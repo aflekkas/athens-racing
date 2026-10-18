@@ -1716,13 +1716,20 @@ export class CarModel {
     this.tail = tailMaterial();
     if(spec.nativeFleet)buildPlayerFleet(this);else buildDetailedCar(this, spec.body, { plate: opts.plate || ({mini:'ΙΚΑ 1920',z4:'ΙΒΜ 4040',taxi:'ΤΑΑ 2150',carrera:'ΙΡΑ 0911',gr_yaris:'ΙΤΥ 0400',gtv:'ΙΡΟ 2000'}[spec.id]) });
     setPaint(this, savedPaint(spec));
-    this.root.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+    // Only solid, visible exterior parts cast: see-through glazing and hidden internals (crash-damage fill) never do;
+    // distance-LOD bodies stay hidden until the car is far away, then they are the visible body.
+    this.root.traverse((o) => {
+      if (!o.isMesh) return;
+      let hidden = false, distance = false;
+      for (let p = o; p && p !== this.root; p = p.parent) { if (!p.visible) hidden = true; if (/distan|lod/i.test(p.name)) distance = true; }
+      o.castShadow = (!hidden || distance) && ![].concat(o.material).every((m) => m.transparent || m.opacity === 0);
+      o.receiveShadow = true;
+    });
     if(spec.exhaustPops)this.exhaustFlames=new ExhaustFlames(this);
     this.cockpit = new Cockpit(spec,this);
     this.wheelSpin = 0;
-    // contact shadow
-    const blob = new THREE.Mesh(new THREE.PlaneGeometry(this.dims.W * 1.25, this.dims.L * 1.15), blobMaterial());
-    blob.rotation.x = -Math.PI / 2; blob.position.y = 0.03; blob.renderOrder = 1; blob.castShadow = false; this.root.add(blob);
+    // No ground-contact decal: a flat quad under the car cuts through crowned roads, kerbs and slopes as a hard-edged
+    // dark patch detached from the wheels (and traffic cars never had one).
   }
   setPlate(text) {
     const old = this.materials.plate, next = makePlateMaterial(text || undefined);
@@ -1744,14 +1751,6 @@ function addTaxiSign(parent, sh) {
   const m = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.18, 0.22), [new THREE.MeshStandardMaterial({ color: '#f7f3e6' }), new THREE.MeshStandardMaterial({ color: '#f7f3e6' }), new THREE.MeshStandardMaterial({ color: '#f7f3e6' }), new THREE.MeshStandardMaterial({ color: '#f7f3e6' }), new THREE.MeshStandardMaterial({ map: tex, emissive: '#ffffff', emissiveMap: tex, emissiveIntensity: 0.4 }), new THREE.MeshStandardMaterial({ map: tex, emissive: '#ffffff', emissiveMap: tex, emissiveIntensity: 0.4 })]);
   m.rotation.y = Math.PI / 2; m.position.set(0, sh.H + 0.1, -0.15); parent.add(m);
 }
-let BLOB = null;
-function blobMaterial() {
-  if (BLOB) return BLOB;
-  const t = canvasTex(64, 128, (g, w, h) => { const gr = g.createRadialGradient(w / 2, h / 2, 2, w / 2, h / 2, h / 2); gr.addColorStop(0, 'rgba(0,0,0,0.75)'); gr.addColorStop(0.6, 'rgba(0,0,0,0.35)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(0, 0, w, h); }, { srgb: false });
-  BLOB = new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4 });
-  return BLOB;
-}
-
 // ------------------------------------------------------------------ traffic models (shared geometry per type)
 export function defaultTrafficWeight(car) {
   const category = String(car.trafficClass || car.class || '').toLowerCase();

@@ -23,7 +23,7 @@ export function createSqlLeaderboard(sql, maps, cars) {
   const list = (filters = {}) => {
     const mapId = filters.mapId || 'riviera';
     // Apply JSON setup filters before limiting; legacy rows have no setup and only match unfiltered views.
-    const rows = [...sql.exec('SELECT entry FROM times WHERE mapId = ? AND version = ? ORDER BY time, at', mapId, leaderboardVersion(mapId, maps.get(mapId)?.track.version || '', filters.reverse))];
+    const rows = [...sql.exec('SELECT entry FROM times WHERE mapId = ? AND version = ? ORDER BY time, at', mapId, leaderboardVersion(mapId, maps.get(mapId)?.track.version || ''))];
     return filterEntries(rows.map(row => JSON.parse(row.entry)), { ...filters, mapId });
   };
   return { submit, list };

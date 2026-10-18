@@ -20,11 +20,27 @@ test('fresh generation cards open their base trim, while saved and filtered choi
  const selection=migrateCarSelection('z4');assert.equal(filterCars(CARS,{},selection).find(x=>carModel(x.car).id==='z4').car.id,'z4');
  const old=globalThis.localStorage;try{globalThis.localStorage={getItem:()=>null};const fresh=renderCarSelect({filters:{search:'BMW Z4'}});assert.match(fresh,new RegExp(`data-car-index="${CARS.indexOf(get('z4_20i'))}"`));globalThis.localStorage={getItem:key=>key==='paraliaki.car'?'z4':null};const saved=renderCarSelect({filters:{search:'BMW Z4'}});assert.match(saved,new RegExp(`data-car-index="${CARS.indexOf(get('z4'))}"`));assert.match(renderCarSelect({index:CARS.indexOf(get('z4_30i')),detail:true}),/data-trim-current="z4_30i"/);}finally{globalThis.localStorage=old;}
  assert.deepEqual(trimChoices('z4',{cars:CARS}),['z4_20i','z4_30i','z4']);assert.equal(stepTrim('z4_20i',1,{cars:CARS}),'z4_30i');assert.equal(stepTrim('z4',1,{cars:CARS}),'z4_20i');assert.deepEqual(trimChoices('z4',{cars:CARS,allowedCars:['z4','z4_30i']}),['z4_30i','z4']);
- const detail=renderCarSelect({index:CARS.indexOf(get('z4_30i')),detail:true});assert.match(detail,/aria-label="Trim 2 of 3"/);
+ const detail=renderCarSelect({index:CARS.indexOf(get('z4_30i')),detail:true}),segments=trimSegments(detail);
+ assert.deepEqual(segments.options,['z4_20i','z4_30i','z4']);assert.equal(segments.selected,'z4_30i');
+ const restricted=trimSegments(renderCarSelect({index:CARS.indexOf(get('z4_30i')),detail:true,allowedCars:['z4','z4_30i']}));
+ assert.deepEqual(restricted.options,['z4_30i','z4']);assert.equal(restricted.selected,'z4_30i');
 });
 test('multiplayer allowed lists and class/spec rule controls use the same generation order',()=>{
  const cars=[...CARS].reverse(),mp={cars,lobby:{allowedCars:cars.map(c=>c.id)},carRules:{preset:'spec',spec:'golf'},get allowedCars(){return Object.getOwnPropertyDescriptor(Multiplayer.prototype,'allowedCars').get.call(this);}};
  const expected=ids(sortTrims(cars));assert.deepEqual(mp.allowedCars,expected);assert.deepEqual(ruleViews(mp).map(v=>v.id),expected);
  const html=renderCars({},mp),options=JSON.parse(html.match(/data-options="([^"]+)"/)[1].replaceAll('&quot;','"').replaceAll('&amp;','&'));assert.deepEqual(options.map(([id])=>id),expected);
  const advanced=renderCars({},{...mp,carRules:{preset:'open'}}),shown=[...advanced.matchAll(/data-key="([^"]+)"[^>]*data-scope="mpAllow"/g)].map(m=>m[1]);assert.deepEqual(shown,expected);
+});
+
+function trimSegments(html) {
+ const at=html.indexOf('data-key="carTrim"');if(at<0)return null;
+ const start=html.indexOf('<div class="seg"',at),segment=html.slice(start,html.indexOf('</div>',start));
+ return {options:[...segment.matchAll(/data-v="([^"]+)"/g)].map(m=>m[1]),selected:segment.match(/class="seg__opt on[^"]*"[^>]*data-v="([^"]+)"/)?.[1]};
+}
+test('rendered trim segments preserve base-to-top order for every generation and body',()=>{
+ for(const model of CAR_MODELS)for(const id of model.bodies?.map(([, ,ids])=>ids[0])||[baseTrim(model)]){
+  const expected=trimChoices(id,{cars:CARS}),html=renderCarSelect({index:CARS.indexOf(get(id)),detail:true}),segments=trimSegments(html);
+  if(expected.length>1){assert.deepEqual(segments.options,expected,id);assert.equal(segments.selected,id);}
+  else assert.equal(segments,null,id+' has no unnecessary single-choice control');
+ }
 });

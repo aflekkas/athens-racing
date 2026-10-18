@@ -9,6 +9,7 @@ class Element extends EventTarget {
  constructor(tag='div'){super();this.tag=tag;this.children=[];this.dataset={};this.hidden=false;this.classes=new Set();this.classList={add:c=>this.classes.add(c),remove:c=>this.classes.delete(c),contains:c=>this.classes.has(c)};}
  append(...nodes){for(const n of nodes){n.parent=this;this.children.push(n);}}
  setAttribute(){}setPointerCapture(){}
+ getBoundingClientRect(){return {left:10,top:10,width:200,height:85};}
  remove(){this.parent?.children.splice(this.parent.children.indexOf(this),1);}
  querySelector(selector){return this.querySelectorAll(selector)[0]||null;}
  querySelectorAll(selector){const all=this.children.flatMap(n=>[n,...n.querySelectorAll('*')]);if(selector==='*')return all;const action=/data-action="([^"]+)"/.exec(selector)?.[1];return action?all.filter(n=>n.dataset.action===action):[];}
@@ -68,4 +69,18 @@ test('touch MODE and both gear buttons emit independent edges on every car',()=>
   frame(car);assert.equal(input.state[action],true);frame(car);assert.equal(input.state[action],false);
   const up=new Event('pointerup',{cancelable:true});Object.assign(up,{pointerId:1});button(action).dispatchEvent(up);frame(car);
  }}finally{input.destroy();}
+});
+
+test('independent pointers hold steering plus gas, and releasing either leaves the other active',()=>{
+ const {input,frame,button}=setup();
+ const steer=input.touchUI.children.find(e=>e.className==='touch-steer'),gas=button('throttle');
+ const dispatch=(el,type,pointerId,clientX=170)=>{const event=new Event(type,{cancelable:true});Object.assign(event,{pointerId,clientX});el.dispatchEvent(event);};
+ try{
+  frame(cars[0]);dispatch(steer,'pointerdown',1);dispatch(gas,'pointerdown',2);frame(cars[0]);
+  assert.equal(input.state.throttle,1);assert.equal(input.state.steer,.75);
+  dispatch(steer,'pointermove',2,10);frame(cars[0]);assert.equal(input.state.steer,.75,'another finger cannot move the wheel');
+  dispatch(gas,'pointerup',2);frame(cars[0]);assert.equal(input.state.throttle,0);assert.equal(input.state.steer,.75);
+  dispatch(gas,'pointerdown',3);dispatch(steer,'pointercancel',1);frame(cars[0]);assert.equal(input.state.steer,0);assert.equal(input.state.throttle,1);
+  input.target.dispatchEvent(new Event('blur'));frame(cars[0]);assert.equal(input.state.throttle,0);assert.equal(input.state.steer,0);
+ }finally{input.destroy();}
 });

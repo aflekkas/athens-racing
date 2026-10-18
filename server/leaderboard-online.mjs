@@ -12,7 +12,7 @@ export function captureRecordMeta(raw, previous, raceId) {
 }
 export function onlineLeaderboardResult(client, lobby, event) {
   const meta = client.state?.recordMeta;
-  return { driverId: client.driverId || client.id, name: client.name, car: client.car, eventId: lobby.eventId, mapId: lobby.mapId, traffic: lobby.traffic, time: client.finish, source: 'online',
+  return { driverId: client.identity?.userId || client.driverId || client.id, name: client.identity?.name || client.name, car: client.car, eventId: lobby.eventId, mapId: lobby.mapId, traffic: lobby.traffic, time: client.finish, source: 'online',
     ...(meta && !meta.changed ? { carName: meta.carName, carGeneration: meta.carGeneration, carTrim: meta.carTrim,
       setup: { map: lobby.mapId, event: lobby.eventId, car: client.car, type: event.type, from: event.s0, to: event.s1, direction: event.dir, laps: event.laps || 1,
         traffic: 0, rivals: 0, time: lobby.config?.time || 'afternoon', weather: lobby.config?.weather || 'clear', police: lobby.config?.police === true, tc: meta.tc, abs: meta.abs, steering: meta.steering, gearbox: meta.gearbox } } : {}) };

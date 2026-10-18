@@ -1,0 +1,1503 @@
+{
+  "proposedBoundsCells": [
+    0,
+    25,
+    9,
+    36
+  ],
+  "cells": 120,
+  "squareKm": 31.45728,
+  "roadKm": 276.06455956987793,
+  "graphEdges": 6389,
+  "buildingOwners": 5814,
+  "pointVegetation": 2611,
+  "coastKm": 21.513948688436553,
+  "buildingDependencyCells": [
+    [
+      2,
+      24
+    ],
+    [
+      3,
+      24
+    ],
+    [
+      4,
+      24
+    ],
+    [
+      5,
+      24
+    ],
+    [
+      6,
+      24
+    ],
+    [
+      7,
+      24
+    ],
+    [
+      10,
+      31
+    ]
+  ],
+  "layeredRoads": 2,
+  "layeredCells": [
+    [
+      7,
+      29
+    ]
+  ],
+  "directedGraphPathBetweenFixtures": true,
+  "notes": [
+    "Inventory only; no cells generated. Conservative contiguous rectangular envelope includes coast and offshore islands.",
+    "Graph connectivity ignores turn restrictions; a legal route and layered surface support remain stage-2 work.",
+    "Vegetation count excludes area scatter; that is bounded by stage-2 quality budgets."
+  ],
+  "perCell": [
+    {
+      "cell": [
+        0,
+        25
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        0,
+        26
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        0,
+        27
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        0,
+        28
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        0,
+        29
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        0,
+        30
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 61.04650487813757,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        0,
+        31
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        0,
+        32
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        0,
+        33
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        0,
+        34
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        0,
+        35
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        0,
+        36
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        1,
+        25
+      ],
+      "edges": 2,
+      "roadMetres": 13.11258864326971,
+      "buildings": 0,
+      "coastMetres": 214.48843244662459,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        1,
+        26
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        1,
+        27
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        1,
+        28
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 576.9530131954431,
+      "trees": 46,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        1,
+        29
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        1,
+        30
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        1,
+        31
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        1,
+        32
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        1,
+        33
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        1,
+        34
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        1,
+        35
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        1,
+        36
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        2,
+        25
+      ],
+      "edges": 115,
+      "roadMetres": 3932.0881529676335,
+      "buildings": 26,
+      "coastMetres": 2155.341580840228,
+      "trees": 17,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        2,
+        26
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 11,
+      "coastMetres": 811.6177077470425,
+      "trees": 28,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        2,
+        27
+      ],
+      "edges": 62,
+      "roadMetres": 2615.706308992577,
+      "buildings": 59,
+      "coastMetres": 875.1837768387111,
+      "trees": 485,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        2,
+        28
+      ],
+      "edges": 14,
+      "roadMetres": 758.1949948255309,
+      "buildings": 5,
+      "coastMetres": 852.8246837083979,
+      "trees": 186,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        2,
+        29
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        2,
+        30
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 168.27855652392583,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        2,
+        31
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 2,
+      "coastMetres": 1592.9731508489865,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        2,
+        32
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        2,
+        33
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        2,
+        34
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        2,
+        35
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        2,
+        36
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        3,
+        25
+      ],
+      "edges": 133,
+      "roadMetres": 6655.715339480476,
+      "buildings": 211,
+      "coastMetres": 66.49233833839989,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        3,
+        26
+      ],
+      "edges": 69,
+      "roadMetres": 3256.335157885019,
+      "buildings": 42,
+      "coastMetres": 1180.9266839356226,
+      "trees": 52,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        3,
+        27
+      ],
+      "edges": 161,
+      "roadMetres": 5698.041030418893,
+      "buildings": 46,
+      "coastMetres": 120.51843718265847,
+      "trees": 292,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        3,
+        28
+      ],
+      "edges": 30,
+      "roadMetres": 1602.5098208215857,
+      "buildings": 15,
+      "coastMetres": 775.7632191051363,
+      "trees": 8,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        3,
+        29
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        3,
+        30
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        3,
+        31
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 298.88007335328194,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        3,
+        32
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        3,
+        33
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        3,
+        34
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        3,
+        35
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 41.01526750984198,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        3,
+        36
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 209.7790765318409,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        4,
+        25
+      ],
+      "edges": 141,
+      "roadMetres": 6604.46116855193,
+      "buildings": 233,
+      "coastMetres": 0.0,
+      "trees": 42,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        4,
+        26
+      ],
+      "edges": 111,
+      "roadMetres": 5669.330492005884,
+      "buildings": 165,
+      "coastMetres": 0.0,
+      "trees": 1,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        4,
+        27
+      ],
+      "edges": 123,
+      "roadMetres": 5927.362900968094,
+      "buildings": 203,
+      "coastMetres": 0.0,
+      "trees": 8,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        4,
+        28
+      ],
+      "edges": 225,
+      "roadMetres": 7041.70756979655,
+      "buildings": 183,
+      "coastMetres": 37.22808802971728,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        4,
+        29
+      ],
+      "edges": 65,
+      "roadMetres": 3773.8687913346225,
+      "buildings": 70,
+      "coastMetres": 702.3324742713713,
+      "trees": 113,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        4,
+        30
+      ],
+      "edges": 6,
+      "roadMetres": 157.8961705088691,
+      "buildings": 0,
+      "coastMetres": 176.5460089823206,
+      "trees": 10,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        4,
+        31
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        4,
+        32
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        4,
+        33
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        4,
+        34
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        4,
+        35
+      ],
+      "edges": 2,
+      "roadMetres": 32.90750917779904,
+      "buildings": 1,
+      "coastMetres": 530.3353179023484,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        4,
+        36
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 1,
+      "coastMetres": 686.0536198542666,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        5,
+        25
+      ],
+      "edges": 169,
+      "roadMetres": 6884.708932697772,
+      "buildings": 204,
+      "coastMetres": 0.0,
+      "trees": 22,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        5,
+        26
+      ],
+      "edges": 116,
+      "roadMetres": 5718.344224801665,
+      "buildings": 203,
+      "coastMetres": 0.0,
+      "trees": 6,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        5,
+        27
+      ],
+      "edges": 120,
+      "roadMetres": 5581.883217082554,
+      "buildings": 251,
+      "coastMetres": 0.0,
+      "trees": 16,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        5,
+        28
+      ],
+      "edges": 118,
+      "roadMetres": 5206.5045168956685,
+      "buildings": 250,
+      "coastMetres": 0.0,
+      "trees": 7,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        5,
+        29
+      ],
+      "edges": 90,
+      "roadMetres": 4608.010019648034,
+      "buildings": 152,
+      "coastMetres": 0.0,
+      "trees": 53,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        5,
+        30
+      ],
+      "edges": 112,
+      "roadMetres": 4856.867988419093,
+      "buildings": 74,
+      "coastMetres": 1279.226814214244,
+      "trees": 58,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        5,
+        31
+      ],
+      "edges": 4,
+      "roadMetres": 63.36240974974129,
+      "buildings": 0,
+      "coastMetres": 115.40583334618113,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        5,
+        32
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        5,
+        33
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        5,
+        34
+      ],
+      "edges": 0,
+      "roadMetres": 0,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        5,
+        35
+      ],
+      "edges": 56,
+      "roadMetres": 2109.3278006244063,
+      "buildings": 18,
+      "coastMetres": 977.8532070096802,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        5,
+        36
+      ],
+      "edges": 20,
+      "roadMetres": 365.7875699075725,
+      "buildings": 0,
+      "coastMetres": 606.6050855731459,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        6,
+        25
+      ],
+      "edges": 158,
+      "roadMetres": 5545.706341176621,
+      "buildings": 295,
+      "coastMetres": 0.0,
+      "trees": 10,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        6,
+        26
+      ],
+      "edges": 181,
+      "roadMetres": 6445.153977848629,
+      "buildings": 256,
+      "coastMetres": 0.0,
+      "trees": 61,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        6,
+        27
+      ],
+      "edges": 173,
+      "roadMetres": 6194.793923383848,
+      "buildings": 197,
+      "coastMetres": 0.0,
+      "trees": 18,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        6,
+        28
+      ],
+      "edges": 106,
+      "roadMetres": 5430.284433729741,
+      "buildings": 228,
+      "coastMetres": 0.0,
+      "trees": 21,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        6,
+        29
+      ],
+      "edges": 137,
+      "roadMetres": 6222.697405391474,
+      "buildings": 202,
+      "coastMetres": 0.0,
+      "trees": 23,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        6,
+        30
+      ],
+      "edges": 110,
+      "roadMetres": 4978.313380549988,
+      "buildings": 276,
+      "coastMetres": 0.0,
+      "trees": 18,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        6,
+        31
+      ],
+      "edges": 61,
+      "roadMetres": 2505.4527847607355,
+      "buildings": 41,
+      "coastMetres": 903.1475915803607,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        6,
+        32
+      ],
+      "edges": 7,
+      "roadMetres": 262.1165471655854,
+      "buildings": 0,
+      "coastMetres": 880.6438964854393,
+      "trees": 12,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        6,
+        33
+      ],
+      "edges": 13,
+      "roadMetres": 638.3318302685415,
+      "buildings": 4,
+      "coastMetres": 693.7399556238067,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        6,
+        34
+      ],
+      "edges": 8,
+      "roadMetres": 570.6172710495404,
+      "buildings": 0,
+      "coastMetres": 603.5546049769323,
+      "trees": 1,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        6,
+        35
+      ],
+      "edges": 88,
+      "roadMetres": 3896.910398260849,
+      "buildings": 4,
+      "coastMetres": 495.20420247633854,
+      "trees": 196,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        6,
+        36
+      ],
+      "edges": 14,
+      "roadMetres": 232.7768523534573,
+      "buildings": 0,
+      "coastMetres": 723.2586615268027,
+      "trees": 4,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        7,
+        25
+      ],
+      "edges": 42,
+      "roadMetres": 1982.2885030718498,
+      "buildings": 44,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        7,
+        26
+      ],
+      "edges": 78,
+      "roadMetres": 2238.9644887615946,
+      "buildings": 71,
+      "coastMetres": 0.0,
+      "trees": 12,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        7,
+        27
+      ],
+      "edges": 97,
+      "roadMetres": 4634.837691140616,
+      "buildings": 180,
+      "coastMetres": 0.0,
+      "trees": 151,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        7,
+        28
+      ],
+      "edges": 106,
+      "roadMetres": 5069.381908585861,
+      "buildings": 248,
+      "coastMetres": 0.0,
+      "trees": 49,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        7,
+        29
+      ],
+      "edges": 107,
+      "roadMetres": 5773.435655668384,
+      "buildings": 275,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": [
+        "w426106069:0",
+        "w426106084:0"
+      ]
+    },
+    {
+      "cell": [
+        7,
+        30
+      ],
+      "edges": 142,
+      "roadMetres": 7179.273720584222,
+      "buildings": 78,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        7,
+        31
+      ],
+      "edges": 155,
+      "roadMetres": 6611.321601881144,
+      "buildings": 68,
+      "coastMetres": 0.0,
+      "trees": 2,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        7,
+        32
+      ],
+      "edges": 90,
+      "roadMetres": 5132.057620766468,
+      "buildings": 26,
+      "coastMetres": 0.0,
+      "trees": 1,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        7,
+        33
+      ],
+      "edges": 78,
+      "roadMetres": 4902.2375119801145,
+      "buildings": 11,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        7,
+        34
+      ],
+      "edges": 86,
+      "roadMetres": 3309.1207572546723,
+      "buildings": 3,
+      "coastMetres": 0.0,
+      "trees": 31,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        7,
+        35
+      ],
+      "edges": 117,
+      "roadMetres": 4774.443056686297,
+      "buildings": 16,
+      "coastMetres": 0.0,
+      "trees": 148,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        7,
+        36
+      ],
+      "edges": 59,
+      "roadMetres": 2146.5701099178946,
+      "buildings": 5,
+      "coastMetres": 1014.011088906665,
+      "trees": 31,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        8,
+        25
+      ],
+      "edges": 20,
+      "roadMetres": 873.5501302946817,
+      "buildings": 32,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        8,
+        26
+      ],
+      "edges": 88,
+      "roadMetres": 5191.703647310506,
+      "buildings": 237,
+      "coastMetres": 0.0,
+      "trees": 57,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        8,
+        27
+      ],
+      "edges": 137,
+      "roadMetres": 5355.847857769718,
+      "buildings": 135,
+      "coastMetres": 0.0,
+      "trees": 131,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        8,
+        28
+      ],
+      "edges": 157,
+      "roadMetres": 6085.833658135114,
+      "buildings": 46,
+      "coastMetres": 0.0,
+      "trees": 59,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        8,
+        29
+      ],
+      "edges": 131,
+      "roadMetres": 4851.4117391142545,
+      "buildings": 21,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        8,
+        30
+      ],
+      "edges": 101,
+      "roadMetres": 5338.224133040835,
+      "buildings": 11,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        8,
+        31
+      ],
+      "edges": 111,
+      "roadMetres": 6190.674147012479,
+      "buildings": 8,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        8,
+        32
+      ],
+      "edges": 115,
+      "roadMetres": 5144.718208645365,
+      "buildings": 45,
+      "coastMetres": 0.0,
+      "trees": 1,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        8,
+        33
+      ],
+      "edges": 108,
+      "roadMetres": 3763.979465330523,
+      "buildings": 3,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        8,
+        34
+      ],
+      "edges": 76,
+      "roadMetres": 3828.166411318496,
+      "buildings": 3,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        8,
+        35
+      ],
+      "edges": 154,
+      "roadMetres": 5681.324835454988,
+      "buildings": 19,
+      "coastMetres": 0.0,
+      "trees": 12,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        8,
+        36
+      ],
+      "edges": 112,
+      "roadMetres": 3063.5520965207265,
+      "buildings": 3,
+      "coastMetres": 1086.7197346926532,
+      "trees": 104,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        9,
+        25
+      ],
+      "edges": 12,
+      "roadMetres": 319.5833014659525,
+      "buildings": 5,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        9,
+        26
+      ],
+      "edges": 74,
+      "roadMetres": 3440.9886676263204,
+      "buildings": 138,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        9,
+        27
+      ],
+      "edges": 52,
+      "roadMetres": 2993.612376871951,
+      "buildings": 55,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        9,
+        28
+      ],
+      "edges": 38,
+      "roadMetres": 1876.1264813702492,
+      "buildings": 38,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        9,
+        29
+      ],
+      "edges": 62,
+      "roadMetres": 2344.8110762977044,
+      "buildings": 15,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        9,
+        30
+      ],
+      "edges": 85,
+      "roadMetres": 3648.587899116903,
+      "buildings": 9,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        9,
+        31
+      ],
+      "edges": 175,
+      "roadMetres": 7146.584999565519,
+      "buildings": 12,
+      "coastMetres": 0.0,
+      "trees": 2,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        9,
+        32
+      ],
+      "edges": 77,
+      "roadMetres": 2262.737295477665,
+      "buildings": 12,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        9,
+        33
+      ],
+      "edges": 30,
+      "roadMetres": 1185.432659755651,
+      "buildings": 1,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        9,
+        34
+      ],
+      "edges": 68,
+      "roadMetres": 2869.7207274561656,
+      "buildings": 0,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        9,
+        35
+      ],
+      "edges": 50,
+      "roadMetres": 2371.992501811481,
+      "buildings": 4,
+      "coastMetres": 0.0,
+      "trees": 0,
+      "layeredRoads": []
+    },
+    {
+      "cell": [
+        9,
+        36
+      ],
+      "edges": 79,
+      "roadMetres": 4424.272804671315,
+      "buildings": 9,
+      "coastMetres": 0.0,
+      "trees": 6,
+      "layeredRoads": []
+    }
+  ]
+}

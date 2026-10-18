@@ -52,7 +52,6 @@ All changes go through a pull request into `staging`, which deploys to the stagi
 - Elevation: EU-DEM v1.1 via OpenTopoData.
 - Textures: Poly Haven (CC0), in `assets/tex/`.
 - World sounds (sea, cicadas, crowds, traffic, impacts): Freesound field recordings (CC0), in `assets/audio/world/`; see its `CREDITS.txt`.
-- Radio: Jason Shaw (Audionautix), Kevin MacLeod (incompetech.com), Juanitos (CC BY) and Zane Little (CC0), in `assets/audio/music/`; see its `CREDITS.txt`.
 
 The scripts in `tools/` rebuild the map data, terrain and textures.
 

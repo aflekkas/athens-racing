@@ -18,7 +18,7 @@ test('the garage lineup is grouped by class, names only real catalogue cars and 
   const listed=filterCars(CARS).map(x=>x.car.id);assert.deepEqual(listed.map(id=>carModel(id).id),GARAGE_CARS,'default order follows the grouped lineup');
   for(const {car,index} of filterCars(CARS))assert.equal(CARS[index],car);
 });
-test('labels and gearbox feedback use remapped keyboard/controller/touch bindings',()=>{const b={keyboard:{shiftUp:['KeyI'],shiftDown:['KeyK'],transmission:['KeyL']},gamepad:{shiftUp:['b0'],shiftDown:['b2'],transmission:['b3']}};assert.equal(bindingLabel(b,'transmission'),'L');assert.match(gearboxMessage(null,true,b,'keyboard'),/I ↑ \/ K ↓ TO SHIFT · L FOR AUTO/);assert.match(gearboxMessage(null,false,b,'gamepad'),/AUTOMATIC · Y FOR MANUAL/);assert.equal(bindingLabel(b,'shiftUp','touch'),'GEAR +');assert.equal(bindingLabel(b,'tow'),'UNBOUND');});
+test('labels and gearbox feedback use remapped keyboard/controller/touch bindings',()=>{const b={keyboard:{shiftUp:['KeyI'],shiftDown:['KeyK'],transmission:['KeyL']},gamepad:{shiftUp:['b0'],shiftDown:['b2'],transmission:['b3']}};assert.equal(bindingLabel(b,'transmission'),'L');assert.match(gearboxMessage(null,true,b,'keyboard'),/I SHIFT UP \/ K SHIFT DOWN · L FOR AUTO/);assert.match(gearboxMessage(null,false,b,'gamepad'),/AUTOMATIC · Y FOR MANUAL/);assert.equal(bindingLabel(b,'shiftUp','touch'),'GEAR +');assert.equal(bindingLabel(b,'tow'),'UNBOUND');});
 
 test('each generation has unique valid trim IDs and legacy selections migrate without losing their engine',()=>{
   const all=CAR_MODELS.flatMap(m=>m.trims);
@@ -78,11 +78,13 @@ test('new trim IDs reach server and deployment catalogues, with exactly one nitr
   for(const m of CAR_MODELS)for(const id of m.trims){const c=CARS.find(c=>c.id===id);if(!c.nativeFleet&&!c.police){assert(c.zeroTo100>0);assert(c.visual.rim>=13&&c.visual.rim<=21);}}
   assert(CAR_MODELS.filter(m=>m.trims.length>=2).length>=15);
 });
-test('body uses shared segments beside trim arrows, filtering forbidden body-engine combinations',async()=>{
+test('body and trim use shared segments, filtering forbidden body-engine combinations',async()=>{
  const {renderCarSelect}=await import('../src/car-select.js');
  const html=renderCarSelect({index:CARS.findIndex(c=>c.id==='mini'),detail:true,allowedCars:['mini','mini_jcw']});
  assert.match(html,/data-key="carBody"/);assert.match(html,/data-trim-current="mini"/);assert.match(html,/HARDTOP/);assert.match(html,/CONVERTIBLE/);assert.match(html,/role="radiogroup"/);assert(!html.includes('<select'));
- assert(!html.includes('data-key="carTrim"'));assert.match(html,/data-act="carTrimNext"/);
+ assert(!html.includes('data-key="carTrim"'));assert.doesNotMatch(html,/data-act="carTrimNext"/);
+ const cle=renderCarSelect({index:CARS.findIndex(c=>c.id==='cle200'),detail:true,allowedCars:['cle200','cle53']});
+ assert.match(cle,/data-key="carTrim"/);assert.match(cle,/data-v="cle200"/);assert.match(cle,/data-v="cle53"/);assert.doesNotMatch(cle,/data-v="cle300e"/);
  const z4=renderCarSelect({index:CARS.findIndex(c=>c.id==='z4'),detail:true});assert(!z4.includes('data-key="carBody"'));
 });
 

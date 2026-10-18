@@ -2,7 +2,7 @@ import { importWithUpdate } from '../client-release.js';
 // Loaded only after the garage opens. One renderer, a bounded memory cache and a lazy disk cache.
 const memory = new Map(), LIMIT = 80;
 export const thumbnailKey = (id, paint, build = 'dev') => `${build}/${id}/${paint.toLowerCase().replace('#','')}`;
-const disk = async () => { try { return await globalThis.caches?.open('athens-garage-thumbnails-v2'); } catch { return null; } };
+const disk = async () => { try { return await globalThis.caches?.open('athens-garage-thumbnails-v3'); } catch { return null; } };
 const cacheUrl = key => new URL('/__ui-car-thumbnails__/' + key + '.webp', location.href).href;
 async function readBlob(key) { if(memory.has(key))return memory.get(key); try{return await (await (await disk())?.match(cacheUrl(key)))?.blob();}catch{return null;} }
 async function writeBlob(key, blob) {

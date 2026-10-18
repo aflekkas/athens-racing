@@ -14,7 +14,7 @@ const styles = [
 ]
   .map((m) => m[0].replaceAll('href="./', 'href="/'))
   .join("");
-const html = `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">${styles}<link rel="stylesheet" href="/src/ui/accounts.css"><style>body{background:#101c23}#ui{position:fixed;inset:0}</style><script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script></head><body><div id="ui"></div><script type="module">import {Menu} from '/src/menu.js'; window.menu=new Menu(document.querySelector('#ui'),{ui(){},ctx(){return{}},inputDevice(){return'keyboard'}});menu.show('title');window.__accountsReady=true;</script></body></html>`;
+const html = `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">${styles}<style>body{background:#101c23}#ui{position:fixed;inset:0}</style><script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script></head><body><div id="ui"></div><script type="module">import {Menu} from '/src/menu.js'; window.menu=new Menu(document.querySelector('#ui'),{ui(){},ctx(){return{}},inputDevice(){return'keyboard'}});menu.show('title');window.__accountsReady=true;</script></body></html>`;
 const server = http.createServer(async (req, res) => {
   try {
     const path = new URL(req.url, "http://localhost").pathname;
@@ -121,7 +121,7 @@ try {
     await page.evaluate(async () => {
       const C = await import("/src/ui/components.js");
       C.ui.toast("ELENI INVITED YOU TO A LOBBY · OPEN ACCOUNT", {
-        icon: "users-three",
+        icon: "users",
         ms: 15000,
       });
     });

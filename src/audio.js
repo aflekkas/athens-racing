@@ -1,6 +1,5 @@
 import { AudioCadence } from './audio-cadence.js';
 import {ExhaustVoice} from './audio/exhaust-voice.js';
-import { MusicSources } from './music-sources.js';
 import { preloadEngine, loadRecordedEngine, recordingFor, RecordedEngineVoice } from './engine-recordings.js';
 import { loadWorldSounds, loopSource, spatialAudio } from './world-sounds.js';
 import { WeatherAudio } from './weather-audio.js';
@@ -20,7 +19,6 @@ import { Sirens } from './sirens.js';
 //  - ambience recorded on Greek and Mediterranean coasts, following the route: waves on sand in the bays and on the
 //    rocks below the cliffs (on the shore side, muffled with distance), Athens traffic and café murmur in town, beach
 //    crowds at Vouliagmeni / Limanakia, cicadas swelling in the pines, gulls
-//  - radio: a streamed playlist that ducks under the action; master bus compressor; synth fallbacks until loaded
 
 import { ENGINE_SOUND, buildEngineBank, EngineVoice, rng32 } from './audio/engine-synth.js';
 export { ENGINE_SOUND, buildEngineBank, EngineVoice } from './audio/engine-synth.js';
@@ -30,10 +28,8 @@ import { EngineLifecycle } from './audio/engine-lifecycle.js';
 
 const MIDI = (n) => 440 * Math.pow(2, (n - 69) / 12);
 const PLAYER_ENGINE_LEVEL = 0.75;
-const MUSIC_LEVEL = 0.35;
-const MENU_MUSIC_LEVEL = 0.62;
-// Mix controls are independent of legacy sfx (which still scales every non-music bus).
-export const AUDIO_DEFAULTS = Object.freeze({ master: 0.6, music: 0.55, sfx: 1, engine: 0.85, tyres: 0.28, ambience: 0.5, traffic: 0.65, voice: 0.65, ui: 0.4 });
+// Mix controls are independent of legacy sfx (which still scales all effects buses).
+export const AUDIO_DEFAULTS = Object.freeze({ master: 0.6, sfx: 1, engine: 0.85, tyres: 0.28, ambience: 0.5, traffic: 0.65, voice: 0.65, ui: 0.4 });
 const clampAudio = (v, lo = 0, hi = 1) => Math.max(lo, Math.min(hi, Number.isFinite(v) ? v : lo));
 
 /** One detail budget across rivals and traffic, so separate pools cannot each fill the foreground. */
@@ -61,8 +57,8 @@ export class AudioMix {
     this.sfx = gain(1, this.master);
     this.worldDuck = gain(1, this.sfx);
     this.buses = {};
-    for (const name of ['engine', 'tyres', 'ambience', 'traffic', 'voice', 'ui', 'music']) {
-      this.buses[name] = gain(1, name === 'music' ? this.master : name === 'ui' ? this.sfx : this.worldDuck);
+    for (const name of ['engine', 'tyres', 'ambience', 'traffic', 'voice', 'ui']) {
+      this.buses[name] = gain(1, name === 'ui' ? this.sfx : this.worldDuck);
     }
     this.setVolumes(volumes, 0);
   }
@@ -215,13 +211,14 @@ export class TyreVoice {
 }
 
 export class Audio {
-  constructor() { this.worldCadence = new AudioCadence(); this.worldMuted = null; this.ctx = null; this.musicOn = false; this.started = false; this.engineSpec = null; this.duckEv = 0; this.banks = {}; this.engineRevision = 0; this.recordingState = 'idle'; this.weather = new WeatherAudio(this); this.sirens = new Sirens(this); this.vol = { ...AUDIO_DEFAULTS }; this.rivals = new Map(); this.musicSources = new MusicSources(this); this.lifecycle = new EngineLifecycle(this); }
+  constructor() { this.worldCadence = new AudioCadence(); this.worldMuted = null; this.ctx = null; this.started = false; this.engineSpec = null; this.banks = {}; this.engineRevision = 0; this.recordingState = 'idle'; this.weather = new WeatherAudio(this); this.sirens = new Sirens(this); this.vol = { ...AUDIO_DEFAULTS }; this.rivals = new Map(); this.lifecycle = new EngineLifecycle(this); }
 
-  start({ context, recordings = true, radio = true } = {}) {
-    if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return; }
+  start({ context, recordings = true } = {}) {
+    if (this.ctx) { if (['suspended', 'interrupted'].includes(this.ctx.state)) this.ctx.resume().catch(() => {}); return; }
     const AC = typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext);
     if (!context && !AC) return;
     const ctx = this.ctx = context || new AC();
+    if (['suspended', 'interrupted'].includes(ctx.state)) ctx.resume().catch(() => {});
     this.started = true;
     const sr = ctx.sampleRate;
     this.mix = new AudioMix(ctx, this.vol);
@@ -247,7 +244,7 @@ export class Audio {
       this.menuObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
       this.syncMenu();
     }
-    // reverb send (synthetic plate) for sfx and music
+    // reverb send (synthetic plate) for effects
     this.verb = ctx.createConvolver();
     { const L = Math.floor(sr * 1.4), ir = ctx.createBuffer(2, L, sr); for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch); let lp = 0; for (let i = 0; i < L; i++) { const k = 0.85 - 0.75 * i / L; lp += ((Math.random() * 2 - 1) - lp) * k; d[i] = lp * Math.pow(1 - i / L, 3.6) * 0.6; } } this.verb.buffer = ir; } // tail darkens as it decays
     this.verbIn = ctx.createGain(); this.verbIn.gain.value = 0.2; this.verbIn.connect(this.verb); this.verb.connect(this.mix.worldDuck);
@@ -306,15 +303,6 @@ export class Audio {
     // --- TRAFFIC voices (assigned each frame to the nearest vehicles): recorded idle + running loops crossfaded by
     // rpm, an electric whine, and tyre roll
     this.externalEngines = new ExternalEngines(ctx, this.trafficBus, (level, pan) => this.passBy(level, pan));
-
-    // --- RADIO
-    this.musicBus = gain(0);
-    this.musicLP = filt('lowpass', 12000, 0.7);
-    this.musicDuck = gain(1);
-    this.musicVol = this.mix.buses.music; // the music volume setting (setVolumes)
-    chain(this.musicBus, this.musicDuck, this.musicLP, this.musicVol);
-    this.radio = this.musicSources; this.musicSources.attach(radio);
-    if (this.musicOn) { this.radio.play(); this.musicBus.gain.setTargetAtTime(this.mix.menu ? MENU_MUSIC_LEVEL : MUSIC_LEVEL, ctx.currentTime, 1.2); }
 
     // --- recorded world sounds
     this.S = {};
@@ -414,9 +402,6 @@ export class Audio {
     if (this.x) { this.x.intakeG.gain.setTargetAtTime(0, this.ctx.currentTime, .08); this.x.turboG.gain.setTargetAtTime(0, this.ctx.currentTime, .08); this.x.compressorG.gain.setTargetAtTime(0, this.ctx.currentTime, .08); this.x.whineG.gain.setTargetAtTime(0, this.ctx.currentTime, .08); this.x.nitroG.gain.setTargetAtTime(0, this.ctx.currentTime, .08); }
   }
 
-  toggleMusic() { return this.musicSources.toggle(); }
-  /** Skip only the chosen local/built-in source; Off never starts the radio. */
-  nextTrack() { if (this.ctx) void this.musicSources.next(); }
 
   /** hook a recorded sound into the graph built in start() */
   attach(name, snd) {
@@ -531,13 +516,7 @@ export class Audio {
       this.weather.update(p, now); p.dt = dt;
     }
 
-    // ---- music ducks under the action (crashes, horns, slides, speed)
-    this.duckEv = Math.max(0, this.duckEv - p.dt * 0.7);
-    const duck = Math.min(1, Math.max(this.duckEv, (p.action || 0) * 0.6, sq * 0.8));
-    this.musicDuck.gain.setTargetAtTime(1 - 0.55 * duck, now, duck > (this.lastDuck || 0) ? 0.05 : 0.6);
-    this.lastDuck = duck;
   }
-  duck(amount = 1) { this.duckEv = Math.max(this.duckEv, amount); }
   // ---- police (traffic.js pursuits): radio one-shots; sirens are in sirens.js
   /** radio squelch plus a burst of chatter; returns the time it ends (s from now) */
   radioBurst(talk = 1.4, gain = 0.32, at = 0) {
@@ -552,7 +531,6 @@ export class Audio {
   /** caught: radio chatter and a falling stinger */
   copBusted() {
     if (!this.ctx) return;
-    this.duck(1);
     const end = this.radioBurst(2.2, 0.34, 0.6);
     [[311, 0.22], [277, 0.22], [233, 0.7]].forEach(([f, d], i) => this.tone({ f, dur: d, gain: 0.1, type: 'sawtooth', at: i * 0.2, lp: 1500, attack: 0.02 }));
     return end;
@@ -571,11 +549,6 @@ export class Audio {
   syncMenu(now = this.ctx?.currentTime || 0) {
     const classes = typeof document !== 'undefined' ? document.body?.classList : null;
     this.mix?.setMenu(this.menuRequested || ['menu', 'ui-open', 'loading', 'paused', 'results'].some(k => classes?.contains(k)), now);
-    if (this.musicBus && this.musicMenu !== this.mix.menu) {
-      this.musicMenu = this.mix.menu;
-      this.musicBus.gain.setTargetAtTime(this.musicOn ? this.musicMenu ? MENU_MUSIC_LEVEL : MUSIC_LEVEL : 0, now, 0.4);
-    }
-    this.musicSources.syncMenu();
   }
 
   /** Loose exhaust shield/hanger: quiet metallic chatter, not extra exhaust pops. */
@@ -718,7 +691,6 @@ export class Audio {
   // ------------------------------------------------------------------ game events
   crash(kind, severity = 1, material = {}) {
     if (!this.ctx) return;
-    this.duck(0.9 * severity + 0.3);
     severity = Math.max(0, Math.min(1, Number.isFinite(severity) ? severity : 0));
     const heavy = kind === 'heavy', glass = material.glass ?? (heavy && severity > .5), r = 0.92 + Math.random() * 0.16;
     if (glass) this.sample('crash-glass', { gain: .30 * Math.sqrt(severity), rate: r, at: .03 });
@@ -776,7 +748,6 @@ export class Audio {
   curb(strength = 0.5) { this.tone({ f: 90, slide: 50, dur: 0.15, gain: 0.25 * strength, type: 'sine' }); this.noise({ dur: 0.18, f: 2200, type: 'highpass', gain: 0.08 * strength }); }
   horn(big, level = 0.6, pan = 0, at = 0) {
     if (!this.ctx) return;
-    this.duck(0.35 * level);
     if (this.sample(big ? 'horn-long' : 'horn-double', { gain: 0.5 * level, rate: big ? 0.72 : 0.95 + Math.random() * 0.15, pan, at, bus: this.trafficBus })) return;
     const d = 0.25 + Math.random() * 0.35;
     const f1 = big ? 220 : 400, f2 = big ? 277 : 500;
@@ -787,7 +758,6 @@ export class Audio {
     if (!this.ctx || level < 0.02) return;
     const bus = kind === 'bus', bike = kind === 'scooter' || kind === 'delivery' || kind === 'moto';
     const lp = 900 + 2400 * Math.min(1, level); // distant horns lose their bite
-    if (level > 0.3) this.duck(0.3 * Math.min(1, level));
     // the recorded horns, pitched per vehicle: buses low, scooters thin
     const rate = (bus ? 0.7 : bike ? 1.45 : kind === 'taxi' ? 1.08 : 0.92) * (0.96 + Math.random() * 0.08);
     const opts = { gain: (bike ? 0.3 : bus ? 0.6 : 0.5) * Math.min(1, level), rate, pan, at, lp: lp * 1.6, bus: this.trafficBus || this.amb };
@@ -813,17 +783,8 @@ export class Audio {
     }
   }
   tramBell() { for (const at of [0, 0.35]) { this.tone({ f: 1250, dur: 0.6, gain: 0.05, at, pan: -0.5, bus: this.amb }); this.tone({ f: 3130, dur: 0.4, gain: 0.02, at, pan: -0.5, bus: this.amb }); } }
-  checkpoint() {
-    if (!this.ctx) return;
-    [62, 66, 69, 74, 78].forEach((n, i) => this.pluck(MIDI(n), i * 0.08, 0.16));
-    this.tone({ f: 1760, dur: 0.6, gain: 0.05, at: 0.42 });
-    setTimeout(() => this.opa(1.1), 450);
-  }
   gameOver() {
     if (!this.ctx) return;
-    const ctx = this.ctx, now = ctx.currentTime;
-    this.tapeStop(0.45, 2.2);
-    this.musicLP.frequency.setTargetAtTime(700, now, 0.6);
     // sad trombone
     [[311, 0.42], [294, 0.42], [277, 0.42], [262, 1.3]].forEach(([f, d], i) => this.tone({ f, dur: d, gain: 0.13, type: 'sawtooth', at: 0.3 + i * 0.45, lp: 1100, vib: i === 3 ? 7 : 0, vibF: 5.5, attack: 0.04 }));
   }
@@ -850,39 +811,10 @@ export class Audio {
     if (!this.ctx) return;
     [[311, 0.42], [294, 0.42], [277, 0.42], [262, 1.3]].forEach(([f, d], i) => this.tone({ f, dur: d, gain: 0.12, type: 'sawtooth', at: 0.2 + i * 0.45, lp: 1100, vib: i === 3 ? 7 : 0, vibF: 5.5, attack: 0.04 }));
   }
-  /** Only local/built-in sources own a media element; other sources can retain an old one. */
-  musicElement() {
-    const radio = this.radio;
-    return radio && (!radio.source || ['files', 'builtin'].includes(radio.source)) ? radio.el : null;
-  }
-  /** Glide an existing local music element's speed (and pitch). */
-  tapeStop(rate, secs) {
-    clearInterval(this.tapeT); this.tapeT = null;
-    const element = this.musicElement();
-    if (!element) return;
-    const radio = this.radio, revision = radio.revision;
-    const r0 = element.playbackRate, t0 = performance.now();
-    const timer = setInterval(() => {
-      // A source/file switch cancels the effect; never animate a replacement track.
-      if (this.musicElement() !== element || radio.revision !== revision) {
-        clearInterval(timer); if (this.tapeT === timer) this.tapeT = null; return;
-      }
-      const k = Math.min(1, (performance.now() - t0) / 1000 / secs);
-      element.playbackRate = r0 + (rate - r0) * k;
-      if (k >= 1) { clearInterval(timer); if (this.tapeT === timer) this.tapeT = null; }
-    }, 50);
-    this.tapeT = timer;
-  }
   restart() {
     if (!this.ctx) return;
     this.nextExhaustRattle = 0;
     this.lastSpeed = 0; this.requestIgnition();
-    const now = this.ctx.currentTime;
-    if (this.musicElement()) {
-      this.tapeStop(1, 0.3);
-      this.musicLP?.frequency.setTargetAtTime(12000, now, 0.4);
-    } else { clearInterval(this.tapeT); this.tapeT = null; }
-    this.duckEv = 0;
   }
 }
 
@@ -894,7 +826,7 @@ Audio.prototype.levels = function () {
   let s = 0, pk = 0; for (const v of buf) { s += v * v; pk = Math.max(pk, Math.abs(v)); }
   return { rms: +(10 * Math.log10(s / buf.length + 1e-12)).toFixed(1), peak: +(20 * Math.log10(pk + 1e-12)).toFixed(1) };
 };
-/** volume settings (src/settings.js), each 0..1: master = everything, music = the radio, sfx = everything but the radio */
+/** volume settings (src/settings.js), each 0..1: master = everything, sfx = all effects */
 Audio.prototype.setVolumes = function (volumes = {}) {
   for (const key of Object.keys(AUDIO_DEFAULTS)) if (key in volumes) this.vol[key] = clampAudio(volumes[key]);
   if (this.eng) this.eng.gain.setTargetAtTime(PLAYER_ENGINE_LEVEL, this.ctx.currentTime, 0.04);
@@ -906,7 +838,7 @@ Audio.prototype.busLevels = function () {
   if (!this.ctx) return null;
   if (!this.taps) {
     this.taps = {};
-    for (const k of ['eng', 'chassis', 'trafficBus', 'amb', 'sfx', 'musicDuck', 'mainOut']) { const an = this.ctx.createAnalyser(); an.fftSize = 2048; this[k].connect(an); this.taps[k] = an; }
+    for (const k of ['eng', 'chassis', 'trafficBus', 'amb', 'sfx', 'mainOut']) { const an = this.ctx.createAnalyser(); an.fftSize = 2048; this[k].connect(an); this.taps[k] = an; }
     return null;
   }
   const out = {}, buf = new Float32Array(2048);

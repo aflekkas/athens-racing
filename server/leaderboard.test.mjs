@@ -31,18 +31,20 @@ test('a full short-route board reports unretained records honestly and leaves lo
   assert.equal(board.list({ eventId: 'long' }).length, 1);
 });
 
-test('Psychiko default-direction correction separates previous times without changing track geometry or deleting them', async t => {
+test('Psychiko Garden Circuit v2 starts a new board: earlier loop times stay stored but are never listed', async t => {
   const dir = await mkdtemp(join(tmpdir(), 'leaderboard-direction-')); t.after(() => rm(dir, { recursive: true, force: true }));
   const { writeFile } = await import('node:fs/promises'), file = join(dir, 'times.json');
-  const old = { driverId: 'driver-previous', eventId: 'psychiko-race', mapId: 'psychiko', car: 'mini', version: 'geometry-v1', time: 400, traffic: false, at: 1 };
-  await writeFile(file, JSON.stringify({ entries: [old] }));
-  const definitions = new Map([['psychiko-race', { len: 12754, routeKey: '0>-12754', traffic: false }]]);
+  const base = { driverId: 'driver-previous', eventId: 'psychiko-race', mapId: 'psychiko', car: 'mini', traffic: false, at: 1 };
+  const old = [{ ...base, version: 'geometry-v1', time: 400 }, { ...base, driverId: 'driver-previous-2', version: 'geometry-v1:reverse-default-v1', time: 410 }];
+  await writeFile(file, JSON.stringify({ entries: old }));
+  const definitions = new Map([['psychiko-race', { len: 7506, routeKey: '0>7506', traffic: false }]]);
   const maps = new Map([['psychiko', { definitions, track: { version: 'geometry-v1' } }]]);
   const board = await createLeaderboard(file, definitions, new Set(['mini']), 'geometry-v1', maps);
   assert.deepEqual(board.list({ mapId: 'psychiko' }), []);
-  assert.equal(board.list({ mapId: 'psychiko', reverse: true })[0].time, 400, 'choosing the old forward direction reads its original board');
+  assert.deepEqual(board.list({ mapId: 'psychiko', reverse: true }), [], 'neither direction reads the previous loops');
   await board.submit({ driverId: 'driver-previous', eventId: 'psychiko-race', mapId: 'psychiko', car: 'mini', time: 450 });
   assert.equal(board.list({ mapId: 'psychiko' })[0].time, 450);
   const stored = JSON.parse(await readFile(file, 'utf8')).entries;
-  assert.ok(stored.some(e => e.version === old.version && e.time === 400)); assert.equal(stored.length, 2);
+  assert.ok(old.every(o => stored.some(e => e.version === o.version && e.time === o.time)), 'earlier times are not deleted');
+  assert.ok(stored.some(e => e.version === 'geometry-v1:garden-v2' && e.time === 450)); assert.equal(stored.length, 3);
 });

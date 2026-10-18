@@ -30,9 +30,8 @@ export async function renderSoundV2({ scenarios = ['straight-100kmh', 'corner-li
   const report = [];
   for (const scenario of scenarios) {
     const seconds = durationSeconds, sr = 44100, ctx = new OfflineAudioContext(2, seconds * sr, sr), a = new Audio();
-    a.musicOn = false;
-    a.start({ context: ctx, recordings: true, radio: false });
-    if (isolate) a.setVolumes({ engine: isolate.startsWith('engine') ? 0.85 : 0, tyres: isolate.startsWith('tyre') || isolate === 'wind' ? 0.8 : 0, ambience: isolate === 'ambience' ? 0.5 : 0, traffic: 0, music: 0 });
+    a.start({ context: ctx, recordings: true });
+    if (isolate) a.setVolumes({ engine: isolate.startsWith('engine') ? 0.85 : 0, tyres: isolate.startsWith('tyre') || isolate === 'wind' ? 0.8 : 0, ambience: isolate === 'ambience' ? 0.5 : 0, traffic: 0 });
     if (isolate) for (const [name, bus] of Object.entries(a.mix.buses)) {
       // Hard-mute unused buses before rendering: the normal settings fade leaks the first 150 ms.
       if (a.mix.volumes[name] === 0) { bus.gain.cancelScheduledValues(0); bus.gain.value = 0; }
@@ -52,11 +51,6 @@ export async function renderSoundV2({ scenarios = ['straight-100kmh', 'corner-li
         a.engineVoice.gains.forEach((gain, i) => { if (i !== layer) gain.disconnect(); });
         for (const name of ['intakeG', 'turboG', 'whineG', 'nitroG']) a.x[name].disconnect();
       }
-    }
-    if (scenario === 'normal-race') {
-      const music = ctx.createBufferSource();
-      music.buffer = await ctx.decodeAudioData(await (await fetch('/assets/audio/music/greek-dance.mp3')).arrayBuffer());
-      music.connect(a.musicBus); a.musicBus.gain.setValueAtTime(0.5, 0); music.start(0, 25);
     }
     const isPass = scenario === 'rival-pass-150kmh';
     let dopplerMin = 2, dopplerMax = 0;
@@ -92,11 +86,6 @@ export async function renderSoundV2({ scenarios = ['straight-100kmh', 'corner-li
     const saved = await fetch(`/render/${scenario}${isolate ? '-' + isolate : ''}${suffix ? '-' + suffix : ''}`, { method: 'POST', headers: { 'Content-Type': 'audio/wav' }, body: wav(buffer) });
     assert(saved.ok, `Save failed: ${saved.status}`);
     const measurement = await saved.json();
-    if (scenario === 'normal-race') {
-      const lufs = +measurement.summary.match(/I:\s+(-?[\d.]+) LUFS/)[1];
-      // This sparse offline fixture is a regression guard; live-game captures in MIX.md set the race target.
-      assert(lufs >= -23 && lufs <= -18, `Normal race fixture loudness: ${lufs} LUFS`);
-    }
     report.push({ ...row, ...measurement });
   }
   return report;

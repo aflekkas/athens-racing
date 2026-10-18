@@ -1,31 +1,6 @@
-/* Release screens (src/ui/release-screens.js): title corner, one-time news panel, What's new, Credits, About.
-   Layouts only: every surface, row and button is a kit component (src/ui/ui.css). */
+/* Release screens (src/ui/release-screens.js): the backdrop behind each page. Their layout, panels and rows are the kit's
+   templates and components (src/ui/ui.css). */
 
-/* title: version + credits in the corner, bottom-left, level with the soft-key bar */
-.title-meta { position: absolute; left: 0; bottom: 0; display: flex; align-items: center; gap: var(--s-1); z-index: 2; }
-/* the one-time "What's new in <version>" panel */
-.news-panel { position: absolute; right: 0; bottom: 3.25rem; z-index: 3; width: min(23rem, 100%); max-height: calc(100% - 4rem); overflow-y: auto; box-sizing: border-box; }
-.release__items { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--s-2); }
-.release__items li { position: relative; padding-left: var(--s-4); font: 500 var(--t-sm) / 1.45 var(--f-sans); color: var(--c-text-2); }
-.release__items li::before { content: ""; position: absolute; left: .1rem; top: .55em; width: .3rem; height: .3rem; border-radius: 50%; background: var(--hu-ice); opacity: .8; }
-
-/* What's new · Credits · a credit file: one centred panel */
-.scr--info > .scr__body { align-items: stretch; }
-.release-list, .credits, .credit-sheet, .release-empty { width: min(52rem, 100%); min-height: 0; display: flex; flex-direction: column; gap: var(--s-3); align-self: center; box-sizing: border-box; }
-.release-list > .card { flex: none; }
-.release-gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(16rem, 100%), 1fr)); gap: var(--s-3); margin: var(--s-3) 0; }
-.news-panel .release-gallery { grid-template-columns: 1fr; }
-.credits .group { margin: 0; }
-.credit-para { padding: var(--s-3) var(--s-4); border: 1px solid transparent; border-radius: var(--r-3); font: 500 var(--t-sm) / 1.6 var(--f-sans); color: var(--c-text-2); white-space: pre-wrap; overflow-wrap: anywhere;
-  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease); outline: none; }
-.credit-para a { color: var(--hu-ice); text-decoration: none; }
-.credit-para a:hover { text-decoration: underline; }
-.credit-para.focus { background: var(--ui-row-focus); border-color: var(--hu-ice); }
-.about-stats { margin: 0 var(--s-4) var(--s-3); }
 #ui.s-whatsNew, #ui.s-credits, #ui.s-creditFile { background: radial-gradient(140% 100% at 50% 0%, rgba(8,12,17,.72), rgba(3,5,7,.9) 70%); }
 /* a release photo, full screen */
 #ui.s-releaseImage { background: var(--ui-surface); }
-.release-image { margin: 0; display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; min-height: 0; gap: var(--s-3); }
-.release-image img { width: 100%; min-height: 0; flex: 1; object-fit: contain; }
-.release-image figcaption { flex: none; text-align: center; padding-top: var(--s-2); color: var(--c-text-2); font: 500 var(--t-sm)/1.5 var(--f-sans); }
-@media (max-width: 720px) { .news-panel { left: 0; right: 0; bottom: 3rem; width: auto; } }

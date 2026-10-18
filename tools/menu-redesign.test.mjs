@@ -82,9 +82,10 @@ import { Menu } from '../src/menu.js';
 test('OWNER LOCK: aceb5bd title is the owner-chosen design; ask before redesigning (docs/OWNER-DECISIONS.md)',()=>{
  const priorDocument=globalThis.document,priorWindow=globalThis.window;globalThis.document={baseURI:'http://localhost/',querySelector:()=>null,body:{classList:{contains:()=>false}}};globalThis.window={};
  let html;try{html=Menu.prototype.r_title.call({h:{}});}finally{globalThis.document=priorDocument;globalThis.window=priorWindow;}
- assert.match(html,/home__brand/,'OWNER LOCK: keep the logo on the left');assert.match(html,/home__tiles/,'OWNER LOCK: keep the large PLAY and four supporting cards');
- const actions=[...html.matchAll(/data-act="([^"]+)"/g)].map(m=>m[1]);assert.deepEqual(actions.filter(a=>['play','mpJoin','mpHost','garage','settings'].includes(a)),['play','mpJoin','mpHost','garage','settings'],'OWNER LOCK: title card structure changed; ask the owner first');
- for(const label of ['PLAY','JOIN GAME','HOST / CREATE GAME','GARAGE','SETTINGS','ATHENS','RACING'])assert.ok(html.includes(label),'OWNER LOCK: missing '+label);
+ assert.match(html,/home__brand/,'OWNER LOCK: keep the logo on the left');assert.match(html,/home__tiles/,'OWNER LOCK: keep the large PLAY and the supporting cards');
+ const actions=[...html.matchAll(/data-act="([^"]+)"/g)].map(m=>m[1]);// Owner-requested edit 2026-10-18: one MULTIPLAYER tile replaced JOIN GAME + HOST / CREATE GAME.
+ assert.deepEqual(actions.filter(a=>['play','multiplayer','mpJoin','mpHost','garage','settings'].includes(a)),['play','multiplayer','garage','settings'],'OWNER LOCK: title card structure changed; ask the owner first');
+ for(const label of ['PLAY','MULTIPLAYER','GARAGE','SETTINGS','ATHENS','RACING'])assert.ok(html.includes(label),'OWNER LOCK: missing '+label);
  assert.doesNotMatch(html,/data-title-hero|home__hero|road-sign|home__edition|home__session/,'OWNER LOCK: no car hero, road sign, coordinates or info strip on the title');
  assert.match(html,/data-act="account"/);assert.match(html,/title-meta/);
  const source=readFileSync(new URL('../src/menu.js',import.meta.url),'utf8');assert.doesNotMatch(source,/mountTitleHero/,'OWNER LOCK: title must allocate no preview renderer');

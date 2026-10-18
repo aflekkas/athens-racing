@@ -1,0 +1,40 @@
+{
+  "identity": "athens-development:069e01dea93aecd58e5caf1629d4753b753aeed9aa1374dd4b56a8853d3f4977",
+  "tiles": {
+    "4,25": {
+      "url": "./4-25-83e535bea2261d6c1cc772ff6f8f4c845f207b7b2c465ecec40d1cf2d321a4be.bin.gz",
+      "sha256": "83e535bea2261d6c1cc772ff6f8f4c845f207b7b2c465ecec40d1cf2d321a4be",
+      "bytes": 926656,
+      "decodedBytes": 12834517,
+      "dependencies": [
+        "3,24",
+        "3,25",
+        "4,24",
+        "4,26",
+        "5,25"
+      ],
+      "triangles": 35247
+    },
+    "5,25": {
+      "url": "./5-25-0ce528e2fdfedaa130aa8ff9fcc2a14854708ba3895f5e830b15c68303c8017c.bin.gz",
+      "sha256": "0ce528e2fdfedaa130aa8ff9fcc2a14854708ba3895f5e830b15c68303c8017c",
+      "bytes": 973990,
+      "decodedBytes": 13326698,
+      "dependencies": [
+        "4,25",
+        "5,24",
+        "5,26",
+        "6,25"
+      ],
+      "triangles": 36316
+    },
+    "8,36": {
+      "url": "./8-36-1f054fa93c3194c35f120c7b2b54ae28956d01462b2679e8a29c1d122dff89ae.bin.gz",
+      "sha256": "1f054fa93c3194c35f120c7b2b54ae28956d01462b2679e8a29c1d122dff89ae",
+      "bytes": 456994,
+      "decodedBytes": 6351660,
+      "dependencies": [],
+      "triangles": 17078
+    }
+  }
+}

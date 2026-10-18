@@ -3,6 +3,8 @@ import { canonicalHostRedirect } from './canonical-host.mjs';
 import { legalPage } from './legal-pages.mjs';
 import { arenaAccountStatus } from './account-arena.mjs';
 import { accounts } from './accounts.mjs';
+import { authorizeGame, protectedPath, accountResult, identityActive } from '../server/auth-policy.mjs';
+import { canSaveResults } from '../server/smoke-session.mjs';
 export { FriendsPresence } from './presence.mjs';
 import { isTerminalImpact } from '../src/damage-math.js';
 import { socketAttachment } from './socket-attachment.mjs';
@@ -37,6 +39,7 @@ export default {
     const legal = legalPage(request);
     if (legal) return legal;
     const url = new URL(request.url);
+    if (protectedPath(url.pathname)) { const auth = await authorizeGame(request, env); if (auth.response) return auth.response; }
     if (url.pathname === '/api/account/presence') return env.PRESENCE.get(env.PRESENCE.idFromName('friends-v1')).fetch(request);
     if (url.pathname.startsWith('/api/auth/') || url.pathname.startsWith('/api/account/')) return accounts(request, env);
     if (['/ws', '/health', '/api/lobbies', '/api/leaderboard'].includes(url.pathname)) {
@@ -54,6 +57,7 @@ export class GameArena extends DurableObject {
   constructor(ctx, env) {
     super(ctx, env);
     this.ctx = ctx;
+    this.env = env;
     this.instanceId = crypto.randomUUID();
     this.startedAt = Date.now();
     this.timer = null;
@@ -112,11 +116,13 @@ export class GameArena extends DurableObject {
   async fetch(request) {
     return this.event('fetch', async () => {
       const url = new URL(request.url), path = url.pathname;
+      const auth = path === '/api/account/live' ? {} : await authorizeGame(request, this.env);
+      if (path !== '/health' && auth.response) return auth.response;
       if (path === '/ws') {
         if (request.headers.get('Upgrade')?.toLowerCase() !== 'websocket') return json({ error: 'WebSocket upgrade required.' }, 426);
         if (this.core.clients.size >= 256) return json({ error: 'Connection limit reached.' }, 503);
         const pair = new WebSocketPair(), [client, server] = Object.values(pair);
-        const connection = connectionProtocol(url);
+        const connection = { ...connectionProtocol(url), identity: auth.identity };
         if (connection.protocol !== MULTIPLAYER_PROTOCOL) {
           // Rejected upgrades have no session/attachment to hibernate. Use an
           // ordinary socket to complete its close handshake before releasing it.
@@ -139,6 +145,7 @@ export class GameArena extends DurableObject {
       if (path === '/api/leaderboard') {
         if (request.method === 'GET') return json(this.leaderboard.list(leaderboardFilters(url.searchParams)));
         if (request.method !== 'POST') return json({ error: 'Use GET or POST.' }, 405);
+        if (!canSaveResults(auth.identity)) return json({ error: 'Smoke sessions cannot save results.' }, 403);
         const ip = request.headers.get('CF-Connecting-IP') || 'unknown', now = Date.now();
         const sql = this.ctx.storage.sql;
         const old = [...sql.exec('SELECT at, count FROM post_limits WHERE ip = ?', ip)][0];
@@ -157,7 +164,7 @@ export class GameArena extends DurableObject {
           const bytes = new Uint8Array(size); let offset = 0; for (const part of chunks) { bytes.set(part, offset); offset += part.length; }
           const r = JSON.parse(new TextDecoder().decode(bytes));
           if (r?.valid !== true) return json({ error: 'Only completed races can be submitted.' }, 400);
-          const out = await this.leaderboard.submit({ ...r, source: 'solo' });
+          const out = await this.leaderboard.submit({ ...accountResult(r, auth.identity), source: 'solo' });
           return json(out);
         } catch (e) { return json({ error: e.status || e instanceof SyntaxError ? e.message : 'Could not save the result.' }, e.status || (e instanceof SyntaxError ? 400 : 500)); }
       }
@@ -166,6 +173,7 @@ export class GameArena extends DurableObject {
   }
   async webSocketMessage(ws, message) {
     return this.event('message', async () => {
+      if (!await identityActive(this.core.clientData(ws)?.identity, this.env)) { ws.close(4001, 'Sign in with Google'); this.core.disconnect(ws); await this.persist(); return; }
       if (typeof message !== 'string' || new TextEncoder().encode(message).byteLength > 4096) { ws.close(1009, 'Message too large'); return; }
       let packet; try { packet = JSON.parse(message); } catch {}
       const type = packet?.type || 'invalid';

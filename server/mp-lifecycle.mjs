@@ -131,10 +131,10 @@ export function sanitizeOpaque(value) {
 export function effectiveEvent(def, config) {
   if (!def || !config?.reverse) return def;
   const dir = -def.dir, s0 = def.closed ? def.s0 : def.s1, s1 = def.closed ? s0 + dir * def.len : def.s0;
-  const checkpoints = def.closed ? (def.checkpoints || []).map(cp => ({ ...cp, s: s0 + dir * cp.d })) :
-    [...(def.checkpoints || []).filter(cp => cp.d < def.len).map(cp => ({ ...cp, d: def.len - cp.d }))
+  const sectors = def.closed ? (def.sectors || []).map(cp => ({ ...cp, s: s0 + dir * cp.d })) :
+    [...(def.sectors || []).filter(cp => cp.d < def.len).map(cp => ({ ...cp, d: def.len - cp.d }))
       .sort((a, b) => a.d - b.d).map(cp => ({ ...cp, s: s0 + dir * cp.d })), { id: 'finish', name: def.fromName || 'FINISH', s: s1, d: def.len }];
-  return { ...def, s0, s1, dir, reverse: dir < 0, checkpoints, routeKey: `${s0}>${s1}` };
+  return { ...def, s0, s1, dir, reverse: dir < 0, sectors, routeKey: `${s0}>${s1}` };
 }
 
 // Keys that offer a different race: everyone must re-ready. Time, weather,

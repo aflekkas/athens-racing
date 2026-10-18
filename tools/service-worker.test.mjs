@@ -1,4 +1,4 @@
-// The offline cache: request routing (never /ws, /api, /auth, music streams), content addressing, release build.
+// The offline cache: request routing (never /ws, /api, /auth, uploads), content addressing, release build.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, mkdtemp, mkdir, writeFile, readdir, rm } from 'node:fs/promises';
@@ -23,7 +23,7 @@ test('routes only listed static files, the page and pinned CDN files', async () 
   assert.equal(route('https://asr.test/data/map.json'), 'content');
   assert.equal(route('https://asr.test/data/map.json', { method: 'POST' }), null);
   assert.equal(route('https://asr.test/data/map.json', { range: true }), null);
-  for (const p of ['/ws', '/api/lobbies', '/api/leaderboard', '/api/unavailable', '/auth/retired', '/health', '/assets/audio/music/a.mp3', '/src/unlisted.js'])
+  for (const p of ['/ws', '/api/lobbies', '/api/leaderboard', '/api/unavailable', '/auth/retired', '/health', '/assets/unlisted.mp3', '/src/unlisted.js'])
     assert.equal(route('https://asr.test' + p, { mode: p.startsWith('/auth') ? 'navigate' : 'cors' }), null, p);
   assert.equal(route('https://asr.test/', { mode: 'navigate' }), 'page');
   assert.equal(route('https://asr.test/index.html?quality=low', { mode: 'navigate' }), 'page');
@@ -58,7 +58,7 @@ test('navigations are checked against the worker release (skew, rollback, kill s
 test('a release publishes immutable content-addressed copies, a worker and the page hook', async () => {
   const dir = await mkdtemp(resolve(tmpdir(), 'asr-release-'));
   try {
-    for (const [p, body] of [['index.html', '<html><head></head><body></body></html>'], ['src/a.js', 'export const a = 1;'], ['src/b.js', 'export const a = 1;'], ['assets/audio/music/song.mp3', 'x'], ['data/raw/roads.json', '{}'], ['data/map.json', '{"v":1}']]) {
+    for (const [p, body] of [['index.html', '<html><head></head><body></body></html>'], ['src/a.js', 'export const a = 1;'], ['src/b.js', 'export const a = 1;'], ['data/raw/roads.json', '{}'], ['data/map.json', '{"v":1}']]) {
       await mkdir(resolve(dir, p, '..'), { recursive: true }); await writeFile(resolve(dir, p), body);
     }
     const release = await buildRelease(dir, { core: ['/src/'] });
@@ -95,4 +95,13 @@ test('an explicit reload bypasses a bad content cache without clearing unrelated
  let matches=0,options;const cache={match:async()=>{matches++;return new Response('bad');},put:async()=>{}};
  const sw=await loadWorker({build:'x',files:{'/data/world.gz':'a'.repeat(16)},core:[]},{caches:{open:async()=>cache},fetch:async(url,opts)=>{options=opts;return new Response('good');}});
  const result=await sw.fromContent(new Request('https://asr.test/data/world.gz',{cache:'reload'}),'/data/world.gz');assert.equal(await result.text(),'good');assert.equal(matches,0);assert.equal(options.cache,'reload');
+});
+
+for (const failure of ['open', 'match', 'put', 'blocked']) for (const kind of ['page', 'cdn']) test(`${kind} remains playable when optional cache ${failure} fails`, async () => {
+  const body=kind==='page'?'<meta name="asr-build" content="x">':'font';let requests=0;
+  const cache={match:async()=>{if(failure==='match')throw Error('unavailable');return null;},put:async()=>{if(failure==='put')throw Error('quota');}};
+  const caches={open(){if(failure==='open')throw Error('private storage');if(failure==='blocked')return new Promise(()=>{});return Promise.resolve(cache);}};
+  const sw=await loadWorker({build:'x',files:{},core:[]},{caches,fetch:async()=>{requests++;return new Response(body);}});
+  const response=await (kind==='page'?sw.fromPage:sw.fromCdn)(new Request(kind==='page'?'https://asr.test/':'https://fonts.gstatic.com/font.woff2'));
+  assert.equal(await response.text(),body);assert.equal(requests,1);
 });

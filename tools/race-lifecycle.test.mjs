@@ -44,12 +44,11 @@ test('finish order uses recorded times; running gaps never divide by speed', () 
   assert.equal(hud.time, 15); assert.equal(hud.gap, 3); assert.equal(hud.gapUnit, 's');
 });
 
-test('recovery has no forward gift and cannot cross the next checkpoint in either direction', () => {
-  assert.equal(recoveryPosition(180, 140, 1, 150), 140);
-  assert.equal(recoveryPosition(140, 180, 1, 150), 140);
-  assert.equal(recoveryPosition(180, 170, 1, 150), 147);
-  assert.equal(recoveryPosition(20, 60, -1, 40), 60);
-  assert.equal(recoveryPosition(60, 20, -1, 40), 60);
+test('recovery without a tracked course has no forward gift in either direction', () => {
+  assert.equal(recoveryPosition(180, 140, 1), 140);
+  assert.equal(recoveryPosition(140, 180, 1), 140);
+  assert.equal(recoveryPosition(20, 60, -1), 60);
+  assert.equal(recoveryPosition(60, 20, -1), 60);
 });
 
 test('a fresh resumed client advances beyond the saved tow epoch and retains the recovery clock', async () => {
@@ -104,7 +103,7 @@ test('objective HUD skips identical writes and restores content after another sc
 });
 
 test('production solo HUD position and gap follow current validated progress through shortcut, retreat and finish', async () => {
-  const { courseProgress } = await import('../src/checkpoints.js');
+  const { courseProgress } = await import('../src/course.js');
   const EV = await import('../src/events.js');
   const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
   const earnedSource = main.slice(main.indexOf('const earnedProgress ='), main.indexOf('function advanceRivalCourses('));

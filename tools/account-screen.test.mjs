@@ -1,7 +1,7 @@
 // Account + sign-in screens on the shared component set (docs/OWNER-DECISIONS.md, 2026-10-16).
 import test from 'node:test';
 import assert from 'node:assert/strict';
-const { renderAccount, renderSignIn } = await import('../src/ui/account-screen.js');
+const { renderAccount, renderSignIn, install } = await import('../src/ui/account-screen.js');
 const base = () => ({ ready: true, providers: ['google'], error: '', presence: { f1: { status: 'in-menu' } }, invites: [],
   user: { id: 'me', displayName: 'GR-4821', plate: 'IKA 1920' }, friends: [{ id: 'f1', display_name: 'ELENI', state: 'accepted' }] });
 
@@ -27,12 +27,26 @@ test('account: one Activity list for requests and invites, only when non-empty',
   assert.match(html, /data-act="account-friend-accept"/); assert.match(html, /data-act="account-join"/);
 });
 
-test('sign-in is the kit Dialog over the title screen with the Google button and Play offline', () => {
+test('sign-in is the kit Dialog over the title screen with required Google sign-in', () => {
   const menu = { r_title: () => '<div class="scr scr--title">TITLE</div>' };
   const html = renderSignIn({ ...base(), user: null }, menu);
   assert.match(html, /class="dialog-under" inert/); assert.match(html, /TITLE/);
   assert.match(html, /role="dialog" aria-modal="true"/); assert.match(html, /SIGN IN TO ATHENS RACING/);
-  assert.match(html, /btn--google[^>]*>\s*<svg class="btn__logo"[\s\S]*#EA4335[\s\S]*#4285F4[\s\S]*#FBBC05[\s\S]*#34A853[\s\S]*Continue with Google/, 'the multicolour G sits left of the standard label');
-  assert.match(html, /data-act="account-offline"[\s\S]*PLAY OFFLINE/); assert.match(html, /href="\/privacy"/); assert.match(html, /href="\/terms"/);
+  assert.match(html, /btn--google[^>]*>\s*<svg class="btn__logo"[\s\S]*#EA4335[\s\S]*#4285F4[\s\S]*#FBBC05[\s\S]*#34A853[\s\S]*CONTINUE WITH GOOGLE/, 'the multicolour G sits left of the standard label');
+  assert.doesNotMatch(html, /account-offline|PLAY OFFLINE|data-act="back"/); assert.match(html, /href="\/privacy"/); assert.match(html, /href="\/terms"/);
   assert.doesNotMatch(html, /YOUR PLACE ON THE GRID|One driver\. Every road\./, 'the old full sign-in page is gone');
+});
+
+test('signed-in connection loss immediately restores the gate and recovery restores the title', () => {
+  const client = { ready: true, required: true, user: { displayName: 'ATHENA' }, offline: false,
+    get blocked() { return this.required && (this.offline || !this.user || !this.user.displayName); } };
+  const menu = { screen: 'title', root: { addEventListener() {}, querySelector() { return null; }, querySelectorAll() { return []; } },
+    show(screen) { this.screen = screen; }, hide() {}, activate() {}, back() {}, render() {}, refresh() {} };
+  install(menu, client);
+  client.offline = true; client.onChange(); assert.equal(menu.screen, 'signIn');
+  menu.show('garage'); assert.equal(menu.screen, 'signIn');
+  client.offline = false; client.onChange(); assert.equal(menu.screen, 'title');
+  client.user = null; client.onChange(); assert.equal(menu.screen, 'signIn');
+  client.user = { displayName: '' }; client.onChange(); assert.equal(menu.screen, 'accountName');
+  client.user.displayName = 'ATHENA'; client.onChange(); assert.equal(menu.screen, 'title');
 });

@@ -1,5 +1,5 @@
 import { MAPS } from './map-catalog.js';
-import { buildCourse, observeCourse, courseStatus, courseProgress } from './checkpoints.js';
+import { buildCourse, observeCourse } from './course.js';
 // EVENTS: data-driven race events (sprints against a grid of 3 by default, time trials, police pursuits), their route segments /
 // direction, medal targets and saved results; plus the event hook API other systems listen to. Straight time: no points.
 // Pure logic, no DOM or three.js: node can import and test it (tools/events-test.mjs).
@@ -9,7 +9,7 @@ import { buildCourse, observeCourse, courseStatus, courseProgress } from './chec
 //   const off = events.on('finish', (result) => { ... });   off() unsubscribes; events.once(name, fn) fires once
 //
 //   'start'   { eventId, type, car, def, run }      at GO (after the countdown). run = the live EventRun
-//   'split'   { eventId, index, id, name, time, best, delta }    passing a checkpoint (district markers) / the finish
+//   'split'   { eventId, index, id, name, time, best, delta }    timing sector crossed (district markers) / the finish
 //   'lap'     { eventId, lap, laps, time, total }   a lap completed (circuits)
 //   'finish'  result                                event complete (finished, busted, or a pursuit survived)
 //   'abort'   { eventId, type, reason }             restart / quit to menu before the finish
@@ -18,7 +18,7 @@ import { buildCourse, observeCourse, courseStatus, courseProgress } from './chec
 //              field, penalties, distance, reverse, record, newBest, prevMedal, busted,
 //              valid (a clean, normal finish: not autodrive / online / aborted), routeKey ('<s0>><s1>' in metres) }
 //     time       seconds incl. penalties (null = did not finish, e.g. busted)
-//     splits     [seconds at each checkpoint, last one = finish]
+//     splits     [seconds at each timing sector, last one = finish]
 //     position   1..field (sprints; 1 for solo events), field = number of cars
 //     medal      'gold' | 'silver' | 'bronze' | null
 //     record     what is now saved in localStorage['paraliaki.events.<id>']
@@ -157,28 +157,28 @@ function nearestName(s, ctx) { let n = (ctx.route.from || '').toUpperCase(); for
 export function resolve(def, ctx) {
   if (isDrivingMode(def)) return resolveDrivingMode(def, ctx);
   const a = locate(def.from, ctx), b = locate(def.to, ctx);
-  if (def.type === 'free') return { s0: a.s, s1: b.s, dir: def.reverse ? -1 : 1, len: ctx.route.length, fromName: a.name, toName: b.name, checkpoints: [], reverse: def.reverse === true, timeLimit: 0, targetTimes: null, free: true };
+  if (def.type === 'free') return { s0: a.s, s1: b.s, dir: def.reverse ? -1 : 1, len: ctx.route.length, fromName: a.name, toName: b.name, sectors: [], reverse: def.reverse === true, timeLimit: 0, targetTimes: null, free: true };
   if (ctx.route.closed) {
     const laps = Math.max(1, Math.min(99, Math.floor(def.laps || 1))), lapLength = ctx.route.length;
-    const dir = def.reverse ? -1 : 1, len = lapLength * laps, checkpoints = [];
+    const dir = def.reverse ? -1 : 1, len = lapLength * laps, sectors = [];
     for (let lap = 1; lap <= laps; lap++) for (let sector = 1; sector <= 4; sector++) {
       const d = ((lap - 1) + sector / 4) * lapLength, last = lap === laps && sector === 4;
-      checkpoints.push({ id: last ? 'finish' : `lap${lap}-sector${sector}`, name: sector === 4 ? `LAP ${lap}` : `SECTOR ${sector}`, s: a.s + dir * d, d, lapEnd: sector === 4, lap });
+      sectors.push({ id: last ? 'finish' : `lap${lap}-sector${sector}`, name: sector === 4 ? `LAP ${lap}` : `SECTOR ${sector}`, s: a.s + dir * d, d, lapEnd: sector === 4, lap });
     }
     return { s0:a.s, s1:a.s + dir*len, dir, len, laps, lapLength, closed:true, fromName:a.name,
-      toName:b.name, checkpoints, reverse:dir<0, timeLimit:0,
+      toName:b.name, sectors, reverse:dir<0, timeLimit:0,
       targetTimes:def.type === 'timetrial' ? Object.fromEntries(MEDALS.map(m => [m, def.targetTimes?.[m] ?? len / ((def.targets?.[m] || 100) / 3.6)])) : null };
   }
   const dir = b.s >= a.s ? 1 : -1, len = Math.abs(b.s - a.s);
   const prog = (s) => (s - a.s) * dir;
-  // checkpoints: the district markers strictly inside the segment, then the finish
+  // timing sectors: the district markers strictly inside the segment, then the finish
   let cps = ctx.marks.filter((m) => prog(m.s) > 150 && prog(m.s) < len - 150).sort((p, q) => prog(p.s) - prog(q.s)).map((m) => ({ id: m.id, name: m.name, s: m.s, d: prog(m.s) }));
   if (!cps.length && len > 2500) { // a long segment with few districts: add kilometre splits
     const n = Math.floor(len / 2000); cps = [];
     for (let i = 1; i <= n; i++) { const d = len * i / (n + 1); cps.push({ id: 'km' + i, name: `${(d / 1000).toFixed(1)} KM`, s: a.s + dir * d, d }); }
   }
   cps.push({ id: 'finish', name: b.name, s: b.s, d: len });
-  const out = { s0: a.s, s1: b.s, dir, len, fromName: a.name, toName: b.name, checkpoints: cps, reverse: dir < 0, timeLimit: def.rules?.timeLimit || 0 };
+  const out = { s0: a.s, s1: b.s, dir, len, fromName: a.name, toName: b.name, sectors: cps, reverse: dir < 0, timeLimit: def.rules?.timeLimit || 0 };
   out.targetTimes = def.type === 'timetrial' ? Object.fromEntries(MEDALS.map((m) => [m, len / (def.targets[m] / 3.6)])) : null;
   return out;
 }
@@ -209,18 +209,14 @@ export function targetLabels(def, r, fmtTime) {
 }
 
 // ------------------------------------------------------------------ saved results
-// Keep old Psychiko forward-default records intact but separate from the new
-// direction contract (including its opposite-direction setup variants).
-const KEY = (id) => 'paraliaki.events.' + id + (/^psychiko-(race|tt)(?:~|$)/.test(id) ? '.reverse-default-v1' : '');
+// The 2026-10-18 Garden Circuit is a different route from every earlier Psychiko loop: its personal
+// bests live in their own namespace so old times never rank against it.
+const KEY = (id) => 'paraliaki.events.' + id + (/^psychiko-(race|tt)(?:~|$)/.test(id) ? '.garden-v2' : '');
 const store = () => (typeof localStorage !== 'undefined' ? localStorage : memStore);
 const memStore = { m: new Map(), getItem(k) { return this.m.has(k) ? this.m.get(k) : null; }, setItem(k, v) { this.m.set(k, String(v)); }, removeItem(k) { this.m.delete(k); } };
 export function loadRecord(id, st = store()) {
   try {
-    let value = st.getItem(KEY(id));
-    if (!value && /^psychiko-(race|tt)(?:~|$)/.test(id)) {
-      const parts = id.split('~'), opposite = parts.includes('rev') ? parts.filter(p => p !== 'rev') : [...parts, 'rev'];
-      value = st.getItem('paraliaki.events.' + opposite.join('~'));
-    }
+    const value = st.getItem(KEY(id));
     return JSON.parse(value || 'null') || {};
   } catch { return {}; }
 }
@@ -281,8 +277,8 @@ export class EventRun {
   reset() {
     this.t = 0; this.started = false; this.done = false; this.result = null;
     this.lapTimes = []; this.lapStart = 0;
-    this.course = buildCourse(this.r, this.courseRoute); this.checkpointClock = 0; this.checkpoint = courseStatus(this.course);
-    this.cpIdx = 0; this.splits = []; this.lastProg = 0; this.maxProg = 0; this.ww = {};
+    this.course = buildCourse(this.r, this.courseRoute); this.courseClock = 0;
+    this.sectorIdx = 0; this.splits = []; this.lastProg = 0; this.maxProg = 0; this.ww = {};
   }
   get type() { return this.def.type; }
   get id() { return this.def.id; }
@@ -305,20 +301,14 @@ export class EventRun {
     if (!this.started || this.done || this.type === 'free') return out;
     this.t = p.t;
     const prog = this.progress(p.s);
-    this.checkpointClock += dt;
-    const previousStatus = this.checkpoint;
-    this.checkpoint = observeCourse(this.course, p, this.checkpointClock, { route: this.courseRoute });
-    if (this.checkpoint.missed !== previousStatus.missed || this.checkpoint.passed !== previousStatus.passed) {
-      const e = { kind: 'checkpoint', ...this.checkpoint }; events.emit('checkpoint', e); out.push(e);
-    }
-    this.maxProg = Math.max(this.maxProg, courseProgress(this.course));
-    const validated = this.course.gates[this.course.passed - 1]?.d ?? 0;
-    // checkpoints (only when crossed forwards: driving back and forth across a line doesn't count twice)
-    while (this.cpIdx < this.r.checkpoints.length && validated >= this.r.checkpoints[this.cpIdx].d) {
-      const cp = this.r.checkpoints[this.cpIdx], i = this.cpIdx++;
-      const gateIndex = this.course.gates.findIndex(g => g.d >= cp.d - 1e-7);
-      const crossedAt = this.course.gateTimes?.[gateIndex];
-      const timeAtLine = Number.isFinite(crossedAt) ? p.t - (this.checkpointClock - crossedAt) : p.t;
+    this.courseClock += dt;
+    observeCourse(this.course, p, this.courseClock, { route: this.courseRoute });
+    this.maxProg = Math.max(this.maxProg, this.course.reached);
+    // Timing sectors (only when reached forwards: driving back and forth across a line doesn't count twice).
+    while (this.sectorIdx < this.r.sectors.length && this.course.reached >= this.r.sectors[this.sectorIdx].d) {
+      const cp = this.r.sectors[this.sectorIdx], i = this.sectorIdx++;
+      const crossedAt = this.course.markTimes[this.course.marks.findIndex(d => d >= cp.d - 1e-7)];
+      const timeAtLine = Number.isFinite(crossedAt) ? p.t - (this.courseClock - crossedAt) : p.t;
       this.splits.push(timeAtLine);
       if (cp.lapEnd) {
         const time = timeAtLine - this.lapStart; this.lapTimes.push(time); this.lapStart = timeAtLine;
@@ -331,7 +321,7 @@ export class EventRun {
     }
     const surviving = this.type === 'pursuit' && this.def.rules?.goal === 'survive';
     if (surviving) { if (this.r.timeLimit && p.t >= this.r.timeLimit) out.push({ kind: 'timeup' }); }
-    else if (this.cpIdx >= this.r.checkpoints.length) out.push({ kind: 'finish', time: this.splits.at(-1) ?? p.t });
+    else if (this.sectorIdx >= this.r.sectors.length) out.push({ kind: 'finish', time: this.splits.at(-1) ?? p.t });
     else if (this.r.timeLimit && p.t >= this.r.timeLimit) out.push({ kind: 'timeup' });
     this.lastProg = prog;
     return out;

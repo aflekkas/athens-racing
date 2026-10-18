@@ -1,8 +1,9 @@
 import { MAX_RIVALS } from '../src/events.js';
 import { matchesRecord } from '../src/leaderboard-records.js';
-// Direction defaults changed without changing OSM geometry. Old times remain
-// stored, in their previous board version, on both native and Worker backends.
-export const leaderboardVersion = (mapId, version, reverse = false) => mapId === 'psychiko' && !reverse ? `${version}:reverse-default-v1` : version;
+// The Psychiko Garden Circuit was redesigned on 2026-10-18 (new streets, new start/finish). Its board
+// version always carries this suffix, so earlier Psychiko times stay stored under their old version and
+// never mix with the new route, on both native and Worker backends.
+export const leaderboardVersion = (mapId, version) => mapId === 'psychiko' ? `${version}:garden-v2` : version;
 export function resultContext(r, definitions, version, maps) {
   r = r && typeof r === 'object' ? r : {};
   if (!maps) return { event: definitions.get(r.eventId), version, mapId: 'riviera' };

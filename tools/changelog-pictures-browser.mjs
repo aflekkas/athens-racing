@@ -37,16 +37,13 @@ try {
     assert.equal(await page.locator('#ui [role="dialog"]').count(), 0);
     await click('back'); assert.equal(await page.evaluate(() => __flow.menu.screen), 'title');
     assert.equal(await page.locator('.news-panel').count(), 1, 'viewing card pictures does not dismiss the card');
-    await click('dismissNews'); await click('whatsNew'); await readyImage('.release-list img');
-    assert.ok((await page.locator('.release-list img').count()) >= 5);
-    assert.equal(await page.locator('.release-list img:not([loading="lazy"])').count(), 0);
+    await click('dismissNews'); await click('whatsNew'); await readyImage('.layout-article .article-figure img');
+    assert.ok((await page.locator('.layout-article .article-figure img').count()) >= 5);
+    assert.equal(await page.locator('.layout-article img:not([loading="lazy"])').count(), 0);
+    assert.equal(await page.locator('.layout-article [data-act="releaseImage"], .layout-article .card').count(), 0, 'screenshots sit inline in the page, not in cards');
     await snap('whats-new');
-    await page.locator('.release-list [data-act="releaseImage"]').first().click();
-    await readyImage('.release-image img'); await snap('full-screen');
-    assert.equal(await page.locator('#ui [role="dialog"]').count(), 0);
-    await click('back'); assert.equal(await page.evaluate(() => __flow.menu.screen), 'whatsNew');
-    assert.equal(maps.length, 0, 'notes and image viewer never load a map');
-    report.checks.push(`${width}: card opt-in photos, lazy notes gallery, full screen and Back; no map data`);
+    assert.equal(maps.length, 0, 'notes never load a map');
+    report.checks.push(`${width}: card opt-in photos and full screen with Back; lazy inline notes pictures; no map data`);
     await context.close();
   }
   assert.deepEqual(report.errors, []); report.passed = true;

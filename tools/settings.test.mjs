@@ -24,7 +24,7 @@ test('comfortable master default migrates the old default once and preserves exp
     storage.setItem('paraliaki.settings', JSON.stringify({ master, music: 0.2, engine: 0.9 }));
     const module = await preferences(storage);
     assert.equal(module.settings.master, master === 0.8 ? 0.6 : master);
-    assert.equal(module.settings.music, 0.2);
+    assert.equal(module.settings.music, undefined);
     assert.equal(module.settings.engine, 0.9);
     module.setSetting('master', 0.8);
     assert.equal((await preferences(storage)).settings.master, 0.8, 'intentional later selection survives');
@@ -37,7 +37,7 @@ test('saved volumes remain usable when storage writes are denied', async () => {
   storage.setItem = () => { throw new Error('storage is read-only'); };
   const module = await preferences(storage);
   assert.equal(module.settings.master, 0.3);
-  assert.equal(module.settings.music, 0.2);
+  assert.equal(module.settings.music, undefined);
 });
 
 test('quieter tyres migrate the old default once without changing custom levels or master', async () => {
@@ -147,7 +147,7 @@ test('owner-locked: tyre-grip HUD preference is removed and saved choices migrat
   assert.equal(Object.hasOwn(module.DEFAULTS,'showTyreGrip'),false,'Owner-locked decision, see docs/OWNER-DECISIONS.md. Ask the owner before restoring the tyre-grip HUD.');
   assert.equal(Object.hasOwn(module.settings,'showTyreGrip'),false);
   const saved=JSON.parse(storage.getItem('paraliaki.settings'));assert.equal(Object.hasOwn(saved,'showTyreGrip'),false);
-  assert.equal(saved.music,.23);assert.equal(module.settings.aids,false);assert.equal(module.settings.abs,true);assert.equal(module.settings.units,'mph');
+  assert.equal(saved.music,undefined);assert.equal(module.settings.aids,false);assert.equal(module.settings.abs,true);assert.equal(module.settings.units,'mph');
   module.setSetting('showTyreGrip',true);assert.equal(Object.hasOwn(module.settings,'showTyreGrip'),false);
 });
 

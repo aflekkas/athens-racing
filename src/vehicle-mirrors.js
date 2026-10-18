@@ -52,13 +52,14 @@ export function seatMirrors(car,scope=car.body,{bike=false}={}){
     // coarse LOD shells cannot produce a long bridge from nominal car width.
     // The Huracan's raked A-pillar needs the foot aft of the sail and a raised stalk.
     if(modern)center.copy(hit.point).add(new THREE.Vector3(side*(car.modelKind==='huracan'?.12:.15),car.modelKind==='huracan'?.075:.085,car.modelKind==='huracan'?.025:.035));
-    const shell=new THREE.Mesh(classic?new THREE.SphereGeometry(1,12,8):new THREE.SphereGeometry(1,low?6:modern?16:10,low?4:modern?10:6),classic?car.materials.chrome:bike?car.materials.black:car.paint);
-    const vertices=shell.geometry.attributes.position;for(let i=0;i<vertices.count;i++){const x=vertices.getX(i),y=vertices.getY(i);vertices.setZ(i,Math.min(0,vertices.getZ(i)));if(modern){vertices.setY(i,y*(.88+.12*side*x));}}shell.geometry.computeVertexNormals();
+    const commercial=group.userData.commercialMirror;
+    const shell=new THREE.Mesh(commercial?new THREE.BoxGeometry(2,2,2):classic?new THREE.SphereGeometry(1,12,8):new THREE.SphereGeometry(1,low?6:modern?16:10,low?4:modern?10:6),classic?car.materials.chrome:bike||commercial?car.materials.black:car.paint);
+    const vertices=shell.geometry.attributes.position;for(let i=0;i<vertices.count;i++){const x=vertices.getX(i),y=vertices.getY(i);vertices.setZ(i,commercial?vertices.getZ(i):Math.min(0,vertices.getZ(i)));if(modern){vertices.setY(i,y*(.88+.12*side*x));}}shell.geometry.computeVertexNormals();
     const orientation=new THREE.Quaternion();if(car.spec?.mass)orientation.setFromUnitVectors(new THREE.Vector3(0,0,1),car.seat.clone().sub(center).normalize());
     shell.quaternion.copy(orientation);
     shell.name='mirror-housing';shell.scale.set(width/2,height/2,depth/2);shell.position.copy(center);group.add(shell);
     const glass=face||new THREE.Mesh(new THREE.CircleGeometry(1,12),car.materials.chrome||car.materials.silver||car.materials.alloy||car.paint);
-    glass.removeFromParent();glass.geometry=new THREE.CircleGeometry(1,modern&&!low?32:16);if(modern){const a=glass.geometry.attributes.position;for(let i=0;i<a.count;i++){const x=a.getX(i),y=a.getY(i);a.setY(i,y*(.88+.12*side*x));}}glass.scale.set(width*(z4?.43:.41),height*(z4?.45:.37),1);glass.position.copy(center);glass.position.add(new THREE.Vector3(0,0,.002).applyQuaternion(orientation));glass.quaternion.copy(orientation);glass.name='mirror-face';group.add(glass);
+    glass.removeFromParent();glass.geometry=commercial?new THREE.PlaneGeometry(2,2):new THREE.CircleGeometry(1,modern&&!low?32:16);if(modern){const a=glass.geometry.attributes.position;for(let i=0;i<a.count;i++){const x=a.getX(i),y=a.getY(i);a.setY(i,y*(.88+.12*side*x));}}glass.scale.set(width*(z4?.43:.41),height*(z4?.45:.37),1);glass.position.copy(center);glass.position.add(new THREE.Vector3(0,0,commercial?depth/2+.002:.002).applyQuaternion(orientation));glass.quaternion.copy(orientation);glass.name='mirror-face';group.add(glass);
     if(scope===car.body&&car.spec?.mass)car[side<0?'mirrorL':'mirrorR']=glass;
     const tip=center.clone().add(new THREE.Vector3(-side*width*.28,-height*.2,-depth*.25).applyQuaternion(orientation));
     const stalkRadius=bike||classic?.009:car.modelKind==='huracan'?.026:modern?.020:.019;

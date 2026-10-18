@@ -8,6 +8,12 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Phones and tablets get a small card on the title screen to add ATHENS RACING to your home screen. Android installs in one tap, iPhone shows the steps.
+  ![Title screen on a phone with a slim card showing the two Add to Home Screen steps](assets/changelog/2026.10.16.1/home-screen-prompt.webp "The card sits under the tiles, never over the race.")
+
+- Credits and What's new are full pages you can scroll with keys, gamepad, wheel or touch. Credits are grouped by kind, and release pictures sit inline.
+  ![Credits page with the team, map data and elevation attribution in a centred column](assets/changelog/2026.10.16.1/about-pages.webp "Credits read as one clear page, with every attribution fully visible.")
+
 - Trims run from base to top model throughout the garage and online car lists, with fantasy builds last and saved choices kept.
 
 - The garage now offers cars and larger vehicles only. Saved motorcycle choices switch to the MINI; traffic bikes still share the road.
@@ -179,6 +185,5 @@ and adds a fresh empty "## Unreleased" above it. -->
 - Your driver name is saved in this browser, with no accounts or sign-in.
 - Graphics quality and resolution can be changed live in Settings.
 - Pick the Athens track map drawn from the real coastline and terrain, and race on Penteli as well as the Riviera coast.
-- Play your own music files or a visible YouTube player; the music is off until you turn it on.
 - The race HUD and every menu share one glassy in-car look.
 - Greek road signs, sparse village life and roadside details make the streets feel local.

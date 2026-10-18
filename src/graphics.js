@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { settings, setSetting } from './settings.js';
 import { CU, AP_UNIFORMS, AERIAL_GLSL, AP_K } from './env.js';
+import { mobileDevice } from './mobile.js';
 
 // ---------------------------------------------------------------- the one graphics look (OWNER-LOCKED)
 // There is exactly ONE look: what the old Lighting = OFF + Effects = OFF levels produced. No presets, no lighting /
@@ -31,6 +32,19 @@ export const PERFORMANCE = Object.freeze({
   high: { pixelRatio: 1.5, drawDistance: 2000, trafficDraw: null, crowd: 175, detail: 1 },
 });
 export const PERF_CLASSES = Object.keys(PERFORMANCE);
+// Admission targets include all live page/worker allocations. Stream reservations
+// are subsets of these totals, including decode overlap; never add them twice.
+const MiB = 1024 * 1024;
+const resourceBudget = (js, gpu, cap, transient, concurrency) => Object.freeze({
+  jsBytes: js * MiB, gpuBytes: gpu * MiB,
+  stream: Object.freeze({ capBytes: cap * MiB, transientBytes: transient * MiB, concurrency }),
+});
+export const RESOURCE_BUDGETS = Object.freeze({
+  potato: resourceBudget(256, 192, 64, 64, 1),
+  low: resourceBudget(256, 192, 64, 64, 1),
+  med: resourceBudget(384, 256, 128, 96, 2),
+  high: resourceBudget(512, 384, 256, 192, 2),
+});
 /**
  * What the current settings resolve to: the fixed RENDER look plus the performance class's resolution and draw
  * ranges. renderScale 'auto' = the class's resolution, otherwise a fixed 0.5..1 fraction of the screen's pixels
@@ -38,10 +52,12 @@ export const PERF_CLASSES = Object.keys(PERFORMANCE);
  */
 export function resolveGraphics(s = settings, { deviceRatio = typeof devicePixelRatio === 'number' ? devicePixelRatio : 1, gpuName = '', userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : '' } = {}) {
   const perfClass = PERFORMANCE[s.perfClass] ? s.perfClass : detectPerfClass(gpuName, userAgent), P = PERFORMANCE[perfClass];
-  const screen = Math.min(deviceRatio || 1, 2), scale = s.renderScale === 'auto' || s.renderScale == null ? null : +s.renderScale;
+  const mobile = mobileDevice(userAgent);
+  const screen = Math.min(deviceRatio || 1, mobile ? 1 : 2), scale = s.renderScale === 'auto' || s.renderScale == null ? null : +s.renderScale;
   const pixelRatio = +(scale ? screen * scale : Math.min(screen, P.pixelRatio)).toFixed(3);
-  const draw = +s.drawDistance > 0 ? +s.drawDistance : P.drawDistance;
-  return { R: RENDER, perfClass, P, pixelRatio, resolution: pixelRatio / screen, drawDistance: draw, trafficDraw: P.trafficDraw, crowd: P.crowd, detail: P.detail };
+  const draw = +s.drawDistance > 0 ? +s.drawDistance : Math.min(P.drawDistance, mobile ? 500 : Infinity);
+  const resources = RESOURCE_BUDGETS[mobile && PERF_CLASSES.indexOf(perfClass) > 1 ? 'low' : perfClass];
+  return { R: RENDER, perfClass, P, resources, pixelRatio, resolution: pixelRatio / screen, drawDistance: draw, trafficDraw: P.trafficDraw, crowd: P.crowd, detail: P.detail };
 }
 const SOFTWARE_GPU = /SwiftShader|llvmpipe|softpipe|Software|Microsoft Basic Render/i;
 // integrated / mobile GPUs: medium. Apple M-series and discrete cards stay on high.
@@ -52,7 +68,8 @@ const WEAK_GPU = /Intel\(R\) HD Graphics( [2-5][0-9]{2,3})?$|Intel.*HD Graphics 
 export function detectPerfClass(gpuName = '', userAgent = '') {
   if (SOFTWARE_GPU.test(gpuName)) return 'low';
   if (WEAK_GPU.test(gpuName)) return 'potato';
-  if (/Android|iPhone|iPad|Mobile/i.test(userAgent) || MID_GPU.test(gpuName)) return 'med';
+  if (mobileDevice(userAgent)) return 'low';
+  if (MID_GPU.test(gpuName)) return 'med';
   return 'high';
 }
 const minClass = (a, b) => PERF_CLASSES[Math.min(PERF_CLASSES.indexOf(a), PERF_CLASSES.indexOf(b))];
@@ -101,13 +118,13 @@ export async function detectPerformance({ probe = true, gpuName = '', userAgent 
   if (probe) { await new Promise(r => setTimeout(r, 0)); try { probed = gpuProbe(); } catch { probed = null; } }
   const gpu = gpuName || probed?.gpu || '';
   let perfClass = detectPerfClass(gpu, userAgent);
-  reasons.push(`gpu:${gpu || 'unknown'}→${perfClass}`);
-  if (cores <= 2 || memory <= 2) { perfClass = minClass(perfClass, 'potato'); reasons.push(`cpu ${cores} cores / ${memory} GB→potato`); }
-  else if (cores <= 4 || memory <= 4) { perfClass = minClass(perfClass, 'med'); reasons.push(`cpu ${cores} cores / ${memory} GB→≤med`); }
+  reasons.push(`gpu:${gpu || 'unknown'} to ${perfClass}`);
+  if (cores <= 2 || memory <= 2) { perfClass = minClass(perfClass, 'potato'); reasons.push(`cpu ${cores} cores / ${memory} GB to potato`); }
+  else if (cores <= 4 || memory <= 4) { perfClass = minClass(perfClass, 'med'); reasons.push(`cpu ${cores} cores / ${memory} GB to ≤med`); }
   const ms = probed?.msPerPass;
   if (ms != null) {
     const cap = ms > 30 ? 'potato' : ms > 14 ? 'low' : ms > 4.5 ? 'med' : 'high';
-    if (cap !== 'high') reasons.push(`probe ${ms.toFixed(1)} ms→≤${cap}`);
+    if (cap !== 'high') reasons.push(`probe ${ms.toFixed(1)} ms to ≤${cap}`);
     perfClass = minClass(perfClass, cap);
   }
   return { perfClass, reasons, gpu, cores, memory, msPerPass: ms ?? null };

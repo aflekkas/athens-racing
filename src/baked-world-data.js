@@ -35,7 +35,7 @@ export async function loadBakedWorldData(map, progress = NO_PROGRESS, { interact
   } });
   const decoded = {};
   const decodeGenerated = buffers => {
-    const t = performance.now(), packs = validate([decodeGeometryPack(buffers.terrain), decodeGeometryPack(buffers.roads)], map);
+    const t = performance.now(), packs = validate([decodeGeometryPack(buffers.terrain, { consume: true }), decodeGeometryPack(buffers.roads, { consume: true })], map);
     metric.codec = 'raw-generated'; metric.decodeWallMs = performance.now() - t; metric.workerTimings = buffers.timings || null;
     return packs;
   };
@@ -68,7 +68,7 @@ export async function loadBakedWorldData(map, progress = NO_PROGRESS, { interact
               metric.inflateFetchWallMs += performance.now() - t;
               report('PREPARING ' + kind.toUpperCase(), .32, { phase: 'decode', asset: kind });
               const decodeStarted = performance.now();
-              const pack = metric.codec === 'meshopt' ? await decodeMeshoptPack(buffer) : decodeGeometryPack(buffer);
+              const pack = metric.codec === 'meshopt' ? await decodeMeshoptPack(buffer) : decodeGeometryPack(buffer, { consume: true });
               // Validate a whole pair before releasing compressed input below.
               decoded[kind] = pack; metric.bufferDecodeWallMs += performance.now() - decodeStarted;
             } catch (error) { downloads.reset(kind); throw new WorldDownloadError('invalid', error.message || 'World data could not be decoded', kind); }

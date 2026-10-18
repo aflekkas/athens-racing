@@ -1,4 +1,5 @@
 import { captureRecordMeta, onlineLeaderboardResult } from './leaderboard-online.mjs';
+import { canSaveResults } from './smoke-session.mjs';
 import { createSharedWorldRelay } from './mp-shared-world.mjs';
 import { worldOwner } from '../src/shared-world-protocol.js';
 import { arenaEnvironment } from './mp-environment.mjs';
@@ -7,7 +8,7 @@ import { formatPlate } from '../src/plate.js';
 import { normalizeDriverName } from '../src/driver-name.js';
 import { isTerminalImpact } from '../src/damage-math.js';
 import { MULTIPLAYER_PROTOCOL, UPDATE_CLOSE_CODE, protocolVersion } from '../src/multiplayer-protocol.js';
-import { buildCourse, observeCourse, courseStatus } from '../src/checkpoints.js';
+import { buildCourse, observeCourse, courseComplete } from '../src/course.js';
 import { defaultConfig, sanitizeConfig, effectiveEvent, configInvalidates, nextGeneration, cancelToWaiting, restartRace, startObjectiveRound, stepPlayerObjective, snapshotPlayerObjective, resultPlayerObjective, objectiveRoundDone, clearObjectiveHold, raceLimitFor, isObjectiveMode, assertModeAllowed, validateStateExtras } from './mp-lifecycle.mjs';
 import { isMapEnabled } from '../src/enabled-maps.js';
 import { carCategory, CAR_CLASSES } from '../src/car-catalog.js';
@@ -77,9 +78,10 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
   const publicLobby = (l, manifest = true) => {
     const def = lobbyEvent(l), event = { ...effectiveEvent(def, l.config), police: l.config?.police === true, traffic: l.config?.traffic || 0, conditions: { time: l.config?.time || 'afternoon', weather: l.config?.weather || 'clear' } };
     const trips = manifest && isObjectiveMode(event?.type) ? (maps.get(l.mapId).trips || {})[event.type] || null : null;
-    return { standings: raceStandings(l, event), world: arenaEnvironment(l, event, Date.now()), code: l.code, name: l.name, host: l.host, status: l.status, capacity: 8, players: [...l.players.values()].map(p => { const pace = haveSpecs ? paceEntry(p.car) : null; return { id: p.id, name: p.name, car: p.car, paint: p.paint || null, driver: p.driver || null, gridSlot: p.gridSlot, loaded: p.loaded === true, ready: p.ready, finish: p.finish, dnf: p.dnf, connected: p.connected, plate: p.plate || null, pi: pace?.pi ?? null, class: pace?.class ?? null, balance: p.balance || null, objective: snapshotPlayerObjective(l, p.id), checkpoint: p.course ? courseStatus(p.course) : null }; }), blockedPlayers: manifest ? (l.blocks || []).filter(b => b.until > Date.now()).map(({ id, name, until }) => ({ id, name, until })) : undefined, eventId: l.eventId, traffic: (l.config?.traffic || 0) > 0, trafficPolicy: 'shared-authority', worldOwner: worldOwner(l), event: trips ? { ...event, objectiveRoutes: trips } : event, mode: event?.type || 'sprint', config: { ...(l.config || {}) }, generation: l.generation || 0, results: l.status === 'results' ? [...l.racers.values()] : null, startAt: l.startAt, raceId: l.raceId, mapId: l.mapId, track: maps.get(l.mapId).track, allowedCars: [...(l.allowedCars || CARS)], carRules: { ...(l.carRules || defaultCarRules()) }, balance: l.balance || null };
+    return { standings: raceStandings(l, event), world: arenaEnvironment(l, event, Date.now()), code: l.code, name: l.name, host: l.host, status: l.status, capacity: 8, players: [...l.players.values()].map(p => { const pace = haveSpecs ? paceEntry(p.car) : null; return { id: p.id, name: p.name, car: p.car, paint: p.paint || null, driver: p.driver || null, gridSlot: p.gridSlot, loaded: p.loaded === true, ready: p.ready, finish: p.finish, dnf: p.dnf, connected: p.connected, plate: p.plate || null, pi: pace?.pi ?? null, class: pace?.class ?? null, balance: p.balance || null, objective: snapshotPlayerObjective(l, p.id) }; }), blockedPlayers: manifest ? (l.blocks || []).filter(b => b.until > Date.now()).map(({ id, name, until }) => ({ id, name, until })) : undefined, eventId: l.eventId, traffic: (l.config?.traffic || 0) > 0, trafficPolicy: 'shared-authority', worldOwner: worldOwner(l), event: trips ? { ...event, objectiveRoutes: trips } : event, mode: event?.type || 'sprint', config: { ...(l.config || {}) }, generation: l.generation || 0, results: l.status === 'results' ? [...l.racers.values()] : null, startAt: l.startAt, raceId: l.raceId, mapId: l.mapId, track: maps.get(l.mapId).track, allowedCars: [...(l.allowedCars || CARS)], carRules: { ...(l.carRules || defaultCarRules()) }, balance: l.balance || null };
   };
-  const discover = () => ({ type: 'discovery', lobbies: [...lobbies.values()].filter(l => !l.private && isMapEnabled(l.mapId)).map(l => publicLobby(l, false)) });
+  // Smoke-hosted lobbies are deployment tests, not public races.
+  const discover = () => ({ type: 'discovery', lobbies: [...lobbies.values()].filter(l => !l.private && isMapEnabled(l.mapId) && !l.players.get(l.host)?.identity?.smoke).map(l => publicLobby(l, false)) });
   const publish = (l) => { l.touched = Date.now(); const lobby = publicLobby(l); for (const p of l.players.values()) send(p.ws, { type: 'lobby', lobby }); for (const c of clients) if (!c.lobby) send(c.ws, discover()); };
   const results = (l) => {
     if (l.status === 'results') return;
@@ -121,7 +123,7 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
     if (protocol !== MULTIPLAYER_PROTOCOL) { reload(ws); return false; }
     if ([...clients].filter(c => c.ip === ip).length >= 24) { ws.close(1013, 'Too many connections'); return; }
     const defaultName = 'GR-' + (1000 + Math.floor(Math.random() * 9000));
-    let c = { ws, ip, protocol, build: clean(connection.build, null, 80), token: randomHex(32), connected: true, touched: Date.now(), id: randomUUID(), name: defaultName, car: 'mini', ready: false, finish: null, state: null, lobby: null, alive: true, messages: 0, window: Date.now(), plate: defaultName };
+    let c = { ws, ip, identity: connection.identity, protocol, build: clean(connection.build, null, 80), token: randomHex(32), connected: true, touched: Date.now(), id: randomUUID(), name: defaultName, car: 'mini', ready: false, finish: null, state: null, lobby: null, alive: true, messages: 0, window: Date.now(), plate: defaultName };
     sessions.set(c.token, c); clients.add(c); send(ws, { type: 'hello', protocol: MULTIPLAYER_PROTOCOL, features: { stateBatching: true, wreckDnf: true }, id: c.id, token: c.token, now: Date.now(), track, maps: catalogue(), events: [...maps.keys()].flatMap(options) }); send(ws, discover());
     bind(c, ws, ip); return true;
   };
@@ -144,6 +146,7 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
       };
       try {
         const m = JSON.parse(bytes); if (!m || typeof m !== 'object') return;
+        if (c.identity && ['name', 'create', 'join'].includes(m.type)) { m.name = c.identity.name; m.driverId = c.identity.userId; }
         if (m.type === 'hello') {
           if (protocolVersion(m.protocol) !== MULTIPLAYER_PROTOCOL) { reload(ws); leave(c); clients.delete(c); sessions.delete(c.token); c.connected = false; return; }
           c.build = clean(m.build, c.build, 80); return;
@@ -159,6 +162,8 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
           if (c.lobby) return error('Leave your current lobby before resuming another session.');
           const prior = sessions.get(m.token);
           if (!prior || prior === c || (!prior.connected && Date.now() - prior.touched > reconnectGraceMs)) { send(ws, { type: 'session', id: c.id, token: c.token, resumed: false }); return; }
+          if ((c.identity?.userId || prior.identity?.userId) && c.identity?.userId !== prior.identity?.userId) return error('Sign in to the same driver account to resume.');
+          if (c.identity) prior.identity = c.identity;
           sessions.delete(c.token); clients.delete(c);
           const previousWs = prior.ws, protocol = c.protocol, build = c.build; c = prior; c.protocol = protocol; c.build = build; c.ws = ws; c.ip = ip; c.connected = true; c.alive = true; c.messages = 0; c.window = now; c.touched = now;
           clients.add(c); if (previousWs !== ws) previousWs.close(1000, 'Session resumed elsewhere');
@@ -437,16 +442,10 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
           const recovered = c.recovery?.raceId === l.raceId && now <= c.recovery.until;
           const previousPose = c.state || c.course?.previous;
           const discontinuous = Math.abs(s.s - prevS) > 30 + 150 * (courseEnabled ? Math.min(5, elapsed) : elapsed) || !recovered && previousPose && Math.hypot(s.x - previousPose.x, s.z - previousPose.z) > 15 + 150 * (courseEnabled ? Math.min(5, elapsed) : elapsed);
-          if (discontinuous) {
-            if (c.course && !c.course.missed) { c.course.missed = true; send(c.ws, { type: 'checkpoint', raceId: l.raceId, generation: l.generation, ...courseStatus(c.course) }); }
-            return;
-          }
-          if (courseEnabled) {
-            const before = JSON.stringify(courseStatus(c.course));
-            observeCourse(c.course, s, now / 1000, { initialTime: Math.max(l.startAt, c.enteredAt || 0) / 1000, recovery: recovered, route: maps.get(l.mapId).geometry });
-            const status = courseStatus(c.course);
-            if (JSON.stringify(status) !== before) send(c.ws, { type: 'checkpoint', raceId: l.raceId, generation: l.generation, ...status });
-          }
+          // A jump is never accepted as movement; progress simply stays where it was (and the course's
+          // rejoin rule keeps it there until the driver returns to the route or is recovered).
+          if (discontinuous) return;
+          if (courseEnabled) observeCourse(c.course, s, now / 1000, { initialTime: Math.max(l.startAt, c.enteredAt || 0) / 1000, recovery: recovered, route: maps.get(l.mapId).geometry });
           const recordMeta = captureRecordMeta(s.recordMeta, c.state?.recordMeta, l.raceId);
           c.state = { ...Object.fromEntries(fields.map(k => [k, s[k]])), nitro: nitrousCars.has(c.car) ? s.nitro ?? c.state?.nitro ?? 0.4 : 0, damage: s.damage ? Object.fromEntries(zones.map(k => [k, s.damage[k]])) : c.state?.damage ?? Object.fromEntries(zones.map(k => [k, 0])), reverse: s.reverse === true, ...(typeof s.paint === 'string' && /^#[a-f\d]{6}$/i.test(s.paint) ? {paint:s.paint.toLowerCase()} : c.state?.paint ? {paint:c.state.paint} : {}), driver: normalizeDriverAppearance(s.driver === undefined ? c.state?.driver : s.driver) }; c.stateAt = now; l.dirty = true;
           Object.assign(c.state, validateStateExtras(s));
@@ -463,9 +462,9 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
           rememberRecoveryRoad(c, event, l.raceId);
           // Objective modes never take the crossing finish; reversed runs keep
           // their time but stay off the leaderboard.
-          if (c.finish === null && event.type === 'sprint' && c.course?.passed === c.course?.gates.length && (s.s - event.s1) * event.dir >= 0 && Math.abs(s.u) < 30) {
-            c.finish = Math.max(0, (c.course.gateTimes?.at(-1) ?? now / 1000) - l.startAt / 1000); l.racers.get(c.id).finish = c.finish; publish(l);
-            if (!l.config?.reverse) leaderboard.submit(onlineLeaderboardResult(c, l, event)).catch(e => { if (!e.status) console.error('Leaderboard save failed:', e.message); });
+          if (c.finish === null && event.type === 'sprint' && courseComplete(c.course) && (s.s - event.s1) * event.dir >= 0 && Math.abs(s.u) < 30) {
+            c.finish = Math.max(0, (c.course.finishedAt ?? now / 1000) - l.startAt / 1000); l.racers.get(c.id).finish = c.finish; publish(l);
+            if (!l.config?.reverse && canSaveResults(c.identity)) leaderboard.submit(onlineLeaderboardResult(c, l, event)).catch(e => { if (!e.status) console.error('Leaderboard save failed:', e.message); });
             if ([...l.players.values()].every(p => p.finish !== null || p.dnf)) results(l);
           }
         }
@@ -504,7 +503,7 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
         const world = arenaEnvironment(l, effectiveEvent(lobbyEvent(l), l.config), now);
         const standings = raceStandings(l, effectiveEvent(lobbyEvent(l), l.config));
         if (!l.dirty) continue; l.dirty = false;
-        const players = [...l.players.values()].map(p => ({ id: p.id, state: p.state, stateAt: p.stateAt, finish: p.finish, dnf: p.dnf, objective: snapshotPlayerObjective(l, p.id), checkpoint: p.course ? courseStatus(p.course) : null }));
+        const players = [...l.players.values()].map(p => ({ id: p.id, state: p.state, stateAt: p.stateAt, finish: p.finish, dnf: p.dnf, objective: snapshotPlayerObjective(l, p.id) }));
         for (const p of l.players.values()) send(p.ws, { type: 'snapshot', raceId: l.raceId, generation: l.generation || 0, now, players, standings, world });
       }
     }
@@ -513,10 +512,10 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
   const exportState = () => ({ sessions: [...sessions.values()].map(c => {
     const data = clientData(c);
     // Course geometry is immutable catalogue data. Persist the accepted cursor
-    // once per driver instead of duplicating every gate in the arena KV row.
+    // once per driver instead of duplicating it in the arena KV row.
     if (data.course) {
-      const { raceId, passed, missed, previousTime, validProgress, onRoute, rejoinLimit, gateTimes } = data.course;
-      data.courseCursor = { raceId, passed, missed, previousTime, validProgress, onRoute, rejoinLimit, gateTimes };
+      const { raceId, reached, validProgress, onRoute, rejoinLimit, previousTime, finishedAt, markTimes, lastRoad } = data.course;
+      data.courseCursor = { raceId, reached, validProgress, onRoute, rejoinLimit, previousTime, finishedAt, markTimes, lastRoad };
       delete data.course;
     }
     return data;
@@ -559,7 +558,7 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
         l.players.set(id, c); c.lobby = l;
         if (c.courseCursor?.raceId === l.raceId) {
           const course = buildCourse(effectiveEvent(lobbyEvent(l), l.config), maps.get(l.mapId).geometry);
-          c.course = { ...course, ...c.courseCursor, passed: Math.min(course.gates.length, c.courseCursor.passed), previous: c.state || course.previous };
+          c.course = { ...course, ...c.courseCursor, previous: c.state || course.previous };
         }
         delete c.courseCursor;
       } }

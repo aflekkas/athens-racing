@@ -2,7 +2,40 @@
 
 This is the lead's single list of open work. It's updated as tasks are assigned, finish or get blocked. `[ ]` open · `[~]` in progress (owner) · `[x]` done (SHA) · `[?]` waiting on the owner (Alexandros).
 
-Last updated: 2026-10-15 23:50 UTC.
+Last updated: 2026-10-18 04:00 UTC.
+
+## In flight (lead thread "Fix Floor Visibility in All Cars", check-up every 30 min)
+Production is on hold (`~/.local/state/athens-release/production-hold`). Staging deployed by hand at `7d6e589f` on 2026-10-18. Agents use Haiku/Sonnet only (Codex quota ran out; no Opus).
+
+Done and checked by the lead:
+- [x] Leaderboards inside Quick Race (`5149f16d`, `9a7c06ca`, `c9619d55`)
+- [x] Cabin floors sealed; interiors through light glass; batched (`b99589d5`, `e3ad08f9`)
+- [x] Remove music (`893686df`, `a455d6c1`, `64f8d528`)
+- [x] Hover/outline removal (`d0a1e153`…`e1483668`). Owner later asked for a subtle hover back (in progress, below)
+- [x] Settings sidebar (`582e3e3b`)
+- [x] Dialog blur (`030afed1`, `21f6e0e2`, `467c6ea7`)
+- [x] Google sign-in required (`248a6837`…`e4b4864d`). Production has no GOOGLE_CLIENT_ID/SECRET yet; waiting on the owner (consent screen)
+- [x] Title cleanup (`91bb033d`), simple header and no clock (`bd8ff407`)
+- [x] Lucide icons (`5ed5152d`, `ea499482`)
+- [x] Garage cards/filters/viewer (`fdedb0f5`); Ducato dashboard (`ab85a17e`)
+- [x] Mobile playable; bodyless-car fix (`c222bc29`, `8f16ab59`); solo HUD MULTIPLAYER button removed (`854ba390`)
+- [x] Multiplayer lobby browser and solo RACE (`74611cfc`); full-page track map (`20fa3196`, `7d6e589f`)
+- [x] Credits and What's New as full-page articles (`8a5117e2`, `a220b106`)
+- [x] Release-PR versioning written (`accfaef6`, not on prod yet). Lead does the cutover after this batch
+
+Running:
+- [~] Subtle hover state + finish layout templates + italic #loading test fix (Sonnet)
+- [~] Bent cockpit beams, Porsche 928 tilt, stray shadow (Sonnet)
+- [~] No checkpoints (tow to latest on-road position) + new Psychiko route (Sonnet)
+- [~] Deploy smoke sign-in key (Sonnet); lead then installs the SMOKE_TOKEN secrets
+- [~] Add-to-home-screen prompt + unexplained 404 (Sonnet)
+- [~] Track-picker map lag (Sonnet)
+- [~] Athens open world stage 2: connected coast, R2 hosting (Sonnet)
+
+Waiting on the owner:
+- [?] Google consent screen published, then the lead installs the production Google secrets
+- [?] Lead sets GitHub prod protection (require release-check, no admin bypass) via gh at cutover?
+- [?] Delete ~2.8 GB of old .scratch (load-v1, playtest-20261014b, lazy-boot, results-flow)?
 
 ## Release and infrastructure
 - [x] Automatic release train on the VPS: tests, pushes and deploys staging then production every 10 min (`023bb4e`).

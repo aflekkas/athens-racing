@@ -7,7 +7,7 @@ registerHooks({ resolve(specifier, context, next) {
   return next(specifier, context);
 } });
 const { GameArena } = await import('./index.mjs');
-const arena = () => Object.assign(Object.create(GameArena.prototype), { instanceId: 'instance-test', startedAt: 123, core: { clients: new Set(), lobbies: new Map(), track: {} } });
+const arena = () => Object.assign(Object.create(GameArena.prototype), { env: {}, instanceId: 'instance-test', startedAt: 123, core: { clients: new Set(), lobbies: new Map(), track: {} } });
 test('arena health identifies the live incarnation without exposing connection tokens', async () => {
   const a = arena(), response = await a.fetch(new Request('https://race.test/health')), data = await response.json();
   assert.equal(response.status, 200); assert.equal(data.instanceId, 'instance-test'); assert.equal(data.startedAt, 123);

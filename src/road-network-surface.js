@@ -27,17 +27,22 @@ export class RoadNetwork {
  candidates(x,z){return this.cells.get(`${Math.floor(x/this.C)},${Math.floor(z/this.C)}`)||[];}
  nearMain(x,z){return !this.routeCells.size||this.routeNear.has(`${Math.floor(x/64)},${Math.floor(z/64)}`);}
  installSurface(tiles){this.surfaceCells=new Map();
-  // Physics shares the renderer's position buffer; it does not copy three arrays for every triangle.
-  for(const tile of tiles){const p=tile.positions||tile.pos;for(let i=0;i<p.length;i+=9){
-   const ax=p[i],az=p[i+2],bx=p[i+3],bz=p[i+5],cx=p[i+6],cz=p[i+8],det=(bz-cz)*(ax-cx)+(cx-bx)*(az-cz);
-   if(Math.abs(det)<1e-7)continue;const triangle={p,i,det,step:tile.col[i]>=.5?.14:0};
-   for(let x=Math.floor(Math.min(ax,bx,cx)/8);x<=Math.floor(Math.max(ax,bx,cx)/8);x++)for(let z=Math.floor(Math.min(az,bz,cz)/8);z<=Math.floor(Math.max(az,bz,cz)/8);z++){
-    const key=`${x},${z}`;if(!this.surfaceCells.has(key))this.surfaceCells.set(key,[]);this.surfaceCells.get(key).push(triangle);
+  // One typed list of triangle offsets per tile/cell, instead of a JS object
+  // per triangle. Positions and colours remain the renderer's shared buffers.
+  for(const tile of tiles){const p=tile.positions||tile.pos,col=tile.col,cells=new Map();
+   for(let i=0;i<p.length;i+=9){
+    const ax=p[i],az=p[i+2],bx=p[i+3],bz=p[i+5],cx=p[i+6],cz=p[i+8],det=(bz-cz)*(ax-cx)+(cx-bx)*(az-cz);
+    if(Math.abs(det)<1e-7)continue;
+    for(let x=Math.floor(Math.min(ax,bx,cx)/8);x<=Math.floor(Math.max(ax,bx,cx)/8);x++)for(let z=Math.floor(Math.min(az,bz,cz)/8);z<=Math.floor(Math.max(az,bz,cz)/8);z++){
+     const key=`${x},${z}`;if(!cells.has(key))cells.set(key,[]);cells.get(key).push(i);
+    }
    }
-  }}
+   for(const [key,indices] of cells){if(!this.surfaceCells.has(key))this.surfaceCells.set(key,[]);this.surfaceCells.get(key).push({p,col,indices:Uint32Array.from(indices)});}
+  }
  }
- meshHeight(x,z){for(const t of this.surfaceCells?.get(`${Math.floor(x/8)},${Math.floor(z/8)}`)||[]){
-  const {p,i,det,step}=t,wa=((p[i+5]-p[i+8])*(x-p[i+6])+(p[i+6]-p[i+3])*(z-p[i+8]))/det,wb=((p[i+8]-p[i+2])*(x-p[i+6])+(p[i]-p[i+6])*(z-p[i+8]))/det,wc=1-wa-wb;
+ meshHeight(x,z){for(const {p,col,indices} of this.surfaceCells?.get(`${Math.floor(x/8)},${Math.floor(z/8)}`)||[])for(const i of indices){
+  const det=(p[i+5]-p[i+8])*(p[i]-p[i+6])+(p[i+6]-p[i+3])*(p[i+2]-p[i+8]),step=col[i]>=.5?.14:0;
+  const wa=((p[i+5]-p[i+8])*(x-p[i+6])+(p[i+6]-p[i+3])*(z-p[i+8]))/det,wb=((p[i+8]-p[i+2])*(x-p[i+6])+(p[i]-p[i+6])*(z-p[i+8]))/det,wc=1-wa-wb;
   if(wa>=-1e-4&&wb>=-1e-4&&wc>=-1e-4)return wa*p[i+1]+wb*p[i+4]+wc*p[i+7]-step;
  }return null;}
  project(x,z){if(!this.routeCells.size)return this.route.project(x,z,null);const cx=Math.floor(x/64),cz=Math.floor(z/64);let best=-1,bd=Infinity;

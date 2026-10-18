@@ -3,11 +3,13 @@ import sys,json,math,sqlite3,collections
 from pathlib import Path
 from functools import lru_cache
 import numpy as np
+import shapely
 from shapely.geometry import LineString,Point,Polygon,box,shape
 from shapely.strtree import STRtree
 from shapely.ops import unary_union
 from surfaces import ground_mesh,validate_partition,f32,SurfaceHeight
 from elevation import Elevation
+from influence import blended_height, profile_height, lattice_height, smooth_lattice_sample, SUPPORT, ROAD_QUERY_HALO
 from appearance import BUILDINGS,linear,ground_colour
 from ingest import encode
 from styles import face_shaded,ROAD,PAVEMENT,KERB_TOP,KERB_SIDE,MARKING
@@ -17,14 +19,20 @@ class Field:
  def __init__(self,db,source,cell,dems):
   self.cell=cell;self.dem=Elevation(dems);ox,oz=cell[0]*512,cell[1]*512;self.ox=ox;self.oz=oz
   self.roads=[];self.byid={};self.land=[]
-  for row,data in db.execute('SELECT r.rowid,r.data FROM spatial s CROSS JOIN roads r ON r.rowid=s.rowid WHERE s.minx<=? AND s.maxx>=? AND s.minz<=? AND s.maxz>=? ORDER BY r.id',(ox+608,ox-96,oz+608,oz-96)):
+  for row,data in db.execute('SELECT r.rowid,r.data FROM spatial s CROSS JOIN roads r ON r.rowid=s.rowid WHERE s.minx<=? AND s.maxx>=? AND s.minz<=? AND s.maxz>=? ORDER BY r.id',(ox+512+ROAD_QUERY_HALO,ox-ROAD_QUERY_HALO,oz+512+ROAD_QUERY_HALO,oz-ROAD_QUERY_HALO)):
    r=json.loads(data);line=LineString(r['points']);r['line']=line;r['polygon']=ribbon_polygon(line,r['width'])
    samples=list(db.execute('SELECT s.station,p.y FROM samples s JOIN points p ON p.rowid=s.point WHERE s.road=? ORDER BY s.station',(row,)))
    r['stations']=[s[0] for s in samples];r['ys']=[s[1] for s in samples]
+   coords=np.asarray(line.coords);stations=np.r_[0,np.cumsum(np.linalg.norm(np.diff(coords,axis=0),axis=1))]
+   breaks=np.unique(np.r_[stations,np.clip(r['stations'],0,line.length)])
+   xs=np.interp(breaks,stations,coords[:,0]);zs=np.interp(breaks,stations,coords[:,1]);ys=np.interp(breaks,r['stations'],r['ys'])
+   r['segments']=[tuple(map(float,v)) for v in zip(xs[:-1],zs[:-1],xs[1:],zs[1:],ys[:-1],ys[1:])]
    if (r['bridge'] or r['tunnel'] or r['layer']) and r['polygon'].intersects(box(ox,oz,ox+512,oz+512)):
     raise ValueError('Ground probe refuses unsolved layered road '+r['id'])
    if not(r['bridge'] or r['tunnel'] or r['layer']):self.roads.append(r);self.byid[r['id']]=r
-  self.tree=STRtree([r['polygon'] for r in self.roads])
+  self.polygons=np.array([r['polygon'] for r in self.roads],dtype=object)
+  self.lines=np.array([r['line'] for r in self.roads],dtype=object)
+  self.tree=STRtree(self.polygons)
   for data, in source.execute("SELECT o.data FROM spatial s CROSS JOIN objects o ON o.rowid=s.rowid WHERE o.kind IN ('landuse','landcover') AND s.minx<=? AND s.maxx>=? AND s.minz<=? AND s.maxz>=? ORDER BY o.id",(ox+512,ox,oz+512,oz)):
    value=json.loads(data);g=shape(value['geometry']);self.land.append((g,value['tags']))
   self.landtree=STRtree([p for p,t in self.land])
@@ -32,26 +40,38 @@ class Field:
  def height(self,x,z):
   point=Point(x,z);baseline=self.dem.height(x,z)
   if not self.roads:return baseline
-  inside=[int(i) for i in self.tree.query(point) if self.roads[int(i)]['polygon'].covers(point)]
-  ids=sorted(inside or [int(i) for i in self.tree.query_nearest(point,all_matches=True)],key=lambda i:self.roads[i]['id'])
-  values=[]
-  for i in ids:
-   road=self.roads[i];station=road['line'].project(point)
-   y=float(np.interp(station,road['stations'],road['ys']));distance=road['polygon'].distance(point)
-   values.append((y,1/(1+road['line'].distance(point)),distance))
-  y=sum(h*w for h,w,d in values)/sum(w for h,w,d in values)
-  distance=min(d for h,w,d in values)
-  if distance>64:return baseline
-  return min(y+distance*.4,max(y-distance*.4,baseline))
+  # Query every influence, never choose a containing or nearest profile.
+  candidates=[]
+  ids=self.tree.query(box(x-SUPPORT,z-SUPPORT,x+SUPPORT,z+SUPPORT))
+  ds=shapely.distance(self.polygons[ids],point);inside=ds<SUPPORT
+  ids=ids[inside];ds=ds[inside]
+  centres=shapely.distance(self.lines[ids],point)
+  for i,d,centre in zip(ids,ds,centres):
+   road=self.roads[int(i)]
+   y=profile_height(x,z,road['segments'],road['width']/2+8)
+   candidates.append((road['id'],y,float(d),float(centre),road['width']))
+  return blended_height(baseline,candidates)
  @lru_cache(maxsize=65536)
- def surface_height(self,x,z):
+ def _surface_sample(self,x,z):
   if not self.roads:return self.height(x,z)
   point=Point(x,z);distance=self.roads[int(self.tree.nearest(point))]['polygon'].distance(point)
-  return self.height(x,z)+pavement_lift(distance)
- def colour(self,x,z):
+  # The planar mesh rounds/nodes boundaries on a centimetre lattice.
+  # Keep that entire tolerance band at asphalt level, not on a kerb bevel.
+  return self.height(x,z)+pavement_lift(max(0.,distance-.02))
+ @lru_cache(maxsize=65536)
+ def _lattice_sample(self,x,z):
+  return smooth_lattice_sample(x,z,self._surface_sample)
+ def surface_height(self,x,z):
+  # Solve/sample one global eight-metre lattice BEFORE clipping the road union.
+  # Sampling a curved height function independently at near-collinear polygon
+  # vertices can create arbitrarily steep interpolation slivers. Every emitted
+  # road/shoulder triangle now lies inside one of these canonical planes.
+  return lattice_height(x,z,self._lattice_sample)
+ def colour(self,x,z,h=None,slope=None):
   p=Point(x,z);candidates=[int(i) for i in self.landtree.query(p) if self.land[int(i)][0].covers(p)]
   tags=self.land[min(candidates,key=lambda i:self.land[i][0].area)][1] if candidates else {}
-  h=self.height(x,z);slope=math.hypot(self.height(x+1,z)-self.height(x-1,z),self.height(x,z+1)-self.height(x,z-1))/2
+  if h is None:h=self.height(x,z)
+  if slope is None:slope=math.hypot(self.height(x+1,z)-self.height(x-1,z),self.height(x,z+1)-self.height(x,z-1))/2
   return ground_colour(x,z,h,slope,tags.get('landuse',''),tags.get('natural',''))[1]
 
 TABLES={'nodes':[],'nodePositions':[],'edges':[],'edgePoints':[],'edgeLayers':[],'turns':[],'ribbons':[],'ribbonVertices':[],'junctions':[],'junctionVertices':[],'markings':[],'contactPositions':[],'contactTriangles':[],'contactLayers':[],'coarseHeights':[],'finePositions':[],'fineTriangles':[],'buildings':[],'buildingCorners':[],'buildingHeights':[],'signs':[],'signTransforms':[],'anchors':[],'anchorTransforms':[]}
@@ -91,7 +111,13 @@ def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision):
    center=Point(ox+sum(p[v*3] for v in tri)/3,oz+sum(p[v*3+2] for v in tri)/3)
    (kerb_tri if kerb.covers(center) else pavement_tri if pavement.covers(center) else ground).extend(tri)
  colours=[]
- for i in range(0,len(p),3):colours.extend(field.colour(ox+p[i],oz+p[i+2]))
+ # Colour the actual solved surface; avoid four extra global-field queries
+ # per vertex merely to classify its terrain palette.
+ vertices=np.asarray(p).reshape(-1,3);faces=np.asarray(surface['triangles']).reshape(-1,3)
+ normals=np.cross(vertices[faces[:,1]]-vertices[faces[:,0]],vertices[faces[:,2]]-vertices[faces[:,0]])
+ grades=np.hypot(normals[:,0],normals[:,2])/np.abs(normals[:,1]);vertex_grades=np.zeros(len(vertices))
+ for side in range(3):np.maximum.at(vertex_grades,faces[:,side],grades)
+ for i in range(0,len(p),3):colours.extend(field.colour(ox+p[i],oz+p[i+2],p[i+1],float(vertex_grades[i//3])))
  mesh(p,ground,0,colours)
  raised=p
  mesh(raised,pavement_tri,8);mesh(raised,kerb_tri,9)

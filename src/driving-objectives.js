@@ -13,7 +13,7 @@ export function drivingModeDefinition(mode, mapId = 'riviera') {
 export function resolveDrivingMode(def, ctx) {
   if (!isDrivingMode(def)) throw new Error('Unknown driving mode');
   if (ctx.route.closed) throw new Error('Driving missions need public roads; choose Riviera or Penteli.');
-  return { s0: ctx.route.start, s1: ctx.route.finish, dir: 1, len: ctx.route.length || ctx.route.finish - ctx.route.start, fromName: ctx.route.from || 'ROAD', toName: 'OBJECTIVES', checkpoints: [], reverse: false, timeLimit: def.sessionDuration || 300, targetTimes: null, objectiveMode: true };
+  return { s0: ctx.route.start, s1: ctx.route.finish, dir: 1, len: ctx.route.length || ctx.route.finish - ctx.route.start, fromName: ctx.route.from || 'ROAD', toName: 'OBJECTIVES', sectors: [], reverse: false, timeLimit: def.sessionDuration || 300, targetTimes: null, objectiveMode: true };
 }
 function roadPoint(route, s, direction) {
   const xs = route.x || route.X, zs = route.z || route.Z, ys = route.y && typeof route.y !== 'function' ? route.y : route.Y;

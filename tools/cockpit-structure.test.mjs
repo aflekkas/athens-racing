@@ -34,7 +34,12 @@ test('all catalogue cockpit controls visibly rotate with steering, retain badge 
    if(spec.nativeFleet!=='bus')assert.ok(cockpit.structure.getObjectByName('cockpit-deck'),spec.id+' front deck geometry missing. '+WHY);
    assert.ok(cockpit.structure.getObjectByName('cockpit-header'),spec.id+' missing windscreen header. '+WHY);
   }
-  cockpit.setVisible(false);assert.equal((cockpit.lod||cockpit.group).visible,true,'Empty authored cabin remains visible outside. '+WHY);cockpit.setVisible(true);assert.equal((cockpit.lod||cockpit.group).visible,true,WHY);cockpit.disposeMirrors();model.disposeDamage?.();
+  cockpit.setVisible(false);assert.equal((cockpit.lod||cockpit.group).visible,true,'Empty authored cabin remains visible outside. '+WHY);cockpit.setVisible(true);
+  assert.equal(cockpit.group.parent,model.body,'POV furniture must be attached to the body. '+WHY);
+  assert.equal(cockpit.group.visible,true,'The authored POV furniture must be visible. '+WHY);
+  for(let part=wheel;part;part=part.parent)assert.equal(part.visible,true,'The steering wheel must be visible through its entire ancestry. '+WHY);
+  assert.equal(cockpit.lod.visible,false,'The separate exterior snapshot must not overlap the POV cabin. '+WHY);
+  cockpit.disposeMirrors();model.disposeDamage?.();
  }
 });
 test('rain is one shared alpha-texture overlay and blades remain on the framed windscreen',async()=>{

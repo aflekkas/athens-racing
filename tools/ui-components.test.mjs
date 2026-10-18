@@ -49,11 +49,11 @@ const bespoke = (c) => !/^(s|scr)-/.test(c) && !SCREEN_CONTAINERS.has(c) && BESP
 const SCREEN_CONTAINERS = new Set(['home__tiles']);
 
 // screen stylesheets: every stylesheet the menus load, except the kit itself
-const SCREEN_CSS = ['src/menu.css', 'src/map-select.css', 'src/multiplayer.css', 'src/ui/accounts.css', 'src/ui/release.css', 'src/ui/headunit.css', 'src/input.css', 'src/music-settings.css'].filter(existsSync);
+const SCREEN_CSS = ['src/menu.css', 'src/map-select.css', 'src/multiplayer.css', 'src/ui/release.css', 'src/ui/headunit.css', 'src/input.css'].filter(existsSync);
 // Race HUD and in-race overlays are not menu screens (style.css owns them); rules scoped to them are out of scope here.
-const HUD_SCOPE = /(#hud|#evBox|#posBox|#mapBox|#dialBox|#routeBox|#gearboxHud|#engineHud|#limitSign|#wrongWay|#lapTiming|#drivingHints|#drivingTip|#keys|#credit|#count|#mp-board|#mp-toggle|#race-settings|#checkpoint-banner|#touch-controls|\.touch-|#police-hud|#tow-prompt|\.tow-|\.objective-|\.racer-marker|\.pop\b|#sigBox|\.wheel-hud|#accounts-offline|\.mp-update-notice|\.mp-connection-chip|\.mp-blocked-row|\.mp-latency|\.graphics-live-note)/;
+const HUD_SCOPE = /(#hud|#evBox|#posBox|#mapBox|#dialBox|#routeBox|#gearboxHud|#engineHud|#limitSign|#wrongWay|#lapTiming|#drivingHints|#drivingTip|#keys|#credit|#count|#mp-board|#mp-toggle|#race-settings|#checkpoint-banner|#touch-controls|\.touch-|#police-hud|#tow-prompt|\.tow-|\.objective-|\.racer-marker|\.pop\b|#sigBox|\.wheel-hud|#accounts-offline|\.mp-update-notice|\.mp-connection-chip|\.mp-latency|\.graphics-live-note)/;
 // screen modules: everything that renders menu markup
-const SCREEN_JS = ['src/menu.js', 'src/car-select.js', 'src/map-select.js', ...walk('src/ui', /\.js$/).filter((f) => f !== KIT_JS && !/phone-wheel|notification|notice-style|telltales|title-hero|garage-thumbnails|live-board|loading\.js$/.test(f))];
+const SCREEN_JS = ['src/menu.js', 'src/leaderboards-screen.js', 'src/car-select.js', 'src/map-select.js', ...walk('src/ui', /\.js$/).filter((f) => f !== KIT_JS && !/phone-wheel|notification|notice-style|telltales|title-hero|garage-thumbnails|live-board|loading\.js$/.test(f))];
 
 test('screen stylesheets lay out kit components but never restyle them', () => {
   const hits = [];
@@ -112,10 +112,10 @@ test('the kit provides the shared Dialog and Car card; a Dialog is used for sign
 
 // The pause menu is THE reference style (docs/OWNER-DECISIONS.md, 2026-10-16): every row kind shares its focus, the kit
 // carries no second visual language (italics, lime, glows), and pause itself is built from the kit it defines.
-test('the pause-menu reference: one focus look, one type language, pause built from the kit', () => {
+test('the pause-menu reference: one surface focus look, one type language, pause built from the kit', () => {
   const css = read(KIT_CSS);
   const focus = cssRules(css).find((r) => /\.option\.focus/.test(r.selector) && /\.field\.focus/.test(r.selector) && /\.list-row\.focus/.test(r.selector) && /\.card\.focus/.test(r.selector));
-  assert.ok(focus && focus.decls.includes('border-color') && focus.decls.includes('transform'), `${OWNER}\noption, field, list row and card share the reference focus (ice outline + slight lift)`);
+  assert.ok(focus && focus.decls.includes('background') && !focus.decls.includes('border-color') && !focus.decls.includes('outline') && !focus.decls.includes('box-shadow'), `${OWNER}\noption, field, list row and card share the reference focus (keyboard/gamepad surface only, no outline/ring)`);
   for (const f of [KIT_CSS, ...SCREEN_CSS, 'src/ui/notifications.css', 'style.css']) {
     const rules = cssRules(read(f)).filter((r) => !/wordmark|title__mark|#hud|#posBox|#evBox|#count|#lapTiming|#wrongWay|#gearboxHud|#routeBox|#engineHud|#mapBox|#dialBox|objective-|tow-|racer-marker/.test(r.selector));
     const src = read(f);
@@ -123,9 +123,104 @@ test('the pause-menu reference: one focus look, one type language, pause built f
     assert.doesNotMatch(src, /#dcfa4c|#b8ef77|#c1ed91/i, `${OWNER}\n${f}: the round-1 lime accent is gone; the one accent is ice`);
   }
   const menu = read('src/menu.js'), pause = menu.slice(menu.indexOf('  r_pause('), menu.indexOf('  r_roamConditions('));
-  assert.match(pause, /C\.sheetHead\(/, `${OWNER}\npause uses the kit sheet header`);
+  assert.match(pause, /C\.sheetList\(\{ variant: 'pause'/, `${OWNER}\npause uses the kit layout with its inset sheet header`);
   assert.match(pause, /C\.option\(/, OWNER);
-  const title = menu.slice(menu.indexOf('  r_title('), menu.indexOf('  participantChoice('));
-  assert.equal([...title.matchAll(/cls: 'option--tile/g)].length, 5, `${OWNER}\nthe locked title layout is the kit's option tiles (PLAY is option--hero)`);
+  const title = menu.slice(menu.indexOf('  r_title('), menu.indexOf('  r_leaderboards('));
+  // owner-requested edit 2026-10-18: one MULTIPLAYER tile replaced JOIN GAME + HOST / CREATE GAME
+  assert.equal([...title.matchAll(/cls: 'option--tile/g)].length, 4, `${OWNER}\nthe locked title layout is the kit's option tiles (PLAY is option--hero)`);
   assert.doesNotMatch(pause, /PHONE AS WHEEL/, 'the phone-wheel feature is being removed; pause does not list it');
+});
+
+test('OWNER LOCK 2026-10-17: leaderboards belong to the Quick Race track, never a mode or title tile', async () => {
+  const { Menu } = await import('../src/menu.js');
+  const priorDocument = globalThis.document, priorWindow = globalThis.window;
+  globalThis.document = { baseURI: 'http://localhost/', querySelector: () => null, body: { classList: { contains: () => false } } };
+  globalThis.window = {};
+  try {
+    const mode = Menu.prototype.r_mode.call({});
+    assert.deepEqual([...mode.matchAll(/class="mi option[^>]+data-act="([^"]+)"/g)].map(m => m[1]), ['quick', 'free']);
+    assert.doesNotMatch(mode, /LEADERBOARD/);
+    assert.doesNotMatch(Menu.prototype.r_title.call({ h: {} }), /LEADERBOARD/);
+    const menu = { screen: 'setup', setupDef: () => ({ id: 'megara-race' }) };
+    const track = Menu.prototype.r_mapConfirm.call(menu, { mapId: 'megara', mode: 'quick' });
+    assert.match(track, /data-act="leaderboards"/);
+    assert.match(track, /YOUR PERSONAL BEST/);
+    assert.match(track, /GLOBAL \/ TOP 3/);
+    assert.match(track, /data-act="mapContinue"/);
+    const { renderLeaderboards } = await import('../src/leaderboards-screen.js');
+    const emptyBoard = renderLeaderboards({ screen: 'setup' }, { tab: 'personal', filters: { mapId: 'penteli', eventId: 'penteli-race' } });
+    assert.match(emptyBoard, /select__val">PENTELI RACE</, 'the prefiltered event remains visible before map events or records load');
+    assert.match(read('src/ui/ui.css'), /\.mode-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,/);
+    assert.match(read('src/map-select.js'), /menu\.show\('mapConfirm', \{ mapId: id, mode: 'quick' \}, true\)/);
+  } finally { globalThis.document = priorDocument; globalThis.window = priorWindow; }
+});
+
+
+test('OWNER LOCK 2026-10-17: title taglines and environment identity leave the header', async () => {
+  const { statusBar, syncFooterBadge } = await import('../src/ui/components.js');
+  for (const kick of ['GREEK ROADS <span class="acc">/</span> PURE TIME', 'PURE TIME', 'GREEK ROADS']) {
+    const html = statusBar({ back: false, account: true, kick });
+    assert.doesNotMatch(html, /hu-crumb|build-badge/);
+    assert.match(html, /data-hu-driver/);
+    assert.doesNotMatch(html, /data-hu-clock/);
+  }
+  assert.match(statusBar({ kick: 'OPTIONS' }), /BACK[\s\S]*OPTIONS/);
+  const priorDocument = globalThis.document;
+  try {
+    let environment = 'staging';
+    globalThis.document = {
+      querySelector: selector => ({ content: selector.includes('asr-environment') ? environment : '2026.10.15.3' }),
+      createElement: () => ({ className: '', textContent: '' }),
+    };
+    const makeFooter = withVersion => {
+      const footer = { badge: null, version: withVersion ? { prepend: badge => { footer.badge = badge; } } : null,
+        querySelector: selector => selector === '.build-badge' ? footer.badge : footer.version,
+        prepend: badge => { footer.badge = badge; } };
+      return footer;
+    };
+    const title = makeFooter(true), settings = makeFooter(false);
+    const root = { querySelectorAll: () => [title, settings] };
+    syncFooterBadge(root);
+    assert.equal(title.badge.textContent, 'STAGING · ');
+    assert.equal(settings.badge.textContent, 'STAGING · 2026.10.15.3');
+    const original = title.badge;
+    syncFooterBadge(root);
+    assert.equal(title.badge, original, 'repeated renders must not duplicate badges');
+    environment = 'production';
+    const production = makeFooter(true);
+    syncFooterBadge({ querySelectorAll: () => [production] });
+    assert.equal(production.badge, null);
+  } finally { globalThis.document = priorDocument; }
+});
+
+test('dialog, confirm and pause share an animated blurred backdrop with a tinted fallback', () => {
+  const css = read(KIT_CSS), kit = read(KIT_JS), menu = read('src/menu.js');
+  assert.match(css, /\.dialog-scrim, \.modal-scrim, \.scr--pause\s*\{[^}]*-webkit-backdrop-filter: blur\(var\(--overlay-blur\)\); backdrop-filter: blur\(var\(--overlay-blur\)\)/);
+  assert.match(css, /--overlay-blur: 12px; background: rgba\(3,5,7,\.66\)/);
+  assert.match(css, /@supports \(\(backdrop-filter: blur\(12px\)\)/);
+  assert.match(css, /@media \(pointer: coarse\), \(prefers-reduced-transparency: reduce\)/);
+  assert.match(css, /data-ui-backdrop=tint/);
+  assert.match(css, /@keyframes ui-overlay-out/);
+  assert.match(kit, /\['potato', 'low'\]\.includes\(settings.perfClass\)/);
+  assert.match(kit, /m\.root\.classList\.add\('is-closing'\)/);
+  assert.match(menu, /if \(entering\) C\.exitBackdrop\(this\.root\)/);
+});
+
+// Owner 2026-10-17: supersedes the offline/escape clauses of the original Dialog decision.
+test('required Google gate has no offline path and uses game button typography', () => {
+  const src = read('src/ui/account-screen.js'), loader = read('src/ui/account-loader.js');
+  assert.match(src, /label: "CONTINUE WITH GOOGLE"/);
+  assert.doesNotMatch(src + loader, /account-offline|PLAY OFFLINE|playing-offline|bypass|searchParams.*guest/);
+  const google = cssRules(read(KIT_CSS)).find(r => r.selector === '.btn--google');
+  assert.ok(google); assert.match(google.body, /font-weight:\s*700/);
+  assert.doesNotMatch(google.body, /font-family|letter-spacing|text-transform/);
+  // Hover (2026-10-18) lifts the Google button's surface only; it never restyles the typography or the G mark.
+  for (const r of cssRules(read(KIT_CSS)).filter((r) => /\.btn--google:hover/.test(r.selector))) assert.deepEqual(r.decls.filter((d) => !/^(background|color)$/.test(d)), [], `${OWNER}\nGoogle hover is a surface change only`);
+});
+
+test('sign-in backdrop samples the whole title without an animated opacity ancestor', () => {
+  const css = read(KIT_CSS);
+  assert.match(css, /#ui\.is-entering \.scr--signin\s*\{ animation: none;/);
+  assert.match(css, /#ui\.is-entering \.dialog-under \.scr\s*\{ animation: none;/);
+  assert.match(css, /animation: ui-fade \.18s ease backwards/);
 });

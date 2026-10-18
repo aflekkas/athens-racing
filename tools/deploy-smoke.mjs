@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { smokeClient } from './resumable-smoke-client.mjs';
+import { loadSmokeToken } from './smoke-token.mjs';
 import { MULTIPLAYER_PROTOCOL } from '../src/multiplayer-protocol.js';
 import { getMap } from '../src/map-catalog.js';
 import { verifySessionCatalogueWithRetry } from './deploy-smoke-catalogue.mjs';
@@ -9,6 +10,10 @@ import { smokeDrive, SMOKE_SPEED, SMOKE_STEP } from './deploy-smoke-route.mjs';
 const base = (process.argv[2] || '').replace(/\/$/, '');
 if (!/^https?:\/\//.test(base)) throw new Error('Usage: node tools/deploy-smoke.mjs https://worker.workers.dev [--race] [--map=riviera|megara|penteli|psychiko]');
 const raceProof = process.argv.includes('--race'), mapId = process.argv.find(v => v.startsWith('--map='))?.slice(6) || 'riviera';
+// Deployed Workers require Google sign-in; the smoke session credential is the only non-account path.
+const smokeToken = loadSmokeToken();
+const signIn = await fetch(base + '/api/auth/config', { signal: AbortSignal.timeout(15000) }).then(r => r.json()).catch(() => ({ required: false }));
+if (signIn.required && !smokeToken) { console.error('Deployment smoke: sign-in is required here; set SMOKE_TOKEN; see deploy/README.md'); process.exit(2); }
 const { build, entry } = await checkDeployedEntry(base);
 const preview = await fetch(base + getMap(mapId).preview.replace(/^\./, ''), { signal: AbortSignal.timeout(15000) });
 assert.equal(preview.status, 200, `Map preview HTTP ${preview.status}`);
@@ -17,7 +22,7 @@ for (const path of ['/server/core.mjs', '/tools/prepare-deploy.mjs', '/package.j
 const healthResponse = await fetch(base + '/health', { signal: AbortSignal.timeout(15000) });
 assert.equal(healthResponse.status, 200);
 console.log(JSON.stringify({ proof: 'health', base, entry, build: build || null, health: await healthResponse.json() }));
-function client(name) { return smokeClient(base, name, { build, identity: `smoke-${randomUUID()}` }); }
+function client(name) { return smokeClient(base, name, { build, identity: `smoke-${randomUUID()}`, smokeToken }); }
 const clients = [];
 async function connect(name) {
   const c = client(name); clients.push(c);
@@ -79,7 +84,7 @@ try {
           if (greeting.features?.stateBatching) c.send({ type: 'states', raceId: running.raceId, states: samples });
           else for (const state of samples) c.send({ type: 'state', raceId: running.raceId, state });
         }
-      } catch { clearInterval(interval); } // next() reports the socket/checkpoint failure.
+      } catch { clearInterval(interval); } // next() reports the socket failure.
     }, 2 * SMOKE_STEP / SMOKE_SPEED * 1000);
     try {
       await b.next(m => m.type === 'snapshot' && m.players.some(p => p.id === hello.id && p.state), 15000);
@@ -87,11 +92,7 @@ try {
       const results = await Promise.all([a, b].map(c => c.next(m => m.type === 'lobby' && m.lobby.status === 'results', timeout)));
       const result = results[0].lobby;
       assert.equal(result.results.length, 2); assert.ok(result.results.every(p => Number.isFinite(p.finish) && !p.dnf));
-      if (hello.protocol !== undefined) for (const c of [a, b]) {
-        assert.equal(c.checkpoint?.passed, drive.checkpoints);
-        assert.equal(c.checkpoint?.missed, false);
-      }
-      console.log(JSON.stringify({ proof: 'create → join → ready → start → snapshot → checkpoints → finish', base, protocol: hello.protocol ?? 0, legacy: hello.protocol === undefined, mapId, eventId: event.id, checkpoints: drive.checkpoints, raceId: running.raceId, startAt: running.startAt, reconnects: a.reconnects + b.reconnects, results: result.results.map(({ id, finish, dnf }) => ({ id, finish, dnf })) }, null, 2));
+      console.log(JSON.stringify({ proof: 'create → join → ready → start → snapshot → route progress → finish', base, protocol: hello.protocol ?? 0, legacy: hello.protocol === undefined, mapId, eventId: event.id, samples: drive.samples.length, raceId: running.raceId, startAt: running.startAt, reconnects: a.reconnects + b.reconnects, results: result.results.map(({ id, finish, dnf }) => ({ id, finish, dnf })) }, null, 2));
     } finally { clearInterval(interval); clearTimeout(resetTimer); }
     b.send({ type: 'leave' }); await b.next(m => m.type === 'left');
   }

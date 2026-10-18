@@ -4,9 +4,9 @@
 
 ## Current targets and defaults
 
-Normal moving race: **−20 to −18 LUFS integrated**, maximum 3-second loudness **≤ −14 LUFS**, true peak **≤ −3 dBTP**. Menus and loading music aim for **approximately −26 LUFS**. Stopped/idling segments and the closed taxi cabin can be quieter.
+Normal moving race: **−20 to −18 LUFS integrated**, maximum 3-second loudness **≤ −14 LUFS**, true peak **≤ −3 dBTP**. Stopped/idling segments and the closed taxi cabin can be quieter.
 
-Defaults: **master 0.60**, music 0.55, SFX 1.00, engine 0.85, tyres 0.28 (−9.1 dB from 0.80), ambience 0.50, traffic 0.65, UI 0.40. Saved master and tyre levels equal to their old 0.80 defaults migrate once, independently; other preferences and later explicit choices are retained.
+Defaults: **master 0.60**, SFX 1.00, engine 0.85, tyres 0.28 (−9.1 dB from 0.80), ambience 0.50, traffic 0.65, UI 0.40. Saved master and tyre levels equal to their old 0.80 defaults migrate once, independently; other preferences and later explicit choices are retained.
 
 ## Real-game captures
 
@@ -37,7 +37,6 @@ These are measured before the shared master/calibration/compressor stages. They 
 | tyres | -35.2 | -31.3 |
 | traffic | -36.2 | -45.1 |
 | ambience | -45.4 | -47.5 |
-| music | -29.7 | -33.2 |
 | ui | silent | silent |
 
 ## Causes and corrections
@@ -47,7 +46,6 @@ These are measured before the shared master/calibration/compressor stages. They 
 - Wind’s quadratic speed rise reached 0.60. Its coefficient and ceiling now fall by a factor of three (9.5 dB); cabin whistle is also reduced. Tyre synthesis remains intact.
 - Player engine source gain changes from 0.55 to 0.75. Combined with the master/calibration reduction, the default player engine remains about 2.3 dB quieter while keeping feedback clear above surrounding vehicles.
 - The fixed 2× calibration plus compressor makeup lifted the entire mix. Calibration changes to 1.50, and first-run master to 0.60. Compressor threshold/knee/ratio/attack/release stay −5 dB / 6 dB / 8:1 / 3 ms / 160 ms. Source and bus balance supply the headroom.
-- Race radio source level changes from 0.50 to 0.35; menu source level is separately 0.62, with the existing −18 dB world duck. Music toggles use the current mode’s level.
 - Recorded grains already normalize coherent body amplitude and texture power. Doppler engines and sirens already have distance rolloff; neither required synthesis or distance changes. Existing ambience is subordinate and its assets/gains are retained.
 
 ## Evidence and verification
@@ -81,10 +79,10 @@ The engine/tyre implementation was frozen in the before/after fixtures because a
 | Rain | Soft outside rain in open air; quieter low-pass roof/screen drumming and wipers in cabin |
 | Police | Noticeable close pass, attenuated with distance; no 2.4 kHz boost |
 | UI | Brief, restrained clicks; UI slider default 0.40 (was 0.70, −4.86 dB) |
-| Menu | Existing world duck retained at −18 dB; music/UI retain their own controls |
+| Menu | Existing world duck retained at −18 dB; UI retains its own control |
 | Peaks | No digital clipping; retain existing dynamics settings and headroom |
 
-Defaults: master 0.80, engine 0.85, tyres 0.80, ambience 0.50, traffic 0.65, UI **0.40**, music 0.55, legacy SFX 1.00. Existing saved user preferences are respected. Ambience balance is fixed at individual source gains while retaining the existing user slider values. Limiter unchanged: threshold −5 dB, knee 6 dB, ratio 8:1, attack 3 ms, release 160 ms; existing calibration gain 2.
+Defaults: master 0.80, engine 0.85, tyres 0.80, ambience 0.50, traffic 0.65, UI **0.40**, legacy SFX 1.00. Existing saved user preferences are respected. Ambience balance is fixed at individual source gains while retaining the existing user slider values. Limiter unchanged: threshold −5 dB, knee 6 dB, ratio 8:1, attack 3 ms, release 160 ms; existing calibration gain 2.
 
 ## Corrected review measurements
 
@@ -159,7 +157,6 @@ Engine, ambience and complete pre-limiter mix share the same measurement point a
 | Police pass | -29.2 → -29.2 | -24.4 → -24.4 | -11.3 → -11.3 |
 | Rain cockpit tyre spray | -34.4 → -34.4 | -34.1 → -34.1 | -25.2 → -25.2 |
 | Menu UI click | -43.5 → -43.5 | -52.2 → -52.2 | -27.2 → -27.2 |
-| Music | -23.2 → -23.2 | -21.9 → -21.9 | -11.3 → -11.3 |
 
 Full corrected logs and all 54 multibus renders: `.scratch/audio-mix/final-*` and `prior-*`; machine-readable comparison: `revision-loudness.json`. Reproduction uses `final-render.mjs`, `revision-measure.py` and `revision-doc.py`, served by `serve.py` on port 8027. Older `before-*` / `after-*` files remain historical artifacts with the original mono-tap limitation. `review-*` / `revision-*` experiments are superseded by `prior-*` / `final-*`.
 

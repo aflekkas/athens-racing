@@ -147,7 +147,7 @@ test('legacy snapshots without timing metadata still interpolate, suppress repea
 
 test('production lobby handler clears race history and resets car/rejoin timelines; socket close preserves authoritative state', t => {
   const { client } = pipeline(t, { duration: 1200 });
-  client.renderRoom = () => {}; client.syncLobby = () => {}; client.panel = {};
+  client.renderRoom = () => {}; client.syncLobby = () => {}; client.panel = {}; client.button = { hidden: true };
   const original = client.peers.get('driver').state;
   const deliver = lobby => client.ws.onmessage({ data: JSON.stringify({ type: 'lobby', lobby }) });
   client.lobby.players.push({ id: 'observer', car: 'mini' });

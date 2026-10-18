@@ -5,7 +5,7 @@
 body{font:17px system-ui;background:#101b22;color:#e8f0ef;max-width:850px;margin:48px auto;padding:24px}button,select{font:inherit;padding:12px;border:1px solid #506873;border-radius:8px;background:#23343e;color:inherit;cursor:pointer}label{display:block;margin:25px 0}input[type=range]{width:100%;accent-color:#f4bc64}h1{font-size:32px}p{line-height:1.6;color:#b9c9d0}output{float:right;color:#f4bc64}pre{white-space:pre-wrap;color:#addbbd}a{color:#f4bc64}.controls{display:flex;gap:12px;flex-wrap:wrap}
 </style>
 <h1>Engine audition</h1>
-<p>Recorded and synthesized engine voices, isolated from music and traffic. Select a car, start the engine, then vary RPM and load.</p>
+<p>Recorded and synthesized engine voices, isolated from traffic. Select a car, start the engine, then vary RPM and load.</p>
 <div class="controls"><select id="car"><option value="mini">MINI Cooper S Cabrio</option><option value="z4">BMW Z4 M40i</option><option value="taxi">Škoda Octavia 2.0 TDI</option><option value="carrera">Porsche 911 Carrera 3.4 (synth)</option><option value="gr_yaris">Toyota GR Yaris (synth)</option><option value="gtv">Alfa Romeo 2000 GTV (synth)</option></select><button id="start">Start engine</button><button id="stop">Stop audio</button></div>
 <label>Engine speed <output id="rpmValue">850 RPM</output><input id="rpm" type="range" min="850" max="6800" value="850" step="10"></label>
 <label>Engine load <output id="loadValue">0%</output><input id="load" type="range" min="-100" max="100" value="0"></label>

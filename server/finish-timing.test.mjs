@@ -6,7 +6,7 @@ const socket=()=>({readyState:1,messages:[],send(d){this.messages.push(JSON.pars
 for(const dir of [1,-1])test(`authoritative ${dir>0?'forward':'reverse'} finish uses the crossing and publishes before others finish`,t=>{
  let now=100000;t.mock.method(Date,'now',()=>now);
  const geometry={step:20,x:Array.from({length:11},(_,i)=>i*20),z:Array(11).fill(0),y:Array(11).fill(0),lanes:Array(11).fill(1),div:Array(11).fill(0)};
- const event={id:'quick',type:'sprint',s0:dir>0?0:200,s1:dir>0?200:0,dir,len:200,checkpoints:[]};
+ const event={id:'quick',type:'sprint',s0:dir>0?0:200,s1:dir>0?200:0,dir,len:200,sectors:[]};
  const maps=new Map([['riviera',{track:{version:'v'},geometry,definitions:new Map([['quick',event]])}]]);
  const core=createGameCore({maps,cars:new Set(['mini']),leaderboard:{submit:async()=>{}},countdownMs:100}),a=socket(),b=socket(),send=(s,m)=>core.message(s,JSON.stringify(m));
  core.connect(a,'a',{protocol:MULTIPLAYER_PROTOCOL});core.connect(b,'b',{protocol:MULTIPLAYER_PROTOCOL});send(a,{type:'create'});const l=[...core.lobbies.values()][0];send(b,{type:'join',code:l.code});send(a,{type:'start',force:true});now+=100;core.tick();

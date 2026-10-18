@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { wantedScreen, driverRow, shownValue, setPending, renderLobby, renderMp, renderCars, renderResults, form, isMpScreen, helpText, change } from '../src/ui/mp-screens.js';
+import { wantedScreen, driverRow, shownValue, setPending, renderLobby, renderMp, renderHost, renderCars, renderResults, form, isMpScreen, helpText, change } from '../src/ui/mp-screens.js';
 
 // A Multiplayer stand-in with just the state the screens read (src/multiplayer.js owns the real one).
 function fakeMp({ host = true, players, status = 'waiting', lobbies } = {}) {
@@ -29,7 +29,7 @@ test('the multiplayer state picks the screen: join/host without a lobby, the roo
   assert.equal(wantedScreen(fakeMp({ host: false }), 'mpCars'), 'mpLobby', 'guests never see host rules');
   assert.equal(wantedScreen(fakeMp({ status: 'results' }), 'mpLobby'), 'mpResults');
   assert.equal(wantedScreen(fakeMp({ status: 'race' }), 'mpLobby'), 'mpLobby');
-  assert.ok(['mp', 'mpLobby', 'mpCars', 'mpResults'].every(isMpScreen) && !isMpScreen('settings') && !isMpScreen('car'));
+  assert.ok(['mp', 'mpHost', 'mpLobby', 'mpCars', 'mpResults'].every(isMpScreen) && !isMpScreen('settings') && !isMpScreen('car'));
 });
 
 test('driver rows report ready, loading, reconnecting and race states', () => {
@@ -76,21 +76,29 @@ test('the host gets separate KICK and BLOCK on other drivers; guests see the set
   assert.match(helpText(fakeMp({ host: false }), fakeMp().lobby, false), /host starts/);
 });
 
-test('join lights up at six characters and lists open lobbies; full ones are not selectable', () => {
-  form.tab = 'join'; form.code = 'AB1';
-  const lobbies = [{ code: 'QWE123', name: 'NIGHT', mapId: 'penteli', status: 'waiting', capacity: 8, players: [{}] }, { code: 'FULL88', name: 'FULL', status: 'waiting', capacity: 2, players: [{}, {}] }];
+test('the lobby browser: open lobbies fill the page, join lights up at six characters, full lobbies are not selectable', () => {
+  form.code = 'AB1';
+  const lobbies = [{ code: 'QWE123', name: 'NIGHT', mapId: 'penteli', status: 'waiting', capacity: 8, host: 'h', players: [{ id: 'h', name: 'GR-4821' }], config: { time: 'night', weather: 'rain' } }, { code: 'FULL88', name: 'FULL', status: 'waiting', capacity: 2, players: [{}, {}] }];
   const mp = fakeMp({ lobbies }); mp.lobby = null;
-  const short = renderMp(menu, mp, { tab: 'join' });
-  assert.match(short, /btn--primary[^"]*off[^"]*" role="button" data-act="mpJoinCode"/);
+  const short = renderMp(menu, mp);
+  assert.match(short, /off[^"]*" role="button" data-act="mpJoinCode"/, 'JOIN waits for a full code');
+  assert.match(short, /data-field="code"/, 'join by code is an inline field');
   form.code = 'AB12CD';
-  assert.doesNotMatch(renderMp(menu, mp, { tab: 'join' }), /off[^"]*" role="button" data-act="mpJoinCode"/);
-  const list = renderMp(menu, mp, { tab: 'join' });
-  assert.match(list, /data-code="QWE123"/); assert.match(list, /PENTELI/);
-  assert.match(list, /list-row off[^"]*" role="button" data-act="mpJoinLobby" data-fid="lobby:FULL88"/, 'a full lobby is not selectable');
-  assert.doesNotMatch(list, /mpRefresh/, 'the list stays live without a REFRESH button');
-  assert.match(list, /id="carStage"[^>]*data-ui-keep="stage"/, 'the showroom stage survives in-place refreshes');
-  const hostTab = renderMp(menu, mp, { tab: 'host' });
-  assert.match(hostTab, /data-act="mpCreate"/); assert.match(hostTab, /data-key="map"/);
+  const list = renderMp(menu, mp);
+  assert.match(list, /btn--primary[^"]*" role="button" data-act="mpJoinCode"/, 'a full code lights JOIN up');
+  assert.match(list, /data-code="QWE123"/); assert.match(list, /PENTELI/); assert.match(list, /HOST · GR-4821/); assert.match(list, /1\/8/); assert.match(list, /NIGHT/);
+  assert.match(list, /list-row[^"]* off[^"]*" role="button" data-act="mpJoinLobby" data-fid="lobby:FULL88"/, 'a full lobby is not selectable');
+  assert.match(list, /role="button" data-default="" data-act="mpJoinLobby" data-fid="lobby:QWE123"/, 'the first joinable lobby takes focus');
+  assert.match(list, /data-act="mpHost"/, 'HOST A LOBBY leads to its setup');
+  assert.doesNotMatch(list, /mpRefresh|data-kind="tabs"|id="carStage"/, 'one live list: no REFRESH, no JOIN / HOST tabs, no showroom car');
+  mp.__lobbies = []; assert.match(renderMp(menu, mp), /NO OPEN LOBBIES RIGHT NOW[\s\S]*data-default="" data-fid="host"|data-fid="host"[^>]*data-default=""/);
+  assert.match(renderMp(menu, { ...mp, connected: false }), /CONNECTING TO THE LOBBY SERVER/);
+  assert.match(renderMp(menu, { ...mp, connected: false, reconnecting: true }), /CAN’T REACH THE LOBBY SERVER[\s\S]*data-act="mpRetry"/);
+  assert.match(renderMp(menu, { ...mp, connected: false, reloadRequired: true }), /GAME UPDATED[\s\S]*data-act="mpReload"/);
+  const host = renderHost(menu, mp);
+  assert.match(host, /data-act="mpTrack"[^>]*data-map="riviera"/); assert.match(host, /data-key="mode"/); assert.match(host, /data-key="private"/); assert.match(host, /data-act="mpCreate"/);
+  assert.doesNotMatch(host, /data-dialog|role="dialog"/, 'host setup is a full screen');
+  assert.equal(wantedScreen({ lobby: null }, 'mpHost'), 'mpHost', 'lobby updates keep the host setup open');
   form.code = '';
 });
 

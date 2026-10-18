@@ -3,6 +3,7 @@
 import contextlib
 import io
 import json
+import math
 from pathlib import Path
 import sqlite3
 import tempfile
@@ -88,13 +89,26 @@ class PrecisionSurfaceTests(unittest.TestCase):
     def test_pavement_bevel_is_continuous_and_returns_to_terrain(self):
         from street_details import pavement_lift
         self.assertEqual(pavement_lift(0),0)
-        self.assertAlmostEqual(pavement_lift(.09),.05)
-        self.assertAlmostEqual(pavement_lift(.18),.1)
+        self.assertAlmostEqual(pavement_lift(.3),.05)
+        self.assertAlmostEqual(pavement_lift(.6),.1)
         self.assertAlmostEqual(pavement_lift(1.8),.1)
         self.assertAlmostEqual(pavement_lift(2.3),.05)
         self.assertEqual(pavement_lift(2.8),0)
-        for boundary in (0,.18,1.8,2.8):
+        for boundary in (0,.6,1.8,2.8):
             self.assertLess(abs(pavement_lift(boundary+1e-7)-pavement_lift(boundary-1e-7)),1e-6)
+
+    def test_nonlinear_lattice_planes_survive_road_clipping(self):
+        from influence import lattice_height
+        from street_details import ribbon_polygon,pavement_regions
+        line=LineString([(95.99,101.01),(130.01,101.03),(140.03,140.01)])
+        roads=[dict(id='sliver',line=line,polygon=ribbon_polygon(line,5.6))]
+        _,kerb,pave=pavement_regions(roads)
+        sample=lambda x,z:.0015*x*x
+        mesh=ground_mesh((0,0),roads,lambda x,z:lattice_height(x,z,sample),[kerb.boundary,pave.boundary])
+        validate_partition(mesh)
+        p=np.asarray(mesh['positions']).reshape(-1,3);ix=np.asarray(mesh['triangles']).reshape(-1,3)
+        v=p[ix];n=np.cross(v[:,1]-v[:,0],v[:,2]-v[:,0]);grades=np.hypot(n[:,0],n[:,2])/abs(n[:,1])
+        self.assertLess(max(g for g,owner in zip(grades,mesh['owners']) if owner),math.tan(math.pi/6))
 
     def test_real_glyfada_neighbour_has_no_precision_holes(self):
         from street_details import pavement_regions

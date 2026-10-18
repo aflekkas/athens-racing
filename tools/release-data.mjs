@@ -54,18 +54,34 @@ async function walk(root, dir = root, out = []) {
 }
 export const findCreditFiles = async (root) => (await walk(root)).sort();
 
-const TITLES = { 'assets/audio/engines': 'Engine recordings', 'assets/audio/tyres': 'Tyre sounds', 'assets/audio/world': 'World sounds',
-  'assets/audio/world/ambience': 'Ambience', 'assets/audio/music': 'Radio music', 'assets/audio/voice': 'Greek voices', 'assets/icons': 'Icons' };
+/** How a credits directory reads on the Credits screen; anything not listed gets a generated title and the section by path. */
+const KNOWN = {
+  'assets/audio/engines': { title: 'Engine recordings', detail: 'Edited recordings of real engines', section: 'audio' },
+  'assets/audio/tyres': { title: 'Tyre sounds', detail: 'Procedural synthesis and one recorded tyre squeal', section: 'audio' },
+  'assets/audio/world': { title: 'World sounds', detail: 'Sea, cicadas, crowds, traffic and impacts', section: 'audio' },
+  'assets/audio/world/ambience': { title: 'Ambience', detail: 'Wind, birds and distant farm sounds', section: 'audio' },
+  'assets/audio/voice': { title: 'Greek voices', detail: 'Synthetic Greek voice reactions, made offline with Piper', section: 'audio' },
+  'assets/brand-badges': { title: 'Manufacturer badges', detail: 'Vector artwork from Simple Icons', section: 'textures', links: ['https://simpleicons.org'] },
+  'assets/icons': { title: 'Lucide icons', detail: 'User-interface icons, with the upstream Feather MIT notice', section: 'visuals', links: ['https://lucide.dev'] },
+  'assets/codecs/basis': { title: 'Basis Universal', detail: 'GPU texture transcoder', section: 'software', links: ['https://github.com/BinomialLLC/basis_universal'] },
+  'assets/fonts': { into: 'fonts' },
+  'tools/world-gen': { into: 'openstreetmap' },
+};
 const humanize = (s) => s.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 function titleFor(file) {
-  const dir = dirname(file), name = basename(file);
-  const base = TITLES[dir] || humanize(dir.split('/').slice(-2).join(' · '));
+  const dir = dirname(file), name = basename(file), base = KNOWN[dir]?.title || humanize(dir.split('/').slice(-2).join(' · '));
   return /^models/i.test(name) ? base + ': models and licences' : base;
 }
-const sectionFor = (file) => file.startsWith('assets/audio/') ? 'audio' : file.startsWith('assets/') ? 'visuals' : 'more';
+const sectionFor = (file) => KNOWN[dirname(file)]?.section || (file.startsWith('assets/audio/') ? 'audio' : file.startsWith('assets/') ? 'visuals' : 'more');
+const extraLabel = (file) => /^licen[cs]e/i.test(basename(file)) ? 'Licence text' : /^models/i.test(basename(file)) ? 'Model notes' : 'More credits';
+/** the first real copyright line of a credits / licence text, as an attribution line */
+const copyrightLine = (body) => {
+  const m = /^Copyright(?: \(c\))? ([^\n[]+)$/im.exec(body); if (!m) return '';
+  return '© ' + m[1].replace(/\s*\(https?:[^)]*\)/g, '').replace(/[.\s]+$/, '');
+};
 
 const LICENCES = [['SIL OFL 1.1', /SIL Open Font License(?:,? Version)? 1\.1/i], ['CC0', /\bCC0\b|publicdomain\/zero/i], ['CC BY 4.0', /CC[ -]BY[ -]4\.0|licenses\/by\/4\.0|By Attribution 4\.0/i], ['CC BY 3.0', /CC[ -]BY[ -]3\.0|licenses\/by\/3\.0/i],
-  ['CC BY 2.0', /CC[ -]BY[ -]2\.0|licenses\/by\/2\.0/i], ['MIT', /\bMIT\b/], ['Apache-2.0', /Apache[ -]2\.0/i], ['ODbL', /\bODbL\b/]];
+  ['CC BY 2.0', /CC[ -]BY[ -]2\.0|licenses\/by\/2\.0/i], ['ISC', /\bISC License\b/i], ['MIT', /\bMIT\b/], ['Apache-2.0', /Apache[ -]2\.0|Apache License,?\s+Version 2\.0/i], ['ODbL', /\bODbL\b/]];
 /** licence names a credits file mentions (not for model-evaluation notes, which also name rejected, unshipped licences) */
 export const detectLicences = (body) => LICENCES.filter(([, re]) => re.test(body)).map(([name]) => name);
 
@@ -115,9 +131,14 @@ export function mergeTeam(listed, authors) {
 }
 
 const attr = (html, re) => [...html.matchAll(re)];
+/** where a README "Data and credits" bullet's provider is credited from; the first match wins */
+const PROVIDER_LINKS = [[/Poly Haven/i, 'https://polyhaven.com/']];
+const oneSentence = (s, max = 110) => { const first = String(s || '').split(/(?<=[.!?])\s/)[0].replace(/[.\s]+$/, ''); return first.length > max ? first.slice(0, max - 1).replace(/\s+\S*$/, '') + '…' : first; };
+
 export async function buildCredits(root, { authors } = {}) {
   const sources = [], use = (f) => { if (!sources.includes(f)) sources.push(f); };
-  const sections = { data: [], audio: [], visuals: [], software: [], more: [] };
+  const sections = { data: [], textures: [], audio: [], visuals: [], software: [], more: [] };
+  const entries = [], add = (section, entry) => { sections[section].push(entry); entries.push(entry); return entry; };
 
   // team + AI note
   use('CREDITS.md');
@@ -129,29 +150,64 @@ export async function buildCredits(root, { authors } = {}) {
   const readme = await text(root, 'README.md'), block = /^## Data and credits\n([\s\S]*?)(?=\n## |$(?![\s\S]))/m.exec(readme)?.[1] || '';
   const html = await text(root, 'index.html'); use('index.html');
   const anchors = attr(html, /<a href="(https?:[^"]+)"[^>]*>([^<]+)<\/a>/g).map((m) => ({ href: m[1], label: m[2] }));
+  let elevation = null;
   for (const line of block.split('\n')) {
     const m = /^-\s+(.+)$/.exec(line.trim()); if (!m || /assets\/audio\//.test(m[1])) continue;
-    const body = m[1].replace(/`/g, '').replace(/,? in (?:data|assets)\/[\w/]*\.?$/, '.');
-    sections.data.push({ id: 'readme-' + sections.data.length, title: body, links: anchors.filter((a) => body.includes(a.label.replace(/ \/ ODbL$/, ''))).map((a) => a.href).slice(0, 1) });
+    const body = m[1].replace(/`/g, '').replace(/,? in (?:data|assets)\/[\w/]*\.?$/, '.').replace(/\.$/, '');
+    const [, label = '', rest = body] = /^(.+?):\s+(.+)$/.exec(body) || [];
+    const licence = /\(([^)]+)\)\s*$/.exec(rest)?.[1], who = rest.replace(/\s*\([^)]*\)\s*$/, '').replace(/^©\s*/, '').trim();
+    if (/^elevation$/i.test(label)) { elevation = { rest }; continue; } // merged with the Copernicus attribution below
+    const section = /^textures?$/i.test(label) ? 'textures' : 'data';
+    const title = who.replace(/ contributors$/, '');
+    add(section, { id: title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'readme-' + entries.length, title, detail: /^textures?$/i.test(label) ? 'Material textures' : label,
+      credit: rest.startsWith('©') ? '© ' + who : '', licences: licence ? [licence] : [],
+      links: [...anchors.filter((a) => body.includes(a.label.replace(/ \/ ODbL$/, ''))).map((a) => a.href), ...PROVIDER_LINKS.filter(([re]) => re.test(who)).map(([, u]) => u)].slice(0, 1) });
   }
-  // Regional map elevation attribution is maintained beside the map source.
+  // Regional map elevation attribution is maintained beside the map source: one entry with the EU-DEM line.
   use('tools/maps/attica/README.md');
   const mapNotes = await text(root, 'tools/maps/attica/README.md');
-  const elevation = /^- Regional elevation: (.+)$/m.exec(mapNotes)?.[1];
-  if (elevation) sections.data.push({ id: 'copernicus', title: 'EU-DEM / Copernicus elevation', text: cleanText(elevation) });
+  const elevationNote = /^- Regional elevation: (.+)$/m.exec(mapNotes)?.[1];
+  if (elevationNote || elevation) {
+    const note = elevationNote ? cleanText(elevationNote) : '';
+    add('data', { id: 'copernicus', title: 'EU-DEM / Copernicus', detail: 'Terrain elevation' + (elevation ? ' · ' + elevation.rest : ''),
+      credit: /Produced using[^.]*\./.exec(note)?.[0] || '', licences: [], links: [], ...(note ? { text: note } : {}) });
+  }
 
   // fonts: the families index.html loads
   const families = [...html.matchAll(/[?&]family=([^:&"]+)/g)].map((m) => decodeURIComponent(m[1]).replace(/\+/g, ' ')).filter((f, i, a) => a.indexOf(f) === i);
-  if (families.length) sections.visuals.push({ id: 'fonts', title: `Fonts: ${families.join(', ')}`, detail: 'Served by Google Fonts', links: [`https://fonts.google.com/specimen/${families.at(-1).replace(/ /g, '+')}`] });
+  if (families.length) add('visuals', { id: 'fonts', title: families.join(' and '), detail: 'Typefaces, served by Google Fonts', credit: '', licences: [], links: [`https://fonts.google.com/specimen/${families.at(-1).replace(/ /g, '+')}`] });
 
-  // every credits / licence file
+  // every credits / licence file: one entry per directory, the CREDITS file first, any licence text attached to it
+  const byDir = new Map();
   for (const file of (await findCreditFiles(root)).filter((f) => f !== 'CREDITS.md')) {
     use(file);
-    const raw = await text(root, file), notes = /^models/i.test(basename(file));
-    let title = titleFor(file);
-    if (/LICENSE$/i.test(file)) { const c = /^Copyright \(c\) \d{4}\s+(.+)$/im.exec(raw); if (c) title = `${title} (${c[1].trim()})`; }
-    const entry = { id: file.toLowerCase().replace(/[^a-z0-9]+/g, '-'), title, file, licences: notes ? [] : detectLicences(raw), text: cleanText(raw) };
-    sections[sectionFor(file)].push(entry);
+    const dir = dirname(file); byDir.set(dir, [...(byDir.get(dir) || []), file]);
+  }
+  const idFor = (file) => file.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  for (const [dir, files] of byDir) {
+    files.sort((a, b) => (/^licen[cs]e|^models/i.test(basename(a)) ? 1 : 0) - (/^licen[cs]e|^models/i.test(basename(b)) ? 1 : 0) || a.localeCompare(b));
+    const known = KNOWN[dir] || {}, texts = [];
+    for (const file of files) texts.push({ file, raw: await text(root, file), notes: /^models/i.test(basename(file)) });
+    const [primary, ...others] = texts;
+    const target = known.into && entries.find((e) => e.id === known.into);
+    const licences = [...new Set(texts.filter((t) => !t.notes).flatMap((t) => detectLicences(t.raw)))];
+    const extra = others.map((t) => ({ id: idFor(t.file), file: t.file, label: extraLabel(t.file), text: cleanText(t.raw) }));
+    if (target) { // the Barlow notice and the world-gen source notes belong to the entry they describe
+      Object.assign(target, { file: primary.file, text: cleanText(primary.raw), ...(extra.length ? { extra } : {}) });
+      target.licences = [...new Set([...target.licences, ...licences])];
+      if (!target.credit) target.credit = copyrightLine(primary.raw);
+      continue;
+    }
+    let title = titleFor(primary.file);
+    if (/LICENSE$/i.test(primary.file) && !known.title) { const c = /^Copyright \(c\) \d{4}\s+(.+)$/im.exec(primary.raw); if (c) title = `${title} (${c[1].trim()})`; }
+    add(sectionFor(primary.file), { id: idFor(primary.file), title, detail: known.detail || '', credit: copyrightLine(primary.raw), file: primary.file, licences: primary.notes ? [] : licences, links: known.links || [], text: cleanText(primary.raw), ...(extra.length ? { extra } : {}) });
+  }
+  // the Copernicus DEM notice sits in the world-gen file; surface its product link and © line on the elevation entry
+  const worldGen = entries.find((e) => e.id === 'openstreetmap')?.text || '', dem = entries.find((e) => e.id === 'copernicus');
+  if (dem) {
+    dem.links = [...(/https:\/\/land\.copernicus\.eu\/\S+/.exec(worldGen) || [])];
+    const dm = /Copernicus DEM: ([^;]+)/.exec(worldGen)?.[1].replace(/\s+/g, ' ').trim();
+    if (dm) dem.credit = [dem.credit, 'Copernicus DEM: ' + dm + '.'].filter(Boolean).join('\n');
   }
 
   // open-source software: package.json
@@ -160,11 +216,11 @@ export async function buildCredits(root, { authors } = {}) {
   for (const name of Object.keys({ ...pkg.dependencies, ...pkg.devDependencies }).sort()) {
     let meta = {}; try { meta = JSON.parse(await text(root, `node_modules/${name}/package.json`)); } catch { /* not installed */ }
     const licence = typeof meta.license === 'string' ? meta.license : meta.license?.type || null;
-    sections.software.push({ id: 'pkg-' + name, title: name === 'three' ? 'three.js' : name, detail: [meta.version && 'v' + meta.version, licence].filter(Boolean).join(' · '),
-      licences: licence ? [licence] : [], links: [meta.homepage || `https://www.npmjs.com/package/${name}`].filter((u) => /^https:/.test(u)) });
+    add('software', { id: 'pkg-' + name, title: name === 'three' ? 'three.js' : name, detail: oneSentence(meta.description), credit: [meta.version && 'v' + meta.version, licence].filter(Boolean).join(' · '),
+      licences: [], links: [meta.homepage || `https://www.npmjs.com/package/${name}`].filter((u) => /^https:/.test(u)) });
   }
   return { team, unlisted, ai, sections: [
-    ['data', 'Map data and textures'], ['audio', 'Audio'], ['visuals', 'Models, textures, icons and fonts'], ['software', 'Open-source software'], ['more', 'More credits'],
+    ['data', 'Map data'], ['textures', 'Textures and artwork'], ['audio', 'Audio'], ['visuals', 'Fonts and icons'], ['software', 'Software'], ['more', 'More credits'],
   ].filter(([id]) => sections[id].length).map(([id, title]) => ({ id, title, entries: sections[id] })), sources };
 }
 

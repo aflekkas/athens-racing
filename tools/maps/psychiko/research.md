@@ -1,28 +1,20 @@
-# Psychiko drawn-loop revision
+# Psychiko Garden Circuit v2 (2026-10-18)
 
-Revision date: 2026-10-15. The user's red loop in `.scratch/psychiko-v2/user-route.jpg` is now the primary race. The drawing extends into Filothei north of the Palaio Psychiko municipal boundary; it is not truncated at that boundary.
+Owner feedback after the drawn-loop revision: "also psychiko map is bad", "i want [the minimap route] to start from the blue dot and go around or whatever", "this part is not done properly", "also what the fuk are these white dots". The loop is redesigned from the street graph rather than from a drawing.
 
-`raw/drawn-course.json` freezes 172 unique junction/shape nodes plus the repeated finish node, with one exact OSM way per edge. `route.mjs` verifies adjacency and public access, then periodically smooths/resamples at approximately 2 m. Raw polyline length is about 5,992.671 m; the playable lap is **5,960.933287659299 m**. Start/finish is on Diamantidou at OSM node **272560900** (38.0162798, 23.7709014). `psychiko-race` is two laps, **11,921.866575318598 m**, against three rivals. `psychiko-tt` retains one lap in the bundle and stays disabled by the existing menu/launch policy and its explicit disabled flag. `free:psychiko` uses the shared untimed free-roam event, with civilian traffic and street life.
+## Findings
 
-## Drawing review and interpretation
+- The blue dot on the minimap was the off-map pointer for the first rival (cyan, drawn at the rim in the direction of the other car), not a start marker; it pointed back down the Diamantidou radial, which is where the owner wants the lap to begin. The old timing line sat north of the roundabout, on the same radial.
+- The old route's northern stretch (Nikiforou Lytra, Achillea Paraschou, Dryadon, Pavlou Mela, 25is Martiou) was a freehand drawing matched to ways, joined by three short unnamed connectors without a surface tag, with knife-edge corners at junctions. The new lap uses none of those connectors and fillets every junction corner.
+- The white squares along the route are the minimap's traffic dots (`rgba(255,255,255,.75)` squares drawn for every active civilian car); see the 2026-10-18 report for what produced them in a race.
 
-The prior skeleton/map match was reviewed both on labelled OSM and as a cyan overlay on the user's original drawing (`.scratch/psychiko-v2/route-overlay.png`). The exact OSM chain follows Diamantidou, 25is Martiou, Marathonodromou, Elikonos, Kamara, Agiou Dimitriou, Sismanoglou, Malakasi, Areaki, Benaki, Korytsas, Bizaniou and the northern 25is Martiou / Nirvana / Davaki / Pavlou Mela / Dryadon / Achillea Paraschou / Nikiforou Lytra return. Short connecting OSM ways and roundabout arcs retain their source identity. There are no invented diagonal connectors or repeated route nodes. The timing line was moved to the long Diamantidou avenue to keep the grid away from the northern corner.
+## Selection
 
-The supplied image is a photographed satellite map with a thick freehand line. Georeferencing is approximate; nearby bends, roundabouts and parallel street choices cannot be treated as a survey. The chosen match retains the drawing's full shape and uses connected public motor roads. Three short northern ways have no OSM surface tag (545646473, 545649904, 545649903); these are inferred paved residential connections, not independently surveyed asphalt. Unlike the original race, the closed course intentionally uses some OSM one-way streets in reverse. Free-roam network metadata keeps the source one-way flags.
+All public, paved, non-private OSM motor ways around the fan of Palaio Psychiko were searched for closed loops through the Diamantidou radial that obey `oneway` tags and roundabout direction. The chosen loop (3,753.4 m) runs: Diamantidou (start/finish, heading south) -> Agiou Dimitriou -> Kamara roundabout -> Kitheronos / Prigkipisas Elenis -> Areaki star roundabout -> Kokkoni -> Benaki diagonal -> Diadochou Pavlou -> Dryadon -> Karkavitsa -> Nikiforou Lytra -> Diamantidou back through the Venizelou roundabout to the line. It mixes the radial avenue, ring streets, two diagonals and three roundabouts, and has no turn tighter than a 6 m radius.
 
-## Whole neighbourhood and original work
+## Elevation
 
-`raw/boundaries.json` freezes OSM municipal relation **1403235**, Palaio Psychiko, and the adjacent Filothei/Neo Psychiko relations for context. Every public motor-road way with a node in the Palaio Psychiko boundary is selected, plus the entire drawing interior, ways within 280 m of the drawn race and every original garden-course way. Private/no-access roads, private driveways, parking aisles and non-motor paths are excluded from the public-neighbourhood selection. The shared at-grade extractor omits Kifisias tunnel ways 25117418, 113339568 and 113339581; these underpasses need a separate grade-separated reconstruction. All other selected source ways have rendered road parts or belong to the primary course. The shared road-network extraction and road/terrain contact systems produce **564 road parts / 82.281 km** of surrounding drivable streets. **3,507 mapped building footprints** supply neighbourhood context. Street widths, garden boundaries, facade appearance and vegetation remain estimates.
-
-The original **4,285.748891 m** loop is preserved in `raw/garden-route.json` and `raw/garden-route-dem.json`; all of its centreline samples are verified as drivable on either the primary route or the surrounding asphalt network. It is not registered as a second race, because the runtime has one active route geometry per map.
-
-## Closures and elevation
-
-All outgoing public OSM half-edges at race-route nodes, excluding the two raced edges, produce one closure each: **92 exits / 92 solid closures**. Source node/way provenance is stored in the bundle. Most cross the outgoing carriageway beyond the raced asphalt; three short slip/roundabout arms use a barrier along the outside race edge. Water-filled barriers, striped rails, cones and `ΕΡΓΑ · ΚΛΕΙΣΤΟ` signs share the same positions as the production collision boxes. Switching to free roam hides the visuals, removes the colliders and clears the collision hash.
-
-The existing EU-DEM terrain grid is retained. **250 direct road stations** were refreshed for the drawn loop via OpenTopoData eudem25m. Periodic sigma-60 m filtering gives **180.76–228.33 m approximate road elevation**, **81.73 m ascent/descent**, **10.0% maximum grade**, and **2.07 m maximum error from direct DEM stations**. The local terrain carving grid remains 10 m interpolation of coarser source data, not a 10 m survey.
-
-The earlier source research follows for historical context; its route lengths, event geometry and measured elevation statistics refer only to the preserved first version.
+Road height follows direct EU-DEM v1.1 samples at ~24 m stations (`raw/route-dem.json`), smoothed over about 24 m; maximum grade about 10.5%.
 
 ---
 

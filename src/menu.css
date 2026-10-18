@@ -1,149 +1,15 @@
-/* Menus (src/menu.js): head-unit screen layouts built from the UI kit (src/ui/ui.css). The race HUD rules follow at the end.
-   Every C.screen shares one frame: status bar (fixed Back slot · breadcrumbs · driver + clock), a title row aligned with the
-   content grid, the body, and a soft-key bar of device-aware hints. */
-#ui { position: fixed; inset: 0; z-index: 12; display: none; font-family: var(--f-sans); color: var(--hu-text); }
-body.ui-open #ui { display: block; }
+/* Menus (src/menu.js): screen layouts are the kit's page templates (src/ui/ui.css, docs/ui-layouts.md); this file owns
+   only the dimmed backdrop behind each screen and the race HUD widgets that follow. */
 body.ui-open #hud { opacity: 0 !important; }
 body.ui-open #keys, body.ui-open #credit { opacity: 0; }
-#ui .mi { cursor: pointer; }
 /* the screen sits on the live road view: dimmed, with a cool vignette like a screen bezel */
-#ui.s-mode, #ui.s-maps, #ui.s-setup, #ui.s-settings, #ui.s-results, #ui.s-roamConditions, #ui.s-roamLandmarks { background: radial-gradient(140% 100% at 50% 0%, rgba(8,12,17,.72), rgba(3,5,7,.9) 70%), linear-gradient(180deg, rgba(3,5,7,.4), rgba(3,5,7,.7)); }
+#ui.s-mode, #ui.s-maps, #ui.s-mapConfirm, #ui.s-leaderboards, #ui.s-setup, #ui.s-settings, #ui.s-results, #ui.s-roamConditions, #ui.s-roamLandmarks { background: radial-gradient(140% 100% at 50% 0%, rgba(8,12,17,.72), rgba(3,5,7,.9) 70%), linear-gradient(180deg, rgba(3,5,7,.4), rgba(3,5,7,.7)); }
 #ui.s-pause { background: linear-gradient(90deg, rgba(3,5,7,.78), rgba(3,5,7,.35) 46%, rgba(3,5,7,.1)); }
 #ui.s-car { background: radial-gradient(120% 90% at 32% 42%, #18222c, #070a0e 72%); }
 #ui.s-title, #ui.s-signIn { background: linear-gradient(90deg, rgba(3,5,7,.9) 0%, rgba(3,5,7,.55) 38%, rgba(3,5,7,.25) 70%, rgba(3,5,7,.55)), linear-gradient(0deg, rgba(3,5,7,.8), transparent 34%), linear-gradient(180deg, rgba(3,5,7,.6), transparent 18%); }
-/* ---------------------------------------------------------------- home (title): brand on the left, an infotainment tile grid */
-.scr--title { grid-template-rows: auto minmax(0, 1fr) auto; }
-.home { display: grid; grid-template-columns: minmax(16rem, .8fr) minmax(0, 1.5fr); gap: var(--s-6); align-items: center; min-height: 0; }
-.home__brand { align-self: center; min-width: 0; }
-.title__mark { display: flex; align-items: center; gap: .16em; margin: 0; font-size: min(5rem, 15vw, 13vh); line-height: 1; }
-.ld-brand { display: flex; align-items: center; gap: .6rem; }
-.ld-brand .brand-mark { width: 2.6rem; height: 2.6rem; }
-.title__tag { margin: var(--s-4) 0 0; max-width: 24rem; font-family: var(--f-sans); font-weight: 500; font-size: var(--t-md); line-height: 1.5; color: var(--c-text-2); }
-.title__menu { display: grid; gap: var(--s-3); }
-/* ---------------------------------------------------------------- mode select: two app cards */
-/* room inside the scroll box for the focus ring: a lit tile is never cropped */
-/* the session summary (race setup): a navigation destination card */
-.evs__top { display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; min-height: 1.6rem; }
-.evs__kick { font: 600 var(--t-xs) var(--f-cond); letter-spacing: var(--track-kick); color: var(--hu-ice); text-transform: uppercase; }
-.evs__name { margin: var(--s-1) 0 0; font-family: var(--f-sans); font-weight: 400; font-size: var(--t-2xl); line-height: 1.1; letter-spacing: .08em; text-transform: uppercase; }
-/* the route reads in full (it wraps, never ellipsises) under the title, like a navigation destination */
-.evs__route { display: flex; align-items: flex-start; gap: var(--s-2); margin: var(--s-2) 0 0; font: 500 var(--t-md) / 1.35 var(--f-sans); letter-spacing: .04em; color: var(--c-text-2); text-transform: uppercase; }
-.evs__route > .ico { flex: none; width: 1.05em; height: 1.05em; margin-top: .15em; color: var(--c-text-3); }
-.evs__route .ico--route { vertical-align: -.15em; color: var(--hu-ice); }
-.evs__facts { margin-top: var(--s-4); grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.evs__facts .stat-tile:nth-child(odd):last-child { grid-column: 1 / -1; }
-/* a long value wraps, never ellipsises */
-/* personal bests: one quiet line under the facts, only when a time exists */
-.evs__best { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-1) var(--s-4); margin: var(--s-4) 0 0; padding-top: var(--s-3); border-top: 1px solid var(--hu-hair);
-  font: 600 var(--t-xs) var(--f-cond); letter-spacing: var(--track-caps); color: var(--c-text-3); text-transform: uppercase; }
-.evs__best > .ico { width: 1rem; height: 1rem; color: var(--c-gold); }
-.evs__best b { margin-left: .3em; font: 500 var(--t-md) var(--f-sans); letter-spacing: .02em; color: #fff; font-variant-numeric: tabular-nums; }
-/* ---------------------------------------------------------------- race setup */
-.setup-layout { flex: 1; display: grid; grid-template-columns: minmax(16rem, .8fr) minmax(0, 1.3fr); gap: var(--s-5); min-height: 0; }
-.setup__event { min-height: 0; align-self: start; max-height: 100%; }
-.setup__form { display: flex; flex-direction: column; min-height: 0; max-height: 100%; align-self: start; padding: var(--s-4) var(--s-4) var(--s-5); }
-.setup__fields { min-height: 0; flex: 0 1 auto; margin: 0 calc(var(--s-2) * -1); padding: 2px var(--s-2); }
-.setup__fields > .btn--ghost { margin: var(--s-2) var(--s-2); }
-.setup__go { margin-top: var(--s-4); padding: 0 var(--s-2); }
-/* ---------------------------------------------------------------- settings: a rail of sections + a glass list */
-.scr--settings { grid-template-columns: minmax(11rem, 15rem) minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr) auto; column-gap: var(--s-5);
-  grid-template-areas: "status status" "title title" "rail body" "foot foot"; }
-.scr--settings > .hu-status { grid-area: status; }
-.scr--settings > .scr__foot { grid-area: foot; }
-.scr--settings > .scr__body { grid-area: body; }
-.scr--settings > .scr__head { display: contents; }
-.scr--settings .scr__titles { grid-area: title; }
-.scr--settings .scr__headr { grid-area: rail; align-self: start; justify-content: stretch; min-height: 0; }
-.scr--settings [data-menu-feedback] { grid-area: title; justify-self: end; align-self: center; margin: 0; }
-.scr--settings .tabs__hint { display: none; }
-/* hover only brightens the label; the one selected item is the glass indicator that slides along the rail */
-.scr--settings .scr__body { align-items: stretch; }
-.set-panel { width: min(56rem, 100%); min-height: 0; padding: var(--s-4) var(--s-4) var(--s-5); }
-@keyframes bindBlink { 50% { opacity: .4; } }
-/* ---------------------------------------------------------------- pause: a quick-settings sheet over the frozen road view */
-/* ---------------------------------------------------------------- results: the trip computer */
-.res-layout { flex: 1; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(17rem, .85fr); gap: var(--s-6); min-height: 0; }
-.res-main { min-height: 0; overflow-y: auto; align-self: start; padding: var(--s-2) 6px 6px; margin-inline: -6px; }
-/* room for focus outlines */
-.res-sub { margin: var(--s-3) 0 0; font-family: var(--f-sans); font-weight: 500; font-size: var(--t-lg); letter-spacing: .02em; color: var(--c-text-2); }
-.res-sub b { color: #fff; font-weight: 600; }
-.res-stats { margin-top: var(--s-5); grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr)); }
-.res-actions { margin-top: var(--s-5); display: flex; flex-wrap: wrap; gap: var(--s-2); }
-.res-side { min-height: 0; display: grid; gap: var(--s-3); align-content: start; }
-/* ---------------------------------------------------------------- car detail: studio + vehicle info */
-.car-layout { flex: 1; display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(19rem, 1fr); gap: var(--s-5); min-height: 0; }
-.car-stage { position: relative; min-width: 0; min-height: 0; border-radius: var(--r-4); background: radial-gradient(ellipse at 50% 64%, #2c3741, #11181f 72%); box-shadow: inset 0 0 0 1px var(--ui-line); overflow: hidden; }
-.car-stage canvas { display: block; width: 100%; height: 100%; }
-.car-stage__count { position: absolute; left: var(--s-4); top: var(--s-4); z-index: 1; display: flex; align-items: center; gap: var(--s-2); }
-.car-info { align-self: center; min-width: 0; max-height: 100%; overflow-y: auto; }
-.car-specs { margin-top: var(--s-4); grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.car-paints { margin-top: var(--s-5); }
-.car-paints__row { display: flex; flex-wrap: wrap; gap: var(--s-3); margin-top: var(--s-3); }
-.car-paints .paint { width: 2rem; height: 2rem; border-radius: 50%; background: var(--paint); box-shadow: inset 0 -3px 6px rgba(0,0,0,.35), inset 0 2px 3px rgba(255,255,255,.25), 0 0 0 1px rgba(255,255,255,.2); transition: transform var(--dur) var(--ease), box-shadow var(--dur); }
-.car-paints .paint.selected { box-shadow: inset 0 -3px 6px rgba(0,0,0,.35), 0 0 0 2px #0b1016, 0 0 0 4px #fff; }
-.car-paints .paint.focus, .car-decals .paint.focus { transform: scale(1.12); box-shadow: inset 0 -3px 6px rgba(0,0,0,.35), 0 0 0 2px #0b1016, 0 0 0 3.5px var(--hu-ice); }
-.car-paint-name { margin-top: var(--s-2); min-height: 1.2em; font-family: var(--f-sans); font-size: var(--t-xs); color: var(--c-text-3); }
-.car-actions { margin-top: var(--s-5); display: grid; gap: var(--s-2); }
-/* ---------------------------------------------------------------- responsive */
-@media (max-width: 1100px) {
-  .home { grid-template-columns: minmax(0, 1fr); gap: var(--s-4); align-content: center; }
-  .home__brand .title__mark { font-size: min(3.6rem, 12vw, 9vh); }
-  .home__tiles { height: auto; grid-template-rows: repeat(2, minmax(7.5rem, auto)); }
-}
-@media (max-width: 860px) {
-  .setup-layout, .res-layout, .car-layout { grid-template-columns: minmax(0, 1fr); }
-  .scr--setup .scr__body, .scr--results .scr__body, .scr--car .scr__body { overflow-y: auto; margin: -6px; }
-  /* room for focus rings */
-  .setup-layout, .res-layout, .car-layout { display: flex; flex-direction: column; flex: none; }
-  .setup__event, .setup__form .setup__fields, .res-main, .res-side, .car-info { max-height: none; overflow: visible; }
-  .setup__event { box-sizing: border-box; width: 100%; }
-  /* stacked: the summary spans the column like the form under it */
-  .car-stage { flex: none; height: max(12rem, 34vh); }
-  /* settings: the rail becomes a scrolling tab strip above the list */
-  .scr--settings { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto minmax(0, 1fr) auto; grid-template-areas: "status" "title" "rail" "body" "foot"; }
-  .set-panel { padding: var(--s-3) var(--s-2) var(--s-4); }
-}
-@media (max-width: 560px) {
-  .home__tiles { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto; gap: var(--s-2); }
-  .title__tag { display: none; }
-  .field__ctl { justify-content: flex-start; }
-  /* one binding per device on phones */
-  .evs__facts { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-}
-/* short landscape (phones sideways, small laptops) */
-@media (max-height: 500px) {
-  .home { grid-template-columns: minmax(12rem, .7fr) minmax(0, 1.6fr); gap: var(--s-4); }
-  .title__mark { font-size: min(3.4rem, 16vh); }
-  .title__tag { display: none; }
-  .home__tiles { height: 100%; grid-template-rows: repeat(2, minmax(0, 1fr)); gap: var(--s-2); }
-  .car-stage { height: auto; }
-  .car-layout { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); flex: 1; min-height: 0; }
-  .car-info { align-self: stretch; }
-  .car-layout > .car-stage { height: auto; }
-  .scr--car .scr__body { overflow: hidden; }
-  .car-info { max-height: 100%; overflow-y: auto; }
-  .scr--settings { grid-template-columns: minmax(9rem, 12rem) minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr) auto; grid-template-areas: "status status" "title title" "rail body" "foot foot"; }
-  .scr--settings .scr__headr { overflow-y: auto; max-height: 100%; }
-}
-@media (max-height: 500px) and (max-width: 860px) {
-  .setup-layout { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); flex: 1; }
-  .scr--setup .scr__body { overflow: hidden; }
-  .setup__event, .setup__form .setup__fields { max-height: 100%; overflow-y: auto; }
-  .setup__form { min-height: 0; }
-  .res-layout { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); flex: 1; }
-  .scr--results .scr__body { overflow: hidden; }
-  .res-main, .res-side { max-height: 100%; overflow-y: auto; }
-}
-/* track select on phones: the destination card stacks under the map, so the body scrolls */
-@media (max-width: 560px), (max-height: 500px) {
-  #ui.s-maps .scr__body { overflow-y: auto; overscroll-behavior: contain; }
-}
-@media (min-width: 2200px) {
-  .home__tiles { height: min(100%, 38rem); }
-}
 /* ---------------------------------------------------------------- event HUD */
 #evBox { position: absolute; right: 28px; top: 130px; min-width: 190px; padding: 10px 16px 10px; background: var(--panel); border-right: 4px solid var(--cyan); font-family: var(--cond); text-align: right; opacity: 0; transition: opacity .3s; }
-#evBox.on { opacity: 1; }
+#evBox.on  { opacity: 1; }
 #evBox .e-k { font-weight: 700; font-size: 13px; letter-spacing: .2em; color: #8f99a6; }
 #evBox b { display: block; font-style: italic; font-weight: 900; font-size: 34px; line-height: 1.05; font-variant-numeric: tabular-nums; }
 #evBox b.good { color: #5dff8a; }
@@ -157,7 +23,7 @@ body[data-mode=pursuit] #posBox .row.rv { display:none; }
 .pop.split.good small { color: #5dff8a; }
 .pop.split.bad small { color: #ff6b61; }
 #wrongWay { position: absolute; left: 50%; top: 22%; transform: translateX(-50%); text-align: center; white-space: nowrap; font-family: var(--cond); opacity: 0; pointer-events: none; }
-#wrongWay.on { opacity: 1; animation: wwBlink .7s steps(2) infinite; }
+#wrongWay.on  { opacity: 1; animation: wwBlink .7s steps(2) infinite; }
 #wrongWay b { display: block; font-style: italic; font-weight: 900; font-size: 84px; line-height: 1; color: #fff; background: var(--red); padding: 4px 34px; clip-path: polygon(14px 0, 100% 0, calc(100% - 14px) 100%, 0 100%); }
 #wrongWay span { display: block; margin-top: 6px; font-weight: 800; letter-spacing: .3em; font-size: 16px; text-shadow: 0 2px 6px #000; }
 @keyframes wwBlink { 50% { opacity: .35; } }
@@ -222,7 +88,6 @@ body.touch-driving #hud #dialBox { right: 10px; bottom: 128px; width: 160px; hei
   body.touch-driving #hud #mapBox { top: 90px; width: 84px; height: 84px; }
   body.touch-driving #hud #dialBox { width: 125px; height: 125px; bottom: 120px; }
 }
-/* ---------------------------------------------------------------- HUD widgets on the UI kit (behaviour stays in main.js / hud.js) */
 /* the non-modal tow offer (main.js offerTow) */
 body .tow-prompt { top: 22%; width: min(26rem, calc(100vw - 32px)); padding: var(--s-4) var(--s-5) var(--s-4); border: 1px solid var(--c-line-2); border-top: 3px solid var(--c-gold); border-radius: var(--r-3);
   background: rgba(16,22,28,.95); box-shadow: 0 1.2rem 3rem rgba(0,0,0,.55); font: 500 var(--t-sm)/1.45 var(--f-sans); color: #fff; animation: ui-pop .22s var(--ease) both; }
@@ -232,8 +97,6 @@ body .tow-prompt p { margin: var(--s-2) 0 var(--s-3); color: var(--c-text-2); }
 body .tow-actions { gap: var(--s-2); }
 body .tow-actions button { flex: 1 1 auto; min-height: 2.6rem; padding: 0 var(--s-4); border: 1px solid var(--c-line-2); border-radius: var(--r-2); background: var(--c-surface-3); color: #fff; font: 800 var(--t-md)/1 var(--f-cond); letter-spacing: .08em; }
 body .tow-actions button:first-child { background: var(--c-gold); border-color: transparent; color: var(--c-bg); }
-body .tow-actions button:hover { filter: brightness(1.12); }
-body .tow-actions button:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 /* racer tags (hud.js RacerMarkers): a readable pill with the player's colour, an icon chevron. hud.js scales the tag with
    distance (0.7 .. 1.05); the base size keeps the far end at a legible ~13 px */
 body .racer-marker { font: 800 19px var(--f-cond); letter-spacing: .06em; filter: drop-shadow(0 2px 6px rgba(0,0,0,.55)); }
@@ -246,27 +109,12 @@ body .racer-marker.ai { font-size: 16px; }
 body .racer-marker.ai .racer-name, body .racer-marker.ai.edge .racer-name { padding: .18em .6em .18em .45em; border-width: 1.5px; }
 body .racer-marker.edge { font-size: 16px; }
 body .racer-marker .racer-chevron { width: 1.2em; height: 1.2em; margin: .05em auto 0; font-size: inherit; color: transparent; background: var(--racer-color, #fff);
-  -webkit-mask: url(../assets/icons/caret-down.svg) center / contain no-repeat; mask: url(../assets/icons/caret-down.svg) center / contain no-repeat; }
-body .racer-marker.edge .racer-chevron { -webkit-mask-image: url(../assets/icons/caret-right.svg); mask-image: url(../assets/icons/caret-right.svg); }
-/* the floating multiplayer button never shows over the loading or title screens */
-#loading.open ~ #mp-toggle, body:not(.loaded) #mp-toggle, body[data-ui=title] #mp-toggle { display: none !important; }
-/* The garage catalogue: a scrollable grid with one renderer shared by its thumbnails. */
-/* focusing a card keeps its class header in view */
-.car-description { color: var(--c-text-2); font: 500 .9rem/1.5 var(--f-sans); margin: 0; }
-.car-transmission { color: var(--c-text-3); margin: .6rem 0 0; }
-.car-stage__count { display: flex; flex-wrap: wrap; gap: .5rem; }
-.car-decals { padding: 1rem 0; border-top: 1px solid var(--c-line); }
-.car-decals .car-paints__row { margin: .6rem 0; }
-.decal-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin: .7rem 0; }
-.decal-layers { display: grid; gap: .25rem; }
-.scr--car .car-info { overflow-y: auto; }
-@media (max-height: 500px) {
-  .scr--car .car-layout { align-items: stretch; }
-}
+  -webkit-mask: url(../assets/icons/chevron-down.svg) center / contain no-repeat; mask: url(../assets/icons/chevron-down.svg) center / contain no-repeat; }
+body .racer-marker.edge .racer-chevron { -webkit-mask-image: url(../assets/icons/chevron-right.svg); mask-image: url(../assets/icons/chevron-right.svg); }
+/* The race-corner MULTIPLAYER button is HUD only: it never floats over a menu screen or its header (owner 2026-10-18). */
+body:not(.loaded) #mp-toggle, body[data-ui=title] #mp-toggle, body.ui-open #mp-toggle { display: none !important; }
+
 /* Binding-aware controls stay compact at race start, and can be expanded in pause. */
-.driving-controls { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .85rem; pointer-events: none; cursor: default; }
-.driving-controls > span { display: inline-flex; align-items: center; gap: .4rem; pointer-events: none; }
-.driving-controls b { font: 700 .7rem var(--f-cond); letter-spacing: .05em; color: #d2dbe5; }
 #drivingHints { position: fixed; z-index: 24; left: 50%; bottom: 1.5rem; transform: translateX(-50%); width: max-content; max-width: calc(100vw - 3rem); display: flex; align-items: center; gap: 1rem; padding: .7rem 1rem; border: 1px solid var(--c-line-2); border-radius: var(--r-3); background: #0b1119ed; color: white; }
 #drivingHints[hidden], #drivingTip[hidden] { display: none; }
 #drivingTip { position: fixed; z-index: 24; bottom: 4.5rem; left: 50%; transform: translateX(-50%); width: min(34rem,calc(100vw - 2rem)); padding: .8rem 1rem; display: flex; align-items: center; gap: .7rem; border: 1px solid var(--c-line-2); border-left: 3px solid var(--c-cyan); border-radius: var(--r-2); background: #0b1119ed; color: white; font: 600 .85rem/1.4 var(--f-sans); }
@@ -290,7 +138,7 @@ body #engineHud[data-tone=bad] { color: #ff7e74; border-color: #ff7e7480; }
 #engineHud b, #engineHud small { display: block; }
 #engineHud small { margin-top: .2rem; color: #e4ebf3; letter-spacing: .02em; font-size: .65rem; }
 #engineHud > i { position: absolute; bottom: 0; left: 0; height: 3px; width: calc(var(--health)*100%); background: currentColor; }
-.car-actions { display: grid; gap: .5rem; }
+
 /* The limit sign sits beside the dial (the gear and mode live on the cluster itself). */
 body #limitSign { left: calc(-2.625rem - 42px); bottom: calc(16px + 3.9rem - 32px); width: 60px; height: 60px; border-width: 7.5px; }
 @media(max-width:500px) {
@@ -298,12 +146,9 @@ body #limitSign { left: calc(-2.625rem - 42px); bottom: calc(16px + 3.9rem - 32p
 }
 /* Keep district captions inside the touch minimap's bottom-left cut corner. */
 body.touch-driving #hud #mapLabel { left: 18px; right: 4px; bottom: 12px; padding: 2px 0; font-size: 9px; letter-spacing: .02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.car-stage { touch-action: none; cursor: grab; }
-.car-stage.dragging { cursor: grabbing; }
-.car-stage__hint { position: absolute; left: 1rem; bottom: 1rem; pointer-events: none; cursor: default; color: var(--c-text-3); font: 600 .7rem var(--f-cond); letter-spacing: .16em; }
-#race-settings { position: fixed; right: 12px; top: 14px; z-index: 48; display: flex; align-items: center; gap: 6px; min-height: 40px; padding: 8px 10px; color: white; background: #151d27; border: 1px solid #ffffff55; border-radius: 6px; font: 800 12px var(--f-cond); cursor: pointer; }
+
+#race-settings { position: fixed; right: 12px; top: 14px; z-index: 48; display: flex; align-items: center; gap: 6px; min-height: 40px; padding: 8px 10px; color: white; background: #151d27; border: 1px solid #ffffff55; border-radius: 6px; font: 800 12px var(--f-cond); }
 #race-settings .ico { width: 18px; height: 18px; }
-#race-settings:focus-visible { outline: 2px solid #ffc21a; }
 body:not(.racing):not(.counting) #race-settings, body.ui-open #race-settings, body:has(#multiplayer:not([hidden])) #race-settings { display: none; }
 body #mp-toggle { right: 118px; top: 14px; }
 body.racing #hud #routeBox { right: 285px; }
@@ -343,101 +188,7 @@ body[data-mode="taxi"] #hud #routeBox, body[data-mode="getaway"] #hud #routeBox 
   body[data-mode="taxi"] #input-toast, body[data-mode="getaway"] #input-toast { top: 316px; }
 }
 /* Every detached race widget follows the same menu visibility policy as the main HUD. */
-body.ui-open :is(#hud,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-prompt,#police-hud), body:has(#multiplayer:not([hidden])) :is(#hud,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-prompt,#police-hud), body:has(#loading.open) :is(#hud,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-prompt,#police-hud) { visibility: hidden !important; pointer-events: none !important; }
-#checkpoint-banner { position:absolute;top:94px;left:50%;transform:translateX(-50%);width:330px;padding:9px 14px;background:#311d16ed;border-left:3px solid #ffb277;box-sizing:border-box;color:#fff;font-family:var(--font-ui,sans-serif);pointer-events:none }
-#checkpoint-banner b { display:block;font-size:16px;letter-spacing:.08em;color:#ffb277 }
-#checkpoint-banner span { font-size:11px;letter-spacing:.07em }
-#checkpoint-banner[hidden] { display:none }
-@media(max-height:480px) {
-  #checkpoint-banner { left:228px;top:82px;transform:none;width:300px;padding:7px 10px }
-}
-@media(max-width:500px) {
-  #checkpoint-banner { left:122px;top:140px;transform:none;width:calc(100vw - 134px) }
-  body[data-mode=taxi] #checkpoint-banner, body[data-mode=getaway] #checkpoint-banner { top:290px }
-  #checkpoint-banner b { font-size:14px }
-}
+body.ui-open :is(#hud,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-prompt,#police-hud), body:has(#multiplayer:not([hidden])) :is(#hud,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-prompt,#police-hud) { visibility: hidden !important; pointer-events: none !important; }
 .graphics-live-note { font:500 var(--t-xs)/1.5 var(--f-sans);color:var(--c-text-3);margin:var(--s-2) var(--s-4) 0 }
-.graphics-quality .seg { flex-wrap:wrap }
-#render-resolution, #pixel-ratio-cap { display:none!important }
-/* Settings → Driver: the local name, edited like a car's profile name (it is also the plate) */
 /* Account/build controls survive the owner-chosen title restoration. */
-#ui.s-multiplayer, #ui.s-account { background: #0b141a; }
-/* OWNER LOCK: aceb5bd title layout; keep brand left and PLAY + four supporting cards. */
-.home__tiles { grid-template-columns: 1.3fr 1fr 1fr; grid-template-rows: repeat(2, minmax(9rem, 1fr)); height: min(100%, 34rem); align-self: center; }
-/* the PLAY tile: tall, with a glowing route line like the navigation screen */
-/* Shared components keep the later flat treatment. Title layout and route motif stay owner-chosen. */
-.scr--title { grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;overflow:visible;gap:var(--s-3) }
-.scr--title>.hu-status { grid-row:1;grid-column:1 }
-.scr--title>.home { grid-row:2;grid-column:1 }
-.scr--title>.scr__foot { grid-row:3;grid-column:1;justify-content:space-between;gap:12px;flex-wrap:wrap }
-.scr--title .title-meta { position:static;display:flex;flex-wrap:wrap;max-width:none;gap:4px }
-.scr--title .scr__foot .hints { margin-left:auto;gap:12px }
-.scr--title .home { min-width:0;grid-template-columns:minmax(15rem,.8fr) minmax(0,1.5fr);gap:var(--s-6) }
-.scr--title .home__tiles { height:min(100%,34rem);grid-template-columns:1.3fr 1fr 1fr;grid-template-rows:repeat(2,minmax(0,1fr));min-height:0 }
-.scr--title .title__mark { font-size:min(5rem,5.6vw,13vh) }
-@media(max-width:900px) and (min-height:501px) {
-  .scr--title .home { grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);gap:20px;align-content:center }
-  .scr--title .home__brand .title__mark { font-size:min(3.6rem,10vw,9vh) }
-  .scr--title .title__tag { display:none }
-  .scr--title .home__tiles { height:min(100%,34rem);width:100% }
-}
-@media(max-width:560px) and (min-height:501px) {
-  .scr--title .home__tiles { grid-template-columns:1fr 1fr;grid-template-rows:1.4fr 1fr 1fr;gap:8px }
-  .scr--title .scr__foot { gap:6px }
-  .scr--title .scr__foot .hints { margin:auto;gap:8px }
-  .scr--title .title-meta { justify-content:center;width:100% }
-}
-@media(max-height:500px) {
-  .scr--title { padding:8px 18px;gap:8px }
-  .scr--title .home { grid-template-columns:minmax(160px,.65fr) minmax(0,1.7fr);gap:16px }
-  .scr--title .title__mark { font-size:min(3.4rem,7vw,13vh) }
-  .scr--title .title__tag { display:none }
-  .scr--title .home__tiles { height:100%;gap:8px;grid-template-columns:1.15fr 1fr 1fr;grid-template-rows:repeat(2,minmax(0,1fr)) }
-  .scr--title .scr__foot { flex-wrap:nowrap;gap:6px }
-  .scr--title .scr__foot .hints { gap:8px }
-  .scr--title .hu-status { min-height:28px }
-}
-/* Offline status is a separate account surface; leave its footer-height strip clear on the title only. */
-body:has(#accounts-offline) .scr--title { bottom:calc(16px + .7rem) }
-
-/* ---------------------------------------------------------------- one component set: screen layouts only (looks live in the kit) */
-/* mode select: the participants choice over two kit option tiles */
-.mode-layout { flex: 1; display: flex; flex-direction: column; gap: var(--s-4); min-height: 0; }
-.mode-layout > .field { flex: none; align-self: flex-start; width: min(34rem, 100%); }
-.mode-grid { flex: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: minmax(12rem, auto); gap: var(--s-4); min-height: 0; overflow-y: auto; }
-@media (max-width: 560px) { .mode-grid { flex: none; grid-template-columns: minmax(0, 1fr); grid-auto-rows: auto; gap: var(--s-2); max-height: none; }  }
-/* race setup: the route summary beside the setup form */
-.setup__map { display: block; width: 100%; max-height: 11rem; object-fit: contain; margin-bottom: var(--s-4); }
-.setup__go { display: flex; justify-content: flex-end; margin-top: var(--s-4); }
-.setup__fields > .btn { margin: var(--s-2) 0; }
-/* pause: the reference sheet, docked left over the frozen road view */
-.scr--pause { grid-template-rows: minmax(0, 1fr) auto; }
-.pause-sheet { align-self: stretch; justify-self: start; width: min(28rem, 100%); max-height: 100%; overflow-y: auto; box-sizing: border-box; padding: var(--s-6) var(--s-4) var(--s-4); }
-.pause-sheet > .sheet-head { margin: 0 var(--s-3); }
-.pause__list { margin-top: var(--s-5); display: grid; gap: 2px; }
-.pause-controls { margin-top: var(--s-4); padding-top: var(--s-3); border-top: 1px solid var(--hu-hair); }
-.pause-controls .driving-controls { padding: var(--s-2) var(--s-3); }
-@media (max-width: 860px) { .pause-sheet { justify-self: stretch; width: 100%; } }
-@media (max-height: 500px) { .pause-sheet { padding: var(--s-3); width: min(36rem, 100%); } .pause__list { margin-top: var(--s-2); grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-/* garage: one header row (title + search + filters), the car grid takes every remaining pixel */
-.scr--catalog .scr__head { align-items: center; flex-wrap: nowrap; }
-.scr--catalog .scr__headr { flex: 1; }
-.catalog-toolbar { flex: 1; display: grid; grid-template-columns: minmax(10rem, 1.5fr) repeat(4, minmax(7.5rem, 1fr)); gap: var(--s-2); max-width: 62rem; }
-.scr--catalog .scr__body { overflow: hidden; }
-.car-grid { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); grid-auto-rows: max-content; align-content: start; gap: var(--s-4);
-  overflow-y: auto; scroll-snap-type: y mandatory; scroll-padding-top: 2px; padding: 2px 2px var(--s-4); }
-.car-grid > .card { scroll-snap-align: start; }
-@media (max-width: 900px) { .scr--catalog .scr__head { flex-wrap: wrap; } .scr--catalog .scr__headr { flex-basis: 100%; } .catalog-toolbar { max-width: none; } }
-@media (max-width: 560px) { .catalog-toolbar { grid-template-columns: repeat(2, minmax(0, 1fr)); } .catalog-toolbar > .search { grid-column: 1 / -1; } .car-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-2); } }
-/* car detail: the trim browser floats over the studio */
-.car-trim-browser { position: absolute; z-index: 4; top: 14px; left: 16px; right: 16px; display: flex; align-items: center; gap: 12px; }
-.car-trim-browser__copy { flex: 1; min-width: 0; text-align: center; }
-.car-trim-browser__name { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; }
-.car-trim-browser strong { font: 500 var(--t-lg) var(--f-sans); letter-spacing: .1em; text-transform: uppercase; }
-.car-trim-browser small { display: block; margin-top: 7px; font: 600 var(--t-xs) var(--f-cond); letter-spacing: var(--track-caps); color: var(--c-text-3); }
-.car-trim-pips { display: flex; gap: 7px; justify-content: center; margin-top: 10px; }
-.car-trim-pips i { height: 5px; width: 5px; border-radius: 50%; background: currentColor; opacity: .25; transition: opacity 160ms linear; }
-.car-trim-pips i.on { opacity: 1; }
-.car-preview-viewport { position: absolute; inset: 112px 0 0; touch-action: pan-y; }
-.car-stage:has([data-key=carBody]) .car-preview-viewport { top: 134px; }
-@media (max-width: 600px) { .car-trim-browser { left: 8px; right: 8px; gap: 5px; } .car-trim-browser__name { gap: 7px; } }
+#ui.s-account { background: #0b141a; }

@@ -52,13 +52,13 @@ test('engine condition owns the recovery event, including a minimized tow offer;
  const q=new NotificationQueue();q.post({id:'tow',text:'Tow and repair',priority:60,persistent:true},0);q.post({id:'engine-condition',title:'ENGINE DISABLED',slot:'banner',priority:95,persistent:true},0);
  assert.deepEqual(commit(q,0).map(n=>n.id),['engine-condition']);assert.ok(q.items.has('tow'),'persistent fallback remains live');q.dismiss('engine-condition');assert.deepEqual(commit(q,1).map(n=>n.id),['tow']);
 });
-test('one route-direction warning wins across checkpoint, objective and wrong-way producers',()=>{
- const q=new NotificationQueue();for(const[id,priority]of[['objective-direction',82],['wrong-way',85],['checkpoint',100]])q.post({id,priority,slot:'banner',persistent:true},0);
- assert.deepEqual(commit(q,0).map(n=>n.id),['checkpoint']);q.dismiss('checkpoint');assert.deepEqual(commit(q,1).map(n=>n.id),['wrong-way']);
+test('one route-direction warning wins across objective and wrong-way producers',()=>{
+ const q=new NotificationQueue();for(const[id,priority]of[['objective-direction',82],['wrong-way',85]])q.post({id,priority,slot:'banner',persistent:true},0);
+ assert.deepEqual(commit(q,0).map(n=>n.id),['wrong-way']);q.dismiss('wrong-way');assert.deepEqual(commit(q,1).map(n=>n.id),['objective-direction']);
 });
 test('same copy from different producers merges visually without hiding unrelated notices',()=>{
- const q=new NotificationQueue();q.post({id:'input',title:'GAMEPAD CONNECTED',priority:40},0);q.post({id:'link',title:'GAMEPAD CONNECTED',priority:30},0);q.post({id:'music',title:'NOW PLAYING',priority:20},0);
- assert.deepEqual(commit(q,0).map(n=>n.id),['input','music']);
+ const q=new NotificationQueue();q.post({id:'input',title:'GAMEPAD CONNECTED',priority:40},0);q.post({id:'link',title:'GAMEPAD CONNECTED',priority:30},0);q.post({id:'tip',title:'DRIVING TIP',priority:20},0);
+ assert.deepEqual(commit(q,0).map(n=>n.id),['input','tip']);
 });
 test('related police callouts preempt persistent status without duplicating it as a toast',()=>{
  const q=new NotificationQueue();q.post({id:'police-status',title:'POLICE PURSUIT',slot:'banner',priority:70,persistent:true},0);q.post({title:'BUSTED',priority:98},0);assert.deepEqual(commit(q,0).map(n=>n.title),['BUSTED']);
@@ -99,7 +99,7 @@ test('safe placement finds room for the critical action before accepting a short
 });
 
 test('a higher-priority route banner cannot suppress the actionable recovery fallback',()=>{
- const q=new NotificationQueue();q.post({id:'tow',priority:60,persistent:true},0);q.post({id:'engine-condition',title:'ENGINE DISABLED',slot:'banner',priority:95,persistent:true},0);q.post({id:'checkpoint',title:'MISSED CHECKPOINT',slot:'banner',priority:100,persistent:true},0);assert.deepEqual(commit(q,0).map(n=>n.id),['checkpoint','tow']);q.dismiss('checkpoint');assert.deepEqual(commit(q,1).map(n=>n.id),['engine-condition']);
+ const q=new NotificationQueue();q.post({id:'tow',priority:60,persistent:true},0);q.post({id:'engine-condition',title:'ENGINE DISABLED',slot:'banner',priority:95,persistent:true},0);q.post({id:'wrong-way',title:'WRONG WAY',slot:'banner',priority:100,persistent:true},0);assert.deepEqual(commit(q,0).map(n=>n.id),['wrong-way','tow']);q.dismiss('wrong-way');assert.deepEqual(commit(q,1).map(n=>n.id),['engine-condition']);
 });
 
 test('actual mirror projection reserves its glass and frame at different aspect ratios',async()=>{

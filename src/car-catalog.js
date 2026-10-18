@@ -1,3 +1,4 @@
+import {badgeBrand} from './manufacturers.js';
 import {carPerformanceIndex} from './car-performance.js';
 // Garage entries describe a generation/body style. Trim IDs remain the wire/physics IDs,
 // so old saves, event links, traffic and remote players retain their exact drivetrain.
@@ -98,6 +99,7 @@ export function filterCars(cars, filters = {}, selection = null) {
   for(const id of GARAGE_CARS){
     const model=carModel(id), members=sortTrims(cars.filter(c=>model.trims.includes(c.id))).map(car=>({car,index:cars.indexOf(car)}));
     const match=members.filter(({car:c})=>(!q || `${model.name} ${c.name} ${c.short} ${c.tag}`.toLocaleLowerCase().includes(q)) &&
+      (!filters.brand || filters.brand==='all' || badgeBrand(c)===filters.brand) &&
       (!filters.category || filters.category==='all' || carCategory(c)===filters.category) &&
       (!filters.drive || filters.drive==='all' || c.drive.toUpperCase()===filters.drive) &&
       (!filters.power || filters.power==='all' || (filters.power==='low'?c.power*1.341<150:filters.power==='mid'?c.power*1.341>=150&&c.power*1.341<=300:c.power*1.341>300)));

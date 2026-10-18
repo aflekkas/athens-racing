@@ -1,23 +1,25 @@
+import { touchControlLabel, touchSteeringLabel } from './ui/components.js';
 import { notifications } from './ui/notifications.js';
 // Unified input. No rendering/physics dependencies; injectable browser APIs make mapping testable in Node.
 import { settings as preferences, setSetting } from './settings.js';
+import { tiltAxis, requestTiltPermission, enterDrivingScreen } from './mobile.js';
 const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, Number.isFinite(x) ? x : 0));
 const copy = x => JSON.parse(JSON.stringify(x));
 export const DEFAULT_BINDINGS = {
   keyboard: {
     throttle: ['KeyW', 'ArrowUp'], brake: ['KeyS', 'ArrowDown'], left: ['KeyA', 'ArrowLeft'], right: ['KeyD', 'ArrowRight'],
     handbrake: ['Space'], nitro: ['ShiftLeft', 'ShiftRight'], camera: ['KeyC'], restart: ['Enter'], pause: ['Escape'],
-    garage: ['KeyG'], shiftUp: ['KeyE'], shiftDown: ['KeyQ'], lookBack: ['KeyB'], tow: ['KeyR', 'KeyT'], reset: ['Backspace', 'KeyR'], transmission: ['KeyL'], tractionControl: ['KeyV'], music: ['KeyJ'], nextTrack: ['KeyN'], map: ['KeyM'],
+    garage: ['KeyG'], shiftUp: ['KeyE'], shiftDown: ['KeyQ'], lookBack: ['KeyB'], tow: ['KeyR', 'KeyT'], reset: ['Backspace', 'KeyR'], transmission: ['KeyL'], tractionControl: ['KeyV'], map: ['KeyM'],
     up: ['ArrowUp', 'KeyW'], down: ['ArrowDown', 'KeyS'], confirm: ['Enter', 'Space'], back: ['Escape', 'Backspace'],
   },
   gamepad: {
     throttle: ['b7'], brake: ['b6'], left: ['a0-'], right: ['a0+'], handbrake: ['b0'], nitro: ['b1', 'b2'], camera: ['b3'],
-    restart: ['b8'], pause: ['b9'], garage: [], shiftUp: ['b5'], shiftDown: ['b4'], lookBack: ['b11'], tow: [], reset: [], tractionControl: ['b14'], transmission: ['b10'], music: [], nextTrack: [], map: [],
+    restart: ['b8'], pause: ['b9'], garage: [], shiftUp: ['b5'], shiftDown: ['b4'], lookBack: ['b11'], tow: [], reset: [], tractionControl: ['b14'], transmission: ['b10'], map: [],
     up: ['b12', 'a1-'], down: ['b13', 'a1+'], confirm: ['b0'], back: ['b1'],
     menuLeft: ['b14', 'a0-'], menuRight: ['b15', 'a0+'], lookLeft: ['a2-'], lookRight: ['a2+'], lookUp: ['a3-'], lookDown: ['a3+'],
   },
 };
-export const EDGE_ACTIONS = ['camera', 'restart', 'pause', 'garage', 'shiftUp', 'shiftDown', 'lookBack', 'tow', 'reset', 'transmission', 'tractionControl', 'music', 'nextTrack', 'map',
+export const EDGE_ACTIONS = ['camera', 'restart', 'pause', 'garage', 'shiftUp', 'shiftDown', 'lookBack', 'tow', 'reset', 'transmission', 'tractionControl', 'map',
   'up', 'down', 'left', 'right', 'confirm', 'back'];
 const DEFAULT_SETTINGS = { deadzone: 0.15, sensitivity: 1, linearity: 1, touchSteering: 'screen' };
 const editable = e => !!e.target?.closest?.('input, select, textarea, button, [contenteditable]');
@@ -46,7 +48,19 @@ export class Input {
     this.listen('blur', () => this.clear());
     this.listen('gamepadconnected', e => this.connect(e.gamepad));
     this.listen('gamepaddisconnected', e => { this.connected.delete(e.gamepad.index); this.pad = null; });
-    this.listen('deviceorientation', e => { if (Number.isFinite(e.gamma)) this.tilt = clamp(e.gamma / 30, -1, 1); });
+    this.listen('deviceorientation', e => {
+      if (!this.tiltAllowed) return;
+      const value = tiltAxis(e, this.target?.screen?.orientation?.angle ?? this.target?.orientation ?? 0);
+      if (value !== null) this.tilt = value;
+    });
+    this.listen('orientationchange', () => { this.tilt = 0; });
+    this.listen('pointerdown', e => {
+      if (e.pointerType === 'touch') this.lastTouchAt = Date.now();
+    });
+    this.listen('click', () => {
+      if (this.settings.touchSteering === 'tilt' && !this.tiltRequested) void this.enableTilt();
+    });
+    this.listen('gesturestart', e => { if (this.touchUI) e.preventDefault(); });
     if (document) this.mountTouch();
   }
   setNitrousEnabled(enabled) {
@@ -81,17 +95,10 @@ export class Input {
         const saved = JSON.parse(this.storage?.getItem('paraliaki.input.' + kind) || 'null');
         // M selects gearbox mode; R taps tow and holds reset instead of restarting.
         if (kind === 'keyboard' && saved?.restart?.join(',') === 'KeyR,Enter') saved.restart = ['Enter'];
-        // M is the big map now; the gearbox mode moved to L. Migrate the old default music (M) and gearbox (M) bindings.
+        // M is the big map now; migrate the old gearbox binding to L.
         if (kind === 'keyboard' && saved?.transmission?.join(',') === 'KeyM') saved.transmission = [...DEFAULT_BINDINGS.keyboard.transmission];
-        if (kind === 'keyboard') for (const action of ['music', 'nextTrack']) {
-          if (saved?.[action]?.includes('KeyM') || saved?.[action]?.some(key => saved?.transmission?.includes(key))) saved[action] = [...DEFAULT_BINDINGS.keyboard[action]];
-        }
         for (const [a, bs] of Object.entries(saved || {})) if (a in this.bindings[kind] && Array.isArray(bs) && bs.every(b => typeof b === 'string' && (kind === 'keyboard' ? /^[A-Za-z0-9]+$/.test(b) : /^(b\d+|a\d+[+-])$/.test(b)))) this.bindings[kind][a] = bs;
       } catch {}
-    }
-    for (const kind of ['keyboard', 'gamepad']) for (const action of ['music', 'nextTrack']) {
-      const conflicts = key => this.bindings[kind].transmission.includes(key) || this.bindings[kind].map.includes(key);
-      if (this.bindings[kind][action].some(conflicts)) this.bindings[kind][action] = DEFAULT_BINDINGS[kind][action].filter(key => !conflicts(key));
     }
     try { this.configure(JSON.parse(this.storage?.getItem('paraliaki.input.settings') || 'null') || {}, false); } catch {}
   }
@@ -101,12 +108,22 @@ export class Input {
     if (['screen', 'tilt'].includes(settings.touchSteering)) this.settings.touchSteering = settings.touchSteering;
     if (persist) this.save('settings', this.settings);
   }
+  async enableTilt() {
+    this.tiltRequested = true;
+    const allowed = await requestTiltPermission(this.target);
+    this.tiltAllowed = allowed; this.tilt = undefined;
+    if (!allowed) {
+      this.configure({ touchSteering: 'screen' });
+      this.toast('Tilt unavailable; use on-screen steering');
+    }
+    return allowed;
+  }
   bind(kind, action, bindings) {
     if (!(action in this.bindings[kind]) || !bindings.every(b => kind === 'keyboard' ? /^[A-Za-z0-9]+$/.test(b) : /^(b\d+|a\d+[+-])$/.test(b))) return false;
-    // Single-key toggles that must never share a key: music / next track, gearbox mode and the big map.
-    const TOGGLES = ['music', 'nextTrack', 'transmission', 'map'];
+    // Single-key toggles that must never share a key: gearbox mode and the big map.
+    const TOGGLES = ['transmission', 'map'];
     if (TOGGLES.includes(action)) {
-      const others = TOGGLES.filter(other => other !== action && !(['music', 'nextTrack'].includes(other) && ['music', 'nextTrack'].includes(action)));
+      const others = TOGGLES.filter(other => other !== action);
       if (others.some(other => bindings.some(key => this.bindings[kind][other].includes(key)))) return false;
     }
     this.bindings[kind][action] = [...bindings]; this.save(kind, this.bindings[kind]); this.clear(); return true;
@@ -149,6 +166,7 @@ export class Input {
     this.lookCanvas = canvas; this.lookEnabled = enabled;
     this.listen('mousemove', e => {
       if (!enabled() || e.sourceCapabilities?.firesTouchEvents || editable(e)) return;
+      if (Date.now() - (this.lastTouchAt || 0) < 1000) return;
       if (this.document?.pointerLockElement === canvas) {
         if (e.movementX || e.movementY) move(e.movementX || 0, e.movementY || 0);
       } else {
@@ -283,7 +301,7 @@ export class Input {
     const tilt = doc.createElement('button'); tilt.type = 'button'; tilt.textContent = 'Touch steering: ' + this.settings.touchSteering;
     tilt.addEventListener('click', async () => {
       if (this.settings.touchSteering === 'screen') {
-        try { if (this.target?.DeviceOrientationEvent?.requestPermission && await this.target.DeviceOrientationEvent.requestPermission() !== 'granted') { this.toast('Tilt permission unavailable; use on-screen steering'); return; } } catch { this.toast('Tilt unavailable; use on-screen steering'); return; }
+        if (!await this.enableTilt()) return;
       }
       this.configure({ touchSteering: this.settings.touchSteering === 'screen' ? 'tilt' : 'screen' }); tilt.textContent = 'Touch steering: ' + this.settings.touchSteering;
     }); panel.append(tilt);
@@ -314,8 +332,10 @@ export class Input {
     const enable = () => {
       if (this.touchUI) return;
       doc.body.classList.add('touch-driving');
-      const root = doc.createElement('div'); root.id = 'touch-controls'; root.setAttribute('aria-label', 'Touch driving controls');
-      const steer = doc.createElement('div'); steer.className = 'touch-steer'; steer.textContent = '◀  STEER  ▶'; steer.setAttribute('role', 'group'); steer.setAttribute('aria-label', 'Drag left or right to steer');
+      doc.body.dataset.input = 'touch';
+      const root = doc.createElement('div'); root.id = 'touch-controls'; root.hidden = true; root.setAttribute('aria-label', 'Touch driving controls');
+      const rotate = doc.createElement('p'); rotate.className = 'touch-rotate'; rotate.textContent = 'Rotate your phone for a wider road view'; root.append(rotate);
+      const steer = doc.createElement('div'); steer.className = 'touch-steer'; steer.innerHTML = touchSteeringLabel(); steer.setAttribute('role', 'group'); steer.setAttribute('aria-label', 'Drag left or right to steer');
       let pointer;
       const move = e => { if (e.pointerId !== pointer) return; const r = steer.getBoundingClientRect(); this.touch.steer = clamp((e.clientX - r.left - r.width / 2) / (r.width * 0.4), -1, 1); };
       steer.addEventListener('pointerdown', e => { e.preventDefault(); if (pointer !== undefined) return; pointer = e.pointerId; steer.setPointerCapture(pointer); move(e); });
@@ -325,14 +345,19 @@ export class Input {
       const aux = doc.createElement('div'); aux.className = 'touch-buttons';
       const actions = doc.createElement('div'); actions.className = 'touch-actions';
       const gears = doc.createElement('div'); gears.className = 'touch-gears'; gears.setAttribute('role', 'group'); gears.setAttribute('aria-label', 'Gear shifts');
-      for (const [action, label] of [['brake', 'BRAKE'], ['throttle', 'GAS'], ['handbrake', 'HB'], ['nitro', 'N₂O'], ['camera', 'CAM'], ['shiftUp', 'GEAR +'], ['shiftDown', 'GEAR −'], ['transmission', 'MODE'], ['tractionControl', 'TC ON'], ['tow', 'TOW'], ['pause', 'Ⅱ']]) {
-        const button = doc.createElement('button'); button.type = 'button'; button.textContent = label; button.dataset.action = action; button.setAttribute('aria-label', action); if (action === 'nitro') button.hidden = !this.nitrousEnabled;
+      for (const [action, label] of [['brake', 'BRAKE'], ['throttle', 'GAS'], ['handbrake', 'HB'], ['nitro', 'N₂O'], ['camera', 'CAM'], ['shiftUp', 'GEAR +'], ['shiftDown', 'GEAR −'], ['transmission', 'MODE'], ['tractionControl', 'TC ON'], ['tow', 'TOW'], ['pause', 'PAUSE']]) {
+        const button = doc.createElement('button'); button.type = 'button'; button.innerHTML = touchControlLabel(action, label); button.dataset.action = action; button.setAttribute('aria-label', action); if (action === 'nitro') button.hidden = !this.nitrousEnabled;
         const pointers = new Set();
         button.addEventListener('pointerdown', e => { e.preventDefault(); pointers.add(e.pointerId); button.setPointerCapture(e.pointerId); this.touch[action] = 1; if (EDGE_ACTIONS.includes(action)) this.pending.add(action); button.classList.add('held'); });
         for (const name of ['pointerup', 'pointercancel', 'lostpointercapture']) button.addEventListener(name, e => { pointers.delete(e.pointerId); if (!pointers.size) { this.touch[action] = 0; button.classList.remove('held'); } });
         (action === 'throttle' || action === 'brake' ? pedals : action === 'shiftUp' || action === 'shiftDown' ? gears : actions).append(button);
       }
       root.dataset.auxColumns = '5';
+      // Fullscreen must also start directly in a tap; unsupported Safari keeps browser mode.
+      if (doc.documentElement?.requestFullscreen) {
+        const button = doc.createElement('button'); button.type = 'button'; button.textContent = 'FULL'; button.dataset.action = 'fullscreen'; button.setAttribute('aria-label', 'Fullscreen landscape');
+        button.addEventListener('click', () => { void enterDrivingScreen(doc, this.target?.screen); }); actions.append(button);
+      }
       aux.append(actions, gears); root.append(pedals, aux); doc.body.append(root); this.touchUI = root;
       this.setAidsEnabled(preferences.aids);
     };

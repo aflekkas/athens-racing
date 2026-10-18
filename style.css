@@ -1,11 +1,14 @@
-@import url("./src/ui/accounts.css");
 :root {
   --red: #ff3b2f; --red2: #c4161c; --cyan: #29d8ff; --gold: #ffc21a; --ink: #07090c; --panel: rgba(8, 10, 14, 0.86); --line: rgba(255, 255, 255, 0.14);
   --cond: "Barlow Condensed", "Arial Narrow", sans-serif; --sans: "Barlow", "Helvetica Neue", Arial, sans-serif;
 }
 * { box-sizing: border-box; }
-html, body { margin: 0; height: 100%; overflow: hidden; background: #050608; }
-body { font-family: var(--sans); color: #fff; user-select: none; -webkit-user-select: none; }
+html, body { margin: 0; height: 100%; overflow: hidden; overscroll-behavior: none; touch-action: pan-x pan-y; background: #050608; }
+body { font-family: var(--sans); color: #fff; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+/* Safari magnifies small text fields even when pinch zoom is disabled. */
+body.touch-driving input, body.touch-driving textarea,
+body.touch-driving input.text-field__input, body.touch-driving input.search__input { font-size: max(16px, 1em); }
+canvas#c { touch-action: none; }
 canvas#c { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
 b { font-weight: inherit; }
 
@@ -138,35 +141,35 @@ body.started #keys { opacity: 0; }
 #credit a { color: inherit; }
 
 /* ---------------------------------------------------------------- loading screen (src/ui/loading.js) */
-#loading { position: fixed; inset: 0; z-index: 40; overflow: hidden; background: radial-gradient(110% 90% at 72% 42%, #13212c 0%, #080b0f 62%); opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .45s ease, visibility .45s; font-family: var(--cond); color: #fff; }
-#loading.open { opacity: 1; visibility: visible; pointer-events: auto; }
-#loading .ld-art { position: absolute; top: 4vh; bottom: 4vh; right: 2vw; width: min(62vw, 150vh); display: grid; place-items: center; opacity: .9; }
-#loading .ld-art svg { width: 100%; height: 100%; }
-#loading .ld-route { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset .5s cubic-bezier(.2,.9,.3,1); filter: drop-shadow(0 0 6px rgba(255,59,47,.6)); }
-#loading .ld-shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(8,11,15,.96) 0%, rgba(8,11,15,.75) 34%, rgba(8,11,15,0) 62%), linear-gradient(0deg, rgba(8,11,15,.95), rgba(8,11,15,0) 32%); }
-#loading .ld-wrap { position: absolute; inset: 0; display: grid; grid-template-rows: auto 1fr auto; padding: clamp(1rem, 5vh, 3.5rem) clamp(1rem, 5vw, 6rem) clamp(1rem, 4vh, 3rem); }
-#loading .ld-map { align-self: center; max-width: min(36rem, 100%); }
-#loading .ld-map .kick { display: flex; align-items: center; gap: .6em; }
-#loading .ld-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--red); }
-#loading h1 { margin: .4rem 0 0; font-style: italic; font-weight: 900; font-size: min(5.2rem, 14vw, 16vh); line-height: .9; letter-spacing: .005em; }
-#loading #ldSub { margin: .6rem 0 0; font-family: var(--sans); font-weight: 600; font-size: 1.15rem; color: #c7ced6; }
-#loading .ld-foot { display: grid; gap: .55rem; max-width: 60rem; }
-#loading .ld-row { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; font-weight: 800; letter-spacing: .24em; font-size: .875rem; color: #c7ced6; }
-#loading #lpct { font-style: italic; font-size: 1.25rem; letter-spacing: .04em; color: #fff; font-variant-numeric: tabular-nums; }
-#loading .ld-bar { height: 5px; }
-#loading .ld-tip { display: flex; align-items: baseline; gap: .8rem; margin: .5rem 0 0; min-height: 2.6em; font-family: var(--sans); font-weight: 600; font-size: 1rem; line-height: 1.35; color: #e3e8ee; text-shadow: 0 1px 3px rgba(0,0,0,.6); }
-#loading .ld-tip__k { flex: none; padding: .15em .5em; border-radius: 2px; background: var(--red); font-family: var(--cond); font-weight: 800; font-size: .75rem; letter-spacing: .2em; color: #fff; }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #ldTip.in { animation: ldTip .5s ease both; }
 @keyframes ldTip { from { opacity: .35; transform: translateY(4px); } }
 @media (max-aspect-ratio: 1/1) {
-  #loading .ld-art { top: 16vh; bottom: auto; left: 0; right: 0; width: 100%; height: 42vh; }
-  #loading .ld-shade { background: linear-gradient(0deg, rgba(8,11,15,.97) 30%, rgba(8,11,15,0) 60%), linear-gradient(180deg, rgba(8,11,15,.8), rgba(8,11,15,0) 22%); }
-  #loading .ld-wrap { grid-template-rows: auto 1fr auto auto; }
-  #loading .ld-map { grid-row: 3; margin-bottom: 1.5rem; }
-  #loading .ld-foot { grid-row: 4; }
-  #loading .ld-brand { grid-row: 1; }
+  
+  
+  
+  
+  
+  
 }
-@media (max-height: 500px) { #loading .ld-tip { min-height: 0; } #loading .ld-art { width: 55vw; } }
+@media (max-height: 500px) {   }
 
 /* ---------------------------------------------------------------- results / garage */
 #menu { position: fixed; inset: 0; z-index: 8; display: grid; grid-template-columns: 1fr 440px; align-items: center; padding: 0 6vw; pointer-events: none; opacity: 0; transition: opacity .45s;

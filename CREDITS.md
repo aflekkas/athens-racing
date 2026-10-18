@@ -14,3 +14,9 @@ A new `CREDITS*` / `LICENSE*` file anywhere in the repo is picked up automatical
 ## AI
 
 Built with help from AI coding agents.
+
+## UI icons
+
+[Lucide](https://lucide.dev), vendored from `lucide-static@1.59.0`, ISC licence.
+The complete notice in [assets/icons/LICENSE](assets/icons/LICENSE) includes the upstream Feather MIT attribution.
+Only used SVGs are shipped; no icon CDN or runtime package is required. Google’s G and manufacturer badges remain brand artwork.

@@ -1,4 +1,4 @@
-// Headless tests of the event framework (src/events.js): route resolution (segments, reverse), checkpoints and
+// Headless tests of the event framework (src/events.js): route resolution (segments, reverse), timing sectors and
 // splits, medals (positions / times only: no points), saved records, pursuit, positions, wrong-way and the hook API.
 //   node tools/events-test.mjs
 import fs from 'node:fs';
@@ -29,14 +29,14 @@ function drive(def, v, st, opts = {}) {
   return { run, out, res: null };
 }
 
-test('every event resolves inside the route with sane checkpoints', () => {
+test('every event resolves inside the route with sane timing sectors', () => {
   for (const e of EV.EVENTS) {
     const r = EV.resolve(e, ctx);
     assert.ok(r.len > 1500, e.id + ' long enough');
     assert.ok(Math.min(r.s0, r.s1) >= 0 && Math.max(r.s0, r.s1) <= route.length, e.id + ' in bounds');
-    assert.equal(r.checkpoints.at(-1).id, 'finish');
-    assert.equal(r.checkpoints.at(-1).d, r.len);
-    for (let i = 1; i < r.checkpoints.length; i++) assert.ok(r.checkpoints[i].d > r.checkpoints[i - 1].d, e.id + ' checkpoints ascend');
+    assert.equal(r.sectors.at(-1).id, 'finish');
+    assert.equal(r.sectors.at(-1).d, r.len);
+    for (let i = 1; i < r.sectors.length; i++) assert.ok(r.sectors[i].d > r.sectors[i - 1].d, e.id + ' sectors ascend');
     assert.ok(EV.TYPES[e.type], e.id + ' type');
     if (!(e.type === 'pursuit' && e.rules?.goal === 'survive')) assert.ok(e.targets.gold && e.targets.silver && e.targets.bronze, e.id + ' targets');
     assert.ok(['sprint', 'timetrial', 'pursuit'].includes(e.type), e.id + ': no points modes');
@@ -51,7 +51,7 @@ test('every event resolves inside the route with sane checkpoints', () => {
 test('reverse and segment routes', () => {
   const rev = EV.resolve(EV.getEvent('return-leg'), ctx);
   assert.equal(rev.dir, -1); assert.equal(rev.s0, route.finish); assert.equal(rev.s1, route.start); assert.ok(rev.reverse);
-  assert.deepEqual(rev.checkpoints.map((c) => c.id), ['coast', 'varkiza', 'limanakia', 'lake', 'astir', 'finish']);
+  assert.deepEqual(rev.sectors.map((c) => c.id), ['coast', 'varkiza', 'limanakia', 'lake', 'astir', 'finish']);
   const seg = EV.resolve(EV.getEvent('astir-varkiza'), ctx);
   assert.equal(seg.dir, 1); assert.equal(seg.fromName, 'ASTIR'); assert.equal(seg.toName, 'VARKIZA');
   assert.equal(EV.locate(5000, ctx).name, 'VARKIZA');
@@ -63,7 +63,7 @@ test('time trial: splits, finish, medal, best splits compared next run', () => {
   const off = EV.events.on('split', (e) => splitsHeard.push(e));
   const a = drive(def, (def.targets.silver + 2) / 3.6, st); // just inside silver
   assert.equal(a.res.medal, 'silver');
-  assert.equal(a.res.splits.length, r.checkpoints.length);
+  assert.equal(a.res.splits.length, r.sectors.length);
   assert.ok(Math.abs(a.res.time - r.len / ((def.targets.silver + 2) / 3.6)) < 0.1);
   assert.ok(a.res.newBest);
   assert.equal(EV.loadRecord(def.id, st).medal, 'silver');
@@ -75,7 +75,7 @@ test('time trial: splits, finish, medal, best splits compared next run', () => {
   assert.equal(c.res.medal, null); assert.equal(EV.loadRecord(def.id, st).medal, 'gold'); assert.ok(!c.res.newBest);
   assert.equal(EV.loadRecord(def.id, st).runs, 3);
   off();
-  assert.ok(splitsHeard.length >= 3 * r.checkpoints.length);
+  assert.ok(splitsHeard.length >= 3 * r.sectors.length);
 });
 
 test('reverse run finishes at the start of the road', () => {
@@ -167,7 +167,7 @@ test('closed circuit: three laps, no early finish, lap clocks and total-time ran
   const def={id:'test-circuit',mapId:'megara',type:'timetrial',from:'start',to:'finish',laps:3,rivals:0,targets:{gold:120,silver:100,bronze:80}};
   const run=new EV.EventRun(def,loop,{storage:mem()});run.start();
   assert.deepEqual(EV.resolve({...def,targetTimes:{gold:240,silver:270,bronze:315}},loop).targetTimes,{gold:240,silver:270,bronze:315},'explicit circuit medals use total elapsed seconds');
-  assert.equal(run.r.len,6000);assert.equal(run.r.laps,3);assert.equal(run.r.checkpoints.length,12);
+  assert.equal(run.r.len,6000);assert.equal(run.r.laps,3);assert.equal(run.r.sectors.length,12);
   let emitted=[];
   for(let s=0;s<=6000;s+=100){const out=run.update(1,{s,t:s/25,kmh:90});emitted.push(...out);if(s<6000)assert.ok(!out.some(e=>e.kind==='finish'));if(s===2100){assert.equal(run.lap,2);assert.equal(run.lapTime,4);}}
   assert.deepEqual(run.lapTimes,[80,80,80]);assert.equal(run.lap,3);
@@ -205,12 +205,14 @@ test('race setup: defaults stay official, choices make a separate custom variant
   assert.deepEqual(RS.trafficLevels(0.8).map((l) => l[1]), [0, 0.5, 0.8, 1.5, 2], 'the event density is one of the choices');
 });
 
-test('Psychiko default direction keeps legacy event times separate from current local records', () => {
-  const oldKey = 'paraliaki.events.psychiko-race', saved = new Map([[oldKey, JSON.stringify({ bestTime: 100 })]]);
+test('Psychiko Garden Circuit v2 keeps earlier loop times stored but never ranks against them', () => {
+  const oldKeys = ['paraliaki.events.psychiko-race', 'paraliaki.events.psychiko-race.reverse-default-v1', 'paraliaki.events.psychiko-race~rev'];
+  const saved = new Map(oldKeys.map((key, i) => [key, JSON.stringify({ bestTime: 100 + i })]));
   const storage = { getItem: key => saved.get(key) || null, setItem: (key, value) => saved.set(key, value) };
   assert.deepEqual(EV.loadRecord('psychiko-race', storage), {});
+  assert.deepEqual(EV.loadRecord('psychiko-race~rev', storage), {});
   EV.saveRecord('psychiko-race', { bestTime: 150 }, storage);
   assert.equal(EV.loadRecord('psychiko-race', storage).bestTime, 150);
-  assert.equal(JSON.parse(saved.get(oldKey)).bestTime, 100);
-  assert.equal(EV.loadRecord('psychiko-race~rev', storage).bestTime, 100, 'old forward record remains readable for the new forward toggle');
+  assert.ok(saved.has('paraliaki.events.psychiko-race.garden-v2'));
+  oldKeys.forEach((key, i) => assert.equal(JSON.parse(saved.get(key)).bestTime, 100 + i, 'earlier records are left untouched'));
 });

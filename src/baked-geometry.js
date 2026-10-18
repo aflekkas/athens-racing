@@ -24,20 +24,28 @@ export function encodeGeometryPack(metadata, arrays, shuffled = []) {
   });
   return buffer;
 }
-export function decodeGeometryPack(buffer) {
+export function decodeGeometryPack(buffer, { consume = false } = {}) {
   const dv = new DataView(buffer);
   if (dv.getUint32(0, true) !== MAGIC) throw new Error('Invalid baked geometry magic');
   const start = dv.getUint32(8, true), size = dv.getUint32(4, true);
   if (start < 12 + size || start % 4) throw new Error('Invalid baked geometry header');
   const metadata = JSON.parse(new TextDecoder().decode(new Uint8Array(buffer, 12, size)));
   if (metadata.version !== 1) throw new Error('Unsupported baked geometry version');
+  // The loader owns its inflated buffer. Unshuffle into that allocation so a
+  // single raw attribute cannot retain the whole pack alongside copied arrays.
+  let scratch;
   const arrays = metadata.views.map(v => {
     const Type = TYPES[v.type];
     if (!Type || !Number.isSafeInteger(v.offset) || v.offset < 0 || !Number.isSafeInteger(v.length) || v.length < 0) throw new Error('Invalid baked geometry view');
     const source = new Uint8Array(buffer, start + v.offset, v.length * Type.BYTES_PER_ELEMENT);
     if (!v.shuffled && !metadata.shuffled) return new Type(buffer, start + v.offset, v.length);
-    const array = new Type(v.length), dest = new Uint8Array(array.buffer), width = Type.BYTES_PER_ELEMENT;
-    for (let byte = 0; byte < width; byte++) for (let n = 0; n < v.length; n++) dest[n * width + byte] = source[byte * v.length + n];
+    const array = consume ? new Type(buffer, start + v.offset, v.length) : new Type(v.length), dest = new Uint8Array(array.buffer, array.byteOffset, array.byteLength), width = Type.BYTES_PER_ELEMENT;
+    let input = source;
+    if (consume) {
+      if (!scratch || scratch.length < source.length) scratch = new Uint8Array(source.length);
+      scratch.set(source); input = scratch;
+    }
+    for (let byte = 0; byte < width; byte++) for (let n = 0; n < v.length; n++) dest[n * width + byte] = input[byte * v.length + n];
     return array;
   });
   return { metadata, arrays };

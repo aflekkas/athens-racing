@@ -64,6 +64,44 @@ This assumes `npm ci` has installed the committed lockfile. If deploying another
 
 The existing VPS service on port 8000 is independent. Deploying Workers does not restart or stop it.
 
+## Deployment smoke credential (SMOKE_TOKEN)
+
+Deployed Workers require Google sign-in, so the live smoke test needs its own credential. `SMOKE_TOKEN` is a shared secret that signs short-lived smoke sessions. It is not a player account and it does not weaken the sign-in gate:
+
+- The Worker and the Node server accept a smoke session only while `SMOKE_TOKEN` is set to at least 32 characters. Unset, empty or short values disable the path completely.
+- A smoke session lasts at most 10 minutes, gets a fixed `SMOKE-<n>` name, and reaches live play and public discovery only. It cannot reach account, friends or presence routes, cannot save leaderboard records, and lobbies it hosts are not listed publicly.
+- `tools/deploy-smoke.mjs` and `tools/resumable-smoke-client.mjs` read `SMOKE_TOKEN` from the environment, else from `~/.config/athens-racing/smoke-token`. When sign-in is required and no token is set, the smoke exits at once with `set SMOKE_TOKEN; see deploy/README.md` instead of retrying until it times out.
+
+Generate one value and use the same value in every environment:
+
+```sh
+openssl rand -hex 32
+```
+
+Install it in each Worker environment. Wrangler prompts for the value, so paste it there rather than putting it in a command argument:
+
+```sh
+CLOUDFLARE_ACCOUNT_ID=d6f3d2dc5817687a91d74ccd257bad9e npx wrangler secret put SMOKE_TOKEN --env staging
+CLOUDFLARE_ACCOUNT_ID=d6f3d2dc5817687a91d74ccd257bad9e npx wrangler secret put SMOKE_TOKEN --env production
+```
+
+Store the same value for the release train to export before the live smoke runs:
+
+```sh
+mkdir -p ~/.config/athens-racing && chmod 700 ~/.config/athens-racing
+(umask 077; cat > ~/.config/athens-racing/smoke-token)   # paste the value, then press Ctrl-D
+chmod 600 ~/.config/athens-racing/smoke-token
+```
+
+Run the smoke with the token exported:
+
+```sh
+export SMOKE_TOKEN="$(cat ~/.config/athens-racing/smoke-token)"
+node tools/deploy-smoke.mjs https://staging.athensracing.com --race
+```
+
+Replacing the value means generating a new one, running both `secret put` commands, and updating the local file. Until the new secret is live, the old value still authenticates. The release train must export `SMOKE_TOKEN` from that file before it calls `tools/deploy-smoke.mjs`.
+
 ## GitHub Actions and the required API token
 
 The CI workflow runs on PRs and pushes to prod/staging. It installs from the lockfile, runs all four required test gates, checks syntax and the full browser import graph, then dry-runs the Worker bundle. Pushes deploy staging from `staging` and production from `prod`, then fetch HTML/module/asset and complete a `/ws` create-lobby round trip. Deploys require a passing test job. Without an API token the workflow reports a notice and skips deployment; a green test run alone does **not** mean GitHub deployed a Worker. The first staging deployment used the VPS OAuth login.
@@ -124,23 +162,6 @@ or paid binding, and does not scan tables or schedule background work.
 Local Worker checks: start `wrangler dev --local --port 19631`, then run
 `ASR_TEST_BASE=http://127.0.0.1:19631 node --test worker/local-driver.test.mjs`.
 
-## Music sources
-
-Fresh players start with **Music Off**. Settings → Sound → MUSIC SOURCE provides
-local files/folders, optional Built-in radio and a visible **menu-only** YouTube
-stream/playlist player. Files never leave the device.
-Chromium can save chosen file/folder handles in IndexedDB; Restore may request
-read permission again. Other browsers require selecting files again next visit.
-Use J for local music mute and N for next track. L switches the gearbox mode, M opens the big map.
-See [current research and official links](../docs/music-sources.md).
-
-YouTube embeds need no Data API key. Users explicitly load an embeddable URL and
-press native Play. Preserve visible controls, ads and branding; do not enable
-hidden/audio-only or background-tab playback. The player pauses when scrolled
-away and is destroyed when Sound settings closes. It cannot share WebAudio;
-its API volume follows master × music. ERT stream endpoints are documented in
-the research but are not shipped as presets without station/rights permission.
-No music source requires a Cloudflare paid feature or a streaming proxy.
 
 ## Release notes and versions
 
@@ -163,7 +184,7 @@ Use a release-level photo on an unindented line, or indent it under the bullet i
 
 Keep photos in `assets/changelog/<version>/` as still, lossy WebP: about 1280 px wide, quality around 75, **under 150,000 bytes each**. Use the latest known version as the screenshot batch directory while writing Unreleased; paths remain stable when the train assigns the next section version, and releases may reuse a photo from an earlier batch. Do not guess the train's next counter or rename shared images when a heading is cut. Use descriptive filenames, alt text and short player-facing captions. Never use bug captures, debug overlays or test-harness UI. Inspect every source photo before adding it.
 
-`npm test` checks alt text, local paths, file existence, lossy WebP encoding, image dimensions (960–1280 px wide, no taller than 1280) and the 150 KB cap. `prepare-deploy` emits a loud **warning, without blocking** when Unreleased contains bullets but no photos. Images are referenced by URL in the small notes metadata; their bytes are never embedded in the boot HTML or JavaScript, or prefetched by the service worker. Opening What's new loads visible photos lazily; the one-time card requests them only after VIEW PHOTOS. Tap a photo for a full screen and use Back to return.
+`npm test` checks alt text, local paths, file existence, lossy WebP encoding, image dimensions (960–1280 px wide, no taller than 1280) and the 150 KB cap. `prepare-deploy` emits a loud **warning, without blocking** when Unreleased contains bullets but no photos. Images are referenced by URL in the small notes metadata; their bytes are never embedded in the boot HTML or JavaScript, or prefetched by the service worker. Opening What's new loads the page's photos lazily as you scroll, inline at the full column width; the one-time card requests them only after VIEW PHOTOS, where a tap opens a photo full screen (Back returns).
 
 Dry run: `node tools/prepare-deploy.mjs`, then serve `.deploy/assets`. Check `/release.json`, the stamped version and the photos after the train releases.
 

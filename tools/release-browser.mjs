@@ -49,15 +49,15 @@ try {
     });
     assert.deepEqual(external, { href: 'https://github.com/aflekkas/athens-racing', target: '_blank', rel: 'noopener' });
     await snap('about');
-    await click('whatsNew'); await page.waitForSelector('.release-list'); await snap('whats-new');
-    assert.equal(await page.locator('.release').count(), 4);
+    await click('whatsNew'); await page.waitForSelector('.article-section--heading'); await snap('whats-new');
+    assert.equal(await page.locator('.article-section--heading').count(), 4);
     await page.evaluate(() => __flow.menu.pop());
-    await click('credits'); await page.waitForSelector('.credits'); await snap('credits');
-    assert.match(await page.locator('.credits').innerText(), /Alexandros Lekkas/i);
-    assert.match(await page.locator('.credits').innerText(), /Vassilis Perrotis/i);
-    assert.match(await page.locator('.credits').innerText(), /Copernicus/i);
+    await click('credits'); await page.waitForSelector('.layout-article .article-entry'); await snap('credits');
+    assert.match(await page.locator('.layout-article').innerText(), /Alexandros Lekkas/i);
+    assert.match(await page.locator('.layout-article').innerText(), /Vassilis Perrotis/i);
+    assert.match(await page.locator('.layout-article').innerText(), /Copernicus/i);
     await page.locator('[data-credit="assets-audio-voice-credits-txt"]').evaluate(el => el.click());
-    assert.match(await page.locator('.credit-sheet').innerText(), /Piper/i);
+    assert.match(await page.locator('.layout-article').innerText(), /Piper/i);
     // Persist only an older version, then reload: a returning player gets the current section.
     await page.evaluate(() => { localStorage.setItem('paraliaki.releaseSeen', '2026.10.15.2'); localStorage.setItem('paraliaki.car', 'seat'); });
     await boot(); await page.waitForSelector('.news-panel'); await snap('one-time-card');
@@ -70,7 +70,7 @@ try {
     await click('dismissNews'); await boot();
     assert.equal(await page.locator('.news-panel').count(), 0, 'dismissal survives reload');
     report.checks.push(`${width}: upgrade shows latest only; race hides card; dismissal survives reload`);
-    await click('credits'); assert.equal(await page.locator('.credits').count(), 1, 'title credits action');
+    await click('credits'); assert.equal(await page.locator('.layout-article .article-entry').count() > 0, true, 'title credits action');
     // The existing HUD footer uses the same screen, with a return route.
     await page.evaluate(() => { __flow.menu.show('title'); document.querySelector('a[data-credits]').click(); });
     assert.equal(await page.evaluate(() => __flow.menu.screen), 'credits');

@@ -1,12 +1,11 @@
 #input-toast { position: fixed; z-index: 120; top: 232px; left: 12px; width: max-content; max-width: min(22rem, calc(100vw - 24px)); display: flex; align-items: center; gap: 10px; background: rgba(16,22,28,.96); color: #fff; padding: 10px 18px 10px 14px; border: 1px solid rgba(255,255,255,.18); border-left: 3px solid #29d8ff; border-radius: 4px; box-shadow: 0 12px 30px rgba(0,0,0,.5); font: 800 15px/1 'Barlow Condensed', sans-serif; letter-spacing: .1em; text-transform: uppercase; pointer-events: none; }
-#input-toast::before { content: ''; flex: none; width: 18px; height: 18px; background: #29d8ff; -webkit-mask: url(../assets/icons/game-controller.svg) center / contain no-repeat; mask: url(../assets/icons/game-controller.svg) center / contain no-repeat; }
+#input-toast::before { content: ''; flex: none; width: 18px; height: 18px; background: #29d8ff; -webkit-mask: url(../assets/icons/gamepad-2.svg) center / contain no-repeat; mask: url(../assets/icons/gamepad-2.svg) center / contain no-repeat; }
 #input-toast[hidden] { display: none; }
 .input-bindings { color: #fff; font: 14px system-ui; }
 .input-bindings p { line-height: 1.5; }
 .input-bindings table { width: 100%; border-collapse: collapse; margin: 16px 0; }
 .input-bindings th, .input-bindings td { text-align: left; padding: 6px; border-bottom: 1px solid #ffffff20; }
-.input-bindings button { cursor: pointer; color: #fff; background: #172231; border: 1px solid #ffffff40; border-radius: 6px; padding: 9px 12px; font: inherit; }
-.input-bindings button:focus-visible { outline: 2px solid #ffcf2a; }
+.input-bindings button { color: #fff; background: #172231; border: 1px solid #ffffff40; border-radius: 6px; padding: 9px 12px; font: inherit; }
 .input-bindings label { display: flex; align-items: center; gap: 12px; margin: 12px 0; flex-wrap: wrap; }
 .input-bindings input[type=range] { flex: 1; min-width: 100px; }
 #touch-controls { position: fixed; z-index: 25; inset: auto 0 0; height: 128px; padding-bottom: env(safe-area-inset-bottom); pointer-events: none; user-select: none; }
@@ -32,8 +31,8 @@ body.touch-driving #dialBox { right: 10px; bottom: 128px; width: 160px; height: 
 .touch-steer { position: absolute; font-size: 0; }
 .touch-steer::after { content: 'STEER'; font-size: 13px; color: rgba(255,255,255,.75); }
 .touch-steer::before { content: ''; position: absolute; inset: 0; background: #fff; opacity: .8; pointer-events: none;
-  -webkit-mask: url(../assets/icons/caret-left.svg) left 14px center / 20px no-repeat, url(../assets/icons/caret-right.svg) right 14px center / 20px no-repeat;
-  mask: url(../assets/icons/caret-left.svg) left 14px center / 20px no-repeat, url(../assets/icons/caret-right.svg) right 14px center / 20px no-repeat; }
+  -webkit-mask: url(../assets/icons/chevron-left.svg) left 14px center / 20px no-repeat, url(../assets/icons/chevron-right.svg) right 14px center / 20px no-repeat;
+  mask: url(../assets/icons/chevron-left.svg) left 14px center / 20px no-repeat, url(../assets/icons/chevron-right.svg) right 14px center / 20px no-repeat; }
 #touch-controls button[data-action=pause], #touch-controls button[data-action=camera] { font-size: 0; position: relative; }
 #touch-controls button[data-action=pause]::before, #touch-controls button[data-action=camera]::before { content: ''; position: absolute; inset: 0; background: #fff; pointer-events: none;
   -webkit-mask: var(--glyph) center / 18px no-repeat; mask: var(--glyph) center / 18px no-repeat; }
@@ -51,7 +50,7 @@ body.touch-driving #dialBox { right: 10px; bottom: 128px; width: 160px; height: 
 body.ui-open #input-toast,
 body:has(#multiplayer:not([hidden])) #input-toast, body:has(.modal-scrim) #input-toast, body:has(#loading.open) #input-toast { display: none !important; }
 #input-toast[data-tone="bad"] { border-left-color: #ff655e; }
-#input-toast[data-tone="bad"]::before { background: #ff655e; -webkit-mask-image: url(../assets/icons/warning.svg); mask-image: url(../assets/icons/warning.svg); }
+#input-toast[data-tone="bad"]::before { background: #ff655e; -webkit-mask-image: url(../assets/icons/triangle-alert.svg); mask-image: url(../assets/icons/triangle-alert.svg); }
 body.touch-driving #input-toast { top: 216px; max-width: min(16rem, calc(100vw - 24px)); }
 @media(max-height:480px) { body.touch-driving #input-toast { top: 186px; max-width: 15rem; font-size: 12px; padding: 8px 10px; } }
 /* On phones, auxiliary actions have their own rows above steer and pedals. */
@@ -75,4 +74,43 @@ body.touch-driving #input-toast { top: 216px; max-width: min(16rem, calc(100vw -
   .touch-actions, .touch-gears { gap: 6px; }
   .touch-actions button { flex-basis: calc((100% - (var(--touch-columns) - 2) * 6px) / (var(--touch-columns) - 1)); }
   .touch-gears { flex-basis: calc((100% - (var(--touch-columns) - 1) * 6px) / var(--touch-columns)); }
+}
+
+:root[data-ui-focus="navigation"] .input-bindings button:focus-visible { background: #35414b; }
+@media (hover: hover) and (pointer: fine) { .input-bindings button:hover { background: #35414b; } }
+/* Touch targets never share a hit area, including short landscape phones. */
+#touch-controls { -webkit-user-select: none; -webkit-touch-callout: none; touch-action: none; }
+#touch-controls button { min-height: 44px; transition: background .12s, border-color .12s; }
+/* Sampling the live WebGL canvas for each button's blur forces costly mobile compositing. */
+#touch-controls button, .touch-steer { backdrop-filter: none; -webkit-backdrop-filter: none; }
+.touch-buttons { width: 236px; bottom: max(12px, env(safe-area-inset-bottom)); }
+.touch-actions { gap: 4px; }
+.touch-actions button { flex-basis: calc(25% - 3px); padding: 0; font-size: 11px; }
+.touch-gears { flex-basis: 44px; }
+.touch-gears button { flex-basis: 44px; }
+.touch-steer { width: min(28vw, 240px); }
+.touch-rotate { display: none; }
+@media (max-width: 650px) {
+  #touch-controls { height: calc(204px + env(safe-area-inset-bottom)); }
+  .touch-buttons { left: max(10px, env(safe-area-inset-left)); right: max(10px, env(safe-area-inset-right)); width: auto; max-width: none; transform: none; bottom: calc(max(12px, env(safe-area-inset-bottom)) + 93px); }
+  .touch-actions button { flex-basis: calc(25% - 3px); }
+  .touch-gears { flex-basis: 44px; }
+  body.touch-driving #dialBox { bottom: calc(204px + env(safe-area-inset-bottom)); }
+}
+@media (orientation: portrait) {
+  .touch-rotate { display: block; position: fixed; top: max(4px, env(safe-area-inset-top)); left: 0; width: 100%; margin: 0; text-align: center; font: 600 12px/1.5 system-ui; color: #fff; }
+}
+
+/* Shared Lucide glyphs remain visible in the steering pad's single row. */
+.touch-steer { font-size: 13px; grid-template-columns: 1fr auto 1fr; }
+.touch-steer::before, .touch-steer::after { content: none; }
+.touch-steer > .ico { width: 20px; height: 20px; }
+
+/* viewport-fit=cover also exposes the notch to the race HUD. */
+body.touch-driving .hud-motion-layer { top: env(safe-area-inset-top); left: env(safe-area-inset-left); right: env(safe-area-inset-right); }
+
+/* Circuit timing shares the upper HUD lane with the map, never its pixels. */
+body.touch-driving #lapTiming { left: calc(122px + env(safe-area-inset-left)); top: calc(126px + env(safe-area-inset-top)); min-width: 0; padding: 5px 10px; }
+@media (max-height: 480px) {
+  body.touch-driving #lapTiming { left: calc(106px + env(safe-area-inset-left)); top: calc(90px + env(safe-area-inset-top)); }
 }

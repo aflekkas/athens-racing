@@ -71,7 +71,7 @@ try{for(const cache of ['cold','warm']){await page.goto(`http://127.0.0.1:${serv
   }
   // Returning to title and browsing host/join screens must not build another world.
   await page.evaluate(()=>__flow.quit());await page.waitForTimeout(400);
-  await click('mpHost'); await page.waitForFunction(()=>__multiplayer.connected);
+  await click('multiplayer'); await page.waitForFunction(()=>__multiplayer.connected);
   holdData(); await page.evaluate(()=>__multiplayer.createLobby({mapId:'penteli',private:true,config:{traffic:0}}));
   await page.waitForFunction(()=>__multiplayer.active);
   await page.waitForFunction(()=>__loading.open);await snap('mp-lobby-loading'); releaseData();

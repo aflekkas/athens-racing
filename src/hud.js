@@ -1,7 +1,9 @@
+import { icon } from './ui/components.js';
 import { notifications } from './ui/notifications.js';
 // DOM HUD: position / timing / rival gap, route progress, real-map minimap (OSM coastline,
 // buildings, streets, the route), tachometer + speedometer, popups, district banners, countdown and menus.
 import { clamp } from './util.js';
+import { layoutRacerMarkers } from './racer-marker-layout.js';
 import { gearFeedback } from './transmission.js';
 import { PAINTS, savedPaint, savePaint } from './vehicle-paint.js';
 
@@ -17,7 +19,7 @@ export class RacerMarkers {
     this.root.setAttribute('aria-hidden', 'true'); document.body.append(this.root);
     const style = document.createElement('style'); style.textContent = `
       #racer-markers { position:fixed; inset:0; z-index:22; pointer-events:none; overflow:hidden; }
-      .racer-marker { position:absolute; color:var(--racer-color); font:700 13px system-ui; text-align:center; white-space:nowrap; transform-origin:center; }
+      .racer-marker { position:absolute; color:var(--racer-color); font:700 13px system-ui; text-align:center; white-space:nowrap; transform-origin:center bottom; }
       .racer-marker .racer-name { display:block; color:white; background:#09131ee0; padding:5px 10px; border:1px solid var(--racer-color); border-radius:5px; box-shadow:0 2px 10px #0008; max-width:180px; overflow:hidden; text-overflow:ellipsis; }
       .racer-marker .racer-chevron { display:block; font-size:24px; line-height:20px; text-shadow:0 2px 5px #000; }
       .racer-marker.ai .racer-name { font-size:11px; padding:3px 7px; border-color:#ffffff50; }
@@ -28,13 +30,13 @@ export class RacerMarkers {
       .tow-prompt strong { font-size:16px; letter-spacing:.08em; }
       .tow-prompt p { margin:8px 0 12px; color:#ced7e0; }
       .tow-actions { display:flex; gap:8px; flex-wrap:wrap; }
-      .tow-actions button { min-height:42px; padding:9px 12px; cursor:pointer; border:1px solid #ffffff45; border-radius:5px; background:#223349; color:#fff; font:700 12px system-ui; }
+      .tow-actions button { min-height:42px; padding:9px 12px;  border:1px solid #ffffff45; border-radius:5px; background:#223349; color:#fff; font:700 12px system-ui; }
       .tow-actions button:first-child { background:#d9ad44; color:#111; }
-      .tow-actions button:focus-visible { outline:2px solid white; outline-offset:3px; }
+      :root[data-ui-focus="navigation"] .tow-actions button:focus-visible { background:#35414b; }
     `; document.head.append(style);
   }
   update(racers) {
-    const present = new Set();
+    const present = new Set(), markers = [];
     for (const r of racers) {
       if (!Number.isFinite(r.x + r.y + r.distance) || r.distance > 350) continue;
       const offscreen = r.behind || Math.abs(r.x) > 0.92 || Math.abs(r.y) > 0.88;
@@ -50,10 +52,10 @@ export class RacerMarkers {
       }
       const { el, name, chevron } = item;
       const nm = r.name || 'DRIVER';
-      if (item._nm !== nm) { item._nm = nm; name.textContent = nm; }
+      if (item._nm !== nm) { item._nm = nm; name.textContent = nm; item.sizeDirty = true; }
       if (item._pid !== r.id) { item._pid = r.id; el.dataset.playerId = r.id; }
       const cls = 'racer-marker' + (r.player ? '' : ' ai') + (offscreen ? ' edge' : '');
-      if (item._cls !== cls) { item._cls = cls; el.className = cls; }
+      if (item._cls !== cls) { item._cls = cls; el.className = cls; item.sizeDirty = true; }
       let x = r.x, y = -r.y;
       if (offscreen) {
         if (r.behind) { x = r.viewX; y = -r.viewY; if (Math.abs(x) + Math.abs(y) < 0.01) x = 1; }
@@ -62,15 +64,24 @@ export class RacerMarkers {
         const rot = `rotate(${Math.atan2(y * innerHeight, x * innerWidth)}rad)`;
         if (item._rot !== rot) { item._rot = rot; chevron.style.transform = rot; }
       } else if (item._ch !== 'main') { item._ch = 'main'; chevron.textContent = '⌄'; chevron.style.transform = ''; item._rot = null; }
-      // quantise to 0.05% (~0.5 px): sub-pixel marker writes never move anything on screen
-      const left = `${Math.round((x + 1) * 1000) / 20}%`, top = `${Math.round((y + 1) * 1000) / 20}%`;
-      if (item._left !== left) { item._left = left; el.style.left = left; }
-      if (item._top !== top) { item._top = top; el.style.top = top; }
       const op = String(Math.round((r.behind ? 0.45 : 1) * clamp((350 - r.distance) / 150, 0, 1) * 100) / 100);
       if (item._op !== op) { item._op = op; el.style.opacity = op; }
       const scale = offscreen ? 0.9 : clamp(1.1 - r.distance / 400, 0.7, 1.05);
-      const tr = `translate(-50%, -100%) scale(${Math.round(scale * 200) / 200})`;
+      const roundedScale = Math.round(scale * 200) / 200;
+      const tr = `translate(-50%, -100%) scale(${roundedScale})`;
       if (item._tr !== tr) { item._tr = tr; el.style.transform = tr; }
+      markers.push({ id: r.id, item, x: (x + 1) * innerWidth / 2, y: (y + 1) * innerHeight / 2, scale: roundedScale });
+    }
+    // Measure only changed labels, after all content writes, then place the whole field together.
+    for (const marker of markers) {
+      const item = marker.item;
+      if (item.sizeDirty) { item.width = item.el.offsetWidth; item.height = item.el.offsetHeight; item.sizeDirty = false; }
+      marker.width = item.width * marker.scale; marker.height = item.height * marker.scale;
+    }
+    for (const marker of layoutRacerMarkers(markers, innerWidth, innerHeight)) {
+      const item = marker.item, left = `${marker.x.toFixed(1)}px`, top = `${marker.y.toFixed(1)}px`;
+      if (item._left !== left) { item._left = left; item.el.style.left = left; }
+      if (item._top !== top) { item._top = top; item.el.style.top = top; }
     }
     for (const [id, item] of this.items) if (!present.has(id)) { item.el.remove(); this.items.delete(id); }
   }
@@ -244,12 +255,19 @@ export class Hud {
     g.strokeStyle = 'rgba(110,200,255,.85)'; g.lineWidth = 1.6 / sc;
     for (const c of cells) for (const s of c.c) { g.beginPath(); g.moveTo(s[0], s[1]); g.lineTo(s[2], s[3]); g.stroke(); }
     // route: done (dim) + ahead (bright)
-    const i0 = Math.max(0, Math.floor((st.s - R) / 10)), i1 = Math.min(this.rpts.length / 2 - 1, Math.ceil((st.s + R) / 10));
-    const ic = Math.round(st.s / 10), fi = Math.round(route.finish / 10);
+    // The route is drawn in the direction of travel: behind the car dim, ahead of it bright, whichever way the event runs
+    // (reverse events count s downwards) and on whichever lap of a circuit (s is unwrapped there).
+    const sw = route.closed ? route.wrap(st.s) : st.s, rev = this.r1 != null && this.r1 < this.r0, N = this.rpts.length / 2 - 1;
+    const lo = Math.floor((sw - R) / 10), hi = Math.ceil((sw + R) / 10), ic = Math.round(sw / 10);
+    // index ranges as pieces of the polyline; a circuit continues past its seam
+    const stroke = (a, b) => {
+      for (const k of route.closed ? [-1, 0, 1] : [0]) { const x = Math.max(0, a - k * N), y = Math.min(N, b - k * N); if (x <= y) { this.pathRange(g, x, y); g.stroke(); } }
+    };
+    const end = route.closed ? Infinity : rev ? Math.round(this.r1 / 10) : Math.round(route.finish / 10);
     g.lineJoin = 'round';
-    g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = 16 / sc + 6; this.pathRange(g, i0, i1); g.stroke();
-    g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = 9 / sc + 3; this.pathRange(g, i0, Math.min(ic, i1)); g.stroke();
-    g.strokeStyle = '#ff3b2f'; g.lineWidth = 9 / sc + 3; this.pathRange(g, Math.max(i0, ic), Math.min(i1, fi)); g.stroke();
+    g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = 16 / sc + 6; stroke(lo, hi);
+    g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = 9 / sc + 3; if (rev) stroke(ic, hi); else stroke(lo, ic);
+    g.strokeStyle = '#ff3b2f'; g.lineWidth = 9 / sc + 3; if (rev) stroke(Math.max(lo, end), ic); else stroke(ic, Math.min(hi, end));
     // finish
     const sFin = this.r1 ?? route.finish;
     if (!st.objectiveMode && Math.abs(sFin - st.s) < R) {
@@ -277,7 +295,9 @@ export class Hud {
     }
     // rival
     g.fillStyle = '#29d8ff'; g.strokeStyle = '#001018'; g.lineWidth = 3 / sc;
-    for (const p of st.remotes || [{ x: st.rx, z: st.rz }]) { g.beginPath(); g.arc(p.x, p.z, 8 / sc, 0, 7); g.fill(); g.stroke(); }
+    // The spare rival is parked out of the way when nobody races (free roam, solo drives): no marker for it.
+    const marked = st.remotes || (st.rx == null ? [] : [{ x: st.rx, z: st.rz }]);
+    for (const p of marked) { g.beginPath(); g.arc(p.x, p.z, 8 / sc, 0, 7); g.fill(); g.stroke(); }
     g.restore();
     // player arrow
     g.save(); g.translate(cx, cy);
@@ -291,6 +311,7 @@ export class Hud {
       g.fillStyle = '#ff3b2f'; g.font = '800 14px "Barlow Condensed", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('N', cx + nx * rr, cy + nz * rr + 1);
     }
     // rival off-map pointer
+    if (st.rx == null && !st.remotes) return;
     const dx = st.rx - st.x, dz = st.rz - st.z;
     const px = (dx * Math.cos(rot) - dz * Math.sin(rot)) * sc, pz = (dx * Math.sin(rot) + dz * Math.cos(rot)) * sc;
     if (Math.abs(px) > cx - 10 || Math.abs(pz) > cy - 10 || pz > H - cy - 10) {
@@ -425,11 +446,11 @@ export class Hud {
     const panel=this.paintPanel;panel.replaceChildren();
     const caption=document.createElement('span');caption.textContent='PAINT';caption.style.cssText='font-size:11px;letter-spacing:.15em;margin-right:5px';panel.append(caption);
     const name=document.createElement('span');name.style.cssText='flex-basis:100%;font-size:11px;color:#a6b8c4';
-    const picker=document.createElement('input');picker.type='color';picker.value=savedPaint(spec);picker.setAttribute('aria-label','Custom paint colour');picker.title='Custom paint colour';picker.style.cssText='width:33px;height:28px;padding:0;border:1px solid #78858d;background:transparent;cursor:pointer';
+    const picker=document.createElement('input');picker.type='color';picker.value=savedPaint(spec);picker.setAttribute('aria-label','Custom paint colour');picker.title='Custom paint colour';picker.style.cssText='width:33px;height:28px;padding:0;border:1px solid #78858d;background:transparent;';
     const buttons=[];
-    const refresh=color=>{picker.value=color;name.textContent=PAINTS[spec.id]?.find(p=>p[1]===color)?.[0]||'Custom '+color.toUpperCase();for(const [b,hex]of buttons){const on=hex===color;b.setAttribute('aria-pressed',String(on));b.style.outline=on?'2px solid #edf4ff':'none';b.style.outlineOffset='2px';}};
+    const refresh=color=>{picker.value=color;name.textContent=PAINTS[spec.id]?.find(p=>p[1]===color)?.[0]||'Custom '+color.toUpperCase();for(const [b,hex]of buttons){const on=hex===color;b.setAttribute('aria-pressed',String(on));b.innerHTML=on?icon('check', 'ico--paint-check'):'';b.style.color='#fff';b.style.textShadow='0 1px 3px #000';}};
     const apply=color=>{if(savePaint(spec.id,color)){refresh(color.toLowerCase());this.onPaint?.(spec.id,color);}};
-    for(const [label,color]of PAINTS[spec.id]||[]){const b=document.createElement('button');b.type='button';b.title=label;b.setAttribute('aria-label',label);b.style.cssText=`width:26px;height:26px;min-width:26px;padding:0;border:1px solid #87939d;border-radius:50%;background:${color};cursor:pointer`;b.onclick=()=>{apply(color);b.blur();};buttons.push([b,color]);panel.append(b);}
+    for(const [label,color]of PAINTS[spec.id]||[]){const b=document.createElement('button');b.type='button';b.title=label;b.setAttribute('aria-label',label);b.style.cssText=`width:26px;height:26px;min-width:26px;padding:0;border:1px solid #87939d;border-radius:50%;background:${color};`;b.onclick=()=>{apply(color);b.blur();};buttons.push([b,color]);panel.append(b);}
     picker.addEventListener('input',()=>apply(picker.value));picker.addEventListener('change',()=>picker.blur());panel.append(picker,name);refresh(savedPaint(spec));
   }
 }

@@ -19,16 +19,11 @@ const clamp=(x,a,b)=>Math.max(a,Math.min(b,x)),r=v=>+v.toFixed(2);
 const P=n=>[(n.lon-proj.lon0)*proj.mlon,-(n.lat-proj.lat0)*proj.mlat];
 function demAt(x,z){const fx=clamp((x-dem.x0)/dem.step,0,dem.nx-1.0001),fz=clamp((z-dem.z0)/dem.step,0,dem.nz-1.0001),i=Math.floor(fx),j=Math.floor(fz),a=fx-i,b=fz-j;return (dem.h[j*dem.nx+i]*(1-a)+dem.h[j*dem.nx+i+1]*a)*(1-b)+(dem.h[(j+1)*dem.nx+i]*(1-a)+dem.h[(j+1)*dem.nx+i+1]*a)*b;}
 function smooth(A,sigma){const rad=Math.ceil(sigma*3);return A.map((_,i)=>{let sum=0,w=0;for(let k=-rad;k<=rad;k++){const q=Math.exp(-k*k/(2*sigma*sigma));sum+=A[clamp(i+k,0,A.length-1)]*q;w+=q;}return sum/w;});}
-// Arc length changes at legal roundabout detours must not shift an old station/height
-// table onto different streets. Preserve the authored road bed by world position;
-// the local DEM supplies only the elevation delta on genuinely new junction arcs.
-const heightReference=load('height-reference');
-const Yraw=X.map((x,i)=>{const z=Z[i];let best=Infinity,height=0,px=0,pz=0;
- for(let j=1;j<heightReference.x.length;j++){const ax=heightReference.x[j-1],az=heightReference.z[j-1],dx=heightReference.x[j]-ax,dz=heightReference.z[j]-az,t=clamp(((x-ax)*dx+(z-az)*dz)/(dx*dx+dz*dz||1),0,1),qx=ax+dx*t,qz=az+dz*t,d=(x-qx)**2+(z-qz)**2;
-  if(d<best){best=d;px=qx;pz=qz;height=heightReference.y[j-1]+(heightReference.y[j]-heightReference.y[j-1])*t;}}
- return height+demAt(x,z)-demAt(px,pz);
-});
-const periodic=Yraw.slice(0,-1),Y=periodic.map((_,i)=>{let sum=0,w=0;for(let k=-9;k<=9;k++){const q=Math.exp(-k*k/18);sum+=periodic[(i+k+periodic.length)%periodic.length]*q;w+=q;}return r(sum/w);});Y.push(Y[0]);
+// Road elevation comes from direct EU-DEM v1.1 samples at ~24 m road stations (raw/route-dem.json),
+// linearly interpolated along the lap, so the carved street bed follows the measured ground.
+const stationDem=load('route-dem');
+const Yraw=X.map((_,i)=>{const s=i*step;let k=1;while(k<stationDem.length-1&&stationDem[k].s<s)k++;const a=stationDem[k-1],b=stationDem[k],t=clamp((s-a.s)/((b.s-a.s)||1),0,1);return a.elevation+(b.elevation-a.elevation)*t;});
+const periodic=Yraw.slice(0,-1),Y=periodic.map((_,i)=>{let sum=0,w=0;for(let k=-36;k<=36;k++){const q=Math.exp(-k*k/288);sum+=periodic[(i+k+periodic.length)%periodic.length]*q;w+=q;}return r(sum/w);});Y.push(Y[0]);
 const buckets=new Map(),C=80;
 for(let i=0;i<N;i++){const key=`${Math.floor(X[i]/C)},${Math.floor(Z[i]/C)}`;if(!buckets.has(key))buckets.set(key,[]);buckets.get(key).push(i);}
 function nearest(x,z,max=600){const cx=Math.floor(x/C),cz=Math.floor(z/C);let bi=-1,bd=max*max;for(let k=0;k<=Math.ceil(max/C);k++){for(let a=-k;a<=k;a++)for(let b=-k;b<=k;b++){if(Math.max(Math.abs(a),Math.abs(b))!==k)continue;for(const i of buckets.get(`${cx+a},${cz+b}`)||[]){const d=(x-X[i])**2+(z-Z[i])**2;if(d<bd){bd=d;bi=i;}}}if(bi>=0&&Math.sqrt(bd)<(k-.5)*C)break;}if(bi<0)return null;const a=Math.max(0,bi-1),b=Math.min(N-1,bi+1),dx=X[b]-X[a],dz=Z[b]-Z[a],l=Math.hypot(dx,dz)||1;return{i:bi,s:bi*step,d:Math.sqrt(bd),u:(x-X[bi])*-dz/l+(z-Z[bi])*dx/l};}
@@ -57,8 +52,11 @@ function raster(p,value){let z0=Infinity,z1=-Infinity;for(let k=1;k<p.length;k+=
 for(const[k,v]of[['scrub',3],['rock',2],['quarry',2],['residential',4],['wood',6],['park',5]])for(const a of areas[k])if(a.c)raster(a.p,v);
 for(let j=0;j<GZ;j++){for(let i=0;i<GX;i++){const x=minX+i*T,z=minZ+j*T,id=j*GX+i;let h=demAt(x,z);const q=nearest(x,z,55);if(q&&q.d<48){const f=clamp((q.d-7)/37,0,1),t=f*f*(3-2*f);h=(Y[q.i]-.25)*(1-t)+h*t;}H[id]=Math.round(h*10);}}
 const header=Buffer.alloc(32);header.writeInt32LE(GX,0);header.writeInt32LE(GZ,4);header.writeFloatLE(minX,8);header.writeFloatLE(minZ,12);header.writeFloatLE(T,16);fs.writeFileSync(path.join(out,'terrain.bin'),Buffer.concat([header,Buffer.from(H.buffer),Buffer.from(CL.buffer)]));
-const marks=R.stations.map((q,i)=>({id:'station-'+i,name:R.names.findLast(n=>n.s<=q.s)?.name.toUpperCase()||'PSYCHIKO',sub:i?'Palaio Psychiko / Filothei streets':'Start / finish · Diamantidou',s:q.s})).sort((a,b)=>a.s-b.s);
-const events=[{id:'psychiko-tt',mapId:'psychiko',name:'PSYCHIKO DRAWN LOOP TT',disabled:true,blurb:'One lap through the drawn neighbourhood loop. Tight roundabouts and neighbourhood avenues against the clock.',type:'timetrial',from:'start',to:'finish',laps:1,rivals:0,traffic:0,targets:{gold:75,silver:65,bronze:55}},{id:'psychiko-race',mapId:'psychiko',name:'PSYCHIKO STREET RACE',blurb:'Two laps against two locals on the user-drawn neighbourhood loop.',type:'sprint',from:'start',to:'finish',laps:2,rivals:2,traffic:0,targets:{gold:1,silver:2,bronze:3}}];
+// Marks name the streets along the lap (district-style splits and HUD ticks); the timing line is the first.
+const plain=name=>name.normalize('NFD').replace(/\p{M}/gu,'').toUpperCase();
+const marks=[{id:'start',name:plain(R.names[0]?.name||'DIAMANTIDOU'),sub:'Start / finish · Diamantidou',s:0}];
+R.names.forEach((n,i)=>{const run=(R.names[i+1]?.s??R.length)-n.s;if(/^Unnamed/.test(n.name)||n.s<150||run<120)return;const name=plain(n.name);if(marks.at(-1).name===name)return;marks.push({id:'street-'+marks.length,name,sub:'Palaio Psychiko streets',s:n.s});});
+const events=[{id:'psychiko-tt',mapId:'psychiko',name:'PSYCHIKO GARDEN LOOP TT',disabled:true,blurb:'One lap around the Palaio Psychiko fan. Tight roundabouts and neighbourhood avenues against the clock.',type:'timetrial',from:'start',to:'finish',laps:1,rivals:0,traffic:0,targets:{gold:75,silver:65,bronze:55}},{id:'psychiko-race',mapId:'psychiko',name:'PSYCHIKO STREET RACE',blurb:'Two laps against two locals around the Palaio Psychiko fan: radial avenues, ring streets and roundabouts.',type:'sprint',from:'start',to:'finish',laps:2,rivals:2,traffic:0,targets:{gold:1,silver:2,bronze:3}}];
 const a=0,b=N-1;let ascent=0,descent=0,maxGrade=0;for(let i=a+1;i<=b;i++){const d=Y[i]-Y[i-1];if(d>0)ascent+=d;else descent-=d;maxGrade=Math.max(maxGrade,Math.abs(d/step));}
 const stats={startElevation:Y[a],finishElevation:Y[b],ascent:r(ascent),descent:r(descent),maxGrade:r(maxGrade*100),elevationSource:dem.source};
 const data={schema:1,id:'psychiko',name:'PSYCHIKO GARDEN CIRCUIT',type:'circuit',coastal:false,length:R.length,attribution:'Map data © OpenStreetMap contributors (ODbL) · Elevation: EU-DEM v1.1 via OpenTopoData',proj,route:{step,x:X,z:Z,y:Y,width:new Array(N).fill(7),lanes:new Array(N).fill(1),div:new Array(N).fill(0),start:0,finish:R.length,length:R.length,closed:true,streetCircuit:true,from:'Diamantidou',to:'Diamantidou',names:R.names,speeds:[{s:0,v:30}]},marks,zones:[{s:0,urban:.85,zone:'town'}],parkSpots:[],humps:[],barriers:[],coast:[],buildings,areas,pois:[],furniture:[],places:[],sideRoads,events,psychiko:{stats,sourceWayIds:R.sourceWayIds,orderedWays:R.orderedWays,stations:R.stations,gardenLoop:{length:garden.length,sourceWayIds:garden.sourceWayIds,sourceNodeIds:garden.sourceNodeIds},boundary:boundary.flat()}};
@@ -85,7 +83,9 @@ data.route.width[N-1]=data.route.width[0];
   if(moved<.005)break;}}
 // Clip 25 m inside the terrain grid so both six-metre shoulders always have ground under them.
 data.psychiko.networkBounds=[minX+25,minZ+25,maxX-25,maxZ-25].map(r);
-data.route.roundabouts=routeRoundabouts(data.route,roundaboutLoops(selected,P)).map(r=>({...r,reverse:R.trafficRoundabouts.find(q=>q.id===r.id)}));
+data.route.roundabouts=routeRoundabouts(data.route,roundaboutLoops(selected,P)).map(r=>{const plan=R.trafficRoundabouts.find(q=>q.id===r.id);
+ // The reverse arm of a roundabout beside the timing line straddles the lap seam: express it with s1 past the lap length.
+ return {...r,reverse:plan&&{...plan,s1:plan.s0>plan.s1?plan.s1+R.length:plan.s1}};});
 for(const r of data.route.roundabouts)for(let i=Math.floor(r.s0/step);i<=Math.ceil(r.s1/step);i++)data.route.width[i]=Math.min(data.route.width[i],r.w);
 data.roadNetwork=extractRoadNetwork(data,selected,{excludeWays:R.sourceWayIds,radius:1600,bounds:data.psychiko.networkBounds});
 data.psychiko.networkWayIds=publicWays.map(w=>w.id);

@@ -1,12 +1,11 @@
 // Recorded world sounds: ambience beds, traffic engine loops, impacts and horns (assets/audio/world, built by
-// tools/build_world_audio.mjs), plus the radio playlist (assets/audio/music). Everything loads in the background
+// tools/build_world_audio.mjs). Everything loads in the background
 // after the first key press; the game plays without any of it and each sound fades in once it arrives.
 const WORLD = new URL('../assets/audio/world/', import.meta.url);
 const ENGINES = new URL('../assets/audio/engines/', import.meta.url);
 const AMBIENCE = new URL('../assets/audio/world/ambience/', import.meta.url);
 const TEXTURES = new Set(['sea-sand', 'sea-rocks', 'city', 'cafe', 'beach', 'cicadas', 'crickets', 'rain-light', 'rain-heavy', 'rain-cabin']);
 const textures = new WeakMap();
-const MUSIC = new URL('../assets/audio/music/', import.meta.url);
 
 // Engine loops reused for traffic, with the RPM each was recorded at (see engine-recordings.js). Petrol traffic
 // uses the BMW exterior takes: they are heard from outside, and long enough that the loop never audibly repeats.
@@ -179,39 +178,6 @@ export class WorldAmbience {
     g.gain.setValueAtTime(volume, now + duration - 0.35); g.gain.linearRampToValueAtTime(0, now + duration);
     src.start(now, offset, duration); src.onended = () => { src.disconnect(); lp.disconnect(); g.disconnect(); pn.disconnect(); };
   }
-}
-
-/**
- * Radio: a streamed playlist (media element, so nothing is decoded up front) routed into the music bus.
- * onTrack(track) fires when a song starts.
- */
-export class Radio {
-  constructor(ctx, dest, onTrack) {
-    this.ctx = ctx; this.onTrack = onTrack; this.tracks = []; this.i = -1;
-    this.el = new window.Audio(); this.el.preload = 'auto'; this.el.crossOrigin = 'anonymous';
-    if ('preservesPitch' in this.el) this.el.preservesPitch = false; // the slow-down on a lost race is a tape stop
-    this.node = ctx.createMediaElementSource(this.el); this.node.connect(dest);
-    this.el.addEventListener('ended', () => this.next());
-    this.el.addEventListener('error', () => { if (this.tracks.length > 1 && !this.failed) { this.failed = true; this.next(); } });
-    this.ready = fetch(new URL('tracks.json', MUSIC)).then((r) => r.json()).then((j) => { this.tracks = j.tracks; }).catch((e) => console.warn('Radio unavailable:', e));
-  }
-  async play() {
-    await this.ready;
-    if (!this.tracks.length) return;
-    if (this.i < 0) return this.next(0);
-    this.el.play().catch(() => {});
-  }
-  pause() { this.el.pause(); }
-  async next(i = this.i + 1) {
-    await this.ready;
-    if (!this.tracks.length) return;
-    this.i = i % this.tracks.length; this.failed = false;
-    const t = this.tracks[this.i];
-    this.el.src = new URL(t.file, MUSIC).href;
-    this.el.playbackRate = 1;
-    this.el.play().then(() => this.onTrack?.(t)).catch(() => {});
-  }
-  set rate(r) { this.el.playbackRate = r; }
 }
 
 /** Camera-relative moving source. vr is positive when closing (m/s).

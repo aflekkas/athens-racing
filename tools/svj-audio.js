@@ -3,7 +3,7 @@ import {Vehicle} from '../src/physics.js';
 import {CARS} from '../src/cars.js';
 import {ExhaustPulse} from '../src/exhaust-pops.js';
 export async function captureSVJ(){
- const ctx=new OfflineAudioContext(2,44100*12,44100),a=new Audio();a.start({context:ctx,recordings:false,radio:false});a.setVolumes({master:1,engine:1,music:0,ambience:0,tyres:0});
+ const ctx=new OfflineAudioContext(2,44100*12,44100),a=new Audio();a.start({context:ctx,recordings:false});a.setVolumes({master:1,engine:1,ambience:0,tyres:0});
  const spec=CARS.find(c=>c.id==='aventador_svj');a.setEngine(spec);
  const route={GR:null,frame:(s,o)=>Object.assign(o,{tx:0,tz:-1,rx:1,rz:0,grade:0,bank:0}),point:(s,u)=>({x:u,z:-s,y:0}),y:()=>0,surfaceY:()=>0,urban:()=>1,edge:()=>900,lin:()=>0,medHalf:()=>0,div:()=>0,project:(x,z)=>({s:-z,u:x})};
  const v=new Vehicle(spec,route),pulse=new ExhaustPulse(),events=[];let failure=null;

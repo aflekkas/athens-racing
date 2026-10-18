@@ -1,10 +1,20 @@
 {
+  "id": "/",
   "name": "ATHENS RACING",
   "short_name": "ATHENS RACING",
   "description": "Race real Greek roads: the Athens Riviera, the Megara circuit and the Penteli hill climb.",
+  "lang": "en",
+  "categories": [
+    "games",
+    "sports"
+  ],
   "start_url": "../",
   "scope": "../",
   "display": "fullscreen",
+  "display_override": [
+    "fullscreen",
+    "standalone"
+  ],
   "orientation": "landscape",
   "background_color": "#07090c",
   "theme_color": "#07090c",
@@ -12,17 +22,26 @@
     {
       "src": "icon.svg",
       "sizes": "any",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any"
     },
     {
       "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "icon-maskable-512.png",

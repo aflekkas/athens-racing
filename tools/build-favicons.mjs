@@ -1,7 +1,7 @@
 // Renders the favicon / app icons from assets/icon.svg (the ASR mark) and writes assets/manifest.webmanifest.
 //   node tools/build-favicons.mjs        (needs `sharp`, which wrangler already installs under node_modules)
 // Outputs: assets/icon-16.png, icon-32.png, apple-touch-icon.png (180, square: iOS rounds it), icon-192.png, icon-512.png,
-// icon-maskable-512.png (square, the glyph inside the maskable safe zone).
+// icon-maskable-192.png and icon-maskable-512.png (square, the glyph inside the maskable safe zone).
 import sharp from 'sharp';
 import { readFileSync, writeFileSync } from 'node:fs';
 
@@ -18,14 +18,17 @@ await out(svg, 32, 'icon-32.png');
 await out(square, 180, 'apple-touch-icon.png');
 await out(svg, 192, 'icon-192.png');
 await out(svg, 512, 'icon-512.png');
+await out(maskable, 192, 'icon-maskable-192.png');
 await out(maskable, 512, 'icon-maskable-512.png');
 writeFileSync(new URL('manifest.webmanifest', dir), JSON.stringify({
-  name: 'ATHENS RACING', short_name: 'ATHENS RACING', description: 'Race real Greek roads: the Athens Riviera, the Megara circuit and the Penteli hill climb.',
-  start_url: '../', scope: '../', display: 'fullscreen', orientation: 'landscape', background_color: '#07090c', theme_color: '#07090c',
+  id: '/', name: 'ATHENS RACING', short_name: 'ATHENS RACING', description: 'Race real Greek roads: the Athens Riviera, the Megara circuit and the Penteli hill climb.',
+  lang: 'en', categories: ['games', 'sports'], start_url: '../', scope: '../', display: 'fullscreen', display_override: ['fullscreen', 'standalone'], orientation: 'landscape',
+  background_color: '#07090c', theme_color: '#07090c',
   icons: [
-    { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml' },
-    { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
-    { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
+    { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
+    { src: 'icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+    { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+    { src: 'icon-maskable-192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
     { src: 'icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
   ],
 }, null, 2) + '\n');

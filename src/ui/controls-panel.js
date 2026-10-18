@@ -7,22 +7,21 @@ import * as C from './components.js';
 
 const { icon, esc } = C;
 const GROUPS = [
-  ['DRIVING', 'steering-wheel', { throttle: 'ACCELERATE', brake: 'BRAKE / REVERSE', left: 'STEER LEFT', right: 'STEER RIGHT', handbrake: 'HANDBRAKE', tractionControl: 'TOGGLE TC / ESC', nitro: 'NITRO', shiftUp: 'SHIFT UP', shiftDown: 'SHIFT DOWN', transmission: 'MANUAL / AUTO', map: 'BIG MAP' }],
+  ['DRIVING', 'circle-gauge', { throttle: 'ACCELERATE', brake: 'BRAKE / REVERSE', left: 'STEER LEFT', right: 'STEER RIGHT', handbrake: 'HANDBRAKE', tractionControl: 'TOGGLE TC / ESC', nitro: 'NITRO', shiftUp: 'SHIFT UP', shiftDown: 'SHIFT DOWN', transmission: 'MANUAL / AUTO', map: 'BIG MAP' }],
   ['CAMERA', 'camera', { camera: 'CHANGE CAMERA', lookBack: 'LOOK BACK', lookLeft: 'LOOK LEFT', lookRight: 'LOOK RIGHT', lookUp: 'LOOK UP', lookDown: 'LOOK DOWN' }],
-  ['RACE', 'flag-checkered', { restart: 'RESTART', pause: 'PAUSE', tow: 'TOW TO THE ROAD', garage: 'GARAGE' }],
-  ['MUSIC', 'speaker-high', { music: 'MUSIC ON / OFF', nextTrack: 'NEXT TRACK' }],
-  ['MENUS', 'list', { up: 'UP', down: 'DOWN', menuLeft: 'LEFT', menuRight: 'RIGHT', confirm: 'CONFIRM', back: 'BACK' }],
+  ['RACE', 'flag', { restart: 'RESTART', pause: 'PAUSE', tow: 'TOW TO THE ROAD', garage: 'GARAGE' }],
+  ['MENUS', 'menu', { up: 'UP', down: 'DOWN', menuLeft: 'LEFT', menuRight: 'RIGHT', confirm: 'CONFIRM', back: 'BACK' }],
 ];
 const KEYS = { Space: 'SPACE', Enter: 'ENTER', Escape: 'ESC', Backspace: 'BKSP', Tab: 'TAB', ShiftLeft: 'L SHIFT', ShiftRight: 'R SHIFT', ControlLeft: 'L CTRL', ControlRight: 'R CTRL', AltLeft: 'L ALT', AltRight: 'R ALT', CapsLock: 'CAPS', Comma: ',', Period: '.', Slash: '/', Semicolon: ';', Quote: "'", BracketLeft: '[', BracketRight: ']', Minus: '-', Equal: '=', Backquote: '`', Backslash: '\\' };
-const keyLabel = (c) => c.startsWith('Key') ? c.slice(3) : c.startsWith('Digit') ? c.slice(5) : c.startsWith('Numpad') ? 'NUM ' + c.slice(6) : c.startsWith('Arrow') ? icon('caret-' + c.slice(5).toLowerCase()) : KEYS[c] || esc(c.replace(/([a-z])([A-Z])/g, '$1 $2').toUpperCase());
-const PAD = ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'VIEW', 'MENU', 'LS', 'RS', 'D ' + icon('caret-up'), 'D ' + icon('caret-down'), 'D ' + icon('caret-left'), 'D ' + icon('caret-right'), 'HOME'];
+const keyLabel = (c) => c.startsWith('Key') ? c.slice(3) : c.startsWith('Digit') ? c.slice(5) : c.startsWith('Numpad') ? 'NUM ' + c.slice(6) : c.startsWith('Arrow') ? icon('chevron-' + c.slice(5).toLowerCase()) : KEYS[c] || esc(c.replace(/([a-z])([A-Z])/g, '$1 $2').toUpperCase());
+const PAD = ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'VIEW', 'MENU', 'LS', 'RS', 'D ' + icon('chevron-up'), 'D ' + icon('chevron-down'), 'D ' + icon('chevron-left'), 'D ' + icon('chevron-right'), 'HOME'];
 const PADCLS = ['pa', 'pb', 'px', 'py'];
 const STICK = ['LS', 'LS', 'RS', 'RS'];
 function padLabel(b) {
   let m = /^b(\d+)$/.exec(b); if (m) return [PAD[+m[1]] || 'B' + m[1], PADCLS[+m[1]] || ''];
   m = /^a(\d+)([+-])$/.exec(b); if (!m) return [esc(b), ''];
   const ax = +m[1], dir = ax % 2 ? (m[2] === '+' ? 'down' : 'up') : (m[2] === '+' ? 'right' : 'left');
-  return [`${STICK[ax] || 'AX' + ax} ${icon('caret-' + dir)}`, ''];
+  return [`${STICK[ax] || 'AX' + ax} ${icon('chevron-' + dir)}`, ''];
 }
 const chips = (kind, codes) => {
   if (!codes.length) return C.kbd('NONE', kind === 'gamepad', 'kbd--empty');
@@ -41,14 +40,14 @@ export function renderControls(menu) {
   const other = all.filter(a => !known.has(a));
   const groups = [...GROUPS, ...(other.length ? [['OTHER', 'wrench', Object.fromEntries(other.map((a) => [a, a.replace(/([A-Z])/g, ' $1').toUpperCase()]))]] : [])];
   menu.bindCol = menu.bindCol || 0; paintCol(menu);
-  return `<div class="group"><h3 class="group__title">${icon('game-controller')}STEERING RESPONSE</h3>
+  return `<div class="group"><h3 class="group__title">${icon('gamepad-2')}STEERING RESPONSE</h3>
       ${C.slider({ key: 'deadzone', label: 'STICK DEADZONE', value: s.deadzone, min: 0, max: 0.45, step: 0.01, format: 'f2', attrs: A })}
       ${C.slider({ key: 'sensitivity', label: 'STEERING SENSITIVITY', value: s.sensitivity, min: 0.25, max: 2, step: 0.05, format: 'x', attrs: A })}
       ${C.slider({ key: 'linearity', label: 'STEERING CURVE', value: s.linearity, min: 0.25, max: 3, step: 0.05, format: 'f2', attrs: A, note: '1.00 IS LINEAR · HIGHER IS GENTLER NEAR CENTRE' })}
-      ${C.segmented({ key: 'touchSteering', label: 'TOUCH STEERING', value: s.touchSteering, options: [['screen', 'ON-SCREEN', 'hand-tap'], ['tilt', 'TILT', 'device-mobile']], attrs: A })}</div>
-    <div class="bind-head"><span></span><span>${icon('keyboard')}KEYBOARD</span><span>${icon('game-controller')}CONTROLLER</span></div>
+      ${C.segmented({ key: 'touchSteering', label: 'TOUCH STEERING', value: s.touchSteering, options: [['screen', 'ON-SCREEN', 'hand'], ['tilt', 'TILT', 'smartphone']], attrs: A })}</div>
+    <div class="bind-head"><span></span><span>${icon('keyboard')}KEYBOARD</span><span>${icon('gamepad-2')}CONTROLLER</span></div>
     ${groups.map(([title, ic, g]) => `<div class="group"><h3 class="group__title">${icon(ic)}${title}</h3>${Object.entries(g).filter(([a]) => all.includes(a)).map(([a, l]) => bindRow(a, l)).join('')}</div>`).join('')}
-    <div class="field-actions">${C.button({ label: 'RESET CONTROLS', icon: 'arrow-counter-clockwise', variant: 'ghost', act: 'controlsReset', size: 'sm' })}</div>`;
+    <div class="field-actions">${C.button({ label: 'RESET CONTROLS', icon: 'rotate-ccw', variant: 'ghost', act: 'controlsReset', size: 'sm' })}</div>`;
 }
 /** the selected chip column (keyboard / controller) is drawn by CSS from #ui[data-bindcol] */
 function paintCol(menu) { menu.root.dataset.bindcol = menu.bindCol; }
@@ -65,8 +64,8 @@ function capture(menu, action, kind) {
   rerenderRow(menu, action);
 }
 async function confirmReset(menu) {
-  const ok = await C.ui.prompt({ title: 'RESET CONTROLS?', body: 'Every key and controller binding and the steering response go back to the defaults.', icon: 'arrow-counter-clockwise',
-    actions: [{ id: 'reset', label: 'RESET', icon: 'arrow-counter-clockwise', variant: 'primary' }, { id: 'cancel', label: 'CANCEL', variant: 'secondary', default: true }] });
+  const ok = await C.ui.prompt({ title: 'RESET CONTROLS?', body: 'Every key and controller binding and the steering response go back to the defaults.', icon: 'rotate-ccw',
+    actions: [{ id: 'reset', label: 'RESET', icon: 'rotate-ccw', variant: 'primary' }, { id: 'cancel', label: 'CANCEL', variant: 'secondary', default: true }] });
   if (ok === 'reset') { input.resetBindings(); menu.refresh(); C.ui.toast('CONTROLS RESET', { icon: 'check', tone: 'good' }); }
 }
 /** a named action on the controls tab; true = handled here */
@@ -85,9 +84,7 @@ export function controlsClick(menu, e) {
 }
 export async function controlsChange(menu, key, value, el) {
   if (key === 'touchSteering' && value === 'tilt') {
-    const D = globalThis.DeviceOrientationEvent;
-    try { if (D?.requestPermission && await D.requestPermission() !== 'granted') { C.ui.toast('TILT PERMISSION UNAVAILABLE', { icon: 'warning', tone: 'bad' }); C.setValue(el, 'screen', false); return; } }
-    catch { C.ui.toast('TILT UNAVAILABLE ON THIS DEVICE', { icon: 'warning', tone: 'bad' }); C.setValue(el, 'screen', false); return; }
+    if (!await input.enableTilt()) { C.setValue(el, 'screen', false); return; }
   }
   input.configure({ [key]: value });
 }

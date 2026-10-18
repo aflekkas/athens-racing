@@ -1,0 +1,129 @@
+{
+  "purpose": "Stage 1 offline surface inspection. Coastline view is geographic context; sea/coast emission and actual game driving belong to stage 2.",
+  "errors": [],
+  "poses": {
+    "overview": {
+      "frame": 2,
+      "calls": 7,
+      "triangles": 17078,
+      "points": 0,
+      "lines": 0,
+      "camera": [
+        700,
+        473.0301532450275,
+        700
+      ],
+      "target": [
+        371.17815955330326,
+        7.755398082733154,
+        25.813470323644957
+      ],
+      "buildings": 3
+    },
+    "street": {
+      "frame": 3,
+      "calls": 5,
+      "triangles": 17048,
+      "points": 0,
+      "lines": 0,
+      "camera": [
+        364.1171569824219,
+        7.755398082733154,
+        35.51616287231445
+      ],
+      "target": [
+        371.17815955330326,
+        7.755398082733154,
+        25.813470323644957
+      ],
+      "buildings": 3
+    },
+    "junction": {
+      "frame": 4,
+      "calls": 7,
+      "triangles": 17078,
+      "points": 0,
+      "lines": 0,
+      "camera": [
+        501.87701416015625,
+        34.45826768875122,
+        221.27000427246094
+      ],
+      "target": [
+        466.87701416015625,
+        6.458267688751221,
+        186.27000427246094
+      ],
+      "buildings": 3
+    },
+    "coastline": {
+      "frame": 5,
+      "calls": 7,
+      "triangles": 17078,
+      "points": 0,
+      "lines": 0,
+      "camera": [
+        600,
+        140,
+        600
+      ],
+      "target": [
+        371.17815955330326,
+        7.755398082733154,
+        25.813470323644957
+      ],
+      "buildings": 3
+    }
+  },
+  "localLoad": {
+    "fetchInflateMs": 92.39999997615814,
+    "decodeValidateMs": 217.70000004768372,
+    "firstRenderMs": 587.2000000476837
+  },
+  "desktop": {
+    "renderCpuMs": {
+      "median": 0.40000009536743164,
+      "p95": 4.899999976158142,
+      "max": 8
+    },
+    "heap": {
+      "used": 7959955,
+      "total": 9035631
+    },
+    "geometryBytes": 317676,
+    "render": {
+      "frame": 65,
+      "calls": 7,
+      "triangles": 17078,
+      "points": 0,
+      "lines": 0
+    },
+    "geometries": 7,
+    "textures": 0,
+    "scope": "single offline cell; not player physics or AI traffic",
+    "webglRenderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+  },
+  "mobile4x": {
+    "renderCpuMs": {
+      "median": 1.399999976158142,
+      "p95": 11.799999952316284,
+      "max": 29.600000023841858
+    },
+    "heap": {
+      "used": 7801296,
+      "total": 8982500
+    },
+    "geometryBytes": 317676,
+    "render": {
+      "frame": 126,
+      "calls": 6,
+      "triangles": 17068,
+      "points": 0,
+      "lines": 0
+    },
+    "geometries": 7,
+    "textures": 0,
+    "scope": "single offline cell; not player physics or AI traffic",
+    "webglRenderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+  }
+}

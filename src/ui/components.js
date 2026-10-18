@@ -1,11 +1,12 @@
+import { BRAND_BADGES, MANUFACTURER_NAMES } from '../manufacturers.js';
 import { buildBadge } from '../build-environment.js';
 import { notifications, raceNotificationsActive } from './notifications.js';
 // UI COMPONENTS: the ATHENS RACING kit. Plain JS, no dependencies; styles in src/ui/ui.css (design tokens at the top).
 //
 // Two ways to use it:
 //   1. HTML builders (menus render strings):  button({ label, icon, variant, act }), slider({ key, value, ... }), toggle(),
-//      segmented(), stepper(), select({ compact }), tabs({ vertical }), option(), listRow(), textField(), searchField(), card(),
-//      carCard(), panel(), sheetHead(), dialog() (sign-in only), plate(), stat(), chip(), table(), keyHints(), progress(), spinner(),
+//      segmented(), stepper(), select({ compact }), tabs(), nav(), option(), listRow(), textField(), searchField(), card(),
+//      carCard(), panel(), listHead(), emptyState(), sheetHead(), dialog() (sign-in only), plate(), stat(), chip(), table(), keyHints(), progress(), spinner(),
 //      medal(), icon(name). Interactive builders emit a `.mi` row (the menu's focus item) carrying data-kind / data-key.
 //      Inside src/menu.js the named input actions drive them: left / right -> step(el, ±1), confirm -> activate(el).
 //      Mouse, touch and pen work through handleClick(event) / pointer drag on sliders (bindRoot(root) once).
@@ -29,8 +30,9 @@ import { notifications, raceNotificationsActive } from './notifications.js';
 //                               window.__flow.inMenu() reports true, so driving input is zeroed while it is open.
 //   ui.toast(text, { icon, tone: 'good' | 'bad', ms })   a short notice at the top of the screen
 //
-// Icons: Phosphor Icons (bold, MIT), vendored in assets/icons/ (sprite.svg via tools/build-icon-sprite.mjs).
+// Icons: Lucide (lucide-static 1.59.0, ISC), vendored in assets/icons/ (sprite.svg via tools/build-icon-sprite.mjs).
 
+import { settings, onSettings } from '../settings.js';
 import { bindingLabel } from '../input-labels.js';
 import { driverName } from '../driver-name.js';
 export let hintBindings = null;
@@ -51,7 +53,36 @@ if (typeof document !== 'undefined' && typeof fetch === 'function') fetch(SPRITE
   if (document.body) put(); else document.addEventListener('DOMContentLoaded', put, { once: true });
 }).catch(() => {});
 export const icon = (name, cls = '') => name ? `<svg class="ico ${cls}" aria-hidden="true" focusable="false"><use href="${spriteInline ? '#ico-' : SPRITE + '#'}${name}"/></svg>` : '';
+export const iconLabel = (text, name) => !name ? text : `<span class="icon-label">${icon(name)}<span>${text}</span></span>`;
 export function iconEl(name, cls = '') { const t = document.createElement('template'); t.innerHTML = icon(name, cls); return t.content.firstChild; }
+
+/** Compact driving controls share the same SVG labels as the menus. */
+export function touchControlLabel(action, label) { return action === 'pause' ? icon('pause') : action === 'camera' ? icon('camera') : esc(label); }
+export function touchSteeringLabel() { return `${icon('chevron-left')}<span>STEER</span>${icon('chevron-right')}`; }
+
+/** Startup HTML declares icons without duplicating the shared SVG markup. */
+export function mountIconPlaceholders(root = document) {
+  for (const el of root.querySelectorAll('[data-ui-icon]')) el.replaceWith(iconEl(el.dataset.uiIcon));
+}
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => mountIconPlaceholders(), { once: true });
+  else mountIconPlaceholders();
+}
+
+// Backdrop effects exist only on mounted overlays. Low performance classes and touch devices use tint.
+if (typeof document !== 'undefined') {
+  const syncBackdrop = () => { document.documentElement.dataset.uiBackdrop = ['potato', 'low'].includes(settings.perfClass) ? 'tint' : 'blur'; };
+  syncBackdrop(); onSettings(syncBackdrop);
+}
+/** Keep the outgoing overlay alive for its short fade after menu navigation replaces the screen. */
+export function exitBackdrop(root) {
+  const overlay = root.querySelector('.dialog-scrim, .scr--pause');
+  if (!overlay) return;
+  const rect = root.getBoundingClientRect();
+  overlay.style.cssText = `position:fixed;inset:auto;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;box-sizing:border-box`;
+  overlay.inert = true; overlay.setAttribute('aria-hidden', 'true'); overlay.classList.add('is-closing');
+  layer().append(overlay); setTimeout(() => overlay.remove(), 180);
+}
 
 // ------------------------------------------------------------------ value formats (sliders / steppers)
 const FORMATS = {
@@ -66,23 +97,44 @@ export function button({ label = '', icon: ic, iconRight, logo = '', variant = '
   const c = ['btn', 'btn--' + variant, size && 'btn--' + size, block && 'btn--block', !label && !logo && 'btn--icon', focusable && 'mi', disabled && 'off', cls].filter(Boolean).join(' ');
   return `<div class="${c}" role="button"${attrStr({ 'data-act': act, title, 'aria-label': !label ? title : null, 'aria-disabled': disabled ? 'true' : null, ...attrs })}>${logo}${icon(ic)}${label ? `<span>${label}</span>` : ''}${sub ? `<span class="btn__sub">${sub}</span>` : ''}${icon(iconRight)}</div>`;
 }
-export function option({ icon: ic, title, desc = '', act, attrs, cls = '', disabled } = {}) {
-  return `<div class="mi option ${disabled ? 'off' : ''} ${cls}" role="button"${attrStr({ 'data-act': act, ...attrs })}><span class="option__ico">${icon(ic)}</span><span><b class="option__title">${title}</b>${desc ? `<span class="option__desc">${desc}</span>` : ''}</span><span class="option__go">${icon('caret-right')}</span></div>`;
+/** media: artwork behind a tile (option--feature); cta: the tile's call to action, lit while the tile has focus */
+export function option({ icon: ic, title, desc = '', act, attrs, cls = '', disabled, media = '', cta = '' } = {}) {
+  return `<div class="mi option ${disabled ? 'off' : ''} ${cls}" role="button"${attrStr({ 'data-act': act, ...attrs })}><span class="option__ico">${icon(ic)}</span><span><b class="option__title">${title}</b>${desc ? `<span class="option__desc">${desc}</span>` : ''}${cta ? `<span class="option__cta">${cta}${icon('chevron-right')}</span>` : ''}</span><span class="option__go">${icon('chevron-right')}</span>${cls.split(/\s+/).includes('option--hero') ? `<span class="option__start">START${icon('chevron-right')}</span>` : ''}${media ? `<span class="option__media" aria-hidden="true">${media}</span>` : ''}</div>`;
 }
 export function panel(title, body, { icon: ic, cls = '', notch = false, right = '', attrs } = {}) {
   return `<section class="panel ${notch ? 'panel--notch' : ''} ${cls}"${attrStr(attrs)}>${title ? `<header class="panel__head"><h3 class="panel__title">${icon(ic)}${title}</h3>${right}</header>` : ''}${body}</section>`;
 }
+/** A small, dismissible card that sits over a screen without blocking it (the install hint): a lead icon plate, a title, one
+ *  line of text, optional numbered steps ({ icon, text }) and actions. Not a dialog: nothing behind it is dimmed or trapped.
+ *  It fades in by itself; set data-leaving on it to fade it out. */
+export function notice({ icon: ic = 'info', title = '', text = '', steps = [], actions = '', dismiss = '', dismissTitle = 'Dismiss', cls = '', attrs } = {}) {
+  return `<aside class="panel panel--float notice ${cls}" role="region"${attrStr(attrs)}><header class="notice__head"><span class="option__ico">${icon(ic)}</span><h3 class="notice__title">${title}</h3>${dismiss ? button({ icon: 'x', variant: 'ghost', size: 'sm', act: dismiss, title: dismissTitle }) : ''}</header>${text ? `<p class="notice__text">${text}</p>` : ''}${steps.length ? `<ol class="notice__steps">${steps.map((st) => `<li><span class="option__ico">${icon(st.icon)}</span><span>${st.text}</span></li>`).join('')}</ol>` : ''}${actions ? `<div class="field-actions notice__actions">${actions}</div>` : ''}</aside>`;
+}
 export function card({ media = '', badge = '', title = '', text = '', body = '', foot = '', act, attrs, cls = '', selected } = {}) {
-  return `<div class="mi card ${selected ? 'selected' : ''} ${cls}" role="button"${attrStr({ 'data-act': act, ...attrs })}>${media ? `<div class="card__media">${media}${badge ? `<span class="card__badge">${badge}</span>` : ''}</div>` : ''}<div class="card__body"><h3 class="card__title">${title}</h3>${text ? `<p class="card__text">${text}</p>` : ''}${body}${foot ? `<div class="card__foot">${foot}</div>` : ''}</div></div>`;
+  return `<div class="mi card ${selected ? 'selected' : ''} ${cls}" role="button"${attrStr({ 'data-act': act, ...attrs })}>${media ? `<div class="card__media">${media}${badge ? `<span class="card__badge">${badge}</span>` : ''}</div>` : ''}<div class="card__body"><h3 class="card__title">${title}</h3>${text ? `<p class="card__text">${text}</p>` : ''}${body}${foot ? `<div class="card__foot">${foot}</div>` : ''}</div>${icon('check', 'card__selected')}</div>`;
+}
+/** A selectable paint swatch with the shared Lucide selection check. */
+export function paintSwatch({ name = '', color, selected = false } = {}) {
+  return `<div class="mi paint ${selected ? 'selected' : ''}" role="button" aria-pressed="${selected}" aria-label="${esc(name)}" title="${esc(name)}" data-act="paint" data-color="${esc(color)}" style="--paint:${esc(color)}">${icon('check', 'ico--paint-check ico--selection-check')}</div>`;
 }
 export function stat(label, value, { icon: ic, tone, cls = '' } = {}) {
   return `<div class="stat-tile ${tone ? 'stat-tile--' + tone : ''} ${cls}"><span class="stat-tile__k">${icon(ic)}${label}</span><b class="stat-tile__v">${value}</b></div>`;
 }
 export const stats = (tiles, cls = '') => `<div class="stats ${cls}">${tiles.map((t) => Array.isArray(t) ? stat(...t) : t).join('')}</div>`;
-/** a focusable list row (lobbies, landmarks, any pick-one list): icon, title + one line, right-side meta, chevron */
-export function listRow({ icon: ic, title = '', desc = '', meta = '', act, fid, attrs, cls = '', disabled, selected, go = true, focusable = true } = {}) {
+/** a focusable list row (lobbies, landmarks, any pick-one list): icon, title + one line, right-side meta, chevron.
+ *  media: a thumbnail in place of the icon. cells: [[html, key]] extra columns that line up from row to row on the
+ *  container's --list-cols grid (listHead() labels them); each cell is a value over a quiet caption. */
+export function listRow({ icon: ic, media = '', title = '', desc = '', cells = [], meta = '', act, fid, attrs, cls = '', disabled, selected, go = true, focusable = true } = {}) {
   // focusable: false = an information row whose meta holds its own buttons (friends, invites)
-  return `<div class="${focusable ? 'mi ' : ''}list-row${focusable ? '' : ' list-row--static'} ${disabled ? 'off' : ''} ${selected ? 'selected' : ''} ${cls}"${focusable ? ' role="button"' : ''}${attrStr({ 'data-act': act, 'data-fid': fid, 'aria-disabled': disabled ? 'true' : null, ...attrs })}>${ic ? `<span class="list-row__ico">${icon(ic)}</span>` : ''}<span class="list-row__main"><b>${title}</b>${desc ? `<span>${desc}</span>` : ''}</span>${meta ? `<span class="list-row__meta">${meta}</span>` : ''}${go ? icon('caret-right', 'list-row__go') : ''}</div>`;
+  const lead = media ? `<span class="list-row__media">${media}</span>` : ic ? `<span class="list-row__ico">${icon(ic)}</span>` : '';
+  return `<div class="${focusable ? 'mi ' : ''}list-row${focusable ? '' : ' list-row--static'}${cells.length ? ' list-row--cells' : ''} ${disabled ? 'off' : ''} ${selected ? 'selected' : ''} ${cls}"${focusable ? ' role="button"' : ''}${attrStr({ 'data-act': act, 'data-fid': fid, 'aria-disabled': disabled ? 'true' : null, ...attrs })}>${lead}<span class="list-row__main"><b>${title}</b>${desc ? `<span>${desc}</span>` : ''}</span>${cells.map(([html, key]) => `<span class="list-row__cell"${attrStr({ 'data-cell': key })}>${html}</span>`).join('')}${meta ? `<span class="list-row__meta">${meta}</span>` : ''}${go ? icon('chevron-right', 'list-row__go') : ''}</div>`;
+}
+/** the caption row over cell list rows: labels: [text | [text, columns spanned]] on the same --list-cols grid */
+export const listHead = (labels, cls = '') => `<div class="list-head ${cls}" aria-hidden="true">${labels.map((l) => { const [text, span] = Array.isArray(l) ? l : [l, 1]; return `<span${span > 1 ? ` style="grid-column: span ${span}"` : ''}>${text}</span>`; }).join('')}</div>`;
+/** an empty, loading or failed collection: an icon plate (or a spinner while busy), a title, one line and an action.
+ *  tone '' | 'warn' | 'bad' tints the plate */
+export function emptyState({ icon: ic = 'info', title = '', text = '', action = '', tone = '', busy = false, cls = '' } = {}) {
+  return `<div class="empty-state ${tone ? 'empty-state--' + tone : ''} ${cls}" role="status">${busy ? `<span class="empty-state__ico">${spinner()}</span>` : `<span class="empty-state__ico">${icon(ic)}</span>`}<b class="empty-state__title">${title}</b>${text ? `<p class="empty-state__text">${text}</p>` : ''}${action ? `<div class="empty-state__act">${action}</div>` : ''}</div>`;
 }
 /** a small status pill: tone '' | 'accent' | 'good' | 'warn' | 'bad' | 'gold' */
 export const chip = (text, { tone = '', icon: ic, cls = '', attrs } = {}) => `<span class="chip ${tone ? 'chip--' + tone : ''} ${cls}"${attrStr(attrs)}>${icon(ic)}<span>${text}</span></span>`;
@@ -103,11 +155,13 @@ export function setProgress(el, v) { if (!el) return; v = clamp(+v || 0, 0, 1); 
 
 // key hints (the soft-key bar): purely informational. Never focusable, clickable or in the .mi
 // focus order; the named input actions (keys / gamepad / touch buttons) drive everything they describe.
-const KB = (k) => `<kbd class="kbd">${k}</kbd>`, PAD = (k, c = '') => `<kbd class="kbd kbd--pad ${c}">${k}</kbd>`;
+const bindingIcons = { UP: 'arrow-up', DOWN: 'arrow-down', LEFT: 'arrow-left', RIGHT: 'arrow-right' };
+const bindingMarkup = text => String(text).replace(/\b(UP|DOWN|LEFT|RIGHT)\b/g, direction => icon(bindingIcons[direction]));
+const KB = (k) => `<kbd class="kbd">${bindingMarkup(k)}</kbd>`, PAD = (k, c = '') => `<kbd class="kbd kbd--pad ${c}">${bindingMarkup(k)}</kbd>`;
 const HINT_KEYS = {
-  confirm: [KB('ENTER'), PAD('A', 'pa')], back: [KB('ESC'), PAD('B', 'pb')], select: [KB(icon('caret-up')) + KB(icon('caret-down')), PAD('D-PAD')],
-  updown: [KB(icon('caret-up')) + KB(icon('caret-down')), PAD(icon('caret-up')) + PAD(icon('caret-down'))],
-  leftright: [KB(icon('caret-left')) + KB(icon('caret-right')), PAD(icon('caret-left')) + PAD(icon('caret-right'))],
+  confirm: [KB('ENTER'), PAD('A', 'pa')], back: [KB('ESC'), PAD('B', 'pb')], select: [KB(icon('chevron-up')) + KB(icon('chevron-down')), PAD('D-PAD')],
+  updown: [KB(icon('chevron-up')) + KB(icon('chevron-down')), PAD(icon('chevron-up')) + PAD(icon('chevron-down'))],
+  leftright: [KB(icon('chevron-left')) + KB(icon('chevron-right')), PAD(icon('chevron-left')) + PAD(icon('chevron-right'))],
   tabs: [KB('Q') + KB('E'), PAD('LB') + PAD('RB')], restart: [KB('R'), PAD('VIEW')], garage: [KB('G'), null],
 };
 export function keyHints(list, cls = '') {
@@ -123,22 +177,107 @@ export function keyHints(list, cls = '') {
     return `<span class="hint ${pad ? '' : 'no-pad'}"><span class="hint__keys on-key">${kb}</span>${pad ? `<span class="hint__keys on-pad">${pad}</span>` : ''}${label}</span>`;
   }).join('')}</div>`;
 }
-export const kbd = (text, pad = false, cls = '') => `<kbd class="kbd ${pad ? 'kbd--pad' : ''} ${cls}">${text}</kbd>`;
+export const kbd = (text, pad = false, cls = '') => `<kbd class="kbd ${pad ? 'kbd--pad' : ''} ${cls}">${bindingMarkup(text)}</kbd>`;
 
-/** the head-unit status bar: a fixed Back slot, breadcrumbs (the kicker), and the driver chip + clock at the right.
+/** the head-unit status bar: a fixed Back slot, breadcrumbs (the kicker), with an account button only when explicitly requested by the title.
  *  Back never shares a row with the page title, so every title lines up with the content grid below it. */
-export function statusBar({ back = true, kick = '' } = {}) {
-  return `<div class="hu-status">${back ? button({ icon: 'caret-left', label: 'BACK', variant: 'ghost', size: 'sm', act: 'back', focusable: false, cls: 'scr__back' }) : ''}${kick ? `<div class="hu-crumb kick">${kick}</div>` : ''}<div class="hu-status__r">${buildBadge() ? `<span class="build-badge">${esc(buildBadge())}</span>` : ''}<button type="button" class="mi hu-driver" data-act="account" aria-label="Account" data-hu-driver>${icon('user')}<span>${esc(driverName.get())}</span></button><time class="hu-clock" data-hu-clock>${clockText()}</time></div></div>`;
+export function statusBar({ back = true, kick = '', account = false } = {}) {
+  // Owner 2026-10-17: remove the title tagline, including its breadcrumb reuse.
+  if (/^(?:GREEK ROADS(?:\s*\/\s*PURE TIME)?|PURE TIME)$/.test(kick.replace(/<[^>]*>/g, '').trim())) kick = '';
+  return `<div class="hu-status">${back ? button({ icon: 'chevron-left', label: 'BACK', variant: 'ghost', size: 'sm', act: 'back', focusable: false, cls: 'scr__back' }) : ''}${kick ? `<div class="hu-crumb kick">${kick}</div>` : ''}${account ? `<div class="hu-status__r"><button type="button" class="mi hu-driver" data-act="account" aria-label="Account" data-hu-driver>${icon('user')}<span>${esc(driverName.get())}</span></button></div>` : ''}</div>`;
 }
-const clockText = () => { const d = new Date(); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
-if (typeof window !== 'undefined' && typeof document !== 'undefined') setInterval(() => { const t = clockText(); for (const el of document.querySelectorAll('[data-hu-clock]')) if (el.textContent !== t) el.textContent = t; }, 15000);
 driverName.onChange?.(name => { if (typeof document !== 'undefined') for (const el of document.querySelectorAll('[data-hu-driver] span')) el.textContent = name; });
 /** the standard menu screen: the status bar, the screen header (title + right slot), a body that scrolls, a footer of
  *  key hints. Every menu screen is built with this one frame (docs/OWNER-DECISIONS.md: one shared component set). */
-export function screen({ cls = '', kick = '', title = '', back = true, head = '', body = '', hints = [], foot = '' } = {}) {
-  return `<div class="scr ${cls}">${statusBar({ back, kick })}<header class="scr__head"><div class="scr__titles">${title ? `<h2 class="scr__title">${title}</h2>` : ''}</div>${head ? `<div class="scr__headr">${head}</div>` : ''}</header>
-    <div class="scr__body">${body}</div><footer class="scr__foot">${foot}${hints.length ? keyHints(hints) : ''}</footer></div>`;
+export function screen({ cls = '', kick = '', title = '', back = true, head = '', body = '', hints = [], foot = '', layout = '', bodyRegion = '', headRegion = '' } = {}) {
+  return `<div class="scr ${cls}"${attrStr({ 'data-layout': layout || null })}>${statusBar({ back, kick })}<header class="scr__head"><div class="scr__titles">${title ? `<h2 class="scr__title">${title}</h2>` : ''}</div>${head ? `<div class="scr__headr"${attrStr({ 'data-layout-region': headRegion || null })}>${head}</div>` : ''}</header>
+    <div class="scr__body"${attrStr({ 'data-layout-region': bodyRegion || null })}>${body}</div><footer class="scr__foot">${foot}${hints.length ? keyHints(hints) : ''}</footer></div>`;
 }
+// ------------------------------------------------------------------ page layouts
+// Screens pass kit content into named regions; the template owns all page geometry.
+// Slot values are trusted HTML, like panel()/screen(). Escape user text with esc().
+// See docs/ui-layouts.md. screen() remains a low-level compatibility primitive during migration.
+function layoutFrame(name, options, body, bodyRegion = '', nav = '') {
+  const { cls = '', kick = '', title = '', back = true, hints = [], foot = '', variant = 'page' } = options;
+  return screen({ cls: `${variant === 'page' ? 'layout' : ''} layout--${name}${variant === 'page' ? '' : '-' + variant} ${cls}`, layout: name, kick, title, back, hints, foot, body, bodyRegion, head: nav, headRegion: nav ? 'nav' : '' });
+}
+const region = (name, content, cls = '') => `<div class="layout__${name} ${cls}" data-layout-region="${name}">${content}</div>`;
+/** Primary tile beside secondary tiles; all tiles share the available height. */
+export function heroTiles({ hero = '', tiles = '', intro = '', variant = 'page', ...frame } = {}) {
+  if (variant === 'title') return `<div class="scr scr--title layout--hero-tiles-title" data-layout="hero-tiles">${statusBar({back:false,account:true,kick:frame.kick})}<div class="home" data-layout-region="hero"><div class="home__brand" data-layout-region="intro">${intro}</div><div class="title__menu home__tiles" data-layout-region="tiles">${hero}${tiles}</div></div><footer class="scr__foot">${frame.foot || ''}${keyHints(frame.hints || [])}</footer></div>`;
+  if (variant === 'choices') return layoutFrame('hero-tiles', { ...frame, variant }, `<div class="mode-grid" data-layout-region="tiles">${hero}${tiles}</div>`);
+  return layoutFrame('hero-tiles', frame, region('hero', `${intro ? region('intro', intro) : ''}${region('primary', hero)}${region('tiles', tiles)}`));
+}
+/** Category navigation beside a separately scrolling content panel. */
+export function sidebarContent({ nav = '', content = '', variant = 'page', ...frame } = {}) {
+  if (variant === 'rail') return layoutFrame('sidebar-content', { ...frame, variant }, `<div class="set-panel panel scroll-y" data-layout-region="content">${content}</div>`, '', nav);
+  if (variant === 'balanced') return layoutFrame('sidebar-content', { ...frame, variant }, region('sidebar', region('nav', nav) + region('content', content, 'layout-sidebar-balanced__content'), 'layout-sidebar-balanced'));
+  return layoutFrame('sidebar-content', frame, region('sidebar', region('nav', nav, 'scroll-y') + region('content', content, 'scroll-y')));
+}
+/** Filters always follow the title; the collection uses the remaining height. */
+export function browseGrid({ filters = '', items = '', list = false, aside = '', busy = false, join = '', identity = '', actions = '', variant = 'page', ...frame } = {}) {
+  if (variant === 'lobby') return layoutFrame('browse-grid', { ...frame, cls: `layout--browse-grid-lobby ${frame.cls || ''}` }, region('filters', `<div class="mp-bar"><div class="mp-bar__join">${join}</div><div class="mp-bar__you">${identity}</div>${actions}</div>`) + region('items', items, 'scroll-y layout__items--list'));
+  if (variant === 'catalog') return layoutFrame('browse-grid', { ...frame, variant }, `<div class="catalog-toolbar" data-layout-region="filters">${filters}</div><div class="car-grid scroll-y" data-layout-region="items">${items}</div>`);
+  if (variant === 'filtered') return layoutFrame('browse-grid', { ...frame, variant }, filters + `<div class="layout-browse-filtered" data-layout-region="collection"><aside class="layout-browse-filtered__aside" data-layout-region="filters">${aside}</aside><div class="layout-browse-filtered__items" data-layout-region="items" aria-live="polite" aria-busy="${!!busy}">${items}</div></div>`);
+  return layoutFrame('browse-grid', frame, `${filters ? region('filters', filters) : ''}${region('items', items, `scroll-y ${list ? 'layout__items--list' : ''}`)}`);
+}
+/** Large viewer and inspector; the inspector follows the stage on a narrow portrait screen. */
+export function stageInspector({ stage = '', inspector = '', actions = '', stageAttrs = {}, caption = '', summary = '', inspectorTitle = '', inspectorHead = '', note = '', collection = true, variant = 'page', ...frame } = {}) {
+  if (variant === 'setup') return layoutFrame('stage-inspector', { ...frame, variant }, `<div class="setup-layout" data-layout-region="stage-inspector">${panel('', stage, {cls:'setup__event scroll-y', attrs:{'data-layout-region':'stage'}})}${panel(inspectorTitle, `<div class="setup__fields scroll-y" data-layout-region="inspector">${inspector}</div>${note}<div class="setup__go" data-layout-region="actions">${actions}</div>`, {icon:'sliders-horizontal', cls:'setup__form', right:inspectorHead})}</div>`);
+  if (variant === 'tracks') return layoutFrame('stage-inspector', { ...frame, cls: `layout--stage-inspector-tracks ${frame.cls || ''}` }, region('stage-inspector', region('stage', collection ? `<div class="mp-tracks scroll-y" data-layout-region="collection">${stage}</div>` : stage) + region('inspector', inspector, 'scroll-y')));
+  if (variant === 'showroom') return layoutFrame('stage-inspector', { ...frame, variant }, `<div class="mp-show mp-show--lobby" data-layout-region="stage-inspector"><div id="carStage" class="mp-stage" data-ui-keep="stage" aria-hidden="true" data-layout-region="stage">${stage}</div><div class="mp-show__cap" data-layout-region="caption">${caption}</div><div class="mp-plate" data-layout-region="summary">${summary}</div><aside class="mp-side scroll-y" data-layout-region="inspector">${inspector}</aside></div>`);
+  if (variant === 'vehicle') return layoutFrame('stage-inspector', { ...frame, variant }, `<div class="car-layout" data-layout-region="stage-inspector"><div class="car-stage" data-layout-region="stage"${attrStr(stageAttrs)}>${stage}</div>${inspector}</div>`);
+  if (variant === 'overview') return layoutFrame('stage-inspector', { ...frame, variant, foot: region('actions', actions, 'layout-overview__actions') }, region('stage-inspector', region('stage', stage, 'layout-overview__stage') + region('inspector', inspector, 'layout-overview__inspector'), 'layout-overview'));
+  if (variant === 'media') return layoutFrame('stage-inspector', { ...frame, variant }, `<figure class="layout-media" data-layout-region="stage">${stage}${inspector ? `<figcaption data-layout-region="inspector">${inspector}</figcaption>` : ''}</figure>`);
+  return layoutFrame('stage-inspector', frame, region('stage-inspector', region('stage', stage) + region('inspector', inspector, 'scroll-y')));
+}
+/** Full-bleed map/canvas behind the frame with a floating, independently scrolling card. */
+export function mapStage({ stage = '', card = '', nav = '', cardHint = '', stageAttrs = {}, cardAttrs = {}, intro = '', foot = '', variant = 'page', ...frame } = {}) {
+  if (variant === 'loading') return `<div id="loading" class="layout--map-stage-loading" data-layout="map-stage" role="region" aria-labelledby="ldName" aria-hidden="true" inert data-state="active"><div class="ld-art" id="ldArt" data-layout-region="stage">${stage}</div><div class="ld-shade"></div><div class="ld-wrap"><div class="ld-brand" data-layout-region="intro">${intro}</div><div class="ld-map" data-layout-region="content">${card}</div><div class="ld-foot" data-layout-region="progress">${foot}</div></div><canvas id="overview" width="560" height="640" hidden></canvas></div>`;
+  if (variant === 'floating') return layoutFrame('map-stage', { ...frame, variant, foot }, `<div class="attica-map layout-map-stage__map" data-layout-region="map"${attrStr(stageAttrs)}>${stage}</div><aside class="map-preview panel panel--float" data-layout-region="map-card"${attrStr(cardAttrs)}>${nav ? `<nav class="map-track-nav" aria-label="Browse tracks" data-layout-region="nav">${nav}</nav>` : ''}<div class="map-preview-content" aria-live="polite" data-layout-region="content">${card}</div>${cardHint ? `<div class="map-cycle-hint" aria-hidden="true">${cardHint}</div>` : ''}</aside>`);
+  return layoutFrame('map-stage', { ...frame, foot }, region('map', stage) + region('map-card', card, 'scroll-y'));
+}
+/** A readable sheet with optional supporting rows and actions. */
+export function sheetList({ rows = '', aside = '', actions = '', variant = 'page', status = '', ...frame } = {}) {
+  // The owner-locked pause sheet has its own inset header and docks left. Its
+  // regions keep the established DOM so focus, blur dismissal and pixels survive.
+  if (variant === 'pause') {
+    const { cls = '', kick = '', title = '', hints = [], foot = '' } = frame;
+    return `<div class="scr scr--pause ${cls}" data-layout="sheet-list">${panel('', `${sheetHead({ kick, title, status })}<div class="pause__list" data-layout-region="rows">${rows}</div>${actions ? `<div class="pause-controls" data-layout-region="actions">${actions}</div>` : ''}`, { cls: 'pause-sheet' })}
+      <footer class="scr__foot">${foot}${hints.length ? keyHints(hints) : ''}</footer></div>`;
+  }
+  if (variant === 'form') return layoutFrame('sheet-list', { ...frame, variant }, `<div class="set-panel panel scroll-y" data-layout-region="rows">${rows}${actions}</div>`);
+  if (variant === 'narrow') return layoutFrame('sheet-list', { ...frame, variant }, region('rows', rows, 'layout-sheet-narrow'));
+  if (variant === 'flow') return layoutFrame('sheet-list', { ...frame, variant }, rows + actions, 'rows');
+  if (variant === 'reading') return layoutFrame('sheet-list', { ...frame, variant }, rows + actions, 'rows');
+  // A whole page of reading: one centred column inside a region that scrolls under the fixed header and key hints.
+  if (variant === 'article') return layoutFrame('sheet-list', { ...frame, variant }, `<div class="layout-article scroll-y" data-layout-region="rows" data-article-scroll tabindex="-1"><article class="layout-article__column">${rows}${actions}</article></div>`);
+  if (variant === 'split') {
+    return layoutFrame('sheet-list', { ...frame, variant }, region('sheet',
+      region('rows', rows + (actions ? region('actions', actions, 'layout-sheet-split__actions') : ''), 'layout-sheet-split__rows') +
+      region('aside', aside, 'layout-sheet-split__aside scroll-y'), 'layout-sheet-split'));
+  }
+  return layoutFrame('sheet-list', frame, region('sheet', region('rows', rows, 'scroll-y') + (aside ? region('aside', aside, 'scroll-y') : '') + (actions ? region('actions', actions) : '')));
+}
+
+// ---- article content (sheetList variant 'article'): credits, release notes, licence texts. Sentence-case body text.
+/** an https link with its address visible, wrapping instead of truncating */
+export const articleLink = (url, label = '') => /^https:\/\//.test(url) ? `<a class="article-link" href="${esc(url)}" target="_blank" rel="noopener">${esc(label || url)}</a>` : '';
+/** a titled block of an article; `level: 'heading'` is a release-style heading (title large, `meta` beside it) */
+export const articleSection = ({ title = '', icon: ic = '', meta = '', level = 'label', body = '', id } = {}) =>
+  `<section class="article-section article-section--${level}"${attrStr({ id })}>${title ? `<header class="article-section__head"><h3 class="article-section__title">${icon(ic)}<span>${title}</span></h3>${meta ? `<div class="article-section__meta">${meta}</div>` : ''}</header>` : ''}${body}</section>`;
+/** a name with its role / attribution lines, optional chips or a handle on the right, and a row of links and actions */
+export function articleEntry({ title = '', desc = '', credit = '', side = '', links = [], actions = '' } = {}) {
+  const lines = String(credit).split('\n').filter(Boolean);
+  return `<div class="article-entry"><h4 class="article-entry__title">${title}</h4>${side ? `<div class="article-entry__side">${side}</div>` : ''}<div class="article-entry__body">${desc ? `<p class="article-entry__desc">${desc}</p>` : ''}${lines.map((l) => `<p class="article-entry__credit">${l}</p>`).join('')}${links.length ? `<ul class="article-entry__links">${links.map((u) => `<li>${u}</li>`).join('')}</ul>` : ''}${actions ? `<div class="article-entry__actions">${actions}</div>` : ''}</div></div>`;
+}
+export const articleList = (items) => `<ul class="article-list">${items.map((t) => `<li>${t}</li>`).join('')}</ul>`;
+/** a picture at the full column width, its size reserved so the page never jumps while it loads */
+export const articleFigure = ({ src, alt = '', caption = '', width = 1280, height = 800 } = {}) =>
+  `<figure class="article-figure"><img src="${esc(src)}" alt="${esc(alt)}" loading="lazy" decoding="async" width="${width}" height="${height}" />${caption ? `<figcaption>${esc(caption)}</figcaption>` : ''}</figure>`;
+/** plain text (licence files) as readable paragraphs */
+export const articleText = (paragraphs) => paragraphs.map((p) => `<p class="article-text">${p}</p>`).join('');
+
 /** the reference sheet header (the pause menu, owner-chosen 2026-10-16): a spaced-caps breadcrumb, a large light spaced
  *  title and an optional accent status line (the amber timer). Used by pause, the sign-in dialog and every panel that
  *  introduces a destination. */
@@ -148,18 +287,28 @@ export function sheetHead({ kick = '', title = '', status = '', statusIcon = 'ti
 /** the ONE dialog (owner-approved exception to "menus are full screens": sign-in only, docs/OWNER-DECISIONS.md).
  *  A compact panel on a scrim that dims the screen rendered under it (`under`, made inert). Focus stays inside: the
  *  menu only walks focus items within [data-dialog] while it is open. */
-export function dialog({ under = '', kick = '', title = '', body = '', actions = '', foot = '', cls = '', label } = {}) {
-  return `<div class="dialog-host">${under ? `<div class="dialog-under" inert aria-hidden="true">${under}</div>` : ''}<div class="dialog-scrim" data-dialog><section class="dialog panel ${cls}" role="dialog" aria-modal="true" aria-labelledby="ui-dialog-title"${attrStr({ 'aria-label': label })}>
-    ${sheetHead({ kick, title, id: 'ui-dialog-title' })}${body ? `<div class="dialog__body">${body}</div>` : ''}${actions ? `<div class="dialog__actions">${actions}</div>` : ''}${foot ? `<footer class="dialog__foot">${foot}</footer>` : ''}</section></div></div>`;
+export function dialog({ under = '', kick = '', title = '', body = '', actions = '', foot = '', cls = '', label, fullScreen = false } = {}) {
+  return `${fullScreen ? '<div class="scr scr--signin" data-layout="dialog">' : ''}<div class="dialog-host">${under ? `<div class="dialog-under" inert aria-hidden="true">${under}</div>` : ''}<div class="dialog-scrim" data-dialog><section class="dialog panel ${cls}" role="dialog" aria-modal="true" aria-labelledby="ui-dialog-title"${attrStr({ 'aria-label': label })}>
+    ${sheetHead({ kick, title, id: 'ui-dialog-title' })}${body ? `<div class="dialog__body">${body}</div>` : ''}${actions ? `<div class="dialog__actions">${actions}</div>` : ''}${foot ? `<footer class="dialog__foot">${foot}</footer>` : ''}</section></div></div>${fullScreen ? '</div>' : ''}`;
 }
+const MANUFACTURER_ATLAS = new URL('../../assets/brand-badges/atlas.svg', import.meta.url).href;
+export function manufacturerBadge(brand, cls = '') {
+  const cell = BRAND_BADGES[brand]?.enabled ? BRAND_BADGES[brand].cell : 15;
+  return `<svg class="manufacturer-badge ${cls}" viewBox="${cell % 4 * 128} ${Math.floor(cell / 4) * 128} 128 128" role="img" aria-label="${esc(MANUFACTURER_NAMES[brand] || 'Manufacturer')}" data-manufacturer="${esc(brand || '')}"><image href="${MANUFACTURER_ATLAS}" width="512" height="640"/></svg>`;
+}
+const selectLabel = option => option ? option[2]?.brand ? `${manufacturerBadge(option[2].brand)}<span>${option[1]}</span>` : iconLabel(option[1], option[2]?.icon) : '';
 /** a car tile for every car grid (garage, lobby car picks): thumbnail, name, class / trims line, HP + weight, drive badge */
-export function carCard({ id, name = '', line = '', hp, kg, drive = '', locked = false, lockLabel = '', act = 'carDetail', selected, attrs, cls = '' } = {}) {
+export function carCard({ id, brand, name = '', line = '', hp, kg, drive = '', locked = false, lockLabel = '', act = 'carDetail', selected, attrs, cls = '' } = {}) {
   return card({ cls: `card--car car-card ${locked ? 'off' : ''} ${cls}`, act, selected, attrs,
-    media: `<img data-car-thumb="${esc(id)}" alt="${esc(name)}" />`, badge: drive ? badge(esc(drive)) : '', title: name, text: line,
-    foot: `<span class="car-card__spec"><b>${hp} HP</b><span>${kg} KG</span></span>${locked && lockLabel ? badge(esc(lockLabel), '', 'lock-simple') : ''}` });
+    media: `${manufacturerBadge(brand, 'car-card__brand')}<img data-car-thumb="${esc(id)}" alt="${esc(name)}" />`, badge: drive ? badge(esc(drive)) : '', title: name, text: line,
+    foot: `<span class="car-card__spec"><b>${hp} HP</b><span>${kg} KG</span></span>${locked && lockLabel ? badge(esc(lockLabel), '', 'lock') : ''}` });
+}
+/** Vehicle specifications share a single panel hierarchy in every picker. */
+export function vehicleSpecs({ brand, name, trim, transmission, specs, choices = '', paint = '', extra = '', action = '' } = {}) {
+  return `<section class="vehicle-specs panel scroll-y"><header class="vehicle-specs__head">${manufacturerBadge(brand)}${sheetHead({kick:name,title:trim,status:transmission,statusIcon:'settings'})}</header>${choices}<div class="stats stats--boxed">${specs.map(([k,v,ic])=>stat(esc(k),esc(v),{icon:ic})).join('')}</div>${extra}${paint}<div class="vehicle-specs__action">${action}</div></section>`;
 }
 /** an inline search box (a text focus row without a label): the magnifier, the input, the kit's pill shape */
-export function searchField({ name, label = 'Search', value = '', placeholder = 'SEARCH', icon: ic = 'magnifying-glass', inputAttrs, cls = '' } = {}) {
+export function searchField({ name, label = 'Search', value = '', placeholder = 'SEARCH', icon: ic = 'search', inputAttrs, cls = '' } = {}) {
   const input = `<input class="search__input"${attrStr({ 'data-field': name, value, placeholder, type: 'search', 'aria-label': label, autocomplete: 'off', spellcheck: 'false', ...inputAttrs })}>`;
   return `<div class="mi search ${cls}" data-kind="text" data-fid="${esc(name)}">${icon(ic)}${input}</div>`;
 }
@@ -198,22 +347,32 @@ export function stepper({ key, label, value, min, max, step = 1, format = 'int',
   const shown = options ? (options.find(([v]) => String(v) === String(value))?.[1] ?? value) : fmt(format, value);
   const i = options ? options.findIndex(([v]) => String(v) === String(value)) : -1;
   const atMin = options ? i <= 0 : value <= min, atMax = options ? i >= options.length - 1 : value >= max;
-  return field(label, `<div class="stepper"><span class="stepper__btn ${atMin ? 'off' : ''}" data-step="-1" role="button" aria-label="Decrease">${icon('caret-left')}</span><b class="stepper__val">${shown}</b><span class="stepper__btn ${atMax ? 'off' : ''}" data-step="1" role="button" aria-label="Increase">${icon('caret-right')}</span></div>`,
+  return field(label, `<div class="stepper"><span class="stepper__btn ${atMin ? 'off' : ''}" data-step="-1" role="button" aria-label="Decrease">${icon('chevron-left')}</span><b class="stepper__val">${shown}</b><span class="stepper__btn ${atMax ? 'off' : ''}" data-step="1" role="button" aria-label="Increase">${icon('chevron-right')}</span></div>`,
     { icon: ic, note, noteCls, kind: 'stepper', key, type: type || (options ? null : 'num'), attrs: { 'data-value': value, 'data-min': min, 'data-max': max, 'data-step': step, 'data-fmt': format, 'data-options': list, ...attrs } });
 }
 /** a custom dropdown: confirm / click opens the list; left / right cycles it closed */
 export function select({ key, label, value, options, icon: ic, note, type, attrs, compact = false } = {}) {
   const cur = options.find(([v]) => String(v) === String(value));
   // compact: no row, just the select pill with its label inside (toolbars: the garage filters)
-  return field(label, `<div class="select" role="combobox" aria-haspopup="listbox" aria-expanded="false">${compact ? `<span class="select__k">${label}</span>` : ''}<span class="select__val">${cur ? cur[1] : ''}</span>${icon('caret-down')}</div>`,
+  return field(label, `<div class="select" role="combobox" aria-haspopup="listbox" aria-expanded="false">${compact ? `<span class="select__k">${label}</span>` : ''}<span class="select__val">${selectLabel(cur)}</span>${icon('chevron-down')}</div>`,
     { icon: ic, note, kind: 'select', key, type, cls: compact ? 'field--bare' : '', attrs: { 'data-value': value, 'data-options': JSON.stringify(options), ...attrs } });
 }
-/** a tab bar: one focus item; left / right (and Q / E · LB / RB in the menus) switch */
+/** a tab bar: one focus item; left / right (and Q / E · LB / RB in the menus) switch. vertical: the section nav below */
 export function tabs({ key, value, options, cls = '', hint = true, vertical = false } = {}) {
-  if (vertical) cls += ' tabs--rail';
+  if (vertical) return nav({ key, value, options, cls });
   const h = hint ? `<span class="tabs__hint on-key" aria-hidden="true">${kbd('Q')}</span><span class="tabs__hint on-pad" aria-hidden="true">${kbd('LB', true)}</span>` : '';
   const h2 = hint ? `<span class="tabs__hint on-key" aria-hidden="true">${kbd('E')}</span><span class="tabs__hint on-pad" aria-hidden="true">${kbd('RB', true)}</span>` : '';
   return `<div class="mi tabs ${cls}" data-kind="tabs" data-key="${esc(key)}" data-value="${esc(value)}" role="tablist">${IND}${h}${options.map(([v, l, ic]) => `<span class="tab ${String(v) === String(value) ? 'on' : ''}" data-v="${esc(v)}" role="tab" aria-selected="${String(v) === String(value)}">${icon(ic)}${l}</span>`).join('')}${h2}</div>`;
+}
+/** a section nav (the Settings sidebar): a panel of pause-menu style rows (icon plate, bold spaced-caps label,
+ *  chevron). One focus item, like tabs: up / down (when vertical), Q / E · LB / RB, tap or click switch. The one
+ *  selected surface slides between rows (indicators()); under 860 px wide it becomes a scrolling strip.
+ *  options: [[value, label, icon]] */
+export function nav({ key, value, options, cls = '', label } = {}) {
+  return `<div class="mi nav ${cls}" data-kind="tabs" data-key="${esc(key)}" data-value="${esc(value)}" role="tablist"${attrStr({ 'aria-label': label })}>${IND}${options.map(([v, l, ic]) => {
+    const on = String(v) === String(value);
+    return `<span class="nav__item ${on ? 'on' : ''}" data-v="${esc(v)}" role="tab" aria-selected="${on}"><span class="nav__ico">${icon(ic)}</span><b class="nav__label">${l}</b><span class="nav__go">${icon('chevron-right')}</span></span>`;
+  }).join('')}</div>`;
 }
 
 // ------------------------------------------------------------------ values
@@ -252,7 +411,7 @@ export function setValue(el, v, doEmit = true) {
     else { v = clamp(+v, +el.dataset.min, +el.dataset.max); if (val) val.textContent = fmt(el.dataset.fmt, v); atMin = v <= +el.dataset.min; atMax = v >= +el.dataset.max; }
     const [a, b] = el.querySelectorAll('.stepper__btn'); a?.classList.toggle('off', atMin); b?.classList.toggle('off', atMax);
   } else if (kind === 'select') {
-    const cur = optionsOf(el).find(([x]) => String(x) === String(v)); const val = el.querySelector('.select__val'); if (val && cur) val.textContent = cur[1];
+    const cur = optionsOf(el).find(([x]) => String(x) === String(v)); const val = el.querySelector('.select__val'); if (val && cur) val.innerHTML = selectLabel(cur);
   }
   const changed = el.dataset.value !== String(v);
   el.dataset.value = String(v);
@@ -348,7 +507,7 @@ function patchAttrs(old, n) {
  *  glide (ui.css .sel-ind), because the indicator node survives in-place refreshes (morph keeps data-ui-keep="ind"). */
 export function indicators(root) {
   if (!root?.querySelectorAll) return;
-  const bars = root.matches?.('.tabs, .seg') ? [root] : root.querySelectorAll('.tabs, .seg');
+  const bars = root.matches?.('.tabs, .seg, .nav') ? [root] : root.querySelectorAll('.tabs, .seg, .nav');
   for (const bar of bars) {
     const ind = bar.querySelector(':scope > .sel-ind'); if (!ind) continue;
     const on = bar.querySelector(':scope > .on, :scope > [data-v].on');
@@ -358,14 +517,33 @@ export function indicators(root) {
     if (first) ind.style.transition = 'none';
     ind.style.transform = `translate(${x}px, ${y}px)`; ind.style.width = w + 'px'; ind.style.height = h + 'px'; ind.style.opacity = '1';
     if (first) { void ind.offsetWidth; ind.style.transition = ''; ind.dataset.placed = '1'; }
+    // a nav strip (narrow screens) keeps the chosen item in view; it scrolls, never jumps, after the first placement
+    if (bar.classList.contains('nav') && bar.scrollWidth > bar.clientWidth + 1) bar.scrollTo({ left: x - (bar.clientWidth - w) / 2, behavior: first ? 'instant' : 'smooth' });
   }
 }
 if (typeof window !== 'undefined' && typeof document !== 'undefined') {
   let raf = 0; const all = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => indicators(document)); };
   addEventListener('resize', all); document.fonts?.ready?.then(all);
 }
+/** Keep deployment identity in the footer, including the locked title's custom footer.
+ *  Deployment metadata remains the source; production has no indicator. */
+export function syncFooterBadge(root) {
+  const identity = buildBadge();
+  if (!identity) return;
+  for (const footer of root.querySelectorAll('.scr__foot')) {
+    if (footer.querySelector('.build-badge')) continue;
+    const version = footer.querySelector('.title-meta [data-act="whatsNew"]');
+    const badge = document.createElement('span');
+    badge.className = 'build-badge';
+    badge.textContent = version ? identity.split(' · ')[0] + ' · ' : identity;
+    if (version) version.prepend(badge);
+    else footer.prepend(badge);
+  }
+}
 export function bindRoot(root) {
   if (root.__uiBound) return; root.__uiBound = true;
+  syncFooterBadge(root);
+  new MutationObserver(() => syncFooterBadge(root)).observe(root, { childList: true, subtree: true });
   root.addEventListener('pointerdown', (e) => {
     const track = e.target.closest?.('.field[data-kind=slider] .slider'); if (!track) return;
     const el = track.closest('[data-kind=slider]');
@@ -384,7 +562,7 @@ function openListbox(anchorEl, { options, value, onPick, anchor } = {}) {
   closeListbox();
   const opts = options || optionsOf(anchorEl), cur = String(value ?? anchorEl.dataset.value);
   const box = document.createElement('div'); box.className = 'listbox'; box.setAttribute('role', 'listbox');
-  box.innerHTML = opts.map(([v, l, o], i) => `<div class="listbox__opt ${String(v) === cur ? 'sel' : ''} ${o?.disabled ? 'dis' : ''}" role="option" data-i="${i}" aria-selected="${String(v) === cur}"><span>${l}</span>${icon('check')}</div>`).join('');
+  box.innerHTML = opts.map(([v, l, o], i) => `<div class="listbox__opt ${String(v) === cur ? 'sel' : ''} ${o?.disabled ? 'dis' : ''}" role="option" data-i="${i}" aria-selected="${String(v) === cur}"><span class="listbox__label">${selectLabel([v,l,o])}</span>${icon('check')}</div>`).join('');
   const scrim = document.createElement('div'); scrim.style.cssText = 'position:fixed;inset:0;pointer-events:auto';
   scrim.addEventListener('pointerdown', (e) => { if (!box.contains(e.target)) { e.preventDefault(); closeListbox(); } });
   scrim.append(box); layer().append(scrim);
@@ -396,7 +574,6 @@ function openListbox(anchorEl, { options, value, onPick, anchor } = {}) {
   else { box.style.bottom = (vh - a.top + 4) + 'px'; box.style.maxHeight = Math.max(120, above) + 'px'; }
   const sel = anchorEl.querySelector('.select') || anchorEl; sel.classList.add('open'); sel.setAttribute('aria-expanded', 'true');
   lb = { el: anchorEl, sel, scrim, box, opts, hi: Math.max(0, opts.findIndex(([v]) => String(v) === cur)), onPick: onPick || ((v) => setValue(anchorEl, v)) };
-  box.addEventListener('pointermove', (e) => { const o = e.target.closest('.listbox__opt'); if (o) hilite(+o.dataset.i); });
   box.addEventListener('click', (e) => { const o = e.target.closest('.listbox__opt'); if (o) pick(+o.dataset.i); });
   hilite(lb.hi);
 }
@@ -415,8 +592,8 @@ export function closeListbox() {
 export const listboxOpen = () => !!lb;
 
 // ------------------------------------------------------------------ <ui-select>: the dropdown for DOM other modules own
-// There are no native select elements in the game. Code that builds its own DOM (the music source,
-// the standings' spectator pick, multiplayer transport state) uses <ui-select>: the same API as a native select
+// There are no native select elements in the game. Code that builds its own DOM (the standings' spectator pick,
+// multiplayer transport state) uses <ui-select>: the same API as a native select
 // (value, selectedIndex, options, disabled, <option> children, 'input' / 'change' events, onchange) drawn as the kit's
 // Select with the animated listbox, keyboard / gamepad / touch alike. Menu screens use the select() row builder.
 // With class "mi" it is also a menu focus item: OK opens it, left / right cycle it.
@@ -458,7 +635,7 @@ if (typeof customElements !== 'undefined' && typeof HTMLElement !== 'undefined' 
       if (!this._init) return;
       let val = this.querySelector(':scope > .select__val');
       if (!val) { // the visible parts; data-ui-keep so an in-place patch of the owner's markup leaves them alone
-        const t = document.createElement('template'); t.innerHTML = `<span class="select__val" data-ui-keep></span>${icon('caret-down')}`;
+        const t = document.createElement('template'); t.innerHTML = `<span class="select__val" data-ui-keep></span>${icon('chevron-down')}`;
         t.content.lastChild.setAttribute('data-ui-keep', ''); this.prepend(...t.content.childNodes); val = this.querySelector(':scope > .select__val');
       }
       const text = this.current()?.textContent || ''; if (val.textContent !== text) val.textContent = text;
@@ -481,7 +658,8 @@ let modal = null; // { root, actions, focus, resolve, dismissible, timer }
 function renderModalFocus() { modal?.buttons.forEach((b, i) => b.classList.toggle('focus', i === modal.focus)); }
 function closePrompt(result = null) {
   if (!modal) return; const m = modal; modal = null;
-  clearTimeout(m.timer); m.root.remove(); m.resolve(result);
+  clearTimeout(m.timer); m.root.inert = true; m.root.classList.add('is-closing');
+  setTimeout(() => m.root.remove(), 180); m.resolve(result);
 }
 function prompt({ title = '', body = '', icon: ic = 'info', actions = [{ id: 'ok', label: 'OK', variant: 'primary' }], dismissible = true, timeout = 0, timeoutId = null, hints = true } = {}) {
   if (modal) closePrompt(null);
@@ -492,7 +670,6 @@ function prompt({ title = '', body = '', icon: ic = 'info', actions = [{ id: 'ok
       <div class="modal__actions">${actions.map((a, i) => button({ label: esc(a.label), icon: a.icon, variant: a.variant || (i === 0 ? 'primary' : 'secondary'), focusable: false, attrs: { 'data-i': i } })).join('')}</div>
       ${hints ? `<div class="modal__foot">${keyHints([['leftright', 'CHOOSE'], ['confirm', 'OK'], ...(dismissible ? [['back', 'CANCEL']] : [])])}</div>` : ''}</div>`;
     root.addEventListener('click', (e) => { const b = e.target.closest('[data-i]'); if (b) closePrompt(actions[+b.dataset.i].id); else if (dismissible && e.target === root) closePrompt(null); });
-    root.addEventListener('pointermove', (e) => { const b = e.target.closest('[data-i]'); if (b && modal) { modal.focus = +b.dataset.i; renderModalFocus(); } });
     layer().append(root);
     const buttons = [...root.querySelectorAll('[data-i]')];
     modal = { root, buttons, actions, focus: Math.max(0, actions.findIndex((a) => a.default)), resolve, dismissible };
@@ -505,6 +682,7 @@ function toast(text, options = {}) {
 }
 /** a named input action (main.js flowAction / src/menu.js). true = an overlay used it */
 function action(name) {
+  navigationFocus();
   if (lb) {
     if (name === 'up' || name === 'left') hilite(lb.hi - 1);
     else if (name === 'down' || name === 'right') hilite(lb.hi + 1);
@@ -520,11 +698,13 @@ function action(name) {
   else if ((name === 'back' || name === 'pause') && modal.dismissible) closePrompt(null);
   return true; // a modal swallows everything else
 }
+// Keyboard/gamepad focus is a surface only; pointer activation adds no focus decoration.
+export function navigationFocus() { if (typeof document !== 'undefined') document.documentElement.dataset.uiFocus = 'navigation'; }
 // which hints to show: a touch tap since the last key press means touch (main.js passes the gamepad / keyboard device)
 let lastPointer = typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches && !matchMedia('(any-pointer: fine)').matches ? 'touch' : null;
 if (typeof window !== 'undefined') {
-  window.addEventListener('pointerdown', (e) => { lastPointer = e.pointerType === 'touch' ? 'touch' : null; }, true);
-  window.addEventListener('keydown', () => { lastPointer = null; }, true);
+  window.addEventListener('pointerdown', (e) => { lastPointer = e.pointerType === 'touch' ? 'touch' : null; document.documentElement.dataset.uiFocus = 'pointer'; }, true);
+  window.addEventListener('keydown', () => { lastPointer = null; navigationFocus(); }, true);
 }
 /** the device the key hints should be drawn for: 'gamepad' wins, then a recent touch, else the given device */
 const hintDevice = (device = 'keyboard') => device === 'gamepad' ? 'gamepad' : lastPointer || device;

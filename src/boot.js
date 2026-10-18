@@ -24,6 +24,7 @@ if (direct || query.has('lobby')) {
   const stopVolumeSync = onSettings(values => audio.setVolumes(values));
   const unlock = () => { if (!runtime) audio.start(); };
   addEventListener('pointerdown', unlock); addEventListener('keydown', unlock);
+  addEventListener('touchend', unlock, { passive: true }); addEventListener('click', unlock);
   const menu = new Menu(document.getElementById('ui'), {
     ctx: () => menuMapContext(mapId), selectMap: id => { mapId = id; },
     carSpec: () => CARS[car], carName: () => CARS[car].name, inputDevice: () => controls.drivingSource === 'phone' ? 'wheel' : controls.drivingSource, manual: () => settings.transmission === 'manual',
