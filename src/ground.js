@@ -509,8 +509,10 @@ export class Ground {
     v.wheelSurf = ws;
     const mapped = !!route.localLayout?.contains(v.s);
     v.gradeG = onRoad && !mapped ? undefined : clamp((yF - yB) / v.wb, -0.8, 0.8);
-    v.grade = onRoad && !mapped ? route.frame(v.s, v._f || (v._f = {})).grade : v.gradeG;
-    v.bank = onRoad && !mapped ? route.bank(v.s) : clamp((yR - yL) / v.track, -0.6, 0.6);
+    // the visual body attitude is the support plane along and across the CAR, not the route's own grade/bank: a car facing
+    // against the route direction (or sideways on it) must pitch with the slope under its nose, not the opposite way
+    v.grade = onRoad && !mapped ? (fw.grade || 0) * ft + (fw.bank || 0) * fr : v.gradeG;
+    v.bank = onRoad && !mapped ? (fw.grade || 0) * rt + (fw.bank || 0) * rr : clamp((yR - yL) / v.track, -0.6, 0.6);
     // crests launch you: off the tarmac, when the ground falls away under the car faster than gravity could follow
     // (vertical speed from the ground slope under the wheelbase, so curbs and steps don't count as ramps)
     // The centre sample must use the same plane/step split as the wheels: using its full pavement height here

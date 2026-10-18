@@ -1,0 +1,860 @@
+{
+ "mini": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.316,
+   0.316,
+   0.316,
+   0.316
+  ]
+ },
+ "z4": {
+  "rootY": 0,
+  "bodyY": -0.025,
+  "bodyPitch": 0,
+  "wheels": [
+   0.335,
+   0.335,
+   0.335,
+   0.335
+  ]
+ },
+ "taxi": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.323,
+   0.323,
+   0.323,
+   0.323
+  ]
+ },
+ "carrera": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.331,
+   0.331,
+   0.331,
+   0.331
+  ]
+ },
+ "gr_yaris": {
+  "rootY": 0,
+  "bodyY": -0.025,
+  "bodyPitch": 0,
+  "wheels": [
+   0.319,
+   0.319,
+   0.319,
+   0.319
+  ]
+ },
+ "gtv": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.313,
+   0.313,
+   0.313,
+   0.313
+  ]
+ },
+ "golf": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.315,
+   0.315,
+   0.315,
+   0.315
+  ]
+ },
+ "corolla": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.318,
+   0.318,
+   0.318,
+   0.318
+  ]
+ },
+ "superb": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.33,
+   0.33,
+   0.33,
+   0.33
+  ]
+ },
+ "police_octavia": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.323,
+   0.323,
+   0.323,
+   0.323
+  ]
+ },
+ "mini_jcw": {
+  "rootY": 0,
+  "bodyY": -0.025,
+  "bodyPitch": 0,
+  "wheels": [
+   0.316,
+   0.316,
+   0.316,
+   0.316
+  ]
+ },
+ "cle": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.337,
+   0.337,
+   0.337,
+   0.337
+  ]
+ },
+ "gla": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.358,
+   0.358,
+   0.358,
+   0.358
+  ]
+ },
+ "gla45": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.356,
+   0.356,
+   0.356,
+   0.356
+  ]
+ },
+ "cla": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.334,
+   0.334,
+   0.334,
+   0.334
+  ]
+ },
+ "aventador_svj": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.355,
+   0.355,
+   0.355,
+   0.355
+  ]
+ },
+ "huracan": {
+  "rootY": 0,
+  "bodyY": -0.025,
+  "bodyPitch": 0,
+  "wheels": [
+   0.338,
+   0.338,
+   0.338,
+   0.338
+  ]
+ },
+ "ibiza": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.289,
+   0.289,
+   0.289,
+   0.289
+  ]
+ },
+ "panda": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.286,
+   0.286,
+   0.286,
+   0.286
+  ]
+ },
+ "yaris": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.282,
+   0.282,
+   0.282,
+   0.282
+  ]
+ },
+ "e36": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.309,
+   0.309,
+   0.309,
+   0.309
+  ]
+ },
+ "cle200": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.337,
+   0.337,
+   0.337,
+   0.337
+  ]
+ },
+ "cle450": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.337,
+   0.337,
+   0.337,
+   0.337
+  ]
+ },
+ "cle53": {
+  "rootY": 0,
+  "bodyY": -0.015,
+  "bodyPitch": 0,
+  "wheels": [
+   0.337,
+   0.337,
+   0.337,
+   0.337
+  ]
+ },
+ "e36_m3": {
+  "rootY": 0,
+  "bodyY": -0.02,
+  "bodyPitch": 0,
+  "wheels": [
+   0.309,
+   0.309,
+   0.309,
+   0.309
+  ]
+ },
+ "panda_11": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.286,
+   0.286,
+   0.286,
+   0.286
+  ]
+ },
+ "panda_100hp": {
+  "rootY": 0,
+  "bodyY": -0.025,
+  "bodyPitch": 0,
+  "wheels": [
+   0.286,
+   0.286,
+   0.286,
+   0.286
+  ]
+ },
+ "yaris_13": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.282,
+   0.282,
+   0.282,
+   0.282
+  ]
+ },
+ "yaris_ts": {
+  "rootY": 0,
+  "bodyY": -0.025,
+  "bodyPitch": 0,
+  "wheels": [
+   0.282,
+   0.282,
+   0.282,
+   0.282
+  ]
+ },
+ "ibiza_cupra": {
+  "rootY": 0,
+  "bodyY": -0.025,
+  "bodyPitch": 0,
+  "wheels": [
+   0.289,
+   0.289,
+   0.289,
+   0.289
+  ]
+ },
+ "golf_gti": {
+  "rootY": 0,
+  "bodyY": -0.025,
+  "bodyPitch": 0,
+  "wheels": [
+   0.315,
+   0.315,
+   0.315,
+   0.315
+  ]
+ },
+ "golf_gtd": {
+  "rootY": 0,
+  "bodyY": -0.025,
+  "bodyPitch": 0,
+  "wheels": [
+   0.315,
+   0.315,
+   0.315,
+   0.315
+  ]
+ },
+ "golf_r": {
+  "rootY": 0,
+  "bodyY": -0.025,
+  "bodyPitch": 0,
+  "wheels": [
+   0.315,
+   0.315,
+   0.315,
+   0.315
+  ]
+ },
+ "mini_cooper": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.316,
+   0.316,
+   0.316,
+   0.316
+  ]
+ },
+ "mini_s": {
+  "rootY": 0,
+  "bodyY": -0.025,
+  "bodyPitch": 0,
+  "wheels": [
+   0.316,
+   0.316,
+   0.316,
+   0.316
+  ]
+ },
+ "mini_cabrio_cooper": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.316,
+   0.316,
+   0.316,
+   0.316
+  ]
+ },
+ "corolla_15": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.318,
+   0.318,
+   0.318,
+   0.318
+  ]
+ },
+ "octavia_16tdi": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.323,
+   0.323,
+   0.323,
+   0.323
+  ]
+ },
+ "octavia_rs": {
+  "rootY": 0,
+  "bodyY": -0.025,
+  "bodyPitch": 0,
+  "wheels": [
+   0.323,
+   0.323,
+   0.323,
+   0.323
+  ]
+ },
+ "superb_15": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.33,
+   0.33,
+   0.33,
+   0.33
+  ]
+ },
+ "superb_4x4": {
+  "rootY": 0,
+  "bodyY": -0.025,
+  "bodyPitch": 0,
+  "wheels": [
+   0.33,
+   0.33,
+   0.33,
+   0.33
+  ]
+ },
+ "cla250": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.334,
+   0.334,
+   0.334,
+   0.334
+  ]
+ },
+ "cla35": {
+  "rootY": 0,
+  "bodyY": -0.025,
+  "bodyPitch": 0,
+  "wheels": [
+   0.334,
+   0.334,
+   0.334,
+   0.334
+  ]
+ },
+ "cla45s": {
+  "rootY": 0,
+  "bodyY": -0.025,
+  "bodyPitch": 0,
+  "wheels": [
+   0.334,
+   0.334,
+   0.334,
+   0.334
+  ]
+ },
+ "gla250": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.358,
+   0.358,
+   0.358,
+   0.358
+  ]
+ },
+ "z4_20i": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.335,
+   0.335,
+   0.335,
+   0.335
+  ]
+ },
+ "z4_30i": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.335,
+   0.335,
+   0.335,
+   0.335
+  ]
+ },
+ "carrera_s": {
+  "rootY": 0,
+  "bodyY": -0.025,
+  "bodyPitch": 0,
+  "wheels": [
+   0.331,
+   0.331,
+   0.331,
+   0.331
+  ]
+ },
+ "carrera_gts": {
+  "rootY": 0,
+  "bodyY": -0.025,
+  "bodyPitch": 0,
+  "wheels": [
+   0.331,
+   0.331,
+   0.331,
+   0.331
+  ]
+ },
+ "huracan_rwd": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.338,
+   0.338,
+   0.338,
+   0.338
+  ]
+ },
+ "gtv1750": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.313,
+   0.313,
+   0.313,
+   0.313
+  ]
+ },
+ "e36_318i": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.309,
+   0.309,
+   0.309,
+   0.309
+  ]
+ },
+ "mini_cabrio_jcw": {
+  "rootY": 0,
+  "bodyY": -0.025,
+  "bodyPitch": 0,
+  "wheels": [
+   0.316,
+   0.316,
+   0.316,
+   0.316
+  ]
+ },
+ "cle300e": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.337,
+   0.337,
+   0.337,
+   0.337
+  ]
+ },
+ "jazz": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.302,
+   0.302,
+   0.302,
+   0.302
+  ]
+ },
+ "jazz_dynamic": {
+  "rootY": 0,
+  "bodyY": -0.01,
+  "bodyPitch": 0,
+  "wheels": [
+   0.302,
+   0.302,
+   0.302,
+   0.302
+  ]
+ },
+ "jazz_drift": {
+  "rootY": 0,
+  "bodyY": -0.055,
+  "bodyPitch": 0,
+  "wheels": [
+   0.302,
+   0.302,
+   0.302,
+   0.302
+  ]
+ },
+ "aygo": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.285,
+   0.285,
+   0.285,
+   0.285
+  ]
+ },
+ "qashqai": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.345,
+   0.345,
+   0.345,
+   0.345
+  ]
+ },
+ "qashqai_dci": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.345,
+   0.345,
+   0.345,
+   0.345
+  ]
+ },
+ "dolphin": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.326,
+   0.326,
+   0.326,
+   0.326
+  ]
+ },
+ "atto3": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.347,
+   0.347,
+   0.347,
+   0.347
+  ]
+ },
+ "van": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.355,
+   0.355,
+   0.355,
+   0.355
+  ]
+ },
+ "van_150": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.355,
+   0.355,
+   0.355,
+   0.355
+  ]
+ },
+ "truck": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.405,
+   0.405,
+   0.405,
+   0.405
+  ]
+ },
+ "bus": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.485,
+   0.485,
+   0.485,
+   0.485
+  ]
+ },
+ "a160": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.288,
+   0.288,
+   0.288,
+   0.288
+  ]
+ },
+ "a190": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.3007,
+   0.3007,
+   0.3007,
+   0.3007
+  ]
+ },
+ "sl400": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.33065,
+   0.33065,
+   0.33065,
+   0.33065
+  ]
+ },
+ "sl500": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.3306,
+   0.3306,
+   0.3306,
+   0.3306
+  ]
+ },
+ "sl63": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.33,
+   0.33,
+   0.33,
+   0.33
+  ]
+ },
+ "sl65": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.33,
+   0.33,
+   0.33,
+   0.33
+  ]
+ },
+ "f348": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.331,
+   0.331,
+   0.331,
+   0.331
+  ]
+ },
+ "f348_ts": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.331,
+   0.331,
+   0.331,
+   0.331
+  ]
+ },
+ "f348_spider": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.331,
+   0.331,
+   0.331,
+   0.331
+  ]
+ },
+ "p928_s4": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.316,
+   0.316,
+   0.316,
+   0.316
+  ]
+ },
+ "p928_gt": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.316,
+   0.316,
+   0.316,
+   0.316
+  ]
+ },
+ "p928": {
+  "rootY": 0,
+  "bodyY": 0,
+  "bodyPitch": 0,
+  "wheels": [
+   0.318,
+   0.318,
+   0.318,
+   0.318
+  ]
+ }
+}

@@ -1211,7 +1211,7 @@ export class Vehicle {
           this.syncWheels();
         }
       }
-      this.grade = f.grade; this.bank = f.bank;
+      this.grade = contact.grade; this.bank = contact.bank; // support plane along / across the car, not the route's own grade
       bodyContact(this, dt, route.surfaceY(this.s, this.u), contact.grade, contact.bank);
     }
 
