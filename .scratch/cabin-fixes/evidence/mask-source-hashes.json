@@ -31,7 +31,7 @@
   "src/traffic-passenger-models.js": "7ef0d878dc57b97d91ad7d6d2ccc53477ce06cbda97311dd1cd96bc7ea2766d5",
   "src/vehicle-budgets.js": "23126f4bd9d1324d46c42581ba97128b7b6296675988f88ba289018ba3c2c82a",
   "src/vehicle-cabin-envelope.js": "a71de5d4d325a56b7f9dc0366c55de89c48a653c4a7248710fdb232fba5c29a9",
-  "src/vehicle-cabin.js": "1b57f3220c7bc7ad337d9a39f6e45912a4cacc7f0b4a247797ec42b426a14ad9",
+  "src/vehicle-cabin.js": "db1818ef5d01828acaae910a1bdaacb79a5caa3e69e29c9ee5cbb45193fb452c",
   "src/vehicle-camera.js": "12865245bdf8cb38a202a58cb1672e1801da92b372f3c9f7cea62aab973fd9f0",
   "src/vehicle-distance.js": "d5475e30a260952fff9f97ae50576c028a39e7102b7371b8725f32cc0c46ea93",
   "src/vehicle-mirrors.js": "e6a7485a79dc9dce23d924b6f9d7b4517c1dc487015f6c3d6af79b4733438e81",

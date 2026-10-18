@@ -26,7 +26,8 @@ export function buildCabin(model,{cheap=false,exterior=false}={}){
  function box(size,pos,mat=carpet){const geo=new T.BoxGeometry(...size);geo.translate(...pos);if(!bins.has(mat))bins.set(mat,[]);bins.get(mat).push(geo);}
  const length=d.back-d.front,mid=(d.front+d.back)/2;
  box([d.width,.055,length+.10],[0,d.floor,mid]);
- box([d.width,.42,.07],[0,d.floor+.19,d.front]); // firewall meets the dash underside
+ const firewall=exterior&&['van','truck','bus'].includes(model.spec?.nativeFleet||model.modelKind||model.shape)?d.belt-d.floor-.12:.42;
+ box([d.width,firewall,.07],[0,d.floor+firewall/2-.02,d.front]); // meets the dashboard underside
  box([.20,.18,length],[0,d.floor+.105,mid]); // continuous transmission tunnel
  for(const sign of [-1,1])box([.08,Math.max(.24,d.belt-d.floor-.14),length],[sign*(d.width/2-.025),(d.belt+d.floor-.14)/2,mid]);
  box([d.width,.28,.07],[0,d.floor+.12,d.back]);
@@ -42,6 +43,12 @@ export function buildCabin(model,{cheap=false,exterior=false}={}){
   box([.25,.15,.10],[x,d.seatY+.56,z+.18],upholstery);
   if(!cheap)for(const s of [-1,1])box([.055,.35,.13],[x+s*.19,d.seatY+.25,z+.12],upholstery);
  }
+ if(exterior&&!cheap&&['van','truck','bus'].includes(model.spec?.nativeFleet)){
+  const x=model.seat.x,a=new T.Vector3(x,envelope.belt-.10,envelope.front+.35),b=new T.Vector3(x,envelope.belt+.07,envelope.seatZ-.43);
+  const axis=b.clone().sub(a),column=new T.CylinderGeometry(.035,.035,axis.length(),6);
+  column.applyQuaternion(new T.Quaternion().setFromUnitVectors(new T.Vector3(0,1,0),axis.normalize()));
+  column.translate(...a.add(b).multiplyScalar(.5).toArray());bins.get(carpet).push(column);
+ }
  if(cheap){
   box([d.width-.10,.18,.30],[0,d.belt-.10,d.front+.18]);
   box([.24,.24,.34],[0,d.floor+.31,d.front+.44]);
@@ -55,8 +62,33 @@ export function buildCabin(model,{cheap=false,exterior=false}={}){
 // POV retains its original materials, animation, instruments and damage hooks.
 const exteriorMaterial=new T.MeshStandardMaterial({vertexColors:true,roughness:.82,side:T.DoubleSide});
 const trafficCabins=new Map();
+// The POV controls are seated for readability from a raised camera. Exterior
+// furniture instead uses the physical scuttle, preserving each authored part
+// and moving complete assemblies rigidly (never stretching them onto glass).
+function commercialFurniture(root,model,e){
+ if(!['van','truck','bus'].includes(model.spec?.nativeFleet))return null;
+ const localBox=o=>new T.Box3().setFromBufferAttribute(o.geometry.attributes.position).applyMatrix4(root.matrixWorld.clone().invert().multiply(o.matrixWorld));
+ const dash=root.getObjectByName('authored-'+model.spec.nativeFleet+'-dashboard');
+ const cluster=root.getObjectByName('authored-'+model.spec.nativeFleet+'-binnacle');
+ const screen=root.getObjectByName('authored-'+model.spec.nativeFleet+'-screen-frame');
+ const db=localBox(dash),cb=localBox(cluster),sb=localBox(screen);
+ const delta=new T.Vector3(0,e.belt-.025-db.max.y,e.front+.06-db.min.z);
+ const clusterDelta=new T.Vector3(0,e.belt+.085-cb.max.y,db.max.z+delta.z+.025-cb.max.z);
+ const wheel=model.cockpit?.steering||root.getObjectByName('authored-steering-wheel');
+ const wp=wheel.position, wheelDelta=new T.Vector3(0,e.belt+.07-wp.y,e.seatZ-.43-wp.z);
+ return (o,g)=>{
+  const role=o.userData.cockpitStructure;
+  if(['dash','console','vent'].includes(role))g.translate(...delta.toArray());
+  else if(role==='binnacle'||o.name==='fleet-instruments')g.translate(...clusterDelta.toArray());
+  else if(o.name==='fleet-navigation'){
+   const b=localBox(o),c=sb.getCenter(new T.Vector3()).add(delta);
+   g.translate(c.x-b.getCenter(new T.Vector3()).x,c.y-b.getCenter(new T.Vector3()).y,sb.max.z+delta.z+.002-b.min.z);
+  }else if(role?.startsWith('wheel-'))g.translate(...wheelDelta.toArray());
+ };
+}
 function mergeCabin(root,model,{snapshot=false,cheap=false}={}){
- const geometries=[],envelope=exteriorCabinEnvelope(model,{cheap});root.updateWorldMatrix(true,true);
+ const geometries=[],parts=[],envelope=exteriorCabinEnvelope(model,{cheap});root.updateWorldMatrix(true,true);
+ const place=snapshot?commercialFurniture(root,model,envelope):null;
  const inverse=root.matrixWorld.clone().invert(),visible=root.visible;root.visible=true;
  root.traverseVisible(o=>{
   if(!o.isMesh)return;
@@ -66,12 +98,13 @@ function mergeCabin(root,model,{snapshot=false,cheap=false}={}){
   const source=o.geometry,materials=[].concat(o.material);
   const g=source.index?source.toNonIndexed():source.clone();
   g.applyMatrix4(inverse.clone().multiply(o.matrixWorld));
-  // Native furniture used a nose-based fallback cowl. Re-seat its dashboard
-  // behind the physical scuttle without moving the independently seated wheel.
-  if(snapshot&&model.spec?.nativeFleet&&['dash','console','vent'].includes(o.userData.cockpitStructure))g.translate(0,0,envelope.front-model.shape.cowl);
+  // Commercial assemblies use their physical scuttle. Other native cabins
+  // retain their existing longitudinal correction.
+  if(place)place(o,g);
+  else if(snapshot&&model.spec?.nativeFleet&&['dash','console','vent'].includes(o.userData.cockpitStructure))g.translate(0,0,envelope.front-model.shape.cowl);
   if(snapshot&&model.spec?.nativeFleet&&o.userData.cockpitStructure==='door-top'){
    g.computeBoundingBox();
-   g.translate(0,Math.min(0,envelope.belt-envelope.margin-g.boundingBox.max.y),0);
+   g.translate(0,Math.min(0,envelope.belt-(model.spec.nativeFleet==='van'?.065:envelope.margin)-g.boundingBox.max.y),0);
   }
   fitExteriorCabin(g,envelope);
   const count=g.attributes.position.count,colors=new Float32Array(count*3);
@@ -87,7 +120,8 @@ function mergeCabin(root,model,{snapshot=false,cheap=false}={}){
   }
   for(const key of Object.keys(g.attributes))if(!['position','normal'].includes(key))g.deleteAttribute(key);
   if(!g.attributes.normal)g.computeVertexNormals();
-  g.setAttribute('color',new T.BufferAttribute(colors,3));g.clearGroups();geometries.push(g);
+  g.setAttribute('color',new T.BufferAttribute(colors,3));g.clearGroups();
+  parts.push({name:o.name,role:o.userData.cockpitStructure,start:geometries.reduce((n,g)=>n+g.attributes.position.count,0),count});geometries.push(g);
  });root.visible=visible;
  if(snapshot){
   const foundation=buildCabin(model,{exterior:true});
@@ -95,7 +129,7 @@ function mergeCabin(root,model,{snapshot=false,cheap=false}={}){
   foundation.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});
  }
  const geometry=mergeGeometries(geometries,false);geometries.forEach(g=>g.dispose());
- geometry.computeBoundingSphere();
+ geometry.computeBoundingSphere();geometry.userData.cabinParts=parts;
  const mesh=new T.Mesh(geometry,exteriorMaterial);mesh.name='exterior-cabin';mesh.userData.vehicleCabin=true;mesh.receiveShadow=true;
  mesh.matrixAutoUpdate=false;return mesh;
 }

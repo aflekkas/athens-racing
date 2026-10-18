@@ -74,3 +74,28 @@ test('commercial bounds follow the cab panes rather than the bonnet or cargo box
   model.cockpit.disposeMirrors();model.disposeDamage?.();
  }
 });
+
+test('commercial dashboards sit under the scuttle in all three garage viewer angles',async()=>{
+ const {createVehicleFraming,frameVehicle}=await import('../src/ui/vehicle-framing.js');
+ for(const [id,scuttle]of [['van',1.31],['van_150',1.31],['truck',1.36],['bus',1.30]]){
+  const model=new CarModel(CARS.find(s=>s.id===id)),mesh=model.cockpit.lod.levels[0].object;
+  const p=mesh.geometry.attributes.position,parts=mesh.geometry.userData.cabinParts;
+  assert.ok(parts.some(p=>p.role==='dash'),'Authored dashboard remains present. '+WHY);
+  for(const angle of [2.8,-.8,.6]){
+   model.root.rotation.y=angle;model.root.updateMatrixWorld(true);
+   const camera=new T.PerspectiveCamera(35,1100/850,.05,100);
+   frameVehicle(camera,model.root,createVehicleFraming(model.root),1100,850);
+   const view=camera.matrixWorldInverse.clone().multiply(model.body.matrixWorld);
+   // Physical lower glass edge, independent of the envelope used to bake the
+   // mesh. In camera coordinates this also catches hierarchy/rotation leaks.
+   const belowScuttle=new T.Plane(new T.Vector3(0,-1,0),scuttle-.02).applyMatrix4(view);
+   const viewMesh=camera.matrixWorldInverse.clone().multiply(mesh.matrixWorld),v=new T.Vector3();
+   for(const part of parts.filter(p=>p.role==='dash'||p.role==='vent'))for(let i=part.start;i<part.start+part.count;i++){
+    v.fromBufferAttribute(p,i).applyMatrix4(viewMesh);
+    assert.ok(belowScuttle.distanceToPoint(v)>=-2e-5,`${id} ${angle}: ${part.name} crosses lower windscreen. ${WHY}`);
+   }
+   inside(mesh,model);
+  }
+  model.cockpit.disposeMirrors();model.disposeDamage?.();
+ }
+});
