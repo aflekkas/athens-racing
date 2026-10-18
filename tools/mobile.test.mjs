@@ -57,7 +57,8 @@ test('saved tilt is reauthorized by a gesture; denied permission falls back to s
   const input=new Input({target,document:null,navigator:{},storage:null});input.toast=()=>{};
   try {
     input.configure({touchSteering:'tilt'});assert.equal(calls,0);
-    target.dispatchEvent(new Event('pointerdown'));assert.equal(calls,1);
+    target.dispatchEvent(new Event('pointerdown'));assert.equal(calls,0);
+    target.dispatchEvent(new Event('click'));assert.equal(calls,1);
     await new Promise(resolve=>setImmediate(resolve));assert.equal(input.settings.touchSteering,'screen');assert.equal(input.tiltAllowed,false);
   }finally{input.destroy();}
 });
@@ -73,6 +74,7 @@ test('game viewport prevents zoom and callouts without disabling scrollable menu
   assert.match(source('index.html'),/name="viewport"[^>]+maximum-scale=1[^>]+user-scalable=no[^>]+viewport-fit=cover/);
   const css=source('style.css');assert.match(css,/overscroll-behavior: none/);assert.match(css,/-webkit-touch-callout: none/);assert.match(css,/touch-action: pan-x pan-y/);
   assert.match(source('src/input.css'),/min-height: 44px/);
+  assert.match(source('src/input.js'),/button.addEventListener\('click', \(\) => \{ void enterDrivingScreen/);
   assert.match(source('src/boot.js'),/addEventListener\('touchend', unlock/);
   assert.match(source('src/main.js'),/addEventListener\('touchend', \(\) => audio.start/);
 });

@@ -55,6 +55,8 @@ export class Input {
     this.listen('orientationchange', () => { this.tilt = 0; });
     this.listen('pointerdown', e => {
       if (e.pointerType === 'touch') this.lastTouchAt = Date.now();
+    });
+    this.listen('click', () => {
       if (this.settings.touchSteering === 'tilt' && !this.tiltRequested) void this.enableTilt();
     });
     this.listen('gesturestart', e => { if (this.touchUI) e.preventDefault(); });
@@ -353,7 +355,7 @@ export class Input {
       // Fullscreen must also start directly in a tap; unsupported Safari keeps browser mode.
       if (doc.documentElement?.requestFullscreen) {
         const button = doc.createElement('button'); button.type = 'button'; button.textContent = 'FULL'; button.dataset.action = 'fullscreen'; button.setAttribute('aria-label', 'Fullscreen landscape');
-        button.addEventListener('pointerdown', e => { e.preventDefault(); void enterDrivingScreen(doc, this.target?.screen); }); actions.append(button);
+        button.addEventListener('click', () => { void enterDrivingScreen(doc, this.target?.screen); }); actions.append(button);
       }
       aux.append(actions, gears); root.append(pedals, aux); doc.body.append(root); this.touchUI = root;
       this.setAidsEnabled(preferences.aids);

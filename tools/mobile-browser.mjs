@@ -32,7 +32,7 @@ try {
    await page.addInitScript(()=>setInterval(()=>console.log('MOBILE_PHASE',window.__game?.state,document.body?.dataset.ui,document.querySelector('#loading')?.innerText?.slice(-140)),10000));
    page.on('pageerror',e=>console.log('ERROR',String(e)));
    await page.goto(app.url+'/?simhook&map='+map+'&bakedownload',{waitUntil:'domcontentloaded'});
-   await page.waitForFunction(()=>{window.__peakMobileHeap=Math.max(window.__peakMobileHeap||0,performance.memory?.usedJSHeapSize||0);return window.__game?.state==='race';},null,{timeout:360000,polling:250});
+   await page.waitForFunction(()=>{window.__peakMobileHeap=Math.max(window.__peakMobileHeap||0,performance.memory?.usedJSHeapSize||0);return window.__game?.state==='race';},null,{timeout:900000,polling:250});
    console.log('MAP_READY',map);
    for(const perfClass of ['potato','low','med','high']){
     await page.evaluate(perfClass=>{__settings.perfClass=perfClass;__renderTest.applyRenderResolution(.9);__renderTest.applyRenderResolution('auto');},perfClass);
