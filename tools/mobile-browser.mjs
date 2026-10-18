@@ -23,7 +23,7 @@ async function screenshot(page, path) {
 }
 const memoryFunction = (await readFile('src/asset-metrics.js','utf8')).split('export function estimateSceneMemory')[1];
 try {
- if (process.argv.includes('--matrix')) {
+ if (process.argv.includes('--matrix') || process.argv.includes('--race')) {
   for (const map of ['megara','riviera','penteli','psychiko']) {
    const context=await browser.newContext({...devices['Pixel 8 landscape']});
    await context.addInitScript(()=>localStorage.setItem('paraliaki.settings',JSON.stringify({perfClass:'low',dynamicResolution:false})));
@@ -38,26 +38,29 @@ try {
     await page.evaluate(perfClass=>{__settings.perfClass=perfClass;__renderTest.applyRenderResolution(.9);__renderTest.applyRenderResolution('auto');},perfClass);
     await page.waitForTimeout(1500);
     const result=await page.evaluate(memoryFunction=>({render:__renderInfo(),memory:Function('return function estimateSceneMemory'+memoryFunction)()(__sim.scene),peakHeap:window.__peakMobileHeap,metrics:__assetMetrics.maps[__game.mapId],resources:performance.getEntriesByType('resource').filter(e=>e.name.includes('/data/')).map(e=>({url:e.name.split('/').at(-1),transfer:e.transferSize,encoded:e.encodedBodySize,ms:e.duration}))}),memoryFunction);
-    result.heap=await cdp.send('Runtime.getHeapUsage');
+    await cdp.send('HeapProfiler.collectGarbage');result.heap=await cdp.send('Runtime.getHeapUsage');
     report.runs.push({map,perfClass,...result});console.log('MAP',JSON.stringify({map,perfClass,...result}));
    }
    await writeFile(resolve(out,'report.json'),JSON.stringify(report,null,2));
    await context.close();
   }
- } else {
+ }
+ if (!process.argv.includes('--matrix')) {
  for (const device of ['iPhone 15','Pixel 8']) {
   const context = await browser.newContext({...devices[device+(landscape?' landscape':'')]});
   await context.addInitScript(baseline=>localStorage.setItem('paraliaki.settings',JSON.stringify({perfClass:baseline?'med':'low'})),baseline);
   const page = await context.newPage();
   page.setDefaultTimeout(20000);
-  await page.addInitScript(()=>{const raf=requestAnimationFrame;window.requestAnimationFrame=cb=>raf(function run(t){if(window.__mobileCapture && cb.name==='frame'){raf(run);return;}cb(t);});});
+  await page.addInitScript(()=>{const raf=requestAnimationFrame;window.requestAnimationFrame=cb=>raf(function run(t){if(window.__mobileCapture){raf(run);return;}cb(t);});});
+  page.on('requestfailed',r=>console.log('REQUEST_FAILED',r.url(),r.failure()?.errorText));
+  page.on('response',r=>{if(r.status()>=400)console.log('HTTP_ERROR',r.status(),r.url());});
   page.on('pageerror',e=>{report.errors.push(String(e)); console.log('ERROR',String(e));});
   page.on('console',m=>{if(m.type()==='error')console.log('CONSOLE',m.text().slice(0,400));});
   page.on('console',m=>{if(m.text().startsWith('MOBILE_PHASE'))console.log(m.text());});
   await page.addInitScript(()=>setInterval(()=>console.log('MOBILE_PHASE',window.__game?.state,document.body?.dataset.ui,document.querySelector('#loading')?.innerText?.slice(-140)),10000));
   const cdp=await context.newCDPSession(page);
   await page.goto(app.url+'/?menu&simhook&bakedownload',{waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>window.__bootMenu?.open,null,{timeout:120000});
+  await page.waitForFunction(()=>window.__bootMenu?.open,null,{timeout:120000}).catch(async error=>{console.log('BOOT_FAILED',await page.evaluate(()=>({html:document.body.innerText,errors:document.querySelector('#err')?.innerText,resources:performance.getEntriesByType('resource').map(e=>({name:e.name,ms:e.duration,bytes:e.transferSize}))})));throw error;});
   console.log('TITLE',device,await page.locator('#ui').innerText());
   if(await page.locator('[data-act=dismissNews]').count())await page.locator('[data-act=dismissNews]').tap();
   await screenshot(page,resolve(out,device+(landscape?'-landscape-menu.png':'-portrait-menu.png')));
