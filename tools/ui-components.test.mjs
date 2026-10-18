@@ -125,8 +125,9 @@ test('the pause-menu reference: one surface focus look, one type language, pause
   const menu = read('src/menu.js'), pause = menu.slice(menu.indexOf('  r_pause('), menu.indexOf('  r_roamConditions('));
   assert.match(pause, /C\.sheetList\(\{ variant: 'pause'/, `${OWNER}\npause uses the kit layout with its inset sheet header`);
   assert.match(pause, /C\.option\(/, OWNER);
-  const title = menu.slice(menu.indexOf('  r_title('), menu.indexOf('  participantChoice('));
-  assert.equal([...title.matchAll(/cls: 'option--tile/g)].length, 5, `${OWNER}\nthe locked title layout is the kit's option tiles (PLAY is option--hero)`);
+  const title = menu.slice(menu.indexOf('  r_title('), menu.indexOf('  r_leaderboards('));
+  // owner-requested edit 2026-10-18: one MULTIPLAYER tile replaced JOIN GAME + HOST / CREATE GAME
+  assert.equal([...title.matchAll(/cls: 'option--tile/g)].length, 4, `${OWNER}\nthe locked title layout is the kit's option tiles (PLAY is option--hero)`);
   assert.doesNotMatch(pause, /PHONE AS WHEEL/, 'the phone-wheel feature is being removed; pause does not list it');
 });
 
@@ -136,7 +137,7 @@ test('OWNER LOCK 2026-10-17: leaderboards belong to the Quick Race track, never 
   globalThis.document = { baseURI: 'http://localhost/', querySelector: () => null, body: { classList: { contains: () => false } } };
   globalThis.window = {};
   try {
-    const mode = Menu.prototype.r_mode.call({ participants: 'solo', participantChoice: Menu.prototype.participantChoice });
+    const mode = Menu.prototype.r_mode.call({});
     assert.deepEqual([...mode.matchAll(/class="mi option[^>]+data-act="([^"]+)"/g)].map(m => m[1]), ['quick', 'free']);
     assert.doesNotMatch(mode, /LEADERBOARD/);
     assert.doesNotMatch(Menu.prototype.r_title.call({ h: {} }), /LEADERBOARD/);

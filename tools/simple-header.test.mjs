@@ -38,7 +38,7 @@ test('only the title opts into the account button, retaining the account and sig
     const calls = [...src.matchAll(/(?:C\.)?statusBar\(\{[^}]*\}/g)];
     for (const [call] of calls) {
       assert.equal(path, 'menu.js');
-      assert.equal(menu.indexOf(call) > menu.indexOf('  r_title(') && menu.indexOf(call) < menu.indexOf('  participantChoice('), true);
+      assert.equal(menu.indexOf(call) > menu.indexOf('  r_title(') && menu.indexOf(call) < menu.indexOf('  r_leaderboards('), true);
       assert.match(call, /account: true/);
     }
   }

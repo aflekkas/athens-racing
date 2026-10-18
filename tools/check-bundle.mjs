@@ -44,7 +44,7 @@ try {
     await page.evaluate(() => window.__flow.quit());
     await page.waitForFunction(() => window.__flow.menu.screen === 'title');
   }
-  await page.evaluate(() => { const menu = window.__flow.menu; menu.show('multiplayer'); menu.activate(menu.root.querySelector('[data-act=mpJoin]')); });
+  await page.evaluate(() => { const menu = window.__flow.menu; menu.show('title'); menu.activate(menu.root.querySelector('[data-act=multiplayer]')); });
   await page.waitForFunction(() => window.__flow.menu.screen === 'mp' && window.__multiplayer?.loaded, null, { timeout: 60000 });
   if (await page.evaluate(() => !!window.__bootMenu)) {
     const faultContext = await browser.newContext({ serviceWorkers: 'block' });

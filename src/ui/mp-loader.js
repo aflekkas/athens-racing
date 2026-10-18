@@ -11,7 +11,7 @@ async function ready(menu) {
 export function installMpScreens(menu) {
   if (window.__multiplayer?.pendingCode || window.__multiplayer?.pendingResume || window.__multiplayer?.active) void ready(menu);
 }
-export const isMpScreen = screen => ['mp', 'mpLobby', 'mpCars', 'mpResults'].includes(screen);
+export const isMpScreen = screen => ['mp', 'mpHost', 'mpLobby', 'mpCars', 'mpResults'].includes(screen);
 export const syncFlag = (...args) => module?.syncFlag(...args);
 export const afterShow = (...args) => module?.afterShow(...args);
 export const afterRender = (...args) => module?.afterRender(...args);
@@ -20,6 +20,7 @@ export const back = (...args) => module?.back(...args);
 export const act = (...args) => module?.act(...args);
 export const change = (...args) => module?.change(...args);
 export const renderMp = (...args) => module?.renderMp(...args) || '';
+export const renderHost = (...args) => module?.renderHost(...args) || '';
 export const renderLobby = (...args) => module?.renderLobby(...args) || '';
 export const renderCars = (...args) => module?.renderCars(...args) || '';
 export const renderResults = (...args) => module?.renderResults(...args) || '';

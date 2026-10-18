@@ -20,7 +20,7 @@ Production is on hold (`~/.local/state/athens-release/production-hold`). Staging
 - [~] Lucide icons everywhere, no glyph arrows (Sol)
 - [~] Garage: drive pill inside card, brand logo, brand filter, filters under title, spec card redesign, hide paint when there's none, viewer without plate and centred (Sol)
 - [~] Fix broken Fiat Ducato model + audit every model for leaked cockpit parts (Astra)
-- [~] Multiplayer: one MULTIPLAYER title tile, lobby-browser screen, RACE cards fill the height, tooltip layering (Opus, Personal)
+- [x] Multiplayer: one MULTIPLAYER title tile, lobby-browser screen + full-screen host setup, solo RACE with full-height cards, race-corner MULTIPLAYER button hidden over menus (Opus, Personal)
 - [~] Track picker: full-page Attica map with a floating card, no RESET, better map (Opus, Enterprise)
 - [~] Shared page-layout templates; migrate every screen; guard test (Astra)
 - [~] Athens open world resumed: fix steep road seams → connected Glyfada–Riviera behind ?map=athens → expand (Astra). Data at /home/dev/data/athens-world-cache. Hidden from players until the owner approves.

@@ -252,6 +252,13 @@ export class Multiplayer {
     if (this.connectionChip) this.connectionChip.hidden = !reconnecting || !this.active;
     if (!reconnecting) { this.reconnectAttempt = 0; clearTimeout(this.reconnectTimer); this.reconnectTimer = null; }
   }
+  /** the browser's TRY AGAIN: skip the back-off wait and dial now (a pending retry is cancelled first) */
+  reconnectNow() {
+    if (this.reloadRequired || this.connected) return;
+    clearTimeout(this.reconnectTimer); this.reconnectTimer = null;
+    const ws = this.ws; this.ws = null; try { ws?.close(); } catch {}
+    this.connect();
+  }
   retryConnection(ws) {
     if (this.ws !== ws || this.reloadRequired || this.reconnectTimer != null) return;
     this.connected = false; this.connectionState(true);

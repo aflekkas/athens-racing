@@ -221,7 +221,8 @@ body .racer-marker .racer-chevron { width: 1.2em; height: 1.2em; margin: .05em a
   -webkit-mask: url(../assets/icons/chevron-down.svg) center / contain no-repeat; mask: url(../assets/icons/chevron-down.svg) center / contain no-repeat; }
 body .racer-marker.edge .racer-chevron { -webkit-mask-image: url(../assets/icons/chevron-right.svg); mask-image: url(../assets/icons/chevron-right.svg); }
 /* the floating multiplayer button never shows over the loading or title screens */
-#loading.open ~ #mp-toggle, body:not(.loaded) #mp-toggle, body[data-ui=title] #mp-toggle { display: none !important; }
+/* The race-corner MULTIPLAYER button is HUD only: it never floats over a menu screen or its header (owner 2026-10-18). */
+#loading.open ~ #mp-toggle, body:not(.loaded) #mp-toggle, body[data-ui=title] #mp-toggle, body.ui-open #mp-toggle { display: none !important; }
 /* The garage catalogue: a scrollable grid with one renderer shared by its thumbnails. */
 /* focusing a card keeps its class header in view */
 
@@ -320,7 +321,7 @@ body.ui-open :is(#hud,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-pr
 #render-resolution, #pixel-ratio-cap { display:none!important }
 /* Settings → Driver: the local name, edited like a car's profile name (it is also the plate) */
 /* Account/build controls survive the owner-chosen title restoration. */
-#ui.s-multiplayer, #ui.s-account { background: #0b141a; }
+#ui.s-account { background: #0b141a; }
 /* OWNER LOCK: aceb5bd title layout; keep brand left and PLAY + four supporting cards. */
 .home__tiles { grid-template-columns: 1.3fr 1fr 1fr; grid-template-rows: repeat(2, minmax(9rem, 1fr)); height: min(100%, 34rem); align-self: center; }
 /* the PLAY tile: tall, with a glowing route line like the navigation screen */
@@ -333,6 +334,8 @@ body.ui-open :is(#hud,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-pr
 .scr--title .scr__foot .hints { margin-left:auto;gap:12px }
 .scr--title .home { min-width:0;grid-template-columns:minmax(15rem,.8fr) minmax(0,1.5fr);gap:var(--s-6) }
 .scr--title .home__tiles { height:min(100%,34rem);grid-template-columns:1.3fr 1fr 1fr;grid-template-rows:repeat(2,minmax(0,1fr));min-height:0 }
+/* Owner 2026-10-18: one MULTIPLAYER tile replaces JOIN GAME + HOST / CREATE GAME and spans both supporting columns */
+.scr--title .home__tiles > [data-act=multiplayer] { grid-column: span 2; }
 .scr--title .title__mark { font-size:min(5rem,5.6vw,13vh) }
 @media(max-width:900px) and (min-height:501px) {
   .scr--title .home { grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);gap:20px;align-content:center }
@@ -359,10 +362,9 @@ body.ui-open :is(#hud,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-pr
 
 /* ---------------------------------------------------------------- one component set: screen layouts only (looks live in the kit) */
 /* mode select: the participants choice over two kit option tiles */
-.mode-layout { flex: 1; display: flex; flex-direction: column; gap: var(--s-4); min-height: 0; }
-.mode-layout > .field { flex: none; align-self: flex-start; width: min(34rem, 100%); }
-.mode-grid { flex: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: minmax(12rem, auto); gap: var(--s-4); min-height: 0; overflow-y: auto; }
-@media (max-width: 560px) { .mode-grid { flex: none; grid-template-columns: minmax(0, 1fr); grid-auto-rows: auto; gap: var(--s-2); max-height: none; } }
+/* RACE (owner 2026-10-18): the two mode cards take the full height of the screen; stacked halves on a phone */
+.mode-grid { flex: 1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: minmax(0, 1fr); gap: var(--s-4); min-height: 0; }
+@media (max-width: 560px) { .mode-grid { grid-template-columns: minmax(0, 1fr); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: var(--s-3); } }
 /* race setup: the route summary beside the setup form */
 .setup__map { display: block; width: 100%; max-height: 11rem; margin-bottom: var(--s-4); }
 .setup__go { display: flex; justify-content: flex-end; margin-top: var(--s-4); }

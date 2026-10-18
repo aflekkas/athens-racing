@@ -6,7 +6,7 @@ import { notifications, raceNotificationsActive } from './notifications.js';
 // Two ways to use it:
 //   1. HTML builders (menus render strings):  button({ label, icon, variant, act }), slider({ key, value, ... }), toggle(),
 //      segmented(), stepper(), select({ compact }), tabs(), nav(), option(), listRow(), textField(), searchField(), card(),
-//      carCard(), panel(), sheetHead(), dialog() (sign-in only), plate(), stat(), chip(), table(), keyHints(), progress(), spinner(),
+//      carCard(), panel(), listHead(), emptyState(), sheetHead(), dialog() (sign-in only), plate(), stat(), chip(), table(), keyHints(), progress(), spinner(),
 //      medal(), icon(name). Interactive builders emit a `.mi` row (the menu's focus item) carrying data-kind / data-key.
 //      Inside src/menu.js the named input actions drive them: left / right -> step(el, ±1), confirm -> activate(el).
 //      Mouse, touch and pen work through handleClick(event) / pointer drag on sliders (bindRoot(root) once).
@@ -97,8 +97,9 @@ export function button({ label = '', icon: ic, iconRight, logo = '', variant = '
   const c = ['btn', 'btn--' + variant, size && 'btn--' + size, block && 'btn--block', !label && !logo && 'btn--icon', focusable && 'mi', disabled && 'off', cls].filter(Boolean).join(' ');
   return `<div class="${c}" role="button"${attrStr({ 'data-act': act, title, 'aria-label': !label ? title : null, 'aria-disabled': disabled ? 'true' : null, ...attrs })}>${logo}${icon(ic)}${label ? `<span>${label}</span>` : ''}${sub ? `<span class="btn__sub">${sub}</span>` : ''}${icon(iconRight)}</div>`;
 }
-export function option({ icon: ic, title, desc = '', act, attrs, cls = '', disabled } = {}) {
-  return `<div class="mi option ${disabled ? 'off' : ''} ${cls}" role="button"${attrStr({ 'data-act': act, ...attrs })}><span class="option__ico">${icon(ic)}</span><span><b class="option__title">${title}</b>${desc ? `<span class="option__desc">${desc}</span>` : ''}</span><span class="option__go">${icon('chevron-right')}</span>${cls.split(/\s+/).includes('option--hero') ? `<span class="option__start">START${icon('chevron-right')}</span>` : ''}</div>`;
+/** media: artwork behind a tile (option--feature); cta: the tile's call to action, lit while the tile has focus */
+export function option({ icon: ic, title, desc = '', act, attrs, cls = '', disabled, media = '', cta = '' } = {}) {
+  return `<div class="mi option ${disabled ? 'off' : ''} ${cls}" role="button"${attrStr({ 'data-act': act, ...attrs })}><span class="option__ico">${icon(ic)}</span><span><b class="option__title">${title}</b>${desc ? `<span class="option__desc">${desc}</span>` : ''}${cta ? `<span class="option__cta">${cta}${icon('chevron-right')}</span>` : ''}</span><span class="option__go">${icon('chevron-right')}</span>${cls.split(/\s+/).includes('option--hero') ? `<span class="option__start">START${icon('chevron-right')}</span>` : ''}${media ? `<span class="option__media" aria-hidden="true">${media}</span>` : ''}</div>`;
 }
 export function panel(title, body, { icon: ic, cls = '', notch = false, right = '', attrs } = {}) {
   return `<section class="panel ${notch ? 'panel--notch' : ''} ${cls}"${attrStr(attrs)}>${title ? `<header class="panel__head"><h3 class="panel__title">${icon(ic)}${title}</h3>${right}</header>` : ''}${body}</section>`;
@@ -114,10 +115,20 @@ export function stat(label, value, { icon: ic, tone, cls = '' } = {}) {
   return `<div class="stat-tile ${tone ? 'stat-tile--' + tone : ''} ${cls}"><span class="stat-tile__k">${icon(ic)}${label}</span><b class="stat-tile__v">${value}</b></div>`;
 }
 export const stats = (tiles, cls = '') => `<div class="stats ${cls}">${tiles.map((t) => Array.isArray(t) ? stat(...t) : t).join('')}</div>`;
-/** a focusable list row (lobbies, landmarks, any pick-one list): icon, title + one line, right-side meta, chevron */
-export function listRow({ icon: ic, title = '', desc = '', meta = '', act, fid, attrs, cls = '', disabled, selected, go = true, focusable = true } = {}) {
+/** a focusable list row (lobbies, landmarks, any pick-one list): icon, title + one line, right-side meta, chevron.
+ *  media: a thumbnail in place of the icon. cells: [[html, key]] extra columns that line up from row to row on the
+ *  container's --list-cols grid (listHead() labels them); each cell is a value over a quiet caption. */
+export function listRow({ icon: ic, media = '', title = '', desc = '', cells = [], meta = '', act, fid, attrs, cls = '', disabled, selected, go = true, focusable = true } = {}) {
   // focusable: false = an information row whose meta holds its own buttons (friends, invites)
-  return `<div class="${focusable ? 'mi ' : ''}list-row${focusable ? '' : ' list-row--static'} ${disabled ? 'off' : ''} ${selected ? 'selected' : ''} ${cls}"${focusable ? ' role="button"' : ''}${attrStr({ 'data-act': act, 'data-fid': fid, 'aria-disabled': disabled ? 'true' : null, ...attrs })}>${ic ? `<span class="list-row__ico">${icon(ic)}</span>` : ''}<span class="list-row__main"><b>${title}</b>${desc ? `<span>${desc}</span>` : ''}</span>${meta ? `<span class="list-row__meta">${meta}</span>` : ''}${go ? icon('chevron-right', 'list-row__go') : ''}</div>`;
+  const lead = media ? `<span class="list-row__media">${media}</span>` : ic ? `<span class="list-row__ico">${icon(ic)}</span>` : '';
+  return `<div class="${focusable ? 'mi ' : ''}list-row${focusable ? '' : ' list-row--static'}${cells.length ? ' list-row--cells' : ''} ${disabled ? 'off' : ''} ${selected ? 'selected' : ''} ${cls}"${focusable ? ' role="button"' : ''}${attrStr({ 'data-act': act, 'data-fid': fid, 'aria-disabled': disabled ? 'true' : null, ...attrs })}>${lead}<span class="list-row__main"><b>${title}</b>${desc ? `<span>${desc}</span>` : ''}</span>${cells.map(([html, key]) => `<span class="list-row__cell"${attrStr({ 'data-cell': key })}>${html}</span>`).join('')}${meta ? `<span class="list-row__meta">${meta}</span>` : ''}${go ? icon('chevron-right', 'list-row__go') : ''}</div>`;
+}
+/** the caption row over cell list rows: labels: [text | [text, columns spanned]] on the same --list-cols grid */
+export const listHead = (labels, cls = '') => `<div class="list-head ${cls}" aria-hidden="true">${labels.map((l) => { const [text, span] = Array.isArray(l) ? l : [l, 1]; return `<span${span > 1 ? ` style="grid-column: span ${span}"` : ''}>${text}</span>`; }).join('')}</div>`;
+/** an empty, loading or failed collection: an icon plate (or a spinner while busy), a title, one line and an action.
+ *  tone '' | 'warn' | 'bad' tints the plate */
+export function emptyState({ icon: ic = 'info', title = '', text = '', action = '', tone = '', busy = false, cls = '' } = {}) {
+  return `<div class="empty-state ${tone ? 'empty-state--' + tone : ''} ${cls}" role="status">${busy ? `<span class="empty-state__ico">${spinner()}</span>` : `<span class="empty-state__ico">${icon(ic)}</span>`}<b class="empty-state__title">${title}</b>${text ? `<p class="empty-state__text">${text}</p>` : ''}${action ? `<div class="empty-state__act">${action}</div>` : ''}</div>`;
 }
 /** a small status pill: tone '' | 'accent' | 'good' | 'warn' | 'bad' | 'gold' */
 export const chip = (text, { tone = '', icon: ic, cls = '', attrs } = {}) => `<span class="chip ${tone ? 'chip--' + tone : ''} ${cls}"${attrStr(attrs)}>${icon(ic)}<span>${text}</span></span>`;

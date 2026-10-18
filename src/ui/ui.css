@@ -552,6 +552,38 @@ body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad
 }
 .option--hero.option--tile.option::before { right:0 }
 
+/* feature tile (RACE modes; option({ media, cta })): the tile tall and led by its artwork, the title large and light like
+   PLAY. The art sits behind a dark fade so the copy stays readable; keyboard / gamepad focus brings the art forward and
+   lights the call to action, both animated. */
+.option--feature.option--tile.option { justify-content: flex-end; padding: var(--s-6); isolation: isolate; }
+.option--feature.option--tile.option > span:nth-child(2) { margin-top: 0; }
+.option--feature > :not(.option__media) { position: relative; z-index: 1; }
+.option--feature.option--tile.option > .option__ico { margin-bottom: auto; }
+.option__media { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; border-radius: inherit; }
+.option__media img { display: block; width: 100%; height: 100%; object-fit: cover; opacity: .6; transform: scale(1.04); transition: opacity .32s var(--ease), transform .45s var(--ease); }
+.option__media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(7,10,14,0) 35%, rgba(7,10,14,.6) 65%, rgba(7,10,14,.94) 95%); }
+.option--feature.option--tile.option .option__title { font-weight: 400; font-size: var(--t-3xl); letter-spacing: .1em; }
+.option--feature.option--tile.option .option__desc { max-width: 34rem; font-size: var(--t-sm); color: var(--c-text-2); }
+.option__cta { display: inline-flex; align-items: center; gap: .4em; height: 2.6rem; margin-top: var(--s-4); padding: 0 var(--s-4) 0 var(--s-5); border-radius: var(--r-pill);
+  background: rgba(255,255,255,.07); box-shadow: inset 0 0 0 1px var(--hu-hair-2); color: var(--c-text); font: 700 var(--t-sm) var(--f-cond); letter-spacing: .18em; text-transform: uppercase;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease), box-shadow var(--dur) var(--ease); }
+.option__cta .ico { width: 1em; height: 1em; transition: transform var(--dur) var(--ease); }
+:root[data-ui-focus="navigation"] .option--feature.focus .option__media img { opacity: 1; transform: none; }
+:root[data-ui-focus="navigation"] .option--feature.focus .option__cta { background: var(--hu-lit); color: var(--hu-lit-fg); box-shadow: none; }
+:root[data-ui-focus="navigation"] .option--feature.focus .option__cta .ico { transform: translateX(3px); }
+.option--feature:active .option__media img { opacity: 1; transform: none; }
+@media (max-width: 560px) and (min-height: 501px) {
+  .option--feature.option--tile.option { padding: var(--s-5); }
+  .option--feature.option--tile.option .option__desc { display: block; }
+  .option--feature.option--tile.option .option__title { font-size: var(--t-2xl); }
+  .option--feature .option__cta { height: 2.3rem; margin-top: var(--s-3); }
+}
+@media (max-height: 500px) {
+  .option--feature.option--tile.option { padding: var(--s-4); }
+  .option--feature.option--tile.option .option__title { font-size: var(--t-2xl); }
+  .option__cta { height: 2rem; margin-top: var(--s-2); font-size: var(--t-xs); }
+}
+
 /* Keyboard/gamepad focus uses a quiet surface; no outline or ring. */
 .sheet-head { display: grid; gap: var(--s-2); min-width: 0; }
 .sheet-head > .kick { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -611,6 +643,43 @@ body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad
 .option--danger .option__title, .option--danger .option__ico { color: var(--c-bad); }
 .search__input::placeholder { text-transform: none; letter-spacing: .02em; }
 .list-row--wrap .list-row__main b, .list-row--wrap .list-row__main span { white-space: normal; overflow-wrap: anywhere; }
+/* list rows with a thumbnail and aligned columns (listRow({ media, cells }) under listHead()): every row and the caption
+   row share the container's --list-cols, so columns line up without a table. A cell is a value over a quiet caption. */
+.list-row.list-row--cells, .list-head { grid-template-columns: var(--list-cols, auto minmax(0, 1.4fr) repeat(3, minmax(0, 1fr)) auto auto); }
+.list-row--cells { min-height: 4.6rem; padding-top: var(--s-2); padding-bottom: var(--s-2); }
+.list-row__media { display: block; width: 100%; aspect-ratio: 5 / 3; border-radius: var(--r-2); overflow: hidden; background: var(--ui-well); box-shadow: inset 0 0 0 1px var(--hu-hair); }
+.list-row__media img { display: block; width: 100%; height: 100%; object-fit: cover; opacity: .85; transition: opacity var(--dur) var(--ease); }
+:root[data-ui-focus="navigation"] .list-row.focus .list-row__media img { opacity: 1; }
+.list-row__cell { min-width: 0; display: grid; gap: .3rem; align-content: center; }
+.list-row__cell > b { font: 500 var(--t-md) var(--f-sans); letter-spacing: .06em; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.list-row__cell > span { font: 600 var(--t-xs) var(--f-cond); letter-spacing: var(--track-caps); color: var(--c-text-3); text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.list-row__cell > .progress { width: min(6rem, 100%); }
+.list-row--cells .list-row__meta { justify-content: flex-start; }
+.list-row--cells.off { opacity: .5; }
+.list-head { display: grid; align-items: end; gap: var(--s-3); padding: 0 calc(var(--s-3) + 1px) var(--s-2) calc(var(--s-4) + 1px); border-bottom: 1px solid var(--ui-line);
+  font: 600 var(--t-2xs) var(--f-cond); letter-spacing: var(--track-kick); color: var(--c-text-3); text-transform: uppercase; white-space: nowrap; }
+.list-head > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+/* a card badge (drive pill, SELECTED mark) fades in when it appears, so a selection change reads as a transition */
+.card__badge { animation: ui-pop .2s var(--ease) both; }
+/* a surfaced row: each row its own calm card (the lobby browser) */
+.list-row--card { background: var(--ui-surface); border-color: var(--ui-line); }
+.list-row--card + .list-row--card { margin-top: 0; }
+:root[data-ui-focus="navigation"] .list-row--card.focus { background: rgba(32, 41, 52, .96); }
+
+/* empty / loading / failed state for a collection (emptyState()): centred, calm, one optional action */
+.empty-state { display: grid; justify-items: center; align-content: center; gap: var(--s-2); min-height: 14rem; padding: var(--s-6) var(--s-5); text-align: center;
+  background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: var(--r-4); }
+.empty-state__ico { display: grid; place-items: center; width: 3.2rem; height: 3.2rem; margin-bottom: var(--s-2); border-radius: 30%; background: rgba(255,255,255,.07); color: var(--c-text-2); }
+.empty-state__ico .ico { width: 1.5rem; height: 1.5rem; }
+.empty-state--warn .empty-state__ico { background: rgba(255,178,26,.13); color: var(--c-warn); }
+.empty-state--bad .empty-state__ico { background: rgba(255,69,58,.12); color: #ff8a80; }
+.empty-state__title { font: 600 var(--t-md) var(--f-sans); letter-spacing: .12em; text-transform: uppercase; color: var(--c-text); }
+.empty-state__text { max-width: 30rem; margin: 0; font: 500 var(--t-sm)/1.5 var(--f-sans); color: var(--c-text-3); }
+.empty-state__act { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--s-2); margin-top: var(--s-3); }
+
+/* a code entry (searchField cls 'search--code'): wide-tracked condensed capitals, the pill sized to its six characters */
+.search--code .search__input { font: 600 var(--t-lg) var(--f-cond); letter-spacing: .3em; }
+.search--code .search__input::placeholder { font: 600 var(--t-sm) var(--f-cond); letter-spacing: .18em; text-transform: uppercase; }
 .card--photo .card__media { aspect-ratio: auto; }
 .card--photo .card__media img { position: static; height: auto; }
 .card--photo .card__text { text-transform: none; letter-spacing: .02em; font: 500 var(--t-sm)/1.5 var(--f-sans); color: var(--c-text-2); }
