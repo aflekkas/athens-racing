@@ -787,3 +787,12 @@ test('public Worker denies anonymous gameplay before forwarding to the arena', a
   assert.equal((await worker.fetch(new Request('https://staging.athensracing.com/api/lobbies'), env)).status, 200);
   assert.equal(forwarded, 1);
 });
+
+
+test('the client closes the gate at the session expiry deadline', async () => {
+  const client = new AccountsClient({ storage: null }); client.ready = true;
+  client.setSession({ user: { id: 'driver', displayName: 'ATHENA' }, expires: Date.now() + 10 });
+  assert.equal(client.blocked, false);
+  await new Promise(resolve => setTimeout(resolve, 30));
+  assert.equal(client.blocked, true); assert.match(client.error, /expired/);
+});

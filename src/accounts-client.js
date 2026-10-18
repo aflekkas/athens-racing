@@ -37,6 +37,18 @@ export class AccountsClient {
     this.ready = false;
   }
   get blocked() { return this.required && (!this.ready || this.offline || !this.user || !this.user.displayName); }
+  setSession(s) {
+    clearTimeout(this.sessionTimer);
+    this.user = s.user; this.csrf = s.csrf;
+    if (s.user && Number.isFinite(s.expires)) {
+      this.sessionTimer = setTimeout(() => {
+        this.disconnect();
+        this.error = "Your session expired. Sign in with Google to continue.";
+        this.onChange();
+      }, Math.max(0, Math.min(2147483647, s.expires - Date.now())));
+      this.sessionTimer?.unref?.();
+    }
+  }
   connectionLost() {
     this.offline = true;
     this.error = "Connect to the internet to sign in with Google, then try again.";
@@ -48,7 +60,7 @@ export class AccountsClient {
     try {
       const s = await this.api("/api/auth/session");
       if (!s.user) this.disconnect();
-      this.user = s.user; this.csrf = s.csrf; this.offline = false;
+      this.setSession(s); this.offline = false;
       this.error = s.user ? "" : "Your session expired. Sign in with Google to continue.";
       this.onChange();
     } catch (e) { this.connectionLost(); }
@@ -95,8 +107,7 @@ export class AccountsClient {
         return;
       }
       const s = await this.api("/api/auth/session");
-      this.user = s.user;
-      this.csrf = s.csrf;
+      this.setSession(s);
       if (this.user) {
         if (!s.migrated)
           await this.api("/api/account/migrate", {
@@ -186,6 +197,7 @@ export class AccountsClient {
     };
   }
   disconnect() {
+    clearTimeout(this.sessionTimer);
     this.user = null;
     clearTimeout(this.retry);
     clearTimeout(this.expireTimer);

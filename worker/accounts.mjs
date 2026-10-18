@@ -177,6 +177,7 @@ export async function accounts(request, env, fetcher = fetch) {
                 avatar: s.avatar,
               },
               csrf: s.csrf,
+              expires: s.expires,
               progress: JSON.parse(s.progress),
               migrated: !!s.migrated,
             }
