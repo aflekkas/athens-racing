@@ -75,3 +75,10 @@ test('catalogues and vehicle stages retain renderer hooks inside kit-owned regio
  assert.match(html,/id="carStage"/);assert.match(html,/aria-label="A &amp; B"/);
  assert.match(C.browseGrid({variant:'catalog',filters:'FILTER',items:'CARS'}),/catalog-toolbar" data-layout-region="filters"/);
 });
+
+test('rail layout owns section navigation and the scrolling content panel', () => {
+ const html=C.sidebarContent({variant:'rail',nav:C.nav({key:'section',options:[['about','ABOUT']]}),content:'CONTENT'});
+ assert.match(html,/class="scr__headr" data-layout-region="nav"/);
+ assert.match(html,/class="set-panel panel scroll-y" data-layout-region="content">CONTENT/);
+ assert.equal((html.match(/data-layout="sidebar-content"/g)||[]).length,1);
+});

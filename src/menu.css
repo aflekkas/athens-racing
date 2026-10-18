@@ -45,19 +45,9 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
 .setup__fields > .btn--ghost { margin: var(--s-2) var(--s-2); }
 .setup__go { margin-top: var(--s-4); padding: 0 var(--s-2); }
 /* ---------------------------------------------------------------- settings: a rail of sections + a glass list */
-.scr--settings { grid-template-columns: minmax(11rem, 15rem) minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr) auto; column-gap: var(--s-5);
-  grid-template-areas: "status status" "title title" "rail body" "foot foot"; }
-.scr--settings > .hu-status { grid-area: status; }
-.scr--settings > .scr__foot { grid-area: foot; }
-.scr--settings > .scr__body { grid-area: body; }
-.scr--settings > .scr__head { display: contents; }
-.scr--settings .scr__titles { grid-area: title; }
-.scr--settings .scr__headr { grid-area: rail; align-self: start; justify-content: stretch; min-height: 0; }
-.scr--settings [data-menu-feedback] { grid-area: title; justify-self: end; align-self: center; margin: 0; }
-.scr--settings .tabs__hint { display: none; }
+
 /* The selected item is the glass indicator that slides along the rail. */
-.scr--settings .scr__body { align-items: stretch; }
-.set-panel { width: min(56rem, 100%); min-height: 0; padding: var(--s-4) var(--s-4) var(--s-5); }
+
 @keyframes bindBlink { 50% { opacity: .4; } }
 /* ---------------------------------------------------------------- pause: a quick-settings sheet over the frozen road view */
 /* ---------------------------------------------------------------- results: the trip computer */
@@ -84,8 +74,8 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
   /* stacked: the summary spans the column like the form under it */
 
   /* settings: the rail becomes a scrolling tab strip above the list */
-  .scr--settings { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto minmax(0, 1fr) auto; grid-template-areas: "status" "title" "rail" "body" "foot"; }
-  .set-panel { padding: var(--s-3) var(--s-2) var(--s-4); }
+  
+  
 }
 @media (max-width: 560px) {
   .home__tiles { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto; gap: var(--s-2); }
@@ -106,8 +96,8 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
   
 
   
-  .scr--settings { grid-template-columns: minmax(9rem, 12rem) minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr) auto; grid-template-areas: "status status" "title title" "rail body" "foot foot"; }
-  .scr--settings .scr__headr { overflow-y: auto; max-height: 100%; }
+  
+  
 }
 @media (max-height: 500px) and (max-width: 860px) {
   .setup-layout { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); flex: 1; }

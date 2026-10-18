@@ -927,3 +927,21 @@ body[data-ui] #mp-toggle { display: none !important; }
 .car-preview-viewport { position: absolute; inset: 0; touch-action: pan-y; }
 @media (max-width: 800px) and (orientation: portrait) { .vehicle-specs { max-height: none; overflow: visible; } }
 :root[data-ui-focus="navigation"] :is(.car-paints, .car-decals) .paint.focus { filter: contrast(.8) brightness(1.05); }
+
+/* SidebarContent rail: shared section navigation and scrolling settings content. */
+.layout--sidebar-content-rail { grid-template-columns: minmax(11rem, 15rem) minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr) auto; column-gap: var(--s-5);
+  grid-template-areas: "status status" "title title" "rail body" "foot foot"; }
+.layout--sidebar-content-rail > .hu-status { grid-area: status; }
+.layout--sidebar-content-rail > .scr__foot { grid-area: foot; }
+.layout--sidebar-content-rail > .scr__body { grid-area: body; }
+.layout--sidebar-content-rail > .scr__head { display: contents; }
+.layout--sidebar-content-rail .scr__titles { grid-area: title; }
+.layout--sidebar-content-rail .scr__headr { grid-area: rail; align-self: start; justify-content: stretch; min-height: 0; }
+.layout--sidebar-content-rail [data-menu-feedback] { grid-area: title; justify-self: end; align-self: center; margin: 0; }
+.layout--sidebar-content-rail .tabs__hint { display: none; }
+.layout--sidebar-content-rail .scr__body { align-items: stretch; }
+.set-panel { width: min(56rem, 100%); min-height: 0; padding: var(--s-4) var(--s-4) var(--s-5); }
+@media (max-width: 860px) { .layout--sidebar-content-rail { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto minmax(0, 1fr) auto; grid-template-areas: "status" "title" "rail" "body" "foot"; } }
+@media (max-width: 860px) { .set-panel { padding: var(--s-3) var(--s-2) var(--s-4); } }
+@media (max-height: 500px) { .layout--sidebar-content-rail { grid-template-columns: minmax(9rem, 12rem) minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr) auto; grid-template-areas: "status status" "title title" "rail body" "foot foot"; } }
+@media (max-height: 500px) { .layout--sidebar-content-rail .scr__headr { overflow-y: auto; max-height: 100%; } }

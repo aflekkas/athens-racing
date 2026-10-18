@@ -468,10 +468,10 @@ export class Menu {
         <div class="group"><h3 class="group__title">${icon('map-pin')}TAGS</h3>${tg('playerMarkers', 'ONLINE PLAYER TAGS')}${tg('rivalMarkers', 'AI RIVAL TAGS')}</div>`;
     } else if (tab === 'controls') body = renderControls(this);
     else if (tab === 'about') body = Release.renderAbout(this);
-    return C.screen({ cls: 'scr--settings', kick: d.from === 'pause' ? 'PAUSED' : 'OPTIONS', title: 'SETTINGS',
-      head: C.nav({ key: 'settingsTab', value: tab, options: tabsList, label: 'Settings sections' }),
+    return C.sidebarContent({ variant: 'rail', cls: 'scr--settings', kick: d.from === 'pause' ? 'PAUSED' : 'OPTIONS', title: 'SETTINGS',
+      nav: C.nav({ key: 'settingsTab', value: tab, options: tabsList, label: 'Settings sections' }),
       hints: [['updown', 'SELECT'], ['leftright', 'CHANGE'], ['tabs', 'TAB'], ...(tab === 'controls' ? [['confirm', 'REBIND']] : []), ['back', 'BACK']],
-      body: `<div class="set-panel panel scroll-y">${body}</div>` });
+      content: body });
   }
   /** leaving the settings screen: drop any half-done key capture */
   leaving() { this.mapView?.dispose(); this.mapView = null; if (this.screen === 'settings') this.h.cancelBindings?.(); C.closeListbox(); this.carView?.dispose(); this.carView = null; }

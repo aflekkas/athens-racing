@@ -172,17 +172,17 @@ export function statusBar({ back = true, kick = '', account = false } = {}) {
 driverName.onChange?.(name => { if (typeof document !== 'undefined') for (const el of document.querySelectorAll('[data-hu-driver] span')) el.textContent = name; });
 /** the standard menu screen: the status bar, the screen header (title + right slot), a body that scrolls, a footer of
  *  key hints. Every menu screen is built with this one frame (docs/OWNER-DECISIONS.md: one shared component set). */
-export function screen({ cls = '', kick = '', title = '', back = true, head = '', body = '', hints = [], foot = '', layout = '', bodyRegion = '' } = {}) {
-  return `<div class="scr ${cls}"${attrStr({ 'data-layout': layout || null })}>${statusBar({ back, kick })}<header class="scr__head"><div class="scr__titles">${title ? `<h2 class="scr__title">${title}</h2>` : ''}</div>${head ? `<div class="scr__headr">${head}</div>` : ''}</header>
+export function screen({ cls = '', kick = '', title = '', back = true, head = '', body = '', hints = [], foot = '', layout = '', bodyRegion = '', headRegion = '' } = {}) {
+  return `<div class="scr ${cls}"${attrStr({ 'data-layout': layout || null })}>${statusBar({ back, kick })}<header class="scr__head"><div class="scr__titles">${title ? `<h2 class="scr__title">${title}</h2>` : ''}</div>${head ? `<div class="scr__headr"${attrStr({ 'data-layout-region': headRegion || null })}>${head}</div>` : ''}</header>
     <div class="scr__body"${attrStr({ 'data-layout-region': bodyRegion || null })}>${body}</div><footer class="scr__foot">${foot}${hints.length ? keyHints(hints) : ''}</footer></div>`;
 }
 // ------------------------------------------------------------------ page layouts
 // Screens pass kit content into named regions; the template owns all page geometry.
 // Slot values are trusted HTML, like panel()/screen(). Escape user text with esc().
 // See docs/ui-layouts.md. screen() remains a low-level compatibility primitive during migration.
-function layoutFrame(name, options, body, bodyRegion = '') {
+function layoutFrame(name, options, body, bodyRegion = '', nav = '') {
   const { cls = '', kick = '', title = '', back = true, hints = [], foot = '', variant = 'page' } = options;
-  return screen({ cls: `${variant === 'page' ? 'layout' : ''} layout--${name}${variant === 'page' ? '' : '-' + variant} ${cls}`, layout: name, kick, title, back, hints, foot, body, bodyRegion });
+  return screen({ cls: `${variant === 'page' ? 'layout' : ''} layout--${name}${variant === 'page' ? '' : '-' + variant} ${cls}`, layout: name, kick, title, back, hints, foot, body, bodyRegion, head: nav, headRegion: nav ? 'nav' : '' });
 }
 const region = (name, content, cls = '') => `<div class="layout__${name} ${cls}" data-layout-region="${name}">${content}</div>`;
 /** Primary tile beside secondary tiles; all tiles share the available height. */
@@ -191,6 +191,7 @@ export function heroTiles({ hero = '', tiles = '', intro = '', ...frame } = {}) 
 }
 /** Category navigation beside a separately scrolling content panel. */
 export function sidebarContent({ nav = '', content = '', variant = 'page', ...frame } = {}) {
+  if (variant === 'rail') return layoutFrame('sidebar-content', { ...frame, variant }, `<div class="set-panel panel scroll-y" data-layout-region="content">${content}</div>`, '', nav);
   if (variant === 'balanced') return layoutFrame('sidebar-content', { ...frame, variant }, region('sidebar', region('nav', nav) + region('content', content, 'layout-sidebar-balanced__content'), 'layout-sidebar-balanced'));
   return layoutFrame('sidebar-content', frame, region('sidebar', region('nav', nav, 'scroll-y') + region('content', content, 'scroll-y')));
 }

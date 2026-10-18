@@ -21,7 +21,7 @@ const SCREEN_CSS = ['src/menu.css', 'src/leaderboards.css', 'src/map-select.css'
 test('the Settings screen builds its sidebar with the shared nav component', () => {
   const menu = read('src/menu.js');
   const from = menu.indexOf('r_settings('), settings = menu.slice(from, menu.indexOf('\n  leaving()', from));
-  assert.match(settings, /head:\s*C\.nav\(\{\s*key:\s*'settingsTab'/, `${OWNER}\nThe sidebar must be C.nav({ key: 'settingsTab', ... }).`);
+  assert.match(settings, /nav:\s*C\.nav\(\{\s*key:\s*'settingsTab'/, `${OWNER}\nThe sidebar must be C.nav({ key: 'settingsTab', ... }).`);
   assert.doesNotMatch(settings, /C\.tabs\(|tabs--rail|class="[^"]*\b(tab|nav__item)\b/, `${OWNER}\nNo pill tabs, old rail or hand-built nav markup on the Settings screen.`);
 });
 

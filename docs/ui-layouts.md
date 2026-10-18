@@ -78,3 +78,8 @@ the shared footer.
 under the title and scrolls it horizontally on phones. `stageInspector` supports
 `vehicle` with `stageAttrs` for renderer IDs/labels and a shared specification
 panel in `inspector`; the kit owns the full viewer bounds and mobile stacking.
+
+`sidebarContent({ variant: 'rail', nav: C.nav(...), content })` keeps the section
+rail beside a scrolling panel. Below 860px the rail becomes a horizontal strip;
+short landscape screens restore a compact sidebar. Header, navigation and content
+remain separate named regions. The About section uses this same frame.
