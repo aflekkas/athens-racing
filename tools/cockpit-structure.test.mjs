@@ -8,6 +8,8 @@ if(!globalThis.Image)globalThis.Image=class {complete=true;naturalWidth=24;set s
 function requireStructure(spec,roles){
  const required=['dash',...(['bus','truck'].includes(spec.nativeFleet)||['cla','huracan','jazz'].includes(spec.body)?[]:['deck']), 'pillar','door-top','wheel-rim','wheel-hub','wheel-badge'];
  for(const role of required)assert.ok(roles[role]?.pixels>=40,`${spec.id}: no visible ${role}. ${WHY}`);
+ // a closed car has a roof: its header band shows across the top of the default frame (van / truck / bus windscreens are taller than the frame)
+ if(!spec.convertible&&!['van','truck','bus'].includes(spec.nativeFleet))assert.ok(roles.header?.pixels>=3000,`${spec.id}: closed car shows no header band in the default POV (${roles.header?.pixels||0} px). ${WHY}`);
  {assert.ok(roles.dash.pixels>=15000,`${spec.id}: dashboard must have substantial visible depth. ${WHY}`);assert.ok(roles.pillar.pixels>=5000,`${spec.id}: pillar trim must be substantial. ${WHY}`);assert.ok(roles.dash.maxX-roles.dash.minX>=832,`${spec.id}: dashboard does not span the view. ${WHY}`);}
 }
 test('every rendered cockpit has visible own-car structure, including a rim, hub and badge',async()=>{
@@ -22,6 +24,7 @@ test('every rendered cockpit has visible own-car structure, including a rim, hub
 test('ghost shells, missing bonnets, hidden steering wheels and missing badges are rejected',()=>{
  const spec=CARS[0],good=Object.fromEntries(STRUCTURE_ROLES.map(r=>[r,{pixels:20000,minX:0,maxX:1279}]));
  requireStructure(spec,good);
+ {const closed=CARS.find(c=>c.id==='golf');requireStructure(closed,good);assert.throws(()=>requireStructure(closed,{...good,header:{pixels:0}}),/Owner-locked decision/,WHY);}
  for(const role of ['dash','deck','pillar','door-top','wheel-rim','wheel-hub','wheel-badge'])assert.throws(()=>requireStructure(spec,{...good,[role]:{pixels:0}}),/Owner-locked decision/,WHY);
 });
 test('all catalogue cockpit controls visibly rotate with steering, retain badge atlas and switch with POV',()=>{
