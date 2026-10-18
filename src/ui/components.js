@@ -197,7 +197,8 @@ function layoutFrame(name, options, body, bodyRegion = '', nav = '') {
 }
 const region = (name, content, cls = '') => `<div class="layout__${name} ${cls}" data-layout-region="${name}">${content}</div>`;
 /** Primary tile beside secondary tiles; all tiles share the available height. */
-export function heroTiles({ hero = '', tiles = '', intro = '', ...frame } = {}) {
+export function heroTiles({ hero = '', tiles = '', intro = '', variant = 'page', ...frame } = {}) {
+  if (variant === 'choices') return layoutFrame('hero-tiles', { ...frame, variant }, `<div class="mode-grid" data-layout-region="tiles">${hero}${tiles}</div>`);
   return layoutFrame('hero-tiles', frame, region('hero', `${intro ? region('intro', intro) : ''}${region('primary', hero)}${region('tiles', tiles)}`));
 }
 /** Category navigation beside a separately scrolling content panel. */

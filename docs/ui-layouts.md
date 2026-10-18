@@ -96,3 +96,6 @@ kit places code entry, identity and host action over the list. Track-based setup
 horizontally on phones. `variant:'showroom'` takes `caption`, `summary`, `inspector`
 and optional `stage` content while owning the persistent 3D mount. Compact rules/forms
 use `sheetList({variant:'form', rows})`; multiplayer results reuse `variant:'split'`.
+
+`heroTiles({variant:'choices', tiles})` fills the content height with two artwork
+choices, side by side on desktop and stacked on phones.

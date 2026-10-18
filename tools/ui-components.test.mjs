@@ -150,7 +150,7 @@ test('OWNER LOCK 2026-10-17: leaderboards belong to the Quick Race track, never 
     const { renderLeaderboards } = await import('../src/leaderboards-screen.js');
     const emptyBoard = renderLeaderboards({ screen: 'setup' }, { tab: 'personal', filters: { mapId: 'penteli', eventId: 'penteli-race' } });
     assert.match(emptyBoard, /select__val">PENTELI RACE</, 'the prefiltered event remains visible before map events or records load');
-    assert.match(read('src/menu.css'), /\.mode-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,/);
+    assert.match(read('src/ui/ui.css'), /\.mode-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,/);
     assert.match(read('src/map-select.js'), /menu\.show\('mapConfirm', \{ mapId: id, mode: 'quick' \}, true\)/);
   } finally { globalThis.document = priorDocument; globalThis.window = priorWindow; }
 });

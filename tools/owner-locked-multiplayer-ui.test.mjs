@@ -44,7 +44,7 @@ test('RACE is solo: QUICK RACE and FREE ROAM are artwork cards that fill the hei
   const menu = read('src/menu.js');
   assert.doesNotMatch(menu, /participant/i, `${OWNER}\nno SOLO / MULTIPLAYER switch on RACE or race setup`);
   assert.doesNotMatch(menu, /HOST \/ CREATE GAME/, OWNER);
-  assert.match(read('src/menu.css'), /\.mode-grid \{ flex: 1; display: grid; grid-template-columns: repeat\(2, minmax\(0, 1fr\)\); grid-template-rows: minmax\(0, 1fr\);/, `${OWNER}\nthe two cards take the full height`);
+  assert.match(read('src/ui/ui.css'), /\.mode-grid \{ flex: 1; display: grid; grid-template-columns: repeat\(2, minmax\(0, 1fr\)\); grid-template-rows: minmax\(0, 1fr\);/, `${OWNER}\nthe two cards take the full height`);
 });
 
 test('MULTIPLAYER is a lobby browser: lobbies are the hero, join by code is inline, HOST A LOBBY is the primary action', async () => {

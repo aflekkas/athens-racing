@@ -361,8 +361,8 @@ body.ui-open :is(#hud,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-pr
 /* ---------------------------------------------------------------- one component set: screen layouts only (looks live in the kit) */
 /* mode select: the participants choice over two kit option tiles */
 /* RACE (owner 2026-10-18): the two mode cards take the full height of the screen; stacked halves on a phone */
-.mode-grid { flex: 1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: minmax(0, 1fr); gap: var(--s-4); min-height: 0; }
-@media (max-width: 560px) { .mode-grid { grid-template-columns: minmax(0, 1fr); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: var(--s-3); } }
+
+@media (max-width: 560px) {  }
 /* race setup: the route summary beside the setup form */
 .setup__map { display: block; width: 100%; max-height: 11rem; margin-bottom: var(--s-4); }
 .setup__go { display: flex; justify-content: flex-end; margin-top: var(--s-4); }
