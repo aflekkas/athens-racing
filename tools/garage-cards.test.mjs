@@ -41,5 +41,5 @@ test('spec panel has shared tiles, segmented trims and no unavailable paint or i
 test('browser measures drive-pill containment, manufacturer options and brand selection at desktop and phone sizes', {timeout:600000}, async()=>{
  const {execFile}=await import('node:child_process'),{promisify}=await import('node:util');
  const {stdout}=await promisify(execFile)('bash',['tools/browser-slot.sh',process.execPath,'tools/garage-cards.browser.mjs'],{timeout:570000,env:{...process.env,BROWSER_SLOT_WAIT:'480'},maxBuffer:1024*1024});
- assert.match(stdout,/Garage browser bounds, logos and brand filter PASS 1280/);assert.match(stdout,/Garage browser bounds, logos and brand filter PASS 390/);
+ assert.match(stdout,/Garage browser bounds, logos and brand filter PASS 1280/);assert.match(stdout,/Garage browser bounds, logos and brand filter PASS 390/);assert.match(stdout,/Garage viewer container and equal spec tiles PASS 390/);
 });
