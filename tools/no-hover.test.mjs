@@ -7,7 +7,7 @@ const read = path => readFileSync(path, 'utf8');
 const walk = dir => readdirSync(dir, { withFileTypes: true }).flatMap(e => e.isDirectory() ? walk(join(dir, e.name)) : [join(dir, e.name)]);
 const shipped = [...walk('src').filter(f => /\.(css|js)$/.test(f)),
   ...['server', 'worker'].flatMap(walk).filter(f => /\.mjs$/.test(f) && !f.endsWith('.test.mjs')), 'style.css', 'index.html'];
-const owner = '2026-10-17 owner decision: no hover effects; keep keyboard/gamepad and click focus. See docs/OWNER-DECISIONS.md.';
+const owner = '2026-10-17 owner decision: no hover effects; keyboard/gamepad surface focus only, with no extra pointer decoration. See docs/OWNER-DECISIONS.md.';
 
 test('all shipped styles, including inline styles, have no hover rules or custom interaction cursors', () => {
   const hits = [];
@@ -72,4 +72,18 @@ test('pointer activation hides surface focus; keyboard and named gamepad navigat
   assert.match(menu, /action\(name\)\s*\{[\s\S]*?C\.navigationFocus\(\)/);
   assert.match(css, /:root\[data-ui-focus="navigation"\][^{}]*\.focus\s*\{[^}]*background:/);
   assert.match(css, /:where\(html, body, #ui, #c, \.scr\):focus\s*\{\s*outline: none; box-shadow: none;/);
+});
+
+// Internal menu position survives clicks, but its visual treatment is navigation-only.
+test('CSS class focus treatments are gated by navigation modality', () => {
+  const hits = [];
+  for (const file of shipped.filter(f => f.endsWith('.css'))) {
+    const source = read(file).replace(/\/\*[\s\S]*?\*\//g, '');
+    for (const [, selector] of source.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+      for (const part of selector.split(',')) {
+        if (/\.focus\b/.test(part) && !part.includes('[data-ui-focus="navigation"]')) hits.push(`${file}: ${part.trim()}`);
+      }
+    }
+  }
+  assert.deepEqual(hits, [], owner);
 });

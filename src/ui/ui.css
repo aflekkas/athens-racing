@@ -160,7 +160,7 @@ body[data-input=touch] .hints { visibility: hidden; }
 .field__note .ico { vertical-align: -.15em; }
 .field__ctl { display: flex; align-items: center; justify-content: flex-end; min-width: 0; }
 :root[data-ui-focus="navigation"] /* Keyboard/gamepad focus uses a quiet surface; no outline or ring. */
-.field.focus .field__label .ico { color: var(--c-text); }
+:root[data-ui-focus="navigation"] .field.focus .field__label .ico { color: var(--c-text); }
 .field.locked { opacity: .42; pointer-events: none; }
 .field--stack { grid-template-columns: 1fr; }
 .field--stack .field__ctl { justify-content: stretch; }
