@@ -687,3 +687,6 @@ body[data-input=touch] .tabs__hint, body[data-input=keyboard] .tabs__hint.on-pad
 :root[data-ui-focus="navigation"] :is(.btn--primary, .btn--google).focus,
 :root[data-ui-focus="navigation"] :is(.btn--primary, .btn--google):focus-visible { background: #ced6dc; color: var(--hu-lit-fg); }
 :root[data-ui-focus="navigation"] :is(#race-settings, .tow-actions button):focus-visible { background: #35414b; }
+
+/* Menu screens own navigation; floating race actions must not occupy their header. */
+body[data-ui] #mp-toggle { display: none !important; }

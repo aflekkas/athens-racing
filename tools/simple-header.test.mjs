@@ -49,3 +49,7 @@ test('no wall-clock markup, formatting, or update code survives in game sources'
     assert.doesNotMatch(read('src/' + path), /hu-clock|data-hu-clock|clockText|toLocaleTimeString\s*\(|\.getHours\s*\(|\.getMinutes\s*\(/, path);
   }
 });
+
+test('floating race navigation never occupies an open menu header', () => {
+  assert.match(read('src/ui/ui.css'), /body\[data-ui\] #mp-toggle\s*\{\s*display: none !important;/);
+});
