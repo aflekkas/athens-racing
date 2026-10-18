@@ -42,6 +42,7 @@ export class AccountsClient {
     this.user = s.user; this.csrf = s.csrf;
     if (s.user && Number.isFinite(s.expires)) {
       this.sessionTimer = setTimeout(() => {
+        if (s.expires > Date.now()) { void this.revalidate(); return; }
         this.disconnect();
         this.error = "Your session expired. Sign in with Google to continue.";
         this.onChange();

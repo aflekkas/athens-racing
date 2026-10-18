@@ -715,6 +715,7 @@ test("Google login attempts are rate limited and SESSION_SECRET rotation revokes
 test('configured game policy rejects anonymous/invalid/expired sessions and binds leaderboard identity', async () => {
   const { authorizeGame, accountResult, identityActive } = await import('./auth-policy.mjs');
   const f = fixture(), a = await f.login('policy-driver');
+  assert.equal((await f.call('/api/account/profile', { displayName: 'ATHENA', plate: 'ATHENA' }, a)).status, 200);
   const request = cookie => new Request('https://staging.athensracing.com/api/leaderboard', { headers: cookie ? { Cookie: cookie } : {} });
   for (const cookie of [null, 'ar_session=invalid']) assert.equal((await authorizeGame(request(cookie), f.env)).response.status, 401);
   const auth = await authorizeGame(request(a.cookie), f.env);
