@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import * as THREE from 'three';
 import { mobileDevice, tiltAxis, requestTiltPermission, enterDrivingScreen } from '../src/mobile.js';
 import { resolveGraphics, detectPerfClass, RENDER, RESOURCE_BUDGETS } from '../src/graphics.js';
@@ -74,6 +74,8 @@ test('game viewport prevents zoom and callouts without disabling scrollable menu
   assert.match(source('index.html'),/name="viewport"[^>]+maximum-scale=1[^>]+user-scalable=no[^>]+viewport-fit=cover/);
   const css=source('style.css');assert.match(css,/overscroll-behavior: none/);assert.match(css,/-webkit-touch-callout: none/);assert.match(css,/touch-action: pan-x pan-y/);
   assert.match(source('src/input.css'),/min-height: 44px/);
+  assert.match(source('src/input.css'),/hud-motion-layer \{ top: env\(safe-area-inset-top\)/);
+  for(const [,path] of source('src/input.css').matchAll(/url\((\.\.\/assets\/icons\/[^)]+)\)/g)) assert(existsSync(new URL(path,new URL('../src/input.css',import.meta.url))),path);
   assert.match(source('src/input.js'),/button.addEventListener\('click', \(\) => \{ void enterDrivingScreen/);
   assert.match(source('src/boot.js'),/addEventListener\('touchend', unlock/);
   assert.match(source('src/main.js'),/addEventListener\('touchend', \(\) => audio.start/);

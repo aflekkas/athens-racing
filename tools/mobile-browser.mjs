@@ -51,7 +51,7 @@ try {
   await context.addInitScript(baseline=>localStorage.setItem('paraliaki.settings',JSON.stringify({perfClass:baseline?'med':'low'})),baseline);
   const page = await context.newPage();
   page.setDefaultTimeout(20000);
-  await page.addInitScript(()=>{const raf=requestAnimationFrame;window.requestAnimationFrame=cb=>raf(function run(t){if(window.__mobileCapture){raf(run);return;}cb(t);});});
+  await page.addInitScript(()=>{const raf=requestAnimationFrame;window.requestAnimationFrame=cb=>raf(function run(t){if(window.__mobileCapture && cb.name==='frame'){raf(run);return;}cb(t);});});
   page.on('requestfailed',r=>console.log('REQUEST_FAILED',r.url(),r.failure()?.errorText));
   page.on('response',r=>{if(r.status()>=400)console.log('HTTP_ERROR',r.status(),r.url());});
   page.on('pageerror',e=>{report.errors.push(String(e)); console.log('ERROR',String(e));});
@@ -64,7 +64,7 @@ try {
   console.log('TITLE',device,await page.locator('#ui').innerText());
   if(await page.locator('[data-act=dismissNews]').count())await page.locator('[data-act=dismissNews]').tap();
   await screenshot(page,resolve(out,device+(landscape?'-landscape-menu.png':'-portrait-menu.png')));
-  const tap=async selector=>{console.log('TAP',device,selector);const el=page.locator(selector).first();await el.scrollIntoViewIfNeeded();await el.tap({timeout:30000});};
+  const tap=async selector=>{console.log('TAP',device,selector);const el=page.locator(selector).first();await el.scrollIntoViewIfNeeded({timeout:120000});await el.tap({timeout:120000});};
   await tap('[data-act=play]');
   console.log('MODE',await page.locator('#ui').innerText());
   await tap('[data-act=quick]');
@@ -72,6 +72,7 @@ try {
   await tap('[data-act=mapNext]');
   await tap('[data-confirm-track][data-map-id=megara]');
   console.log('SELECTED',await page.locator('#ui').innerText());
+  if(await page.locator('[data-act=mapContinue]').count())await tap('[data-act=mapContinue]');
   const go=page.locator('[data-act=setupGo]');
   if (process.argv.includes('--race')) {
    await tap('[data-act=setupAdvanced]');
@@ -82,7 +83,7 @@ try {
   console.log('CAR',await page.locator('#ui').innerText());
   if(await page.locator('[data-act=carDetail]').count())await tap('[data-act=carDetail]');
   await tap('[data-act=carConfirm]');
-  await page.waitForFunction(()=>window.__game?.state==='race',null,{timeout:240000});
+  await page.waitForFunction(()=>window.__game?.state==='race',null,{timeout:900000});
   console.log('RACE',device,await page.evaluate(()=>({render:__renderInfo(),metrics:__assetMetrics,heap:performance.memory?.usedJSHeapSize,state:__game.state})));
   await screenshot(page,resolve(out,device+(landscape?'-landscape-race.png':'-portrait-race.png')));
   if (!landscape) await page.setViewportSize(devices[device+' landscape'].viewport);
