@@ -94,5 +94,5 @@ test('omitting an optional render clock cannot erase the recovery epoch or repla
   r.send(r.a, { type: 'state', raceId: r.lobby.raceId, state: stopped });
   assert.equal(r.core.clientData(r.a).state.motionEpoch, 2);
   r.send(r.a, { type: 'recover', raceId: r.lobby.raceId, motionEpoch: 1 });
-  assert.equal(r.a.messages.at(-1).type, 'error'); assert.equal(r.core.clientData(r.a).recovery.motionEpoch, 2);
+  assert.equal(r.a.messages.at(-1).type, 'recover-denied'); assert.equal(r.core.clientData(r.a).recovery.motionEpoch, 2);
 });

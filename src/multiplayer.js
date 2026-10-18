@@ -14,6 +14,8 @@ import { inGarage, sortTrims } from './car-catalog.js';
 import { defaultCarRules, describeRules } from './mp-car-rules.js';
 import { describeMode, configFromLobby } from './mp-setup.js';
 import { getPlayableMaps } from './enabled-maps.js';
+// The tow screen is black while this request is out; the server answers (or denies) within a round trip.
+export const RECOVERY_TIMEOUT_MS = 3500;
 // Same-origin multiplayer transport and lobby UI. Physics stays responsive locally;
 // the server owns membership, synchronized starts, and elapsed finish times.
 export class Multiplayer {
@@ -195,9 +197,20 @@ export class Multiplayer {
     const raceId = this.lobby.raceId, motionEpoch = this.stateSender.motionEpoch;
     let resolve, reject;
     const promise = new Promise((yes, no) => { resolve = yes; reject = no; });
-    const timer = setTimeout(() => this.cancelRecovery('Recovery timed out. Try again.'), 8000);
-    this.recoveryPending = { raceId, motionEpoch, promise, resolve, reject, timer };
+    const timer = setTimeout(() => this.cancelRecovery('Recovery timed out. Try again.'), RECOVERY_TIMEOUT_MS);
+    this.recoveryPending = { raceId, motionEpoch, promise, resolve, reject, timer, capture, retried: false };
     this.send({ type: 'recover', raceId, generation: this.lobby.generation, motionEpoch, capture }); return promise;
+  }
+  // The server answered "no": fail now (the caller is fading to black), or once re-send with an epoch it will accept.
+  denyRecovery(m) {
+    const pending = this.recoveryPending;
+    if (!pending || m.raceId !== pending.raceId || m.motionEpoch !== pending.motionEpoch) return;
+    if (!pending.retried && Number.isSafeInteger(m.epoch) && m.epoch >= pending.motionEpoch) {
+      pending.retried = true; this.stateSender.motionEpoch = Math.max(this.stateSender.motionEpoch, m.epoch + 1); this.stateSender.discontinuity();
+      pending.motionEpoch = this.stateSender.motionEpoch;
+      this.send({ type: 'recover', raceId: pending.raceId, generation: this.lobby.generation, motionEpoch: pending.motionEpoch, capture: pending.capture }); return;
+    }
+    this.cancelRecovery(m.message || 'Recovery is unavailable.');
   }
   cancelRecovery(message = 'The race changed before recovery completed.') {
     if (!this.recoveryPending) return;
@@ -295,10 +308,11 @@ export class Multiplayer {
         this.send({ type: 'name', name: driverName.get() });
       }
       else if (m.type === 'session') {
-        if (!m.resumed && this.active) { this.connected = false; this.status('Connection lost. Driving continues while we retry.'); this.retryConnection(ws); return; }
-        this.id = m.id; this.saveToken(m.token);
+        // The server no longer knows this token (grace over, restart, other account): adopt the fresh session. Retrying the
+        // dead token would loop forever on a socket that reads as open.
+        this.id = m.id; this.saveToken(m.token); this.reconnectAttempt = 0;
         if (!m.resumed || !m.lobby) this.connected = true;
-        if (!m.resumed) { this.left(); this.status('Your previous session expired. Join or create a lobby.'); }
+        if (!m.resumed) { const wasRacing = this.active; this.left(); this.status(wasRacing ? 'You were away too long and your seat was released. Join or create a lobby.' : 'Your previous session expired. Join or create a lobby.'); }
         else if (!m.lobby) this.left();
       }
       else if (m.type === 'pong') { this.latency = Math.max(0, Date.now() - m.sent); }
@@ -325,6 +339,7 @@ export class Multiplayer {
         if (joined) { this.peers.clear(); this.hooks.join(this.me.car); this.panel.hidden = false; }
         else if (previousCar !== this.me?.car || previousBalance !== JSON.stringify(this.me?.balance || null)) this.hooks.carChanged?.(this.me.car);
         this.renderRoom(); this.syncLobby();
+      } else if (m.type === 'recover-denied') { this.denyRecovery(m);
       } else if (m.type === 'recovered' && m.raceId === this.lobby?.raceId && (m.generation === undefined || m.generation === this.lobby.generation)) {
         const pending = this.recoveryPending;
         if (pending && m.motionEpoch === pending.motionEpoch && Number.isFinite(m.s) && Number.isFinite(m.u) && Number.isFinite(m.until)) {
@@ -443,7 +458,7 @@ export class Multiplayer {
     const list = this.$('mp-members'); list.replaceChildren();
     for (const p of l.players) {
       const row = document.createElement('div'); row.className = 'mp-member';row.dataset.playerId=p.id;
-      const label = document.createElement('span'); label.textContent = `${p.name}${p.id === this.id ? ' (YOU)' : ''}${p.id === l.host ? ' · HOST' : ''} · ${this.cars.find(c => c.id === p.car)?.short || p.car} · ${p.connected === false ? 'RECONNECTING' : !p.loaded ? 'LOADING' : p.ready ? 'READY' : 'NOT READY'}`;
+      const label = document.createElement('span'); label.textContent = `${p.name}${p.id === this.id ? ' (YOU)' : ''}${p.id === l.host ? ' · HOST' : ''} · ${(c => c?.name || c?.short)(this.cars.find(c => c.id === p.car)) || p.car} · ${p.connected === false ? 'RECONNECTING' : !p.loaded ? 'LOADING' : p.ready ? 'READY' : 'NOT READY'}`;
       row.append(label);
       list.append(row);
     }

@@ -162,7 +162,9 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
           if (c.lobby) return error('Leave your current lobby before resuming another session.');
           const prior = sessions.get(m.token);
           if (!prior || prior === c || (!prior.connected && Date.now() - prior.touched > reconnectGraceMs)) { send(ws, { type: 'session', id: c.id, token: c.token, resumed: false }); return; }
-          if ((c.identity?.userId || prior.identity?.userId) && c.identity?.userId !== prior.identity?.userId) return error('Sign in to the same driver account to resume.');
+          // A token from another account (or from before sign-in) is simply an expired session: answer it so the client
+          // adopts this fresh session instead of waiting for a reply that never comes.
+          if ((c.identity?.userId || prior.identity?.userId) && c.identity?.userId !== prior.identity?.userId) { send(ws, { type: 'session', id: c.id, token: c.token, resumed: false }); return; }
           if (c.identity) prior.identity = c.identity;
           sessions.delete(c.token); clients.delete(c);
           const previousWs = prior.ws, protocol = c.protocol, build = c.build; c = prior; c.protocol = protocol; c.build = build; c.ws = ws; c.ip = ip; c.connected = true; c.alive = true; c.messages = 0; c.window = now; c.touched = now;
@@ -405,10 +407,12 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
           l.host = target.id; publish(l); return;
         }
         if (m.type === 'recover') {
-          if (l.status !== 'race' || m.raceId !== l.raceId || m.generation !== undefined && m.generation !== l.generation || c.finish !== null || c.dnf) return;
+          // Every request is answered: a silent drop leaves the driver's screen black until the client gives up.
+          const deny = (message, extra = {}) => send(c.ws, { type: 'recover-denied', raceId: m.raceId, generation: l.generation || 0, motionEpoch: m.motionEpoch, message, ...extra });
+          if (l.status !== 'race' || m.raceId !== l.raceId || m.generation !== undefined && m.generation !== l.generation || c.finish !== null || c.dnf) return deny('Recovery is unavailable.');
           const event = publicLobby(l).event;
           const recovery = requestRecovery(c, event, l.raceId, m.motionEpoch, now, { route: maps.get(l.mapId).geometry, capture: m.capture === true });
-          if (!recovery) return error('Recovery needs a current race position.');
+          if (!recovery) return deny(c.state ? 'Recovery needs a fresh position. Try again.' : 'Recovery needs a current race position.', Number.isSafeInteger(c.state?.motionEpoch) ? { epoch: c.state.motionEpoch } : {});
           clearObjectiveHold(l, c.id);
           l.dirty = true; send(c.ws, { type: 'recovered', generation: l.generation, ...recovery }); return;
         }

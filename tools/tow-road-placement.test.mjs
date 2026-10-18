@@ -19,11 +19,11 @@ function recoveryHarness(route, v, options={}) {
   const dir=G.dir;
   if(options.lastRoad!=null)G.run={r:{s0:0},course:{s0:0,dir,validProgress:options.lastRoad*dir,lastRoad:{s:options.lastRoad,u:0}},courseClock:0,progress:s=>s*dir};
   const safe={s:options.safe??v.s,u:0},towOffer={safe},player={veh:v};
-  const multiplayer={active:!!options.online,retired:false,lobby:{raceId:'test',event:{dir}},recover:async()=>options.served??{s:options.serverS??safe.s,u:0,until:250},now:()=>0,stateSender:{discontinuity(){}}};
+  const multiplayer={active:!!options.online,connected:true,retired:false,lobby:{raceId:'test',event:{dir}},recover:async()=>options.served??{s:options.serverS??safe.s,u:0,until:250},now:()=>0,stateSender:{discontinuity(){}}};
   const ground=options.ground||{network:null,walls:()=>null},traffic=options.traffic||{cars:[],point(){}},grid=options.grid||[];
-  const api=Function('G','multiplayer','towOffer','route','ground','traffic','grid','planTow','RoadIndex','routeTowAdapter','courseTowLimits','towCourseTo','clamp','beginCameraBlend','syncCar','updateCamera','player','look','closeTowOffer','TOW_PROMPT_COOLDOWN','controls','document','sessionTransitions','inFreeRoam','hud','notifications',
+  const api=Function('G','multiplayer','towOffer','route','ground','traffic','grid','planTow','RoadIndex','routeTowAdapter','courseTowLimits','towCourseTo','clamp','beginCameraBlend','syncCar','updateCamera','player','look','closeTowOffer','TOW_PROMPT_COOLDOWN','controls','document','sessionTransitions','inFreeRoam','hud','notifications','blackout',
     section('// Tow, reset and automatic recovery put', 'function stuckCheck(')+section('function tow(', 'function resetCar(')+'return {tow,backOnRoad};')(
-    G,multiplayer,towOffer,route,ground,traffic,grid,planTow,RoadIndex,routeTowAdapter,courseTowLimits,towCourseTo,clamp,()=>{},()=>{},()=>{},player,{},()=>{},20,{releaseMouseLook(){}},{body:{classList:{add(){},remove(){}}}},{after(ms,fn){callbacks.push(fn);}},()=>!!options.free,{message(){}},{dismiss(){}});
+    G,multiplayer,towOffer,route,ground,traffic,grid,planTow,RoadIndex,routeTowAdapter,courseTowLimits,towCourseTo,clamp,()=>{},()=>{},()=>{},player,{},()=>{},20,{releaseMouseLook(){}},{body:{classList:{add(){},remove(){}}}},{after(ms,fn){callbacks.push(fn);}},()=>!!options.free,{message(){}},{dismiss(){}},()=>{});
   return {G,towOffer,...api,async flush(){while(callbacks.length)await callbacks.shift()(()=>true);}};
 }
 for(const def of MAPS)test(`${def.id}: real T/R paths put off-road cars on the nearest road, in free roam and in a race`,async t=>{

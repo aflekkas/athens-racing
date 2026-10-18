@@ -74,6 +74,7 @@ import { trackVersion } from './network-track.js';
 import { initWeather, updateWeather, updateRoadWeather, disposeWeather } from './weather.js';
 import { wetPlanningPace, WEATHER } from './wet-grip.js';
 const buildMapWorld = async (...args) => (await importWithUpdate(() => import('./map-world.js'))).buildMapWorld(...args);
+import { createBlackout } from './blackout.js';
 import { SessionTransitions } from './session-transitions.js';
 import { speedLimitAt } from './speed-limit.js';
 import { updateSceneryLod, setDrawDistance, drawDistance } from './scenery.js';
@@ -243,6 +244,8 @@ let ground = null, splash = null, fx = null, police = null, policeHud = null;
 let drivingModeView = null;
 let world = null, mapSwitch = null, lastMapDisposal = null;
 const sessionTransitions = new SessionTransitions();
+const blackout = createBlackout(() => { G.towing = false; });
+
 const lodList = [];
 const lodAt = new THREE.Vector3(1e9, 0, 0);
 function updateLod() { updateSceneryLod(lodList, camera); lodAt.copy(camera.position); }
@@ -370,7 +373,7 @@ async function switchMap(id = 'riviera', context = 'QUICK RACE') {
   mapSwitch = (async () => {
     const priorState = G.state, priorPaused = G.paused;
     sessionTransitions.cancel(); controls.clear(); G.cameraStarting = false; G.towing = false; G.paused = null;
-    document.body.classList.remove('fading');
+    blackout(false);
     voices.reset(); audio.menuRequested = true; audio.syncMenu(); audio.engineOff?.(); G.state = 'loading';
     if (!world) {
       try { return await loadFirstMap(id); }
@@ -702,24 +705,28 @@ function stuckCheck(pv, dt) {
 }
 function tow(pv, { reset = false, automatic = false, capture = false } = {}) {
   if (G.state !== 'race' || G.towing || multiplayer.retired || !capture && (towOffer.hold > 0 || towOffer.rearm > 0)) return;
+  // Without a connection there is nobody to answer: say so instead of fading to black for nothing.
+  if (multiplayer.active && !multiplayer.connected) { hud.message('Reconnecting… recovery needs the connection back.', 3); return; }
   G.towing = true; G.stuckT = 0; towOffer.corridorT = 0; clearCorridorWarning(); closeTowOffer(TOW_PROMPT_COOLDOWN);
-  controls.releaseMouseLook(); document.body.classList.add('fading');
+  controls.releaseMouseLook(); blackout(true, { onTimeout: true });
   const raceId = multiplayer.lobby?.raceId;
   sessionTransitions.after(320, async current => {
     let recovery = null;
-    try { if (multiplayer.active) recovery = await multiplayer.recover({ capture }); }
-    catch (error) { if (current()) { G.towing = false; document.body.classList.remove('fading'); hud.message(error.message, 4); } return; }
-    if (!current()) return;
-    G.towing = false;
-    if (G.state !== 'race' || player.veh !== pv || multiplayer.retired || multiplayer.lobby?.raceId !== raceId) { document.body.classList.remove('fading'); return; }
-    // Both controls put the car on the nearest road; online keeps the server's pose.
-    backOnRoad(pv, recovery, { reset });
-    towOffer.hold = multiplayer.active && recovery ? Math.max(0, (recovery.until - multiplayer.now()) / 1000) : 0;
-    towOffer.recovering = towOffer.hold > 0; towOffer.rearm = .8;
-    towOffer.offT = towOffer.stuckT = towOffer.severeT = 0;
-    if (automatic) notifications.toast('Recovered to road', { id: 'recovered', kind: 'card', label: 'RECOVERY', tone: 'good', ms: 3000 });
-    else hud.message(`<i>${reset ? 'RESET' : 'TOWED'}</i> · BACK ON THE ROAD`, 3);
-    sessionTransitions.after(120, () => document.body.classList.remove('fading'));
+    try {
+      try { if (multiplayer.active) recovery = await multiplayer.recover({ capture }); }
+      catch (error) { G.towing = false; blackout(false); if (current()) hud.message(error.message, 4); return; }
+      if (!current()) { blackout(false); return; }
+      G.towing = false;
+      if (G.state !== 'race' || player.veh !== pv || multiplayer.retired || multiplayer.lobby?.raceId !== raceId) { blackout(false); return; }
+      // Both controls put the car on the nearest road; online keeps the server's pose.
+      backOnRoad(pv, recovery, { reset });
+      towOffer.hold = multiplayer.active && recovery ? Math.max(0, (recovery.until - multiplayer.now()) / 1000) : 0;
+      towOffer.recovering = towOffer.hold > 0; towOffer.rearm = .8;
+      towOffer.offT = towOffer.stuckT = towOffer.severeT = 0;
+      if (automatic) notifications.toast('Recovered to road', { id: 'recovered', kind: 'card', label: 'RECOVERY', tone: 'good', ms: 3000 });
+      else hud.message(`<i>${reset ? 'RESET' : 'TOWED'}</i> · BACK ON THE ROAD`, 3);
+      sessionTransitions.after(120, () => blackout(false));
+    } catch (error) { G.towing = false; blackout(false); console.error('Recovery failed', error); }
   });
 }
 
@@ -769,9 +776,9 @@ function restart(idx = G.carIdx) {
   if (multiplayer.active) return;
   sessionTransitions.cancel(); G.towing = false;
   G.cameraStarting = true; controls.requestMouseLock(); beginCameraBlend();
-  document.body.classList.add('fading');
+  blackout(true);
   sessionTransitions.after(280, () => {
-    if (multiplayer.active) { document.body.classList.remove('fading'); return; }
+    if (multiplayer.active) { blackout(false); return; }
     // Capture at the actual reset, after the fade delay; the old blend has already elapsed.
     beginCameraBlend(.65);
     if (G.run && !G.run.done) G.run.abort('restart');
@@ -782,7 +789,7 @@ function restart(idx = G.carIdx) {
     G.cam = G.userCam || 'cockpit'; applyCamMode();
     updateCamera(0, true);
     startCountdown();
-    document.body.classList.remove('fading');
+    blackout(false);
   });
 }
 
@@ -1104,7 +1111,9 @@ function pauseGame() {
 }
 function resume() {
   if (!G.paused && !(multiplayer.active && menu?.open)) return;
-  menu.hide(); if (G.paused && !G.paused.online) G.state = G.paused.state; if (G.paused) G.cam = G.paused.cam; G.countWall = performance.now(); G.paused = null; G.cameraStarting = false; controls.requestMouseLock();
+  menu.hide(); if (G.paused && !G.paused.online) G.state = G.paused.state; if (G.paused) G.cam = G.paused.cam; G.countWall = performance.now(); G.paused = null; G.cameraStarting = false;
+  // A retired or finished online driver spectates with the cursor (pick a driver on the live board); only drivers look by mouse.
+  if (!(multiplayer.active && (multiplayer.retired || multiplayer.me?.finish != null))) controls.requestMouseLock();
 }
 function openSettings() {
   if (['race', 'countdown', 'finished', 'onlineCountdown', 'onlineFinished', 'onlineWrecked'].includes(G.state) && !G.paused) pauseGame();
@@ -1133,10 +1142,10 @@ function quitToMenu(screen = 'title') {
   G.cam = 'orbit'; applyCamMode(); G.orbitA = 0.4; updateCamera(0, true); post.resetHistory?.();
   // The static menu backdrop keeps idle menus free of world rendering work.
   document.body.classList.add('menu-backdrop');
-  document.body.classList.add('fading');
+  blackout(true);
   sessionTransitions.after(260, () => {
     menu.show(screen === 'events' ? 'events' : 'title');
-    document.body.classList.remove('fading');
+    blackout(false);
   });
 }
 function showTitle() {
@@ -1822,6 +1831,7 @@ function updateCamera(dt, snap = false) {
   previousCameraQuat.copy(camera.quaternion);
   snap ||= !!camState.retarget; camState.retarget = false;
   const watching = multiplayer.spectating();
+  if (watching) controls.releaseMouseLook(); // choosing whom to watch needs the pointer
   const targetCar = watching && remoteCars.get(watching.id);
   if (targetCar?.model.root.visible) {
     if (G.cam !== 'spectate') { G.cam = 'spectate'; applyCamMode(); }

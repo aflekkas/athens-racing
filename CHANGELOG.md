@@ -8,6 +8,14 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Multiplayer: towing with T or R can no longer leave the screen black. A refused tow answers at once and the screen always comes back.
+
+- Multiplayer: if you are away longer than the 90-second reservation, you are taken back to the menu with a clear message instead of a "reconnecting" loop that never ends.
+
+- Multiplayer: after you retire, the mouse cursor stays visible so you can pick which driver to watch.
+
+- Multiplayer lobby: the driver list names the whole car ("FIAT PANDA · 1.1") instead of only the trim.
+
 - Towing and reset put you back on the road nearest to where you are, facing the way you were heading. In a race a tow never counts as progress.
 
 - Frame rate limit: NO LIMIT now draws at your screen's full refresh rate everywhere, including the online car showroom that stayed at 30. The overlay shows your limit.
