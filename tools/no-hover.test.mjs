@@ -80,7 +80,7 @@ test('CSS class focus treatments are gated by navigation modality', () => {
   for (const file of shipped.filter(f => f.endsWith('.css'))) {
     const source = read(file).replace(/\/\*[\s\S]*?\*\//g, '');
     for (const [, selector] of source.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
-      for (const part of selector.split(',')) {
+      for (const part of selector.split(/,(?![^()]*\))/)) {
         if (/\.focus\b/.test(part) && !part.includes('[data-ui-focus="navigation"]')) hits.push(`${file}: ${part.trim()}`);
       }
     }
