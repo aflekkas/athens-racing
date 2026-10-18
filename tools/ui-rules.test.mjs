@@ -43,7 +43,7 @@ test('key hints and tooltip chips are not clickable, have no pointer cursor and 
     ['src/ui/components.js', '<div class="hints ${cls}" aria-hidden="true">'],
     ['src/ui/components.js', 'tabs__hint on-key" aria-hidden="true"'],
     ['src/ui/driving-hints.js', '<div class="driving-controls" aria-hidden="true">'],
-    ['src/map-select.js', '<div class="map-cycle-hint" aria-hidden="true">'],
+    ['src/ui/components.js', '<div class="map-cycle-hint" aria-hidden="true"'],
     ['index.html', '<div id="keys" aria-hidden="true">'],
   ];
   const missing = decorative.filter(([f, s]) => !read(f).includes(s)).map(([f, s]) => `${f}: missing ${s}`);

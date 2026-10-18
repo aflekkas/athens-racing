@@ -99,3 +99,7 @@ use `sheetList({variant:'form', rows})`; multiplayer results reuse `variant:'spl
 
 `heroTiles({variant:'choices', tiles})` fills the content height with two artwork
 choices, side by side on desktop and stacked on phones.
+
+`stageInspector({variant:'setup', stage, inspectorTitle, inspectorHead, inspector,
+actions})` owns the session summary panel and scrolling form, stacking on phones
+and returning to two columns in short landscape.
