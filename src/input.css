@@ -107,3 +107,9 @@ body.touch-driving #input-toast { top: 216px; max-width: min(16rem, calc(100vw -
 
 /* viewport-fit=cover also exposes the notch to the race HUD. */
 body.touch-driving .hud-motion-layer { top: env(safe-area-inset-top); left: env(safe-area-inset-left); right: env(safe-area-inset-right); }
+
+/* Circuit timing shares the upper HUD lane with the map, never its pixels. */
+body.touch-driving #lapTiming { left: calc(122px + env(safe-area-inset-left)); top: calc(126px + env(safe-area-inset-top)); min-width: 0; padding: 5px 10px; }
+@media (max-height: 480px) {
+  body.touch-driving #lapTiming { left: calc(106px + env(safe-area-inset-left)); top: calc(90px + env(safe-area-inset-top)); }
+}

@@ -74,8 +74,8 @@ test('fullscreen begins in the gesture and unavailable orientation lock is harml
 
 test('game viewport prevents zoom and callouts without disabling scrollable menu panels', () => {
   assert.match(source('index.html'),/name="viewport"[^>]+maximum-scale=1[^>]+user-scalable=no[^>]+viewport-fit=cover/);
-  const css=source('style.css');assert.match(css,/overscroll-behavior: none/);assert.match(css,/-webkit-touch-callout: none/);assert.match(css,/touch-action: pan-x pan-y/);
-  assert.match(source('src/input.css'),/min-height: 44px/);
+  const css=source('style.css');assert.match(css,/overscroll-behavior: none/);assert.match(css,/-webkit-touch-callout: none/);assert.match(css,/touch-action: pan-x pan-y/);assert.match(css,/body\.touch-driving input\.text-field__input[^{]+\{ font-size: max\(16px, 1em\)/);
+  assert.match(source('src/input.css'),/min-height: 44px/);assert.match(source('src/input.css'),/#lapTiming \{ left: calc\(122px \+ env\(safe-area-inset-left\)\)/);
   assert.match(source('src/input.css'),/hud-motion-layer \{ top: env\(safe-area-inset-top\)/);
   for(const [,path] of source('src/input.css').matchAll(/url\((\.\.\/assets\/icons\/[^)]+)\)/g)) assert(existsSync(new URL(path,new URL('../src/input.css',import.meta.url))),path);
   assert.match(source('src/input.js'),/button.addEventListener\('click', \(\) => \{ void enterDrivingScreen/);

@@ -6,6 +6,9 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; overflow: hidden; overscroll-behavior: none; touch-action: pan-x pan-y; background: #050608; }
 body { font-family: var(--sans); color: #fff; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+/* Safari magnifies small text fields even when pinch zoom is disabled. */
+body.touch-driving input, body.touch-driving textarea,
+body.touch-driving input.text-field__input, body.touch-driving input.search__input { font-size: max(16px, 1em); }
 canvas#c { touch-action: none; }
 canvas#c { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
 b { font-weight: inherit; }

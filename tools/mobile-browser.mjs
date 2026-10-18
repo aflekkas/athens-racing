@@ -20,8 +20,12 @@ async function screenshot(page, path) {
       const cdp=await page.context().newCDPSession(page);
       try {
         const box=await page.evaluate(()=>({width:innerWidth,height:innerHeight,ratio:devicePixelRatio}));
-        const shot=await cdp.send('Page.captureScreenshot',{format:'png',fromSurface:true,captureBeyondViewport:false,clip:{x:0,y:0,width:box.width,height:box.height,scale:1/box.ratio}});
-        await writeFile(target,Buffer.from(shot.data,'base64'));
+        const options={format:'png',fromSurface:true,captureBeyondViewport:false,clip:{x:0,y:0,width:box.width,height:box.height,scale:1}};
+        let png=Buffer.from((await cdp.send('Page.captureScreenshot',options)).data,'base64');
+        // Headless Chrome capture paths differ in whether DPR is applied to clips.
+        if(png.readUInt32BE(16)!==box.width){options.clip.scale=box.width/png.readUInt32BE(16);png=Buffer.from((await cdp.send('Page.captureScreenshot',options)).data,'base64');}
+        assert.equal(png.readUInt32BE(16),box.width);assert.equal(png.readUInt32BE(20),box.height);
+        await writeFile(target,png);
       } finally { await cdp.detach(); }
     } finally { await page.evaluate(()=>{window.__mobileCapture=false;}); }
   };
@@ -110,6 +114,9 @@ try {
   if (!landscape) await page.setViewportSize(devices[device+' landscape'].viewport);
   const bounds=await page.evaluate(()=>[...document.querySelectorAll('#touch-controls button,.touch-steer')].filter(el=>!el.hidden).map(el=>({action:el.dataset.action||'steer',...Object.fromEntries(['x','y','width','height'].map(k=>[k,el.getBoundingClientRect()[k]]))})));
   console.log('BOUNDS',device,JSON.stringify(bounds));
+  for(let i=0;i<bounds.length;i++)for(let j=i+1;j<bounds.length;j++){
+    const a=bounds[i],b=bounds[j];assert(!(a.x<b.x+b.width && a.x+a.width>b.x && a.y<b.y+b.height && a.y+a.height>b.y),'overlapping touch targets: '+a.action+'/'+b.action);
+  }
   const pedal=bounds.find(b=>b.action==='throttle'),steer=bounds.find(b=>b.action==='steer');
   const points=[{id:1,x:pedal.x+pedal.width/2,y:pedal.y+pedal.height/2},{id:2,x:steer.x+steer.width*.6,y:steer.y+steer.height/2}];
   await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:points});
@@ -117,6 +124,7 @@ try {
   const drive=await page.evaluate(()=>({input:__sim.input,speed:__sim.player.veh.vLong,state:__game.state}));
   console.log('DRIVE',device,JSON.stringify(drive));
   await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+  assert.deepEqual(await page.evaluate(()=>({scale:visualViewport.scale,x:scrollX,y:scrollY})),{scale:1,x:0,y:0});
   if(!baseline){assert.equal(drive.input.throttle,1);assert(drive.input.steer>0);assert(drive.speed>0);}
   for(const cpu of [1,4]){
    await cdp.send('Emulation.setCPUThrottlingRate',{rate:cpu});
