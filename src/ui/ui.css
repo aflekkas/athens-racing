@@ -789,3 +789,10 @@ body[data-ui] #mp-toggle { display: none !important; }
 .ico--paint-check { color: white; filter: drop-shadow(0 1px 1px #000); }
 .ico--selection-check { visibility: hidden; width: 100%; height: 100%; padding: .35rem; box-sizing: border-box; }
 .selected > .ico--selection-check { visibility: visible; }
+
+/* Touch controls keep SVG dimensions independent of their legacy text size. */
+#touch-controls .touch-steer { display: flex; align-items: center; justify-content: space-around; font: 700 .8rem var(--f-cond); }
+#touch-controls .touch-steer::before, #touch-controls .touch-steer::after,
+#touch-controls button[data-action=pause]::before, #touch-controls button[data-action=camera]::before { content: none; display: none; }
+#touch-controls .ico { width: 18px; height: 18px; vertical-align: middle; }
+#touch-controls button[data-action=pause], #touch-controls button[data-action=camera] { display: grid; place-items: center; }

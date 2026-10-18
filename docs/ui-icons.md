@@ -54,3 +54,5 @@ Unused legacy SVGs were removed. Existing canonical equivalents (camera, car, ch
 Glyph replacements: sort ↓/↑ → `arrow-down`/`arrow-up`; START › and spectator ‹/› → `chevron-right`/`chevron-left`; READY ✓ → `check`; mobile pause Ⅱ → `pause`; touch steering triangles → `chevron-left`/`chevron-right`. Music icons were already removed.
 
 `npm test` checks source icon references, vendored hashes, sprite equality and the absence of UI arrow/check glyphs.
+
+Touch pause, camera and steering labels use the shared SVG builders; their 18px SVG size is independent of the controls’ text size. The icon guard also validates every CSS icon URL against the pinned inventory and sprite.

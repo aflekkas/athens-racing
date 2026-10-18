@@ -56,6 +56,10 @@ export const icon = (name, cls = '') => name ? `<svg class="ico ${cls}" aria-hid
 export const iconLabel = (text, name) => !name ? text : `<span class="icon-label">${icon(name)}<span>${text}</span></span>`;
 export function iconEl(name, cls = '') { const t = document.createElement('template'); t.innerHTML = icon(name, cls); return t.content.firstChild; }
 
+/** Compact driving controls share the same SVG labels as the menus. */
+export function touchControlLabel(action, label) { return action === 'pause' ? icon('pause') : action === 'camera' ? icon('camera') : esc(label); }
+export function touchSteeringLabel() { return `${icon('chevron-left')}<span>STEER</span>${icon('chevron-right')}`; }
+
 /** Startup HTML declares icons without duplicating the shared SVG markup. */
 export function mountIconPlaceholders(root = document) {
   for (const el of root.querySelectorAll('[data-ui-icon]')) el.replaceWith(iconEl(el.dataset.uiIcon));

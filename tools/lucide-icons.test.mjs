@@ -87,3 +87,13 @@ test('shared dropdown value, update and listbox retain direction icons and the i
   assert.match(css, /\.listbox__opt > \.ico\s*\{ visibility: hidden/);
   assert.match(C.option({ cls: 'option--tile option--hero' }), /option__start.*START.*#chevron-right/);
 });
+
+
+test('CSS icon URLs resolve to canonical Lucide symbols and compact touch labels use shared SVGs', () => {
+  for (const file of walk('src').filter(f => /\.css$/.test(f))) {
+    for (const m of read(file).matchAll(/assets\/icons\/([a-z][a-z0-9-]*)\.svg/g)) resolve(m[1]);
+  }
+  assert.match(C.touchControlLabel('pause', 'PAUSE'), /#pause/);
+  assert.match(C.touchControlLabel('camera', 'CAM'), /#camera/);
+  assert.match(C.touchSteeringLabel(), /#chevron-left[\s\S]*STEER[\s\S]*#chevron-right/);
+});

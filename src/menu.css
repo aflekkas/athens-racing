@@ -241,8 +241,8 @@ body .racer-marker.ai { font-size: 16px; }
 body .racer-marker.ai .racer-name, body .racer-marker.ai.edge .racer-name { padding: .18em .6em .18em .45em; border-width: 1.5px; }
 body .racer-marker.edge { font-size: 16px; }
 body .racer-marker .racer-chevron { width: 1.2em; height: 1.2em; margin: .05em auto 0; font-size: inherit; color: transparent; background: var(--racer-color, #fff);
-  -webkit-mask: url(../assets/icons/caret-down.svg) center / contain no-repeat; mask: url(../assets/icons/caret-down.svg) center / contain no-repeat; }
-body .racer-marker.edge .racer-chevron { -webkit-mask-image: url(../assets/icons/caret-right.svg); mask-image: url(../assets/icons/caret-right.svg); }
+  -webkit-mask: url(../assets/icons/chevron-down.svg) center / contain no-repeat; mask: url(../assets/icons/chevron-down.svg) center / contain no-repeat; }
+body .racer-marker.edge .racer-chevron { -webkit-mask-image: url(../assets/icons/chevron-right.svg); mask-image: url(../assets/icons/chevron-right.svg); }
 /* the floating multiplayer button never shows over the loading or title screens */
 #loading.open ~ #mp-toggle, body:not(.loaded) #mp-toggle, body[data-ui=title] #mp-toggle { display: none !important; }
 /* The garage catalogue: a scrollable grid with one renderer shared by its thumbnails. */
