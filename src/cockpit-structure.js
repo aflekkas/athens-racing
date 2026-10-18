@@ -31,19 +31,24 @@ export function buildCockpitStructure(model,cockpit){
  const [bl,br]=frame?[frame[0],frame[1]]:[v(-half,sh.belt,sh.cowl),v(half,sh.belt,sh.cowl)];
  const [tl,tr]=frame?[frame[2],frame[3]]:[v(-half,sh.H-.08,sh.header),v(half,sh.H-.08,sh.header)];
  // Pillars carry on along the glass edge past the corner (the sealed frame), never off towards another point.
- const ext=spec.nativeFleet?.08:.05;
- for(const [b,t]of [[bl,tl],[br,tr]]){const d=t.clone().sub(b).normalize();t.add(d.multiplyScalar(ext));}
+ // Cars carry the pillars up to the body's roof line (shape.H) at most .18 m beyond the glass corner; commercial
+ // bodies keep their short fixed frame.
+ const exts=[[bl,tl],[br,tr]].map(([b,t])=>{const d=t.clone().sub(b).normalize();return spec.nativeFleet||!frame?.08:Math.min(.18,Math.max(.05,(sh.H+.025-t.y)/Math.max(d.y,.2)));});
+ for(const [i,[b,t]]of [[bl,tl],[br,tr]].entries()){const d=t.clone().sub(b).normalize();t.add(d.multiplyScalar(exts[i]));}
+ const ext=(exts[0]+exts[1])/2;
  for(const p of [bl,br,tl,tr])p.z+=.012;
  // The header is straight but the glass top edge bows up at the centre: lift it so no frame crosses the aperture.
  const bow=frame?Math.max(0,bounds.max.y+ext*.5-(tl.y+tr.y)/2):0,headerL=tl.clone().add(v(0,bow,0)),headerR=tr.clone().add(v(0,bow,0));
- const thickness=spec.nativeFleet==='bus'?.105:spec.nativeFleet==='truck'?.095:spec.convertible?.055:.06;
- beam(headerL,headerR,.045,trim,'header',.075);
- if(!spec.convertible&&!sh.open)panel([headerL,headerR,v(half,headerR.y+.06,model.seat.z+.4),v(-half,headerL.y+.06,model.seat.z+.4)],trim,'headliner');
+ const thickness=spec.nativeFleet==='bus'?.105:spec.nativeFleet==='truck'?.08:spec.convertible?.055:.05;
+ const fleet=!!spec.nativeFleet;
+ beam(headerL,headerR,fleet?.045:.026,trim,'header',fleet?.075:.04);
+ if(!spec.convertible&&!sh.open)panel([headerL,headerR,v(half,headerR.y+(fleet?.06:.05),fleet?model.seat.z+.4:headerR.z+.07),v(-half,headerL.y+(fleet?.06:.05),fleet?model.seat.z+.4:headerL.z+.07)],trim,'headliner');
  beam(headerL.clone().add(v(0,-.026,.018)),headerR.clone().add(v(0,-.026,.018)),.009,trim,'visor-edge');
  for(const [s,b,t]of [[-1,bl,tl],[1,br,tr]]){
-  beam(b,t,thickness,trim,'pillar',.045);
-  const cap=b.clone();if(spec.nativeFleet==='bus')cap.y=Math.max(cap.y,model.seat.y-.27);beam(cap,v(s*half,cap.y-.02,model.seat.z+.25),.075,trim,'door-top',.085);
-  if(!spec.convertible)beam(t,v(s*half,t.y,model.seat.z+.30),.065,trim,'window-frame',.085);
+  // the pillar stands outboard of the glass: its inner face is flush with the glass edge instead of straddling it
+  const out=v(s*Math.min(thickness/2,.03),0,0);beam(b.clone().add(out),t.clone().add(out),thickness,trim,'pillar',['bus','truck'].includes(spec.nativeFleet)?.045:.02);
+  const cap=b.clone();if(spec.nativeFleet==='bus')cap.y=Math.max(cap.y,model.seat.y-.27);beam(cap,v(s*half,cap.y-.02,model.seat.z+.25),fleet?.075:.032,trim,'door-top',fleet?.085:.04);
+  if(!spec.convertible)beam(t,v(s*half,t.y,model.seat.z+.30),fleet?.065:.028,trim,'window-frame',fleet?.085:.03);
  }
  // Follow the actual body cowl/front height; bus has no bonnet beyond its glass.
  if(spec.nativeFleet!=='bus'){
@@ -52,7 +57,12 @@ export function buildCockpitStructure(model,cockpit){
  }
  attachCockpitWipers(model,group,[bl,br,tr,tl],trim);
  const interior=cockpit.mirrors?.find(m=>m.name==='interior')?.mesh;
- if(interior){cockpit.mirrorStem.visible=false;cockpit.mirrorMount.visible=false;beam(model.body.worldToLocal(interior.getWorldPosition(v(0,0,0))).add(v(0,.04,-.02)),headerL.clone().lerp(headerR,.5),.014,trim,'mirror-mount');}
- for(const key of ['mirrorL','mirrorR']){const m=model[key]||model.body.getObjectByName(key==='mirrorL'?'mirror_l':'mirror_r')?.getObjectByName('mirror-face');if(!m)continue;const p=model.body.worldToLocal(m.getWorldPosition(v(0,0,0)));beam(p.x<0?bl:br,p,.04,paint,'mirror-mount');}
+ if(interior){
+  // The stalk drops from the top glass edge straight above the mirror (it stays on the roof side of the glass).
+  cockpit.mirrorStem.visible=false;cockpit.mirrorMount.visible=false;
+  const mirror=model.body.worldToLocal(interior.getWorldPosition(v(0,0,0))),top=frame?points.reduce((a,p)=>p.y>a.y?p:a).clone():headerL.clone().lerp(headerR,.5);
+  beam(mirror.clone().add(v(0,.05,-.02)),v(mirror.x,top.y+.01,top.z+.012),.014,trim,'mirror-mount');
+ }
+ for(const key of ['mirrorL','mirrorR']){const m=model[key]||model.body.getObjectByName(key==='mirrorL'?'mirror_l':'mirror_r')?.getObjectByName('mirror-face');if(!m)continue;const p=model.body.worldToLocal(m.getWorldPosition(v(0,0,0)));beam(p.x<0?bl:br,p,.028,paint,'mirror-mount');}
  cockpit.updateStructure=()=>{};
 }
