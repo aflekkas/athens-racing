@@ -36,3 +36,11 @@ test('pause uses the inset reference header and one shared full-screen sheet', (
   assert.match(html, /data-layout-region="rows"/); assert.match(html, /data-layout-region="actions"/);
   assert.doesNotMatch(html, /role="dialog"|hu-driver|hu-clock/);
 });
+
+test('split sheets keep actions with the summary and supporting panels in an aside', () => {
+ const html=C.sheetList({variant:'split',rows:'SUMMARY',actions:'RETRY',aside:'SPLITS'});
+ assert.match(html,/layout--sheet-list-split/);
+ assert.ok(html.indexOf('SUMMARY') < html.indexOf('RETRY'));
+ assert.ok(html.indexOf('RETRY') < html.indexOf('SPLITS'));
+ for (const slot of ['rows','actions','aside']) assert.match(html,new RegExp('data-layout-region="'+slot+'"'));
+});

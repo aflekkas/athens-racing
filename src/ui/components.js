@@ -181,8 +181,8 @@ export function screen({ cls = '', kick = '', title = '', back = true, head = ''
 // Slot values are trusted HTML, like panel()/screen(). Escape user text with esc().
 // See docs/ui-layouts.md. screen() remains a low-level compatibility primitive during migration.
 function layoutFrame(name, options, body) {
-  const { cls = '', kick = '', title = '', back = true, hints = [], foot = '' } = options;
-  return screen({ cls: `layout layout--${name} ${cls}`, layout: name, kick, title, back, hints, foot, body });
+  const { cls = '', kick = '', title = '', back = true, hints = [], foot = '', variant = 'page' } = options;
+  return screen({ cls: `${variant === 'page' ? 'layout' : ''} layout--${name}${variant === 'page' ? '' : '-' + variant} ${cls}`, layout: name, kick, title, back, hints, foot, body });
 }
 const region = (name, content, cls = '') => `<div class="layout__${name} ${cls}" data-layout-region="${name}">${content}</div>`;
 /** Primary tile beside secondary tiles; all tiles share the available height. */
@@ -213,6 +213,11 @@ export function sheetList({ rows = '', aside = '', actions = '', variant = 'page
     const { cls = '', kick = '', title = '', hints = [], foot = '' } = frame;
     return `<div class="scr scr--pause ${cls}" data-layout="sheet-list">${panel('', `${sheetHead({ kick, title, status })}<div class="pause__list" data-layout-region="rows">${rows}</div>${actions ? `<div class="pause-controls" data-layout-region="actions">${actions}</div>` : ''}`, { cls: 'pause-sheet' })}
       <footer class="scr__foot">${foot}${hints.length ? keyHints(hints) : ''}</footer></div>`;
+  }
+  if (variant === 'split') {
+    return layoutFrame('sheet-list', { ...frame, variant }, region('sheet',
+      region('rows', rows + (actions ? region('actions', actions, 'layout-sheet-split__actions') : ''), 'layout-sheet-split__rows') +
+      region('aside', aside, 'layout-sheet-split__aside scroll-y'), 'layout-sheet-split'));
   }
   return layoutFrame('sheet-list', frame, region('sheet', region('rows', rows, 'scroll-y') + (aside ? region('aside', aside, 'scroll-y') : '') + (actions ? region('actions', actions) : '')));
 }

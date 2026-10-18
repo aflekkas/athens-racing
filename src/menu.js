@@ -511,12 +511,12 @@ export class Menu {
     const field = d.field?.length ? C.panel('CLASSIFICATION', `<table class="r-table">${d.field.map((f) => `<tr class="${f.me ? 'me' : ''}"><td class="r-pos">P${f.pos}</td><td>${esc(f.name)}<small>${esc(f.car || '')}</small></td><td class="tnum ${f.running ? 'run' : ''}">${f.time}</td></tr>`).join('')}</table>`, { icon: 'flag' }) : '';
     const tiles = (d.rows || []).filter(([k]) => !/EVENT BEST|MEDAL|RECORD/i.test(k)).map(([k, v, hi]) => C.stat(esc(k), v, { tone: hi ? 'hi' : '' }));
     const act = (a, ic, label, v = 'secondary') => C.button({ label, icon: ic, act: a, variant: v, attrs: a === 'retry' ? { 'data-default': '' } : null });
-    return C.screen({ cls: `scr--results ${d.win ? 'is-win' : 'is-lose'}`, back: false, kick, title: esc(d.title || ''), hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'MAIN MENU']],
-      body: `<div class="res-layout"><div class="res-main">
+    return C.sheetList({ variant: 'split', cls: `scr--results ${d.win ? 'is-win' : 'is-lose'}`, back: false, kick, title: esc(d.title || ''), hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'MAIN MENU']],
+      rows: `
         ${d.sub ? `<p class="res-sub">${d.sub}</p>` : ''}
         ${personalBestLabel(d.result?.personalBest) ? C.badge(esc(personalBestLabel(d.result.personalBest)), 'good', 'timer') : ''}
         <div class="stats res-stats">${tiles.join('')}</div>
-        <div class="res-actions">${act('retry', 'rotate-ccw', 'RETRY', 'primary')}${d.result?.time != null ? act('shareResult', 'share', 'SHARE') : ''}${act('list', 'menu', 'MAIN MENU')}</div>
-      </div><div class="res-side scroll-y">${d.result?.personalBest?.exact ? renderBestRecord(d.result.personalBest.exact, { title: `${d.result.personalBest.newBest ? 'NEW ' : ''}PERSONAL BEST · ${this.h.fmtTime(d.result.personalBest.exact.time)}` }) : ''}${field}${splits}</div></div>` });
+      `, actions: `${act('retry', 'rotate-ccw', 'RETRY', 'primary')}${d.result?.time != null ? act('shareResult', 'share', 'SHARE') : ''}${act('list', 'menu', 'MAIN MENU')}`,
+      aside: `${d.result?.personalBest?.exact ? renderBestRecord(d.result.personalBest.exact, { title: `${d.result.personalBest.newBest ? 'NEW ' : ''}PERSONAL BEST · ${this.h.fmtTime(d.result.personalBest.exact.time)}` }) : ''}${field}${splits}` });
   }
 }

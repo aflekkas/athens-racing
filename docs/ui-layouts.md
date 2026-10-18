@@ -51,3 +51,7 @@ the locked title layout and pause placement with kit-owned variants.
 keeps the locked inset sheet header, left docking and full-width phone sheet.
 The kit owns its two-column short-landscape rows and backdrop lifecycle. It is a
 full screen, not a dialog. The pause screen supplies only option rows and controls.
+
+`sheetList({ variant: 'split', rows, actions, aside })` puts actions after the
+summary and supporting panels alongside it. At 860px the body scrolls as one
+column; short landscape restores independently scrolling columns.

@@ -61,14 +61,14 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
 @keyframes bindBlink { 50% { opacity: .4; } }
 /* ---------------------------------------------------------------- pause: a quick-settings sheet over the frozen road view */
 /* ---------------------------------------------------------------- results: the trip computer */
-.res-layout { flex: 1; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(17rem, .85fr); gap: var(--s-6); min-height: 0; }
-.res-main { min-height: 0; overflow-y: auto; align-self: start; padding: var(--s-2) 6px 6px; margin-inline: -6px; }
+
+
 /* Keyboard/gamepad focus uses a quiet surface; no outline or ring. */
 .res-sub { margin: var(--s-3) 0 0; font-family: var(--f-sans); font-weight: 500; font-size: var(--t-lg); letter-spacing: .02em; color: var(--c-text-2); }
 .res-sub b { color: #fff; font-weight: 600; }
-.res-stats { margin-top: var(--s-5); grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr)); }
-.res-actions { margin-top: var(--s-5); display: flex; flex-wrap: wrap; gap: var(--s-2); }
-.res-side { min-height: 0; display: grid; gap: var(--s-3); align-content: start; }
+
+
+
 /* ---------------------------------------------------------------- car detail: studio + vehicle info */
 .car-layout { flex: 1; display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(19rem, 1fr); gap: var(--s-5); min-height: 0; }
 .car-stage { position: relative; min-width: 0; min-height: 0; border-radius: var(--r-4); background: radial-gradient(ellipse at 50% 64%, #2c3741, #11181f 72%); box-shadow: inset 0 0 0 1px var(--ui-line); overflow: hidden; }
@@ -88,11 +88,11 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
   .home__tiles { height: auto; grid-template-rows: repeat(2, minmax(7.5rem, auto)); }
 }
 @media (max-width: 860px) {
-  .setup-layout, .res-layout, .car-layout { grid-template-columns: minmax(0, 1fr); }
-  .scr--setup .scr__body, .scr--results .scr__body, .scr--car .scr__body { overflow-y: auto; margin: -6px; }
+  .setup-layout, .car-layout { grid-template-columns: minmax(0, 1fr); }
+  .scr--setup .scr__body, .scr--car .scr__body { overflow-y: auto; margin: -6px; }
   /* Keyboard/gamepad focus uses a quiet surface; no outline or ring. */
-  .setup-layout, .res-layout, .car-layout { display: flex; flex-direction: column; flex: none; }
-  .setup__event, .setup__form .setup__fields, .res-main, .res-side, .car-info, .vehicle-specs { max-height: none; overflow: visible; }
+  .setup-layout, .car-layout { display: flex; flex-direction: column; flex: none; }
+  .setup__event, .setup__form .setup__fields, .car-info, .vehicle-specs { max-height: none; overflow: visible; }
   .setup__event { box-sizing: border-box; width: 100%; }
   /* stacked: the summary spans the column like the form under it */
   .car-stage { flex: none; height: max(12rem, 34vh); }
@@ -127,9 +127,9 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
   .scr--setup .scr__body { overflow: hidden; }
   .setup__event, .setup__form .setup__fields { max-height: 100%; overflow-y: auto; }
   .setup__form { min-height: 0; }
-  .res-layout { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); flex: 1; }
-  .scr--results .scr__body { overflow: hidden; }
-  .res-main, .res-side { max-height: 100%; overflow-y: auto; }
+  
+  
+  
 }
 /* track select on phones: the destination card stacks under the map, so the body scrolls */
 @media (max-width: 560px), (max-height: 500px) {
