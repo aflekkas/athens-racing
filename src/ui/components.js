@@ -200,7 +200,8 @@ export function browseGrid({ filters = '', items = '', list = false, aside = '',
   return layoutFrame('browse-grid', frame, `${filters ? region('filters', filters) : ''}${region('items', items, `scroll-y ${list ? 'layout__items--list' : ''}`)}`);
 }
 /** Large viewer and inspector; the inspector follows the stage on a narrow portrait screen. */
-export function stageInspector({ stage = '', inspector = '', variant = 'page', ...frame } = {}) {
+export function stageInspector({ stage = '', inspector = '', actions = '', variant = 'page', ...frame } = {}) {
+  if (variant === 'overview') return layoutFrame('stage-inspector', { ...frame, variant, foot: region('actions', actions, 'layout-overview__actions') }, region('stage-inspector', region('stage', stage, 'layout-overview__stage') + region('inspector', inspector, 'layout-overview__inspector'), 'layout-overview'));
   if (variant === 'media') return layoutFrame('stage-inspector', { ...frame, variant }, `<figure class="layout-media" data-layout-region="stage">${stage}${inspector ? `<figcaption data-layout-region="inspector">${inspector}</figcaption>` : ''}</figure>`);
   return layoutFrame('stage-inspector', frame, region('stage-inspector', region('stage', stage) + region('inspector', inspector, 'scroll-y')));
 }

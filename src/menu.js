@@ -359,12 +359,12 @@ export class Menu {
   r_mapConfirm(d) {
     const map = MAPS.find(m => m.id === d.mapId) || MAPS[0], def = this.setupDef();
     d.eventId = (def.baseId || def.id).split('~')[0];
-    return C.screen({ cls: 'scr--track', kick: 'QUICK RACE / YOUR TRACK', title: esc(map.name),
+    return C.stageInspector({ variant: 'overview', cls: 'scr--track', kick: 'QUICK RACE / YOUR TRACK', title: esc(map.name),
       hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'BACK']],
-      body: `<div class="track-layout"><div class="track-overview">${C.panel('YOUR TRACK',
+      stage: C.panel('YOUR TRACK',
         `${map.preview ? `<img class="setup__map" src="${esc(map.preview)}" alt="Route preview: ${esc(map.name)}">` : ''}<p>${esc(map.subtitle)}</p>${C.stats([['LENGTH', fmtDist(map.length)], ['EVENT', 'QUICK RACE']])}`,
-        { icon: 'map' })}</div>${renderTrackTimes(this, d, { mapId: map.id, eventId: d.eventId })}</div>`,
-      foot: `<div class="track-actions">${C.button({ label: 'LEADERBOARD', icon: 'timer', act: 'leaderboards' })}${C.button({ label: 'RACE SETUP', icon: 'sliders-horizontal', iconRight: 'chevron-right', variant: 'primary', act: 'mapContinue', attrs: { 'data-default': '' } })}</div>` });
+        { icon: 'map' }), inspector: renderTrackTimes(this, d, { mapId: map.id, eventId: d.eventId }),
+      actions: `${C.button({ label: 'LEADERBOARD', icon: 'timer', act: 'leaderboards' })}${C.button({ label: 'RACE SETUP', icon: 'sliders-horizontal', iconRight: 'chevron-right', variant: 'primary', act: 'mapContinue', attrs: { 'data-default': '' } })}` });
   }
 
   // ---------------------------------------------------------------- car

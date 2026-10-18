@@ -30,7 +30,7 @@ export function renderTrackTimes(menu, d, filters) {
   else if (state.error) global = `<p>${esc(state.error)}</p>${C.button({ label: 'TRY AGAIN', act: 'trackTimesRetry', size: 'sm' })}`;
   else global = state.entries.length ? state.entries.map((r, i) => renderBestRecord(r, { rank: i + 1, global: true, compact: true })).join('') : '<p>No global times yet. Set the first clean time.</p>';
   queueMicrotask(() => loadTrackTimes(menu, d, state, filters));
-  return `<div class="track-times">${personal}${C.panel('GLOBAL / TOP 3', global, { icon: 'globe', attrs: { 'aria-live': 'polite', 'aria-busy': !!state.loading } })}<p class="muted">Fastest times for this track and event, across routes and setups.</p></div>`;
+  return `${personal}${C.panel('GLOBAL / TOP 3', global, { icon: 'globe', attrs: { 'aria-live': 'polite', 'aria-busy': !!state.loading } })}<p class="muted">Fastest times for this track and event, across routes and setups.</p>`;
 }
 async function loadTrackTimes(menu, d, state, filters) {
   if (menu.screen !== 'mapConfirm' || menu.data !== d || d.trackTimes !== state || state.requested) return;

@@ -69,3 +69,7 @@ The sign-in exception uses `dialog({ fullScreen: true })`; its shell stays in th
 `browseGrid({ variant: 'filtered', filters, aside, items, busy })` places tabs below
 the title and a filter rail beside ranked results; it stacks below 700px. The kit
 owns the live-results region and its busy state.
+
+`stageInspector({ variant: 'overview', stage, inspector, actions })` pairs a compact
+track overview with related records. It stacks below 700px and keeps actions in
+the shared footer.

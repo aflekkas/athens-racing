@@ -63,3 +63,9 @@ test('filtered browsers keep categories before the filter rail and announce resu
  assert.ok(html.indexOf('TABS')<html.indexOf('FILTERS'));
  assert.match(html,/aria-live="polite" aria-busy="true"/);
 });
+
+test('overview stages keep their actions in the shared footer', () => {
+ const html=C.stageInspector({variant:'overview',stage:'TRACK',inspector:'TIMES',actions:'RACE'});
+ assert.ok(html.indexOf('scr__foot')<html.indexOf('RACE'));
+ assert.match(html,/data-layout-region="inspector"/);
+});
