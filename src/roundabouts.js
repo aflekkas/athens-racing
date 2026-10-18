@@ -5,10 +5,12 @@ export function islandDistance(x,z,p){let d=Infinity;for(let i=0;i<p.length;i++)
 export function roundaboutYield(entry,cars,{gap=18,time=3}={}){return cars.some(c=>c.circulating&&c.id!==entry.id&&c.distance>=-4&&c.distance<gap+Math.max(0,c.speed||0)*time);}
 export function ringStation(x,z,p){let best=Infinity,station=0,length=0;for(let i=0;i<p.length;i++){const a=p[i],b=p[(i+1)%p.length],dx=b[0]-a[0],dz=b[1]-a[1],L=Math.hypot(dx,dz),t=Math.max(0,Math.min(1,((x-a[0])*dx+(z-a[1])*dz)/(L*L))),d=Math.hypot(x-a[0]-t*dx,z-a[1]-t*dz);if(d<best){best=d;station=length+t*L;}length+=L;}return{s:station,length,d:best};}
 export function ringPoint(p,s,out={}){const length=ringStation(...p[0],p).length;s=((s%length)+length)%length;for(let i=0;i<p.length;i++){const a=p[i],b=p[(i+1)%p.length],dx=b[0]-a[0],dz=b[1]-a[1],L=Math.hypot(dx,dz);if(s<=L||i===p.length-1){out.x=a[0]+dx*s/L;out.z=a[1]+dz*s/L;out.tx=dx/L;out.tz=dz/L;return out;}s-=L;}return out;}
+// A reverse arm may straddle the lap seam of a closed route; its s1 then exceeds the lap length. Bring a wrapped station into its range.
+export function reverseStation(route,r,s){s=route.closed?route.wrap(s):s;return s<r.reverse.s0?s+route.length:s>r.reverse.s1?s-route.length:s;}
 export function roundaboutRange(route,s,padding=0){if(!route.roundabouts?.length)return undefined;s=route.closed?route.wrap(s):s;return route.roundabouts?.find(r=>s>=r.s0-padding&&s<=r.s1+padding);}
 // Reverse-route traffic takes the complementary CCW arc, returning to its intended exit arm.
 export function circulatingPoint(route,c,out={}){if(c._world&&!c.crash)return Object.assign(out,c._world);out.set ||= function(x,y,z){this.x=x;this.y=y;this.z=z;return this;};const r=c.crash||c._sharedPosition?null:trafficRoundaboutRange(route,c);if(!r)return route.point(c.s,c.u,out);const s=route.closed?route.wrap(c.s):c.s;
- if(c.dir<0&&r.reverse){const q=r.reverse,t=(q.s1-s)/(q.s1-q.s0);polylinePoint(q.path,t*q.length,out);out.y=route.y(c.s);return out;}
+ if(c.dir<0&&r.reverse){const q=r.reverse,t=(q.s1-reverseStation(route,r,s))/(q.s1-q.s0);polylinePoint(q.path,t*q.length,out);out.y=route.y(c.s);return out;}
  if(c.dir>=0)return route.point(c.s,Math.max(-.35,Math.min(.6,c.u)),out);
  const start=route.point(r.s1,0),end=route.point(r.s0,0),a=ringStation(start.x,start.z,r.p),b=ringStation(end.x,end.z,r.p),length=(b.s-a.s+a.length)%a.length,t=(r.s1-s)/(r.s1-r.s0),q=ringPoint(r.p,a.s+length*t,{});
  const edge=route.point(c.s,c.u),blend=Math.min(1,t/.12,(1-t)/.12);out.x=edge.x*(1-blend)+q.x*blend;out.z=edge.z*(1-blend)+q.z*blend;out.y=route.y(c.s);return out;}
@@ -19,5 +21,5 @@ export function entryYieldDistance(route,c,others){if(!route.roundabouts?.length
  }return null;
 }
 export function polylinePoint(p,s,out={}){for(let i=1;i<p.length;i++){const a=p[i-1],b=p[i],dx=b[0]-a[0],dz=b[1]-a[1],L=Math.hypot(dx,dz);if(s<=L||i===p.length-1){const t=Math.max(0,Math.min(1,s/L));return Object.assign(out,{x:a[0]+dx*t,z:a[1]+dz*t,tx:dx/L,tz:dz/L});}s-=L;}return out;}
-export function trafficRoundaboutRange(route,c){if(c.dir<0&&route.roundabouts?.length){const s=route.closed?route.wrap(c.s):c.s;const r=route.roundabouts.find(r=>r.reverse&&s>=r.reverse.s0&&s<=r.reverse.s1);if(r)return r;}return roundaboutRange(route,c.s);}
+export function trafficRoundaboutRange(route,c){if(c.dir<0&&route.roundabouts?.length){const r=route.roundabouts.find(r=>{if(!r.reverse)return false;const s=reverseStation(route,r,c.s);return s>=r.reverse.s0&&s<=r.reverse.s1;});if(r)return r;}return roundaboutRange(route,c.s);}
 export function polylineStation(x,z,p){let best=Infinity,station=0,length=0;for(let i=1;i<p.length;i++){const a=p[i-1],b=p[i],dx=b[0]-a[0],dz=b[1]-a[1],L=Math.hypot(dx,dz);if(!L)continue;const t=Math.max(0,Math.min(1,((x-a[0])*dx+(z-a[1])*dz)/(L*L))),d=Math.hypot(x-a[0]-t*dx,z-a[1]-t*dz);if(d<best){best=d;station=length+t*L;}length+=L;}return{s:station,length,d:best};}

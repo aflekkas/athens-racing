@@ -11,7 +11,7 @@ export async function createLeaderboard(file, definitions, cars, version, maps) 
   const validate = r => validResult(r, resultContext(r, definitions, version, maps).event, cars);
   const list = (filters = {}) => {
     const mapId = filters.mapId || 'riviera';
-    return filterEntries(entries.filter(e => (e.mapId || 'riviera') === mapId && e.version === leaderboardVersion(mapId, maps ? maps.get(mapId)?.track.version : version, filters.reverse)), { ...filters, mapId });
+    return filterEntries(entries.filter(e => (e.mapId || 'riviera') === mapId && e.version === leaderboardVersion(mapId, maps ? maps.get(mapId)?.track.version : version)), { ...filters, mapId });
   };
   const submit = r => {
     if (!validate(r)) return Promise.reject(Object.assign(new Error('Unknown event/car or implausible result time.'), { status: 400 }));

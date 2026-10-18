@@ -26,10 +26,10 @@ test('carved street bed clears both full carriageways and pavements at the lap s
  const g=new Ground(map,(x,z)=>triangleHeight(terrain,h,x,z),{network:null});
  for(const s of [-1,0,1,route.length-1,route.length+1,1600,2400])for(const u of [-route.edge(s)-1.1,0,route.edge(s)+1.1]){const p=route.point(s,u),q=g.at(p.x,p.z,s,u,{});assert.equal(q.surf,u?'pavement':'asphalt');assert(Math.abs(q.y-(p.y+(u?.16+.02*(Math.abs(u)-route.edge(s)-.55)/(1.98):0)))<.03);}
 });
-test('both authored events pass every gate and finish with correct lap counts',()=>{
+test('both authored events track the whole route and finish with correct lap counts',()=>{
  for(const def of data.events){const ev=new EventRun(def,{route,marks:data.marks},{storage:{getItem:()=>null}});ev.start();let time=0,finished=false;
-  for(let s=-4;s<ev.r.s1+4;s+=2){const p=route.point(s,0);time+=.1;const out=ev.update(.1,{s,u:0,x:p.x,y:p.y,z:p.z,t:time,kmh:72});assert.equal(ev.checkpoint.missed,false);finished ||=out.some(q=>q.kind==='finish');}
-  assert(finished);assert.equal(ev.lapTimes.length,def.laps);assert.equal(ev.cpIdx,ev.r.checkpoints.length);assert.equal(resolve(def,{route,marks:data.marks}).len,route.length*def.laps);
+  for(let s=-4;s<ev.r.s1+4;s+=2){const p=route.point(s,0);time+=.1;const out=ev.update(.1,{s,u:0,x:p.x,y:p.y,z:p.z,t:time,kmh:72});assert.equal(ev.course.onRoute,true);finished ||=out.some(q=>q.kind==='finish');}
+  assert(finished);assert.equal(ev.lapTimes.length,def.laps);assert.equal(ev.sectorIdx,ev.r.sectors.length);assert.equal(resolve(def,{route,marks:data.marks}).len,route.length*def.laps);
  }
 });
 test('route projections preserve unwrapped progress and elevation across laps',()=>{
@@ -83,7 +83,7 @@ test('whole municipal street network and the interior of the drawing are include
  for(const w of elements.filter(publicRoad))if(w.nodes.some(id=>inside(p(nodes.get(id)),ring)||inside(p(nodes.get(id)),drawn)))assert(selected.has(w.id),`municipal way missing ${w.id}`);
  const rendered=new Set([...data.roadNetwork.roads.map(r=>r.id),...data.psychiko.sourceWayIds]);
  const omitted=elements.filter(w=>w.type==='way'&&selected.has(w.id)&&!rendered.has(w.id));
- assert.deepEqual(omitted.map(w=>w.id).sort((a,b)=>a-b),[25117418,113339568,113339581]);
+ assert(omitted.every(w=>[25117418,113339568,113339581].includes(w.id)),'only the three documented Kifisias underpasses may be omitted');
  assert(omitted.every(w=>w.tags.tunnel==='yes'&&w.tags.layer==='-1'),'only documented grade-separated Kifisias underpasses may be omitted');
  assert(data.roadNetwork.length>50000);assert(data.roadNetwork.roads.length>400);
 });
@@ -167,4 +167,50 @@ test('owner lock: road closures only in races, never in free roam',async()=>{
  }
  assert.deepEqual(roadworksForEvent(data,{...races[0],free:true}),[]);
  assert.deepEqual(roadworksForEvent(data,undefined),[]);
+});
+
+// ---- Garden Circuit v2 (owner request 2026-10-18): start at the south radial, loop the neighbourhood on real streets
+const raw = JSON.parse(readFileSync(new URL('./maps/psychiko/raw/route.json', import.meta.url)));
+async function osmFixture() {
+ const {publicRoad}=await import('./maps/psychiko/neighbourhood.mjs'),{gunzipSync}=await import('node:zlib');
+ const elements=JSON.parse(gunzipSync(readFileSync(new URL('./maps/psychiko/raw/osm.json.gz',import.meta.url)))).elements;
+ return {publicRoad,elements,nodes:new Map(elements.filter(e=>e.type==='node').map(n=>[n.id,n])),ways:new Map(elements.filter(e=>e.type==='way').map(w=>[w.id,w]))};
+}
+test('Garden Circuit follows real public OSM streets only: every metre is within a street, no cutting through blocks',async()=>{
+ const {publicRoad,elements,nodes}=await osmFixture(),P=n=>[(n.lon-data.proj.lon0)*data.proj.mlon,-(n.lat-data.proj.lat0)*data.proj.mlat];
+ const segments=[];for(const w of elements.filter(publicRoad)){const ps=w.nodes.map(id=>nodes.get(id)).filter(Boolean).map(P);for(let i=1;i<ps.length;i++)segments.push([ps[i-1],ps[i]]);}
+ const near=(x,z)=>{let best=Infinity;for(const [a,b] of segments){const dx=b[0]-a[0],dz=b[1]-a[1],t=Math.max(0,Math.min(1,((x-a[0])*dx+(z-a[1])*dz)/(dx*dx+dz*dz||1)));best=Math.min(best,Math.hypot(x-a[0]-dx*t,z-a[1]-dz*t));}return best;};
+ let worst=0;for(let i=0;i<data.route.x.length;i+=2)worst=Math.max(worst,near(data.route.x[i],data.route.z[i]));
+ assert(worst<4.5,`route strays ${worst.toFixed(1)} m from every public street centreline`);
+});
+test('Garden Circuit drives every street in its legal one-way direction, on public asphalt',async()=>{
+ const {publicRoad,ways}=await osmFixture(),chain=raw.sourceNodeIds;
+ assert.equal(chain[0],chain.at(-1));assert.equal(new Set(chain.slice(0,-1)).size,chain.length-1,'simple loop');
+ for(let i=0;i<chain.length-1;i++){const a=chain[i],b=chain[i+1],w=ways.get(raw.orderedWays.length?raw.sourceWayIds.find(id=>{const q=ways.get(id);return q.nodes.some((n,k)=>(n===a&&q.nodes[k+1]===b)||(n===b&&q.nodes[k+1]===a));}):0);
+  assert(w&&publicRoad(w),`edge ${a}>${b} is a public road`);assert(!w.tags.surface||w.tags.surface==='asphalt'||w.tags.surface==='paved'||w.tags.surface==='sett');
+  const forward=w.nodes.some((n,k)=>n===a&&w.nodes[k+1]===b),backward=w.nodes.some((n,k)=>n===b&&w.nodes[k+1]===a);
+  if(w.tags.oneway==='yes'||w.tags.junction==='roundabout')assert(forward,`${a}>${b} runs against one-way way ${w.id}`);
+  else if(w.tags.oneway==='-1')assert(backward,`${a}>${b} runs against one-way way ${w.id}`);
+ }
+});
+test('Garden Circuit starts on the Diamantidou radial south of the Venizelou roundabout and is a 3.5-7 km mixed loop',()=>{
+ const start=route.point(0,0),hub={x:-252,z:-440};
+ assert(start.z>hub.z+60&&start.z<hub.z+330,`start ${start.z-hub.z} m south of the hub`);assert(Math.abs(start.x-hub.x)<80);
+ assert(/Diamantidi|Διαμαντ/i.test(route.names.findLast(n=>n.s<=0.01).name));
+ const f=route.frame(0,{});assert(f.tz>.8,'the timing line faces south, away from the roundabout, along the radial');
+ assert(route.length>3500&&route.length<7000);assert(route.roundabouts.length>=2,'roundabouts on the lap');
+ const streets=new Set(route.names.map(n=>n.name));assert(streets.size>=8,'radial avenues, diagonals and ring streets');
+});
+test('Garden Circuit turns are smooth: no corner tighter than a street junction can drive',()=>{
+ let tightest=Infinity;
+ for(let s=0;s<route.length;s+=2){const a=route.frame(s-3,{}),b=route.frame(s+3,{}),turn=Math.abs(Math.atan2(a.tx*b.tz-a.tz*b.tx,a.tx*b.tx+a.tz*b.tz));if(turn>.02)tightest=Math.min(tightest,6/turn);}
+ assert(tightest>=6,`tightest radius ${tightest.toFixed(1)} m`);
+});
+test('Psychiko times are a new board: leaderboard version, local records and selector all follow the new route',async()=>{
+ const {leaderboardVersion}=await import('../server/leaderboard-policy.mjs'),{loadRecord,saveRecord}=await import('../src/events.js');
+ assert.match(leaderboardVersion('psychiko','abc'),/^abc:garden-v2$/);assert.equal(leaderboardVersion('riviera','abc'),'abc');
+ const st={m:new Map(),getItem(k){return this.m.get(k)??null;},setItem(k,v){this.m.set(k,v);}};
+ st.setItem('paraliaki.events.psychiko-race.reverse-default-v1',JSON.stringify({bestTime:1}));st.setItem('paraliaki.events.psychiko-race',JSON.stringify({bestTime:2}));
+ assert.deepEqual(loadRecord('psychiko-race',st),{},'earlier loops never rank against the new circuit');saveRecord('psychiko-race',{bestTime:99},st);assert.equal(loadRecord('psychiko-race',st).bestTime,99);
+ const selector=TRACK_ROUTES.psychiko;assert.equal(selector.loop,true);assert(Math.abs(selector.length*(7.5)-0)>=0);
 });

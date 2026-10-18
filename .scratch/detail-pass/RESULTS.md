@@ -1,6 +1,6 @@
 # World detail: measured On / Off
 
-> Psychiko refresh after the roundabout correction: the four Psychiko rows in `budgets.json` now use the current base geometry with optional detail Off as their baseline. The old Psychiko rows below are historical. New fixed-pose day/night chase/cockpit captures and measurements are in `.scratch/roundabouts/detail-budget/`; unchanged maps retain their source-identical measurements.
+> Psychiko refresh 2026-10-18 for the Garden Circuit v2 route (poses now at the new lap midpoint; Off is the baseline, no height reference any more). Earlier note: Psychiko refresh after the roundabout correction: the four Psychiko rows in `budgets.json` now use the current base geometry with optional detail Off as their baseline. The old Psychiko rows below are historical. New fixed-pose day/night chase/cockpit captures and measurements are in `.scratch/roundabouts/detail-budget/`; unchanged maps retain their source-identical measurements.
 
 Baseline: `195ce8b322f2297034be56c8e38b8899321c2bb3` (includes restored Psychiko frontages). Sign fix `70b7853343c49c9956364f8b2372011643649a45` precedes this change. Candidate source SHA-256 hashes are in `budgets.json`; the committed tree contains the exact measured source.
 

@@ -1,4 +1,4 @@
-import {circulatingPoint,roundaboutRange,entryYieldDistance,ringStation,ringPoint,polylinePoint,polylineStation,trafficRoundaboutRange,roundaboutYield} from './roundabouts.js';
+import {circulatingPoint,roundaboutRange,entryYieldDistance,ringStation,ringPoint,polylinePoint,polylineStation,trafficRoundaboutRange,roundaboutYield,reverseStation} from './roundabouts.js';
 // Athens traffic on the real lanes of the coast road. Every vehicle has a driver with a personality
 // (desired speed, headway, patience, politeness, how much they bother to indicate) and runs:
 //  - IDM car-following with jerk-limited acceleration (smooth speeding up, progressive braking, hard stops when needed)
@@ -524,7 +524,7 @@ export class Traffic {
   driveRoundabout(c,dt){
     const route=this.route;
     if(!c._roundabout){const r=trafficRoundaboutRange(route,c),p=this.point(c,{}),start=ringStation(p.x,p.z,r.p),exit=route.point(c.dir>0?r.s1:r.s0,0),end=ringStation(exit.x,exit.z,r.p),reverse=c.dir<0?r.reverse:null;
-      c._roundabout=reverse?{r,path:reverse.path,travel:c._sharedPosition?polylineStation(p.x,p.z,reverse.path).s:Math.max(0,Math.min(reverse.length,(reverse.s1-route.wrap(c.s))/(reverse.s1-reverse.s0)*reverse.length)),length:reverse.length,entryDistance:reverse.entryDistance,exitDistance:reverse.exitDistance,exitS:reverse.s0,entryS:reverse.s1}:{r,start:start.s,travel:0,length:(end.s-start.s+start.length)%start.length,entryDistance:0,exitDistance:Infinity,exitS:c.dir>0?r.s1:r.s0,entryS:c.s};c._sharedPosition=false;c.task=null;c.ovt=null;c.split=false;c.evade=null;
+      c._roundabout=reverse?{r,path:reverse.path,travel:c._sharedPosition?polylineStation(p.x,p.z,reverse.path).s:Math.max(0,Math.min(reverse.length,(reverse.s1-reverseStation(route,r,c.s))/(reverse.s1-reverse.s0)*reverse.length)),length:reverse.length,entryDistance:reverse.entryDistance,exitDistance:reverse.exitDistance,exitS:reverse.s0,entryS:reverse.s1}:{r,start:start.s,travel:0,length:(end.s-start.s+start.length)%start.length,entryDistance:0,exitDistance:Infinity,exitS:c.dir>0?r.s1:r.s0,entryS:c.s};c._sharedPosition=false;c.task=null;c.ovt=null;c.split=false;c.evade=null;
     }
     const k=c._roundabout,r=k.r,sample=s=>k.path?polylinePoint(k.path,s,{}):ringPoint(r.p,k.start+s,{}),at=sample(k.travel),station=ringStation(at.x,at.z,r.p);k.circulating=k.travel>=k.entryDistance&&k.travel<=k.exitDistance;let gap=Infinity,leader=5;
     const approaching=[];

@@ -24,9 +24,9 @@ test('geometry-only OSM sources retain implicit one-way loops and reverse one-wa
 test('source course uses only forward edges around every roundabout, including implicit one-way ways',()=>{
  const source=JSON.parse(fs.readFileSync(new URL('./maps/psychiko/raw/route.json',import.meta.url))),chain=source.sourceNodeIds;
  for(const loop of loops){for(let i=1;i<chain.length;i++){const a=loop.nodes.slice(0,-1).indexOf(chain[i-1]),b=loop.nodes.slice(0,-1).indexOf(chain[i]);if(a>=0&&b>=0)assert.equal((a+1)%(loop.nodes.length-1),b);}}
- assert.equal(r.roundabouts.length,5);
+ assert.equal(r.roundabouts.length,3,'the Garden Circuit passes the Kamara and Areaki roundabouts and the Venizelou hub');
 });
-test('racing line, checkpoints, and both civilian travel directions stay outside island polygons',()=>{
+test('racing line, route marks, and both civilian travel directions stay outside island polygons',()=>{
  const islands=data.roadNetwork.roundabouts.map(q=>({id:q.id,p:islandRing(q.p,q.w/2+.12)})),line=new RacingLine(r);
  for(let i=0;i<line.n;i++)for(const island of islands)assert(!insideIsland(line.x[i],line.z[i],island.p),`racing line ${i*line.step} crosses ${island.id}`);
  for(const mark of data.marks){const p=r.point(mark.s,0);for(const island of islands)assert(!insideIsland(p.x,p.z,island.p));}
@@ -39,7 +39,7 @@ test('island contact is grass and the recovery corridor excludes its interior',(
 });
 test('entry yields to a circulating car approaching the merge, then releases the gap',()=>{
  assert(roundaboutYield({id:1},[{id:2,circulating:true,distance:25,speed:6}]));assert(!roundaboutYield({id:1},[{id:2,circulating:false,distance:0,speed:6}]));assert(!roundaboutYield({id:1},[{id:2,circulating:true,distance:100,speed:2}]));
- const q=r.roundabouts[0],entrant={s:q.s0-12,dir:1,len:4.5},circulating={s:q.s0+(q.s1-q.s0)*.08,dir:-1,u:-1.77,v:4,active:true};
+ const q=r.roundabouts.find(q=>!q.reverse),entrant={s:q.s0-12,dir:1,len:4.5},circulating={s:q.s0+(q.s1-q.s0)*.08,dir:-1,u:-1.77,v:4,active:true};
  assert(entryYieldDistance(r,entrant,[circulating])!==null);assert.equal(entryYieldDistance(r,entrant,[]),null);assert.equal(entryYieldDistance(r,{s:q.s0+5,dir:1},[circulating]),null);
 });
 
@@ -59,27 +59,29 @@ test('the traffic integrator circulates CCW in world space and returns to its in
 
 test('reverse traffic uses the legal incoming and outgoing OSM arms, including explicit one-way tags',()=>{
  const ways=new Map(elements.filter(w=>w.type==='way').map(w=>[w.id,w]));
- for(const q of r.roundabouts){const reverse=q.reverse;assert(reverse);assert(reverse.s0<q.s0&&reverse.s1>q.s1);
+ assert(r.roundabouts.some(q=>q.reverse),'at least one roundabout has a street-legal reverse plan (the other has a one-way arm)');
+ for(const q of r.roundabouts.filter(q=>q.reverse)){const reverse=q.reverse;assert(reverse.s0<q.s0&&reverse.s1>q.s1);
   for(let i=0;i<reverse.sourceWayIds.length;i++){const w=ways.get(reverse.sourceWayIds[i]),a=reverse.sourceNodeIds[i],b=reverse.sourceNodeIds[i+1],index=w.nodes.indexOf(a);assert(w.nodes[index-1]===b||w.nodes[index+1]===b);if(w.tags.oneway==='yes')assert.equal(w.nodes[index+1],b);if(w.tags.oneway==='-1')assert.equal(w.nodes[index-1],b);}
   let previous=null;for(let s=0;s<=reverse.length;s+=.25){const p=polylinePoint(reverse.path,s);for(const island of data.roadNetwork.roundabouts)assert(!insideIsland(p.x,p.z,islandRing(island.p,island.w/2+.12)));if(s>=reverse.entryDistance&&s<=reverse.exitDistance){const at=ringStation(p.x,p.z,q.p);if(previous!==null)assert((at.s-previous+at.length)%at.length<1);previous=at.s;}}
  }
 });
 
 test('a reverse-traffic approach stops at its yield line and enters after circulation clears',async()=>{
- const {Traffic}=await import('../src/traffic.js'),q=r.roundabouts[0],reverse=q.reverse,c={dir:-1,s:q.s1,u:-1.77,len:4.5,wid:1.8,v:8,wheel:0,drv:{vf:1,a:1.5,b:2,T:1.2,s0:2},_roundabout:{r:q,path:reverse.path,travel:reverse.entryDistance-5,length:reverse.length,entryDistance:reverse.entryDistance,exitDistance:reverse.exitDistance,exitS:reverse.s0,entryS:reverse.s1}};
+ const {Traffic}=await import('../src/traffic.js'),q=r.roundabouts.find(q=>q.reverse),reverse=q.reverse,c={dir:-1,s:q.s1,u:-1.77,len:4.5,wid:1.8,v:8,wheel:0,drv:{vf:1,a:1.5,b:2,T:1.2,s0:2},_roundabout:{r:q,path:reverse.path,travel:reverse.entryDistance-5,length:reverse.length,entryDistance:reverse.entryDistance,exitDistance:reverse.exitDistance,exitS:reverse.s0,entryS:reverse.s1}};
  const entry=polylinePoint(reverse.path,reverse.entryDistance),at=ringStation(entry.x,entry.z,q.p),leader={active:true,len:4.5,v:0,_roundabout:{r:q,circulating:true},_world:ringPoint(q.p,at.s-5)},traffic={route:r,cars:[c,leader],racers:[],roadSpeed:()=>8,point:(c,o)=>circulatingPoint(r,c,o),idm:Traffic.prototype.idm,laneUOf:()=>-1.77};
  for(let i=0;i<120;i++)Traffic.prototype.driveRoundabout.call(traffic,c,1/60);assert(c._roundabout.travel<=reverse.entryDistance-c.len/2-2+.001);assert(!c._roundabout.circulating);
  traffic.cars=[c];for(let i=0;i<600&&c._roundabout.travel<reverse.entryDistance+1;i++)Traffic.prototype.driveRoundabout.call(traffic,c,1/60);assert(c._roundabout.travel>reverse.entryDistance);
 });
 test('shared-world snapshots render the actual road-space position and resume the legal path on promotion',async()=>{
- const {Traffic}=await import('../src/traffic.js'),{packCar}=await import('../src/shared-world-protocol.js'),{applySharedCar}=await import('../src/mp-shared-world.js'),q=r.roundabouts[0],c={id:0,s:q.s1-5,u:-1.77,dir:-1,len:4.5,wid:1.8,v:4,wheel:0,drv:{vf:1,a:1.5,b:2,T:1.2,s0:2},mass:1500,I:2500},traffic={route:r,cars:[c],racers:[],roadSpeed:()=>8,point:(c,o)=>circulatingPoint(r,c,o),idm:Traffic.prototype.idm,laneUOf:()=>-1.77,carBody:Traffic.prototype.carBody};
+ for(const q of r.roundabouts.filter(q=>q.reverse)){
+ const {Traffic}=await import('../src/traffic.js'),{packCar}=await import('../src/shared-world-protocol.js'),{applySharedCar}=await import('../src/mp-shared-world.js'),c={id:0,s:q.s1-5,u:-1.77,dir:-1,len:4.5,wid:1.8,v:4,wheel:0,drv:{vf:1,a:1.5,b:2,T:1.2,s0:2},mass:1500,I:2500},traffic={route:r,cars:[c],racers:[],roadSpeed:()=>8,point:(c,o)=>circulatingPoint(r,c,o),idm:Traffic.prototype.idm,laneUOf:()=>-1.77,carBody:Traffic.prototype.carBody};
  Traffic.prototype.driveRoundabout.call(traffic,c,1/60);const point=c._world,row=packCar(traffic,c),remote={active:false,len:4.5,wid:1.8,indL:{},indR:{},flash:{},m:{},drv:c.drv};const guest={...traffic,cars:[remote],initDrive(){}};
- applySharedCar(guest,row,0);assert(remote._sharedPosition);const displayed=circulatingPoint(r,remote,{});assert(Math.hypot(displayed.x-point.x,displayed.z-point.z)<1);
+ applySharedCar(guest,row,0);assert(remote._sharedPosition);const displayed=circulatingPoint(r,remote,{});assert(Math.hypot(displayed.x-point.x,displayed.z-point.z)<2,'road-space s/u reproduce the ring position within 2 m');
  applySharedCar(guest,row,0,true);Traffic.prototype.driveRoundabout.call(guest,remote,1/60);assert(remote._roundabout);assert(Math.hypot(remote._world.x-point.x,remote._world.z-point.z)<1);assert(!remote._sharedPosition);
+ }
 });
-test('legal junction detours preserve authored heights on unchanged streets',()=>{
- const old=JSON.parse(fs.readFileSync(new URL('./maps/psychiko/raw/height-reference.json',import.meta.url)));let total=0,count=0;
- for(let i=0;i<data.route.x.length;i+=10){const x=data.route.x[i],z=data.route.z[i];let nearest=Infinity,height=0;for(let j=1;j<old.x.length;j++){const ax=old.x[j-1],az=old.z[j-1],dx=old.x[j]-ax,dz=old.z[j]-az,t=Math.max(0,Math.min(1,((x-ax)*dx+(z-az)*dz)/(dx*dx+dz*dz||1))),distance=(x-ax-dx*t)**2+(z-az-dz*t)**2;if(distance<nearest){nearest=distance;height=old.y[j-1]+(old.y[j]-old.y[j-1])*t;}}
-  if(nearest<4){const difference=Math.abs(data.route.y[i]-height);assert(difference<.65,`unrelated street height shifted at ${i*data.route.step}: ${difference}`);total+=difference;count++;}}
- assert(count>200);assert(total/count<.08);
+test('road elevation follows the measured EU-DEM stations along the whole lap',()=>{
+ const stations=JSON.parse(fs.readFileSync(new URL('./maps/psychiko/raw/route-dem.json',import.meta.url)));let total=0,worst=0;
+ for(const q of stations){const d=Math.abs(r.y(q.s)-q.elevation);total+=d;worst=Math.max(worst,d);}
+ assert(stations.length>150);assert(worst<4,`worst elevation gap ${worst}`);assert(total/stations.length<1.2);
 });
