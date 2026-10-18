@@ -1,0 +1,145 @@
+{
+  "stage": 1,
+  "connected": false,
+  "releaseReady": false,
+  "world": "athens-development",
+  "revision": "069e01dea93aecd58e5caf1629d4753b753aeed9aa1374dd4b56a8853d3f4977",
+  "cells": [
+    {
+      "cell": [
+        4,
+        25
+      ],
+      "compressedBytes": 926656,
+      "reservationBytes": 12834517,
+      "transientReservationBytes": 26595690,
+      "packetBytes": 3512477,
+      "arrayBackingBytes": 2347053,
+      "gpuGeometryBytes": 750579,
+      "contactIndexBytes": 381540,
+      "triangles": 35247,
+      "graphPoints": 1269,
+      "maxGraphContactError": 9.520068431356776e-7,
+      "anchors": 113,
+      "physical": {
+        "passed": true,
+        "maxProfileGrade": 0.1308380213842956,
+        "asphaltTriangles": 5718,
+        "asphaltAbove30": 0,
+        "maxAsphaltDegrees": 8.681765749405056,
+        "shoulderSamples": 310804,
+        "outsideFixture": 2221,
+        "missingContacts": 0,
+        "maxShoulderStep": 0.03271235178418053,
+        "maxShoulderDegrees": 7.45476555419192,
+        "worstShoulder": {
+          "x": 160.6176222668372,
+          "z": 403.95461036296336,
+          "d": 6,
+          "nx": 0.8896039145900533,
+          "nz": -0.4567328268759021,
+          "previousY": 12.206834201144243,
+          "y": 12.239546552928424
+        }
+      }
+    },
+    {
+      "cell": [
+        5,
+        25
+      ],
+      "compressedBytes": 973990,
+      "reservationBytes": 13326698,
+      "transientReservationBytes": 27627386,
+      "packetBytes": 3629357,
+      "arrayBackingBytes": 2435192,
+      "gpuGeometryBytes": 772668,
+      "contactIndexBytes": 387124,
+      "triangles": 36316,
+      "graphPoints": 1539,
+      "maxGraphContactError": 0.000001900387459841113,
+      "anchors": 124,
+      "physical": {
+        "passed": true,
+        "maxProfileGrade": 0.14264377285146707,
+        "asphaltTriangles": 6194,
+        "asphaltAbove30": 0,
+        "maxAsphaltDegrees": 8.430396231756548,
+        "shoulderSamples": 320425,
+        "outsideFixture": 2375,
+        "missingContacts": 0,
+        "maxShoulderStep": 0.030060184238479337,
+        "maxShoulderDegrees": 6.856370433901356,
+        "worstShoulder": {
+          "x": 472.46159686242896,
+          "z": 382.7038350548997,
+          "d": 6,
+          "nx": 0.9047102490983975,
+          "nz": -0.4260274230332079,
+          "previousY": 34.97537804710468,
+          "y": 35.005438231343156
+        }
+      }
+    },
+    {
+      "cell": [
+        8,
+        36
+      ],
+      "compressedBytes": 456994,
+      "reservationBytes": 6351660,
+      "transientReservationBytes": 13160314,
+      "packetBytes": 1709924,
+      "arrayBackingBytes": 1154338,
+      "gpuGeometryBytes": 317676,
+      "contactIndexBytes": 219500,
+      "triangles": 17078,
+      "graphPoints": 715,
+      "maxGraphContactError": 8.36478250221262e-7,
+      "anchors": 43,
+      "physical": {
+        "passed": true,
+        "maxProfileGrade": 0.19434870490782327,
+        "asphaltTriangles": 2841,
+        "asphaltAbove30": 0,
+        "maxAsphaltDegrees": 11.75431766452519,
+        "shoulderSamples": 150650,
+        "outsideFixture": 2325,
+        "missingContacts": 0,
+        "maxShoulderStep": 0.04867753513507367,
+        "maxShoulderDegrees": 11.018208783953744,
+        "worstShoulder": {
+          "x": 41.452587815942564,
+          "z": 92.91137691367916,
+          "d": 4.5,
+          "nx": 0.7072416351508642,
+          "nz": 0.7069719014990142,
+          "previousY": 9.386256260531088,
+          "y": 9.337578725396014
+        }
+      }
+    }
+  ],
+  "extentSquareKm": 0.786432,
+  "roadKm": 16.552722129827977,
+  "compressedBytes": 2357640,
+  "graphNodes": 241,
+  "graphEdges": 422,
+  "turnRules": 11,
+  "spawn": {
+    "cell": [
+      4,
+      25
+    ],
+    "anchor": "anchor:tow:osm:way:24826358:0-0:f:4:25"
+  },
+  "spawnWorld": [
+    2324.1220092773438,
+    16.50499153137207,
+    13057.307189941406,
+    2.9831650257110596
+  ],
+  "seamSamples": 2048,
+  "maxSeamError": 2.1763813862207826e-8,
+  "renderContactFineIdentity": true
+}

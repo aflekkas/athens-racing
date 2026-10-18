@@ -1,5 +1,7 @@
 # Offline Athens generator handoff — wrap-up, 2026-10-16
 
+> 2026-10-18 update: the owner resumed Athens development. The three-cell physical blocker is addressed in [the stage 1 report](../athens-resume-2026-10-18/RESULTS.md). That report supersedes the freeze and steep-surface status below; these older fixtures remain historical. The connected-world bake still requires lead storage confirmation, and player activation remains owner-controlled.
+
 Scope is frozen by the lead. Do not activate Athens for players from these
 fixtures. No coast, structures, signs or full-stage generation was started for
 this wrap-up. The offline foundation landed as

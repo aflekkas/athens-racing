@@ -1,0 +1,42 @@
+{
+  "attica.osm.pbf": {
+    "sha256": "db17fa15807d29f115bd160937e34194255e8b6e61148ccb90dc19a0ef25dc15",
+    "bytes": 62333978
+  },
+  "attica-n37-e023.tif": {
+    "sha256": "0c6e0c971f28d4a8965af835239adc87fc205a379a09356b0814488c4329f799",
+    "bytes": 8591272
+  },
+  "attica-n38-e023.tif": {
+    "sha256": "593ed89479962af1ac6836d669518d5175b81b04f7fae1acbc8e70dfec3052d4",
+    "bytes": 17292644
+  },
+  "source.sqlite": {
+    "sha256": "c7b270984cb19293e4b90b2456bc412dbd1954347e80aa62d997591da159de74",
+    "bytes": 309506048
+  },
+  "clean.sqlite": {
+    "sha256": "dd84f9186bc625045f62d4cf78dcdc0bb498b09e62215a296337a1b49dcd4c03",
+    "bytes": 908300288
+  },
+  "graph-a.sqlite": {
+    "sha256": "aaab0d3427a147d3d76a7b9ed30cdef1ac6b66a2c5b13df34823a514ad67d385",
+    "bytes": 50020352
+  },
+  "profiles-a.sqlite": {
+    "sha256": "9d827f3fc108adc0df2243555bc83f08838cd9a4bbda783a33505897c17a1426",
+    "bytes": 71618560
+  },
+  "turns-a.sqlite": {
+    "sha256": "aa649c1d7776a8a1a0007117116bba5465cc2a33aa20d127fd9d1b5d17b90598",
+    "bytes": 184320
+  },
+  "vegetation.sqlite": {
+    "sha256": "bf27f00331f8639bed0207c1bc2507fbd997f92301a6e7d96cfba688ac174d49",
+    "bytes": 15876096
+  },
+  "building-details.sqlite": {
+    "sha256": "f0e7f2c051de0165da15af546e04b71f54f320eb40d85a305a1344430d0e897b",
+    "bytes": 61227008
+  }
+}

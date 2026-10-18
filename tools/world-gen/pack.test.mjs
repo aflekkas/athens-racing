@@ -50,3 +50,18 @@ test('Python terrain layout reconstructs exact contacts through the shared runti
   const attribute=new TerrainPosition(new Uint16Array(fixture.quantized),fixture.decode,new Float32Array(fixture.residual));
   for(let i=0;i<attribute.count;i++)assert.deepEqual([attribute.getX(i),attribute.getY(i),attribute.getZ(i)],fixture.positions.slice(i*3,i*3+3));
 });
+
+test('Spool refuses physically steep asphalt even when the tile is structurally valid',async()=>{
+  const root=await mkdtemp(join(tmpdir(),'awt-physical-test-'));
+  try{
+    const input=fixture();input.metadata.ids.push('road');
+    input.tables.finePositions=[0,0,0,512,512,0,0,0,512,512,512,512];
+    input.tables.contactPositions=[...input.tables.finePositions];
+    input.tables.contactTriangles=[0,2,1,1,1,1,2,3,1,1];input.tables.contactLayers=[0,0];
+    // Encoding proves this failure is physical, not the structural codec gate.
+    encodeTile(input);
+    const path=join(root,'input.ndjson');await writeFile(path,JSON.stringify(input)+'\n');
+    await assert.rejects(packTiles(path,join(root,'out')),/Physical surface acceptance failed/);
+    await assert.rejects(readFile(join(root,'out','entries.json')),/ENOENT/);
+  }finally{await rm(root,{recursive:true,force:true});}
+});

@@ -156,7 +156,9 @@
     "tools/leaderboard-records.test.mjs",
     "tools/garage-cards.test.mjs",
     "tools/mobile.test.mjs",
-    "tools/lucide-icons.test.mjs"
+    "tools/lucide-icons.test.mjs",
+    "tools/world-gen/influence.test.mjs",
+    "tools/world-surface-audit.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",
@@ -183,6 +185,7 @@
   ],
   "world": [
     "tools/world-tests.test.mjs",
-    "tools/world-gen/pack.test.mjs"
+    "tools/world-gen/pack.test.mjs",
+    "tools/world-gen/conformance.test.mjs"
   ]
 }

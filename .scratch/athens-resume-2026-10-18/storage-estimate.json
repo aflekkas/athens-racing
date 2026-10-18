@@ -1,0 +1,35 @@
+{
+  "kind": "pre-bake estimate, not measured corridor size",
+  "proposedCoreCells": 120,
+  "knownDependencyCells": 7,
+  "reservedCells": 127,
+  "referenceMaxCompressedBytesPerCell": 973990,
+  "allCellsAtLargestFixtureBytes": 123696730,
+  "detailCoastStructureAllowancePercent": 50,
+  "proposedFinalShippedCapMiB": 192,
+  "incrementalDiskReservationMiB": 1536,
+  "diskBreakdownMiB": {
+    "isolatedArchive": 720,
+    "oneCellSpoolAndDecodeScratch": 64,
+    "localStructureSolveAndEvidenceAllowance": 256,
+    "finalPackedWorld": 192,
+    "publicationOrValidationCopy": 192,
+    "margin": 112
+  },
+  "newSourceDownloadsBytes": 0,
+  "runtimeAdmissionConflict": {
+    "lowStreamCapBytes": 67108864,
+    "largestFixtureReservationBytes": 13326698,
+    "nineCellsAtLargestReservationBytes": 119940282,
+    "admissibleSuchCells": 5,
+    "neededPerCellForNineBytes": 7456540
+  },
+  "notes": [
+    "One spool at a time; never retain a full-corridor NDJSON spool.",
+    "192 MiB is a proposed final asset ceiling with a 1.5 GiB incremental disk reservation, not a guarantee. Stop and report if estimates are exceeded.",
+    "Known 2 layered roads in cell [7,29] currently block the ground-only emitter. Solve surfaces/clearance before any corridor acceptance.",
+    "Building dependencies may require small further closure or scenery-owner separation; reserved disk margin includes that uncertainty.",
+    "Phone nine-cell safety set conflicts with current conservative per-cell reservation. Reduce payload/reservation using measured backing storage or separate contact/scenery before admission; do not raise mobile caps.",
+    "No stage-2 generation until lead confirms this inventory and storage reservation."
+  ]
+}

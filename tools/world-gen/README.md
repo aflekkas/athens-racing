@@ -318,3 +318,35 @@ integer terrain decoder preserves contact heights, but the required normal,
 urban-blend and residual attributes increased measured pair transfer and first
 cell residency. See the performance report before enabling it. No runtime codec
 or rendering path is introduced by the generator.
+
+## Resumed physical gates (2026-10-18)
+
+The durable source cache is `/home/dev/data/athens-world-cache`; the historical
+`/tmp/athens-world-cache` path is a symlink. Check its recorded SHA-256s before
+considering any source download. Put new spools in a task subdirectory, retain
+only reviewed output, and stop generation at 83% filesystem usage.
+
+`tiles.Field` uses all same-layer profiles within a continuous compact support,
+including a continuous blend across the segments within each road. The query
+halo covers the largest accepted width/mitre as well as the support. The terrain
+and road tops use one emitted mesh. The global eight-metre lattice is sampled
+before clipping after a symmetric five-tap-per-axis filter (which preserves
+affine grades exactly); its plane diagonals are inserted into the road/shoulder
+tessellation so thin polygon intersections cannot amplify field curvature.
+A tolerance band keeps rounded asphalt
+edges off the kerb rise, and a wider low-poly bevel leaves room for road grade.
+
+Core regressions run in `npm test` without the regional data or Python GIS
+packages (Python 3 is required for the small influence kernel). The full bake
+gate consumes emitted contact triangles, including junction boundary shoulders:
+
+```sh
+node tools/world-surface-audit.mjs /path/to/new-cells.ndjson
+ATHENS_WORLD_SPOOL=/path/to/new-cells.ndjson node --test tools/world-gen/conformance.test.mjs
+```
+
+The real-data gate does not infer road conformance from shared-border identity
+or from sampling the generator's height function. It disables contact fallback
+to coarse/fine terrain when looking for missing emitted faces. Shoulders leaving
+a finite fixture are counted explicitly and need the adjacent cells before a
+connected-world acceptance claim.
