@@ -265,12 +265,15 @@ export class Hud {
     };
     const end = route.closed ? Infinity : rev ? Math.round(this.r1 / 10) : Math.round(route.finish / 10);
     g.lineJoin = 'round';
-    g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = 16 / sc + 6; stroke(lo, hi);
-    g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = 9 / sc + 3; if (rev) stroke(ic, hi); else stroke(lo, ic);
-    g.strokeStyle = '#ff3b2f'; g.lineWidth = 9 / sc + 3; if (rev) stroke(Math.max(lo, end), ic); else stroke(ic, Math.min(hi, end));
+    // Free roam shows only the map and its streets (owner decision 2026-10-18): no route line, no finish, no signals or traffic dots.
+    if (!st.free) {
+      g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = 16 / sc + 6; stroke(lo, hi);
+      g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = 9 / sc + 3; if (rev) stroke(ic, hi); else stroke(lo, ic);
+      g.strokeStyle = '#ff3b2f'; g.lineWidth = 9 / sc + 3; if (rev) stroke(Math.max(lo, end), ic); else stroke(ic, Math.min(hi, end));
+    }
     // finish
     const sFin = this.r1 ?? route.finish;
-    if (!st.objectiveMode && Math.abs(sFin - st.s) < R) {
+    if (!st.free && !st.objectiveMode && Math.abs(sFin - st.s) < R) {
       const p = route.point(sFin, 0); g.fillStyle = '#ffc21a'; g.beginPath(); g.arc(p.x, p.z, 9 / sc, 0, 7); g.fill(); g.strokeStyle = '#000'; g.lineWidth = 3 / sc; g.stroke();
     }
     // Driving missions show the actual pickup/dropoff instead of a race finish.
@@ -280,13 +283,13 @@ export class Hud {
       g.strokeStyle = '#000'; g.lineWidth = 3 / sc; g.stroke();
     }
     // traffic lights
-    if (st.junctions) for (const j of st.junctions) {
+    if (st.junctions && !st.free) for (const j of st.junctions) {
       if (Math.abs(j.s - st.s) > R) continue;
       g.fillStyle = j.main === 'R' ? '#ff2a14' : j.main === 'A' ? '#ffb000' : '#22ff74'; g.strokeStyle = '#000'; g.lineWidth = 2.5 / sc;
       g.beginPath(); g.arc(j.x, j.z, 6.5 / sc, 0, 7); g.fill(); g.stroke();
     }
     // traffic dots
-    if (st.traffic) { g.fillStyle = 'rgba(255,255,255,.75)'; for (const c of st.traffic) { if (!c.active || c.cop || Math.abs(c.s - st.s) > R) continue; const p = route.point(c.s, c.u); g.fillRect(p.x - 2.2 / sc * 1.2, p.z - 2.2 / sc * 1.2, 4.4 / sc * 1.2, 4.4 / sc * 1.2); } }
+    if (st.traffic && !st.free) { g.fillStyle = 'rgba(255,255,255,.75)'; for (const c of st.traffic) { if (!c.active || c.cop || Math.abs(c.s - st.s) > R) continue; const p = route.point(c.s, c.u); g.fillRect(p.x - 2.2 / sc * 1.2, p.z - 2.2 / sc * 1.2, 4.4 / sc * 1.2, 4.4 / sc * 1.2); } }
     // police: bigger dots, flashing blue / red while their lights are on (src/police.js)
     if (st.traffic) for (const c of st.traffic) {
       if (!c.active || !c.cop || Math.abs(c.s - st.s) > R * 1.4) continue;

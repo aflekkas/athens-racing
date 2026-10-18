@@ -4,7 +4,7 @@
   "src/cockpit-controls.js": "c4b50f4226a8152c64bc9f542f3a5c7deecbfe6d8cd889933aa4ec866c48045d",
   "src/cockpit-rain.js": "214f792b01609a805034dcfa8121bbb58806c6af0a3e7efa5197c78830214dd7",
   "src/cockpit-seating.js": "23d65abda77669a57df1662218050db3deeab37c20d3229475684c99e16c41f2",
-  "src/cockpit-structure.js": "f7e288736c93ac60bfcb14c203c2109c110f11ad6a64dc706c57e23812b087d4",
+  "src/cockpit-structure.js": "f4ca3f64fa798dd5dc55888b3a7d1128c8cd405154774e58c6727d130994fa6c",
   "src/cockpit-telltales.js": "fe653d167559222c232b5d25ac059c95e5d792b3dc193af1b79af96ba01dd2dc",
   "src/cockpit.js": "d05dd32e08cb04df5d87b8e70b0cb9c4d13fe6b918a4eba339ad6c1e8296a360",
   "src/fleet-cockpit.js": "e71fffa88431468e776087aa1fb77157eb134be230f8f49144bcd36ff5e95e84",
