@@ -194,7 +194,7 @@ test('OWNER LOCK 2026-10-17: title taglines and environment identity leave the h
 
 test('dialog, confirm and pause share an animated blurred backdrop with a tinted fallback', () => {
   const css = read(KIT_CSS), kit = read(KIT_JS), menu = read('src/menu.js');
-  assert.match(css, /\.dialog-scrim, \.modal-scrim, \.scr--pause::before\s*\{[^}]*-webkit-backdrop-filter: blur\(var\(--overlay-blur\)\); backdrop-filter: blur\(var\(--overlay-blur\)\)/);
+  assert.match(css, /\.dialog-scrim, \.modal-scrim, \.scr--pause\s*\{[^}]*-webkit-backdrop-filter: blur\(var\(--overlay-blur\)\); backdrop-filter: blur\(var\(--overlay-blur\)\)/);
   assert.match(css, /--overlay-blur: 12px; background: rgba\(3,5,7,\.66\)/);
   assert.match(css, /@supports \(\(backdrop-filter: blur\(12px\)\)/);
   assert.match(css, /@media \(pointer: coarse\), \(prefers-reduced-transparency: reduce\)/);
