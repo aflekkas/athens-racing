@@ -19,14 +19,14 @@
         "triangles": 4316
       },
       "geometryAudit": {
-        "nearRoadDistance": 10,
+        "nearRoadDistance": 9.75,
         "pitch": -0.045,
         "eye": [
           -0.371305,
           1.18,
           0.29
         ],
-        "roadVisible": 64.61538461538461,
+        "roadVisible": 66.15384615384616,
         "clusterOcclusion": 10.869565217391305,
         "rimOcclusion": 10.869565217391305,
         "telltalesBlocked": 0,
@@ -154,7 +154,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 63984,
+        "pixels": 77501,
         "minX": 374,
         "maxX": 1279,
         "minY": 581,
@@ -189,7 +189,7 @@
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19695,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -203,7 +203,7 @@
         "maxY": 799
       },
       "wheel-badge": {
-        "pixels": 1360,
+        "pixels": 1480,
         "minX": 618,
         "maxX": 661,
         "minY": 706,
@@ -238,14 +238,14 @@
         "maxY": 594
       },
       "binnacle": {
-        "pixels": 15550,
+        "pixels": 17099,
         "minX": 554,
         "maxX": 725,
         "minY": 570,
         "maxY": 694
       },
       "console": {
-        "pixels": 54235,
+        "pixels": 55733,
         "minX": 253,
         "maxX": 1159,
         "minY": 556,
@@ -287,14 +287,14 @@
         "triangles": 3312
       },
       "geometryAudit": {
-        "nearRoadDistance": 9.25,
+        "nearRoadDistance": 9,
         "pitch": -0.045,
         "eye": [
           -0.40076,
           1.06,
           0.47
         ],
-        "roadVisible": 90.76923076923077,
+        "roadVisible": 92.3076923076923,
         "clusterOcclusion": 12,
         "rimOcclusion": 12,
         "telltalesBlocked": 0,
@@ -422,7 +422,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 93885,
+        "pixels": 99652,
         "minX": 326,
         "maxX": 1279,
         "minY": 583,
@@ -450,14 +450,14 @@
         "maxY": 105
       },
       "door-top": {
-        "pixels": 38881,
+        "pixels": 42190,
         "minX": 0,
         "maxX": 377,
         "minY": 541,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19319,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -506,15 +506,15 @@
         "maxY": 576
       },
       "binnacle": {
-        "pixels": 21779,
+        "pixels": 22174,
         "minX": 537,
         "maxX": 742,
         "minY": 569,
         "maxY": 694
       },
       "console": {
-        "pixels": 61434,
-        "minX": 170,
+        "pixels": 61908,
+        "minX": 169,
         "maxX": 1110,
         "minY": 545,
         "maxY": 799
@@ -555,7 +555,7 @@
         "triangles": 3744
       },
       "geometryAudit": {
-        "nearRoadDistance": 10.75,
+        "nearRoadDistance": 10.25,
         "pitch": -0.045,
         "eye": [
           -0.393235,
@@ -691,10 +691,10 @@
     },
     "structure": {
       "dash": {
-        "pixels": 104918,
+        "pixels": 113400,
         "minX": 342,
         "maxX": 1279,
-        "minY": 552,
+        "minY": 551,
         "maxY": 799
       },
       "deck": {
@@ -719,14 +719,14 @@
         "maxY": 152
       },
       "door-top": {
-        "pixels": 44191,
+        "pixels": 49684,
         "minX": 0,
         "maxX": 427,
         "minY": 516,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 18114,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -740,7 +740,7 @@
         "maxY": 781
       },
       "wheel-badge": {
-        "pixels": 1440,
+        "pixels": 1480,
         "minX": 618,
         "maxX": 661,
         "minY": 706,
@@ -775,14 +775,14 @@
         "maxY": 545
       },
       "binnacle": {
-        "pixels": 17723,
+        "pixels": 20784,
         "minX": 541,
         "maxX": 738,
         "minY": 571,
         "maxY": 692
       },
       "console": {
-        "pixels": 56117,
+        "pixels": 58021,
         "minX": 208,
         "maxX": 1220,
         "minY": 534,
@@ -959,7 +959,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 99833,
+        "pixels": 129352,
         "minX": 412,
         "maxX": 1279,
         "minY": 529,
@@ -987,14 +987,14 @@
         "maxY": 77
       },
       "door-top": {
-        "pixels": 54282,
+        "pixels": 62203,
         "minX": 0,
         "maxX": 1279,
         "minY": 472,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19534,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -1043,17 +1043,17 @@
         "maxY": 498
       },
       "binnacle": {
-        "pixels": 22855,
+        "pixels": 23140,
         "minX": 529,
         "maxX": 750,
         "minY": 570,
         "maxY": 692
       },
       "console": {
-        "pixels": 43394,
-        "minX": 167,
+        "pixels": 50212,
+        "minX": 166,
         "maxX": 1113,
-        "minY": 643,
+        "minY": 642,
         "maxY": 799
       },
       "vent": {
@@ -1099,7 +1099,7 @@
           1.175,
           0.2
         ],
-        "roadVisible": 67.6923076923077,
+        "roadVisible": 70.76923076923077,
         "clusterOcclusion": 16,
         "rimOcclusion": 16,
         "telltalesBlocked": 0,
@@ -1228,7 +1228,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 111934,
+        "pixels": 118377,
         "minX": 373,
         "maxX": 1279,
         "minY": 535,
@@ -1256,14 +1256,14 @@
         "maxY": 148
       },
       "door-top": {
-        "pixels": 33611,
+        "pixels": 46900,
         "minX": 0,
         "maxX": 431,
         "minY": 524,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19477,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -1277,7 +1277,7 @@
         "maxY": 781
       },
       "wheel-badge": {
-        "pixels": 1440,
+        "pixels": 1480,
         "minX": 618,
         "maxX": 661,
         "minY": 706,
@@ -1312,14 +1312,14 @@
         "maxY": 555
       },
       "binnacle": {
-        "pixels": 13371,
+        "pixels": 20734,
         "minX": 542,
         "maxX": 737,
         "minY": 570,
         "maxY": 692
       },
       "console": {
-        "pixels": 48500,
+        "pixels": 53579,
         "minX": 246,
         "maxX": 1055,
         "minY": 548,
@@ -1368,7 +1368,7 @@
           1.035,
           0.19
         ],
-        "roadVisible": 76.92307692307692,
+        "roadVisible": 78.46153846153847,
         "clusterOcclusion": 0,
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
@@ -1494,7 +1494,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 144936,
+        "pixels": 161388,
         "minX": 390,
         "maxX": 1279,
         "minY": 553,
@@ -1522,32 +1522,32 @@
         "maxY": 102
       },
       "door-top": {
-        "pixels": 51205,
+        "pixels": 55340,
         "minX": 0,
         "maxX": 1279,
         "minY": 512,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 12605,
+        "pixels": 13606,
         "minX": 448,
         "maxX": 831,
         "minY": 538,
         "maxY": 799
       },
       "wheel-hub": {
-        "pixels": 2640,
+        "pixels": 2906,
         "minX": 604,
         "maxX": 675,
         "minY": 690,
         "maxY": 765
       },
       "wheel-badge": {
-        "pixels": 1266,
+        "pixels": 1356,
         "minX": 619,
         "maxX": 660,
         "minY": 707,
-        "maxY": 749
+        "maxY": 750
       },
       "reserved-9": {
         "pixels": 0,
@@ -1578,14 +1578,14 @@
         "maxY": 546
       },
       "binnacle": {
-        "pixels": 5655,
+        "pixels": 11264,
         "minX": 554,
         "maxX": 725,
         "minY": 581,
         "maxY": 651
       },
       "console": {
-        "pixels": 23383,
+        "pixels": 23718,
         "minX": 289,
         "maxX": 1014,
         "minY": 659,
@@ -1627,14 +1627,14 @@
         "triangles": 3508
       },
       "geometryAudit": {
-        "nearRoadDistance": 10.75,
+        "nearRoadDistance": 10.5,
         "pitch": -0.045,
         "eye": [
           -0.386785,
           1.17,
           0.2
         ],
-        "roadVisible": 63.07692307692308,
+        "roadVisible": 64.61538461538461,
         "clusterOcclusion": 16,
         "rimOcclusion": 16,
         "telltalesBlocked": 0,
@@ -1763,7 +1763,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 101030,
+        "pixels": 106248,
         "minX": 391,
         "maxX": 1279,
         "minY": 555,
@@ -1798,7 +1798,7 @@
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 18107,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -1847,14 +1847,14 @@
         "maxY": 541
       },
       "binnacle": {
-        "pixels": 20118,
+        "pixels": 20894,
         "minX": 540,
         "maxX": 739,
         "minY": 571,
         "maxY": 692
       },
       "console": {
-        "pixels": 52949,
+        "pixels": 54026,
         "minX": 223,
         "maxX": 1047,
         "minY": 535,
@@ -2032,7 +2032,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 97865,
+        "pixels": 109603,
         "minX": 397,
         "maxX": 1279,
         "minY": 549,
@@ -2067,7 +2067,7 @@
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19522,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -2081,7 +2081,7 @@
         "maxY": 781
       },
       "wheel-badge": {
-        "pixels": 1440,
+        "pixels": 1480,
         "minX": 618,
         "maxX": 661,
         "minY": 706,
@@ -2116,14 +2116,14 @@
         "maxY": 535
       },
       "binnacle": {
-        "pixels": 19761,
+        "pixels": 20610,
         "minX": 542,
         "maxX": 737,
         "minY": 571,
         "maxY": 691
       },
       "console": {
-        "pixels": 50836,
+        "pixels": 52723,
         "minX": 234,
         "maxX": 1038,
         "minY": 532,
@@ -2301,7 +2301,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 129093,
+        "pixels": 133313,
         "minX": 413,
         "maxX": 1279,
         "minY": 516,
@@ -2329,14 +2329,14 @@
         "maxY": 174
       },
       "door-top": {
-        "pixels": 61565,
+        "pixels": 64771,
         "minX": 0,
         "maxX": 1279,
         "minY": 477,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 18634,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -2350,7 +2350,7 @@
         "maxY": 781
       },
       "wheel-badge": {
-        "pixels": 1440,
+        "pixels": 1480,
         "minX": 618,
         "maxX": 661,
         "minY": 706,
@@ -2385,14 +2385,14 @@
         "maxY": 503
       },
       "binnacle": {
-        "pixels": 16824,
+        "pixels": 19214,
         "minX": 543,
         "maxX": 736,
         "minY": 574,
         "maxY": 688
       },
       "console": {
-        "pixels": 55660,
+        "pixels": 57490,
         "minX": 215,
         "maxX": 1049,
         "minY": 525,
@@ -2434,7 +2434,7 @@
         "triangles": 3914
       },
       "geometryAudit": {
-        "nearRoadDistance": 10.75,
+        "nearRoadDistance": 10.5,
         "pitch": -0.045,
         "eye": [
           -0.393235,
@@ -2570,7 +2570,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 112659,
+        "pixels": 112704,
         "minX": 412,
         "maxX": 1279,
         "minY": 544,
@@ -2598,14 +2598,14 @@
         "maxY": 189
       },
       "door-top": {
-        "pixels": 37338,
+        "pixels": 53510,
         "minX": 0,
         "maxX": 1279,
         "minY": 503,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 18272,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -2619,7 +2619,7 @@
         "maxY": 781
       },
       "wheel-badge": {
-        "pixels": 1440,
+        "pixels": 1480,
         "minX": 618,
         "maxX": 661,
         "minY": 706,
@@ -2661,7 +2661,7 @@
         "maxY": 690
       },
       "console": {
-        "pixels": 46865,
+        "pixels": 53799,
         "minX": 264,
         "maxX": 1054,
         "minY": 529,
@@ -2839,7 +2839,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 107479,
+        "pixels": 107584,
         "minX": 406,
         "maxX": 1279,
         "minY": 550,
@@ -2867,14 +2867,14 @@
         "maxY": 159
       },
       "door-top": {
-        "pixels": 45365,
+        "pixels": 49984,
         "minX": 0,
         "maxX": 418,
         "minY": 510,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19321,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -2923,14 +2923,14 @@
         "maxY": 543
       },
       "binnacle": {
-        "pixels": 12841,
+        "pixels": 14724,
         "minX": 558,
         "maxX": 721,
         "minY": 572,
         "maxY": 673
       },
       "console": {
-        "pixels": 59747,
+        "pixels": 60856,
         "minX": 177,
         "maxX": 1144,
         "minY": 554,
@@ -2972,14 +2972,14 @@
         "triangles": 4856
       },
       "geometryAudit": {
-        "nearRoadDistance": 9.75,
+        "nearRoadDistance": 9.5,
         "pitch": -0.045,
         "eye": [
           -0.400115,
           1.1,
           0.2
         ],
-        "roadVisible": 75.38461538461539,
+        "roadVisible": 76.92307692307692,
         "clusterOcclusion": 24,
         "rimOcclusion": 24,
         "telltalesBlocked": 0,
@@ -3107,7 +3107,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 133552,
+        "pixels": 151658,
         "minX": 399,
         "maxX": 1279,
         "minY": 502,
@@ -3135,14 +3135,14 @@
         "maxY": 87
       },
       "door-top": {
-        "pixels": 40941,
+        "pixels": 54162,
         "minX": 0,
         "maxX": 406,
         "minY": 472,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19477,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -3156,7 +3156,7 @@
         "maxY": 781
       },
       "wheel-badge": {
-        "pixels": 1440,
+        "pixels": 1480,
         "minX": 618,
         "maxX": 661,
         "minY": 706,
@@ -3191,14 +3191,14 @@
         "maxY": 500
       },
       "binnacle": {
-        "pixels": 17966,
+        "pixels": 20528,
         "minX": 542,
         "maxX": 737,
-        "minY": 575,
+        "minY": 571,
         "maxY": 691
       },
       "console": {
-        "pixels": 52053,
+        "pixels": 66923,
         "minX": 61,
         "maxX": 1279,
         "minY": 557,
@@ -3247,7 +3247,7 @@
           1.2650000000000001,
           0.18
         ],
-        "roadVisible": 50.76923076923077,
+        "roadVisible": 52.30769230769231,
         "clusterOcclusion": 24,
         "rimOcclusion": 24,
         "telltalesBlocked": 0,
@@ -3376,7 +3376,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 82532,
+        "pixels": 98931,
         "minX": 401,
         "maxX": 1279,
         "minY": 549,
@@ -3404,14 +3404,14 @@
         "maxY": 127
       },
       "door-top": {
-        "pixels": 41731,
+        "pixels": 43842,
         "minX": 0,
         "maxX": 439,
         "minY": 514,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19355,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -3467,7 +3467,7 @@
         "maxY": 691
       },
       "console": {
-        "pixels": 51861,
+        "pixels": 69668,
         "minX": 206,
         "maxX": 1279,
         "minY": 523,
@@ -3509,7 +3509,7 @@
         "triangles": 4048
       },
       "geometryAudit": {
-        "nearRoadDistance": 10.75,
+        "nearRoadDistance": 10.5,
         "pitch": -0.045,
         "eye": [
           -0.39753499999999997,
@@ -3645,7 +3645,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 102230,
+        "pixels": 124911,
         "minX": 399,
         "maxX": 1279,
         "minY": 505,
@@ -3673,14 +3673,14 @@
         "maxY": 2
       },
       "door-top": {
-        "pixels": 40488,
+        "pixels": 48197,
         "minX": 0,
         "maxX": 413,
         "minY": 483,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19117,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -3736,7 +3736,7 @@
         "maxY": 691
       },
       "console": {
-        "pixels": 67834,
+        "pixels": 87470,
         "minX": 65,
         "maxX": 1279,
         "minY": 523,
@@ -3914,7 +3914,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 92662,
+        "pixels": 99430,
         "minX": 406,
         "maxX": 1279,
         "minY": 478,
@@ -3942,14 +3942,14 @@
         "maxY": 133
       },
       "door-top": {
-        "pixels": 44520,
+        "pixels": 54930,
         "minX": 0,
         "maxX": 415,
         "minY": 446,
-        "maxY": 781
+        "maxY": 785
       },
       "wheel-rim": {
-        "pixels": 19367,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -4005,7 +4005,7 @@
         "maxY": 690
       },
       "console": {
-        "pixels": 143099,
+        "pixels": 152554,
         "minX": 0,
         "maxX": 1279,
         "minY": 520,
@@ -4173,16 +4173,16 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 36.62265625,
-      "openPixels": 375016,
+      "windscreenPercent": 36.6240234375,
+      "openPixels": 375030,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 36.21123046875
+      "unobstructedViewPercent": 36.21259765625
     },
     "structure": {
       "dash": {
-        "pixels": 143812,
+        "pixels": 158681,
         "minX": 385,
         "maxX": 1279,
         "minY": 515,
@@ -4210,14 +4210,14 @@
         "maxY": 161
       },
       "door-top": {
-        "pixels": 69528,
+        "pixels": 82216,
         "minX": 0,
         "maxX": 428,
         "minY": 479,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 17375,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -4231,7 +4231,7 @@
         "maxY": 794
       },
       "wheel-badge": {
-        "pixels": 1270,
+        "pixels": 1480,
         "minX": 618,
         "maxX": 661,
         "minY": 706,
@@ -4266,14 +4266,14 @@
         "maxY": 510
       },
       "binnacle": {
-        "pixels": 14731,
+        "pixels": 21948,
         "minX": 540,
         "maxX": 739,
         "minY": 570,
         "maxY": 692
       },
       "console": {
-        "pixels": 34985,
+        "pixels": 36713,
         "minX": 242,
         "maxX": 1090,
         "minY": 660,
@@ -4441,16 +4441,16 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 50.55380859375,
-      "openPixels": 517671,
+      "windscreenPercent": 50.555078125,
+      "openPixels": 517684,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 50.55283203125
+      "unobstructedViewPercent": 50.5541015625
     },
     "structure": {
       "dash": {
-        "pixels": 129107,
+        "pixels": 147464,
         "minX": 397,
         "maxX": 1279,
         "minY": 530,
@@ -4478,14 +4478,14 @@
         "maxY": 91
       },
       "door-top": {
-        "pixels": 74310,
+        "pixels": 81127,
         "minX": 0,
         "maxX": 441,
         "minY": 499,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19035,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -4534,14 +4534,14 @@
         "maxY": 533
       },
       "binnacle": {
-        "pixels": 13604,
+        "pixels": 21064,
         "minX": 540,
         "maxX": 739,
         "minY": 570,
         "maxY": 684
       },
       "console": {
-        "pixels": 31129,
+        "pixels": 31510,
         "minX": 277,
         "maxX": 1079,
         "minY": 673,
@@ -4590,7 +4590,7 @@
           1.1,
           0.27
         ],
-        "roadVisible": 78.46153846153847,
+        "roadVisible": 80,
         "clusterOcclusion": 16,
         "rimOcclusion": 16,
         "telltalesBlocked": 0,
@@ -4718,7 +4718,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 110978,
+        "pixels": 119954,
         "minX": 422,
         "maxX": 1279,
         "minY": 556,
@@ -4746,14 +4746,14 @@
         "maxY": 106
       },
       "door-top": {
-        "pixels": 36608,
+        "pixels": 44181,
         "minX": 29,
         "maxX": 1279,
         "minY": 519,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19182,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -4802,15 +4802,15 @@
         "maxY": 550
       },
       "binnacle": {
-        "pixels": 18690,
+        "pixels": 21056,
         "minX": 540,
         "maxX": 739,
         "minY": 570,
         "maxY": 692
       },
       "console": {
-        "pixels": 27689,
-        "minX": 263,
+        "pixels": 28901,
+        "minX": 262,
         "maxX": 1279,
         "minY": 672,
         "maxY": 799
@@ -4858,7 +4858,7 @@
           1.26,
           0.1
         ],
-        "roadVisible": 46.15384615384615,
+        "roadVisible": 49.23076923076923,
         "clusterOcclusion": 12,
         "rimOcclusion": 12,
         "telltalesBlocked": 0,
@@ -4987,7 +4987,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 91199,
+        "pixels": 100847,
         "minX": 420,
         "maxX": 1279,
         "minY": 584,
@@ -5015,14 +5015,14 @@
         "maxY": 134
       },
       "door-top": {
-        "pixels": 19406,
+        "pixels": 19582,
         "minX": 205,
         "maxX": 430,
         "minY": 615,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 18446,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -5036,7 +5036,7 @@
         "maxY": 781
       },
       "wheel-badge": {
-        "pixels": 1270,
+        "pixels": 1480,
         "minX": 618,
         "maxX": 661,
         "minY": 706,
@@ -5078,7 +5078,7 @@
         "maxY": 696
       },
       "console": {
-        "pixels": 21428,
+        "pixels": 22025,
         "minX": 429,
         "maxX": 1279,
         "minY": 688,
@@ -5120,14 +5120,14 @@
         "triangles": 2944
       },
       "geometryAudit": {
-        "nearRoadDistance": 11.5,
+        "nearRoadDistance": 11.25,
         "pitch": -0.045,
         "eye": [
           -0.3569,
           1.22,
           0.19
         ],
-        "roadVisible": 50.76923076923077,
+        "roadVisible": 55.38461538461539,
         "clusterOcclusion": 0,
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
@@ -5255,7 +5255,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 114910,
+        "pixels": 118771,
         "minX": 421,
         "maxX": 1279,
         "minY": 573,
@@ -5283,14 +5283,14 @@
         "maxY": 157
       },
       "door-top": {
-        "pixels": 25385,
+        "pixels": 26976,
         "minX": 157,
         "maxX": 1279,
         "minY": 561,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 18187,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -5339,14 +5339,14 @@
         "maxY": -1
       },
       "binnacle": {
-        "pixels": 46140,
+        "pixels": 46457,
         "minX": 832,
         "maxX": 1062,
         "minY": 404,
         "maxY": 627
       },
       "console": {
-        "pixels": 24798,
+        "pixels": 25078,
         "minX": 323,
         "maxX": 1279,
         "minY": 669,
@@ -5523,7 +5523,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 128332,
+        "pixels": 134354,
         "minX": 417,
         "maxX": 1279,
         "minY": 538,
@@ -5551,14 +5551,14 @@
         "maxY": 148
       },
       "door-top": {
-        "pixels": 49994,
+        "pixels": 50128,
         "minX": 0,
         "maxX": 1279,
         "minY": 501,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 18764,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -5607,14 +5607,14 @@
         "maxY": 531
       },
       "binnacle": {
-        "pixels": 20589,
+        "pixels": 20894,
         "minX": 540,
         "maxX": 739,
         "minY": 571,
         "maxY": 692
       },
       "console": {
-        "pixels": 31921,
+        "pixels": 33654,
         "minX": 220,
         "maxX": 1022,
         "minY": 665,
@@ -5656,14 +5656,14 @@
         "triangles": 4856
       },
       "geometryAudit": {
-        "nearRoadDistance": 9.75,
+        "nearRoadDistance": 9.5,
         "pitch": -0.045,
         "eye": [
           -0.400115,
           1.1,
           0.2
         ],
-        "roadVisible": 75.38461538461539,
+        "roadVisible": 76.92307692307692,
         "clusterOcclusion": 24,
         "rimOcclusion": 24,
         "telltalesBlocked": 0,
@@ -5791,7 +5791,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 133552,
+        "pixels": 151658,
         "minX": 399,
         "maxX": 1279,
         "minY": 502,
@@ -5819,14 +5819,14 @@
         "maxY": 87
       },
       "door-top": {
-        "pixels": 40941,
+        "pixels": 54162,
         "minX": 0,
         "maxX": 406,
         "minY": 472,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19477,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -5840,7 +5840,7 @@
         "maxY": 781
       },
       "wheel-badge": {
-        "pixels": 1440,
+        "pixels": 1480,
         "minX": 618,
         "maxX": 661,
         "minY": 706,
@@ -5875,14 +5875,14 @@
         "maxY": 500
       },
       "binnacle": {
-        "pixels": 17966,
+        "pixels": 20528,
         "minX": 542,
         "maxX": 737,
-        "minY": 575,
+        "minY": 571,
         "maxY": 691
       },
       "console": {
-        "pixels": 52053,
+        "pixels": 66923,
         "minX": 61,
         "maxX": 1279,
         "minY": 557,
@@ -5924,14 +5924,14 @@
         "triangles": 4876
       },
       "geometryAudit": {
-        "nearRoadDistance": 9.75,
+        "nearRoadDistance": 9.5,
         "pitch": -0.045,
         "eye": [
           -0.400115,
           1.1,
           0.2
         ],
-        "roadVisible": 75.38461538461539,
+        "roadVisible": 76.92307692307692,
         "clusterOcclusion": 24,
         "rimOcclusion": 24,
         "telltalesBlocked": 0,
@@ -6059,7 +6059,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 133552,
+        "pixels": 151658,
         "minX": 399,
         "maxX": 1279,
         "minY": 502,
@@ -6087,14 +6087,14 @@
         "maxY": 87
       },
       "door-top": {
-        "pixels": 40941,
+        "pixels": 54162,
         "minX": 0,
         "maxX": 406,
         "minY": 472,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19477,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -6108,7 +6108,7 @@
         "maxY": 781
       },
       "wheel-badge": {
-        "pixels": 1440,
+        "pixels": 1480,
         "minX": 618,
         "maxX": 661,
         "minY": 706,
@@ -6143,14 +6143,14 @@
         "maxY": 500
       },
       "binnacle": {
-        "pixels": 17966,
+        "pixels": 20528,
         "minX": 542,
         "maxX": 737,
-        "minY": 575,
+        "minY": 571,
         "maxY": 691
       },
       "console": {
-        "pixels": 52053,
+        "pixels": 66923,
         "minX": 61,
         "maxX": 1279,
         "minY": 557,
@@ -6192,14 +6192,14 @@
         "triangles": 3888
       },
       "geometryAudit": {
-        "nearRoadDistance": 9.75,
+        "nearRoadDistance": 9.5,
         "pitch": -0.045,
         "eye": [
           -0.41624,
           1.1,
           0.2
         ],
-        "roadVisible": 75.38461538461539,
+        "roadVisible": 76.92307692307692,
         "clusterOcclusion": 24,
         "rimOcclusion": 24,
         "telltalesBlocked": 0,
@@ -6327,7 +6327,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 135749,
+        "pixels": 153976,
         "minX": 390,
         "maxX": 1279,
         "minY": 502,
@@ -6355,14 +6355,14 @@
         "maxY": 87
       },
       "door-top": {
-        "pixels": 33773,
+        "pixels": 52431,
         "minX": 0,
         "maxX": 394,
         "minY": 472,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19477,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -6376,7 +6376,7 @@
         "maxY": 781
       },
       "wheel-badge": {
-        "pixels": 1440,
+        "pixels": 1480,
         "minX": 618,
         "maxX": 661,
         "minY": 706,
@@ -6411,15 +6411,15 @@
         "maxY": 500
       },
       "binnacle": {
-        "pixels": 17966,
+        "pixels": 20528,
         "minX": 542,
         "maxX": 737,
-        "minY": 575,
+        "minY": 571,
         "maxY": 691
       },
       "console": {
-        "pixels": 52782,
-        "minX": 38,
+        "pixels": 68482,
+        "minX": 37,
         "maxX": 1279,
         "minY": 557,
         "maxY": 799
@@ -6595,7 +6595,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 128332,
+        "pixels": 134354,
         "minX": 417,
         "maxX": 1279,
         "minY": 538,
@@ -6623,14 +6623,14 @@
         "maxY": 148
       },
       "door-top": {
-        "pixels": 49994,
+        "pixels": 50128,
         "minX": 0,
         "maxX": 1279,
         "minY": 501,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 18764,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -6679,14 +6679,14 @@
         "maxY": 531
       },
       "binnacle": {
-        "pixels": 20589,
+        "pixels": 20894,
         "minX": 540,
         "maxX": 739,
         "minY": 571,
         "maxY": 692
       },
       "console": {
-        "pixels": 31921,
+        "pixels": 33654,
         "minX": 220,
         "maxX": 1022,
         "minY": 665,
@@ -6735,7 +6735,7 @@
           1.26,
           0.1
         ],
-        "roadVisible": 46.15384615384615,
+        "roadVisible": 49.23076923076923,
         "clusterOcclusion": 12,
         "rimOcclusion": 12,
         "telltalesBlocked": 0,
@@ -6864,7 +6864,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 91199,
+        "pixels": 100847,
         "minX": 420,
         "maxX": 1279,
         "minY": 584,
@@ -6892,14 +6892,14 @@
         "maxY": 134
       },
       "door-top": {
-        "pixels": 19406,
+        "pixels": 19582,
         "minX": 205,
         "maxX": 430,
         "minY": 615,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 18446,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -6913,7 +6913,7 @@
         "maxY": 781
       },
       "wheel-badge": {
-        "pixels": 1270,
+        "pixels": 1480,
         "minX": 618,
         "maxX": 661,
         "minY": 706,
@@ -6955,7 +6955,7 @@
         "maxY": 696
       },
       "console": {
-        "pixels": 21428,
+        "pixels": 22025,
         "minX": 429,
         "maxX": 1279,
         "minY": 688,
@@ -7004,7 +7004,7 @@
           1.26,
           0.1
         ],
-        "roadVisible": 46.15384615384615,
+        "roadVisible": 49.23076923076923,
         "clusterOcclusion": 12,
         "rimOcclusion": 12,
         "telltalesBlocked": 0,
@@ -7133,7 +7133,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 91199,
+        "pixels": 100847,
         "minX": 420,
         "maxX": 1279,
         "minY": 584,
@@ -7161,14 +7161,14 @@
         "maxY": 134
       },
       "door-top": {
-        "pixels": 19406,
+        "pixels": 19582,
         "minX": 205,
         "maxX": 430,
         "minY": 615,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 18446,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -7182,7 +7182,7 @@
         "maxY": 781
       },
       "wheel-badge": {
-        "pixels": 1270,
+        "pixels": 1480,
         "minX": 618,
         "maxX": 661,
         "minY": 706,
@@ -7224,7 +7224,7 @@
         "maxY": 696
       },
       "console": {
-        "pixels": 21428,
+        "pixels": 22025,
         "minX": 429,
         "maxX": 1279,
         "minY": 688,
@@ -7266,14 +7266,14 @@
         "triangles": 2944
       },
       "geometryAudit": {
-        "nearRoadDistance": 11.5,
+        "nearRoadDistance": 11.25,
         "pitch": -0.045,
         "eye": [
           -0.3569,
           1.22,
           0.19
         ],
-        "roadVisible": 50.76923076923077,
+        "roadVisible": 55.38461538461539,
         "clusterOcclusion": 0,
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
@@ -7401,7 +7401,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 114910,
+        "pixels": 118771,
         "minX": 421,
         "maxX": 1279,
         "minY": 573,
@@ -7429,14 +7429,14 @@
         "maxY": 157
       },
       "door-top": {
-        "pixels": 25385,
+        "pixels": 26976,
         "minX": 157,
         "maxX": 1279,
         "minY": 561,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 18187,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -7485,14 +7485,14 @@
         "maxY": -1
       },
       "binnacle": {
-        "pixels": 46140,
+        "pixels": 46457,
         "minX": 832,
         "maxX": 1062,
         "minY": 404,
         "maxY": 627
       },
       "console": {
-        "pixels": 24798,
+        "pixels": 25078,
         "minX": 323,
         "maxX": 1279,
         "minY": 669,
@@ -7541,7 +7541,7 @@
           1.22,
           0.19
         ],
-        "roadVisible": 50.76923076923077,
+        "roadVisible": 53.84615384615385,
         "clusterOcclusion": 0,
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
@@ -7669,7 +7669,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 114910,
+        "pixels": 118771,
         "minX": 421,
         "maxX": 1279,
         "minY": 573,
@@ -7697,14 +7697,14 @@
         "maxY": 157
       },
       "door-top": {
-        "pixels": 25385,
+        "pixels": 26976,
         "minX": 157,
         "maxX": 1279,
         "minY": 561,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 18187,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -7753,14 +7753,14 @@
         "maxY": -1
       },
       "binnacle": {
-        "pixels": 46140,
+        "pixels": 46457,
         "minX": 832,
         "maxX": 1062,
         "minY": 404,
         "maxY": 627
       },
       "console": {
-        "pixels": 24798,
+        "pixels": 25078,
         "minX": 323,
         "maxX": 1279,
         "minY": 669,
@@ -7809,7 +7809,7 @@
           1.1,
           0.27
         ],
-        "roadVisible": 78.46153846153847,
+        "roadVisible": 80,
         "clusterOcclusion": 16,
         "rimOcclusion": 16,
         "telltalesBlocked": 0,
@@ -7937,7 +7937,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 110978,
+        "pixels": 119954,
         "minX": 422,
         "maxX": 1279,
         "minY": 556,
@@ -7965,14 +7965,14 @@
         "maxY": 106
       },
       "door-top": {
-        "pixels": 36608,
+        "pixels": 44181,
         "minX": 29,
         "maxX": 1279,
         "minY": 519,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19182,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -8021,15 +8021,15 @@
         "maxY": 550
       },
       "binnacle": {
-        "pixels": 18690,
+        "pixels": 21056,
         "minX": 540,
         "maxX": 739,
         "minY": 570,
         "maxY": 692
       },
       "console": {
-        "pixels": 27689,
-        "minX": 263,
+        "pixels": 28901,
+        "minX": 262,
         "maxX": 1279,
         "minY": 672,
         "maxY": 799
@@ -8070,14 +8070,14 @@
         "triangles": 3552
       },
       "geometryAudit": {
-        "nearRoadDistance": 10.75,
+        "nearRoadDistance": 10.5,
         "pitch": -0.045,
         "eye": [
           -0.386785,
           1.17,
           0.2
         ],
-        "roadVisible": 63.07692307692308,
+        "roadVisible": 64.61538461538461,
         "clusterOcclusion": 16,
         "rimOcclusion": 16,
         "telltalesBlocked": 0,
@@ -8206,7 +8206,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 101030,
+        "pixels": 106248,
         "minX": 391,
         "maxX": 1279,
         "minY": 555,
@@ -8241,7 +8241,7 @@
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 18107,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -8290,14 +8290,14 @@
         "maxY": 541
       },
       "binnacle": {
-        "pixels": 20118,
+        "pixels": 20894,
         "minX": 540,
         "maxX": 739,
         "minY": 571,
         "maxY": 692
       },
       "console": {
-        "pixels": 52949,
+        "pixels": 54026,
         "minX": 223,
         "maxX": 1047,
         "minY": 535,
@@ -8339,14 +8339,14 @@
         "triangles": 3552
       },
       "geometryAudit": {
-        "nearRoadDistance": 10.75,
+        "nearRoadDistance": 10.5,
         "pitch": -0.045,
         "eye": [
           -0.386785,
           1.17,
           0.2
         ],
-        "roadVisible": 63.07692307692308,
+        "roadVisible": 64.61538461538461,
         "clusterOcclusion": 16,
         "rimOcclusion": 16,
         "telltalesBlocked": 0,
@@ -8475,7 +8475,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 101030,
+        "pixels": 106248,
         "minX": 391,
         "maxX": 1279,
         "minY": 555,
@@ -8510,7 +8510,7 @@
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 18107,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -8559,14 +8559,14 @@
         "maxY": 541
       },
       "binnacle": {
-        "pixels": 20118,
+        "pixels": 20894,
         "minX": 540,
         "maxX": 739,
         "minY": 571,
         "maxY": 692
       },
       "console": {
-        "pixels": 52949,
+        "pixels": 54026,
         "minX": 223,
         "maxX": 1047,
         "minY": 535,
@@ -8608,14 +8608,14 @@
         "triangles": 3552
       },
       "geometryAudit": {
-        "nearRoadDistance": 10.75,
+        "nearRoadDistance": 10.5,
         "pitch": -0.045,
         "eye": [
           -0.386785,
           1.17,
           0.2
         ],
-        "roadVisible": 63.07692307692308,
+        "roadVisible": 64.61538461538461,
         "clusterOcclusion": 16,
         "rimOcclusion": 16,
         "telltalesBlocked": 0,
@@ -8744,7 +8744,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 101030,
+        "pixels": 106248,
         "minX": 391,
         "maxX": 1279,
         "minY": 555,
@@ -8779,7 +8779,7 @@
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 18107,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -8828,14 +8828,14 @@
         "maxY": 541
       },
       "binnacle": {
-        "pixels": 20118,
+        "pixels": 20894,
         "minX": 540,
         "maxX": 739,
         "minY": 571,
         "maxY": 692
       },
       "console": {
-        "pixels": 52949,
+        "pixels": 54026,
         "minX": 223,
         "maxX": 1047,
         "minY": 535,
@@ -9013,7 +9013,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 107479,
+        "pixels": 107584,
         "minX": 406,
         "maxX": 1279,
         "minY": 550,
@@ -9041,14 +9041,14 @@
         "maxY": 159
       },
       "door-top": {
-        "pixels": 45365,
+        "pixels": 49984,
         "minX": 0,
         "maxX": 418,
         "minY": 510,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19321,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -9097,14 +9097,14 @@
         "maxY": 543
       },
       "binnacle": {
-        "pixels": 12841,
+        "pixels": 14724,
         "minX": 558,
         "maxX": 721,
         "minY": 572,
         "maxY": 673
       },
       "console": {
-        "pixels": 59747,
+        "pixels": 60856,
         "minX": 177,
         "maxX": 1144,
         "minY": 554,
@@ -9282,7 +9282,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 107479,
+        "pixels": 107584,
         "minX": 406,
         "maxX": 1279,
         "minY": 550,
@@ -9310,14 +9310,14 @@
         "maxY": 159
       },
       "door-top": {
-        "pixels": 45365,
+        "pixels": 49984,
         "minX": 0,
         "maxX": 418,
         "minY": 510,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19321,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -9366,14 +9366,14 @@
         "maxY": 543
       },
       "binnacle": {
-        "pixels": 12841,
+        "pixels": 14724,
         "minX": 558,
         "maxX": 721,
         "minY": 572,
         "maxY": 673
       },
       "console": {
-        "pixels": 59747,
+        "pixels": 60856,
         "minX": 177,
         "maxX": 1144,
         "minY": 554,
@@ -9415,14 +9415,14 @@
         "triangles": 4316
       },
       "geometryAudit": {
-        "nearRoadDistance": 10,
+        "nearRoadDistance": 9.75,
         "pitch": -0.045,
         "eye": [
           -0.371305,
           1.18,
           0.29
         ],
-        "roadVisible": 64.61538461538461,
+        "roadVisible": 66.15384615384616,
         "clusterOcclusion": 10.869565217391305,
         "rimOcclusion": 10.869565217391305,
         "telltalesBlocked": 0,
@@ -9550,7 +9550,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 63984,
+        "pixels": 77501,
         "minX": 374,
         "maxX": 1279,
         "minY": 581,
@@ -9585,7 +9585,7 @@
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19695,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -9599,7 +9599,7 @@
         "maxY": 799
       },
       "wheel-badge": {
-        "pixels": 1360,
+        "pixels": 1480,
         "minX": 618,
         "maxX": 661,
         "minY": 706,
@@ -9634,14 +9634,14 @@
         "maxY": 594
       },
       "binnacle": {
-        "pixels": 15550,
+        "pixels": 17099,
         "minX": 554,
         "maxX": 725,
         "minY": 570,
         "maxY": 694
       },
       "console": {
-        "pixels": 54235,
+        "pixels": 55733,
         "minX": 253,
         "maxX": 1159,
         "minY": 556,
@@ -9819,7 +9819,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 97865,
+        "pixels": 109603,
         "minX": 397,
         "maxX": 1279,
         "minY": 549,
@@ -9854,7 +9854,7 @@
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19522,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -9868,7 +9868,7 @@
         "maxY": 781
       },
       "wheel-badge": {
-        "pixels": 1440,
+        "pixels": 1480,
         "minX": 618,
         "maxX": 661,
         "minY": 706,
@@ -9903,14 +9903,14 @@
         "maxY": 535
       },
       "binnacle": {
-        "pixels": 19761,
+        "pixels": 20610,
         "minX": 542,
         "maxX": 737,
         "minY": 571,
         "maxY": 691
       },
       "console": {
-        "pixels": 50836,
+        "pixels": 52723,
         "minX": 234,
         "maxX": 1038,
         "minY": 532,
@@ -9952,7 +9952,7 @@
         "triangles": 3864
       },
       "geometryAudit": {
-        "nearRoadDistance": 10.75,
+        "nearRoadDistance": 10.25,
         "pitch": -0.045,
         "eye": [
           -0.393235,
@@ -10088,10 +10088,10 @@
     },
     "structure": {
       "dash": {
-        "pixels": 104918,
+        "pixels": 113400,
         "minX": 342,
         "maxX": 1279,
-        "minY": 552,
+        "minY": 551,
         "maxY": 799
       },
       "deck": {
@@ -10116,14 +10116,14 @@
         "maxY": 152
       },
       "door-top": {
-        "pixels": 44191,
+        "pixels": 49684,
         "minX": 0,
         "maxX": 427,
         "minY": 516,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 18114,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -10137,7 +10137,7 @@
         "maxY": 781
       },
       "wheel-badge": {
-        "pixels": 1440,
+        "pixels": 1480,
         "minX": 618,
         "maxX": 661,
         "minY": 706,
@@ -10172,14 +10172,14 @@
         "maxY": 545
       },
       "binnacle": {
-        "pixels": 17723,
+        "pixels": 20784,
         "minX": 541,
         "maxX": 738,
         "minY": 571,
         "maxY": 692
       },
       "console": {
-        "pixels": 56117,
+        "pixels": 58021,
         "minX": 208,
         "maxX": 1220,
         "minY": 534,
@@ -10228,7 +10228,7 @@
           1.18,
           0.2
         ],
-        "roadVisible": 67.6923076923077,
+        "roadVisible": 69.23076923076923,
         "clusterOcclusion": 24,
         "rimOcclusion": 24,
         "telltalesBlocked": 0,
@@ -10357,10 +10357,10 @@
     },
     "structure": {
       "dash": {
-        "pixels": 108191,
+        "pixels": 116808,
         "minX": 342,
         "maxX": 1279,
-        "minY": 552,
+        "minY": 551,
         "maxY": 799
       },
       "deck": {
@@ -10385,14 +10385,14 @@
         "maxY": 152
       },
       "door-top": {
-        "pixels": 44191,
+        "pixels": 49684,
         "minX": 0,
         "maxX": 427,
         "minY": 516,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 18114,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -10406,7 +10406,7 @@
         "maxY": 781
       },
       "wheel-badge": {
-        "pixels": 1440,
+        "pixels": 1480,
         "minX": 618,
         "maxX": 661,
         "minY": 706,
@@ -10441,14 +10441,14 @@
         "maxY": 545
       },
       "binnacle": {
-        "pixels": 17723,
+        "pixels": 20784,
         "minX": 541,
         "maxX": 738,
         "minY": 571,
         "maxY": 692
       },
       "console": {
-        "pixels": 53357,
+        "pixels": 54613,
         "minX": 208,
         "maxX": 1066,
         "minY": 534,
@@ -10626,7 +10626,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 129093,
+        "pixels": 133313,
         "minX": 413,
         "maxX": 1279,
         "minY": 516,
@@ -10654,14 +10654,14 @@
         "maxY": 174
       },
       "door-top": {
-        "pixels": 61565,
+        "pixels": 64771,
         "minX": 0,
         "maxX": 1279,
         "minY": 477,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 18634,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -10675,7 +10675,7 @@
         "maxY": 781
       },
       "wheel-badge": {
-        "pixels": 1440,
+        "pixels": 1480,
         "minX": 618,
         "maxX": 661,
         "minY": 706,
@@ -10710,14 +10710,14 @@
         "maxY": 503
       },
       "binnacle": {
-        "pixels": 16824,
+        "pixels": 19214,
         "minX": 543,
         "maxX": 736,
         "minY": 574,
         "maxY": 688
       },
       "console": {
-        "pixels": 55660,
+        "pixels": 57490,
         "minX": 215,
         "maxX": 1049,
         "minY": 525,
@@ -10895,7 +10895,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 129093,
+        "pixels": 133313,
         "minX": 413,
         "maxX": 1279,
         "minY": 516,
@@ -10923,14 +10923,14 @@
         "maxY": 174
       },
       "door-top": {
-        "pixels": 61565,
+        "pixels": 64771,
         "minX": 0,
         "maxX": 1279,
         "minY": 477,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 18634,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -10944,7 +10944,7 @@
         "maxY": 781
       },
       "wheel-badge": {
-        "pixels": 1440,
+        "pixels": 1480,
         "minX": 618,
         "maxX": 661,
         "minY": 706,
@@ -10979,14 +10979,14 @@
         "maxY": 503
       },
       "binnacle": {
-        "pixels": 16824,
+        "pixels": 19214,
         "minX": 543,
         "maxX": 736,
         "minY": 574,
         "maxY": 688
       },
       "console": {
-        "pixels": 55660,
+        "pixels": 57490,
         "minX": 215,
         "maxX": 1049,
         "minY": 525,
@@ -11164,7 +11164,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 142041,
+        "pixels": 152347,
         "minX": 406,
         "maxX": 1279,
         "minY": 478,
@@ -11192,14 +11192,14 @@
         "maxY": 133
       },
       "door-top": {
-        "pixels": 44520,
+        "pixels": 54930,
         "minX": 0,
         "maxX": 415,
         "minY": 446,
-        "maxY": 781
+        "maxY": 785
       },
       "wheel-rim": {
-        "pixels": 19367,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -11255,7 +11255,7 @@
         "maxY": 690
       },
       "console": {
-        "pixels": 91013,
+        "pixels": 99277,
         "minX": 0,
         "maxX": 1279,
         "minY": 520,
@@ -11433,7 +11433,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 142041,
+        "pixels": 152347,
         "minX": 406,
         "maxX": 1279,
         "minY": 478,
@@ -11461,14 +11461,14 @@
         "maxY": 133
       },
       "door-top": {
-        "pixels": 44520,
+        "pixels": 54930,
         "minX": 0,
         "maxX": 415,
         "minY": 446,
-        "maxY": 781
+        "maxY": 785
       },
       "wheel-rim": {
-        "pixels": 19367,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -11524,7 +11524,7 @@
         "maxY": 690
       },
       "console": {
-        "pixels": 91013,
+        "pixels": 99277,
         "minX": 0,
         "maxX": 1279,
         "minY": 520,
@@ -11702,7 +11702,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 142041,
+        "pixels": 152347,
         "minX": 406,
         "maxX": 1279,
         "minY": 478,
@@ -11730,14 +11730,14 @@
         "maxY": 133
       },
       "door-top": {
-        "pixels": 44520,
+        "pixels": 54930,
         "minX": 0,
         "maxX": 415,
         "minY": 446,
-        "maxY": 781
+        "maxY": 785
       },
       "wheel-rim": {
-        "pixels": 19367,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -11793,7 +11793,7 @@
         "maxY": 690
       },
       "console": {
-        "pixels": 91013,
+        "pixels": 99277,
         "minX": 0,
         "maxX": 1279,
         "minY": 520,
@@ -11842,7 +11842,7 @@
           1.2650000000000001,
           0.18
         ],
-        "roadVisible": 50.76923076923077,
+        "roadVisible": 52.30769230769231,
         "clusterOcclusion": 24,
         "rimOcclusion": 24,
         "telltalesBlocked": 0,
@@ -11971,7 +11971,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 82532,
+        "pixels": 98931,
         "minX": 401,
         "maxX": 1279,
         "minY": 549,
@@ -11999,14 +11999,14 @@
         "maxY": 127
       },
       "door-top": {
-        "pixels": 41731,
+        "pixels": 43842,
         "minX": 0,
         "maxX": 439,
         "minY": 514,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19355,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -12062,7 +12062,7 @@
         "maxY": 691
       },
       "console": {
-        "pixels": 51861,
+        "pixels": 69668,
         "minX": 206,
         "maxX": 1279,
         "minY": 523,
@@ -12104,14 +12104,14 @@
         "triangles": 3268
       },
       "geometryAudit": {
-        "nearRoadDistance": 9.25,
+        "nearRoadDistance": 9,
         "pitch": -0.045,
         "eye": [
           -0.40076,
           1.06,
           0.47
         ],
-        "roadVisible": 90.76923076923077,
+        "roadVisible": 92.3076923076923,
         "clusterOcclusion": 12,
         "rimOcclusion": 12,
         "telltalesBlocked": 0,
@@ -12239,7 +12239,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 93885,
+        "pixels": 99652,
         "minX": 326,
         "maxX": 1279,
         "minY": 583,
@@ -12267,14 +12267,14 @@
         "maxY": 105
       },
       "door-top": {
-        "pixels": 38881,
+        "pixels": 42190,
         "minX": 0,
         "maxX": 377,
         "minY": 541,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19319,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -12323,15 +12323,15 @@
         "maxY": 576
       },
       "binnacle": {
-        "pixels": 21779,
+        "pixels": 22174,
         "minX": 537,
         "maxX": 742,
         "minY": 569,
         "maxY": 694
       },
       "console": {
-        "pixels": 61434,
-        "minX": 170,
+        "pixels": 61908,
+        "minX": 169,
         "maxX": 1110,
         "minY": 545,
         "maxY": 799
@@ -12372,14 +12372,14 @@
         "triangles": 3268
       },
       "geometryAudit": {
-        "nearRoadDistance": 9.25,
+        "nearRoadDistance": 9,
         "pitch": -0.045,
         "eye": [
           -0.40076,
           1.06,
           0.47
         ],
-        "roadVisible": 90.76923076923077,
+        "roadVisible": 92.3076923076923,
         "clusterOcclusion": 12,
         "rimOcclusion": 12,
         "telltalesBlocked": 0,
@@ -12507,7 +12507,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 93885,
+        "pixels": 99652,
         "minX": 326,
         "maxX": 1279,
         "minY": 583,
@@ -12535,14 +12535,14 @@
         "maxY": 105
       },
       "door-top": {
-        "pixels": 38881,
+        "pixels": 42190,
         "minX": 0,
         "maxX": 377,
         "minY": 541,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19319,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -12591,15 +12591,15 @@
         "maxY": 576
       },
       "binnacle": {
-        "pixels": 21779,
+        "pixels": 22174,
         "minX": 537,
         "maxX": 742,
         "minY": 569,
         "maxY": 694
       },
       "console": {
-        "pixels": 61434,
-        "minX": 170,
+        "pixels": 61908,
+        "minX": 169,
         "maxX": 1110,
         "minY": 545,
         "maxY": 799
@@ -12775,7 +12775,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 99833,
+        "pixels": 129352,
         "minX": 412,
         "maxX": 1279,
         "minY": 529,
@@ -12803,14 +12803,14 @@
         "maxY": 77
       },
       "door-top": {
-        "pixels": 54282,
+        "pixels": 62203,
         "minX": 0,
         "maxX": 1279,
         "minY": 472,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19534,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -12859,17 +12859,17 @@
         "maxY": 498
       },
       "binnacle": {
-        "pixels": 22855,
+        "pixels": 23140,
         "minX": 529,
         "maxX": 750,
         "minY": 570,
         "maxY": 692
       },
       "console": {
-        "pixels": 43394,
-        "minX": 167,
+        "pixels": 50212,
+        "minX": 166,
         "maxX": 1113,
-        "minY": 643,
+        "minY": 642,
         "maxY": 799
       },
       "vent": {
@@ -13043,7 +13043,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 99833,
+        "pixels": 129352,
         "minX": 412,
         "maxX": 1279,
         "minY": 529,
@@ -13071,14 +13071,14 @@
         "maxY": 77
       },
       "door-top": {
-        "pixels": 54282,
+        "pixels": 62203,
         "minX": 0,
         "maxX": 1279,
         "minY": 472,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19534,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -13127,17 +13127,17 @@
         "maxY": 498
       },
       "binnacle": {
-        "pixels": 22855,
+        "pixels": 23140,
         "minX": 529,
         "maxX": 750,
         "minY": 570,
         "maxY": 692
       },
       "console": {
-        "pixels": 43394,
-        "minX": 167,
+        "pixels": 50212,
+        "minX": 166,
         "maxX": 1113,
-        "minY": 643,
+        "minY": 642,
         "maxY": 799
       },
       "vent": {
@@ -13302,16 +13302,16 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 50.55380859375,
-      "openPixels": 517671,
+      "windscreenPercent": 50.555078125,
+      "openPixels": 517684,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 50.55283203125
+      "unobstructedViewPercent": 50.5541015625
     },
     "structure": {
       "dash": {
-        "pixels": 129107,
+        "pixels": 147464,
         "minX": 397,
         "maxX": 1279,
         "minY": 530,
@@ -13339,14 +13339,14 @@
         "maxY": 91
       },
       "door-top": {
-        "pixels": 74310,
+        "pixels": 81127,
         "minX": 0,
         "maxX": 441,
         "minY": 499,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19035,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -13395,14 +13395,14 @@
         "maxY": 533
       },
       "binnacle": {
-        "pixels": 13604,
+        "pixels": 21064,
         "minX": 540,
         "maxX": 739,
         "minY": 570,
         "maxY": 684
       },
       "console": {
-        "pixels": 31129,
+        "pixels": 31510,
         "minX": 277,
         "maxX": 1079,
         "minY": 673,
@@ -13451,7 +13451,7 @@
           1.035,
           0.19
         ],
-        "roadVisible": 76.92307692307692,
+        "roadVisible": 78.46153846153847,
         "clusterOcclusion": 0,
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
@@ -13577,7 +13577,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 144936,
+        "pixels": 161388,
         "minX": 390,
         "maxX": 1279,
         "minY": 553,
@@ -13605,32 +13605,32 @@
         "maxY": 102
       },
       "door-top": {
-        "pixels": 51205,
+        "pixels": 55340,
         "minX": 0,
         "maxX": 1279,
         "minY": 512,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 12605,
+        "pixels": 13606,
         "minX": 448,
         "maxX": 831,
         "minY": 538,
         "maxY": 799
       },
       "wheel-hub": {
-        "pixels": 2640,
+        "pixels": 2906,
         "minX": 604,
         "maxX": 675,
         "minY": 690,
         "maxY": 765
       },
       "wheel-badge": {
-        "pixels": 1266,
+        "pixels": 1356,
         "minX": 619,
         "maxX": 660,
         "minY": 707,
-        "maxY": 749
+        "maxY": 750
       },
       "reserved-9": {
         "pixels": 0,
@@ -13661,14 +13661,14 @@
         "maxY": 546
       },
       "binnacle": {
-        "pixels": 5655,
+        "pixels": 11264,
         "minX": 554,
         "maxX": 725,
         "minY": 581,
         "maxY": 651
       },
       "console": {
-        "pixels": 23383,
+        "pixels": 23718,
         "minX": 289,
         "maxX": 1014,
         "minY": 659,
@@ -13845,7 +13845,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 128332,
+        "pixels": 134354,
         "minX": 417,
         "maxX": 1279,
         "minY": 538,
@@ -13873,14 +13873,14 @@
         "maxY": 148
       },
       "door-top": {
-        "pixels": 49994,
+        "pixels": 50128,
         "minX": 0,
         "maxX": 1279,
         "minY": 501,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 18764,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -13929,14 +13929,14 @@
         "maxY": 531
       },
       "binnacle": {
-        "pixels": 20589,
+        "pixels": 20894,
         "minX": 540,
         "maxX": 739,
         "minY": 571,
         "maxY": 692
       },
       "console": {
-        "pixels": 31921,
+        "pixels": 33654,
         "minX": 220,
         "maxX": 1022,
         "minY": 665,
@@ -13978,14 +13978,14 @@
         "triangles": 4360
       },
       "geometryAudit": {
-        "nearRoadDistance": 10,
+        "nearRoadDistance": 9.75,
         "pitch": -0.045,
         "eye": [
           -0.371305,
           1.18,
           0.29
         ],
-        "roadVisible": 64.61538461538461,
+        "roadVisible": 66.15384615384616,
         "clusterOcclusion": 10.869565217391305,
         "rimOcclusion": 10.869565217391305,
         "telltalesBlocked": 0,
@@ -14113,7 +14113,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 63984,
+        "pixels": 77501,
         "minX": 374,
         "maxX": 1279,
         "minY": 581,
@@ -14148,7 +14148,7 @@
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19695,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -14162,7 +14162,7 @@
         "maxY": 799
       },
       "wheel-badge": {
-        "pixels": 1360,
+        "pixels": 1480,
         "minX": 618,
         "maxX": 661,
         "minY": 706,
@@ -14197,14 +14197,14 @@
         "maxY": 594
       },
       "binnacle": {
-        "pixels": 15550,
+        "pixels": 17099,
         "minX": 554,
         "maxX": 725,
         "minY": 570,
         "maxY": 694
       },
       "console": {
-        "pixels": 54235,
+        "pixels": 55733,
         "minX": 253,
         "maxX": 1159,
         "minY": 556,
@@ -14246,14 +14246,14 @@
         "triangles": 4864
       },
       "geometryAudit": {
-        "nearRoadDistance": 9.75,
+        "nearRoadDistance": 9.5,
         "pitch": -0.045,
         "eye": [
           -0.400115,
           1.1,
           0.2
         ],
-        "roadVisible": 75.38461538461539,
+        "roadVisible": 76.92307692307692,
         "clusterOcclusion": 24,
         "rimOcclusion": 24,
         "telltalesBlocked": 0,
@@ -14381,7 +14381,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 133552,
+        "pixels": 151658,
         "minX": 399,
         "maxX": 1279,
         "minY": 502,
@@ -14409,14 +14409,14 @@
         "maxY": 87
       },
       "door-top": {
-        "pixels": 40941,
+        "pixels": 54162,
         "minX": 0,
         "maxX": 406,
         "minY": 472,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19477,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -14430,7 +14430,7 @@
         "maxY": 781
       },
       "wheel-badge": {
-        "pixels": 1440,
+        "pixels": 1480,
         "minX": 618,
         "maxX": 661,
         "minY": 706,
@@ -14465,14 +14465,14 @@
         "maxY": 500
       },
       "binnacle": {
-        "pixels": 17966,
+        "pixels": 20528,
         "minX": 542,
         "maxX": 737,
-        "minY": 575,
+        "minY": 571,
         "maxY": 691
       },
       "console": {
-        "pixels": 52053,
+        "pixels": 66923,
         "minX": 61,
         "maxX": 1279,
         "minY": 557,
@@ -14650,7 +14650,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 107381,
+        "pixels": 117371,
         "minX": 368,
         "maxX": 1279,
         "minY": 547,
@@ -14678,14 +14678,14 @@
         "maxY": 152
       },
       "door-top": {
-        "pixels": 56952,
+        "pixels": 57341,
         "minX": 0,
         "maxX": 1279,
         "minY": 515,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 18659,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -14699,7 +14699,7 @@
         "maxY": 781
       },
       "wheel-badge": {
-        "pixels": 1270,
+        "pixels": 1480,
         "minX": 618,
         "maxX": 661,
         "minY": 706,
@@ -14734,14 +14734,14 @@
         "maxY": 541
       },
       "binnacle": {
-        "pixels": 16715,
+        "pixels": 19662,
         "minX": 544,
         "maxX": 735,
         "minY": 573,
         "maxY": 689
       },
       "console": {
-        "pixels": 37560,
+        "pixels": 44365,
         "minX": 370,
         "maxX": 1011,
         "minY": 527,
@@ -14919,7 +14919,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 107381,
+        "pixels": 117371,
         "minX": 368,
         "maxX": 1279,
         "minY": 547,
@@ -14947,14 +14947,14 @@
         "maxY": 152
       },
       "door-top": {
-        "pixels": 56952,
+        "pixels": 57341,
         "minX": 0,
         "maxX": 1279,
         "minY": 515,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 18659,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -14968,7 +14968,7 @@
         "maxY": 781
       },
       "wheel-badge": {
-        "pixels": 1270,
+        "pixels": 1480,
         "minX": 618,
         "maxX": 661,
         "minY": 706,
@@ -15003,14 +15003,14 @@
         "maxY": 541
       },
       "binnacle": {
-        "pixels": 16715,
+        "pixels": 19662,
         "minX": 544,
         "maxX": 735,
         "minY": 573,
         "maxY": 689
       },
       "console": {
-        "pixels": 37560,
+        "pixels": 44365,
         "minX": 370,
         "maxX": 1011,
         "minY": 527,
@@ -15188,7 +15188,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 107381,
+        "pixels": 117371,
         "minX": 368,
         "maxX": 1279,
         "minY": 547,
@@ -15216,14 +15216,14 @@
         "maxY": 152
       },
       "door-top": {
-        "pixels": 56952,
+        "pixels": 57341,
         "minX": 0,
         "maxX": 1279,
         "minY": 515,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 18659,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -15237,7 +15237,7 @@
         "maxY": 781
       },
       "wheel-badge": {
-        "pixels": 1270,
+        "pixels": 1480,
         "minX": 618,
         "maxX": 661,
         "minY": 706,
@@ -15272,14 +15272,14 @@
         "maxY": 541
       },
       "binnacle": {
-        "pixels": 16715,
+        "pixels": 19662,
         "minX": 544,
         "maxX": 735,
         "minY": 573,
         "maxY": 689
       },
       "console": {
-        "pixels": 37560,
+        "pixels": 44365,
         "minX": 370,
         "maxX": 1011,
         "minY": 527,
@@ -15444,7 +15444,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 109739,
+        "pixels": 109741,
         "minX": 380,
         "maxX": 1279,
         "minY": 565,
@@ -15479,7 +15479,7 @@
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 31857,
+        "pixels": 31990,
         "minX": 405,
         "maxX": 874,
         "minY": 494,
@@ -15735,7 +15735,7 @@
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 29208,
+        "pixels": 31990,
         "minX": 405,
         "maxX": 874,
         "minY": 494,
@@ -15749,7 +15749,7 @@
         "maxY": 781
       },
       "wheel-badge": {
-        "pixels": 2743,
+        "pixels": 3294,
         "minX": 613,
         "maxX": 666,
         "minY": 703,
@@ -15784,7 +15784,7 @@
         "maxY": 520
       },
       "binnacle": {
-        "pixels": 8564,
+        "pixels": 10916,
         "minX": 497,
         "maxX": 782,
         "minY": 516,
@@ -15991,7 +15991,7 @@
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 29208,
+        "pixels": 31990,
         "minX": 405,
         "maxX": 874,
         "minY": 494,
@@ -16005,7 +16005,7 @@
         "maxY": 781
       },
       "wheel-badge": {
-        "pixels": 2743,
+        "pixels": 3294,
         "minX": 613,
         "maxX": 666,
         "minY": 703,
@@ -16040,7 +16040,7 @@
         "maxY": 520
       },
       "binnacle": {
-        "pixels": 8564,
+        "pixels": 10916,
         "minX": 497,
         "maxX": 782,
         "minY": 516,
@@ -16247,7 +16247,7 @@
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 21485,
+        "pixels": 25678,
         "minX": 434,
         "maxX": 845,
         "minY": 520,
@@ -16261,7 +16261,7 @@
         "maxY": 774
       },
       "wheel-badge": {
-        "pixels": 2085,
+        "pixels": 2520,
         "minX": 616,
         "maxX": 663,
         "minY": 706,
@@ -16303,7 +16303,7 @@
         "maxY": 666
       },
       "console": {
-        "pixels": 16269,
+        "pixels": 19061,
         "minX": 775,
         "maxX": 1098,
         "minY": 538,
@@ -16468,7 +16468,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 80962,
+        "pixels": 81735,
         "minX": 323,
         "maxX": 1279,
         "minY": 556,
@@ -16503,7 +16503,7 @@
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 30894,
+        "pixels": 31990,
         "minX": 405,
         "maxX": 874,
         "minY": 494,
@@ -16566,7 +16566,7 @@
         "maxY": 746
       },
       "vent": {
-        "pixels": 694,
+        "pixels": 1069,
         "minX": 386,
         "maxX": 465,
         "minY": 680,
@@ -16598,7 +16598,7 @@
       "pitch": -0.045,
       "render": {
         "calls": 69,
-        "triangles": 1188
+        "triangles": 1126
       },
       "geometryAudit": {
         "nearRoadDistance": 7,
@@ -16649,8 +16649,8 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 58.17041015625,
-      "openPixels": 595665,
+      "windscreenPercent": 57.3513671875,
+      "openPixels": 587278,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -16664,7 +16664,7 @@
       "pitch": -0.07,
       "render": {
         "calls": 38,
-        "triangles": 676
+        "triangles": 628
       },
       "geometryAudit": {
         "nearRoadDistance": 6,
@@ -16715,16 +16715,16 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 71.397265625,
-      "openPixels": 731108,
+      "windscreenPercent": 71.455859375,
+      "openPixels": 731708,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 70.9962890625
+      "unobstructedViewPercent": 71.0548828125
     },
     "structure": {
       "dash": {
-        "pixels": 89278,
+        "pixels": 89279,
         "minX": 415,
         "maxX": 1279,
         "minY": 508,
@@ -16752,14 +16752,14 @@
         "maxY": 45
       },
       "door-top": {
-        "pixels": 11440,
+        "pixels": 11437,
         "minX": 305,
         "maxX": 1279,
-        "minY": 651,
+        "minY": 652,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 21620,
+        "pixels": 22248,
         "minX": 450,
         "maxX": 829,
         "minY": 535,
@@ -16773,11 +16773,11 @@
         "maxY": 770
       },
       "wheel-badge": {
-        "pixels": 1745,
+        "pixels": 2144,
         "minX": 618,
         "maxX": 661,
         "minY": 708,
-        "maxY": 755
+        "maxY": 756
       },
       "reserved-9": {
         "pixels": 0,
@@ -16794,11 +16794,11 @@
         "maxY": -1
       },
       "mirror-mount": {
-        "pixels": 13566,
+        "pixels": 13277,
         "minX": 0,
         "maxX": 416,
-        "minY": 632,
-        "maxY": 701
+        "minY": 634,
+        "maxY": 720
       },
       "wiper": {
         "pixels": 0,
@@ -16854,7 +16854,7 @@
       "pitch": -0.045,
       "render": {
         "calls": 69,
-        "triangles": 1188
+        "triangles": 1126
       },
       "geometryAudit": {
         "nearRoadDistance": 7,
@@ -16905,8 +16905,8 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 58.17041015625,
-      "openPixels": 595665,
+      "windscreenPercent": 57.3513671875,
+      "openPixels": 587278,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -16920,7 +16920,7 @@
       "pitch": -0.07,
       "render": {
         "calls": 38,
-        "triangles": 676
+        "triangles": 628
       },
       "geometryAudit": {
         "nearRoadDistance": 6,
@@ -16971,16 +16971,16 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 71.397265625,
-      "openPixels": 731108,
+      "windscreenPercent": 71.455859375,
+      "openPixels": 731708,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 70.9962890625
+      "unobstructedViewPercent": 71.0548828125
     },
     "structure": {
       "dash": {
-        "pixels": 89278,
+        "pixels": 89279,
         "minX": 415,
         "maxX": 1279,
         "minY": 508,
@@ -17008,14 +17008,14 @@
         "maxY": 45
       },
       "door-top": {
-        "pixels": 11440,
+        "pixels": 11437,
         "minX": 305,
         "maxX": 1279,
-        "minY": 651,
+        "minY": 652,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 21620,
+        "pixels": 22248,
         "minX": 450,
         "maxX": 829,
         "minY": 535,
@@ -17029,11 +17029,11 @@
         "maxY": 770
       },
       "wheel-badge": {
-        "pixels": 1745,
+        "pixels": 2144,
         "minX": 618,
         "maxX": 661,
         "minY": 708,
-        "maxY": 755
+        "maxY": 756
       },
       "reserved-9": {
         "pixels": 0,
@@ -17050,11 +17050,11 @@
         "maxY": -1
       },
       "mirror-mount": {
-        "pixels": 13566,
+        "pixels": 13277,
         "minX": 0,
         "maxX": 416,
-        "minY": 632,
-        "maxY": 701
+        "minY": 634,
+        "maxY": 720
       },
       "wiper": {
         "pixels": 0,
@@ -17110,7 +17110,7 @@
       "pitch": -0.045,
       "render": {
         "calls": 63,
-        "triangles": 1086
+        "triangles": 1038
       },
       "geometryAudit": {
         "nearRoadDistance": 11.5,
@@ -17163,8 +17163,8 @@
           "road"
         ]
       },
-      "windscreenPercent": 34.59140625,
-      "openPixels": 354216,
+      "windscreenPercent": 32.710546875,
+      "openPixels": 334956,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -17178,7 +17178,7 @@
       "pitch": -0.07,
       "render": {
         "calls": 38,
-        "triangles": 788
+        "triangles": 740
       },
       "geometryAudit": {
         "nearRoadDistance": 7.5,
@@ -17216,7 +17216,7 @@
         "mirrors": [
           {
             "name": "left",
-            "inView": true,
+            "inView": false,
             "clear": true
           },
           {
@@ -17229,16 +17229,16 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 40.21708984375,
-      "openPixels": 411823,
+      "windscreenPercent": 38.5232421875,
+      "openPixels": 394478,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 40.21708984375
+      "unobstructedViewPercent": 38.5232421875
     },
     "structure": {
       "dash": {
-        "pixels": 136457,
+        "pixels": 146378,
         "minX": 216,
         "maxX": 1279,
         "minY": 548,
@@ -17273,7 +17273,7 @@
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 28407,
+        "pixels": 30938,
         "minX": 409,
         "maxX": 870,
         "minY": 498,
@@ -17308,11 +17308,11 @@
         "maxY": -1
       },
       "mirror-mount": {
-        "pixels": 6788,
-        "minX": 23,
-        "maxX": 297,
-        "minY": 493,
-        "maxY": 606
+        "pixels": 4552,
+        "minX": 0,
+        "maxX": 287,
+        "minY": 505,
+        "maxY": 614
       },
       "wiper": {
         "pixels": 0,
@@ -17329,7 +17329,7 @@
         "maxY": 658
       },
       "console": {
-        "pixels": 8822,
+        "pixels": 9610,
         "minX": 868,
         "maxX": 1150,
         "minY": 690,
@@ -17368,7 +17368,7 @@
       "pitch": -0.045,
       "render": {
         "calls": 61,
-        "triangles": 1358
+        "triangles": 1310
       },
       "geometryAudit": {
         "nearRoadDistance": 10.75,
@@ -17421,8 +17421,8 @@
           "road"
         ]
       },
-      "windscreenPercent": 55.244921875,
-      "openPixels": 565708,
+      "windscreenPercent": 53.43076171875,
+      "openPixels": 547131,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -17436,7 +17436,7 @@
       "pitch": -0.07,
       "render": {
         "calls": 33,
-        "triangles": 738
+        "triangles": 690
       },
       "geometryAudit": {
         "nearRoadDistance": 7.75,
@@ -17451,7 +17451,7 @@
         "rimOcclusion": 0,
         "telltalesBlocked": 0,
         "horizonFromTop": 44.60165244397765,
-        "headerIntrusion": 5.882352941176471,
+        "headerIntrusion": 11.764705882352942,
         "geometry": {
           "windscreen": {
             "min": [
@@ -17487,16 +17487,16 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 62.65595703125,
-      "openPixels": 641597,
+      "windscreenPercent": 61.37041015625,
+      "openPixels": 628433,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 62.65595703125
+      "unobstructedViewPercent": 61.37041015625
     },
     "structure": {
       "dash": {
-        "pixels": 175373,
+        "pixels": 203672,
         "minX": 102,
         "maxX": 1279,
         "minY": 588,
@@ -17531,25 +17531,25 @@
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 15843,
-        "minX": 377,
+        "pixels": 17492,
+        "minX": 376,
         "maxX": 903,
         "minY": 606,
         "maxY": 799
       },
       "wheel-hub": {
-        "pixels": 2591,
+        "pixels": 3660,
         "minX": 580,
         "maxX": 699,
         "minY": 753,
         "maxY": 799
       },
       "wheel-badge": {
-        "pixels": 1272,
+        "pixels": 1812,
         "minX": 613,
-        "maxX": 665,
+        "maxX": 666,
         "minY": 765,
-        "maxY": 798
+        "maxY": 799
       },
       "reserved-9": {
         "pixels": 0,
@@ -17566,11 +17566,11 @@
         "maxY": -1
       },
       "mirror-mount": {
-        "pixels": 19417,
-        "minX": 34,
-        "maxX": 283,
-        "minY": 85,
-        "maxY": 554
+        "pixels": 17785,
+        "minX": 0,
+        "maxX": 277,
+        "minY": 65,
+        "maxY": 558
       },
       "wiper": {
         "pixels": 0,
@@ -17580,11 +17580,11 @@
         "maxY": -1
       },
       "binnacle": {
-        "pixels": 6406,
+        "pixels": 8472,
         "minX": 476,
         "maxX": 803,
         "minY": 490,
-        "maxY": 595
+        "maxY": 596
       },
       "console": {
         "pixels": 0,
@@ -17636,7 +17636,7 @@
           1.3,
           0.1
         ],
-        "roadVisible": 35.38461538461539,
+        "roadVisible": 38.46153846153846,
         "clusterOcclusion": 24,
         "rimOcclusion": 24,
         "telltalesBlocked": 1,
@@ -17765,7 +17765,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 102095,
+        "pixels": 124554,
         "minX": 367,
         "maxX": 1279,
         "minY": 570,
@@ -17800,7 +17800,7 @@
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 17423,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -17849,15 +17849,15 @@
         "maxY": 542
       },
       "binnacle": {
-        "pixels": 11885,
+        "pixels": 19242,
         "minX": 543,
         "maxX": 736,
         "minY": 574,
         "maxY": 695
       },
       "console": {
-        "pixels": 17380,
-        "minX": 370,
+        "pixels": 20491,
+        "minX": 369,
         "maxX": 996,
         "minY": 659,
         "maxY": 799
@@ -17905,7 +17905,7 @@
           1.3,
           0.1
         ],
-        "roadVisible": 35.38461538461539,
+        "roadVisible": 38.46153846153846,
         "clusterOcclusion": 24,
         "rimOcclusion": 24,
         "telltalesBlocked": 1,
@@ -18034,7 +18034,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 102095,
+        "pixels": 124554,
         "minX": 367,
         "maxX": 1279,
         "minY": 570,
@@ -18069,7 +18069,7 @@
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 17423,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -18118,15 +18118,15 @@
         "maxY": 542
       },
       "binnacle": {
-        "pixels": 11885,
+        "pixels": 19242,
         "minX": 543,
         "maxX": 736,
         "minY": 574,
         "maxY": 695
       },
       "console": {
-        "pixels": 17380,
-        "minX": 370,
+        "pixels": 20491,
+        "minX": 369,
         "maxX": 996,
         "minY": 659,
         "maxY": 799
@@ -18330,14 +18330,14 @@
         "maxY": 114
       },
       "door-top": {
-        "pixels": 48293,
+        "pixels": 48295,
         "minX": 0,
         "maxX": 374,
         "minY": 527,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19653,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -18386,14 +18386,14 @@
         "maxY": 562
       },
       "binnacle": {
-        "pixels": 21523,
+        "pixels": 21870,
         "minX": 537,
         "maxX": 742,
         "minY": 569,
         "maxY": 694
       },
       "console": {
-        "pixels": 44226,
+        "pixels": 44653,
         "minX": 152,
         "maxX": 1279,
         "minY": 656,
@@ -18598,14 +18598,14 @@
         "maxY": 114
       },
       "door-top": {
-        "pixels": 48293,
+        "pixels": 48295,
         "minX": 0,
         "maxX": 374,
         "minY": 527,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19653,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -18654,14 +18654,14 @@
         "maxY": 562
       },
       "binnacle": {
-        "pixels": 21523,
+        "pixels": 21870,
         "minX": 537,
         "maxX": 742,
         "minY": 569,
         "maxY": 694
       },
       "console": {
-        "pixels": 44226,
+        "pixels": 44653,
         "minX": 152,
         "maxX": 1279,
         "minY": 656,
@@ -18703,7 +18703,7 @@
         "triangles": 3555
       },
       "geometryAudit": {
-        "nearRoadDistance": 9,
+        "nearRoadDistance": 8.75,
         "pitch": -0.045,
         "eye": [
           -0.403555,
@@ -18866,14 +18866,14 @@
         "maxY": 116
       },
       "door-top": {
-        "pixels": 48288,
+        "pixels": 48290,
         "minX": 0,
         "maxX": 374,
         "minY": 527,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19653,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -18922,14 +18922,14 @@
         "maxY": 562
       },
       "binnacle": {
-        "pixels": 21523,
+        "pixels": 21870,
         "minX": 537,
         "maxX": 742,
         "minY": 569,
         "maxY": 694
       },
       "console": {
-        "pixels": 44226,
+        "pixels": 44653,
         "minX": 152,
         "maxX": 1279,
         "minY": 656,
@@ -18971,7 +18971,7 @@
         "triangles": 3555
       },
       "geometryAudit": {
-        "nearRoadDistance": 9,
+        "nearRoadDistance": 8.75,
         "pitch": -0.045,
         "eye": [
           -0.403555,
@@ -19134,14 +19134,14 @@
         "maxY": 116
       },
       "door-top": {
-        "pixels": 48288,
+        "pixels": 48290,
         "minX": 0,
         "maxX": 374,
         "minY": 527,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19653,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -19190,14 +19190,14 @@
         "maxY": 562
       },
       "binnacle": {
-        "pixels": 21523,
+        "pixels": 21870,
         "minX": 537,
         "maxX": 742,
         "minY": 569,
         "maxY": 694
       },
       "console": {
-        "pixels": 44226,
+        "pixels": 44653,
         "minX": 152,
         "maxX": 1279,
         "minY": 656,
@@ -19239,14 +19239,14 @@
         "triangles": 3502
       },
       "geometryAudit": {
-        "nearRoadDistance": 8.25,
+        "nearRoadDistance": 8,
         "pitch": -0.045,
         "eye": [
           -0.40720999999999996,
           0.93,
           0.04
         ],
-        "roadVisible": 98.46153846153847,
+        "roadVisible": 100,
         "clusterOcclusion": 16,
         "rimOcclusion": 16,
         "telltalesBlocked": 0,
@@ -19374,7 +19374,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 126101,
+        "pixels": 139412,
         "minX": 398,
         "maxX": 1279,
         "minY": 536,
@@ -19402,14 +19402,14 @@
         "maxY": 171
       },
       "door-top": {
-        "pixels": 40765,
+        "pixels": 53654,
         "minX": 0,
         "maxX": 417,
         "minY": 495,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 18155,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -19423,7 +19423,7 @@
         "maxY": 781
       },
       "wheel-badge": {
-        "pixels": 1270,
+        "pixels": 1480,
         "minX": 618,
         "maxX": 661,
         "minY": 706,
@@ -19458,14 +19458,14 @@
         "maxY": 528
       },
       "binnacle": {
-        "pixels": 13689,
+        "pixels": 21156,
         "minX": 540,
         "maxX": 739,
         "minY": 570,
         "maxY": 692
       },
       "console": {
-        "pixels": 40390,
+        "pixels": 40891,
         "minX": 124,
         "maxX": 1067,
         "minY": 646,
@@ -19507,14 +19507,14 @@
         "triangles": 3468
       },
       "geometryAudit": {
-        "nearRoadDistance": 8.25,
+        "nearRoadDistance": 8,
         "pitch": -0.045,
         "eye": [
           -0.40720999999999996,
           0.93,
           0.04
         ],
-        "roadVisible": 98.46153846153847,
+        "roadVisible": 100,
         "clusterOcclusion": 16,
         "rimOcclusion": 16,
         "telltalesBlocked": 0,
@@ -19642,7 +19642,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 126101,
+        "pixels": 139412,
         "minX": 398,
         "maxX": 1279,
         "minY": 536,
@@ -19670,14 +19670,14 @@
         "maxY": 171
       },
       "door-top": {
-        "pixels": 40911,
+        "pixels": 53800,
         "minX": 0,
         "maxX": 417,
         "minY": 495,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 18155,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -19691,7 +19691,7 @@
         "maxY": 781
       },
       "wheel-badge": {
-        "pixels": 1270,
+        "pixels": 1480,
         "minX": 618,
         "maxX": 661,
         "minY": 706,
@@ -19726,14 +19726,14 @@
         "maxY": 528
       },
       "binnacle": {
-        "pixels": 13689,
+        "pixels": 21156,
         "minX": 540,
         "maxX": 739,
         "minY": 570,
         "maxY": 692
       },
       "console": {
-        "pixels": 40390,
+        "pixels": 40891,
         "minX": 124,
         "maxX": 1067,
         "minY": 646,
@@ -19775,14 +19775,14 @@
         "triangles": 3364
       },
       "geometryAudit": {
-        "nearRoadDistance": 8.25,
+        "nearRoadDistance": 8,
         "pitch": -0.045,
         "eye": [
           -0.40720999999999996,
           0.93,
           0.04
         ],
-        "roadVisible": 98.46153846153847,
+        "roadVisible": 100,
         "clusterOcclusion": 16,
         "rimOcclusion": 16,
         "telltalesBlocked": 0,
@@ -19910,7 +19910,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 126101,
+        "pixels": 139412,
         "minX": 398,
         "maxX": 1279,
         "minY": 536,
@@ -19938,14 +19938,14 @@
         "maxY": 171
       },
       "door-top": {
-        "pixels": 40911,
+        "pixels": 53800,
         "minX": 0,
         "maxX": 417,
         "minY": 495,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 18155,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -19959,7 +19959,7 @@
         "maxY": 781
       },
       "wheel-badge": {
-        "pixels": 1270,
+        "pixels": 1480,
         "minX": 618,
         "maxX": 661,
         "minY": 706,
@@ -19994,14 +19994,14 @@
         "maxY": 528
       },
       "binnacle": {
-        "pixels": 13689,
+        "pixels": 21156,
         "minX": 540,
         "maxX": 739,
         "minY": 570,
         "maxY": 692
       },
       "console": {
-        "pixels": 40390,
+        "pixels": 40891,
         "minX": 124,
         "maxX": 1067,
         "minY": 646,
@@ -20179,7 +20179,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 145927,
+        "pixels": 145999,
         "minX": 409,
         "maxX": 1279,
         "minY": 524,
@@ -20207,14 +20207,14 @@
         "maxY": 136
       },
       "door-top": {
-        "pixels": 43040,
+        "pixels": 56687,
         "minX": 0,
         "maxX": 426,
         "minY": 486,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19182,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -20270,7 +20270,7 @@
         "maxY": 692
       },
       "console": {
-        "pixels": 39123,
+        "pixels": 41187,
         "minX": 131,
         "maxX": 1116,
         "minY": 635,
@@ -20448,7 +20448,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 145927,
+        "pixels": 145999,
         "minX": 409,
         "maxX": 1279,
         "minY": 524,
@@ -20476,14 +20476,14 @@
         "maxY": 136
       },
       "door-top": {
-        "pixels": 43040,
+        "pixels": 56687,
         "minX": 0,
         "maxX": 426,
         "minY": 486,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19182,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -20539,7 +20539,7 @@
         "maxY": 692
       },
       "console": {
-        "pixels": 39123,
+        "pixels": 41187,
         "minX": 131,
         "maxX": 1116,
         "minY": 635,
@@ -20717,7 +20717,7 @@
     },
     "structure": {
       "dash": {
-        "pixels": 147229,
+        "pixels": 147305,
         "minX": 402,
         "maxX": 1279,
         "minY": 524,
@@ -20745,14 +20745,14 @@
         "maxY": 136
       },
       "door-top": {
-        "pixels": 41022,
+        "pixels": 58445,
         "minX": 0,
         "maxX": 402,
         "minY": 485,
         "maxY": 799
       },
       "wheel-rim": {
-        "pixels": 19182,
+        "pixels": 19740,
         "minX": 444,
         "maxX": 835,
         "minY": 533,
@@ -20808,7 +20808,7 @@
         "maxY": 692
       },
       "console": {
-        "pixels": 40178,
+        "pixels": 42241,
         "minX": 115,
         "maxX": 1125,
         "minY": 635,

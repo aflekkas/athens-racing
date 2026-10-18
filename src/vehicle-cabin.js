@@ -1,3 +1,4 @@
+import {exteriorCabinEnvelope,fitExteriorCabin} from './vehicle-cabin-envelope.js';
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 
@@ -16,8 +17,9 @@ export function cabinDimensions(model){
   seatZ,seatY:commercial?(seat?.y??d.H*.68)-.66:y+.15,
   belt:d.belt??(seat?.y??(commercial?d.H*.68:1.15))-.2};
 }
-export function buildCabin(model,{cheap=false}={}){
- const d=cabinDimensions(model),group=new T.Group();group.name=cheap?'cabin-distance':'cabin-foundation';group.userData.vehicleCabin=true;
+export function buildCabin(model,{cheap=false,exterior=false}={}){
+ const envelope=exteriorCabinEnvelope(model,{cheap});
+ const d=exterior?{width:envelope.half*2-.04,floor:envelope.floor+.03,front:envelope.front+.06,back:envelope.back-.06,seatZ:envelope.seatZ,seatY:envelope.seatY,belt:envelope.belt}:cabinDimensions(model),group=new T.Group();group.name=cheap?'cabin-distance':'cabin-foundation';group.userData.vehicleCabin=true;
  const carpet=new T.MeshStandardMaterial({color:'#282a2c',roughness:1,side:T.DoubleSide});
  const upholstery=new T.MeshStandardMaterial({color:model.shape?.leather||'#454344',roughness:.82,side:T.DoubleSide});
  const bins=new Map();
@@ -31,6 +33,10 @@ export function buildCabin(model,{cheap=false}={}){
  const rows=[d.seatZ];if(d.back-d.seatZ>.95&&model.shape?.seats!==2)rows.push(Math.min(d.back-.36,d.seatZ+.76));
  for(const z of rows)for(const sign of [-1,1]){
   const x=sign*model.dims.W*.215;
+  if(exterior&&['van','truck','bus'].includes(model.spec?.nativeFleet||model.modelKind||model.shape)){
+   const height=d.seatY-.06-d.floor;
+   box([.30,height,.30],[x,d.floor+height/2,z-.03]); // commercial seat pedestal meets the floor
+  }
   box([.43,.12,.44],[x,d.seatY,z-.03],upholstery);
   box([.43,.46,.10],[x,d.seatY+.26,z+.17],upholstery);
   box([.25,.15,.10],[x,d.seatY+.56,z+.18],upholstery);
@@ -49,14 +55,25 @@ export function buildCabin(model,{cheap=false}={}){
 // POV retains its original materials, animation, instruments and damage hooks.
 const exteriorMaterial=new T.MeshStandardMaterial({vertexColors:true,roughness:.82,side:T.DoubleSide});
 const trafficCabins=new Map();
-function mergeCabin(root){
- const geometries=[];root.updateWorldMatrix(true,true);
+function mergeCabin(root,model,{snapshot=false,cheap=false}={}){
+ const geometries=[],envelope=exteriorCabinEnvelope(model,{cheap});root.updateWorldMatrix(true,true);
  const inverse=root.matrixWorld.clone().invert(),visible=root.visible;root.visible=true;
  root.traverseVisible(o=>{
   if(!o.isMesh)return;
+  // A hidden POV shell must never become exterior art even if a caller toggled
+  // visibility before baking. The body already owns its pillars, wipers/mirrors.
+  for(let p=o;p&&p!==root;p=p.parent)if(p.name==='cockpit-structure'||/^cockpit-(wiper|mirror-mount|deck|pillar|header|headliner|window-frame)/.test(p.name)||snapshot&&p.userData.vehicleCabin)return;
   const source=o.geometry,materials=[].concat(o.material);
   const g=source.index?source.toNonIndexed():source.clone();
   g.applyMatrix4(inverse.clone().multiply(o.matrixWorld));
+  // Native furniture used a nose-based fallback cowl. Re-seat its dashboard
+  // behind the physical scuttle without moving the independently seated wheel.
+  if(snapshot&&model.spec?.nativeFleet&&['dash','console','vent'].includes(o.userData.cockpitStructure))g.translate(0,0,envelope.front-model.shape.cowl);
+  if(snapshot&&model.spec?.nativeFleet&&o.userData.cockpitStructure==='door-top'){
+   g.computeBoundingBox();
+   g.translate(0,Math.min(0,envelope.belt-envelope.margin-g.boundingBox.max.y),0);
+  }
+  fitExteriorCabin(g,envelope);
   const count=g.attributes.position.count,colors=new Float32Array(count*3);
   const groups=source.groups.length?source.groups:[{start:0,count,materialIndex:0}];
   for(const part of groups){
@@ -72,29 +89,39 @@ function mergeCabin(root){
   if(!g.attributes.normal)g.computeVertexNormals();
   g.setAttribute('color',new T.BufferAttribute(colors,3));g.clearGroups();geometries.push(g);
  });root.visible=visible;
+ if(snapshot){
+  const foundation=buildCabin(model,{exterior:true});
+  const shell=mergeCabin(foundation,model);geometries.push(shell.geometry);
+  foundation.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});
+ }
  const geometry=mergeGeometries(geometries,false);geometries.forEach(g=>g.dispose());
  geometry.computeBoundingSphere();
  const mesh=new T.Mesh(geometry,exteriorMaterial);mesh.name='exterior-cabin';mesh.userData.vehicleCabin=true;mesh.receiveShadow=true;
  mesh.matrixAutoUpdate=false;return mesh;
 }
 function cheapCabin(model){
- const source=buildCabin(model,{cheap:true}),mesh=mergeCabin(source);
+ const source=buildCabin(model,{cheap:true,exterior:true}),mesh=mergeCabin(source,model,{cheap:true});
  source.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});return mesh;
+}
+export function buildExteriorCabin(model,cockpit){
+ return mergeCabin(cockpit.group,model,{snapshot:true});
 }
 export function installCabinLOD(model,cockpit){
  const near=cockpit.group;near.add(buildCabin(model));
  cockpit.structure.visible=false;
- const exterior=mergeCabin(near);
+ const exterior=buildExteriorCabin(model,cockpit);
  // Keep the large, animated POV tree out of scene matrix traversal altogether
  // while driving in chase view or drawing rivals/garage cars.
  const lod=cockpit.lod||new T.LOD();model.body.add(lod);lod.name='cockpit-lod';lod.userData.vehicleCabin=true;
  for(const level of lod.levels)level.object.removeFromParent();lod.levels.length=0;
  near.removeFromParent();
  lod.addLevel(exterior,0);lod.addLevel(cheapCabin(model),25,.12);
- lod.addLevel(new T.Group(),40,.12);cockpit.lod=lod;lod.visible=true;
+ lod.addLevel(new T.Group(),40,.12);lod.levels.forEach((l,i)=>l.object.visible=i===0);cockpit.lod=lod;lod.visible=true;
  const setVisible=cockpit.setVisible.bind(cockpit);
  cockpit.setVisible=v=>{
   setVisible(v);
+  // Keep the snapshot hidden even when another camera explicitly updates LODs.
+  lod.visible=!v;
   if(v){if(near.parent!==model.body)model.body.add(near);near.visible=true;for(const level of lod.levels)level.object.visible=false;}
   else{near.removeFromParent();if(cockpit.inPOV!==false){lod.levels.forEach((l,i)=>l.object.visible=i===0);}}
   cockpit.inPOV=v;
@@ -107,7 +134,7 @@ export function installCabinLOD(model,cockpit){
 export function installTrafficCabin(model,type){
  if(type.scooter||type.moto)return;
  // Cache by actual cabin shape/seat layout, including commercial model kind.
- const key=JSON.stringify([cabinDimensions(model),model.dims.W,model.shape?.leather,model.shape?.seats]);
+ const key=JSON.stringify([exteriorCabinEnvelope(model,{cheap:true}),model.dims.W,model.shape?.leather,model.shape?.seats]);
  let template=trafficCabins.get(key);
  if(!template){template=cheapCabin(model);template.geometry.userData.shared=true;trafficCabins.set(key,template);}
  const lod=new T.LOD();lod.name='traffic-cabin-lod';lod.userData.vehicleCabin=true;
