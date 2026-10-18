@@ -129,6 +129,7 @@
     "tools/police-tuning.test.mjs",
     "tools/police-online.test.mjs",
     "tools/tow-road-placement.test.mjs",
+    "tools/tow-nearest-road.test.mjs",
     "tools/test-runner-coverage.test.mjs",
     "tools/offtrack-corridor.test.mjs",
     "tools/lazy-boot.test.mjs",

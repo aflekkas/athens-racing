@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { SpectatorSelection, recoveryPosition, rankDrivers, driverTelemetry, spectatorState, applySpectatorState } from '../src/race-lifecycle.js';
+import { SpectatorSelection, rankDrivers, driverTelemetry, spectatorState, applySpectatorState } from '../src/race-lifecycle.js';
 import { Multiplayer } from '../src/multiplayer.js';
 import { StateSender } from '../src/multiplayer-state.js';
 import { readFileSync } from 'node:fs';
@@ -42,13 +42,6 @@ test('finish order uses recorded times; running gaps never divide by speed', () 
   const ranked = rankDrivers(drivers, progress); assert.deepEqual(ranked.map(p => p.id), ['fast', 'late', 'running', 'dnf']);
   const hud = driverTelemetry({ member: drivers[0], state: { s: 100, vLong: 0 }, event: { s0: 0, dir: 1 }, now: 50000, startAt: 0, ranked, progress });
   assert.equal(hud.time, 15); assert.equal(hud.gap, 3); assert.equal(hud.gapUnit, 's');
-});
-
-test('recovery without a tracked course has no forward gift in either direction', () => {
-  assert.equal(recoveryPosition(180, 140, 1), 140);
-  assert.equal(recoveryPosition(140, 180, 1), 140);
-  assert.equal(recoveryPosition(20, 60, -1), 60);
-  assert.equal(recoveryPosition(60, 20, -1), 60);
 });
 
 test('a fresh resumed client advances beyond the saved tow epoch and retains the recovery clock', async () => {

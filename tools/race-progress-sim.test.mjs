@@ -6,14 +6,15 @@ const { Vehicle } = await import('../src/physics.js');
 const { Route } = await import('../src/map.js');
 const catalogue = readFileSync(new URL('../src/cars.js', import.meta.url), 'utf8');
 const CARS = Function('return ' + catalogue.split('export const CARS = ')[1].split('\n];')[0] + '\n];')();
-import { buildCourse, observeCourse, courseProgress, courseComplete, courseRecoveryPose } from '../src/course.js';
+import { buildCourse, observeCourse, courseProgress, courseComplete, courseTowLimits } from '../src/course.js';
 import { requestRecovery } from '../server/race-recovery.mjs';
 import { rankDrivers, restoreVehicleState } from '../src/race-lifecycle.js';
 import { EventRun, registerMapEvents, getEvents, freeRoam, resolve } from '../src/events.js';
 import { applySetup } from '../src/race-setup.js';
 import { DrivingGuidance, travelDirection } from '../src/driving-guidance.js';
 import { raceGridSlot, soloStartPosition } from '../src/start-placement.js';
-import { roadRecoveryPose } from '../src/road-recovery.js';
+import { routeTowAdapter } from '../src/road-recovery.js';
+import { planTow } from '../src/tow-placement.js';
 import { RivalAI } from '../src/rival-ai.js';
 const spec = CARS.find(c => c.id === 'mini');
 const road = { length: 2400, closed: false, edge: () => 5, medHalf: () => 0, lanes: () => 1, laneU: () => 2, curv: () => 0,
@@ -44,14 +45,15 @@ for (const dir of [1, -1]) test(`actual Vehicle acceleration/overtake/retreat an
   // An inverted car/off-road projection onto another lap must recover nearby.
   car.vehicle.bodyDynamic = true; car.vehicle.rigid = { q: [1, 0, 0, 0] };
   car.vehicle.s -= dir * 6000;
-  const target = courseRecoveryPose(car.course).s; assert.ok(Math.abs(target - (event.s0 + dir * earned)) < 1e-6, 'tow anchor is the latest valid on-road pose');
-  const placement = roadRecoveryPose(road, car.vehicle, dir, target);
+  // The tow puts the car on the nearest road, where it physically is; never before its latest valid pose.
+  const placement = planTow({ x: car.vehicle.x, z: car.vehicle.z, yaw: car.vehicle.yaw, route: routeTowAdapter(road), dir, course: courseTowLimits(car.course) });
+  const target = placement.s; assert.equal(placement.kind, 'route'); assert.ok((target - (event.s0 + dir * earned)) * dir > -1e-6, 'never before the latest valid on-road pose');
   car.vehicle.reset(placement.s, placement.u); car.vehicle.yaw = placement.yaw;
-  assert.ok(Math.abs(car.vehicle.s - safeS) < .01); assert.equal(car.vehicle.bodyDynamic, false); assert.equal(car.vehicle.rigid, null); assert.equal(car.vehicle.sus.fresh, true);
+  assert.ok(Math.abs(car.vehicle.s - safeS) < .5); assert.equal(car.vehicle.bodyDynamic, false); assert.equal(car.vehicle.rigid, null); assert.equal(car.vehicle.sus.fresh, true);
   for (let i = 0; i < 90; i++) car.vehicle.update(1 / 60, { throttle: .6, brake: 0, steer: 0 });
   assert.ok(car.vehicle.vLong > 1, 'upright recovery settles suspension and accepts throttle');
   const driver = { recoveryRace: 'race', course: structuredClone(car.course), state: {
-    s: target, u: 2, x: car.vehicle.x, y: 0, z: car.vehicle.z, yaw: 0, motionEpoch: 1,
+    s: target, u: 2, x: car.vehicle.x, y: 0, z: car.vehicle.z, yaw: dir > 0 ? 0 : Math.PI, motionEpoch: 1,
     bodyDynamic: true, bodyQ: [1,0,0,0], engineStalled: true, engineDamage: 1, engHealth: 0,
   } };
   requestRecovery(driver, event, 'race', 2, 1000, { route: road });
@@ -64,7 +66,7 @@ for (const dir of [1, -1]) test(`actual Vehicle acceleration/overtake/retreat an
   observeCourse(car.course, { ...road.point(backwardS, 2), s: backwardS, u: 2 }, 23, { route: road });
   assert.ok(courseProgress(car.course) < earned, 'earned history does not keep a reversing car ahead');
   mkdirSync(new URL('../.scratch/recovery-progress/', import.meta.url), { recursive: true });
-  writeFileSync(new URL(`../.scratch/recovery-progress/driven-${dir}.json`, import.meta.url), JSON.stringify({ kind: 'actual Vehicle.update at 60Hz on synthetic road; no pose changes before overtake', changes, earned, recoveryStation: target }, null, 2));
+  writeFileSync(new URL(`../.scratch/recovery-progress/driven-${dir}.json`, import.meta.url), JSON.stringify({ kind: 'actual Vehicle.update at 60Hz on synthetic road; no pose changes before overtake', changes, earned, towStation: target }, null, 2));
   t.diagnostic(JSON.stringify(changes));
 });
 const data = JSON.parse(readFileSync(new URL('../data/maps/psychiko/map.json', import.meta.url)));

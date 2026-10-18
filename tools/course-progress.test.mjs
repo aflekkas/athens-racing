@@ -1,8 +1,8 @@
 // Invisible route progress (owner decision 2026-10-18: no checkpoints). Only continuous on-road movement
-// counts; a shortcut buys nothing; the finish needs the whole route; recovery returns to the latest valid pose.
+// counts; a shortcut buys nothing; the finish needs the whole route; a tow lands on the nearest road (src/tow-placement.js) and grants no progress.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildCourse, observeCourse, roadFrame, courseComplete, courseHeld, courseProgress, courseRecoveryPose, restartCourseAt } from '../src/course.js';
+import { buildCourse, observeCourse, roadFrame, courseComplete, courseHeld, courseProgress, courseTowLimits, towCourseTo } from '../src/course.js';
 import { EventRun } from '../src/events.js';
 const straight = { step: 20, x: [0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200], z: Array(11).fill(0), y: Array(11).fill(0), lanes: Array(11).fill(1), div: Array(11).fill(0) };
 // An L: east for 100 m, then south for 100 m. The corner can be cut straight across the grass.
@@ -87,16 +87,28 @@ test('closed circuits count every lap on the unwrapped station', () => {
   for (let s = lap + 14; s <= 2 * lap + 10; s += 4) observeCourse(course, pose(s), t += .1, { route: ring });
   assert.equal(courseComplete(course), true);
 });
-test('tow / recovery anchor is always the latest valid on-road pose', () => {
+test('a tow is never placed before the latest valid pose and never grants progress', () => {
   const course = buildCourse(event, straight);
   observeCourse(course, onStraight(0), 0, { route: straight });
   let t = drive(course, straight, 6, 90);
-  assert.equal(courseRecoveryPose(course).s, 90);
-  // Drive off the road ahead of the departure point: the anchor stays at the last on-road pose.
+  assert.deepEqual(courseTowLimits(course), { s0: 0, dir: 1, floor: 90, ref: 90 });
+  // Drive off the road ahead of the departure point: the floor stays at the last on-road pose.
   for (const s of [96, 102, 108, 114]) observeCourse(course, onStraight(s, 30), t += .2, { route: straight });
-  assert.equal(courseRecoveryPose(course).s, 90, 'off-road poses never move the anchor');
-  restartCourseAt(course, courseRecoveryPose(course), t);
-  assert.equal(course.onRoute, true); assert.equal(courseHeld(course), false); assert.equal(courseProgress(course), 90);
+  assert.equal(courseTowLimits(course).floor, 90, 'off-road poses never move the floor');
+  const earned = { progress: courseProgress(course), reached: course.reached, limit: course.rejoinLimit };
+  // The nearest road is the route where the car is: placed there, history restarts, nothing is earned.
+  towCourseTo(course, onStraight(114), t);
+  assert.equal(course.onRoute, true); assert.equal(courseProgress(course), earned.progress); assert.equal(course.reached, earned.reached);
+  assert.equal(course.rejoinLimit, earned.limit, 'the rejoin rule survives the tow');
+  // Placed on a stretch ahead of what the excursion earned: the tow bought nothing, the car is held until it drives back.
+  towCourseTo(course, onStraight(180), t);
+  observeCourse(course, onStraight(186), t += .2, { route: straight });
+  assert.equal(courseHeld(course), true); assert.equal(courseProgress(course), earned.progress); assert.ok(course.reached <= 90 + 6, `a tow cannot advance progress (reached ${course.reached})`);
+  // A side-street placement is off the route: no progress either.
+  towCourseTo(course, { s: 120, u: 40, x: 120, z: 40, y: 0, kind: 'road' }, t);
+  assert.equal(course.onRoute, false); assert.equal(course.reached, earned.reached);
+  // Driving back to where it left the route resumes progress; the whole route then finishes it.
+  towCourseTo(course, onStraight(96), t);
   drive(course, straight, 96, 210, { t0: t });
   assert.equal(courseComplete(course), true);
 });

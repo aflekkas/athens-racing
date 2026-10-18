@@ -1,5 +1,6 @@
 // Owner decision 2026-10-18 (docs/OWNER-DECISIONS.md): no checkpoints. Tow to the latest valid on-road
-// position; progress is validated invisibly. Do not restore checkpoints without a new owner decision.
+// onto the nearest road ("we just want to tow back onto the road"); progress is validated invisibly. Do not restore
+// checkpoints without a new owner decision.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readdir, readFile, access } from 'node:fs/promises';
@@ -24,13 +25,22 @@ test('owner lock: no checkpoint module, banner, notice, message or wording ships
     if (!/^worker\/(?:index|arena-diagnostics)|ragdoll/.test(path)) assert.doesNotMatch(text.replace(/\/\/[^\n]*|\/\*[\s\S]*?\*\//g, ''), /checkpoint/i, `${path}: checkpoint wording in code or UI. ${LOCK}`);
   }
 });
-test('owner lock: a tow lands on the latest valid on-road pose, and the decision is recorded in the owner words', async () => {
+test('owner lock: a tow lands on the nearest road, never back along the route, and the decision is recorded in the owner words', async () => {
   const course = await readFile(new URL('src/course.js', root), 'utf8'), main = await readFile(new URL('src/main.js', root), 'utf8');
   const recovery = await readFile(new URL('server/race-recovery.mjs', root), 'utf8'), lifecycle = await readFile(new URL('src/race-lifecycle.js', root), 'utf8');
-  assert.match(course, /export function courseRecoveryPose/, LOCK);
-  assert.match(main, /courseRecoveryPose\(course\)/, `solo tow must use the latest valid pose. ${LOCK}`);
-  assert.match(recovery, /courseRecoveryPose\(driver\.course\)/, `server recovery must use the latest valid pose. ${LOCK}`);
-  assert.doesNotMatch(lifecycle, /nextCheckpoint/, LOCK);
+  const placement = await readFile(new URL('src/tow-placement.js', root), 'utf8');
+  assert.match(placement, /export function planTow/, LOCK);
+  assert.match(course, /export function towCourseTo/, LOCK);
+  assert.match(main, /planTow\(/, `solo tow must plan the nearest road. ${LOCK}`);
+  assert.match(main, /courseTowLimits\(course\)/, `a race tow must respect the latest valid pose. ${LOCK}`);
+  assert.match(recovery, /planTow\(/, `server recovery must plan the nearest road. ${LOCK}`);
+  assert.match(recovery, /courseTowLimits\(course\)/, `server recovery must respect the latest valid pose. ${LOCK}`);
+  // A tow never rewinds to an earlier point and never touches earned progress.
+  assert.doesNotMatch(lifecycle, /nextCheckpoint|recoveryPosition/, LOCK);
+  assert.doesNotMatch(course, /courseRecoveryPose|restartCourseAt/, LOCK);
+  const towCourse = course.slice(course.indexOf('export function towCourseTo'));
+  assert.doesNotMatch(towCourse, /validProgress\s*=|reached\s*=|rejoinLimit/, `a tow must not touch earned progress. ${LOCK}`);
   const decisions = await readFile(new URL('docs/OWNER-DECISIONS.md', root), 'utf8');
   assert.match(decisions, /there are not meant to be checkpoints, you're supposed to get towed to the latest world/);
+  assert.match(decisions, /we just want to tow back onto the road/);
 });

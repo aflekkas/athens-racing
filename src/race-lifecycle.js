@@ -48,12 +48,6 @@ export function driverTelemetry({ member, state, event, startAt, now, ranked, pr
   };
 }
 
-// Recovery with no tracked course (free roam, objective modes): at or behind both the current car and
-// its last known road position. Races use the course's latest valid on-road pose instead.
-export function recoveryPosition(currentS, safeS, dir = 1) {
-  return dir * Math.min(dir * currentS, dir * safeS);
-}
-
 const engineFields = ['impactMechanical', 'maxImpactEbs', 'engineDamage', 'engHealth', 'coolantTemp', 'engineStalled', 'drivetrainBroken', 'engineFailureReason', 'mechanicalOverrevRpm'];
 // Lightweight cosmetic telemetry rides the existing state cadence; no wheel-force arrays.
 export function spectatorState(vehicle) {

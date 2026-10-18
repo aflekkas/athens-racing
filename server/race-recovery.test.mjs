@@ -21,19 +21,21 @@ function race(t, dir = 1) {
   return { core, opts, a, b, c, lobby, id, event, send, advance(ms) { now += ms; }, get now() { return now; } };
 }
 
-for (const dir of [1, -1]) test(`three clients recover to their latest on-road pose without a finish shortcut (${dir > 0 ? 'forward' : 'reverse'})`, t => {
+for (const dir of [1, -1]) test(`three clients are towed to where they are, never to a claimed position, without a finish shortcut (${dir > 0 ? 'forward' : 'reverse'})`, t => {
   const r = race(t, dir), s = distance => r.event.s0 + dir * distance;
   r.advance(500); r.send(r.a, { type: 'state', raceId: r.lobby.raceId, state: state(s(70)) });
   r.advance(100); r.send(r.a, { type: 'state', raceId: r.lobby.raceId, state: state(s(90), 1, 40) });
-  // A claimed client recovery position is ignored; the latest valid on-road pose wins (owner decision 2026-10-18).
+  // A claimed client recovery position is ignored; the tow lands where the server last saw the car, never before its
+  // latest valid pose (owner decision 2026-10-18: "we just want to tow back onto the road").
   r.send(r.a, { type: 'recover', raceId: 'old', motionEpoch: 2 }); assert.notEqual(r.a.messages.at(-1).type, 'recovered');
   r.send(r.a, { type: 'recover', raceId: r.lobby.raceId, motionEpoch: 2, s: s(200) });
-  const ack = r.a.messages.at(-1); assert.equal(ack.type, 'recovered'); assert.equal(ack.s, s(70)); assert.equal(ack.until - r.now, 250);
+  const ack = r.a.messages.at(-1); assert.equal(ack.type, 'recovered'); assert.equal(ack.s, s(90)); assert.equal(ack.until - r.now, 250);
+  assert.equal(r.core.clientData(r.a).course.reached, 70, 'the tow bought no progress');
   r.send(r.a, { type: 'state', raceId: r.lobby.raceId, state: state(s(200), 2) });
-  r.core.tick(); let view = r.b.messages.at(-1); assert.equal(view.type, 'snapshot'); assert.equal(view.players.find(p => p.id === r.id).state.s, s(70)); assert.equal(view.players.find(p => p.id === r.id).finish, null);
+  r.core.tick(); let view = r.b.messages.at(-1); assert.equal(view.type, 'snapshot'); assert.equal(view.players.find(p => p.id === r.id).state.s, s(90)); assert.equal(view.players.find(p => p.id === r.id).finish, null);
   const stopped = { ...state(s(70), 2), vLong: 0 }; r.send(r.a, { type: 'state', raceId: r.lobby.raceId, state: stopped });
   r.advance(240); r.send(r.a, { type: 'state', raceId: r.lobby.raceId, state: state(s(120), 2) });
-  assert.equal(r.core.exportState().sessions.find(p => p.id === r.id).state.s, s(70));
+  assert.equal(r.core.exportState().sessions.find(p => p.id === r.id).state.s, s(90));
   // Hold/epoch survives persistence and a transport restore.
   const saved = JSON.parse(JSON.stringify(r.core.exportState())); assert.equal(saved.sessions.find(p => p.id === r.id).recovery.until, ack.until);
   r.advance(10); r.send(r.a, { type: 'state', raceId: r.lobby.raceId, state: state(s(200), 1) });
@@ -47,14 +49,15 @@ for (const dir of [1, -1]) test(`three clients recover to their latest on-road p
   r.send(r.c, { type: 'leave' }); assert.equal(r.a.messages.at(-1).lobby.status, 'results'); assert.equal(r.a.messages.at(-1).lobby.results.find(p => p.id === r.id).finish, finisher.finish);
 });
 
-test('recovery lands on the latest valid on-road pose: a legal retreat moves it back, an off-road excursion never moves it', t => {
+test('a tow lands where the car is but never before its latest valid pose, and never earns progress', t => {
   const r = race(t); r.advance(500); r.send(r.a, { type: 'state', raceId: r.lobby.raceId, state: state(70) });
   r.advance(200); r.send(r.a, { type: 'state', raceId: r.lobby.raceId, state: state(60) });
   r.send(r.a, { type: 'recover', raceId: r.lobby.raceId, motionEpoch: 2 }); assert.equal(r.a.messages.at(-1).s, 60, 'the car legally reversed to 60');
   r.advance(1500); r.send(r.a, { type: 'state', raceId: r.lobby.raceId, state: state(75, 2) });
   r.advance(200); r.send(r.a, { type: 'state', raceId: r.lobby.raceId, state: state(85, 2, 40) });
   r.advance(200); r.send(r.a, { type: 'state', raceId: r.lobby.raceId, state: state(95, 2, 40) });
-  r.send(r.a, { type: 'recover', raceId: r.lobby.raceId, motionEpoch: 3 }); assert.equal(r.a.messages.at(-1).s, 75, 'driving off the road ahead buys nothing: back to the last on-road pose');
+  r.send(r.a, { type: 'recover', raceId: r.lobby.raceId, motionEpoch: 3 }); assert.equal(r.a.messages.at(-1).s, 95, 'the tow puts the car on the road where it is');
+  assert.equal(r.core.clientData(r.a).course.validProgress, 75, 'driving off the road ahead and towing earns nothing');
 });
 
 test('police capture retains five seconds through persisted resume; receipt time and epoch cannot buy forward progress', t => {
