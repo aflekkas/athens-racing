@@ -17,7 +17,7 @@ padding and key hints. Its regions shrink without pushing the footer offscreen.
 | `browseGrid` | Garage, lobby browser, leaderboards | optional `filters`, `items`; `list: true` for rows |
 | `stageInspector` | Car detail, track confirmation | `stage`, `inspector` |
 | `mapStage` | Track picker | full-bleed `stage`, floating `card` |
-| `sheetList` | Pause, results, information and simple lists | `rows`, optional `aside`, `actions` |
+| `sheetList` | Pause, results, information, long reading pages (`article`) and simple lists | `rows`, optional `aside`, `actions` |
 
 Desktop uses two columns for navigation/viewer layouts, tiles that fill available
 height, and a bounded readable sheet. At 860px in portrait navigation becomes a
@@ -63,6 +63,16 @@ available height with an optional caption underneath.
 
 `sidebarContent({ variant: 'balanced', nav, content })` pairs a profile/navigation
 panel with related panels (68rem maximum, stacked at 860px).
+`sheetList({ variant: 'article', rows, actions })` is a whole page of reading (Credits, What's new,
+licence texts): one scroll region spanning the screen under the fixed header and key hints, with a
+centred 50rem column (`--layout-article-width`) that the title lines up with. Build the column from
+`articleSection({ title, level, meta, body })`, `articleEntry({ title, desc, credit, side, links, actions })`,
+`articleList`, `articleFigure` (full column width, lazy, size reserved), `articleText` and `articleLink`
+(the address is its own visible label). Text is sentence case and wraps; nothing truncates. The region
+is the scroller (`data-article-scroll`): wheel and touch are native, held Up/Down/W/S and the gamepad
+sticks or D-pad glide, PageUp/PageDown/Home/End and Q/E/LB/RB jump (`src/ui/article-scroll.js`), and
+Left/Right step between the few links and buttons (Enter/A opens the highlighted one). The page
+starts with nothing highlighted.
 `sheetList` also supports `narrow` (34rem form) and `flow` (full-width rows).
 The sign-in exception uses `dialog({ fullScreen: true })`; its shell stays in the kit.
 

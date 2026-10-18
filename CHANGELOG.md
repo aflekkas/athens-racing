@@ -8,6 +8,9 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Credits and What's new are full pages you can scroll with keys, gamepad, wheel or touch. Credits are grouped by kind, and release pictures sit inline.
+  ![Credits page with the team, map data and elevation attribution in a centred column](assets/changelog/2026.10.16.1/about-pages.webp "Credits read as one clear page, with every attribution fully visible.")
+
 - Trims run from base to top model throughout the garage and online car lists, with fantasy builds last and saved choices kept.
 
 - The garage now offers cars and larger vehicles only. Saved motorcycle choices switch to the MINI; traffic bikes still share the road.

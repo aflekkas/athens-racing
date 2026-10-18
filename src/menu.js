@@ -29,6 +29,7 @@ import './ui/hosts.js';
 import { driverName } from './driver-name.js';
 import { controlsStrip, drivingHints } from './ui/driving-hints.js';
 import * as Release from './ui/release-screens.js';
+import { installArticleScroll, articleAction, clearArticleFocus } from './ui/article-scroll.js';
 
 const { settings, setSetting, steeringAssistChoice, fmtDist } = S;
 const { esc, icon } = C;
@@ -57,7 +58,7 @@ export class Menu {
   constructor(root, h) {
     this.root = root; this.h = h; this.screen = null; this.data = {}; this.focus = 0; this.stack = [];
     this.filter = 'all';
-    C.bindRoot(root); root.tabIndex = -1; installSettingsAccess(this); MP.installMpScreens(this); Release.install(this); installAccounts(this);
+    C.bindRoot(root); root.tabIndex = -1; installSettingsAccess(this); MP.installMpScreens(this); Release.install(this); installAccounts(this); installArticleScroll(this);
     root.addEventListener('focusin', e => { const row = e.target.closest('.mi'); const i = this.items().indexOf(row); if(i >= 0) this.setFocus(i, false); });
     root.addEventListener('keydown', e => { if(e.code !== 'Escape' || !e.target.closest('input, textarea, [contenteditable]')) return; e.preventDefault(); e.stopPropagation(); e.target.blur(); root.focus({preventScroll:true}); }, true);
     root.addEventListener('click', (e) => this.onClick(e));
@@ -124,7 +125,7 @@ export class Menu {
     if (f == null) { f = it.findIndex((el) => el.dataset.default != null); if (f < 0) f = it.findIndex((el) => el.dataset.kind !== 'tabs' && el.dataset.act !== 'account'); }
     if (this.data.keepScroll && keep != null) { const b = this.root.querySelector('.scr__body .scroll-y, .scr__body'); if (b) b.scrollTop = keep; }
     this.setFocus(Math.min(Math.max(0, f), Math.max(0, it.length - 1)), !this.data.keepScroll && !(this.screen === 'car' && this.data.detail));
-    this.data.keepScroll = false; C.indicators(this.root);
+    clearArticleFocus(this); this.data.keepScroll = false; C.indicators(this.root);
   }
   /** the morph path of render(): only nodes whose markup changed are touched, so focus, scroll and the garage
    *  thumbnails survive and nothing flashes */
@@ -135,7 +136,7 @@ export class Menu {
     MP.afterRender(this);
     if (this.screen === 'settings' && this.data.tab === 'controls') this.h.cancelBindings?.();
     const it = this.items(); this.setFocus(Math.min(Math.max(0, this.focus ?? 0), Math.max(0, it.length - 1)), false);
-    this.data.keepScroll = false; C.indicators(this.root); // selection glides to its new item
+    clearArticleFocus(this); this.data.keepScroll = false; C.indicators(this.root); // selection glides to its new item
   }
   /** re-render in place (a value changed that other rows depend on); focus stays on the same item even when others
    *  appear or disappear (e.g. DEFAULTS becomes available) */
@@ -185,6 +186,7 @@ export class Menu {
     C.navigationFocus();
     if (C.ui.action(name)) return true;
     if (this.screen === 'maps' && this.mapView?.action(name)) return true;
+    if (articleAction(this, name)) return true; // Credits, What's new: smooth page scrolling; left / right step between links
     const cur = this.items()[this.focus];
     if (this.screen === 'settings' && this.data.tab === 'controls' && controlsAction(this, name, cur)) return true;
     if (name === 'shiftUp' || name === 'shiftDown') {

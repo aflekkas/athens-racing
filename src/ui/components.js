@@ -244,6 +244,8 @@ export function sheetList({ rows = '', aside = '', actions = '', variant = 'page
   if (variant === 'narrow') return layoutFrame('sheet-list', { ...frame, variant }, region('rows', rows, 'layout-sheet-narrow'));
   if (variant === 'flow') return layoutFrame('sheet-list', { ...frame, variant }, rows + actions, 'rows');
   if (variant === 'reading') return layoutFrame('sheet-list', { ...frame, variant }, rows + actions, 'rows');
+  // A whole page of reading: one centred column inside a region that scrolls under the fixed header and key hints.
+  if (variant === 'article') return layoutFrame('sheet-list', { ...frame, variant }, `<div class="layout-article scroll-y" data-layout-region="rows" data-article-scroll tabindex="-1"><article class="layout-article__column">${rows}${actions}</article></div>`);
   if (variant === 'split') {
     return layoutFrame('sheet-list', { ...frame, variant }, region('sheet',
       region('rows', rows + (actions ? region('actions', actions, 'layout-sheet-split__actions') : ''), 'layout-sheet-split__rows') +
@@ -251,6 +253,24 @@ export function sheetList({ rows = '', aside = '', actions = '', variant = 'page
   }
   return layoutFrame('sheet-list', frame, region('sheet', region('rows', rows, 'scroll-y') + (aside ? region('aside', aside, 'scroll-y') : '') + (actions ? region('actions', actions) : '')));
 }
+
+// ---- article content (sheetList variant 'article'): credits, release notes, licence texts. Sentence-case body text.
+/** an https link with its address visible, wrapping instead of truncating */
+export const articleLink = (url, label = '') => /^https:\/\//.test(url) ? `<a class="article-link" href="${esc(url)}" target="_blank" rel="noopener">${esc(label || url)}</a>` : '';
+/** a titled block of an article; `level: 'heading'` is a release-style heading (title large, `meta` beside it) */
+export const articleSection = ({ title = '', icon: ic = '', meta = '', level = 'label', body = '', id } = {}) =>
+  `<section class="article-section article-section--${level}"${attrStr({ id })}>${title ? `<header class="article-section__head"><h3 class="article-section__title">${icon(ic)}<span>${title}</span></h3>${meta ? `<div class="article-section__meta">${meta}</div>` : ''}</header>` : ''}${body}</section>`;
+/** a name with its role / attribution lines, optional chips or a handle on the right, and a row of links and actions */
+export function articleEntry({ title = '', desc = '', credit = '', side = '', links = [], actions = '' } = {}) {
+  const lines = String(credit).split('\n').filter(Boolean);
+  return `<div class="article-entry"><h4 class="article-entry__title">${title}</h4>${side ? `<div class="article-entry__side">${side}</div>` : ''}<div class="article-entry__body">${desc ? `<p class="article-entry__desc">${desc}</p>` : ''}${lines.map((l) => `<p class="article-entry__credit">${l}</p>`).join('')}${links.length ? `<ul class="article-entry__links">${links.map((u) => `<li>${u}</li>`).join('')}</ul>` : ''}${actions ? `<div class="article-entry__actions">${actions}</div>` : ''}</div></div>`;
+}
+export const articleList = (items) => `<ul class="article-list">${items.map((t) => `<li>${t}</li>`).join('')}</ul>`;
+/** a picture at the full column width, its size reserved so the page never jumps while it loads */
+export const articleFigure = ({ src, alt = '', caption = '', width = 1280, height = 800 } = {}) =>
+  `<figure class="article-figure"><img src="${esc(src)}" alt="${esc(alt)}" loading="lazy" decoding="async" width="${width}" height="${height}" />${caption ? `<figcaption>${esc(caption)}</figcaption>` : ''}</figure>`;
+/** plain text (licence files) as readable paragraphs */
+export const articleText = (paragraphs) => paragraphs.map((p) => `<p class="article-text">${p}</p>`).join('');
 
 /** the reference sheet header (the pause menu, owner-chosen 2026-10-16): a spaced-caps breadcrumb, a large light spaced
  *  title and an optional accent status line (the amber timer). Used by pause, the sign-in dialog and every panel that

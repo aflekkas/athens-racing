@@ -56,10 +56,10 @@ export function openExternal(url) {
 
 // ---------------------------------------------------------------- markup helpers
 const linkify = (s) => esc(s).replace(/https?:\/\/[^\s<]+/g, (u) => { const [, url, tail] = /^(.*?)([.,;:)]*)$/.exec(u); return `<a href="${url}" target="_blank" rel="noopener">${url}</a>${tail}`; });
-const empty = (msg) => C.panel('', `<p class="empty">${msg}</p>`, { cls: 'release-empty' });
-const loading = () => empty(`${C.spinner()} LOADING`);
-const head = (menu, kick) => ({ cls: 'scr--info', kick: menu.data.from === 'pause' ? 'PAUSED' : kick, hints: [['updown', 'SELECT'], ['back', 'BACK']] });
-const paragraphs = (body) => body.split(/\n{2,}/).map((p) => `<div class="mi credit-para" role="listitem">${linkify(p)}</div>`).join('');
+const head = (menu, kick, hints = [['updown', 'SCROLL'], ['back', 'BACK']]) => ({ cls: 'scr--info', kick: menu.data.from === 'pause' ? 'PAUSED' : kick, hints });
+const paragraphs = (body) => C.articleText(body.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean).map(linkify));
+const article = (menu, frame, content, actions = '') => C.sheetList({ ...head(menu, frame.kick || 'ABOUT', frame.hints), variant: 'article', title: frame.title, rows: content, actions });
+const note = (msg) => `<p class="empty">${msg}</p>`;
 
 /** Settings > About */
 export function renderAbout(menu) {
@@ -89,51 +89,53 @@ export function renderImage(menu) {
   const release = state.release?.notes?.find(n => n.version === menu.data.version);
   const image = release?.images?.[menu.data.image];
   const frame = { ...head(menu, "WHAT'S NEW"), cls: 'scr--info scr--release-image', title: 'PHOTO' };
-  return image ? C.stageInspector({ ...frame, variant: 'media', stage: `<img src="${esc(image.src)}" alt="${esc(image.alt)}" decoding="async" />`, inspector: esc(image.caption) }) : C.sheetList({ ...frame, variant: 'reading', rows: empty('PHOTO NOT AVAILABLE') });
+  return image ? C.stageInspector({ ...frame, variant: 'media', stage: `<img src="${esc(image.src)}" alt="${esc(image.alt)}" decoding="async" />`, inspector: esc(image.caption) }) : C.sheetList({ ...frame, variant: 'reading', rows: C.panel('', note('PHOTO NOT AVAILABLE')) });
 }
 
-/** the What's new screen: every release, newest first */
+/** one release's bullets, with each screenshot inline where it belongs (lead pictures first), at the full column width */
+function releaseBody(n) {
+  const pictures = (match) => (n.images || []).filter(match).map((image) => C.articleFigure({ src: image.src, alt: image.alt, caption: image.caption, width: image.width || 1280, height: image.height || 800 })).join('');
+  let out = pictures((image) => image.item == null), run = [];
+  const flush = () => { if (run.length) out += C.articleList(run); run = []; };
+  n.items.forEach((text, j) => {
+    run.push(esc(text));
+    const shots = pictures((image) => image.item === j);
+    if (shots) { flush(); out += shots; }
+  });
+  flush();
+  return out;
+}
+
+/** the What's new screen: every release, newest first, one section each on a single scrolling page */
 export function renderWhatsNew(menu) {
   ensure(menu, 'release', 'release.json');
-  const r = state.release, now = buildInfo().version;
-  let body;
-  if (r === null) body = loading();
-  else if (!r?.notes?.length) body = empty('RELEASE NOTES COME WITH PUBLISHED BUILDS');
-  else body = C.panel('', r.notes.map((n, i) => C.card({ cls: 'release', title: esc(versionLabel(n.version)), attrs: { role: 'listitem', 'aria-label': versionLabel(n.version) },
-      text: `${esc(formatDate(n.date))}${n.version === now ? ' · THIS VERSION' : i === 0 ? ' · LATEST' : ''}`,
-      body: `${gallery(n, (n.images || []).filter(image => image.item == null))}<ul class="release__items">${n.items.map((t, j) => `<li>${esc(t)}${gallery(n, (n.images || []).filter(image => image.item === j))}</li>`).join('')}</ul>` })).join(''), { cls: 'scroll-y release-list', attrs: { role: 'list' } });
-  return C.sheetList({ ...head(menu, 'ABOUT'), variant: 'reading', title: "WHAT'S NEW", rows: body });
+  const r = state.release, now = buildInfo().version, frame = { title: "WHAT'S NEW" };
+  if (r === null) return article(menu, frame, note(`${C.spinner()} LOADING`));
+  if (!r?.notes?.length) return article(menu, frame, note('RELEASE NOTES COME WITH PUBLISHED BUILDS'));
+  return article(menu, frame, r.notes.map((n, i) => C.articleSection({ level: 'heading', id: 'release-' + n.version.replaceAll('.', '-'), title: esc(versionLabel(n.version)),
+    meta: `${esc(formatDate(n.date))}${n.version === now ? C.chip('THIS VERSION', { tone: 'accent' }) : i === 0 ? C.chip('LATEST') : ''}`, body: releaseBody(n) })).join(''));
 }
 
-/** the Credits screen: team, then every generated section; entries with text open as a sheet */
+/** the Credits screen: the team, then each kind of credit; long attributions and licences open as their own page */
 export function renderCredits(menu) {
   ensure(menu, 'credits', 'credits.json');
-  const c = state.credits;
-  let body;
-  if (c === null) body = loading();
-  else if (!c) body = empty('CREDITS COME WITH PUBLISHED BUILDS');
-  else {
-    const row = (e) => {
-      const lic = e.licences?.length ? e.licences.join(' · ') : '', desc = [e.detail, lic].filter(Boolean).join(' · ');
-      if (e.text) return C.listRow({ title: esc(e.title), desc: esc(desc), act: 'creditFile', attrs: { 'data-credit': e.id } });
-      if (e.links?.[0]) return C.listRow({ title: esc(e.title), desc: esc(desc), act: 'openLink', attrs: { 'data-url': e.links[0] }, cls: 'credit-link' });
-      return C.listRow({ title: esc(e.title), desc: esc(desc), go: false, cls: 'list-row--wrap' });
-    };
-    body = C.panel('', `
-      <div class="group"><h3 class="group__title">${icon('users')}TEAM</h3>${c.team.map((m) => m.url
-        ? C.listRow({ icon: 'user', title: esc(m.name), desc: esc(m.role), meta: '@' + esc(m.handle), act: 'openLink', attrs: { 'data-url': m.url }, go: false })
-        : C.listRow({ icon: 'user', title: esc(m.name), desc: esc(m.role), go: false })).join('')}
-        ${c.ai ? `<p class="group__note">${esc(c.ai)}</p>` : ''}</div>
-      ${c.sections.map((s) => `<div class="group"><h3 class="group__title">${esc(s.title.toUpperCase())}</h3>${s.entries.map(row).join('')}</div>`).join('')}`, { cls: 'scroll-y credits' });
-  }
-  return C.sheetList({ ...head(menu, 'ABOUT'), variant: 'reading', title: 'CREDITS', hints: [['updown', 'SELECT'], ['confirm', 'OPEN'], ['back', 'BACK']], rows: body, actions: legalLinks });
+  const c = state.credits, frame = { title: 'CREDITS', hints: [['updown', 'SCROLL'], ['leftright', 'LINKS'], ['confirm', 'OPEN'], ['back', 'BACK']] };
+  if (c === null) return article(menu, frame, note(`${C.spinner()} LOADING`));
+  if (!c) return article(menu, frame, note('CREDITS COME WITH PUBLISHED BUILDS'));
+  const text = (e, label, id, cls = 'ghost') => C.button({ label, iconRight: 'chevron-right', variant: cls, size: 'sm', act: 'creditFile', attrs: { 'data-credit': id } });
+  const entry = (e) => C.articleEntry({ title: esc(e.title), desc: esc(e.detail || ''), credit: esc(e.credit || ''),
+    side: (e.licences || []).map((l) => C.chip(esc(l))).join(''), links: (e.links || []).map((u) => C.articleLink(u)).filter(Boolean),
+    actions: [e.text && text(e, e.extra?.length || e.file ? 'FULL CREDITS' : 'FULL ATTRIBUTION', e.id), ...(e.extra || []).map((x) => text(x, x.label.toUpperCase(), x.id))].filter(Boolean).join('') });
+  const team = C.articleSection({ title: 'Team', body: `${c.team.map((m) => C.articleEntry({ title: esc(m.name), desc: esc(m.role),
+    side: m.url ? C.articleLink(m.url, '@' + m.handle) : '' })).join('')}${c.ai ? `<p class="article-note">${esc(c.ai)}</p>` : ''}` });
+  return article(menu, frame, team + c.sections.map((s) => C.articleSection({ title: esc(s.title), body: s.entries.map(entry).join('') })).join(''), legalLinks);
 }
 
-/** one credits / licence file, as readable paragraphs (each focusable, so keys and pads scroll it) */
+/** one credits / licence file, as readable paragraphs */
 export function renderCreditFile(menu) {
-  const entry = state.credits?.sections?.flatMap((s) => s.entries).find((e) => e.id === menu.data.id);
-  const body = entry ? C.panel('', paragraphs(entry.text), { cls: 'scroll-y credit-sheet', attrs: { role: 'list' } }) : empty('NOT AVAILABLE');
-  return C.sheetList({ ...head(menu, 'CREDITS'), variant: 'reading', title: esc((entry?.title || 'CREDITS').toUpperCase()), rows: body });
+  const all = state.credits?.sections?.flatMap((s) => s.entries.flatMap((e) => [e, ...(e.extra || []).map((x) => ({ ...x, title: `${e.title}: ${x.label.toLowerCase()}` }))])) || [];
+  const entry = all.find((e) => e.id === menu.data.id);
+  return article(menu, { title: esc(entry?.title || 'CREDITS'), kick: 'CREDITS', hints: [['updown', 'SCROLL'], ['back', 'BACK']] }, entry ? C.articleSection({ body: paragraphs(entry.text) }) : note('NOT AVAILABLE'));
 }
 
 // ---------------------------------------------------------------- title screen: version corner + one-time card

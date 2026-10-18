@@ -1,4 +1,4 @@
-/* Release screens (src/ui/release-screens.js): title corner, one-time news panel, What's new, Credits, About.
+/* Release screens (src/ui/release-screens.js): title corner, one-time news panel, About.
    Layouts only: every surface, row and button is a kit component (src/ui/ui.css). */
 
 /* title: version + credits in the corner, bottom-left, level with the soft-key bar */
@@ -9,14 +9,9 @@
 .release__items li { position: relative; padding-left: var(--s-4); font: 500 var(--t-sm) / 1.45 var(--f-sans); color: var(--c-text-2); }
 .release__items li::before { content: ""; position: absolute; left: .1rem; top: .55em; width: .3rem; height: .3rem; border-radius: 50%; background: var(--hu-ice); opacity: .8; }
 
-/* What's new · Credits · a credit file: one centred panel */
+/* the release photos on the title news panel and photo screen (What's new, Credits and licence texts are kit article pages) */
 .release-gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(16rem, 100%), 1fr)); gap: var(--s-3); margin: var(--s-3) 0; }
 .news-panel .release-gallery { grid-template-columns: 1fr; }
-.credits .group { margin: 0; }
-.credit-para { padding: var(--s-3) var(--s-4); border: 1px solid transparent; border-radius: var(--r-3); font: 500 var(--t-sm) / 1.6 var(--f-sans); color: var(--c-text-2); white-space: pre-wrap; overflow-wrap: anywhere;
-  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease); outline: none; }
-.credit-para a { color: var(--hu-ice); text-decoration: none; }
-:root[data-ui-focus="navigation"] .credit-para.focus { background: var(--ui-row-focus);  }
 .about-stats { margin: 0 var(--s-4) var(--s-3); }
 #ui.s-whatsNew, #ui.s-credits, #ui.s-creditFile { background: radial-gradient(140% 100% at 50% 0%, rgba(8,12,17,.72), rgba(3,5,7,.9) 70%); }
 /* a release photo, full screen */

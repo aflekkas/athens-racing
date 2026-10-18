@@ -74,13 +74,13 @@ test('every credits / licence file in the repo is in the generated Credits scree
   for (const file of found) {
     assert.ok(credits.sources.includes(file), `${file} exists but is not included in the Credits screen (tools/release-data.mjs)`);
     if (file !== 'CREDITS.md') {
-      const entry = entries.find((e) => e.file === file);
-      assert.ok(entry?.text?.length > 40, `${file} has no readable entry`);
-      assert.ok(entry.title, `${file} has no title`);
+      const entry = entries.find((e) => e.file === file), extra = entries.flatMap((e) => (e.extra || []).map((x) => ({ ...x, title: e.title }))).find((x) => x.file === file);
+      assert.ok((entry || extra)?.text?.length > 40, `${file} has no readable entry`);
+      assert.ok((entry || extra).title, `${file} has no title`);
     }
   }
   assert.deepEqual((await findCreditFiles(root)).filter((f) => f !== 'CREDITS.md').sort(), found.filter((f) => f !== 'CREDITS.md').sort());
-  const ids = entries.map((e) => e.id); assert.equal(new Set(ids).size, ids.length, 'entry ids are unique (they address the sheets)');
+  const ids = entries.flatMap((e) => [e.id, ...(e.extra || []).map((x) => x.id)]); assert.equal(new Set(ids).size, ids.length, 'entry ids are unique (they address the sheets)');
 });
 
 test('a credits file added anywhere is picked up by name', async () => {
@@ -129,33 +129,59 @@ test('every human git author is listed in CREDITS.md (skipped without .git)', as
 
 test('data, fonts, audio and software sections come from the repo files, not from memory', async () => {
   const credits = await buildCredits(root, { authors: null }), sec = (id) => credits.sections.find((s) => s.id === id)?.entries || [];
-  const data = sec('data').map((e) => e.title).join('\n');
-  assert.match(data, /OpenStreetMap contributors \(ODbL\)/);
+  const all = (e) => [e.title, e.detail, e.credit].join('\n');
+  const data = sec('data').map(all).join('\n');
+  assert.match(data, /© OpenStreetMap contributors/);
+  assert.ok(sec('data').find((e) => /OpenStreetMap/.test(e.title)).licences.includes('ODbL'));
   assert.match(data, /EU-DEM v1\.1/);
   assert.match(data, /Copernicus/);
-  assert.match(data, /Poly Haven \(CC0\)/);
+  assert.match(data, /DLR e\.V\. 2010–2014 and © Airbus Defence and Space GmbH 2014–2018/, 'the Copernicus DEM notice is on the screen, not only in the full text');
   assert.deepEqual(sec('data').find((e) => /OpenStreetMap/.test(e.title)).links, ['https://www.openstreetmap.org/copyright']);
   assert.ok(sec('data').every((e) => !/assets\/audio/.test(e.title)), 'audio is covered by its own credits files');
-  assert.match(sec('visuals').find((e) => e.id === 'fonts').title, /Barlow Condensed, Barlow/);
+  assert.equal(sec('data').filter((e) => /EU-DEM|Copernicus/i.test(e.title)).length, 1, 'EU-DEM and Copernicus are one entry, not two');
+  assert.ok(sec('data').find((e) => /Copernicus/.test(e.title)).text.length > 40, 'the full Copernicus attribution stays readable');
+  const poly = sec('textures').find((e) => e.title === 'Poly Haven');
+  assert.deepEqual(poly.licences, ['CC0']);
+  const fonts = sec('visuals').find((e) => e.id === 'fonts');
+  assert.match(fonts.title, /Barlow Condensed and Barlow/);
+  assert.deepEqual(fonts.licences, ['SIL OFL 1.1']);
+  assert.equal(fonts.extra[0].file, 'assets/fonts/LICENSE.txt', 'the licence text hangs off the font entry instead of a second row');
+  assert.ok(!credits.sections.flatMap((s) => s.entries).some((e) => e.file === 'assets/fonts/CREDITS.txt' && e.id !== 'fonts'));
   const audio = sec('audio').map((e) => e.file);
   for (const f of ['engines', 'tyres', 'world', 'world/ambience', 'voice']) assert.ok(audio.includes(`assets/audio/${f}/CREDITS.txt`), f);
-  assert.ok(audio.includes('assets/audio/voice/MODELS.md'));
   const voice = sec('audio').find((e) => e.file === 'assets/audio/voice/CREDITS.txt');
   assert.match(voice.text, /Piper/); assert.ok(voice.licences.includes('Apache-2.0') && voice.licences.includes('MIT'));
-  assert.deepEqual(sec('audio').find((e) => e.file === 'assets/audio/voice/MODELS.md').licences, [], 'evaluation notes do not claim licences for the shipped files');
+  const notes = voice.extra.find((x) => x.file === 'assets/audio/voice/MODELS.md');
+  assert.equal(notes.label, 'Model notes'); assert.ok(notes.text.length > 40);
+  assert.ok(!voice.extra.some((x) => x.licences), 'evaluation notes do not claim licences for the shipped files');
   const pkg = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')), software = sec('software');
   for (const name of Object.keys({ ...pkg.dependencies, ...pkg.devDependencies })) assert.ok(software.some((e) => e.id === 'pkg-' + name), name);
   assert.equal(software.find((e) => e.id === 'pkg-three').title, 'three.js');
-  if (existsSync(join(root, 'node_modules/three/package.json'))) assert.match(software.find((e) => e.id === 'pkg-three').detail, /MIT/);
+  if (existsSync(join(root, 'node_modules/three/package.json'))) assert.match(software.find((e) => e.id === 'pkg-three').credit, /MIT/);
+  assert.ok(software.find((e) => e.file === 'assets/codecs/basis/LICENSE.txt').licences.includes('Apache-2.0'));
   const icons = sec('visuals').find(e => e.file === 'assets/icons/LICENSE');
-  assert.match(icons.title, /Lucide Icons/);
+  assert.equal(icons.title, 'Lucide icons');
+  assert.equal(icons.credit, '© 2026 Lucide Icons and Contributors');
   assert.ok(icons.licences.includes('ISC'));
   assert.ok(icons.licences.includes('MIT'), 'retain upstream Feather attribution');
+  assert.deepEqual(credits.sections.map((s) => s.title).slice(0, 5), ['Map data', 'Textures and artwork', 'Audio', 'Fonts and icons', 'Software']);
+});
+
+test('credits read as sentences: unique entries, no all-caps titles, links are https', async () => {
+  const credits = await buildCredits(root, { authors: null }), entries = credits.sections.flatMap((s) => s.entries);
+  const titles = entries.map((e) => e.title.toLowerCase());
+  assert.equal(new Set(titles).size, titles.length, 'no entry is listed twice');
+  for (const e of entries) {
+    assert.ok(!(/[A-Z]{4}/.test(e.title) && e.title === e.title.toUpperCase()), `${e.title} is shouty: sentence case`);
+    assert.ok(e.title.length < 60 && !/…$/.test(e.title), `${e.title}: titles are names, not sentences`);
+    for (const url of e.links || []) assert.match(url, /^https:\/\//);
+  }
 });
 
 test('credits text is plain and readable; licences are only those the file names', () => {
   assert.equal(cleanText('# Title\n\n| a | b |\n|---|:--|\n| `x` | y **z** |\n\n\n\nend  '), 'Title\n\n• a — b\n• x — y z\n\nend');
   assert.deepEqual(detectLicences('CC0 1.0 and CC BY 3.0, plus MIT; ODbL data; Apache-2.0'), ['CC0', 'CC BY 3.0', 'MIT', 'Apache-2.0', 'ODbL']);
+  assert.deepEqual(detectLicences('Apache License\n Version 2.0, January 2004'), ['Apache-2.0']);
   assert.deepEqual(detectLicences('all rights reserved'), []);
   assert.equal(basename(resolve(root, 'CREDITS.md')), 'CREDITS.md');
 });

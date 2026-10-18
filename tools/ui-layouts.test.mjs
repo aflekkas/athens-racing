@@ -100,3 +100,23 @@ test('lobby, track and showroom profiles own their page regions and renderer mou
  assert.match(C.stageInspector({variant:'showroom',summary:'CAR'}),/id="carStage" class="mp-stage" data-ui-keep="stage"/);
  assert.match(C.sheetList({variant:'form',rows:'RULES'}),/data-layout-region="rows">RULES/);
 });
+
+test('article pages scroll as one region under the shared header and hints, with a centred reading column', () => {
+ const html = C.sheetList({ variant: 'article', title: 'CREDITS', kick: 'ABOUT', hints: [['updown', 'SCROLL']], rows: C.articleSection({ title: 'Team', body: C.articleEntry({ title: 'Ada', desc: 'Maker', side: 'SIDE', links: [C.articleLink('https://example.com/a')] }) }), actions: 'FOOT' });
+ assert.match(html, /data-layout="sheet-list"/); assert.match(html, /layout--sheet-list-article/);
+ assert.equal((html.match(/data-article-scroll/g) || []).length, 1, 'exactly one scrolling region');
+ assert.match(html, /class="layout-article scroll-y" data-layout-region="rows"[^>]*><article class="layout-article__column">/);
+ assert.ok(html.indexOf('scr__head') < html.indexOf('layout-article') && html.indexOf('layout-article') < html.indexOf('scr__foot'), 'header and key hints stay outside the scroller');
+ assert.ok(html.indexOf('Team') < html.indexOf('Ada') && html.indexOf('FOOT') < html.indexOf('</article>'));
+ assert.match(html, /<a class="article-link" href="https:\/\/example\.com\/a" target="_blank" rel="noopener">https:\/\/example\.com\/a<\/a>/, 'the address is its own visible label');
+ assert.equal(C.articleLink('javascript:alert(1)'), '', 'only https links');
+ assert.doesNotMatch(html, /hu-driver|hu-clock/);
+});
+
+test('article figures reserve their size, lazy-load, and escape text', () => {
+ const html = C.articleFigure({ src: 'assets/x.webp', alt: 'A "car"', caption: '<b>', width: 1280, height: 720 });
+ assert.match(html, /loading="lazy" decoding="async" width="1280" height="720"/);
+ assert.match(html, /alt="A &quot;car&quot;"/); assert.match(html, /&lt;b&gt;/);
+ assert.match(C.articleList(['one', 'two']), /<ul class="article-list"><li>one<\/li><li>two<\/li><\/ul>/);
+ assert.equal((C.articleEntry({ title: 'T', credit: 'a\nb' }).match(/article-entry__credit/g) || []).length, 2, 'each credit line is its own paragraph');
+});
