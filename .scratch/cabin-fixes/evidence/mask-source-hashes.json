@@ -42,7 +42,6 @@
   "tools/cockpit-structure-mask.js": "5bf46484e818e49a6081a2a936a85667d1a9c40b251bc4cde689d5409cb87e6b",
   "tools/pov-audit.js": "75bd7b0f5ff6cdf48179a3ae38916509640878998ad0b3ffff7f6ba07d07b02c",
   "src/brand-badges.js": "199566ada0cb749161c1a485ac107cd16d8a0f26338eced7e59d8a218dbf24b9",
-  "src/manufacturers.js": "adc7eebd8810ebc0ae3da85a6dd680567712279aabf4176fbaef6fd3d05a99c0",
   "assets/brand-badges/atlas.svg": "f75aa9280f71aa2c61c90ce33631b0a6519ca245fe8d07d4b384fb4fefaa6c73",
   "src/texture-manifest.js#badge": "13150f0a23d2664b09553d99316cf6b84dbd707999655548b976eec2f3185e7f",
   "src/weather.js#cockpit-rain": "0ecb8efe9320488ad2e3b5eeccfc99d171108499e6130a22b84ff4c84d8ccc7c",
