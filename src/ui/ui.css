@@ -109,6 +109,19 @@ html { font-size: clamp(12px, calc(5px + .6vmin + .4vw), 22px); }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .panel--float { background: var(--ui-surface); } }
 @media (prefers-reduced-transparency: reduce) { .panel--float { background: var(--ui-surface); -webkit-backdrop-filter: none; backdrop-filter: none; } }
 :root[data-ui-backdrop=tint] .panel--float { background: var(--ui-surface); -webkit-backdrop-filter: none; backdrop-filter: none; }
+/* a notice (C.notice): a small dismissible card over a screen; it fades and rises in, and fades out with data-leaving */
+.notice { display: flex; flex-direction: column; gap: var(--s-3); padding: var(--s-4); box-sizing: border-box; animation: notice-card-in .32s var(--ease) .5s backwards; }
+.notice[data-leaving] { animation: notice-card-out .22s var(--ease) both; pointer-events: none; }
+.notice__head { display: flex; align-items: center; gap: var(--s-3); }
+.notice__title { flex: 1; min-width: 0; margin: 0; font-family: var(--f-cond); font-weight: 700; font-size: var(--t-sm); line-height: 1.25; letter-spacing: .12em; text-transform: uppercase; color: var(--c-text); }
+.notice__text { margin: 0; font: 500 var(--t-sm) / 1.45 var(--f-sans); color: var(--c-text-2); }
+.notice__steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-2); }
+.notice__steps li { display: flex; align-items: center; gap: var(--s-3); font: 500 var(--t-sm) / 1.35 var(--f-sans); color: var(--c-text-2); }
+.notice__steps b { color: var(--c-text); font-weight: 700; letter-spacing: .06em; }
+.notice__actions { margin-top: 0; }
+@keyframes notice-card-in { from { opacity: 0; transform: translateY(8px); } }
+@keyframes notice-card-out { to { opacity: 0; transform: translateY(8px); } }
+@media (prefers-reduced-motion: reduce) { .notice, .notice[data-leaving] { animation-duration: .01ms; animation-delay: 0s; } }
 .panel__head { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); margin: 0 0 var(--s-3); }
 .panel__title { margin: 0; display: flex; align-items: center; gap: var(--s-2); font-family: var(--f-cond); font-weight: 600; font-size: var(--t-xs); letter-spacing: var(--track-kick); color: var(--c-text-3); text-transform: uppercase; }
 .panel__title .ico { color: var(--c-text-2); }

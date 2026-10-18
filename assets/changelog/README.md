@@ -13,5 +13,6 @@ Real in-game screenshots, inspected before inclusion, converted to 1280 px wide 
 | 2026.10.15.3/riviera-rails.webp | .scratch/riviera-rails/after-2860-fullres.png | Riviera coastal guardrails; production chase camera, Potato preset at 1280 × 800 |
 | 2026.10.16.1/sharper-handling.webp | .scratch/handling-opus/hairpin-huracan-after.webp | Trail-braked Megara hairpin, eight chase-camera frames (production Ground) |
 | 2026.10.16.1/about-pages.webp | .scratch/about-pages/shots/credits-top-1280x800.png, in-game Credits at 1280 × 800, crop y0–750 (footer excluded) | Credits and What's new as full scrolling pages |
+| 2026.10.16.1/home-screen-prompt.webp | .scratch/a2hs/shots/ios-landscape-iphone.png, iPhone 14 landscape profile, 844 × 390 at 3x, resized to 1280 | The Add to Home Screen card on the phone title screen |
 
 Keep filenames stable: a later release may reuse an earlier screenshot. See deploy/README.md and CONTRIBUTING.md for the Unreleased workflow and automated limits.

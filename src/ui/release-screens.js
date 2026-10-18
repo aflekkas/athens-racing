@@ -28,6 +28,8 @@ const fetchJson = (name) => fetch(new URL(name, document.baseURI), { cache: 'no-
 /** null = not requested, false = unavailable (local dev), else the parsed file */
 function ensure(menu, key, file) {
   if (state[key] !== null || state.loading[key]) return;
+  // A local dev build has no /release.json or /credits.json (the deploy writes them): don't ask, or every load logs a 404.
+  if (buildInfo().version === DEV_VERSION) { state[key] = false; return; }
   state.loading[key] = fetchJson(file).catch(() => false).then((data) => {
     state[key] = data; state.loading[key] = null;
     if (key === 'release') settle(menu);
@@ -139,6 +141,8 @@ export function renderCreditFile(menu) {
 }
 
 // ---------------------------------------------------------------- title screen: version corner + one-time card
+/** is the one-time news card on the title right now? (call after titleExtras, which decides it) */
+export const newsCardUp = () => !!state.card && !racing();
 export function titleExtras(menu) {
   ensure(menu, 'release', 'release.json');
   settle(menu, false); // already rendering the title

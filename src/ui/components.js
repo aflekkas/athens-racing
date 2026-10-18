@@ -104,6 +104,12 @@ export function option({ icon: ic, title, desc = '', act, attrs, cls = '', disab
 export function panel(title, body, { icon: ic, cls = '', notch = false, right = '', attrs } = {}) {
   return `<section class="panel ${notch ? 'panel--notch' : ''} ${cls}"${attrStr(attrs)}>${title ? `<header class="panel__head"><h3 class="panel__title">${icon(ic)}${title}</h3>${right}</header>` : ''}${body}</section>`;
 }
+/** A small, dismissible card that sits over a screen without blocking it (the install hint): a lead icon plate, a title, one
+ *  line of text, optional numbered steps ({ icon, text }) and actions. Not a dialog: nothing behind it is dimmed or trapped.
+ *  It fades in by itself; set data-leaving on it to fade it out. */
+export function notice({ icon: ic = 'info', title = '', text = '', steps = [], actions = '', dismiss = '', dismissTitle = 'Dismiss', cls = '', attrs } = {}) {
+  return `<aside class="panel panel--float notice ${cls}" role="region"${attrStr(attrs)}><header class="notice__head"><span class="option__ico">${icon(ic)}</span><h3 class="notice__title">${title}</h3>${dismiss ? button({ icon: 'x', variant: 'ghost', size: 'sm', act: dismiss, title: dismissTitle }) : ''}</header>${text ? `<p class="notice__text">${text}</p>` : ''}${steps.length ? `<ol class="notice__steps">${steps.map((st) => `<li><span class="option__ico">${icon(st.icon)}</span><span>${st.text}</span></li>`).join('')}</ol>` : ''}${actions ? `<div class="field-actions notice__actions">${actions}</div>` : ''}</aside>`;
+}
 export function card({ media = '', badge = '', title = '', text = '', body = '', foot = '', act, attrs, cls = '', selected } = {}) {
   return `<div class="mi card ${selected ? 'selected' : ''} ${cls}" role="button"${attrStr({ 'data-act': act, ...attrs })}>${media ? `<div class="card__media">${media}${badge ? `<span class="card__badge">${badge}</span>` : ''}</div>` : ''}<div class="card__body"><h3 class="card__title">${title}</h3>${text ? `<p class="card__text">${text}</p>` : ''}${body}${foot ? `<div class="card__foot">${foot}</div>` : ''}</div>${icon('check', 'card__selected')}</div>`;
 }

@@ -8,6 +8,9 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- On phones and tablets the title screen now invites you to add ATHENS RACING to your home screen, so it opens fullscreen like an app. Android offers a one-tap INSTALL, iPhone shows the Share steps. Not now hides it for a week, and it never shows in the installed app.
+  ![Title screen on a phone with a slim card showing the two Add to Home Screen steps](assets/changelog/2026.10.16.1/home-screen-prompt.webp "The card sits under the tiles, never over the race.")
+
 - Credits and What's new are full pages you can scroll with keys, gamepad, wheel or touch. Credits are grouped by kind, and release pictures sit inline.
   ![Credits page with the team, map data and elevation attribution in a centred column](assets/changelog/2026.10.16.1/about-pages.webp "Credits read as one clear page, with every attribution fully visible.")
 

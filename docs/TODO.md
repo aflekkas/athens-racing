@@ -10,6 +10,7 @@ Production is on hold (`~/.local/state/athens-release/production-hold`). Staging
 - [x] Leaderboards: personal and global, with car and setup, filterable (`5149f16d`, `9a7c06ca`). Moved into the Quick Race track screen (`c9619d55`).
 - [x] Cabin floors sealed; empty interiors visible through light exterior glass; batched (`b99589d5`, `e3ad08f9`). Live on production 2026-10-17 22:19.
 - [~] Mobile playable on phones (Sol)
+- [x] Add to Home Screen invitation on phones (title-screen kit notice, manifest, iOS / Android steps, 7-day snooze); `/release.json` 404 on every local load fixed (this commit)
 - [~] Remove music entirely (Sol)
 - [~] No hover effects + no blue focus outlines; subtle surface focus for keys (Sol)
 - [~] Settings sidebar redesign (Opus, Enterprise)
