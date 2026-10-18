@@ -123,6 +123,13 @@ lives in `src/ui/loading-content.js`, while loading.js owns progress and recover
 composition. Its title-only status bar owns the account entry; inner templates
 continue to expose only Back, breadcrumb and title.
 
+Screens never render their own `.scr` shell and never carry page layout in a stylesheet of
+their own: `tools/screen-layouts.test.mjs` fails on a hand-built shell, a renderer that skips
+the templates, or a layout property (display, grid, flex, position, size, spacing, overflow)
+in a screen stylesheet. The only allowlisted screen rendering is the map canvas, its labels and
+pins (`src/map-select.css`) and the static menu backdrop (`src/menu-backdrop.css`). Put
+geometry in `src/ui/ui.css`.
+
 Pointer hover is a kit concern too: one `@media (hover: hover) and (pointer: fine)` block at the
 end of `src/ui/ui.css` lights an item with the keyboard-focus surface. Never add `:hover` to a
 screen stylesheet or an outline, ring, glow or scale to any state (`tools/pointer-hover.test.mjs`).

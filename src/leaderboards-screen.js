@@ -97,7 +97,3 @@ export function leaderboardChange(menu, key, value) {
   }
   menu.refresh();
 }
-// Screen CSS only arranges shared components.
-if (typeof document !== 'undefined' && !document.getElementById('leaderboards-css')) {
-  const link = document.createElement('link'); link.id = 'leaderboards-css'; link.rel = 'stylesheet'; link.href = new URL('./leaderboards.css', import.meta.url).href; document.head.append(link);
-}

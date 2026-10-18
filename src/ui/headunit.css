@@ -1,48 +1,6 @@
-/* Head-unit skin for panels whose markup and behaviour other modules own: the loading screen (src/ui/loading.js +
-   style.css) and the race corner buttons. Loaded last
-   (index.html); rules carry :root so they also win over stylesheets that modules append later. Tokens: src/ui/ui.css. */
-
-/* ---------------------------------------------------------------- loading: the car's welcome sequence */
-
-
-
-
-
-
-
-
-/* status line: what is happening now (left) and, only when measured, how much has arrived (right) */
-
-
-
-/* four steps; only the active one moves (measured fill or an indeterminate sweep) */
-
-
-
-
-
-
-
-/* quiet, plain-language context when the screen has gone still for a while */
-
-
-
-/* paused load: one calm glass panel with the next step, never a red diagnostic banner */
-
-
-
-
-
-
-
-
-@media (max-width: 560px) {
-  
-  
-  
-  
-  
-}
+/* Head-unit skin for the race corner buttons and the race HUD readouts, whose markup and behaviour other modules own.
+   Loaded last (index.html); rules carry :root so they also win over stylesheets that modules append later. Tokens: src/ui/ui.css.
+   Menu and loading screen layouts live in the kit (src/ui/ui.css, docs/ui-layouts.md). */
 
 /* ---------------------------------------------------------------- race corner buttons (settings / multiplayer) */
 :root #race-settings, :root body #mp-toggle { border-radius: var(--r-pill); border: 1px solid var(--hu-hair-2); background: var(--hu-sheen), rgba(10,14,19,.78); -webkit-backdrop-filter: var(--hu-blur); backdrop-filter: var(--hu-blur);
@@ -93,5 +51,3 @@
 /* ---------------------------------------------------------------- multiplayer: the lobby owns the top-right corner.
    The corner MULTIPLAYER toggle only opens the lobby, so it steps aside while the lobby is open and the close button stays clear. */
 :root body:has(#multiplayer:not([hidden])) #mp-toggle { display: none; }
-/* results: a stat value wraps rather than truncating on a phone ("212 KM/H" stays whole) */
-

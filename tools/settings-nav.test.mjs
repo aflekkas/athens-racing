@@ -16,7 +16,7 @@ function cssRules(src) {
   while ((m = re.exec(src))) rules.push({ selector: m[1].trim().replace(/\s+/g, ' '), body: m[2], decls: m[2].split(';').map((d) => d.slice(0, d.indexOf(':')).trim().toLowerCase()).filter(Boolean), line: src.slice(0, m.index).split('\n').length });
   return rules;
 }
-const SCREEN_CSS = ['src/menu.css', 'src/leaderboards.css', 'src/map-select.css', 'src/multiplayer.css', 'src/ui/accounts.css', 'src/ui/release.css', 'src/ui/headunit.css', 'src/input.css', 'src/music-settings.css'];
+const SCREEN_CSS = ['src/menu.css', 'src/map-select.css', 'src/multiplayer.css', 'src/ui/release.css', 'src/ui/headunit.css', 'src/input.css', 'src/music-settings.css'];
 
 test('the Settings screen builds its sidebar with the shared nav component', () => {
   const menu = read('src/menu.js');

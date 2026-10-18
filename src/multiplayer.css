@@ -43,7 +43,6 @@
 #mp-board .mp-watch { display:flex;gap:3px;padding:3px 0;pointer-events:auto }
 #mp-board .mp-watch ui-select { width:0;min-width:0;flex:1;font-size:10px;min-height:26px;padding:0 6px;gap:4px }
 #mp-board .mp-watch button { padding:0 8px;min-height:26px }
-.mp-blocked-row { display:flex;justify-content:space-between;align-items:center;margin:6px 0;gap:10px }
 @media(max-height:480px) {
   #mp-board { top:86px;right:12px;width:168px;max-height:160px;padding:7px 9px }
   #mp-board li { font-size:11px }
