@@ -1,3 +1,4 @@
+import { syncCameraVehicleView } from './camera-visibility.js';
 import { soloStartPosition, raceGridSlot } from './start-placement.js';
 import { seatPosition } from './seat-position.js';
 import { CpuMetrics } from './cpu-metrics.js';
@@ -2256,6 +2257,8 @@ function render() {
   guardLighting();
   const photoCamera = G.resultPhotoPending ? { position: camera.position.clone(), quaternion: camera.quaternion.clone(), fov: camera.fov } : null;
   if (photoCamera) { const v = player.veh; camera.position.set(v.x + Math.cos(v.yaw) * 6 + Math.sin(v.yaw) * 5, v.y + 2.6, v.z - Math.sin(v.yaw) * 6 + Math.cos(v.yaw) * 5); camera.lookAt(v.x, v.y + .65, v.z); camera.fov = 55; camera.updateProjectionMatrix(); }
+  // Camera blends and result photos can be outside while the selected mode is POV.
+  const cockpitInView = syncCameraVehicleView(player.model, camera, G.cam, !!photoCamera);
   renderer.info.autoReset = false; renderer.info.reset();
   ENV.updateWorldBlend(G.lastDt || 1 / 60);
   updateWeather(G.lastDt || 1 / 60);
@@ -2265,7 +2268,7 @@ function render() {
   // In-car mirrors only (Settings > Mirrors). Owner-locked: the chase / third-person camera never renders a mirror or
   // a rear-view strip, and never pays for the mirror pass (docs/OWNER-DECISIONS.md).
   const mirrorsOn = settings.mirrors !== false;
-  if (mirrorsInView(G.cam)) player.cockpit.renderMirrors(renderer, scene, { enabled: mirrorsOn });
+  if (mirrorsInView(G.cam)) { if (cockpitInView) player.cockpit.renderMirrors(renderer, scene, { enabled: mirrorsOn }); }
   // post: depth of field for the orbit cameras
   const orbit = G.cam === 'orbit';
   post.comp.uDof.value = orbit ? 5.5 : 0;
@@ -2277,7 +2280,7 @@ function render() {
     metric.peakHeapBytes = Math.max(metric.peakHeapBytes || 0, heapBytes() || 0) || null;
     metric.gpu = estimateSceneMemory(scene);
   }
-  if (photoCamera) { G.resultPhoto = captureResultFrame(canvas); G.resultPhotoPending = false; camera.position.copy(photoCamera.position); camera.quaternion.copy(photoCamera.quaternion); camera.fov = photoCamera.fov; camera.updateProjectionMatrix(); }
+  if (photoCamera) { G.resultPhoto = captureResultFrame(canvas); G.resultPhotoPending = false; camera.position.copy(photoCamera.position); camera.quaternion.copy(photoCamera.quaternion); camera.fov = photoCamera.fov; camera.updateProjectionMatrix(); syncCameraVehicleView(player.model, camera, G.cam); }
 }
 
 function onResize() {

@@ -159,7 +159,8 @@
     "tools/mobile.test.mjs",
     "tools/lucide-icons.test.mjs",
     "tools/world-gen/influence.test.mjs",
-    "tools/world-surface-audit.test.mjs"
+    "tools/world-surface-audit.test.mjs",
+    "tools/camera-visibility.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",
