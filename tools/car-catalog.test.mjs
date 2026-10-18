@@ -78,11 +78,13 @@ test('new trim IDs reach server and deployment catalogues, with exactly one nitr
   for(const m of CAR_MODELS)for(const id of m.trims){const c=CARS.find(c=>c.id===id);if(!c.nativeFleet&&!c.police){assert(c.zeroTo100>0);assert(c.visual.rim>=13&&c.visual.rim<=21);}}
   assert(CAR_MODELS.filter(m=>m.trims.length>=2).length>=15);
 });
-test('body uses shared segments beside trim arrows, filtering forbidden body-engine combinations',async()=>{
+test('body and trim use shared segments, filtering forbidden body-engine combinations',async()=>{
  const {renderCarSelect}=await import('../src/car-select.js');
  const html=renderCarSelect({index:CARS.findIndex(c=>c.id==='mini'),detail:true,allowedCars:['mini','mini_jcw']});
  assert.match(html,/data-key="carBody"/);assert.match(html,/data-trim-current="mini"/);assert.match(html,/HARDTOP/);assert.match(html,/CONVERTIBLE/);assert.match(html,/role="radiogroup"/);assert(!html.includes('<select'));
- assert(!html.includes('data-key="carTrim"'));assert.match(html,/data-act="carTrimNext"/);
+ assert(!html.includes('data-key="carTrim"'));assert.doesNotMatch(html,/data-act="carTrimNext"/);
+ const cle=renderCarSelect({index:CARS.findIndex(c=>c.id==='cle200'),detail:true,allowedCars:['cle200','cle53']});
+ assert.match(cle,/data-key="carTrim"/);assert.match(cle,/data-v="cle200"/);assert.match(cle,/data-v="cle53"/);assert.doesNotMatch(cle,/data-v="cle300e"/);
  const z4=renderCarSelect({index:CARS.findIndex(c=>c.id==='z4'),detail:true});assert(!z4.includes('data-key="carBody"'));
 });
 
