@@ -42,6 +42,13 @@ test(`Lucide icons only, no outline, no hover, animated in and out. ${lock}`, as
   assert.doesNotMatch(await read('src/ui/release.css').then((s) => s.slice(s.indexOf('the install hint'))), /:hover|outline/);
 });
 
+test(`the card never clips or shrinks the owner-locked title tiles: the title scrolls instead. ${lock}`, async () => {
+  const css = await read('src/ui/ui.css');
+  assert.match(css, /#ui \.scr--title:has\(\.install-notice\) \{[^}]*overflow: clip auto[^}]*minmax\(min-content, 1fr\)/);
+  assert.match(css, /#ui \.scr--title \.scr__foot:has\(> \.install-notice\) \{ flex-wrap: wrap; \}/, 'wins over the short-screen nowrap footer rule');
+  assert.doesNotMatch(css.slice(css.indexOf('the install hint')), /\.home__tiles|\.option--tile|\.option--hero/, 'the tiles themselves are untouched');
+});
+
 test(`dismissals are remembered; installing is final. ${lock}`, async () => {
   const card = await read('src/ui/install-card.js');
   for (const act of ['installLater', 'installNever', 'installApp']) assert.match(card, new RegExp(`case '${act}'`));
