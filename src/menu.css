@@ -62,25 +62,12 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
 /* ---------------------------------------------------------------- pause: a quick-settings sheet over the frozen road view */
 /* ---------------------------------------------------------------- results: the trip computer */
 
-
 /* Keyboard/gamepad focus uses a quiet surface; no outline or ring. */
 .res-sub { margin: var(--s-3) 0 0; font-family: var(--f-sans); font-weight: 500; font-size: var(--t-lg); letter-spacing: .02em; color: var(--c-text-2); }
 .res-sub b { color: #fff; font-weight: 600; }
 
-
-
 /* ---------------------------------------------------------------- car detail: studio + vehicle info */
-.car-layout { flex: 1; display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(19rem, 1fr); gap: var(--s-5); min-height: 0; }
-.car-stage { position: relative; min-width: 0; min-height: 0; border-radius: var(--r-4); background: radial-gradient(ellipse at 50% 64%, #2c3741, #11181f 72%); box-shadow: inset 0 0 0 1px var(--ui-line); overflow: hidden; }
-.car-stage canvas { display: block; width: 100%; height: 100%; }
-.car-stage__count { position: absolute; left: var(--s-4); top: var(--s-4); z-index: 1; display: flex; align-items: center; gap: var(--s-2); }
-.car-info { align-self: center; min-width: 0; max-height: 100%; overflow-y: auto; }
-.car-specs { margin-top: var(--s-4); grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.car-paints { margin-top: var(--s-5); }
-.car-paints__row { display: flex; flex-wrap: wrap; gap: var(--s-3); margin-top: var(--s-3); }
-.car-paints .paint { width: 2rem; height: 2rem; border-radius: 50%; background: var(--paint); box-shadow: inset 0 -3px 6px rgba(0,0,0,.35), inset 0 2px 3px rgba(255,255,255,.25), 0 0 0 1px rgba(255,255,255,.2); transition: transform var(--dur) var(--ease), box-shadow var(--dur); }
-.car-paint-name { margin-top: var(--s-2); min-height: 1.2em; font-family: var(--f-sans); font-size: var(--t-xs); color: var(--c-text-3); }
-.car-actions { margin-top: var(--s-5); display: grid; gap: var(--s-2); }
+
 /* ---------------------------------------------------------------- responsive */
 @media (max-width: 1100px) {
   .home { grid-template-columns: minmax(0, 1fr); gap: var(--s-4); align-content: center; }
@@ -88,14 +75,14 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
   .home__tiles { height: auto; grid-template-rows: repeat(2, minmax(7.5rem, auto)); }
 }
 @media (max-width: 860px) {
-  .setup-layout, .car-layout { grid-template-columns: minmax(0, 1fr); }
-  .scr--setup .scr__body, .scr--car .scr__body { overflow-y: auto; margin: -6px; }
+  .setup-layout { grid-template-columns: minmax(0, 1fr); }
+  .scr--setup .scr__body { overflow-y: auto; margin: -6px; }
   /* Keyboard/gamepad focus uses a quiet surface; no outline or ring. */
-  .setup-layout, .car-layout { display: flex; flex-direction: column; flex: none; }
-  .setup__event, .setup__form .setup__fields, .car-info, .vehicle-specs { max-height: none; overflow: visible; }
+  .setup-layout { display: flex; flex-direction: column; flex: none; }
+  .setup__event, .setup__form .setup__fields { max-height: none; overflow: visible; }
   .setup__event { box-sizing: border-box; width: 100%; }
   /* stacked: the summary spans the column like the form under it */
-  .car-stage { flex: none; height: max(12rem, 34vh); }
+
   /* settings: the rail becomes a scrolling tab strip above the list */
   .scr--settings { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto minmax(0, 1fr) auto; grid-template-areas: "status" "title" "rail" "body" "foot"; }
   .set-panel { padding: var(--s-3) var(--s-2) var(--s-4); }
@@ -113,12 +100,12 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
   .title__mark { font-size: min(3.4rem, 16vh); }
   .title__tag { display: none; }
   .home__tiles { height: 100%; grid-template-rows: repeat(2, minmax(0, 1fr)); gap: var(--s-2); }
-  .car-stage { height: auto; }
-  .car-layout { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); flex: 1; min-height: 0; }
-  .car-info { align-self: stretch; }
-  .car-layout > .car-stage { height: auto; }
-  .scr--car .scr__body { overflow: hidden; }
-  .car-info { max-height: 100%; overflow-y: auto; }
+
+  
+
+  
+
+  
   .scr--settings { grid-template-columns: minmax(9rem, 12rem) minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr) auto; grid-template-areas: "status status" "title title" "rail body" "foot foot"; }
   .scr--settings .scr__headr { overflow-y: auto; max-height: 100%; }
 }
@@ -127,9 +114,9 @@ body.ui-open #keys, body.ui-open #credit { opacity: 0; }
   .scr--setup .scr__body { overflow: hidden; }
   .setup__event, .setup__form .setup__fields { max-height: 100%; overflow-y: auto; }
   .setup__form { min-height: 0; }
+
   
-  
-  
+
 }
 /* track select on phones: the destination card stacks under the map, so the body scrolls */
 @media (max-width: 560px), (max-height: 500px) {
@@ -247,17 +234,10 @@ body .racer-marker.edge .racer-chevron { -webkit-mask-image: url(../assets/icons
 #loading.open ~ #mp-toggle, body:not(.loaded) #mp-toggle, body[data-ui=title] #mp-toggle { display: none !important; }
 /* The garage catalogue: a scrollable grid with one renderer shared by its thumbnails. */
 /* focusing a card keeps its class header in view */
-.car-description { color: var(--c-text-2); font: 500 .9rem/1.5 var(--f-sans); margin: 0; }
-.car-transmission { color: var(--c-text-3); margin: .6rem 0 0; }
-.car-stage__count { display: flex; flex-wrap: wrap; gap: .5rem; }
-.car-decals { padding: 1rem 0; border-top: 1px solid var(--c-line); }
-.car-decals .car-paints__row { margin: .6rem 0; }
+
 .decal-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin: .7rem 0; }
 .decal-layers { display: grid; gap: .25rem; }
-.scr--car .car-info { overflow-y: auto; }
-@media (max-height: 500px) {
-  .scr--car .car-layout { align-items: stretch; }
-}
+
 /* Binding-aware controls stay compact at race start, and can be expanded in pause. */
 #drivingHints { position: fixed; z-index: 24; left: 50%; bottom: 1.5rem; transform: translateX(-50%); width: max-content; max-width: calc(100vw - 3rem); display: flex; align-items: center; gap: 1rem; padding: .7rem 1rem; border: 1px solid var(--c-line-2); border-radius: var(--r-3); background: #0b1119ed; color: white; }
 #drivingHints[hidden], #drivingTip[hidden] { display: none; }
@@ -282,7 +262,7 @@ body #engineHud[data-tone=bad] { color: #ff7e74; border-color: #ff7e7480; }
 #engineHud b, #engineHud small { display: block; }
 #engineHud small { margin-top: .2rem; color: #e4ebf3; letter-spacing: .02em; font-size: .65rem; }
 #engineHud > i { position: absolute; bottom: 0; left: 0; height: 3px; width: calc(var(--health)*100%); background: currentColor; }
-.car-actions { display: grid; gap: .5rem; }
+
 /* The limit sign sits beside the dial (the gear and mode live on the cluster itself). */
 body #limitSign { left: calc(-2.625rem - 42px); bottom: calc(16px + 3.9rem - 32px); width: 60px; height: 60px; border-width: 7.5px; }
 @media(max-width:500px) {
@@ -290,8 +270,7 @@ body #limitSign { left: calc(-2.625rem - 42px); bottom: calc(16px + 3.9rem - 32p
 }
 /* Keep district captions inside the touch minimap's bottom-left cut corner. */
 body.touch-driving #hud #mapLabel { left: 18px; right: 4px; bottom: 12px; padding: 2px 0; font-size: 9px; letter-spacing: .02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.car-stage { touch-action: none; }
-.car-stage__hint { position: absolute; left: 1rem; bottom: 1rem; pointer-events: none; cursor: default; color: var(--c-text-3); font: 600 .7rem var(--f-cond); letter-spacing: .16em; }
+
 #race-settings { position: fixed; right: 12px; top: 14px; z-index: 48; display: flex; align-items: center; gap: 6px; min-height: 40px; padding: 8px 10px; color: white; background: #151d27; border: 1px solid #ffffff55; border-radius: 6px; font: 800 12px var(--f-cond); }
 #race-settings .ico { width: 18px; height: 18px; }
 body:not(.racing):not(.counting) #race-settings, body.ui-open #race-settings, body:has(#multiplayer:not([hidden])) #race-settings { display: none; }
@@ -399,22 +378,6 @@ body.ui-open :is(#hud,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-pr
 .setup__go { display: flex; justify-content: flex-end; margin-top: var(--s-4); }
 .setup__fields > .btn { margin: var(--s-2) 0; }
 /* Garage controls sit below the clean title; cards fill the remaining body height. */
-.catalog-toolbar { flex: none; display: grid; grid-template-columns: minmax(11rem,1.4fr) repeat(5,minmax(0,1fr)); gap: var(--s-2); margin-bottom: var(--s-3); }
-.scr--catalog .scr__body { overflow: hidden; }
-.car-grid { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(auto-fill,minmax(15rem,1fr)); grid-auto-rows: max-content; align-content: start; gap: var(--s-4); padding: 4px; scroll-padding-block: 4px; }
-.car-grid > .card { scroll-snap-align: start; }
-@media (max-width: 900px) { .catalog-toolbar { grid-template-columns: repeat(5,minmax(0,1fr)); } .catalog-toolbar > .search { grid-column: 1 / -1; } }
-@media (max-width: 560px) {
-  .catalog-toolbar { display: flex; overflow-x: auto; padding-bottom: var(--s-2); }
-  .catalog-toolbar > * { flex: 0 0 10rem; }
-  .catalog-toolbar > .search { flex-basis: 12rem; }
-  .car-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: var(--s-2); }
-}
-.car-info, .vehicle-specs { align-self: stretch; min-width: 0; max-height: 100%; overflow-y: auto; }
+
 /* The full stage is the viewer; trim and body controls live in the specification panel. */
-.car-preview-viewport { position: absolute; inset: 0; touch-action: pan-y; }
-
-@media (max-width: 800px) and (orientation: portrait) { .vehicle-specs { max-height: none; overflow: visible; } }
-
-:root[data-ui-focus="navigation"] :is(.car-paints, .car-decals) .paint.focus { filter: contrast(.8) brightness(1.05); }
 

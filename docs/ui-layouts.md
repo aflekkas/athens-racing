@@ -73,3 +73,8 @@ owns the live-results region and its busy state.
 `stageInspector({ variant: 'overview', stage, inspector, actions })` pairs a compact
 track overview with related records. It stacks below 700px and keeps actions in
 the shared footer.
+
+`browseGrid({ variant: 'catalog', filters, items })` keeps the garage filter strip
+under the title and scrolls it horizontally on phones. `stageInspector` supports
+`vehicle` with `stageAttrs` for renderer IDs/labels and a shared specification
+panel in `inspector`; the kit owns the full viewer bounds and mobile stacking.

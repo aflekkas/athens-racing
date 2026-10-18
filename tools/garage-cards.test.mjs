@@ -17,7 +17,7 @@ test('brand filter covers every manufacturer and combines with the other filters
  for(const [brand] of options){const list=filterCars(CARS,{brand});assert.ok(list.length,brand);assert.ok(list.every(({car})=>badgeBrand(car)===brand));}
  assert.deepEqual(filterCars(CARS,{brand:'volkswagen',search:'golf',category:'city',drive:'AWD',power:'mid',sort:'power'}).map(({car})=>car.id),['golf_r']);
  assert.equal(filterCars(CARS,{brand:'fiat',category:'super'}).length,0);
- const source=read('src/car-select.js');assert.match(source,/key: 'brand', label: 'BRAND'/);assert.match(source,/body: `\$\{toolbar\}<div class="car-grid/);
+ const source=read('src/car-select.js');assert.match(source,/key: 'brand', label: 'BRAND'/);assert.match(source,/C\.browseGrid\(\{ variant: 'catalog'/);assert.match(source,/filters: toolbar, items:/);
 });
 test('showroom has a transparent soft shadow receiver and no turntable disc',()=>{
  const source=read('src/car-select.js');assert.doesNotMatch(source,/CircleGeometry|castShadow=true/);assert.match(source,/createVehicleContactShadow\(\)/);

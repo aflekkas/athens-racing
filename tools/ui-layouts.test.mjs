@@ -69,3 +69,9 @@ test('overview stages keep their actions in the shared footer', () => {
  assert.ok(html.indexOf('scr__foot')<html.indexOf('RACE'));
  assert.match(html,/data-layout-region="inspector"/);
 });
+
+test('catalogues and vehicle stages retain renderer hooks inside kit-owned regions', () => {
+ const html=C.stageInspector({variant:'vehicle',stage:'VIEWER',stageAttrs:{id:'carStage','aria-label':'A & B'},inspector:'SPECS'});
+ assert.match(html,/id="carStage"/);assert.match(html,/aria-label="A &amp; B"/);
+ assert.match(C.browseGrid({variant:'catalog',filters:'FILTER',items:'CARS'}),/catalog-toolbar" data-layout-region="filters"/);
+});

@@ -196,11 +196,13 @@ export function sidebarContent({ nav = '', content = '', variant = 'page', ...fr
 }
 /** Filters always follow the title; the collection uses the remaining height. */
 export function browseGrid({ filters = '', items = '', list = false, aside = '', busy = false, variant = 'page', ...frame } = {}) {
+  if (variant === 'catalog') return layoutFrame('browse-grid', { ...frame, variant }, `<div class="catalog-toolbar" data-layout-region="filters">${filters}</div><div class="car-grid scroll-y" data-layout-region="items">${items}</div>`);
   if (variant === 'filtered') return layoutFrame('browse-grid', { ...frame, variant }, filters + `<div class="layout-browse-filtered" data-layout-region="collection"><aside class="layout-browse-filtered__aside" data-layout-region="filters">${aside}</aside><div class="layout-browse-filtered__items" data-layout-region="items" aria-live="polite" aria-busy="${!!busy}">${items}</div></div>`);
   return layoutFrame('browse-grid', frame, `${filters ? region('filters', filters) : ''}${region('items', items, `scroll-y ${list ? 'layout__items--list' : ''}`)}`);
 }
 /** Large viewer and inspector; the inspector follows the stage on a narrow portrait screen. */
-export function stageInspector({ stage = '', inspector = '', actions = '', variant = 'page', ...frame } = {}) {
+export function stageInspector({ stage = '', inspector = '', actions = '', stageAttrs = {}, variant = 'page', ...frame } = {}) {
+  if (variant === 'vehicle') return layoutFrame('stage-inspector', { ...frame, variant }, `<div class="car-layout" data-layout-region="stage-inspector"><div class="car-stage" data-layout-region="stage"${attrStr(stageAttrs)}>${stage}</div>${inspector}</div>`);
   if (variant === 'overview') return layoutFrame('stage-inspector', { ...frame, variant, foot: region('actions', actions, 'layout-overview__actions') }, region('stage-inspector', region('stage', stage, 'layout-overview__stage') + region('inspector', inspector, 'layout-overview__inspector'), 'layout-overview'));
   if (variant === 'media') return layoutFrame('stage-inspector', { ...frame, variant }, `<figure class="layout-media" data-layout-region="stage">${stage}${inspector ? `<figcaption data-layout-region="inspector">${inspector}</figcaption>` : ''}</figure>`);
   return layoutFrame('stage-inspector', frame, region('stage-inspector', region('stage', stage) + region('inspector', inspector, 'scroll-y')));
