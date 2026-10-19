@@ -91,7 +91,9 @@ export function buildPsychikoScenery(data, bytes, osm = []) {
         let type = null;
         if (clear(x, z, .1, own) && !inBuilding(x - p.tz * side * 1.2, z + p.tx * side * 1.2)) {
           const kind = sec.kind;
-          if (inCampus(x - p.tz * side * 3, z + p.tx * side * 3)) type = 'school-stone';
+          // Reviewed Bizaniou (97723004) College boundary: campus relation geometry is absent from the closed-way index.
+          const collegeLeft = ref < 0 && side < 0 && /Μπιζανίου|Bizaniou|Vyzaniou/.test(route.names.findLast(n=>n.s<=s)?.name||'');
+          if (collegeLeft || inCampus(x - p.tz * side * 3, z + p.tx * side * 3)) type = 'school-stone';
           else if (inPark(x - p.tz * side * 2, z + p.tx * side * 2)) type = pickWeighted(WALLS.park, r);
           else { const o = observedNear(x, z), seen = o && ((x - o.x) * o.hz - (z - o.z) * o.hx > 0 ? o.left : o.right);
             type = seen?.length ? OBSERVED[seen[Math.floor(r * seen.length)]] ?? null : pickWeighted(WALLS[kind] || WALLS.default, r); }

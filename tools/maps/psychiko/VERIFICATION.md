@@ -1,3 +1,15 @@
+# Psychiko Faros Circuit v3 — 2026-10-19
+
+The active course supersedes all historical courses below. It is **5,732.284 m**, two race laps, start/finish on the Faros at-grade signal approach. A/B rings and their short internal connectors stay fully open; every other public side-street exit is closed only during a race. All six raced rings and every network ring are one-way CCW; reverse racing stays disabled.
+
+[Implementation D report](../../../.scratch/psychiko-realism/impl-d/README.md) contains the exact turn/way list, naming decisions, field/profile statistics, fixed-world-pose Low/High/full-game performance, clean-archive gates and limitations. [Route overlay](../../../.scratch/psychiko-realism/impl-d/route-overlay.webp) and seven matched game/Street View panes supplement the headless onboard frame strip. The release picture is the native game canvas at 1280 × 800, WebP quality 75, without harness UI.
+
+New local records use `.faros-v3`; native/Worker board versions use `:faros-v3`. Existing route fingerprints keep old ghosts and incompatible multiplayer clients out. All map/terrain/route/profile/preview outputs are rebuilt twice and the second pass must be byte-identical. Spawn-road data and both the map selector and named Faros/Elikonos free-roam spawns are refreshed.
+
+The final gates run on a clean archive of the committed candidate with existing node_modules symlinked. They include npm test (only the three explicitly accepted upstream failures), 1,261 physics regressions, syntax/import graphs, source validator, focused Psychiko/ring checks, a full production-physics AI lap with zero off-road/island/clockwise frames, and Wrangler staging **dry-run**. See the report's gate table/logs; no push, PR edit or deployment is performed.
+
+---
+
 # Psychiko realism verification — 2026-10-19
 
 Worktree `psychiko-realism`, branch `vas-per/psychiko-realism` (base `8351f10`). No push or deployment. Headless only: one SwiftShader Chromium at a time, each stopped by its own handle; evidence (small `.webp`/JSON) in the ignored `.scratch/psychiko-realism/impl-a/`.

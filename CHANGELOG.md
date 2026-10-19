@@ -8,6 +8,13 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Race the new 5.73 km Psychiko Faros Circuit, from the Faros light through both squares and the hills, returning along Kifisias.
+  ![The Faros start and finish on the surface Kifisias approach](assets/changelog/2026.10.16.1/psychiko-faros.webp "Psychiko's new Faros circuit.")
+
+- Free Roam now includes both surface directions of Kifisias, with lane markings, medians and traffic lights.
+
+- Psychiko's new course has its own best times and ghosts.
+
 - Psychiko looks like the real place: shady tree-lined avenues, cars parked at the kerb, double centre lines and planted squares.
   ![Diamantidou in Psychiko with a closed tree canopy, kerb parking and double centre lines](assets/changelog/2026.10.16.1/psychiko-street-view.webp "Diamantidou, matched to street photos.")
 

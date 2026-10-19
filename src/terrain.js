@@ -225,7 +225,8 @@ export function buildTerrain(terrain, route, extraStamps, scene, { coastal = tru
   // The source DEM is 10 m: road-edge constraints cannot survive interpolation
   // of those large triangles. Refine only the road/shoulder corridor; the
   // tighter Penteli hairpins use 1.25 m, Riviera 2 m, Megara and the Psychiko street grid 2.5 m.
-  const conform = new RoadTerrain(route, network, { clearance: coastal ? .095 : .075 }), refined = new Set();
+  // Psychiko reserves two extra millimetres for its compact lattice quantisation.
+  const conform = new RoadTerrain(route, network, { clearance: coastal ? .095 : gardens ? .077 : .075 }), refined = new Set();
   for (const seg of conform.segments) {
     const feather = gardens ? 12 : 32, R = seg.width + feather + T;
     const i0 = Math.max(0, Math.floor((Math.min(seg.ax, seg.bx) - R - minX) / T)), i1 = Math.min(GX - 2, Math.ceil((Math.max(seg.ax, seg.bx) + R - minX) / T));

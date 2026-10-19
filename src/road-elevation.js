@@ -11,7 +11,9 @@ export function conformRoadElevations(route) {
   for(let x=cx-1;x<=cx+1;x++)for(let z=cz-1;z<=cz+1;z++)for(const a of bins.get(`${x},${z}`)||[]){
    if(a.i===i)continue;const d=Math.hypot(a.x-q.x,a.z-q.z);const along=route.closed?Math.min(Math.abs(a.i-i),N-1-Math.abs(a.i-i))*step:Math.abs(a.i-i)*step;
    const centre=Math.hypot(route.X[a.i]-route.X[i],route.Z[a.i]-route.Z[i]);
-   if(d<16&&(centre<along*.8||d<along*.4))pairs.push([a,q,d*slope]);
+   // Edges within two metres can overlap in a tight junction: keep their levels within 1 cm.
+   // Farther apart they retain the measured hillside slope.
+   if(d<16&&(centre<along*.8||d<along*.4))pairs.push([a,q,route.streetCircuit?Math.min(d*slope,.01+Math.max(0,d-2)*slope):d*slope]);
   }
   const key=`${cx},${cz}`;if(!bins.has(key))bins.set(key,[]);bins.get(key).push(q);
  }
