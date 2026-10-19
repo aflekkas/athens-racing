@@ -22,7 +22,7 @@ export const MODEL = {
   aventador: AVENTADOR,
   ...MERCEDES_MODELS,
   ...ROAD_MODELS,
-  carrera: { profile:'carrera',axleOffset:-.18, L:4.491,W:1.808,H:1.303,wb:2.45,track:1.525,r:.331,belt:.88,front:.62,rear:.79,cowl:-.68,header:-.04,back:1.57,roofBack:.54,seatZ:.36,eyeY:1.00,leather:'#6b4934',rim:.241,doors:2,tyreF:.235,tyreR:.285,rearLow:true },
+  carrera: { profile:'carrera',axleOffset:-.18, L:4.491,W:1.808,H:1.303,wb:2.45,track:1.525,r:.331,belt:.88,front:.62,rear:.79,cowl:-.68,header:-.04,back:1.30,roofBack:.55,rearGlassY:.94,seatZ:.36,eyeY:1.00,leather:'#6b4934',rim:.241,doors:2,tyreF:.235,tyreR:.285,rearLow:true },
   gr_yaris: { profile:'yaris',axleOffset:0, L:3.995,W:1.805,H:1.455,wb:2.56,track:1.554,r:.319,belt:.98,front:.78,rear:1.04,cowl:-.84,header:-.31,back:1.84,roofBack:1.47,seatZ:.20,eyeY:1.155,leather:'#26272a',rim:.229,doors:2,tyreF:.225,tyreR:.225,blackRoof:true },
   gtv: { profile:'gtv',axleOffset:-.015, L:4.10,W:1.58,H:1.328,wb:2.35,track:1.30,r:.313,belt:.88,front:.77,rear:.87,cowl:-.77,header:-.27,back:1.30,roofBack:.69,seatZ:.19,eyeY:1.015,leather:'#a2764e',rim:.178,doors:2,tyreF:.165,tyreR:.165,classic:true,rearLow:true },
   mini: { L:3.85,W:1.727,H:1.415,wb:2.495,track:1.485,r:0.316,belt:0.96,front:0.85,rear:0.89,cowl:-0.62,header:-0.23,back:1.12,roofBack:0.68,open:true,seatZ:0.29,eyeY:1.16,leather:'#965d37',rim:0.223 },
@@ -121,14 +121,14 @@ function skin(car,d,M,low) {
 function profileAt(points,z){for(let i=1;i<points.length;i++)if(z<=points[i][0]){const [a,b]=[points[i-1],points[i]],t=clamp((z-a[0])/(b[0]-a[0]),0,1);return lerp(a[1],b[1],t*t*(3-2*t));}return points.at(-1)[1];}
 function shoulderY(d,z){
   const F=-d.L/2,R=d.L/2;
-  if(d.profile==='carrera')return profileAt([[F,.625],[-2.14,.665],[-1.96,.765],[-1.25,.84],[d.cowl,d.belt],[.35,.88],[1.04,1.00],[1.47,.97],[R,.79]],z);
+  if(d.profile==='carrera')return profileAt([[F,.625],[-2.14,.665],[-1.96,.765],[-1.25,.84],[d.cowl,d.belt],[.35,.88],[.9,.985],[1.3,.945],[1.8,.875],[R,.77]],z);
   if(d.profile==='yaris')return profileAt([[F,.78],[-1.35,.88],[d.cowl,.98],[.5,1.00],[1.38,1.08],[R,1.04]],z);
   return profileAt([[F,.77],[-1.93,.82],[d.cowl,.88],[.6,.88],[d.back,.89],[R,.87]],z);
 }
 function shapedWidth(d,z,y){
   const W=d.W/2,F=-d.L/2,R=d.L/2,ax=d.axleOffset||0;
   let w;
-  if(d.profile==='carrera')w=profileAt([[F,W*.84],[-2.0,W*.93],[-1.72,W*.97],[-1.1,W*.95],[-.35,W*.86],[.35,W*.90],[1.05,W],[1.60,W*.98],[R,W*.84]],z);
+  if(d.profile==='carrera')w=profileAt([[F,W*.84],[-2.0,W*.93],[-1.72,W*.97],[-1.1,W*.95],[-.35,W*.84],[.35,W*.88],[1.0,W],[1.7,W],[2.0,W*.96],[R,W*.86]],z);
   else if(d.profile==='yaris')w=profileAt([[F,W*.88],[-1.30,W],[-.58,W*.91],[.42,W*.92],[1.25,W],[R,W*.91]],z);
   else w=profileAt([[F,W*.91],[-1.2,W*.99],[.4,W],[1.3,W*.99],[R,W*.94]],z);
   const v=clamp((y-.17)/(shoulderY(d,z)-.17),0,1);
@@ -163,11 +163,11 @@ function shapedSkin(car,d,M,low){
   if(d.classic){line(p,M.chrome,[[-.67,.795,F-.003],[0,.813,F-.003],[.67,.795,F-.003]],.006);line(p,M.seam,[[-.67,.887,d.back+.045],[0,.916,d.back+.045],[.67,.887,d.back+.045]],.0025);}
   box(p,M.black,[d.W*.77,.075,d.L*.90],[0,.20,0],.025,[0,0,0],'undertray');
 }
-function roofY(d,u,x=0){const drop=d.profile==='yaris'?.115:d.profile==='carrera'?.065:.012;return d.H-.045-drop*u+.022*Math.sin(u*Math.PI)+(lerp(.018,.012,u)+.042*Math.sin(u*Math.PI))*(1-x*x);}
+function roofY(d,u,x=0){const drop=d.profile==='yaris'?.115:d.profile==='carrera'?.12:.012;return d.H-.045-drop*u+.022*Math.sin(u*Math.PI)+(lerp(.018,.012,u)+.042*Math.sin(u*Math.PI))*(1-x*x);}
 function shapedCabin(car,d,M,low){
-  const p=car.body,W=d.W/2,rw=W-(d.profile==='carrera'?.27:.22),bw=W-.14;
+  const p=car.body,W=d.W/2,rw=W-(d.profile==='carrera'?.30:.22),bw=W-(d.profile==='carrera'?.17:.14),gy=d.rearGlassY??d.belt+.014;
   const frontPoint=(u,v)=>{const x=2*u-1;return[x*lerp(bw,rw,v),lerp(d.belt+.014,roofY(d,0,1),v)+.018*(1-x*x),lerp(d.cowl,d.header,v)-.045*(1-x*x)];};
-  const rearPoint=(u,v)=>{const x=2*u-1;return[x*lerp(rw,bw,v),lerp(roofY(d,1,1),d.belt+.014,v)+.012*(1-x*x),lerp(d.roofBack,d.back,v)];};
+  const rearPoint=(u,v)=>{const x=2*u-1;return[x*lerp(rw,bw,v),lerp(roofY(d,1,1),gy,v)+.012*(1-x*x),lerp(d.roofBack,d.back,v)];};
   car.windscreen=surface(p,M.glass,frontPoint,24,10,'windscreen');surface(p,M.glass,rearPoint,22,12,'rear-glass');
   const roofMat=d.blackRoof?M.black:M.paint;
   surface(p,roofMat,(u,v)=>{const x=2*v-1;return[x*rw,roofY(d,u,x),lerp(d.header,d.roofBack,u)-.045*(1-x*x)*(1-u)];},30,20,'roof');
@@ -175,11 +175,11 @@ function shapedCabin(car,d,M,low){
     const end=d.profile==='carrera'?d.back-.29:d.profile==='yaris'?d.back-.27:d.back-.12;
     const roofEnd=d.profile==='carrera'?d.roofBack-.025:d.profile==='yaris'?d.roofBack-.10:d.roofBack-.025;
     const A0=[s*bw,d.belt+.014,d.cowl],A1=[s*rw,roofY(d,0,1),d.header];
-    const C0=[s*bw,d.belt+.014,end],C1=[s*rw,roofY(d,(roofEnd-d.header)/(d.roofBack-d.header),1)-.05,roofEnd];
+    const C0=[s*bw,gy,end],C1=[s*rw,roofY(d,(roofEnd-d.header)/(d.roofBack-d.header),1)-.05,roofEnd];
     const ap=d.classic?.045:.078;
     // Broad sheet-metal A/C pillars, with glazing inset inside each opening.
     patch(p,M.paint,[A0,A1,[s*rw,roofY(d,0,1)-.058,d.header+ap],[s*bw,d.belt+.014,d.cowl+ap]],'solid-a-pillar');
-    const outerC1=[s*rw,roofY(d,1,1),d.roofBack],outerC0=[s*bw,d.belt+.014,d.back];
+    const outerC1=[s*rw,roofY(d,1,1),d.roofBack],outerC0=[s*bw,gy,d.back];
     surface(p,M.paint,(u,v)=>{const inner=V(...C1).lerp(V(...C0),v),outer=V(...outerC1).lerp(V(...outerC0),v);const q=inner.lerp(outer,u);q.x+=s*.035*Math.sin(u*Math.PI)*Math.sin(v*Math.PI);return q.toArray();},18,18,'solid-c-pillar');
     const b=d.profile==='carrera'?.54:d.profile==='yaris'?.62:.46;
     const bHalf=d.classic?.018:d.profile==='yaris'?.045:.027;
