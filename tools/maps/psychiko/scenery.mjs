@@ -113,7 +113,7 @@ export function buildPsychikoScenery(data, bytes, osm = []) {
         if (r > .55 && r < .55 + .25) { const u = strip.hw(s) + strip.fw(s) + 2.5 + hash(ref, side, s, 14) * 9, x = p.x - p.tz * u * side, z = p.z + p.tx * u * side;
           if (clear(x, z, 1.5, null) && !inBuilding(x + 2, z) && !inBuilding(x - 2, z) && !inBuilding(x, z + 2) && !inBuilding(x, z - 2)) { const sp = inCampus(x, z) ? pickSpecies([.5, .3, .2, 0, 0], hash(x | 0, z | 0)) : pickSpecies(GARDEN, hash(ref, side, s, 15)); tree(x, z, sp, treeHeight(sp, hash(ref, s, side, 16))); } }
         // Garden shrubs massed just inside the boundary (dense hedges/shrubs are typical of the villa frontages).
-        if (r < .26 && strip.section(s).kind !== 'arterial') { const u = strip.hw(s) + strip.fw(s) + 1.3 + hash(ref, side, s, 17) * 1.8, x = p.x - p.tz * u * side, z = p.z + p.tx * u * side;
+        if (r < .2 && strip.section(s).kind !== 'arterial') { const u = strip.hw(s) + strip.fw(s) + 1.3 + hash(ref, side, s, 17) * 1.8, x = p.x - p.tz * u * side, z = p.z + p.tx * u * side;
           if (clear(x, z, .8, null)) tree(x, z, 5, treeHeight(5, hash(ref, side, s, 18))); }
       }
     }

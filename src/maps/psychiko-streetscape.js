@@ -75,7 +75,7 @@ const TRUNK = '#6f5f4a';
 function treeTemplates() {
   const pine = v => template(m => {
     // Tall bare trunk with a slight lean, flat irregular umbrella crown high up (Pinus pinea), sometimes a second lobe.
-    const lean = (v - 1) * .05; lathe(m, [[0, .022], [.8, .016]], 4, [TRUNK], null, 0, lean);
+    const lean = (v - 1) * .05; lathe(m, [[0, .022], [.8, .016]], 3, [TRUNK], null, 0, lean);
     const jit = (k, y) => .82 + .36 * hash(v, k, y > .8 ? 1 : 0);
     lathe(m, [[.71, 0], [.79, .36], [.83, .3], [.88, 0]], 8, ['#435e36', '#4b6a3c', '#5b7b46'], jit, 0, lean * 1.1);
     if (v === 1) lathe(m, [[.66, 0], [.72, .2], [.78, 0]], 6, ['#3f5a33', '#4f6d3d'], jit, .2, lean - .12);
@@ -83,13 +83,13 @@ function treeTemplates() {
   return [
     [pine(0), pine(1), pine(2)],
     [template(m => lathe(m, [[.04, .055], [.38, .085], [1, 0]], 6, ['#34492c', '#3e5734']), 'streetProp')],
-    [0, 1].map(v => template(m => { lathe(m, [[0, .035], [.48, .028]], 4, [TRUNK]); const jit = (k, y) => .8 + .4 * hash(k, v, y > .6 ? 2 : 3);
-      lathe(m, [[.36, 0], [.48, .3], [.78, .32], [1, 0]], 6, ['#556e42', '#5f7a48', '#6d8a52'], jit); if (v) lathe(m, [[.42, 0], [.5, .18], [.68, .19], [.8, 0]], 5, ['#5a7545', '#6b8851'], jit, .24, .1); }, 'streetProp')),
-    [template(m => { lathe(m, [[0, .028], [.86, .02]], 4, ['#8b7b5e']);
+    [0, 1].map(v => template(m => { lathe(m, [[0, .035], [.48, .028]], 3, [TRUNK]); const jit = (k, y) => .78 + .44 * hash(k, v, y > .6 ? 2 : 3);
+      lathe(m, [[.36, 0], [.48, .3], [.78, .32], [1, 0]], 6, ['#556e42', '#5f7a48', '#6d8a52'], jit); }, 'streetProp')),
+    [template(m => { lathe(m, [[0, .028], [.86, .02]], 3, ['#8b7b5e']);
       for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2, s = Math.sin(a), c = Math.cos(a), w = .05, tip = [s * .34, .74, c * .34], l = [-c * w, .87, s * w], r = [c * w, .87, -s * w];
         m.tri(l[0], l[1], l[2], ...tip, r[0], r[1], r[2], '#6f8a45'); m.tri(r[0], r[1], r[2], ...tip, l[0], l[1], l[2], '#5d7639'); } }, 'streetProp')],
-    [template(m => { lathe(m, [[0, .06], [.5, .05]], 4, ['#7c6d58']); lathe(m, [[.4, 0], [.52, .3], [.8, .3], [1, 0]], 6, ['#7b8a68', '#86967a', '#95a382'], (k, y) => .85 + .3 * hash(k, y > .6 ? 4 : 5)); }, 'streetProp')],
-    [0, 1].map(v => template(m => lathe(m, [[0, .32], [.4, .52], [.8, .4], [1, 0]], 5, ['#41593a', '#4b663f', '#57744a'], (k, y) => .8 + .4 * hash(k, v, y > .5 ? 6 : 7)), 'streetProp')),
+    [template(m => { lathe(m, [[0, .06], [.5, .05]], 3, ['#7c6d58']); lathe(m, [[.4, 0], [.52, .3], [.8, .3], [1, 0]], 6, ['#7b8a68', '#86967a', '#95a382'], (k, y) => .85 + .3 * hash(k, y > .6 ? 4 : 5)); }, 'streetProp')],
+    [0, 1].map(v => template(m => lathe(m, [[0, .34], [.45, .52], [1, 0]], 5, ['#43603c', '#53704a'], (k, y) => .8 + .4 * hash(k, v, y > .5 ? 6 : 7)), 'streetProp')),
   ];
 }
 // Kerb car (≈5 m bay), gooseneck lamp, utility pole with side arm.
@@ -129,7 +129,7 @@ export class PsychikoStreetscape {
     const scenery = map.data.psychiko?.scenery || {};
     this.group = new THREE.Group(); this.group.name = 'psychiko-streetscape'; parent.add(this.group);
     this.group.worldDetailController = this;
-    this.materials = { props: this.fadeMaterial(260), trees: this.fadeMaterial(480) }; this.cells = new Map(); this.last = { x: Infinity, z: Infinity }; this.obstacles = [];
+    this.materials = { props: this.fadeMaterial(260), trees: this.fadeMaterial(420) }; this.cells = new Map(); this.last = { x: Infinity, z: Infinity }; this.obstacles = [];
     this.trees = treeTemplates(); this.cars = carTemplates(); this.lamps = [gooseneck(), utilityPole()];
     this.stats = { cells: 0, builds: 0, triangles: 0 };
     this.index(scenery);
@@ -173,7 +173,9 @@ export class PsychikoStreetscape {
           put(this.props, 200, (A.x + B.x) / 2, (A.z + B.z) / 2, { kind: 'wall', A, B, side, type, h, seed: i + j }); } }
     }
     const T = sc.trees || [];
-    for (let i = 0, hx = 0, hz = 0; i < T.length; i += 3) { hx += T[i]; hz += T[i + 1]; const x = hx / 2, z = hz / 2, sp = Math.floor(T[i + 2] / 100), h = T[i + 2] % 100 / 2; put(this.canopy, 320, x, z, { kind: 'tree', x, z, sp, h, seed: i }); }
+    for (let i = 0, hx = 0, hz = 0; i < T.length; i += 3) { hx += T[i]; hz += T[i + 1]; const x = hx / 2, z = hz / 2, sp = Math.floor(T[i + 2] / 100), h = T[i + 2] % 100 / 2;
+      // Garden shrubs are small: they stream with the near props, trees with the longer canopy ring.
+      if (sp === 5) put(this.props, 200, x, z, { kind: 'tree', x, z, sp, h, seed: i }); else put(this.canopy, 320, x, z, { kind: 'tree', x, z, sp, h, seed: i }); }
     const Pk = sc.parking || [];
     for (let i = 0; i < Pk.length; i += 4) {
       const st = strip(Pk[i]); if (!st) continue; const side = Pk[i + 1], s0 = Pk[i + 2] / 10, s1 = Pk[i + 3] / 10, lap = Pk[i] < 0;
@@ -282,7 +284,7 @@ export class PsychikoStreetscape {
   /** Called with the scenery LOD pass (scenery.js updateSceneryLod via worldDetailController). */
   update(camera) {
     this.camera = camera; if (!this.enabled) return;
-    const p = camera.position || camera, k = drawScale(), farProps = 260 * k, farTrees = 480 * k;
+    const p = camera.position || camera, k = drawScale(), farProps = 260 * k, farTrees = 420 * k;
     this.materials.props.userData.far.value = farProps; this.materials.trees.userData.far.value = farTrees;
     const jump = Math.hypot(p.x - this.last.x, p.z - this.last.z); if (jump < 8) return;
     let budget = jump > 150 ? Infinity : 2; // a teleport builds everything now; driving adds at most two cells per pass
