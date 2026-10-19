@@ -5,7 +5,7 @@ This is the lead's single list of open work. It's updated as tasks are assigned,
 Last updated: 2026-10-18 20:40 UTC.
 
 ## In flight (lead thread "Fix Floor Visibility in All Cars", check-up every 30 min)
-Production is on hold (`~/.local/state/athens-release/production-hold`). Staging live at `ebc92001` (train, 2026-10-19 02:03 UTC); `9ae9d1ad` in gates. Agents use Haiku/Sonnet only (Codex quota ran out; no Opus).
+Production is on hold (`~/.local/state/athens-release/production-hold`). Staging live at `2adaf2d6` (train, 2026-10-19 02:23 UTC); `68878224` in gates. Agents use Haiku/Sonnet only (Codex quota ran out; no Opus).
 
 Done and checked by the lead:
 - [x] Leaderboards inside Quick Race (`5149f16d`, `9a7c06ca`, `c9619d55`)
@@ -48,13 +48,12 @@ Also done since 2026-10-18 04:00 (checked by the lead):
 
 - [x] Handling: no more ploughing into corners (`9e3555f0`); rivals keep off the edge so the gate is green again (`ebc92001`)
 - [x] Engine sounds: flat-six 911, V12 Aventador/SL 65, separate turbo-four takes (`634824e4`); SL rear lettering fixed (`9a753c93`); 911 lamps flush (`a30c4e01`)
-- [x] Look back on V, racing-wheel support, mouse no longer pans the camera by itself (`9ae9d1ad`, final report pending)
+- [x] Look back on V, racing-wheel support, mouse no longer pans the camera by itself (`9ae9d1ad`); wheel only unit-tested
 
 Running (Sonnet; Enterprise unless noted):
 - [x] Low-end laptop performance + audio dropouts/ticking: CPU budget per perf class, first-run CPU probe, frame governor, lag-spiral fix, audio robustness (see CHANGELOG). Follow-up: [ ] owner re-test on the friend's Arc laptop (Riviera/Megara).
-- [~] Driving: final report after the 9ae9d1ad gate (Personal)
-- [~] Cars: 911 silhouette pass (roofline, haunches, nose) + GLA mirror joint (Personal)
-- [~] Athens: re-made road screenshots (paused by rate limit)
+- [~] Cars: 911 silhouette pass + one-piece mirrors (`68878224` in gates; lead to check shots)
+- [~] Athens: re-made road screenshots (moved to Personal)
 - [~] Release cutover (lead): after the batch is checked on staging
 
 Waiting on the owner:
