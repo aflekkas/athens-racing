@@ -139,3 +139,16 @@ Owner decision: **the Athens world's total compressed size ceiling rises from 19
 - the R2 staging bucket total of ≤5 GB.
 
 The rest of the centre (Kypseli/Patisia and the 114 candidate cells) and then the north can be baked into the same single world. It stays behind `?map=athens` until the owner activates it.
+
+## 2026-10-19 — Computer only: phones and tablets can't play
+
+Owner decision: **Athens Racing is a computer game. Phones and tablets may not play it, and we no longer optimise for them.** Owner: "disable phone playing the game entirely, keep it to computer only", "don't allow people on the phone to play the game", "optimizing for this is bad, and document this", "make a plan to strip it out".
+
+**What changes:**
+- **Phones and tablets:** they get one full-screen "Athens Racing is made for computers" page, with the game's name and a line to open it on a laptop or desktop. They get no title menu, sign-in, garage or race.
+  - A phone or tablet is a device whose primary pointer is coarse and which has no fine pointer: `(pointer: coarse)` and not `(any-pointer: fine)`, plus the platform's mobile/tablet hints.
+  - Touchscreen laptops, and any device with a mouse or trackpad, keep playing.
+- **Superseded:** this replaces the 2026-10-18 "mobile is playable" work and the add-to-home-screen request (§ line "on mobile can we encourage the user to add a bookmark").
+- **Removed code:** touch controls, the add-to-home-screen card, phone-only layouts and phone performance paths are removed under the strip-out plan in `docs/plans/desktop-only.md`.
+- **Athens open world:** phone-emulation runs and phone-specific caps stop being gates. Desktop limits stay: the initial download (≤15 MiB), the stream resident cap, the quality-tier resource caps and the 10-minute session download. The 64 MiB 2×2 "phone cap" becomes a desktop low-end budget, and the lead may re-tune it with measurements.
+- **Guard:** `tools/owner-locked-desktop-only.test.mjs` (added by the strip-out work). Ask the owner before changing.
