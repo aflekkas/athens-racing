@@ -108,7 +108,7 @@ export function driveCorner(spec, route, kmh, { device = 'keyboard', instant = f
       wheelspin: vehicle.wheelspin, rearWheels: vehicle.corners.slice(2).map(c => ({ sx: c.sx, sy: c.sy })),
       betaDeg: beta * DEG, rpm: vehicle.rpm, gear: vehicle.gear, throttle: pedal,
       engineTorque: vehicle.engT, ax: vehicle.axRaw, frontLoad: vehicle.wheel[0].Fz,
-      rearLoad: vehicle.wheel[1].Fz, effectiveGravity: vehicle.contactFrame.effectiveGravity,
+      rearLoad: vehicle.wheel[1].Fz, normalLoadG: (vehicle.wheel[0].Fz + vehicle.wheel[1].Fz) / (vehicle.m * G), effectiveGravity: vehicle.contactFrame.effectiveGravity,
       grade: vehicle.contactFrame.grade, bank: vehicle.contactFrame.bank,
       travel: vehicle.sus.d.slice(), travelLimit: vehicle.travel, toePull: vehicle.toePull,
       tcCut: vehicle.tcCut, escCut: vehicle.escCut,
@@ -119,9 +119,10 @@ export function driveCorner(spec, route, kmh, { device = 'keyboard', instant = f
   const yaw = mean(settled, 'yawRate'), speed = mean(settled, 'kmh') / 3.6;
   const reach = trace.find(r => r.yawRate >= yaw * 0.9);
   const steer90 = trace.find(r => Math.abs(r.steerInput) >= 0.9);
-  // Grip scales with tyre load: in a sag or over a crest (Psychiko's real hills) compare lateral g with the
-  // effective vertical g, so a valley-bottom bend is not mistaken for invented grip. Flat roads are unchanged.
-  for (const r of trace) r.loadG = r.lateralG / (r.effectiveGravity || 1);
+  // Grip scales with the actual tyre load. Geometric effectiveGravity can briefly approach zero at a
+  // crest before the suspension unloads; dividing by it falsely reports several g of tyre grip.
+  // Axle normal forces include that suspension response and are the loads used by the tyre model.
+  for (const r of trace) r.loadG = r.lateralG / Math.max(.05, r.normalLoadG);
   const peakG = Math.max(...trace.slice(14).map((_, j) => mean(trace.slice(j, j + 15), 'loadG')));
   return { car: spec.id, kmh, corner: { s: bend.s, k: bend.k, radius: bend.radius, requiredG: (kmh / 3.6) ** 2 / (bend.radius * G) },
     device, instant, gear, aids, assist: vehicle.steerAssist, yaw90: reach?.t ?? null, input90: steer90?.t ?? null,
