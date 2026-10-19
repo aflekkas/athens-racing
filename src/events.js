@@ -111,8 +111,9 @@ export const TYPES = {
   timetrial: { label: 'TIME TRIAL', short: 'TT', desc: 'You, the road and the clock.' },
   pursuit: { label: 'PURSUIT', short: 'PURSUIT', desc: 'Shake the ΕΛ.ΑΣ. off your tail. Get busted and it is over.' },
 };
-/** Map-local untimed session; never part of the competitive event catalogue. */
-export const freeRoam = (mapId = 'riviera') => ({ id: 'free:' + mapId, mapId, name: 'FREE ROAM', type: 'free', reverse: MAPS.find(m => m.id === mapId)?.defaultReverse === true, free: true, from: 'start', to: 'finish', rivals: 0, traffic: mapId === 'megara' ? 0 : 1, targets: {} });
+/** Map-local untimed session; never part of the competitive event catalogue. `spawn` ({ x, z, name }, map metres) is where the
+ *  player chose to start (owner 2026-10-19): the car goes on the nearest drivable road to it. Without one the session starts at the map's start. */
+export const freeRoam = (mapId = 'riviera', spawn = null) => ({ id: 'free:' + mapId, mapId, name: 'FREE ROAM', type: 'free', ...(spawn ? { spawn } : {}), reverse: MAPS.find(m => m.id === mapId)?.defaultReverse === true, free: true, from: 'start', to: 'finish', rivals: 0, traffic: mapId === 'megara' ? 0 : 1, targets: {} });
 export const MEDALS = ['bronze', 'silver', 'gold'];
 
 export const EVENTS = [

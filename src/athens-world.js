@@ -66,7 +66,11 @@ export async function bootAthens(){
  const spec=CARS.find(c=>c.id===query.get('car'))||CARS.find(c=>c.id==='carrera')||CARS[0];
  function place(v,p){v.reset(0,0,0);Object.assign(v,{x:p.x,y:p.y,z:p.z,yaw:p.yaw,vLong:0,vLat:0,w:0,_network:true});Object.assign(v,v.route.project(v.x,v.z));v.ground.referenceY=p.y;v.ground.begin(v);v.ground.resolve(v,1/240);v.syncWheels();}
  await stream.spawn(p=>{const route=new AthensRoute(p),veh=new Vehicle(spec,route),model=new CarModel(spec);veh.ground=new AthensGround(stream,route,barriers,obstacles);place(veh,p);scene.add(model.root);player={veh,model,spec};},{halfWidth:(spec.width||2)/2,halfLength:(spec.length||5)/2,timeoutMs:180000});
- stream.releaseSpawn();input.setCarSpec(spec);stats.initialDownloadBytes=stream.pool?.downloadedBytes||stream.metrics.loadedBytes;stats.initialDriveMs=performance.now()-started;
+ // The free roam spawn picker (?map=athens&menu=1) sends the chosen point as ?spawn=x,z (Athens world metres): the car goes on the nearest safe road anchor there.
+ async function spawnAt(x,z){towing=true;try{await stream.teleport({x,z},()=>{const p=[...roads.anchors({validate:false})].filter(p=>roads.safe(p)).sort((a,b)=>Math.hypot(a.x-x,a.z-z)-Math.hypot(b.x-x,b.z-z))[0];if(!p)throw Error('No safe road near the chosen point');place(player.veh,p);});}finally{towing=false;}}
+ stream.releaseSpawn();input.setCarSpec(spec);
+ {const chosen=(query.get('spawn')||'').split(',').map(Number);if(chosen.length===2&&chosen.every(Number.isFinite))await spawnAt(chosen[0],chosen[1]);}
+ stats.initialDownloadBytes=stream.pool?.downloadedBytes||stream.metrics.loadedBytes;stats.initialDriveMs=performance.now()-started;
  loading.hide();document.body.classList.remove('menu-backdrop');document.body.classList.add('loaded','racing');document.getElementById('ui').replaceChildren();
  for(const id of ['posBox','mapBox','sigBox','rbar','rToGo'])document.getElementById(id).style.display='none';
  document.getElementById('rZone').textContent='ATHENS';document.getElementById('rRoad').textContent='FREE ROAM';

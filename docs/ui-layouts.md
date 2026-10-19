@@ -16,7 +16,7 @@ and key hints. Its regions shrink without pushing the footer offscreen.
 | `sidebarContent` | Settings, account | `nav`, `content` |
 | `browseGrid` | Garage, lobby browser, leaderboards | optional `filters`, `items`; `list: true` for rows |
 | `stageInspector` | Car detail, track confirmation | `stage`, `inspector` |
-| `mapStage` | Track picker | full-bleed `stage`, floating `card` |
+| `mapStage` | Track picker (Quick Race) and the free roam spawn picker | full-bleed `stage`, floating `card` |
 | `sheetList` | Pause, results, information, long reading pages (`article`) and simple lists | `rows`, optional `aside`, `actions` |
 
 Athens Racing is a computer game (owner decision 2026-10-19): the layouts serve desktop and laptop

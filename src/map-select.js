@@ -30,11 +30,11 @@ function preview(map) {
 const count = (selectable, m) => `${selectable.indexOf(m) + 1} <span>/ ${selectable.length}</span>`;
 // A pin's name chip sits on the side away from its route, so it never covers the track it names.
 const side = r => (r.bounds[0] + r.bounds[2]) / 2 >= r.start[0] - .5 ? 'l' : 'r';
-export function renderMapSelect(selectedId = 'riviera', mode) {
+export function renderMapSelect(selectedId = 'riviera') {
   style(); const selectable = playable(), selected = selectable.find(m => m.id === selectedId) || selectable[0];
   const labels = MAP_LABELS.map((l, i) => `<span class="map-label map-label--${l.k}" data-label="${i}"><i></i><b>${esc(l.t)}${l.s ? `<small>${esc(l.s)}</small>` : ''}</b></span>`).join('');
   const pins = selectable.map((m, i) => `<span role="button" tabindex="-1" class="mi track-pin ${m.id === selected.id ? 'selected active' : ''}" aria-label="Preview ${esc(m.name)}" aria-pressed="${m.id === selected.id}" data-map-id="${m.id}" data-side="${side(TRACK_ROUTES[m.id])}" style="--pin:${color(m.id)}" ${m.id === selected.id ? 'data-default' : ''}><i class="track-pin__dot">${i + 1}</i><span>${esc(m.name)}</span></span>`).join('');
-  return C.mapStage({ variant: 'floating', cls: 'scr--maps', kick: mode === 'free' ? 'FREE ROAM' : 'QUICK RACE', title: 'ATTICA / CHOOSE YOUR TRACK',
+  return C.mapStage({ variant: 'floating', cls: 'scr--maps', kick: 'QUICK RACE', title: 'ATTICA / CHOOSE YOUR TRACK',
     hints: [['leftright', 'TRACK'], ['confirm', 'SELECT'], ['back', 'BACK']],
     stageAttrs: { role: 'img', 'aria-label': `Map of Attica with ${selectable.length} tracks: ${selectable.map(m => m.name).join(', ')}` },
     stage: `<canvas class="attica-canvas" aria-hidden="true"></canvas>
@@ -71,7 +71,7 @@ function parseVectors(buffer) {
   }
   return layers;
 }
-const loadAssets = () => assets ||= Promise.all([image(MAP_ASSETS.land), image(MAP_ASSETS.sea), fetch(MAP_ASSETS.vectors).then(r => { if (!r.ok) throw new Error('map vectors ' + r.status); return r.arrayBuffer(); })])
+export const loadAssets = () => assets ||= Promise.all([image(MAP_ASSETS.land), image(MAP_ASSETS.sea), fetch(MAP_ASSETS.vectors).then(r => { if (!r.ok) throw new Error('map vectors ' + r.status); return r.arrayBuffer(); })])
   .then(([land, sea, buffer]) => ({ land, sea, layers: parseVectors(buffer),
     // Close-up relief and building fabric per track; they arrive after the region art and fade in with zoom.
     detail: MAP_ASSETS.detail.map(d => { const entry = { ...d, img: null }; entry.ready = image(d.src).then(img => { entry.img = img; }, () => {}); return entry; }) }))
@@ -322,15 +322,14 @@ export function mountMapSelect(root) {
     return false;
   }, dispose() { events.abort(); resize.disconnect(); seen.disconnect(); stop(); cancelAnimationFrame(resizeFrame); base?.dispose(); base = null; } };
 }
-// Quick Race confirms the track and compares times before race setup.
+// Quick Race confirms the track and compares times before race setup. (Free roam has no tracks: src/spawn-select.js.)
 export async function selectMap(menu, id) {
   if (menu.mapLoading || !isMapEnabled(id)) return;
   menu.mapLoading = true;
   try {
     menu.h.selectMap(id);
     menu.filter = menu.data.filter || menu.filter || 'all';
-    if (menu.data.mode === 'free') menu.show('setup', { eventId: 'free:' + id, mode: 'free' }, true);
-    else menu.show('mapConfirm', { mapId: id, mode: 'quick' }, true);
+    menu.show('mapConfirm', { mapId: id, mode: 'quick' }, true);
   } catch (error) { C.ui.toast('COULD NOT LOAD THIS MAP', { icon: 'triangle-alert', tone: 'bad' }); console.error(error); }
   finally { menu.mapLoading = false; }
 }
