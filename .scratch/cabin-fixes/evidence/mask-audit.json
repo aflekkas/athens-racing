@@ -820,8 +820,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 108,
-        "triangles": 3784
+        "calls": 106,
+        "triangles": 3652
       },
       "geometryAudit": {
         "nearRoadDistance": 9,
@@ -831,7 +831,7 @@
           1.02,
           0.36
         ],
-        "roadVisible": 44.61538461538461,
+        "roadVisible": 41.53846153846154,
         "clusterOcclusion": 12,
         "rimOcclusion": 12,
         "telltalesBlocked": 0,
@@ -840,12 +840,12 @@
         "geometry": {
           "windscreen": {
             "min": [
-              -0.7644613981246948,
-              0.8940258026123047,
+              -0.7644610404968262,
+              0.8940428495407104,
               -0.8850000500679016
             ],
             "max": [
-              0.7644613981246948,
+              0.7644610404968262,
               1.2769421339035034,
               -0.16497012972831726
             ]
@@ -879,8 +879,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 41.16494140625,
-      "openPixels": 421529,
+      "windscreenPercent": 41.0166015625,
+      "openPixels": 420010,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -913,12 +913,12 @@
         "geometry": {
           "windscreen": {
             "min": [
-              -0.7644613981246948,
-              0.8940258026123047,
+              -0.7644610404968262,
+              0.8940428495407104,
               -0.8850000500679016
             ],
             "max": [
-              0.7644613981246948,
+              0.7644610404968262,
               1.2769421339035034,
               -0.16497012972831726
             ]
@@ -950,12 +950,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 56.570703125,
-      "openPixels": 579284,
+      "windscreenPercent": 56.57060546875,
+      "openPixels": 579283,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 55.78759765625
+      "unobstructedViewPercent": 55.7875
     },
     "structure": {
       "dash": {
@@ -12636,8 +12636,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 108,
-        "triangles": 3868
+        "calls": 106,
+        "triangles": 3736
       },
       "geometryAudit": {
         "nearRoadDistance": 9,
@@ -12647,7 +12647,7 @@
           1.02,
           0.36
         ],
-        "roadVisible": 44.61538461538461,
+        "roadVisible": 41.53846153846154,
         "clusterOcclusion": 12,
         "rimOcclusion": 12,
         "telltalesBlocked": 0,
@@ -12656,12 +12656,12 @@
         "geometry": {
           "windscreen": {
             "min": [
-              -0.7644613981246948,
-              0.8940258026123047,
+              -0.7644610404968262,
+              0.8940428495407104,
               -0.8850000500679016
             ],
             "max": [
-              0.7644613981246948,
+              0.7644610404968262,
               1.2769421339035034,
               -0.16497012972831726
             ]
@@ -12695,8 +12695,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 41.16494140625,
-      "openPixels": 421529,
+      "windscreenPercent": 41.0166015625,
+      "openPixels": 420010,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -12729,12 +12729,12 @@
         "geometry": {
           "windscreen": {
             "min": [
-              -0.7644613981246948,
-              0.8940258026123047,
+              -0.7644610404968262,
+              0.8940428495407104,
               -0.8850000500679016
             ],
             "max": [
-              0.7644613981246948,
+              0.7644610404968262,
               1.2769421339035034,
               -0.16497012972831726
             ]
@@ -12766,12 +12766,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 56.570703125,
-      "openPixels": 579284,
+      "windscreenPercent": 56.57060546875,
+      "openPixels": 579283,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 55.78759765625
+      "unobstructedViewPercent": 55.7875
     },
     "structure": {
       "dash": {
@@ -12904,8 +12904,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 108,
-        "triangles": 3868
+        "calls": 106,
+        "triangles": 3736
       },
       "geometryAudit": {
         "nearRoadDistance": 9,
@@ -12915,7 +12915,7 @@
           1.02,
           0.36
         ],
-        "roadVisible": 44.61538461538461,
+        "roadVisible": 41.53846153846154,
         "clusterOcclusion": 12,
         "rimOcclusion": 12,
         "telltalesBlocked": 0,
@@ -12924,12 +12924,12 @@
         "geometry": {
           "windscreen": {
             "min": [
-              -0.7644613981246948,
-              0.8940258026123047,
+              -0.7644610404968262,
+              0.8940428495407104,
               -0.8850000500679016
             ],
             "max": [
-              0.7644613981246948,
+              0.7644610404968262,
               1.2769421339035034,
               -0.16497012972831726
             ]
@@ -12963,8 +12963,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 41.16494140625,
-      "openPixels": 421529,
+      "windscreenPercent": 41.0166015625,
+      "openPixels": 420010,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -12997,12 +12997,12 @@
         "geometry": {
           "windscreen": {
             "min": [
-              -0.7644613981246948,
-              0.8940258026123047,
+              -0.7644610404968262,
+              0.8940428495407104,
               -0.8850000500679016
             ],
             "max": [
-              0.7644613981246948,
+              0.7644610404968262,
               1.2769421339035034,
               -0.16497012972831726
             ]
@@ -13034,12 +13034,12 @@
         "visibleCharacters": [],
         "flags": []
       },
-      "windscreenPercent": 56.570703125,
-      "openPixels": 579284,
+      "windscreenPercent": 56.57060546875,
+      "openPixels": 579283,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800,
-      "unobstructedViewPercent": 55.78759765625
+      "unobstructedViewPercent": 55.7875
     },
     "structure": {
       "dash": {

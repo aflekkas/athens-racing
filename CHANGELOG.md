@@ -8,6 +8,8 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Porsche 911: round headlamps, a lower bonnet and a rear light bar with PORSCHE lettering.
+
 - Cars: model lettering and the A-Class star now sit on the bodywork instead of floating by the tail lights, and door mirrors are mounted lower and sturdier.
 
 - Multiplayer: other drivers' tyre smoke, burnouts and skid marks are now visible, and so are your own online. Sparks and dust show too.
