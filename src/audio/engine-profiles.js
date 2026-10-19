@@ -2,19 +2,25 @@
  * Layout wins over cylinder count: a Porsche boxer must not become a BMW I6.
  * Cached by immutable catalogue spec; no allocations on the update path.
  */
-const profile = (id, synth, sample, cylinders, turbo = false, pops = .12, gain = 1) =>
-  Object.freeze({ id, synth, sample, cylinders, turbo, pops, gain, diesel: synth === 'diesel' || synth === 'bus' });
+// tone scales the recorded voice's low-pass: families that share a recording get a different brightness.
+const profile = (id, synth, sample, cylinders, turbo = false, pops = .12, gain = 1, tone = 1) =>
+  Object.freeze({ id, synth, sample, cylinders, turbo, pops, gain, tone, diesel: synth === 'diesel' || synth === 'bus' });
 export const ENGINE_PROFILES = Object.freeze({
   v8flat: profile('na-flat-plane-v8','v8flat',null,8,false,.28),
   v8na: profile('na-cross-plane-v8','v8na',null,8,false,.26),
   turbov6: profile('sl-biturbo-v6','v6',null,6,true,.24),
   turbov8: profile('sl-biturbo-v8','v8',null,8,true,.35),
-  turbov12: profile('sl-biturbo-v12','v12',null,12,true,.28),
+  turbov12: profile('sl-biturbo-v12','v12','v12',12,true,.28,.9),
   turbo3: profile('turbo-i3', 'turbo3', null, 3, true, .35),
   na3: profile('city-i3', 'na3', null, 3, false, 0, .85),
-  city4: profile('city-i4', 'city4', 'mini', 4, false, 0, .8),
+  city4: profile('city-i4', 'city4', null, 4, false, 0, .8),
   na4: profile('na-i4', 'na4', null, 4),
   turbo4: profile('turbo-i4', 'turbo4', 'mini', 4, true, .18),
+  // Hot, mainstream and small turbo fours each take their own recording (Focus RS, Abarth 595) rather than the MINI's.
+  hot4: profile('hot-turbo-i4', 'turbo4', 'focus', 4, true, .65),
+  comfort4: profile('comfort-turbo-i4', 'turbo4', 'focus', 4, true, .1, .86, .5),
+  small4: profile('small-turbo-i4', 'turbo4', 'abarth', 4, true, .6, .95),
+  fiat4: profile('fiat-i4', 'city4', 'abarth', 4, false, 0, .8, .7),
   diesel: profile('diesel-i4', 'diesel', 'taxi', 4, true, 0, .9),
   van: profile('van-diesel-i4', 'diesel', 'taxi', 4, true, 0, .85),
   bus: profile('bus-diesel-i6', 'bus', null, 6, true, 0, .9),
@@ -22,14 +28,14 @@ export const ENGINE_PROFILES = Object.freeze({
   turbo6: profile('turbo-i6', 'turbo6', 'z4', 6, true, .4),
   v6: profile('biturbo-v6', 'v6', null, 6, true, .5),
   v8: profile('biturbo-v8', 'v8', null, 8, true, .6),
-  flat6: profile('na-flat6', 'flat6', null, 6, false, .65),
+  flat6: profile('na-flat6', 'flat6', 'flat6', 6, false, .65, 1, .6),
   v10: profile('na-v10', 'v10', null, 10, false, .7),
-  v12: profile('na-v12', 'v12', null, 12, false, .65),
+  v12: profile('na-v12', 'v12', 'v12', 12, false, .65),
   turbo5: profile('turbo-i5', 'turbo5', null, 5, true, .7),
   bike: profile('motorcycle', 'bike', null, 2, false, 0, .65),
   electric: profile('electric', 'electric', null, 0, false, 0, .25),
 });
-const SVJ_PROFILE=profile('aventador-svj-v12','v12',null,12,false,0,.92);
+const SVJ_PROFILE=profile('aventador-svj-v12','v12','v12',12,false,0,.92);
 const cache = new WeakMap();
 export function engineProfile(spec) {
   if (!spec) return ENGINE_PROFILES.turbo4;
@@ -39,16 +45,25 @@ export function engineProfile(spec) {
   const layout = String(spec.engineLayout || spec.layout || '').toLowerCase();
   let key = type;
   if (spec.electric || type === 'electric') key = 'electric';
-  else if (spec.kind === 'bus' || type === 'bus') key = 'bus';
-  else if (spec.kind === 'van') key = 'van';
+  else if (spec.kind === 'bus' || spec.nativeFleet === 'bus' || spec.nativeFleet === 'truck' || type === 'bus') key = 'bus';
+  else if (spec.kind === 'van' || spec.nativeFleet === 'van') key = 'van';
   else if (/flat[- ]?6|boxer/.test(layout)) key = 'flat6';
   else if (['v8flat','v8na','turbov6','turbov8','turbov12'].includes(type)) key = type;
   else if (/v8/.test(type + layout)) key = 'v8';
   else if (/v6/.test(type + layout)) key = 'v6';
-  else if (type === 'na4' && /^(panda|yaris|ibiza|corolla)/.test(spec.id || '')) key = 'city4';
+  else if (type === 'na4' && /^panda/.test(spec.id || '')) key = 'fiat4';
+  else if (type === 'na4' && /^(yaris|ibiza|corolla)/.test(spec.id || '')) key = 'city4';
+  else if (type === 'turbo4') {
+    const id = spec.id || '';
+    // MINI Cooper S and the B48 Z4s keep the MINI recording; AMG/GTI/RS trims get the Focus RS; the Cupra and Jazz drift car the Abarth.
+    if (/^(mini|z4)/.test(id)) key = 'turbo4';
+    else if (/gla45|cla35|cla45|golf_r|golf_gti|octavia_rs/.test(id)) key = 'hot4';
+    else if (/ibiza_cupra|jazz_drift/.test(id)) key = 'small4';
+    else key = 'comfort4';
+  }
   let selected = ENGINE_PROFILES[key] || ENGINE_PROFILES.turbo4;
   // Sport exhaust calibrations belong to trim IDs, not every turbo commuter.
-  if (selected === ENGINE_PROFILES.turbo4 && /jazz_drift|jcw|gti|cupra|_rs|golf_r|gla45|cla35|cla45/.test(spec.id || '')) {
+  if ((selected === ENGINE_PROFILES.turbo4 || selected === ENGINE_PROFILES.small4) && /jazz_drift|jcw|gti|cupra|_rs|golf_r|gla45|cla35|cla45/.test(spec.id || '')) {
     selected = Object.freeze({ ...selected, id: selected.id + '-sport', pops: .65 });
   }
   cache.set(spec, selected); return selected;

@@ -30,6 +30,37 @@ Running loops: Soundholder, Audi A3 8L 1.9 TDI 2000 RPM and Volkswagen
 Caravelle T5 2.0 TDI 3000 RPM, Sonniss GameAudioGDC 2020.
 These are diesel SUBSTITUTES, not an exact Octavia recording.
 
+PORSCHE 911 (flat-six)
+Running loops: Pole Position Production, Porsche 911 ST 1972 onboard fast drive,
+engine microphone (air-cooled flat-six), from Sonniss GameAudioGDC 2020.
+Starter: Pole Position Production, Porsche 997 Cup 2012 start (water-cooled
+flat-six). These are flat-six SUBSTITUTES for the 991.1 Carrera, S and GTS, not
+exact recordings of them. The master reaches about 3.5k rpm; above that the top
+loop is pitch-extended by the RPM-driven playback rate.
+https://sonniss.com/gameaudiogdc/
+
+LAMBORGHINI AVENTADOR SVJ and MERCEDES-AMG SL 65 (V12)
+Running loops and starter: Pole Position Production, Lamborghini Aventador 2014
+onboard start/drive/ramps, exhaust microphone, Sonniss GameAudioGDC 2020. A V12
+SUBSTITUTE for both cars (the SL 65 is a twin-turbo V12, so it shares this take
+with its own gain and spool/overrun behaviour).
+https://sonniss.com/gameaudiogdc/
+
+FORD FOCUS RS turbo four (GTI / R / RS / AMG hot hatches and compact SUVs)
+Running loops: Pole Position Production, Ford Focus RS 2016 onboard drive and
+ramps, engine microphone, Sonniss GameAudioGDC 2020. A 2.3 EcoBoost SUBSTITUTE,
+used with a darker, quieter calibration for mainstream turbo fours (Golf, Superb,
+CLE, GLA, CLA, Qashqai) and an open one for the sport trims. The starter is the
+shared petrol-four starter above. The idle loop has a 3.09 kHz notch against a
+narrow-band whine in the take.
+https://sonniss.com/gameaudiogdc/
+
+FIAT ABARTH 595 small four (Panda family, Ibiza Cupra, Jazz Drift)
+Running loops: Pole Position Production, Fiat Abarth 595 2016 onboard fast drive,
+exhaust microphone, Sonniss GameAudioGDC 2020. A 1.4 T-Jet SUBSTITUTE. The starter
+is the shared petrol-four starter above.
+https://sonniss.com/gameaudiogdc/
+
 LICENSES
 CC0 1.0: https://creativecommons.org/publicdomain/zero/1.0/
 CC BY 3.0: https://creativecommons.org/licenses/by/3.0/

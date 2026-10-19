@@ -26,5 +26,5 @@ test('348 dogleg gate puts first down-left and second up-centre while ordinary g
 });
 
 test('adding explicit V8 layouts preserves existing city-car audio routing',()=>{
- const city=CARS.filter(c=>c.engine==='na4'&&/^(panda|yaris|ibiza|corolla)/.test(c.id));assert(city.length>0);for(const c of city)assert.equal(engineProfile(c).id,'city-i4',c.id);
+ const city=CARS.filter(c=>c.engine==='na4'&&/^(panda|yaris|ibiza|corolla)/.test(c.id));assert(city.length>0);for(const c of city)assert.equal(engineProfile(c).id,/^panda/.test(c.id)?'fiat-i4':'city-i4',c.id);
 });

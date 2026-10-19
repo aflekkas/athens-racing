@@ -831,7 +831,7 @@
           1.02,
           0.36
         ],
-        "roadVisible": 41.53846153846154,
+        "roadVisible": 56.92307692307692,
         "clusterOcclusion": 12,
         "rimOcclusion": 12,
         "telltalesBlocked": 0,
@@ -879,8 +879,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 41.0166015625,
-      "openPixels": 420010,
+      "windscreenPercent": 41.39423828125,
+      "openPixels": 423877,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -12647,7 +12647,7 @@
           1.02,
           0.36
         ],
-        "roadVisible": 41.53846153846154,
+        "roadVisible": 56.92307692307692,
         "clusterOcclusion": 12,
         "rimOcclusion": 12,
         "telltalesBlocked": 0,
@@ -12695,8 +12695,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 41.0166015625,
-      "openPixels": 420010,
+      "windscreenPercent": 41.39423828125,
+      "openPixels": 423877,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800
@@ -12915,7 +12915,7 @@
           1.02,
           0.36
         ],
-        "roadVisible": 41.53846153846154,
+        "roadVisible": 56.92307692307692,
         "clusterOcclusion": 12,
         "rimOcclusion": 12,
         "telltalesBlocked": 0,
@@ -12963,8 +12963,8 @@
           "cluster"
         ]
       },
-      "windscreenPercent": 41.0166015625,
-      "openPixels": 420010,
+      "windscreenPercent": 41.39423828125,
+      "openPixels": 423877,
       "totalPixels": 1024000,
       "width": 1280,
       "height": 800

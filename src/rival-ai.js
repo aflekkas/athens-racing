@@ -10,6 +10,8 @@ const pointOut = () => ({ x: 0, y: 0, z: 0, set(x, y, z) { this.x = x; this.y = 
 const smooth01 = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
 // Side-by-side passes may use the asphalt down to this body clearance.
 const PASS_MARGIN = 0.3;
+// Asphalt kept outside the body when racing: 0.15 m more than before, because a rival now reaches its entry line with up to ~0.3 m of overshoot.
+const RACE_MARGIN = 1.1;
 const scratchBounds = {};
 
 /** Stable flat-road capability adapter. New handling implementations own these
@@ -201,7 +203,7 @@ export class RacingLine {
     }
   }
   index(i) { return this.closed ? (i % this.n + this.n) % this.n : clamp(i, 0, this.n - 1); }
-  bounds(s, oncoming = false, wide = false, out = {}) { return racingBounds(this.route, s, this.dir, this.halfWidth, this.roadEdges, oncoming || this.closedRoad, wide && !this.closed ? PASS_MARGIN : 0.95, out); }
+  bounds(s, oncoming = false, wide = false, out = {}) { return racingBounds(this.route, s, this.dir, this.halfWidth, this.roadEdges, oncoming || this.closedRoad, wide && !this.closed ? PASS_MARGIN : RACE_MARGIN, out); }
   sample(A, s) {
     const t = (this.closed ? wrap(s, this.length) : clamp(s, 0, this.length)) / this.step, i = Math.floor(t);
     return mix(A[this.index(i)], A[this.index(i + 1)], t - i);

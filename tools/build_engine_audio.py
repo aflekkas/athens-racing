@@ -59,6 +59,9 @@ def main():
     for asset in selected:
         x = decoded[asset['source']][round(asset['trim'][0]*SR):round(asset['trim'][1]*SR)]
         x = signal.sosfilt(signal.butter(2, 25, fs=SR, btype='highpass', output='sos'), x)
+        # Optional notches remove a recorded narrow-band whine that is not a firing harmonic (see sources.json notes).
+        for hz, q in asset.get('notches', []):
+            b, a = signal.iirnotch(hz, q, fs=SR); x = signal.sosfilt(signal.tf2sos(b, a), x)
         if asset['kind'] == 'loop':
             if asset.get('stabilize', True): x = stabilize(x, asset['rpm'], asset['cylinders'])
             x = loop(x)

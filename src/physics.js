@@ -27,6 +27,12 @@ import { tyreTelemetry } from './tyre-telemetry.js';
 import { angularVelocity, bodyContact, impactDynamics, placeRigid } from './airborne-dynamics.js';
 
 const G = 9.81, RHO = 1.2;
+// Steady-state understeer gradient (deg per g of road-wheel angle beyond Ackermann): road cars run ~1-3, and the catalogue's nose-heavy
+// hatches carried up to 4.2, which owners read as "ridiculous understeer, the handbrake is the way into a corner". Gradients above
+// US_KNEE are brought most of the way down to it, so the worst cars are no longer the heaviest ploughs; light understeer stays.
+const REAR_MARGIN = 0.08, REAR_LAT_MIN = 0.8; // see balancedRearLat
+const US_KNEE = 1.2, US_SLOPE = 0.55;
+export const understeerTrim = (grad) => grad <= US_KNEE ? grad : US_KNEE + (grad - US_KNEE) * US_SLOPE;
 const POWER_MUL = 1;    // catalogue power / torque as quoted (spec.powerMul can override per car)
 const H = 1 / 240;
 const DRAG_FLOOR = 0.85;  // of the car's speed: the slowest an axle may read to the automatic box when choosing a downshift
@@ -126,10 +132,11 @@ export class Vehicle {
     // to the front axle's lateral force. Sets the steady-state understeer gradient (deg of steer per g; real road cars
     // ~1-4: nose-heavy hatches the most, rear-engined cars the least), on top of the tyres' own ~0.3-0.5
     // (default from the weight split: nose-heavy cars are set up with more of it; spec.usGrad overrides)
-    const usG = spec.usGrad ?? clamp(0.8 + (fw - 0.39) * 8.5, 0.6, 3);
+    const usG = understeerTrim(spec.usGrad ?? clamp(0.8 + (fw - 0.39) * 8.5, 0.6, 3));
     // (the tyres alone give ~0.45 deg/g on a nose-heavy car, slightly less than nothing on a tail-heavy one)
     this.kComp = Math.max(0, usG - 0.45 + 4.5 * Math.max(0, 0.5 - fw)) / 57.3; // rad of road-wheel angle per g of front-axle force
     this.gripR = spec.gripRear ?? 1;                                     // rear tyres vs front (staggered sizes)
+    this.rearLat = this.balancedRearLat();
     this.ayCap = this.maxLatAccel(25);
     this.damageFx();
   }
@@ -198,16 +205,27 @@ export class Vehicle {
     return c(Fz / 2 + dLat / 2) + c(Fz / 2 - dLat / 2);
   }
   /** max steady cornering acceleration at speed v (m/s): the first axle to saturate sets it */
-  maxLatAccel(v = 20) {
+  maxLatAccel(v = 20, axles = null) {
     const sp = this.spec, m = this.m, fw = sp.frontW ?? 0.55, rsF = sp.rsF ?? 0.55;
-    const DF = 0.5 * RHO * (sp.clA ?? 0) * v * v, aeroF = sp.aeroF ?? 0.45;
-    let ay = sp.grip * G;
+    const DF = 0.5 * RHO * (sp.clA ?? 0) * v * v, aeroF = sp.aeroF ?? 0.45, rl = this.rearLat ?? 1;
+    let ay = sp.grip * G, aF = 0, aR = 0;
     for (let it = 0; it < 12; it++) {
       const dLat = m * ay * this.hcg / this.track;
-      const cF = this._axleCap(m * G * fw + DF * aeroF, 2 * dLat * rsF, true), cR = this._axleCap(m * G * (1 - fw) + DF * (1 - aeroF), 2 * dLat * (1 - rsF), false);
-      ay = 0.5 * ay + 0.5 * Math.min(cF / (m * fw), cR / (m * (1 - fw))) * 0.97;   // ~3% for the slip the tyres can't all hold at once
+      const cF = this._axleCap(m * G * fw + DF * aeroF, 2 * dLat * rsF, true), cR = this._axleCap(m * G * (1 - fw) + DF * (1 - aeroF), 2 * dLat * (1 - rsF), false) * rl;
+      aF = cF / (m * fw); aR = cR / (m * (1 - fw));
+      ay = 0.5 * ay + 0.5 * Math.min(aF, aR) * 0.97;   // ~3% for the slip the tyres can't all hold at once
     }
+    if (axles) { axles.front = aF; axles.rear = aR; }
     return ay;
+  }
+  /** Rear lateral grip factor (<= 1) that leaves the rear axle at most REAR_MARGIN above the front's cornering limit. The car
+   *  still corners at the front's limit (the lower of the two, so the calibrated skidpad figures do not move), but the unused
+   *  rear surplus no longer pins the tail: at the limit the rear is nearly as busy as the front, so the car rotates on the
+   *  brakes and the lift instead of ploughing. Braking and traction (longitudinal grip) are not touched. */
+  balancedRearLat() {
+    this.rearLat = 1;
+    const a = {}; this.maxLatAccel(25, a);
+    return a.rear > a.front * (1 + REAR_MARGIN) ? Math.max(REAR_LAT_MIN, (1 + REAR_MARGIN) * a.front / a.rear) : 1;
   }
   /** max straight-line braking deceleration from speed v (m/s): grip with the weight thrown forward, brake bias, ABS */
   maxBrakeDecel(v = 20) {
@@ -897,7 +915,7 @@ export class Vehicle {
         const reserve = Math.sqrt(Math.max(0, 1 - (k * sx) ** 2));
         lateralK = lerp(k, Math.max(k, pure * reserve / aySlip), 0.75);
       }
-      out.Fy = -cap[i] * lateralK * sy; out.sx = sx; out.sy = sy; out.sN = sN;
+      out.Fy = -cap[i] * lateralK * sy * (i < 2 ? 1 : this.rearLat); out.sx = sx; out.sy = sy; out.sN = sN;
       return out;
     };
     const tt = this._tt || (this._tt = { Fx: 0, Fy: 0, sx: 0, sy: 0, sN: 0 });

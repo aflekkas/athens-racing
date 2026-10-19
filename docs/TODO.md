@@ -42,6 +42,7 @@ Also done since 2026-10-18 04:00 (checked by the lead):
 - [x] Seat lettering, A-Class star, lower door mirrors (`9a753c93`)
 
 - [x] Porsche 911 front/tail rework (`4b5ed440`)
+- [x] Engine sounds: flat-six for the 911, V12 for the Aventador/SL 65, own turbo-four takes for hot, mainstream and small cars (no recording shared by more than 13 cars)
 - [x] Exhaust-pop first-pop freeze: one permanent flash light + flame pipeline warm-up (`10aad92c`)
 - [x] Athens: connected coast stage 2 + OSM road cross-sections, rebaked, 47.9 MB in R2 staging (`b631ef8c`, `b3591cc0`); screenshots being re-made; next area waits on the lead's review
 

@@ -4,6 +4,9 @@ import {dopplerFactor, spatialEngine, NearestEngines} from '../src/audio/engine-
 import {engineProfile, gearboxSound} from '../src/audio/engine-profiles.js';
 import {EngineLifecycle} from '../src/audio/engine-lifecycle.js';
 import {recordingFor, rpmBlend} from '../src/engine-recordings.js';
+import {CARS} from './vehicle-budget-support.mjs';
+import {readFileSync, existsSync} from 'node:fs';
+import {fileURLToPath} from 'node:url';
 test('Doppler: stationary, approaching, receding, shared velocity, corrupt telemetry', () => {
   assert.equal(dopplerFactor(0), 1);
   assert.ok(dopplerFactor(40) > 1); assert.ok(dopplerFactor(-40) < 1);
@@ -29,11 +32,11 @@ test('profile selection honors layouts and matching licensed substitutes', () =>
   for (const [engine,cyl] of [['turbo4',4],['diesel',4],['turbo6',6],['na6',6],['flat6',6],['v10',10],['v6biturbo',6],['v8biturbo',8],['na3',3]]) {
     const spec={id:'test',engine}; assert.equal(engineProfile(spec).cylinders,cyl); assert.equal(engineProfile(spec),engineProfile(spec));
   }
-  assert.equal(engineProfile({id:'panda',engine:'na4'}).id,'city-i4');
+  assert.equal(engineProfile({id:'panda',engine:'na4'}).id,'fiat-i4');assert.equal(engineProfile({id:'yaris',engine:'na4'}).id,'city-i4');
   assert.equal(engineProfile({id:'e36_m3',engine:'na6'}).id,'na-i6');
   assert.equal(recordingFor({id:'golf_gti',engine:'turbo4'}).engine,'turbo4');
   assert.equal(recordingFor({id:'golf_gtd',engine:'diesel'}).engine,'diesel');
-  assert.equal(recordingFor({id:'carrera',engine:'flat6'}),null);
+  assert.equal(recordingFor({id:'carrera',engine:'flat6'}).engine,'flat6');
   assert.equal(engineProfile({kind:'bus'}).cylinders,6);
   assert.equal(engineProfile({kind:'van'}).pops,0);
   assert.equal(gearboxSound({gearbox:'AT'}),'auto'); assert.equal(gearboxSound({gearbox:'PDK'}),'dct');
@@ -82,4 +85,25 @@ test('existing world loop licences are retained through bus/bike banks and guard
   const bank=pool.recorded.get(profile);assert.equal(bank.loops.length,2);
   assert.equal(bank.loops[0].loopStart,.025);assert.equal(bank.loops[1].loopEnd,19.9);
  }
+});
+
+test('engine families have their own voice: the 911 is a flat-six and no recording is shared by most of the garage',()=>{
+  const groups=new Map();
+  for(const c of CARS){const p=engineProfile(c),key=p.sample||'synth:'+p.synth;groups.set(key,(groups.get(key)||0)+1);}
+  // Before 2026-10-18 thirty-five cars shared the MINI recording ("why do all the cars sound like papaya?").
+  for(const [key,n] of groups)assert.ok(n<=20,key+' is shared by '+n+' cars');
+  assert.ok(groups.get('mini')<=8,'the MINI recording belongs to the MINI and the B48 Z4s');
+  assert.ok(groups.size>=14,'distinct engine voices: '+groups.size);
+  const car=id=>CARS.find(c=>c.id===id);
+  for(const id of ['carrera','carrera_s','carrera_gts']){const r=recordingFor(car(id));assert.equal(r.engine,'flat6',id);assert.equal(r.cylinders,6,id);}
+  for(const id of ['aventador_svj','sl65'])assert.equal(recordingFor(car(id)).cylinders,12,id);
+  assert.notEqual(recordingFor(car('golf')),recordingFor(car('panda')));assert.notEqual(engineProfile(car('golf_gti')).id,engineProfile(car('golf')).id,'sport and mainstream turbo fours are calibrated differently');
+  assert.ok(engineProfile(car('golf')).tone<engineProfile(car('golf_gti')).tone,'mainstream calibration is darker than the sport one');
+  assert.equal(engineProfile(car('bus')).synth,'bus');assert.equal(engineProfile(car('truck')).synth,'bus');
+  // Every recording is licensed and listed: each loop file exists, rises in rpm and matches sources.json.
+  const manifest=JSON.parse(readFileSync(new URL('../assets/audio/engines/sources.json',import.meta.url),'utf8'));
+  for(const spec of CARS){const r=recordingFor(spec);if(!r)continue;
+    const rpms=r.loops.map(l=>l.rpm);assert.deepEqual(rpms,[...rpms].sort((x,y)=>x-y),spec.id+' loops ascend');
+    for(const l of r.loops){const file=fileURLToPath(l.url.split('?')[0]);assert.ok(existsSync(file),file);const entry=manifest.assets.find(a=>file.endsWith('/'+a.file));assert.ok(entry,file+' missing from sources.json');assert.equal(entry.rpm,l.rpm,file);assert.ok(manifest.sources[entry.source]?.licenseUrl,file+' needs a licence');}
+  }
 });
