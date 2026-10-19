@@ -7,6 +7,7 @@ import {fileURLToPath} from 'node:url';
 import {boundaryRing,inside,publicRoad,sideStreetExits} from './neighbourhood.mjs';
 import {psychikoSection} from '../../../src/maps/psychiko-streets.js';
 import {buildPsychikoScenery} from './scenery.mjs';
+import {psychikoWayClass} from './street-classes.mjs';
 import {inject} from '../../inject-speed-signs.mjs';
 import {routeRoundabouts,roundaboutLoops} from '../../roundabouts.mjs';
 import {extractRoadNetwork} from '../../build-road-network.mjs';
@@ -29,6 +30,15 @@ for(let i=0;i<N;i++){const key=`${Math.floor(X[i]/C)},${Math.floor(Z[i]/C)}`;if(
 function nearest(x,z,max=600){const cx=Math.floor(x/C),cz=Math.floor(z/C);let bi=-1,bd=max*max;for(let k=0;k<=Math.ceil(max/C);k++){for(let a=-k;a<=k;a++)for(let b=-k;b<=k;b++){if(Math.max(Math.abs(a),Math.abs(b))!==k)continue;for(const i of buckets.get(`${cx+a},${cz+b}`)||[]){const d=(x-X[i])**2+(z-Z[i])**2;if(d<bd){bd=d;bi=i;}}}if(bi>=0&&Math.sqrt(bd)<(k-.5)*C)break;}if(bi<0)return null;const a=Math.max(0,bi-1),b=Math.min(N-1,bi+1),dx=X[b]-X[a],dz=Z[b]-Z[a],l=Math.hypot(dx,dz)||1;return{i:bi,s:bi*step,d:Math.sqrt(bd),u:(x-X[bi])*-dz/l+(z-Z[bi])*dx/l};}
 const nodes=new Map(osm.filter(e=>e.type==='node').map(e=>[e.id,e]));
 const geometry=w=>(w.geometry||w.nodes?.map(id=>nodes.get(id))||[]).filter(Boolean).map(P);
+// Each lap sample takes the surveyed class of its nearest raced OSM way (raw/street-classes.json). Route names gain that
+// class as `k` and split where a mixed way changes class; runs under 20 m (junction fillets) join the previous run.
+const routeNames=(()=>{const ways=[...new Set(R.orderedWays.map(w=>w.id))].map(id=>({id,p:geometry(osm.find(e=>e.type==='way'&&e.id===id))}));
+ const seg=(x,z,a,b)=>{const dx=b[0]-a[0],dz=b[1]-a[1],t=clamp(((x-a[0])*dx+(z-a[1])*dz)/(dx*dx+dz*dz||1),0,1);return Math.hypot(x-a[0]-t*dx,z-a[1]-t*dz);};
+ const cls=X.map((x,i)=>{let best=null,d=Infinity;for(const w of ways)for(let k=1;k<w.p.length;k++){const e=seg(x,Z[i],w.p[k-1],w.p[k]);if(e<d){d=e;best=w.id;}}return psychikoWayClass(best,x,Z[i],proj);});
+ for(let i=1,start=0;i<=N;i++)if(i===N||cls[i]!==cls[start]){if((i-start)*step<20&&start>0)cls.fill(cls[start-1],start,i);start=i;}
+ const out=[];R.names.forEach((n,j)=>{const end=R.names[j+1]?.s??R.length,first=Math.min(N-1,Math.round((n.s+Math.min(10,(end-n.s)/2))/step));let k=cls[first];out.push({...n,k});
+  for(let i=first+1;i*step<end-step&&i<N;i++)if(cls[i]!==k){k=cls[i];out.push({s:r(i*step),name:n.name,k});}});
+ return out;})(),classed={length:R.length,names:routeNames};
 const areas=Object.fromEntries(['beach','lake','pool','scrub','rock','cliff','wood','park','marina','pier','breakwater','parking','golf','pitch','residential','fuel','quarry'].map(k=>[k,[]]));
 const boundary=boundaryRing(load('boundaries'),P);
 const garden=load('garden-route');
@@ -39,7 +49,7 @@ for(const e of osm){const t=e.tags||{};if(e.type==='node')continue;if(e.type!=='
  const center=ps.reduce((s,p)=>[s[0]+p[0]/ps.length,s[1]+p[1]/ps.length],[0,0]);const q=nearest(...center,1800);if(!q)continue;
  if(t.building&&ps.length>3&&(q.d<400||inside(center,boundary)||inside(center,drawnRing))){// Preserve close OSM fronts. Only omit actual race-carriageway overlaps;
  // the former 8 m centreline exclusion erased legitimate front-garden plots.
- if(ps.some(p=>{const q=nearest(...p,8);return q&&q.d<psychikoSection(R,q.s).w/2+.05;}))continue;const k=t.building==='church'?'church':!['apartments','commercial','retail','school'].includes(t.building)?'villa':'apt';const pick=((Math.imul(e.id,2654435761)>>>0)%1000)/1000;const lv=+t['building:levels']||(pick<.67?2:3);buildings.push({p:flatten(ps.slice(0,-1)),h:+t.height||lv*3.1,lv,k:k==='villa'&&pick>.65?'apt':k,pitched:k!=='church'&&pick<.45,s:q.s,u:r(q.u),id:e.id,name:t['name:en']||t.name});if(k==='church')landmarks.push({id:e.id,kind:'church',p:flatten(ps),name:t.name});}
+ if(ps.some(p=>{const q=nearest(...p,8);return q&&q.d<psychikoSection(classed,q.s).w/2+.05;}))continue;const k=t.building==='church'?'church':!['apartments','commercial','retail','school'].includes(t.building)?'villa':'apt';const pick=((Math.imul(e.id,2654435761)>>>0)%1000)/1000;const lv=+t['building:levels']||(pick<.67?2:3);buildings.push({p:flatten(ps.slice(0,-1)),h:+t.height||lv*3.1,lv,k:k==='villa'&&pick>.65?'apt':k,pitched:k!=='church'&&(t['roof:shape']?t['roof:shape']!=='flat':pick<.45),...(t['roof:shape']==='gabled'?{roof:'gabled'}:{}),s:q.s,u:r(q.u),id:e.id,name:t['name:en']||t.name});if(k==='church')landmarks.push({id:e.id,kind:'church',p:flatten(ps),name:t.name});}
  let cls=t.landuse==='quarry'?'quarry':t.natural==='wood'||t.landuse==='forest'?'wood':t.natural==='scrub'||t.natural==='heath'?'scrub':t.natural==='bare_rock'||t.natural==='scree'?'rock':t.landuse==='residential'?'residential':t.amenity==='parking'?'parking':t.leisure==='park'||t.landuse==='village_green'?'park':null;
  if(cls&&ps.length>3){const a={p:flatten(ps),c:e.nodes?.[0]===e.nodes?.at(-1)?1:0,id:e.id};areas[cls].push(a);if(cls==='quarry')areas.rock.push(a);}
  if(t.highway&&!R.sourceWayIds.includes(e.id)&&q.d<380&&['secondary','tertiary','unclassified','residential','service'].includes(t.highway)&&!['dirt','gravel','unpaved','ground'].includes(t.surface)){sideRoads.push({id:e.id,p:flatten(ps),w:t.highway==='secondary'?6.6:4.5,f:0,n:t['int_name']||t['name:en']||t.name});}
@@ -59,7 +69,7 @@ R.names.forEach((n,i)=>{const run=(R.names[i+1]?.s??R.length)-n.s;if(/^Unnamed/.
 const events=[{id:'psychiko-tt',mapId:'psychiko',name:'PSYCHIKO GARDEN LOOP TT',disabled:true,blurb:'One lap around the Palaio Psychiko fan. Tight roundabouts and neighbourhood avenues against the clock.',type:'timetrial',from:'start',to:'finish',laps:1,rivals:0,traffic:0,targets:{gold:75,silver:65,bronze:55}},{id:'psychiko-race',mapId:'psychiko',name:'PSYCHIKO STREET RACE',blurb:'Two laps against two locals around the Palaio Psychiko fan: radial avenues, ring streets and roundabouts.',type:'sprint',from:'start',to:'finish',laps:2,rivals:2,traffic:0,targets:{gold:1,silver:2,bronze:3}}];
 const a=0,b=N-1;let ascent=0,descent=0,maxGrade=0;for(let i=a+1;i<=b;i++){const d=Y[i]-Y[i-1];if(d>0)ascent+=d;else descent-=d;maxGrade=Math.max(maxGrade,Math.abs(d/step));}
 const stats={startElevation:Y[a],finishElevation:Y[b],ascent:r(ascent),descent:r(descent),maxGrade:r(maxGrade*100),elevationSource:dem.source};
-const data={schema:1,id:'psychiko',name:'PSYCHIKO GARDEN CIRCUIT',type:'circuit',coastal:false,length:R.length,attribution:'Map data © OpenStreetMap contributors (ODbL) · Elevation: EU-DEM v1.1 via OpenTopoData',proj,route:{step,x:X,z:Z,y:Y,width:new Array(N).fill(7),lanes:new Array(N).fill(1),div:new Array(N).fill(0),start:0,finish:R.length,length:R.length,closed:true,streetCircuit:true,from:'Diamantidou',to:'Diamantidou',names:R.names,speeds:[{s:0,v:30}]},marks,zones:[{s:0,urban:.85,zone:'town'}],parkSpots:[],humps:[],barriers:[],coast:[],buildings,areas,pois:[],furniture:[],places:[],sideRoads,events,psychiko:{stats,sourceWayIds:R.sourceWayIds,orderedWays:R.orderedWays,stations:R.stations,gardenLoop:{length:garden.length,sourceWayIds:garden.sourceWayIds,sourceNodeIds:garden.sourceNodeIds},boundary:boundary.flat()}};
+const data={schema:1,id:'psychiko',name:'PSYCHIKO GARDEN CIRCUIT',type:'circuit',coastal:false,length:R.length,attribution:'Map data © OpenStreetMap contributors (ODbL) · Elevation: EU-DEM v1.1 via OpenTopoData',proj,route:{step,x:X,z:Z,y:Y,width:new Array(N).fill(7),lanes:new Array(N).fill(1),div:new Array(N).fill(0),start:0,finish:R.length,length:R.length,closed:true,streetCircuit:true,from:'Diamantidou',to:'Diamantidou',names:routeNames,speeds:[{s:0,v:30}]},marks,zones:[{s:0,urban:.85,zone:'town'}],parkSpots:[],humps:[],barriers:[],coast:[],buildings,areas,pois:[],furniture:[],places:[],sideRoads,events,psychiko:{stats,sourceWayIds:R.sourceWayIds,orderedWays:R.orderedWays,stations:R.stations,gardenLoop:{length:garden.length,sourceWayIds:garden.sourceWayIds,sourceNodeIds:garden.sourceNodeIds},boundary:boundary.flat()}};
 // Real OSM stops; only route-side stops, not nearby stops on a different avenue.
 for(const e of osm)if(e.type==='node'&&(e.tags?.highway==='bus_stop'||e.tags?.public_transport==='platform')){const p=P(e),q=nearest(...p,20);if(q)data.furniture.push({t:'bus_stop',s:q.s,u:r(q.u),x:r(p[0]),z:r(p[1]),id:e.id});}
 
