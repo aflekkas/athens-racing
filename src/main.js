@@ -7,7 +7,7 @@ import { CpuMetrics } from './cpu-metrics.js';
 import { RenderScale } from './render-scale.js';
 import { FrameLimiter, dynamicBudgetMs } from './frame-pacing.js';
 import { scaleVehicleLod } from './vehicle-lod.js';
-import { mergeInstancedCells } from './batch.js';
+import { CHUNK_SCALE, mergeInstancedCells } from './batch.js';
 import { importWithUpdate } from './client-release.js';
 import { notifications } from './ui/notifications.js';
 import { objectiveNotice } from './ui/objective-notice.js';
@@ -86,7 +86,7 @@ import { speedLimitAt } from './speed-limit.js';
 import { updateSceneryLod, setDrawDistance, drawDistance } from './scenery.js';
 import { RENDER, resolveGraphics, dynamicFloor, outputRatio, applyRenderResolution, releaseSceneryVariants, trimShadowCasters } from './graphics.js';
 import { DistanceDetail } from './batch.js';
-import { PARKED_RANGE, fleetModel } from './traffic-fleet.js';
+import { PARKED_CELL, PARKED_RANGE, fleetModel } from './traffic-fleet.js';
 import { initGhostLap } from './ghost-lap-mode.js';
 import { loading, errorCode } from './ui/loading.js';
 import { kbd, ui, icon } from './ui/components.js';
@@ -271,6 +271,7 @@ setDrawDistance(+Q.get('draw') || GFX.drawDistance, R.horizon, GFX.detail);
 // owns the shared traffic, so only the HUD rates apply there.
 const applyCpuBudget = () => { G.trafficTier = GFX.traffic; if (people) people.budgetMul = GFX.walkers; hud?.setRates(GFX.hud); };
 // Weaker classes draw the instanced props in coarser chunks (batch.js mergeInstancedCells): fewer draw calls, same look.
+PARKED_CELL.scale = GFX.chunkScale >= 3 ? 2 : 1; CHUNK_SCALE.value = GFX.chunkScale;
 const consolidateWorld = (w) => { if (w && GFX.chunkScale > 1) mergeInstancedCells(w.group, 400 * GFX.chunkScale, { lod: w.lod }); };
 const applyDrawDistance = () => { if (traffic) PARKED_RANGE.far = traffic.drawRange = Math.min(GFX.trafficDraw ?? Infinity, clamp(drawDistance() * 0.55, 220, 1150)); if (people) people.drawRadius = Math.min(GFX.crowd, Math.max(60, drawDistance() * 0.35)); };
 const GRAPHICS_KEYS = new Set(['perfClass', 'renderScale', 'dynamicResolution', 'frameCap', 'drawDistance']);

@@ -202,7 +202,9 @@ class ParkingCell extends THREE.LOD{
     if(distance>PARKED_RANGE.far)for(const level of this.levels)level.object.visible=false;
   }
 }
-export function bakeParkedFleet(models,cell=40){
+// Weaker performance classes bake parked cars in cells this many times wider (main.js): fewer cells in view, so fewer draw calls
+export const PARKED_CELL={scale:1};
+export function bakeParkedFleet(models,cell=40){cell*=PARKED_CELL.scale;
   const group=new THREE.Group(),cells=new Map();
   for(const car of models){const p=car.root.position,key=Math.floor(p.x/cell)+','+Math.floor(p.z/cell);if(!cells.has(key))cells.set(key,[]);cells.get(key).push(car);}
   for(const cars of cells.values()){const origin=new THREE.Vector3();for(const c of cars)origin.add(c.root.position);origin.multiplyScalar(1/cars.length);origin.y=0;group.add(new ParkingCell(cars,origin));}

@@ -4,7 +4,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
-import { batchStatic, mergeInstancedCells } from '../src/batch.js';
+import { batchStatic, CHUNK_SCALE, mergeInstancedCells } from '../src/batch.js';
 import { CellInstances } from '../src/util.js';
 import { PERFORMANCE, PERF_CLASSES, resolveGraphics } from '../src/graphics.js';
 import { Crowd } from '../src/human.js';
@@ -79,4 +79,19 @@ test('other drivers\' cars drop to the road-distance model sooner on weak classe
   const main = (await import('node:fs')).readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
   assert.match(main, /if \(!isPlayer\) scaleVehicleLod\(model, GFX\.vehicleLod\)/, 'only rivals and online players');
   assert.match(main, /scaleVehicleLod\(c\.model, GFX\.vehicleLod\)/, 'a live class change re-applies it');
+});
+
+test('Riviera road: one mesh per material and chunk (median and skirt share the verge), and weaker classes draw coarser guardrail chunks with the same rails', async () => {
+  const { worldFixture } = await import('./world-test-fixture.mjs');
+  const { ROAD, buildRoad } = await import('../src/road.js');
+  const { buildRivieraRails } = await import('../src/riviera-guardrail-mesh.js');
+  const { map, network, terrain } = await worldFixture('riviera');
+  const group = buildRoad(map, new THREE.Group(), terrain.heightC, { network, furniture: false }).group;
+  const chunks = Math.ceil((map.route.length + 120) / 1000), meshes = group.children.filter(o => o.isMesh);
+  assert.ok(meshes.length <= 4 * chunks, `${meshes.length} road meshes for ${chunks} chunks: road, verge, kerb, paving at most`);
+  const rails = (scale) => { CHUNK_SCALE.value = scale; try { const g = new THREE.Group(); buildRivieraRails(map, g, terrain.heightC, { network }, ROAD); return g.userData.guardrails; } finally { CHUNK_SCALE.value = 1; } };
+  const fine = rails(1), coarse = rails(3);
+  assert.equal(coarse.triangles, fine.triangles, 'the same rail triangles');
+  assert.equal(coarse.posts, fine.posts, 'the same posts');
+  assert.ok(coarse.chunks < fine.chunks * .6, `${coarse.chunks} coarse guardrail chunks vs ${fine.chunks}`);
 });
