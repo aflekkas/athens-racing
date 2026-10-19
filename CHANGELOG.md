@@ -24,6 +24,12 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 - Multiplayer: bumping another car now affects both of you the same way, whoever hits whom and whoever has the slower connection.
 
+- Multiplayer: moving a lobby to another track now brings that track's own traffic, time and weather, so Megara no longer gets Riviera traffic.
+
+- Multiplayer: pressing JOIN twice no longer shows a "Leave your current lobby first" error.
+
+- Multiplayer: another driver's car is no longer drawn far behind its real position after it stops for a moment and sets off again.
+
 - Porsche 911: a fastback roofline falling to a lower tail, raised front wings with upright oval headlamps, wider rear haunches; door mirrors are one piece with their arm.
 
 - Weak laptops: the lowest graphics classes now run fewer cars and pedestrians and refresh the HUD less often, and the first-run check also tests your processor.

@@ -58,7 +58,7 @@ Running (Sonnet; Enterprise unless noted):
 - [x] Athens stage 3: Piraeus/Faliro, 289 cells, 871 km of road, all gates green, 2×2 set 36.6/64 MiB (`1f61c0fd`, `eac1f7f5`)
 - [~] Athens stage 4: the centre (Kallithea→Syntagma/Omonia/Plaka→Kypseli) (Personal, rate limit on Enterprise); north follows without owner wait
 - [x] Online: remote cars glide (jitter buffer, 20 Hz sim-clock samples, 50 ms relay) and car-to-car contacts symmetric (`3f35e7de`); owner to retest with a friend
-- [~] Multiplayer: restart teleport, lobby join glitches, traffic seed (Personal, rate limit on Enterprise)
+- [x] Multiplayer: restart and tow land where the car is (0 m off the grid after a host restart, guards in `server/mp-restart-tow.test.mjs`); lobby double-JOIN error and a lobby keeping the old track's traffic fixed; traffic seed equal on every client (`tools/traffic-seed.test.mjs`); owner to retest with a friend
 - [~] Playtest leftovers (Personal, rate limit on Enterprise): Riviera draw calls <200 on Low/Potato, blurry player car, GLA badge clutter, clearer car vs trim picker
 - [~] Release cutover (lead): after the batch is checked on staging
 

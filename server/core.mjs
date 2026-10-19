@@ -195,6 +195,8 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
         if (m.type === 'leave') { leave(c); send(ws, { type: 'left' }); return; }
         if (['create', 'options'].includes(m.type) && m.mode !== undefined && !['sprint', 'free'].includes(m.mode)) return error('Mode unavailable. Choose Quick Race or Free Roam.');
         if (m.type === 'create' || m.type === 'join') {
+          // A second click or a retried message for the lobby the driver is already in is the same request: answer with the lobby, not an error toast.
+          if (l && m.type === 'join' && String(m.code ?? '').trim().toUpperCase() === l.code) { publish(l); return; }
           if (l) return error('Leave your current lobby first.');
           c.name = clean(m.name, c.name, 16); c.plate = formatPlate(c.name); c.car = CARS.has(m.car) ? m.car : 'mini';
           c.ready = false; c.loaded = false; c.finish = null; c.dnf = false; c.state = null; c.stateAt = null; c.course = null; c.recovery = null;
@@ -305,8 +307,11 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
             refreshBalance(l);
           }
           const prevConfig = l.config || {};
-          const nextConfig = { ...prevConfig, ...cfg.config };
           const mapChanged = mapId !== l.mapId, eventChanged = eventId !== l.eventId;
+          // A different track brings its own defaults: a Riviera lobby's traffic, time, weather and police must not follow the host
+          // to Megara ("why is there traffic on Megara"). What the host sets in this same message still wins.
+          const trackDefaults = mapChanged ? (({ traffic, time, weather, police, reverse }) => ({ traffic, time, weather, police, reverse }))(defaultConfig(defs.get(eventId))) : {};
+          const nextConfig = { ...prevConfig, ...trackDefaults, ...cfg.config };
           const raceChanged = mapChanged || eventChanged || configInvalidates(prevConfig, nextConfig);
           if (mapChanged) for (const p of l.players.values()) p.loaded = false;
           l.mapId = mapId; l.eventId = eventId; l.config = nextConfig; l.traffic = nextConfig.traffic > 0; l.police = nextConfig.police === true;

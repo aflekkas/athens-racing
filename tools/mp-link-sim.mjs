@@ -59,7 +59,7 @@ function link(random, { base, jitter, loss, rto }) {
 /** Frame clock with the uneven spacing of a struggling machine. */
 function frames(random, fps, spread) { let next = 0; return now => { if (now + .001 < next) return false; next = Math.max(next + 1, now) + (1000 / fps) * (1 + (random() * 2 - 1) * spread); return true; }; }
 
-export function runLink({ senderFps = 60, receiverFps = 60, net = NET.bad, seconds = 24, seed = 7, warmup = 4, path = curvyPath, relayMs = protocol.RELAY_MS ?? 100, spread = .2 } = {}) {
+export function runLink({ senderFps = 60, receiverFps = 60, net = NET.bad, seconds = 24, seed = 7, warmup = 4, path = curvyPath, relayMs = protocol.RELAY_MS ?? 100, spread = .2, events = [] } = {}) {
   const realNow = Date.now, realPerf = performance.now; let now = 0; const BASE = 1.7e12, SENDER_SKEW = 7777;
   Date.now = () => BASE + now; performance.now = () => now;
   try {
@@ -81,6 +81,7 @@ export function runLink({ senderFps = 60, receiverFps = 60, net = NET.bad, secon
     const out = [], senderFrames = []; let firstSeen = null;
     const end = seconds * 1000;
     for (now = 0; now <= end; now++) {
+      for (const e of events) if (!e.done && now >= e.at) { e.done = true; e.run({ sender, now }); } // scripted driver events (a tow bumps the motion epoch)
       if (senderFrame(now)) { const p = truth(now); senderFrames.push(now); sender.sample(stateOf(p), lobby.raceId, { batching }); }
       for (const [id, timer] of timers) if (timer.at <= now) { timers.delete(id); timer.fn(); }
       up.drain(now, text => { core.message(a, text); if (relayAt === null && [...core.lobbies.values()].some(l => l.dirty)) relayAt = now + relayMs; });

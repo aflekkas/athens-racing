@@ -18,7 +18,7 @@ export const MIN_DELAY = 100, START_DELAY = 180, MAX_DELAY = 280, COAST_MS = 350
 export class RemoteTimeline {
   constructor() {
     this.samples = []; this.delay = START_DELAY; this.jitter = 0; this.cadence = 50; this.offset = null; this.base = null;
-    this.arrivals = []; this.pushed = 0; this.playhead = null; this.rate = 1; this.renderAt = null; this.mode = 'empty'; this.resetCount = 0; this.err = null; this.shown = null;
+    this.arrivals = []; this.pushed = 0; this.playhead = null; this.pinned = false; this.rate = 1; this.renderAt = null; this.mode = 'empty'; this.resetCount = 0; this.err = null; this.shown = null;
   }
   push(state, { receivedAt, serverNow, stateAt, car, stopped = false, networkDelay = 0 } = {}) {
     if (!valid(state)) return false;
@@ -37,7 +37,7 @@ export class RemoteTimeline {
     // player's sample clock signals a stalled stream; receipt gaps cannot reset
     // the clock to the oldest packet in a queued burst.
     const discontinuity = previous && (restart || car !== previous.car || state.motionEpoch !== previous.state.motionEpoch || gap > 1.5 || distance > 3 + Math.max(speed(state), speed(previous.state)) * Math.max(0, gap) * 1.6);
-    if (discontinuity) { this.samples = []; this.arrivals = []; this.pushed = 0; this.playhead = this.renderAt = null; this.rate = 1; this.offset = this.base = null; this.delay = START_DELAY; this.jitter = 0; this.cadence = 50; this.err = this.shown = null; this.resetCount++; }
+    if (discontinuity) { this.samples = []; this.arrivals = []; this.pushed = 0; this.playhead = this.renderAt = null; this.pinned = false; this.rate = 1; this.offset = this.base = null; this.delay = START_DELAY; this.jitter = 0; this.cadence = 50; this.err = this.shown = null; this.resetCount++; }
     const last = this.samples.at(-1);
     const candidate = local - source;
     if (this.offset === null) this.offset = candidate;
@@ -45,7 +45,8 @@ export class RemoteTimeline {
     else this.offset = Math.min(candidate, this.offset + .2);
     // Arrival lag: how long after its own timestamp this sample became available here (clock offset + transit + every hold).
     // Its floor is the best the path can do; the excess over the floor is the jitter the buffer has to absorb.
-    this.arrivals.push({ at: receivedAt, lag: receivedAt - source, source });
+    // A car that stood still sent nothing: the gap before its first moving sample is a stop, not a slow sender or a lossy link.
+    this.arrivals.push({ at: receivedAt, lag: receivedAt - source, source, afterStop: !!last && speed(last.state) < .1 });
     while (this.arrivals.length > 1 && receivedAt - this.arrivals[0].at > BASE_WINDOW_MS) this.arrivals.shift();
     this.base = Math.min(...this.arrivals.map(a => a.lag));
     if (last) {
@@ -73,7 +74,7 @@ export class RemoteTimeline {
     const window = this.arrivals.filter(a => now - a.at <= WINDOW_MS);
     if (window.length < 3) return;
     const excess = window.map(a => a.lag - this.base);
-    let gap = 0; for (let i = 1; i < window.length; i++) { const g = window[i].source - window[i - 1].source; if (g > 0 && g <= 600) gap = Math.max(gap, g); }
+    let gap = 0; for (let i = 1; i < window.length; i++) { const g = window[i].source - window[i - 1].source; if (g > 0 && g <= 600 && !window[i].afterStop) gap = Math.max(gap, g); }
     const wanted = clamp(percentile(excess, .9) + gap + 15, MIN_DELAY, MAX_DELAY);
     // Attack fast (a starving buffer is the visible bug), release slowly (a shrinking buffer re-times every car on screen).
     // A dead band either way: a buffer that twitches by a few tens of ms re-times every car on screen each time.
@@ -90,7 +91,11 @@ export class RemoteTimeline {
     // Keep time at the last bounded prediction while frozen. On packet recovery playback continues from there, rather than
     // chasing a distant pose. Playback may run up to 5% fast or 10% slow to settle a changed buffer depth.
     if (this.playhead === null) this.playhead = target;
-    else {
+    else if (this.pinned && moving) {
+      // The car stood still (a stopped car sends nothing, so the playhead was held on its last sample) and is moving again. The wall
+      // clock kept running: re-time to it now. Crawling at +5 % would draw it the whole hold (0.3 - 1 s) behind for many seconds.
+      this.playhead = Math.max(this.playhead, target); this.rate = 1; this.pinned = false;
+    } else {
       const dt = Math.max(0, now - this.renderAt), error = target - this.playhead - dt;
       if (error > 1000) { this.playhead = target; this.rate = 1; } // a stall long enough to be a reconnect: re-time rather than crawl
       else {
@@ -100,7 +105,8 @@ export class RemoteTimeline {
         this.playhead += dt * this.rate;
       }
     }
-    this.playhead = Math.min(this.playhead, latest.time + (moving ? COAST_MS : 0));
+    const cap = latest.time + (moving ? COAST_MS : 0);
+    if (this.playhead > cap) { this.playhead = cap; this.pinned = !moving; }
     const dt = this.renderAt === null ? 0 : clamp(now - this.renderAt, 0, 200);
     this.renderAt = now;
     const time = this.playhead;
