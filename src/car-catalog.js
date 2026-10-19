@@ -53,6 +53,11 @@ export const GARAGE_CARS = GARAGE_CLASSES.flatMap(([, ,ids])=>ids);
 const MODELS = new Map(CAR_MODELS.flatMap(m=>m.trims.map(id=>[id,m])));
 const CLASS_OF = new Map(GARAGE_CLASSES.flatMap(([id,,cars])=>cars.map(car=>[car,id])));
 export const carModel = c => MODELS.get(c?.id ?? c);
+/** the trim part of a car's name ("GLA 45 S" of the GLA H247 model): what changes between the entries of one model */
+export function trimName(c, model = carModel(c)) {
+  const label = c.trimLabel || c.short || c.name, prefix = model?.name || '';
+  return prefix && label.toUpperCase().startsWith(prefix.toUpperCase()) ? label.slice(prefix.length).trim() || label : label;
+}
 export const inGarage = c => MODELS.has(c?.id ?? c);
 export const classLabel = id => GARAGE_CLASSES.find(([k])=>k===id)?.[1] || String(id).toUpperCase();
 export function carCategory(c) { return CLASS_OF.get(carModel(c)?.id) || (c?.police ? 'police' : 'sedan/coupe'); }

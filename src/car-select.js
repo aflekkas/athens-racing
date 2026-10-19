@@ -13,7 +13,7 @@ import { TurntableControl } from './turntable-control.js';
 import { driverName } from './driver-name.js';
 import { Cockpit } from './cockpit.js';
 import { PAINTS, savedPaint, savePaint } from './vehicle-paint.js';
-import { GARAGE_CLASSES, GARAGE_CARS, carCategory, classLabel, filterCars, carModel, migrateCarSelection, bodyTrim, trimChoices, stepTrim, readCarSelection } from './car-catalog.js';
+import { GARAGE_CLASSES, GARAGE_CARS, carCategory, classLabel, filterCars, carModel, trimName, migrateCarSelection, bodyTrim, trimChoices, stepTrim, readCarSelection } from './car-catalog.js';
 import { classifyCar } from './car-performance.js';
 import { carEligibility } from './mp-car-rules.js';
 // Why a trim is locked by lobby car rules (null without rules or when eligible).
@@ -34,10 +34,7 @@ const ruleReason = (car, rules) => {
 export const ACCELERATION = { mini: 7.2, z4: 4.5, taxi: 8.7, carrera: 4.8, gr_yaris: 5.2, gtv: 9.0 };
 import * as C from './ui/components.js';
 const { esc, icon } = C;
-function displayTrim(c, model = carModel(c)) {
-  const label = c.trimLabel || c.short || c.name, prefix = model?.name || '';
-  return prefix && label.toUpperCase().startsWith(prefix.toUpperCase()) ? label.slice(prefix.length).trim() || label : label;
-}
+const displayTrim = trimName;
 export function renderCarSelect({ index = 0, def, garage = false, detail = false, filters = {}, allowedCars, rules } = {}) {
   const c = CARS[index] || CARS[0], allowed = !allowedCars || allowedCars.includes(c.id), paints = PAINTS[c.id] || PAINTS[carModel(c)?.id] || [], acc = c.zeroTo100 || ACCELERATION[c.id], model = carModel(c);
   if (!detail) {
@@ -68,8 +65,8 @@ export function renderCarSelect({ index = 0, def, garage = false, detail = false
     hints: [['leftright', 'TRIM · A/D · LB/RB'], ['confirm', garage ? 'SELECT' : 'RACE'], ['back', 'CATALOGUE']],
     stageAttrs: { id: 'carStage', 'data-trim-current': c.id, 'aria-label': `Rotating 3D view of ${c.name}` },
     stage: '<div class="car-preview-viewport" data-ui-keep="preview"></div>',
-    inspector: C.vehicleSpecs({ brand: badgeBrand(c), name: model?.name || c.name, trim: displayTrim(c,model), transmission: `${c.gears.length}-SPEED ${c.gearbox === 'MT' ? 'MANUAL' : c.gearbox || ''} · ${c.drive.toUpperCase()}`, specs,
-      choices: `${body ? C.segmented({key:'carBody',label:'BODY',value:body[0],options:model.bodies.filter(([, ,ids])=>ids.some(available)).map(([id,label])=>[id,label]),attrs:{'data-scope':'car-body'}}) : ''}${trims.length > 1 ? C.segmented({key:'carTrim',label:'TRIM',value:c.id,options:trims.map(id=>{const car=CARS.find(c=>c.id===id);return [id,esc(displayTrim(car,model))];}),attrs:{'data-scope':'car-trim'}}) : ''}`,
+    inspector: C.vehicleSpecs({ brand: badgeBrand(c), kick: 'CAR', name: model?.name || c.name, transmission: `${c.gears.length}-SPEED ${c.gearbox === 'MT' ? 'MANUAL' : c.gearbox || ''} · ${c.drive.toUpperCase()}`, specs,
+      choices: `${body ? C.segmented({key:'carBody',label:'BODY',value:body[0],options:model.bodies.filter(([, ,ids])=>ids.some(available)).map(([id,label])=>[id,label]),attrs:{'data-scope':'car-body'}}) : ''}${trims.length > 1 ? C.trimPicker({key:'carTrim',value:c.id,options:trims.map(id=>{const car=CARS.find(c=>c.id===id),t=car.zeroTo100||ACCELERATION[car.id];return {id,label:displayTrim(car,model),hp:Math.round(car.power*1.341),acc:t?`${car.id==='gtv'?'≈ ':''}${t.toFixed(1)} S`:'—'};}),attrs:{'data-scope':'car-trim'}}) : ''}`,
       extra: c.exhaustPops ? C.toggle({key:'exhaustPops',label:'EXHAUST POPS',value:exhaustPopsEnabled(c),attrs:{'data-scope':'exhaust'}}) : '',
       paint: paints.length ? `<div class="car-paints"><span class="label">PAINT</span><div class="car-paints__row">${paints.map(([name, color]) => C.paintSwatch({ name, color, selected: savedPaint(c) === color })).join('')}</div><div class="car-paint-name">${esc(paints.find(p => p[1] === savedPaint(c))?.[0] || '')}</div></div>` : '',
       action: `${!allowed && !def?.car && ruleReason(c, rules) ? `<p class="group__note">${icon('lock')} ${esc(ruleReason(c, rules))}</p>` : ''}${C.button({ label: garage ? 'SELECT CAR' : 'RACE', icon: garage ? 'check' : 'flag', variant: 'primary', block: true, act: 'carConfirm', disabled: !allowed, attrs: { 'data-default': '' } })}`

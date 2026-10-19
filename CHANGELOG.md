@@ -8,6 +8,10 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Garage: the car and its trims are now clearly separate: the car is named at the top, its trims sit below as labelled chips with power and 0-100 time.
+
+- Multiplayer lobby: your trim now has its own chip under your car's name.
+
 - Cars: badges now sit on the bodywork. The 911 crest is no longer buried and the 928 shows its model name once.
 
 - Cars: the 348 has one horse at the front, and the BMW and MINI roundels no longer float off the car.
