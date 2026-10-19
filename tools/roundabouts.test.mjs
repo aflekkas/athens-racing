@@ -84,8 +84,8 @@ test('road elevation follows the shared Copernicus field along the whole lap',as
  const {readCopernicus,copernicusField,roundaboutPlanes,plannedHeight}=await import('./maps/psychiko/elevation.mjs');
  const field=copernicusField(readCopernicus(new URL('./maps/psychiko/raw/copernicus.json.gz',import.meta.url)),data.proj),height=plannedHeight(field,roundaboutPlanes(loops,field));let total=0,worst=0;
  for(let i=0;i<r.N;i+=5){const d=Math.abs(r.Y[i]-height(data.route.x[i],data.route.z[i]));total+=d;worst=Math.max(worst,d);}
- // Only junction vertical curves (sigma 12 m) and the 14% two-metre cap ease it, by well under a metre.
- assert(worst<.8,`worst elevation gap ${worst}`);assert(total/(r.N/5)<.1);
+ // Only junction vertical curves (sigma 12 m) and the 14% two-metre cap ease it, by at most 1.2 m on the steep Faros course.
+ assert(worst<1.2,`worst elevation gap ${worst}`);assert(total/(r.N/5)<.1);
 });
 const ccwStep=(p,a,b)=>{const s=ringStation(a.x,a.z,p),t=ringStation(b.x,b.z,p);return((t.s-s.s+s.length/2)%s.length+s.length)%s.length-s.length/2;};
 test('Psychiko never offers or runs a reverse course: solo setup, event resolution and multiplayer stay forward',async()=>{

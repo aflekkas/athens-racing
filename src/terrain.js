@@ -227,13 +227,13 @@ export function buildTerrain(terrain, route, extraStamps, scene, { coastal = tru
   // tighter Penteli hairpins use 1.25 m, Riviera 2 m, Megara and the Psychiko street grid 2.5 m.
   const conform = new RoadTerrain(route, network, { clearance: coastal ? .095 : .075 }), refined = new Set();
   for (const seg of conform.segments) {
-    const R = seg.width + 32 + T;
+    const feather = gardens ? 12 : 32, R = seg.width + feather + T;
     const i0 = Math.max(0, Math.floor((Math.min(seg.ax, seg.bx) - R - minX) / T)), i1 = Math.min(GX - 2, Math.ceil((Math.max(seg.ax, seg.bx) + R - minX) / T));
     const j0 = Math.max(0, Math.floor((Math.min(seg.az, seg.bz) - R - minZ) / T)), j1 = Math.min(GZ - 2, Math.ceil((Math.max(seg.az, seg.bz) + R - minZ) / T));
     for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
       const x = minX + (i + .5) * T, z = minZ + (j + .5) * T;
       const t = clamp(((x - seg.ax) * seg.dx + (z - seg.az) * seg.dz) / seg.L2, 0, 1);
-      if (Math.hypot(x - seg.ax - seg.dx * t, z - seg.az - seg.dz * t) <= seg.width + 32 + T * .71) {
+      if (Math.hypot(x - seg.ax - seg.dx * t, z - seg.az - seg.dz * t) <= seg.width + feather + T * .71) {
         refined.add(j * GX + i); mask[j * GX + i] = mask[j * GX + i + 1] = mask[(j + 1) * GX + i] = mask[(j + 1) * GX + i + 1] = 1;
       }
     }

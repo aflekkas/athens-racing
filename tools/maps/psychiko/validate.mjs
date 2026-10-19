@@ -22,14 +22,17 @@ for(let i=0;i<raw.sourceNodeIds.length-1;i++){
  const w=raw.sourceWayIds.map(id=>ways.get(id)).find(w=>w.nodes.some((id,k)=>id===a&&(w.nodes[k+1]===b||w.nodes[k-1]===b)));
  assert(w,'edge has primary source');assert(!w.tags.surface||w.tags.surface==='asphalt');assert(!['private','no'].includes(w.tags.access));
  assert(!['private','no'].includes(w.tags.motor_vehicle));
- // Closed-course permissions intentionally reverse some public one-way streets.
+ const forward=w.nodes.some((n,k)=>n===a&&w.nodes[k+1]===b);
+ if(w.tags.oneway==='yes'||w.tags.junction==='roundabout')assert(forward,'forward OSM direction');
+ if(w.tags.oneway==='-1')assert(!forward,'reverse-tagged OSM direction');
+ assert(!w.tags.tunnel&&!Number(w.tags.layer),'surface course only');
 }
 // Real Psychiko grades: the runtime caps 2 m steps at 14%; the build already owns that pass.
 assert(Math.max(...r.GR.map(Math.abs))<=.1405,'drivable grades');
 const runtimeShift=Math.max(...d.route.y.map((y,i)=>Math.abs(y-r.Y[i])));assert(runtimeShift<.011,'runtime conformance is a no-op: '+runtimeShift);
 // The lap follows the shared Copernicus field, eased only by junction vertical curves and the 14% two-metre cap.
 const P=n=>[(n.lon-d.proj.lon0)*d.proj.mlon,-(n.lat-d.proj.lat0)*d.proj.mlat],field=copernicusField(readCopernicus(new URL('./raw/copernicus.json.gz',import.meta.url)),d.proj),heightAt=plannedHeight(field,roundaboutPlanes(roundaboutLoops(osm,P),field));
-let maxDemError=0;for(let i=0;i<r.N;i++)maxDemError=Math.max(maxDemError,Math.abs(heightAt(d.route.x[i],d.route.z[i])-r.Y[i]));assert(maxDemError<.8,'lap departs from the height field by '+maxDemError);
+let maxDemError=0;for(let i=0;i<r.N;i++)maxDemError=Math.max(maxDemError,Math.abs(heightAt(d.route.x[i],d.route.z[i])-r.Y[i]));assert(maxDemError<1.2,'lap departs from the height field by '+maxDemError);
 let maxGrade=0;for(let i=1;i<r.N;i++)maxGrade=Math.max(maxGrade,Math.abs(d.route.y[i]-d.route.y[i-1])/d.route.step);assert(Math.abs(maxGrade*100-d.psychiko.stats.maxGrade)<.02,'stats describe the final profile');
 for(let s=0;s<r.length*2;s+=4){const p=r.point(s,0),q=r.project(p.x,p.z,s-1,8);assert(Math.abs(q.s-s)<.1);assert(Number.isFinite(t.height(p.x,p.z)));assert(Math.abs(t.height(p.x,p.z)-p.y)<2.5);}
 for(const e of d.events){const out=resolve(e,{route:r,marks:d.marks});assert.equal(e.mapId,'psychiko');assert.equal(out.len,d.length*(e.laps||1));assert.equal(out.laps,e.laps);assert.equal(out.sectors.at(-1).s,out.s1);}

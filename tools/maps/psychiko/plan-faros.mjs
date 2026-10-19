@@ -24,5 +24,5 @@ for(const [name,from,to,ids] of legs){const graph=new Map();for(const w of ways.
  const ns=[to],ws=[];for(let b=to;b!==from;){const p=prev.get(b);ns.push(p.a);ws.push(p.w);b=p.a;}ns.reverse();ws.reverse();chain.push(...(chain.length?ns.slice(1):ns));edgeWays.push(...ws);stations.push(from);console.log(name,[...new Set(ws)],Math.round(best.get(to))+' m');
 }
 if(new Set(chain.slice(0,-1)).size!==chain.length-1)throw Error('Course repeats a node');
-const result={description:'Faros Circuit v3 (2026-10-19). Reviewed OSM surface course; legal forward edges only. See SOURCES.md for naming and Faros surface-junction decisions.',startOffset:-16,nodes:chain,edgeWays,stations,legs:legs.map(([name,from,to])=>({name,from,to}))};
+const result={description:'Faros Circuit v3 (2026-10-19). Reviewed OSM surface course; legal forward edges only. See SOURCES.md for naming and Faros surface-junction decisions.',startOffset:-16,openJunctionWayIds:[661213888,661217861,661217863,661542256,661584000,661583998,978004330],nodes:chain,edgeWays,stations,legs:legs.map(([name,from,to])=>({name,from,to}))};
 fs.writeFileSync(new URL('./raw/drawn-course.json',import.meta.url),JSON.stringify(result));

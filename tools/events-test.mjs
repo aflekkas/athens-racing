@@ -206,7 +206,7 @@ test('race setup: defaults stay official, choices make a separate custom variant
 });
 
 test('Psychiko Faros Circuit v3 keeps earlier loop times stored but never ranks against them', () => {
-  const oldKeys = ['paraliaki.events.psychiko-race', 'paraliaki.events.psychiko-race.reverse-default-v1', 'paraliaki.events.psychiko-race~rev'];
+  const oldKeys = ['paraliaki.events.psychiko-race.garden-v2','paraliaki.events.psychiko-race', 'paraliaki.events.psychiko-race.reverse-default-v1', 'paraliaki.events.psychiko-race~rev'];
   const saved = new Map(oldKeys.map((key, i) => [key, JSON.stringify({ bestTime: 100 + i })]));
   const storage = { getItem: key => saved.get(key) || null, setItem: (key, value) => saved.set(key, value) };
   assert.deepEqual(EV.loadRecord('psychiko-race', storage), {});

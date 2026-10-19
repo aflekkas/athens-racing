@@ -28,7 +28,7 @@ export function roadNetworkMaterial(psychiko=false){const m=new THREE.MeshStanda
  diffuseColor.rgb=mix(mix(asphalt,tile,paving),vec3(.72,.71,.66),paint);`).replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\nnormal=roadAsphaltNormal(-vViewPosition,normal,nWorld,(1.-step(.5,vColor.r))*.65);');
  };m.defaultAttributeValues={...m.defaultAttributeValues,aRoadHalfWidth:[100]};return m;}
 export function buildRoadNetwork(network,scene){
- const root=new THREE.Group();root.name='surrounding-osm-roads';scene.add(root);const mat=roadNetworkMaterial(network.route.streetCircuit),tiles=new Map(),roadS=new Map(),tolerance=network.route.streetCircuit?.015:.01;let triangles=0;
+ const root=new THREE.Group();root.name='surrounding-osm-roads';scene.add(root);const mat=roadNetworkMaterial(network.route.streetCircuit),tiles=new Map(),roadS=new Map(),tolerance=network.route.streetCircuit?.04:.01;let triangles=0;
  for(const road of network.roads){let s=0;for(const seg of network.segments.filter(q=>q.road===road)){roadS.set(seg,s);s+=seg.L;}}
  function vertex(tile,p,seg,pavement){const u=((p[0]-seg.ax)*-seg.dz+(p[1]-seg.az)*seg.dx)/seg.L,s=roadS.get(seg)+((p[0]-seg.ax)*seg.dx+(p[1]-seg.az)*seg.dz)/seg.L;
   let paint=seg.road.sf==='asphalt'&&!seg.road.oneway&&!['residential','living_street','service'].includes(seg.road.h)?1:0;
@@ -41,7 +41,7 @@ export function buildRoadNetwork(network,scene){
  }
  function triangle(a,b,c,seg,pavement,depth=0){if(Math.abs(cross(a,b,c))<1e-6)return;const ab=Math.hypot(a[0]-b[0],a[1]-b[1]),bc=Math.hypot(b[0]-c[0],b[1]-c[1]),ca=Math.hypot(c[0]-a[0],c[1]-a[1]),length=Math.max(ab,bc,ca);
   // Subdivide for actual DEM curvature rather than making long, flat streets spend triangles on uniform metre grids.
-  // Psychiko's measured hills keep the old triangle budget at a 1.5 cm chord tolerance (still under the 5.5 cm road lift).
+  // Psychiko's measured hills keep the old triangle budget at a 4 cm chord tolerance (still under the 5.5 cm road lift).
   const ys=[a,b,c].map(p=>network.height(...p)),points=[a,b,c];let error=0;
   for(let i=0;i<3;i++){const j=(i+1)%3;error=Math.max(error,Math.abs(network.height((points[i][0]+points[j][0])/2,(points[i][1]+points[j][1])/2)-(ys[i]+ys[j])/2));}
   error=Math.max(error,Math.abs(network.height((a[0]+b[0]+c[0])/3,(a[1]+b[1]+c[1])/3)-(ys[0]+ys[1]+ys[2])/3));

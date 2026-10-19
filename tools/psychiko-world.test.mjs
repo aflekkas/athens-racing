@@ -16,7 +16,7 @@ route.urban=()=>.85;route.seaR=route.seaL=()=>999;route.district=()=> 'town';
 const bytes=readFileSync(new URL('../data/maps/psychiko/terrain.bin',import.meta.url)),terrain=new Terrain(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength));
 const map={id:'psychiko',data,route,terrain};map.roadNetwork=new RoadNetwork(map);
 test('Psychiko is offered with the same geometry version in solo, selector and multiplayer',()=>{
- const meta=getMap('psychiko'),server=resolveMap(meta,data);assert(isMapEnabled(meta.id));assert.equal(meta.length,route.length);assert(TRACK_ROUTES.psychiko.path);assert.equal(server.track.version,trackVersion(data.route));
+ const meta=getMap('psychiko'),server=resolveMap(meta,data);assert(isMapEnabled(meta.id));assert.equal(meta.length,route.length);assert(TRACK_ROUTES.psychiko.path);assert.equal(server.track.version,trackVersion(data.route));assert.notEqual(server.track.version,'653bca47','old Garden ghosts cannot match the new geometry');
  assert.equal(server.definitions.get('psychiko-race').len,2*route.length);assert(server.definitions.has('free:psychiko'));assert.deepEqual(meta.eventIds,data.events.map(e=>e.id));
 });
 test('carved street bed clears both full carriageways and pavements at the lap seam',()=>{
@@ -44,7 +44,8 @@ test('all public junction exits have exactly one solid race closure, with no rac
  // Independently count non-raced half-edges. A junction may be visited twice after taking the legal roundabout exit.
  const graph=new Map();for(const w of osm.filter(publicRoad))for(let i=1;i<w.nodes.length;i++)for(const [a,b] of [[w.nodes[i-1],w.nodes[i]],[w.nodes[i],w.nodes[i-1]]]){if(!graph.has(a))graph.set(a,new Set());graph.get(a).add(b);}
  const {roundaboutLoops}=await import('./roundabouts.mjs'),rings=roundaboutLoops(osm,n=>[n.lon,n.lat]).filter(l=>l.ways.some(id=>course.sourceWayIds.includes(id)));
- const chain=[...new Set([...course.sourceNodeIds.slice(0,-1),...rings.flatMap(l=>l.nodes)])],exits=[],raced=new Set(course.sourceNodeIds.slice(1).flatMap((b,i)=>[`${course.sourceNodeIds[i]}:${b}`,`${b}:${course.sourceNodeIds[i]}`]));
+ const chain=[...new Set([...course.sourceNodeIds.slice(0,-1),...rings.flatMap(l=>l.nodes),...osm.filter(w=>course.openJunctionWayIds?.includes(w.id)).flatMap(w=>w.nodes)])],exits=[],raced=new Set(course.sourceNodeIds.slice(1).flatMap((b,i)=>[`${course.sourceNodeIds[i]}:${b}`,`${b}:${course.sourceNodeIds[i]}`]));
+ for(const w of osm.filter(w=>course.openJunctionWayIds?.includes(w.id)))for(let i=1;i<w.nodes.length;i++){raced.add(`${w.nodes[i-1]}:${w.nodes[i]}`);raced.add(`${w.nodes[i]}:${w.nodes[i-1]}`);}
  for(const ring of rings)for(let i=1;i<ring.nodes.length;i++){raced.add(`${ring.nodes[i-1]}:${ring.nodes[i]}`);raced.add(`${ring.nodes[i]}:${ring.nodes[i-1]}`);}
  for(let i=0;i<chain.length;i++){const node=chain[i];
   for(const other of graph.get(node))if(!raced.has(`${node}:${other}`)&&!exits.some(e=>e.id===`${node}:${other}`))exits.push({id:`${node}:${other}`});
@@ -59,7 +60,7 @@ test('race → free roam → race toggles every visual/collider and invalidates 
  const THREE=await import('three'),{buildRoadworks,roadworksForEvent}=await import('../src/roadworks.js');
  const g=new Ground(map,(x,z)=>terrain.height(x,z),{network:map.roadNetwork});g.parked=[{x:900,z:900,hl:1,hw:1,yaw:0}];const base=g.parked;
  const works=buildRoadworks(map,new THREE.Group(),g);
- assert.equal(works.group.children.length,data.roadworks.length);
+ assert.equal(works.group.children.filter(o=>o.name.startsWith("roadworks:")).length,data.roadworks.length);
  for(const type of ['sprint','free','timetrial','free','sprint']){
   works.setEvent({type});const count=type==='free'?0:data.roadworks.length;
   assert.equal(roadworksForEvent(data,{type}).length,count);assert.equal(works.group.visible,count>0);assert.equal(works.active,count>0);
@@ -277,10 +278,15 @@ test('Copernicus hills: real lap grades, no artificial side-street steps, closur
  for(const r of data.roadNetwork.roads)for(let i=2;i<r.p.length;i+=2){const ax=r.p[i-2],az=r.p[i-1],bx=r.p[i],bz=r.p[i+1],L=Math.hypot(bx-ax,bz-az),n=Math.max(1,Math.round(L/6));
   // 6 m windows: the 10 m terrain triangles bend bilinear ground slightly; the old lap blend added 25-45% ramps.
   for(let k=0;k<n;k++){const x0=ax+(bx-ax)*k/n,z0=az+(bz-az)*k/n,x1=ax+(bx-ax)*(k+1)/n,z1=az+(bz-az)*(k+1)/n,d=L/n,g=Math.abs(net.baseHeight(x1,z1)-net.baseHeight(x0,z0))/d;
-   steepest=Math.max(steepest,g);assert(g<Math.abs(planned(x1,z1)-planned(x0,z0))/d+.06,`artificial step on ${r.id} at ${x0.toFixed(1)},${z0.toFixed(1)}: ${g}`);}}
+   // At junctions a level cross-section rotates the hillside slope into the side street. Bound it by the
+   // local field gradient magnitude, rather than only that street's former directional component.
+   const gx=(planned(x0+3,z0)-planned(x0-3,z0))/6,gz=(planned(x0,z0+3)-planned(x0,z0-3))/6;
+   steepest=Math.max(steepest,g);assert(g<Math.max(Math.abs(planned(x1,z1)-planned(x0,z0))/d,Math.hypot(gx,gz))+.06,`artificial step on ${r.id} at ${x0.toFixed(1)},${z0.toFixed(1)}: ${g}`);}}
  assert(steepest>.25&&steepest<.35,'Ouranou-class lanes stay steep but drivable: '+steepest);
  const THREE=await import('three'),{buildRoadworks}=await import('../src/roadworks.js'),g=new Ground(map,(x,z)=>terrain.height(x,z),{network:net}),works=buildRoadworks(map,new THREE.Group(),g),v=new THREE.Vector3();
  works.group.updateMatrixWorld(true);let gap=0;
+ for(const [x,y,z] of works.group.userData.footings||[])gap=Math.max(gap,Math.abs(y-net.height(x,z)));
+ assert(works.group.userData.footings.length>data.roadworks.length);assert(works.group.userData.batches.after<works.group.userData.batches.before/10,'closures share spatial material batches');
  works.group.traverse(m=>{// Every barrier section and cone stands on a thin dark base plate.
   if(!m.isMesh||m.geometry.type!=='BoxGeometry'||m.scale.y>.09)return;m.getWorldPosition(v);gap=Math.max(gap,Math.abs(v.y-m.scale.y/2-net.height(v.x,v.z)));});
  assert(gap<.12,`roadworks sit on the street (worst ${gap} m)`);
@@ -293,4 +299,22 @@ test('OSM multipolygon relations ship: courtyard buildings keep their holes, the
  for(const mp of multipolygons(relations,elements,P).filter(m=>m.tags.building&&m.holes.length)){const pieces=data.buildings.filter(b=>b.rel&&b.id===mp.id);if(!pieces.length)continue;
   for(const hole of mp.holes){const c=hole.reduce((s,q)=>[s[0]+q[0]/hole.length,s[1]+q[1]/hole.length],[0,0]);if(!pointInPoly(c[0],c[1],hole.flat()))continue;assert(!pieces.some(b=>pointInPoly(c[0],c[1],b.p)),`courtyard of ${mp.id} is roofed over`);}}
  assert(data.areas.pitch.some(a=>a.id===3000647),'Stefanou Delta stadium');assert(data.areas.park.some(a=>a.id===1741088),'Attiko Alsos');
+});
+
+test('Faros course keeps A/B rings complete and their unused arcs open, with closures only beyond their public arms',async()=>{
+ const {roundaboutLoops}=await import('./roundabouts.mjs'),{elements}=await osmFixture(),P=n=>[(n.lon-data.proj.lon0)*data.proj.mlon,-(n.lat-data.proj.lat0)*data.proj.mlat];
+ const rings=roundaboutLoops(elements,P).filter(q=>[25053095,25053533].includes(q.id));assert.equal(rings.length,2);
+ const distance=(x,z,points)=>Math.min(...points.map((a,i)=>{const b=points[(i+1)%points.length],dx=b[0]-a[0],dz=b[1]-a[1],t=Math.max(0,Math.min(1,((x-a[0])*dx+(z-a[1])*dz)/(dx*dx+dz*dz||1)));return Math.hypot(x-a[0]-t*dx,z-a[1]-t*dz);}));
+ for(const q of rings){assert(map.roadNetwork.islands.some(i=>i.id===q.id));for(let i=0;i<q.p.length;i++){const a=q.p[i],b=q.p[(i+1)%q.p.length],L=Math.hypot(b[0]-a[0],b[1]-a[1]);for(let d=0;d<L;d+=.5){const x=a[0]+(b[0]-a[0])*d/L,z=a[1]+(b[1]-a[1])*d/L;assert(map.roadNetwork.mainInside(x,z)||map.roadNetwork.sample(x,z)?.surf==='asphalt',`${q.id} has a missing arc`);}}
+  for(const b of data.roadworks)for(let t=-b.hl;t<=b.hl;t+=.5){const x=b.x-Math.sin(b.yaw)*t,z=b.z-Math.cos(b.yaw)*t;assert(distance(x,z,q.p)>q.w/2+b.hw,`closure ${b.id} blocks ring ${q.id}`);}
+ }
+});
+test('Kifisias frontage is in free roam in both legal directions; the course never uses a tunnel or the wrong carriageway',async()=>{
+ const {elements,ways}=await osmFixture();
+ const required=[662139350,216905683,664440151,465205389,476108293,113339579,371561413,113339584,25117419];
+ for(const id of required){assert(data.psychiko.networkWayIds.includes(id),'surface way selected '+id);assert(data.psychiko.sourceWayIds.includes(id)||data.roadNetwork.roads.some(r=>r.id===id),'surface way drivable '+id);}
+ const arterial=data.roadNetwork.roads.filter(r=>/Kifisias|Paraplefri Odos/.test(r.n||''));assert(arterial.length>=20);assert(arterial.every(r=>r.oneway===1));assert(arterial.some(r=>r.k==='T10'&&r.w===10.5));assert(arterial.some(r=>r.k==='D8'&&r.w===8));
+ for(const id of data.psychiko.sourceWayIds){const t=ways.get(id).tags;assert(!t.tunnel&&!t.bridge&&!Number(t.layer),'at-grade lap only');}
+ for(const id of ['faros','elikonos'])assert(data.psychiko.arterial.signals.filter(s=>s.hub===id).length>=2);
+ assert(data.psychiko.arterial.medians.length>20);
 });

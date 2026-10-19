@@ -106,11 +106,19 @@ for(const r of data.route.roundabouts)for(let i=Math.floor(r.s0/step);i<=Math.ce
  data.route.oneway=data.route.oneway.map(p=>p.map(r));}
 // The runtime caps 2 m grades at 14% (and levels genuinely folded carriageway edges).
 // Own that pass here, before the terrain is cut, so the shipped profile and terrain already agree with it.
-{const {Route}=await import('../../../src/map.js'),y=data.route.y,down=v=>Math.floor(v*100+1e-6)/100;
- for(let pass=0;pass<60;pass++){const conformed=new Route(data.route).Y;let moved=0;
-  for(let i=0;i<N;i++){const v=down(conformed[i]);if(v<y[i]){moved=Math.max(moved,y[i]-v);y[i]=v;}}
-  y[0]=y[N-1]=Math.min(y[0],y[N-1]);
-  if(moved<.005)break;}}
+{const {Route}=await import('../../../src/map.js'),original=data.route.y.slice();
+ // Symmetric feasible envelopes keep a steep junction close to the measured field: the former
+ // lower-only pass cut over 2 m from Dryadon. Both envelopes obey identical physical constraints;
+ // their average does too, sharing the adjustment between the uphill and downhill approaches.
+ const envelope=sign=>{let y=original.map(h=>sign*h);for(let pass=0;pass<60;pass++){const next=Array.from(new Route({...data.route,y}).Y);const moved=Math.max(...y.map((h,i)=>Math.abs(h-next[i])));y=next;if(moved<.0001)break;}return y.map(h=>sign*h);};
+ const low=envelope(1),high=envelope(-1);for(let i=0;i<N;i++)Y[i]=r((low[i]+high[i])/2);
+ // Centimetre quantisation must not leave a fresh runtime correction at a folded edge.
+ for(let pass=0;pass<8;pass++){const next=new Route(data.route).Y;let moved=0;for(let i=0;i<N;i++){const v=Math.floor((next[i]+.00002)*100)/100;moved=Math.max(moved,Math.abs(v-Y[i]));Y[i]=v;}
+  const limit=Math.floor(.14*step*100)/100;
+  for(let i=1;i<N;i++)Y[i]=r(Math.min(Y[i],Y[i-1]+limit));
+  for(let i=N-2;i>=0;i--)Y[i]=r(Math.min(Y[i],Y[i+1]+limit));
+  if(moved<.005)break;}
+ Y[0]=Y[N-1]=Math.min(Y[0],Y[N-1]);}
 // Rasterise source land cover and sample the shared height field. The 10 m grid
 // improves road cutting, not the ~30 m Copernicus source resolution.
 const GX=Math.floor((maxX-minX)/T)+1,GZ=Math.floor((maxZ-minZ)/T)+1,H=new Int16Array(GX*GZ),CL=new Uint8Array(GX*GZ).fill(3);
@@ -121,7 +129,16 @@ for(const[k,v]of[['scrub',3],['rock',2],['quarry',2],['residential',4],['wood',6
 // and verges do not get squeezed into a steep ramp beside the lap.
 for(let j=0;j<GZ;j++){for(let i=0;i<GX;i++){const x=minX+i*T,z=minZ+j*T,id=j*GX+i;let h=heightAt(x,z);const q=nearest(x,z,75);
  if(q){const e=data.route.width[q.i]/2+3,bed=Y[q.i]-.25;if(q.d<=e)h=bed;else if(q.d<e+60){const a=Math.max(0,q.i-1),b=Math.min(N-1,q.i+1),l=Math.hypot(X[b]-X[a],Z[b]-Z[a])||1,side=Math.sign(q.u)||1;
-  const off=bed-heightAt(X[q.i]-(Z[b]-Z[a])/l*side*e,Z[q.i]+(X[b]-X[a])/l*side*e),f=(q.d-e)/60,t=f*f*(3-2*f);h+=off*(1-t);}}
+  // Blend offsets from all nearby arms. Choosing only the nearest arm made a ridge where the
+  // incoming and outgoing Faros legs meet at the same distance from a side street.
+  let offset=0,weight=0;const cx=Math.floor(x/C),cz=Math.floor(z/C);
+  for(let ax=-1;ax<=1;ax++)for(let az=-1;az<=1;az++)for(const j of buckets.get(`${cx+ax},${cz+az}`)||[]){
+   if(j%4)continue;const d=Math.hypot(x-X[j],z-Z[j]),e=data.route.width[j]/2+3,gap=Math.max(.5,d-e);if(gap>=60)continue;
+   const a=(j-2+N-1)%(N-1),b=(j+2)%(N-1),l=Math.hypot(X[b]-X[a],Z[b]-Z[a])||1,rx=-(Z[b]-Z[a])/l,rz=(X[b]-X[a])/l,side=Math.sign((x-X[j])*rx+(z-Z[j])*rz)||1,w=(1-gap/60)**2/gap**4;
+   offset+=(Y[j]-.25-heightAt(X[j]+rx*side*e,Z[j]+rz*side*e))*w;weight+=w;
+  }
+  const f=(q.d-e)/60,t=f*f*(3-2*f);if(weight)h+=offset/weight*(1-t);}}
+
  H[id]=Math.round(h*10);}}
 const header=Buffer.alloc(32);header.writeInt32LE(GX,0);header.writeInt32LE(GZ,4);header.writeFloatLE(minX,8);header.writeFloatLE(minZ,12);header.writeFloatLE(T,16);fs.writeFileSync(path.join(out,'terrain.bin'),Buffer.concat([header,Buffer.from(H.buffer),Buffer.from(CL.buffer)]));
 const a=0,b=N-1;let ascent=0,descent=0,maxGrade=0;for(let i=a+1;i<=b;i++){const d=Y[i]-Y[i-1];if(d>0)ascent+=d;else descent-=d;maxGrade=Math.max(maxGrade,Math.abs(d/step));}

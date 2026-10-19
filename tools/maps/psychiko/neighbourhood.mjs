@@ -27,6 +27,7 @@ export function sideStreetExits(elements,course){
  const rings=roundaboutLoops(elements,n=>[n.lon,n.lat]).filter(l=>l.ways.some(id=>course.sourceWayIds.includes(id)));
  const raced=new Set([...chain,...rings.flatMap(l=>l.nodes)]),edges=new Set(course.sourceNodeIds.slice(1).map((b,i)=>[course.sourceNodeIds[i],b].sort((a,b)=>a-b).join(':'))),seen=new Set(),out=[];
  for(const l of rings)for(let i=1;i<l.nodes.length;i++)edges.add([l.nodes[i-1],l.nodes[i]].sort((a,b)=>a-b).join(':'));
+ for(const id of course.openJunctionWayIds||[]){const w=elements.find(e=>e.type==='way'&&e.id===id);if(!w)throw Error('Missing reviewed junction way '+id);w.nodes.forEach(n=>raced.add(n));for(let i=1;i<w.nodes.length;i++)edges.add([w.nodes[i-1],w.nodes[i]].sort((a,b)=>a-b).join(':'));}
  for(const w of elements.filter(publicRoad))for(let i=0;i<w.nodes.length;i++){
   const a=w.nodes[i];if(!raced.has(a))continue;
   for(const j of [i-1,i+1]){const b=w.nodes[j];if(!b)continue;const key=[a,b].sort((a,b)=>a-b).join(':');const exitKey=`${a}:${b}`;if(edges.has(key)||seen.has(exitKey))continue;seen.add(exitKey);

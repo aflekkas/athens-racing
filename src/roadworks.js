@@ -1,3 +1,4 @@
+import { batchStatic } from './batch.js';
 import { assertWorldBudget } from './world-art-direction.js';
 import * as THREE from 'three';
 
@@ -41,6 +42,14 @@ export function buildRoadworks(map, scene, ground, assets = {}) {
     mesh(root, box, dark, 0, 1.45, 0, .08, 2.9, .08);
     const label = assets.makeLabel?.('ΕΡΓΑ · ΚΛΕΙΣΤΟ', 2.6, .65, '#ffe157', '#151515');
     if (label) { label.position.set(.16, 2.35, 0); label.rotation.y = Math.PI / 2; root.add(label); }
+  }
+  if (map.id === 'psychiko') {
+    // Keep each exit's logical root/collider; merge the static barriers by spatial cell and material.
+    group.updateMatrixWorld(true);
+    const p = new THREE.Vector3(), footings = [];
+    group.traverse(o => { if (o.isMesh && o.geometry === box && o.scale.y < .09) { o.getWorldPosition(p); footings.push([p.x, p.y - o.scale.y / 2, p.z]); } });
+    group.userData.footings = footings;
+    group.userData.batches = batchStatic(group, 200);
   }
   const base = ground.parked || [];
   const colliders = blocks.map(b => ({ ...b, kind: 'roadworks', restitution: .05, damageScale: .65 }));
