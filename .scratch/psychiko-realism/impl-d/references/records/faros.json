@@ -1,0 +1,54 @@
+{
+  "id": "faros",
+  "lat": 38.0051081262345,
+  "lon": 23.77553002816197,
+  "heading": 214,
+  "fovH": 90,
+  "panoId": "mSBiHId_9DLt8NG8WiCABw",
+  "captureDate": [
+    2021,
+    6
+  ],
+  "googleAddress": [
+    [
+      "Leof. Kifisias",
+      "el-Latn"
+    ],
+    [
+      "Psychiko, Decentralized Administration of Attica",
+      "en"
+    ]
+  ],
+  "copyright": "© 2026 Google",
+  "orientation": [
+    207.23749,
+    90.018196,
+    0.58469075
+  ],
+  "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+  "requestedPosition": {
+    "lat": 38.00512,
+    "lon": 23.77551
+  },
+  "snapDistanceM": 2.2,
+  "status": "captured",
+  "views": [
+    {
+      "heading": 214,
+      "path": "views/faros-214.webp",
+      "width": 1024,
+      "height": 512,
+      "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=mSBiHId_9DLt8NG8WiCABw&heading=214&pitch=0&fov=90",
+      "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=mSBiHId_9DLt8NG8WiCABw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=214&pitch=0&thumbfov=90"
+    },
+    {
+      "heading": 34,
+      "path": "views/faros-034.webp",
+      "width": 1024,
+      "height": 512,
+      "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=mSBiHId_9DLt8NG8WiCABw&heading=34&pitch=0&fov=90",
+      "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=mSBiHId_9DLt8NG8WiCABw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=34&pitch=0&thumbfov=90"
+    }
+  ],
+  "observationStatus": "pending-visual-review"
+}

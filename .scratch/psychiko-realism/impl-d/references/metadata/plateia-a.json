@@ -1,0 +1,26 @@
+{
+  "panoId": "CFw8vdFn5-lzCJZ-kcs5PQ",
+  "lat": 38.007915176215974,
+  "lon": 23.77401578430283,
+  "captureDate": [
+    2024,
+    9
+  ],
+  "googleAddress": [
+    [
+      "Πλ. Βασιλέως Γεωργίου Β",
+      "el"
+    ],
+    [
+      "Psychiko, Decentralized Administration of Attica",
+      "en"
+    ]
+  ],
+  "copyright": "© 2026 Google",
+  "orientation": [
+    208.51427,
+    91.03084,
+    358.368
+  ],
+  "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch"
+}

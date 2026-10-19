@@ -1,0 +1,54 @@
+{
+  "id": "vyzaniou",
+  "lat": 38.01940128853723,
+  "lon": 23.78138850089878,
+  "heading": 233,
+  "fovH": 90,
+  "panoId": "0XVcBa5T3p7JSZEx72_J1g",
+  "captureDate": [
+    2024,
+    9
+  ],
+  "googleAddress": [
+    [
+      "1 25is Martiou",
+      "el-Latn"
+    ],
+    [
+      "Filothei, Decentralized Administration of Attica",
+      "en"
+    ]
+  ],
+  "copyright": "© 2026 Google",
+  "orientation": [
+    305.41135,
+    88.725746,
+    1.2098086
+  ],
+  "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+  "requestedPosition": {
+    "lat": 38.01938,
+    "lon": 23.78136
+  },
+  "snapDistanceM": 3.4,
+  "status": "captured",
+  "views": [
+    {
+      "heading": 233,
+      "path": "views/vyzaniou-233.webp",
+      "width": 1024,
+      "height": 512,
+      "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=0XVcBa5T3p7JSZEx72_J1g&heading=233&pitch=0&fov=90",
+      "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=0XVcBa5T3p7JSZEx72_J1g&cb_client=maps_sv.tactile&w=1024&h=512&yaw=233&pitch=0&thumbfov=90"
+    },
+    {
+      "heading": 53,
+      "path": "views/vyzaniou-053.webp",
+      "width": 1024,
+      "height": 512,
+      "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=0XVcBa5T3p7JSZEx72_J1g&heading=53&pitch=0&fov=90",
+      "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=0XVcBa5T3p7JSZEx72_J1g&cb_client=maps_sv.tactile&w=1024&h=512&yaw=53&pitch=0&thumbfov=90"
+    }
+  ],
+  "observationStatus": "pending-visual-review"
+}

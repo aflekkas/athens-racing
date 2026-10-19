@@ -1,0 +1,54 @@
+{
+  "id": "plateia-a",
+  "lat": 38.007915176215974,
+  "lon": 23.77401578430283,
+  "heading": 270,
+  "fovH": 90,
+  "panoId": "CFw8vdFn5-lzCJZ-kcs5PQ",
+  "captureDate": [
+    2024,
+    9
+  ],
+  "googleAddress": [
+    [
+      "Πλ. Βασιλέως Γεωργίου Β",
+      "el"
+    ],
+    [
+      "Psychiko, Decentralized Administration of Attica",
+      "en"
+    ]
+  ],
+  "copyright": "© 2026 Google",
+  "orientation": [
+    208.51427,
+    91.03084,
+    358.368
+  ],
+  "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+  "requestedPosition": {
+    "lat": 38.00786,
+    "lon": 23.77414
+  },
+  "snapDistanceM": 12.5,
+  "status": "captured",
+  "views": [
+    {
+      "heading": 270,
+      "path": "views/plateia-a-270.webp",
+      "width": 1024,
+      "height": 512,
+      "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=CFw8vdFn5-lzCJZ-kcs5PQ&heading=270&pitch=0&fov=90",
+      "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=CFw8vdFn5-lzCJZ-kcs5PQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=270&pitch=0&thumbfov=90"
+    },
+    {
+      "heading": 90,
+      "path": "views/plateia-a-090.webp",
+      "width": 1024,
+      "height": 512,
+      "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=CFw8vdFn5-lzCJZ-kcs5PQ&heading=90&pitch=0&fov=90",
+      "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=CFw8vdFn5-lzCJZ-kcs5PQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=90&pitch=0&thumbfov=90"
+    }
+  ],
+  "observationStatus": "pending-visual-review"
+}

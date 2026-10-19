@@ -1,0 +1,376 @@
+[
+  {
+    "id": "faros",
+    "lat": 38.0051081262345,
+    "lon": 23.77553002816197,
+    "heading": 214,
+    "fovH": 90,
+    "panoId": "mSBiHId_9DLt8NG8WiCABw",
+    "captureDate": [
+      2021,
+      6
+    ],
+    "googleAddress": [
+      [
+        "Leof. Kifisias",
+        "el-Latn"
+      ],
+      [
+        "Psychiko, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      207.23749,
+      90.018196,
+      0.58469075
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.00512,
+      "lon": 23.77551
+    },
+    "snapDistanceM": 2.2,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 214,
+        "path": "views/faros-214.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=mSBiHId_9DLt8NG8WiCABw&heading=214&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=mSBiHId_9DLt8NG8WiCABw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=214&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 34,
+        "path": "views/faros-034.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=mSBiHId_9DLt8NG8WiCABw&heading=34&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=mSBiHId_9DLt8NG8WiCABw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=34&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "pending-visual-review"
+  },
+  {
+    "id": "plateia-a",
+    "lat": 38.007915176215974,
+    "lon": 23.77401578430283,
+    "heading": 270,
+    "fovH": 90,
+    "panoId": "CFw8vdFn5-lzCJZ-kcs5PQ",
+    "captureDate": [
+      2024,
+      9
+    ],
+    "googleAddress": [
+      [
+        "Πλ. Βασιλέως Γεωργίου Β",
+        "el"
+      ],
+      [
+        "Psychiko, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      208.51427,
+      91.03084,
+      358.368
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.00786,
+      "lon": 23.77414
+    },
+    "snapDistanceM": 12.5,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 270,
+        "path": "views/plateia-a-270.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=CFw8vdFn5-lzCJZ-kcs5PQ&heading=270&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=CFw8vdFn5-lzCJZ-kcs5PQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=270&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 90,
+        "path": "views/plateia-a-090.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=CFw8vdFn5-lzCJZ-kcs5PQ&heading=90&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=CFw8vdFn5-lzCJZ-kcs5PQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=90&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "pending-visual-review"
+  },
+  {
+    "id": "plateia-b",
+    "lat": 38.013226695780226,
+    "lon": 23.771801742899914,
+    "heading": 320,
+    "fovH": 90,
+    "panoId": "gAbUcedQwjDn7RwMq60fnw",
+    "captureDate": [
+      2024,
+      1
+    ],
+    "googleAddress": [
+      [
+        "Psychiko, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      198.94038,
+      88.45154,
+      358.82623
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.01324,
+      "lon": 23.77196
+    },
+    "snapDistanceM": 14.0,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 320,
+        "path": "views/plateia-b-320.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=gAbUcedQwjDn7RwMq60fnw&heading=320&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=gAbUcedQwjDn7RwMq60fnw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=320&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 140,
+        "path": "views/plateia-b-140.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=gAbUcedQwjDn7RwMq60fnw&heading=140&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=gAbUcedQwjDn7RwMq60fnw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=140&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "pending-visual-review"
+  },
+  {
+    "id": "paraschou",
+    "lat": 38.01843447584743,
+    "lon": 23.77192249087847,
+    "heading": 337,
+    "fovH": 90,
+    "panoId": "Y6gm4bjiN4lxxNcIuNMAxg",
+    "captureDate": [
+      2026,
+      4
+    ],
+    "googleAddress": [
+      [
+        "4 Αχιλλέα Παράσχου",
+        "el"
+      ],
+      [
+        "Psychiko, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      357.72632,
+      90.47005,
+      1.0042468
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.01841,
+      "lon": 23.77176
+    },
+    "snapDistanceM": 14.5,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 337,
+        "path": "views/paraschou-337.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=Y6gm4bjiN4lxxNcIuNMAxg&heading=337&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=Y6gm4bjiN4lxxNcIuNMAxg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=337&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 157,
+        "path": "views/paraschou-157.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=Y6gm4bjiN4lxxNcIuNMAxg&heading=157&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=Y6gm4bjiN4lxxNcIuNMAxg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=157&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "pending-visual-review"
+  },
+  {
+    "id": "vyzaniou",
+    "lat": 38.01940128853723,
+    "lon": 23.78138850089878,
+    "heading": 233,
+    "fovH": 90,
+    "panoId": "0XVcBa5T3p7JSZEx72_J1g",
+    "captureDate": [
+      2024,
+      9
+    ],
+    "googleAddress": [
+      [
+        "1 25is Martiou",
+        "el-Latn"
+      ],
+      [
+        "Filothei, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      305.41135,
+      88.725746,
+      1.2098086
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.01938,
+      "lon": 23.78136
+    },
+    "snapDistanceM": 3.4,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 233,
+        "path": "views/vyzaniou-233.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=0XVcBa5T3p7JSZEx72_J1g&heading=233&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=0XVcBa5T3p7JSZEx72_J1g&cb_client=maps_sv.tactile&w=1024&h=512&yaw=233&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 53,
+        "path": "views/vyzaniou-053.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=0XVcBa5T3p7JSZEx72_J1g&heading=53&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=0XVcBa5T3p7JSZEx72_J1g&cb_client=maps_sv.tactile&w=1024&h=512&yaw=53&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "pending-visual-review"
+  },
+  {
+    "id": "kalari",
+    "lat": 38.01314899628184,
+    "lon": 23.776438082121796,
+    "heading": 119,
+    "fovH": 90,
+    "panoId": "uC-cMcSTTH0qRaVR7wKDbQ",
+    "captureDate": [
+      2026,
+      4
+    ],
+    "googleAddress": [
+      [
+        "33 Στρ. Καλλάρη",
+        "el"
+      ],
+      [
+        "Psychiko, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      119.33993,
+      86.244225,
+      359.4494
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.01314,
+      "lon": 23.77647
+    },
+    "snapDistanceM": 3.0,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 119,
+        "path": "views/kalari-119.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=uC-cMcSTTH0qRaVR7wKDbQ&heading=119&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=uC-cMcSTTH0qRaVR7wKDbQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=119&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 299,
+        "path": "views/kalari-299.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=uC-cMcSTTH0qRaVR7wKDbQ&heading=299&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=uC-cMcSTTH0qRaVR7wKDbQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=299&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "pending-visual-review"
+  },
+  {
+    "id": "elikonos",
+    "lat": 38.01013033810724,
+    "lon": 23.779812539159014,
+    "heading": 121,
+    "fovH": 90,
+    "panoId": "DqQlT9s_dWxDr93EfyMNFg",
+    "captureDate": [
+      2026,
+      4
+    ],
+    "googleAddress": [
+      [
+        "1 Ελικώνος",
+        "el"
+      ],
+      [
+        "Psychiko, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      122.78295,
+      87.762314,
+      358.15195
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.01009,
+      "lon": 23.77978
+    },
+    "snapDistanceM": 5.3,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 121,
+        "path": "views/elikonos-121.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=DqQlT9s_dWxDr93EfyMNFg&heading=121&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=DqQlT9s_dWxDr93EfyMNFg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=121&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 301,
+        "path": "views/elikonos-301.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=DqQlT9s_dWxDr93EfyMNFg&heading=301&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=DqQlT9s_dWxDr93EfyMNFg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=301&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "pending-visual-review"
+  }
+]

@@ -1,0 +1,26 @@
+{
+  "panoId": "mSBiHId_9DLt8NG8WiCABw",
+  "lat": 38.0051081262345,
+  "lon": 23.77553002816197,
+  "captureDate": [
+    2021,
+    6
+  ],
+  "googleAddress": [
+    [
+      "Leof. Kifisias",
+      "el-Latn"
+    ],
+    [
+      "Psychiko, Decentralized Administration of Attica",
+      "en"
+    ]
+  ],
+  "copyright": "© 2026 Google",
+  "orientation": [
+    207.23749,
+    90.018196,
+    0.58469075
+  ],
+  "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch"
+}
