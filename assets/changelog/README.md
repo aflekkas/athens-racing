@@ -15,5 +15,6 @@ Real in-game screenshots, inspected before inclusion, converted to 1280 px wide 
 | 2026.10.16.1/about-pages.webp | .scratch/about-pages/shots/credits-top-1280x800.png, in-game Credits at 1280 × 800, crop y0–750 (footer excluded) | Credits and What's new as full scrolling pages |
 | 2026.10.16.1/home-screen-prompt.webp | .scratch/a2hs/shots/ios-landscape-iphone.png, iPhone 14 landscape profile, 844 × 390 at 3x, resized to 1280 | The Add to Home Screen card on the phone title screen |
 | 2026.10.16.1/free-roam-spawn.webp | .scratch/free-roam-spawn-2026-10-19/picker-1280x800.webp, free roam spawn picker at 1280 × 800 (headless Chrome, SwiftShader) | Free Roam: pick where to start on the Attica map |
+| 2026.10.16.1/psychiko-street-view.webp | .scratch/psychiko-realism/impl-c/sbs-S07.webp, game pane only (crop y30–629, x0–800), High preset, headless Chromium/SwiftShader, resized to 1280 | Psychiko avenue canopy, kerb parking and double centre lines on Diamantidou |
 
 Keep filenames stable: a later release may reuse an earlier screenshot. See deploy/README.md and CONTRIBUTING.md for the Unreleased workflow and automated limits.
