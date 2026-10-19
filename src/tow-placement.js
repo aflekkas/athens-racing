@@ -6,6 +6,9 @@ import { roadFrame, courseFrame } from './course.js';
 // Pure maths shared by the client and the authoritative server: no DOM, three.js, timers or network.
 export const ROUTE_PREFERENCE = 40;
 const SLIDE_STEP = 4, SLIDE_MAX = 36, CELL = 64, SEARCH_MAX = 3000, CANDIDATES = 40;
+// On a circuit the car belongs to the leg it was last on. Megara's straights pass 36 m apart, so a car 20 m off the infield
+// side of one leg is nearer the other, 800 m further round: the tow looks for its own leg within this many metres of the car's last valid station first.
+export const OWN_LEG_RANGE = 120;
 // A street pose must leave the whole car off the route's own surface, gutter and kerb (car half width, gutter, margin).
 const STREET_CLEARANCE = 2.5;
 const finite = Number.isFinite;
@@ -71,14 +74,18 @@ export function rawRoute(route) {
     closed, length,
     edge: s => roadFrame(route, s).halfWidth - 2,
     centre: s => roadFrame(route, s),
-    project(x, z) {
+    // A hint (a station) with a range (metres) searches only that stretch of a circuit and answers on the hint's lap.
+    project(x, z, hint = null, range = OWN_LEG_RANGE) {
       let distance = Infinity, s = 0;
-      for (let i = 0; i < n - 1; i++) {
+      const windowed = closed && finite(hint), reach = Math.ceil(range / step), first = windowed ? Math.floor(hint / step) - reach : 0, count = windowed ? Math.min(n - 1, 2 * reach + 1) : n - 1;
+      for (let k = 0; k < count; k++) {
+        const i = ((first + k) % (n - 1) + (n - 1)) % (n - 1);
         const dx = route.x[i + 1] - route.x[i], dz = route.z[i + 1] - route.z[i];
         const t = Math.max(0, Math.min(1, ((x - route.x[i]) * dx + (z - route.z[i]) * dz) / (dx * dx + dz * dz || 1)));
         const d = (x - route.x[i] - dx * t) ** 2 + (z - route.z[i] - dz * t) ** 2;
         if (d < distance) { distance = d; s = (i + t) * step; }
       }
+      if (windowed) s += Math.round((hint - s) / length) * length;
       return { s, u: lateral(roadFrame(route, s), x, z) };
     },
     pose(s, d) {
@@ -96,7 +103,13 @@ const unwrap = (route, s, ref) => route.closed && finite(ref) ? s + Math.round((
 //   clear(pose): false when traffic or an obstacle blocks the spot. Returns the pose to place the car at:
 //   { kind: 'route' | 'road', x, y?, z, yaw, s, u, d, distance, clear }. A 'road' pose leaves y to the caller.
 export function planTow({ x, z, yaw, route, index = null, course = null, dir = 1, clear = null, preference = ROUTE_PREFERENCE }) {
-  const here = route.project(x, z), centre = route.centre(here.s);
+  let here = route.project(x, z);
+  // A car standing on another leg's tarmac is on that road; one beside the circuit belongs to its own leg.
+  if (course && route.closed && finite(course.ref) && Math.abs(here.u) > route.edge(here.s)) {
+    const own = route.project(x, z, course.ref, OWN_LEG_RANGE);
+    if (own && Math.abs(own.u) <= route.edge(own.s) + ROUTE_PREFERENCE) here = own;
+  }
+  const centre = route.centre(here.s);
   const routeEdge = Math.max(0, Math.hypot(x - centre.x, z - centre.z) - route.edge(here.s));
   const streets = index?.near(x, z) || [];
   const ok = pose => !clear || clear(pose);
