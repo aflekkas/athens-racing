@@ -140,15 +140,35 @@ test('catalogue-only Psychiko launch preserves the authored two laps before the 
 });
 
 
-test('Psychiko uses shared footprint boxes and budgeted square street props',async()=>{
- const {psychikoLampGeometry}=await import('../src/maps/psychiko.js');
- const {triangleCount,WORLD_TRIANGLE_BUDGETS}=await import('../src/world-art-direction.js');
+test('Psychiko uses shared footprint boxes and budgeted streetscape props',async()=>{
+ const THREE=await import('three');
+ const {PsychikoStreetscape}=await import('../src/maps/psychiko-streetscape.js'); // templates assert their prop/lamp budgets on load
  const {buildingBlockGeometry}=await import('../src/buildings.js');
- assert.ok(data.vegetation?.length>0,'OSM vegetation records feed the budgeted detail layer');assert.deepEqual(Object.keys(data.psychiko.scenery),['furniture']);
- const lamp=psychikoLampGeometry();assert.equal(triangleCount(lamp),36);assert(triangleCount(lamp)<=WORLD_TRIANGLE_BUDGETS.lamp);lamp.dispose();
+ const {triangleCount}=await import('../src/world-art-direction.js');
+ assert.ok(data.vegetation?.length>0,'OSM vegetation records feed the budgeted detail layer');
+ const sc=data.psychiko.scenery;assert.deepEqual(Object.keys(sc),['version','source','roads','walls','trees','parking','poles','zebras']);assert.equal(sc.roads,data.roadNetwork.roads.length);
+ const street=new PsychikoStreetscape(map,new THREE.Group(),(x,z)=>terrain.height(x,z));
+ assert(street.canopy.size>20&&street.props.size>50&&street.obstacles.length>1000);
+ // Kerb parking never narrows the raced width: lap cars sit astride the kerb, side-street rows stay off the lap.
+ for(const o of street.obstacles){const q=route.project(o.x,o.z,null);if(Math.abs(q.u)<route.edge(q.s)+4)assert(Math.abs(q.u)-o.hw>=route.edge(q.s)-.05,`parked car intrudes at s=${q.s.toFixed(1)}`);}
+ let tris=0;for(const key of street.props.keys()){const m=street.buildCell('props',key);if(m){tris+=m.geometry.attributes.position.count/3;m.geometry.dispose();}}
+ assert(tris<800000,'streetscape props stay a light streamed layer');
+ const roofs=street.buildRoofs(data.buildings.map(b=>({...b,top:10})));assert(street.stats.roofs>800&&roofs.geometry.attributes.position.count/3<=street.stats.roofs*6);street.dispose();
  for(const b of data.buildings){const g=buildingBlockGeometry(b.p,b.h);assert(triangleCount(g)<=40);g.dispose();}
  const shader=(await import('../src/terrain.js')).terrainMaterial({gardens:true});
  assert.equal(shader.customProgramCacheKey(),'terrain-owner-area');
+});
+
+test('Psychiko street classes come from the frozen survey reduction',async()=>{
+ const {PSYCHIKO_CLASSES,psychikoStreet}=await import('../src/maps/psychiko-streets.js');
+ const survey=JSON.parse(readFileSync(new URL('./maps/psychiko/raw/street-classes.json',import.meta.url)));
+ for(const [k,c] of Object.entries(survey.classes)){assert.equal(PSYCHIKO_CLASSES[k].w,c.w,k);assert.equal(PSYCHIKO_CLASSES[k].footway,c.footway,k);assert.equal(PSYCHIKO_CLASSES[k].paint,c.paint,k);}
+ // Diamantidou is a 9 m double-white avenue; Benaki's school-wall section about 7 m; Davaki's utility lane about 3.5 m.
+ const roads=data.roadNetwork.roads,byWay=id=>roads.filter(r=>r.id===id);
+ assert(byWay(107944932).some(r=>r.k==='N4'&&r.w===3.5));
+ for(const r of roads)if(r.k&&r.k!=='C7'&&r.junction!=='roundabout'&&r.p.length>=4)assert.equal(r.w,psychikoStreet(r.n,false,r.k).w,`way ${r.id}`);
+ const lap=data.route.names;assert(lap.some(n=>/Benak|Μπενάκη/.test(n.name)&&n.k==='I7'));assert(lap.some(n=>/Diamantid/.test(n.name)&&n.k==='A9'));
+ for(let s=0;s<route.length;s+=4)assert(route.edge(s)*2>=5.4,'race carriageway stays drivable');
 });
 
 test('close OSM fronts retain their source centroids and road-edge distances after box conversion',async()=>{

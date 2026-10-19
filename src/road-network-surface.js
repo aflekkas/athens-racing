@@ -17,7 +17,7 @@ export class RoadNetwork {
   for(let i=0;i<(this.route.N||0);i+=Math.max(1,Math.floor(8/this.route.step))){const k=`${Math.floor(this.route.X[i]/64)},${Math.floor(this.route.Z[i]/64)}`;if(!this.routeCells.has(k))this.routeCells.set(k,[]);this.routeCells.get(k).push(i);}
   this.routeNear=new Set();
   for(const key of this.routeCells.keys()){const [x,z]=key.split(',').map(Number);for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)this.routeNear.add(`${x+dx},${z+dz}`);}
-  for(const road of this.roads)for(let i=0;i+3<road.p.length;i+=2){const [ax,az,bx,bz]=road.p.slice(i,i+4),dx=bx-ax,dz=bz-az,L=Math.hypot(dx,dz);if(L<.01)continue;const seg={id:this.segments.length,road,ax,az,bx,bz,dx,dz,L,L2:L*L,hw:road.w/2,sw:road.urban&&road.sf==='asphalt'?1.3:0};
+  for(const road of this.roads)for(let i=0;i+3<road.p.length;i+=2){const [ax,az,bx,bz]=road.p.slice(i,i+4),dx=bx-ax,dz=bz-az,L=Math.hypot(dx,dz);if(L<.01)continue;const seg={id:this.segments.length,road,ax,az,bx,bz,dx,dz,L,L2:L*L,hw:road.w/2,sw:road.urban&&road.sf==='asphalt'?road.fw??1.3:0};
    const mx=(ax+bx)/2,mz=(az+bz)/2;
    if(this.route.frame&&this.nearMain(mx,mz)){const q=this.project(mx,mz),f=this.route.frame(q.s,{});if(Math.abs(q.u)<this.route.edge(q.s)+12&&Math.abs(dx/L*f.tx+dz/L*f.tz)<.8)seg.hw+=1.4;}
    this.segments.push(seg);const R=seg.hw+seg.sw+2;

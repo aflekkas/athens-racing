@@ -203,7 +203,7 @@ test('server (c): 300 m down a non-route road, a tow lands on the nearest road t
   assert.equal(r.course.reached, before.reached, 'driving on from the side street still earns nothing');
 });
 test('server (d): a tow cannot advance race progress, whatever the client claims', t => {
-  const r = race(t), near = streetPoint(P, 18, 26, { skip: 8, stations: [300, 2000] }), q = route.project(near.x, near.z, null);
+  const r = race(t), near = streetPoint(P, 18, 26, { skip: 7, stations: [300, 2000] }), q = route.project(near.x, near.z, null);
   r.advance(500); r.begin(0); driveRoute(r, 6, q.s);
   const claim = route.point(2800, 2);
   r.runTo(near.x, near.z);
