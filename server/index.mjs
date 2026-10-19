@@ -3,7 +3,7 @@ import { authorizeGame, protectedPath, accountResult, identityActive } from './a
 import { canSaveResults } from './smoke-session.mjs';
 import { leaderboardFilters } from './leaderboard-policy.mjs';
 import { legalPage } from '../worker/legal-pages.mjs';
-import { connectionProtocol } from '../src/multiplayer-protocol.js';
+import { connectionProtocol, AUTH_CLOSE_CODE } from '../src/multiplayer-protocol.js';
 import http from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { createReadStream } from 'node:fs';
@@ -92,7 +92,7 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
     if (!core.connect(ws, req.socket.remoteAddress, { ...connectionProtocol(new URL(req.url, 'http://localhost')), identity: req.accountIdentity })) return;
     ws.on('pong', () => core.pong(ws));
     ws.on('message', async bytes => {
-      try { if (!await identityActive(core.clientData(ws)?.identity, accountEnv)) { ws.close(4001, 'Sign in with Google'); core.disconnect(ws); return; } core.message(ws, bytes); }
+      try { if (!await identityActive(core.clientData(ws)?.identity, accountEnv)) { ws.close(AUTH_CLOSE_CODE, 'Sign in with Google'); core.disconnect(ws); return; } core.message(ws, bytes); }
       catch { ws.close(1011, 'Sign-in unavailable'); }
     });
     ws.on('close', () => core.disconnect(ws));

@@ -8,6 +8,14 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Multiplayer: other drivers' tyre smoke, burnouts and skid marks are now visible, and so are your own online. Sparks and dust show too.
+
+- Multiplayer lobby: CHANGE CAR / TRIM is its own button under your car, says it opens the garage, and explains when your car is locked.
+
+- Multiplayer: a driver the lobby shows as "loading" now reports in again every few seconds, so nobody gets stuck on loading.
+
+- Signing out in another tab now returns you to the sign-in screen instead of showing "game updated, reload".
+
 - Multiplayer: towing with T or R can no longer leave the screen black. A refused tow answers at once and the screen always comes back.
 
 - Multiplayer: if you are away longer than the 90-second reservation, you are taken back to the menu with a clear message instead of a "reconnecting" loop that never ends.

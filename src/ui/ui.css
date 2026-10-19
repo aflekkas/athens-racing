@@ -1235,6 +1235,8 @@ body[data-ui] #mp-toggle { display: none !important; }
 .mp-plate { grid-column: 1; grid-row: 3; z-index: 1; justify-self: center; display: grid; justify-items: center; gap: .2rem; text-align: center; max-width: 100%; }
 .mp-plate__name { font: 400 var(--t-2xl) var(--f-sans); letter-spacing: .1em; text-transform: uppercase; text-shadow: 0 2px 18px rgba(0,0,0,.6); }
 .mp-plate__spec { font: 600 var(--t-xs) var(--f-cond); letter-spacing: .18em; color: var(--hu-ice); min-height: 1em; }
+.mp-plate__car { margin-top: var(--s-2); }
+.mp-plate__hint { margin: 0; font: 600 var(--t-xs) var(--f-cond); letter-spacing: .12em; color: var(--hu-ice); opacity: .8; text-transform: uppercase; }
 .mp-plate__acts { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: var(--s-2); margin-top: var(--s-2); }
 .mp-actions { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: var(--s-2); }
 .mp-actions > .btn:not(.btn--sm) { min-width: 11rem; min-height: 3rem; }

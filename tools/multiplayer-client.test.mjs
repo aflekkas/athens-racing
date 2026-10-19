@@ -361,3 +361,26 @@ test('an expired session while racing returns to the menu with a fresh token ins
   assert.equal(m.lobby, null); assert.equal(left.length, 1); assert.equal(m.token, 'fresh-token'); assert.equal(m.connected, true);
   assert.equal(timers.length, 0, 'no retry loop on a socket that is open'); assert.match(m.lastStatus, /too long|expired/);
 });
+
+test('a sign-in close code shows the account gate and keeps retrying; it is never treated as a game update', async t => {
+  const { AUTH_CLOSE_CODE } = await import('../src/multiplayer-protocol.js');
+  const { m, nodes, timers } = protocolClient(t); let revalidated = 0;
+  globalThis.__bootMenu = { accounts: { revalidate() { revalidated++; } } }; t.after(() => { delete globalThis.__bootMenu; });
+  m.ws.onclose({ code: AUTH_CLOSE_CODE, reason: 'Sign in with Google' });
+  assert.equal(revalidated, 1, 'the account client re-checks the session so the sign-in gate appears');
+  assert.equal(m.reloadRequired, undefined); assert.equal(nodes.length, 0, 'no "game updated" notice');
+  assert.equal(timers.length, 1, 'reconnection continues once the account is signed in again');
+});
+
+// Owner playtest 2026-10-18: the lobby showed the joiner as "loading" for ever.
+test('a driver the lobby still lists as loading keeps reporting it is loaded until the lobby agrees', t => {
+  const { m } = lobbyClient('riviera'); const sent = [];
+  Object.assign(m, { boardAt: Infinity, trackVersion: 'v1', loadedKey: 'ABCDEF:riviera:v1:', loadedAt: 0, hooks: { ...m.hooks, clock() {}, remote() {} }, send: p => sent.push(p) });
+  m.lobby.status = 'waiting'; m.lobby.raceId = null; m.lobby.players = [{ id: 'me', loaded: false }];
+  const clock = t.mock.method(performance, 'now', () => 10000);
+  m.update(1 / 60, state()); assert.deepEqual(sent.map(p => p.type), ['loaded'], 'the first nudge goes out as soon as the grace has passed');
+  assert.deepEqual(sent[0], { type: 'loaded', loaded: true, mapId: 'riviera', version: 'v1' });
+  m.update(1 / 60, state()); assert.equal(sent.length, 1, 'not every frame');
+  clock.mock.mockImplementation(() => 14500); m.update(1 / 60, state()); assert.equal(sent.length, 2, 'again after four seconds');
+  m.lobby.players[0].loaded = true; clock.mock.mockImplementation(() => 30000); m.update(1 / 60, state()); assert.equal(sent.length, 2, 'silent once the lobby agrees');
+});

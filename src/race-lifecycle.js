@@ -1,4 +1,5 @@
 import { angularVelocity, restoreRigidState } from './airborne-dynamics.js';
+import { tyreFxState, applyTyreFx } from './remote-tyre-fx.js';
 // Selection is keyed by driver identity, never a timer or lobby array position.
 export class SpectatorSelection {
   constructor() { this.reset(); }
@@ -54,6 +55,7 @@ export function spectatorState(vehicle) {
   const state = Object.fromEntries(engineFields.filter(k => vehicle[k] !== undefined).map(k => [k, vehicle[k]]));
   for (const [field, key] of [['bodyHeave', 'heave'], ['bodyPitch', 'pitch'], ['bodyRoll', 'roll']]) if (Number.isFinite(vehicle.pose?.[key])) state[field] = vehicle.pose[key];
   state.vy = vehicle.vy || 0; state.bodyDynamic = !!vehicle.bodyDynamic; state.air = !!vehicle.air;
+  Object.assign(state, tyreFxState(vehicle));
   if (vehicle.rigid) {
     state.bodyQ = vehicle.rigid.q.slice();
     [state.angularX, state.angularY, state.angularZ] = angularVelocity(vehicle);
@@ -70,6 +72,7 @@ export function applySpectatorState(vehicle, snapshot) {
   vehicle.bodyDynamic = snapshot.bodyDynamic === true; vehicle.air = snapshot.air ? 1 : 0;
   vehicle.bodyQ = snapshot.bodyQ || null; vehicle.vy = snapshot.vy || 0;
   vehicle.remoteTyreTelemetry = snapshot.tyreTelemetry || null;
+  applyTyreFx(vehicle, snapshot);
   vehicle.remoteEngineTelemetry = Number.isFinite(snapshot.engHealth);
   for (const key of engineFields) vehicle[key] = snapshot[key];
 }
