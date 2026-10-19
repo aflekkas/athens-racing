@@ -1,0 +1,77 @@
+[runner] 1 test files, 1 at a time, heaviest first, failed files retried once alone
+[unit] (node:93917) Warning: `--localstorage-file` was provided without a valid path
+[unit] (Use `node --trace-warnings ...` to show where the warning was created)
+[unit] ✔ every garage trim has the manufacturer artwork and drive pill inside its card media (7.411875ms)
+[unit] ✔ brand filter covers every manufacturer and combines with the other filters (31.179042ms)
+[unit] ✔ showroom has a transparent soft shadow receiver and no turntable disc (1.635292ms)
+[unit] ✔ actual city, sports, van and bus vertices stay centred within half a pixel through full revolutions (846.694542ms)
+[unit] ✔ static thumbnails fill their image bounds with consistent margins (323.878584ms)
+[unit] ✔ spec panel has shared tiles, segmented trims and no unavailable paint or internal copy (5.254375ms)
+[unit] ✖ browser measures drive-pill containment, manufacturer options and brand selection at desktop and narrow-window sizes (48.874125ms)
+[unit] ℹ tests 7
+[unit] ℹ suites 0
+[unit] ℹ pass 6
+[unit] ℹ fail 1
+[unit] ℹ cancelled 0
+[unit] ℹ skipped 0
+[unit] ℹ todo 0
+[unit] ℹ duration_ms 1623.086583
+[unit] ✖ failing tests:
+[unit] test at tools/garage-cards.test.mjs:58:1
+[unit] ✖ browser measures drive-pill containment, manufacturer options and brand selection at desktop and narrow-window sizes (48.874125ms)
+[unit]   AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Garage browser bounds, logos and brand filter PASS 1280/. Input:
+[unit]   
+[unit]   ''
+[unit]   
+[unit]       at TestContext.<anonymous> (file:///Users/vassilisperrotis/.t3/worktrees/athens-street-racers/psychiko-realism/.scratch/psychiko-realism/impl-c/staging/tools/garage-cards.test.mjs:61:9)
+[unit]       at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+[unit]       at async Test.run (node:internal/test_runner/test:1208:7)
+[unit]       at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+[unit]     generatedMessage: true,
+[unit]     code: 'ERR_ASSERTION',
+[unit]     actual: '',
+[unit]     expected: /Garage browser bounds, logos and brand filter PASS 1280/,
+[unit]     operator: 'match',
+[unit]     diff: 'simple'
+[unit]   }
+[unit] tools/garage-cards.test.mjs: FAILED (exit 1) after 1.7 s
+[retry] tools/garage-cards.test.mjs: failed (exit 1, 1.7 s); rerunning once, alone
+[retry] tools/garage-cards.test.mjs: failed again (exit 1, 1.4 s): a real failure
+[unit] (node:93931) Warning: `--localstorage-file` was provided without a valid path
+[unit] (Use `node --trace-warnings ...` to show where the warning was created)
+[unit] ✔ every garage trim has the manufacturer artwork and drive pill inside its card media (6.081917ms)
+[unit] ✔ brand filter covers every manufacturer and combines with the other filters (11.529917ms)
+[unit] ✔ showroom has a transparent soft shadow receiver and no turntable disc (0.833125ms)
+[unit] ✔ actual city, sports, van and bus vertices stay centred within half a pixel through full revolutions (693.066625ms)
+[unit] ✔ static thumbnails fill their image bounds with consistent margins (359.049167ms)
+[unit] ✔ spec panel has shared tiles, segmented trims and no unavailable paint or internal copy (11.594584ms)
+[unit] ✖ browser measures drive-pill containment, manufacturer options and brand selection at desktop and narrow-window sizes (45.290416ms)
+[unit] ℹ tests 7
+[unit] ℹ suites 0
+[unit] ℹ pass 6
+[unit] ℹ fail 1
+[unit] ℹ cancelled 0
+[unit] ℹ skipped 0
+[unit] ℹ todo 0
+[unit] ℹ duration_ms 1299.722333
+[unit] ✖ failing tests:
+[unit] test at tools/garage-cards.test.mjs:58:1
+[unit] ✖ browser measures drive-pill containment, manufacturer options and brand selection at desktop and narrow-window sizes (45.290416ms)
+[unit]   AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Garage browser bounds, logos and brand filter PASS 1280/. Input:
+[unit]   
+[unit]   ''
+[unit]   
+[unit]       at TestContext.<anonymous> (file:///Users/vassilisperrotis/.t3/worktrees/athens-street-racers/psychiko-realism/.scratch/psychiko-realism/impl-c/staging/tools/garage-cards.test.mjs:61:9)
+[unit]       at async Test.run (node:internal/test_runner/test:1208:7)
+[unit]       at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+[unit]     generatedMessage: true,
+[unit]     code: 'ERR_ASSERTION',
+[unit]     actual: '',
+[unit]     expected: /Garage browser bounds, logos and brand filter PASS 1280/,
+[unit]     operator: 'match',
+[unit]     diff: 'simple'
+[unit]   }
+[unit] tools/garage-cards.test.mjs: FAILED twice (exit 1, then exit 1)
+[summary] 1/1 files, 7 tests, 6 pass, 1 fail in first attempts, 0 skipped; 0 flaky (passed on isolated retry), 1 failed
+[summary] FAILED: tools/garage-cards.test.mjs (exit 1)
+[total] 3.1 s; FAIL

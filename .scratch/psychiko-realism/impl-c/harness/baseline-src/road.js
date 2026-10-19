@@ -1,0 +1,494 @@
+import {roundaboutRange} from './roundabouts.js';
+import { upperName } from './greek-caps.js';
+import { signFaceOffset } from './sign-mount.js';
+import { gantryLegFrame } from './gantry-legs.js';
+import { squarePost, signFace } from './world-prop-geometries.js';
+// The road: a continuous spline sweep along the real route with banking, shader-drawn markings,
+// curbs, pavements/shoulders, planted median, guard rails and road furniture.
+import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { buildRivieraRails } from './riviera-guardrail-mesh.js';
+import { REFLECT_LAYER } from './env.js';
+import { clamp, smoothstep, canvasTex, CellInstances, M, RNG, lerp } from './util.js';
+import { LANE_W } from './map.js';
+import { terrainMaterial } from './terrain.js';
+import { psychikoSection } from './maps/psychiko-streets.js';
+import { TX, GLSL_HELPERS } from './tex.js';
+
+const STEP = 2;
+const CHUNK = 1000; // metres per mesh chunk (both sides merged per material: few draw calls)
+
+export const ROAD = {
+  curbH: (route, s) => 0.16 * smoothstep(0.15, 0.6, route.urban(s)),
+  gutter: 0.55,
+  /** pavement / shoulder width beyond the curb */
+  sidewalk(route, s, side) {
+    if (route.streetCircuit) return 1.8;
+    const urb = route.urban(s);
+    const sea = side > 0 ? route.seaR(s) : route.seaL(s);
+    const prom = sea < 140 ? 2.4 : 0; // the seaside promenade is wider (palms, benches)
+    return lerp(1.6, 3.6 + prom, urb);
+  },
+  /** hard limits for the car body centre (u range) */
+  limits(route, s, out) {
+    const e = route.edge(s), mh = route.medHalf(s), div = route.div(s), urb = route.urban(s);
+    const outer = e + ROAD.gutter + (urb > 0.5 ? 0 : 1.1);
+    out.max = outer; out.min = div > 0.45 ? mh : -outer;
+    return out;
+  },
+};
+
+// ------------------------------------------------------------------ materials
+// Asphalt: photographed asphalt (albedo / normal / roughness, anti-tiling) + macro variation, repaired patches,
+// tyre-polished wheel tracks, oil drips down the lane centres, a dusty gutter; worn thermoplastic markings.
+function asphaltMaterial(psychiko = false) {
+  const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, metalness: 0 });
+  mat.userData.uniforms = { tAD: { value: TX.asphalt_diff }, tAN: { value: TX.asphalt_nor }, tAR: { value: TX.asphalt_arm }, uCross: { value: new Float32Array(16).fill(-9999) }, uStop: { value: new Float32Array(8).fill(-9999) }, uStopO: { value: new Float32Array(8).fill(-9999) } };
+  mat.customProgramCacheKey = () => psychiko ? 'asphalt6-psychiko' : 'asphalt6';
+  mat.onBeforeCompile = (sh) => {
+    Object.assign(sh.uniforms, mat.userData.uniforms);
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute vec2 aSU; attribute vec4 aEM; varying vec2 vSU; varying vec4 vEM;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvSU = aSU; vEM = aEM;');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', `#include <common>
+      uniform sampler2D tAD; uniform sampler2D tAN; uniform sampler2D tAR; uniform float uCross[16]; uniform float uStop[8]; uniform float uStopO[8];
+      varying vec2 vSU; varying vec4 vEM;
+      ${GLSL_HELPERS}
+      // anti-aliased band |x - c| < w/2
+      float band(float x, float c, float w){ float d = abs(x - c) - w * 0.5; float fw = max(fwidth(x), 1e-4); return 1.0 - smoothstep(-fw, fw, d); }
+      float paint = 0.0; float polish = 0.0; float gRough = 0.9; vec3 aN = vec3(0.0, 0.0, 1.0); float gut = 0.0;
+      `)
+      .replace('#include <color_fragment>', `#include <color_fragment>
+      {
+        float s = vSU.x, u = vSU.y, au = abs(u);
+        float e = vEM.x, mh = vEM.y, nl = vEM.z, dv = vEM.w;
+        vec2 tuv = vec2(u, s) / 4.2;
+        vec3 alb = texNoTile(tAD, tuv).rgb;
+        vec4 nr = texNoTile(tAN, tuv);
+        vec3 arm = texNoTile(tAR, tuv).rgb;
+        aN = nr.xyz * 2.0 - 1.0;
+        float macro = fbm2(vec2(u * 0.08, s * 0.012)) ;
+        float lumA = dot(alb, vec3(0.333));
+        vec3 base = (vec3(0.1) + (mix(vec3(lumA), alb, 0.5) - 0.1) * 0.55) * 1.4 * (0.72 + 0.56 * macro) * vec3(0.98, 0.98, 1.0);
+        // repaired patches: darker, smoother rectangles of newer asphalt with crisp edges
+        vec2 pc = floor(vec2(u / 3.5, s / 19.0));
+        float pr = h12(pc + 7.1);
+        if (pr > 0.86) { vec2 lf = fract(vec2(u / 3.5, s / 19.0)); float inP = band(lf.x, 0.5, 0.62 + 0.2 * h12(pc)) * band(lf.y, 0.45, 0.4 + 0.3 * h12(pc + 3.0)); base = mix(base, base * 0.62, inP); aN.xy *= 1.0 - 0.6 * inP; }
+        // tyre-polished tracks in each lane, oil drips between them
+        float lu = (au - mh) / ${LANE_W.toFixed(2)};
+        float lf = fract(lu);
+        float inLane = step(0.0, lu) * step(lu, nl);
+        polish = (smoothstep(0.17, 0.0, abs(lf - 0.25)) + smoothstep(0.17, 0.0, abs(lf - 0.75))) * inLane;
+        float oil = smoothstep(0.12, 0.0, abs(lf - 0.5)) * inLane * smoothstep(0.45, 0.8, vn2(vec2(u * 2.0, s * 0.35))) * 0.6;
+        base *= (1.0 - polish * 0.12) * (1.0 - oil * 0.35);
+        // gutter: dusty concrete edge strip, sand and grit drift against the curb
+        gut = smoothstep(e + 0.02, e + 0.06, au);
+        vec3 conc = vec3(0.42, 0.405, 0.38) * (0.78 + 0.4 * alb.r);
+        base = mix(base, conc, gut);
+        float dust = smoothstep(e - 0.9, e + 0.4, au) * (0.5 + 0.5 * vn2(vec2(s * 0.3, u * 3.0)));
+        base = mix(base, vec3(0.36, 0.33, 0.28), dust * 0.35);
+        // ---- markings (white thermoplastic, chipped and worn by tyres)
+        float m = 0.0;
+        ${psychiko ? '' : 'm += band(au, e - 0.22, 0.15);'}                       // edge lines
+        if (dv > 0.5) m += band(au, mh + 0.22, 0.12);       // inner edge next to the median
+        else { m += band(u, 0.12, 0.1) + band(u, -0.12, 0.1); } // double solid centre line
+        float dash = band(fract(s / 9.0), 0.185, 0.37);
+        for (int i = 1; i < 4; i++) { float fi = float(i); if (fi < nl - 0.3) m += band(au, mh + fi * ${LANE_W.toFixed(2)}, 0.12) * dash; }
+        // zebra crossings and stop lines near the player
+        float heavy = 0.0;
+        for (int i = 0; i < 16; i++) {
+          float ds = s - uCross[i];
+          if (abs(ds) < 2.6) { float bar = band(fract(u / 1.1 + 0.25), 0.75, 0.5); float z = bar * band(ds, 0.0, 4.0) * step(au, e - 0.3); m += z; heavy += z; }
+        }
+        for (int i = 0; i < 8; i++) { float ds = s - uStop[i]; m += band(ds, 0.0, 0.45) * step(mh, u) * step(u, e - 0.3); float dso = s - uStopO[i]; m += band(dso, 0.0, 0.45) * step(u, -mh) * step(-(e - 0.3), u); }
+        float wearN = vn2(vec2(u * 9.0, s * 2.3)) * 0.55 + vn2(vec2(u * 31.0, s * 13.0)) * 0.45;
+        float wearK = 0.32 + polish * 0.25 * heavy + (1.0 - lumA) * 0.25;
+        float chip = smoothstep(wearK - 0.05, wearK + 0.08, wearN);
+        ${psychiko ? `m *= max(0., min(1., nl)); if(nl<-.5){vec2 bq=vec2(u,s)/vec2(.14,.22);float seam=step(.07,fract(bq.x+floor(bq.y)*.5))*step(.08,fract(bq.y));base=mix(vec3(.17,.13,.11),vec3(.29,.23,.20),seam)*(.85+.3*macro);}` : ''}
+        paint = clamp(m, 0.0, 1.0) * (1.0 - gut) * chip;
+        vec3 pcol = vec3(0.8, 0.8, 0.77) * (0.88 + 0.12 * alb.r / max(lumA, 0.05)) * (1.0 - polish * 0.15 * heavy);
+        diffuseColor.rgb = mix(base, pcol, paint);
+        gRough = mix(clamp(arm.g * 1.05, 0.55, 1.0), 0.55, polish * 0.55 + oil * 0.6);
+        gRough = mix(gRough, 0.62, paint);
+        aN.xy *= (1.0 - paint * 0.75) * (1.0 - polish * 0.3);
+        diffuseColor.rgb *= mix(1.0, arm.r, 0.3);
+      }`)
+      .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = gRough;')
+      .replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\nnormal = perturb(-vViewPosition, normal, vec2(vSU.y, vSU.x) / 4.2, aN, 1.2);');
+  };
+  return mat;
+}
+
+// Pavements: grooved square concrete paving slabs (photographed), tinted per district; gravel shoulders outside town
+function pavingMaterial() {
+  const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.85, vertexColors: true });
+  mat.customProgramCacheKey = () => 'paving6';
+  mat.onBeforeCompile = (sh) => {
+    sh.uniforms.tPD = { value: TX.paver_diff }; sh.uniforms.tPN = { value: TX.paver_nor }; sh.uniforms.tPR = { value: TX.paver_arm };
+    sh.uniforms.tGD = { value: TX.ground_diff }; sh.uniforms.tGN = { value: TX.ground_nor };
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute vec2 aSU; varying vec2 vSU;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvSU = aSU;');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', `#include <common>
+      uniform sampler2D tPD; uniform sampler2D tPN; uniform sampler2D tPR; uniform sampler2D tGD; uniform sampler2D tGN;
+      varying vec2 vSU; vec3 pN = vec3(0, 0, 1); float pRough = 0.85; float gravel = 0.0;
+      ${GLSL_HELPERS}`)
+      .replace('#include <color_fragment>', `#include <color_fragment>
+      {
+        vec2 q = vec2(vSU.x, vSU.y) / 3.2;
+        vec3 alb = texture2D(tPD, q).rgb; vec4 n = texture2D(tPN, q); vec3 arm = texture2D(tPR, q).rgb;
+        gravel = smoothstep(0.42, 0.34, dot(vColor, vec3(0.333))); // gravel shoulders are vertex-coloured darker
+        vec2 gq = vSU / 3.5;
+        vec3 g = texNoTile(tGD, gq).rgb; vec3 gn = texture2D(tGN, gq).xyz;
+        float stain = fbm2(vSU * 0.35);
+        vec3 tile = alb * vec3(1.08, 1.06, 1.02) * (0.85 + 0.3 * stain) * (vColor / max(0.001, dot(vColor, vec3(0.333)))) * 0.95;
+        diffuseColor.rgb = mix(tile, g * vec3(1.05, 0.98, 0.9), gravel);
+        pN = mix(n.xyz, gn, gravel) * 2.0 - 1.0;
+        pRough = mix(clamp(arm.g, 0.5, 1.0), 0.95, gravel);
+        diffuseColor.rgb *= mix(1.0, arm.r, 0.7 * (1.0 - gravel));
+      }`)
+      .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = pRough;')
+      .replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\nnormal = perturb(-vViewPosition, normal, vSU / 3.2, pN, 1.0);');
+  };
+  return mat;
+}
+
+// Curbs, median noses, piers: worn concrete
+export function concreteMaterial(color = '#d8d3c8', scale = 2.0) {
+  const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.85 });
+  mat.customProgramCacheKey = () => 'concrete6_' + scale;
+  mat.onBeforeCompile = (sh) => {
+    sh.uniforms.tCD = { value: TX.concrete_diff }; sh.uniforms.tCN = { value: TX.concrete_nor }; sh.uniforms.tCR = { value: TX.concrete_arm };
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vCW; varying vec3 vCWN;')
+      .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvCW = (modelMatrix * vec4(transformed, 1.0)).xyz; vCWN = normalize(mat3(modelMatrix) * objectNormal);');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', `#include <common>
+      uniform sampler2D tCD; uniform sampler2D tCN; uniform sampler2D tCR; varying vec3 vCW; varying vec3 vCWN; vec3 cN = vec3(0,0,1); float cR = 0.85; vec2 cUV;
+      ${GLSL_HELPERS}`)
+      .replace('#include <color_fragment>', `#include <color_fragment>
+      {
+        vec3 an = abs(vCWN);
+        cUV = (an.y > max(an.x, an.z) ? vCW.xz : an.x > an.z ? vCW.zy : vCW.xy) / ${scale.toFixed(2)};
+        vec3 alb = texture2D(tCD, cUV).rgb; vec3 arm = texture2D(tCR, cUV).rgb; cN = texture2D(tCN, cUV).xyz * 2.0 - 1.0;
+        float l = dot(alb, vec3(0.333));
+        diffuseColor.rgb *= (0.55 + 0.9 * l) * (0.85 + 0.25 * fbm2(cUV * 0.4)) * mix(1.0, arm.r, 0.6);
+        cR = clamp(arm.g, 0.55, 1.0);
+      }`)
+      .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = cR;')
+      .replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\nnormal = perturb(-vViewPosition, normal, cUV, cN, 0.8);');
+  };
+  return mat;
+}
+
+// ------------------------------------------------------------------ geometry
+/** two indexed strips with the same attributes as one geometry (null when they differ) */
+function mergePair(a, b) {
+  const ka = Object.keys(a.attributes).sort().join(), kb = Object.keys(b.attributes).sort().join();
+  if (ka !== kb || !a.index || !b.index) return null;
+  const g = mergeGeometries([a, b]); if (!g) return null;
+  a.dispose(); b.dispose(); g.computeBoundingSphere(); return g;
+}
+class Strip {
+  constructor(cols) { this.cols = cols; this.pos = []; this.su = []; this.em = []; this.col = []; this.rows = 0; }
+  row(points) { // points: [{p:Vector3, s, u, c?:Color}]
+    for (const q of points) { this.pos.push(q.p.x, q.p.y, q.p.z); this.su.push(q.s, q.u); if (q.em) this.em.push(...q.em); if (q.c) this.col.push(q.c.r, q.c.g, q.c.b); }
+    this.rows++;
+  }
+  build(flipU = false, enabledRows = null, enabledCells = null) {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(this.pos, 3));
+    g.setAttribute('aSU', new THREE.Float32BufferAttribute(this.su, 2));
+    if (this.em.length) g.setAttribute('aEM', new THREE.Float32BufferAttribute(this.em, 4));
+    if (this.col.length) g.setAttribute('color', new THREE.Float32BufferAttribute(this.col, 3));
+    const idx = [], C = this.cols;
+    for (let r = 0; r + 1 < this.rows; r++) for (let c = 0; c + 1 < C; c++) {
+      if (enabledCells && !enabledCells(r,c)) continue;
+      if (enabledRows && (!enabledRows[r] || !enabledRows[r + 1])) continue;
+      const a = r * C + c, b = a + 1, d = a + C, e = d + 1;
+      if (!flipU) idx.push(a, b, d, b, e, d); else idx.push(a, d, b, b, d, e);
+    }
+    g.setIndex(idx); g.computeVertexNormals(); g.computeBoundingSphere();
+    return g;
+  }
+}
+
+/** A chunk's median and skirt strips share a material: one mesh per material and chunk instead of one per strip (a call less per
+ * chunk, same triangles). Merging chunks into longer runs was tried for weak classes and dropped: the road is drawn to the horizon, so
+ * a 3 km run cost 90k more triangles in view for 9 fewer calls. */
+function mergeChunkStrips(group, chunkMeshes) {
+  const bins = new Map();
+  for (const { m, chunkIndex } of chunkMeshes) {
+    const g = m.geometry, key = [m.material.uuid, chunkIndex, m.layers.mask, !!g.index, Object.keys(g.attributes).sort().join()].join('|');
+    let list = bins.get(key); if (!list) bins.set(key, list = []); list.push(m);
+  }
+  for (const list of bins.values()) {
+    if (list.length < 2) continue;
+    const merged = mergeGeometries(list.map((m) => m.geometry)); if (!merged) continue;
+    merged.computeBoundingSphere();
+    const first = list[0], mesh = new THREE.Mesh(merged, first.material);
+    mesh.receiveShadow = first.receiveShadow; mesh.castShadow = list.some((m) => m.castShadow); mesh.layers.mask = first.layers.mask;
+    group.add(mesh);
+    for (const m of list) { group.remove(m); m.geometry.dispose(); }
+  }
+}
+
+export function buildRoad(map, scene, heightC, assets) {
+  const { route, data } = map;
+  const legacyMedian = !map.id || map.id === 'riviera'; // preserve the original coast mesh
+  const group = new THREE.Group(); scene.add(group);
+  const psychiko = map.id === 'psychiko';
+  const asphalt = asphaltMaterial(psychiko);
+  const paving = pavingMaterial();
+  const curbMat = concreteMaterial(map.id === 'psychiko' ? '#bdb9ac' : '#e2ddd2', 1.6);
+  const vergeMat = terrainMaterial();
+  const P = () => new THREE.Vector3();
+  const sMin = route.closed ? 0 : -60, sMax = route.length + (route.closed ? 0 : 60);
+  const cPink = new THREE.Color('#d6a49a'), cSlab = new THREE.Color('#c9c9c6');
+  const cConc = new THREE.Color('#bdb8ad'), cSoil = new THREE.Color('#6b5a40'), cGravel = new THREE.Color('#9c917c'), cDirt = new THREE.Color('#8f8064');
+
+  const chunkMeshes = []; let chunkIndex = 0;
+  for (let c0 = sMin; c0 < sMax; c0 += CHUNK, chunkIndex++) {
+    const c1 = Math.min(sMax, c0 + CHUNK);
+    const road = new Strip(7), med = new Strip(6), curbR = new Strip(4), curbL = new Strip(4), walkR = new Strip(3), walkL = new Strip(3), skR = new Strip(3), skL = new Strip(3);
+    const medianRows = [];
+    const sideRows = { '-1': [], '1': [] };
+    for (let s = c0; s <= c1 + 0.001; s += STEP) {
+      const e = route.edge(s), mh = route.medHalf(s), nl = route.lanesF(s), dv = route.div(s);
+      medianRows.push((legacyMedian || dv > .01) && !route.localLayout?.portal(s));
+      const eA = e + ROAD.gutter;
+      const section = psychiko ? psychikoSection(route,s) : null;
+      const em = [e, mh, roundaboutRange(route,s) ? 0 : section ? section.kind==='blocks' ? -1 : section.paint : nl, dv];
+      const us = [-eA, -e, -mh, 0, mh, e, eA];
+      road.row(us.map((u) => ({ p: route.point(s, u, P()), s, u, em })));
+      // median island (raised when the avenue is divided)
+      const mhH = 0.2 * smoothstep(0.25, 0.6, dv);
+      const y0 = route.surfaceY(s, 0);
+      const mrow = [[-mh, 0, cConc], [-mh, mhH, cConc], [-mh + 0.16, mhH, cConc], [mh - 0.16, mhH, cConc], [mh, mhH, cConc], [mh, 0, cConc]];
+      med.row(mrow.map(([u, h, c], i) => { const p = route.point(s, u, P()); p.y += h + (i === 2 || i === 3 ? 0.02 : 0); return { p, s, u, c: (i === 2 || i === 3) && mh > 0.6 ? cSoil : c }; }));
+      // curbs + pavements both sides
+      const ch = ROAD.curbH(route, s);
+      for (const side of [1, -1]) {
+        sideRows[side].push(!assets.network?.mouth(s, side, 2));
+        const sw = ROAD.sidewalk(route, s, side);
+        const yC = route.surfaceY(s, side * eA);
+        const yTop = yC + ch;
+        const pts = [[eA, yC], [eA, yTop], [eA + 0.18, yTop], [eA + 0.18, yTop]];
+        const curb = side > 0 ? curbR : curbL;
+        curb.row(pts.map(([u, y], i) => { const p = route.point(s, side * u, P()); p.y = y + (i === 3 ? -0.0 : 0); return { p, s, u: side * u }; }));
+        const walk = side > 0 ? walkR : walkL;
+        const urb = route.urban(s);
+        // Psychiko footways: pink tiles on the Diamantidou avenue and around the squares, pale slabs elsewhere (Street View survey).
+        const wc = section ? section.k === 'A9' || roundaboutRange(route, s) ? cPink : cSlab : urb > 0.5 ? cConc : cGravel;
+        const wp = [[eA + 0.18, yTop], [eA + 0.18 + sw * 0.5, yTop + 0.01], [eA + 0.18 + sw, yTop + 0.02]];
+        walk.row(wp.map(([u, y]) => { const p = route.point(s, side * u, P()); p.y = y; return { p, s, u: side * u, c: wc }; }));
+        // skirt down to the terrain
+        const uo = eA + 0.18 + sw;
+        const po = route.point(s, side * (uo + 0.5), P());
+        const th = heightC(po.x, po.z);
+        const sk = side > 0 ? skR : skL;
+        const yb = Math.min(yTop - 0.1, th - 0.25);
+        const pk1 = route.point(s, side * (uo + 0.05), P()); pk1.y = yTop + 0.02;
+        const pk2 = route.point(s, side * (uo + 0.4), P()); pk2.y = lerp(yTop, yb, 0.6);
+        const pk3 = route.point(s, side * (uo + 1.0 + Math.max(0, yTop - yb) * 0.6), P()); pk3.y = yb;
+        sk.row([{ p: pk1, s, u: side * uo, c: cDirt }, { p: pk2, s, u: side * uo, c: cDirt }, { p: pk3, s, u: side * uo, c: cDirt }]);
+      }
+    }
+    const add = (geo, mat, shadow = false, refl = false) => { const m = new THREE.Mesh(geo, mat); m.receiveShadow = true; m.castShadow = shadow; if (refl) m.layers.enable(REFLECT_LAYER); group.add(m); chunkMeshes.push({ m, chunkIndex }); return m; };
+    add(road.build(false, null, (r,c) => (c !== 2 && c !== 3) || !route.localLayout?.contains(c0 + (r + .5) * STEP)), asphalt, false, true);
+    if (medianRows.some(Boolean)) add(med.build(false, legacyMedian && !route.localLayout ? null : medianRows), vergeMat, true);
+    // both sides of a chunk share one mesh per material: fewer draw calls, same triangles
+    const pair = (a, b, mat, shadow, refl) => { const m = mergePair(a, b); if (m) add(m, mat, shadow, refl); else { add(a, mat, shadow, refl); add(b, mat, shadow, refl); } };
+    pair(curbR.build(false, sideRows[1]), curbL.build(true, sideRows[-1]), curbMat);
+    pair(walkR.build(false, sideRows[1]), walkL.build(true, sideRows[-1]), paving, false, true);
+    pair(skR.build(false, sideRows[1]), skL.build(true, sideRows[-1]), vergeMat);
+  }
+
+  mergeChunkStrips(group, chunkMeshes);
+  if (assets.furniture !== false) buildFurniture(map, group, heightC, assets);
+  return { group, asphalt };
+}
+
+// ------------------------------------------------------------------ furniture
+export function signTexture(route) {
+  // Bilingual Greek / Latin atlas; geographic labels, not sign transcriptions.
+  const W = 2048, H = 1024;
+  const regions = {};
+  const tex = canvasTex(W, H, (g) => {
+    g.fillStyle = '#ffffff'; g.fillRect(0, 0, W, H);
+    const blue = '#0b4ea2';
+    const font = (px, w = 700) => `${w} ${px}px "Barlow Condensed", "Arial Narrow", sans-serif`;
+    let y = 0;
+    const panel = (key, w, h, draw) => { if (!panel.x || panel.x + w > W) { panel.x = 0; y += panel.rowH || 0; panel.rowH = 0; } regions[key] = [panel.x / W, 1 - (y + h) / H, (panel.x + w) / W, 1 - y / H]; g.save(); g.translate(panel.x, y); draw(w, h); g.restore(); panel.x += w; panel.rowH = Math.max(panel.rowH, h); };
+    const dirSign = (key, lines) => panel(key, 512, 256, (w, h) => {
+      g.fillStyle = blue; g.fillRect(0, 0, w, h); g.strokeStyle = '#fff'; g.lineWidth = 8; g.strokeRect(10, 10, w - 20, h - 20);
+      g.fillStyle = '#fff'; g.textBaseline = 'middle';
+      lines.forEach(([txt, arrow, km], i) => {
+        const yy = 60 + i * 70;
+        const [greek, latin] = txt.split(' / ');
+        g.font = font(31); g.textAlign = 'left'; g.fillText(greek, 92, yy - 17, w - (km ? 192 : 128));
+        g.font = font(27); g.fillText(latin || greek, 92, yy + 17, w - (km ? 192 : 128));
+        if (km) { g.textAlign = 'right'; g.fillText(km, w - 34, yy); }
+        g.save(); g.translate(52, yy); g.rotate(arrow); g.beginPath(); g.moveTo(0, -24); g.lineTo(18, 0); g.lineTo(6, 0); g.lineTo(6, 22); g.lineTo(-6, 22); g.lineTo(-6, 0); g.lineTo(-18, 0); g.closePath(); g.fill(); g.restore();
+      });
+    });
+    dirSign('d_start', [['ΑΣΤΕΡΑΣ / ASTIR BEACH', Math.PI / 2, ''], ['ΒΑΡΚΙΖΑ / VARKIZA', 0, '6'], ['ΣΟΥΝΙΟ / SOUNIO', 0, '47']]);
+    dirSign('d_lake', [['ΛΙΜΝΗ ΒΟΥΛΙΑΓΜΕΝΗΣ / LAKE VOULIAGMENI', -Math.PI / 2, ''], ['ΛΙΜΑΝΑΚΙΑ / LIMANAKIA', 0, '1.5'], ['ΒΑΡΚΙΖΑ / VARKIZA', 0, '5']]);
+    dirSign('d_astir', [['ΑΣΤΕΡΑΣ / ASTIR BEACH', Math.PI / 2, ''], ['ΜΑΡΙΝΑ / MARINA', Math.PI / 2, ''], ['ΒΑΡΚΙΖΑ / VARKIZA', 0, '5']]);
+    dirSign('d_varkiza', [['ΒΑΡΗ / VARI', -Math.PI / 2, '4'], ['ΛΟΜΒΑΡΔΑ / LOMVARDA', 0, '3'], ['ΣΟΥΝΙΟ / SOUNIO', 0, '42']]);
+    // speed limits
+    for (const v of [30, 40, 50, 60, 70]) panel('sl' + v, 256, 256, (w, h) => {
+      g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); g.beginPath(); g.arc(128, 128, 118, 0, Math.PI * 2); g.fillStyle = '#d0141e'; g.fill();
+      g.beginPath(); g.arc(128, 128, 92, 0, Math.PI * 2); g.fillStyle = '#fff'; g.fill(); g.fillStyle = '#111'; g.font = font(118, 800); g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(String(v), 128, 134);
+    });
+    // Greek and Latin village/place names on white boards.
+    for (const [k, t] of [['n_vouliagmeni', 'ΒΟΥΛΙΑΓΜΕΝΗ / VOULIAGMENI'], ['n_limanakia', 'ΛΙΜΑΝΑΚΙΑ / LIMANAKIA'], ['n_varkiza', 'ΒΑΡΚΙΖΑ / VARKIZA'], ['n_lomvarda', 'ΛΟΜΒΑΡΔΑ / LOMVARDA']]) panel(k, 512, 128, (w, h) => {
+      g.fillStyle = '#f4f4f0'; g.fillRect(0, 0, w, h); g.strokeStyle = blue; g.lineWidth = 10; g.strokeRect(8, 8, w - 16, h - 16); g.fillStyle = blue; g.textAlign = 'center'; g.textBaseline = 'middle'; const [greek,latin]=t.split(' / '); g.font=font(45,800); g.fillText(greek,w/2,43,w-32); g.font=font(35,700); g.fillText(latin,w/2,94,w-32);
+    });
+    panel('bus', 256, 256, (w, h) => { g.fillStyle = '#0b4ea2'; g.fillRect(0, 0, w, h); g.fillStyle = '#fff'; g.font = font(120, 800); g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('BUS', 128, 100); g.font = font(44, 700); g.fillText('OASA', 128, 196); });
+    panel('chev', 256, 256, (w, h) => { g.fillStyle = '#ffd400'; g.fillRect(0, 0, w, h); g.fillStyle = '#111'; for (let i = 0; i < 2; i++) { g.beginPath(); const x = 50 + i * 90; g.moveTo(x, 30); g.lineTo(x + 70, 128); g.lineTo(x, 226); g.lineTo(x + 34, 226); g.lineTo(x + 104, 128); g.lineTo(x + 34, 30); g.closePath(); g.fill(); } });
+    panel('finish', 1024, 256, (w, h) => {
+      for (let i = 0; i < 32; i++) for (let j = 0; j < 8; j++) { g.fillStyle = (i + j) % 2 ? '#111' : '#fff'; g.fillRect(i * 32, j * 32, 32, 32); }
+      g.fillStyle = 'rgba(10,12,16,.92)'; g.fillRect(150, 50, w - 300, h - 100);
+      g.fillStyle = '#fff'; g.font = `italic 900 120px "Barlow Condensed", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('FINISH · ' + route.to.toUpperCase(), w / 2, h / 2 + 6, w - 336);
+    });
+    panel('start', 1024, 256, (w, h) => {
+      g.fillStyle = '#0b0d10'; g.fillRect(0, 0, w, h); g.fillStyle = '#ff3d2e'; g.fillRect(0, 0, 40, h); g.fillRect(w - 40, 0, 40, h);
+      g.fillStyle = '#fff'; g.font = `italic 900 110px "Barlow Condensed", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(route.closed ? 'START / FINISH · ' + (route.from || 'CIRCUIT').toUpperCase() : 'RIVIERA RUN · START', w / 2, h / 2 + 6, w - 128);
+    });
+  });
+  return { tex, regions };
+}
+function uvRect(geo, r) { const uv = geo.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, r[0] + (r[2] - r[0]) * uv.getX(i), r[1] + (r[3] - r[1]) * uv.getY(i)); return geo; }
+
+export function buildFurniture(map, group, heightC, assets) {
+  const { route, data } = map;
+  const rng = new RNG(77);
+  const metal = new THREE.MeshStandardMaterial({ color: '#7d8186', metalness: 0.85, roughness: 0.38 });
+  const darkMetal = new THREE.MeshStandardMaterial({ color: '#3b3f44', metalness: 0.7, roughness: 0.45 });
+  const white = new THREE.MeshStandardMaterial({ color: '#e9e7e1', roughness: 0.6 });
+  const lampHead = new THREE.MeshStandardMaterial({ color: '#d6d8da', metalness: 0.4, roughness: 0.4, emissive: '#fff2d6', emissiveIntensity: 0.15 });
+  const { tex, regions } = signTexture(route);
+  const signMat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.5, metalness: 0.1 });
+  assets.signRegions = regions; assets.signMat = signMat;
+  const lim = {};
+  const pt = new THREE.Vector3();
+
+  // -- street lamps: double-arm on the median, single-arm on pavements, none on the cliff road
+  const poleGeo = squarePost(.14,9.5,.24,'lamp'); poleGeo.translate(0, 4.75, 0);
+  const armGeo = squarePost(.09,2.2,.10,'lamp'); armGeo.rotateZ(Math.PI / 2); armGeo.translate(1.1, 9.2, 0);
+  const headGeo = new THREE.BoxGeometry(0.75, 0.16, 0.32); headGeo.translate(2.25, 9.15, 0);
+  const lampPole = new CellInstances(poleGeo, metal, { far: 1600 }), lampArm = new CellInstances(armGeo, metal, { far: 900, shadow: false }), lampHeadI = new CellInstances(headGeo, lampHead, { shadow: false, far: 900 });
+  for (let s = 10; s < route.length; s += 36) {
+    const urb = route.urban(s); if (urb < 0.4) continue;
+    const dv = route.div(s), f = route.frame(s, {});
+    const yaw = Math.atan2(f.tx, f.tz);
+    if (dv > 0.6 && route.medHalf(s) > 1.2) {
+      route.point(s, 0, pt);
+      lampPole.addTRS(pt.x, pt.y + 0.2, pt.z, yaw, 1);
+      for (const a of [0, Math.PI]) { lampArm.addTRS(pt.x, pt.y + 0.2, pt.z, yaw + a, 1); lampHeadI.addTRS(pt.x, pt.y + 0.2, pt.z, yaw + a, 1); }
+    } else {
+      const u = route.edge(s) + ROAD.gutter + 0.6;
+      if (assets.network?.mouth(s, 1, 2)) continue;
+      route.point(s, u, pt);
+      lampPole.addTRS(pt.x, pt.y + 0.15, pt.z, yaw, 1);
+      lampArm.addTRS(pt.x, pt.y + 0.15, pt.z, yaw, 1); lampHeadI.addTRS(pt.x, pt.y + 0.15, pt.z, yaw, 1);
+    }
+  }
+  lampPole.build(group); lampArm.build(group); lampHeadI.build(group);
+
+  // Selective coastal drop protection shares its runs with Ground collision.
+  const railRuns = buildRivieraRails(map, group, heightC, assets, ROAD);
+  const reflGeo = squarePost(.1,1); reflGeo.translate(0, .5, 0);
+  const reflPosts = new CellInstances(reflGeo, white, {shadow:false, far:500});
+  for (const side of [-1, 1]) for (let s=0; s<route.length; s+=50) {
+    if (route.urban(s)>=.5 || assets.network?.mouth(s,side,3) || railRuns.some(r=>r.side===side&&s>=r.pts[0].s&&s<=r.pts.at(-1).s)) continue;
+    const u=route.edge(s)+ROAD.gutter+ROAD.sidewalk(route,s,side)+.14;
+    route.point(s,side*u,pt); const f=route.frame(s,{});
+    const y=route.surfaceY(s,side*(route.edge(s)+ROAD.gutter))+ROAD.curbH(route,s);
+    reflPosts.addTRS(pt.x,y,pt.z,Math.atan2(f.tx,f.tz),1);
+  }
+  reflPosts.build(group);
+
+  // -- OSM furniture: crossings and bus stops (the signalised junctions are built by signals.js)
+  const crossings = [], stops = [], stopsO = [];
+  const used = [];
+  const J = assets.junctions || [];
+  const nearJ = (s) => J.some((j) => Math.abs(j.s - s) < 18);
+  const isNear = (s, type, d) => used.some((q) => q.t === type && Math.abs(q.s - s) < d);
+  for (const j of J) { crossings.push(j.zF, j.zO); stops.push(j.sF); stopsO.push(j.sO); }
+  for (const f of data.furniture) {
+    if (f.t === 'crossing' && !nearJ(f.s) && !isNear(f.s, 'crossing', 25)) { crossings.push(f.s); used.push({ t: 'crossing', s: f.s }); }
+    if (f.t === 'bus_stop' && !isNear(f.s + (f.u > 0 ? 0 : 0.5), 'bus' + Math.sign(f.u), 80) && f.u > 0 && !nearJ(f.s) ) {
+      used.push({ t: 'bus' + Math.sign(f.u), s: f.s });
+      // the shelter itself is modelled by roadside.js (OASA shelter + pole); here we only keep the stop for bus scheduling
+      (assets.busStops = assets.busStops || []).push(f.s);
+    }
+  }
+  crossings.sort((a, b) => a - b); stops.sort((a, b) => a - b); stopsO.sort((a, b) => a - b);
+  assets.crossings = crossings; assets.stops = stops; assets.stopsO = stopsO;
+
+  // -- direction / name signs at real places
+  const sgPole = new THREE.BoxGeometry(0.07*2, 3.2, 0.07*2); sgPole.translate(0, 1.6, 0);
+  const addSign = (s, key, w, h, height = 2.4, side = 1, poles = 1) => {
+    if (!Number.isFinite(s)) return;
+    const fr = route.frame(s, {}), yaw = Math.atan2(fr.tx, fr.tz);
+    const u = side * (route.edge(s) + ROAD.gutter + 1.0);
+    route.point(s, u, pt);
+    const g = new THREE.Group(); g.position.copy(pt); g.rotation.y = yaw; group.add(g);
+    for (let i = 0; i < poles; i++) { const p = new THREE.Mesh(sgPole, metal); p.scale.y = (height + h * 0.5) / 3.2; p.position.x = poles === 1 ? 0 : (i - 0.5) * w * 0.7; p.castShadow = true; g.add(p); }
+    const plate = new THREE.Mesh(uvRect(new THREE.PlaneGeometry(w, h), regions[key]), signMat); plate.position.set(0, height + h / 2, -signFaceOffset(.14)); plate.rotation.y = Math.PI; plate.castShadow = true; g.add(plate);
+    const back = new THREE.Mesh(new THREE.PlaneGeometry(w, h), metal); back.position.set(0, height + h / 2, -signFaceOffset(.14) + .02); g.add(back);
+  };
+  const mk = Object.fromEntries(data.marks.map((m) => [m.id, m.s]));
+  if (map.id === 'riviera') addSign(route.start + 200, 'd_start', 4.2, 2.1, 2.2, 1, 2);
+  addSign(mk.astir - 90, 'd_astir', 4.2, 2.1, 2.2, 1, 2);
+  addSign(mk.lake - 160, 'd_lake', 4.2, 2.1, 2.2, 1, 2);
+  addSign(mk.limanakia - 200, 'n_limanakia', 2.4, 0.6);
+  addSign(mk.varkiza - 250, 'n_varkiza', 2.4, 0.6);
+  addSign(mk.varkiza + 350, 'd_varkiza', 4.2, 2.1, 2.2, 1, 2);
+  addSign(mk.lomvarda - 220, 'n_lomvarda', 2.4, 0.6);
+  // posted limits where OSM maxspeed changes (30 through Limanakia, 60 on the Ribas approach), repeated every ~900 m
+  const speeds = route.speeds && route.speeds.length ? route.speeds : [{ s: 0, v: 50 }];
+  speeds.forEach((q, i) => {
+    const end = i + 1 < speeds.length ? speeds[i + 1].s : route.length;
+    for (let s = Math.max(route.start - 60, q.s) + 25; s < end - 60; s += 900) if (regions['sl' + q.v]) addSign(s, 'sl' + q.v, 0.75, 0.75, 1.9);
+  });
+  // chevrons on the tighter cliff bends
+  for (let s = 0; s < route.length; s += 14) {
+    const k = route.curv(s);
+    if (route.urban(s) < 0.5 && Math.abs(k) > 1 / 160) {
+      const side = k > 0 ? -1 : 1; // outside of the bend
+      const fr = route.frame(s, {}), yaw = Math.atan2(fr.tx, fr.tz);
+      route.point(s, side * (route.edge(s) + ROAD.gutter + 1.6), pt);
+      const g = new THREE.Group(); g.position.copy(pt); g.rotation.y = yaw; group.add(g);
+      const p = new THREE.Mesh(sgPole, metal); p.scale.y = 0.4; g.add(p);
+      const geo = uvRect(new THREE.PlaneGeometry(0.7, 0.7), regions.chev); if (side > 0) { const uv = geo.attributes.uv, r = regions.chev; for (let i = 0; i < uv.count; i++) uv.setX(i, r[0] + r[2] - uv.getX(i)); }
+      const plate = new THREE.Mesh(geo, signMat); plate.position.set(0, 1.25, -signFaceOffset(.14)); plate.rotation.y = Math.PI; g.add(plate);
+    }
+  }
+  // start / finish gantries
+  // Free roam has no start or finish (owner decision 2026-10-18): these arches live in one group the game hides there.
+  const timing = new THREE.Group(); timing.name = 'timing-gantries'; group.add(timing); (route.timingMarks ||= []).push(timing);
+  const gantry = (s, key, tint) => {
+    const wHalf = route.edge(s) + 1.2;
+    const g = gantryLegFrame(route, s, new THREE.MeshStandardMaterial({ color: tint, roughness: 0.5, metalness: 0.3 })); timing.add(g);
+    const banner = new THREE.Mesh(uvRect(new THREE.PlaneGeometry(wHalf * 2, wHalf * 0.5), regions[key]), signMat); banner.position.set(0, 6.4, -signFaceOffset(.5)); banner.rotation.y = Math.PI; banner.castShadow = true; g.add(banner);
+    const banner2 = banner.clone(); banner2.rotation.set(0, 0, 0); banner2.position.z = signFaceOffset(.5); g.add(banner2);
+  };
+  gantry(route.start, 'start', '#ff3d2e');
+  if (route.closed) route.fixedGantries = [route.start];
+  else gantry(route.finish, 'finish', '#f2f2f2');
+  timing.traverse(o => { if (o.isMesh) o.userData.dynamic = true; }); // never merged into the static batches: it must stay hideable
+}
+
+function addBusStop(group, route, f, regions, signMat, assets) {
+  const s = f.s, fr = route.frame(s, {}), yaw = Math.atan2(fr.tx, fr.tz);
+  const u = route.edge(s) + ROAD.gutter + Math.min(2.6, ROAD.sidewalk(route, s, 1) - 0.6);
+  const pt = route.point(s, u, new THREE.Vector3());
+  const g = new THREE.Group(); g.position.copy(pt); g.position.y += ROAD.curbH(route, s); g.rotation.y = yaw + Math.PI; group.add(g);
+  const frame = new THREE.MeshStandardMaterial({ color: '#2f3a45', metalness: 0.6, roughness: 0.4 });
+  const glass = new THREE.MeshPhysicalMaterial({ color: '#cfe3ee', transparent: true, opacity: 0.25, roughness: 0.05, metalness: 0 });
+  const roof = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.08, 4.2), frame); roof.position.set(0.2, 2.5, 0); roof.castShadow = true; g.add(roof);
+  for (const z of [-2, 2]) for (const x of [-0.5, 0.9]) { const p = new THREE.Mesh(new THREE.BoxGeometry(0.07, 2.5, 0.07), frame); p.position.set(x, 1.25, z); g.add(p); }
+  const back = new THREE.Mesh(new THREE.PlaneGeometry(4.0, 2.0), glass); back.position.set(0.9, 1.3, 0); back.rotation.y = -Math.PI / 2; g.add(back);
+  const bench = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.06, 2.6), frame); bench.position.set(0.6, 0.48, 0); g.add(bench);
+  const sign = new THREE.Mesh(uvRect(new THREE.PlaneGeometry(0.6, 0.6), regions.bus), signMat); sign.position.set(-0.5, 2.9, -2.0); sign.rotation.y = Math.PI / 2; g.add(sign);
+  if (f.n && assets.makeLabel) { const lab = assets.makeLabel(upperName(f.n), 3.2, 0.42, '#0b4ea2', '#ffffff'); lab.position.set(-0.3, 2.66, 0); lab.rotation.y = -Math.PI / 2; g.add(lab); const lab2 = lab.clone(); lab2.rotation.y = Math.PI / 2; lab2.position.x = -0.32; g.add(lab2); }
+}

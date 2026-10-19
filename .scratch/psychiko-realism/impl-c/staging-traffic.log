@@ -1,0 +1,84 @@
+[runner] 1 test files, 1 at a time, heaviest first, failed files retried once alone
+[physics] ✖ Riviera, afternoon, player at matched pace: civilians keep moving and the field never stalls (21310.462167ms)
+[physics] ✖ Riviera, rush hour, slow player: civilians keep moving and the field never stalls (0.588666ms)
+[physics] ℹ tests 2
+[physics] ℹ suites 0
+[physics] ℹ pass 0
+[physics] ℹ fail 2
+[physics] ℹ cancelled 0
+[physics] ℹ skipped 0
+[physics] ℹ todo 0
+[physics] ℹ duration_ms 21481.772666
+[physics] ✖ failing tests:
+[physics] test at tools/traffic-race.test.mjs:34:36
+[physics] ✖ Riviera, afternoon, player at matched pace: civilians keep moving and the field never stalls (21310.462167ms)
+[physics]   AssertionError [ERR_ASSERTION]: civilian #52 (truck) stood in a lane for 15.7 s: {"behind-parked":662,"behind-moving-car":236,"behind-stopped-car":45}
+[physics]       at TestContext.<anonymous> (file:///Users/vassilisperrotis/.t3/worktrees/athens-street-racers/psychiko-realism/.scratch/psychiko-realism/impl-c/staging/tools/traffic-race.test.mjs:48:10)
+[physics]       at async Test.run (node:internal/test_runner/test:1208:7)
+[physics]       at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+[physics]     generatedMessage: false,
+[physics]     code: 'ERR_ASSERTION',
+[physics]     actual: false,
+[physics]     expected: true,
+[physics]     operator: '==',
+[physics]     diff: 'simple'
+[physics]   }
+[physics] test at tools/traffic-race.test.mjs:34:36
+[physics] ✖ Riviera, rush hour, slow player: civilians keep moving and the field never stalls (0.588666ms)
+[physics]   AssertionError [ERR_ASSERTION]: field-wide stall 11 s
+[physics]       at TestContext.<anonymous> (file:///Users/vassilisperrotis/.t3/worktrees/athens-street-racers/psychiko-realism/.scratch/psychiko-realism/impl-c/staging/tools/traffic-race.test.mjs:41:10)
+[physics]       at async Test.run (node:internal/test_runner/test:1208:7)
+[physics]       at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+[physics]     generatedMessage: false,
+[physics]     code: 'ERR_ASSERTION',
+[physics]     actual: false,
+[physics]     expected: true,
+[physics]     operator: '==',
+[physics]     diff: 'simple'
+[physics]   }
+[physics] tools/traffic-race.test.mjs: FAILED (exit 1) after 21.6 s
+[retry] tools/traffic-race.test.mjs: failed (exit 1, 21.6 s); rerunning once, alone
+[retry] tools/traffic-race.test.mjs: failed again (exit 1, 15.4 s): a real failure
+[physics] ✖ Riviera, afternoon, player at matched pace: civilians keep moving and the field never stalls (15148.254625ms)
+[physics] ✖ Riviera, rush hour, slow player: civilians keep moving and the field never stalls (0.760125ms)
+[physics] ℹ tests 2
+[physics] ℹ suites 0
+[physics] ℹ pass 0
+[physics] ℹ fail 2
+[physics] ℹ cancelled 0
+[physics] ℹ skipped 0
+[physics] ℹ todo 0
+[physics] ℹ duration_ms 15305.082333
+[physics] ✖ failing tests:
+[physics] test at tools/traffic-race.test.mjs:34:36
+[physics] ✖ Riviera, afternoon, player at matched pace: civilians keep moving and the field never stalls (15148.254625ms)
+[physics]   AssertionError [ERR_ASSERTION]: civilian #52 (truck) stood in a lane for 15.7 s: {"behind-parked":662,"behind-moving-car":236,"behind-stopped-car":45}
+[physics]       at TestContext.<anonymous> (file:///Users/vassilisperrotis/.t3/worktrees/athens-street-racers/psychiko-realism/.scratch/psychiko-realism/impl-c/staging/tools/traffic-race.test.mjs:48:10)
+[physics]       at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+[physics]       at async Test.run (node:internal/test_runner/test:1208:7)
+[physics]       at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+[physics]     generatedMessage: false,
+[physics]     code: 'ERR_ASSERTION',
+[physics]     actual: false,
+[physics]     expected: true,
+[physics]     operator: '==',
+[physics]     diff: 'simple'
+[physics]   }
+[physics] test at tools/traffic-race.test.mjs:34:36
+[physics] ✖ Riviera, rush hour, slow player: civilians keep moving and the field never stalls (0.760125ms)
+[physics]   AssertionError [ERR_ASSERTION]: field-wide stall 11 s
+[physics]       at TestContext.<anonymous> (file:///Users/vassilisperrotis/.t3/worktrees/athens-street-racers/psychiko-realism/.scratch/psychiko-realism/impl-c/staging/tools/traffic-race.test.mjs:41:10)
+[physics]       at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+[physics]       at async Test.run (node:internal/test_runner/test:1208:7)
+[physics]       at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+[physics]     generatedMessage: false,
+[physics]     code: 'ERR_ASSERTION',
+[physics]     actual: false,
+[physics]     expected: true,
+[physics]     operator: '==',
+[physics]     diff: 'simple'
+[physics]   }
+[physics] tools/traffic-race.test.mjs: FAILED twice (exit 1, then exit 1)
+[summary] 1/1 files, 2 tests, 0 pass, 2 fail in first attempts, 0 skipped; 0 flaky (passed on isolated retry), 1 failed
+[summary] FAILED: tools/traffic-race.test.mjs (exit 1)
+[total] 37.0 s; FAIL

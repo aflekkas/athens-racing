@@ -1265,8 +1265,8 @@
           0.7711624836595407
         ],
         "calls": 372,
-        "triangles": 800926,
-        "geometryBytes": 202250190,
+        "triangles": 800326,
+        "geometryBytes": 202217790,
         "textureBytes": 98721796.00000001,
         "shadows": false
       }
@@ -1393,8 +1393,8 @@
           0.7711624836595407
         ],
         "calls": 374,
-        "triangles": 801886,
-        "geometryBytes": 202250190,
+        "triangles": 801286,
+        "geometryBytes": 202217790,
         "textureBytes": 98721796.00000001,
         "shadows": false
       }

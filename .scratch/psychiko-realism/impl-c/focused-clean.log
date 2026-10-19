@@ -1,0 +1,53 @@
+(node:97532) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Psychiko is offered with the same geometry version in solo, selector and multiplayer (7.300292ms)
+✔ carved street bed clears both full carriageways and pavements at the lap seam (1122.553958ms)
+✔ both authored events track the whole route and finish with correct lap counts (12.881708ms)
+✔ route projections preserve unwrapped progress and elevation across laps (3.265084ms)
+✔ all public junction exits have exactly one solid race closure, with no raced edge blocked (183.769125ms)
+✔ race → free roam → race toggles every visual/collider and invalidates cached collision cells (32.412334ms)
+✔ every preserved garden-course centreline sample remains on drivable asphalt (20.279916ms)
+✔ whole municipal street network and the interior of the drawing are included (3245.604125ms)
+✔ real vehicle physics cannot cross any roadworks box at 90 km/h; the same paths are open in free roam (1479.796041ms)
+✔ Psychiko uses the shared two-rival grid and road-aware auto-tow corridor (11.535667ms)
+✔ Psychiko permits the shared police runtime in free roam and with online police enabled (2.360667ms)
+✔ catalogue-only Psychiko launch preserves the authored two laps before the bundle loads (0.622292ms)
+✔ Psychiko uses shared footprint boxes and budgeted streetscape props (754.522958ms)
+✔ Psychiko street classes come from the frozen survey reduction (1.507625ms)
+✔ surveyed square gardens and start avenue retain planting, outer lamps and safe kerb parking (197.473875ms)
+✔ close OSM fronts retain their source centroids and road-edge distances after box conversion (192.070459ms)
+✔ owner lock: road closures only in races, never in free roam (17.803083ms)
+✔ Garden Circuit follows real public OSM streets only: every metre is within a street, no cutting through blocks (671.304583ms)
+✔ Garden Circuit drives every street in its legal one-way direction, on public asphalt (177.280625ms)
+✔ Garden Circuit starts on the Diamantidou radial south of the Venizelou roundabout and is a 3.5-7 km mixed loop (0.41475ms)
+✔ Garden Circuit turns are smooth: no corner tighter than a street junction can drive (3.331ms)
+✔ Psychiko times are a new board: leaderboard version, local records and selector all follow the new route (1.701625ms)
+✔ Copernicus hills: real lap grades, no artificial side-street steps, closures follow the slope (239.212916ms)
+✔ OSM multipolygon relations ship: courtyard buildings keep their holes, the Stefanou Delta stadium and Attiko Alsos appear (161.623667ms)
+(node:97533) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ split and closed OSM roundabouts form CCW rings, with implicit one-way directed edges (13.745875ms)
+✔ geometry-only OSM sources retain implicit one-way loops and reverse one-way tags (1.661167ms)
+✔ source course uses only forward edges around every roundabout, including implicit one-way ways (3.214667ms)
+✔ racing line, route marks, and both civilian travel directions stay outside island polygons (193.029375ms)
+✔ island contact is grass and the recovery corridor excludes its interior (36.444417ms)
+✔ entry yields to a circulating car approaching the merge, then releases the gap (0.270375ms)
+✔ streets, markings and island kerbs stay in one material per spatial road chunk (13.994875ms)
+✔ the traffic integrator circulates CCW in world space and returns to its intended exit (119.134667ms)
+✔ reverse traffic uses the legal incoming and outgoing OSM arms, including explicit one-way tags (63.984125ms)
+✔ a reverse-traffic approach stops at its yield line and enters after circulation clears (2.517584ms)
+✔ shared-world snapshots render the actual road-space position and resume the legal path on promotion (2.765417ms)
+✔ road elevation follows the shared Copernicus field along the whole lap (18.9145ms)
+✔ Psychiko never offers or runs a reverse course: solo setup, event resolution and multiplayer stay forward (5.95525ms)
+✔ no driver path ever circulates clockwise: racing line, every network ring part and free-roam civilians (827.357083ms)
+✔ free-roam one-way stretches cover every forward-only lap street, including the Areaki approaches (5.915917ms)
+✔ every island inset is a simple CCW polygon inside its ring that clears the carriageway (incl. border loop 31486890) (2.750625ms)
+✔ one-way guidance: CCW arrows on every public ring and the mini-roundabout, a sign and give-way line at each legal entry, one draw call (32.585ms)
+ℹ tests 41
+ℹ suites 0
+ℹ pass 41
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8865.896458

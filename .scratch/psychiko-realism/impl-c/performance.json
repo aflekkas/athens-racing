@@ -1,0 +1,102 @@
+{
+  "method": "Production buildMapWorld, fixed RENDER look, actual Low/High performance ranges/chunks; race roadworks; inactive traffic; no player/rivals/HUD/post. Three fixed poses; no FPS claim.",
+  "rows": [
+    {
+      "preset": "low",
+      "pose": "start",
+      "before": {
+        "calls": 231,
+        "triangles": 1514466
+      },
+      "after": {
+        "calls": 231,
+        "triangles": 1520333
+      },
+      "deltaPct": {
+        "calls": 0.0,
+        "triangles": 0.387
+      }
+    },
+    {
+      "preset": "low",
+      "pose": "mid",
+      "before": {
+        "calls": 315,
+        "triangles": 854289
+      },
+      "after": {
+        "calls": 315,
+        "triangles": 855210
+      },
+      "deltaPct": {
+        "calls": 0.0,
+        "triangles": 0.108
+      }
+    },
+    {
+      "preset": "low",
+      "pose": "overview",
+      "before": {
+        "calls": 1812,
+        "triangles": 1650297
+      },
+      "after": {
+        "calls": 1812,
+        "triangles": 1650253
+      },
+      "deltaPct": {
+        "calls": 0.0,
+        "triangles": -0.003
+      }
+    },
+    {
+      "preset": "high",
+      "pose": "start",
+      "before": {
+        "calls": 238,
+        "triangles": 1613838
+      },
+      "after": {
+        "calls": 238,
+        "triangles": 1624735
+      },
+      "deltaPct": {
+        "calls": 0.0,
+        "triangles": 0.675
+      }
+    },
+    {
+      "preset": "high",
+      "pose": "mid",
+      "before": {
+        "calls": 323,
+        "triangles": 886267
+      },
+      "after": {
+        "calls": 323,
+        "triangles": 888368
+      },
+      "deltaPct": {
+        "calls": 0.0,
+        "triangles": 0.237
+      }
+    },
+    {
+      "preset": "high",
+      "pose": "overview",
+      "before": {
+        "calls": 1841,
+        "triangles": 2092803
+      },
+      "after": {
+        "calls": 1841,
+        "triangles": 2093547
+      },
+      "deltaPct": {
+        "calls": 0.0,
+        "triangles": 0.036
+      }
+    }
+  ],
+  "browserErrors": []
+}
