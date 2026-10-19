@@ -12,6 +12,7 @@ import { cameraRelativeSource, cameraDirectionPan, syncAudioListener } from './a
 // World built from OpenStreetMap data (see tools/). Menus boot without a world; direct race URLs load on demand.
 import * as THREE from 'three';
 import {exhaustPopsEnabled} from './exhaust-pops.js';
+import {flashLight,flashEnabled,warmFlamePipelines} from './exhaust-flames.js';
 import { loadMap, LANE_W } from './map.js';
 import { getMap } from './map-catalog.js';
 import { menuMapContext, quickMapEvent, initialMapId } from './menu-map.js';
@@ -152,6 +153,10 @@ const scene = new THREE.Scene();
 scene.matrixAutoUpdate = false; // never moves; its children update themselves (static world: batch.js freezeStatic)
 const drivingFeedback = new DrivingFeedback({ scene, input: controls });
 scene.fog = new THREE.FogExp2(new THREE.Color('#c3cdd6'), 0.00011); // only switches USE_FOG on; see ENV.installAerial
+// One always-visible exhaust-pop flash light (intensity 0 until a pop): showing/hiding a light, or cars with flames joining or
+// leaving, would change the light count and re-resolve/recompile every material's program mid-race
+flashLight.visible = flashEnabled(R.exhaust); scene.add(flashLight);
+let flamesWarmable = false; // set once the load-time warm-up has run: later joins warm on arrival
 const camera = new THREE.PerspectiveCamera(settings.cockpitFov, innerWidth / innerHeight, 0.1, 90000);
 renderer.terrainLodCamera = camera; // Auxiliary passes reuse the main view's terrain selection.
 const audio = window.__bootAudio || new Audio();
@@ -333,6 +338,8 @@ async function loadFirstMap(id) {
   const compileStarted = performance.now(); await compileScene();
   assetMetrics.compileSceneMs = performance.now() - compileStarted;
   if (renderer.shadowMap.enabled) warmShadowPrograms(); // compileAsync skips the shadow depth variants
+  try { await warmExhaustFlames(); } catch (e) { console.warn('Exhaust flame warm-up skipped:', e?.message || e); }
+  flamesWarmable = true;
   tlog('compiled');
   onResize();
   multiplayer.mapId = map.id;
@@ -438,7 +445,7 @@ function makeCar(spec, isPlayer, plate) {
   // the driver name; multiplayer shows every driver's name.
   const model = new CarModel(spec, { plate });
   scene.add(model.root);
-  if(model.exhaustFlames)scene.add(model.exhaustFlames.mirrorRoot);
+  if(model.exhaustFlames){scene.add(model.exhaustFlames.mirrorRoot);if(flamesWarmable)warmExhaustFlames();} // a remote SVJ joining mid-session: first pop must not compile
   trimShadowCasters(model.root);
   return { model };
 }
@@ -2237,6 +2244,13 @@ function step(dt, draw = true) {
 // Build every material's program behind the loading screen. The main view draws into post's linear HDR target, never
 // the sRGB canvas, and the output colour space is part of a program's key: compiled against the canvas, every material
 // compiled a second time on its first appearance mid-race (traffic glass, buses: hitches near the Riviera tunnel).
+// Build the exhaust flame programs and per-target pipelines (once per session) before anyone pops: see src/exhaust-flames.js.
+// Targets: the main view's linear target and a throwaway twin of the cockpit mirror's sRGB target.
+async function warmExhaustFlames() {
+  const mirror = new THREE.WebGLRenderTarget(32, 18, { depthBuffer: true }); mirror.texture.colorSpace = THREE.SRGBColorSpace;
+  try { await warmFlamePipelines(renderer, camera, scene.fog, [post?.sceneRT ?? null, mirror]); }
+  finally { mirror.dispose(); }
+}
 async function compileScene() {
   const target = renderer.getRenderTarget();
   let done;

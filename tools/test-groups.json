@@ -13,6 +13,7 @@
     "tools/world-tile-scene.test.mjs",
     "tools/world-tile-stream.test.mjs",
     "tools/svj.test.mjs",
+    "tools/exhaust-pops-hitch.test.mjs",
     "tools/release-notes.test.mjs",
     "tools/install-prompt.test.mjs",
     "tools/web-manifest.test.mjs",
