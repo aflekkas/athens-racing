@@ -27,7 +27,9 @@ export function ringArrowPlacements(p) {
   const length = ringStation(...p[0], p).length, count = Math.max(3, Math.round(length / 28));
   return Array.from({ length: count }, (_, k) => ringPoint(p, (k + .5) * length / count, {}));
 }
-function ringArrows(batch, surface, p, scale = 1) { for (const q of ringArrowPlacements(p)) paint(batch, surface, arrowTris(q.x, q.z, q.tx, q.tz, scale)); }
+// Full-size circulation arrows: 4.2 m long × 1.5 m head width. Mini-roundabouts retain their compact markings.
+export const RING_ARROW_SCALE = 1.5;
+function ringArrows(batch, surface, p, scale = RING_ARROW_SCALE) { for (const q of ringArrowPlacements(p)) paint(batch, surface, arrowTris(q.x, q.z, q.tx, q.tz, scale)); }
 // Dashed give-way line across the entering half of an arm (all of it on a one-way entry), just outside the ring.
 function giveWay(batch, surface, e, offset, half) {
   const cx = e.x + e.dx * offset, cz = e.z + e.dz * offset, rx = e.dz, rz = -e.dx; // right of the approaching driver

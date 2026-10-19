@@ -8,7 +8,7 @@
 //   walls   [ref, side, s0, s1, type, height]      boundary runs at the back of the footway, gaps at junctions/drives
 //   trees   [x, z, species*1000 + height]          0 umbrella pine, 1 cypress, 2 broadleaf, 3 palm, 4 small/pollard, 5 garden shrub
 //           (stored as half-metre deltas, species*100 + half-metre height)
-//   parking [ref, side, s0, s1]                    kerb rows on the asphalt (side streets only; the lap stays clear)
+//   parking [ref, side, s0, s1]                    kerb rows (lap bays sit outside the raced width)
 //   poles   [ref, side, s, type]                   0 green gooseneck + cream bell (avenues), 1 utility pole + side arm
 //   zebras  [ref, s]                               marked crossings across the whole carriageway
 import { Route, Terrain } from '../../../src/map.js';
@@ -16,6 +16,7 @@ import { RoadNetwork } from '../../../src/road-network-surface.js';
 import { pointInPoly, polyBounds } from '../../../src/util.js';
 import { psychikoStreet, psychikoSection } from '../../../src/maps/psychiko-streets.js';
 import { PSYCHIKO_SURVEY, psychikoWayParking } from './street-classes.mjs';
+import { insideIsland, islandDistance } from '../../../src/roundabouts.js';
 export const WALL_TYPES = Object.freeze(['plaster-railing', 'hedge', 'metal-fence', 'school-stone', 'stone', 'plaster', 'gate']);
 const dm = v => Math.round(v * 10);
 // Integer hash: placement depends on the feature, never on generation order.
@@ -108,8 +109,12 @@ export function buildPsychikoScenery(data, bytes, osm = []) {
       const p = at(s), sec = strip.section(s), [prob, mix] = STREET_TREES[sec.kind] || STREET_TREES.residential;
       for (const side of [-1, 1]) {
         const r = hash(ref, side, Math.floor(s), 11);
-        if (strip.fw(s) >= .9 && r < prob / 3.4) { const u = strip.hw(s) + .55, x = p.x - p.tz * u * side, z = p.z + p.tx * u * side;
-          if (!inBuilding(x, z) && roadClear(x, z, -strip.fw(s) + .3, own) && lapClear(x, z, -1.8 + .2) && !network.islandAt(x, z)) { const sp = pickSpecies(mix, hash(ref, side, Math.floor(s), 12)); tree(x, z, sp, treeHeight(sp, hash(s, ref, 13)) * (sp === 4 ? 1 : .85)); } }
+        // Mature avenue rows: roughly 7.5 m between pits, with gaps at mouths and buildings. Crowns overlap above
+        // the street; trunks stay on the footway. The survey's A9/A8 classes alone receive this denser treatment.
+        const avenue = sec.k === 'A9' || sec.k === 'A8', phase = side > 0 ? 3 : 0;
+        const streetTree = avenue ? Math.floor((s + phase + 3) / 7.5) !== Math.floor((s + phase) / 7.5) && r < .94 : r < prob / 3.4;
+        if (strip.fw(s) >= .9 && streetTree) { const u = strip.hw(s) + .55, x = p.x - p.tz * u * side, z = p.z + p.tx * u * side;
+          if (!inBuilding(x, z) && roadClear(x, z, -strip.fw(s) + .3, own) && lapClear(x, z, -1.8 + .2) && !network.islandAt(x, z)) { const sp = pickSpecies(mix, hash(ref, side, Math.floor(s), 12)), h = avenue && sp === 2 ? 13 + hash(s, ref, 13) * 4 : treeHeight(sp, hash(s, ref, 13)) * (sp === 4 ? 1 : .85); tree(x, z, sp, h); } }
         if (r > .55 && r < .55 + .25) { const u = strip.hw(s) + strip.fw(s) + 2.5 + hash(ref, side, s, 14) * 9, x = p.x - p.tz * u * side, z = p.z + p.tx * u * side;
           if (clear(x, z, 1.5, null) && !inBuilding(x + 2, z) && !inBuilding(x - 2, z) && !inBuilding(x, z + 2) && !inBuilding(x, z - 2)) { const sp = inCampus(x, z) ? pickSpecies([.5, .3, .2, 0, 0], hash(x | 0, z | 0)) : pickSpecies(GARDEN, hash(ref, side, s, 15)); tree(x, z, sp, treeHeight(sp, hash(ref, s, side, 16))); } }
         // Garden shrubs massed just inside the boundary (dense hedges/shrubs are typical of the villa frontages).
@@ -119,17 +124,17 @@ export function buildPsychikoScenery(data, bytes, osm = []) {
     }
     if (ref < 0) {
       // The lap stays a clear race carriageway: on its surveyed avenues (A9/A8) cars sit astride the kerb, inner wheels in
-      // the gutter, outside the raced width. Not on the start grid, near rings, junction mouths or driveways.
+      // the gutter, outside the raced width, including beside the grid. Keep the gantry, rings and mouths clear.
       for (const side of [-1, 1]) {
         let s0 = null;
         const end = s => { if (s0 !== null && s - s0 >= 5) parking.push(ref, side, dm(s0), dm(s)); s0 = null; };
-        for (let s = 130; s <= length - 150; s += 1) {
-          const sec = strip.section(s), block = Math.floor(s / 90), e = route.edge(s), u = e + .85, p = at(s), x = p.x - p.tz * u * side, z = p.z + p.tx * u * side;
-          const ok = ['A9', 'A8'].includes(sec.k) && e >= 3.9 && hash(side, block, 31) < (sec.parking ?? .5) * 1.15 && !route.roundabouts.some(r => s > r.s0 - 45 && s < r.s1 + 45)
+        for (let s = 8; s <= length - 8; s += 1) {
+          const sec = strip.section(s), block = Math.floor(s / 60), e = route.edge(s), u = e + 1.15, p = at(s), x = p.x - p.tz * u * side, z = p.z + p.tx * u * side;
+          const ok = ['A9', 'A8'].includes(sec.k) && e >= 3.9 && hash(side, block, 31) < (sec.parking ?? .5) * 1.3 && !route.roundabouts.some(r => s > r.s0 - 18 && s < r.s1 + 18)
             && !network.mouth(s, side, 6) && !network.candidates(x, z).some(seg => network.distance(seg, x, z) < seg.hw + 6) && !((s % 26) / 26 > .6 && (s % 26) / 26 < .6 + 4 / 26 && hash(side, Math.floor(s / 26), 32) < .5);
           if (ok && s0 === null) s0 = s; else if (!ok) end(s);
         }
-        end(length - 150);
+        end(length - 8);
       }
       continue;
     }
@@ -150,18 +155,72 @@ export function buildPsychikoScenery(data, bytes, osm = []) {
     }
   }
 
+  // Each square keeps an open centre/path corridor and irregular crown groups. These are class-level garden
+  // estimates from the survey notes, not satellite-derived trunk coordinates. Use the actual inset island polygon,
+  // with a generous kerb setback; the general park filler deliberately rejects islands.
+  const gardens = new Map([[25053074, 12], [25053095, 13], [25053106, 8], [25053533, 11], [25053545, 10], [25053562, 14], [31250243, 3], [31486890, 2], [634346640, 5], [737204781, 9]]);
+  for (const island of network.islands) {
+    const count = gardens.get(island.id); if (!count) continue;
+    const poly = island.ring, cx = (island.minX + island.maxX) / 2, cz = (island.minZ + island.maxZ) / 2;
+    const angle = hash(island.id, 41) * Math.PI, cs = Math.cos(angle), sn = Math.sin(angle);
+    const path = (x, z, width) => { const dx = x - cx, dz = z - cz; return Math.abs(dx * cs + dz * sn) < width || (island.id !== 25053562 && Math.abs(-dx * sn + dz * cs) < width); };
+    const fits = (x, z, pad) => insideIsland(x, z, poly) && islandDistance(x, z, poly) > pad && !network.mainInside(x, z) && !inBuilding(x, z);
+    for (let k = 0, planted = 0; k < 500 && planted < count; k++) {
+      const x = Math.round((island.minX + hash(island.id, k, 42) * (island.maxX - island.minX)) * 2) / 2;
+      const z = Math.round((island.minZ + hash(island.id, k, 43) * (island.maxZ - island.minZ)) * 2) / 2;
+      if (!fits(x, z, 4) || path(x, z, 2) || trees.some((v, i) => i % 3 === 0 && Math.floor(trees[i + 2] / 1000) !== 5 && Math.hypot(v / 10 - x, trees[i + 1] / 10 - z) < 6)) continue;
+      const sp = hash(island.id, k, 44) < .64 ? 0 : 2;
+      tree(x, z, sp, sp === 0 ? 14 + hash(k, island.id) * 5 : 11 + hash(k, island.id) * 4); planted++;
+    }
+    // Low clipped perimeter hedge, interrupted for paths, plus loose shrub beds inside it.
+    for (let i = 0; i < poly.length; i++) {
+      const a = poly[i], b = poly[(i + 1) % poly.length], L = Math.hypot(b[0] - a[0], b[1] - a[1]);
+      for (let d = 0; d < L; d += 2.2) {
+        const px = a[0] + (b[0] - a[0]) * d / L, pz = a[1] + (b[1] - a[1]) * d / L, R = Math.hypot(px - cx, pz - cz);
+        const x = Math.round((px + (cx - px) * 2.6 / R) * 2) / 2, z = Math.round((pz + (cz - pz) * 2.6 / R) * 2) / 2;
+        if (fits(x, z, 1.6) && !path(x, z, 2.4)) tree(x, z, 5, 1.4 + hash(i, island.id, d | 0) * .35);
+      }
+    }
+    for (let k = 0; k < count * 3; k++) {
+      const x = cx + (hash(island.id, k, 45) - .5) * (island.maxX - island.minX) * .72, z = cz + (hash(island.id, k, 46) - .5) * (island.maxZ - island.minZ) * .72;
+      if (fits(x, z, 3) && !path(x, z, 2.5)) tree(x, z, 5, 1.5 + hash(island.id, k, 47));
+    }
+  }
+
   // Poles: green goosenecks staggered along avenues, utility poles with side arms on one side of other streets.
   for (const strip of strips) {
     const { ref, length, at } = strip;
     if (ref >= 0 && strip.road.h === 'primary') continue;
     let s = 8 + hash(ref, 21) * 12, n = 0;
     while (s < length - 6) {
+      if (ref < 0 && route.roundabouts.some(r => s > r.s0 - 8 && s < r.s1 + 8)) { s += 3; continue; }
       const sec = strip.section(s), avenue = ['avenue', 'school', 'park', 'cypress'].includes(sec.kind), side = avenue ? (n % 2 ? 1 : -1) : (hash(ref, 22) < .5 ? -1 : 1);
       const p = at(s), u = strip.hw(s) + Math.min(.45, strip.fw(s) / 2), x = p.x - p.tz * u * side, z = p.z + p.tx * u * side;
       if (!inBuilding(x, z) && !network.islandAt(x, z) && (ref < 0 || lapClear(x, z, -1.6)) && !network.candidates(x, z).some(seg => seg.road !== strip.road && network.distance(seg, x, z) < seg.hw + .6)) { poles.push(ref, side, dm(s), avenue ? 0 : 1); n++; s += avenue ? 26 + hash(ref, s | 0) * 8 : 32 + hash(ref, s | 0) * 8; }
       else s += 3;
     }
   }
+
+  // Ring lamps stand on the OUTER footway, facing the circulating lane. Use source-road references so they
+  // share the existing streamed prop cells and height sampler. No lamps in the gated college garden.
+  data.roadNetwork.roads.forEach((road, ref) => {
+    if (road.junction !== 'roundabout' || !network.islands.some(r => gardens.has(r.id) && r.ways.includes(road.id))) return;
+    let station = 0, next = 12;
+    for (let i = 0; i + 3 < road.p.length; i += 2) {
+      const [ax, az, bx, bz] = road.p.slice(i, i + 4), L = Math.hypot(bx - ax, bz - az); if (L < .01) continue;
+      for (; next < station + L; next += 30) {
+        const t = (next - station) / L, tx = (bx - ax) / L, tz = (bz - az) / L, u = road.w / 2 + .45;
+        for (const side of [-1, 1]) {
+          const x = ax + (bx - ax) * t - tz * u * side, z = az + (bz - az) * t + tx * u * side;
+          // The outward candidate must also be beyond the island on a short step further from the ring.
+          if (network.islandAt(x, z) || network.islandAt(x - tz * 2 * side, z + tx * 2 * side) || network.mainInside(x, z) || inBuilding(x, z)) continue;
+          if (!network.candidates(x, z).some(seg => seg.road.id !== road.id && seg.road.junction !== 'roundabout' && network.distance(seg, x, z) < seg.hw + 1)) poles.push(ref, side, dm(next), 0);
+          break;
+        }
+      }
+      station += L;
+    }
+  });
 
   // Zebras: OSM marked crossings inside the municipality, plus the observed approach crossings at A, B and Pindou squares.
   const nearestStrip = (x, z, max = 4) => { let best = null, d = max; for (const strip of strips) { if (strip.ref < 0) { if (!network.nearMain(x, z)) continue; const q = network.project(x, z), e = Math.abs(q.u); if (e < d) { d = e; best = { ref: -1, s: q.s }; } continue; } for (let s = 0; s <= strip.length; s += 1) { const p = strip.at(s), e = Math.hypot(p.x - x, p.z - z); if (e < d) { d = e; best = { ref: strip.ref, s }; } } } return best; };

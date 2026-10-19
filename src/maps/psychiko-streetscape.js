@@ -172,8 +172,9 @@ export class PsychikoStreetscape {
         for (let j = 0; j < steps; j++) { const da = a + (b - a) * j / steps, db = a + (b - a) * (j + 1) / steps, A = off(st, da, st.hw(da) + st.fw(da) + .2, side), B = off(st, db, st.hw(db) + st.fw(db) + .2, side);
           put(this.props, 200, (A.x + B.x) / 2, (A.z + B.z) / 2, { kind: 'wall', A, B, side, type, h, seed: i + j }); } }
     }
-    const T = sc.trees || [];
+    const T = sc.trees || [], trunks = new Map();
     for (let i = 0, hx = 0, hz = 0; i < T.length; i += 3) { hx += T[i]; hz += T[i + 1]; const x = hx / 2, z = hz / 2, sp = Math.floor(T[i + 2] / 100), h = T[i + 2] % 100 / 2;
+      if (sp !== 5) put(trunks, 8, x, z, { x, z });
       // Garden shrubs are small: they stream with the near props, trees with the longer canopy ring.
       if (sp === 5) put(this.props, 200, x, z, { kind: 'tree', x, z, sp, h, seed: i }); else put(this.canopy, 320, x, z, { kind: 'tree', x, z, sp, h, seed: i }); }
     const Pk = sc.parking || [];
@@ -181,8 +182,21 @@ export class PsychikoStreetscape {
       const st = strip(Pk[i]); if (!st) continue; const side = Pk[i + 1], s0 = Pk[i + 2] / 10, s1 = Pk[i + 3] / 10, lap = Pk[i] < 0;
       for (let d = s0 + 2.6, n = 0; d <= s1 - 2.4; d += 5.1 + hash(i, n) * 1.2, n++) {
         if (hash(i, n, 3) < .14) continue; // the odd empty bay
+        if ((sc.zebras || []).some((ref, j, a) => j % 2 === 0 && ref === Pk[i] && Math.abs(a[j + 1] / 10 - d) < 6)) continue;
         // Side streets: on the asphalt against the kerb. The lap: astride the kerb, just outside the raced width.
-        const u = lap ? st.hw(d) + .3 : st.hw(d) - 1 - hash(i, n, 4) * .25, p = off(st, d, u, side), yaw = Math.atan2(p.tx, p.tz) + (side > 0 ? 0 : Math.PI), color = Math.floor(hash(i, n, 5) * CAR_COLORS.length);
+        const u = lap ? st.hw(d) + .6 : st.hw(d) - 1 - hash(i, n, 4) * .25, p = off(st, d, u, side), yaw = Math.atan2(p.tx, p.tz) + (side > 0 ? 0 : Math.PI), color = Math.floor(hash(i, n, 5) * CAR_COLORS.length);
+        // Check the full oriented body at bends, not just its centre. Keep it off the race lane, every island
+        // and other roads' mouths; the generator's longitudinal gaps already protect the own-road junctions.
+        const sn = Math.sin(yaw), cs = Math.cos(yaw);
+        let treeBay = false;
+        for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) for (const t of trunks.get((Math.floor(p.x / 8) + a) + ',' + (Math.floor(p.z / 8) + b)) || []) {
+          if (Math.abs((t.x - p.x) * sn + (t.z - p.z) * cs) < 2.5 && Math.abs((t.x - p.x) * cs - (t.z - p.z) * sn) < 1.3) treeBay = true;
+        }
+        if (treeBay) continue; // leave the footway tree pits clear of parked bodies
+        if ([-2.08, 0, 2.08].some(f => [-.87, .87].some(r => {
+          const x = p.x + sn * f + cs * r, z = p.z + cs * f - sn * r;
+          return this.network.islandAt(x, z) || this.network.mainInside(x, z);
+        }))) continue;
         put(this.props, 200, p.x, p.z, { kind: 'car', x: p.x, z: p.z, yaw, color, lap: lap && { d, u: (st.hw(d) - .02) * side } });
         this.obstacles.push({ x: p.x, z: p.z, yaw, hl: 2.08, hw: .87 });
       }
@@ -206,7 +220,7 @@ export class PsychikoStreetscape {
     mesh.matrixAutoUpdate = false; mesh.updateMatrixWorld(true); this.stats.builds++; return mesh;
   }
   tree(m, r) {
-    const set = this.trees[r.sp], t = set[r.seed % set.length], y = this.height(r.x, r.z) - .25, s = r.h, wide = r.sp === 0 ? 1 + hash(r.seed) * .25 : r.sp === 1 ? .85 + hash(r.seed) * .4 : 1;
+    const set = this.trees[r.sp], t = set[r.seed % set.length], y = this.network.islandAt(r.x, r.z) ? this.network.height(r.x, r.z) - .04 : this.height(r.x, r.z) - .25, s = r.h, wide = r.sp === 0 ? 1 + hash(r.seed) * .25 : r.sp === 1 ? .85 + hash(r.seed) * .4 : 1;
     m.add(t, r.x, y, r.z, hash(r.seed, 1) * 6.283, s * wide, s, s * wide, .86 + hash(r.seed, 2) * .3);
   }
   car(m, r) { m.add(this.cars[r.color], r.x, r.lap ? this.route.point(r.lap.d, r.lap.u).y + .08 : this.network.height(r.x, r.z) - .02, r.z, r.yaw); }

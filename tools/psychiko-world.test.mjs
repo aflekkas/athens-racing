@@ -171,6 +171,32 @@ test('Psychiko street classes come from the frozen survey reduction',async()=>{
  for(let s=0;s<route.length;s+=4)assert(route.edge(s)*2>=5.4,'race carriageway stays drivable');
 });
 
+test('surveyed square gardens and start avenue retain planting, outer lamps and safe kerb parking',async()=>{
+ const THREE=await import('three'),{PsychikoStreetscape}=await import('../src/maps/psychiko-streetscape.js');
+ const street=new PsychikoStreetscape(map,new THREE.Group(),(x,z)=>terrain.height(x,z)),net=map.roadNetwork;
+ try {
+  const items=[...street.canopy.values(),...street.props.values()].flat();
+  for(const id of [25053095,25053533,25053106,634346640,25053562]){
+   const island=net.islands.find(r=>r.id===id),plants=items.filter(r=>r.kind==='tree'&&net.islandAt(r.x,r.z)===island);
+   assert(plants.filter(r=>r.sp!==5).length>=4,`square ${id} needs mature crowns`);
+   assert(plants.filter(r=>r.sp===5).length>=12,`square ${id} needs low planting`);
+   for(const plant of plants)assert(!net.mainInside(plant.x,plant.z),'island trunks stay outside the raced lane');
+  }
+  for(const pole of items.filter(r=>r.kind==='pole'))assert(!net.islandAt(pole.x,pole.z),'lamps stand outside garden islands');
+  const startTrees=items.filter(r=>r.kind==='tree'&&r.sp!==5).filter(r=>{const q=route.project(r.x,r.z);return q.s>10&&q.s<130&&Math.abs(q.u)<route.edge(q.s)+2;});
+  assert(startTrees.length>=20,'mature avenue rows continue beside the start straight');
+  const cars=items.filter(r=>r.kind==='car');
+  assert(cars.filter(r=>r.lap&&r.lap.d<130).length>=8,'kerb parking continues beside, and outside, the start grid');
+  for(const car of cars){
+   for(const f of [-2.08,0,2.08])for(const u of [-.87,.87]){
+    const x=car.x+Math.sin(car.yaw)*f+Math.cos(car.yaw)*u,z=car.z+Math.cos(car.yaw)*f-Math.sin(car.yaw)*u;
+    assert(!net.mainInside(x,z),'whole parked body clears race width at bends');assert(!net.islandAt(x,z),'no island parking');
+   }
+   if(car.lap)for(let i=0;i<data.psychiko.scenery.zebras.length;i+=2){const z=data.psychiko.scenery.zebras;if(z[i]===-1)assert(Math.abs(z[i+1]/10-car.lap.d)>=6,'crossings keep a clear approach');}
+  }
+ } finally {street.dispose();}
+});
+
 test('close OSM fronts retain their source centroids and road-edge distances after box conversion',async()=>{
  const {frontageAudit}=await import('./psychiko-frontage-audit.mjs');
  for(const row of frontageAudit()){
