@@ -67,7 +67,7 @@ const CompositeShader = {
 
 const FinalShader = {
   uniforms: {
-    tHDR: { value: null }, uTime: { value: 0 }, uRes: { value: new THREE.Vector2(1, 1) },
+    tHDR: { value: null }, uTime: { value: 0 }, uRes: { value: new THREE.Vector2(1, 1) }, uSrc: { value: new THREE.Vector2(1, 1) }, uUp: { value: 0 },
     uSun: { value: new THREE.Vector3(0.5, 0.5, 0) }, uSpeed: { value: 0 }, uCenter: { value: new THREE.Vector2(0.5, 0.56) },
     uShake: { value: 0 }, uFlash: { value: 0 }, uNitro: { value: 0 }, uFade: { value: 0 }, uExposure: { value: 1.0 },
     uWB: { value: new THREE.Vector3(0.96, 1.0, 1.06) },
@@ -78,7 +78,7 @@ const FinalShader = {
   },
   vertexShader: VS,
   fragmentShader: /* glsl */`
-    uniform sampler2D tHDR; uniform float uTime; uniform vec2 uRes; uniform vec3 uSun; uniform float uSpeed; uniform vec2 uCenter;
+    uniform sampler2D tHDR; uniform float uTime; uniform vec2 uRes; uniform vec2 uSrc; uniform float uUp; uniform vec3 uSun; uniform float uSpeed; uniform vec2 uCenter;
     uniform float uShake; uniform float uFlash; uniform float uNitro; uniform float uFade; uniform float uExposure;
     uniform vec3 uWB;
     uniform vec3 uLift; uniform vec3 uGamma; uniform vec3 uGain; uniform float uSat; uniform float uContrast; uniform vec3 uShadowTint; uniform vec3 uHiTint;
@@ -109,7 +109,21 @@ const FinalShader = {
       return clamp(color, 0.0, 1.0);
     }
     vec3 toSRGB(vec3 c){ return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(0.0031308, c)); }
-    vec3 tex(vec2 uv){ return texture2D(tHDR, uv).rgb; }
+    // The picture is drawn at the class's pixel ratio and shown on a canvas up to ~1.4x larger (uUp = 1): a Catmull-Rom
+    // reconstruction (5 taps, in a compressed range so a bright edge does not ring) instead of a bilinear stretch, so edges
+    // such as the car's outline stay crisp. It only reads the scene; it adds no pass and changes no colour.
+    vec3 fetchC(vec2 uv){ vec3 c = max(texture2D(tHDR, uv).rgb, 0.0); return c / (1.0 + c); }
+    vec3 tex(vec2 uv){
+      if (uUp < 0.5) return texture2D(tHDR, uv).rgb;
+      vec2 pos = uv * uSrc, c = floor(pos - 0.5) + 0.5, f = pos - c;
+      vec2 w0 = f * (-0.5 + f * (1.0 - 0.5 * f)), w1 = 1.0 + f * f * (-2.5 + 1.5 * f), w2 = f * (0.5 + f * (2.0 - 1.5 * f)), w3 = f * f * (-0.5 + 0.5 * f);
+      vec2 w12 = w1 + w2, t12 = (c + w2 / w12) / uSrc, t0 = (c - 1.0) / uSrc, t3 = (c + 2.0) / uSrc;
+      vec3 acc = fetchC(vec2(t12.x, t0.y)) * (w12.x * w0.y) + fetchC(vec2(t0.x, t12.y)) * (w0.x * w12.y) + fetchC(t12) * (w12.x * w12.y)
+               + fetchC(vec2(t3.x, t12.y)) * (w3.x * w12.y) + fetchC(vec2(t12.x, t3.y)) * (w12.x * w3.y);
+      acc /= (w12.x * w0.y + w0.x * w12.y + w12.x * w12.y + w3.x * w12.y + w12.x * w3.y);
+      acc = clamp(acc, 0.0, 0.995);
+      return acc / (1.0 - acc);
+    }
     void main(){
       vec2 uv = vUv;
       vec2 c = uv - uCenter;
@@ -230,13 +244,16 @@ export function createPost(renderer, scene, camera) {
       mark('final');
       if (prof) { prof.frames++; for (const k in prof.cur) { prof.sum[k] = (prof.sum[k] || 0) + prof.cur[k]; prof.cur[k] = 0; } }
     },
-    setSize(w, h, p) {
+    /** p: the scene's pixel ratio · out: the canvas's pixel ratio (>= p; a larger canvas is filled by a crisp reconstruction of the scene) */
+    setSize(w, h, p, out = p) {
       pr = p;
       size.set(w, h);
       const ww = Math.max(1, Math.floor(w * p)), hh = Math.max(1, Math.floor(h * p));
       sceneRT.setSize(ww, hh); hdrRT.setSize(ww, hh);
       compMat.uniforms.uRes.value.set(ww, hh);
-      u.uRes.value.set(ww, hh);
+      u.uSrc.value.set(ww, hh);
+      u.uRes.value.set(Math.max(1, Math.floor(w * Math.max(out, p))), Math.max(1, Math.floor(h * Math.max(out, p))));
+      u.uUp.value = out > p * 1.1 ? 1 : 0;
     },
     resetHistory() { post.snapGrade(); },
     /** jump the eased grade / exposure to the current conditions (map switch, captures) */

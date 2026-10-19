@@ -8,6 +8,8 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Weak laptops: the picture no longer drops as low when your computer struggles, so your car stays sharp.
+
 - Garage: the car and its trims are now clearly separate: the car is named at the top, its trims sit below as labelled chips with power and 0-100 time.
 
 - Multiplayer lobby: your trim now has its own chip under your car's name.

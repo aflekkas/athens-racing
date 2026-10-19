@@ -36,6 +36,27 @@ export const PERFORMANCE = Object.freeze({
   high: { pixelRatio: 1.5, drawDistance: 2000, trafficDraw: null, crowd: 175, detail: 1, traffic: 1, walkers: 1, trafficHz: 60, hud: hudRates(30, 15, 30) },
 });
 export const PERF_CLASSES = Object.keys(PERFORMANCE);
+// How low dynamic resolution may drop the picture. The car in front of the camera is the first thing a player looks at, and it
+// turns to mush well before the frame rate gains much: playtest 2026-10-18 "the car looks really low-res" (dynamic resolution
+// walked down to 0.5-0.6 of the screen's pixels on every class, and the governor then moved the machine to potato, whose own
+// base ratio is 0.6). `min` is an absolute pixel ratio the picture never goes under, `frac` the share of the class's ratio it
+// may drop to on a sharper screen; the larger of the two wins, and never more than the ratio itself. Potato's ratio is
+// unchanged (it is the cheapest picture there is, and it keeps its frame time): it only loses the last 8% it used to shed.
+export const DYNAMIC_FLOOR = Object.freeze({
+  potato: Object.freeze({ min: 0.55, frac: 0.92 }), low: Object.freeze({ min: 0.72, frac: 0.9 }),
+  med: Object.freeze({ min: 0.8, frac: 0.65 }), high: Object.freeze({ min: 0.8, frac: 0.6 }),
+});
+/** the canvas's pixel ratio for a scene drawn at `sceneRatio`: a scene below this is shown on a canvas this large and filled by
+ * the post chain's crisp reconstruction (src/post.js) instead of the browser's bilinear stretch of a tiny canvas */
+export const UPSCALE_OUTPUT = 0.85;
+export function outputRatio(sceneRatio, deviceRatio = 1) {
+  return +Math.min(Math.min(deviceRatio || 1, 2), Math.max(sceneRatio, UPSCALE_OUTPUT)).toFixed(3);
+}
+/** the lowest pixel ratio dynamic resolution may use for a class whose full-quality ratio is `ratio` */
+export function dynamicFloor(perfClass, ratio) {
+  const f = DYNAMIC_FLOOR[perfClass] || DYNAMIC_FLOOR.high;
+  return Math.min(ratio, Math.max(f.min, ratio * f.frac));
+}
 // Admission targets include all live page/worker allocations. Stream reservations
 // are subsets of these totals, including decode overlap; never add them twice.
 const MiB = 1024 * 1024;

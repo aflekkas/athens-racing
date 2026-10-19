@@ -82,7 +82,7 @@ import { createBlackout } from './blackout.js';
 import { SessionTransitions } from './session-transitions.js';
 import { speedLimitAt } from './speed-limit.js';
 import { updateSceneryLod, setDrawDistance, drawDistance } from './scenery.js';
-import { RENDER, resolveGraphics, applyRenderResolution, releaseSceneryVariants, trimShadowCasters } from './graphics.js';
+import { RENDER, resolveGraphics, dynamicFloor, outputRatio, applyRenderResolution, releaseSceneryVariants, trimShadowCasters } from './graphics.js';
 import { DistanceDetail } from './batch.js';
 import { PARKED_RANGE, fleetModel } from './traffic-fleet.js';
 import { initGhostLap } from './ghost-lap-mode.js';
@@ -143,10 +143,9 @@ addEventListener('keydown', (e) => {
 let pixelRatio = GFX.pixelRatio;
 let dynamicScale = makeDynamicScale();
 function makeDynamicScale() {
-  const floor = { potato: .83, low: .75, med: .65, high: .6 }[GFX.perfClass];
-  return new RenderScale({ max: GFX.pixelRatio, min: Math.min(GFX.pixelRatio, Math.max(.5, GFX.pixelRatio * floor)), budgetMs: dynamicBudgetMs(settings.frameCap) });
+  return new RenderScale({ max: GFX.pixelRatio, min: dynamicFloor(GFX.perfClass, GFX.pixelRatio), budgetMs: dynamicBudgetMs(settings.frameCap) });
 }
-renderer.setPixelRatio(pixelRatio);
+renderer.setPixelRatio(outputRatio(pixelRatio, window.devicePixelRatio));
 renderer.setSize(innerWidth, innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.NoToneMapping; // tone mapping happens in the post pipeline (post.js)
@@ -326,6 +325,7 @@ async function loadFirstMap(id) {
   bindMapWorld(world);
   policeHud ||= new PoliceHud();
   post ||= createPost(renderer, scene, camera); window.__post = post;
+  post.setSize(innerWidth, innerHeight, pixelRatio, outputRatio(pixelRatio, window.devicePixelRatio)); // the scene's own ratio; the canvas may be larger (graphics.js outputRatio)
   probe ||= createProbe();
   setCarEnv(probe.envRT.texture);
   bindMapWeather(); // time of day + weather (?tod=&wx=)
@@ -2377,9 +2377,10 @@ function render() {
 
 function onResize() {
   const w = innerWidth, h = innerHeight;
-  renderer.setPixelRatio(pixelRatio); renderer.setSize(w, h);
+  const out = outputRatio(pixelRatio, window.devicePixelRatio);
+  renderer.setPixelRatio(out); renderer.setSize(w, h);
   camera.aspect = w / h; camera.updateProjectionMatrix();
-  if (post) post.setSize(w, h, pixelRatio);
+  if (post) post.setSize(w, h, pixelRatio, out);
   if (water) water.setSize(w * pixelRatio, h * pixelRatio);
 }
 addEventListener('resize', onResize);
