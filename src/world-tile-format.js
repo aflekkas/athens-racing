@@ -1,4 +1,5 @@
 // AWT/1 describes world data; ASR1/ASR2 remains owned by baked-geometry.js.
+import { buildingTriangleCount } from './world-tile-buildings.js';
 export const TILE_VERSION = 1;
 export const TILE_METRES = 512;
 export const TILE_TABLES = Object.freeze({
@@ -12,12 +13,25 @@ export const TILE_TABLES = Object.freeze({
   signs: ['Uint32Array', 4], signTransforms: ['Float32Array', 5],
   anchors: ['Uint32Array', 5], anchorTransforms: ['Float32Array', 4],
 });
+/** Present only in compact tiles (see docs/world-tiles-format.md): the ground half of the contact rows, one per fine triangle. */
+export const TILE_COMPACT_TABLES = Object.freeze({ fineSurface: ['Uint32Array', 1], fineFlags: ['Uint8Array', 1] });
 const fail = message => { throw new Error(`AWT/1: ${message}`); };
 const integer = (n, min = 0) => Number.isSafeInteger(n) && n >= min;
 const idPattern = /^[a-z0-9][a-z0-9:._/-]*$/i;
 export function tileKey(x, z) { return `${Math.floor(x / TILE_METRES)},${Math.floor(z / TILE_METRES)}`; }
 export function tileTables(pack) {
-  return Object.fromEntries(Object.keys(TILE_TABLES).map(k => [k, pack.arrays[pack.metadata.tables[k]]]));
+  const names = [...Object.keys(TILE_TABLES), ...Object.keys(TILE_COMPACT_TABLES).filter(k => pack.metadata.tables[k] != null)];
+  return Object.fromEntries(names.map(k => [k, pack.arrays[pack.metadata.tables[k]]]));
+}
+/** Compact tiles keep the ground contact rows as (surface, flags) beside the fine triangles. This is the classic table shape
+ * (ground rows first, then the deck rows) for offline audits; the runtime reads the compact form directly. */
+export function legacyTables(t) {
+  if (!t.fineSurface) return t;
+  const ground = t.fineTriangles.length / 3, rows = new Uint32Array((ground + t.contactTriangles.length / 5) * 5), layers = new Int8Array(ground + t.contactLayers.length);
+  for (let r = 0; r < ground; r++) { for (let k = 0; k < 3; k++) rows[r * 5 + k] = t.fineTriangles[r * 3 + k]; rows[r * 5 + 3] = t.fineSurface[r]; rows[r * 5 + 4] = t.fineFlags[r]; }
+  rows.set(t.contactTriangles, ground * 5); layers.set(t.contactLayers, ground);
+  const { fineSurface, fineFlags, ...rest } = t;
+  return { ...rest, contactTriangles: rows, contactLayers: layers };
 }
 /** Optional owner-authorized detail data; base AWT surfaces remain independently usable. */
 function validateWorldDetail(m,arrays,buildingCount) {
@@ -59,8 +73,9 @@ export function validateWorldTile(pack, expected = {}) {
   if (!Array.isArray(m.strings) || m.strings[0] !== '' || m.strings.some(s => typeof s !== 'string')) fail('strings');
   if (!Array.isArray(m.palette) || !m.palette.length || m.palette.length > 256 || m.palette.some(c => !Array.isArray(c) || c.length !== 3 || c.some(v => !Number.isFinite(v) || v < 0 || v > 1))) fail('palette');
   if (!m.tables || Object.keys(TILE_TABLES).some(k => !integer(m.tables[k]) || !arrays[m.tables[k]])) fail('tables');
-  const t = tileTables(pack), count = k => t[k].length / TILE_TABLES[k][1];
-  for (const [k, [type, stride]] of Object.entries(TILE_TABLES)) {
+  const t = tileTables(pack), count = k => t[k].length / (TILE_TABLES[k] ?? TILE_COMPACT_TABLES[k])[1];
+  if ((t.fineSurface == null) !== (t.fineFlags == null) || Object.keys(TILE_COMPACT_TABLES).some(k => m.tables[k] != null && !arrays[m.tables[k]])) fail('compact tables');
+  for (const [k, [type, stride]] of [...Object.entries(TILE_TABLES), ...Object.entries(TILE_COMPACT_TABLES).filter(([k]) => t[k])]) {
     const a = t[k];
     if (a.constructor.name !== type || a.length % stride) fail(`table ${k} type/stride`);
     if (type === 'Float32Array') for (const v of a) if (!Number.isFinite(v)) fail(`table ${k} nonfinite`);
@@ -84,6 +99,11 @@ export function validateWorldTile(pack, expected = {}) {
   for (const [k, vertices, stride] of [['contactTriangles', 'contactPositions', 5], ['fineTriangles', 'finePositions', 3]]) for (let i = 0; i < t[k].length; i += stride) {
     for (let j = 0; j < 3; j++) ref(t[k][i+j], count(vertices), `${k} vertex`);
     if (stride === 5) { id(t[k][i+3], 'contact surface'); if (t[k][i+4] > 15) fail('contact flags'); }
+  }
+  if (t.fineSurface) {
+    if (count('fineSurface') !== count('fineTriangles') || count('fineFlags') !== count('fineTriangles')) fail('compact ground rows');
+    for (let r = 0; r < t.fineSurface.length; r++) { id(t.fineSurface[r], 'contact surface'); if (t.fineFlags[r] > 15) fail('contact flags'); }
+    if (t.contactPositions.length < t.finePositions.length || t.finePositions.some((v, i) => v !== t.contactPositions[i])) fail('compact positions');
   }
   if (m.terrain?.coarseSize !== 33 || m.terrain?.spacing !== 16 || t.coarseHeights.length !== 1089) fail('coarse terrain');
   for (const [k, stride] of [['nodePositions',3], ['edgePoints',3], ['ribbonVertices',5], ['junctionVertices',3], ['contactPositions',3], ['finePositions',3]]) for (let i = 0; i < t[k].length; i += stride) {
@@ -118,10 +138,15 @@ export function validateWorldTile(pack, expected = {}) {
     let indices = vertices;
     if (mesh.index != null) {
       const index = arrays[mesh.index]; if (!index || !['Uint16Array','Uint32Array'].includes(index.constructor.name)) fail('mesh index');
-      for (const v of index) ref(v, vertices, 'mesh vertex'); indices = index.length;
+      // A mesh may be a window (drawRange) over an index array shared with other meshes and with the fine triangle table:
+      // only its own window is checked and counted, so shared geometry is validated once and never stored twice.
+      const range = mesh.drawRange, first = range?.start ?? 0, size = range?.count ?? index.length;
+      if (!integer(first) || !integer(size) || first % 3 || size % 3 || first + size > index.length) fail('mesh draw range');
+      for (let k = first; k < first + size; k++) ref(index[k], vertices, 'mesh vertex'); indices = size;
     }
     if (indices < 3 || indices % 3 || indices / 3 > 16384) fail('mesh triangle budget'); triangles += indices / 3;
   }
+  if (m.extensions?.derivedBuildings && !m.extensions.derivedBuildings.derived) for (let i = 0; i < t.buildings.length; i += 4) triangles += buildingTriangleCount(t.buildings[i+2]);
   if (triangles !== m.budgets.triangles) fail('triangle accounting');
   return { metadata: m, arrays, tables: t, bytes: residentArrayBytes(arrays), triangles };
 }
@@ -145,7 +170,9 @@ export function validateWorldManifest(m) {
  * Such a tangent owns no shared edge and must not invent a neighbour contact. */
 function boundarySamples(m,t,axis,value){
  const samples=new Set(),number=v=>Object.is(v,-0)?'-0':String(v);
- for(const[name,triangles,stride]of [['finePositions',t.fineTriangles,3],['contactPositions',t.contactTriangles,5]]){
+ // A compact tile's ground contact rows are its fine triangles; its contact table holds only the deck rows.
+ const contact=t.fineSurface?[['contactPositions',t.fineTriangles,3],['contactPositions',t.contactTriangles,5]]:[['contactPositions',t.contactTriangles,5]];
+ for(const[name,triangles,stride]of [['finePositions',t.fineTriangles,3],...contact]){
   const p=t[name],vertices=new Set(),segments=new Set(),point=id=>`${number(p[id*3]+m.origin[0])},${number(p[id*3+2]+m.origin[2])},${number(p[id*3+1])}`;
   for(let i=0;i<triangles.length;i+=stride)for(let edge=0;edge<3;edge++){
    const a=triangles[i+edge],b=triangles[i+(edge+1)%3];

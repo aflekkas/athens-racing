@@ -57,7 +57,7 @@ Running (Sonnet; Enterprise unless noted):
 - [x] Athens road screenshots re-made and checked (`914c48e3`)
 - [x] Athens stage 3: Piraeus/Faliro, 289 cells, 871 km of road, all gates green, 2×2 set 36.6/64 MiB (`1f61c0fd`, `eac1f7f5`)
 - [x] Athens centre (partial): 47 cells, 336-cell world at 183.8/192 MiB, gates green (`2ead313f`, `5f95eb8b`)
-- [~] Athens: Piraeus entry (Tavros underpasses) + ≥35% smaller cells, then Kypseli/Patisia up to the cap (Personal)
+- [x] Athens: Piraeus enterable from Syntagma (Tavros underpass link drawn at grade, 0% → 73% of Piraeus km; the rest is cut by gated port roads and the world edge), cells 67% smaller (compact tiles), Kypseli/Patisia and every other centre candidate baked: 450 cells, 104.1 of 192 MiB, worst 2×2 set 22.8 MiB (`tunnels.json`, `world-tile-compact`)
 - [x] Owner raised the Athens world ceiling to 2 GiB, player-side caps unchanged (`07be9d90`); rest of the centre then the north follow
 - [~] Potato: stop drawing distant road (fogged cull) to get Riviera under 200 draw calls (owner approved; Enterprise) without owner wait
 - [x] Online: remote cars glide (jitter buffer, 20 Hz sim-clock samples, 50 ms relay) and car-to-car contacts symmetric (`3f35e7de`); owner to retest with a friend

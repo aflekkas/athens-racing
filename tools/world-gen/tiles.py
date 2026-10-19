@@ -11,6 +11,7 @@ from surfaces import ground_mesh,validate_partition,f32,SurfaceHeight
 from elevation import Elevation
 from coastal import Coast, Structures
 from bridge_policy import exclusion_reason
+import tunnels
 from tile_detail import water_mesh,vegetation_rows,bridge_edges
 from details import fnv1a
 from influence import blended_height, profile_height, lattice_height, smooth_lattice_sample, SUPPORT, ROAD_QUERY_HALO
@@ -46,7 +47,7 @@ class Field:
   self.cell=cell;self.dem=Elevation(dems);ox,oz=cell[0]*512,cell[1]*512;self.ox=ox;self.oz=oz;halo=512 if coastal else ROAD_QUERY_HALO
   self.roads=[];self.byid={};self.land=[];self.coast=Coast(source,cell,bounds) if coastal else None
   for row,data in db.execute('SELECT r.rowid,r.data FROM spatial s CROSS JOIN roads r ON r.rowid=s.rowid WHERE s.minx<=? AND s.maxx>=? AND s.minz<=? AND s.maxz>=? ORDER BY r.id',(bounds[2] if bounds else ox+512+halo,bounds[0] if bounds else ox-halo,bounds[3] if bounds else oz+512+halo,bounds[1] if bounds else oz-halo)):
-   r=json.loads(data)
+   r=tunnels.apply(json.loads(data))
    if coastal:
     reason=(EXCLUSION_REASONS.get(r['id'],'structure exclusion') if r['id'] in EXCLUDED else None) or (plan['excluded'].get(r['id']) if plan else None) or exclusion_reason(r,(bridge_tags or {}).get(r['way']))
     if reason:
@@ -160,7 +161,7 @@ class Field:
   return ground_colour(x,z,h,slope,tags.get('landuse',''),tags.get('natural',''))
 
 SURFACES={'asphalt':(1,'asphalt'),'concrete':(12,'asphalt'),'paving':(13,'paving'),'unpaved':(14,None)}
-TABLES={'nodes':[],'nodePositions':[],'edges':[],'edgePoints':[],'edgeLayers':[],'turns':[],'ribbons':[],'ribbonVertices':[],'junctions':[],'junctionVertices':[],'markings':[],'contactPositions':[],'contactTriangles':[],'contactLayers':[],'coarseHeights':[],'finePositions':[],'fineTriangles':[],'buildings':[],'buildingCorners':[],'buildingHeights':[],'signs':[],'signTransforms':[],'anchors':[],'anchorTransforms':[]}
+TABLES={'nodes':[],'nodePositions':[],'edges':[],'edgePoints':[],'edgeLayers':[],'turns':[],'ribbons':[],'ribbonVertices':[],'junctions':[],'junctionVertices':[],'markings':[],'contactPositions':[],'contactTriangles':[],'contactLayers':[],'fineSurface':[],'fineFlags':[],'coarseHeights':[],'finePositions':[],'fineTriangles':[],'buildings':[],'buildingCorners':[],'buildingHeights':[],'signs':[],'signTransforms':[],'anchors':[],'anchorTransforms':[]}
 
 def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=False,vegetation=None,osm=None,sections=None,extent=None,plan=None):
  db=sqlite3.connect(f'file:{dbpath}?mode=ro',uri=True);source=sqlite3.connect(f'file:{sourcepath}?mode=ro',uri=True)
@@ -201,43 +202,62 @@ def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=F
    attrs=dict(position=dict(array=array('Float32Array',ps),itemSize=3,normalized=False))
    if colours is not None:attrs['color']=dict(array=array('Uint8Array',[round(c*255) for c in cs]),itemSize=3,normalized=True)
    meshes.append(dict(name='probe',material=material,attributes=attrs,index=array('Uint16Array',ix),userData=dict(worldSurface=material in (0,1,8,9,12,13,14),**(user_data or {})),layers=1,drawRange=dict(start=0,count=len(ix))))
- p=surface['positions'];t['finePositions']=p;t['fineTriangles']=surface['triangles'];t['contactPositions']=p.copy()
- rendered_height=SurfaceHeight(surface)
- t['coarseHeights']=[f32(field.surface_height(ox+x,oz+z)) for z in range(0,513,16) for x in range(0,513,16)]
- terrain=identifier('terrain:'+str(cell[0])+':'+str(cell[1]));roadtri=collections.defaultdict(list);ground=[];pavement_tri=[];kerb_tri=[]
- loose=[i for i,owner in enumerate(surface['owners']) if not owner];centres=[[ox+sum(p[v*3] for v in surface['triangles'][i*3:i*3+3])/3 for i in loose],[oz+sum(p[v*3+2] for v in surface['triangles'][i*3:i*3+3])/3 for i in loose]]
- region_of=dict(zip(loose,regions.classify(*centres)))
- for i,owner in enumerate(surface['owners']):
-  tri=surface['triangles'][i*3:i*3+3]
-  sid=identifier('surface:'+owner) if owner else terrain
-  t['contactTriangles'].extend([*tri,sid,1 if owner else 2]);t['contactLayers'].append(0)
-  if owner:roadtri[owner].extend(tri)
-  else:
-   (kerb_tri if region_of[i]==1 else pavement_tri if region_of[i]==2 else ground).extend(tri)
- colours=[]
- # Colour the actual solved surface; avoid four extra global-field queries
- # per vertex merely to classify its terrain palette.
+ p=surface['positions']
+ # Colour the actual solved surface; avoid four extra global-field queries per vertex merely to classify its terrain palette.
  vertices=np.asarray(p).reshape(-1,3);faces=np.asarray(surface['triangles']).reshape(-1,3)
  normals=np.cross(vertices[faces[:,1]]-vertices[faces[:,0]],vertices[faces[:,2]]-vertices[faces[:,0]])
  grades=np.hypot(normals[:,0],normals[:,2])/np.abs(normals[:,1]);vertex_grades=np.zeros(len(vertices))
  for side in range(3):np.maximum.at(vertex_grades,faces[:,side],grades)
- categories=[]
+ colours=[];categories=[]
  for i in range(0,len(p),3):
   category,rgb=field.colour(ox+p[i],oz+p[i+2],p[i+1],float(vertex_grades[i//3]));categories.append(category);colours.extend(rgb)
+ # Every ground triangle gets a drawing class, and the triangles are SORTED by class: the render meshes are then windows
+ # (drawRange) over one shared position array and one shared index array, and that index array is also the fine/contact
+ # triangle table. Nothing is stored twice. Ground whose every corner is urban land (residential, commercial, retail,
+ # industrial...) is its own class, drawn with the shared paving scan at run time instead of one flat grey.
+ loose=[i for i,owner in enumerate(surface['owners']) if not owner];centres=[[ox+sum(p[v*3] for v in surface['triangles'][i*3:i*3+3])/3 for i in loose],[oz+sum(p[v*3+2] for v in surface['triangles'][i*3:i*3+3])/3 for i in loose]]
+ region_of=dict(zip(loose,regions.classify(*centres)))
+ CLASS_OF_SURFACE=dict(asphalt=4,concrete=5,paving=6,unpaved=7)  # 0 ground, 1 urban ground, 2 kerb, 3 sidewalk, then road surfaces
+ def drawing_class(i):
+  owner=surface['owners'][i]
+  if owner:return CLASS_OF_SURFACE[field.byid[owner]['section']['surface']]
+  if region_of[i]==1:return 2
+  if region_of[i]==2:return 3
+  return 1 if all(categories[w]=='urban' for w in surface['triangles'][i*3:i*3+3]) else 0
+ kinds=[drawing_class(i) for i in range(len(surface['owners']))];order=sorted(range(len(kinds)),key=lambda i:(kinds[i],i))
+ sorted_triangles=[v for i in order for v in surface['triangles'][i*3:i*3+3]];sorted_owners=[surface['owners'][i] for i in order]
+ surface['triangles']=sorted_triangles;surface['owners']=sorted_owners
+ class_start={};class_count=collections.Counter(kinds)
+ running=0
+ for k in sorted(class_count):class_start[k]=running;running+=class_count[k]
+ t['finePositions']=p;t['fineTriangles']=surface['triangles'];t['contactPositions']=p.copy()
+ rendered_height=SurfaceHeight(surface)
+ t['coarseHeights']=[f32(field.surface_height(ox+x,oz+z)) for z in range(0,513,16) for x in range(0,513,16)]
+ terrain=identifier('terrain:'+str(cell[0])+':'+str(cell[1]));roadtri=collections.defaultdict(list)
+ for i,owner in enumerate(surface['owners']):
+  tri=surface['triangles'][i*3:i*3+3]
+  sid=identifier('surface:'+owner) if owner else terrain
+  t['fineSurface'].append(sid);t['fineFlags'].append(1 if owner else 2)
+  if owner:roadtri[owner].extend(tri)
  # Terrain under an approach deck is coplanar with it and z-fights; lower only its RENDER copy (contact keeps p).
  render_p=p
  if field.structures and not field.structures.platform.is_empty:
   shapely.prepare(field.structures.platform);render_p=list(p)
   for i in range(0,len(p),3):
    if field.structures.platform.covers(Point(ox+p[i],oz+p[i+2])):render_p[i+1]=f32(p[i+1]-.3)
- # Ground whose every corner is urban land (residential, commercial, retail, industrial...) is its own mesh, drawn with
- # the shared paving scan at run time instead of one flat grey; every other ground keeps its plain vertex colours.
- urban=[v for i in range(0,len(ground),3) if all(categories[w]=='urban' for w in ground[i:i+3]) for v in ground[i:i+3]]
- other=[v for i in range(0,len(ground),3) if not all(categories[w]=='urban' for w in ground[i:i+3]) for v in ground[i:i+3]]
- mesh(render_p,other,0,colours)
- if urban:mesh(render_p,urban,0,colours,user_data=dict(tileSurface='urban'))
- raised=render_p
- mesh(raised,pavement_tri,8,user_data=dict(tileSurface='paving'));mesh(raised,kerb_tri,9)
+  if render_p==p:render_p=p  # nothing lowered: one position array serves the render and contact surfaces
+ render_position=array('Float32Array',render_p);road_position=render_position if render_p is p else array('Float32Array',p)
+ shared_triangles=array('Uint32Array',surface['triangles']);shared_colour=array('Uint8Array',[round(c*255) for c in colours])
+ def draw_window(klass,material,position,colour=None,user_data=None):
+  # Windows of at most 16384 triangles over the class's contiguous range of the shared index array.
+  first=class_start.get(klass,0);total=class_count.get(klass,0)
+  for start in range(first,first+total,16384):
+   n=min(16384,first+total-start)
+   attrs=dict(position=dict(array=position,itemSize=3,normalized=False))
+   if colour is not None:attrs['color']=dict(array=colour,itemSize=3,normalized=True)
+   meshes.append(dict(name='probe',material=material,attributes=attrs,index=shared_triangles,userData=dict(worldSurface=material in (0,1,8,9,12,13,14),**(user_data or {})),layers=1,drawRange=dict(start=start*3,count=n*3)))
+ draw_window(0,0,render_position,shared_colour);draw_window(1,0,render_position,shared_colour,dict(tileSurface='urban'))
+ draw_window(3,8,render_position,None,dict(tileSurface='paving'));draw_window(2,9,render_position)
  # The bevel is the physical/rendered kerb (12 cm over 30 cm); no unsupported vertical wall.
  paintps,paintix=road_markings(near_roads,cell,rendered_height,regions);mesh(paintps,paintix,11,user_data=dict(tileSurface='marking'))
  deck_surface=None;deck_height=None;structure_records=[];rails=[]
@@ -305,28 +325,15 @@ def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=F
   emitted_graph.append((edge,positions))
   for incoming,via,target in turndb.execute('SELECT from_edge,via_node,to_edge FROM turns WHERE from_edge=? ORDER BY via_node,to_edge',(edge['id'],)):
    t['turns'].extend([identifier(incoming),identifier(via),identifier(target),1])
- for owner,indices in sorted(roadtri.items()):
-  road=field.byid[owner];sid=identifier('surface:'+owner)
-  candidates=byroad[owner]
-  if not candidates:raise ValueError('Ribbon has no graph edge '+owner)
-  reference=min(candidates,key=lambda e:(tuple(e['cell'])!=tuple(cell),':f:' not in e['id'],e['id']))
-  edge=identifier(reference['id']);orientation=1 if ':f:' in reference['id'] else -1
-  start=len(t['ribbonVertices'])//5
-  rp=deck_surface['positions'] if field.structures and owner in field.structures.raised else p
-  for vertex in indices:
-   x,y,z=rp[vertex*3:vertex*3+3]
-   station,lateral=ribbon_lateral(road['line'],ox+x,oz+z,orientation==1)
-   t['ribbonVertices'].extend([x,y,z,station,lateral])
-  t['ribbons'].extend([sid,edge,start,len(indices),1])
- bysurface=collections.defaultdict(list)
- for owner,ix in sorted(roadtri.items()):
-  if not field.structures or owner not in field.structures.raised:bysurface[field.byid[owner]['section']['surface']].extend(ix)
- for name,(material,tile) in SURFACES.items():
-  if bysurface[name]:mesh(p,bysurface[name],material,user_data=dict(tileSurface=tile) if tile else None)
+ # The per-vertex ribbon tables (station, lateral) were never read at run time and cost a seventh of a dense cell: compact tiles
+ # carry none. The bake still insists every drawn road has a graph edge.
+ for owner in sorted(roadtri):
+  if not byroad[owner]:raise ValueError('Road surface has no graph edge '+owner)
+ for name,(material,tile) in SURFACES.items():draw_window(CLASS_OF_SURFACE[name],material,road_position,None,dict(tileSurface=tile) if tile else None)
  turndb.close()
  # Buildings are clipped to the cell: a footprint crossing a border becomes two flush pieces that share the
  # whole building's base, height and palette, so no cell needs a neighbour (dependencies stay empty) to be safe.
- dependencies=set();maxbuilding=0;buildinggroups={};all_building_footprints=[];clipped=dict(pieces=0,dropped=0);cellbox=box(ox,oz,ox+512,oz+512)
+ dependencies=set();maxbuilding=0;derived_triangles=0;all_building_footprints=[];clipped=dict(pieces=0,dropped=0);cellbox=box(ox,oz,ox+512,oz+512)
  for data, in source.execute("SELECT o.data FROM spatial s CROSS JOIN objects o ON o.rowid=s.rowid WHERE o.kind='building' AND s.minx<=? AND s.maxx>=? AND s.minz<=? AND s.maxz>=? ORDER BY o.id",(ox+512,ox,oz+512,oz)):
   building=json.loads(data);footprints=[Polygon(part['footprint']) for part in building['parts']];all_building_footprints.extend(footprints)
   for part,footprint in zip(building['parts'],footprints):
@@ -345,13 +352,9 @@ def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=F
     corners=piece['footprint']
     t['buildings'].extend([identifier('building:'+pid),len(t['buildingCorners'])//2,len(corners),colour])
     t['buildingCorners'].extend(v for x,z in corners for v in (x-ox,z-oz));t['buildingHeights'].extend([base,piece['height']])
-    positions=[]
-    for i in range(0,len(piece['positions']),3):
-     x,y,z=piece['positions'][i:i+3];positions.extend([x+piece['origin'][0]-ox,y+base,z+piece['origin'][2]-oz])
-    positions,indices,shades=face_shaded(positions,piece['indices'])
-    ps,ix,cs=buildinggroups.setdefault(colour,([],[],[]));offset=len(ps)//3
-    ps.extend(positions);ix.extend(v+offset for v in indices);cs.extend(shades)
- for colour,(ps,ix,cs) in sorted(buildinggroups.items()):mesh(ps,ix,colour,cs)
+    # The wall and roof meshes are not stored: the runtime derives them from the footprint tables (world-tile-buildings.js).
+    if piece['triangles']!=3*len(corners)-2 or any(corners[k]==corners[(k+1)%len(corners)] for k in range(len(corners))):raise ValueError('Building footprint cannot be derived: '+pid)
+    derived_triangles+=piece['triangles']
  # Safe tow/spawn candidates use actual contacts and a bus-sized footprint.
  building_tree=STRtree(all_building_footprints)
  safe_road_area=unary_union([regions.surface(r) for r in near_roads if r['public']]).buffer(-.03)
@@ -384,17 +387,21 @@ def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=F
  if field.coast:
   water=field.coast.water(cell,field.roads);ps,ix=water_mesh(water,ox,oz)
   palette.append(linear('#426b80'));mesh(ps,ix,len(palette)-1,user_data=dict(water=True))
- triangles=sum(len(arrays[m['index']]['data'])//3 for m in meshes)
+ triangles=derived_triangles+sum((m['drawRange']['count'] if m.get('drawRange') else len(arrays[m['index']]['data']))//3 for m in meshes)
  road_sections=dict(schema=['class','width','lanes','sidewalkLeft','sidewalkRight','surface','oneway'],roads={owner:[(sec:=field.byid[owner]['section'])['class'],sec['width'],sec['lanes'],sec['sidewalk']['left'],sec['sidewalk']['right'],sec['surface'],sec['oneway']] for owner in sorted(roadtri)})
- extensions={}
+ extensions=dict(derivedBuildings=dict(version=1))
  if vegetation:
   vp,vk,vs=vegetation_rows(vegetation,field,all_building_footprints,rendered_height,int(triangles*.25))
-  extensions=dict(worldDetail=dict(version=1,buildings=dict(facadeStyle=array('Uint8Array',[0]*(len(t['buildings'])//4)),detailSeed=array('Uint32Array',[fnv1a(ids[t['buildings'][i]]) for i in range(0,len(t['buildings']),4)])),vegetation=dict(positionHeight=array('Float32Array',vp),kind=array('Uint8Array',vk),seed=array('Uint32Array',vs))))
+  extensions=dict(derivedBuildings=dict(version=1),worldDetail=dict(version=1,buildings=dict(facadeStyle=array('Uint8Array',[0]*(len(t['buildings'])//4)),detailSeed=array('Uint32Array',[fnv1a(ids[t['buildings'][i]]) for i in range(0,len(t['buildings']),4)])),vegetation=dict(positionHeight=array('Float32Array',vp),kind=array('Uint8Array',vk),seed=array('Uint32Array',vs))))
   validation['vegetationInstances']=len(vk)
 
  validation['streets']=streets;validation['clippedBuildings']=clipped;validation['excludedRoads']=dict(sorted(field.excluded_here.items()));validation['unresolvedBridges']=list(field.structures.unresolved) if field.structures else [];validation['renderContactTopIdentity']=True;validation['structures']=structure_records
  validation['graphEdges']=len(emitted_graph);validation['graphContactPoints']=len(t['edgePoints'])//3
  validation['turnRestrictions']=len(t['turns'])//4;validation['safeAnchors']=len(t['anchors'])//5;validation['releaseReady']=False
+ # One position array serves the fine triangles, the contact rows (which append any deck vertices to it) and the unlowered
+ # render meshes: the render and road meshes drew from copies of it, and on a decked cell the contact table from a third.
+ arrays[road_position if render_p is not p else render_position]['data']=t['contactPositions'];t['finePositions']=t['contactPositions']
+ if render_p is p:arrays[shared_colour]['data']=arrays[shared_colour]['data']+[0]*(len(t['contactPositions'])-len(p))
  metadata=dict(tileVersion=1,world=world,revision=revision,cell=list(cell),origin=[ox,0,oz],ids=ids,strings=strings,palette=palette,meshes=meshes,terrain=dict(coarseSize=33,spacing=16),budgets=dict(triangles=triangles,buildingTriangles=maxbuilding),developmentOnly=True,releaseReady=False,structures=structure_records,rails=rails,roadSections=road_sections,extensions=extensions)
  field.dem.close();db.close();source.close()
  return dict(metadata=metadata,tables=t,arrays=arrays,dependencies=sorted(dependencies)),validation

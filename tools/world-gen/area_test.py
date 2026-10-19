@@ -2,6 +2,7 @@
 import math,re,unittest
 from shapely.geometry import Polygon,box
 import areas
+from border_nodes import canonical_polygon,lift_border_runs
 from buildings import clipped_piece
 from tile_detail import bridge_edges,_prism
 
@@ -54,6 +55,20 @@ class Centre(unittest.TestCase):
         self.assertTrue(later, 'cells that did not fit the world ceiling remain listed'); self.assertFalse(later & set(areas.load('centre')['cells']))
 
 
+class CentreFull(unittest.TestCase):
+    def test_centre_full_extends_centre_with_every_candidate_cell(self):
+        f = areas.load('centre-full'); cells = f['cells']; centre = set(areas.load('centre')['cells']); cand = {tuple(x) for x in areas.load('centre-candidates')['spec']['land']}
+        self.assertEqual(f['parents'], ['centre']); self.assertEqual(len(cells), len(set(cells))); self.assertTrue(centre < set(cells))
+        self.assertTrue(cand <= set(cells), 'every candidate cell is baked'); self.assertEqual(len(cells), 450)
+        self.assertEqual(f['sources']['profiles'], 'profiles-ad.sqlite', 'baked from the caches that solved the Tavros underpass link at grade')
+    def test_cells_are_contiguous_from_the_spawn(self):
+        cells = set(areas.load('centre-full')['cells']); seen = {(4, 25)}; stack = [(4, 25)]
+        while stack:
+            x, z = stack.pop()
+            for n in ((x + 1, z), (x - 1, z), (x, z + 1), (x, z - 1)):
+                if n in cells and n not in seen: seen.add(n); stack.append(n)
+        self.assertEqual(seen, cells)
+
 class Clipping(unittest.TestCase):
  part=dict(height=12.0,heightSource='levels',landuse='residential',palette=3,id='w1:0')
  def test_building_across_a_border_is_two_flush_pieces(self):
@@ -70,6 +85,17 @@ class Clipping(unittest.TestCase):
  def test_piece_ids_are_valid_wire_ids_for_negative_cells(self):
   piece=clipped_piece('w9:1/-12:7.1',Polygon([(-5100,3600),(-5090,3600),(-5090,3612),(-5100,3612)]),self.part)
   self.assertTrue(ID.match(piece['id']),piece['id'])
+
+class Borders(unittest.TestCase):
+ def test_no_outline_edge_lies_on_a_border(self):
+  # A tip that reaches a border with a 2 cm edge along it would give one neighbour a triangle edge the other cannot have.
+  tip=Polygon([(500,0),(512,0),(512,.02),(520,5),(520,10),(500,10)])
+  def on_border(g):return [(a,b) for a,b in zip(g.exterior.coords,list(g.exterior.coords)[1:]) if a[0]==b[0]==512 and a[1]!=b[1]]
+  self.assertTrue(on_border(tip))
+  lifted=canonical_polygon(tip)
+  self.assertFalse(on_border(lifted));self.assertAlmostEqual(lifted.area,tip.area,delta=.5);self.assertTrue(lifted.is_valid)
+  self.assertTrue(any(c[0]==512 for c in lifted.exterior.coords),'the outline still crosses the border at a node both cells share')
+  square=Polygon([(100,100),(110,100),(110,110),(100,110)]);self.assertEqual(lift_border_runs(square).wkt,square.wkt,'polygons off the borders are untouched')
 
 class Guardrail(unittest.TestCase):
  def test_prism_faces_point_outward(self):

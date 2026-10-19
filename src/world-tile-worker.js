@@ -2,6 +2,7 @@ import { decodeTilePack } from './world-tile-codec.js';
 import { validateWorldTile, residentArrayBytes } from './world-tile-format.js';
 import { buildTileContactIndex } from './world-tile-contact.js';
 import { tileGPUPlan, tileRenderVariants } from './world-tile-gpu.js';
+import { addDerivedBuildings } from './world-tile-buildings.js';
 import {buildTileObstacleIndex,obstacleBytes} from './world-tile-obstacles.js';
 const controllers = new Map();
 async function limitedBuffer(stream,limit,onBytes=null) {
@@ -26,15 +27,21 @@ export async function fetchTilePacket({url,entry,world,revision,cell},signal,onB
 }
 export function prepareTilePacket(pack,{entry,world,revision,cell}){
   const checked=validateWorldTile(pack,{world,revision,cell});
+  // Footprints are stored once; their wall and roof meshes are built here, before bounds, GPU plan and byte accounting.
+  addDerivedBuildings(pack,checked.tables);
   const contactIndex=buildTileContactIndex(checked.tables,Math.floor(entry.decodedBytes/4));
   // Bounding volumes are built in the worker, avoiding a vertex scan during activation.
   let gpuBytes=0;const gpuViews=new Map();
   for(const mesh of pack.metadata.meshes) {
     const p=pack.arrays[mesh.attributes.position.array],n=p.length/3,decode=mesh.userData?.terrainDecode;
     const residual=decode?pack.arrays[mesh.attributes.aHeightResidual.array]:null,min=[Infinity,Infinity,Infinity],max=[-Infinity,-Infinity,-Infinity];
-    for(let i=0;i<n;i++)for(let axis=0;axis<3;axis++){
-      let value=p[i*3+axis]; if(decode){value=Math.fround(decode.offset[axis]+value*decode.scale[axis]);if(axis===1)value=Math.fround(value+residual[i]);}
-      min[axis]=Math.min(min[axis],value);max[axis]=Math.max(max[axis],value);
+    // Meshes may be windows over an index array shared with other meshes: bound only the vertices the window draws.
+    const indexed=!decode&&mesh.index!=null?pack.arrays[mesh.index]:null,first=mesh.drawRange?.start??0,last=indexed?first+(mesh.drawRange?.count??indexed.length):n;
+    for(let k=indexed?first:0;k<(indexed?last:n);k++){const i=indexed?indexed[k]:k;
+      for(let axis=0;axis<3;axis++){
+        let value=p[i*3+axis]; if(decode){value=Math.fround(decode.offset[axis]+value*decode.scale[axis]);if(axis===1)value=Math.fround(value+residual[i]);}
+        min[axis]=Math.min(min[axis],value);max[axis]=Math.max(max[axis],value);
+      }
     }
     if(n)mesh.bounds={box:[...min,...max],sphere:[...min.map((v,i)=>(v+max[i])/2),Math.hypot(...min.map((v,i)=>(max[i]-v)/2))]};
     for(const [name,a]of Object.entries(mesh.attributes)){

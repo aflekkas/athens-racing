@@ -20,6 +20,7 @@ from shapely.geometry import LineString, Point, box, shape
 from shapely.ops import unary_union
 from elevation import Elevation
 from ingest import encode,sha
+import tunnels
 
 
 def solve_constraints(heights,a,b,gaps,minimum,max_iterations=2000,tolerance=.002):
@@ -71,7 +72,7 @@ def solve_constraints(heights,a,b,gaps,minimum,max_iterations=2000,tolerance=.00
 
 def build(source,output,stage,dems,extra_cells=None):
     started=time.monotonic();output=Path(output)
-    code=b''.join(Path(__file__).with_name(n).read_bytes() for n in ('profiles.py','elevation.py','model.py','appearance.py'))
+    code=b''.join(Path(__file__).with_name(n).read_bytes() for n in ('profiles.py','elevation.py','model.py','appearance.py','tunnels.py','tunnels.json'))
     inputs=dict(sourceSha256=sha(source),stage=stage,dem=[dict(name=Path(p).name,sha256=sha(p)) for p in sorted(dems)],codeSha256=hashlib.sha256(code).hexdigest())
     # Cells listed here (an area file's land + sea) extend the stage mask by one cell of road context; absent for the original stage-A cache.
     if extra_cells is not None:inputs['extraCells']=hashlib.sha256(json.dumps(sorted(map(list,extra_cells))).encode()).hexdigest()
@@ -101,6 +102,8 @@ def build(source,output,stage,dems,extra_cells=None):
     for (data,) in source_db.execute("SELECT o.data FROM objects o JOIN spatial s USING(rowid) WHERE o.kind='road' AND s.minx<=? AND s.maxx>=? AND s.minz<=? AND s.maxz>=? ORDER BY o.id",(xx,x,zz,z)):
         road=json.loads(data);line=LineString(road['points'])
         if not mask.intersects(line):continue
+        # A listed underpass link (tunnels.json) is solved and drawn as an ordinary layer 0 street.
+        if tunnels.apply(dict(road))!=road:road=tunnels.apply(road);data=encode(road)
         # Complete roads are retained to avoid inventing stage-boundary nodes.
         row=db.execute('INSERT INTO roads(id,data) VALUES(?,?)',(road['id'],data)).lastrowid
         a,b,c,d=line.bounds;db.execute('INSERT INTO spatial VALUES(?,?,?,?,?)',(row,a,c,b,d))

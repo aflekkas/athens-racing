@@ -4,7 +4,9 @@ import { mkdtemp, writeFile, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { TILE_TABLES } from '../../src/world-tile-format.js';
-import { encodeTile, packTiles } from './pack.mjs';
+import { encodeTile, packTiles, WORLD_CEILING_BYTES } from './pack.mjs';
+import { readFileSync } from 'node:fs';
+import { LIMIT } from '../world-r2.mjs';
 function fixture(x=0) {
   const tables=Object.fromEntries(Object.keys(TILE_TABLES).map(k=>[k,[]]));
   tables.coarseHeights=Array(1089).fill(0);
@@ -64,4 +66,11 @@ test('Spool refuses physically steep asphalt even when the tile is structurally 
     await assert.rejects(packTiles(path,join(root,'out')),/Physical surface acceptance failed/);
     await assert.rejects(readFile(join(root,'out','entries.json')),/ENOENT/);
   }finally{await rm(root,{recursive:true,force:true});}
+});
+
+test('the packer\'s world ceiling is the owner\'s 2 GiB (2026-10-19), still inside the R2 staging limit, and is the only ceiling the supervisor passes',()=>{
+  assert.equal(WORLD_CEILING_BYTES,2*1024**3);assert.ok(WORLD_CEILING_BYTES<LIMIT,'the staging bucket limit (5 GB) is separate and unchanged');
+  const supervisor=readFileSync(new URL('./build-coast.mjs',import.meta.url),'utf8');
+  assert.match(supervisor,/maxBytes:WORLD_CEILING_BYTES/);assert.doesNotMatch(supervisor,/192\*1024/);
+  assert.match(readFileSync(new URL('../../docs/OWNER-DECISIONS.md',import.meta.url),'utf8'),/ceiling raised to 2 GB/);
 });

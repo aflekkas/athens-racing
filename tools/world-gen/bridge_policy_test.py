@@ -1,5 +1,20 @@
 import unittest
 from bridge_policy import require_bridge_yes,connected_approaches,exclusion_reason
+import tunnels
+class Tunnels(unittest.TestCase):
+ def test_a_listed_underpass_is_drawn_at_grade_and_nothing_else_changes(self):
+  listed=sorted(tunnels.AT_GRADE)[0]
+  tunnel=dict(id=listed,tunnel=True,bridge=False,layer=-1)
+  self.assertEqual(exclusion_reason(tunnel,None),'tunnel')
+  tunnels.apply(tunnel)
+  self.assertEqual((tunnel['tunnel'],tunnel['bridge'],tunnel['layer']),(False,False,0))
+  self.assertIsNone(exclusion_reason(tunnel,None))
+  other=dict(id='w1:0',tunnel=True,bridge=False,layer=-1)
+  tunnels.apply(other)
+  self.assertEqual(exclusion_reason(other,None),'tunnel','every other tunnel is still left out')
+  self.assertEqual(tunnels.apply(dict(tunnel))==tunnel,True,'idempotent')
+ def test_every_entry_names_a_tunnel_and_says_why(self):
+  for entry in tunnels.PLAN:self.assertTrue(entry['reason'] and entry['tunnel'].startswith('w'))
 class Policy(unittest.TestCase):
  def road(self,i,a,b,za,zb,name='A'):
   return dict(id=i,way=i,fromNode=a,toNode=b,points=[[0,za],[0,zb]],name=name,highway='primary',tunnel=False)
