@@ -1,0 +1,61 @@
+{
+  "tag": "before",
+  "cam": "cockpit",
+  "class": "potato",
+  "rivals": 0,
+  "query": "",
+  "farCull": 0,
+  "sourceHashes": {
+    "src/far-cull.js": null
+  },
+  "poses": {
+    "straight": {
+      "managed": null,
+      "hidden": null,
+      "updateMs": null,
+      "s": 5712,
+      "x": 3324,
+      "z": 1466,
+      "calls": [
+        252,
+        205,
+        205,
+        252,
+        205,
+        205
+      ],
+      "triangles": 1139188,
+      "speedKmh": 15
+    },
+    "corner": {
+      "managed": null,
+      "hidden": null,
+      "updateMs": null,
+      "s": 9394,
+      "x": 5571,
+      "z": 2307,
+      "calls": [
+        156,
+        121,
+        121,
+        156,
+        121,
+        121
+      ],
+      "triangles": 529081,
+      "speedKmh": 44
+    }
+  },
+  "errors": [],
+  "route": {
+    "straight": {
+      "s": 5710,
+      "runLength": 730
+    },
+    "corner": {
+      "s": 9380,
+      "curvature": 0.028610557317733765,
+      "radius": 35
+    }
+  }
+}

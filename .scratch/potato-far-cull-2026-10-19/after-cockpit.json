@@ -1,0 +1,179 @@
+{
+  "tag": "after",
+  "cam": "cockpit",
+  "class": "potato",
+  "rivals": 0,
+  "query": "",
+  "farCull": 340,
+  "sourceHashes": {
+    "src/far-cull.js": "11ce97be04117e798c5a440b71ef1df38b37f00fc6b70c6c5f3ba7412d49c740"
+  },
+  "poses": {
+    "straight": {
+      "leaks": [
+        {
+          "path": "map-world:riviera > Mesh",
+          "meshAutoUpdate": true,
+          "ancestorsStatic": true,
+          "radius": 131,
+          "nearestM": 2452
+        },
+        {
+          "path": "map-world:riviera > Points",
+          "meshAutoUpdate": true,
+          "ancestorsStatic": true,
+          "radius": 0,
+          "nearestM": 175989
+        },
+        {
+          "path": "map-world:riviera > Points",
+          "meshAutoUpdate": true,
+          "ancestorsStatic": true,
+          "radius": 0,
+          "nearestM": 175989
+        },
+        {
+          "path": "map-world:riviera > Points",
+          "meshAutoUpdate": true,
+          "ancestorsStatic": true,
+          "radius": 0,
+          "nearestM": 175989
+        },
+        {
+          "path": "map-world:riviera > Mesh",
+          "meshAutoUpdate": true,
+          "ancestorsStatic": true,
+          "radius": 0,
+          "nearestM": 175989
+        },
+        {
+          "path": "map-world:riviera > world-detail-layers > Mesh",
+          "meshAutoUpdate": true,
+          "ancestorsStatic": false,
+          "radius": 115,
+          "nearestM": 2378
+        },
+        {
+          "path": "map-world:riviera > world-detail-layers > Mesh",
+          "meshAutoUpdate": true,
+          "ancestorsStatic": false,
+          "radius": 183,
+          "nearestM": 2345
+        },
+        {
+          "path": "Points",
+          "meshAutoUpdate": true,
+          "ancestorsStatic": true,
+          "radius": 1333,
+          "nearestM": 1480
+        }
+      ],
+      "leakCount": 8,
+      "managed": 817,
+      "hidden": 737,
+      "updateMs": 0.438,
+      "s": 5712,
+      "x": 3324,
+      "z": 1465,
+      "calls": [
+        139,
+        103,
+        103,
+        139,
+        103,
+        103
+      ],
+      "triangles": 412775,
+      "speedKmh": 14
+    },
+    "corner": {
+      "leaks": [
+        {
+          "path": "map-world:riviera > Mesh",
+          "meshAutoUpdate": true,
+          "ancestorsStatic": true,
+          "radius": 131,
+          "nearestM": 3679
+        },
+        {
+          "path": "map-world:riviera > Points",
+          "meshAutoUpdate": true,
+          "ancestorsStatic": true,
+          "radius": 0,
+          "nearestM": 177806
+        },
+        {
+          "path": "map-world:riviera > Points",
+          "meshAutoUpdate": true,
+          "ancestorsStatic": true,
+          "radius": 0,
+          "nearestM": 177806
+        },
+        {
+          "path": "map-world:riviera > Points",
+          "meshAutoUpdate": true,
+          "ancestorsStatic": true,
+          "radius": 0,
+          "nearestM": 177806
+        },
+        {
+          "path": "map-world:riviera > Mesh",
+          "meshAutoUpdate": true,
+          "ancestorsStatic": true,
+          "radius": 0,
+          "nearestM": 177806
+        },
+        {
+          "path": "map-world:riviera > world-detail-layers > Mesh",
+          "meshAutoUpdate": true,
+          "ancestorsStatic": false,
+          "radius": 115,
+          "nearestM": 4425
+        },
+        {
+          "path": "map-world:riviera > world-detail-layers > Mesh",
+          "meshAutoUpdate": true,
+          "ancestorsStatic": false,
+          "radius": 183,
+          "nearestM": 4405
+        },
+        {
+          "path": "Points",
+          "meshAutoUpdate": true,
+          "ancestorsStatic": true,
+          "radius": 1333,
+          "nearestM": 3831
+        }
+      ],
+      "leakCount": 8,
+      "managed": 817,
+      "hidden": 766,
+      "updateMs": 0.196,
+      "s": 9394,
+      "x": 5571,
+      "z": 2307,
+      "calls": [
+        91,
+        91,
+        125,
+        91,
+        91,
+        125
+      ],
+      "triangles": 562508,
+      "speedKmh": 44
+    }
+  },
+  "errors": [],
+  "route": {
+    "straight": {
+      "s": 5710,
+      "runLength": 730
+    },
+    "corner": {
+      "s": 9380,
+      "curvature": 0.028610557317733765,
+      "radius": 35
+    }
+  }
+}

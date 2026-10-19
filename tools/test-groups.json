@@ -217,7 +217,9 @@
     "tools/world-connectivity-audit.test.mjs",
     "tools/badge-set.test.mjs",
     "tools/dynamic-floor.test.mjs",
-    "tools/draw-call-budget.test.mjs"
+    "tools/draw-call-budget.test.mjs",
+    "tools/far-cull.test.mjs",
+    "tools/far-cull-budget.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",

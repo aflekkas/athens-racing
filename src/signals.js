@@ -164,6 +164,7 @@ export class Signals {
       // soft halos so the lit lamp reads from far away and from the cockpit
       j.haloMat = new THREE.SpriteMaterial({ map: glow, color: LAMP_COL[2], transparent: true, opacity: 0.55, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
       j.halos = j.heads.map(() => { const sp = new THREE.Sprite(j.haloMat); sp.scale.setScalar(1.15); g.add(sp); return sp; });
+      for (const o of g.children) o.userData.farCull = true; // the lamp parts and halos of a junction never move: Potato's far cull (far-cull.js) may stop drawing them when far away
       j.main = null; this.paint(j);
     }
   }

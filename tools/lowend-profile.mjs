@@ -3,7 +3,7 @@
 // headless Chromium. Private server on its own random port, ?simhook race with traffic + 2 rivals + police.
 //   tools/browser-slot.sh node tools/lowend-profile.mjs --root <archive> --map riviera --class potato --throttle 4 --out r.json
 // Options: --map riviera|megara · --class potato|low|med|high (settings.perfClass) · --throttle N (CDP CPU rate) ·
-//   --realtime (wait on the live loop instead of the deterministic stepped warm-up) · --rivals N (grid rivals, default 2) · --traffic N · --police off · --calls [--depth N] (draw calls per owner) · --viewport 640x360 · --seconds 15 · --warm 6 · --cap 60 · --dyn (leave dynamic resolution on) · --noworld (world detail off)
+//   --realtime (wait on the live loop instead of the deterministic stepped warm-up) · --rivals N (grid rivals, default 2) · --traffic N · --police off · --calls [--depth N] (draw calls per owner) · --viewport 640x360 · --seconds 15 · --warm 6 · --cap 60 · --dyn (leave dynamic resolution on) · --noworld (world detail off) · --query farcull=300 (extra URL parameters)
 import { createGameServer } from '../server/index.mjs';
 import fs from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -35,7 +35,7 @@ try {
     localStorage.setItem('paraliaki.settings', JSON.stringify({ perfClass: cls, dynamicResolution: dyn, hudMotion: 'full', frameCap: cap, worldDetail: !noworld }));
     let seed = 9001; Math.random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
   }, { cls, cap, dyn: !!arg('dyn', false), noworld: !!arg('noworld', false) });
-  await page.goto(`http://127.0.0.1:${port}/?simhook&map=${map}&guest=1&autodrive&cpuProfile&car=mini`, { waitUntil: 'domcontentloaded', timeout: 180000 });
+  await page.goto(`http://127.0.0.1:${port}/?simhook&map=${map}&guest=1&autodrive&cpuProfile&car=mini${arg('query', false) ? '&' + arg('query') : ''}`, { waitUntil: 'domcontentloaded', timeout: 180000 });
   await page.waitForFunction(() => window.__sim?.player && document.body.classList.contains('loaded'), null, { timeout: 600000 });
   console.log('loaded', map, cls);
   await page.evaluate(async (opts) => {
@@ -143,11 +143,11 @@ try {
         r.renderBufferDirect = function (camera, scene, geometry, material, object, group) {
           const kind = (object.isInstancedMesh ? 'instanced' : object.isSkinnedMesh ? 'skinned' : object.isSprite ? 'sprite' : object.isPoints ? 'points' : object.isLine ? 'line' : 'mesh') + (material.transparent ? '/transparent' : '');
           const key = path(object) + ' | ' + kind + (depth > 3 ? ' | ' + (material.name || material.type) : ''); const e = rows.get(key) || { calls: 0, tris: 0, materials: new Set() };
-          e.calls++; total++; e.tris += (geometry.index ? geometry.index.count : geometry.attributes.position?.count || 0) / 3; e.materials.add(material.uuid); mats.add(material.uuid); rows.set(key, e);
+          e.calls++; total++; { const bs = object.boundingSphere || geometry.boundingSphere; if (bs) { const c = bs.center.clone().applyMatrix4(object.matrixWorld), d = Math.max(0, c.distanceTo(s.camera.position) - bs.radius * object.matrixWorld.getMaxScaleOnAxis()); e.dMin = Math.min(e.dMin ?? Infinity, d); e.dMax = Math.max(e.dMax ?? 0, d); } } e.tris += (geometry.index ? geometry.index.count : geometry.attributes.position?.count || 0) / 3; e.materials.add(material.uuid); mats.add(material.uuid); rows.set(key, e);
           return orig.apply(this, arguments);
         };
         s.render(); r.renderBufferDirect = orig;
-        frames.push({ total, materials: mats.size, rows: [...rows].map(([k, v]) => ({ owner: k, calls: v.calls, tris: Math.round(v.tris), materials: v.materials.size })).sort((a, b) => b.calls - a.calls).slice(0, 90) });
+        frames.push({ total, materials: mats.size, rows: [...rows].map(([k, v]) => ({ owner: k, calls: v.calls, tris: Math.round(v.tris), materials: v.materials.size, nearestM: v.dMin == null ? null : Math.round(v.dMin), farthestM: v.dMax == null ? null : Math.round(v.dMax) })).sort((a, b) => b.calls - a.calls).slice(0, 90) });
       }
       frames.sort((a, b) => a.total - b.total);
       return { main: frames[0], mirror: frames[2] };
