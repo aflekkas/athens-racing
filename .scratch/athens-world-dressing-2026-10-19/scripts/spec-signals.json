@@ -1,0 +1,7 @@
+[
+ {"name":"signals-street-red","car":[506,456],"carcam":[0,3.4,13,34],"pre":"if(A.props)A.props.timeOverride=0","wait":7000},
+ {"name":"signals-close-red","car":[506,456],"at":[494,443],"cam":[13,3.4,11],"lookUp":3.2,"far":600,"pre":"if(A.props)A.props.timeOverride=0","wait":4000},
+ {"name":"signals-close-amber","car":[506,456],"at":[494,443],"cam":[13,3.4,11],"lookUp":3.2,"far":600,"pre":"if(A.props)A.props.timeOverride=25.9","wait":2500},
+ {"name":"signals-close-green","car":[506,456],"at":[494,443],"cam":[13,3.4,11],"lookUp":3.2,"far":600,"pre":"if(A.props)A.props.timeOverride=12","wait":2500},
+ {"name":"signals-above","car":[506,456],"at":[490,440],"cam":[25,50,40],"far":700,"pre":"if(A.props)A.props.timeOverride=0","wait":4000}
+]

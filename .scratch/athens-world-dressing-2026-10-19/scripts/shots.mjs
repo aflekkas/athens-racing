@@ -32,6 +32,7 @@ try{
         const [ax,az,ry]=cfg.at,c=A.stream.contact(ax,az,{referenceY:cfg.deckAt?v.y:(ry??v.y),layer:cfg.layer}),y=cfg.fixedY??(c?c.y:v.y);
         cam.position.set(ax-o.x+cfg.cam[0],y+cfg.cam[1],az-o.z+cfg.cam[2]);cam.lookAt(ax-o.x,y+(cfg.lookUp||0),az-o.z);
       });},[{at:s.deck&&!s.at?[s.deck[0],s.deck[1]]:s.at,cam:s.cam,far:s.far,lookUp:s.lookUp,carcam:s.carcam,layer:s.layer,fixedY:s.fixedY,deckAt:!!s.deck&&!s.at}]);
+    if(s.pre)await page.evaluate(code=>{const A=window.__athens;return eval(code);},s.pre);
     await page.waitForTimeout(s.wait||9000);await page.screenshot({path:`${outdir}/${s.name}.png`});const info=await page.evaluate(()=>{const A=window.__athens,i=A.renderer.info;i.autoReset=false;i.reset();A.render(.016);const out={calls:i.render.calls,triangles:i.render.triangles,textures:i.memory.textures,geometries:i.memory.geometries};i.autoReset=true;return out;});report.shots.push({name:s.name,placed:res,info});console.log('shot',s.name,JSON.stringify(res));
   }
 }catch(e){report.failure=e.stack;console.log(e.stack)}finally{await browser.close();server.close();console.log(JSON.stringify({errors:report.errors.slice(0,6),worldBytes:c.world.bytes,cells:c.world.count}));const {writeFile}=await import('node:fs/promises');await writeFile(outdir+'/report.json',JSON.stringify(report,null,1));}
