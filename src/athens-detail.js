@@ -105,7 +105,20 @@ export const GROUND_APPLY=`{float k=uWorldDetail*(1.-smoothstep(160.,360.,vGroun
 
 /** Facade: tiled window / balcony / shopfront rhythm per 3.05 m floor, chosen by facade style 0..7 (FACADE_STYLES). */
 export const FACADE_GLSL=`${NOISE_GLSL}
-varying vec3 vFac;varying vec2 vFacP;varying float vFacDist;
+varying vec3 vFac;varying vec2 vFacP;varying float vFacDist;varying vec3 vFacW;varying vec3 vFacCam;
+// Derived buildings carry no vertex colour: each flat face is shaded here from its own normal (screen-space derivatives of the
+// local position), the bake's old face_shaded() values: roofs 1, walls .75+.10*(n.x*-.6+n.z*-.8) in display space, as linear.
+// A mesh that still has vertex colours (an older bake) is shaded by them, through color_fragment, and gets 1 here.
+float wallShade(){
+#ifdef USE_COLOR
+  return 1.;
+#else
+  vec3 n=normalize(cross(dFdx(vFacW),dFdy(vFacW)));
+  if(dot(n,vFacCam-vFacW)<0.)n=-n; // the visible face is the outward one, whatever the handedness of the view (mirrors flip it)
+  float level=abs(n.y)>.9?1.:.75+.10*(n.x*-.6+n.z*-.8);
+  return level<=.04045?level/12.92:pow((level+.055)/1.055,2.4);
+#endif
+}
 float rect(vec2 q,vec2 lo,vec2 hi,vec2 aa){vec2 s=smoothstep(lo-aa,lo+aa,q)-smoothstep(hi-aa,hi+aa,q);return s.x*s.y;}
 vec3 signColour(float r){return r<.25?vec3(.62,.36,.3):r<.5?vec3(.3,.42,.5):r<.75?vec3(.82,.76,.58):vec3(.42,.52,.42);}
 vec3 facadeMul(float u,float v,float st){
@@ -145,9 +158,9 @@ vec3 roofMul(vec2 p){vec4 n=texture2D(detailMap,p/8.);return vec3((.78+.14*n.r)*
 vec3 facadeOrRoof(){
   bool roof=vFac.x>6553.;vec3 m=roof?roofMul(vFacP):facadeMul(vFac.x,vFac.y,floor(vFac.z+.5));
   float k=uWorldDetail*(1.-smoothstep(150.,260.,vFacDist));return mix(vec3(1.),mix(vec3(.86),m,k),uWorldDetail);}`;
-export const FACADE_VERTEX_VARYINGS='attribute vec2 aFacade;varying vec3 vFac;varying vec2 vFacP;varying float vFacDist;';
-export const FACADE_VERTEX_BODY='vFac=vec3(aFacade.x*.1,mod(aFacade.y,4096.)*.1,floor(aFacade.y/4096.));vFacP=position.xz;vFacDist=length((modelViewMatrix*vec4(position,1.)).xyz);';
-export const FACADE_APPLY='diffuseColor.rgb*=facadeOrRoof();';
+export const FACADE_VERTEX_VARYINGS='attribute vec2 aFacade;varying vec3 vFac;varying vec2 vFacP;varying float vFacDist;varying vec3 vFacW;varying vec3 vFacCam;';
+export const FACADE_VERTEX_BODY='vFac=vec3(aFacade.x*.1,mod(aFacade.y,4096.)*.1,floor(aFacade.y/4096.));vFacP=position.xz;vFacW=position;vFacCam=cameraPosition-modelMatrix[3].xyz;vFacDist=length((modelViewMatrix*vec4(position,1.)).xyz);';
+export const FACADE_APPLY='diffuseColor.rgb*=facadeOrRoof()*wallShade();';
 
 /** Sea: colour only. Two scrolling ridge layers (different scales and directions) over slow deep/shallow patches. */
 export const SEA_GLSL=`${NOISE_GLSL}

@@ -39,6 +39,10 @@ STRUCTURE_EXCLUSIONS=_plan('structure-exclusions.json')
 # Streets whose 6 m shoulders cannot reach the gates (asphalt <= 30 degrees, 15 cm steps) on steep ground: found by the
 # bake's own physical audit (offenders), listed with the gate they failed, reviewed and committed.
 STEEP_EXCLUSIONS=_plan('steep-exclusions.json')
+# Cells whose street geometry near a border depends on a road more than 96 m away (a long straight kerb edge whose far end
+# the neighbour sees and this cell's window does not: the crossing then rounds one 2 cm step differently, a cracked seam).
+# Found by the bake's own seam check, listed with the halo that fixes it (metres), reviewed and committed.
+SEAM_HALOS={tuple(map(int,k.split(','))):v for k,v in (json.loads((Path(__file__).parent/'seam-halos.json').read_text()) if (Path(__file__).parent/'seam-halos.json').exists() else {}).items()}
 EXCLUDED={e['id'] for e in [*COAST_EXCLUSIONS,*STRUCTURE_EXCLUSIONS,*STEEP_EXCLUSIONS]}
 EXCLUSION_REASONS={e['id']:e['reason'] for e in [*COAST_EXCLUSIONS,*STRUCTURE_EXCLUSIONS,*STEEP_EXCLUSIONS]}
 
@@ -182,7 +186,7 @@ def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=F
  field.land.extend(park_areas(vegetation,field.ox,field.oz));field.landtree=STRtree([p for p,t in field.land])
  # Surfaces within 96 m of the cell decide everything inside it (reach, fillets and ramps are all < 40 m): a
  # window keeps the global geometry identical across cells without unioning the whole 1.5 km height halo.
- window=box(field.ox-96,field.oz-96,field.ox+608,field.oz+608);near_roads=[r for r in field.ground_roads if r['line'].intersects(window)]
+ halo=SEAM_HALOS.get(tuple(cell),96);window=box(field.ox-halo,field.oz-halo,field.ox+512+halo,field.oz+512+halo);near_roads=[r for r in field.ground_roads if r['line'].intersects(window)]
  regions=StreetRegions(near_roads,clip=field.deck_clip)
  # Owner polygons include each street's share of the junction fillets; the kerb/sidewalk rise is added per vertex.
  mesh_roads=[dict(r,polygon=regions.surface(r)) for r in near_roads]
@@ -299,6 +303,10 @@ def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=F
    if clearance<4.5:raise ValueError('Insufficient bridge clearance '+g['id']+': '+str(clearance))
    if clearances and min(clearances)<4.5:raise ValueError('Underpass road clearance below 4.5 m: '+str(min(clearances))+' ('+g['id']+')')
    structure_records.append(dict(id=g['id'],kind='osm-bridge-guarded',layer=1,shoulderMetres=.25,bridgeSources=g['bridgeSources'],clearance=min(clearances or [clearance]),clearanceSamples=len(clearances),roads=[r['id'] for r in g['roads']]))
+  # A long raised approach reaches cells that load none of its bridge ways: guarded like the deck it belongs to, but this cell holds
+  # no crossing to gate, so no clearance is measured here (the cells with the crossing carry that gate).
+  for g in field.structures.approaches(box(ox-8,oz-8,ox+520,oz+520)):
+   structure_records.append(dict(id=g['id'],kind='osm-bridge-guarded',layer=1,shoulderMetres=.25,approachOnly=True,bridgeSources=g['bridgeSourcesAll'],clearance=None,clearanceSamples=0,roads=[r['id'] for r in g['roads']]))
  def road_height(edge,x,z):return deck_height(x,z) if deck_height and edge['source'] in field.structures.raised else rendered_height(x,z)
  # Directed graph is clipped globally; sample final emitted contacts for Y.
  graphdb=sqlite3.connect(f'file:{graphpath}?mode=ro',uri=True)
