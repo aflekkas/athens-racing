@@ -32,3 +32,4 @@ MARKING=linear('#e5e5dd')
 ROAD_CONCRETE=linear('#6c7172')
 ROAD_PAVING=linear('#85817a')
 ROAD_UNPAVED=linear('#8c7d60')
+GUARDRAIL=linear('#b9bec2')  # galvanised steel beam and posts on bridge decks

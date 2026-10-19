@@ -38,22 +38,43 @@ def vegetation_rows(path,field,buildings,height,triangle_budget):
  db.close();return positions,kinds,seeds
 
 
+def _prism(ps,ix,a,b,ya,yb,w,lo,hi,ends=False):
+ """Box along a->b (cell-local x,z), `w` either side of the line, from deck+lo to deck+hi. Outward-wound quads."""
+ (x,z),(xx,zz)=a,b;dx,dz=xx-x,zz-z;length=math.hypot(dx,dz)
+ if length<1e-6:return
+ rx,rz=-dz/length*w,dx/length*w;start=len(ps)//3
+ for px,pz,py in [(x-rx,z-rz,ya),(x+rx,z+rz,ya),(xx+rx,zz+rz,yb),(xx-rx,zz-rz,yb)]:ps.extend([px,py+lo,pz])
+ for px,pz,py in [(x-rx,z-rz,ya),(x+rx,z+rz,ya),(xx+rx,zz+rz,yb),(xx-rx,zz-rz,yb)]:ps.extend([px,py+hi,pz])
+ cx=sum(ps[(start+i)*3] for i in range(8))/8;cy=sum(ps[(start+i)*3+1] for i in range(8))/8;cz=sum(ps[(start+i)*3+2] for i in range(8))/8
+ faces=[(0,3,7,4),(1,2,6,5),(4,5,6,7)]+([(0,1,5,4),(3,2,6,7)] if ends else [])
+ for q in faces:
+  v=[start+i for i in q];p=[ps[i*3:i*3+3] for i in v]
+  n=[(p[1][1]-p[0][1])*(p[2][2]-p[0][2])-(p[1][2]-p[0][2])*(p[2][1]-p[0][1]),(p[1][2]-p[0][2])*(p[2][0]-p[0][0])-(p[1][0]-p[0][0])*(p[2][2]-p[0][2]),(p[1][0]-p[0][0])*(p[2][1]-p[0][1])-(p[1][1]-p[0][1])*(p[2][0]-p[0][0])]
+  mid=[sum(c[k] for c in p)/4-(cx,cy,cz)[k] for k in range(3)]
+  if sum(n[k]*mid[k] for k in range(3))<0:v=v[::-1]
+  ix.extend([v[0],v[1],v[2],v[0],v[2],v[3]])
+
+
 def bridge_edges(platform,cell,deck,ground):
- """A half-metre slab and low concrete edge rails, protecting the explicitly permitted narrow OSM bridge shoulder."""
+ """A half-metre slab edge with a kerb lip, and a low post-and-beam guardrail on it (posts every 4 m).
+
+ Returns (fascia, guardrail, rails): two (positions, indices) meshes and the collision rail list. The collision rail is
+ unchanged: a solid 0.3 m wide, 0.65 m high swept volume along the deck edge, so what a car hits is at least what is drawn."""
  from shapely.geometry import box,LineString
  from street_details import lines
- ox,oz=(v*512 for v in cell);bounds=box(ox,oz,ox+512,oz+512);ps=[];ix=[];rails=[]
- for line in lines(platform.buffer(-.15,join_style=2).boundary.intersection(bounds)):
+ ox,oz=(v*512 for v in cell);bounds=box(ox,oz,ox+512,oz+512);fp=[];fi=[];gp=[];gi=[];rails=[]
+ # On the deck edge itself: an inward offset retreats at acute corners, leaving the corner more than the gate's 0.22 m from any rail.
+ for line in lines(platform.boundary.intersection(bounds)):
   points=list(line.coords)
   for a,b in zip(points,points[1:]):
    n=max(1,math.ceil(math.dist(a,b)/4))
    for k in range(n):
     x,z=(a[j]+(b[j]-a[j])*k/n for j in (0,1));xx,zz=(a[j]+(b[j]-a[j])*(k+1)/n for j in (0,1));y,yy=deck(x,z),deck(xx,zz)
     if max(y-ground(x,z),yy-ground(xx,zz))<.15:continue
-    dx,dz=xx-x,zz-z;length=math.hypot(dx,dz);rx,rz=-dz/length*.15,dx/length*.15;start=len(ps)//3
-    for px,pz,py in [(x+rx,z+rz,y),(x-rx,z-rz,y),(xx-rx,zz-rz,yy),(xx+rx,zz+rz,yy)]:
-     ps.extend([px-ox,py-.5,pz-oz,px-ox,py+.65,pz-oz])
-    for u,v in [(0,2),(2,4),(4,6),(6,0)]:ix.extend([start+u,start+v,start+u+1,start+u+1,start+v,start+v+1])
-    ix.extend([start+1,start+3,start+5,start+1,start+5,start+7])
+    p,q=(x-ox,z-oz),(xx-ox,zz-oz)
+    _prism(fp,fi,p,q,y,yy,.15,-.5,.1)        # slab edge, 10 cm lip above the deck surface
+    _prism(gp,gi,p,q,y,yy,.04,.37,.65)       # beam, 28 cm tall, top at the collision rail's height
+    ex,ez=(q[0]-p[0])/max(math.dist(p,q),1e-6)*.06,(q[1]-p[1])/max(math.dist(p,q),1e-6)*.06
+    _prism(gp,gi,(p[0]-ex,p[1]-ez),(p[0]+ex,p[1]+ez),y,y,.06,.1,.65,True)  # post at the segment start
     rails.append([x-ox,y,z-oz,xx-ox,yy,zz-oz,.65])
- return ps,ix,rails
+ return (fp,fi),(gp,gi),rails

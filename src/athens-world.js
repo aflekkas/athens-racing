@@ -68,7 +68,7 @@ export async function bootAthens(){
  loading.hide();document.body.classList.remove('menu-backdrop');document.body.classList.add('loaded','racing');document.getElementById('ui').replaceChildren();
  for(const id of ['posBox','mapBox','sigBox','rbar','rToGo'])document.getElementById(id).style.display='none';
  document.getElementById('rZone').textContent='ATHENS';document.getElementById('rRoad').textContent='FREE ROAM';
- const tacho=document.getElementById('tacho'),dial={tacho,tctx:tacho.getContext('2d')};
+ const tacho=document.getElementById('tacho'),dial=Object.assign(Object.create(Hud.prototype),{tacho,tctx:tacho.getContext('2d')}); // the tacho is Hud's own drawing code, so the dial needs Hud's methods (tachoBase, fontsReady) too
  let sharedMemory=estimateSceneMemory(scene),sharedJS=sharedMemory.geometryBytes+sharedMemory.textureBytes;
  function inventory(){sharedMemory=estimateSceneMemory(scene);sharedJS=sharedMemory.geometryBytes+sharedMemory.textureBytes;let tileJS=0,tileGPU=0;for(const t of stream.tiles.values())if(t.packet){tileJS+=t.packet.jsBytes;tileGPU+=t.packet.gpuBytes;}
   const size=renderer.getDrawingBufferSize(new THREE.Vector2()),targets=size.x*size.y*20+16*MiB;
@@ -107,7 +107,7 @@ export async function bootAthens(){
   const fx=-Math.sin(v.yaw),fz=-Math.cos(v.yaw),target=new THREE.Vector3(v.x-o.x-fx*8,v.y+3.8,v.z-o.z-fz*8);
   camera.position.copy(target);camera.lookAt(v.x-o.x+fx*8,v.y+1,v.z-o.z+fz*8);if(cameraHook)cameraHook(camera,v,o);sky.position.copy(camera.position);ENV.updateSun(sun,player.model.root.position);ENV.U.time.value=elapsed;
   detail.update({position:{x:v.x,z:v.z}});post.render(dt);
-  Hud.prototype.drawTacho.call(dial,{...v,redline:spec.redline,kmh:Math.abs(v.vLong)*3.6,gearLabel:v.reverse?'R':String(v.gear),aidsOff:!settings.aids});document.getElementById('tRace').textContent=fmtTime(elapsed);
+  dial.drawTacho({...v,redline:spec.redline,kmh:Math.abs(v.vLong)*3.6,gearLabel:v.reverse?'R':String(v.gear),aidsOff:!settings.aids});document.getElementById('tRace').textContent=fmtTime(elapsed);
  }
  function tick(now){if(stopped)return;if(scripted){last=now;frameId=requestAnimationFrame(tick);return;}const cpu=performance.now(),delta=Math.min(.1,(now-last)/1000);stats.frameMs.push(now-last);if(stats.frameMs.length>900)stats.frameMs.shift();last=now;
   try{

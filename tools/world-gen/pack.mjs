@@ -64,7 +64,7 @@ export async function packTiles(path, output,{onTile=null,maxBytes=Infinity}={})
     if(roads&&!roads.passed)throw new Error('Road cross-section gate failed '+key+': '+JSON.stringify(roads.problems));
     if(!bridges.passed)throw new Error('Bridge guard/headroom/anchor gate failed '+key+': '+JSON.stringify(bridges));
     if(!physical.passed)throw new Error('Physical surface acceptance failed '+key+': '+JSON.stringify(physical));
-    }catch(e){if(!keepGoing)throw e;failures.push({cell:m.cell,error:e.message.slice(0,400)});console.error('KEEP-GOING failure',key,e.message.slice(0,200));continue;}
+    }catch(e){if(!keepGoing)throw e;failures.push({cell:m.cell,error:e.message.slice(0,400),offenders:physical?.offenders||[]});console.error('KEEP-GOING failure',key,e.message.slice(0,200));continue;}
     const nextIdentity=m.world+':'+m.revision;
     if (identity && identity!==nextIdentity) throw new Error('Mixed world/revision');
     identity=nextIdentity;
@@ -81,7 +81,7 @@ export async function packTiles(path, output,{onTile=null,maxBytes=Infinity}={})
       dependencies:input.dependencies??[],triangles:checked.triangles};
     seams.set(key,tileEdgeSignatures(decoded).map(digest));
     const [cx,cz]=m.cell,signature=seams.get(key);
-    for(const [other,side,opposite]of [[`${cx-1},${cz}`,0,1],[`${cx+1},${cz}`,1,0],[`${cx},${cz-1}`,2,3],[`${cx},${cz+1}`,3,2]])if(seams.has(other)&&signature[side]!==seams.get(other)[opposite])throw Error(`Cracked seam ${key}/${other}`);
+    for(const [other,side,opposite]of [[`${cx-1},${cz}`,0,1],[`${cx+1},${cz}`,1,0],[`${cx},${cz-1}`,2,3],[`${cx},${cz+1}`,3,2]])if(seams.has(other)&&signature[side]!==seams.get(other)[opposite]){if(!keepGoing)throw Error(`Cracked seam ${key}/${other}`);failures.push({cell:m.cell,error:`Cracked seam ${key}/${other}`,offenders:[]});}
     await writeFile(join(output,name+'.partial'),bytes);
     await rename(join(output,name+'.partial'),join(output,name));
     await onTile?.({key,entry:entries[key],physical,bridges,roads,decoded,packet,seams:seams.get(key)});
@@ -90,7 +90,7 @@ export async function packTiles(path, output,{onTile=null,maxBytes=Infinity}={})
   for (const [key,a] of seams) {
     const [x,z]=key.split(',').map(Number);
     for (const [other,side,opposite] of [[`${x+1},${z}`,1,0],[`${x},${z+1}`,3,2]]) {
-      if (seams.has(other) && a[side]!==seams.get(other)[opposite]) throw new Error(`Cracked seam ${key}/${other}`);
+      if (seams.has(other) && a[side]!==seams.get(other)[opposite] && !keepGoing) throw new Error(`Cracked seam ${key}/${other}`);
     }
   }
   // An entries file is deliberately not a playable manifest: the caller still

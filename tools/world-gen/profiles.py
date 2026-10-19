@@ -16,7 +16,8 @@ import resource
 import sqlite3
 import time
 import numpy as np
-from shapely.geometry import LineString, Point, shape
+from shapely.geometry import LineString, Point, box, shape
+from shapely.ops import unary_union
 from elevation import Elevation
 from ingest import encode,sha
 
@@ -68,10 +69,12 @@ def solve_constraints(heights,a,b,gaps,minimum,max_iterations=2000,tolerance=.00
                 maxAdjustment=float(np.max(np.abs(heights-target))) if len(target) else 0)
 
 
-def build(source,output,stage,dems):
+def build(source,output,stage,dems,extra_cells=None):
     started=time.monotonic();output=Path(output)
     code=b''.join(Path(__file__).with_name(n).read_bytes() for n in ('profiles.py','elevation.py','model.py','appearance.py'))
     inputs=dict(sourceSha256=sha(source),stage=stage,dem=[dict(name=Path(p).name,sha256=sha(p)) for p in sorted(dems)],codeSha256=hashlib.sha256(code).hexdigest())
+    # Cells listed here (an area file's land + sea) extend the stage mask by one cell of road context; absent for the original stage-A cache.
+    if extra_cells is not None:inputs['extraCells']=hashlib.sha256(json.dumps(sorted(map(list,extra_cells))).encode()).hexdigest()
     if output.exists():
         if output.with_suffix('.sha256').read_text().strip()!=sha(output):raise ValueError('Corrupt profile cache')
         with sqlite3.connect(output) as db:record=json.loads(db.execute("SELECT value FROM metadata WHERE key='manifest'").fetchone()[0])
@@ -82,7 +85,9 @@ def build(source,output,stage,dems):
     source_db=sqlite3.connect(f'file:{source}?mode=ro',uri=True)
     manifest=json.loads(source_db.execute("SELECT value FROM metadata WHERE key='manifest'").fetchone()[0])
     if manifest['masks'][stage] is None:raise ValueError('Missing stage land mask')
-    mask=shape(manifest['masks'][stage]).buffer(128)
+    mask=shape(manifest['masks'][stage])
+    if extra_cells:mask=mask.union(unary_union([box(x*512,z*512,x*512+512,z*512+512) for x,z in extra_cells]).buffer(512))
+    mask=mask.buffer(128)
     db=sqlite3.connect(partial);db.executescript('''PRAGMA cache_size=-32768; PRAGMA temp_store=FILE;
       CREATE TABLE metadata(key TEXT PRIMARY KEY,value TEXT);
       CREATE TABLE roads(rowid INTEGER PRIMARY KEY,id TEXT UNIQUE,data TEXT);
@@ -173,5 +178,9 @@ def build(source,output,stage,dems):
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('source',type=Path);p.add_argument('output',type=Path);p.add_argument('--stage',default='a_south');p.add_argument('--dem',nargs='+',type=Path,required=True)
-    a=p.parse_args();build(a.source,a.output,a.stage,a.dem)
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('source',type=Path);p.add_argument('output',type=Path);p.add_argument('--stage',default='a_south');p.add_argument('--area',type=Path,help='area JSON whose land+sea cells extend the stage mask');p.add_argument('--dem',nargs='+',type=Path,required=True)
+    a=p.parse_args()
+    extra=None
+    if a.area:
+        area=json.loads(a.area.read_text());extra=[tuple(c) for c in area['land']+area['sea']]
+    build(a.source,a.output,a.stage,a.dem,extra)

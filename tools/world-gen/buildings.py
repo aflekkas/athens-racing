@@ -41,9 +41,25 @@ def simplify_footprint(polygon):
 def building_mesh(identifier, polygon, tags, landuse, base=0):
     outline=simplify_footprint(polygon)
     if outline is None:return None
+    height,source=building_height(tags,landuse)
+    return extrude(identifier,outline,height,source,landuse,base)
+
+
+def clipped_piece(identifier, polygon, part):
+    """The part of one building footprint that lies inside a cell, with the whole building's height and palette.
+
+    Every cell bakes the pieces it contains, so a building crossing a border is two flush prisms (the cut wall
+    is hidden between them) and neither cell needs the other to be resident for its obstacles."""
+    outline=simplify_footprint(polygon)
+    if outline is None:return None
+    mesh=extrude(identifier,outline,part['height'],part['heightSource'],part['landuse'])
+    mesh['palette']=part['palette']
+    return mesh
+
+
+def extrude(identifier, outline, height, source, landuse, base=0):
     outline=orient(outline,sign=1)
     points=list(outline.exterior.coords)[:-1]
-    height,source=building_height(tags,landuse)
     # Per-instance local coordinates keep buffer precision independent of distance.
     origin=[points[0][0],base,points[0][1]]
     positions=[]

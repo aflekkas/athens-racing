@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';import * as THREE from 'three';
-import {athensMaterial,ASPHALT_PERIOD,PAVING_PERIOD,ATHENS_TEXTURES} from '../src/athens-materials.js';import {TX} from '../src/tex.js';
+import {athensMaterial,ASPHALT_PERIOD,PAVING_PERIOD,URBAN_PERIOD,ATHENS_TEXTURES} from '../src/athens-materials.js';import {TX} from '../src/tex.js';
 const compile=m=>{const shader={uniforms:{},vertexShader:'#include <common>\n#include <begin_vertex>',fragmentShader:'#include <common>\n#include <color_fragment>'};m.onBeforeCompile(shader);return shader;};
 test('tile-local planar UVs repeat a whole number of times per 512 m cell, so scans never seam at tile borders',()=>{
   assert.equal(512/ASPHALT_PERIOD,122);assert.equal(512/PAVING_PERIOD,160);assert.ok(Math.abs(ASPHALT_PERIOD-4.2)<.01,'same scale as the hand-tuned maps');
@@ -16,4 +16,14 @@ test('asphalt and paving use the shared library scans, no new textures',()=>{
 test('markings are drawn over the asphalt without z-fighting; other surfaces stay plain unlit',()=>{
   const m=athensMaterial('marking',[.8,.8,.8],false);assert.equal(m.polygonOffset,true);assert.ok(m.polygonOffsetFactor<0&&m.polygonOffsetUnits<0);
   const b=athensMaterial('basic',[1,1,1],true);assert.equal(b.isMeshBasicMaterial,true);assert.equal(b.vertexColors,true);assert.equal(b.polygonOffset,false);
+});
+test('ground between buildings uses the paving scan over its vertex colour, softened, with seamless tone drift',()=>{
+  TX.paver_diff=new THREE.Texture();assert.equal(512/URBAN_PERIOD,80);
+  const u=athensMaterial('urban',[1,1,1],true),s=compile(u);assert.equal(u.vertexColors,true,'keeps the muted urban vertex colour');assert.equal(s.uniforms.scanMap.value,TX.paver_diff);
+  assert.match(s.vertexShader,/position\.xz\/6\.4/);assert.match(s.fragmentShader,/mix\(vec3\(1\.\),mix\(vec3\(grain\),scan,\.5\)[^;]*,0\.700\)/,'blended at 70%, not full contrast');
+  // Drift wavelengths divide the 80 texture units of a tile, so the tone does not jump at tile borders.
+  const [, u1, v1] = s.fragmentShader.match(/vScanUV\.x\*6\.283185\/([\d.]+)\+sin\(vScanUV\.y\*6\.283185\/([\d.]+)\)/).slice(0,3).map((x,i)=>i?Number(x):x);
+  assert.equal(80%u1,0);assert.equal(80%v1,0);
+  const p=athensMaterial('paving',[.4,.4,.4],false);assert.notEqual(u.customProgramCacheKey(),p.customProgramCacheKey());
+  for(const m of [u,p])m.dispose();
 });

@@ -1,11 +1,11 @@
 """Street surface regions and markings on synthetic scenes (needs shapely; the runner skips without it)."""
 import math, random, unittest
-from shapely.geometry import LineString, Point
+from shapely.geometry import LineString, Point, Polygon
 from shapely.ops import unary_union
 from road_section import KERB_RISE, KERB_RUN, cross_section
 from street_audit import audit_regions, check
 from street_details import line_offsets, road_markings
-from street_regions import RAMP, StreetRegions, polygons_of
+from street_regions import RAMP, StreetRegions, polygons_of, fill_junction_holes
 from street_details import ribbon_polygon
 
 
@@ -158,6 +158,18 @@ class Lines(unittest.TestCase):
         points, indices = road_markings(roads, (0, 0), lambda x, z: 0., r)
         half = roads[0]['width'] / 2
         self.assertTrue(all(abs(points[i + 2]) <= half + .01 for i in range(0, len(points), 3)))
+
+
+class JunctionHoles(unittest.TestCase):
+    def test_pocket_beside_a_junction_is_closed_but_islands_and_far_holes_stay(self):
+        roads = t_junction()
+        square = lambda cx, cz, h: [(cx - h, cz - h), (cx + h, cz - h), (cx + h, cz + h), (cx - h, cz + h)]
+        ground = Polygon(square(0, 0, 60), [square(4, 4, .6), square(10, -10, 1.2), square(50, 50, .6)])  # 1.4 m2, 5.8 m2, 1.4 m2
+        closed = fill_junction_holes(ground, roads)
+        holes = sorted(round(Polygon(r).area, 1) for p in polygons_of(closed) for r in p.interiors)
+        self.assertEqual(holes, [1.4, 5.8], 'the 1.4 m2 pocket 5 m from the node is closed; the larger island and the far hole stay')
+        bend = fill_junction_holes(ground, roads[:2])
+        self.assertEqual(sum(len(p.interiors) for p in polygons_of(bend)), 3, 'a plain two-street bend is not a junction: nothing is closed')
 
 
 if __name__ == '__main__':
