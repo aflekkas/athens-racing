@@ -5,7 +5,7 @@ This is the lead's single list of open work. It's updated as tasks are assigned,
 Last updated: 2026-10-18 20:40 UTC.
 
 ## In flight (lead thread "Fix Floor Visibility in All Cars", check-up every 30 min)
-Production is on hold (`~/.local/state/athens-release/production-hold`). Staging live at `2adaf2d6` (train, 2026-10-19 02:23 UTC); `68878224` in gates. Agents use Haiku/Sonnet only (Codex quota ran out; no Opus).
+Production is on hold (`~/.local/state/athens-release/production-hold`). Staging live at `914c48e3` (train, 2026-10-19 02:50 UTC). Agents use Haiku/Sonnet only (Codex quota ran out; no Opus).
 
 Done and checked by the lead:
 - [x] Leaderboards inside Quick Race (`5149f16d`, `9a7c06ca`, `c9619d55`)
@@ -52,8 +52,10 @@ Also done since 2026-10-18 04:00 (checked by the lead):
 
 Running (Sonnet; Enterprise unless noted):
 - [x] Low-end laptop performance + audio dropouts/ticking: CPU budget per perf class, first-run CPU probe, frame governor, lag-spiral fix, audio robustness (see CHANGELOG). Follow-up: [ ] owner re-test on the friend's Arc laptop (Riviera/Megara).
-- [~] Cars: 911 silhouette pass + one-piece mirrors (`68878224` in gates; lead to check shots)
-- [~] Athens: re-made road screenshots (moved to Personal)
+- [x] One-piece door mirrors on modern cars (`68878224`)
+- [?] 911 silhouette pass (`68878224`): better but still lumpy/wedge nose; owner to judge on staging whether it needs a dedicated modelling pass
+- [x] Athens road screenshots re-made and checked (`914c48e3`)
+- [~] Athens stage 3: Piraeus/Faliro connected to the coast, ground + guardrail polish (Personal); hold before the centre
 - [~] Release cutover (lead): after the batch is checked on staging
 
 Waiting on the owner:
