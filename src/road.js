@@ -208,6 +208,26 @@ class Strip {
   }
 }
 
+/** A chunk's median and skirt strips share a material: one mesh per material and chunk instead of one per strip (a call less per
+ * chunk, same triangles). Merging chunks into longer runs was tried for weak classes and dropped: the road is drawn to the horizon, so
+ * a 3 km run cost 90k more triangles in view for 9 fewer calls. */
+function mergeChunkStrips(group, chunkMeshes) {
+  const bins = new Map();
+  for (const { m, chunkIndex } of chunkMeshes) {
+    const g = m.geometry, key = [m.material.uuid, chunkIndex, m.layers.mask, !!g.index, Object.keys(g.attributes).sort().join()].join('|');
+    let list = bins.get(key); if (!list) bins.set(key, list = []); list.push(m);
+  }
+  for (const list of bins.values()) {
+    if (list.length < 2) continue;
+    const merged = mergeGeometries(list.map((m) => m.geometry)); if (!merged) continue;
+    merged.computeBoundingSphere();
+    const first = list[0], mesh = new THREE.Mesh(merged, first.material);
+    mesh.receiveShadow = first.receiveShadow; mesh.castShadow = list.some((m) => m.castShadow); mesh.layers.mask = first.layers.mask;
+    group.add(mesh);
+    for (const m of list) { group.remove(m); m.geometry.dispose(); }
+  }
+}
+
 export function buildRoad(map, scene, heightC, assets) {
   const { route, data } = map;
   const legacyMedian = !map.id || map.id === 'riviera'; // preserve the original coast mesh
@@ -221,7 +241,8 @@ export function buildRoad(map, scene, heightC, assets) {
   const sMin = route.closed ? 0 : -60, sMax = route.length + (route.closed ? 0 : 60);
   const cConc = new THREE.Color('#bdb8ad'), cSoil = new THREE.Color('#6b5a40'), cGravel = new THREE.Color('#9c917c'), cDirt = new THREE.Color('#8f8064');
 
-  for (let c0 = sMin; c0 < sMax; c0 += CHUNK) {
+  const chunkMeshes = []; let chunkIndex = 0;
+  for (let c0 = sMin; c0 < sMax; c0 += CHUNK, chunkIndex++) {
     const c1 = Math.min(sMax, c0 + CHUNK);
     const road = new Strip(7), med = new Strip(6), curbR = new Strip(4), curbL = new Strip(4), walkR = new Strip(3), walkL = new Strip(3), skR = new Strip(3), skL = new Strip(3);
     const medianRows = [];
@@ -266,7 +287,7 @@ export function buildRoad(map, scene, heightC, assets) {
         sk.row([{ p: pk1, s, u: side * uo, c: cDirt }, { p: pk2, s, u: side * uo, c: cDirt }, { p: pk3, s, u: side * uo, c: cDirt }]);
       }
     }
-    const add = (geo, mat, shadow = false, refl = false) => { const m = new THREE.Mesh(geo, mat); m.receiveShadow = true; m.castShadow = shadow; if (refl) m.layers.enable(REFLECT_LAYER); group.add(m); return m; };
+    const add = (geo, mat, shadow = false, refl = false) => { const m = new THREE.Mesh(geo, mat); m.receiveShadow = true; m.castShadow = shadow; if (refl) m.layers.enable(REFLECT_LAYER); group.add(m); chunkMeshes.push({ m, chunkIndex }); return m; };
     add(road.build(false, null, (r,c) => (c !== 2 && c !== 3) || !route.localLayout?.contains(c0 + (r + .5) * STEP)), asphalt, false, true);
     if (medianRows.some(Boolean)) add(med.build(false, legacyMedian && !route.localLayout ? null : medianRows), vergeMat, true);
     // both sides of a chunk share one mesh per material: fewer draw calls, same triangles
@@ -276,6 +297,7 @@ export function buildRoad(map, scene, heightC, assets) {
     pair(skR.build(false, sideRows[1]), skL.build(true, sideRows[-1]), vergeMat);
   }
 
+  mergeChunkStrips(group, chunkMeshes);
   if (assets.furniture !== false) buildFurniture(map, group, heightC, assets);
   return { group, asphalt };
 }

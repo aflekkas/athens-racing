@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {CellInstances} from './util.js';
 import {registerLod} from './scenery.js';
+import {CHUNK_SCALE} from './batch.js';
 import {planRivieraRails} from './riviera-guardrails.js';
 
 export function buildRivieraRails(map,group,heightC,assets,road) {
@@ -9,7 +10,7 @@ export function buildRivieraRails(map,group,heightC,assets,road) {
   const material=new THREE.MeshStandardMaterial({color:'#b3b8bd',metalness:.72,roughness:.48,side:THREE.DoubleSide});
   const geo=new THREE.BoxGeometry(.12,.86,.08);geo.translate(0,.43,0);
   const posts=new CellInstances(geo,material,{cell:240,shadow:false,far:420});
-  const profile=[[0,.51],[.06,.55],[.06,.61],[0,.66],[0,.71],[.06,.76],[.06,.82],[0,.86]],chunks=new Map();
+  const profile=[[0,.51],[.06,.55],[.06,.61],[0,.66],[0,.71],[.06,.76],[.06,.82],[0,.86]],chunks=new Map(),cell=240*(CHUNK_SCALE.value>=3?3:1); // weaker classes: coarser rail chunks, a few rail triangles more in view for a third of the calls
   let triangles=0,postCount=0;
   for(const run of runs){const pts=run.pts;
     for(let start=0;start<pts.length-1;){const end=Math.min(pts.length-1,start+80),pos=[],ix=[];
@@ -19,7 +20,7 @@ export function buildRivieraRails(map,group,heightC,assets,road) {
         if(i>start)for(let j=0;j<7;j++){const a=(i-start-1)*8+j,b=a+1,c=a+8,d=c+1;ix.push(a,c,b,b,c,d);}
       }
       const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(ix);g.computeVertexNormals();triangles+=ix.length/3;
-      const p=pts[start].p,key=Math.floor(p.x/240)+','+Math.floor(p.z/240);if(!chunks.has(key))chunks.set(key,[]);chunks.get(key).push(g);start=end;
+      const p=pts[start].p,key=Math.floor(p.x/cell)+','+Math.floor(p.z/cell);if(!chunks.has(key))chunks.set(key,[]);chunks.get(key).push(g);start=end;
     }
     for(const q of pts){if(q.s%4||q.s-pts[0].s<6||pts.at(-1).s-q.s<6)continue;const f=r.frame(q.s,{});posts.addTRS(q.p.x,q.p.y-.03,q.p.z,Math.atan2(f.tx,f.tz),1);postCount++;}
   }

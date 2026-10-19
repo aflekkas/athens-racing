@@ -6,6 +6,10 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 const sig = (m) => [m.type, m.color?.getHexString(), m.emissive?.getHexString(), m.emissiveIntensity, m.roughness, m.metalness, m.map?.uuid, m.emissiveMap?.uuid,
   m.transparent, m.opacity, m.side, m.vertexColors, m.alphaTest, m.clearcoat, m.toneMapped, !!m.onBeforeCompile && m.onBeforeCompile.toString().length].join('|');
 
+/** The performance class's chunk scale (graphics.js PERFORMANCE.chunk), set by main.js before a world is built: world builders draw their
+ * static batches, guardrails and parked cars in coarser cells when it is 3 or more (weak classes), for fewer draw calls. */
+export const CHUNK_SCALE = { value: 1 };
+
 export function batchStatic(root, cell = 450) {
   root.updateMatrixWorld(true);
   const groups = new Map();

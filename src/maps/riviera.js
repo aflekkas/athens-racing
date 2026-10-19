@@ -7,7 +7,7 @@ import { buildNature } from '../nature.js';
 import { buildRoadside } from '../roadside.js';
 import { buildRivieraLandmarks } from '../riviera-landmarks.js';
 import { People } from '../people.js';
-import { batchStatic } from '../batch.js';
+import { batchStatic, CHUNK_SCALE } from '../batch.js';
 import { frameYield } from '../util.js';
 export async function buildRiviera({ map, group, ter, assets, still, progress, quality, staticRoots, infill }) {
   const road = still(() => buildRoad(map, group, ter.heightC, assets), 'road'); assets.asphalt = road.asphalt;
@@ -19,7 +19,8 @@ export async function buildRiviera({ map, group, ter, assets, still, progress, q
   // Keep the original Riviera builders and their order, including the people before static batching.
   const people = new People(map, group, assets, natureGroup);
   const custom = { people, ...still(() => buildRoadside(map, group, ter.heightC, assets), 'roadside') };
-  for (const g of [road.group, bld.group, nat.group]) batchStatic(g);
+  // weaker classes batch the static meshes in coarser cells (fewer draw calls; 450 m cells on classes that keep the fine chunks)
+  for (const g of [road.group, bld.group, nat.group]) batchStatic(g, 450 * (CHUNK_SCALE.value >= 3 ? 2 : 1));
   staticRoots.push(ENV.createFarScenery(map.data.proj)); group.add(staticRoots.at(-1));
   custom.landmarks = () => still(() => buildRivieraLandmarks(map, group), 'landmarks');
   return { road, signals, natureGroup, custom };

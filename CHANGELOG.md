@@ -8,6 +8,8 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Weak laptops: Riviera draws about a tenth fewer things per frame, with the same picture.
+
 - Weak laptops: Riviera draws fewer things per frame, which takes load off the processor.
 
 - Weak laptops: the picture no longer drops as low when your computer struggles, so your car stays sharp.
