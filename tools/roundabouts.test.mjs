@@ -80,8 +80,10 @@ test('shared-world snapshots render the actual road-space position and resume th
  applySharedCar(guest,row,0,true);Traffic.prototype.driveRoundabout.call(guest,remote,1/60);assert(remote._roundabout);assert(Math.hypot(remote._world.x-point.x,remote._world.z-point.z)<1);assert(!remote._sharedPosition);
  }
 });
-test('road elevation follows the measured EU-DEM stations along the whole lap',()=>{
- const stations=JSON.parse(fs.readFileSync(new URL('./maps/psychiko/raw/route-dem.json',import.meta.url)));let total=0,worst=0;
- for(const q of stations){const d=Math.abs(r.y(q.s)-q.elevation);total+=d;worst=Math.max(worst,d);}
- assert(stations.length>150);assert(worst<4,`worst elevation gap ${worst}`);assert(total/stations.length<1.2);
+test('road elevation follows the shared Copernicus field along the whole lap',async()=>{
+ const {readCopernicus,copernicusField,roundaboutPlanes,plannedHeight}=await import('./maps/psychiko/elevation.mjs');
+ const field=copernicusField(readCopernicus(new URL('./maps/psychiko/raw/copernicus.json.gz',import.meta.url)),data.proj),height=plannedHeight(field,roundaboutPlanes(loops,field));let total=0,worst=0;
+ for(let i=0;i<r.N;i+=5){const d=Math.abs(r.Y[i]-height(data.route.x[i],data.route.z[i]));total+=d;worst=Math.max(worst,d);}
+ // Only the shared 14% two-metre grade cap trims the Diamantidou descent, by about 0.5 m.
+ assert(worst<.6,`worst elevation gap ${worst}`);assert(total/(r.N/5)<.03);
 });

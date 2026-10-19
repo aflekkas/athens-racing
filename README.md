@@ -49,7 +49,7 @@ All changes go through a pull request into `staging`, which deploys to the stagi
 ## Data and credits
 
 - Road network, coastline, buildings and points of interest: © OpenStreetMap contributors (ODbL), in `data/`.
-- Elevation: EU-DEM v1.1 via OpenTopoData.
+- Elevation: EU-DEM v1.1 via OpenTopoData; Palaio Psychiko uses Copernicus DEM GLO-30 (see `tools/maps/psychiko/SOURCES.md`).
 - Textures: Poly Haven (CC0), in `assets/tex/`.
 - World sounds (sea, cicadas, crowds, traffic, impacts): Freesound field recordings (CC0), in `assets/audio/world/`; see its `CREDITS.txt`.
 

@@ -18,24 +18,25 @@ export function buildRoadworks(map, scene, ground, assets = {}) {
   }
   for (const b of blocks) {
     const root = new THREE.Group(); root.name = 'roadworks:' + b.id;
-    const y = ground.network?.height(b.x, b.z) ?? ground.heightC(b.x, b.z);
+    const at = (x, z) => ground.network?.height(x, z) ?? ground.heightC(x, z), sin = Math.sin(b.yaw), cos = Math.cos(b.yaw);
+    // Local ground offset at (lx,lz): each barrier section and cone follows a sloping street.
+    const y = at(b.x, b.z), rise = (lx, lz) => at(b.x + cos * lx + sin * lz, b.z - sin * lx + cos * lz) - y;
     root.position.set(b.x, y, b.z); root.rotation.y = b.yaw; group.add(root);
     // Alternating water-filled safety barriers; continuous width includes the footways.
     const count = Math.ceil(b.hl * 2 / 1.8), length = b.hl * 2 / count;
     for (let i = 0; i < count; i++) {
-      const z = -b.hl + (i + .5) * length, material = i % 2 ? white : orange;
-      mesh(root, box, material, 0, .24, z, 1.3, .48, length);
-      mesh(root, box, material, 0, .69, z, .65, .42, length * .97);
-      mesh(root, box, dark, 0, .04, z, 1.45, .08, length);
+      const z = -b.hl + (i + .5) * length, material = i % 2 ? white : orange, dy = rise(0, z), tilt = -Math.atan2(rise(0, z + length / 2) - rise(0, z - length / 2), length);
+      for (const m of [mesh(root, box, material, 0, .24 + dy, z, 1.3, .48, length), mesh(root, box, material, 0, .69 + dy, z, .65, .42, length * .97), mesh(root, box, dark, 0, .04 + dy, z, 1.45, .08, length)]) m.rotation.x = tilt;
     }
     // Striped barricade rail and road-closed sign face the race route.
     mesh(root, box, white, .05, 1.14, 0, .12, .25, Math.min(4, b.hl * 2));
     // A single orange inset keeps the rail assembly at 24 triangles.
     mesh(root, box, orange, .12, 1.14, 0, .015, .25, 1.2);
     for (const z of [-b.hl + .3, b.hl - .3]) {
-      mesh(root, box, dark, 1.6, .035, z, .5, .07, .5);
-      mesh(root, cone, orange, 1.6, .41, z);
-      mesh(root, box, white, 1.6, .46, z, .22, .10, .22);
+      const dy = rise(1.6, z);
+      mesh(root, box, dark, 1.6, .035 + dy, z, .5, .07, .5);
+      mesh(root, cone, orange, 1.6, .41 + dy, z);
+      mesh(root, box, white, 1.6, .46 + dy, z, .22, .10, .22);
     }
     mesh(root, box, dark, 0, 1.45, 0, .08, 2.9, .08);
     const label = assets.makeLabel?.('ΕΡΓΑ · ΚΛΕΙΣΤΟ', 2.6, .65, '#ffe157', '#151515');

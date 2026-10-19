@@ -214,3 +214,23 @@ test('Psychiko times are a new board: leaderboard version, local records and sel
  assert.deepEqual(loadRecord('psychiko-race',st),{},'earlier loops never rank against the new circuit');saveRecord('psychiko-race',{bestTime:99},st);assert.equal(loadRecord('psychiko-race',st).bestTime,99);
  const selector=TRACK_ROUTES.psychiko;assert.equal(selector.loop,true);assert(Math.abs(selector.length*(7.5)-0)>=0);
 });
+test('Copernicus hills: real lap grades, no artificial side-street steps, closures follow the slope',async()=>{
+ const {readCopernicus,copernicusField,roundaboutPlanes,plannedHeight}=await import('./maps/psychiko/elevation.mjs'),{roundaboutLoops}=await import('./roundabouts.mjs'),{gunzipSync}=await import('node:zlib');
+ const osm=JSON.parse(gunzipSync(readFileSync(new URL('./maps/psychiko/raw/osm.json.gz',import.meta.url)))).elements,P=n=>[(n.lon-data.proj.lon0)*data.proj.mlon,-(n.lat-data.proj.lat0)*data.proj.mlat];
+ const field=copernicusField(readCopernicus(new URL('./maps/psychiko/raw/copernicus.json.gz',import.meta.url)),data.proj),planned=plannedHeight(field,roundaboutPlanes(roundaboutLoops(osm,P),field));
+ const h=[];for(let s=0;s<=route.length;s+=2)h.push(route.y(s));let up=0,down=0;
+ for(let i=0;i+10<h.length;i++){const g=(h[i+10]-h[i])/20;up=Math.max(up,g);down=Math.max(down,-g);}
+ // Elevation research: the lap climbs ~12.5% on Benaki/Diadochou Pavlou and drops ~13.5% on Diamantidou.
+ assert(up>.11&&up<.145&&down>.12&&down<.145,`lap 20 m grades ${up} / ${down}`);assert(Math.min(...h)<180&&Math.max(...h)>238);
+ const net=map.roadNetwork;let steepest=0;
+ for(const r of data.roadNetwork.roads)for(let i=2;i<r.p.length;i+=2){const ax=r.p[i-2],az=r.p[i-1],bx=r.p[i],bz=r.p[i+1],L=Math.hypot(bx-ax,bz-az),n=Math.max(1,Math.round(L/6));
+  // 6 m windows: the 10 m terrain triangles bend bilinear ground slightly; the old lap blend added 25-45% ramps.
+  for(let k=0;k<n;k++){const x0=ax+(bx-ax)*k/n,z0=az+(bz-az)*k/n,x1=ax+(bx-ax)*(k+1)/n,z1=az+(bz-az)*(k+1)/n,d=L/n,g=Math.abs(net.baseHeight(x1,z1)-net.baseHeight(x0,z0))/d;
+   steepest=Math.max(steepest,g);assert(g<Math.abs(planned(x1,z1)-planned(x0,z0))/d+.06,`artificial step on ${r.id} at ${x0.toFixed(1)},${z0.toFixed(1)}: ${g}`);}}
+ assert(steepest>.25&&steepest<.35,'Ouranou-class lanes stay steep but drivable: '+steepest);
+ const THREE=await import('three'),{buildRoadworks}=await import('../src/roadworks.js'),g=new Ground(map,(x,z)=>terrain.height(x,z),{network:net}),works=buildRoadworks(map,new THREE.Group(),g),v=new THREE.Vector3();
+ works.group.updateMatrixWorld(true);let gap=0;
+ works.group.traverse(m=>{// Every barrier section and cone stands on a thin dark base plate.
+  if(!m.isMesh||m.geometry.type!=='BoxGeometry'||m.scale.y>.09)return;m.getWorldPosition(v);gap=Math.max(gap,Math.abs(v.y-m.scale.y/2-net.height(v.x,v.z)));});
+ assert(gap<.12,`roadworks sit on the street (worst ${gap} m)`);
+});
