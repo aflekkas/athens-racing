@@ -56,10 +56,11 @@ Running (Sonnet; Enterprise unless noted):
 - [?] 911 silhouette pass (`68878224`): better but still lumpy/wedge nose; owner to judge on staging whether it needs a dedicated modelling pass
 - [x] Athens road screenshots re-made and checked (`914c48e3`)
 - [x] Athens stage 3: Piraeus/Faliro, 289 cells, 871 km of road, all gates green, 2×2 set 36.6/64 MiB (`1f61c0fd`, `eac1f7f5`)
-- [~] Athens stage 4: the centre (Kallithea→Syntagma/Omonia/Plaka→Kypseli) (Personal, rate limit on Enterprise); north follows without owner wait
+- [~] Athens stage 4: the centre, first 47 cells in (`2ead313f`), rest in progress (Personal); north follows without owner wait
 - [x] Online: remote cars glide (jitter buffer, 20 Hz sim-clock samples, 50 ms relay) and car-to-car contacts symmetric (`3f35e7de`); owner to retest with a friend
 - [x] Multiplayer: restart and tow land where the car is (0 m off the grid after a host restart, guards in `server/mp-restart-tow.test.mjs`); lobby double-JOIN error and a lobby keeping the old track's traffic fixed; traffic seed equal on every client (`tools/traffic-seed.test.mjs`); owner to retest with a friend
-- [~] Playtest leftovers (Personal, rate limit on Enterprise): Riviera draw calls <200 on Low/Potato, blurry player car, GLA badge clutter, clearer car vs trim picker
+- [x] Badges one per end, catalogue guard (`5a9dccf9`); car vs trim chips (`50dc18db`); sharper car on weak classes (`bfdb468d`); Riviera draw calls ~540→~340 on Low (`c5025607`)
+- [~] Riviera draw calls under 200 on Low/Potato: instancing round (Personal)
 - [~] Release cutover (lead): after the batch is checked on staging
 
 Waiting on the owner:
