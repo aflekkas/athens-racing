@@ -19,3 +19,7 @@ Owner feedback: no texture on buildings, sea or ground; traffic lights and small
 ## Step 2: working traffic signals (`step2/`)
 
 `signals-*-before.webp` is the step-1 tree on the test bake (no signals); `-after.webp` is this commit: street view, close-ups at red, amber and green (the near head belongs to one approach, the far head to the cross street, so they show opposite phases) and an overhead view of the Syntagma junction at cell 0,0 (494, 443). The after shots also show the street lamps and one-way signs of step 3, because the test bake and the layer carry both; `measure.json` is the same combined layer. `signals-ai.json`: the AI evidence described in docs/world-dressing.md (script `scripts/signals-ai.mjs`).
+
+## Step 3: street details (`step3/`)
+
+`<cell>-<kind>-before.webp` is the step-2 state (signals only: a bake with this commit's generator but `FURNITURE=False`, the step-2 tree's generator); `-after.webp` is this commit. One shot per model, each placed beside a real instance on the side the model faces: kiosk (periptero), bus shelter and stop, bench, fountain, monument, street lamp, one-way sign, pedestrian-crossing sign (Syntagma, cell 0,0), parked cars, stop sign, bus stop, bollard, kiosk, shelter, fountain (Piraeus, cells -14,8 and -15,8). `scripts/mkspec.mjs` writes `scripts/spec-furniture.json` from the baked rows. `measure.json`: draw calls and triangles of the whole layer, On and Off, against the step-1 tree on the same cells.

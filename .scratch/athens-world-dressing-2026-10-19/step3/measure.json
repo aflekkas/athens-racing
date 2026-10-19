@@ -1,0 +1,223 @@
+{
+ "before": {
+  "syntagma-on": {
+   "calls": 113,
+   "triangles": 44942,
+   "textures": 16,
+   "geometries": 172,
+   "medianRenderCallMs": 7.3,
+   "gpuBytes": 37470167,
+   "tileGPU": 3777395,
+   "tileJS": 6022300,
+   "props": null
+  },
+  "syntagma-off": {
+   "calls": 112,
+   "triangles": 44932,
+   "textures": 15,
+   "geometries": 172,
+   "medianRenderCallMs": 6.8,
+   "gpuBytes": 37382786,
+   "tileGPU": 3777395,
+   "tileJS": 6022300,
+   "props": null
+  },
+  "plaka-on": {
+   "calls": 153,
+   "triangles": 158562,
+   "textures": 16,
+   "geometries": 212,
+   "medianRenderCallMs": 5.3,
+   "gpuBytes": 40655270,
+   "tileGPU": 6959618,
+   "tileJS": 10877461,
+   "props": null
+  },
+  "plaka-off": {
+   "calls": 152,
+   "triangles": 158346,
+   "textures": 15,
+   "geometries": 212,
+   "medianRenderCallMs": 5,
+   "gpuBytes": 40567889,
+   "tileGPU": 6959618,
+   "tileJS": 10877461,
+   "props": null
+  },
+  "kypseli-on": {
+   "calls": 122,
+   "triangles": 83951,
+   "textures": 16,
+   "geometries": 234,
+   "medianRenderCallMs": 7.3,
+   "gpuBytes": 42576849,
+   "tileGPU": 8881197,
+   "tileJS": 13861022,
+   "props": null
+  },
+  "kypseli-off": {
+   "calls": 122,
+   "triangles": 83951,
+   "textures": 15,
+   "geometries": 234,
+   "medianRenderCallMs": 2,
+   "gpuBytes": 42489468,
+   "tileGPU": 8881197,
+   "tileJS": 13861022,
+   "props": null
+  },
+  "piraeus-on": {
+   "calls": 130,
+   "triangles": 100735,
+   "textures": 16,
+   "geometries": 262,
+   "medianRenderCallMs": 1.3,
+   "gpuBytes": 46435071,
+   "tileGPU": 12739419,
+   "tileJS": 19809839,
+   "props": null
+  },
+  "piraeus-off": {
+   "calls": 126,
+   "triangles": 100356,
+   "textures": 15,
+   "geometries": 262,
+   "medianRenderCallMs": 3.4,
+   "gpuBytes": 46347690,
+   "tileGPU": 12739419,
+   "tileJS": 19809839,
+   "props": null
+  }
+ },
+ "after": {
+  "syntagma-on": {
+   "calls": 121,
+   "triangles": 50570,
+   "textures": 16,
+   "geometries": 182,
+   "medianRenderCallMs": 1.3,
+   "gpuBytes": 37654231,
+   "tileGPU": 3777395,
+   "tileJS": 6022300,
+   "props": {
+    "instances": 103,
+    "signals": 14,
+    "drawCalls": 8,
+    "rebuilds": 6
+   }
+  },
+  "syntagma-off": {
+   "calls": 112,
+   "triangles": 44932,
+   "textures": 15,
+   "geometries": 182,
+   "medianRenderCallMs": 1.1,
+   "gpuBytes": 37566850,
+   "tileGPU": 3777395,
+   "tileJS": 6022300,
+   "props": {
+    "instances": 103,
+    "signals": 14,
+    "drawCalls": 8,
+    "rebuilds": 6
+   }
+  },
+  "plaka-on": {
+   "calls": 156,
+   "triangles": 159162,
+   "textures": 16,
+   "geometries": 223,
+   "medianRenderCallMs": 1.4,
+   "gpuBytes": 40840534,
+   "tileGPU": 6959618,
+   "tileJS": 10877461,
+   "props": {
+    "instances": 14,
+    "signals": 0,
+    "drawCalls": 3,
+    "rebuilds": 7
+   }
+  },
+  "plaka-off": {
+   "calls": 152,
+   "triangles": 158346,
+   "textures": 15,
+   "geometries": 223,
+   "medianRenderCallMs": 1.5,
+   "gpuBytes": 40753153,
+   "tileGPU": 6959618,
+   "tileJS": 10877461,
+   "props": {
+    "instances": 14,
+    "signals": 0,
+    "drawCalls": 3,
+    "rebuilds": 7
+   }
+  },
+  "kypseli-on": {
+   "calls": 127,
+   "triangles": 86135,
+   "textures": 16,
+   "geometries": 246,
+   "medianRenderCallMs": 2.2,
+   "gpuBytes": 42763313,
+   "tileGPU": 8881197,
+   "tileJS": 13861022,
+   "props": {
+    "instances": 24,
+    "signals": 13,
+    "drawCalls": 5,
+    "rebuilds": 8
+   }
+  },
+  "kypseli-off": {
+   "calls": 122,
+   "triangles": 83951,
+   "textures": 15,
+   "geometries": 246,
+   "medianRenderCallMs": 1.2,
+   "gpuBytes": 42675932,
+   "tileGPU": 8881197,
+   "tileJS": 13861022,
+   "props": {
+    "instances": 24,
+    "signals": 13,
+    "drawCalls": 5,
+    "rebuilds": 8
+   }
+  },
+  "piraeus-on": {
+   "calls": 139,
+   "triangles": 105811,
+   "textures": 16,
+   "geometries": 275,
+   "medianRenderCallMs": 1.6,
+   "gpuBytes": 46623455,
+   "tileGPU": 12739419,
+   "tileJS": 19809839,
+   "props": {
+    "instances": 108,
+    "signals": 8,
+    "drawCalls": 9,
+    "rebuilds": 9
+   }
+  },
+  "piraeus-off": {
+   "calls": 126,
+   "triangles": 100356,
+   "textures": 15,
+   "geometries": 275,
+   "medianRenderCallMs": 1.3,
+   "gpuBytes": 46536074,
+   "tileGPU": 12739419,
+   "tileJS": 19809839,
+   "props": {
+    "instances": 108,
+    "signals": 8,
+    "drawCalls": 9,
+    "rebuilds": 9
+   }
+  }
+ },
+ "note": "before = the step-1 tree on the same cells (no layer); after = signals + details"
+}

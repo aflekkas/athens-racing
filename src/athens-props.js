@@ -7,7 +7,10 @@ import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {signalState,STOP_OFF} from './signal-plan.js';
 
 export const KINDS=Object.freeze({lamp:0,bus_stop:1,bus_shelter:2,kiosk:3,bench:4,bollard:5,stop:6,give_way:7,oneway:8,fountain:9,monument:10,parked_car:11,crossing:12,signal:13});
-export const PROP_LIMITS=Object.freeze({capacity:900,near:210,rebuildMetres:10});
+export const PROP_LIMITS=Object.freeze({capacity:900,near:230,rebuildMetres:10});
+/** How far each model is drawn (metres). Small or rare models stop earlier, so a street scene costs a handful of draw calls, not one per model type. */
+export const PROP_NEAR=Object.freeze({lamp:210,signal:230,bus_stop:140,bus_shelter:140,kiosk:140,stop:110,give_way:110,oneway:100,crossing:100,bench:80,bollard:80,fountain:160,monument:160,parked_car:120});
+const NEAR_BY_KIND=Object.fromEntries(Object.entries(PROP_NEAR).map(([n,d])=>[KINDS[n],d]));
 const CAR_PAINT=['#e9e9e6','#9ea4a8','#26292c','#2f4d78','#8c2f2b','#b9a98a'];
 const STATE_CODE={R:1,A:2,G:3};
 
@@ -100,10 +103,10 @@ export class AthensProps{
   }
   removeTile(key){const t=this.tiles.get(key);if(!t)return;for(const rec of t.edges)if(this.byEdge.get(rec.edge)===rec)this.byEdge.delete(rec.edge);this.tiles.delete(key);this.last.x=Infinity;}
   setEnabled(on){if(this.enabled===on)return;this.enabled=on;this.group.visible=on;this.last.x=Infinity;}
-  /** Nearest records first, within PROP_LIMITS.near, at most `capacity`. */
+  /** Nearest records first, each within its model's range (PROP_NEAR), at most `capacity`. */
   collect(x,z){
-    const out=[],limit=PROP_LIMITS.near;
-    for(const {records} of this.tiles.values())for(const r of records){const d=Math.hypot(r.x-x,r.z-z);if(d<limit)out.push({r,d});}
+    const out=[];
+    for(const {records} of this.tiles.values())for(const r of records){const d=Math.hypot(r.x-x,r.z-z);if(d<NEAR_BY_KIND[r.kind])out.push({r,d});}
     out.sort((a,b)=>a.d-b.d);if(out.length>this.capacity)out.length=this.capacity;return out.map(v=>v.r);
   }
   update(camera,time){
