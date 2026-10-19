@@ -19235,8 +19235,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 88,
-        "triangles": 3484
+        "calls": 86,
+        "triangles": 3480
       },
       "geometryAudit": {
         "nearRoadDistance": 8,
@@ -19503,8 +19503,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 86,
-        "triangles": 3450
+        "calls": 84,
+        "triangles": 3446
       },
       "geometryAudit": {
         "nearRoadDistance": 8,
@@ -19771,8 +19771,8 @@
       ],
       "pitch": -0.045,
       "render": {
-        "calls": 86,
-        "triangles": 3346
+        "calls": 84,
+        "triangles": 3342
       },
       "geometryAudit": {
         "nearRoadDistance": 8,
