@@ -7,10 +7,9 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { ROAD } from './road.js';
 import { RNG, clamp, canvasTex } from './util.js';
 
-export const CYCLE = 28, GREEN = 16, AMBER = 3; // red = 9 s
-const RED0 = GREEN + AMBER;
+import { CYCLE, GREEN, AMBER, RED0, WAVE_V } from './signal-plan.js';
+// the fixed-time plan is shared with the streamed Athens world (src/signal-plan.js); red = 9 s
 export const STOP_OFF = 12, ZEBRA_OFF = 8.5;
-const WAVE_V = 80 / 3.6;
 const PED0 = RED0 + 1, PED1 = CYCLE - 2.5; // green man window (inside the main red)
 
 /** cluster the OSM signal nodes into junctions on the route, and find which side streets meet there */
@@ -164,7 +163,6 @@ export class Signals {
       // soft halos so the lit lamp reads from far away and from the cockpit
       j.haloMat = new THREE.SpriteMaterial({ map: glow, color: LAMP_COL[2], transparent: true, opacity: 0.55, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
       j.halos = j.heads.map(() => { const sp = new THREE.Sprite(j.haloMat); sp.scale.setScalar(1.15); g.add(sp); return sp; });
-      for (const o of g.children) o.userData.farCull = true; // the lamp parts and halos of a junction never move: Potato's far cull (far-cull.js) may stop drawing them when far away
       j.main = null; this.paint(j);
     }
   }

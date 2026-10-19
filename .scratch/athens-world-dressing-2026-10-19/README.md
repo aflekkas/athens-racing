@@ -15,3 +15,7 @@ Owner feedback: no texture on buildings, sea or ground; traffic lights and small
 | Kypseli 1,-4 / 1,-3 | +2,714 / +1,223 | +5.4% / +4.0% |
 | Glyfada coast 4,25 / 3,25 / 2,26 / 3,26 / 2,27 | +2.0 to +5.4 KB | +1.1% to +8.5% |
 | Piraeus -15,8 / -15,9 / -14,8 | +1,707 / +3,632 / +1,211 | +5.3% / +5.4% / +6.5% |
+
+## Step 2: working traffic signals (`step2/`)
+
+`signals-*-before.webp` is the step-1 tree on the test bake (no signals); `-after.webp` is this commit: street view, close-ups at red, amber and green (the near head belongs to one approach, the far head to the cross street, so they show opposite phases) and an overhead view of the Syntagma junction at cell 0,0 (494, 443). The after shots also show the street lamps and one-way signs of step 3, because the test bake and the layer carry both; `measure.json` is the same combined layer. `signals-ai.json`: the AI evidence described in docs/world-dressing.md (script `scripts/signals-ai.mjs`).

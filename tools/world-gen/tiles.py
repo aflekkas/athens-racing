@@ -14,6 +14,7 @@ from bridge_policy import exclusion_reason
 import tunnels
 from tile_detail import water_mesh,vegetation_rows,bridge_edges,foam_mesh,park_areas,facade_styles
 from details import fnv1a
+from props import build as build_props,load_nodes,road_extras
 from influence import blended_height, profile_height, lattice_height, smooth_lattice_sample, SUPPORT, ROAD_QUERY_HALO
 from appearance import BUILDINGS,linear,ground_colour
 from buildings import clipped_piece
@@ -163,16 +164,18 @@ class Field:
 SURFACES={'asphalt':(1,'asphalt'),'concrete':(12,'asphalt'),'paving':(13,'paving'),'unpaved':(14,None)}
 TABLES={'nodes':[],'nodePositions':[],'edges':[],'edgePoints':[],'edgeLayers':[],'turns':[],'ribbons':[],'ribbonVertices':[],'junctions':[],'junctionVertices':[],'markings':[],'contactPositions':[],'contactTriangles':[],'contactLayers':[],'fineSurface':[],'fineFlags':[],'coarseHeights':[],'finePositions':[],'fineTriangles':[],'buildings':[],'buildingCorners':[],'buildingHeights':[],'signs':[],'signTransforms':[],'anchors':[],'anchorTransforms':[]}
 
-def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=False,vegetation=None,osm=None,sections=None,extent=None,plan=None,details=None):
+def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=False,vegetation=None,osm=None,sections=None,extent=None,plan=None,details=None,street_nodes=None):
  db=sqlite3.connect(f'file:{dbpath}?mode=ro',uri=True);source=sqlite3.connect(f'file:{sourcepath}?mode=ro',uri=True)
  sectiondb=sqlite3.connect(f'file:{sections}?mode=ro',uri=True) if sections else None
- bridge_tags={}
+ bridge_tags={};lit_parking={}
  if coastal:
   if not osm:raise ValueError('Coastal bake requires original ingested OSM tags')
   raw=sqlite3.connect(f'file:{osm}?mode=ro',uri=True)
   for identifier,tags in raw.execute("SELECT id,tags FROM features WHERE kind='road'"):
-   value=json.loads(tags).get('bridge')
+   parsed=json.loads(tags);value=parsed.get('bridge')
    if value:bridge_tags[identifier]=value
+   extra=road_extras(parsed)
+   if extra:lit_parking[identifier]=extra
   raw.close()
  field=Field(db,source,cell,dems,coastal,bridge_tags,sectiondb,extent,plan=plan)
  # Parks (OSM leisure=park) are not in the landuse table; the vegetation cache holds their polygons.
@@ -401,6 +404,13 @@ def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=F
   extensions=dict(derivedBuildings=dict(version=1),worldDetail=dict(version=1,buildings=dict(facadeStyle=array('Uint8Array',facade_styles(details,[ids[t['buildings'][i]] for i in range(0,len(t['buildings']),4)])),detailSeed=array('Uint32Array',[fnv1a(ids[t['buildings'][i]]) for i in range(0,len(t['buildings']),4)])),vegetation=dict(positionHeight=array('Float32Array',vp),kind=array('Uint8Array',vk),seed=array('Uint32Array',vs))))
   validation['vegetationInstances']=len(vk)
 
+ if street_nodes:
+  # Signals and street furniture (tools/world-gen/props.py): tile-local instance rows the runtime draws in one instanced mesh.
+  sig,pr=build_props(emitted_graph,field,ox,oz,load_nodes(street_nodes,ox,oz),lit_parking,all_building_footprints,rendered_height)
+  wd=extensions.setdefault('worldDetail',dict(version=1))
+  wd['signals']=dict(rows=array('Float32Array',sig['rows']),edge=array('Uint32Array',[identifier(e) for e in sig['edges']]))
+  wd['props']=dict(rows=array('Float32Array',pr['rows']),kind=array('Uint8Array',pr['kind']))
+  validation['signals']=len(sig['edges']);validation['props']=len(pr['kind'])
  validation['streets']=streets;validation['clippedBuildings']=clipped;validation['excludedRoads']=dict(sorted(field.excluded_here.items()));validation['unresolvedBridges']=list(field.structures.unresolved) if field.structures else [];validation['renderContactTopIdentity']=True;validation['structures']=structure_records
  validation['graphEdges']=len(emitted_graph);validation['graphContactPoints']=len(t['edgePoints'])//3
  validation['turnRestrictions']=len(t['turns'])//4;validation['safeAnchors']=len(t['anchors'])//5;validation['releaseReady']=False
