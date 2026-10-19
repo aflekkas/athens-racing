@@ -16,7 +16,8 @@ const variant = (surface, attributes, index = 'Uint16Array') => { const v = { su
 /** Render layouts the dressing can produce. A manifest baked earlier does not list them, and an undeclared layout is refused after start-up. */
 export const DRESSING_VARIANTS = Object.freeze([
   variant('ground', { color: COLOUR, position: POSITION }),
-  variant('building', { aFacade: { type: 'Uint16Array', itemSize: 2, normalized: false }, color: COLOUR, position: POSITION }),
+  // Derived buildings carry no colour attribute (the facade material shades each face from its normal).
+  variant('building', { aFacade: { type: 'Uint16Array', itemSize: 2, normalized: false }, position: POSITION }),
   variant('sea', { position: POSITION }),
   variant('foam', { aFoam: { type: 'Uint8Array', itemSize: 1, normalized: true }, position: POSITION }),
 ]);

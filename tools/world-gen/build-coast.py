@@ -17,7 +17,7 @@ paths={k:c/v for k,v in area['sources'].items()};dems=[c/'attica-n37-e023.tif',c
 inputs={k:sha(v) for k,v in paths.items()};inputs['dem']=[sha(v) for v in dems];inputs['coastal']=True
 # The generator code, the exclusion list and every area file in the chain are part of the revision.
 inputs['area']=dict(name=area['name'],cells=hashlib.sha256(json.dumps(area['cells']).encode()).hexdigest(),structures=sha(PLAN_FILE) if plan else None)
-inputs['code']={f.name:sha(f) for f in sorted([*Path(__file__).parent.glob('*.py'),Path(__file__).parent/'coast-exclusions.json'])};revision=hashlib.sha256(encode(inputs).encode()).hexdigest()
+inputs['code']={f.name:sha(f) for f in sorted([*Path(__file__).parent.glob('*.py'),Path(__file__).parent/'coast-exclusions.json',Path(__file__).parent/'steep-exclusions.json',*Path(__file__).parent.glob('seam-halos.json')])};revision=hashlib.sha256(encode(inputs).encode()).hexdigest()
 print(encode(dict(inputs=inputs,revision=revision)),file=sys.stderr,flush=True)
 cells=area['cells']
 if os.environ.get('ATHENS_CELLS'):cells=[tuple(map(int,v.split(','))) for v in os.environ['ATHENS_CELLS'].split(';')]  # development subset; the full bake never sets this

@@ -10,7 +10,7 @@ export function auditWorldSurface(tile,{spacing=2,sweepStep=.25,sweepMetres=6,st
   const t=legacyTables(tile);
   const guarded=new Set();
   for(const s of structures){
-    if(s.kind!=='osm-bridge-guarded'||s.layer!==1||s.shoulderMetres!==.25||!s.bridgeSources?.length||!s.bridgeSources.every(id=>s.roads?.includes(id)))throw Error('Invalid guarded OSM bridge shoulder exception');
+    if(s.kind!=='osm-bridge-guarded'||s.layer!==1||s.shoulderMetres!==.25||!s.bridgeSources?.length||!s.roads?.length||!s.approachOnly&&!s.bridgeSources.every(id=>s.roads.includes(id)))throw Error('Invalid guarded OSM bridge shoulder exception');
     for(const id of s.roads)guarded.add('surface:'+id);
   }
   const p=t.contactPositions,ix=t.contactTriangles,edges=new Map();
