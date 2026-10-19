@@ -152,3 +152,16 @@ Owner decision: **Athens Racing is a computer game. Phones and tablets may not p
 - **Removed code:** touch controls, the add-to-home-screen card, phone-only layouts and phone performance paths are removed under the strip-out plan in `docs/plans/desktop-only.md`.
 - **Athens open world:** phone-emulation runs and phone-specific caps stop being gates. Desktop limits stay: the initial download (≤15 MiB), the stream resident cap, the quality-tier resource caps and the 10-minute session download. The 64 MiB 2×2 "phone cap" becomes a desktop low-end budget, and the lead may re-tune it with measurements.
 - **Guard:** `tools/owner-locked-desktop-only.test.mjs` (added by the strip-out work). Ask the owner before changing.
+
+## 2026-10-19 — Free roam: pick where to spawn, not a track
+
+Owner decision: **free roam has no tracks. You pick where on the map to start.** Owner: "free roam should have no tracks, it should be more of like i just pick where to be spawned".
+
+**How it works:**
+- **Screen:** FREE ROAM opens a spawn picker instead of the track list. It is the full-page Attica map, the same art and screen template as Track select.
+- **Choosing a spot:** you choose a named spawn spot (a pin with a place name) or click any drivable road on the map, then DRIVE.
+- **Placement:** the car spawns on the nearest drivable road to the chosen point. It is centred in a lane, faces along the road and is clear of traffic, using the same placement as the tow (`src/tow-placement.js`).
+- **Available roads:** spots and clickable roads come from every map players can drive today. The whole-Athens open world joins only when the owner activates it; until then it appears only under `?map=athens`.
+- **What stays:** the 2026-10-18 "free roam has no route or start/finish" rule still holds.
+- **What's gone:** free roam no longer shows a track name, length, laps or leaderboard. Races (Quick Race and multiplayer) keep the track picker.
+- **Guard:** `tools/owner-locked-free-roam-spawn.test.mjs`. Ask the owner before changing.
