@@ -51,7 +51,7 @@ Also done since 2026-10-18 04:00 (checked by the lead):
 - [x] Look back on V, racing-wheel support, mouse no longer pans the camera by itself (`9ae9d1ad`, final report pending)
 
 Running (Sonnet; Enterprise unless noted):
-- [~] Low-end laptop performance + audio dropouts/ticking (Personal)
+- [x] Low-end laptop performance + audio dropouts/ticking: CPU budget per perf class, first-run CPU probe, frame governor, lag-spiral fix, audio robustness (see CHANGELOG). Follow-up: [ ] owner re-test on the friend's Arc laptop (Riviera/Megara).
 - [~] Driving: final report after the 9ae9d1ad gate (Personal)
 - [~] Cars: 911 silhouette pass (roofline, haunches, nose) + GLA mirror joint (Personal)
 - [~] Athens: re-made road screenshots (paused by rate limit)

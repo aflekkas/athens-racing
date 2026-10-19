@@ -8,6 +8,10 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Weak laptops: the lowest graphics classes now run fewer cars and pedestrians and refresh the HUD less often, and the first-run check also tests your processor.
+
+- Sound: engines and tyres no longer cut out or tick on a slow machine, and sound comes back by itself if the browser pauses it.
+
 - Porsche 911: the headlamps now sit flush in the front wings, with a steeper nose in front of them.
 
 - Engine sounds: the 911 now has a real flat-six, the Aventador and SL 65 a V12, and hot hatches, small turbos and mainstream turbo fours stop all sharing the MINI sound.

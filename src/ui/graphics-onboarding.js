@@ -1,4 +1,5 @@
 import { detectPerformance } from '../graphics.js';
+import { PERF_CEILING_KEY } from '../perf-ceiling.js';
 import { settings, setSetting } from '../settings.js';
 
 // First run: a SILENT performance check. There is no graphics prompt and nothing to choose: the game has one look
@@ -19,6 +20,7 @@ export async function firstRunPerformanceCheck({gpuName=''}={}) {
   try {
     const result=await detectPerformance({gpuName,probe:!skipPerformanceProbe({search:location.search,webdriver:navigator.webdriver})});
     setSetting('perfClass',result.perfClass);
+    try { localStorage.setItem(PERF_CEILING_KEY,result.perfClass); } catch {}
     try { localStorage.setItem(PERF_CHECK_KEY,'1'); } catch {}
     return result;
   } catch(error) { console.warn('Performance check unavailable:',error.message); return null; }

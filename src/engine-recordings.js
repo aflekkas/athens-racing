@@ -1,4 +1,5 @@
 import { engineProfile } from './audio/engine-profiles.js';
+import { BranchGate } from './audio/robust.js';
 // Local, edited field recordings. Full provenance and known substitutions:
 // assets/audio/engines/sources.json and CREDITS.txt.
 const base = new URL('../assets/audio/engines/', import.meta.url);
@@ -46,7 +47,12 @@ export function loadRecordedEngine(ctx, spec) {
     const promise = Promise.all([
       decode(new URL(recording.start + '.wav', base).href),
       Promise.all(recording.loops.map(async l => ({ ...l, buffer: await decode(l.url) }))),
-    ]).then(([start, loops]) => ({ ...recording, start, loops, recorded: true }))
+    ]).then(async ([start, loops]) => {
+      // Granular beds are built here, in short slices, so the voice that uses them is created without a freeze.
+      const owner = { id: recording === ENGINE_RECORDINGS.mini ? 'mini' : spec.id, engine: recording.engine };
+      for (const sample of loops) if (usesGranularBed(owner, { buffer: sample.buffer })) await engineGrainBedAsync(ctx, sample.buffer, sample.rpm, grainCylinders(owner, recording));
+      return { ...recording, start, loops, recorded: true };
+    })
       .catch(error => { cache.delete(recording); throw error; });
     cache.set(recording, promise);
   }
@@ -66,8 +72,11 @@ export function rpmBlend(points, rpm, out = new Float32Array(points.length)) {
  * prevent destructive interference between correlated engine grains.
  */
 const grainBeds = new WeakMap();
-function engineGrainBed(ctx, buffer, rpm, cylinders) {
-  if (grainBeds.has(buffer)) return grainBeds.get(buffer);
+// The bed is ~24 s of audio per loop (about 600 ms of work). It is a generator that yields every few tens of
+// thousands of samples, so loading a recorded engine can be spread over many short tasks instead of freezing the
+// main thread for seconds (engineGrainBedAsync); engineGrainBed runs it to the end in one go.
+const SLICE = 32768;
+function* engineGrainBedSteps(ctx, buffer, rpm, cylinders) {
   const sr = buffer.sampleRate, input = buffer.getChannelData(0), size = input.length;
   const fundamental = rpm * cylinders / 120; // four-stroke firing order
   // Separate the firing body from the stochastic texture before overlap normalization.
@@ -86,6 +95,7 @@ function engineGrainBed(ctx, buffer, rpm, cylinders) {
       const x = bass[index], y = b0*x + b1*x1 + b0*x2 - a1*y1 - a2*y2;
       x2 = x1; x1 = x; y2 = y1; y1 = y;
       if (i >= 0) bass[index] = y;
+      if ((i & (SLICE - 1)) === 0) yield;
     }
   }
   for (let i = 0; i < size; i++) texture[i] = input[i] - bass[i];
@@ -100,6 +110,7 @@ function engineGrainBed(ctx, buffer, rpm, cylinders) {
   const wrap = i => (i % size + size) % size;
   // Circular overlap-add carries the final grains across the wrap without a seam.
   for (let start = 0; start < length; ) {
+    yield;
     let offset = Math.floor(random() * size);
     // Measure the local firing phase, then align this random excerpt to audio time.
     let re = 0, im = 0;
@@ -123,29 +134,59 @@ function engineGrainBed(ctx, buffer, rpm, cylinders) {
   for (let i = 0; i < length; i++) {
     low[i] /= Math.max(1e-6, weight[i]); // coherent firing body: normalize amplitude
     high[i] /= Math.sqrt(Math.max(1e-6, power[i])); // decorrelated texture: normalize power
+    if ((i & (SLICE - 1)) === 0) yield;
   }
   // Normalize residual source-level changes after summation, not individual grains.
   // Symmetric look-ahead is possible because preparation precedes playback; no AGC lag.
-  const stabilize = (samples, reference) => {
-    let target = 0; for (const v of reference) target += v*v;
+  const stabilize = function* (samples, reference) {
+    let target = 0; for (let i = 0; i < reference.length; i++) { const v = reference[i]; target += v*v; if ((i & (SLICE - 1)) === 0) yield; }
     target /= reference.length;
     const radius = Math.round(sr * .04), squared = new Float64Array(length + 2*radius + 1);
     for (let i = 0; i < length + 2*radius; i++) {
       const v = samples[(i - radius + length) % length]; squared[i+1] = squared[i] + v*v;
+      if ((i & (SLICE - 1)) === 0) yield;
     }
     const envelope = new Float32Array(length);
-    for (let i = 0; i < length; i++) envelope[i] = Math.sqrt(target / Math.max(1e-12, (squared[i+2*radius] - squared[i]) / (2*radius)));
+    for (let i = 0; i < length; i++) { envelope[i] = Math.sqrt(target / Math.max(1e-12, (squared[i+2*radius] - squared[i]) / (2*radius))); if ((i & (SLICE - 1)) === 0) yield; }
     // Smooth gain itself over 20 ms; retain natural individual combustion pulses.
     const smooth = Math.round(sr * .01), sums = new Float64Array(length + 2*smooth + 1);
-    for (let i = 0; i < length + 2*smooth; i++) sums[i+1] = sums[i] + envelope[(i-smooth+length)%length];
-    for (let i = 0; i < length; i++) samples[i] *= Math.min(4, (sums[i+2*smooth] - sums[i]) / (2*smooth));
+    for (let i = 0; i < length + 2*smooth; i++) { sums[i+1] = sums[i] + envelope[(i-smooth+length)%length]; if ((i & (SLICE - 1)) === 0) yield; }
+    for (let i = 0; i < length; i++) { samples[i] *= Math.min(4, (sums[i+2*smooth] - sums[i]) / (2*smooth)); if ((i & (SLICE - 1)) === 0) yield; }
   };
-  stabilize(low, bass); stabilize(high, texture);
+  yield* stabilize(low, bass); yield* stabilize(high, texture);
   const result = ctx.createBuffer(1, length, sr), data = result.getChannelData(0);
   for (let i = 0; i < length; i++) data[i] = low[i] + high[i];
-  stabilize(data, input); // also account for residual correlation between the two bands
+  yield;
+  yield* stabilize(data, input); // also account for residual correlation between the two bands
   grainBeds.set(buffer, result); return result;
 }
+function engineGrainBed(ctx, buffer, rpm, cylinders) {
+  if (grainBeds.has(buffer)) return grainBeds.get(buffer);
+  const steps = engineGrainBedSteps(ctx, buffer, rpm, cylinders);
+  for (let step = steps.next(); ; step = steps.next()) if (step.done) return step.value;
+}
+const pendingBeds = new WeakMap();
+const nextTask = () => new Promise(resolve => setTimeout(resolve, 0));
+/** Build the bed in ~4 ms slices between frames. Resolves once engineGrainBed(...) for this take is cached. */
+export function engineGrainBedAsync(ctx, buffer, rpm, cylinders, budgetMs = 4) {
+  if (grainBeds.has(buffer)) return Promise.resolve(grainBeds.get(buffer));
+  if (!pendingBeds.has(buffer)) {
+    pendingBeds.set(buffer, (async () => {
+      const steps = engineGrainBedSteps(ctx, buffer, rpm, cylinders);
+      for (;;) {
+        const until = performance.now() + budgetMs;
+        let step;
+        do step = steps.next(); while (!step.done && performance.now() < until);
+        if (step.done) return step.value;
+        await nextTask();
+      }
+    })().finally(() => pendingBeds.delete(buffer)));
+  }
+  return pendingBeds.get(buffer);
+}
+/** which loops of a recorded engine are played as granular beds (short takes, and every Mini loop) */
+export const usesGranularBed = (spec, sample) => spec.id === 'mini' || sample.buffer.duration < 1.25;
+export const grainCylinders = (spec, bank) => bank?.cylinders || (spec.engine === 'turbo6' ? 6 : 4);
 
 export class GranularEngineLoop {
   constructor(ctx, buffer, dest, rpm = 1800, cylinders = 4) {
@@ -167,14 +208,16 @@ export class RecordedEngineVoice {
     this.filter.connect(this.out); this.out.connect(dest);
     for (const sample of bank.loops) {
       const g = ctx.createGain(); g.gain.value = 0; g.connect(this.filter);
-      const source = spec.id === 'mini' || sample.buffer.duration < 1.25
-        ? new GranularEngineLoop(ctx, sample.buffer, g, sample.rpm, bank.cylinders || (spec.engine === 'turbo6' ? 6 : 4))
+      const source = usesGranularBed(spec, sample)
+        ? new GranularEngineLoop(ctx, sample.buffer, g, sample.rpm, grainCylinders(spec, bank))
         : ctx.createBufferSource();
       if (!(source instanceof GranularEngineLoop)) { source.buffer = sample.buffer; source.loop = true; source.loopStart = sample.loopStart || 0; source.loopEnd = sample.loopEnd || sample.buffer.duration; source.connect(g); }
       const offset = (sample.loopStart || 0) + Math.random() * ((sample.loopEnd || sample.buffer.duration) - (sample.loopStart || 0));
       source.start(ctx.currentTime, offset);
       this.sources.push(source); this.gains.push(g);
     }
+    // only the two loops either side of the current RPM are blended in: the others are cut from the graph (BranchGate)
+    this.branches = this.gains.map(g => new BranchGate(g, this.filter, .6, 1e-4));
     // Preserve limiter feedback without distorting the recorded engine timbre.
     this.limiter = ctx.createOscillator(); this.limiter.type = 'square'; this.limiter.frequency.value = 17;
     this.limiterGain = ctx.createGain(); this.limiterGain.gain.value = 0;
@@ -190,6 +233,7 @@ export class RecordedEngineVoice {
       const rate = Math.max(.25, Math.min(4, r / this.bank.loops[i].rpm * dop));
       source.playbackRate.setTargetAtTime(rate, now, tc);
       this.gains[i].gain.setTargetAtTime(weights[i], now, .06);
+      this.branches[i].use(weights[i], now);
     }
     const rn = Math.min(1, r / this.spec.redline);
     this.filter.frequency.setTargetAtTime(((this.spec.engine === 'diesel' ? 1700 : 2200) + on * 8300 + rn * (700 + on * 1100)) * this.tone, now, .07);

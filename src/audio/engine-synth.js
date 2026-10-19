@@ -1,3 +1,4 @@
+import { BranchGate } from "./robust.js";
 // Firing-order fallback; licensed recordings take precedence. No frame-time buffer generation.
 // ------------------------------------------------------------------ engine models
 // cyl: cylinders; f1/f2: exhaust resonances (Hz) with decay t1/t2 (s); b: rasp resonance level; thump: low pressure pulse;
@@ -104,6 +105,7 @@ export class EngineVoice {
         list.push(s); gl.push(g);
       }
     }
+    this.branches = []; for (let k = 0; k < bank.pts.length; k++) for (const g of [this.gOn[k], this.gOff[k]]) this.branches.push(new BranchGate(g, this.sum, .4, 1e-4)); // [on k, off k] pairs
     this.shaper = ctx.createWaveShaper();
     const n = 1024, curve = new Float32Array(n); for (let i = 0; i < n; i++) { const x = i / (n - 1) * 2 - 1; curve[i] = Math.tanh(x * 1.8) / Math.tanh(1.8); }
     this.shaper.curve = curve; this.shaper.oversample = '2x';
@@ -137,6 +139,7 @@ export class EngineVoice {
       this.src[k * 2 + 1].playbackRate.setTargetAtTime(rate, now, tc);
       this.gOn[k].gain.setTargetAtTime(w * gOn, now, 0.03);
       this.gOff[k].gain.setTargetAtTime(w * gOff * 0.60, now, 0.03);
+      this.branches[k * 2].use(w * gOn, now); this.branches[k * 2 + 1].use(w * gOff * 0.60, now);
     }
     const rn = Math.min(1.1, rpm / (P[3] / 0.88));
     this.lp.frequency.setTargetAtTime(E.lp[0] + (E.lp[1] - E.lp[0]) * Math.min(1, rn * (0.5 + 0.5 * on)), now, 0.04);

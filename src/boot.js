@@ -1,3 +1,4 @@
+import { audioLatencyHint, audioLowCost } from './audio/robust.js';
 import { importWithUpdate } from './client-release.js';
 // Production entry: paint the real menu before fetching the simulation or world builders.
 // Native development still enters main.js directly and needs no build step.
@@ -20,6 +21,7 @@ if (query.get('map')==='athens' || direct || query.has('lobby')) {
     if (window.__multiplayer?.pendingResume || window.__multiplayer?.active || window.__multiplayer?.pendingCode) (await importWithUpdate(() => import('./ui/mp-loader.js'))).installMpScreens(menu);
     return window.__flow; }).catch(error => { runtime = null; throw error; });
   const audio = window.__bootAudio = new Audio();
+  audio.latencyHint = audioLatencyHint(settings.perfClass, navigator.hardwareConcurrency); audio.lowCost = audioLowCost(settings.perfClass, navigator.hardwareConcurrency);
   audio.menuRequested = true; audio.setVolumes(settings);
   const stopVolumeSync = onSettings(values => audio.setVolumes(values));
   const unlock = () => { if (!runtime) audio.start(); };
