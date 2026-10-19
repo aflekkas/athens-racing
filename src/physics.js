@@ -741,13 +741,15 @@ export class Vehicle {
       // dragging axle (the handbrake just released, engine braking in a slide) turns far slower than the car and used to walk
       // the box down to 1st at speed ("the thing keeps shifting to 1" while drifting the E36 M3), while a spinning axle already
       // reads high and ordinary brake slip (10-15%) is untouched. rpmShift is also the over-rev check for the gear below.
+      // (1st only at crawling speed applies in and just after a slide; ordinary braking keeps the old 90% rule)
+      const slideNow = !!inp.handbrake || this.driftLatch > 0.05 || Math.abs(beta) > 0.12;
       const vShift = Math.max(vwD, av * DRAG_FLOOR), rpmShift = (g) => vShift / R * this.ratio(g) * 60 / (2 * Math.PI);
       if ((!pt || brk < .2 || rpmIn(this.gear) > pt.limiterRpm) && this.gear < nG && rpmIn(this.gear) > up && (this.clutch >= 1 || pt?.gearboxType === 'automatic')) this.shift(this.gear + 1, pt?.shiftTime ?? sp.shiftT ?? 0.15);
-      else if (holdGear) { if (this.gear > 1 && rpmRoad(this.gear) < red * lerp(0.25, 0.42, thrRaw) && rpmRoad(this.gear - 1) < red * (this.gear === 2 ? FIRST_GEAR_MAX : 0.7)) this.shift(this.gear - 1, (pt?.shiftTime ?? (sp.shiftT ?? 0.15) * 0.7)); }
+      else if (holdGear) { if (this.gear > 1 && rpmRoad(this.gear) < red * lerp(0.25, 0.42, thrRaw) && rpmRoad(this.gear - 1) < red * (this.gear === 2 ? Math.min(0.7, FIRST_GEAR_MAX) : 0.7)) this.shift(this.gear - 1, (pt?.shiftTime ?? (sp.shiftT ?? 0.15) * 0.7)); }
       else if (this.gear > 1) {
         const dn = rpmShift(this.gear - 1);
         const downAt = pt ? (brk > 0.2 ? red * lerp(.42, .72, brk) : schedule.down) : brk > 0.2 ? red * 0.72 : red * lerp(0.32, 0.6, thrRaw);
-        if (dn < red * (this.gear === 2 ? Math.min(0.9, FIRST_GEAR_MAX) : 0.9) && (!pt || dn < (brk > .2 ? red * .88 : schedule.up * .9)) && (rpmShift(this.gear) < downAt || (thrRaw > 0.92 && dn < red * 0.8 && rpmShift(this.gear) < red * 0.55))) this.shift(this.gear - 1, (pt?.shiftTime ?? (sp.shiftT ?? 0.15) * 0.7));
+        if (dn < red * (this.gear === 2 && slideNow ? Math.min(0.9, FIRST_GEAR_MAX) : 0.9) && (!pt || dn < (brk > .2 ? red * .88 : schedule.up * .9)) && (rpmShift(this.gear) < downAt || (thrRaw > 0.92 && dn < red * 0.8 && rpmShift(this.gear) < red * 0.55))) this.shift(this.gear - 1, (pt?.shiftTime ?? (sp.shiftT ?? 0.15) * 0.7));
       }
     }
     }
