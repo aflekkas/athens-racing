@@ -40,14 +40,16 @@ export class WorldDetail {
     const records=[],corridor=new DrivableCorridor(map.route,map.roadNetwork),buildingCells=new Map();
     for(const b of map.data.buildings||[]){const p=b.p?.flat();if(!p?.length)continue;const bb=polyBounds(p),x=(bb.x0+bb.x1)/2,z=(bb.z0+bb.z1)/2;
       const bounds={p,bb};for(let cx=Math.floor(bb.x0/CELL);cx<=Math.floor(bb.x1/CELL);cx++)for(let cz=Math.floor(bb.z0/CELL);cz<=Math.floor(bb.z1/CELL);cz++){const k=cx+','+cz;if(!buildingCells.has(k))buildingCells.set(k,[]);buildingCells.get(k).push(bounds);}
-      if(bb.x1-bb.x0<5||bb.z1-bb.z0<5||!pointInPoly(x,z,p))continue;
+      // A map that draws tiled roofs on its pitched footprints keeps rooftop plant off them.
+      if(bb.x1-bb.x0<5||bb.z1-bb.z0<5||!pointInPoly(x,z,p)||b.pitched&&map.pitchedRoofs)continue;
       const seed=b.detailSeed??detailSeed('way/'+b.id);let top=-Infinity;for(let i=0;i<p.length;i+=2)top=Math.max(top,this.heightC(p[i],p[i+1]));if(!Number.isFinite(top)||top<.2)continue;top+=Math.max(2.6,Number(b.h||b.height)||5.5);
       let width=Math.min(5,bb.x1-bb.x0-2),depth=Math.min(4,bb.z1-bb.z0-2);
       while(width>2.4&&depth>3.1&&[-1,1].some(a=>[-1,1].some(b=>!pointInPoly(x+a*width/2,z+b*depth/2,p)))){width*=.8;depth*=.8;}
       if(width>=2.4&&depth>=3.1&&[-1,1].every(a=>[-1,1].every(b=>pointInPoly(x+a*width/2,z+b*depth/2,p))))records.push({kind:'roof',x,z,y:top,seed,style:buildingStyle(b),width,depth});
     }
     const free=(x,z)=>corridor.distance(x,z,12)>2&&!((buildingCells.get(Math.floor(x/CELL)+','+Math.floor(z/CELL))||[]).some(b=>pointInPoly(x,z,b.p)));
-    for(const tree of map.data.vegetation||[]){if(!free(tree.x,tree.z))continue;const y=this.heightC(tree.x,tree.z);if(Number.isFinite(y)&&y>=0)records.push({...tree,kind:'tree',treeKind:tree.kind,y,height:Math.min(10,Math.max(3,tree.height||5.5))});}
+    // A map whose own scenery draws its canopy (Psychiko streetscape) sets map.ownVegetation.
+    if(!map.ownVegetation)for(const tree of map.data.vegetation||[]){if(!free(tree.x,tree.z))continue;const y=this.heightC(tree.x,tree.z);if(Number.isFinite(y)&&y>=0)records.push({...tree,kind:'tree',treeKind:tree.kind,y,height:Math.min(10,Math.max(3,tree.height||5.5))});}
     // Street assemblies stay outside the carriageway. Existing mapped lamps,
     // signs and crossings remain the base; these are sparse supplementary props.
     const route=map.route;

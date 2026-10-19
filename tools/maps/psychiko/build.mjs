@@ -124,8 +124,7 @@ data.roadworks=data.psychiko.sideStreetExits.map(exit=>{
  }
  return chosen;
 });
-const scenery=buildPsychikoScenery(data,fs.readFileSync(path.join(out,'terrain.bin')));
-data.psychiko.scenery={furniture:scenery.furniture};
+data.psychiko.scenery=buildPsychikoScenery(data,fs.readFileSync(path.join(out,'terrain.bin')),osm);
 fs.writeFileSync(path.join(out,'map.json'),JSON.stringify(data));
 inject('psychiko');
 fs.writeFileSync(path.join(dir,'raw/profile.json'),JSON.stringify({step,start:R.start,finish:R.finish,raw:Yraw,smoothed:Y,stats}));
