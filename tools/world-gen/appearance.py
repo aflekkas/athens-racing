@@ -3,7 +3,7 @@ import math
 
 # sRGB source colours; packing converts these to linear vertex/material colours.
 BUILDINGS=['#f4f5f3','#e6e9ea','#d4d9de','#c5d2dc','#c7d5cf','#d8cbd1']
-TERRAIN=dict(earth='#8d826a',rock='#8e9395',scrub='#717d65',sand='#b5ad8a',urban='#797d80')
+TERRAIN=dict(earth='#8d826a',rock='#8e9395',scrub='#717d65',sand='#b5ad8a',urban='#86837a')
 
 
 def linear(hex_colour):

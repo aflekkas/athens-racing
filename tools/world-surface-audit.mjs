@@ -18,6 +18,7 @@ export function auditWorldSurface(t,{spacing=2,sweepStep=.25,sweepMetres=6,struc
     const start=t.edges[i+3],count=t.edges[i+4];
     for(let j=start+1;j<start+count;j++){const a=(j-1)*3,b=j*3,d=Math.hypot(graph[b]-graph[a],graph[b+2]-graph[a+2]);if(d>1e-6)maxProfileGrade=Math.max(maxProfileGrade,Math.abs(graph[b+1]-graph[a+1])/d);}
   }
+  const offenders=new Set(),surfaceRoad=id=>String(ids[id]||'').replace(/^surface:/,'');
   let asphaltTriangles=0,asphaltAbove30=0,maxAsphaltGrade=0,missingContacts=0,samples=0,outsideFixture=0,maxShoulderStep=0,maxShoulderGrade=0,worstShoulder=null,guardedShoulderSamples=0;
   const point=v=>[p[v*3],p[v*3+1],p[v*3+2]];
   for(let i=0;i<ix.length;i+=5){
@@ -25,7 +26,7 @@ export function auditWorldSurface(t,{spacing=2,sweepStep=.25,sweepMetres=6,struc
     const ux=b[0]-a[0],uy=b[1]-a[1],uz=b[2]-a[2],vx=c[0]-a[0],vy=c[1]-a[1],vz=c[2]-a[2];
     const grade=Math.hypot(uy*vz-uz*vy,ux*vy-uy*vx)/Math.abs(uz*vx-ux*vz);
     if(!Number.isFinite(grade))throw Error('Degenerate contact triangle');
-    if(road){asphaltTriangles++;maxAsphaltGrade=Math.max(maxAsphaltGrade,grade);if(grade>MAX_GRADE)asphaltAbove30++;}
+    if(road){asphaltTriangles++;maxAsphaltGrade=Math.max(maxAsphaltGrade,grade);if(grade>MAX_GRADE){asphaltAbove30++;offenders.add(surfaceRoad(ix[i+3]));}}
     for(let j=0;j<3;j++){
       const u=ids[j],v=ids[(j+1)%3],key=u<v?`${u},${v}`:`${v},${u}`;
       if(!edges.has(key))edges.set(key,[]);
@@ -54,6 +55,7 @@ export function auditWorldSurface(t,{spacing=2,sweepStep=.25,sweepMetres=6,struc
         if(!hit||!Number.isFinite(hit.y)){missingContacts++;previous=null;continue;}
         if(previous!==null){const step=Math.abs(hit.y-previous),grade=step/sweepStep;
           maxShoulderStep=Math.max(maxShoulderStep,step);
+          if(step>MAX_STEP||grade>MAX_GRADE)offenders.add(surfaceRoad(faces.find(f=>f.road).surface));
           if(grade>maxShoulderGrade){maxShoulderGrade=grade;worstShoulder={x,z,d,nx,nz,previousY:previous,y:hit.y};}
         }
         previous=hit.y;
@@ -61,7 +63,7 @@ export function auditWorldSurface(t,{spacing=2,sweepStep=.25,sweepMetres=6,struc
     }
   }
   const passed=maxProfileGrade<=MAX_PROFILE_GRADE+2e-6&&asphaltAbove30===0&&missingContacts===0&&maxShoulderStep<=MAX_STEP&&maxShoulderGrade<=MAX_GRADE;
-  return {passed,maxProfileGrade,asphaltTriangles,asphaltAbove30,maxAsphaltDegrees:Math.atan(maxAsphaltGrade)*180/Math.PI,shoulderSamples:samples,guardedShoulderSamples,outsideFixture,missingContacts,maxShoulderStep,maxShoulderDegrees:Math.atan(maxShoulderGrade)*180/Math.PI,worstShoulder};
+  return {passed,maxProfileGrade,asphaltTriangles,asphaltAbove30,maxAsphaltDegrees:Math.atan(maxAsphaltGrade)*180/Math.PI,shoulderSamples:samples,guardedShoulderSamples,outsideFixture,missingContacts,maxShoulderStep,maxShoulderDegrees:Math.atan(maxShoulderGrade)*180/Math.PI,worstShoulder,offenders:[...offenders].filter(Boolean).sort()};
 }
 
 // CLI intentionally accepts development NDJSON rather than assuming that

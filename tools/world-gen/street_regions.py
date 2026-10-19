@@ -119,6 +119,23 @@ class Distance:
         return self.segments[int(self.tree.nearest(p))].distance(p)
 
 
+def fill_junction_holes(geometry, roads, limit=4.):
+    """Close enclosed gaps under `limit` m2 beside a >=3-way node (the audit's own definition of a junction gap).
+
+    Streets of unequal width meeting at a short stub can leave a pocket just over the 1 m2 void limit between their
+    ribbons and fillets; beside a junction that is a hole in the road, never an island. Local roads only decide it."""
+    discs = []
+    for key, items in sorted(node_table(roads).items()):
+        if len({r['id'] for r, _ in items}) < 3:
+            continue
+        x, z = items[0][1]; discs.append(Point(x, z).buffer(max(r['width'] for r, _ in items) / 2 + 6))
+    if not discs:
+        return geometry
+    near = unary_union(discs)
+    parts = [Polygon(p.exterior, [r for r in p.interiors if not (Polygon(r).area < limit and Polygon(r).intersects(near))]) for p in polygons_of(geometry)]
+    return unary_union(parts) if parts else Polygon()
+
+
 def node_table(roads):
     nodes = defaultdict(list)
     for road in roads:
@@ -182,7 +199,7 @@ class StreetRegions:
         self.fillets = clean(junction_fillets(roads, self.ribbons)) if roads else Polygon()
         if clip is not None and not self.fillets.is_empty:
             self.fillets = clean(diff(self.fillets, clip))  # e.g. the bridge deck platform: no ground asphalt beneath it
-        self.asphalt = fill_small_holes(clean(unary_union([ribbons, self.fillets]))) if roads else Polygon()
+        self.asphalt = fill_junction_holes(fill_small_holes(clean(unary_union([ribbons, self.fillets]))), roads) if roads else Polygon()
         self.owner_extra = self._assign_fillets()
         strips = []
         for road in roads:

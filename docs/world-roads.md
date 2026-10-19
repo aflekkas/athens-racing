@@ -108,7 +108,7 @@ The 8 m height lattice is untouched, so asphalt keeps the earlier physical proof
 
 ## Rendering
 
-Tile meshes carry `userData.tileSurface`: `asphalt`, `paving` or `marking`. `src/athens-materials.js` turns them into unlit materials using the same
+Tile meshes carry `userData.tileSurface`: `asphalt`, `paving`, `marking`, or `urban` (the ground between buildings, see [world-areas.md](world-areas.md)). `src/athens-materials.js` turns them into unlit materials using the same
 shared library scans as the hand-tuned maps (`asphalt_02_diff`, `floor_pavement_diff`; only these two are loaded for Athens, about 0.5 MB) with
 **planar UVs taken from the tile-local position**: 512 m is exactly 122 asphalt periods (4.197 m, the maps' 4.2 m) and 160 paving periods (3.2 m), so
 the scan never seams at a cell border. Markings use `polygonOffset` so 1.5 cm paint never z-fights. Kerbs are a plain light concrete colour.
@@ -129,7 +129,7 @@ the scan never seams at a cell border. Markings use `polygonOffset` so 1.5 cm pa
 CACHE=/home/dev/data/athens-world-cache   # the same cache as the rest of world-gen; nothing is downloaded
 $CACHE/venv/bin/python tools/world-gen/sidewalks.py $CACHE/attica.osm.pbf $CACHE/sidewalks.sqlite        # ~3 min, once
 $CACHE/venv/bin/python tools/world-gen/sections.py $CACHE/profiles-a.sqlite $CACHE/source.sqlite $CACHE/sidewalks.sqlite $CACHE/sections-a.sqlite   # 20 s
-node tools/world-gen/build-coast.mjs $CACHE <output-dir>
+node tools/world-gen/build-coast.mjs $CACHE <output-dir> [area]   # areas, structures and the Piraeus area: docs/world-areas.md
 python3 tools/world-gen/road_section.py > tools/world-gen/fixtures/road-classes.json   # after editing CLASSES
 ```
 
