@@ -925,6 +925,14 @@ body[data-ui] #mp-toggle { display: none !important; }
 @media (max-height: 500px) { .pause-sheet { padding: var(--s-3); width: min(36rem, 100%); } .pause__list { margin-top: var(--s-2); grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
 /* Shared binding-aware driving controls (pause and race hints). */
+/* Settings > Controls > Steering wheel: live steering / throttle / brake readouts while a wheel is calibrated or checked */
+.wheel-meters { display: grid; gap: var(--s-2); padding: var(--s-2) var(--s-3); }
+.wheel-live { display: grid; grid-template-columns: 8.5rem 4.75rem minmax(6rem, 1fr); align-items: center; gap: var(--s-3); pointer-events: none; cursor: default; }
+.wheel-live__k { display: inline-flex; align-items: center; gap: .4rem; font: 700 .7rem var(--f-cond); letter-spacing: .12em; color: var(--c-text-3); }
+.wheel-live__v { font: 700 .8rem var(--f-cond); letter-spacing: .06em; text-align: right; color: var(--c-text); font-variant-numeric: tabular-nums; }
+.wheel-live .progress { height: 5px; }
+.wheel-step { color: var(--c-text-2, var(--c-text-3)); }
+.wheel-error { color: var(--c-bad); }
 .driving-controls { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .85rem; pointer-events: none; cursor: default; }
 .driving-controls > span { display: inline-flex; align-items: center; gap: .4rem; pointer-events: none; }
 .driving-controls b { font: 700 .7rem var(--f-cond); letter-spacing: .05em; color: #d2dbe5; }

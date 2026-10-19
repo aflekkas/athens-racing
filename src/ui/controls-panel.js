@@ -3,6 +3,7 @@
 // A binding row has two chips (keyboard, controller): left / right picks one, confirm (or a click) waits for the new key /
 // button / axis; Esc cancels. While a capture runs the input system holds back every action, so the menu stays put.
 import { input } from '../input.js';
+import { CALIBRATION_STEPS, CALIBRATION_TEXT, WHEEL_LIMITS } from '../steering-wheel.js';
 import * as C from './components.js';
 
 const { icon, esc } = C;
@@ -33,6 +34,54 @@ function bindRow(action, label) {
     : `<span class="bind__chip ${cap === kind ? 'wait' : ''}" data-bind="${kind}" role="button" aria-label="Rebind ${esc(label)} ${kind}">${cap === kind ? `<em>${kind === 'keyboard' ? 'PRESS A KEY' : 'PRESS A BUTTON'}</em>` : chips(kind, b[kind][action])}</span>`;
   return C.field(esc(label), `<div class="bind__cols">${cell('keyboard')}${cell('gamepad')}</div>`, { kind: 'bind', cls: 'bind', attrs: { 'data-action': action } });
 }
+// ---- racing wheel (src/steering-wheel.js): detection, live axes, calibration, mapping, range, deadzone, force feedback
+const WHEEL_MAP = { wheelSteerAxis: ['steer', 'axis'], wheelThrottleAxis: ['throttle', 'axis'], wheelBrakeAxis: ['brake', 'axis'],
+  wheelSteerInvert: ['steer', 'invert'], wheelThrottleInvert: ['throttle', 'invert'], wheelBrakeInvert: ['brake', 'invert'] };
+const pct = (v) => Math.round(v * 100) + '%';
+const live = (role, label, ic) => `<div class="wheel-live" data-wheel-live="${role}"><span class="wheel-live__k">${icon(ic)}${label}</span><b class="wheel-live__v">0%</b>${C.progress(role === 'steer' ? 0.5 : 0, 'wheel-live__bar')}</div>`;
+const liveRows = () => `<div class="wheel-meters">${live('steer', 'STEERING', 'circle-dot')}${live('throttle', 'THROTTLE', 'gauge')}${live('brake', 'BRAKE', 'circle-gauge')}</div>`;
+/** refresh the live axis readouts while the controls tab shows them; stops itself once they are gone */
+let liveTimer = null;
+function ensureLive() {
+  if (liveTimer || typeof document === 'undefined') return;
+  liveTimer = setInterval(() => {
+    const rows = document.querySelectorAll('[data-wheel-live]');
+    if (!rows.length) { clearInterval(liveTimer); liveTimer = null; return; }
+    const v = input.wheel?.values; if (!v) return;
+    for (const row of rows) {
+      const role = row.dataset.wheelLive, value = v[role] || 0;
+      row.querySelector('.wheel-live__v').textContent = role === 'steer' ? (value > 0.005 ? 'R ' : value < -0.005 ? 'L ' : '') + pct(Math.abs(value)) : pct(value);
+      C.setProgress(row.querySelector('.progress'), role === 'steer' ? (value + 1) / 2 : value);
+    }
+  }, 80);
+}
+function wheelGroup(A) {
+  const w = input.wheel, s = input.settings, cal = input.wheelCal;
+  const mode = C.segmented({ key: 'wheelMode', label: 'RACING WHEEL', value: s.wheelMode, options: [['auto', 'AUTO'], ['gamepad', 'OFF'], ['wheel', 'ON']], attrs: A,
+    note: 'AUTO USES A RECOGNISED WHEEL (LOGITECH G29 / G920, THRUSTMASTER T300, FANATEC) · ON TREATS ANY NON-STANDARD DEVICE AS ONE' });
+  let body = '';
+  if (!w) body = `<p class="group__note">${icon('circle-dot')} NO WHEEL DETECTED. Plug it in and turn it or press a pedal, so the browser lists it.</p>`;
+  else if (cal) {
+    const step = cal.name, n = CALIBRATION_STEPS.indexOf(step) + 1, [title, text] = CALIBRATION_TEXT[step];
+    body = `<p class="group__note">${icon('circle-dot')} ${C.esc(w.name)} · STEP ${n} OF ${CALIBRATION_STEPS.length}: <b>${title}</b></p>
+      <p class="group__note wheel-step">${C.esc(text)}${cal.error ? `<br><b class="wheel-error">${C.esc(cal.error)}</b>` : ''}</p>${liveRows()}
+      <div class="field-actions">${C.button({ label: n === CALIBRATION_STEPS.length ? 'FINISH' : 'NEXT', icon: 'check', variant: 'primary', act: 'wheelNext', size: 'sm' })}${C.button({ label: 'CANCEL', variant: 'ghost', act: 'wheelCancel', size: 'sm' })}</div>`;
+  } else {
+    const p = w.profile, axes = Array.from({ length: Math.max(1, w.axisCount) }, (_, i) => [String(i), 'AXIS ' + i]);
+    const mapRow = (role, label, key, invKey) => { const m = p[role]; return m ? C.select({ key, label, value: String(m.axis), options: axes, attrs: A })
+      + C.toggle({ key: invKey, label: label + ' INVERTED', value: role === 'steer' ? !!m.invert : m.max < m.min, attrs: A }) : ''; };
+    body = `<p class="group__note">${icon('circle-dot')} ${C.esc(w.name)} · ${w.saved ? 'CALIBRATED' : 'DEFAULT MAPPING, CALIBRATE FOR BEST RESULTS'}</p>${liveRows()}
+      <div class="field-actions">${C.button({ label: 'CALIBRATE', icon: 'refresh-cw', variant: 'secondary', act: 'wheelCalibrate', size: 'sm' })}${w.saved ? C.button({ label: 'RESET WHEEL', icon: 'rotate-ccw', variant: 'ghost', act: 'wheelReset', size: 'sm' }) : ''}</div>
+      ${C.slider({ key: 'wheelRange', label: 'STEERING RANGE', value: s.wheelRange, min: WHEEL_LIMITS.range[0], max: WHEEL_LIMITS.range[1], step: 0.05, format: 'pct', attrs: A, note: 'SHARE OF THE WHEEL\'S TURN FROM CENTRE THAT GIVES FULL LOCK · LOWER IS QUICKER' })}
+      ${C.slider({ key: 'wheelDeadzone', label: 'STEERING DEADZONE', value: s.wheelDeadzone, min: 0, max: WHEEL_LIMITS.deadzone[1], step: 0.01, format: 'pct', attrs: A })}
+      ${C.slider({ key: 'wheelLinearity', label: 'STEERING CURVE', value: s.wheelLinearity, min: WHEEL_LIMITS.linearity[0], max: WHEEL_LIMITS.linearity[1], step: 0.05, format: 'f2', attrs: A, note: '1.00 IS LINEAR · HIGHER IS GENTLER NEAR CENTRE' })}
+      ${C.slider({ key: 'wheelPedalDeadzone', label: 'PEDAL DEADZONE', value: s.wheelPedalDeadzone, min: 0, max: WHEEL_LIMITS.pedalDeadzone[1], step: 0.01, format: 'pct', attrs: A, note: 'TRAVEL IGNORED AT THE TOP AND BOTTOM OF EACH PEDAL' })}
+      ${mapRow('steer', 'STEERING AXIS', 'wheelSteerAxis', 'wheelSteerInvert')}${mapRow('throttle', 'THROTTLE AXIS', 'wheelThrottleAxis', 'wheelThrottleInvert')}${mapRow('brake', 'BRAKE AXIS', 'wheelBrakeAxis', 'wheelBrakeInvert')}
+      ${C.slider({ key: 'wheelForce', label: 'FORCE FEEDBACK', value: s.wheelForce, min: 0, max: 1, step: 0.05, format: 'pct', icon: 'zap', attrs: A, note: w.canRumble ? 'RUMBLE AS THE FRONT TYRES REACH THEIR GRIP LIMIT AND OVER KERBS · 0% IS OFF' : 'THIS WHEEL DOES NOT OFFER FORCE FEEDBACK TO THE BROWSER, SO THIS HAS NO EFFECT' })}`;
+  }
+  ensureLive();
+  return `<div class="group"><h3 class="group__title">${icon('circle-dot')}STEERING WHEEL</h3>${mode}${body}</div>`;
+}
 export function renderControls(menu) {
   const s = input.settings, A = { 'data-scope': 'input' };
   const known = new Set(GROUPS.flatMap(([, , g]) => Object.keys(g)));
@@ -45,6 +94,7 @@ export function renderControls(menu) {
       ${C.slider({ key: 'sensitivity', label: 'STEERING SENSITIVITY', value: s.sensitivity, min: 0.25, max: 2, step: 0.05, format: 'x', attrs: A })}
       ${C.slider({ key: 'linearity', label: 'STEERING CURVE', value: s.linearity, min: 0.25, max: 3, step: 0.05, format: 'f2', attrs: A, note: '1.00 IS LINEAR · HIGHER IS GENTLER NEAR CENTRE' })}
       ${C.segmented({ key: 'touchSteering', label: 'TOUCH STEERING', value: s.touchSteering, options: [['screen', 'ON-SCREEN', 'hand'], ['tilt', 'TILT', 'smartphone']], attrs: A })}</div>
+    ${wheelGroup(A)}
     <div class="bind-head"><span></span><span>${icon('keyboard')}KEYBOARD</span><span>${icon('gamepad-2')}CONTROLLER</span></div>
     ${groups.map(([title, ic, g]) => `<div class="group"><h3 class="group__title">${icon(ic)}${title}</h3>${Object.entries(g).filter(([a]) => all.includes(a)).map(([a, l]) => bindRow(a, l)).join('')}</div>`).join('')}
     <div class="field-actions">${C.button({ label: 'RESET CONTROLS', icon: 'rotate-ccw', variant: 'ghost', act: 'controlsReset', size: 'sm' })}</div>`;
@@ -68,8 +118,18 @@ async function confirmReset(menu) {
     actions: [{ id: 'reset', label: 'RESET', icon: 'rotate-ccw', variant: 'primary' }, { id: 'cancel', label: 'CANCEL', variant: 'secondary', default: true }] });
   if (ok === 'reset') { input.resetBindings(); menu.refresh(); C.ui.toast('CONTROLS RESET', { icon: 'check', tone: 'good' }); }
 }
+/** the wheel calibration buttons: start, advance a step (the last one saves), cancel, and forget this wheel's calibration */
+function wheelButton(menu, act) {
+  if (act === 'wheelCalibrate') input.startWheelCalibration();
+  else if (act === 'wheelCancel') input.cancelWheelCalibration();
+  else if (act === 'wheelReset') { input.resetWheelProfile(); C.ui.toast('WHEEL RESET', { icon: 'check', tone: 'good' }); }
+  else if (act === 'wheelNext') { const r = input.nextWheelCalibration(); if (r.done) C.ui.toast('WHEEL CALIBRATED', { icon: 'check', tone: 'good' }); }
+  else return false;
+  menu.refresh(); return true;
+}
 /** a named action on the controls tab; true = handled here */
 export function controlsAction(menu, name, cur) {
+  if (name === 'confirm' && /^wheel/.test(cur?.dataset.act || '') && wheelButton(menu, cur.dataset.act)) return true;
   if (cur?.dataset.kind !== 'bind') { if (name === 'confirm' && cur?.dataset.act === 'controlsReset') { confirmReset(menu); return true; } return false; }
   if (name === 'left' || name === 'right') { menu.bindCol = name === 'right' ? 1 : 0; paintCol(menu); menu.h.ui?.(name === 'right'); return true; }
   if (name === 'confirm') { capture(menu, cur.dataset.action, ['keyboard', 'gamepad'][menu.bindCol]); menu.h.ui?.(true); return true; }
@@ -77,12 +137,14 @@ export function controlsAction(menu, name, cur) {
 }
 export function controlsClick(menu, e) {
   if (e.target.closest?.('[data-act=controlsReset]')) { confirmReset(menu); return true; }
+  const wheel = e.target.closest?.('[data-act^=wheel]'); if (wheel && wheelButton(menu, wheel.dataset.act)) return true;
   const chip = e.target.closest?.('[data-bind]'); if (!chip) return false;
   const row = chip.closest('.bind'), it = menu.items(); if (it.includes(row)) menu.setFocus(it.indexOf(row), false);
   menu.bindCol = chip.dataset.bind === 'gamepad' ? 1 : 0;
   capture(menu, row.dataset.action, chip.dataset.bind); return true;
 }
 export async function controlsChange(menu, key, value, el) {
+  if (key in WHEEL_MAP) { const [role, prop] = WHEEL_MAP[key]; input.setWheelMapping(role, { [prop]: prop === 'axis' ? Number(value) : value === true || value === 'true' }); menu.refresh(); return; }
   if (key === 'touchSteering' && value === 'tilt') {
     if (!await input.enableTilt()) { C.setValue(el, 'screen', false); return; }
   }

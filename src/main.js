@@ -1752,15 +1752,18 @@ function updateAudio(dt) {
 // ------------------------------------------------------------------ cameras
 const camState = { pos: new THREE.Vector3(), look: new THREE.Vector3(), fov: settings.cockpitFov, vel: new THREE.Vector3() };
 // Raw mouse movement works without a click. Race/resume gestures request lock; cursor offset is the fallback.
-const look = { yaw: 0, pitch: 0, targetYaw: 0, targetPitch: 0, yawV: 0, pitchV: 0, zoom: 1, idleT: 9, back: 0, backV: 0 };
+const look = { yaw: 0, pitch: 0, targetYaw: 0, targetPitch: 0, yawV: 0, pitchV: 0, zoom: 1, idleT: 9, back: 0, backV: 0, dragging: false };
+// The mouse never pans the view by itself (Settings > Camera > Mouse look is off by default): holding the right button, the
+// right stick or free look moves it, and it returns to the road quickly once that stops.
+const LOOK_RECENTRE_DELAY = 0.15, FREE_LOOK_RECENTRE_DELAY = 0.6;
 const canLook = () => G.state === 'race' && !menu?.open && multiplayer.panel.hidden;
 function moveLook(dx, dy, k = 0.0028) {
   look.targetYaw = clamp(look.targetYaw - dx * k * settings.mouseSensitivity, -Math.PI * 2 / 3, Math.PI * 2 / 3);
   look.targetPitch = clamp(look.targetPitch + dy * k * settings.mouseSensitivity * (settings.invertLookY ? -1 : 1), -0.55, 0.8);
   look.idleT = 0;
 }
-controls.mountMouseLook(canvas, { enabled: canLook, move: moveLook,
-  position(x, y) { look.targetYaw = clamp(-x * Math.PI * 2 / 3 * settings.mouseSensitivity, -Math.PI * 2 / 3, Math.PI * 2 / 3); look.targetPitch = clamp(y * (y < 0 ? 0.55 : 0.8) * settings.mouseSensitivity * (settings.invertLookY ? -1 : 1), -0.55, 0.8); look.idleT = 0; },
+controls.mountMouseLook(canvas, { enabled: canLook, free: () => settings.mouseLook === true, move: moveLook,
+  drag(on) { look.dragging = on; if (!on) look.idleT = Math.max(look.idleT, LOOK_RECENTRE_DELAY); },
   unlock() { if (G.state === 'race' && !towOffer.element) pauseGame(); },
 });
 canvas.addEventListener('contextmenu', e => { if (canLook()) e.preventDefault(); });
@@ -1786,8 +1789,10 @@ function updateLook(dt) {
   spring(look, 'back', 'backV', input.lookBack ? Math.PI : 0, 10, dt);
   const cl = controls.cameraLook;
   if (cl && (Math.abs(cl.x) > 0.01 || Math.abs(cl.y) > 0.01)) moveLook(cl.x * 2.6 * dt, cl.y * 1.6 * dt, 1);
-  else look.idleT += dt;
-  if (look.idleT > 1.5) { look.targetYaw = damp(look.targetYaw, 0, 5, dt); look.targetPitch = damp(look.targetPitch, 0, 5, dt); }
+  else if (!look.dragging) look.idleT += dt;
+  if (!settings.mouseLook) controls.releaseMouseLook();
+  const recentre = look.dragging ? Infinity : settings.mouseLook ? FREE_LOOK_RECENTRE_DELAY : LOOK_RECENTRE_DELAY;
+  if (look.idleT > recentre) { look.targetYaw = damp(look.targetYaw, 0, 9, dt); look.targetPitch = damp(look.targetPitch, 0, 9, dt); }
   spring(look, 'yaw', 'yawV', look.targetYaw, 14, dt); spring(look, 'pitch', 'pitchV', look.targetPitch, 14, dt);
 }
 const cameraBlend = { active: false, elapsed: 0, duration: 0.45, pos: new THREE.Vector3(), quat: new THREE.Quaternion(), trackPos: new THREE.Vector3(), trackRoot: null, fov: settings.cockpitFov };
@@ -2081,6 +2086,8 @@ function step(dt, draw = true) {
       traffic.honks.length = 0;
       handleTrafficSounds();
       if (pv.bumpHit > 0.1) G.shake = Math.max(G.shake, pv.bumpHit * 0.22);
+      // a racing wheel's force feedback (when the browser lets the wheel rumble): grip limit and kerbs, ~8 times a second
+      if (G.state === 'race' && controls.wheelActive) controls.wheelFeedback(() => ({ frontSlip: pv.tyreTelemetry?.front?.slipDemand ?? 0, kerb: Math.max(pv.curbHit || 0, pv.bumpHit || 0), speed: Math.abs(pv.vLong) }));
       if (pv.wallHit > 2.5 && G.state === 'race') { playerImpactVoice({ kind: 'wall', dv: pv.wallHit }); audio.scrape(Math.min(1, pv.wallHit / 10)); G.shake = Math.max(G.shake, Math.min(0.6, pv.wallHit / 12)); }
       if (pv.wallHit > 3) { fx.sparks(pv, pv.wallHit / 12); controls.rumble(Math.min(1, pv.wallHit / 10), 0.6, 220); }
       if (!multiplayer.active) for (const c of grid) if (c.veh.wallHit > 3) fx.sparks(c.veh, c.veh.wallHit / 12);
