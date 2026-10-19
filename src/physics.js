@@ -29,6 +29,8 @@ import { angularVelocity, bodyContact, impactDynamics, placeRigid } from './airb
 const G = 9.81, RHO = 1.2;
 const POWER_MUL = 1;    // catalogue power / torque as quoted (spec.powerMul can override per car)
 const H = 1 / 240;
+const DRAG_FLOOR = 0.85;  // of the car's speed: the slowest an axle may read to the automatic box when choosing a downshift
+const FIRST_GEAR_MAX = 0.45;  // fraction of redline: the automatic box drops into 1st only at crawling speed, never at speed
 const J_WHEEL = 1.1;    // kg m^2 per wheel (tyre + rim + brake disc)
 const ETA = 0.92;       // driveline efficiency
 // Pedal-to-force gain: full pedal is past the tyres' limit on every car (ABS decides); half pedal gives ~0.75-0.9 g
@@ -726,7 +728,8 @@ export class Vehicle {
     if (!this.manual && !this.autoOverride) {
     // automatic sequential box: shift points follow the throttle; kick-down; rev-matched downshifts when braking
     // mid-drift it holds the gear (a locked or spinning axle says nothing about road speed): no shifts on the
-    // handbrake, and while latched only an upshift at the limiter or a downshift once the car has really slowed
+    // handbrake, and while latched only an upshift at the limiter or a downshift once the car has really slowed (road speed
+    // sets that, with a kickdown a little higher the harder the throttle: a drift that stalls in a tall gear dies)
     const holdGear = burnout || sR > 0 && (inp.handbrake || (this.driftLatch > 0.3 && Math.abs(beta) > 0.1)); // fwd: the box reads the (honest) front wheels
     if (!this.reverse && this.shiftT <= 0 && this.shiftCool <= 0 && av > 0.5 && !(holdGear && inp.handbrake)) {
       const nG = sp.gears.length;
@@ -734,12 +737,17 @@ export class Vehicle {
       const up = holdGear ? red * 0.99 : pt ? schedule.up : red * lerp(0.6, 0.975, smoothstep(0.2, 0.9, thrRaw));
       const rpmIn = (g) => vwD / R * this.ratio(g) * 60 / (2 * Math.PI);
       const rpmRoad = (g) => vt / R * this.ratio(g) * 60 / (2 * Math.PI);
+      // Downshifts read the driven wheels but never less than DRAG_FLOOR of the car's own speed along its heading: a locked or
+      // dragging axle (the handbrake just released, engine braking in a slide) turns far slower than the car and used to walk
+      // the box down to 1st at speed ("the thing keeps shifting to 1" while drifting the E36 M3), while a spinning axle already
+      // reads high and ordinary brake slip (10-15%) is untouched. rpmShift is also the over-rev check for the gear below.
+      const vShift = Math.max(vwD, av * DRAG_FLOOR), rpmShift = (g) => vShift / R * this.ratio(g) * 60 / (2 * Math.PI);
       if ((!pt || brk < .2 || rpmIn(this.gear) > pt.limiterRpm) && this.gear < nG && rpmIn(this.gear) > up && (this.clutch >= 1 || pt?.gearboxType === 'automatic')) this.shift(this.gear + 1, pt?.shiftTime ?? sp.shiftT ?? 0.15);
-      else if (holdGear) { if (this.gear > 1 && rpmRoad(this.gear) < red * 0.25 && rpmRoad(this.gear - 1) < red * 0.7) this.shift(this.gear - 1, (pt?.shiftTime ?? (sp.shiftT ?? 0.15) * 0.7)); }
+      else if (holdGear) { if (this.gear > 1 && rpmRoad(this.gear) < red * lerp(0.25, 0.42, thrRaw) && rpmRoad(this.gear - 1) < red * (this.gear === 2 ? FIRST_GEAR_MAX : 0.7)) this.shift(this.gear - 1, (pt?.shiftTime ?? (sp.shiftT ?? 0.15) * 0.7)); }
       else if (this.gear > 1) {
-        const dn = rpmIn(this.gear - 1);
+        const dn = rpmShift(this.gear - 1);
         const downAt = pt ? (brk > 0.2 ? red * lerp(.42, .72, brk) : schedule.down) : brk > 0.2 ? red * 0.72 : red * lerp(0.32, 0.6, thrRaw);
-        if (dn < red * 0.9 && (!pt || dn < (brk > .2 ? red * .88 : schedule.up * .9)) && (rpmIn(this.gear) < downAt || (thrRaw > 0.92 && dn < red * 0.8 && rpmIn(this.gear) < red * 0.55))) this.shift(this.gear - 1, (pt?.shiftTime ?? (sp.shiftT ?? 0.15) * 0.7));
+        if (dn < red * (this.gear === 2 ? Math.min(0.9, FIRST_GEAR_MAX) : 0.9) && (!pt || dn < (brk > .2 ? red * .88 : schedule.up * .9)) && (rpmShift(this.gear) < downAt || (thrRaw > 0.92 && dn < red * 0.8 && rpmShift(this.gear) < red * 0.55))) this.shift(this.gear - 1, (pt?.shiftTime ?? (sp.shiftT ?? 0.15) * 0.7));
       }
     }
     }

@@ -200,6 +200,7 @@
     "tools/physics-test/engine-abuse.test.mjs",
     "tools/physics-test/driver-feel.test.mjs",
     "tools/physics-test/maneuvers.test.mjs",
+    "tools/physics-test/auto-gearbox-slide.test.mjs",
     "tools/physics-test/mapped-line.test.mjs",
     "tools/physics-test/playtest-handling.test.mjs",
     "tools/physics-test/tyre-impact.test.mjs",
