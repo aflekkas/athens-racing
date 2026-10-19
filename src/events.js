@@ -213,9 +213,9 @@ export function targetLabels(def, r, fmtTime) {
 }
 
 // ------------------------------------------------------------------ saved results
-// The 2026-10-18 Garden Circuit is a different route from every earlier Psychiko loop: its personal
+// The 2026-10-19 Faros Circuit is a different route from every earlier Psychiko loop: its personal
 // bests live in their own namespace so old times never rank against it.
-const KEY = (id) => 'paraliaki.events.' + id + (/^psychiko-(race|tt)(?:~|$)/.test(id) ? '.garden-v2' : '');
+const KEY = (id) => 'paraliaki.events.' + id + (/^psychiko-(race|tt)(?:~|$)/.test(id) ? '.faros-v3' : '');
 const store = () => (typeof localStorage !== 'undefined' ? localStorage : memStore);
 const memStore = { m: new Map(), getItem(k) { return this.m.has(k) ? this.m.get(k) : null; }, setItem(k, v) { this.m.set(k, String(v)); }, removeItem(k) { this.m.delete(k); } };
 export function loadRecord(id, st = store()) {

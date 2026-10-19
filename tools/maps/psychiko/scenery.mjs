@@ -196,7 +196,7 @@ export function buildPsychikoScenery(data, bytes, osm = []) {
       if (ref < 0 && route.roundabouts.some(r => s > r.s0 - 8 && s < r.s1 + 8)) { s += 3; continue; }
       const sec = strip.section(s), avenue = ['avenue', 'school', 'park', 'cypress'].includes(sec.kind), side = avenue ? (n % 2 ? 1 : -1) : (hash(ref, 22) < .5 ? -1 : 1);
       const p = at(s), u = strip.hw(s) + Math.min(.45, strip.fw(s) / 2), x = p.x - p.tz * u * side, z = p.z + p.tx * u * side;
-      if (!inBuilding(x, z) && !network.islandAt(x, z) && (ref < 0 || lapClear(x, z, -1.6)) && !network.candidates(x, z).some(seg => seg.road !== strip.road && network.distance(seg, x, z) < seg.hw + .6)) { poles.push(ref, side, dm(s), avenue ? 0 : 1); n++; s += avenue ? 26 + hash(ref, s | 0) * 8 : 32 + hash(ref, s | 0) * 8; }
+      if (!inBuilding(x, z) && !network.islandAt(x, z) && (ref < 0 || lapClear(x, z, -1.6)) && !network.candidates(x, z).some(seg => seg.road !== strip.road && network.distance(seg, x, z) < seg.hw + .6)) { poles.push(ref, side, dm(s), sec.kind==='arterial' ? 2 : avenue ? 0 : 1); n++; s += avenue ? 26 + hash(ref, s | 0) * 8 : 32 + hash(ref, s | 0) * 8; }
       else s += 3;
     }
   }

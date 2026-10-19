@@ -130,7 +130,7 @@ export class PsychikoStreetscape {
     this.group = new THREE.Group(); this.group.name = 'psychiko-streetscape'; parent.add(this.group);
     this.group.worldDetailController = this;
     this.materials = { props: this.fadeMaterial(260), trees: this.fadeMaterial(420) }; this.cells = new Map(); this.last = { x: Infinity, z: Infinity }; this.obstacles = [];
-    this.trees = treeTemplates(); this.cars = carTemplates(); this.lamps = [gooseneck(), utilityPole()];
+    this.trees = treeTemplates(); this.cars = carTemplates(); this.lamps = [gooseneck(), utilityPole(), arterialLamp()];
     this.stats = { cells: 0, builds: 0 };
     this.index(scenery);
     this.roofs = null;
@@ -208,6 +208,8 @@ export class PsychikoStreetscape {
       put(this.props, 200, p.x, p.z, pole);
       if (type === 1) { const key = ref + ':' + side, prev = lines.get(key); if (prev && d - prev.d < 45) put(this.props, 200, p.x, p.z, { kind: 'wire', a: prev, b: pole }); lines.set(key, pole); }
     }
+    for (const r of this.map.data.psychiko?.arterial?.signals || []) put(this.props, 200, r.x, r.z, { ...r, kind: 'signal' });
+    for (const r of this.map.data.psychiko?.arterial?.medians || []) put(this.props, 200, r.x, r.z, { ...r, kind: 'median' });
     const Z = sc.zebras || [];
     for (let i = 0; i < Z.length; i += 2) { const st = strip(Z[i]); if (!st) continue; const d = Z[i + 1] / 10, p = st.at(d); put(this.props, 200, p.x, p.z, { kind: 'zebra', st, d, ref: Z[i] }); }
   }
@@ -227,6 +229,13 @@ export class PsychikoStreetscape {
   pole(m, r) {
     const y = r.onRoute ? this.route.point(r.d, r.u).y + .16 : this.groundY(r.x, r.z);
     r.y = y; m.add(this.lamps[r.type], r.x, y, r.z, r.yaw);
+  }
+  signal(m, r) {
+    const y = this.groundY(r.x, r.z);
+    m.add(SIGNAL, r.x, y, r.z, r.yaw);
+  }
+  median(m, r) {
+    m.add(MEDIAN, r.x, this.groundY(r.x, r.z) + .02, r.z, r.yaw, r.width, 1, r.length);
   }
   wire(m, r) {
     const a = r.a, b = r.b; if (a.y === undefined) a.y = a.onRoute ? this.route.point(a.d, a.u).y + .16 : this.groundY(a.x, a.z); if (b.y === undefined) b.y = b.onRoute ? this.route.point(b.d, b.u).y + .16 : this.groundY(b.x, b.z);
@@ -319,3 +328,16 @@ export class PsychikoStreetscape {
   dispose() { this.unsubscribe(); for (const mesh of this.cells.values()) mesh?.geometry.dispose(); this.cells.clear(); this.roofs?.geometry.dispose(); this.roofs?.material.dispose(); for (const mat of Object.values(this.materials)) mat.dispose(); }
 }
 const POST = template(m => box(m, 0, 0, 0, .4, 2, .4, '#efece4'));
+
+// Arterial furniture uses the existing near-prop material and cell mesh: no per-light objects or lights.
+const arterialLamp = () => template(m => {
+  box(m, 0, 0, 0, .16, 9, .16, '#858a89');
+  box(m, 0, 8.8, .9, .12, .12, 1.9, '#858a89');
+  box(m, 0, 8.65, 1.7, .4, .14, .75, '#e7dfbf');
+}, 'lamp');
+const SIGNAL = template(m => {
+  box(m, 0, 0, 0, .13, 3.4, .13, '#656d67');
+  box(m, 0, 2.5, 0, .38, 1.05, .26, '#202722');
+  for (let k=0;k<3;k++) box(m, 0, 2.56+k*.3, -.141, .2, .19, .025, ['#3f8d66','#695c30','#612f2c'][k]);
+});
+const MEDIAN = template(m => box(m, 0, 0, 0, 1, .16, 1, '#b2ac96', '#8d9675'));

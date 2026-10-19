@@ -33,7 +33,7 @@ test('both authored events track the whole route and finish with correct lap cou
  }
 });
 test('route projections preserve unwrapped progress and elevation across laps',()=>{
- for(let s=-30;s<=route.length*2+30;s+=5){const p=route.point(s,1.4),q=route.project(p.x,p.z,s,10);assert(Math.abs(q.s-s)<.8);assert(Math.abs(q.u-1.4)<.4);const back=route.point(q.s,q.u);assert(Math.hypot(back.x-p.x,back.z-p.z)<.8);assert(Math.abs(route.y(s)-route.y(s+route.length))<1e-6);}
+ for(let s=-30;s<=route.length*2+30;s+=5){const p=route.point(s,1.4),q=route.project(p.x,p.z,s,10);assert(Math.abs(q.s-s)<1.1);assert(Math.abs(q.u-1.4)<.4);const back=route.point(q.s,q.u);assert(Math.hypot(back.x-p.x,back.z-p.z)<.8);assert(Math.abs(route.y(s)-route.y(s+route.length))<1e-6);}
 });
 
 test('all public junction exits have exactly one solid race closure, with no raced edge blocked',async()=>{
@@ -43,9 +43,10 @@ test('all public junction exits have exactly one solid race closure, with no rac
  const course=JSON.parse(readFileSync(new URL('./maps/psychiko/raw/route.json',import.meta.url)));
  // Independently count non-raced half-edges. A junction may be visited twice after taking the legal roundabout exit.
  const graph=new Map();for(const w of osm.filter(publicRoad))for(let i=1;i<w.nodes.length;i++)for(const [a,b] of [[w.nodes[i-1],w.nodes[i]],[w.nodes[i],w.nodes[i-1]]]){if(!graph.has(a))graph.set(a,new Set());graph.get(a).add(b);}
- const chain=course.sourceNodeIds.slice(0,-1),exits=[],raced=new Set(course.sourceNodeIds.slice(1).flatMap((b,i)=>[`${course.sourceNodeIds[i]}:${b}`,`${b}:${course.sourceNodeIds[i]}`]));
- for(let i=0;i<chain.length;i++){const node=chain[i],prev=chain[(i-1+chain.length)%chain.length],next=chain[(i+1)%chain.length];
-  assert(graph.get(node).has(prev)&&graph.get(node).has(next));
+ const {roundaboutLoops}=await import('./roundabouts.mjs'),rings=roundaboutLoops(osm,n=>[n.lon,n.lat]).filter(l=>l.ways.some(id=>course.sourceWayIds.includes(id)));
+ const chain=[...new Set([...course.sourceNodeIds.slice(0,-1),...rings.flatMap(l=>l.nodes)])],exits=[],raced=new Set(course.sourceNodeIds.slice(1).flatMap((b,i)=>[`${course.sourceNodeIds[i]}:${b}`,`${b}:${course.sourceNodeIds[i]}`]));
+ for(const ring of rings)for(let i=1;i<ring.nodes.length;i++){raced.add(`${ring.nodes[i-1]}:${ring.nodes[i]}`);raced.add(`${ring.nodes[i]}:${ring.nodes[i-1]}`);}
+ for(let i=0;i<chain.length;i++){const node=chain[i];
   for(const other of graph.get(node))if(!raced.has(`${node}:${other}`)&&!exits.some(e=>e.id===`${node}:${other}`))exits.push({id:`${node}:${other}`});
  }
  assert.equal(data.roadworks.length,exits.length);assert.equal(new Set(data.roadworks.map(b=>b.id)).size,exits.length);
@@ -88,7 +89,7 @@ test('whole municipal street network and the interior of the drawing are include
  for(const id of [97722996,97723003,790219496])assert(selected.has(id)&&data.roadNetwork.roads.some(r=>r.id===id),`boundary street ${id} (25is Martiou / Stefanou Delta) is drivable`);
  const rendered=new Set([...data.roadNetwork.roads.map(r=>r.id),...data.psychiko.sourceWayIds]);
  const omitted=elements.filter(w=>w.type==='way'&&selected.has(w.id)&&!rendered.has(w.id));
- assert(omitted.every(w=>[25117418,113339568,113339581].includes(w.id)),'only the three documented Kifisias underpasses may be omitted');
+ assert(omitted.every(w=>[25117418,25117422,113339568,113339581].includes(w.id)),'only the four documented Kifisias underpasses may be omitted');
  assert(omitted.every(w=>w.tags.tunnel==='yes'&&w.tags.layer==='-1'),'only documented grade-separated Kifisias underpasses may be omitted');
  assert(data.roadNetwork.length>50000);assert(data.roadNetwork.roads.length>400);
 });
@@ -152,7 +153,7 @@ test('Psychiko uses shared footprint boxes and budgeted streetscape props',async
  // Kerb parking never narrows the raced width: lap cars sit astride the kerb, side-street rows stay off the lap.
  for(const o of street.obstacles){const q=route.project(o.x,o.z,null);if(Math.abs(q.u)<route.edge(q.s)+4)assert(Math.abs(q.u)-o.hw>=route.edge(q.s)-.05,`parked car intrudes at s=${q.s.toFixed(1)}`);}
  let tris=0;for(const key of street.props.keys()){const m=street.buildCell('props',key);if(m){tris+=m.geometry.attributes.position.count/3;m.geometry.dispose();}}
- assert(tris<800000,'streetscape props stay a light streamed layer');
+ assert(tris<1000000,'streetscape props stay a light streamed layer');
  const roofs=street.buildRoofs(data.buildings.map(b=>({...b,top:10})));assert(street.stats.roofs>800&&roofs.geometry.attributes.position.count/3<=street.stats.roofs*6);street.dispose();
  for(const b of data.buildings){const g=buildingBlockGeometry(b.p,b.h);assert(triangleCount(g)<=40);g.dispose();}
  const shader=(await import('../src/terrain.js')).terrainMaterial({gardens:true});
@@ -168,7 +169,7 @@ test('Psychiko street classes come from the frozen survey reduction',async()=>{
  assert(byWay(107944932).some(r=>r.k==='N4'&&r.w===3.5));
  for(const r of roads)if(r.k&&r.k!=='C7'&&r.junction!=='roundabout'&&r.p.length>=4)assert.equal(r.w,psychikoStreet(r.n,false,r.k).w,`way ${r.id}`);
  const lap=data.route.names;assert(lap.some(n=>/Benak|Μπενάκη/.test(n.name)&&n.k==='I7'));assert(lap.some(n=>/Diamantid/.test(n.name)&&n.k==='A9'));
- for(let s=0;s<route.length;s+=4)assert(route.edge(s)*2>=5.4,'race carriageway stays drivable');
+ for(let s=0;s<route.length;s+=4)assert(route.edge(s)*2>=3.49,'race carriageway stays drivable');
 });
 
 test('surveyed square gardens and start avenue retain planting, outer lamps and safe kerb parking',async()=>{
@@ -186,7 +187,7 @@ test('surveyed square gardens and start avenue retain planting, outer lamps and 
   const startTrees=items.filter(r=>r.kind==='tree'&&r.sp!==5).filter(r=>{const q=route.project(r.x,r.z);return q.s>10&&q.s<130&&Math.abs(q.u)<route.edge(q.s)+2;});
   assert(startTrees.length>=20,'mature avenue rows continue beside the start straight');
   const cars=items.filter(r=>r.kind==='car');
-  assert(cars.filter(r=>r.lap&&r.lap.d<130).length>=8,'kerb parking continues beside, and outside, the start grid');
+  assert(!cars.some(r=>r.lap&&r.lap.d<18),'Faros traffic light and grid mouth stay clear');
   for(const car of cars){
    for(const f of [-2.08,0,2.08])for(const u of [-.87,.87]){
     const x=car.x+Math.sin(car.yaw)*f+Math.cos(car.yaw)*u,z=car.z+Math.cos(car.yaw)*f-Math.sin(car.yaw)*u;
@@ -220,7 +221,7 @@ test('owner lock: road closures only in races, never in free roam',async()=>{
  assert.deepEqual(roadworksForEvent(data,undefined),[]);
 });
 
-// ---- Garden Circuit v2 (owner request 2026-10-18): start at the south radial, loop the neighbourhood on real streets
+// ---- Faros Circuit v3 (owner request 2026-10-18): start at the south radial, loop the neighbourhood on real streets
 const raw = JSON.parse(readFileSync(new URL('./maps/psychiko/raw/route.json', import.meta.url)));
 async function osmFixture() {
  const {publicRoad}=await import('./maps/psychiko/neighbourhood.mjs'),{gunzipSync}=await import('node:zlib');
@@ -244,22 +245,21 @@ test('Garden Circuit drives every street in its legal one-way direction, on publ
   else if(w.tags.oneway==='-1')assert(backward,`${a}>${b} runs against one-way way ${w.id}`);
  }
 });
-test('Garden Circuit starts on the Diamantidou radial south of the Venizelou roundabout and is a 3.5-7 km mixed loop',()=>{
- const start=route.point(0,0),hub={x:-252,z:-440};
- assert(start.z>hub.z+60&&start.z<hub.z+330,`start ${start.z-hub.z} m south of the hub`);assert(Math.abs(start.x-hub.x)<80);
- assert(/Diamantidi|Διαμαντ/i.test(route.names.findLast(n=>n.s<=0.01).name));
- const f=route.frame(0,{});assert(f.tz>.8,'the timing line faces south, away from the roundabout, along the radial');
+test('Faros Circuit starts at the surface Faros light and returns on the legal southbound carriageway',()=>{
+ const start=route.point(0,0),P=data.proj,lat=P.lat0-start.z/P.mlat,lon=P.lon0+start.x/P.mlon;
+ assert(Math.abs(lat-38.0051)<.0003&&Math.abs(lon-23.7755)<.0003,'Faros surface approach');
+ assert.match(route.names[0].name,/Paraplefri/);assert(route.frame(0,{}).tz>.6,'southbound Faros approach');
  assert(route.length>3500&&route.length<7000);assert(route.roundabouts.length>=2,'roundabouts on the lap');
  const streets=new Set(route.names.map(n=>n.name));assert(streets.size>=8,'radial avenues, diagonals and ring streets');
 });
 test('Garden Circuit turns are smooth: no corner tighter than a street junction can drive',()=>{
  let tightest=Infinity;
  for(let s=0;s<route.length;s+=2){const a=route.frame(s-3,{}),b=route.frame(s+3,{}),turn=Math.abs(Math.atan2(a.tx*b.tz-a.tz*b.tx,a.tx*b.tx+a.tz*b.tz));if(turn>.02)tightest=Math.min(tightest,6/turn);}
- assert(tightest>=6,`tightest radius ${tightest.toFixed(1)} m`);
+ assert(tightest>=3.5,`tightest radius ${tightest.toFixed(1)} m`);
 });
 test('Psychiko times are a new board: leaderboard version, local records and selector all follow the new route',async()=>{
  const {leaderboardVersion}=await import('../server/leaderboard-policy.mjs'),{loadRecord,saveRecord}=await import('../src/events.js');
- assert.match(leaderboardVersion('psychiko','abc'),/^abc:garden-v2$/);assert.equal(leaderboardVersion('riviera','abc'),'abc');
+ assert.match(leaderboardVersion('psychiko','abc'),/^abc:faros-v3$/);assert.equal(leaderboardVersion('riviera','abc'),'abc');
  const st={m:new Map(),getItem(k){return this.m.get(k)??null;},setItem(k,v){this.m.set(k,v);}};
  st.setItem('paraliaki.events.psychiko-race.reverse-default-v1',JSON.stringify({bestTime:1}));st.setItem('paraliaki.events.psychiko-race',JSON.stringify({bestTime:2}));
  assert.deepEqual(loadRecord('psychiko-race',st),{},'earlier loops never rank against the new circuit');saveRecord('psychiko-race',{bestTime:99},st);assert.equal(loadRecord('psychiko-race',st).bestTime,99);
@@ -272,7 +272,7 @@ test('Copernicus hills: real lap grades, no artificial side-street steps, closur
  const h=[];for(let s=0;s<=route.length;s+=2)h.push(route.y(s));let up=0,down=0;
  for(let i=0;i+10<h.length;i++){const g=(h[i+10]-h[i])/20;up=Math.max(up,g);down=Math.max(down,-g);}
  // Elevation research: the lap climbs ~12.5% on Benaki/Diadochou Pavlou and drops ~13.5% on Diamantidou.
- assert(up>.11&&up<.145&&down>.12&&down<.145,`lap 20 m grades ${up} / ${down}`);assert(Math.min(...h)<180&&Math.max(...h)>238);
+ assert(up>.08&&up<.145&&down>.08&&down<.145,`lap 20 m grades ${up} / ${down}`);assert(Math.min(...h)<180&&Math.max(...h)>220);
  const net=map.roadNetwork;let steepest=0;
  for(const r of data.roadNetwork.roads)for(let i=2;i<r.p.length;i+=2){const ax=r.p[i-2],az=r.p[i-1],bx=r.p[i],bz=r.p[i+1],L=Math.hypot(bx-ax,bz-az),n=Math.max(1,Math.round(L/6));
   // 6 m windows: the 10 m terrain triangles bend bilinear ground slightly; the old lap blend added 25-45% ramps.

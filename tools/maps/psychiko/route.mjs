@@ -37,7 +37,10 @@ function fillet(points,radius){const n=points.length-1,out=[];// closed ring: po
   const steps=Math.max(2,Math.ceil(Math.abs(da)*r/1.5));for(let k=0;k<=steps;k++){const q=a0+da*k/steps;out.push([ic[0]+Math.cos(q)*r,ic[1]+Math.sin(q)*r]);}
  }
  out.push(out[0]);return out;}
-const ring=fillet(chain.map(pos),FILLET_RADIUS);
+// Survey nodes just before a junction must not artificially shrink its fillet to a 2 m radius.
+// Drop only redundant almost-collinear interior vertices (under 30 cm); source provenance stays unchanged.
+function simplify(points){const p=points.slice(0,-1);let changed=true;while(changed){changed=false;for(let i=0;i<p.length;i++){const a=p[(i+p.length-1)%p.length],b=p[i],c=p[(i+1)%p.length],dx=c[0]-a[0],dz=c[1]-a[1],t=((b[0]-a[0])*dx+(b[1]-a[1])*dz)/(dx*dx+dz*dz);if(t>0&&t<1&&Math.hypot(b[0]-a[0]-t*dx,b[1]-a[1]-t*dz)<.3){p.splice(i,1);changed=true;break;}}}return [...p,p[0]];}
+const ring=fillet(simplify(chain.map(pos)),FILLET_RADIUS);
 const dense=sample(ring,1),smooth=dense.map((_,i)=>{let x=0,z=0,sum=0;for(let k=-9;k<=9;k++){const w=Math.exp(-k*k/18),p=dense[(i+k+dense.length)%dense.length];x+=p[0]*w;z+=p[1]*w;sum+=w;}return[x/sum,z/sum];});
 smooth.push(smooth[0]);const total=smooth.slice(1).reduce((s,p,i)=>s+dist(p,smooth[i]),0),count=Math.round(total/2),step=total/count;
 const pts=sample(smooth,step).slice(0,count);

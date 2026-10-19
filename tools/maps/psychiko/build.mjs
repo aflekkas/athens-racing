@@ -11,6 +11,7 @@ import {psychikoWayClass} from './street-classes.mjs';
 import {inject} from '../../inject-speed-signs.mjs';
 import {routeRoundabouts,roundaboutLoops} from '../../roundabouts.mjs';
 import {extractRoadNetwork} from '../../build-road-network.mjs';
+import {arterialRecords} from './arterial.mjs';
 import {loadPsychikoOsm} from './corrections.mjs';
 import {multipolygons,footprintPieces} from './multipolygon.mjs';
 import {readCopernicus,copernicusField,roundaboutPlanes,plannedHeight,gridExtent} from './elevation.mjs';
@@ -70,10 +71,10 @@ for(const mp of multipolygons(load('relations').elements,osm,P)){const t=mp.tags
 }
 // Marks name the streets along the lap (district-style splits and HUD ticks); the timing line is the first.
 const plain=name=>name.normalize('NFD').replace(/\p{M}/gu,'').toUpperCase();
-const marks=[{id:'start',name:plain(R.names[0]?.name||'DIAMANTIDOU'),sub:'Start / finish · Diamantidou',s:0}];
+const marks=[{id:'start',name:'FAROS',sub:'Start / finish · Faros traffic light',s:0}];
 R.names.forEach((n,i)=>{const run=(R.names[i+1]?.s??R.length)-n.s;if(/^Unnamed/.test(n.name)||n.s<150||run<120)return;const name=plain(n.name);if(marks.at(-1).name===name)return;marks.push({id:'street-'+marks.length,name,sub:'Palaio Psychiko streets',s:n.s});});
-const events=[{id:'psychiko-tt',mapId:'psychiko',name:'PSYCHIKO GARDEN LOOP TT',disabled:true,blurb:'One lap around the Palaio Psychiko fan. Tight roundabouts and neighbourhood avenues against the clock.',type:'timetrial',from:'start',to:'finish',laps:1,rivals:0,traffic:0,targets:{gold:75,silver:65,bronze:55}},{id:'psychiko-race',mapId:'psychiko',name:'PSYCHIKO STREET RACE',blurb:'Two laps against two locals around the Palaio Psychiko fan: radial avenues, ring streets and roundabouts.',type:'sprint',from:'start',to:'finish',laps:2,rivals:2,traffic:0,targets:{gold:1,silver:2,bronze:3}}];
-const data={schema:1,id:'psychiko',name:'PSYCHIKO GARDEN CIRCUIT',type:'circuit',coastal:false,length:R.length,attribution:'Map data © OpenStreetMap contributors (ODbL) · Elevation: Copernicus DEM GLO-30 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA (smoothed)',proj,route:{step,x:X,z:Z,y:Y,width:new Array(N).fill(7),lanes:new Array(N).fill(1),div:new Array(N).fill(0),start:0,finish:R.length,length:R.length,closed:true,streetCircuit:true,from:'Diamantidou',to:'Diamantidou',names:routeNames,speeds:[{s:0,v:30}]},marks,zones:[{s:0,urban:.85,zone:'town'}],parkSpots:[],humps:[],barriers:[],coast:[],buildings,areas,pois:[],furniture:[],places:[],sideRoads,events,psychiko:{sourceWayIds:R.sourceWayIds,orderedWays:R.orderedWays,stations:R.stations,gardenLoop:{length:garden.length,sourceWayIds:garden.sourceWayIds,sourceNodeIds:garden.sourceNodeIds},boundary:boundary.flat()}};
+const events=[{id:'psychiko-tt',mapId:'psychiko',name:'PSYCHIKO FAROS TT',disabled:true,blurb:'One lap from Faros through the squares, the College and Kifisias against the clock.',type:'timetrial',from:'start',to:'finish',laps:1,rivals:0,traffic:0,targets:{gold:75,silver:65,bronze:55}},{id:'psychiko-race',mapId:'psychiko',name:'PSYCHIKO FAROS RACE',blurb:'Two laps from the Faros light, through Psychiko squares and hills, returning on Kifisias.',type:'sprint',from:'start',to:'finish',laps:2,rivals:2,traffic:0,targets:{gold:1,silver:2,bronze:3}}];
+const data={schema:1,id:'psychiko',name:'PSYCHIKO FAROS CIRCUIT',type:'circuit',coastal:false,length:R.length,attribution:'Map data © OpenStreetMap contributors (ODbL) · Elevation: Copernicus DEM GLO-30 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA (smoothed)',proj,route:{step,x:X,z:Z,y:Y,width:new Array(N).fill(7),lanes:new Array(N).fill(1),div:new Array(N).fill(0),start:0,finish:R.length,length:R.length,closed:true,streetCircuit:true,from:'Faros',to:'Faros',names:routeNames,speeds:[{s:0,v:30}]},marks,zones:[{s:0,urban:.85,zone:'town'}],parkSpots:[],humps:[],barriers:[],coast:[],buildings,areas,pois:[],furniture:[],places:[],sideRoads,events,psychiko:{sourceWayIds:R.sourceWayIds,orderedWays:R.orderedWays,stations:R.stations,gardenLoop:{length:garden.length,sourceWayIds:garden.sourceWayIds,sourceNodeIds:garden.sourceNodeIds},boundary:boundary.flat()}};
 // Real OSM stops; only route-side stops, not nearby stops on a different avenue.
 for(const e of osm)if(e.type==='node'&&(e.tags?.highway==='bus_stop'||e.tags?.public_transport==='platform')){const p=P(e),q=nearest(...p,20);if(q)data.furniture.push({t:'bus_stop',s:q.s,u:r(q.u),x:r(p[0]),z:r(p[1]),id:e.id});}
 
@@ -81,7 +82,7 @@ for(const e of osm)if(e.type==='node'&&(e.tags?.highway==='bus_stop'||e.tags?.pu
 // and the retained original course. Keep private driveways and footpaths out.
 const gardenWays=new Set(garden.sourceWayIds);
 // Municipal ways also count by clipped length, so streets running exactly along the edge are not missed.
-const publicWays=osm.filter(e=>{if(!publicRoad(e))return false;const ps=geometry(e);return gardenWays.has(e.id)||ps.some(p=>inside(p,boundary)||inside(p,drawnRing)||nearest(...p,280))||municipalLength(ps,boundary)>2;});
+const publicWays=osm.filter(e=>{if(!publicRoad(e))return false;const ps=geometry(e);return R.sourceWayIds.includes(e.id)||gardenWays.has(e.id)||(/Kifisias|Paraplefri Odos/.test(e.tags.int_name||'')&&ps.some(p=>p[1]>-1400&&p[1]<1300))||ps.some(p=>inside(p,boundary)||inside(p,drawnRing)||nearest(...p,280))||municipalLength(ps,boundary)>2;});
 const selected=[...nodes.values(),...publicWays];
 // Kerb-to-kerb sections from station evidence, blended over 12m for smooth road edges.
 const sections=X.map((_,i)=>psychikoSection(data.route,i*step).w);
@@ -92,7 +93,7 @@ const T=10,minX=Math.max(dem.x0,Math.floor((Math.min(...X)-1800)/T)*T),maxX=Math
 data.psychiko.networkBounds=[minX+25,minZ+25,maxX-25,maxZ-25].map(r);
 // Oncoming civilians use a legal reverse plan only if it stays within 60 m of the lap: shared-world snapshots
 // carry road-space s/u, which cannot place a car on a long detour. Without a plan the ring is forward-only.
-data.route.roundabouts=routeRoundabouts(data.route,roundaboutLoops(selected,P)).map(r=>{const plan=R.trafficRoundabouts.find(q=>q.id===r.id&&q.path.every(p=>(nearest(...p,600)?.d??Infinity)<60));
+data.route.roundabouts=routeRoundabouts(data.route,roundaboutLoops(selected,P)).map(r=>{const plan=R.trafficRoundabouts.find(q=>q.id===r.id&&q.path.every(p=>(nearest(...p,600)?.d??Infinity)<30));
  // The reverse arm of a roundabout beside the timing line straddles the lap seam: express it with s1 past the lap length.
  return {...r,reverse:plan&&{...plan,s1:plan.s0>plan.s1?plan.s1+R.length:plan.s1}};});
 for(const r of data.route.roundabouts)for(let i=Math.floor(r.s0/step);i<=Math.ceil(r.s1/step);i++)data.route.width[i]=Math.min(data.route.width[i],r.w);
@@ -118,9 +119,9 @@ for(const[k,v]of[['scrub',3],['rock',2],['quarry',2],['residential',4],['wood',6
 // The street bed is level with the lap across its kerbs and footways. Beyond them the ground keeps the
 // field's own cross-slope; only the small offset at the footway edge decays over 35 m, so side streets
 // and verges do not get squeezed into a steep ramp beside the lap.
-for(let j=0;j<GZ;j++){for(let i=0;i<GX;i++){const x=minX+i*T,z=minZ+j*T,id=j*GX+i;let h=heightAt(x,z);const q=nearest(x,z,45);
- if(q){const e=data.route.width[q.i]/2+3,bed=Y[q.i]-.25;if(q.d<=e)h=bed;else if(q.d<e+35){const a=Math.max(0,q.i-1),b=Math.min(N-1,q.i+1),l=Math.hypot(X[b]-X[a],Z[b]-Z[a])||1,side=Math.sign(q.u)||1;
-  const off=bed-heightAt(X[q.i]-(Z[b]-Z[a])/l*side*e,Z[q.i]+(X[b]-X[a])/l*side*e),f=(q.d-e)/35,t=f*f*(3-2*f);h+=off*(1-t);}}
+for(let j=0;j<GZ;j++){for(let i=0;i<GX;i++){const x=minX+i*T,z=minZ+j*T,id=j*GX+i;let h=heightAt(x,z);const q=nearest(x,z,75);
+ if(q){const e=data.route.width[q.i]/2+3,bed=Y[q.i]-.25;if(q.d<=e)h=bed;else if(q.d<e+60){const a=Math.max(0,q.i-1),b=Math.min(N-1,q.i+1),l=Math.hypot(X[b]-X[a],Z[b]-Z[a])||1,side=Math.sign(q.u)||1;
+  const off=bed-heightAt(X[q.i]-(Z[b]-Z[a])/l*side*e,Z[q.i]+(X[b]-X[a])/l*side*e),f=(q.d-e)/60,t=f*f*(3-2*f);h+=off*(1-t);}}
  H[id]=Math.round(h*10);}}
 const header=Buffer.alloc(32);header.writeInt32LE(GX,0);header.writeInt32LE(GZ,4);header.writeFloatLE(minX,8);header.writeFloatLE(minZ,12);header.writeFloatLE(T,16);fs.writeFileSync(path.join(out,'terrain.bin'),Buffer.concat([header,Buffer.from(H.buffer),Buffer.from(CL.buffer)]));
 const a=0,b=N-1;let ascent=0,descent=0,maxGrade=0;for(let i=a+1;i<=b;i++){const d=Y[i]-Y[i-1];if(d>0)ascent+=d;else descent-=d;maxGrade=Math.max(maxGrade,Math.abs(d/step));}
@@ -160,6 +161,7 @@ data.roadworks=data.psychiko.sideStreetExits.map(exit=>{
  }
  return chosen;
 });
+data.psychiko.arterial=arterialRecords(selected,P);
 data.psychiko.scenery=buildPsychikoScenery(data,fs.readFileSync(path.join(out,'terrain.bin')),osm);
 fs.writeFileSync(path.join(out,'map.json'),JSON.stringify(data));
 inject('psychiko');

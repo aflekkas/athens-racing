@@ -1,4 +1,5 @@
 // Public motor-road coverage and junction half-edges, directly from frozen OSM.
+import {roundaboutLoops} from '../../roundabouts.mjs';
 import {ROAD_WIDTHS} from '../../build-road-network.mjs';
 export function publicRoad(w) {
  const t=w.tags||{};
@@ -21,7 +22,11 @@ export function municipalLength(points,ring,tol=1){
  return length;
 }
 export function sideStreetExits(elements,course){
- const raced=new Set(course.sourceNodeIds),edges=new Set(course.sourceNodeIds.slice(1).map((b,i)=>[course.sourceNodeIds[i],b].sort((a,b)=>a-b).join(':'))),seen=new Set(),out=[];
+ const chain=[...course.sourceNodeIds];
+ // Keep every raced ring open, including its unused arc; close the outgoing arms of the WHOLE square.
+ const rings=roundaboutLoops(elements,n=>[n.lon,n.lat]).filter(l=>l.ways.some(id=>course.sourceWayIds.includes(id)));
+ const raced=new Set([...chain,...rings.flatMap(l=>l.nodes)]),edges=new Set(course.sourceNodeIds.slice(1).map((b,i)=>[course.sourceNodeIds[i],b].sort((a,b)=>a-b).join(':'))),seen=new Set(),out=[];
+ for(const l of rings)for(let i=1;i<l.nodes.length;i++)edges.add([l.nodes[i-1],l.nodes[i]].sort((a,b)=>a-b).join(':'));
  for(const w of elements.filter(publicRoad))for(let i=0;i<w.nodes.length;i++){
   const a=w.nodes[i];if(!raced.has(a))continue;
   for(const j of [i-1,i+1]){const b=w.nodes[j];if(!b)continue;const key=[a,b].sort((a,b)=>a-b).join(':');const exitKey=`${a}:${b}`;if(edges.has(key)||seen.has(exitKey))continue;seen.add(exitKey);

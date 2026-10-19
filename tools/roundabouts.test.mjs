@@ -24,7 +24,7 @@ test('geometry-only OSM sources retain implicit one-way loops and reverse one-wa
 test('source course uses only forward edges around every roundabout, including implicit one-way ways',()=>{
  const source=JSON.parse(fs.readFileSync(new URL('./maps/psychiko/raw/route.json',import.meta.url))),chain=source.sourceNodeIds;
  for(const loop of loops){for(let i=1;i<chain.length;i++){const a=loop.nodes.slice(0,-1).indexOf(chain[i-1]),b=loop.nodes.slice(0,-1).indexOf(chain[i]);if(a>=0&&b>=0)assert.equal((a+1)%(loop.nodes.length-1),b);}}
- assert.deepEqual(r.roundabouts.map(q=>q.id),[25053106,634346640,25053562,25053533],'the Garden Circuit passes Kamara, Areaki, the Eleftherias rim and the Venizelou hub');
+ assert.deepEqual(r.roundabouts.map(q=>q.id),[25053095,25053533,25053562,31486843,470144907,634346640],'Faros course: A/B squares, Eleftherias, Venizelou/25is Martiou, Georgiou Stavrou and Michalakopoulou');
 });
 test('racing line, route marks, and both civilian travel directions stay outside island polygons',()=>{
  const islands=data.roadNetwork.roundabouts.map(q=>({id:q.id,p:islandRing(q.p,q.w/2+.12)})),line=new RacingLine(r);
@@ -102,7 +102,7 @@ test('Psychiko never offers or runs a reverse course: solo setup, event resoluti
 });
 test('no driver path ever circulates clockwise: racing line, every network ring part and free-roam civilians',async()=>{
  const line=new RacingLine(r),rings=new Map(data.roadNetwork.roundabouts.map(q=>[q.id,q]));
- assert.deepEqual(r.roundabouts.map(q=>q.id),[25053106,634346640,25053562,25053533]);
+ assert.deepEqual(r.roundabouts.map(q=>q.id),[25053095,25053533,25053562,31486843,470144907,634346640]);
  for(const q of r.roundabouts){let prev=null;for(let i=0;i<line.n;i++){const s=i*line.step;if(s<q.s0||s>q.s1){prev=null;continue;}const p={x:line.x[i],z:line.z[i]};if(prev)assert(ccwStep(q.p,prev,p)>=-.05,`racing line clockwise at ${q.id} s=${s}`);prev=p;}}
  // Rivals follow that forward line only: Psychiko has no reverse event (previous test).
  const parts=data.roadNetwork.roads.filter(q=>q.junction==='roundabout');assert(parts.length>=20);
@@ -119,8 +119,8 @@ test('no driver path ever circulates clockwise: racing line, every network ring 
 });
 test('free-roam one-way stretches cover every forward-only lap street, including the Areaki approaches',()=>{
  const ways=new Map(elements.filter(w=>w.type==='way').map(w=>[w.id,w])),source=JSON.parse(fs.readFileSync(new URL('./maps/psychiko/raw/route.json',import.meta.url)));
- for(const id of [147731530,31269674]){const w=source.orderedWays.find(q=>q.id===id);assert(w&&ways.get(id).tags.oneway==='yes');for(const n of [w.from,w.to]){const p=project(elements.find(e=>e.id===n&&e.type==='node')),q=r.project(...p);assert.equal(r.oneWayAhead(q.s,-1),0,`way ${id} open to oncoming traffic`);}}
- assert.equal(r.oneWayAhead(4,-1)>0,true,'the two-way Diamantidou start straight keeps oncoming traffic');
+ for(const id of [662139350,216905683,371561413]){const w=source.orderedWays.find(q=>q.id===id);assert(w&&ways.get(id).tags.oneway==='yes');const p=project(elements.find(e=>e.id===w.from&&e.type==='node')),q=r.project(...p);assert.equal(r.oneWayAhead(q.s+2,-1),0,`way ${id} open to oncoming traffic`);}
+ assert.equal(r.oneWayAhead(4,-1),0,'Faros is one-way southbound');
 });
 test('every island inset is a simple CCW polygon inside its ring that clears the carriageway (incl. border loop 31486890)',()=>{
  const cross=(a,b,c,e)=>{const o=(p,q,s)=>(q[0]-p[0])*(s[1]-p[1])-(q[1]-p[1])*(s[0]-p[0]);return o(a,b,c)*o(a,b,e)<0&&o(c,e,a)*o(c,e,b)<0;},area=p=>p.reduce((s,a,i)=>{const b=p[(i+1)%p.length];return s+a[0]*b[1]-b[0]*a[1];},0);

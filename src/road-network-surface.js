@@ -61,7 +61,7 @@ export class RoadNetwork {
  baseHeight(x,z){const dem=triangleHeight(this.terrain,this.source||this.terrain.H,x,z)+.055;if(!this.nearMain(x,z))return dem;const q=this.project(x,z),edge=this.route.edge(q.s)+this.mainMargin,au=Math.abs(q.u),t=!this.route.closed&&(q.s< -60||q.s>this.route.length+60)?1:smooth(edge+12,edge+32,au);const y=this.route.surfaceY(q.s,clamp(q.u,-edge,edge));
   // Psychiko's terrain follows one measured height field with real cross-slopes. Meet the lap edge exactly,
   // then decay only the edge offset, rather than holding the lap height 12 m out and ramping steeply after.
-  if(this.route.streetCircuit){if(au<=edge)return y;const p=this.route.point(q.s,Math.sign(q.u)*edge,edgePoint);return dem+(y-triangleHeight(this.terrain,this.source||this.terrain.H,p.x,p.z)-.055)*(1-smooth(edge,edge+20,au));}
+  if(this.route.streetCircuit){if(au<=edge)return y;const p=this.route.point(q.s,Math.sign(q.u)*edge,edgePoint);return dem+(y-triangleHeight(this.terrain,this.source||this.terrain.H,p.x,p.z)-.055)*(1-smooth(edge,edge+60,au));}
   return y*(1-t)+dem*t;}
  prepareTerrain(H,stamp,base=H){this.source=base.slice();const t=this.terrain;
   const carved=new Uint8Array(H.length);

@@ -205,7 +205,7 @@ test('race setup: defaults stay official, choices make a separate custom variant
   assert.deepEqual(RS.trafficLevels(0.8).map((l) => l[1]), [0, 0.5, 0.8, 1.5, 2], 'the event density is one of the choices');
 });
 
-test('Psychiko Garden Circuit v2 keeps earlier loop times stored but never ranks against them', () => {
+test('Psychiko Faros Circuit v3 keeps earlier loop times stored but never ranks against them', () => {
   const oldKeys = ['paraliaki.events.psychiko-race', 'paraliaki.events.psychiko-race.reverse-default-v1', 'paraliaki.events.psychiko-race~rev'];
   const saved = new Map(oldKeys.map((key, i) => [key, JSON.stringify({ bestTime: 100 + i })]));
   const storage = { getItem: key => saved.get(key) || null, setItem: (key, value) => saved.set(key, value) };
@@ -213,6 +213,6 @@ test('Psychiko Garden Circuit v2 keeps earlier loop times stored but never ranks
   assert.deepEqual(EV.loadRecord('psychiko-race~rev', storage), {});
   EV.saveRecord('psychiko-race', { bestTime: 150 }, storage);
   assert.equal(EV.loadRecord('psychiko-race', storage).bestTime, 150);
-  assert.ok(saved.has('paraliaki.events.psychiko-race.garden-v2'));
+  assert.ok(saved.has('paraliaki.events.psychiko-race.faros-v3'));
   oldKeys.forEach((key, i) => assert.equal(JSON.parse(saved.get(key)).bestTime, 100 + i, 'earlier records are left untouched'));
 });
