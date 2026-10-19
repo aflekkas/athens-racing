@@ -5,7 +5,7 @@ This is the lead's single list of open work. It's updated as tasks are assigned,
 Last updated: 2026-10-18 20:40 UTC.
 
 ## In flight (lead thread "Fix Floor Visibility in All Cars", check-up every 30 min)
-Production is on hold (`~/.local/state/athens-release/production-hold`). Staging live at `9720683c` (train, 2026-10-18 23:15 UTC). Agents use Haiku/Sonnet only (Codex quota ran out; no Opus).
+Production is on hold (`~/.local/state/athens-release/production-hold`). Staging live at `b9a4bcd3` (train, 2026-10-19 00:32 UTC). Agents use Haiku/Sonnet only (Codex quota ran out; no Opus).
 
 Done and checked by the lead:
 - [x] Leaderboards inside Quick Race (`5149f16d`, `9a7c06ca`, `c9619d55`)
@@ -35,6 +35,11 @@ Also done since 2026-10-18 04:00 (checked by the lead):
 - [x] Tow/reset onto the nearest road (`6c2d6c13`, `2d0ff81d`); one frame limiter, NO LIMIT honoured (`30ebd588`)
 - [x] Fast releases: parallel gates, bake cache, same-tree memory, flaky retry (`02c6e212`); train every 2 min
 - [x] Staging multiplayer black screen / reconnect loop / retire cursor (`9720683c`); owner to retest with two players
+
+- [x] Multiplayer extras: tyre smoke online, sign-out shows sign-in gate, stuck LOADING self-heals, CHANGE CAR / TRIM (`c56a1522`)
+- [x] Megara tow stays on the car's own leg; every map's finish tested (`b9a4bcd3`)
+- [x] Auto gearbox no longer drops to 1st at speed on a slide/handbrake (`47d28899`, `90e7305a`)
+- [x] Seat lettering, A-Class star, lower door mirrors (`9a753c93`)
 
 Running (Sonnet; Enterprise unless noted):
 - [~] Exhaust-pop first-trigger lag spike (Personal)
