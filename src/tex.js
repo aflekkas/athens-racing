@@ -58,6 +58,18 @@ export function loadTextures() {
   const started = performance.now();
   return (pending = Promise.all(jobs).then(textures => { assetMetrics.textureLibraryReadyMs = performance.now() - started; return textures; }));
 }
+/** Load only some library textures (e.g. the streamed Athens map needs asphalt and paving, not the 8-set library). */
+const subset = new Map();
+export function loadTextureSubset(names) {
+  return Promise.all(names.map(name => {
+    if (!subset.has(name)) {
+      const [group, map] = name.split('_'), entry = LIST[group];
+      if (!entry || !entry[1].split(' ').includes(map)) throw new Error('Unknown library texture ' + name);
+      subset.set(name, TX[name]?.image ? Promise.resolve(TX[name]) : load(name, `${BASE}${entry[0]}_${map}.webp`, map === 'diff'));
+    }
+    return subset.get(name);
+  }));
+}
 /** upload everything to the GPU before the first frame */
 export function uploadTextures(renderer) { for (const t of Object.values(TX)) if (t.image) { const start = performance.now(); renderer.initTexture(t); assetMetrics.textureUploadMs = (assetMetrics.textureUploadMs || 0) + performance.now() - start; } }
 /** Shared anisotropy level (1..8). The fixed graphics look uses 8. */

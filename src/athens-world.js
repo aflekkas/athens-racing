@@ -10,6 +10,7 @@ import {WorldTileBarriers} from './world-tile-barriers.js';
 import {WorldTileObstacles} from './world-tile-obstacles.js';
 import {AthensRoute,AthensGround} from './athens-ground.js';
 import {WorldDetail} from './world-detail.js';
+import {athensMaterial,loadAthensTextures} from './athens-materials.js';
 import {Vehicle} from './physics.js';
 import {CARS,CarModel,setCarEnv,catalogueTrafficTypes} from './cars.js';
 import {fleetModel} from './traffic-fleet.js';
@@ -36,7 +37,7 @@ export async function bootAthens(){
  scene.fog=new THREE.Fog('#9caeae',camera.far*.65,camera.far);const sky=ENV.createSky();scene.add(sky);const baked=ENV.bakeSky(renderer,sky);scene.environment=baked.env;setCarEnv(baked.env);const {sun}=ENV.createLights(scene);sun.castShadow=false;
  const post=createPost(renderer,scene,camera),detailRoot=new THREE.Group();scene.add(detailRoot);
  const detail=new WorldDetail({id:'athens',terrain:{},data:{buildings:[],vegetation:[]},route:{length:0}},detailRoot,()=>0);
- const sceneTiles=new WorldTileScene(scene,{renderer}),barriers=new WorldTileBarriers(),obstacles=new WorldTileObstacles();
+ await loadAthensTextures(renderer);const sceneTiles=new WorldTileScene(scene,{renderer,materialFactory:athensMaterial}),barriers=new WorldTileBarriers(),obstacles=new WorldTileObstacles();
  loading.show('athens','FREE ROAM');document.getElementById('ldName').textContent='ATHENS';
  const manifestURL=new URL('./data/athens/manifest.json',document.baseURI),response=await fetch(manifestURL);
  if(!response.ok)throw Error('Athens development cells are not hosted on this server');

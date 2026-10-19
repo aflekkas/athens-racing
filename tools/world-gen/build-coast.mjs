@@ -7,7 +7,7 @@ import {packTiles} from './pack.mjs';
 import {WorldRoadGraph} from '../../src/world-tile-graph.js';
 import {validateWorldManifest,tileTables} from '../../src/world-tile-format.js';
 import {tileRenderVariants} from '../../src/world-tile-gpu.js';
-const cache=resolve(process.argv[2]),output=resolve(process.argv[3]);await mkdir(output,{recursive:true});
+const cache=resolve(process.argv[2]),output=resolve(process.argv[3]),subset=process.env.ATHENS_CELLS?new Set(process.env.ATHENS_CELLS.split(';')):null;await mkdir(output,{recursive:true});
 const graph=new WorldRoadGraph(),variants=new Map(),audits=[],seams={},anchorCandidates=[];
 const generator=spawn(join(cache,'venv/bin/python'),[new URL('./build-coast.py',import.meta.url).pathname,'--cache',cache],{stdio:['ignore','pipe','inherit']});
 // The packer reads a stream path; a FIFO is unnecessary with /proc's descriptor.
@@ -18,17 +18,18 @@ const {execFileSync}=await import('node:child_process');const {rm}=await import(
 execFileSync('mkfifo',[fifo]);const writer=createWriteStream(fifo);writer.on('error',()=>{if(generator.exitCode===null)generator.kill('SIGTERM');});generator.stdout.pipe(writer);
 let entries;
 try{
- entries=await packTiles(fifo,join(output,'cells'),{maxBytes:192*1024*1024,onTile:async({key,entry,physical,bridges,decoded,packet,seams:edgeHashes})=>{
+ entries=await packTiles(fifo,join(output,'cells'),{maxBytes:192*1024*1024,onTile:async({key,entry,physical,bridges,roads,decoded,packet,seams:edgeHashes})=>{
+  if(!roads)throw Error('Coastal cell '+key+' has no road cross-sections');
   const m=decoded.metadata,t=tileTables(decoded),[x,z]=m.cell,playable=x>=0&&x<10&&z>=25&&z<37;
-  entry.contactEligible=playable;if(!playable)entry.dependencies=[];
+  entry.contactEligible=playable;if(!playable)entry.dependencies=[];if(subset)entry.dependencies=entry.dependencies.filter(d=>subset.has(d));
   if(playable)graph.install(key,decoded);
   for(const v of tileRenderVariants(decoded))variants.set(v.key,v);
   if(key==='4,25')for(let i=0;i<t.anchors.length;i+=5)anchorCandidates.push(m.ids[t.anchors[i]]);
-  const row={cell:m.cell,bytes:entry.bytes,residentBytes:entry.residentBytes,transientBytes:entry.transientBytes,jsBytes:packet.jsBytes,gpuBytes:packet.gpuBytes,physical,bridges,edges:t.edges.length/10,anchors:t.anchors.length/5};audits.push(row);seams[key]=edgeHashes;
+  const row={cell:m.cell,bytes:entry.bytes,residentBytes:entry.residentBytes,transientBytes:entry.transientBytes,jsBytes:packet.jsBytes,gpuBytes:packet.gpuBytes,physical,bridges,roads:{roads:roads.roads,sidewalkRoads:roads.sidewalkRoads,byClass:roads.byClass},edges:t.edges.length/10,anchors:t.anchors.length/5};audits.push(row);seams[key]=edgeHashes;
   await appendFile(join(output,'audit.ndjson'),JSON.stringify(row)+'\n');console.error(JSON.stringify({packed:key,bytes:entry.bytes,residentBytes:entry.residentBytes,triangles:entry.triangles}));
  }});
  if(generator.exitCode===null)await new Promise((res,rej)=>{generator.once('exit',code=>code?rej(Error('Generator failed '+code)):res());});else if(generator.exitCode)throw Error('Generator failed '+generator.exitCode);
- if(Object.keys(entries).length!==127)throw Error('Incomplete approved coastal extent');
+ if(!subset&&Object.keys(entries).length!==127)throw Error('Incomplete approved coastal extent');
  const requested='anchor:tow:osm:way:24826358:0-0:f:4:25',anchor=anchorCandidates.includes(requested)?requested:anchorCandidates[0];if(!anchor)throw Error('No validated Glyfada spawn');
  const identity=JSON.parse(await readFile(join(output,'cells/entries.json'),'utf8')).identity;
  const manifest=validateWorldManifest({tileVersion:1,tileMetres:512,world:'athens-coast-development',revision:identity.split(':').at(-1),projection:{lat0:37.98,lon0:23.73,mlat:111320,mlon:87745.27512677578},spawn:{cell:[4,25],anchor},developmentOnly:true,releaseReady:false,tiles:entries,renderVariants:[...variants.values()]});
