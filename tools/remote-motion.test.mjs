@@ -116,7 +116,7 @@ test('a parked/finished/wrecked car cannot extrapolate; a missing stream coasts 
 
 test('stop/resume, epoch tow, teleport, car switch and a stalled reconnect reset without drawing a streak', () => {
   const timeline = new RemoteTimeline(); push(timeline, 0); push(timeline, 200); push(timeline, 400, { vLong: 0 });
-  close(timeline.sample(1000).z, -8); push(timeline, 600); const resumed = timeline.sample(1050); assert.ok(resumed.z < -8 && resumed.z >= -14.4);
+  close(timeline.sample(1000).z, -8); push(timeline, 600); const resumed = timeline.sample(1050); assert.ok(resumed.z < -8 && resumed.z >= -15, 'moving off after a stop re-times to the clock at once and stays within the newest sample plus the capped coast');
   push(timeline, 800, { x: 2, z: -10, vLong: 0, motionEpoch: 2 }); close(timeline.sample(900).x, 2); close(timeline.sample(900).z, -10);
   push(timeline, 1000, { x: 500 }); close(timeline.sample(1100).x, 500);
   push(timeline, 1200, { x: 0 }, { car: 'z4' }); close(timeline.sample(1300).x, 0);

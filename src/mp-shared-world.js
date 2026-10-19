@@ -2,7 +2,9 @@ import { CAR, ZONES, WORLD_HZ, worldOwner, worldPackets, WorldAssembler, packCar
 import { RNG } from './util.js';
 
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
-const seed = text => [...text].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619), 2166136261) >>> 0;
+/** The traffic seed of a race: the same `raceId:generation` text gives every client the same sequence. */
+export const trafficSeed = text => [...text].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619), 2166136261) >>> 0;
+const seed = trafficSeed;
 export function applySharedCar(traffic, row, age = 0, promote = false) {
   const c = traffic.cars[row[0]]; if (!c) return;
   const fresh = !c.active, flags = row[CAR.FLAGS], k = !!(flags & 1), dir = row[CAR.DIR];

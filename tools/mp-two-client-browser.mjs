@@ -11,81 +11,17 @@
 // in-order delivery, and a retransmit stall for a small share of messages. The slow client is CPU-throttled and frame-capped.
 // The GL draw call is stubbed (--gl keeps it): the subject is the game logic and the network, and software rendering on a shared
 // host turns a "15 fps" client into 0.5 fps. Frames still run the real simulation, HUD update, intake and render-pose code.
-import { mkdir, writeFile } from 'node:fs/promises';
-import { createServer } from 'node:net';
+import { writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { createHmac, randomBytes } from 'node:crypto';
-import { pathToFileURL } from 'node:url';
-import { homedir } from 'node:os';
-import { readFileSync } from 'node:fs';
+import { startRig, sleep, log, NETS } from './mp-browser-kit.mjs';
 
 const arg = (k, d) => process.argv.find(a => a.startsWith(`--${k}=`))?.slice(k.length + 3) ?? d, flag = k => process.argv.includes(`--${k}`);
 const tree = resolve(arg('tree', new URL('..', import.meta.url).pathname)), out = resolve(arg('out', '.scratch/mp-two-client'));
 const target = arg('target', ''), scenarios = arg('scenarios', 'smooth').split(',');
-const NETS = { none: { base: 0, jitter: 0, loss: 0, rto: 0 }, mid: { base: 60, jitter: 20, loss: 0, rto: 0 }, rtt150: { base: 75, jitter: 50, loss: .015, rto: 300 }, bad: { base: 150, jitter: 50, loss: .015, rto: 300 } };
-const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || '/home/dev/projects/spawn-platform/node_modules/.pnpm/playwright@1.62.0/node_modules/playwright/index.mjs');
-await mkdir(out, { recursive: true });
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-const t0 = Date.now(), log = (...a) => console.log(`[${((Date.now() - t0) / 1000).toFixed(0)}s]`, ...a);
-const freePort = () => new Promise(r => { const s = createServer().listen(0, '127.0.0.1', () => { const { port } = s.address(); s.close(() => r(port)); }); });
 
-let server, base, auth = [];
-if (target) {
-  base = target.replace(/\/$/, '');
-  const token = process.env.SMOKE_TOKEN || readFileSync(resolve(homedir(), '.config/athens-racing/smoke-token'), 'utf8').trim();
-  // Same payload and HMAC as server/smoke-session.mjs; valid for ten minutes, so a staging run must stay shorter.
-  const header = () => { const payload = `smoke:${randomBytes(16).toString('hex')}:${Date.now() + 540000}`; return payload + '.' + createHmac('sha256', token).update(payload).digest('base64url'); };
-  auth = [{ smoke: header() }, { smoke: header() }];
-} else {
-  const port = await freePort(); base = `http://127.0.0.1:${port}`;
-  const { accountsStub } = await import(pathToFileURL(resolve(tree, 'server/accounts-stub.mjs')));
-  const stub = accountsStub(base);
-  const { createGameServer } = await import(pathToFileURL(resolve(tree, 'server/index.mjs')));
-  server = await createGameServer({ root: tree, accountEnv: stub.env, dataDir: resolve(out, 'data'), countdownMs: 3000 });
-  await new Promise(r => server.server.listen(port, '127.0.0.1', r));
-  for (const [i, name] of ['ALPHA', 'BRAVO'].entries()) { const a = await stub.signIn(`mp-sync-${i}`, name); auth.push({ cookie: a.cookie }); }
-}
-
-// ---- the link, switchable between scenarios: in-order delivery, base delay, jitter and the occasional retransmit stall
-const cond = { net: NETS[arg('net', 'rtt150')] };
-function shaper() {
-  const lane = () => { let last = 0; return fn => { const net = cond.net; let at = Date.now() + net.base + (Math.random() * 2 - 1) * net.jitter; if (net.loss && Math.random() < net.loss) at += net.rto; at = Math.max(last, at); last = at; setTimeout(fn, Math.max(0, at - Date.now())); }; };
-  return { up: lane(), down: lane() };
-}
-const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROMIUM_PATH || '/home/dev/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome', args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--disable-dev-shm-usage', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows'] });
-const pages = {}, cdps = {}, errors = [], results = {};
-const both = fn => Promise.all(Object.values(pages).map(fn));
+const rig = await startRig({ tree, out, target, net: arg('net', 'rtt150'), stepTimeout: +arg('step-timeout', 240000) });
+const { pages, cdps, cond, both, errors, base } = rig, results = {};
 try {
-  for (const [i, name] of ['A', 'B'].entries()) {
-    const context = await browser.newContext({ viewport: { width: 320, height: 180 }, ...(auth[i].smoke ? { extraHTTPHeaders: { 'X-Smoke-Session': auth[i].smoke } } : {}) });
-    if (auth[i].cookie) { const [n, ...v] = auth[i].cookie.split('='); await context.addCookies([{ name: n, value: v.join('='), url: base }]); }
-    const page = await context.newPage(); pages[name] = page; page.setDefaultTimeout(+arg('step-timeout', 240000));
-    { const wait = page.waitForFunction.bind(page); page.waitForFunction = (fn, a, opts = {}) => wait(fn, a, { polling: 200, ...opts }); } // the default polls on requestAnimationFrame
-    cdps[name] = await context.newCDPSession(page);
-    page.on('pageerror', e => errors.push(`${name}: ${e.message}`));
-    if (target) await page.route('**/api/auth/session', route => route.fulfill({ json: { user: { id: `smoke-${name}`, name: `SMOKE ${name}`, displayName: `SMOKE ${name}` }, csrf: 'x' } }));
-    const shaped = shaper();
-    await page.routeWebSocket(/\/ws(\?|$)/, ws => {
-      const upstream = ws.connectToServer();
-      ws.onMessage(m => shaped.up(() => upstream.send(m)));
-      upstream.onMessage(m => shaped.down(() => ws.send(m)));
-      ws.onClose((code, reason) => upstream.close({ code, reason })); upstream.onClose((code, reason) => ws.close({ code, reason }));
-    });
-    await page.addInitScript(({ name }) => {
-      localStorage.setItem('paraliaki.driver', name === 'A' ? 'ALPHA' : 'BRAVO'); localStorage.setItem('paraliaki.car', 'mini');
-      const raf = window.requestAnimationFrame.bind(window); let lastRun = 0; const frames = window.__frames = [];
-      window.__fps = 0;
-      window.requestAnimationFrame = cb => raf(ts => {
-        if (window.__fps && ts - lastRun < 1000 / window.__fps - 4) return window.requestAnimationFrame(cb); // a machine that only manages __fps
-        lastRun = ts; cb(ts);
-        if (cb.name === 'frame' && window.__record) {
-          const v = window.__vehicle?.(), remote = window.__onlineCars?.()[0];
-          frames.push({ wall: Date.now(), x: v?.x, z: v?.z, y: v?.y, yaw: v?.yaw, s: v?.s, v: v?.vLong, remote: remote ? { visible: remote.visible, x: remote.x, z: remote.z, yaw: remote.yaw, s: remote.s, v: remote.vLong } : null, state: window.__sim?.G.state, hits: (window.__multiplayer?.lastContacts || []).filter(h => h.closing > 1).map(h => ({ closing: h.closing, impulse: h.impulse })) });
-        }
-      });
-    }, { name });
-    await page.goto(`${base}/?simhook=1&debug=1&quality=low&fixedres=1&map=riviera`, { waitUntil: 'domcontentloaded', timeout: 240000 });
-  }
   await both(p => p.waitForFunction(() => document.body.classList.contains('loaded') && window.__multiplayer?.connected && window.__sim?.player, null, { timeout: 900000 }));
   log('both clients loaded', base);
   const { A, B } = pages;
@@ -184,6 +120,42 @@ try {
       }
     }
   }
+  if (scenarios.includes('recover')) {
+    // T / reset while A drives or sits stuck: where A lands against where A was, and what B drew of A before, during and after.
+    results.recover = [];
+    for (const [label, c] of [['perfect link', { net: 'none' }], [`${arg('net', 'rtt150')} link, A at ${arg('slow-fps', 15)} fps and ${arg('cpu', 5)}x CPU`, { net: arg('net', 'rtt150'), slow: 'A', fps: +arg('slow-fps', 15), cpu: +arg('cpu', 5) }]].filter((_, i) => arg('cond', '01').includes(i)))
+      for (const mode of arg('modes', 'driving,stopped').split(',')) {
+        await conditions(c); await race(); await pilot(A, 0); await pilot(B, 1);
+        await sleep(7000);
+        if (mode === 'stopped') { await A.evaluate(() => { window.__pilot.hold = true; }); await sleep(5000); }
+        await record(true); await sleep(2500);
+        const before = await A.evaluate(() => { const v = __vehicle(); return { x: v.x, z: v.z, s: v.s, u: v.u, v: v.vLong }; });
+        const tAt = Date.now(); await A.evaluate(() => __flow.resetCar());
+        await sleep(2500); if (mode === 'stopped') await A.evaluate(() => { window.__pilot.hold = false; });
+        await sleep(5500); await record(false);
+        const fr = await frames(); await writeFile(resolve(out, `frames-recover-${results.recover.length}.json`), JSON.stringify({ label, mode, tAt, fr }));
+        const row = { label, mode, before, ...recoverSummary(fr, tAt) }; results.recover.push(row); log('recover', JSON.stringify(row));
+      }
+  }
+  if (scenarios.includes('restart')) {
+    // The host presses RESTART mid-race: every car must be on its own grid slot during the countdown, on BOTH screens.
+    results.restart = [];
+    for (const [label, c] of [['perfect link', { net: 'none' }], [`${arg('net', 'rtt150')} link, A at ${arg('slow-fps', 15)} fps and ${arg('cpu', 5)}x CPU`, { net: arg('net', 'rtt150'), slow: 'A', fps: +arg('slow-fps', 15), cpu: +arg('cpu', 5) }], [`${arg('net', 'rtt150')} link, B at ${arg('slow-fps', 15)} fps and ${arg('cpu', 5)}x CPU`, { net: arg('net', 'rtt150'), slow: 'B', fps: +arg('slow-fps', 15), cpu: +arg('cpu', 5) }]]) {
+      await conditions(c); await race(); await pilot(A, 0); await pilot(B, 1); await sleep(9000);
+      const oldRace = await A.evaluate(() => __multiplayer.lobby.raceId), tAt = Date.now();
+      await record(true); await A.evaluate(() => __multiplayer.restart());
+      await both(p => p.waitForFunction(old => __multiplayer.lobby.raceId !== old && __sim.G.state === 'onlineCountdown', oldRace, { timeout: 90000 }));
+      await sleep(1500);
+      const grid = p => p.evaluate(() => { const mp = __multiplayer, me = mp.lobby.players.find(x => x.id === mp.id), slot = __flow.gridSlot(me.gridSlot ?? 0), v = __vehicle(), o = __onlineCars()[0]; return { slot: { s: slot.s, u: slot.u }, s: v.s, u: v.u, x: v.x, z: v.z, remote: o && { visible: o.visible, x: o.x, z: o.z, s: o.s } }; });
+      const view = { A: await grid(A), B: await grid(B) };
+      const off = n => Math.abs(view[n].s - view[n].slot.s);
+      const seen = (n, m) => view[n].remote && Math.hypot(view[n].remote.x - view[m].x, view[n].remote.z - view[m].z);
+      await both(p => p.evaluate(() => { __multiplayer.close(); __flow.menu.close?.(); }));
+      await both(p => p.waitForFunction(() => __sim.G.state === 'race', null, { timeout: 60000 })); await sleep(7000); await record(false);
+      const row = { label, ownOffGridM: { A: round(off('A'), 2), B: round(off('B'), 2) }, remoteErrDuringCountdownM: { AseesB: round(seen('A', 'B'), 2), BseesA: round(seen('B', 'A'), 2) }, ...restartSummary(await frames(), tAt) };
+      results.restart.push(row); log('restart', JSON.stringify(row));
+    }
+  }
   if (scenarios.includes('contact')) {
     // Frame-rate independent wiring check of the production contact path: the attacker is put 4.3 m behind the other car at
     // closing speed and ONE physics step is run, so the attacker detects the hit locally; the other client must then receive the
@@ -227,8 +199,7 @@ try {
   await writeFile(resolve(out, 'report.json'), JSON.stringify({ base, tree, results, errors, failure: error.message }, null, 1)).catch(() => {});
   process.exitCode = 1;
 } finally {
-  await browser.close().catch(() => {});
-  if (server) await server.close().catch(() => {});
+  await rig.close();
 }
 
 function pct(xs, p) { const s = [...xs].sort((a, b) => a - b); return s[Math.min(s.length - 1, Math.floor(p * s.length))]; }
@@ -268,4 +239,22 @@ function measure(frames, senderName) {
   };
   const truthRows = rows.map(r => { const q = at(r.t); return { t: r.t, x: q.x, z: q.z }; });
   return { sender: senderName, receiverFrames: rows.length, receiverFps: round(rows.length / ((rows.at(-1).t - rows[0].t) / 1000), 1), errMeanM: round(err.reduce((a, b) => a + b, 0) / err.length, 2), errP95M: round(pct(err, .95), 2), errMaxM: round(Math.max(...err), 2), effectiveLagMs: best.lag, noiseRmsM: round(best.rms), hiddenMs: Math.round(hidden.length * frameMs), longestHiddenMs: Math.round(longest), drawn: pathStats(rows), realCar: pathStats(truthRows) };
+}
+
+// Where the other car was drawn against where it really was, per window of time around the placement.
+function viewError(frames, subject, viewer, from, to) {
+  const truth = frames[subject].filter(f => Number.isFinite(f.x)); if (truth.length < 2) return null;
+  const at = t => { let lo = 0, hi = truth.length - 1; if (t <= truth[0].wall) return truth[0]; if (t >= truth[hi].wall) return truth[hi]; while (hi - lo > 1) { const m = lo + hi >> 1; truth[m].wall <= t ? lo = m : hi = m; } const a = truth[lo], b = truth[hi], k = (t - a.wall) / (b.wall - a.wall); return { x: a.x + (b.x - a.x) * k, z: a.z + (b.z - a.z) * k }; };
+  const rows = frames[viewer].filter(f => f.wall >= from && f.wall < to && f.remote), err = rows.map(f => f.remote.visible ? Math.hypot(f.remote.x - at(f.wall).x, f.remote.z - at(f.wall).z) : Infinity);
+  const frameMs = rows.length > 1 ? (rows.at(-1).wall - rows[0].wall) / (rows.length - 1) : 0, finite = err.filter(Number.isFinite);
+  return { frames: rows.length, errP95M: round(pct(finite, .95), 2), errMaxM: round(Math.max(0, ...finite), 2), wrongOver8mMs: Math.round(err.filter(e => e > 8).length * frameMs), invisibleMs: Math.round(err.filter(e => e === Infinity).length * frameMs) };
+}
+function recoverSummary(frames, tAt) {
+  const own = frames.A.filter(f => Number.isFinite(f.x) && f.wall >= tAt - 3000);
+  let jump = null; for (let i = 1; i < own.length; i++) { const d = Math.hypot(own[i].x - own[i - 1].x, own[i].z - own[i - 1].z); if (own[i].wall >= tAt && d > 6 + Math.abs(own[i - 1].v || 0) * (own[i].wall - own[i - 1].wall) / 1000 * 1.5) { jump = { atMs: own[i].wall - tAt, distM: round(d, 1), from: { s: round(own[i - 1].s, 1) }, to: { s: round(own[i].s, 1) } }; break; } }
+  const t1 = jump ? tAt + jump.atMs : tAt + 1000;
+  return { jump, viewBeforeTow: viewError(frames, 'A', 'B', tAt - 2500, tAt), viewDuringTow: viewError(frames, 'A', 'B', tAt, t1 + 1500), viewAfterTow: viewError(frames, 'A', 'B', t1 + 1500, t1 + 6000) };
+}
+function restartSummary(frames, tAt) {
+  return { AseenByB: viewError(frames, 'A', 'B', tAt + 8000, tAt + 30000), BseenByA: viewError(frames, 'B', 'A', tAt + 8000, tAt + 30000), startedAtWall: tAt };
 }

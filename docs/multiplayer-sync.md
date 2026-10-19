@@ -44,6 +44,39 @@ Every driver owns their own car, so each client resolves its half of a hit (`src
   the common velocity.
 - Towed, finished, retired, disconnected and not-yet-loaded cars are ghosts. Damage is applied once per contact (600 ms cooldown).
 
+## Lobby, restart, tow and traffic (owner playtest 2026-10-18, round 2)
+
+Measured with two real browser clients (`tools/mp-two-client-browser.mjs --scenarios=recover,restart`, `tools/mp-lobby-browser.mjs`) against a
+local server with stub Google sign-in:
+
+- **Host restart.** Every car was on its own grid slot during the countdown on both screens (0.0 m off the slot, remote car 0.0 m from the
+  other driver's real pose), with a perfect link and with a 150 ms +/- 50 link plus a 15 fps / 5x CPU sender. The arena clears every pose on
+  `restart`, drops states of the old generation, and a client clears its remote timelines when the race id changes. Guard: `server/mp-restart-tow.test.mjs`.
+- **Reset / tow (T).** The server tows from the last accepted pose onto the nearest road by the same rule as the client. On the Riviera route
+  the car moves at most the 1.65 m to the lane centre for its heading (7 m only when it was standing on the wrong carriageway); the other
+  screen is told the same pose. A server restart in mid race (Worker eviction) restores a pose at most one checkpoint (2 s) old, the returning
+  driver's real pose replaces it, and a tow right after is where the car is. A driver that was silent for 6 s is not frozen out. Guards in
+  `server/mp-restart-tow.test.mjs`.
+- **Lobby join.** The join, create, change-car, leave-and-rejoin and start flows pass on the real menus. Two real defects were fixed:
+  (1) a second JOIN click (or a retried message) for the lobby you are already in answered "Leave your current lobby first." and unhid the
+  lobby panel over the screen, now it answers with the lobby; (2) a lobby moved to another track kept the old track's traffic, time and
+  weather (Riviera's traffic on the Megara circuit), now a track change brings that track's own defaults and whatever the host sets in the
+  same message still wins. A guest who joins a lobby whose race is already live is on the grid and cannot change car ("The race has already
+  started") by design. Guards: `server/mp-lobby-join.test.mjs`, `server/mp-lobby-config.test.mjs`.
+- **A car that stopped and set off again was drawn behind for seconds.** Found with `tools/remote-tow-sim.test.mjs`. A stopped car sends
+  nothing, so the receiver's playhead was held on its last sample; when the car moved off, the playhead crawled to the clock at +5 %
+  (`error > 1000 ms` re-timed instantly, anything shorter crawled). After a stop of 0.3 - 1 s (a junction, a bump, the tow hold, a reset) the
+  other screen drew the car 5 - 18 m behind it, up to 0.9 s, for 8 s and more: "Do you not see me behind you now?", "I can't see you. Where
+  are you?". Now the playhead re-times at once when a held car moves again, and the gap before a stopped car's first moving sample no longer
+  counts as sender jitter (it inflated the buffer). Drawn lag 20 m/s after the stop, 5 s after moving off:
+  `perfect link 9.3 / 15.7 m (hold 0.6 / 0.9 s) -> 4.6 m`, `150 ms RTT +/- 50, 15 fps 13.4 / 17.9 m -> 7.0 / 7.2 m` (the normal buffer + link delay,
+  independent of how long the car stood).
+- **Traffic.** Only the world authority simulates traffic; guests show its frames and never run NPC AI. The traffic seed is the text
+  `raceId:generation`, so two clients that seed from it build the same cars (the pool type per car id is fixed) and a driver who takes over as
+  authority continues from the last shared frame. Guard: `tools/traffic-seed.test.mjs`.
+- The browser tools take `--cond=0|1|01` and `--modes=driving,stopped` for the recover scenario and write the frames to `frames-recover-N.json`.
+  A shared host at load 30 turns the "15 fps" client into 3 fps; use `tools/mp-link-sim.mjs` for numbers that do not depend on the machine.
+
 ## Tools
 
 - `node tools/mp-link-sim.mjs --sender-fps=15 --net=bad` : deterministic virtual-time simulator of two drivers through the real sender,
