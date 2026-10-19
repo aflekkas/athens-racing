@@ -60,7 +60,7 @@ def unary_union(geoms):
     for g in geoms:
         g = _polygonal(g)
         if not g.is_empty:
-            result = g if result.is_empty else _polygonal(shapely.union(result, g))
+            result = g if result.is_empty else _polygonal(shapely.union(result, g, grid_size=GRID))
     return result
 
 

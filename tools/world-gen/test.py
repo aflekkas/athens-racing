@@ -56,6 +56,17 @@ class TurnTests(unittest.TestCase):
         self.assertEqual(audit,{'unsupported-fail-closed':1});self.assertEqual(db.execute('SELECT edge FROM blocked').fetchone()[0],'in');db.close()
 
 
+class ViaChainTurnTests(unittest.TestCase):
+    def test_u_turn_through_via_ways_only_bans_the_last_step(self):
+        from turns import compile_turns
+        db=sqlite3.connect(':memory:');db.execute('CREATE TABLE edge_index(id TEXT,a TEXT,b TEXT,way TEXT)')
+        # in (w1) -> via1 (w2, a stretch of the through road) -> via2 (w3, the crossover) -> back (w4); straight carries on along w2.
+        db.executemany('INSERT INTO edge_index VALUES(?,?,?,?)',[('in','a','osm:node:1','w1'),('via1','osm:node:1','osm:node:2','w2'),('via2','osm:node:2','osm:node:3','w3'),('back','osm:node:3','z','w4'),('ahead','osm:node:2','osm:node:5','w5')])
+        audit=compile_turns(db,[(20,json.dumps({'restriction':'no_u_turn'}),json.dumps([['w',1,'from'],['w',2,'via'],['w',3,'via'],['w',4,'to']]))])
+        self.assertEqual(audit,{'via-chain-exit':1})
+        self.assertEqual(set(db.execute('SELECT from_edge,to_edge FROM turns')),{('via2','back')},'driving in and straight on stays legal; only the exit into the to-way is banned')
+
+
 class DetailTests(unittest.TestCase):
     def test_shared_seed_contract_and_semantic_facades(self):
         from details import fnv1a,building_details
@@ -277,7 +288,8 @@ class ModelTests(unittest.TestCase):
 
     def test_markings_are_clipped_to_road_and_tile(self):
         line=LineString([(-20,100),(540,100)])
-        road=dict(id='paint',fromNode='a',toNode='b',points=list(line.coords),line=line,width=6.4,polygon=line.buffer(3.2,cap_style=2))
+        from road_section import cross_section
+        road=dict(id='paint',fromNode='a',toNode='b',points=list(line.coords),line=line,width=6.4,polygon=line.buffer(3.2,cap_style=2),section=dict(cross_section({'highway':'tertiary','lanes':'2'}),width=6.4))
         ps,ix=road_markings([road],(0,0),lambda x,z:7)
         self.assertGreater(len(ix),0)
         for x,y,z in zip(ps[::3],ps[1::3],ps[2::3]):

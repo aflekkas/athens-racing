@@ -26,13 +26,16 @@ def compile_turns(db,relations):
             uncertain=any('conditional' in k or 'lanes' in k for k in tags)
             if rule is None and not uncertain:mode='other-vehicle-class'
             elif viaways and rule and rule.startswith('no_') and not uncertain:
-                # Relations need not order their via ways. Forbid entering any
-                # connected via member from a from-way: stricter but safe.
-                for way in sorted(fromways):
+                # A chain `from -> via ways -> to` (typically a no_u_turn across a median crossover) cannot be written as a
+                # node rule: the edge-state graph has no history. Forbid only the LAST step, entering a to-way from a via
+                # way. The old rule forbade entering any via way from the from-way, which also banned driving straight
+                # on when a via way is a stretch of the through road (one Poseidonos U-turn rule split the world's
+                # strongly connected road network in two).
+                for way in sorted(viaways):
                     for incoming in edges(way):
                         for target in outgoing(incoming[2]):
-                            if target[3] in viaways:prohibit(incoming,target,rid)
-                mode='via-entry-conservative'
+                            if target[3] in toways:prohibit(incoming,target,rid)
+                mode='via-chain-exit'
             elif uncertain or len(vias)!=1 or viaways or not fromways or not toways or not rule or not rule.startswith(('no_','only_')):
                 for way in sorted(fromways or ways):
                     db.executemany('INSERT OR IGNORE INTO blocked VALUES(?,?)',((e[0],str(rid)) for e in edges(way)))

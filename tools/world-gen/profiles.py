@@ -182,5 +182,7 @@ if __name__=='__main__':
     a=p.parse_args()
     extra=None
     if a.area:
-        area=json.loads(a.area.read_text());extra=[tuple(c) for c in area['land']+area['sea']]
+        import areas
+        # The whole union (this area and everything it extends) feeds one height solve, so every shared border agrees.
+        extra=[tuple(c) for c in areas.load(a.area.stem)['cells']]
     build(a.source,a.output,a.stage,a.dem,extra)
