@@ -42,11 +42,11 @@ const signGeometry = (() => {
   // P-40: blue disc, three white CCW arrows (as seen by the approaching driver, who looks along -z).
   add(new THREE.CircleGeometry(.33, 16), M(0, 1.95, .045), BLUE);
   add(new THREE.CircleGeometry(.33, 16), M(0, 1.95, .04, 0, Math.PI, 0), BACK);
-  // The viewer's right is local -x, so arrows run clockwise in local x/y to read counter-clockwise.
+  // The approaching driver faces the sign's +z side with local +x to their right: counter-clockwise in local x/y.
   for (let k = 0; k < 3; k++) {
     const a = k * Math.PI * 2 / 3, x = Math.cos(a) * .17, y = 1.95 + Math.sin(a) * .17;
     add(new THREE.PlaneGeometry(.14, .045), M(x, y, .05, 0, 0, a + Math.PI / 2), WHITE);
-    add(new THREE.CircleGeometry(.06, 3), M(x + Math.sin(a) * .08, y - Math.cos(a) * .08, .05, 0, 0, a - Math.PI / 2), WHITE);
+    add(new THREE.CircleGeometry(.06, 3), M(x - Math.sin(a) * .08, y + Math.cos(a) * .08, .05, 0, 0, a + Math.PI / 2), WHITE);
   }
   // P-1 give way: red-bordered white point-down triangle above it.
   add(new THREE.CircleGeometry(.42, 3), M(0, 2.62, .045, 0, 0, -Math.PI / 2), RED);

@@ -14,7 +14,7 @@ All public, paved, non-private OSM motor ways around the fan of Palaio Psychiko 
 
 ## Elevation
 
-Road height follows direct EU-DEM v1.1 samples at ~24 m stations (`raw/route-dem.json`), smoothed over about 24 m; maximum grade about 10.5%.
+Historical (superseded 2026-10-19 by the Copernicus GLO-30 field, see SOURCES.md): road height followed direct EU-DEM v1.1 samples at ~24 m stations, smoothed over about 24 m; maximum grade about 10.5%.
 
 ---
 
