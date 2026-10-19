@@ -5,7 +5,7 @@ This is the lead's single list of open work. It's updated as tasks are assigned,
 Last updated: 2026-10-18 20:40 UTC.
 
 ## In flight (lead thread "Fix Floor Visibility in All Cars", check-up every 30 min)
-Production is on hold (`~/.local/state/athens-release/production-hold`). Staging live at `b9a4bcd3` (train, 2026-10-19 00:32 UTC). Agents use Haiku/Sonnet only (Codex quota ran out; no Opus).
+Production is on hold (`~/.local/state/athens-release/production-hold`). Staging live at `4b5ed440` (train, 2026-10-19 01:04 UTC); `10aad92c` in gates. Agents use Haiku/Sonnet only (Codex quota ran out; no Opus).
 
 Done and checked by the lead:
 - [x] Leaderboards inside Quick Race (`5149f16d`, `9a7c06ca`, `c9619d55`)
@@ -41,12 +41,15 @@ Also done since 2026-10-18 04:00 (checked by the lead):
 - [x] Auto gearbox no longer drops to 1st at speed on a slide/handbrake (`47d28899`, `90e7305a`)
 - [x] Seat lettering, A-Class star, lower door mirrors (`9a753c93`)
 
+- [x] Porsche 911 front/tail rework (`4b5ed440`)
+- [x] Exhaust-pop first-pop freeze: one permanent flash light + flame pipeline warm-up (`10aad92c`)
+- [x] Athens: connected coast stage 2 + OSM road cross-sections, rebaked, 47.9 MB in R2 staging (`b631ef8c`, `b3591cc0`); screenshots being re-made; next area waits on the lead's review
+
 Running (Sonnet; Enterprise unless noted):
-- [~] Exhaust-pop first-trigger lag spike (Personal)
 - [~] Low-end laptop performance + audio dropouts/ticking
 - [~] Driving: understeer, auto gearbox to 1st, Megara race end, look-back on V, wheel support, mouse camera
 - [~] Cars: Mercedes SL logos, GLA mirror, 911 (992) model, engine sound variety
-- [~] Athens open world: OSM road cross-sections (sidewalks, textures, widths), bridges, coast rebake, R2
+- [~] Athens: re-made road screenshots (paused by rate limit)
 - [~] Release cutover (lead): after the batch is checked on staging
 
 Waiting on the owner:
