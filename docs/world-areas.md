@@ -10,6 +10,7 @@ An **area** (`tools/world-gen/areas/<name>.json`) lists the 512 m cells one bake
 |---|---|---|
 | `coast` | 120 | Glyfada to the Riviera (x 0..9, z 25..36) |
 | `piraeus-faliro` | 289 | the coast plus 127 land cells and 44 sea-ring cells: the Alimos/Elliniko strip, Faliro, Neo Faliro, Tavros, Moschato and the Piraeus peninsula |
+| `centre` | 336 | Piraeus/Faliro plus 47 inland cells: the historic centre (Syntagma, Omonia, Plaka/Monastiraki, Exarchia south, Kolonaki, Pangrati west), Koukaki, Nea Smyrni and Kallithea east, joined to the Faliro network by a Syngrou corridor. Sized to the 192 MiB world ceiling; `centre-candidates` lists the 161 cells the district boxes asked for |
 
 `tools/world-gen/select-area.py CACHE OUT.json` picks the cells deterministically from the cleaned OSM cache: a cell is wanted if it has roads or buildings, touches the mainland land mask and is within **1.2 km** (strip, south of row 13) or **1.5 km** (core, rows 7..12) of the coastline, plus the ring of sea cells around them so the shore and open water are baked. The selector's parameters are stored in the area file.
 
@@ -54,7 +55,7 @@ One deck over ground is the only structure the streamed world models: a literal 
 | decks that cannot be lifted safely | listed in the area's `structures.json` |
 | one hillside street on the coast | `coast-exclusions.json` (unchanged) |
 
-For the Piraeus area that is 139 roads of 11,9xx. The network is still one connected component from Piraeus through Faliro to Glyfada and the Riviera (`11,097` of `11,918` roads in the main component).
+For the Piraeus area that is 139 roads of 11,9xx. The network is still one connected component, **undirected**, from Piraeus through Faliro to Glyfada and the Riviera (`11,097` of `11,918` roads in the main component). Driving direction is a different question, see *Directed connectivity* below.
 
 ### The structure plan (decided once, for the whole area)
 
@@ -91,3 +92,21 @@ Seam and gate checks on every shared border are unchanged and exact. Making a un
 ## Gates added
 
 `tools/world-gen/area_test.py` (areas share one world and are contiguous; clipped pieces tile the footprint, share height and palette and have valid wire ids; the guardrail's faces point outward, it is low and open under the beam), `bridge_policy_test.py` (exclusion rules, continuation at tag boundaries), the junction-pocket case in `street_regions_test.py`, the urban material in `tools/athens-materials.test.mjs`, and in the packer: the offender list on every physical failure, cracked seams reported in keep-going mode, and every deck-edge gate unchanged.
+
+## The centre (`centre`, the third area)
+
+Inland Athens cannot be described by a distance to the coast, so `select-region.py CACHE OUT.json --extends piraeus-faliro --world athens-centre-development --district name=W,S,E,N ...` takes named district boxes (lon/lat), keeps the 512 m cells that hold roads or buildings and drops cells the extended areas already own. The boxes are stored in the output (`centre-candidates.json`: Kallithea / Nea Smyrni / Koukaki, the historic centre, Kypseli / Patisia: 161 cells, 85,231 buildings, 21,470 roads).
+
+**What fits.** The new cells average 1.08 MB compressed (largest 1.63 MB); the 47 that fit take the world to **183.8 MiB of the 192 MiB ceiling**. They are the historic centre (24 of its 60 cells: Syntagma, Omonia, Plaka/Monastiraki, Kolonaki, Pangrati west, the south of Exarchia) and 23 of the 73 Kallithea / Nea Smyrni / Koukaki cells, with the Syngrou corridor. **None of Kypseli / Patisia fits.** The remaining 114 candidate cells would add about 118 MiB at the new-cell average (about 301 MiB in all): more than the ceiling allows, so they stay in `centre-candidates.json` until the ceiling, or the cost per cell, changes. The worst 2×2 safety set did not move (36.6 MiB, still a Piraeus cell): inland centre cells are denser but smaller, and buildings are clipped.
+
+**One height solve for the whole union.** `profiles.py --area` now solves heights for the area and everything it extends in one pass, so every shared border agrees; the whole 336-cell world is baked again each time (Piraeus and the coast change by sub-millimetre amounts).
+
+**Seams.** The street-region union is snapped to its 2 cm grid at every step (`shapely.union(..., grid_size=GRID)`), so two cells that load different far-away streets cut the very same edge. This was the cause of the last cracked seams in the centre.
+
+### Turn restrictions that cut the network
+
+A `no_u_turn` made of `from -> via ways -> to` (a median crossover) used to forbid entering any via way from the from-way. When a via way is a stretch of the through road, that also banned driving straight on, and a single Poseidonos rule split the strongly connected road network in two. Only the last step is forbidden now (entering a to-way from a via way; audit mode `via-chain-exit`, 605 relations in this area). Restrictions the compiler cannot express still fail closed by blocking the from-way (36 relations, 73 edges blocked from AI and routing; the player can still drive them).
+
+### Directed connectivity (what is enterable from where)
+
+`tools/world-connectivity-audit.mjs` (strongly connected components of the turn-aware edge graph) on the centre world: 1,480 km of drivable edges, **main component 1,162 km (78.5%)**; the other components are one-way pockets cut by the edge of the baked world. From the Syntagma start, 93% to 98% of the centre, Faliro/Kallithea, Alimos/Elliniko and Glyfada..Riviera is enterable, and 64% of Neo Faliro / Tavros / Moschato. **Piraeus is exit-only: 0% of its 196 km can be entered from the centre, while 73% of it can be driven from inside and from there everything else is reachable.** The Piraeus-bound carriageways run through the Tavros underpasses, and tunnels are left out: adding every tunnel back makes Piraeus enterable (73%), adding any other left-out category does not. Turn restrictions and edge heights are not the cause. The undirected statement above stays true; only the direction is missing. Fixing it means modelling those underpasses (a tunnel is a deck-over-ground problem turned upside down) or opening a few of them at grade; neither is done.

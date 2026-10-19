@@ -193,6 +193,7 @@
     "tools/athens-materials.test.mjs",
     "tools/athens-world-hud.test.mjs",
     "tools/world-gen/road-model.test.mjs",
+    "tools/world-gen/world-gen.test.mjs",
     "tools/camera-visibility.test.mjs",
     "tools/owner-locked-no-checkpoints.test.mjs",
     "server/course-validation.test.mjs",

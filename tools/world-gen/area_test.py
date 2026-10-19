@@ -31,6 +31,29 @@ class Areas(unittest.TestCase):
   a=areas.load('piraeus-faliro');e=areas.extent(a['cells'])
   for x,z in a['cells']:self.assertTrue(e.covers(box(x*512,z*512,x*512+512,z*512+512).buffer(-1)))
 
+class Centre(unittest.TestCase):
+    def test_centre_extends_piraeus_faliro_as_one_world(self):
+        c = areas.load('centre'); base = set(areas.load('piraeus-faliro')['cells']); cells = c['cells']
+        self.assertEqual(c['parents'], ['piraeus-faliro']); self.assertEqual(len(cells), len(set(cells)))
+        self.assertTrue(base < set(cells), 'the earlier areas are part of the same world, so every border is shared')
+        new = [x for x in cells if x not in base]
+        self.assertEqual(len(new), len(c['spec']['land'])); self.assertFalse(set(new) & base)
+        self.assertEqual(c['sources']['profiles'], 'profiles-ac.sqlite')
+    def test_centre_is_contiguous_and_every_new_cell_names_its_district(self):
+        c = areas.load('centre'); cells = set(c['cells']); seen = {(4, 25)}; stack = [(4, 25)]
+        while stack:
+            x, z = stack.pop()
+            for n in ((x + 1, z), (x - 1, z), (x, z + 1), (x, z - 1)):
+                if n in cells and n not in seen: seen.add(n); stack.append(n)
+        self.assertEqual(seen, cells, 'every cell is reachable from the Glyfada spawn through shared borders')
+        spec = c['spec']
+        self.assertTrue(all('%d,%d' % tuple(x) in spec['districtOf'] for x in spec['land']))
+    def test_candidates_are_the_cells_left_for_later(self):
+        cand = areas.load('centre-candidates')['spec']; now = {tuple(x) for x in areas.load('centre')['spec']['land']}
+        later = {tuple(x) for x in cand['land']} - now
+        self.assertTrue(later, 'cells that did not fit the world ceiling remain listed'); self.assertFalse(later & set(areas.load('centre')['cells']))
+
+
 class Clipping(unittest.TestCase):
  part=dict(height=12.0,heightSource='levels',landuse='residential',palette=3,id='w1:0')
  def test_building_across_a_border_is_two_flush_pieces(self):
