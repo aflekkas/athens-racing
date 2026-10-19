@@ -3,7 +3,7 @@ import { authorizeGame, protectedPath, accountResult, identityActive } from './a
 import { canSaveResults } from './smoke-session.mjs';
 import { leaderboardFilters } from './leaderboard-policy.mjs';
 import { legalPage } from '../worker/legal-pages.mjs';
-import { connectionProtocol, AUTH_CLOSE_CODE } from '../src/multiplayer-protocol.js';
+import { connectionProtocol, AUTH_CLOSE_CODE, RELAY_MS } from '../src/multiplayer-protocol.js';
 import http from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { createReadStream } from 'node:fs';
@@ -98,7 +98,7 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
     ws.on('close', () => core.disconnect(ws));
     ws.on('error', () => ws.close());
   });
-  const tick = setInterval(() => { core.tick(); for (const [ip, limit] of postLimits) if (Date.now() - limit.at > 60000) postLimits.delete(ip); }, 100);
+  const tick = setInterval(() => { core.tick(); for (const [ip, limit] of postLimits) if (Date.now() - limit.at > 60000) postLimits.delete(ip); }, RELAY_MS);
   const heartbeat = setInterval(() => { for (const c of clients) { if (!c.alive) c.ws.terminate(); else { c.alive = false; c.ws.ping(); } } }, 15000);
   const close = async () => { clearInterval(tick); clearInterval(heartbeat); for (const c of clients) c.ws.terminate(); await new Promise(r => wss.close(r)); await new Promise(r => server.close(r)); await leaderboard.flush(); };
   return { server, close, lobbies, track, leaderboard };

@@ -1,4 +1,5 @@
-// Sample at 10 Hz, send at most two samples per message, and avoid repeating parked state.
+import { STATE_INTERVAL_MS } from './multiplayer-protocol.js';
+// Sample at 20 Hz (STATE_INTERVAL_MS), send at most two samples per message, and avoid repeating parked state.
 const tolerances = { vy: .05, angularX: .01, angularY: .01, angularZ: .01, x: .01, y: .01, z: .01, s: .02, u: .01, yaw: .001, steer: .005, vLong: .05, vLat: .05, rpm: 150, nitro: .02, bodyHeave: .005, bodyPitch: .005, bodyRoll: .005 };
 function stationaryUnchanged(a, b) {
   if (!b || Math.abs(a.vLong) > .1 || Math.abs(a.vLat) > .1 || Math.abs(b.vLong) > .1 || Math.abs(b.vLat) > .1) return false;
@@ -30,10 +31,12 @@ export class StateSender {
     if (this.timer != null) this.cancel(this.timer);
     this.timer = null; this.pending = []; this.lastAt = -Infinity; this.last = null; this.motionEpoch++;
   }
-  sample(state, raceId, { batching = false, force = false } = {}) {
+  sample(state, raceId, { batching = false, force = false, at } = {}) {
     if (this.raceId !== raceId) { this.reset(); this.raceId = raceId; }
-    const now = this.now();
-    if (!force && now - this.lastAt < 100) return false;
+    const now = Number.isFinite(at) ? at : this.now();
+    // 20 Hz when two samples share a message (same message budget as before); servers without batching keep 10 Hz single states.
+    // A frame a hair early still counts: frame-quantised senders would otherwise wait for the next one.
+    if (!force && now - this.lastAt < (batching ? STATE_INTERVAL_MS - 2 : 100)) return false;
     this.lastAt = now;
     if (!force && stationaryUnchanged(state, this.last)) return false;
     const {decals: legacyDecals, ...cleanState}=state;
@@ -42,7 +45,7 @@ export class StateSender {
     if (!batching) { this.send({ type: 'state', raceId, state: snapshot }); return true; }
     this.pending.push(snapshot);
     if (force || this.pending.length === 2) this.flush();
-    else if (this.timer == null) this.timer = this.schedule(() => this.flush(), 200);
+    else if (this.timer == null) this.timer = this.schedule(() => this.flush(), 2 * STATE_INTERVAL_MS);
     return true;
   }
   flush() {
