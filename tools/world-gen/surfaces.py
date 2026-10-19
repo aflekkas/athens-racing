@@ -5,31 +5,47 @@ surface layer, and must separately validate rendered grades and clearance.
 """
 import math
 import struct
-from shapely import constrained_delaunay_triangles, set_precision, union_all
+from shapely import constrained_delaunay_triangles, set_precision, union_all, prepare
 from shapely.geometry import LineString, Point, box
 from shapely.ops import polygonize, unary_union
 from shapely.strtree import STRtree
+from border_nodes import split_borders,canonical_polygon
 
 
 def f32(value):return struct.unpack('<f',struct.pack('<f',value))[0]
-def snap(geometry):return set_precision(geometry,.01)
+def snap(geometry):return set_precision(geometry,.02)
 
 
-def ground_mesh(cell,roads,height,boundaries=()):
+def border_nodes(geometry):
+    """Insert exact two-centimetre intersections with every GLOBAL 512 m border.
+
+    Snap-rounding a long segment against a clipped border can choose either
+    neighbouring centimetre depending on the side's noding context. Explicit
+    integer-rational intersections give both tiles the very same input vertex.
+    """
+    if geometry.is_empty:return []
+    if geometry.geom_type not in ('LineString','LinearRing'):
+        return [line for part in getattr(geometry,'geoms',[]) for line in border_nodes(part)]
+    points=split_borders(list(geometry.coords))
+    return [LineString(points)]
+
+def ground_mesh(cell,roads,height,boundaries=(),exclude=None,asphalt=None):
     """8 m road/shoulder cells, 16 m elsewhere; exact 2 m border subdivisions.
 
     roads: [{id, polygon, line}], already globally solved and with >=64 m halo.
     height(x,z): deterministic global surface height; never a tile-local filter.
-    XZ uses centimetres (a subset of the required global millimetre lattice).
+    XZ uses two centimetres (a subset of the required global millimetre lattice).
     Returned triangles partition the tile: no duplicated contact ownership.
     """
     ox,oz=cell[0]*512,cell[1]*512;bounds=box(ox,oz,ox+512,oz+512)
     ordered=sorted(roads,key=lambda r:r['id'])
-    polygons=[snap(r['polygon']) for r in ordered]
+    polygons=[canonical_polygon(r['polygon']) for r in ordered]
     tree=STRtree(polygons)
-    union=unary_union(polygons) if polygons else None
+    # A caller that also draws kerbs from the asphalt outline passes that very polygon, so the road edge is
+    # ONE line: two separately computed unions differ by a centimetre and leave sliver faces between them.
+    union=asphalt if asphalt is not None else unary_union(polygons) if polygons else None
     near=union.buffer(8,quad_segs=1) if union is not None else None
-    lines=[]
+    lines=[];grid=[]
     # Explicit border vertices are identical even if the neighbour has no road.
     for n in range(0,512,2):
         for a,b in (((ox+n,oz),(ox+n+2,oz)),((ox+n,oz+512),(ox+n+2,oz+512)),
@@ -37,17 +53,23 @@ def ground_mesh(cell,roads,height,boundaries=()):
             lines.append(LineString([a,b]))
     for z in range(oz-16,oz+528,16):
         for x in range(ox-16,ox+528,16):
-            square=box(x,z,x+16,z+16);lines.append(square.boundary)
+            square=box(x,z,x+16,z+16);grid.append(square.boundary)
             if near is not None and near.intersects(square):
                 for n in (8,):
-                    lines.append(LineString([(x+n,z),(x+n,z+16)]))
-                    lines.append(LineString([(x,z+n),(x+16,z+n)]))
+                    grid.append(LineString([(x+n,z),(x+n,z+16)]))
+                    grid.append(LineString([(x,z+n),(x+16,z+n)]))
                 # Same global southwest/northeast diagonal as Field's height
                 # lattice. Clip feature faces only AFTER these plane boundaries
                 # are noded, including the full six-metre junction shoulders.
                 for dz in range(0,16,8):
                     for dx in range(0,16,8):
-                        lines.append(LineString([(x+dx+8,z+dz),(x+dx,z+dz+8)]))
+                        grid.append(LineString([(x+dx+8,z+dz),(x+dx,z+dz+8)]))
+    # Kerb, sidewalk and ramp strips are modelled by their own boundary vertices (their rise is added per
+    # vertex): the 8 m lattice stops at their outline instead of cutting every strip into 8 m pieces.
+    if exclude is not None and not exclude.is_empty and grid:
+        kept=unary_union(grid).difference(exclude)
+        grid=list(kept.geoms) if hasattr(kept,'geoms') else [kept]
+    lines.extend(grid)
     # Preserve full global feature segments until noding. Clipping and rounding
     # their endpoints independently shifts border intersections by a centimetre.
     # A grid halo supplies identical intersection context on both sides.
@@ -57,26 +79,35 @@ def ground_mesh(cell,roads,height,boundaries=()):
     for boundary in boundaries:
         clipped=snap(boundary)
         if not clipped.is_empty:lines.append(clipped)
-    noded=union_all(lines,grid_size=.01)
+    lines=[part for line in lines for part in border_nodes(line)]
+    noded=union_all(lines,grid_size=.02)
     positions=[];triangles=[];owners=[];keys={}
     def vertex(p):
-        key=(round(p[0]*100),round(p[1]*100))
+        key=(round(p[0]*50),round(p[1]*50))
         if key not in keys:
-            x,z=key[0]/100,key[1]/100
+            x,z=key[0]/50,key[1]/50
             keys[key]=len(positions)//3
             positions.extend([f32(x-ox),f32(height(x,z)),f32(z-oz)])
         return keys[key]
     faces=sorted(polygonize(noded),key=lambda p:(p.bounds,p.wkb))
+    if union is not None:prepare(union)
     for face in faces:
-        if face.area<1e-8 or not bounds.covers(face.representative_point()):continue
+        inside=face.representative_point()
+        if face.area<1e-8 or not bounds.covers(inside):continue
+        # Road or not is a property of the whole face (every road outline is a noded edge): a centimetre
+        # sliver's own centroid can sit exactly on the outline and be misread as asphalt.
+        road_face=union is not None and union.covers(inside)
         for triangle in constrained_delaunay_triangles(face).geoms:
             ps=list(triangle.exterior.coords)[:-1]
             cross=(ps[1][0]-ps[0][0])*(ps[2][1]-ps[0][1])-(ps[1][1]-ps[0][1])*(ps[2][0]-ps[0][0])
             if abs(cross)<1e-8:continue
             if cross>0:ps.reverse() # +Y normal
             centroid=triangle.representative_point()
-            candidates=[int(i) for i in tree.query(centroid) if polygons[int(i)].covers(centroid)]
-            owner=min(candidates,key=lambda i:(ordered[i]['line'].distance(centroid),ordered[i]['id'])) if candidates else None
+            owner=None
+            if road_face:
+                candidates=[int(i) for i in tree.query(centroid) if polygons[int(i)].covers(centroid)]
+                if not candidates:candidates=[int(i) for i in tree.query(inside.buffer(1))]  # sliver on an interior overlap edge
+                owner=min(candidates,key=lambda i:(ordered[i]['line'].distance(centroid),ordered[i]['id'])) if candidates else None
             triangles.extend(vertex(p) for p in ps)
             owners.append(ordered[owner]['id'] if owner is not None else None)
     return dict(cell=list(cell),positions=positions,triangles=triangles,owners=owners)

@@ -133,6 +133,8 @@ export function validateWorldManifest(m) {
   for (const [key, entry] of Object.entries(m.tiles)) {
     if (!/^-?\d+,-?\d+$/.test(key) || key.split(',').some(v => !Number.isSafeInteger(Number(v)))) fail('tile key');
     if (typeof entry.url !== 'string' || !entry.url || !/^[a-f0-9]{64}$/.test(entry.sha256) || !integer(entry.bytes,1) || entry.bytes > 25*1024*1024 || !integer(entry.decodedBytes,1) || !integer(entry.triangles)) fail(`entry ${key}`);
+    for(const field of ['residentBytes','transientBytes'])if(entry[field]!==undefined&&!integer(entry[field],1))fail(`entry ${key} ${field}`);
+    if(entry.transientBytes!==undefined&&entry.transientBytes<2*entry.decodedBytes+entry.bytes)fail(`entry ${key} transient allowance`);
     if (!Array.isArray(entry.dependencies) || new Set(entry.dependencies).size !== entry.dependencies.length || entry.dependencies.some(d => typeof d !== 'string' || d === key || !Object.hasOwn(m.tiles,d))) fail(`dependencies ${key}`);
     if (entry.range && (!integer(entry.range.offset) || !integer(entry.range.length,1) || entry.range.length !== entry.bytes || entry.range.offset + entry.range.length > 25*1024*1024)) fail('range');
   }

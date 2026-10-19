@@ -4,10 +4,11 @@ Rendering helpers only: contact integration and stage conformance remain the
 caller's responsibility. No trees, street props, furniture or runtime lights.
 """
 import math
+from border_nodes import canonical_polygon
 from collections import defaultdict
 from shapely.geometry import Point,Polygon,box
 from shapely.ops import unary_union,substring
-from shapely import constrained_delaunay_triangles
+from shapely import constrained_delaunay_triangles,set_precision
 
 
 KERB_WIDTH = .6  # 10 cm rise with headroom for longitudinal road grade.
@@ -15,9 +16,14 @@ KERB_WIDTH = .6  # 10 cm rise with headroom for longitudinal road grade.
 
 def pavement_regions(roads):
     if not roads:return Polygon(),Polygon(),Polygon()
-    road=unary_union([r['polygon'] for r in roads])
-    kerb=road.buffer(KERB_WIDTH,join_style=2).difference(road)
-    pavement=road.buffer(1.8,join_style=2).difference(road.buffer(KERB_WIDTH,join_style=2))
+    # Snap each global source outline before unioning it. Otherwise the raw
+    # kerb's inner ring and the contact road union round to two different lines
+    # at a tile border, leaving a centimetre sliver on only one side.
+    road=unary_union([canonical_polygon(r['polygon']) for r in roads])
+    kerb_outer=unary_union([canonical_polygon(r['polygon'].buffer(KERB_WIDTH,join_style=2)) for r in roads])
+    outer=unary_union([canonical_polygon(r['polygon'].buffer(1.8,join_style=2)) for r in roads])
+    kerb=kerb_outer.difference(road)
+    pavement=outer.difference(kerb_outer)
     return road,kerb,pavement
 
 
@@ -51,32 +57,74 @@ def kerb_sides(boundary,cell,height,rise=.10):
     return ps,ix
 
 
-def road_markings(roads,cell,height):
+PAINT=.065  # half-width: 13 cm lines
+
+
+def paint_triangles(paint,ps,ix,ox,oz,height,lift=.015):
+    for polygon in polygons(paint):
+        for tri in constrained_delaunay_triangles(polygon).geoms:
+            points=list(tri.exterior.coords)[:-1]
+            if (points[1][0]-points[0][0])*(points[2][1]-points[0][1])-(points[1][1]-points[0][1])*(points[2][0]-points[0][0])>0:points.reverse()
+            for x,z in points:ix.append(len(ps)//3);ps.extend([x-ox,height(x,z)+lift,z-oz])
+
+
+def line_offsets(section,width):
+    """(lateral metres, style) for every painted line of a road; lateral > 0 is the geographic right."""
+    m=section['markings'];half=width/2;lane=section['laneWidth'];lines=[]
+    if m['edge']=='solid':lines.extend([(-half+.35,'solid'),(half-.35,'solid')])
+    if m['lane']=='dashed':
+        forward,backward=section['lanesForward'],section['lanesBackward']
+        if section['oneway']:
+            lines.extend((half-k*lane,'dashed') for k in range(1,section['lanes']))
+        else:
+            # Right-hand traffic: forward lanes sit to the right of the centre line.
+            centre=half-forward*lane
+            lines.extend((half-k*lane,'dashed') for k in range(1,forward))
+            lines.extend((centre-k*lane,'dashed') for k in range(1,backward))
+    if not section['oneway'] and m['centre']!='none':
+        centre=half-section['lanesForward']*section['laneWidth']
+        if m['centre']=='double':lines.extend([(centre-.14,'solid'),(centre+.14,'solid')])
+        else:lines.append((centre,m['centre']))
+    return lines
+
+
+def zebra_paint(road,station,point,frame):
+    """Bars across the carriageway at a marked crossing, 45 cm bars on a 90 cm pitch, clear of the edge lines."""
+    tx,tz,nx,nz=frame;half=road['width']/2-.5;bars=[]
+    for k in range(4):
+        along=(k-1.5)*PITCH
+        a=(point[0]+tx*(along-BAR/2)-nx*half,point[1]+tz*(along-BAR/2)-nz*half);b=(point[0]+tx*(along+BAR/2)-nx*half,point[1]+tz*(along+BAR/2)-nz*half)
+        c=(point[0]+tx*(along+BAR/2)+nx*half,point[1]+tz*(along+BAR/2)+nz*half);d=(point[0]+tx*(along-BAR/2)+nx*half,point[1]+tz*(along-BAR/2)+nz*half)
+        bars.append(Polygon([a,b,c,d]))
+    return bars
+
+
+BAR,PITCH=.45,.9
+
+
+def road_markings(roads,cell,height,regions=None):
     ox,oz=cell[0]*512,cell[1]*512;bounds=box(ox,oz,ox+512,oz+512)
     nodes=defaultdict(list)
     for road in roads:
         for key,point in ((road['fromNode'],road['points'][0]),(road['toNode'],road['points'][-1])):
             nodes[key].append((point,road['width']))
-    junctions=unary_union([Point(items[0][0]).buffer(max(w for p,w in items)*.65) for items in nodes.values() if len(items)>=3])
+    junctions=unary_union([Point(items[0][0]).buffer(max(w for p,w in items)*.5+2.2) for items in nodes.values() if len(items)>=3])
     ps=[];ix=[]
     for road in roads:
-        width=road['width']
-        if width<5:continue
-        # Preserve the actual line shape. Painted lane/centre dividers use a
-        # stable 3 m dash / 3 m gap, clipped away from intersection interiors.
-        lanes=max(2,round(width/3.2));line=road['line']
-        offsets=[-width/2+width*k/lanes for k in range(1,lanes)]
-        for offset in offsets:
+        section=road['section'];dash,gap=section['markings']['dash'];line=road['line']
+        surface=regions.surface(road) if regions else road['polygon']
+        for offset,style in line_offsets(section,road['width']):
             for route in lines(line.offset_curve(offset)) if abs(offset)>.001 else [line]:
-                for start in range(0,math.ceil(route.length),6):
-                    dash=substring(route,start,min(start+3,route.length))
-                    if dash.geom_type!='LineString' or dash.length<.05:continue
-                    paint=dash.buffer(.065,cap_style=2,join_style=2).intersection(road['polygon']).intersection(bounds).difference(junctions)
-                    for polygon in polygons(paint):
-                        for tri in constrained_delaunay_triangles(polygon).geoms:
-                            points=list(tri.exterior.coords)[:-1]
-                            if (points[1][0]-points[0][0])*(points[2][1]-points[0][1])-(points[1][1]-points[0][1])*(points[2][0]-points[0][0])>0:points.reverse()
-                            for x,z in points:ix.append(len(ps)//3);ps.extend([x-ox,height(x,z)+.015,z-oz])
+                spans=[(0,route.length)] if style=='solid' else [(start,min(start+dash,route.length)) for start in range(0,math.ceil(route.length),round(dash+gap))]
+                for a,b in spans:
+                    piece=substring(route,a,b)
+                    if piece.geom_type!='LineString' or piece.length<.05:continue
+                    paint_triangles(piece.buffer(PAINT,cap_style=2,join_style=2).intersection(surface).intersection(bounds).difference(junctions),ps,ix,ox,oz,height)
+    if regions:
+        for road,station,point,frame in regions.zebras:
+            if not (ox-6<point[0]<ox+518 and oz-6<point[1]<oz+518):continue
+            for bar in zebra_paint(road,station,point,frame):
+                paint_triangles(bar.intersection(regions.asphalt).intersection(bounds),ps,ix,ox,oz,height)
     return ps,ix
 
 

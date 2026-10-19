@@ -23,7 +23,22 @@ test('AWT physical audit does not hide missing faces behind coarse terrain',()=>
   const r=auditWorldSurface(t);assert.equal(r.passed,false);assert.ok(r.missingContacts>0);
 });
 
-test('AWT physical audit preserves the solved twenty-percent profile grade bound',()=>{
-  const t=fixture({roadGrade:.3});t.edgePoints=[0,0,10,256,76.8,10];t.edges=[1,1,2,0,2,0,1,50,0,1];
-  const r=auditWorldSurface(t);assert.equal(r.asphaltAbove30,0);assert.ok(r.maxProfileGrade>.2);assert.equal(r.passed,false);
+test('AWT physical audit bounds emitted graph profile grade at forty-five percent',()=>{
+  const t=fixture({roadGrade:.3});t.edgePoints=[0,0,10,256,128,10];t.edges=[1,1,2,0,2,0,1,50,0,1];
+  const r=auditWorldSurface(t);assert.equal(r.asphaltAbove30,0);assert.ok(r.maxProfileGrade>.45);assert.equal(r.passed,false);
+});
+
+// Owner exception (2026-10-18): literal OSM bridge=yes and connected
+// approaches may use a 0.25 m shoulder protected by solid visible guardrails.
+// Every ground road and every undeclared elevated road still sweeps six metres.
+test('guarded OSM bridge exception is explicit, surface-specific and never weakens ground gates',()=>{
+  const t=fixture();t.contactPositions[12]=t.contactPositions[15]=256.75;t.contactLayers.fill(1);
+  const options={ids:['','surface:w1:0','ground'],structures:[{kind:'osm-bridge-guarded',layer:1,shoulderMetres:.25,bridgeSources:['w1:0'],roads:['w1:0']}]};
+  assert.equal(auditWorldSurface(t).passed,false,'layer alone grants no exception');
+  const r=auditWorldSurface(t,options);assert.equal(r.passed,true);assert.ok(r.guardedShoulderSamples>0);
+  assert.equal(auditWorldSurface(t,{...options,ids:['','surface:unrelated','ground']}).passed,false);
+  t.contactLayers.fill(0);assert.equal(auditWorldSurface(t,options).passed,false,'six metres on ground even with matching source ID');
+  assert.throws(()=>auditWorldSurface(t,{...options,structures:[{...options.structures[0],bridgeSources:[]}]}),/Invalid guarded/);
+  t.contactLayers.fill(1);for(let i=1;i<t.contactPositions.length;i+=3)t.contactPositions[i]=t.contactPositions[i-1]*.7;
+  assert.equal(auditWorldSurface(t,options).passed,false,'bridge asphalt still obeys thirty degrees');
 });

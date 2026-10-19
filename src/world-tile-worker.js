@@ -2,21 +2,22 @@ import { decodeTilePack } from './world-tile-codec.js';
 import { validateWorldTile, residentArrayBytes } from './world-tile-format.js';
 import { buildTileContactIndex } from './world-tile-contact.js';
 import { tileGPUPlan, tileRenderVariants } from './world-tile-gpu.js';
+import {buildTileObstacleIndex,obstacleBytes} from './world-tile-obstacles.js';
 const controllers = new Map();
-async function limitedBuffer(stream,limit) {
+async function limitedBuffer(stream,limit,onBytes=null) {
   const reader=stream.getReader(),chunks=[]; let bytes=0;
-  try { for(;;){const {value,done}=await reader.read();if(done)break;bytes+=value.byteLength;if(bytes>limit)throw new Error('Tile exceeds declared byte budget');chunks.push(value);} }
+  try { for(;;){const {value,done}=await reader.read();if(done)break;bytes+=value.byteLength;onBytes?.(value.byteLength);if(bytes>limit)throw new Error('Tile exceeds declared byte budget');chunks.push(value);} }
   catch(e){await reader.cancel().catch(()=>{});throw e;}
   const out=new Uint8Array(bytes);let offset=0;for(const chunk of chunks){out.set(chunk,offset);offset+=chunk.byteLength;}return out.buffer;
 }
-export async function fetchTilePacket({url,entry,world,revision,cell},signal) {
+export async function fetchTilePacket({url,entry,world,revision,cell},signal,onBytes=null) {
   const headers=entry.range?{Range:`bytes=${entry.range.offset}-${entry.range.offset+entry.range.length-1}`} : {};
   const response=await fetch(url,{headers,signal});
   if(entry.range) {
     const expected=`bytes ${entry.range.offset}-${entry.range.offset+entry.range.length-1}/`;
     if(response.status!==206||!response.headers.get('Content-Range')?.startsWith(expected))throw new Error('Tile range response invalid');
   }else if(!response.ok)throw new Error(`Tile HTTP ${response.status}`);
-  const compressed=await limitedBuffer(response.body,entry.bytes);
+  const compressed=await limitedBuffer(response.body,entry.bytes,onBytes);
   const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',compressed))].map(v=>v.toString(16).padStart(2,'0')).join('');
   if(compressed.byteLength!==entry.bytes||hash!==entry.sha256)throw new Error('Tile integrity failure');
   const stream=new Blob([compressed]).stream().pipeThrough(new DecompressionStream('gzip'));
@@ -43,19 +44,19 @@ export function prepareTilePacket(pack,{entry,world,revision,cell}){
     if(mesh.index!=null)gpuViews.set(`index:${mesh.index}`,pack.arrays[mesh.index].byteLength);
   }
   for(const bytes of gpuViews.values())gpuBytes+=bytes;
-  const gpuPlan=tileGPUPlan(pack),renderVariants=tileRenderVariants(pack);
-  const bytes=residentArrayBytes(pack.arrays)+contactIndex.offsets.byteLength+contactIndex.refs.byteLength+gpuBytes+new TextEncoder().encode(JSON.stringify({metadata:pack.metadata,gpuPlan,renderVariants})).byteLength;
-  if(bytes>entry.decodedBytes)throw new Error('Tile resident budget understated');
+  const gpuPlan=tileGPUPlan(pack),renderVariants=tileRenderVariants(pack),obstacleIndex=buildTileObstacleIndex(checked.tables);
+  const bytes=obstacleBytes(obstacleIndex)+residentArrayBytes(pack.arrays)+contactIndex.offsets.byteLength+contactIndex.refs.byteLength+gpuBytes+new TextEncoder().encode(JSON.stringify({metadata:pack.metadata,gpuPlan,renderVariants})).byteLength;
+  if(bytes>(entry.residentBytes??entry.decodedBytes))throw new Error('Tile resident budget understated');
   if(checked.triangles!==entry.triangles)throw new Error('Tile triangles mismatch');
-  return {...pack,contactIndex,bytes,gpuBytes,gpuPlan,renderVariants};
+  return {...pack,contactIndex,obstacleIndex,bytes,jsBytes:bytes-gpuBytes,gpuBytes,gpuPlan,renderVariants};
 }
 if(typeof self!=='undefined'&&typeof document==='undefined')self.onmessage=async({data})=>{
   if(data.cancel){controllers.get(data.id)?.abort();return;}
   const controller=new AbortController();controllers.set(data.id,controller);
   try{
-    const packet=await fetchTilePacket(data.job,controller.signal);
+    const packet=await fetchTilePacket(data.job,controller.signal,bytes=>self.postMessage({id:data.id,downloadBytes:bytes}));
     if(controller.signal.aborted)return;
-    const transfer=[...new Set([...packet.arrays.map(a=>a.buffer),packet.contactIndex.offsets.buffer,packet.contactIndex.refs.buffer])];
+    const transfer=[...new Set([...packet.arrays.map(a=>a.buffer),packet.contactIndex.offsets.buffer,packet.contactIndex.refs.buffer,...Object.values(packet.obstacleIndex).map(a=>a.buffer)])];
     self.postMessage({id:data.id,packet},transfer);
   }catch(e){self.postMessage({id:data.id,error:e.message});}finally{controllers.delete(data.id);}
 };

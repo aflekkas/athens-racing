@@ -47,12 +47,17 @@
     },
     {
       "tag": "v4-remove-phone-wheel",
-      "deleted_classes": ["PhoneWheelRoom"]
+      "deleted_classes": [
+        "PhoneWheelRoom"
+      ]
     }
   ],
   "env": {
     "staging": {
       "name": "athens-street-racers-staging",
+      "vars": {
+        "ATHENS_WORLD_MANIFEST": "manifests/9d0941d1b85688efecb1464cae8314664f5f51d6dc6a87c290eb2c38d92d095c.json"
+      },
       "build": {
         "command": "ASR_BUILD_ENV=staging node tools/prepare-deploy.mjs"
       },
@@ -86,7 +91,13 @@
         "crons": [
           "17 3 * * *"
         ]
-      }
+      },
+      "r2_buckets": [
+        {
+          "binding": "ATHENS_WORLD",
+          "bucket_name": "athens-racing-world-staging"
+        }
+      ]
     },
     "production": {
       "name": "athens-street-racers",
@@ -127,7 +138,13 @@
         "crons": [
           "17 3 * * *"
         ]
-      }
+      },
+      "r2_buckets": [
+        {
+          "binding": "ATHENS_WORLD",
+          "bucket_name": "athens-racing-world"
+        }
+      ]
     }
   },
   "d1_databases": [
@@ -136,6 +153,12 @@
       "database_name": "athens-racing-accounts-staging",
       "database_id": "5e3d1170-f253-4de6-bff4-8b8f2c0027f4",
       "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "ATHENS_WORLD",
+      "bucket_name": "athens-racing-world-staging"
     }
   ]
 }

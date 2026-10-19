@@ -24,3 +24,17 @@ test('graph activation is transactional and eviction removes routing ownership e
 test('GPS includes restrictions on the first and final partial directed edges',()=>{
  const {roads,set,p,stream}=setup();roads.graph.dispose();p.metadata.ids.push('c','next');set('nodes',new Uint32Array([1,0,2,1,6,2]));set('nodePositions',new Float32Array([0,0,10,100,0,10,100,0,100]));set('edges',new Uint32Array([3,1,2,0,2,0,1,30,0,5,7,2,6,2,2,0,1,30,0,5]));set('edgePoints',new Float32Array([0,0,10,100,0,10,100,0,10,100,0,100]));set('turns',new Uint32Array([3,2,7,1]));const pack={...p,tables:tileTables(p)};roads.graph.install('0,0',pack);assert.equal(roads.gps({x:10,y:0,z:10},{x:100,y:0,z:80}),null);roads.graph.dispose();set('turns',new Uint32Array());roads.graph.install('0,0',{...p,tables:tileTables(p)});assert.deepEqual(roads.gps({x:10,y:0,z:10},{x:100,y:0,z:80}).edges,['f','next']);stream.dispose();
 });
+
+test('AI stays inside guarded bridge asphalt, crosses continuous approach layers, and ignores reverse-edge nearest ties',()=>{
+ const {roads,set,p,stream}=setup();roads.graph.dispose();p.metadata.ids=['','a','b','f','r','ground','c','bridge','deck'];
+ set('nodes',new Uint32Array([1,0,2,1,6,2]));set('nodePositions',new Float32Array([0,6,10,50,6,10,100,6,10]));
+ // Reverse edge first deliberately wins a global nearest-road tie.
+ set('edges',new Uint32Array([4,2,1,0,2,0,1,30,0,5,3,1,2,2,2,0,1,30,0,5,7,2,6,4,2,0,1,30,0,8]));
+ set('edgePoints',new Float32Array([50,6,10,0,6,10,0,6,10,50,6,10,50,6,10,100,6,10]));set('edgeLayers',new Int8Array([0,0,1]));
+ set('contactPositions',new Float32Array([0,6,7,0,6,13,50,6,7,50,6,13,100,6,7,100,6,13]));set('contactTriangles',new Uint32Array([0,1,2,5,1,1,3,2,5,1,2,3,4,8,1,3,5,4,8,1]));set('contactLayers',new Int8Array([0,0,1,1]));
+ const packet={...p,tables:tileTables(p),contactIndex:buildTileContactIndex(tileTables(p)),bytes:100};stream.tiles.get('0,0').packet=packet;roads.graph.install('0,0',packet);
+ const start={edge:'f',x:46,y:6,z:10,yaw:-Math.PI/2,layer:0};assert.ok(roads.advance(start,1));
+ const onDeck=roads.advance(start,6);assert.equal(onDeck?.edge,'bridge');assert.equal(onDeck?.layer,1);assert.equal(onDeck?.y,6);
+ assert.equal(roads.advance({...onDeck,z:12.6},1),null,'full vehicle footprint cannot use the narrow guarded edge');
+ assert.ok(roads.advance(onDeck,8));stream.dispose();
+});

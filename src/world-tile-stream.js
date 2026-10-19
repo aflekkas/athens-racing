@@ -9,7 +9,7 @@ export class TileResources {
 }
 export class TileWorkerPool {
   constructor({size=2,url=new URL('./world-tile-worker.js',import.meta.url),createWorker=u=>new Worker(u,{type:'module'})}={}) {
-    this.slots=Array.from({length:size},()=>({worker:null,busy:false}));this.url=url;this.createWorker=createWorker;this.nextId=0;this.disposed=false;
+    this.slots=Array.from({length:size},()=>({worker:null,busy:false}));this.url=url;this.createWorker=createWorker;this.nextId=0;this.downloadedBytes=0;this.disposed=false;
   }
   load(job,signal){
     if(this.disposed||signal?.aborted)return Promise.reject(new Error('Tile worker cancelled'));
@@ -21,7 +21,7 @@ export class TileWorkerPool {
       // Terminating also cancels synchronous decode, and bounds stale worker allocations.
       const abort=()=>{worker.terminate();slot.worker=null;finish(new Error('Tile worker cancelled'));};
       slot.reject=abort;signal?.addEventListener('abort',abort,{once:true});
-      worker.onmessage=({data})=>{if(data.id===id)finish(data.error?new Error(data.error):null,data.packet);};
+      worker.onmessage=({data})=>{if(data.id===id){if(data.downloadBytes){this.downloadedBytes+=data.downloadBytes;return;}finish(data.error?new Error(data.error):null,data.packet);}};
       worker.onerror=e=>{worker.terminate();slot.worker=null;finish(new Error(e.message||'Tile worker failed'));};
       try{worker.postMessage({id,job});}catch(e){worker.terminate();slot.worker=null;finish(e);}
     });
@@ -37,7 +37,7 @@ export class WorldTileStream {
     this.nearRing=nearRing;this.safetyRing=safetyRing;this.lookaheadSeconds=lookaheadSeconds;this.activationMs=activationMs;this.now=now;this.retryMs=retryMs;
     this.tiles=new Map();this.pins=new Map();this.wanted=new Map();this.origin={x:0,z:0};this.generation=0;this.disposed=false;
     this.residentBytes=0;this.reservedBytes=0;this.transientBytes=0;this.inflight=0;
-    this.metrics={loadedBytes:0,evictions:0,failures:0,peakResidentBytes:0,peakReservedBytes:0,maxActivationMs:0,activationLongTasks:0};
+    this.metrics={loadedBytes:0,evictions:0,failures:0,peakResidentBytes:0,peakReservedBytes:0,peakTransientBytes:0,peakJSBytes:0,peakGPUBytes:0,maxActivationMs:0,activationLongTasks:0};
     this.spawnRelease=this.pin('spawn',manifest.spawn.cell.join(','));
   }
   entry(key){return this.manifest.tiles[key];}
@@ -84,7 +84,7 @@ export class WorldTileStream {
       if(this.inflight>=this.concurrency)break;
       const old=this.tiles.get(key);if(old&&old.state!=='failed')continue;
       if(old&&(old.attempts>=3||old.retryAt>this.now()))continue;
-      const entry=this.entry(key),reserved=entry.decodedBytes,transient=entry.decodedBytes*2+entry.bytes;
+      const entry=this.entry(key),reserved=entry.residentBytes??entry.decodedBytes,transient=entry.transientBytes??entry.decodedBytes*2+entry.bytes;
       if(transient>this.transientCap-this.transientBytes)continue;
       const admission=(this.wanted.get(key)??0)>=10?this.capBytes*.8:this.capBytes;
       while(this.residentBytes+this.reservedBytes+reserved>admission){
@@ -94,6 +94,7 @@ export class WorldTileStream {
       if(this.residentBytes+this.reservedBytes+reserved>admission)continue;
       const controller=new AbortController(),tile={state:'loading',generation:++this.generation,controller,reserved,transient,used:this.now(),attempts:(old?.attempts||0)+1};
       this.tiles.set(key,tile);this.inflight++;this.reservedBytes+=reserved;this.transientBytes+=transient;
+      this.metrics.peakTransientBytes=Math.max(this.metrics.peakTransientBytes,this.transientBytes);
       this.metrics.peakReservedBytes=Math.max(this.metrics.peakReservedBytes,this.residentBytes+this.reservedBytes);
       const job={url:new URL(entry.url,this.baseURL).href,entry,world:this.manifest.world,revision:this.manifest.revision,cell:key.split(',').map(Number)};
       Promise.resolve().then(()=>this.load(job,controller.signal)).then(packet=>{
@@ -101,7 +102,11 @@ export class WorldTileStream {
         if(!Number.isSafeInteger(packet.bytes)||packet.bytes<0||packet.bytes>reserved)throw new Error('Tile exceeded reservation');
         packet.tables=tileTables(packet);
         this.reservedBytes-=tile.reserved;tile.reserved=0;
-        tile.packet=packet;tile.state='preparing';tile.used=this.now();this.residentBytes+=packet.bytes;tile.bytes=packet.bytes;
+        tile.packet=packet;tile.state='preparing';tile.used=this.now();tile.bytes=entry.residentBytes??packet.bytes;this.residentBytes+=tile.bytes;
+        let jsBytes=0,gpuBytes=0;
+        for(const value of this.tiles.values())if(value.packet){jsBytes+=value.packet.jsBytes??value.packet.bytes-(value.packet.gpuBytes||0);gpuBytes+=value.packet.gpuBytes||0;}
+        this.metrics.peakJSBytes=Math.max(this.metrics.peakJSBytes,jsBytes);
+        this.metrics.peakGPUBytes=Math.max(this.metrics.peakGPUBytes,gpuBytes);
         this.metrics.loadedBytes+=entry.bytes;this.metrics.peakResidentBytes=Math.max(this.metrics.peakResidentBytes,this.residentBytes);
         const warming=this.adapter?.warmup?.(tile.packet);packet=null;
         if(warming)return Promise.resolve(warming).then(()=>{if(!this.disposed&&this.tiles.get(key)===tile)tile.state='ready';});
@@ -137,7 +142,7 @@ export class WorldTileStream {
     }
     this.pump();
   }
-  readyAt(x,z){const key=tileKey(x,z),tile=this.tiles.get(key);if(tile?.state!=='active'||![...this.dependencies(key)].every(k=>this.tiles.get(k)?.state==='active'))return false;tile.used=this.now();return true;}
+  readyAt(x,z){const key=tileKey(x,z),tile=this.tiles.get(key);if(this.entry(key)?.contactEligible===false||tile?.state!=='active'||![...this.dependencies(key)].every(k=>this.tiles.get(k)?.state==='active'))return false;tile.used=this.now();return true;}
   /** Null is an explicit missing-contact state: callers must hold physics, never invent a fallback height. */
   contact(x,z,options){
     const tile=this.tiles.get(tileKey(x,z));if(!this.readyAt(x,z))return null;tile.used=this.now();
@@ -209,6 +214,7 @@ export class WorldTileStream {
       await move();
     }finally{for(const release of releases)release();}
   }
+  releaseSpawn(){this.spawnRelease?.();this.spawnRelease=null;}
   retry(key){const tile=this.tiles.get(key);if(tile?.state==='failed'){tile.attempts=0;tile.retryAt=0;this.pump();}}
   remove(key){
     const tile=this.tiles.get(key);if(!tile)return;this.tiles.delete(key);tile.controller.abort();

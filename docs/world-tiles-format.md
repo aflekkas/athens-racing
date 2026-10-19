@@ -264,3 +264,12 @@ Range bundles remain experimental: this checkout's local Wrangler asset server
 returned HTTP 200/full-file for Range, while the tile loader requires 206. The
 current file count permits individual immutable files; do not activate packed
 publication without an end-to-end hosting test. No R2 dependency is introduced.
+
+## Road cross-sections and textured road surfaces (2026-10-18)
+
+Cells produced after the owner's “textured roads with sidewalks and one width, mapped from the open data” decision carry `metadata.roadSections`
+(`{schema:['class','width','lanes','sidewalkLeft','sidewalkRight','surface','oneway'], roads:{<road id>:[…]}}`, widths in metres, sidewalk 0 = none), the
+section each OSM road was drawn with; the packer gates it (`tools/world-roads-audit.mjs`). Render meshes may carry `userData.tileSurface`
+(`asphalt`, `paving`, `marking`); the runtime maps it to an unlit material that multiplies the palette colour by the shared library scan
+(asphalt / paving) using **tile-local planar UVs** (no UV attribute, no per-tile texture: 512 m is exactly 122 asphalt and 160 paving periods, so scans never seam).
+Kerb and sidewalk heights are real emitted vertices, so contact and render agree. See [world-roads.md](world-roads.md).

@@ -13,6 +13,7 @@
     "tools/world-tile-scene.test.mjs",
     "tools/world-tile-stream.test.mjs",
     "tools/svj.test.mjs",
+    "tools/exhaust-pops-hitch.test.mjs",
     "tools/release-notes.test.mjs",
     "tools/install-prompt.test.mjs",
     "tools/web-manifest.test.mjs",
@@ -182,6 +183,9 @@
     "tools/lucide-icons.test.mjs",
     "tools/world-gen/influence.test.mjs",
     "tools/world-surface-audit.test.mjs",
+    "tools/world-roads-audit.test.mjs",
+    "tools/athens-materials.test.mjs",
+    "tools/world-gen/road-model.test.mjs",
     "tools/camera-visibility.test.mjs",
     "tools/owner-locked-no-checkpoints.test.mjs",
     "server/course-validation.test.mjs",
@@ -189,7 +193,13 @@
     "tools/owner-locked-free-roam-clean.test.mjs",
     "tools/run-tests.test.mjs",
     "tools/bake-cache.test.mjs",
-    "tools/release-fast.test.mjs"
+    "tools/release-fast.test.mjs",
+    "tools/world-bridge-audit.test.mjs",
+    "tools/world-gen/bridge-policy.test.mjs",
+    "worker/world-assets.test.mjs",
+    "tools/world-r2.test.mjs",
+    "tools/world-tile-obstacles.test.mjs",
+    "tools/world-connectivity-audit.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",
@@ -210,7 +220,8 @@
     "tools/traffic-race.test.mjs",
     "tools/damage-mechanics.test.mjs",
     "tools/rivals-test.mjs",
-    "tools/physics-test/airborne.test.mjs"
+    "tools/physics-test/airborne.test.mjs",
+    "tools/world-tile-barriers.test.mjs"
   ],
   "damage": [
     "tools/damage-geometry.test.mjs",

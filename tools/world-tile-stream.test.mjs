@@ -189,3 +189,15 @@ test('tile workers reuse the shared ASR2 decoder and reject allocation expansion
  const json=new TextEncoder().encode(JSON.stringify({version:2,views:[{type:'Uint8Array',length:1000000,codec:'ATTRIBUTES',count:250000,stride:4,offset:0,byteLength:0}]})),buffer=new ArrayBuffer(12+json.length),view=new DataView(buffer);view.setUint32(0,0x32525341,true);view.setUint32(4,json.length,true);view.setUint32(8,buffer.byteLength,true);new Uint8Array(buffer,12).set(json);
  await assert.rejects(decodeTilePack(buffer,16384),/decoded byte budget/);
 });
+test('nine measured packet reservations fit the unchanged 64 MiB phone stream cap with conservative decode overlap',async()=>{
+ const m=manifest(0);m.spawn={cell:[1,1],anchor:'spawn:0'};
+ for(let x=0;x<3;x++)for(let z=0;z<3;z++)m.tiles[`${x},${z}`]={url:'tile.bin.gz',sha256:'0'.repeat(64),bytes:1000000,decodedBytes:13313693,residentBytes:4536697,transientBytes:27627386,dependencies:[],triangles:0};
+ const s=new WorldTileStream(m,{capBytes:64*1024*1024,transientBytes:64*1024*1024,concurrency:1,load:async job=>({...packet(job.cell),bytes:3629357,jsBytes:2856689,gpuBytes:772668}),adapter:adapter()});
+ s.update({x:768,z:768});await settle(s,40);assert.equal([...s.tiles.values()].filter(t=>t.state==='active').length,9);
+ assert.equal(s.residentBytes,9*4536697,'retain the metadata/object allowance after preparation');assert.ok(s.metrics.peakTransientBytes<=27627386);assert.equal(s.metrics.peakJSBytes,9*2856689);assert.equal(s.metrics.peakGPUBytes,9*772668);s.dispose();
+});
+test('spawn pins can be released and dependency-only scenery never supplies driving contact',async()=>{
+ const m=manifest(3);m.tiles['2,0'].contactEligible=false;
+ const s=new WorldTileStream(m,{load:async job=>packet(job.cell),adapter:adapter(),capBytes:300,nearRing:0});s.update({x:1,z:1});await settle(s);assert.ok(s.pins.has('0,0'));
+ s.releaseSpawn();s.releaseSpawn();assert.equal(s.pins.size,0);s.update({x:1025,z:1});await settle(s);assert.equal(s.readyAt(1025,1),false);assert.equal(s.contact(1025,1),null);s.dispose();
+});
