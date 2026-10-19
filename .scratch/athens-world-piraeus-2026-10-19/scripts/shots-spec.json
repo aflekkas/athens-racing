@@ -1,0 +1,10 @@
+[
+ {"name":"d-street-piraeus","car":[-7400,4500],"carcam":[0,3.6,9,10],"far":700},
+ {"name":"d-street-faliro","car":[-3000,5900],"carcam":[0,3.6,9,10],"far":700},
+ {"name":"d-junction-faliro","car":[-2950,6050],"carcam":[10,16,18,0],"far":700},
+ {"name":"d-overview","car":[-3000,6200],"at":[-3000,6200],"cam":[250,520,420],"far":3000,"wait":14000},
+ {"name":"d-deck-car","car":[-3493,4564],"deck":[-3493,4564],"carcam":[0,3.6,9,10],"far":700},
+ {"name":"d-deck-side","car":[-3493,4564],"deck":[-3493,4564],"carcam":[7,1.6,2,0],"far":600},
+ {"name":"d-above","car":[-3493,4564],"at":[-3493,4564],"cam":[10,90,70],"far":900,"wait":12000},
+ {"name":"d-under","car":[-3493,4564],"at":[-3493,4564],"layer":0,"cam":[14,1.8,10],"lookUp":4.5,"far":500}
+]
