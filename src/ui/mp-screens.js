@@ -84,8 +84,12 @@ export function showroomCar(mp) { return mp?.lobby ? mp.me?.car : mp?.$?.('mp-ca
 // so in-place refreshes never touch the canvas; afterRender() mounts, keeps or swaps the studio.
 function carPlate(mp, car, extra = '') {
   const spec = car ? `${esc(classLabel(carCategory(car)))} · ${Math.round(car.power * 1.341)} HP · ${esc(String(car.drive || '').toUpperCase())}` : '';
+  // Changing car or engine trim is its own obvious action, with the garage it opens named, and the reason when it is locked.
+  const locked = !!mp && !mp.canChangeCar;
   return `<span class="kick">YOUR CAR</span><b class="mp-plate__name">${esc(car?.name || '—')}</b><span class="mp-plate__spec">${spec}</span>
-    <div class="mp-plate__acts">${C.button({ label: 'CHANGE CAR', icon: 'car', variant: 'ghost', size: 'sm', act: 'mpCar', disabled: !mp?.canChangeCar, attrs: { 'data-fid': 'car' } })}${extra}</div>`;
+    <div class="mp-plate__car">${C.button({ label: 'CHANGE CAR / TRIM', icon: 'car', variant: 'secondary', act: 'mpCar', disabled: locked, attrs: { 'data-fid': 'car' } })}</div>
+    <p class="mp-plate__hint">${locked ? 'Your car is locked while the race runs. Change it back in the lobby.' : 'Opens the garage: pick another car or engine trim.'}</p>
+    <div class="mp-plate__acts">${extra}</div>`;
 }
 
 // ---------------------------------------------------------------- the lobby browser (owner 2026-10-18)

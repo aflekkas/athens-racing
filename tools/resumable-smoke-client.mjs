@@ -50,7 +50,7 @@ export function smokeClient(base, name, { build, identity, recoveryMs = 85000, s
     const socket=ws=new WebSocket(url,{origin:base,...(headers?{headers}:{})});
     socket.on('error',()=>schedule(socket));
     socket.on('unexpected-response',(request,response)=>{if(socket!==ws||closing)return;response.resume();if(response.statusCode===401)return fail(Error(authFailure));schedule(socket);});
-    socket.on('close',(code,reason)=>{if(socket!==ws||closing)return;if(code===4001)return fail(Error(`${name}: ${reason==='Sign in with Google'?'session ended; sign-in or SMOKE_TOKEN was rejected; see deploy/README.md':'protocol update '+reason}`));schedule(socket);});
+    socket.on('close',(code,reason)=>{if(socket!==ws||closing)return;if(code===4001||code===4401)return fail(Error(`${name}: ${reason==='Sign in with Google'?'session ended; sign-in or SMOKE_TOKEN was rejected; see deploy/README.md':'protocol update '+reason}`));schedule(socket);});
     socket.on('message',bytes=>{
       if(socket!==ws||closing||String(bytes)==='alive')return;
       let m;try{m=JSON.parse(bytes);}catch{return fail(Error(`${name}: invalid JSON`));}

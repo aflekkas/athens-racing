@@ -3,6 +3,8 @@ const tolerances = { vy: .05, angularX: .01, angularY: .01, angularZ: .01, x: .0
 function stationaryUnchanged(a, b) {
   if (!b || Math.abs(a.vLong) > .1 || Math.abs(a.vLat) > .1 || Math.abs(b.vLong) > .1 || Math.abs(b.vLat) > .1) return false;
   if (a.air !== b.air || a.bodyDynamic !== b.bodyDynamic) return false;
+  // A stationary burnout is exactly the moment the tyres smoke: toggling it or the wheelspin must be sent.
+  if (!!a.burnout !== !!b.burnout || Math.abs((a.wheelspin || 0) - (b.wheelspin || 0)) > .1) return false;
   if (JSON.stringify(a.bodyQ) !== JSON.stringify(b.bodyQ)) return false;
   if(a.exhaustSerial!==b.exhaustSerial||a.exhaustEnabled!==b.exhaustEnabled)return false;
   if (JSON.stringify(a.recordMeta || null) !== JSON.stringify(b.recordMeta || null)) return false;

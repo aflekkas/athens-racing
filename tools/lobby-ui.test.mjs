@@ -150,3 +150,17 @@ test('the host sets POLICE and CAN BE BUSTED for everyone; guests read them', ()
   assert.deepEqual(sent, [{ police: true, policeLevel: 'relaxed' }, { police: false }, { busted: true }]);
   delete globalThis.window;
 });
+
+// Owner playtest 2026-10-18: "how do I change car?", "the trim picker is unclear". It is its own named action, with its reason when locked.
+test('the lobby names the change-car action, says what it opens, and explains when it is locked', () => {
+  for (const host of [true, false]) {
+    const open = renderLobby(menu, fakeMp({ host }));
+    assert.match(open, /data-act="mpCar"[^>]*>|data-act="mpCar"/); assert.match(open, /CHANGE CAR \/ TRIM/);
+    assert.match(open, /Opens the garage: pick another car or engine trim/);
+    assert.doesNotMatch(open, /class="mp-plate__acts">[^<]*<button[^>]*mpCar/, 'it no longer hides among the race buttons');
+    const mp = fakeMp({ host, status: 'race' }); mp.canChangeCar = false;
+    const locked = renderLobby(menu, mp);
+    assert.match(locked, /Your car is locked while the race runs/);
+    assert.match(locked, /mpCar[^]*?disabled|disabled[^]*?mpCar/);
+  }
+});

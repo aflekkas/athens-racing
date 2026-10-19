@@ -347,6 +347,8 @@ export function validateStateExtras(s, ctx = {}) {
   for (const [key, limit] of [['bodyHeave', 3], ['bodyPitch', 6.3], ['bodyRoll', 6.3]]) if (Number.isFinite(s?.[key]) && Math.abs(s[key]) <= limit) extras[key] = s[key];
   for (const key of ['vy', 'angularX', 'angularY', 'angularZ'])
     if (Number.isFinite(s?.[key]) && Math.abs(s[key]) <= (key === 'vy' ? 100 : 40)) extras[key] = s[key];
+  if (typeof s?.burnout === 'boolean') extras.burnout = s.burnout;
+  for (const key of ['drift', 'lockup', 'wheelspin']) if (Number.isFinite(s?.[key]) && s[key] >= 0 && s[key] <= 3) extras[key] = s[key];
   for (const key of ['air', 'bodyDynamic']) if (typeof s?.[key] === 'boolean') extras[key] = s[key];
   if (Array.isArray(s?.bodyQ) && s.bodyQ.length === 4 && s.bodyQ.every(Number.isFinite)) {
     const length = Math.hypot(...s.bodyQ);

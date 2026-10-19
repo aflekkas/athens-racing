@@ -1,6 +1,6 @@
 import { icon } from './ui/components.js';
 import { ReconnectHistory, reconnectDelay } from './reconnect-history.js';
-import { MULTIPLAYER_PROTOCOL, UPDATE_CLOSE_CODE, protocolVersion, clientHello } from './multiplayer-protocol.js';
+import { MULTIPLAYER_PROTOCOL, UPDATE_CLOSE_CODE, AUTH_CLOSE_CODE, protocolVersion, clientHello } from './multiplayer-protocol.js';
 import { renderLiveBoard } from './ui/live-board.js';
 import { driverId, getLeaderboard } from './leaderboard.js';
 import { MAPS } from './map-catalog.js';
@@ -14,6 +14,8 @@ import { inGarage, sortTrims } from './car-catalog.js';
 import { defaultCarRules, describeRules } from './mp-car-rules.js';
 import { describeMode, configFromLobby } from './mp-setup.js';
 import { getPlayableMaps } from './enabled-maps.js';
+
+const LOADED_RETRY_MS = 4000; // how long a driver may stay LOADING in a lobby before the client says so again
 // The tow screen is black while this request is out; the server answers (or denies) within a round trip.
 export const RECOVERY_TIMEOUT_MS = 3500;
 // Same-origin multiplayer transport and lobby UI. Physics stays responsive locally;
@@ -359,6 +361,8 @@ export class Multiplayer {
       if (this.ws !== ws) return;
       if (this.reloadRequired || e.code === UPDATE_CLOSE_CODE) { this.requireReload(); return; }
       this.lastClose = { code: e.code, reason: e.reason, at: Date.now() };
+      // An ended account session is not an update: let the account gate take over instead of reloading.
+      if (e.code === AUTH_CLOSE_CODE) void globalThis.__bootMenu?.accounts?.revalidate?.();
       console.warn('Multiplayer socket closed', this.lastClose);
       this.loadedKey = null; this.connected = false;
       this.cancelRecovery('Connection lost before recovery completed.');
@@ -403,7 +407,7 @@ export class Multiplayer {
     if (!this.worldReady) { this.renderRoom(); return Promise.resolve(); }
     const lobby = this.lobby;
     const loadedKey = `${lobby.code}:${this.mapId}:${this.trackVersion}:${lobby.raceId || ''}`;
-    if (this.loadedKey !== loadedKey) { this.loadedKey = loadedKey; this.send({ type: 'loaded', loaded: true, mapId: this.mapId, version: this.trackVersion }); }
+    if (this.loadedKey !== loadedKey) { this.loadedKey = loadedKey; this.loadedAt = performance.now(); this.send({ type: 'loaded', loaded: true, mapId: this.mapId, version: this.trackVersion }); }
     const appearance = this.hooks.appearance?.();
     if (appearance && JSON.stringify(appearance) !== this.appearanceKey) { this.appearanceKey = JSON.stringify(appearance); this.send({ type: 'appearance', ...appearance }); }
     if (lobby.world) this.hooks.world?.(lobby.world.state, Math.max(0, (this.now() - lobby.world.at) / 1000));
@@ -567,6 +571,11 @@ export class Multiplayer {
     if (!this.lobby || !this.worldReady) return;
     this.hooks.remote(this.peers, dt);
     const l = this.lobby;
+    // The server resets "loaded" when a driver joins or the track changes, and quietly ignores a vote it cannot match.
+    // Keep telling it, every few seconds, until the lobby agrees this driver is loaded, so nobody sits on LOADING for ever.
+    if (l.status === 'waiting' && this.connected && this.me && this.me.loaded === false && this.loadedKey && performance.now() - (this.loadedAt || 0) > LOADED_RETRY_MS) {
+      this.loadedAt = performance.now(); this.send({ type: 'loaded', loaded: true, mapId: this.mapId, version: this.trackVersion });
+    }
     if (['countdown', 'race'].includes(l.status)) {
       this.advanceClock();
       if (this.now() >= l.startAt && this.me?.finish == null && !this.retired && !this.recoveryPending) {

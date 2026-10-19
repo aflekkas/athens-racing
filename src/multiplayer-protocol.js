@@ -4,6 +4,8 @@
 // state. Worker and client must deploy together: protocol-7 clients reload.
 export const MULTIPLAYER_PROTOCOL = 8;
 export const UPDATE_CLOSE_CODE = 4001;
+// The account session ended (sign-out, expiry, revocation). Not an update: the client shows the sign-in gate instead of reloading.
+export const AUTH_CLOSE_CODE = 4401;
 export const protocolVersion = value => Number.isSafeInteger(value) && value >= 0 ? value : 0;
 export function connectionProtocol(url) {
   const value = url.searchParams.get('protocol');

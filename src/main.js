@@ -1625,7 +1625,7 @@ const _fr = {}, _av = new THREE.Vector3(), _aw = new THREE.Vector3(), _ar = new 
 // Per-frame audio-feed scratch: updateAudio runs every frame, so its traffic / rival / wheel descriptors and the
 // parameter block are reused instead of allocated (the audio graph reads them synchronously within update()).
 const _tl = [], _rivals = [], _wheelArgs = [{}, {}, {}, {}];
-const _actors = [{ veh: null, kind: 'player' }], _fxVehs = [];
+const _actors = [{ veh: null, kind: 'player' }], _fxVehs = [], REMOTE_FX_RANGE = 160; // m: other drivers' tyre effects are drawn this close
 let _actorsInit = false;
 let _tlN = 0, _rivN = 0;
 const _audioRival = {}, _audioParam = { rival: _audioRival, wheels: _wheelArgs };
@@ -2124,11 +2124,11 @@ function step(dt, draw = true) {
   bootFrameLog('frame-simulation');
   // ---- visuals
   syncCar(player, simulate ? dt : 0); if (multiplayer.active || !grid.length) syncCar(rival, simulate ? dt : 0); else for (const c of grid) syncCar(c, simulate ? dt : 0);
-  if (!multiplayer.active) {
-    _fxVehs.length = 0; _fxVehs.push(pv);
-    for (let i = 0; i < grid.length; i++) _fxVehs.push(grid[i].veh);
-    fx.update(simulate ? dt : 0, _fxVehs, camera, innerHeight * pixelRatio);
-  }
+  // Tyre smoke, rubber marks, grit and sparks run online too: this driver's own car and every nearby visible rival.
+  _fxVehs.length = 0; _fxVehs.push(pv);
+  if (multiplayer.active) { for (const c of remoteCars.values()) if (c.veh !== pv && c.model.root.visible && Math.hypot(c.veh.x - pv.x, c.veh.z - pv.z) < REMOTE_FX_RANGE) _fxVehs.push(c.veh); }
+  else for (let i = 0; i < grid.length; i++) _fxVehs.push(grid[i].veh);
+  fx.update(simulate ? dt : 0, _fxVehs, camera, innerHeight * pixelRatio);
   traffic.sync(pv.s);
   if (police) { police.sync(G.t); policeHud.update(dt); }
   // Select own-car glass/structure visibility; the empty cabin stays visible outside.

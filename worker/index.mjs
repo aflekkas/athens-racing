@@ -8,7 +8,7 @@ import { canSaveResults } from '../server/smoke-session.mjs';
 export { FriendsPresence } from './presence.mjs';
 import { isTerminalImpact } from '../src/damage-math.js';
 import { socketAttachment } from './socket-attachment.mjs';
-import { connectionProtocol, MULTIPLAYER_PROTOCOL } from '../src/multiplayer-protocol.js';
+import { connectionProtocol, MULTIPLAYER_PROTOCOL, AUTH_CLOSE_CODE } from '../src/multiplayer-protocol.js';
 import { DurableObject } from 'cloudflare:workers';
 import { cleanupLegacyStorage } from './legacy-storage.mjs';
 import { rewriteShareMetadata } from './share-metadata.mjs';
@@ -173,7 +173,7 @@ export class GameArena extends DurableObject {
   }
   async webSocketMessage(ws, message) {
     return this.event('message', async () => {
-      if (!await identityActive(this.core.clientData(ws)?.identity, this.env)) { ws.close(4001, 'Sign in with Google'); this.core.disconnect(ws); await this.persist(); return; }
+      if (!await identityActive(this.core.clientData(ws)?.identity, this.env)) { ws.close(AUTH_CLOSE_CODE, 'Sign in with Google'); this.core.disconnect(ws); await this.persist(); return; }
       if (typeof message !== 'string' || new TextEncoder().encode(message).byteLength > 4096) { ws.close(1009, 'Message too large'); return; }
       let packet; try { packet = JSON.parse(message); } catch {}
       const type = packet?.type || 'invalid';
