@@ -3,7 +3,11 @@
 Local play (`npm start`) uses the import map and native modules in `src/`; no build step is needed.
 `node tools/prepare-deploy.mjs` produces the deployment with esbuild, minification, ES2022 modules,
 content-hashed entry/chunk names and a bundled, tree-shaken copy of the pinned three.js/addons.
-The entry paints the ordinary Menu before importing the simulation. The existing silent performance check stays with the actual game renderer, so the GPU determines
+The page's own module is the desktop gate, `src/entry.js` (owner decision 2026-10-19: computer only). It decides with `src/device-gate.js`
+and only then `import()`s the game entry (`main.js` natively, `boot.js` in the bundle, rewritten by the bundler), so a phone or tablet downloads
+the gate and nothing else. `tools/bundle-browser.mjs` builds both as entry points and counts the dynamic import's chunks as initial, so the
+service worker still precaches the menu shell. `tools/owner-locked-desktop-only.test.mjs` guards that.
+The game entry paints the ordinary Menu before importing the simulation. The existing silent performance check stays with the actual game renderer, so the GPU determines
 the same performance class as native play. The fresh title creates no world and fetches no map data. Garage, account and multiplayer
 screens and the three map scenery implementations have dynamic import boundaries.
 

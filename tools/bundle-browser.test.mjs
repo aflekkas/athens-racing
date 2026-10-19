@@ -65,7 +65,7 @@ test('real production graph keeps worlds, simulation and screens lazy and maps p
     const { symlink } = await import('node:fs/promises');
     await symlink(resolve(import.meta.dirname, '../node_modules'), resolve(root, 'node_modules'));
     await mkdir(resolve(out, 'src'), { recursive: true });
-    await writeFile(resolve(out, 'index.html'), '<script type="importmap">{"imports":{"three":"https://cdn.example/three.js"}}</script><script type="module" src="./src/main.js"></script>');
+    await writeFile(resolve(out, 'index.html'), '<script type="importmap">{"imports":{"three":"https://cdn.example/three.js"}}</script><script type="module" src="./src/entry.js"></script>');
     for (const path of MAPS.map(map => map.dataUrl)) {
       await mkdir(resolve(out, path, '..'), { recursive: true }); await writeFile(resolve(out, path), '{}');
     }
@@ -82,7 +82,7 @@ test('real production graph keeps worlds, simulation and screens lazy and maps p
     }
     assert.ok(!(await readFile(resolve(out, 'index.html'), 'utf8')).includes('importmap'));
     assert.ok((await readdir(resolve(root, '.deploy/sourcemaps/src'))).some(path => path.endsWith('.map')));
-    await writeFile(resolve(out, 'index.html'), '<script type="importmap">{"imports":{"three":"https://cdn.example/three.js"}}</script><script type="module" src="./src/main.js"></script>');
+    await writeFile(resolve(out, 'index.html'), '<script type="importmap">{"imports":{"three":"https://cdn.example/three.js"}}</script><script type="module" src="./src/entry.js"></script>');
     const cdn = await bundleBrowser(root, out, { three: 'cdn' });
     const worker = Object.entries(cdn.outputs).find(([, output]) => output.entryPoint === 'src/world-worker.js');
     assert.ok(worker);

@@ -20,11 +20,14 @@ export async function bundleBrowser(root, out, { three = process.env.ASR_THREE_M
   if (!['bundled', 'cdn'].includes(three)) throw new Error('ASR_THREE_MODE must be bundled or cdn');
   const exists = path => readFile(resolve(root, path)).then(() => true, () => false);
   const entry = await exists('src/boot.js') ? 'src/boot.js' : 'src/main.js';
+  // The page's own module is the desktop gate (src/entry.js): it decides, and only then imports the game entry above, so a phone or
+  // tablet never downloads the game. A checkout without it (an old baseline) enters the game directly.
+  const gate = await exists('src/entry.js') ? 'src/entry.js' : null;
   const auxiliaries = [];
   for (const path of ['src/world-tile-worker.js', 'src/ragdoll-worker.js']) if (await exists(path)) auxiliaries.push(path);
   const hasWorker = await exists('src/world-worker.js');
   const options = {
-    absWorkingDir: root, entryPoints: [entry, ...(three === 'bundled' ? auxiliaries : []), ...(hasWorker && three === 'bundled' ? ['src/world-worker.js'] : [])], outdir: resolve(out, 'src'),
+    absWorkingDir: root, entryPoints: [...(gate ? [gate] : []), entry, ...(three === 'bundled' ? auxiliaries : []), ...(hasWorker && three === 'bundled' ? ['src/world-worker.js'] : [])], outdir: resolve(out, 'src'),
     entryNames: '[name]-[hash]', chunkNames: '[name]-[hash]', bundle: true, splitting: true,
     format: 'esm', platform: 'browser', target: 'es2022', minify: true, keepNames: true,
     sourcemap: 'external', sourcesContent: true, write: false,
@@ -46,6 +49,7 @@ export async function bundleBrowser(root, out, { three = process.env.ASR_THREE_M
         const codec = /\/(?:KTX2Loader|meshopt_decoder\.module)\.js$/.test(args.path);
         if (!path.startsWith('src/') && !codec) return;
         let source = await preserveCodecWorkerSource(args.path, await readFile(args.path, 'utf8'));
+        if (path === gate && entry !== 'src/main.js') source = source.replace("import('./main.js')", `import('./${entry.slice('src/'.length)}')`);
         if (path === 'src/cars.js') source = source.replace(/export const CARS = \[[\s\S]*?^\];/m, "import { CARS } from 'asr:car-data'; export { CARS };");
         source = source.replace(/(import\s*\{\s*CARS\s*\}\s*from\s*)['"]\.\/?cars\.js['"]/g, "$1'asr:car-data'");
         return { contents: source.replace(/\bimport\.meta\.url\b/g, `new URL(${JSON.stringify('/' + path)}, globalThis.location.href).href`), loader: 'js', resolveDir: resolve(args.path, '..') };
@@ -83,19 +87,22 @@ export async function bundleBrowser(root, out, { three = process.env.ASR_THREE_M
   if (tileWorker) await writeFile(resolve(out, 'src/world-tile-worker.js'), `import './${relative(resolve(out,'src'),resolve(root,tileWorker)).split(sep).join('/')}';\n`);
   const ragdoll = Object.entries(result.metafile.outputs).find(([, v]) => v.entryPoint === 'src/ragdoll-worker.js')?.[0];
   if (ragdoll) await writeFile(resolve(out, 'src/ragdoll-worker.js'), `export * from './${slash(relative(resolve(out, 'src'), resolve(root, ragdoll)))}';\n`);
-  const main = Object.entries(result.metafile.outputs).find(([, v]) => v.entryPoint === entry)?.[0];
-  if (!main) throw new Error('Browser bundle entry missing');
+  const outputOf = entryPoint => Object.entries(result.metafile.outputs).find(([, v]) => v.entryPoint === entryPoint)?.[0];
+  const game = outputOf(entry), main = gate ? outputOf(gate) : game;
+  if (!main || !game) throw new Error('Browser bundle entry missing');
   const path = './' + slash(relative(out, resolve(root, main)));
   const index = resolve(out, 'index.html'), html = await readFile(index, 'utf8');
-  if (!html.includes('src="./src/main.js"')) throw new Error('Browser module entry missing from index');
-  const bundledHtml = html.replace('src="./src/main.js"', `src="${path}"`);
+  const source = gate ? 'src="./src/entry.js"' : 'src="./src/main.js"';
+  if (!html.includes(source)) throw new Error('Browser module entry missing from index');
+  const bundledHtml = html.replace(source, `src="${path}"`);
   await writeFile(index, three === 'cdn' ? bundledHtml : bundledHtml.replace(/<script type="importmap">[\s\S]*?<\/script>/, ''));
   const worker = Object.entries(result.metafile.outputs).find(([, v]) => v.entryPoint === 'src/world-worker.js')?.[0];
   if (worker) for (const path of MAPS.map(map => resolve(out, map.dataUrl))) {
     const data = JSON.parse(await readFile(path, 'utf8'));
     if (data.bakedWorld) { data.bakedWorld.worker = './' + slash(relative(out, resolve(root, worker))); await writeFile(path, JSON.stringify(data)); }
   }
-  result.metafile.initial = initialChunks(result.metafile, root, out, main);
+  // The gate reaches the game by a dynamic import, which initialChunks does not follow: the menu shell is core either way.
+  result.metafile.initial = [...new Set([...initialChunks(result.metafile, root, out, main), ...initialChunks(result.metafile, root, out, game)])];
   if (resolve(out) === resolve(root, '.deploy/assets')) await writeFile(resolve(root, '.deploy/browser-metafile.json'), JSON.stringify(result.metafile));
   console.log(`Bundled browser (${three} three.js): ${Object.keys(result.metafile.inputs).length} inputs, ${Object.keys(result.metafile.outputs).length} ESM chunks, ${Object.values(result.metafile.outputs).reduce((sum, o) => sum + o.bytes, 0)} bytes`);
   return result.metafile;

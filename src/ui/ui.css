@@ -1499,6 +1499,19 @@ body:has(#loading.open) :is(#hud,#mp-board,#racer-markers,#drivingHints,#driving
 @media(max-height:500px) { .scr--title .scr__foot .hints { gap:8px } }
 @media(max-height:500px) { .scr--title .hu-status { min-height:28px } }
 
+/* ---------------------------------------------------------------- desktop gate (owner 2026-10-19: computer only)
+   index.html's #device-gate is the one screen a phone or tablet gets; src/entry.js sets html[data-device=blocked] before anything
+   else loads. It is a full screen on the shared narrow sheet layout, never a dialog. */
+#device-gate { display: none; }
+html[data-device="blocked"] body > :not(#device-gate) { display: none !important; }
+html[data-device="blocked"] #device-gate { display: block; position: fixed; inset: 0; z-index: 400; overflow-y: auto; background: #050608; color: var(--hu-text); font-family: var(--f-sans); }
+#device-gate .scr { position: relative; min-height: 100%; box-sizing: border-box; }
+#device-gate .layout-sheet-narrow { display: grid; align-content: center; justify-items: center; gap: var(--s-6); min-height: 100%; }
+#device-gate .device-gate__brand { display: flex; align-items: center; gap: var(--s-3); }
+#device-gate .device-gate__brand .brand-mark { width: 3rem; height: 3rem; }
+#device-gate .scr__foot { display: none; }
+#device-gate .empty-state { min-height: 0; }
+
 /* ---------------------------------------------------------------- pointer hover (owner 2026-10-18: "there is no hover state now at all, we need one")
    A calm surface hover for real mouse pointers only: the same lighter surface as keyboard / gamepad focus, a quiet plate
    brighten, one short ease. Never an outline, ring, glow, coloured border or scale. Hover is purely visual: it never moves
