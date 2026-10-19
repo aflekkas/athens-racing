@@ -1,0 +1,10 @@
+[
+ {"name":"syntagma","car":[421,501],"carcam":[0,3.8,9,10],"far":700},
+ {"name":"syntagma-above","car":[421,501],"at":[421,501],"cam":[40,110,80],"far":1200,"wait":12000},
+ {"name":"omonia","car":[-175,-456],"carcam":[0,3.8,9,10],"far":700},
+ {"name":"omonia-above","car":[-175,-456],"at":[-175,-456],"cam":[40,110,80],"far":1200,"wait":12000},
+ {"name":"plaka","car":[-44,835],"carcam":[0,3.4,8,8],"far":600},
+ {"name":"syngrou","car":[-149,1291],"carcam":[0,3.8,9,10],"far":700},
+ {"name":"syngrou-above","car":[-700,2000],"at":[-700,2000],"cam":[60,150,120],"far":1600,"wait":12000},
+ {"name":"overview","car":[100,700],"at":[100,700],"cam":[250,520,420],"far":3000,"wait":14000}
+]
