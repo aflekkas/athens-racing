@@ -6,10 +6,7 @@
 #lapTiming small { display: block; margin-top: 2px; font-size: 12px; letter-spacing: .06em; color: #b8c3ce; }
 #lapTiming small:empty { display: none; }
 body.ui-open #lapTiming { display: none; }
-@media (max-width: 700px) {
-  #lapTiming { top: 92px; left: 12px; min-width: 0; padding: 5px 10px; }
-  #lapTiming span { font-size: 20px; }
-}
+
 /* Track select (owner 2026-10-18): the Attica map is the whole page. The header, the key-hint footer and the floating
    track card sit over it; the map is a canvas rendered from the pre-built OSM/DEM art (tools/build-attica-map.py). */
 /* clip, not hidden: focusing an off-screen pin (scrollIntoView) must never scroll the map layer sideways */
@@ -63,26 +60,6 @@ body.ui-open #lapTiming { display: none; }
 #ui.s-maps .map-label--peak > i { left: -4px; top: -4px; width: 8px; height: 7px; border-radius: 0; background: #7f978d; clip-path: polygon(50% 0, 100% 100%, 0 100%); box-shadow: none; }
 #ui.s-maps .map-label--peak > b { color: #8ba196; font-size: 9px; }
 #ui.s-maps .map-label--water > b { color: #4d7a8e; font-size: 11px; font-weight: 500; letter-spacing: .55em; text-shadow: none; }
-
-/* The floating track card: right of the free area on wide screens, a bottom sheet on phones (still the full screen). */
-
-@media (max-width: 700px) and (min-height: 501px) {
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  #ui.s-maps .track-pin > span { padding: .28rem .45rem; font-size: 9px; letter-spacing: .08em; }
-  #ui.s-maps .track-pin__dot { width: 22px; height: 22px; font-size: 10px; }
-  #ui.s-maps .map-label--city > b { font-size: 14px; letter-spacing: .4em; }
-  #ui.s-maps .map-label--water > b { font-size: 9px; letter-spacing: .4em; }
-  #ui.s-maps .map-label > b { font-size: 9px; }
-  #ui.s-maps .map-label--suburb > b { font-size: 8px; }
-}
 
 @media (prefers-reduced-motion: reduce) {
   #ui.s-maps .track-pin > span, #ui.s-maps .track-pin__dot, #ui.s-maps .map-label, #ui.s-maps .attica-overlay, #ui.s-maps .attica-canvas { transition: none; }

@@ -5,8 +5,8 @@ import {setExhaustPops} from './exhaust-pops.js';
 import { install as installAccounts } from './ui/account-loader.js';
 // MENUS: title, mode select, map select, race setup, car select, settings, pause and results.
 // Plain DOM in #ui (index.html), built from the UI kit (src/ui/components.js + ui.css) and styled by src/menu.css.
-// Navigation: mouse / touch, or the named input actions main.js routes here (up / down / left / right / confirm / back,
-// shiftUp / shiftDown switch tabs) from keyboard, gamepad and touch. Up / down / left / right move focus spatially
+// Navigation: mouse, or the named input actions main.js routes here (up / down / left / right / confirm / back,
+// shiftUp / shiftDown switch tabs) from keyboard and gamepad. Up / down / left / right move focus spatially
 // (lists, grids and card rails alike); on an adjustable row (slider, toggle, segmented, stepper, select) left / right
 // change its value. Menu items are not native <button>s on purpose: the input system ignores key events aimed at
 // focused form controls, so focus is drawn with a class and the keys keep flowing through flowAction().
@@ -29,7 +29,6 @@ import './ui/hosts.js';
 import { driverName } from './driver-name.js';
 import { controlsStrip, drivingHints } from './ui/driving-hints.js';
 import * as Release from './ui/release-screens.js';
-import * as InstallCard from './ui/install-card.js';
 import { installArticleScroll, articleAction, clearArticleFocus } from './ui/article-scroll.js';
 
 const { settings, setSetting, steeringAssistChoice, fmtDist } = S;
@@ -59,7 +58,7 @@ export class Menu {
   constructor(root, h) {
     this.root = root; this.h = h; this.screen = null; this.data = {}; this.focus = 0; this.stack = [];
     this.filter = 'all';
-    C.bindRoot(root); root.tabIndex = -1; installSettingsAccess(this); MP.installMpScreens(this); Release.install(this); InstallCard.install(this); installAccounts(this); installArticleScroll(this);
+    C.bindRoot(root); root.tabIndex = -1; installSettingsAccess(this); MP.installMpScreens(this); Release.install(this); installAccounts(this); installArticleScroll(this);
     root.addEventListener('focusin', e => { const row = e.target.closest('.mi'); const i = this.items().indexOf(row); if(i >= 0) this.setFocus(i, false); });
     root.addEventListener('keydown', e => { if(e.code !== 'Escape' || !e.target.closest('input, textarea, [contenteditable]')) return; e.preventDefault(); e.stopPropagation(); e.target.blur(); root.focus({preventScroll:true}); }, true);
     root.addEventListener('click', (e) => this.onClick(e));
@@ -235,7 +234,7 @@ export class Menu {
     if (el.dataset.landmark) { window.__flow.teleportLandmark(el.dataset.landmark); this.back(); return; }
     const a = el.dataset.act;
     this.h.ui?.(true);
-    if (InstallCard.act(this, el) || Release.act(this, el)) return;
+    if (Release.act(this, el)) return;
     if (a?.startsWith('mp') && MP.act(this, el)) return;
     switch (a) {
       case 'seatReset': { resetSeatPosition(this.h.carSpec?.()?.id); for(const key of ['height','position']){const el=this.root.querySelector('[data-key=seat-'+key+']');if(el)C.setValue(el,0,false);} break; }
@@ -280,7 +279,7 @@ export class Menu {
       case 'shareResult': this.h.shareResult?.(); break;
     }
   }
-  /** a component value changed (keyboard, gamepad, mouse or touch) */
+  /** a component value changed (keyboard, gamepad or mouse) */
   onChange({ key, value, el }) {
     const scope = el.dataset.scope;
     if (scope === 'leaderboard' || key === 'leaderboardTab') { leaderboardChange(this, key, value); return; }
@@ -327,7 +326,7 @@ export class Menu {
       <p class="title__tag">Real roads of Attica: the Athens Riviera and the Penteli hill climb.</p>`, tiles: `${C.option({ icon: 'flag', title: 'PLAY', desc: 'Quick Race or Free Roam against the clock', act: 'play', cls: 'option--tile option--hero', attrs: { 'data-default': '' } })}
         ${C.option({ icon: 'users', title: 'MULTIPLAYER', desc: 'Browse open lobbies, join with a code or host your own', act: 'multiplayer', cls: 'option--tile' })}
         ${C.option({ icon: 'car', title: 'GARAGE', desc: `${GARAGE_CARS.length} cars · city to super`, act: 'garage', cls: 'option--tile' })}
-        ${C.option({ icon: 'settings', title: 'SETTINGS', desc: 'Sound, graphics, driving and controls', act: 'settings', cls: 'option--tile' })}`, foot: Release.titleExtras(this) + InstallCard.titleNotice({ busy: Release.newsCardUp() }), hints: [['select', 'SELECT'], ['confirm', 'OK'], ['garage', 'GARAGE']] });
+        ${C.option({ icon: 'settings', title: 'SETTINGS', desc: 'Sound, graphics, driving and controls', act: 'settings', cls: 'option--tile' })}`, foot: Release.titleExtras(this), hints: [['select', 'SELECT'], ['confirm', 'OK'], ['garage', 'GARAGE']] });
   }
   r_leaderboards(d) { return renderLeaderboards(this, d); }
   // RACE is solo (owner 2026-10-18): two artwork-led cards fill the screen; multiplayer lives behind the title's MULTIPLAYER tile.

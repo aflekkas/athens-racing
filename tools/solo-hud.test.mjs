@@ -21,8 +21,8 @@ test('solo races and free roam have no multiplayer HUD button; joined sessions r
 });
 
 const overlaps = (a, b) => Math.abs(a.x - b.x) < (a.width + b.width) / 2 && a.y > b.y - b.height && a.y - a.height < b.y;
-test('crowded rival tags stack within phone landscape and portrait bounds', () => {
-  for (const [width, height] of [[852, 393], [412, 915], [1280, 720]]) {
+test('crowded rival tags stack within narrow and wide desktop windows', () => {
+  for (const [width, height] of [[960, 700], [1280, 720], [1920, 1080]]) {
     for (const y of [20, height / 2, height - 10]) {
       const tags = ['ELENI', 'STAV', 'NIKOS', 'ALEX'].map((id, i) => ({ id, x: width / 2 + i * 3, y, width: 64, height: 42 }));
       const placed = layoutRacerMarkers(tags, width, height);

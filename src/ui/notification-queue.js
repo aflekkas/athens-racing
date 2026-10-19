@@ -67,7 +67,7 @@ export function drivingArea(width,height){return {left:width*.2,right:width*.8,t
 export const rectanglesOverlap=(a,b)=>a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;
 // Place the notice stack in the top-left corner, under the timer and every other HUD obstacle in that column; on a
 // screen too narrow for a corner column, a slim strip (badge + one notice) at the very top edge, in the widest clear gap.
-export function notificationPlacement({width,height,obstacles=[],heights=[],gap=6,margin=width<700?10:28,laneWidth=300,badges=[]}={}) {
+export function notificationPlacement({width,height,obstacles=[],heights=[],gap=6,margin=28,laneWidth=300,badges=[]}={}) {
   const area=drivingArea(width,height);
   // badges: indices of persistent HUD badges. With room for one item only, a short-lived notice wins over a badge.
   const take=(left,w,top,bottom,limit=heights.length)=>{const shown=[];let cursor=top;const order=limit===1?[...heights.keys()].sort((a,b)=>badges.includes(a)-badges.includes(b)):[...heights.keys()];

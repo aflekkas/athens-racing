@@ -1,0 +1,1 @@
+[{"name": "syntagma-street-detail-off", "car": [421, 501], "carcam": [0, 2.4, 9, 30], "wait": 9000, "detail": false}, {"name": "plaka-above-detail-off", "car": [-48, 946], "at": [-48, 946], "cam": [0, 140, 110], "far": 900, "wait": 9000, "detail": false}]

@@ -1,4 +1,4 @@
-// CONTROLS TAB (settings): steering response sliders, touch steering, and the key / controller rebinding list, built
+// CONTROLS TAB (settings): steering response sliders, racing wheel setup, and the key / controller rebinding list, built
 // from the UI kit over the input system's API (src/input.js: bindings, settings, configure(), capture, resetBindings()).
 // A binding row has two chips (keyboard, controller): left / right picks one, confirm (or a click) waits for the new key /
 // button / axis; Esc cancels. While a capture runs the input system holds back every action, so the menu stays put.
@@ -92,8 +92,7 @@ export function renderControls(menu) {
   return `<div class="group"><h3 class="group__title">${icon('gamepad-2')}STEERING RESPONSE</h3>
       ${C.slider({ key: 'deadzone', label: 'STICK DEADZONE', value: s.deadzone, min: 0, max: 0.45, step: 0.01, format: 'f2', attrs: A })}
       ${C.slider({ key: 'sensitivity', label: 'STEERING SENSITIVITY', value: s.sensitivity, min: 0.25, max: 2, step: 0.05, format: 'x', attrs: A })}
-      ${C.slider({ key: 'linearity', label: 'STEERING CURVE', value: s.linearity, min: 0.25, max: 3, step: 0.05, format: 'f2', attrs: A, note: '1.00 IS LINEAR · HIGHER IS GENTLER NEAR CENTRE' })}
-      ${C.segmented({ key: 'touchSteering', label: 'TOUCH STEERING', value: s.touchSteering, options: [['screen', 'ON-SCREEN', 'hand'], ['tilt', 'TILT', 'smartphone']], attrs: A })}</div>
+      ${C.slider({ key: 'linearity', label: 'STEERING CURVE', value: s.linearity, min: 0.25, max: 3, step: 0.05, format: 'f2', attrs: A, note: '1.00 IS LINEAR · HIGHER IS GENTLER NEAR CENTRE' })}</div>
     ${wheelGroup(A)}
     <div class="bind-head"><span></span><span>${icon('keyboard')}KEYBOARD</span><span>${icon('gamepad-2')}CONTROLLER</span></div>
     ${groups.map(([title, ic, g]) => `<div class="group"><h3 class="group__title">${icon(ic)}${title}</h3>${Object.entries(g).filter(([a]) => all.includes(a)).map(([a, l]) => bindRow(a, l)).join('')}</div>`).join('')}
@@ -143,10 +142,7 @@ export function controlsClick(menu, e) {
   menu.bindCol = chip.dataset.bind === 'gamepad' ? 1 : 0;
   capture(menu, row.dataset.action, chip.dataset.bind); return true;
 }
-export async function controlsChange(menu, key, value, el) {
+export function controlsChange(menu, key, value) {
   if (key in WHEEL_MAP) { const [role, prop] = WHEEL_MAP[key]; input.setWheelMapping(role, { [prop]: prop === 'axis' ? Number(value) : value === true || value === 'true' }); menu.refresh(); return; }
-  if (key === 'touchSteering' && value === 'tilt') {
-    if (!await input.enableTilt()) { C.setValue(el, 'screen', false); return; }
-  }
   input.configure({ [key]: value });
 }

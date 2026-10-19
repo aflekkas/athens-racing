@@ -9,12 +9,11 @@ function covers(camera,view) {
   const [left,top]=screen(camera,view,0,0),[right,bottom]=screen(camera,view,MAP_VIEW.width,MAP_VIEW.height);
   assert.ok(left<=.001 && top<=.001 && right>=view.width-.001 && bottom>=view.height-.001, 'Geographic art must cover the entire full-screen map');
 }
-// Full-screen map; `safe` is the free area beside the floating card (desktop) or above the bottom sheet (phone).
+// Full-screen map; `safe` is the free area beside the floating card (desktop) or the narrow-window card.
 const VIEWS = {
   desktop: { view: { width: 1280, height: 800 }, safe: { left: 0, top: 150, right: 880, bottom: 750 } },
   laptop: { view: { width: 1024, height: 640 }, safe: { left: 0, top: 130, right: 680, bottom: 595 } },
-  phone: { view: { width: 390, height: 844 }, safe: { left: 0, top: 120, right: 390, bottom: 470 } },
-  landscape: { view: { width: 844, height: 390 }, safe: { left: 0, top: 70, right: 560, bottom: 350 } },
+  narrow: { view: { width: 960, height: 700 }, safe: { left: 0, top: 130, right: 640, bottom: 655 } },
 };
 for (const [name, { view, safe }] of Object.entries(VIEWS)) {
   test(`${name}: each selected track is framed whole inside the free area, never exposing the art's edges`, () => {

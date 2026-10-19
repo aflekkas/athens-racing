@@ -12,7 +12,7 @@ from shapely.ops import unary_union
 from shapely import prepare
 
 AREAS=Path(__file__).parent/'areas'
-SOURCES=dict(profiles='profiles-a.sqlite',source='clean.sqlite',graph='graph-a.sqlite',turns='turns-a.sqlite',vegetation='vegetation.sqlite',osm='source.sqlite',sections='sections-a.sqlite')
+SOURCES=dict(profiles='profiles-a.sqlite',source='clean.sqlite',graph='graph-a.sqlite',turns='turns-a.sqlite',vegetation='vegetation.sqlite',osm='source.sqlite',sections='sections-a.sqlite',details='building-details.sqlite')
 
 
 def load(name,_seen=()):

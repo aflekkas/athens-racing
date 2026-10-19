@@ -1,4 +1,3 @@
-import { showroomPixelRatio } from './mobile.js';
 import { settings } from './settings.js';
 import { FrameLimiter } from './frame-pacing.js';
 import { importWithUpdate } from './client-release.js';
@@ -110,7 +109,7 @@ export function mountCarSelect(root, index, opts = {}) {
   root.addEventListener('ui:change',onTrim,true); root.addEventListener('click',onConfirm,true);
   const container = opts.container || root.querySelector('.car-preview-viewport') || root.querySelector('#carStage'), lite = !!opts.lite;
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setPixelRatio(showroomPixelRatio(devicePixelRatio, lite));
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, lite ? 1 : 1.5));
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
   container.append(renderer.domElement);
   const scene = new THREE.Scene();
@@ -153,13 +152,13 @@ export function mountCarSelect(root, index, opts = {}) {
     frame();
   };
   const observer = new ResizeObserver(resize); observer.observe(container); resize();
-  const turntable = new TurntableControl(model.root.rotation.y); let pointer, pointerX, pointerStart, pointerAt, touch, last = performance.now();
-  const down = e => { if (pointer != null) return; e.preventDefault(); pointer=e.pointerId;pointerX=e.clientX;pointerStart=e.clientX;pointerAt=performance.now();touch=e.pointerType==='touch';turntable.dragging=true;container.classList.add('dragging');container.setPointerCapture(pointer); };
+  const turntable = new TurntableControl(model.root.rotation.y); let pointer, pointerX, last = performance.now();
+  const down = e => { if (pointer != null) return; e.preventDefault(); pointer=e.pointerId;pointerX=e.clientX;turntable.dragging=true;container.classList.add('dragging');container.setPointerCapture(pointer); };
   const move = e => { if(e.pointerId!==pointer)return;model.root.rotation.y=turntable.drag(e.clientX-pointerX);pointerX=e.clientX;frame();renderer.render(scene,camera); };
-  const up = e => { if(e.pointerId!==pointer)return;const swipe=touch?e.clientX-pointerStart:0;pointer=null;if(e.type==='pointerup' && Math.abs(swipe)>60 && performance.now()-pointerAt<350)step(swipe<0?1:-1);turntable.dragging=false;container.classList.remove('dragging'); };
+  const up = e => { if(e.pointerId!==pointer)return;pointer=null;turntable.dragging=false;container.classList.remove('dragging'); };
   container.addEventListener('pointerdown',down);container.addEventListener('pointermove',move);
   for(const name of ['pointerup','pointercancel','lostpointercapture'])container.addEventListener(name,up);
-  const hint=document.createElement('span');hint.className='car-stage__hint';hint.setAttribute('aria-hidden','true');hint.textContent='DRAG TO ROTATE · SWIPE TO CHANGE TRIM';if(!lite)container.append(hint);
+  const hint=document.createElement('span');hint.className='car-stage__hint';hint.setAttribute('aria-hidden','true');hint.textContent='DRAG TO ROTATE';if(!lite)container.append(hint);
   const rules=()=>window.__flow?.menu?.data || {};
   const swapTo = next => {
     if(next===index)return false;

@@ -3,6 +3,7 @@ import { validateWorldTile, residentArrayBytes } from './world-tile-format.js';
 import { buildTileContactIndex } from './world-tile-contact.js';
 import { tileGPUPlan, tileRenderVariants } from './world-tile-gpu.js';
 import { addDerivedBuildings } from './world-tile-buildings.js';
+import { tagDressedSurfaces, dressingBytes } from './world-tile-dressing.js';
 import {buildTileObstacleIndex,obstacleBytes} from './world-tile-obstacles.js';
 const controllers = new Map();
 async function limitedBuffer(stream,limit,onBytes=null) {
@@ -28,7 +29,7 @@ export async function fetchTilePacket({url,entry,world,revision,cell},signal,onB
 export function prepareTilePacket(pack,{entry,world,revision,cell}){
   const checked=validateWorldTile(pack,{world,revision,cell});
   // Footprints are stored once; their wall and roof meshes are built here, before bounds, GPU plan and byte accounting.
-  addDerivedBuildings(pack,checked.tables);
+  addDerivedBuildings(pack,checked.tables);tagDressedSurfaces(pack);
   const contactIndex=buildTileContactIndex(checked.tables,Math.floor(entry.decodedBytes/4));
   // Bounding volumes are built in the worker, avoiding a vertex scan during activation.
   let gpuBytes=0;const gpuViews=new Map();
@@ -53,7 +54,7 @@ export function prepareTilePacket(pack,{entry,world,revision,cell}){
   for(const bytes of gpuViews.values())gpuBytes+=bytes;
   const gpuPlan=tileGPUPlan(pack),renderVariants=tileRenderVariants(pack),obstacleIndex=buildTileObstacleIndex(checked.tables);
   const bytes=obstacleBytes(obstacleIndex)+residentArrayBytes(pack.arrays)+contactIndex.offsets.byteLength+contactIndex.refs.byteLength+gpuBytes+new TextEncoder().encode(JSON.stringify({metadata:pack.metadata,gpuPlan,renderVariants})).byteLength;
-  if(bytes>(entry.residentBytes??entry.decodedBytes))throw new Error('Tile resident budget understated');
+  if(bytes-dressingBytes(pack)>(entry.residentBytes??entry.decodedBytes))throw new Error('Tile resident budget understated');
   if(checked.triangles!==entry.triangles)throw new Error('Tile triangles mismatch');
   return {...pack,contactIndex,obstacleIndex,bytes,jsBytes:bytes-gpuBytes,gpuBytes,gpuPlan,renderVariants};
 }

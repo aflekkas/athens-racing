@@ -1,6 +1,6 @@
 # UI icons
 
-Owner decision, 2026-10-17: Lucide is the only UI icon library. All menu and touch-control icons use `icon()` / `iconEl()` in `src/ui/components.js`, styled in `src/ui/ui.css`. Brand artwork (Google G, manufacturer badges) is unchanged. Vehicle instrument telltales and world road-sign artwork retain their specialized authored graphics.
+Owner decision, 2026-10-17: Lucide is the only UI icon library. All menu icons use `icon()` / `iconEl()` in `src/ui/components.js`, styled in `src/ui/ui.css`. Brand artwork (Google G, manufacturer badges) is unchanged. Vehicle instrument telltales and world road-sign artwork retain their specialized authored graphics.
 
 ## Offline source and licence
 
@@ -27,12 +27,10 @@ Unused legacy SVGs were removed. Existing canonical equivalents (camera, car, ch
 | `caret-right` | `chevron-right` |
 | `caret-up` | `chevron-up` |
 | `cube` | `box` |
-| `device-mobile` | `smartphone` |
 | `export` | `share` |
 | `flag-checkered` | `flag` |
 | `game-controller` | `gamepad-2` |
 | `gear-six` | `settings` |
-| `hand-tap` | `hand` |
 | `lightning` | `zap` |
 | `list` | `menu` |
 | `lock-simple` | `lock` |
@@ -51,8 +49,8 @@ Unused legacy SVGs were removed. Existing canonical equivalents (camera, car, ch
 | `users-three` | `users` |
 | `warning` | `triangle-alert` |
 
-Glyph replacements: sort ↓/↑ → `arrow-down`/`arrow-up`; START › and spectator ‹/› → `chevron-right`/`chevron-left`; READY ✓ → `check`; mobile pause Ⅱ → `pause`; touch steering triangles → `chevron-left`/`chevron-right`. Music icons were already removed.
+Glyph replacements: sort ↓/↑ → `arrow-down`/`arrow-up`; START › and spectator ‹/› → `chevron-right`/`chevron-left`; READY ✓ → `check`; pause Ⅱ → `pause`. Music icons were already removed.
 
 `npm test` checks source icon references, vendored hashes, sprite equality and the absence of UI arrow/check glyphs.
 
-Touch pause, camera and steering labels use the shared SVG builders; their 18px SVG size is independent of the controls’ text size. The icon guard also validates every CSS icon URL against the pinned inventory and sprite.
+The icon guard also validates every CSS icon URL against the pinned inventory and sprite.

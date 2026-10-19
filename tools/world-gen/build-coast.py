@@ -31,7 +31,7 @@ def one(cell):
   return None,encode(dict(failedCell=cell,error=(type(e).__name__+': '+str(e))[:500]))
 
 def generate(cell):
- start=time.monotonic();tile,audit=bake(paths['profiles'],paths['source'],paths['graph'],paths['turns'],cell,dems,area['world'],revision,True,paths['vegetation'],paths['osm'],paths['sections'],extent,plan)
+ start=time.monotonic();tile,audit=bake(paths['profiles'],paths['source'],paths['graph'],paths['turns'],cell,dems,area['world'],revision,True,paths['vegetation'],paths['osm'],paths['sections'],extent,plan,paths['details'])
  return encode(tile),encode(dict(cell=cell,seconds=time.monotonic()-start,**audit))
 
 def disk_check():

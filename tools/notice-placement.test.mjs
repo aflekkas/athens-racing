@@ -9,27 +9,27 @@ import { notificationPlacement, drivingArea, rectanglesOverlap, TOAST_MS, MAX_MS
 const OWNER = 'Owner-locked decision, see docs/OWNER-DECISIONS.md ("in-race notices stay out of the driving view"). Ask the owner before changing.';
 /** the race HUD as measured in the real scene (.scratch/one-component-set race captures), per viewport and camera */
 function hud(width, height, view) {
-  const phone = width < 700, o = {};
-  o.posBox = phone ? { left: 10, right: 196, top: 10, bottom: 84 } : { left: 28, right: 262, top: 24, bottom: 112 };
-  o.lapTiming = phone ? null : { left: 28, right: 198, top: 116, bottom: 178 };
-  o.route = phone ? { left: 20, right: width - 16, top: 128, bottom: 133 } : { left: width * .42, right: width * .78, top: 32, bottom: 48 };
-  o.settings = phone ? { left: width - 112, right: width - 12, top: 76, bottom: 116 } : { left: width - 220, right: width - 12, top: 14, bottom: 54 };
-  o.minimap = phone ? { left: 16, right: 140, top: height - 147, bottom: height - 23 } : { left: 28, right: 208, top: height - 202, bottom: height - 22 };
-  o.dial = phone ? { left: width - 190, right: width - 12, top: height - 190, bottom: height - 12 } : { left: width - 358, right: width - 18, top: height - 346, bottom: height - 6 };
-  o.speedSign = phone ? { left: width - 250, right: width - 196, top: height - 120, bottom: height - 66 } : { left: width - 428, right: width - 366, top: height - 120, bottom: height - 58 };
-  if (view === 'cockpit' && !phone) { // projected glass: the rear-view mirror (right) and the driver's door mirror (left)
+  const o = {};
+  o.posBox = { left: 28, right: 262, top: 24, bottom: 112 };
+  o.lapTiming = { left: 28, right: 198, top: 116, bottom: 178 };
+  o.route = { left: width * .42, right: width * .78, top: 32, bottom: 48 };
+  o.settings = { left: width - 220, right: width - 12, top: 14, bottom: 54 };
+  o.minimap = { left: 28, right: 208, top: height - 202, bottom: height - 22 };
+  o.dial = { left: width - 358, right: width - 18, top: height - 346, bottom: height - 6 };
+  o.speedSign = { left: width - 428, right: width - 366, top: height - 120, bottom: height - 58 };
+  if (view === 'cockpit') { // projected glass: the rear-view mirror (right) and the driver's door mirror (left)
     o.rearMirror = { left: width * .74, right: width, top: height * .28, bottom: height * .43 };
     o.doorMirror = { left: width * .15, right: width * .29, top: height * .54, bottom: height * .66 };
   }
   return Object.fromEntries(Object.entries(o).filter(([, r]) => r));
 }
-const SIZES = [[1280, 800], [1920, 1080], [390, 844]];
+const SIZES = [[1280, 800], [1920, 1080]];
 
-test('notices avoid the central driving area, mirrors, speed sign and minimap at 1280, 1920 and 390, cockpit and chase', () => {
+test('notices avoid the central driving area, mirrors, speed sign and minimap at 1280 and 1920, cockpit and chase', () => {
   for (const [width, height] of SIZES) for (const view of ['chase', 'cockpit']) {
     const obstacles = hud(width, height, view), heights = [28, 44, 44], area = drivingArea(width, height);
     const p = notificationPlacement({ width, height, obstacles: Object.values(obstacles), heights });
-    assert.ok(p.shown.length >= (width < 700 ? 1 : 2), `${width}x${height} ${view}: room for the notices (${p.mode})`);
+    assert.ok(p.shown.length >= 2, `${width}x${height} ${view}: room for the notices (${p.mode})`);
     let y = p.top;
     for (const i of p.shown) {
       const r = { left: p.left, right: p.left + p.width, top: y, bottom: y + heights[i] };
@@ -38,7 +38,7 @@ test('notices avoid the central driving area, mirrors, speed sign and minimap at
       for (const [name, b] of Object.entries(obstacles)) assert.ok(!rectanglesOverlap(r, b), `${OWNER}\n${width}x${height} ${view}: notice covers the ${name}`);
       y = r.bottom + 6;
     }
-    assert.equal(p.mode, width < 700 ? 'strip' : 'corner', `${width}: ${width < 700 ? 'a top-edge strip' : 'the top-left corner stack'}`);
+    assert.equal(p.mode, 'corner', `${width}: the top-left corner stack`);
   }
 });
 
@@ -58,8 +58,16 @@ test('notices are short-lived and the police pursuit level is a HUD badge, not a
   assert.doesNotMatch(css, /\.race-notice|italic/, `${OWNER}\nnotice looks live in the kit (src/ui/ui.css)`);
 });
 
+test('a narrow desktop window has no room for the corner column: notices take the top-edge strip, clear of the driving area', () => {
+  const width = 960, height = 700, area = drivingArea(width, height), timer = { left: 28, right: 262, top: 24, bottom: 112 };
+  const p = notificationPlacement({ width, height, obstacles: [timer], heights: [28, 40], badges: [0] });
+  assert.equal(p.mode, 'strip'); assert.deepEqual(p.shown, [0, 1]);
+  const r = { left: p.left, right: p.left + p.width, top: p.top, bottom: p.top + 28 + 6 + 40 };
+  assert.ok(!rectanglesOverlap(r, area), OWNER); assert.ok(!rectanglesOverlap(r, timer), OWNER);
+});
+
 test('with room for one item, a short-lived notice is shown before a persistent badge', () => {
-  const obstacles = Object.values(hud(390, 844, 'cockpit')); obstacles.push({ left: 170, right: 280, top: 76, bottom: 108 });
-  const p = notificationPlacement({ width: 390, height: 844, obstacles, heights: [28, 40], badges: [0] });
+  // a wide HUD row leaves the band above the road too narrow for two, but one slim notice still fits above it
+  const p = notificationPlacement({ width: 960, height: 700, obstacles: [{ left: 100, right: 900, top: 52, bottom: 112 }], heights: [28, 40], badges: [0] });
   assert.equal(p.mode, 'strip'); assert.deepEqual(p.shown, [1], 'TOWED shows; the pursuit badge waits');
 });

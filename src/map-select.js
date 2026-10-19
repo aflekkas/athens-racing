@@ -41,7 +41,7 @@ export function renderMapSelect(selectedId = 'riviera', mode) {
       <div class="attica-overlay"><div class="attica-labels" aria-hidden="true">${labels}</div>${pins}</div>
       <p class="attica-credit"><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a> · <a href="https://github.com/tilezen/joerd/blob/master/docs/attribution.md" target="_blank" rel="noopener">EU-DEM, Copernicus</a></p>`,
     cardAttrs: { 'data-map': selected.id, style: `--track:${color(selected.id)}` },
-    nav: `${C.button({ icon: 'chevron-left', variant: 'ghost', act: 'mapPrev', title: 'Previous track' })}<div><small>TRACK</small><b class="map-track-count">${count(selectable, selected)}</b></div>${C.button({ icon: 'chevron-right', variant: 'ghost', act: 'mapNext', title: 'Next track' })}`, card: preview(selected), cardHint: 'SWIPE TO BROWSE' });
+    nav: `${C.button({ icon: 'chevron-left', variant: 'ghost', act: 'mapPrev', title: 'Previous track' })}<div><small>TRACK</small><b class="map-track-count">${count(selectable, selected)}</b></div>${C.button({ icon: 'chevron-right', variant: 'ghost', act: 'mapNext', title: 'Next track' })}`, card: preview(selected) });
 }
 
 // ---------------------------------------------------------------- map assets (fetched once per page, shared by every visit)
@@ -91,7 +91,7 @@ export function mountMapSelect(root) {
   const selectable = playable(), events = new AbortController(), { signal } = events;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
   const { width: W, height: H } = MAP_VIEW;
-  let selected = card.dataset.map, camera, view, safe, dpr = 1, layers = null, art = null, base = null, drag, pinch, swipe, frame = 0, resizeFrame = 0, motion = null, last = 0, reveal = null, intro = true, dirty = false, settling = false, onScreen = true, panning = false, moving = false, shown = null;
+  let selected = card.dataset.map, camera, view, safe, dpr = 1, layers = null, art = null, base = null, drag, pinch, frame = 0, resizeFrame = 0, motion = null, last = 0, reveal = null, intro = true, dirty = false, settling = false, onScreen = true, panning = false, moving = false, shown = null;
   const bounds = routeBounds(selectable.map(m => TRACK_ROUTES[m.id]));
   const routes = Object.fromEntries(selectable.map(m => { const r = TRACK_ROUTES[m.id], path = new Path2D(r.path);
     // Sample points (every half unit) let labels avoid the line itself rather than its whole bounding box.
@@ -114,7 +114,7 @@ export function mountMapSelect(root) {
     const scr = root.querySelector('.scr'), parts = [...scr.querySelectorAll(':scope > .hu-status, :scope > .scr__head')].filter(el => el.offsetHeight);
     const top = Math.max(0, ...parts.map(el => rel(el, vr, 0)[3])), foot = scr.querySelector(':scope > .scr__foot'), bottom = foot?.offsetHeight ? rel(foot, vr, 0)[1] : vr.height;
     const c = rel(card, vr, 0), sheet = c[2] - c[0] > vr.width * .6;
-    // The free area: below the header, above the footer, beside (desktop) or above (phone sheet) the floating card.
+    // The free area: below the header, above the footer, beside the floating card.
     safe = { left: 0, top, right: sheet ? vr.width : Math.max(vr.width * .4, c[0] - 8), bottom: sheet ? Math.max(top + 80, c[1] - 8) : bottom };
     // The attribution sits in the free area's bottom corner, clear of the card and the footer.
     credit.style.transform = `translate(${Math.round(safe.right - credit.offsetWidth - (sheet ? 12 : 10))}px,${Math.round(safe.bottom - credit.offsetHeight - 6)}px)`;
@@ -283,9 +283,6 @@ export function mountMapSelect(root) {
   }, { signal });
   const up = e => { pointers.delete(e.pointerId); if (pointers.size < 2) pinch = null; drag = pointers.size ? [...pointers.values()][0] : null; if (!pointers.size) { map.classList.remove('dragging'); panning = false; want(true); } };
   map.addEventListener('pointerup', up, { signal }); map.addEventListener('pointercancel', up, { signal });
-  card.addEventListener('pointerdown', e => { if (e.pointerType === 'touch') { swipe = [e.clientX, e.clientY, e.pointerId]; } }, { signal });
-  card.addEventListener('pointerup', e => { if (!swipe || swipe[2] !== e.pointerId) return; const dx = e.clientX - swipe[0], dy = e.clientY - swipe[1]; swipe = null; if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.4) cycle(dx < 0 ? 1 : -1); }, { signal });
-  card.addEventListener('pointercancel', () => { swipe = null; }, { signal });
   // ResizeObserver callbacks run during layout: defer writes to avoid another
   // resize notification in the same delivery cycle (and the global error banner).
   const relayout = () => {

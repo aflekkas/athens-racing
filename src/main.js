@@ -84,6 +84,7 @@ import { createBlackout } from './blackout.js';
 import { SessionTransitions } from './session-transitions.js';
 import { speedLimitAt } from './speed-limit.js';
 import { updateSceneryLod, setDrawDistance, drawDistance } from './scenery.js';
+import { FarCull, setFarFog } from './far-cull.js';
 import { RENDER, resolveGraphics, dynamicFloor, outputRatio, applyRenderResolution, releaseSceneryVariants, trimShadowCasters } from './graphics.js';
 import { DistanceDetail } from './batch.js';
 import { PARKED_CELL, PARKED_RANGE, fleetModel } from './traffic-fleet.js';
@@ -263,7 +264,9 @@ const blackout = createBlackout(() => { G.towing = false; });
 
 const lodList = [];
 const lodAt = new THREE.Vector3(1e9, 0, 0);
-function updateLod() { updateSceneryLod(lodList, camera); lodAt.copy(camera.position); }
+// Potato on Riviera (graphics.js PERFORMANCE.farCull): the static world beyond a distance is not drawn, and the fog ends it (far-cull.js). Render only.
+const farCull = new FarCull(), farCullDistance = () => Q.has('farcull') ? +Q.get('farcull') || 0 : map?.id === 'riviera' ? GFX.farCull : 0; // Riviera only (the long coast road: ~100 calls of the far world; the other maps gain <3%). ?farcull=300 tries a distance on any class and map, ?farcull=0 turns it off
+function updateLod() { updateSceneryLod(lodList, camera); farCull.update(camera, farCullDistance()); lodAt.copy(camera.position); }
 // render distance (scenery.js): the setting applies live; traffic is drawn out to about half of it
 setDrawDistance(+Q.get('draw') || GFX.drawDistance, R.horizon, GFX.detail);
 // weaker performance classes cap traffic and pedestrian draw ranges (graphics.js PERFORMANCE); high keeps the full range
@@ -281,7 +284,7 @@ function applyGraphics() {
   for (const c of [...grid, ...remoteCars.values()]) if (c.model) scaleVehicleLod(c.model, GFX.vehicleLod);
   dynamicScale = makeDynamicScale();
   if (GFX.pixelRatio !== pixelRatio) { pixelRatio = GFX.pixelRatio; onResize(); post?.resetHistory(); }
-  setDrawDistance(+Q.get('draw') || GFX.drawDistance, R.horizon, GFX.detail); applyDrawDistance(); applyCpuBudget(); updateLod();
+  setDrawDistance(+Q.get('draw') || GFX.drawDistance, R.horizon, GFX.detail); applyDrawDistance(); applyCpuBudget(); setFarFog(farCullDistance()); updateLod();
 }
 onSettings((s, key) => { if (GRAPHICS_KEYS.has(key)) applyGraphics(); });
 
@@ -373,12 +376,13 @@ function bindMapWorld(next) {
   ground.corridor = new DrivableCorridor(route, ground.network, map.terrain);
   drivingModeView?.dispose(); drivingModeView = new DrivingModeView(scene, route);
   lodList.splice(0, lodList.length, ...next.lod);
+  farCull.bind(next.group, lodList); setFarFog(farCullDistance());
   traffic.disabled = Q.has('notraffic') || route.closed;
   { const base = traffic.density.bind(traffic); traffic.density = (s) => base(s) * (G.trafficMul ?? 1) * (multiplayer.active ? 1 : G.trafficTier ?? 1); }
   police = new Police(traffic, route); window.__police = police;
   policeVoice.reset(); humanVoices.reset(); police.onVoice = (state, transitions) => policeVoice.observe(state, transitions);
   notifications.mirrorView = () => ({camera, mirrors: G.cam==='cockpit'||cameraBlend.active ? player?.cockpit?.mirrors||[] : []});
-  window.__sim = { signals, people, traffic, route, ground, fx, G, input, look, camera, cameraBlend, towOffer, get player() { return player; } };
+  window.__sim = { signals, people, traffic, route, ground, fx, G, input, look, camera, cameraBlend, towOffer, farCull, get player() { return player; } };
   if (Q.has('simhook')) {
     Object.assign(window.__sim, { scene, renderer, canvas, keys, render: () => render(), step: (n = 1, dt = 1 / 60) => { for (let i = 0; i < n; i++) step(dt, false); } });
     // World binding precedes post creation/car selection; diagnostics must read current owners after a swap.
@@ -821,7 +825,6 @@ function restart(idx = G.carIdx) {
 
 // ------------------------------------------------------------------ input
 function requestRaceLook(action) {
-  if (G.inputDevice === 'touch') return;
   if ((menu?.screen === 'car' && action === 'carConfirm' && !menu.data.garage) || (G.state === 'paused' && action === 'resume')) {
     G.cameraStarting = true; controls.requestMouseLock();
   }
@@ -835,8 +838,7 @@ addEventListener('keydown', e => {
   if (!multiplayer.panel.hidden && !menu?.open) { clearDriveInput(); return; } // the lobby screens are menus: their keys navigate
   G.inputDevice = 'keyboard'; audio.start();
 });
-addEventListener('pointerdown', e => { G.inputDevice = e.pointerType === 'touch' ? 'touch' : 'keyboard'; audio.start(); });
-addEventListener('touchend', () => audio.start(), { passive: true });
+addEventListener('pointerdown', e => { G.inputDevice = 'keyboard'; audio.start(); });
 addEventListener('click', () => audio.start());
 
 function readInput(dt) {
@@ -846,7 +848,6 @@ function readInput(dt) {
   controls.update(dt, { speed: player ? Math.abs(player.veh.vLong) : 0, inMenu, blocked, retainMouseLock: !!G.cameraStarting });
   const pad = controls.pad;
   if (controls.keys.size) G.inputDevice = 'keyboard';
-  else if (Object.values(controls.touch).some(Boolean)) G.inputDevice = 'touch';
   else if (pad && (pad.buttons?.some(b => (b.value || 0) > 0.05) || pad.axes?.some(a => Math.abs(a) > controls.settings.deadzone))) G.inputDevice = 'gamepad';
   else if (!G.inputDevice || G.inputDevice === 'gamepad' && !pad) G.inputDevice = pad ? 'gamepad' : 'keyboard';
   { const hint = ui.hintDevice(G.inputDevice); if (document.body.dataset.input !== hint) document.body.dataset.input = hint; } // device-aware key hints (ui.css)
@@ -1052,7 +1053,6 @@ function onFlowSettings(s, key) {
     if (player) applyVehicleAids(player.veh, player.spec, s);
   } else if (key === 'transmission' || !key) applyDriving();
   if (key === 'aids' || !key) {
-    controls.setAidsEnabled(s.aids);
     if (!s.aids) G.lampTC = G.lampESC = 0;
     if (menu?.screen === 'settings') menu.refreshValues();
   }

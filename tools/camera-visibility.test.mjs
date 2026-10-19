@@ -19,13 +19,13 @@ function shell(mesh, model) {
   for (let p = mesh; p; p = p.parent) if (p.userData.vehicleCabin || /cockpit|mirror/i.test(p.name)) return false;
   return [].concat(mesh.material).includes(model.paint) && mesh.geometry.attributes.position.count > 20;
 }
-for (const spec of CARS) test(`${spec.id}: body accompanies visible cabin across tiers, phone profiles and POV transitions`, () => {
+for (const spec of CARS) test(`${spec.id}: body accompanies visible cabin across tiers, pixel ratios and POV transitions`, () => {
   const model = new CarModel(spec), cockpit = new Cockpit(spec, model);
   const camera = new T.PerspectiveCamera(60, .6, .05, 2000);
   model.root.position.set(31, 4, -17); model.root.rotation.y = .7;
   try {
-    for (const perfClass of PERF_CLASSES) for (const profile of ['desktop', 'iPhone', 'Android']) {
-      const graphics = resolveGraphics({ perfClass }, { userAgent: profile === 'desktop' ? 'Desktop Chrome' : `Mozilla/5.0 (${profile}) Mobile`, deviceRatio: 3 });
+    for (const perfClass of PERF_CLASSES) for (const deviceRatio of [1, 3]) {
+      const graphics = resolveGraphics({ perfClass }, { deviceRatio });
       camera.far = graphics.drawDistance; camera.updateProjectionMatrix();
       for (const aspect of [.6, 2.1]) for (const distance of [7, 20, 30]) {
         camera.aspect = aspect; camera.updateProjectionMatrix();
@@ -37,7 +37,7 @@ for (const spec of CARS) test(`${spec.id}: body accompanies visible cabin across
         camera.lookAt(model.root.localToWorld(new T.Vector3(0, .7, 0)));
         assert.equal(syncCameraVehicleView(model, camera, 'cockpit'), false);
         const meshes = rendered(model, camera);
-        assert.ok(meshes.some(o => shell(o, model)), `${perfClass}/${profile}/${aspect}/${distance}: exterior body missing`);
+        assert.ok(meshes.some(o => shell(o, model)), `${perfClass}/${deviceRatio}/${aspect}/${distance}: exterior body missing`);
         assert.ok(meshes.length > 0);
         // Ordinary chase/orbit and result photos use the same restoration path.
         for (const [mode, photo] of [['chase', false], ['orbit', false], ['cockpit', true]]) {

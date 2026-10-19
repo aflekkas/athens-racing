@@ -19,8 +19,8 @@ const server = http.createServer(async(req,res)=>{try{
 await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const browser=await chromium.launch({headless:true,executablePath:'/home/dev/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome',args:['--no-sandbox']});
 const report=[];
-try{for(const width of [1280,390]){
- const page=await browser.newPage({viewport:{width,height:width===390?844:900}});
+try{for(const width of [1280,960]){
+ const page=await browser.newPage({viewport:{width,height:width===960?700:900}});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  for(const path of ['privacy','terms']){
  const requests=[]; const listener=r=>requests.push(r.url());page.on('request',listener);
@@ -35,7 +35,7 @@ try{for(const width of [1280,390]){
  await page.evaluate(({screen,data})=>{if(['settings','credits'].includes(screen))menu.accounts.required=false;menu.show(screen,data);},{screen,data});
  await page.waitForTimeout(300);assert.ok(await page.locator('#ui a[href="/privacy"]').count()>0);
  assert.ok(await page.locator('#ui a[href="/terms"]').count()>0);
- if(width===390 && screen==='signIn'){
+ if(width===960 && screen==='signIn'){
  const popupEvent=page.waitForEvent('popup');
  await page.evaluate(()=>menu.activate(document.querySelector('#ui a[href="/privacy"]')));
  const popup=await popupEvent;await popup.waitForLoadState();assert.match(popup.url(),/\/privacy$/);
