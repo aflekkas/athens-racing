@@ -1,4 +1,5 @@
 import { MAPS } from './map-catalog.js';
+import { upperName } from './greek-caps.js';
 import { buildCourse, observeCourse } from './course.js';
 // EVENTS: data-driven race events (sprints against a grid of 3 by default, time trials, police pursuits), their route segments /
 // direction, medal targets and saved results; plus the event hook API other systems listen to. Straight time: no points.
@@ -147,13 +148,13 @@ export const getEvent = (id) => (isDrivingMode(id?.split(':')[0]) ? drivingModeD
 /** ctx = { route: {start, finish, length, from, to, curv?}, marks: [{id, name, sub, s}] } */
 export function locate(loc, ctx) {
   if (typeof loc === 'number') return { s: loc, name: nearestName(loc, ctx) };
-  if (loc === 'start') return { s: ctx.route.start, name: (ctx.route.from || 'START').toUpperCase() };
-  if (loc === 'finish') return { s: ctx.route.finish, name: (ctx.route.to || 'FINISH').toUpperCase() };
+  if (loc === 'start') return { s: ctx.route.start, name: upperName(ctx.route.from || 'START') };
+  if (loc === 'finish') return { s: ctx.route.finish, name: upperName(ctx.route.to || 'FINISH') };
   const m = ctx.marks.find((q) => q.id === loc);
   if (!m) throw new Error('unknown event location ' + loc);
   return { s: m.s, name: m.name };
 }
-function nearestName(s, ctx) { let n = (ctx.route.from || '').toUpperCase(); for (const m of ctx.marks) if (s >= m.s - 1) n = m.name; return n; }
+function nearestName(s, ctx) { let n = upperName(ctx.route.from || ''); for (const m of ctx.marks) if (s >= m.s - 1) n = m.name; return n; }
 
 export function resolve(def, ctx) {
   if (isDrivingMode(def)) return resolveDrivingMode(def, ctx);

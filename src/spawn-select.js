@@ -4,6 +4,7 @@
 // Selecting a spot flies the camera to it; drag, scroll and pinch stay map navigation; there is no reset control.
 // The panel shows the place, the car (with the garage path to change it) and DRIVE; the game then puts the car on the
 // nearest road to that point with the tow placement (src/tow-placement.js), see spawnOnRoad in src/main.js.
+import { upperName } from './greek-caps.js';
 import { MAP_VIEW, MAP_LABELS, MAP_ASSETS } from './attica-map-data.js';
 import { coverScale, frameBounds, fitTracks, clampCamera, flight, MAX_SCALE } from './map-select-camera.js';
 import { createMapRenderer, smooth } from './map-select-render.js';
@@ -31,7 +32,7 @@ const PLACES = { c: [-.5, -.5, 0, 0], r: [0, -.5, 8, 0], l: [-1, -.5, -8, 0], t:
 const spotChoice = s => ({ id: s.id, road: false, mapId: s.mapId, name: s.name, sub: `${areaName(s.mapId)}${s.note ? ' · ' + s.note : ''}`, at: s.at, local: s.local });
 function roadChoice(snap, spots) {
   const near = nearestSpot(spots, snap.mapId, ...snap.at);
-  return { id: 'road', road: true, mapId: snap.mapId, name: snap.street || (near ? 'NEAR ' + near.name : areaName(snap.mapId)), sub: `${areaName(snap.mapId)} · ROAD POINT`, at: snap.at, local: snap.local };
+  return { id: 'road', road: true, mapId: snap.mapId, name: upperName(snap.street) || (near ? 'NEAR ' + near.name : areaName(snap.mapId)), sub: `${areaName(snap.mapId)} · ROAD POINT`, at: snap.at, local: snap.local };
 }
 function card(choice, menu) {
   const car = menu.h.carSpec?.();
