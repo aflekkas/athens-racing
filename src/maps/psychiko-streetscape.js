@@ -131,7 +131,7 @@ export class PsychikoStreetscape {
     this.group.worldDetailController = this;
     this.materials = { props: this.fadeMaterial(260), trees: this.fadeMaterial(420) }; this.cells = new Map(); this.last = { x: Infinity, z: Infinity }; this.obstacles = [];
     this.trees = treeTemplates(); this.cars = carTemplates(); this.lamps = [gooseneck(), utilityPole()];
-    this.stats = { cells: 0, builds: 0, triangles: 0 };
+    this.stats = { cells: 0, builds: 0 };
     this.index(scenery);
     this.roofs = null;
     this.enabled = settings.worldDetail !== false; this.group.visible = this.enabled;
