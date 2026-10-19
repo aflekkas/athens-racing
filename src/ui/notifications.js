@@ -11,7 +11,7 @@ export function raceNotificationsActive(doc=globalThis.document) {
   const hud=doc.getElementById('hud'),lobby=doc.getElementById('multiplayer');
   return (body.classList.contains('racing')||body.classList.contains('counting'))&&!body.classList.contains('ui-open')&&!body.classList.contains('menu')&&(!lobby||lobby.hidden)&&!doc.querySelector('#loading.open,.modal-scrim')&&(!hud||!hud.hidden&&hud.style.display!=='none');
 }
-const OBSTACLES=['#accounts-offline','.wheel-hud','#posBox','#mapBox','#dialBox','#limitSign','#evBox.on .objective-card','#evBox.on:not(:has(.objective-card))','#mp-board','#race-settings','#mp-toggle','#sigBox','#touch-controls button','#touch-controls .touch-steer','#routeBox','#lapTiming','#gearboxHud'];
+const OBSTACLES=['#accounts-offline','.wheel-hud','#posBox','#mapBox','#dialBox','#limitSign','#evBox.on .objective-card','#evBox.on:not(:has(.objective-card))','#mp-board','#race-settings','#mp-toggle','#sigBox','#routeBox','#lapTiming','#gearboxHud'];
 export class NotificationManager {
   constructor(){this.queue=new NotificationQueue();this.cards=new Map();this.nextAt=0;this.dirty=true;}
   post(value){
@@ -62,7 +62,7 @@ export class NotificationManager {
     this.root.hidden=false;this.root.style.visibility='hidden';
     const cards=items.map(n=>this.card(n));if(cards.length!==this.root.children.length||cards.some((card,i)=>this.root.children[i]!==card))this.root.replaceChildren(...cards);for(const card of cards)if(card.hidden)card.hidden=false;
     // The lane is the corner column when the screen has room for it, else the slim top-edge strip (notification-queue.js).
-    const margin=innerWidth<700?10:28,column=Math.min(300,drivingArea(innerWidth,innerHeight).left-margin-8),width=column>=200?column:Math.min(360,innerWidth-2*margin);this.root.style.width=width+'px';
+    const margin=28,column=Math.min(300,drivingArea(innerWidth,innerHeight).left-margin-8),width=column>=200?column:Math.min(360,innerWidth-2*margin);this.root.style.width=width+'px';
     const visible=el=>el.getClientRects().length&&getComputedStyle(el).display!=='none'&&getComputedStyle(el).visibility!=='hidden';
     const mirrorView=this.mirrorView?.();
     // The real projected mirror glass whenever the camera is known (none in chase: owner-locked, no chase mirror); the

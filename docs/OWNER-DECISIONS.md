@@ -101,6 +101,8 @@ The player and nearby cars may reuse the authored cockpit, **at most 12,000 cabi
 
 2026-10-18 owner decision: **Free roam has no track to follow and no start or finish line.** Owner: “also in free roam there should be no track to follow” and “and no like finish line start line”. In free roam the minimap shows only the map and its streets with a heading arrow (no route line, finish dot, signal or traffic dots), the world has no start/finish gantries, arches, stripes or flags (every map registers them in `route.timingMarks`, which `src/main.js` hides for `free` events; the sprint arches in `markers` are hidden too), and the route/race HUD (position, race clock, route bar, lap timing) is hidden. Races keep their route and start/finish. Guarded by `tools/owner-locked-free-roam-clean.test.mjs`. Owner-locked decision, see docs/OWNER-DECISIONS.md. Ask the owner before changing.
 
+2026-10-19 owner decision: **“stop drawing distant road”: on Potato only, on Riviera, the static world beyond about 340 m is not drawn.** The goal is under 200 draw calls per frame on Riviera on Potato. The race road, terrain tiles, surrounding roads, block buildings and far scenery beyond `PERFORMANCE.potato.farCull` (`src/graphics.js`) are hidden by `src/far-cull.js`, with hysteresis, and the fog (the aerial perspective's far term, `apFar` in `src/env.js`) is fully opaque 40 m before the edge, so the world ends in the horizon haze and nothing pops. It is render only: physics, collision, the route, the minimap, traffic and police never read it. Low, Med, High and Ultra, and the other maps, keep their draw distances and draw the world to the horizon as before. The locked look and the cockpit are unchanged. Guarded by `tools/far-cull.test.mjs` and `tools/far-cull-budget.test.mjs`.
+
 ### 2026-10-18 — Guarded OSM bridge shoulders (Athens development world)
 
 Owner permits OSM carriageway width plus a narrow protected shoulder only on literal `bridge=yes` ways and their connected approaches. Visible low-poly guardrails must be solid colliders: 150 km/h glancing and head-on impacts must not clip through or launch the car off the deck. Tow/respawn must avoid narrow edges and overhangs; AI must stay on deck. All other roads retain the six-metre shoulder sweep. Asphalt slope limits, approach continuity and underpass clearance remain mandatory. Guard descriptions and the Athens handoff must state this exception. Athens remains dev-flagged until owner activation.
@@ -152,3 +154,26 @@ Owner decision: **Athens Racing is a computer game. Phones and tablets may not p
 - **Removed code:** touch controls, the add-to-home-screen card, phone-only layouts and phone performance paths are removed under the strip-out plan in `docs/plans/desktop-only.md`.
 - **Athens open world:** phone-emulation runs and phone-specific caps stop being gates. Desktop limits stay: the initial download (≤15 MiB), the stream resident cap, the quality-tier resource caps and the 10-minute session download. The 64 MiB 2×2 "phone cap" becomes a desktop low-end budget, and the lead may re-tune it with measurements.
 - **Guard:** `tools/owner-locked-desktop-only.test.mjs` (added by the strip-out work). Ask the owner before changing.
+
+## 2026-10-19 — Free roam: pick where to spawn, not a track
+
+Owner decision: **free roam has no tracks. You pick where on the map to start.** Owner: "free roam should have no tracks, it should be more of like i just pick where to be spawned".
+
+**How it works:**
+- **Screen:** FREE ROAM opens a spawn picker instead of the track list. It is the full-page Attica map, the same art and screen template as Track select.
+- **Choosing a spot:** you choose a named spawn spot (a pin with a place name) or click any drivable road on the map, then DRIVE.
+- **Placement:** the car spawns on the nearest drivable road to the chosen point. It is centred in a lane, faces along the road and is clear of traffic, using the same placement as the tow (`src/tow-placement.js`).
+- **Available roads:** spots and clickable roads come from every map players can drive today. The whole-Athens open world joins only when the owner activates it; until then it appears only under `?map=athens`.
+- **What stays:** the 2026-10-18 "free roam has no route or start/finish" rule still holds.
+- **What's gone:** free roam no longer shows a track name, length, laps or leaderboard. Races (Quick Race and multiplayer) keep the track picker.
+- **Guard:** `tools/owner-locked-free-roam-spawn.test.mjs`. Ask the owner before changing.
+
+## 2026-10-19 — Athens world dressing: textures and street detail, all procedural
+
+Owner feedback on the Athens screenshots: "the roads look good (even something simple like that is fine)", "building textures, i cant see any texture", "nor does the sea have texture", "the ground could have at least a texture that is supposed to look somewhat realistic", traffic lights "yeah", "are there any small details like this we can do". Owner clarification: **"all procedural stuff, not telling you to go step by step for each, but at least adding some sort of texture"**.
+
+* Everything is generated in code at load time (canvas or shader noise, tiled patterns, one small noise texture): no hand-made art, no per-building or per-place special cases, facades kept simple (a window / balcony-band rhythm scaled by floor height with the existing per-building tint).
+* The locked look stays: unlit colour only, no lights, shadow maps, sea reflection pass or post effects. Textures and vertex colour carry the look.
+* Budgets: all new textures under 3 MB (one 256 px noise texture, 0.33 MB), instanced props, **World detail Off removes the layers** (plain colour, no props, no foam draw call), every addition reports its bytes per cell. Details, costs and the data caches: [docs/world-dressing.md](world-dressing.md).
+* Guards: `tools/athens-detail.test.mjs`, `tools/world-gen/dressing.test.mjs`.
+

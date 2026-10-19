@@ -12,7 +12,8 @@ import { input as controls } from './input.js';
 import { Audio } from './audio.js';
 const query = new URLSearchParams(location.search);
 const direct = !query.has('menu') && ['simhook', 'autodrive', 'car', 's', 'event', 'quick', 'fixeddt', 'turbo'].some(key => query.has(key));
-if (query.get('map')==='athens' || direct || query.has('lobby')) {
+// ?map=athens boots the open world directly; with ?menu=1 it opens the menu, whose free roam spawn picker then offers the open world.
+if ((query.get('map')==='athens' && !query.has('menu')) || direct || query.has('lobby')) {
   await (await importWithUpdate(() => import('./main.js'))).gameReady;
 } else {
   let mapId = initialMapId(query), car = 0, runtime;
@@ -26,10 +27,10 @@ if (query.get('map')==='athens' || direct || query.has('lobby')) {
   const stopVolumeSync = onSettings(values => audio.setVolumes(values));
   const unlock = () => { if (!runtime) audio.start(); };
   addEventListener('pointerdown', unlock); addEventListener('keydown', unlock);
-  addEventListener('touchend', unlock, { passive: true }); addEventListener('click', unlock);
+  addEventListener('click', unlock);
   const menu = new Menu(document.getElementById('ui'), {
     ctx: () => menuMapContext(mapId), selectMap: id => { mapId = id; },
-    carSpec: () => CARS[car], carName: () => CARS[car].name, inputDevice: () => controls.drivingSource === 'phone' ? 'wheel' : controls.drivingSource, manual: () => settings.transmission === 'manual',
+    carSpec: () => CARS[car], carName: () => CARS[car].name, inputDevice: () => controls.drivingSource, manual: () => settings.transmission === 'manual',
     fmtTime: seconds => (seconds / 60 | 0) + ':' + (seconds % 60).toFixed(3).padStart(6, '0'),
     ensureRuntime, ui: forward => audio.ui?.(forward), bindings: element => controls.openBindings?.(element), cancelBindings: () => controls.cancelCapture?.(),
     garage: () => menu.show('car', { index: car, garage: true }, true),
@@ -40,6 +41,7 @@ if (query.get('map')==='athens' || direct || query.has('lobby')) {
       if (menu.screen !== 'car' || menu.data.def !== def) return;
       await flow.startEvent(def, { car: index });
     },
+    startFree: async def => { const flow = await ensureRuntime(); if (menu.screen !== 'maps') return; await flow.startEvent(def, { car }); },
     openEvent: id => menu.show('car', { def: typeof id === 'object' ? id : quickMapEvent(mapId), index: car }, true),
     quickRace: () => menu.show('car', { def: quickMapEvent(mapId), index: car }, true),
   });

@@ -1,4 +1,5 @@
 import { icon } from './ui/components.js';
+import { upperName } from './greek-caps.js';
 import { notifications } from './ui/notifications.js';
 // DOM HUD: position / timing / rival gap, route progress, real-map minimap (OSM coastline,
 // buildings, streets, the route), tachometer + speedometer, popups, district banners, countdown and menus.
@@ -164,9 +165,9 @@ export class Hud {
     const mk = Object.fromEntries(data.marks.map((m) => [m.id, m.s]));
     // the district / sea labels belong to the Riviera map only; other maps (Megara, Penteli) just get start and finish
     const riviera = this.map.id === 'riviera';
-    lab(route.start, 'START · ' + route.from.toUpperCase(), -14);
+    lab(route.start, 'START · ' + upperName(route.from), -14);
     if (riviera) { lab(mk.lake, 'LAKE', 14); lab(mk.limanakia, 'LIMANAKIA', -14); lab(mk.varkiza, 'VARKIZA', 14); }
-    lab(route.finish, 'FINISH · ' + route.to.toUpperCase(), 14, '#ffc21a');
+    lab(route.finish, 'FINISH · ' + upperName(route.to), 14, '#ffc21a');
     g.fillStyle = 'rgba(255,255,255,.55)'; g.font = '700 11px "Barlow Condensed", sans-serif'; if (riviera) g.fillText('SARONIC GULF', 40, H * 0.72);
     g.fillText('MAP DATA © OPENSTREETMAP CONTRIBUTORS', 40, H - 18);
   }
@@ -213,7 +214,7 @@ export class Hud {
       if (toGoStr !== this._toGo) { this._toGo = toGoStr; el.rToGo.textContent = toGoStr; }
       const z = route.zone(st.s); if (z && z !== this.lastZone) { this.lastZone = z; el.rZone.textContent = z.name; el.mapLabel.textContent = z.name; }
       let rn = route.names[0]?.name || ''; for (const n of route.names) if (st.s >= n.s) rn = n.name;
-      rn = rn.toUpperCase().replace(/^LEOF\.? /, '').replace(/ AVENUE$/, ' AVE');
+      rn = upperName(rn).replace(/^LEOF\.? /, '').replace(/ AVENUE$/, ' AVE');
       if (rn !== this._rRoad) { this._rRoad = rn; el.rRoad.textContent = rn; }
     }
     if (st.pen !== this.penShown) { this.penShown = st.pen; el.penRow.classList.toggle('on', st.pen > 0); el.pen.textContent = '+' + st.pen.toFixed(1) + ' S'; }

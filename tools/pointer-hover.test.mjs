@@ -119,7 +119,7 @@ const movement = [
   ['src/car-select.js', "container.addEventListener('pointermove',move)", /const move = e => \{ if\(e\.pointerId!==pointer\)return;[^\n]+/],
   ['src/ui/components.js', "track.addEventListener('pointermove', move)", /const move = \(ev\) => \{ if \(ev\.pointerId === e\.pointerId\) onValue\(at\(ev\)\); \};/],
   ['src/map-select.js', "map.addEventListener('pointermove', e => {", /map\.addEventListener\('pointermove', e => \{\s*if \(!pointers\.has\(e\.pointerId\)\) return;/],
-  ['src/input.js', "steer.addEventListener('pointermove', move)", /const move = e => \{ if \(e\.pointerId !== pointer\) return;[^\n]+/],
+  ['src/spawn-select.js', "map.addEventListener('pointermove', e => {", /map\.addEventListener\('pointermove', e => \{\s*if \(!pointers\.has\(e\.pointerId\)\) return;/],
   ['src/input.js', "this.listen('mousemove', e => {", /this\.listen\('mousemove', e => \{\s*if \(!enabled\(\) \|\| e\.sourceCapabilities\?\.firesTouchEvents \|\| editable\(e\)\) return;/],
 ];
 test('mouseover / mouseenter / pointermove handlers cannot move UI focus, highlights or selection', () => {
@@ -127,7 +127,7 @@ test('mouseover / mouseenter / pointermove handlers cannot move UI focus, highli
   for (const file of shipped.filter(f => /\.(m?js|html)$/.test(f))) {
     let source = read(file);
     // Gesture callbacks cannot call UI focus/selection helpers either.
-    if (file === 'src/map-select.js') {
+    if (file === 'src/map-select.js' || file === 'src/spawn-select.js') {
       const gesture = source.slice(source.indexOf("map.addEventListener('pointermove'"), source.indexOf('  const up ='));
       assert.doesNotMatch(gesture, /\b(?:focus|setFocus|hilite|highlight|show)\s*\(|classList\.(?:add|toggle)\(['"](?:focus|hi|selected)/, owner);
     }

@@ -51,7 +51,7 @@ const SCREEN_CONTAINERS = new Set(['home__tiles']);
 // screen stylesheets: every stylesheet the menus load, except the kit itself
 const SCREEN_CSS = ['src/menu.css', 'src/map-select.css', 'src/multiplayer.css', 'src/ui/release.css', 'src/ui/headunit.css', 'src/input.css'].filter(existsSync);
 // Race HUD and in-race overlays are not menu screens (style.css owns them); rules scoped to them are out of scope here.
-const HUD_SCOPE = /(#hud|#evBox|#posBox|#mapBox|#dialBox|#routeBox|#gearboxHud|#engineHud|#limitSign|#wrongWay|#lapTiming|#drivingHints|#drivingTip|#keys|#credit|#count|#mp-board|#mp-toggle|#race-settings|#checkpoint-banner|#touch-controls|\.touch-|#police-hud|#tow-prompt|\.tow-|\.objective-|\.racer-marker|\.pop\b|#sigBox|\.wheel-hud|#accounts-offline|\.mp-update-notice|\.mp-connection-chip|\.mp-latency|\.graphics-live-note)/;
+const HUD_SCOPE = /(#hud|#evBox|#posBox|#mapBox|#dialBox|#routeBox|#gearboxHud|#engineHud|#limitSign|#wrongWay|#lapTiming|#drivingHints|#drivingTip|#keys|#credit|#count|#mp-board|#mp-toggle|#race-settings|#checkpoint-banner|#police-hud|#tow-prompt|\.tow-|\.objective-|\.racer-marker|\.pop\b|#sigBox|\.wheel-hud|#accounts-offline|\.mp-update-notice|\.mp-connection-chip|\.mp-latency|\.graphics-live-note)/;
 // screen modules: everything that renders menu markup
 const SCREEN_JS = ['src/menu.js', 'src/leaderboards-screen.js', 'src/car-select.js', 'src/map-select.js', ...walk('src/ui', /\.js$/).filter((f) => f !== KIT_JS && !/phone-wheel|notification|notice-style|telltales|title-hero|garage-thumbnails|live-board|loading\.js$/.test(f))];
 
@@ -198,7 +198,7 @@ test('dialog, confirm and pause share an animated blurred backdrop with a tinted
   assert.match(css, /\.dialog-scrim, \.modal-scrim, \.scr--pause\s*\{[^}]*-webkit-backdrop-filter: blur\(var\(--overlay-blur\)\); backdrop-filter: blur\(var\(--overlay-blur\)\)/);
   assert.match(css, /--overlay-blur: 12px; background: rgba\(3,5,7,\.66\)/);
   assert.match(css, /@supports \(\(backdrop-filter: blur\(12px\)\)/);
-  assert.match(css, /@media \(pointer: coarse\), \(prefers-reduced-transparency: reduce\)/);
+  assert.match(css, /@media \(prefers-reduced-transparency: reduce\)/);
   assert.match(css, /data-ui-backdrop=tint/);
   assert.match(css, /@keyframes ui-overlay-out/);
   assert.match(kit, /\['potato', 'low'\]\.includes\(settings.perfClass\)/);

@@ -18,7 +18,7 @@ Done and checked by the lead:
 - [x] Title cleanup (`91bb033d`), simple header and no clock (`bd8ff407`)
 - [x] Lucide icons (`5ed5152d`, `ea499482`)
 - [x] Garage cards/filters/viewer (`fdedb0f5`); Ducato dashboard (`ab85a17e`)
-- [x] Mobile playable; bodyless-car fix (`c222bc29`, `8f16ab59`); solo HUD MULTIPLAYER button removed (`854ba390`)
+- [x] ~~Mobile playable~~ (superseded 2026-10-19: computer only, phones and tablets get a gate and the touch support is removed, `docs/plans/desktop-only.md`); bodyless-car fix (`c222bc29`, `8f16ab59`); solo HUD MULTIPLAYER button removed (`854ba390`)
 - [x] Multiplayer lobby browser and solo RACE (`74611cfc`); full-page track map (`20fa3196`, `7d6e589f`)
 - [x] Credits and What's New as full-page articles (`8a5117e2`, `a220b106`)
 - [x] Release-PR versioning written (`accfaef6`, not on prod yet). Lead does the cutover after this batch
@@ -59,7 +59,8 @@ Running (Sonnet; Enterprise unless noted):
 - [x] Athens centre (partial): 47 cells, 336-cell world at 183.8/192 MiB, gates green (`2ead313f`, `5f95eb8b`)
 - [x] Athens: Piraeus enterable from Syntagma (Tavros underpass link drawn at grade, 0% → 73% of Piraeus km; the rest is cut by gated port roads and the world edge), cells 67% smaller (compact tiles), Kypseli/Patisia and every other centre candidate baked: 450 cells, 104.1 of 192 MiB, worst 2×2 set 22.8 MiB (`tunnels.json`, `world-tile-compact`)
 - [x] Owner raised the Athens world ceiling to 2 GiB, player-side caps unchanged (`07be9d90`); rest of the centre then the north follow
-- [~] Potato: stop drawing distant road (fogged cull) to get Riviera under 200 draw calls (owner approved; Enterprise) without owner wait
+- [~] Athens world dressing (owner 2026-10-19, all procedural): ground classes + facade textures + sea with foam done (`590fb520`); working traffic lights done (`c7fdab54`); street details done (lamps, benches, kiosks, bus stops, crossing/stop/one-way signs, fountains, monuments, parked cars; not pedestrian paving). **The next full bake picks all of it up** (HANDOVER in `.scratch/athens-world-dressing-2026-10-19/HANDOVER.md`, docs/world-dressing.md)
+- [x] Potato far cull on Riviera, 340 m + haze; <200 calls on open road (`a413b4ce`). Psychiko ~600+ calls on Potato, owner to decide without owner wait
 - [x] Online: remote cars glide (jitter buffer, 20 Hz sim-clock samples, 50 ms relay) and car-to-car contacts symmetric (`3f35e7de`); owner to retest with a friend
 - [x] Multiplayer: restart and tow land where the car is (0 m off the grid after a host restart, guards in `server/mp-restart-tow.test.mjs`); lobby double-JOIN error and a lobby keeping the old track's traffic fixed; traffic seed equal on every client (`tools/traffic-seed.test.mjs`); owner to retest with a friend
 - [x] Badges one per end, catalogue guard (`5a9dccf9`); car vs trim chips (`50dc18db`); sharper car on weak classes (`bfdb468d`); Riviera draw calls ~540→~340 on Low (`c5025607`)
@@ -147,7 +148,7 @@ Waiting on the owner:
 
 ## Controls
 - [x] Phone as steering wheel: QR pairing, P2P with relay fallback, tilt, pedals, safe release (`fe12576`).
-- [?] Owner: test on a real iPhone/Android.
+- [~] ~~Owner: test on a real iPhone/Android.~~ Superseded 2026-10-19: phones and tablets can't play.
 
 ## Quality
 - [x] Review findings fixed: trim-step DOM leak, touch rotate, frozen scooter rider, rider protocol bounds, 8 unwired test suites plus a coverage guard (`b2798b9`). CLE margin and mild-language silence were already fixed.

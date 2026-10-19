@@ -6,10 +6,7 @@
 #lapTiming small { display: block; margin-top: 2px; font-size: 12px; letter-spacing: .06em; color: #b8c3ce; }
 #lapTiming small:empty { display: none; }
 body.ui-open #lapTiming { display: none; }
-@media (max-width: 700px) {
-  #lapTiming { top: 92px; left: 12px; min-width: 0; padding: 5px 10px; }
-  #lapTiming span { font-size: 20px; }
-}
+
 /* Track select (owner 2026-10-18): the Attica map is the whole page. The header, the key-hint footer and the floating
    track card sit over it; the map is a canvas rendered from the pre-built OSM/DEM art (tools/build-attica-map.py). */
 /* clip, not hidden: focusing an off-screen pin (scrollIntoView) must never scroll the map layer sideways */
@@ -45,6 +42,28 @@ body.ui-open #lapTiming { display: none; }
   #ui.s-maps .track-pin:not(.selected):hover .track-pin__dot { background: #4a5864; }
 }
 
+/* Free roam spawn picker (owner 2026-10-19): the same map screen; pins are named places, a clicked road is a place too.
+   A pin is just its dot; the name chip shows for the chosen place and for the others that fit (src/spawn-select.js). */
+#ui.s-maps .track-pin.spawn-pin { display: block; width: 18px; height: 18px; }
+#ui.s-maps .track-pin.spawn-pin .track-pin__dot { position: absolute; left: 2px; top: 2px; width: 14px; height: 14px; font-size: 0; }
+#ui.s-maps .track-pin.spawn-pin > span { position: absolute; left: calc(100% + 6px); top: 50%; translate: 0 -50%; opacity: 0; pointer-events: none; }
+#ui.s-maps .track-pin.spawn-pin[data-side="l"] > span { left: auto; right: calc(100% + 6px); }
+#ui.s-maps .track-pin.spawn-pin.named > span, #ui.s-maps .track-pin.spawn-pin.selected > span { opacity: 1; pointer-events: auto; }
+#ui.s-maps .track-pin.spawn-pin.selected { z-index: 2; }
+#ui.s-maps .track-pin.spawn-pin > span, #ui.s-maps .track-pin.spawn-pin .track-pin__dot { transition: opacity .25s var(--ease, ease), color .3s var(--ease, ease), background .3s var(--ease, ease), transform .35s var(--ease, ease); }
+/* The point a click snapped to: a dot that grows in, with one soft pulse. */
+#ui.s-maps .attica-overlay .spawn-marker { position: absolute; left: 0; top: 0; width: 0; height: 0; z-index: 2; pointer-events: none; will-change: transform; }
+#ui.s-maps .attica-overlay .spawn-marker > i { position: absolute; left: -9px; top: -9px; width: 18px; height: 18px; border-radius: 50%; border: 2px solid #05080b; background: var(--pin, #ff7868); box-shadow: 0 2px 10px rgba(0,0,0,.6); opacity: 0; transform: scale(.3); transition: opacity .25s var(--ease, ease), transform .35s var(--ease, ease), background .3s var(--ease, ease); }
+#ui.s-maps .attica-overlay .spawn-marker.on > i { opacity: 1; transform: scale(1); }
+#ui.s-maps .attica-overlay .spawn-marker > i::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; background: var(--pin, #ff7868); opacity: 0; }
+#ui.s-maps .attica-overlay .spawn-marker.on > i::after { animation: spawn-pulse 1.5s var(--ease, ease-out) 1; }
+@keyframes spawn-pulse { 0% { opacity: .55; transform: scale(.7); } 100% { opacity: 0; transform: scale(2.4); } }
+/* "No road here": a short note by the click, gone in under two seconds. */
+#ui.s-maps .attica-overlay .spawn-nohere { position: absolute; left: 0; top: 0; z-index: 3; opacity: 0; pointer-events: none; will-change: transform; transition: opacity .25s var(--ease, ease); }
+#ui.s-maps .attica-overlay .spawn-nohere.on { opacity: 1; }
+#ui.s-maps .attica-overlay .spawn-nohere > b { display: block; padding: .34rem .6rem; border-radius: 6px; border: 1px solid rgba(190,215,235,.12); background: rgba(7,11,15,.9); color: #c8d2d9; font: 650 10px/1.2 var(--f-sans, sans-serif); letter-spacing: .14em; white-space: nowrap; transform: translateY(4px); transition: transform .3s var(--ease, ease); }
+#ui.s-maps .attica-overlay .spawn-nohere.on > b { transform: none; }
+
 /* Map labels: real OSM places and summits at constant screen size; zoom tiers and collisions decide which show. */
 #ui.s-maps .map-label { position: absolute; left: 0; top: 0; width: 0; height: 0; opacity: 0; transition: opacity .25s cubic-bezier(.2,.8,.2,1); will-change: transform; pointer-events: none; }
 #ui.s-maps .map-label.on { opacity: 1; }
@@ -64,27 +83,8 @@ body.ui-open #lapTiming { display: none; }
 #ui.s-maps .map-label--peak > b { color: #8ba196; font-size: 9px; }
 #ui.s-maps .map-label--water > b { color: #4d7a8e; font-size: 11px; font-weight: 500; letter-spacing: .55em; text-shadow: none; }
 
-/* The floating track card: right of the free area on wide screens, a bottom sheet on phones (still the full screen). */
-
-@media (max-width: 700px) and (min-height: 501px) {
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  #ui.s-maps .track-pin > span { padding: .28rem .45rem; font-size: 9px; letter-spacing: .08em; }
-  #ui.s-maps .track-pin__dot { width: 22px; height: 22px; font-size: 10px; }
-  #ui.s-maps .map-label--city > b { font-size: 14px; letter-spacing: .4em; }
-  #ui.s-maps .map-label--water > b { font-size: 9px; letter-spacing: .4em; }
-  #ui.s-maps .map-label > b { font-size: 9px; }
-  #ui.s-maps .map-label--suburb > b { font-size: 8px; }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  #ui.s-maps .track-pin > span, #ui.s-maps .track-pin__dot, #ui.s-maps .map-label, #ui.s-maps .attica-overlay, #ui.s-maps .attica-canvas { transition: none; }
+  #ui.s-maps .track-pin > span, #ui.s-maps .track-pin__dot, #ui.s-maps .map-label, #ui.s-maps .attica-overlay, #ui.s-maps .attica-canvas, #ui.s-maps .attica-overlay .spawn-marker > i, #ui.s-maps .attica-overlay .spawn-nohere, #ui.s-maps .attica-overlay .spawn-nohere > b { transition: none; }
+  #ui.s-maps .attica-overlay .spawn-marker.on > i::after { animation: none; }
   
 }

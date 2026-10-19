@@ -7,14 +7,14 @@ const source=readFileSync(new URL('../src/car-select.js',import.meta.url),'utf8'
 test('showroom viewport has a nonempty morph key',()=>{
  assert.match(source, /class="car-preview-viewport" data-ui-keep="preview"/);
 });
-test('touch and mouse rotate; only large fast completed touch swipes change trim',()=>{
+test('every pointer type rotates the car by dragging, and a swipe never changes trim',()=>{
  const handlers=source.slice(source.indexOf('  const down = e =>'),source.indexOf("  container.addEventListener('pointerdown'"));
- const factory=new Function('turntable','model','container','renderer','scene','camera','performance','step','frame',`let pointer,pointerX,pointerStart,pointerAt,touch;${handlers};return {down,move,up}`);
- for(const [type,dx,elapsed,event,steps] of [['touch',20,100,'pointerup',0],['touch',90,500,'pointerup',0],['touch',90,100,'pointerup',1],['touch',-90,100,'pointerup',-1],['touch',90,100,'pointercancel',0],['mouse',90,100,'pointerup',0]]){
+ const factory=new Function('turntable','model','container','renderer','scene','camera','performance','step','frame',`let pointer,pointerX;${handlers};return {down,move,up}`);
+ for(const [type,dx,elapsed,event] of [['touch',20,100,'pointerup'],['touch',90,100,'pointerup'],['touch',-90,100,'pointerup'],['touch',90,100,'pointercancel'],['mouse',90,100,'pointerup'],['pen',90,100,'pointerup']]){
   const t=new TurntableControl(0),model={root:{rotation:{y:0}}};let now=0,stepped=0;
   const h=factory(t,model,{classList:{add(){},remove(){}},setPointerCapture(){}},{render(){}},{},{},{now:()=>now},n=>stepped+=n,()=>{});
   const e={pointerId:1,clientX:0,pointerType:type,preventDefault(){}};
   h.down(e);now=elapsed;h.move({...e,clientX:dx});assert.equal(model.root.rotation.y,dx*.012);
-  h.up({...e,clientX:dx,type:event});assert.equal(stepped,steps===0?0:-steps);assert.equal(t.dragging,false);
+  h.up({...e,clientX:dx,type:event});assert.equal(stepped,0,'trim changes only through its own controls');assert.equal(t.dragging,false);
  }
 });

@@ -3,7 +3,7 @@ import { MAPS, getMap } from './map-catalog.js';
 import { QUICK_RACE } from './events.js';
 
 export function initialMapId(query) {
-  if (query.has('map')) return getMap(query.get('map')).id;
+  if (query.has('map') && query.get('map') !== 'athens') return getMap(query.get('map')).id; // ?map=athens is the open world, not a catalogue map
   const event = query.get('event') || '';
   return MAPS.find(m => m.eventIds?.includes(event) || event.endsWith(':' + m.id))?.id || 'riviera';
 }

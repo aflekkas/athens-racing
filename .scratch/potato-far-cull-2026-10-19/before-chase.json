@@ -1,0 +1,61 @@
+{
+  "tag": "before",
+  "cam": "chase",
+  "class": "potato",
+  "rivals": 0,
+  "query": "",
+  "farCull": 0,
+  "sourceHashes": {
+    "src/far-cull.js": null
+  },
+  "poses": {
+    "straight": {
+      "managed": null,
+      "hidden": null,
+      "updateMs": null,
+      "s": 5713,
+      "x": 3324,
+      "z": 1466,
+      "calls": [
+        239,
+        239,
+        239,
+        239,
+        239,
+        239
+      ],
+      "triangles": 1139080,
+      "speedKmh": 15
+    },
+    "corner": {
+      "managed": null,
+      "hidden": null,
+      "updateMs": null,
+      "s": 9394,
+      "x": 5571,
+      "z": 2307,
+      "calls": [
+        153,
+        153,
+        153,
+        153,
+        153,
+        153
+      ],
+      "triangles": 518566,
+      "speedKmh": 44
+    }
+  },
+  "errors": [],
+  "route": {
+    "straight": {
+      "s": 5710,
+      "runLength": 730
+    },
+    "corner": {
+      "s": 9380,
+      "curvature": 0.028610557317733765,
+      "radius": 35
+    }
+  }
+}

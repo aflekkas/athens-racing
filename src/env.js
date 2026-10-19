@@ -185,6 +185,7 @@ const AP = {
   apSun: { value: new Float32Array(3) },
   apQ: { value: new Float32Array([0.000075, 240, 1]) }, // sea-level aerosol density / scale height / enabled
   apP: { value: new Float32Array(3) },   // x: haze (extinction) multiplier, y: 1 = uniforms present, z: sun-translucency scale
+  apFar: { value: new Float32Array(2) }, // far fog (Potato's far cull, far-cull.js): haze fully opaque at y metres, ramping from x; y = 0: off
   apGlowC: { value: new Float32Array(3) }, apGlowD: { value: new Float32Array([GLOW_DIR.x, 0, GLOW_DIR.z]) },
 };
 for (const sh of Object.values(THREE.ShaderLib)) if (sh.uniforms && sh.uniforms.fogColor) Object.assign(sh.uniforms, AP);
@@ -220,7 +221,7 @@ writeUniforms();
 /** GLSL: aerial perspective (transmittance + in-scattering toward the horizon colour). Reads the shared condition
  *  uniforms; materials without them (custom shaders) fall back to the boot-time constants. */
 export const AERIAL_GLSL = /* glsl */`
-  uniform vec3 apHz[10]; uniform vec3 apSun; uniform vec3 apQ; uniform vec3 apP; uniform vec3 apGlowC; uniform vec3 apGlowD;
+  uniform vec3 apHz[10]; uniform vec3 apSun; uniform vec3 apQ; uniform vec3 apP; uniform vec2 apFar; uniform vec3 apGlowC; uniform vec3 apGlowD;
   const vec3 AP_SUN0 = ${v3([sunDir.x, sunDir.y, sunDir.z])};
   const vec3 AP_BR = vec3(${BR.map(f1).join(',')});
   const float AP_BM = ${f1(BME)};
@@ -248,6 +249,8 @@ export const AERIAL_GLSL = /* glsl */`
     // Coastal boundary layer: height-integrated, weather-scaled, with the live angular sky radiance.
     if (apP.y > 0.5 && apQ.z > 0.5) od += vec3(apQ.x * apOD(camY, dir.y, d, max(apQ.y, 1.0)) * sqrt(max(apP.x, 1.0)));
     vec3 T = exp(-od * AP_K);
+    // far fog: a class that stops drawing the world at a distance (far-cull.js) ends it in the horizon haze instead of an edge
+    if (apFar.y > 0.5) T *= 1.0 - smoothstep(apFar.x, apFar.y, d);
     return col * T + apHorizon(dir) * (1.0 - T);
   }
 `;

@@ -1,4 +1,5 @@
 import * as roundaboutHelpers from '../src/roundabouts.js';
+import * as PLAN from '../src/signal-plan.js';
 import { impactTarget, LIFE, STEP } from '../src/impact-ragdoll.js';
 // The real src/traffic.js and src/signals.js decision code without WebGL: the models are plain records, the
 // signal heads are not drawn. Used by tools/traffic-race.test.mjs and tools/traffic-race-sim.mjs to run civilians
@@ -40,7 +41,7 @@ export function loadTraffic() {
     THREE, COND, trafficByHour, () => 15, TRAFFIC_TYPES, trafficModel, () => {}, RNG, clamp, lerp, smoothstep,
     ROAD, 3.3, {}, () => null, () => null, damageIncrement, equivalentBarrierSpeed,
     class { begin() {} add() {} end() {} }, 110, impactTarget, LIFE, STEP, roundaboutHelpers); // distant-car draw batches (src/traffic-proxies.js): nothing to draw here
-  const S = new Function('THREE', 'mergeGeometries', 'ROAD', 'RNG', 'clamp', 'canvasTex', strip(read('signals.js')) + '\nreturn { Signals, findJunctions };')(THREE, () => null, ROAD, RNG, clamp, () => null);
+  const S = new Function('THREE', 'mergeGeometries', 'ROAD', 'RNG', 'clamp', 'canvasTex', 'CYCLE', 'GREEN', 'AMBER', 'RED0', 'WAVE_V', strip(read('signals.js')) + '\nreturn { Signals, findJunctions };')(THREE, () => null, ROAD, RNG, clamp, () => null, PLAN.CYCLE, PLAN.GREEN, PLAN.AMBER, PLAN.RED0, PLAN.WAVE_V);
   return (loaded = { ...T, TRAFFIC_TYPES, ...S });
 }
 

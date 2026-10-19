@@ -8,7 +8,6 @@ async function prepareCapture(page) {
     if(window.__sim?.render){
       window.dispatchEvent(new Event('resize'));
       __sim.cameraBlend.active=false;__sim.step(8,1e-6);__sim.cameraBlend.active=false;
-      const touch=document.getElementById('touch-controls');if(touch)touch.hidden=innerWidth>=900;
       __sim.render();
     }
     if(n){n.dirty=true;n.update();}
@@ -24,14 +23,12 @@ async function capturePlacements(page,context,{out,baseline,variant,prepare=true
       window.__notifications=(await import('/legacy/src/ui/notifications.js')).notifications;
       window.auditEngine=(await import('/legacy/src/engine-hud.js')).updateEngineHud;
       window.auditComponents=await import('/legacy/src/ui/components.js');
-      [...document.querySelectorAll('#touch-controls')].slice(1).forEach(el=>el.remove());
       __notifications.mount();clearInterval(__notifications.timer);
     }
   },variant);
   const checks=[];await fs.mkdir(resolve(out,variant),{recursive:true});
-  for(const[width,height]of[[1280,800],[1920,1080],[390,844],[844,390]]){
+  for(const[width,height]of[[1280,800],[1920,1080]]){
     await page.setViewportSize({width,height});await page.mouse.move(width/2,height/2);
-    if(width<900)await page.evaluate(()=>{window.dispatchEvent(new Event('touchstart'));[...document.querySelectorAll('#touch-controls')].slice(1).forEach(el=>el.remove());});
     for(const view of ['chase','cockpit']){
       console.log('RESHOOT',variant,width,view);
       await page.evaluate(([view,variant])=>{

@@ -57,6 +57,6 @@ try{
  const excludedByReason={};for(const reason of excluded.values())excludedByReason[reason]=(excludedByReason[reason]||0)+1;
  await writeFile(join(output,'python-audit.ndjson'),pythonAudits.map(a=>JSON.stringify(a)).join('\n')+'\n');
  await writeFile(join(output,'summary.json'),JSON.stringify({area:areaName,world:area.world,atGradeUnderpasses:JSON.parse(await readFile(new URL('./tunnels.json',import.meta.url),'utf8')),excludedRoads:excluded.size,excludedByReason,excludedRoadIds:[...excluded.keys()].sort(),unresolvedBridges:[...unresolved].sort(),clippedBuildingPieces:clippedPieces,clippedBuildingPiecesDropped:clippedDropped,cells:audits.length,bytes:audits.reduce((n,r)=>n+r.bytes,0),maxSafetyBytes,worstSafetyCell,maxNeighbourhoodBytes,maxTransientBytes,graphEdges:graph.edges.size,graphNodes:graph.nodes.size,turnRules:graph.turns.size},null,2));
- if(maxSafetyBytes>64*1024*1024||maxTransientBytes>64*1024*1024)throw Error('Phone minimum safety set/reservation conflicts with unchanged cap');
+ if(maxSafetyBytes>64*1024*1024||maxTransientBytes>64*1024*1024)throw Error('Desktop low-end safety set/reservation exceeds the unchanged 64 MiB budget');
  console.error('Coastal bake complete; assets remain uncommitted pending hosting agreement.');
 }catch(e){if(e.failures)await writeFile(join(output,'failures.json'),JSON.stringify(e.failures,null,1));throw e;}finally{if(generator.exitCode===null)generator.kill('SIGTERM');writer.destroy();await rm(fifo,{force:true});}

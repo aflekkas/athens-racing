@@ -8,6 +8,13 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Free Roam: pick where to start. Choose a place such as Vouliagmeni or Varkiza, or click any road, then drive. No more tracks to pick.
+  ![The Free Roam map with Vouliagmeni chosen, the Riviera roads lit and your car beside the DRIVE button](assets/changelog/2026.10.16.1/free-roam-spawn.webp "Pick a place or click any road, then drive.")
+
+- ATHENS RACING is made for computers: phones and tablets now see a page asking you to open it on a laptop or desktop. Touchscreen laptops keep playing.
+
+- Weak laptops: far-off road, hills and buildings now fade into haze instead of being drawn, so Riviera runs smoother on the weakest computers.
+
 - Weak laptops: Riviera draws about a tenth fewer things per frame, with the same picture.
 
 - Weak laptops: Riviera draws fewer things per frame, which takes load off the processor.

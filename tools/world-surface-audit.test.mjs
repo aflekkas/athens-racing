@@ -42,3 +42,13 @@ test('guarded OSM bridge exception is explicit, surface-specific and never weake
   t.contactLayers.fill(1);for(let i=1;i<t.contactPositions.length;i+=3)t.contactPositions[i]=t.contactPositions[i-1]*.7;
   assert.equal(auditWorldSurface(t,options).passed,false,'bridge asphalt still obeys thirty degrees');
 });
+
+// A long raised approach reaches cells that hold none of its bridge ways: the record names the bridge elsewhere (approachOnly) and
+// guards the approach roads this cell does hold; without the flag a bridge source absent from `roads` is still invalid.
+test('an approach-only structure record guards the loaded approach roads but never a record that names none',()=>{
+  const t=fixture();t.contactPositions[12]=t.contactPositions[15]=256.75;t.contactLayers.fill(1);
+  const record={kind:'osm-bridge-guarded',layer:1,shoulderMetres:.25,bridgeSources:['w9:0'],roads:['w1:0']},ids=['','surface:w1:0','ground'];
+  assert.throws(()=>auditWorldSurface(t,{ids,structures:[record]}),/Invalid guarded/);
+  const r=auditWorldSurface(t,{ids,structures:[{...record,approachOnly:true}]});assert.equal(r.passed,true);assert.ok(r.guardedShoulderSamples>0);
+  assert.throws(()=>auditWorldSurface(t,{ids,structures:[{...record,approachOnly:true,roads:[]}]}),/Invalid guarded/);
+});

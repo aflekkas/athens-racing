@@ -24,7 +24,7 @@ await new Promise(r=>server.listen(0,'127.0.0.1',r));let browser;
 try{
  browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_BIN||'/home/dev/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome',args:['--no-sandbox','--enable-webgl','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
  const page=await browser.newPage({deviceScaleFactor:2});
- for(const width of [1280,390]){
+ for(const width of [1280,960]){
   await page.setViewportSize({width,height:844});await page.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>window.ready);
   const failures=await page.evaluate(()=>{
    const errors=[],grid=document.querySelector('.car-grid'),toolbar=document.querySelector('.catalog-toolbar'),heading=document.querySelector('.scr__head');

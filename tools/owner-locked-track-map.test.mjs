@@ -11,7 +11,7 @@ const rule = sel => [...css.matchAll(/([^{}]+)\{([^}]*)\}/g)].filter(m => m[1].s
 test('the track picker has no reset control or reset action', () => {
   assert.doesNotMatch(js, /mapReset|['"`]RESET['"`]|arrow-counter-clockwise|rotate-ccw/, `src/map-select.js: ${owner}`);
   assert.doesNotMatch(read('src/menu.js'), /mapReset/, `src/menu.js: ${owner}`);
-  // Selecting a track (pin, prev/next, A/D, LB/RB, swipe) always re-frames it instead.
+  // Selecting a track (pin, prev/next, A/D, LB/RB) always re-frames it instead.
   assert.match(js, /const frameSelected = \(\) => \{[^\n]*flyTo\(framing\(\)\)/, owner);
   assert.match(js, /\} else if \(!reframe\) return;\n\s*frameSelected\(\);/, owner);
   assert.match(js, /show\(pin\.dataset\.mapId, true\)/, `a pin click re-frames its track. ${owner}`);

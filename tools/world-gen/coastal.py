@@ -136,7 +136,7 @@ class Structures:
   self.unresolved=[i for i in plan['unresolved'] if i in byid];platforms=[];self.crossing_ids=set();self.joined_nodes=set()
   for g in sorted(plan['groups'],key=lambda g:g['id']):
    shape_=shape(g['platform']);platforms.append(shape_);self.crossing_ids.update(g['lower']);self.joined_nodes.update(g['upperNodes'])
-   groups.append(dict(id=g['id'],bridgeSources=[i for i in g['bridgeSources'] if i in byid],roads=[byid[i] for i in g['upper'] if i in byid],lower=[byid[i] for i in g['lower'] if i in byid],
+   groups.append(dict(id=g['id'],bridgeSourcesAll=list(g['bridgeSources']),bridgeSources=[i for i in g['bridgeSources'] if i in byid],roads=[byid[i] for i in g['upper'] if i in byid],lower=[byid[i] for i in g['lower'] if i in byid],
     centre=tuple(g['centre']),axis=tuple(g['axis']),platform=shape_,acrossEnd=g['acrossEnd']))
   self.groups=groups;self.raised={r['id'] for g in groups for r in g['roads']}
   self.deck=[r for r in roads if r['id'] in self.raised];self.ground=[r for r in roads if r['id'] not in self.raised]
@@ -144,6 +144,10 @@ class Structures:
  def relevant(self,box_):
   """Groups with roads in view, a bridge way in view and a platform that reaches `box_`: the ones a cell builds, gates and records."""
   return [g for g in self.groups if g['roads'] and g['bridgeSources'] and g['platform'].intersects(box_)]
+ def approaches(self,box_):
+  """Groups seen only by their approach roads: the raised chain of a deck can run hundreds of metres from the bridge itself, so
+  a cell may load some of its roads and none of its bridge ways. Its deck edges are still the approach of a literal bridge=yes."""
+  return [g for g in self.groups if g['roads'] and not g['bridgeSources'] and g.get('bridgeSourcesAll') and g['platform'].intersects(box_)]
  def depression(self,x,z):
   result=0.
   for g in self.groups:

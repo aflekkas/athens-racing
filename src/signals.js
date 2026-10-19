@@ -7,10 +7,9 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { ROAD } from './road.js';
 import { RNG, clamp, canvasTex } from './util.js';
 
-export const CYCLE = 28, GREEN = 16, AMBER = 3; // red = 9 s
-const RED0 = GREEN + AMBER;
+import { CYCLE, GREEN, AMBER, RED0, WAVE_V } from './signal-plan.js';
+// the fixed-time plan is shared with the streamed Athens world (src/signal-plan.js); red = 9 s
 export const STOP_OFF = 12, ZEBRA_OFF = 8.5;
-const WAVE_V = 80 / 3.6;
 const PED0 = RED0 + 1, PED1 = CYCLE - 2.5; // green man window (inside the main red)
 
 /** cluster the OSM signal nodes into junctions on the route, and find which side streets meet there */

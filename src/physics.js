@@ -640,7 +640,7 @@ export class Vehicle {
     const helper = clamp(beta * 0.55, -0.22, 0.22) * smoothstep(5, 14, vt) * (Math.abs(sIn) < 0.1 ? 1 : 0.35) * (1 - this.driftLatch) * clamp(this.steerAssist ?? 1, 0, 1);
     const rack = this.rackLock(vt);
     const raw = sIn * (rack + counter) + helper;
-    // steering assist (digital input: keyboard / touch). The input range maps onto the angle that asks the front tyres
+    // steering assist (digital input: the keyboard). The input range maps onto the angle that asks the front tyres
     // for their peak slip from the direction the front axle is actually travelling (thF): full input = all the grip the
     // fronts have, never more (past the peak they only scrub and plough); half input = half of it. Counter-steer maps
     // onto the same peak on the other side of thF, so in a slide full opposite lock catches it. steerAssist: 1 full,

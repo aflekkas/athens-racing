@@ -13,8 +13,8 @@ const { chromium } = await import(pathToFileURL(process.env.PLAYWRIGHT_MODULE ||
 const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROME_BIN, args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 const report = { errors: [], checks: [], captures: [] }, url = `http://127.0.0.1:${app.server.address().port}/?menu&quality=low`;
 try {
-  for (const width of [1280, 390]) {
-    const context = await browser.newContext({ viewport: { width, height: width === 390 ? 844 : 800 }, serviceWorkers: 'block' });
+  for (const width of [1280, 960]) {
+    const context = await browser.newContext({ viewport: { width, height: width === 960 ? 700 : 800 }, serviceWorkers: 'block' });
     const page = await context.newPage(), photos = [], maps = [];
     page.on('pageerror', e => report.errors.push(e.stack));
     page.on('request', req => { const path = new URL(req.url()).pathname; if (path.startsWith('/assets/changelog/')) photos.push(path); if (path.startsWith('/data/')) maps.push(path); });

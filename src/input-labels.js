@@ -2,7 +2,6 @@
 const PAD = ['A','B','X','Y','LB','RB','LT','RT','VIEW','MENU','LS','RS','D UP','D DOWN','D LEFT','D RIGHT','HOME'];
 const KEYS = { Space: 'SPACE', Escape: 'ESC', Enter: 'ENTER', ShiftLeft: 'L SHIFT', ShiftRight: 'R SHIFT', Backspace: 'BKSP' };
 export function bindingLabel(bindings, action, device = 'keyboard') {
-  if (device === 'touch') return ({ throttle: 'GAS', brake: 'BRAKE', handbrake: 'HB', shiftUp: 'GEAR +', shiftDown: 'GEAR −', transmission: 'MODE', tractionControl: 'TC', camera: 'CAM', lookBack: 'LOOK BACK', pause: 'PAUSE', tow: 'TOW', reset: 'RESET', mouseLook: 'DRAG VIEW' })[action] || action.toUpperCase();
   const defaults = { keyboard: { shiftUp: ['KeyE'], shiftDown: ['KeyQ'], transmission: ['KeyL'] }, gamepad: { shiftUp: ['b5'], shiftDown: ['b4'], transmission: ['b10'] } };
   const codes = (bindings || defaults)?.[device === 'gamepad' ? 'gamepad' : 'keyboard']?.[action] || [];
   if (!codes.length) return 'UNBOUND';

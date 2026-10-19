@@ -5,14 +5,15 @@ import {setExhaustPops} from './exhaust-pops.js';
 import { install as installAccounts } from './ui/account-loader.js';
 // MENUS: title, mode select, map select, race setup, car select, settings, pause and results.
 // Plain DOM in #ui (index.html), built from the UI kit (src/ui/components.js + ui.css) and styled by src/menu.css.
-// Navigation: mouse / touch, or the named input actions main.js routes here (up / down / left / right / confirm / back,
-// shiftUp / shiftDown switch tabs) from keyboard, gamepad and touch. Up / down / left / right move focus spatially
+// Navigation: mouse, or the named input actions main.js routes here (up / down / left / right / confirm / back,
+// shiftUp / shiftDown switch tabs) from keyboard and gamepad. Up / down / left / right move focus spatially
 // (lists, grids and card rails alike); on an adjustable row (slider, toggle, segmented, stepper, select) left / right
 // change its value. Menu items are not native <button>s on purpose: the input system ignores key events aimed at
 // focused form controls, so focus is drawn with a class and the keys keep flowing through flowAction().
 import { getEvents, QUICK_RACE, TYPES, resolve, rivalCount, SP_RIVALS, MAX_RIVALS } from './events.js';
 import * as S from './settings.js';
 import { renderMapSelect, selectMap, mountMapSelect } from './map-select.js';
+import { renderSpawnSelect, mountSpawnSelect, driveFromSpawn } from './spawn-select.js';
 import { CARS } from './cars.js';
 import { GARAGE_CARS } from './car-catalog.js';
 let garage;
@@ -29,7 +30,6 @@ import './ui/hosts.js';
 import { driverName } from './driver-name.js';
 import { controlsStrip, drivingHints } from './ui/driving-hints.js';
 import * as Release from './ui/release-screens.js';
-import * as InstallCard from './ui/install-card.js';
 import { installArticleScroll, articleAction, clearArticleFocus } from './ui/article-scroll.js';
 
 const { settings, setSetting, steeringAssistChoice, fmtDist } = S;
@@ -59,7 +59,7 @@ export class Menu {
   constructor(root, h) {
     this.root = root; this.h = h; this.screen = null; this.data = {}; this.focus = 0; this.stack = [];
     this.filter = 'all';
-    C.bindRoot(root); root.tabIndex = -1; installSettingsAccess(this); MP.installMpScreens(this); Release.install(this); InstallCard.install(this); installAccounts(this); installArticleScroll(this);
+    C.bindRoot(root); root.tabIndex = -1; installSettingsAccess(this); MP.installMpScreens(this); Release.install(this); installAccounts(this); installArticleScroll(this);
     root.addEventListener('focusin', e => { const row = e.target.closest('.mi'); const i = this.items().indexOf(row); if(i >= 0) this.setFocus(i, false); });
     root.addEventListener('keydown', e => { if(e.code !== 'Escape' || !e.target.closest('input, textarea, [contenteditable]')) return; e.preventDefault(); e.stopPropagation(); e.target.blur(); root.focus({preventScroll:true}); }, true);
     root.addEventListener('click', (e) => this.onClick(e));
@@ -118,7 +118,7 @@ export class Menu {
     cancelAnimationFrame(this.settling); this.settling = requestAnimationFrame(() => { this.settling = requestAnimationFrame(() => this.root.classList.remove('is-settling')); });
     if (stage) this.root.querySelector('#carStage')?.replaceWith(stage);
     else if (this.screen === 'car') this.carView = this.data.detail ? garage.mountCarSelect(this.root, this.data.index || 0) : garage.mountCarGrid(this.root);
-    if (this.screen === 'maps') this.mapView = mountMapSelect(this.root);
+    if (this.screen === 'maps') this.mapView = this.data.mode === 'free' ? mountSpawnSelect(this.root, this) : mountMapSelect(this.root);
     for (const t of this.root.querySelectorAll('.tabs')) { const on = t.querySelector('.tab.on'); if (on && t.scrollWidth > t.clientWidth) t.scrollLeft = on.offsetLeft - (t.clientWidth - on.offsetWidth) / 2; }
     if (this.screen === 'settings' && this.data.tab === 'controls') this.h.cancelBindings?.();
     const it = this.items();
@@ -154,7 +154,7 @@ export class Menu {
     for (const [k, el] of it.entries()) el.classList.toggle('focus', k === this.focus);
     const el = it[this.focus];
     if (scroll) el.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
-    if (this.screen === 'maps' && el.dataset.mapId) this.mapView?.preview(el.dataset.mapId);
+    if (this.screen === 'maps' && (el.dataset.mapId || el.dataset.spot)) this.mapView?.preview(el.dataset.mapId || el.dataset.spot);
   }
   /** spatial focus movement: the nearest item in that direction; up / down wrap at the ends of a column */
   move(dir) {
@@ -232,14 +232,17 @@ export class Menu {
     if (el.classList.contains('off') || el.getAttribute('aria-disabled') === 'true') return;
     if (el.dataset.kind && C.activate(el)) { this.h.ui?.(true); return; }
     if (el.dataset.mapId) { this.h.ui?.(true); selectMap(this, el.dataset.mapId); return; }
+    if (el.dataset.spot) { this.h.ui?.(true); driveFromSpawn(this); return; } // confirm on a spawn pin: DRIVE from the chosen place
     if (el.dataset.landmark) { window.__flow.teleportLandmark(el.dataset.landmark); this.back(); return; }
     const a = el.dataset.act;
     this.h.ui?.(true);
-    if (InstallCard.act(this, el) || Release.act(this, el)) return;
+    if (Release.act(this, el)) return;
     if (a?.startsWith('mp') && MP.act(this, el)) return;
     switch (a) {
       case 'seatReset': { resetSeatPosition(this.h.carSpec?.()?.id); for(const key of ['height','position']){const el=this.root.querySelector('[data-key=seat-'+key+']');if(el)C.setValue(el,0,false);} break; }
       case 'mapPrev': case 'mapNext': case 'mapZoomIn': case 'mapZoomOut': this.mapView?.action(a); break;
+      case 'spawnDrive': driveFromSpawn(this); break;
+      case 'spawnCar': this.h.garage?.(); break;
       case 'saveDriverName': { const input = this.root.querySelector('[data-driver-name]'); try { driverName.set(input.value); input.value = driverName.get(); C.ui.toast('DRIVER NAME SAVED'); } catch (error) { C.ui.toast(error.message, { icon: 'triangle-alert', tone: 'bad' }); input.focus(); } break; }
       case 'drivingHints': drivingHints.toggle(); this.refresh(); break;
       case 'account': this.show('account', {}, true); break;
@@ -280,7 +283,7 @@ export class Menu {
       case 'shareResult': this.h.shareResult?.(); break;
     }
   }
-  /** a component value changed (keyboard, gamepad, mouse or touch) */
+  /** a component value changed (keyboard, gamepad or mouse) */
   onChange({ key, value, el }) {
     const scope = el.dataset.scope;
     if (scope === 'leaderboard' || key === 'leaderboardTab') { leaderboardChange(this, key, value); return; }
@@ -327,7 +330,7 @@ export class Menu {
       <p class="title__tag">Real roads of Attica: the Athens Riviera and the Penteli hill climb.</p>`, tiles: `${C.option({ icon: 'flag', title: 'PLAY', desc: 'Quick Race or Free Roam against the clock', act: 'play', cls: 'option--tile option--hero', attrs: { 'data-default': '' } })}
         ${C.option({ icon: 'users', title: 'MULTIPLAYER', desc: 'Browse open lobbies, join with a code or host your own', act: 'multiplayer', cls: 'option--tile' })}
         ${C.option({ icon: 'car', title: 'GARAGE', desc: `${GARAGE_CARS.length} cars · city to super`, act: 'garage', cls: 'option--tile' })}
-        ${C.option({ icon: 'settings', title: 'SETTINGS', desc: 'Sound, graphics, driving and controls', act: 'settings', cls: 'option--tile' })}`, foot: Release.titleExtras(this) + InstallCard.titleNotice({ busy: Release.newsCardUp() }), hints: [['select', 'SELECT'], ['confirm', 'OK'], ['garage', 'GARAGE']] });
+        ${C.option({ icon: 'settings', title: 'SETTINGS', desc: 'Sound, graphics, driving and controls', act: 'settings', cls: 'option--tile' })}`, foot: Release.titleExtras(this), hints: [['select', 'SELECT'], ['confirm', 'OK'], ['garage', 'GARAGE']] });
   }
   r_leaderboards(d) { return renderLeaderboards(this, d); }
   // RACE is solo (owner 2026-10-18): two artwork-led cards fill the screen; multiplayer lives behind the title's MULTIPLAYER tile.
@@ -335,7 +338,7 @@ export class Menu {
     const art = (src) => `<img src="${esc(src)}" alt="" decoding="async">`;
     const tile = (act, ic, title, desc, src, cta) => C.option({ icon: ic, title, desc, act, cls: 'option--tile option--feature', media: art(src), cta });
     return C.heroTiles({ variant: 'choices', cls: 'scr--mode', kick: 'CHOOSE YOUR MODE', title: 'RACE', hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'BACK']],
-      tiles: `${tile('quick', 'flag', 'QUICK RACE', quickBlurb(), MAPS.find((m) => m.id === 'penteli')?.preview || MAPS[0].preview, 'CHOOSE TRACK')}${tile('free', 'car', 'FREE ROAM', 'Explore any map in traffic. Change car, weather and time anytime.', './assets/maps/attica.svg', 'CHOOSE MAP')}` });
+      tiles: `${tile('quick', 'flag', 'QUICK RACE', quickBlurb(), MAPS.find((m) => m.id === 'penteli')?.preview || MAPS[0].preview, 'CHOOSE TRACK')}${tile('free', 'car', 'FREE ROAM', 'Pick where to start on the map and explore the roads in traffic. Change car, weather and time anytime.', './assets/maps/attica.svg', 'CHOOSE SPAWN')}` });
   }
 
   // ---------------------------------------------------------------- multiplayer (src/ui/mp-screens.js)
@@ -350,7 +353,7 @@ export class Menu {
   r_mpResults() { return MP.renderResults(this, window.__multiplayer); }
 
   // ---------------------------------------------------------------- maps
-  r_maps() { return renderMapSelect(this.h.ctx?.().mapId, this.data.mode); }
+  r_maps() { return this.data.mode === 'free' ? renderSpawnSelect(this) : renderMapSelect(this.h.ctx?.().mapId); }
   r_mapConfirm(d) {
     const map = MAPS.find(m => m.id === d.mapId) || MAPS[0], def = this.setupDef();
     d.eventId = (def.baseId || def.id).split('~')[0];

@@ -1,0 +1,75 @@
+{
+ "sizes": [
+  {
+   "size": "960x700",
+   "steps": [
+    {
+     "spot": "riviera:vouliagmeni",
+     "map": "riviera",
+     "x": 1138.9,
+     "z": 2390.1,
+     "y": 20.13,
+     "yaw": 0.331,
+     "speed": 0,
+     "network": true,
+     "roadDistance": 0,
+     "nearest": "street",
+     "tarmac": true,
+     "roadY": 20.13,
+     "state": "race",
+     "mode": "free",
+     "routeHud": true
+    },
+    {
+     "spot": "psychiko:kifisias",
+     "map": "psychiko",
+     "x": 650.7,
+     "z": -389.6,
+     "y": 177.18,
+     "yaw": -0.617,
+     "speed": 0,
+     "network": true,
+     "roadDistance": 0,
+     "nearest": "street",
+     "tarmac": true,
+     "roadY": 177.18,
+     "state": "race",
+     "mode": "free",
+     "routeHud": true
+    }
+   ],
+   "picker": {
+    "screen": "maps",
+    "mode": "free",
+    "pins": 26,
+    "trackPins": 0,
+    "panelFloat": true,
+    "choice": "VOULIAGMENI"
+   },
+   "afterNext": "ASTIR PENINSULA",
+   "overview": 26,
+   "clicked": {
+    "id": "road",
+    "road": true,
+    "mapId": "riviera",
+    "name": "Τηθύος",
+    "sub": "ATHENS RIVIERA · ROAD POINT",
+    "at": [
+     799.9579132444538,
+     540.587752315839
+    ],
+    "local": [
+     2637.1643869741415,
+     2311.9247844067986
+    ],
+    "panel": "Τηθύος",
+    "kind": "ROAD POINT"
+   },
+   "noRoad": {
+    "shown": true,
+    "choiceKept": "Τηθύος"
+   }
+  }
+ ],
+ "errors": []
+}

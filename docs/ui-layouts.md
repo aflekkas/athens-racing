@@ -7,8 +7,8 @@ for new screens. Templates ignore `body` and `head`: use their named slots.
 
 All templates accept `title`, `kick` (breadcrumb), `back`, `hints`, `foot`, and
 `cls` (screen identity/state, not layout overrides). Inner headers have Back,
-breadcrumb and title only. No account chip or wall clock. The frame owns safe-area
-padding and key hints. Its regions shrink without pushing the footer offscreen.
+breadcrumb and title only. No account chip or wall clock. The frame owns its padding
+and key hints. Its regions shrink without pushing the footer offscreen.
 
 | Builder | Use | Content regions |
 | --- | --- | --- |
@@ -16,15 +16,15 @@ padding and key hints. Its regions shrink without pushing the footer offscreen.
 | `sidebarContent` | Settings, account | `nav`, `content` |
 | `browseGrid` | Garage, lobby browser, leaderboards | optional `filters`, `items`; `list: true` for rows |
 | `stageInspector` | Car detail, track confirmation | `stage`, `inspector` |
-| `mapStage` | Track picker | full-bleed `stage`, floating `card` |
+| `mapStage` | Track picker (Quick Race) and the free roam spawn picker | full-bleed `stage`, floating `card` |
 | `sheetList` | Pause, results, information, long reading pages (`article`) and simple lists | `rows`, optional `aside`, `actions` |
 
-Desktop uses two columns for navigation/viewer layouts, tiles that fill available
-height, and a bounded readable sheet. At 860px in portrait navigation becomes a
-strip and the inspector a lower sheet. At 560px tiles stack, filters wrap, and the
-map card spans the width. Short landscape (500px high or less) retains side-by-side
-navigation/viewer regions and independent scrolling. Grid items never exceed the
-viewport at 390px. The kit owns `--layout-gap`, `--layout-sheet-width`,
+Athens Racing is a computer game (owner decision 2026-10-19): the layouts serve desktop and laptop
+windows from about 900px wide up. Desktop uses two columns for navigation/viewer layouts, tiles that
+fill available height, and a bounded readable sheet. At 860px in portrait navigation becomes a strip
+and the inspector a lower sheet. Phones and tablets get the desktop gate instead (`src/device-gate.js`,
+`src/entry.js`; the gate itself is a static `sheetList({variant:'narrow'})` generated into `index.html`
+by `tools/sync-loading-layout.mjs`). The kit owns `--layout-gap`, `--layout-sheet-width`,
 `--layout-rail-width`, and `--layout-card-min`; do not override them in screen CSS.
 
 ```js
@@ -44,12 +44,12 @@ return C.sidebarContent({
 Interaction handlers, focus IDs, selection state and canvas lifecycle stay in the
 owning screen. Templates never clone or reinterpret content. Existing selection
 animations and surface focus come from components. During rollout migrate one
-screen after its current owner lands; compare desktop and phone captures. Preserve
+screen after its current owner lands; compare 1280×800 and 960×700 captures. Preserve
 the locked title layout and pause placement with kit-owned variants.
 
 `sheetList({ variant: 'pause', kick, title, status, rows, actions, hints })`
-keeps the locked inset sheet header, left docking and full-width phone sheet.
-The kit owns its two-column short-landscape rows and backdrop lifecycle. It is a
+keeps the locked inset sheet header and left docking.
+The kit owns its backdrop lifecycle. It is a
 full screen, not a dialog. The pause screen supplies only option rows and controls.
 
 `sheetList({ variant: 'split', rows, actions, aside })` puts actions after the
@@ -85,34 +85,32 @@ track overview with related records. It stacks below 700px and keeps actions in
 the shared footer.
 
 `browseGrid({ variant: 'catalog', filters, items })` keeps the garage filter strip
-under the title and scrolls it horizontally on phones. `stageInspector` supports
+under the title. `stageInspector` supports
 `vehicle` with `stageAttrs` for renderer IDs/labels and a shared specification
-panel in `inspector`; the kit owns the full viewer bounds and mobile stacking.
+panel in `inspector`; the kit owns the full viewer bounds and narrow-window stacking.
 
 `sidebarContent({ variant: 'rail', nav: C.nav(...), content })` keeps the section
 rail beside a scrolling panel. Below 860px the rail becomes a horizontal strip;
 short landscape screens restore a compact sidebar. Header, navigation and content
 remain separate named regions. The About section uses this same frame.
 
-`mapStage({ variant: 'floating', stage, stageAttrs, nav, card, cardAttrs, cardHint })`
-places the map behind the header/footer and a glass card on the right. Portrait
-phones below 700px use a bottom sheet; short landscape screens keep a compact
-right card. The template owns positioning, safe regions and card scrolling; the
+`mapStage({ variant: 'floating', stage, stageAttrs, nav, card, cardAttrs })`
+places the map behind the header/footer and a glass card on the right. The
+template owns positioning, safe regions and card scrolling; the
 map module owns only canvas drawing, geographic labels, pins and attribution.
 
 Lobby browsers use `browseGrid({variant:'lobby', join, identity, actions, items})`: the
 kit places code entry, identity and host action over the list. Track-based setup uses
 `stageInspector({variant:'tracks', stage, collection, inspector})`; track cards scroll
-horizontally on phones. `variant:'showroom'` takes `caption`, `summary`, `inspector`
+in their own region. `variant:'showroom'` takes `caption`, `summary`, `inspector`
 and optional `stage` content while owning the persistent 3D mount. Compact rules/forms
 use `sheetList({variant:'form', rows})`; multiplayer results reuse `variant:'split'`.
 
 `heroTiles({variant:'choices', tiles})` fills the content height with two artwork
-choices, side by side on desktop and stacked on phones.
+choices, side by side.
 
 `stageInspector({variant:'setup', stage, inspectorTitle, inspectorHead, inspector,
-actions})` owns the session summary panel and scrolling form, stacking on phones
-and returning to two columns in short landscape.
+actions})` owns the session summary panel and scrolling form, stacking in narrow windows.
 
 The pre-module loading screen uses `mapStage({variant:'loading', intro, card, foot})`.
 Its static HTML is generated by `node tools/sync-loading-layout.mjs`; the guard checks

@@ -16,8 +16,8 @@ const TEMPLATE = /\bC\.(?:heroTiles|sidebarContent|browseGrid|stageInspector|map
 test('no module outside the kit renders its own .scr shell or calls screen()', () => {
   const hits = [];
   const shell = /class\s*=\s*["'`][^"'`]*\bscr(?:\s|"|'|`)|classList\.add\(\s*['"`]scr['"`]|className\s*=\s*['"`]scr\b|\bC\.screen\(|\bscreen\(\s*\{|data-layout\s*=/;
-  // index.html's loading screen is generated from the kit's mapStage({variant:'loading'}) (tools/sync-loading-layout.mjs).
-  const html = read('index.html').replace(/<!-- ui-layout:loading:start -->[\s\S]*?<!-- ui-layout:loading:end -->/, '');
+  // index.html's loading screen and desktop gate are generated from the kit's mapStage({variant:'loading'}) and sheetList({variant:'narrow'}) (tools/sync-loading-layout.mjs).
+  const html = read('index.html').replace(/<!-- ui-layout:(loading|device-gate):start -->[\s\S]*?<!-- ui-layout:\1:end -->/g, '');
   for (const [file, text] of [...walk('src', /\.js$/).filter((f) => f !== KIT_JS).map((f) => [f, read(f)]), ['index.html', html]]) {
     text.split('\n').forEach((line, i) => {
       if (/^\s*(\/\/|\*|\/\*)/.test(line)) return;
@@ -87,7 +87,7 @@ test('screen modules carry no inline page layout', () => {
 const SCREEN_CSS = ['src/menu.css', 'src/menu-backdrop.css', 'src/map-select.css', 'src/ui/release.css', 'src/multiplayer.css', 'src/ui/headunit.css'];
 const LAYOUT = /^(display|position|inset|top|right|bottom|left|z-index|order|flex|flex-[a-z-]+|grid|grid-[a-z-]+|gap|row-gap|column-gap|align-[a-z]+|justify-[a-z]+|place-[a-z]+|width|min-width|max-width|height|min-height|max-height|inline-size|block-size|min-inline-size|min-block-size|margin|margin-[a-z-]+|padding|padding-[a-z-]+|overflow|overflow-[xy]|aspect-ratio|float|columns|column-[a-z-]+|scroll-[a-z-]+)$/;
 // Race HUD and in-race overlays are not menu screens (style.css and the HUD modules own them).
-const HUD = /(#hud|#evBox|#posBox|#mapBox|#dialBox|#routeBox|#gearboxHud|#engineHud|#limitSign|#wrongWay|#lapTiming|#drivingHints|#drivingTip|#keys|#credit|#count|#mp-board|#mp-toggle|#race-settings|#checkpoint-banner|#touch-controls|\.touch-|#police-hud|#tow-prompt|\.tow-|\.objective-|\.racer-marker|\.pop\b|#sigBox|\.wheel-hud|#accounts-offline|\.mp-update-notice|\.mp-connection-chip|\.mp-latency|\.graphics-live-note|#banner|#input-toast|\.driving-dismiss|#multiplayer|#styleBox|#mapLabel|#msg|#rZone|#rRoad|#rToGo|#rticks|#notification-lane|\.race-notice|\.chip--hud|#engineHud|#posBox)/;
+const HUD = /(#hud|#evBox|#posBox|#mapBox|#dialBox|#routeBox|#gearboxHud|#engineHud|#limitSign|#wrongWay|#lapTiming|#drivingHints|#drivingTip|#keys|#credit|#count|#mp-board|#mp-toggle|#race-settings|#checkpoint-banner|#police-hud|#tow-prompt|\.tow-|\.objective-|\.racer-marker|\.pop\b|#sigBox|\.wheel-hud|#accounts-offline|\.mp-update-notice|\.mp-connection-chip|\.mp-latency|\.graphics-live-note|#banner|#input-toast|\.driving-dismiss|#multiplayer|#styleBox|#mapLabel|#msg|#rZone|#rRoad|#rToGo|#rticks|#notification-lane|\.race-notice|\.chip--hud|#engineHud|#posBox)/;
 // Genuinely screen-specific rendering that no template can own: the map canvas, its labels and pins, and the static backdrop
 // layer. Adding to this list needs owner review: layout belongs in the kit.
 const ALLOWED = [

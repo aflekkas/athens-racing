@@ -37,9 +37,9 @@ try {
   const cdp = await page.context().newCDPSession(page);
   const capture = async name => { const shot = await cdp.send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false }); await writeFile(resolve(out, name), Buffer.from(shot.data, 'base64')); };
   await capture('google-required-1280.png'); console.log('Captured desktop');
-  await page.setViewportSize({ width: 390, height: 844 });
-  await capture('google-required-390.png'); console.log('Captured mobile');
-  const box = await page.locator('.dialog').boundingBox(); assert.ok(box.x >= 0 && box.x + box.width <= 390);
+  await page.setViewportSize({ width: 960, height: 700 });
+  await capture('google-required-960.png'); console.log('Captured narrow');
+  const box = await page.locator('.dialog').boundingBox(); assert.ok(box.x >= 0 && box.x + box.width <= 960);
   await page.context().setOffline(true); await page.waitForFunction(() => window.__bootMenu.accounts.offline); await gate();
   assert.match(await page.locator('.account-error').innerText(), /internet/);
   await page.context().setOffline(false);

@@ -12,8 +12,9 @@ from elevation import Elevation
 from coastal import Coast, Structures
 from bridge_policy import exclusion_reason
 import tunnels
-from tile_detail import water_mesh,vegetation_rows,bridge_edges
+from tile_detail import water_mesh,vegetation_rows,bridge_edges,foam_mesh,park_areas,facade_styles
 from details import fnv1a
+from props import build as build_props,load_nodes,road_extras
 from influence import blended_height, profile_height, lattice_height, smooth_lattice_sample, SUPPORT, ROAD_QUERY_HALO
 from appearance import BUILDINGS,linear,ground_colour
 from buildings import clipped_piece
@@ -38,6 +39,10 @@ STRUCTURE_EXCLUSIONS=_plan('structure-exclusions.json')
 # Streets whose 6 m shoulders cannot reach the gates (asphalt <= 30 degrees, 15 cm steps) on steep ground: found by the
 # bake's own physical audit (offenders), listed with the gate they failed, reviewed and committed.
 STEEP_EXCLUSIONS=_plan('steep-exclusions.json')
+# Cells whose street geometry near a border depends on a road more than 96 m away (a long straight kerb edge whose far end
+# the neighbour sees and this cell's window does not: the crossing then rounds one 2 cm step differently, a cracked seam).
+# Found by the bake's own seam check, listed with the halo that fixes it (metres), reviewed and committed.
+SEAM_HALOS={tuple(map(int,k.split(','))):v for k,v in (json.loads((Path(__file__).parent/'seam-halos.json').read_text()) if (Path(__file__).parent/'seam-halos.json').exists() else {}).items()}
 EXCLUDED={e['id'] for e in [*COAST_EXCLUSIONS,*STRUCTURE_EXCLUSIONS,*STEEP_EXCLUSIONS]}
 EXCLUSION_REASONS={e['id']:e['reason'] for e in [*COAST_EXCLUSIONS,*STRUCTURE_EXCLUSIONS,*STEEP_EXCLUSIONS]}
 
@@ -158,26 +163,30 @@ class Field:
   tags=self.land[min(candidates,key=lambda i:self.land[i][0].area)][1] if candidates else {}
   if h is None:h=self.height(x,z)
   if slope is None:slope=math.hypot(self.height(x+1,z)-self.height(x-1,z),self.height(x,z+1)-self.height(x,z-1))/2
-  return ground_colour(x,z,h,slope,tags.get('landuse',''),tags.get('natural',''))
+  return ground_colour(x,z,h,slope,tags.get('landuse',''),tags.get('natural',''),leisure=tags.get('leisure',''))
 
 SURFACES={'asphalt':(1,'asphalt'),'concrete':(12,'asphalt'),'paving':(13,'paving'),'unpaved':(14,None)}
 TABLES={'nodes':[],'nodePositions':[],'edges':[],'edgePoints':[],'edgeLayers':[],'turns':[],'ribbons':[],'ribbonVertices':[],'junctions':[],'junctionVertices':[],'markings':[],'contactPositions':[],'contactTriangles':[],'contactLayers':[],'fineSurface':[],'fineFlags':[],'coarseHeights':[],'finePositions':[],'fineTriangles':[],'buildings':[],'buildingCorners':[],'buildingHeights':[],'signs':[],'signTransforms':[],'anchors':[],'anchorTransforms':[]}
 
-def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=False,vegetation=None,osm=None,sections=None,extent=None,plan=None):
+def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=False,vegetation=None,osm=None,sections=None,extent=None,plan=None,details=None,street_nodes=None):
  db=sqlite3.connect(f'file:{dbpath}?mode=ro',uri=True);source=sqlite3.connect(f'file:{sourcepath}?mode=ro',uri=True)
  sectiondb=sqlite3.connect(f'file:{sections}?mode=ro',uri=True) if sections else None
- bridge_tags={}
+ bridge_tags={};lit_parking={}
  if coastal:
   if not osm:raise ValueError('Coastal bake requires original ingested OSM tags')
   raw=sqlite3.connect(f'file:{osm}?mode=ro',uri=True)
   for identifier,tags in raw.execute("SELECT id,tags FROM features WHERE kind='road'"):
-   value=json.loads(tags).get('bridge')
+   parsed=json.loads(tags);value=parsed.get('bridge')
    if value:bridge_tags[identifier]=value
+   extra=road_extras(parsed)
+   if extra:lit_parking[identifier]=extra
   raw.close()
  field=Field(db,source,cell,dems,coastal,bridge_tags,sectiondb,extent,plan=plan)
+ # Parks (OSM leisure=park) are not in the landuse table; the vegetation cache holds their polygons.
+ field.land.extend(park_areas(vegetation,field.ox,field.oz));field.landtree=STRtree([p for p,t in field.land])
  # Surfaces within 96 m of the cell decide everything inside it (reach, fillets and ramps are all < 40 m): a
  # window keeps the global geometry identical across cells without unioning the whole 1.5 km height halo.
- window=box(field.ox-96,field.oz-96,field.ox+608,field.oz+608);near_roads=[r for r in field.ground_roads if r['line'].intersects(window)]
+ halo=SEAM_HALOS.get(tuple(cell),96);window=box(field.ox-halo,field.oz-halo,field.ox+512+halo,field.oz+512+halo);near_roads=[r for r in field.ground_roads if r['line'].intersects(window)]
  regions=StreetRegions(near_roads,clip=field.deck_clip)
  # Owner polygons include each street's share of the junction fillets; the kerb/sidewalk rise is added per vertex.
  mesh_roads=[dict(r,polygon=regions.surface(r)) for r in near_roads]
@@ -190,16 +199,18 @@ def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=F
   if s not in ids:ids.append(s)
   return ids.index(s)
  def array(type,data):arrays.append(dict(type=type,data=data));return len(arrays)-1
- def mesh(positions,indices,material,colours=None,user_data=None):
+ def mesh(positions,indices,material,colours=None,user_data=None,extra=None):
   # Split by triangle blocks; compact remapping bounds each upload job.
   for start in range(0,len(indices),16384*3):
-   selected=indices[start:start+16384*3];remap={};ps=[];cs=[];ix=[]
+   selected=indices[start:start+16384*3];remap={};ps=[];cs=[];es=[];ix=[]
    for old in selected:
     if old not in remap:
      remap[old]=len(ps)//3;ps.extend(positions[old*3:old*3+3])
      if colours is not None:cs.extend(colours[old*3:old*3+3])
+     if extra is not None:es.append(extra[1][old])
     ix.append(remap[old])
    attrs=dict(position=dict(array=array('Float32Array',ps),itemSize=3,normalized=False))
+   if extra is not None:attrs[extra[0]]=dict(array=array('Uint8Array',[round(e*255) for e in es]),itemSize=1,normalized=True)
    if colours is not None:attrs['color']=dict(array=array('Uint8Array',[round(c*255) for c in cs]),itemSize=3,normalized=True)
    meshes.append(dict(name='probe',material=material,attributes=attrs,index=array('Uint16Array',ix),userData=dict(worldSurface=material in (0,1,8,9,12,13,14),**(user_data or {})),layers=1,drawRange=dict(start=0,count=len(ix))))
  p=surface['positions']
@@ -292,6 +303,10 @@ def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=F
    if clearance<4.5:raise ValueError('Insufficient bridge clearance '+g['id']+': '+str(clearance))
    if clearances and min(clearances)<4.5:raise ValueError('Underpass road clearance below 4.5 m: '+str(min(clearances))+' ('+g['id']+')')
    structure_records.append(dict(id=g['id'],kind='osm-bridge-guarded',layer=1,shoulderMetres=.25,bridgeSources=g['bridgeSources'],clearance=min(clearances or [clearance]),clearanceSamples=len(clearances),roads=[r['id'] for r in g['roads']]))
+  # A long raised approach reaches cells that load none of its bridge ways: guarded like the deck it belongs to, but this cell holds
+  # no crossing to gate, so no clearance is measured here (the cells with the crossing carry that gate).
+  for g in field.structures.approaches(box(ox-8,oz-8,ox+520,oz+520)):
+   structure_records.append(dict(id=g['id'],kind='osm-bridge-guarded',layer=1,shoulderMetres=.25,approachOnly=True,bridgeSources=g['bridgeSourcesAll'],clearance=None,clearanceSamples=0,roads=[r['id'] for r in g['roads']]))
  def road_height(edge,x,z):return deck_height(x,z) if deck_height and edge['source'] in field.structures.raised else rendered_height(x,z)
  # Directed graph is clipped globally; sample final emitted contacts for Y.
  graphdb=sqlite3.connect(f'file:{graphpath}?mode=ro',uri=True)
@@ -387,14 +402,23 @@ def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=F
  if field.coast:
   water=field.coast.water(cell,field.roads);ps,ix=water_mesh(water,ox,oz)
   palette.append(linear('#426b80'));mesh(ps,ix,len(palette)-1,user_data=dict(water=True))
+  fp,fi,fv=foam_mesh(water,ox,oz)
+  if fi:mesh(fp,fi,len(palette)-1,user_data=dict(tileSurface='foam'),extra=('aFoam',fv))
  triangles=derived_triangles+sum((m['drawRange']['count'] if m.get('drawRange') else len(arrays[m['index']]['data']))//3 for m in meshes)
  road_sections=dict(schema=['class','width','lanes','sidewalkLeft','sidewalkRight','surface','oneway'],roads={owner:[(sec:=field.byid[owner]['section'])['class'],sec['width'],sec['lanes'],sec['sidewalk']['left'],sec['sidewalk']['right'],sec['surface'],sec['oneway']] for owner in sorted(roadtri)})
  extensions=dict(derivedBuildings=dict(version=1))
  if vegetation:
   vp,vk,vs=vegetation_rows(vegetation,field,all_building_footprints,rendered_height,int(triangles*.25))
-  extensions=dict(derivedBuildings=dict(version=1),worldDetail=dict(version=1,buildings=dict(facadeStyle=array('Uint8Array',[0]*(len(t['buildings'])//4)),detailSeed=array('Uint32Array',[fnv1a(ids[t['buildings'][i]]) for i in range(0,len(t['buildings']),4)])),vegetation=dict(positionHeight=array('Float32Array',vp),kind=array('Uint8Array',vk),seed=array('Uint32Array',vs))))
+  extensions=dict(derivedBuildings=dict(version=1),worldDetail=dict(version=1,buildings=dict(facadeStyle=array('Uint8Array',facade_styles(details,[ids[t['buildings'][i]] for i in range(0,len(t['buildings']),4)])),detailSeed=array('Uint32Array',[fnv1a(ids[t['buildings'][i]]) for i in range(0,len(t['buildings']),4)])),vegetation=dict(positionHeight=array('Float32Array',vp),kind=array('Uint8Array',vk),seed=array('Uint32Array',vs))))
   validation['vegetationInstances']=len(vk)
 
+ if street_nodes:
+  # Signals and street furniture (tools/world-gen/props.py): tile-local instance rows the runtime draws in one instanced mesh.
+  sig,pr=build_props(emitted_graph,field,ox,oz,load_nodes(street_nodes,ox,oz),lit_parking,all_building_footprints,rendered_height)
+  wd=extensions.setdefault('worldDetail',dict(version=1))
+  wd['signals']=dict(rows=array('Float32Array',sig['rows']),edge=array('Uint32Array',[identifier(e) for e in sig['edges']]))
+  wd['props']=dict(rows=array('Float32Array',pr['rows']),kind=array('Uint8Array',pr['kind']))
+  validation['signals']=len(sig['edges']);validation['props']=len(pr['kind'])
  validation['streets']=streets;validation['clippedBuildings']=clipped;validation['excludedRoads']=dict(sorted(field.excluded_here.items()));validation['unresolvedBridges']=list(field.structures.unresolved) if field.structures else [];validation['renderContactTopIdentity']=True;validation['structures']=structure_records
  validation['graphEdges']=len(emitted_graph);validation['graphContactPoints']=len(t['edgePoints'])//3
  validation['turnRestrictions']=len(t['turns'])//4;validation['safeAnchors']=len(t['anchors'])//5;validation['releaseReady']=False
