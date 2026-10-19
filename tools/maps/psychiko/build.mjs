@@ -4,13 +4,14 @@ import fs from 'node:fs';
 import {gunzipSync} from 'node:zlib';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {boundaryRing,inside,publicRoad,sideStreetExits} from './neighbourhood.mjs';
+import {boundaryRing,inside,municipalLength,publicRoad,sideStreetExits} from './neighbourhood.mjs';
 import {psychikoSection} from '../../../src/maps/psychiko-streets.js';
 import {buildPsychikoScenery} from './scenery.mjs';
 import {inject} from '../../inject-speed-signs.mjs';
 import {routeRoundabouts,roundaboutLoops} from '../../roundabouts.mjs';
 import {extractRoadNetwork} from '../../build-road-network.mjs';
 import {loadPsychikoOsm} from './corrections.mjs';
+import {multipolygons,footprintPieces} from './multipolygon.mjs';
 import {readCopernicus,copernicusField,roundaboutPlanes,plannedHeight,gridExtent} from './elevation.mjs';
 const dir=path.dirname(fileURLToPath(import.meta.url)),root=path.resolve(dir,'../../..'),out=path.join(root,'data/maps/psychiko');
 fs.mkdirSync(out,{recursive:true});
@@ -48,6 +49,15 @@ for(const e of osm){const t=e.tags||{};if(e.type==='node')continue;if(e.type!=='
  if(cls&&ps.length>3){const a={p:flatten(ps),c:e.nodes?.[0]===e.nodes?.at(-1)?1:0,id:e.id};areas[cls].push(a);if(cls==='quarry')areas.rock.push(a);}
  if(t.highway&&!R.sourceWayIds.includes(e.id)&&q.d<380&&['secondary','tertiary','unclassified','residential','service'].includes(t.highway)&&!['dirt','gravel','unpaved','ground'].includes(t.surface)){sideRoads.push({id:e.id,p:flatten(ps),w:t.highway==='secondary'?6.6:4.5,f:0,n:t['int_name']||t['name:en']||t.name});}
 }
+// OSM multipolygon relations (raw/relations.json): courtyard and campus buildings, the Stefanou Delta stadium
+// and tracks, parks and woods. Courtyards stay open: a holed footprint becomes several <=10-vertex blocks.
+for(const mp of multipolygons(load('relations').elements,osm,P)){const t=mp.tags,ps=mp.outer,center=ps.reduce((s,p)=>[s[0]+p[0]/ps.length,s[1]+p[1]/ps.length],[0,0]),q=nearest(...center,1800);if(!q)continue;
+ if(t.building&&(q.d<400||inside(center,boundary)||inside(center,drawnRing))&&!ps.some(p=>{const q=nearest(...p,8);return q&&q.d<psychikoSection(R,q.s).w/2+.05;})){
+  const k=!['apartments','commercial','retail','school','office','hospital'].includes(t.building)?'villa':'apt',pick=((Math.imul(mp.id,2654435761)>>>0)%1000)/1000,lv=+t['building:levels']||(pick<.67?2:3),pieces=footprintPieces(ps,mp.holes);
+  pieces.forEach((piece,part)=>buildings.push({p:flatten(piece),h:+t.height||lv*3.1,lv,k:k==='villa'&&pick>.65?'apt':k,pitched:pieces.length===1&&pick<.45,s:q.s,u:r(q.u),id:mp.id,rel:1,...(pieces.length>1?{part}:{}),name:t['name:en']||t.name}));}
+ const cls=t.natural==='wood'||t.landuse==='forest'?'wood':t.landuse==='residential'?'residential':t.leisure==='park'||t.landuse==='village_green'?'park':['stadium','track','pitch'].includes(t.leisure)?'pitch':null;
+ if(cls)areas[cls].push({p:flatten(ps),c:1,id:mp.id,rel:1,...(mp.holes.length?{holes:mp.holes.map(flatten)}:{})});
+}
 // Marks name the streets along the lap (district-style splits and HUD ticks); the timing line is the first.
 const plain=name=>name.normalize('NFD').replace(/\p{M}/gu,'').toUpperCase();
 const marks=[{id:'start',name:plain(R.names[0]?.name||'DIAMANTIDOU'),sub:'Start / finish · Diamantidou',s:0}];
@@ -60,7 +70,8 @@ for(const e of osm)if(e.type==='node'&&(e.tags?.highway==='bus_stop'||e.tags?.pu
 // Cover the entire municipal unit, the drawn loop (including its Filothei extension),
 // and the retained original course. Keep private driveways and footpaths out.
 const gardenWays=new Set(garden.sourceWayIds);
-const publicWays=osm.filter(e=>publicRoad(e)&&geometry(e).some(p=>inside(p,boundary)||inside(p,drawnRing)||nearest(...p,280)||gardenWays.has(e.id)));
+// Municipal ways also count by clipped length, so streets running exactly along the edge are not missed.
+const publicWays=osm.filter(e=>{if(!publicRoad(e))return false;const ps=geometry(e);return gardenWays.has(e.id)||ps.some(p=>inside(p,boundary)||inside(p,drawnRing)||nearest(...p,280))||municipalLength(ps,boundary)>2;});
 const selected=[...nodes.values(),...publicWays];
 // Kerb-to-kerb sections from station evidence, blended over 12m for smooth road edges.
 const sections=X.map((_,i)=>psychikoSection(data.route,i*step).w);
@@ -92,8 +103,8 @@ for(const r of data.route.roundabouts)for(let i=Math.floor(r.s0/step);i<=Math.ce
 // Rasterise source land cover and sample the shared height field. The 10 m grid
 // improves road cutting, not the ~30 m Copernicus source resolution.
 const GX=Math.floor((maxX-minX)/T)+1,GZ=Math.floor((maxZ-minZ)/T)+1,H=new Int16Array(GX*GZ),CL=new Uint8Array(GX*GZ).fill(3);
-function raster(p,value){let z0=Infinity,z1=-Infinity;for(let k=1;k<p.length;k+=2){z0=Math.min(z0,p[k]);z1=Math.max(z1,p[k]);}for(let j=clamp(Math.ceil((z0-minZ)/T),0,GZ-1);j<=clamp(Math.floor((z1-minZ)/T),0,GZ-1);j++){const z=minZ+j*T,xs=[];for(let a=0,b=p.length-2;a<p.length;b=a,a+=2){const za=p[a+1],zb=p[b+1];if((za>z)!==(zb>z))xs.push(p[a]+(z-za)*(p[b]-p[a])/(zb-za));}xs.sort((a,b)=>a-b);for(let k=0;k+1<xs.length;k+=2)for(let i=clamp(Math.ceil((xs[k]-minX)/T),0,GX-1);i<=clamp(Math.floor((xs[k+1]-minX)/T),0,GX-1);i++)CL[j*GX+i]=value;}}
-for(const[k,v]of[['scrub',3],['rock',2],['quarry',2],['residential',4],['wood',6],['park',5]])for(const a of areas[k])if(a.c)raster(a.p,v);
+function raster(outer,value,holes=[]){const p=outer;let z0=Infinity,z1=-Infinity;for(let k=1;k<p.length;k+=2){z0=Math.min(z0,p[k]);z1=Math.max(z1,p[k]);}for(let j=clamp(Math.ceil((z0-minZ)/T),0,GZ-1);j<=clamp(Math.floor((z1-minZ)/T),0,GZ-1);j++){const z=minZ+j*T,xs=[];for(const p of [outer,...holes])for(let a=0,b=p.length-2;a<p.length;b=a,a+=2){const za=p[a+1],zb=p[b+1];if((za>z)!==(zb>z))xs.push(p[a]+(z-za)*(p[b]-p[a])/(zb-za));}xs.sort((a,b)=>a-b);for(let k=0;k+1<xs.length;k+=2)for(let i=clamp(Math.ceil((xs[k]-minX)/T),0,GX-1);i<=clamp(Math.floor((xs[k+1]-minX)/T),0,GX-1);i++)CL[j*GX+i]=value;}}
+for(const[k,v]of[['scrub',3],['rock',2],['quarry',2],['residential',4],['wood',6],['park',5],['pitch',5]])for(const a of areas[k])if(a.c)raster(a.p,v,a.holes);
 // The street bed is level with the lap across its kerbs and footways. Beyond them the ground keeps the
 // field's own cross-slope; only the small offset at the footway edge decays over 35 m, so side streets
 // and verges do not get squeezed into a steep ramp beside the lap.

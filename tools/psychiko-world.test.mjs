@@ -80,7 +80,12 @@ test('whole municipal street network and the interior of the drawing are include
  const nodes=new Map(elements.filter(e=>e.type==='node').map(n=>[n.id,n])),p=n=>[(n.lon-data.proj.lon0)*data.proj.mlon,-(n.lat-data.proj.lat0)*data.proj.mlat];
  const ring=boundaryRing(JSON.parse(readFileSync(new URL('./maps/psychiko/raw/boundaries.json',import.meta.url))),p);
  const selected=new Set(data.psychiko.networkWayIds),drawn=data.route.x.map((x,i)=>[x,data.route.z[i]]);
- for(const w of elements.filter(publicRoad))if(w.nodes.some(id=>inside(p(nodes.get(id)),ring)||inside(p(nodes.get(id)),drawn)))assert(selected.has(w.id),`municipal way missing ${w.id}`);
+ // Clipped-segment coverage, independent of the builder: half-metre samples inside the polygon or on its edge.
+ // Vertex containment alone missed the streets that run exactly along the administrative boundary.
+ const edge=(x,z)=>Math.min(...ring.map((a,i)=>{const b=ring[(i+1)%ring.length],dx=b[0]-a[0],dz=b[1]-a[1],t=Math.max(0,Math.min(1,((x-a[0])*dx+(z-a[1])*dz)/(dx*dx+dz*dz||1)));return Math.hypot(x-a[0]-t*dx,z-a[1]-t*dz);}));
+ const clipped=ps=>{let m=0;for(let i=1;i<ps.length;i++){const a=ps[i-1],b=ps[i],L=Math.hypot(b[0]-a[0],b[1]-a[1]),n=Math.ceil(L/.5)||1;for(let k=0;k<n;k++){const x=a[0]+(b[0]-a[0])*(k+.5)/n,z=a[1]+(b[1]-a[1])*(k+.5)/n;if(inside([x,z],ring)||edge(x,z)<1)m+=L/n;}}return m;};
+ for(const w of elements.filter(publicRoad)){const ps=w.nodes.map(id=>p(nodes.get(id)));if(clipped(ps)>2||ps.some(q=>inside(q,drawn)))assert(selected.has(w.id),`municipal way missing ${w.id}`);}
+ for(const id of [97722996,97723003,790219496])assert(selected.has(id)&&data.roadNetwork.roads.some(r=>r.id===id),`boundary street ${id} (25is Martiou / Stefanou Delta) is drivable`);
  const rendered=new Set([...data.roadNetwork.roads.map(r=>r.id),...data.psychiko.sourceWayIds]);
  const omitted=elements.filter(w=>w.type==='way'&&selected.has(w.id)&&!rendered.has(w.id));
  assert(omitted.every(w=>[25117418,113339568,113339581].includes(w.id)),'only the three documented Kifisias underpasses may be omitted');
@@ -233,4 +238,13 @@ test('Copernicus hills: real lap grades, no artificial side-street steps, closur
  works.group.traverse(m=>{// Every barrier section and cone stands on a thin dark base plate.
   if(!m.isMesh||m.geometry.type!=='BoxGeometry'||m.scale.y>.09)return;m.getWorldPosition(v);gap=Math.max(gap,Math.abs(v.y-m.scale.y/2-net.height(v.x,v.z)));});
  assert(gap<.12,`roadworks sit on the street (worst ${gap} m)`);
+});
+test('OSM multipolygon relations ship: courtyard buildings keep their holes, the Stefanou Delta stadium and Attiko Alsos appear',async()=>{
+ const {multipolygons}=await import('./maps/psychiko/multipolygon.mjs'),{pointInPoly}=await import('../src/util.js');
+ const elements=(await import('./maps/psychiko/corrections.mjs')).loadPsychikoOsm(),relations=JSON.parse(readFileSync(new URL('./maps/psychiko/raw/relations.json',import.meta.url))).elements,P=n=>[(n.lon-data.proj.lon0)*data.proj.mlon,-(n.lat-data.proj.lat0)*data.proj.mlat];
+ // The 15 municipal building relations the relation-free snapshot missed (coverage audit, 2026-10-19).
+ for(const id of [6302650,6302781,6314311,6295551,6295671,6295683,6296752,6296816,6298427,6298432,6302583,3000645,6299788,6300377,6300430])assert(data.buildings.some(b=>b.rel&&b.id===id),'relation building '+id);
+ for(const mp of multipolygons(relations,elements,P).filter(m=>m.tags.building&&m.holes.length)){const pieces=data.buildings.filter(b=>b.rel&&b.id===mp.id);if(!pieces.length)continue;
+  for(const hole of mp.holes){const c=hole.reduce((s,q)=>[s[0]+q[0]/hole.length,s[1]+q[1]/hole.length],[0,0]);if(!pointInPoly(c[0],c[1],hole.flat()))continue;assert(!pieces.some(b=>pointInPoly(c[0],c[1],b.p)),`courtyard of ${mp.id} is roofed over`);}}
+ assert(data.areas.pitch.some(a=>a.id===3000647),'Stefanou Delta stadium');assert(data.areas.park.some(a=>a.id===1741088),'Attiko Alsos');
 });
