@@ -64,6 +64,7 @@ export class People {
     this.peds = Array.from({ length: MAX }, (_, i) => ({ slot: i, active: false, P: newPose() }));
     this.onRoad = []; this.events = []; this.t = 0;
     this.drawRadius = 175; // m (main.js: graphics tier)
+    this.budgetMul = 1; // x the walkers a map wants (main.js: performance class)
     this.traffic = null;
     const J = assets.junctions || [];
     this.zebras = (assets.crossings || []).map((s) => ({ s, j: J.find((j) => Math.abs(j.zF - s) < 0.5 || Math.abs(j.zO - s) < 0.5) || null }));
@@ -223,7 +224,7 @@ export class People {
     for (const p of this.peds) if (p.active) this.despawn(p);
     for (const a of this.anchors) { a.ped = null; a.hitUntil = 0; }
     this.t = 0; this.bodies.clear();
-    for (let i = 0; i < INITIAL_WALKERS; i++) this.spawnWalker(ps, true);
+    for (let i = 0, n = Math.round(INITIAL_WALKERS * this.budgetMul); i < n; i++) this.spawnWalker(ps, true);
     this.updateAnchors(ps);
   }
 
@@ -258,7 +259,7 @@ export class People {
       else if (p.anchor && (p.anchor.s < ps - 190 || p.anchor.s > ps + 430)) this.despawn(p);
     }
     if ((this.frame = (this.frame || 0) + 1) % 10 === 0) this.updateAnchors(ps);
-    const want = Math.round(WALKERS * Math.max(this.dens(ps + 120), this.dens(ps + 350)));
+    const want = Math.round(WALKERS * this.budgetMul * Math.max(this.dens(ps + 120), this.dens(ps + 350)));
     if (walkers > want && this.frame % 10 === 0) { const p = this.peds.find(p => p.active && p.kind === 'walker' && p.mode === 'walk'); if (p) this.despawn(p); }
     if (walkers < want) this.spawnWalker(ps, false);
     // actors in world space

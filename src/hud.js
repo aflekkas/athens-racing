@@ -129,6 +129,7 @@ export class Hud {
       if (['lake', 'limanakia', 'varkiza', 'lomvarda'].includes(m.id)) { const l = document.createElement('div'); l.className = 'l'; l.style.left = (f * 100) + '%'; l.textContent = m.name; if (alt++ % 2 && false) l.style.top = '28px'; ticks.appendChild(l); }
     }
     this.frame = 0; this.lastZone = null; this.lastPos = 0;
+    this.rates = { tacho: 30, map: 15, mapBig: 30 }; this._tachoAt = this._mapAt = -1e9; // Hz; setRates() follows the performance class
   }
 
   // ------------------------------------------------------------------ overview (title screen)
@@ -217,10 +218,14 @@ export class Hud {
     }
     if (st.pen !== this.penShown) { this.penShown = st.pen; el.penRow.classList.toggle('on', st.pen > 0); el.pen.textContent = '+' + st.pen.toFixed(1) + ' S'; }
     this.setLimit(st.limit, st.unit === 'MPH' ? st.kmh * 1.609344 : st.kmh);
-    if ((this.frame & 1) === 0) this.drawTacho(st);
-    const mapEvery = this.bigMap ? 2 : 4;
-    if (this.frame % mapEvery === 0) this.drawMinimap(this.mctx, this.mini.width, this.mini.height, st, this.bigMap ? 0.35 : 2.2);
+    // Both displays redraw on a clock (the performance class sets the rates), not every n-th frame: at 30 fps a frame divisor
+    // halved them again.
+    const clock = performance.now(), rates = this.rates;
+    if (clock - this._tachoAt >= 1000 / rates.tacho - 2) { this._tachoAt = clock; this.drawTacho(st); }
+    if (clock - this._mapAt >= 1000 / (this.bigMap ? rates.mapBig : rates.map) - 2) { this._mapAt = clock; this.drawMinimap(this.mctx, this.mini.width, this.mini.height, st, this.bigMap ? 0.35 : 2.2); }
   }
+  /** redraw rates (Hz) of the analogue cluster and the minimap: the performance class's HUD budget */
+  setRates({ tacho = 30, map = 15, mapBig = 30 } = {}) { this.rates = { tacho, map, mapBig }; }
   /** M: the minimap grows into a wide-area map (about 0.8 km around you) so the other drivers are in view */
   toggleBigMap(on = !this.bigMap) {
     this.bigMap = on; this.mini.width = this.mini.height = on ? 640 : 300;
@@ -323,28 +328,60 @@ export class Hud {
     }
   }
 
-  drawTacho(st) {
-    const g = this.tctx, W = this.tacho.width, H = this.tacho.height, cx = W / 2, cy = H / 2 + 4, R = W * 0.43;
-    g.clearRect(0, 0, W, H);
-    const a0 = Math.PI * 0.75, a1 = Math.PI * 2.25, span = a1 - a0;
-    const red = st.redline, max = Math.ceil(red * 1.08 / 1000) * 1000;
-    // dial face
+  /**
+   * The analogue cluster. The dial face, the dim segments and the numbers depend only on the redline, so they are drawn
+   * once into an offscreen layer; a frame draws that layer, the lit segments (one stroke per colour, not one per segment),
+   * the gear box and the speed. Nothing is drawn when no visible value changed (the cluster key), which at a steady speed is
+   * most frames. This was the single most expensive function of the sim step (about 7% of its CPU on a weak laptop).
+   */
+  tachoBase(W, H, cx, cy, R, max, red) {
+    const key = `${W}x${H}|${max}|${red}|${this.fontsReady()}`;
+    if (this._tachoBaseKey === key) return this._tachoBase;
+    const layer = this._tachoBase || (this._tachoBase = document.createElement('canvas'));
+    layer.width = W; layer.height = H; this._tachoBaseKey = key;
+    const g = layer.getContext('2d'), a0 = Math.PI * 0.75, a1 = Math.PI * 2.25, span = a1 - a0, N = 46, redK = red / max;
     const grd = g.createRadialGradient(cx, cy, R * 0.2, cx, cy, R * 1.05);
     grd.addColorStop(0, 'rgba(14,17,22,.92)'); grd.addColorStop(0.85, 'rgba(8,10,14,.9)'); grd.addColorStop(1, 'rgba(8,10,14,0)');
     g.fillStyle = grd; g.beginPath(); g.arc(cx, cy, R * 1.05, 0, 7); g.fill();
-    // segments
-    const N = 46, kr = clamp(st.rpm / max, 0, 1), redK = red / max;
     for (let i = 0; i < N; i++) {
       const f = i / N, a = a0 + span * f, b = a0 + span * (f + 0.8 / N);
-      const lit = f < kr;
-      let col = f >= redK ? (lit ? '#ff3b2f' : 'rgba(255,59,47,.25)') : (lit ? (f > redK - 0.12 ? '#ffc21a' : '#ffffff') : 'rgba(255,255,255,.1)');
-      if (lit && st.rpm > red * 0.97 && Math.sin(performance.now() * 0.04) > 0) col = '#ff3b2f';
-      g.strokeStyle = col; g.lineWidth = f >= redK ? 20 : 16;
+      g.strokeStyle = f >= redK ? 'rgba(255,59,47,.25)' : 'rgba(255,255,255,.1)'; g.lineWidth = f >= redK ? 20 : 16;
       g.beginPath(); g.arc(cx, cy, R - 10, a, b); g.stroke();
     }
-    // numbers
     g.fillStyle = 'rgba(255,255,255,.75)'; g.font = 'italic 800 19px "Barlow Condensed", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
     for (let k = 0; k <= max / 1000; k++) { const a = a0 + span * (k * 1000 / max); g.fillText(String(k), cx + Math.cos(a) * (R - 38), cy + Math.sin(a) * (R - 38)); }
+    return layer;
+  }
+  fontsReady() { return this._fonts ||= document.fonts?.check?.('800 19px "Barlow Condensed"') !== false; }
+  drawTacho(st) {
+    const g = this.tctx, W = this.tacho.width, H = this.tacho.height, cx = W / 2, cy = H / 2 + 4, R = W * 0.43;
+    const a0 = Math.PI * 0.75, a1 = Math.PI * 2.25, span = a1 - a0;
+    const red = st.redline, max = Math.ceil(red * 1.08 / 1000) * 1000;
+    const N = 46, kr = clamp(st.rpm / max, 0, 1), redK = red / max;
+    const now = performance.now(), blink = st.rpm > red * 0.97 && Math.sin(now * 0.04) > 0;
+    const cue = gearFeedback(st).upshift && Math.sin(now * 0.03) > 0, hot = st.shiftFlash > 0 || cue;
+    let litN = 0; while (litN < N && litN / N < kr) litN++;
+    const nitro = st.nitrous === true ? Math.round(clamp(st.nitro, 0, 1) * 200) : -1;
+    const key = `${W}x${H}|${max}|${red}|${litN}|${blink}|${Math.round(st.kmh)}|${st.unit}|${st.damageLabel}|${nitro}|${!!st.nitroOn}|${hot}|${st.gearLabel}|${!!st.esc}|${!!st.tc}|${!!st.abs}|${!!st.aidsOff}|${!!st.manual}|${this.fontsReady()}`;
+    if (key === this._tachoKey) return;
+    this._tachoKey = key;
+    g.clearRect(0, 0, W, H);
+    g.drawImage(this.tachoBase(W, H, cx, cy, R, max, red), 0, 0);
+    // lit segments: one path and one stroke per colour / width
+    const lit = { white: [], amber: [], red: [] };
+    for (let i = 0; i < litN; i++) { const f = i / N; (blink || f >= redK ? lit.red : f > redK - 0.12 ? lit.amber : lit.white).push(i); }
+    for (const [name, col] of [['white', '#ffffff'], ['amber', '#ffc21a'], ['red', '#ff3b2f']]) {
+      const list = lit[name]; if (!list.length) continue;
+      g.strokeStyle = col; g.lineWidth = 16; g.beginPath();
+      let wide = false;
+      for (const i of list) {
+        const f = i / N; if (f >= redK) { if (!wide) { g.stroke(); g.beginPath(); g.lineWidth = 20; wide = true; } }
+        const a = a0 + span * f, b = a0 + span * (f + 0.8 / N);
+        g.moveTo(cx + Math.cos(a) * (R - 10), cy + Math.sin(a) * (R - 10)); g.arc(cx, cy, R - 10, a, b);
+      }
+      g.stroke();
+    }
+    g.textAlign = 'center'; g.textBaseline = 'middle';
     if (st.nitrous === true) {
     // nitro arc in the bottom gap
     const n0 = Math.PI * 0.32, n1 = Math.PI * 0.68;
@@ -360,7 +397,6 @@ export class Hud {
     // gear box
     const gx = cx, gy = cy - 86;
     // the cluster is the only gear display: a manual-car upshift cue blinks the badge amber like a shift light
-    const cue = gearFeedback(st).upshift && Math.sin(performance.now() * 0.03) > 0, hot = st.shiftFlash > 0 || cue;
     g.fillStyle = hot ? '#ffc21a' : '#ff3b2f';
     g.beginPath(); g.moveTo(gx - 26, gy - 24); g.lineTo(gx + 34, gy - 24); g.lineTo(gx + 26, gy + 24); g.lineTo(gx - 34, gy + 24); g.closePath(); g.fill();
     g.fillStyle = hot ? '#07090c' : '#fff'; g.font = 'italic 900 44px "Barlow Condensed", sans-serif'; g.fillText(st.gearLabel, gx, gy + 3);

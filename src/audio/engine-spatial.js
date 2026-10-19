@@ -71,8 +71,8 @@ export class DistantEngineVoice {
   }
 }
 export class ExternalEngines {
-  constructor(ctx, dest, passBy) {
-    this.ctx = ctx; this.world = {}; this.selection = new NearestEngines(); this.banks = new Map(); this.recorded = new Map(); this.pending = new Set();
+  constructor(ctx, dest, passBy, { detail = 6 } = {}) {
+    this.ctx = ctx; this.world = {}; this.selection = new NearestEngines(detail, 2); this.banks = new Map(); this.recorded = new Map(); this.pending = new Set();
     this.passBy = passBy; this.slots = [];
     for (let i = 0; i < 8; i++) {
       const air = ctx.createBiquadFilter(), panner = ctx.createStereoPanner(), gate = ctx.createGain();
@@ -104,7 +104,7 @@ export class ExternalEngines {
       const slot = this.slots[i]; slot.source = null;
       for (let j = 0; j < chosen.count; j++) {
         if (slot.id === chosen.sources[j].id && slot.kind === chosen.kinds[j]) {
-          slot.source = chosen.sources[j]; slot.wantDetail = j < 6; break;
+          slot.source = chosen.sources[j]; slot.wantDetail = j < this.selection.detail; break;
         }
       }
       if (!slot.source) slot.gate.gain.setTargetAtTime(0, now, .06);
@@ -120,7 +120,7 @@ export class ExternalEngines {
       // New owner waits for the outgoing signal to fade before its gate opens.
       slot.voice?.stop(); slot.voice = null; slot.source = source; slot.id = source.id; slot.kind = kind;
       slot.nextSwap = now + .4; slot.spatialTime = null; slot.doppler = 1; slot.lastVr = 0; slot.approachPeak = 0;
-      slot.wantDetail = j < 6; slot.spec = null;
+      slot.wantDetail = j < this.selection.detail; slot.spec = null;
     }
     for (let i = 0; i < 8; i++) {
       const slot = this.slots[i], source = slot.source;

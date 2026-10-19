@@ -1,3 +1,5 @@
+import { audioLatencyHint, audioLowCost } from './audio/robust.js';
+import { PerfGovernor } from './perf-governor.js';
 import { syncCameraVehicleView } from './camera-visibility.js';
 import { soloStartPosition, raceGridSlot } from './start-placement.js';
 import { seatPosition } from './seat-position.js';
@@ -68,6 +70,7 @@ import * as EV from './events.js';
 import { DrivingModeRun, drivingModeDefinition, isDrivingMode, drivingModeHud, drivingModeResults, drivingModeTarget } from './driving-modes.js';
 import { DrivingModeView } from './driving-mode-view.js';
 import { firstRunPerformanceCheck } from './ui/graphics-onboarding.js';
+import { storedPerfCeiling } from './perf-ceiling.js';
 import { Menu } from './menu.js';
 import { updateLapHud } from './lap-hud.js';
 import { settings, setSetting, onSettings, steeringAssistChoice, applySteeringAssist as applyVehicleSteeringAssist, fmtSpeed, fmtDist, speedIn, speedUnit } from './settings.js';
@@ -160,6 +163,8 @@ let flamesWarmable = false; // set once the load-time warm-up has run: later joi
 const camera = new THREE.PerspectiveCamera(settings.cockpitFov, innerWidth / innerHeight, 0.1, 90000);
 renderer.terrainLodCamera = camera; // Auxiliary passes reuse the main view's terrain selection.
 const audio = window.__bootAudio || new Audio();
+// weaker performance classes get a larger output buffer and fewer simultaneous one-shot voices: continuous sound over reaction time
+audio.latencyHint ||= audioLatencyHint(GFX.perfClass, navigator.hardwareConcurrency); if (!audio.ctx) audio.lowCost ??= audioLowCost(GFX.perfClass, navigator.hardwareConcurrency); audio.voiceLimit = GFX.perfClass === 'potato' || GFX.perfClass === 'low' ? 20 : 32;
 const voices = new VoiceReactions(audio, { settings });
 const playerVoices = new VoiceReactions(audio, { settings });
 function carVoicePosition(c) {
@@ -261,6 +266,9 @@ function updateLod() { updateSceneryLod(lodList, camera); lodAt.copy(camera.posi
 // render distance (scenery.js): the setting applies live; traffic is drawn out to about half of it
 setDrawDistance(+Q.get('draw') || GFX.drawDistance, R.horizon, GFX.detail);
 // weaker performance classes cap traffic and pedestrian draw ranges (graphics.js PERFORMANCE); high keeps the full range
+// The performance class's CPU budget: offline traffic density, pedestrian count, traffic AI rate, HUD redraw rates. Online the server
+// owns the shared traffic, so only the HUD rates apply there.
+const applyCpuBudget = () => { G.trafficTier = GFX.traffic; if (people) people.budgetMul = GFX.walkers; hud?.setRates(GFX.hud); };
 const applyDrawDistance = () => { if (traffic) PARKED_RANGE.far = traffic.drawRange = Math.min(GFX.trafficDraw ?? Infinity, clamp(drawDistance() * 0.55, 220, 1150)); if (people) people.drawRadius = Math.min(GFX.crowd, Math.max(60, drawDistance() * 0.35)); };
 const GRAPHICS_KEYS = new Set(['perfClass', 'renderScale', 'dynamicResolution', 'frameCap', 'drawDistance']);
 /** re-resolve resolution / draw distance and apply them live (no reload, the world is kept); the look never changes */
@@ -268,7 +276,7 @@ function applyGraphics() {
   GFX = resolveGraphics(settings, { deviceRatio: window.devicePixelRatio, gpuName });
   dynamicScale = makeDynamicScale();
   if (GFX.pixelRatio !== pixelRatio) { pixelRatio = GFX.pixelRatio; onResize(); post?.resetHistory(); }
-  setDrawDistance(+Q.get('draw') || GFX.drawDistance, R.horizon, GFX.detail); applyDrawDistance(); updateLod();
+  setDrawDistance(+Q.get('draw') || GFX.drawDistance, R.horizon, GFX.detail); applyDrawDistance(); applyCpuBudget(); updateLod();
 }
 onSettings((s, key) => { if (GRAPHICS_KEYS.has(key)) applyGraphics(); });
 
@@ -304,7 +312,7 @@ async function loadFirstMap(id) {
   route = map.route;
   startS = route.start;
   hud?.paintPanel?.remove(); $('rticks').replaceChildren();
-  hud = new Hud(map);
+  hud = new Hud(map); applyCpuBudget();
   hud.onPaint = (id, color) => { if (player?.spec.id === id) setPaint(player.model, color); }; // garage paint picker (hud.showPaint)
   hud.drawOverview($('overview'));
   tlog('map');
@@ -353,14 +361,14 @@ async function loadFirstMap(id) {
 
 // Map scene ownership is separate from persistent rendering, input and menu state.
 function bindMapWorld(next) {
-  ({ map, water, assets, signals, people, traffic, ground, splash, fx, markers } = next); applyDrawDistance();
+  ({ map, water, assets, signals, people, traffic, ground, splash, fx, markers } = next); applyDrawDistance(); applyCpuBudget();
   for (const c of traffic.cars || []) if (c.m?.root && !c.m.root.userData.shadowTrimmed) { trimShadowCasters(c.m.root); c.m.root.userData.shadowTrimmed = true; }
   route = map.route; startS = route.start;
   ground.corridor = new DrivableCorridor(route, ground.network, map.terrain);
   drivingModeView?.dispose(); drivingModeView = new DrivingModeView(scene, route);
   lodList.splice(0, lodList.length, ...next.lod);
   traffic.disabled = Q.has('notraffic') || route.closed;
-  { const base = traffic.density.bind(traffic); traffic.density = (s) => base(s) * (G.trafficMul ?? 1); }
+  { const base = traffic.density.bind(traffic); traffic.density = (s) => base(s) * (G.trafficMul ?? 1) * (multiplayer.active ? 1 : G.trafficTier ?? 1); }
   police = new Police(traffic, route); window.__police = police;
   policeVoice.reset(); humanVoices.reset(); police.onVoice = (state, transitions) => policeVoice.observe(state, transitions);
   notifications.mirrorView = () => ({camera, mirrors: G.cam==='cockpit'||cameraBlend.active ? player?.cockpit?.mirrors||[] : []});
@@ -409,7 +417,7 @@ async function switchMap(id = 'riviera', context = 'QUICK RACE') {
     for (const c of [player, rival]) { c.veh = new Vehicle(c.spec, route); c.veh.ground = ground; c.ai = { lane: 0, cool: 0 }; delete c.networkName; }
     applyDriving();
     hud.paintPanel?.remove(); $('rticks').replaceChildren();
-    hud = new Hud(map); hud.onPaint = (car, color) => { if (player?.spec.id === car) setPaint(player.model, color); };
+    hud = new Hud(map); applyCpuBudget(); hud.onPaint = (car, color) => { if (player?.spec.id === car) setPaint(player.model, color); };
     hud.drawOverview($('overview'));
     if (window.__ghostLap) { Object.assign(window.__ghostLap.ctx, { route, hud }); window.__ghostLap.recorder = null; }
     G.ev = null; G.run = null; G.pendingEvent = null; G.gridKey = null;
@@ -1928,6 +1936,9 @@ const DBG_VIEW = Q.has('view') ? Q.get('view').split(',').map(Number) : null;
 // ------------------------------------------------------------------ main loop
 let last = 0, frameN = 0;
 const frameLimiter = new FrameLimiter();
+const perfGovernor = new PerfGovernor({ ceiling: storedPerfCeiling() });
+window.__perfGovernor = perfGovernor;
+const MAX_SLICES = 10; // a half-second hitch is caught up in at most 10 slices, not 30
 const events = [];
 const ACTORS = [{ veh: null, kind: 'player' }, { veh: null, kind: 'rival' }];
 const sunScreen = new THREE.Vector3();
@@ -1941,7 +1952,7 @@ function frame(now) {
   // every requestAnimationFrame callback, at the display's refresh, simulates and draws.
   perfOverlay.tick();
   if (!Q.has('fixeddt') && !frameLimiter.allow(now, settings.frameCap)) return;
-  const cpuFrameStart = cpuMetrics.start();
+  const cpuFrameStart = cpuMetrics.start(), frameStart = performance.now();
   const wallDt = Math.max(0, (now - last) / 1000);
   let dt = Math.min(0.5, wallDt); last = now;
   if (Q.has('fixeddt')) dt = 1 / 60;
@@ -1953,8 +1964,11 @@ function frame(now) {
   perfOverlay.frame(wallDt);
   G.fps = G.fps ? G.fps * 0.95 + 0.05 / Math.max(1e-3, (now - (G.lastNow || now - 16)) / 1000) : 60; G.lastNow = now;
   const reps = +(Q.get('turbo') || 1);
-  const slices = Math.max(1, Math.ceil(dt / (1 / 60)));
-  try { for (let i = 0; i < reps; i++) for (let j = 0; j < slices; j++) step(dt / slices, i === reps - 1 && j === slices - 1); } catch (e) { if (G.ctxLost || renderer.getContext().isContextLost()) return; fail(e); throw e; }
+  // A long frame is simulated in <= 1/60 s slices (physics, AI, traffic), but the HUD, audio, camera and visuals run once
+  // per displayed frame (the last slice, with the whole frame's time). They used to run in every slice, so a slow frame
+  // (a weak laptop at 20 fps = 3 slices) cost 3x the HUD / audio / sync work and got slower still: the lag spiral.
+  const slices = Math.min(MAX_SLICES, Math.max(1, Math.ceil(dt / (1 / 60) - 1e-6)));
+  try { for (let i = 0; i < reps; i++) for (let j = 0; j < slices; j++) { const last = i === reps - 1 && j === slices - 1; step(dt / slices, last, last, dt); } } catch (e) { if (G.ctxLost || renderer.getContext().isContextLost()) return; fail(e); throw e; }
   if (splash) splash.update(dt);
   if (player) drivingHints.update({ state: G.state, device: activeInputDevice(), car: player.spec, manual: player.veh.manual, blocked: !!menu?.open || !multiplayer.panel.hidden });
   if (input.handbrake) drivingHints.action('handbrake');
@@ -1964,9 +1978,15 @@ function frame(now) {
     drivingFeedback.update({ vehicle: selectedDriverVehicle, route: selectedDriverVehicle?.route || route, dir: inFreeRoam() ? undefined : multiplayer.active ? multiplayer.lobby.event?.dir || 1 : G.dir || 1, visible: ['race', 'onlineFinished', 'onlineWrecked'].includes(G.state) && !menu?.open && multiplayer.panel.hidden && !G.towing, spectating: !!watching, driverName: watching?.name || '', units: settings.units, wetGrip: WEATHER.gripScale, endS: !inFreeRoam() && !route?.closed ? G.ev?.r.s1 : undefined });
   }
   cpuMetrics.frame(cpuFrameStart);
+  // Frame governor: a machine that keeps missing its budget (and where dynamic resolution cannot help) drops a performance class.
+  if (!document.hidden && !Q.has('fixeddt') && (G.state === 'race' || G.state === 'onlineRace' || G.state === 'countdown') && !menu?.open) {
+    const pixelBound = settings.dynamicResolution && dynamicScale.ratio > dynamicScale.min * 1.02 && dynamicScale.holdT <= 0;
+    const next = perfGovernor.sample(wallDt * 1000, performance.now() - frameStart, 1000 / (settings.frameCap || 60), GFX.perfClass, { dt: wallDt, pixelBound });
+    if (next) { console.info(`performance class ${GFX.perfClass} -> ${next}`, perfGovernor.last); setSetting('perfClass', next); }
+  }
 }
 
-function step(dt, draw = true) {
+function step(dt, draw = true, visual = true, frameDt = dt) {
   // A queued first frame can predate boot's clock reset. Integrators require a positive timestep.
   if (!(dt > 0) || mapSwitch) return;
   if (menu?.accounts?.blocked) { readInput(dt); return; }
@@ -2058,7 +2078,8 @@ function step(dt, draw = true) {
       if (!multiplayer.active) for (let i = 0; i < grid.length; i++) _actors[i + 1] = grid[i].actor;
       const actors = _actors;
       const cpuTraffic = cpuMetrics.start();
-      if (!multiplayer.active) traffic.update(dt, pv.s, actors);
+      // the lowest class runs the traffic AI at 30 Hz (it accumulates the skipped steps' time); everyone else every step
+      if (!multiplayer.active) { G.trafficAcc = (G.trafficAcc || 0) + dt; if (G.trafficAcc >= 1 / (GFX.trafficHz ?? 60) - 1e-4) { traffic.update(G.trafficAcc, pv.s, actors); G.trafficAcc = 0; } }
       cpuMetrics.end('traffic', cpuTraffic);
       events.length = 0;
       if ((!multiplayer.active || multiplayer.lobby.traffic || police?.enabled) && !(G.autodrive && player.ai && player.ai.passT > 0)) traffic.collide(actors[0], events, G.t);
@@ -2134,12 +2155,14 @@ function step(dt, draw = true) {
         const wait = G.state === 'race' && nj.main !== 'G' && d < 40 && pv.kmh < 3;
         if (wait && pv.spec.nitrous === true) { pv.nitro = Math.min(1, pv.nitro + dt * 0.1); if (G.waitJ !== nj.i) { G.waitJ = nj.i; hud.message('RED LIGHT · <i>NITRO CHARGING</i> WHILE YOU WAIT', 2.5); } }
         info = { main: nj.main, d, wait, nitrous: pv.spec.nitrous === true, close: nj.main === 'R' && d < 80 && pv.kmh > 25 };
-        if (nj.ped && d < 70) { G.tickT -= dt; if (G.tickT <= 0) { G.tickT = nj.pedLeft < 2.2 ? 0.22 : 0.55; audio.pedTick(nj.pedLeft < 2.2, 0.3); } }
+        if (nj.ped && d < 70) { G.tickT -= dt; if (G.tickT <= 0) { G.tickT = nj.pedLeft < 2.2 ? 0.22 : 0.55; audio.pedTick(nj.pedLeft < 2.2, 0.3, Math.max(0, 1 - d / 60) ** 2); } }
       }
     }
     hud.signal(info);
   }
   bootFrameLog('frame-simulation');
+  if (!visual) return; // an earlier slice of a long frame: the last one updates the picture, HUD and sound
+  dt = frameDt;
   // ---- visuals
   syncCar(player, simulate ? dt : 0); if (multiplayer.active || !grid.length) syncCar(rival, simulate ? dt : 0); else for (const c of grid) syncCar(c, simulate ? dt : 0);
   // Tyre smoke, rubber marks, grit and sparks run online too: this driver's own car and every nearby visible rival.

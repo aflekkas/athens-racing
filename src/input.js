@@ -78,8 +78,13 @@ export class Input {
   }
   // Production polls the selected spec every frame, including car switches and menu resumes.
   setCarSpec(spec) {
+    // Polled every frame, but it only touches the DOM (querySelector / querySelectorAll) when the car's nitrous flag or the
+    // aids preference changed, and once a second to catch hints rendered later by a menu.
+    const nitrous = spec?.nitrous === true, aids = !!preferences.aids;
+    if (nitrous === this._specNitrous && aids === this._specAids && (this._specPoll = (this._specPoll || 0) + 1) < 60) return;
+    this._specPoll = 0; this._specNitrous = nitrous; this._specAids = aids;
     this.setAidsEnabled(preferences.aids);
-    this.setNitrousEnabled(spec?.nitrous === true);
+    this.setNitrousEnabled(nitrous);
     if (this.touchUI && this.touchUI.dataset.auxColumns !== '5') this.touchUI.dataset.auxColumns = '5';
   }
   listen(name, cb) { this.target?.addEventListener(name, cb); this.listeners.push([name, cb]); }

@@ -20,16 +20,20 @@ export const RENDER = Object.freeze({
   waterEvery: 0, particles: 'low', mirror: Object.freeze({ every: 3, far: 150, width: 384 }),
   scenery: 'high', horizon: 'high', anisotropy: 8, exhaust: 'high',
 });
-// PERFORMANCE classes change only resolution and draw ranges, never the look. settings.perfClass ('auto' = from the
-// device; the first-run check in src/ui/graphics-onboarding.js may lower it silently) picks the 'auto' resolution and
-// draw distance. pixelRatio: render pixel ratio cap (x device pixels) · drawDistance m (src/scenery.js) ·
-// trafficDraw / crowd: traffic and pedestrian draw ranges (m, null = from the draw distance) · detail: small-prop
-// range factor (src/scenery.js)
+// PERFORMANCE classes change only resolution, draw ranges and how much is simulated and refreshed, never the look. settings.perfClass
+// ('auto' = from the device; the first-run check in src/ui/graphics-onboarding.js may lower it silently, and the frame
+// governor in src/perf-governor.js lowers it when a machine keeps missing its frame budget) picks the 'auto' resolution,
+// draw distance and the CPU budget below. pixelRatio: render pixel ratio cap (x device pixels) · drawDistance m
+// (src/scenery.js) · trafficDraw / crowd: traffic and pedestrian draw ranges (m, null = from the draw distance) · detail:
+// small-prop range factor (src/scenery.js) · traffic / walkers: offline traffic density and pedestrian count (x the
+// map's; online the server owns the shared traffic, so it is never scaled there) · trafficHz: traffic AI rate (60 = every
+// step) · hud: minimap / tacho redraw rates in Hz (src/hud.js)
+const hudRates = (tacho, map, mapBig) => Object.freeze({ tacho, map, mapBig });
 export const PERFORMANCE = Object.freeze({
-  potato: { pixelRatio: 0.6, drawDistance: 500, trafficDraw: 220, crowd: 70, detail: 0.5 },
-  low: { pixelRatio: 0.8, drawDistance: 1000, trafficDraw: 320, crowd: 110, detail: 0.7 },
-  med: { pixelRatio: 1.1, drawDistance: 1000, trafficDraw: 420, crowd: 140, detail: 0.85 },
-  high: { pixelRatio: 1.5, drawDistance: 2000, trafficDraw: null, crowd: 175, detail: 1 },
+  potato: { pixelRatio: 0.6, drawDistance: 500, trafficDraw: 220, crowd: 70, detail: 0.5, traffic: 0.4, walkers: 0.5, trafficHz: 30, hud: hudRates(20, 8, 15) },
+  low: { pixelRatio: 0.8, drawDistance: 1000, trafficDraw: 320, crowd: 110, detail: 0.7, traffic: 0.6, walkers: 0.7, trafficHz: 60, hud: hudRates(24, 10, 20) },
+  med: { pixelRatio: 1.1, drawDistance: 1000, trafficDraw: 420, crowd: 140, detail: 0.85, traffic: 0.85, walkers: 1, trafficHz: 60, hud: hudRates(30, 15, 30) },
+  high: { pixelRatio: 1.5, drawDistance: 2000, trafficDraw: null, crowd: 175, detail: 1, traffic: 1, walkers: 1, trafficHz: 60, hud: hudRates(30, 15, 30) },
 });
 export const PERF_CLASSES = Object.keys(PERFORMANCE);
 // Admission targets include all live page/worker allocations. Stream reservations
@@ -57,7 +61,7 @@ export function resolveGraphics(s = settings, { deviceRatio = typeof devicePixel
   const pixelRatio = +(scale ? screen * scale : Math.min(screen, P.pixelRatio)).toFixed(3);
   const draw = +s.drawDistance > 0 ? +s.drawDistance : Math.min(P.drawDistance, mobile ? 500 : Infinity);
   const resources = RESOURCE_BUDGETS[mobile && PERF_CLASSES.indexOf(perfClass) > 1 ? 'low' : perfClass];
-  return { R: RENDER, perfClass, P, resources, pixelRatio, resolution: pixelRatio / screen, drawDistance: draw, trafficDraw: P.trafficDraw, crowd: P.crowd, detail: P.detail };
+  return { R: RENDER, perfClass, P, resources, pixelRatio, resolution: pixelRatio / screen, drawDistance: draw, trafficDraw: P.trafficDraw, crowd: P.crowd, detail: P.detail, traffic: P.traffic, walkers: P.walkers, trafficHz: P.trafficHz, hud: P.hud };
 }
 const SOFTWARE_GPU = /SwiftShader|llvmpipe|softpipe|Software|Microsoft Basic Render/i;
 // integrated / mobile GPUs: medium. Apple M-series and discrete cards stay on high.
@@ -107,6 +111,27 @@ function gpuProbe(budgetMs = 1500) {
   gl.getExtension('WEBGL_lose_context')?.loseContext();
   return { gpu, msPerPass };
 }
+// A short synchronous CPU probe: a fixed amount of the kind of work the simulation does (trig, sqrt, typed-array traffic,
+// dependent chains), repeated until `budgetMs` has passed. Returns ms per million loop iterations (lower is faster): about
+// 20-35 on a current laptop core, 70 on a 2x slower one. A weak GPU is only half of a slow machine: the first-run check
+// also needs to know whether the CPU can run the sim, the traffic and the HUD at frame rate.
+export function cpuProbe(budgetMs = 60) {
+  const table = new Float64Array(256); let x = 0.1, y = 0.2, v = 1, loops = 0;
+  const start = performance.now(); let elapsed = 0;
+  do {
+    for (let i = 0; i < 20000; i++) { x = Math.sin(x * 1.7 + y) * 0.99; y = Math.sqrt(Math.abs(x) + y * 0.5 + 0.1); table[i & 255] = x * y + v; v = v * 0.9999 + table[(i * 7) & 255] * 1e-3; }
+    loops++; elapsed = performance.now() - start;
+  } while (elapsed < budgetMs);
+  return { msPerMillion: elapsed / (loops * 0.02), sink: x + y + v };
+}
+/** the heaviest class this CPU can carry (a probe time in ms per million iterations; see cpuProbe) */
+export function cpuCap(msPerMillion) {
+  return msPerMillion > CPU_PROBE_LIMITS.potato ? 'potato' : msPerMillion > CPU_PROBE_LIMITS.low ? 'low' : msPerMillion > CPU_PROBE_LIMITS.med ? 'med' : 'high';
+}
+// Calibrated against the sim: one core of the 8-core server this was tuned on probes at ~35 ms per million iterations (CPU
+// time) and runs the busy Riviera sim step in ~7 ms (x4 CPU throttle: ~28 ms, i.e. no 60 fps). A core 2x slower (~70) can still
+// run 'low'; 3x slower (~100+) only 'potato'.
+export const CPU_PROBE_LIMITS = Object.freeze({ potato: 100, low: 65, med: 45 });
 /**
  * The first-run performance check: GPU name + CPU cores + device memory, then (optional) a <=1.5 s GPU probe that
  * can only lower it. Resolves { perfClass, reasons[], gpu, cores, memory, msPerPass }. Performance only: it picks
@@ -119,6 +144,10 @@ export async function detectPerformance({ probe = true, gpuName = '', userAgent 
   const gpu = gpuName || probed?.gpu || '';
   let perfClass = detectPerfClass(gpu, userAgent);
   reasons.push(`gpu:${gpu || 'unknown'} to ${perfClass}`);
+  // the CPU: best of three short probes (a busy moment must not condemn a fast machine)
+  let cpu = null;
+  if (probe) { cpu = Infinity; for (let i = 0; i < 3; i++) { await new Promise(r => setTimeout(r, 0)); cpu = Math.min(cpu, cpuProbe(40).msPerMillion); } }
+  if (cpu != null) { const cap = cpuCap(cpu); if (cap !== 'high') reasons.push(`cpu probe ${cpu.toFixed(0)} ms/M to ≤${cap}`); perfClass = minClass(perfClass, cap); }
   if (cores <= 2 || memory <= 2) { perfClass = minClass(perfClass, 'potato'); reasons.push(`cpu ${cores} cores / ${memory} GB to potato`); }
   else if (cores <= 4 || memory <= 4) { perfClass = minClass(perfClass, 'med'); reasons.push(`cpu ${cores} cores / ${memory} GB to ≤med`); }
   const ms = probed?.msPerPass;
@@ -127,7 +156,7 @@ export async function detectPerformance({ probe = true, gpuName = '', userAgent 
     if (cap !== 'high') reasons.push(`probe ${ms.toFixed(1)} ms to ≤${cap}`);
     perfClass = minClass(perfClass, cap);
   }
-  return { perfClass, reasons, gpu, cores, memory, msPerPass: ms ?? null };
+  return { perfClass, reasons, gpu, cores, memory, msPerPass: ms ?? null, cpuMsPerMillion: cpu };
 }
 /** Resolution: 'auto' (the performance class's) or a fixed 0.5..1 of the screen's pixels. */
 export function applyRenderResolution(scale, { pixelRatioCap } = {}) {

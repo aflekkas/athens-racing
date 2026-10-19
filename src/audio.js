@@ -4,6 +4,7 @@ import { preloadEngine, loadRecordedEngine, recordingFor, RecordedEngineVoice } 
 import { loadWorldSounds, loopSource, spatialAudio } from './world-sounds.js';
 import { WeatherAudio } from './weather-audio.js';
 import { Sirens } from './sirens.js';
+import { VoiceBudget, ContextWatchdog, playoutUnderruns, useKRate, BranchGate } from './audio/robust.js';
 
 // Recorded player/rival engines with procedural fallback; recorded world (WebAudio).
 // Starts on the first key press / click (autoplay policy).
@@ -112,7 +113,7 @@ export function tyreSquealActive(active, parameters) {
 
 /** Four decorrelated contact-patch voices; no downloaded squeal is needed before the first corner. */
 export class TyreVoice {
-  constructor(ctx, dest, index) {
+  constructor(ctx, dest, index, { lowCost = false } = {}) {
     this.ctx = ctx; this.index = index;
     const gain = (value = 0) => { const n = ctx.createGain(); n.gain.value = value; return n; };
     const filter = (type, hz, q = 0.7) => { const n = ctx.createBiquadFilter(); n.type = type; n.frequency.value = hz; n.Q.value = q; return n; };
@@ -145,7 +146,8 @@ export class TyreVoice {
     this.squealActive = false; this.squealTarget = 0;
     this.squeal = gain(); this.squealFlutter = gain(1); chain(this.squeal, this.squealFlutter, this.squealBus);
     this.squealModes = [];
-    for (const [harmonic, level] of [[1, 15.2], [2, 6.4], [3, 1.92]]) {
+    // the weakest machines drop the faint third harmonic (4 resonances per tyre instead of 6)
+    for (const [harmonic, level] of lowCost ? [[1, 15.2], [2, 6.4]] : [[1, 15.2], [2, 6.4], [3, 1.92]]) {
       for (const detune of [0.977, 1.026]) {
         const band = filter('bandpass', 850 * harmonic * detune, 11 + harmonic * 2), amp = gain(level);
         chain(this.noise, band, amp, this.squeal);
@@ -154,6 +156,12 @@ export class TyreVoice {
     }
     this.nextFlutter = 0; this.nextChatter = 0; this.chatterUntil = 0;
     this.chirp = gain(); this.chirpOsc = osc(1200); chain(this.chirpOsc, this.chirp, this.squealBus);
+    // Most of the time most layers are silent: a branch that is cut from the graph is not rendered at all (see BranchGate)
+    this.branches = {
+      squeal: new BranchGate(this.squealBus, this.axle, 1.5), scrub: new BranchGate(this.scrubLP, this.axle, 0.8), grit: new BranchGate(this.grit, this.axle, 0.8),
+      rumble: new BranchGate(this.rumble, this.axle, 0.8), roll: new BranchGate(this.roll, this.axle, 0.8),
+    };
+    for (const gate of Object.values(this.branches)) gate.close();
   }
   attachRecording(sound) {
     if (this.recording) return;
@@ -169,6 +177,8 @@ export class TyreVoice {
     this.squealTarget = p.squeal;
     for (const key of ['roll', 'scrub', 'howl', 'grit', 'rumble']) this[key].gain.setTargetAtTime(p[key], now, .055);
     this.squeal.gain.setTargetAtTime(p.squeal, now, squealTime);
+    this.branches.squeal.use(Math.max(p.squeal, p.lock ? 1 : 0), now);
+    this.branches.scrub.use(Math.max(p.scrub, p.howl), now); this.branches.grit.use(p.grit, now); this.branches.rumble.use(p.rumble, now); this.branches.roll.use(p.roll, now);
     if (this.recording) {
       this.recordGain.gain.setTargetAtTime(p.squeal * 0.85, now, squealTime);
       this.recording.playbackRate.setTargetAtTime(clampAudio(p.pitch / 850, 0.7, 1.65) * (0.97 + this.index * 0.018), now, 0.07);
@@ -213,11 +223,17 @@ export class TyreVoice {
 export class Audio {
   constructor() { this.worldCadence = new AudioCadence(); this.worldMuted = null; this.ctx = null; this.started = false; this.engineSpec = null; this.banks = {}; this.engineRevision = 0; this.recordingState = 'idle'; this.weather = new WeatherAudio(this); this.sirens = new Sirens(this); this.vol = { ...AUDIO_DEFAULTS }; this.rivals = new Map(); this.lifecycle = new EngineLifecycle(this); }
 
-  start({ context, recordings = true } = {}) {
+  start({ context, recordings = true, latencyHint = this.latencyHint, kRate = true } = {}) {
     if (this.ctx) { if (['suspended', 'interrupted'].includes(this.ctx.state)) this.ctx.resume().catch(() => {}); return; }
     const AC = typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext);
     if (!context && !AC) return;
-    const ctx = this.ctx = context || new AC();
+    // A larger output buffer ('balanced' / 'playback') is what keeps sound continuous when the CPU is saturated: the
+    // audio thread then has several milliseconds more to finish each block before the device runs dry.
+    const ctx = this.ctx = context || (() => { try { return latencyHint ? new AC({ latencyHint }) : new AC(); } catch { return new AC(); } })();
+    if (kRate) useKRate(ctx);
+    this.voices ||= new VoiceBudget(this.voiceLimit || 32); this.watchdog ||= new ContextWatchdog();
+    ctx.addEventListener?.('statechange', () => this.watchdog.check(ctx, performance.now() / 1000));
+    if (typeof document !== 'undefined' && !context) document.addEventListener('visibilitychange', () => { if (!document.hidden) this.watchdog.check(ctx, performance.now() / 1000); });
     if (['suspended', 'interrupted'].includes(ctx.state)) ctx.resume().catch(() => {});
     this.started = true;
     const sr = ctx.sampleRate;
@@ -246,7 +262,7 @@ export class Audio {
     }
     // reverb send (synthetic plate) for effects
     this.verb = ctx.createConvolver();
-    { const L = Math.floor(sr * 1.4), ir = ctx.createBuffer(2, L, sr); for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch); let lp = 0; for (let i = 0; i < L; i++) { const k = 0.85 - 0.75 * i / L; lp += ((Math.random() * 2 - 1) - lp) * k; d[i] = lp * Math.pow(1 - i / L, 3.6) * 0.6; } } this.verb.buffer = ir; } // tail darkens as it decays
+    { const L = Math.floor(sr * (this.lowCost ? 0.9 : 1.4)), ir = ctx.createBuffer(2, L, sr); for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch); let lp = 0; for (let i = 0; i < L; i++) { const k = 0.85 - 0.75 * i / L; lp += ((Math.random() * 2 - 1) - lp) * k; d[i] = lp * Math.pow(1 - i / L, 3.6) * 0.6; } } this.verb.buffer = ir; } // tail darkens as it decays
     this.verbIn = ctx.createGain(); this.verbIn.gain.value = 0.2; this.verbIn.connect(this.verb); this.verb.connect(this.mix.worldDuck);
     this.sfx.connect(this.verbIn);
     // noise buffers
@@ -279,15 +295,21 @@ export class Audio {
     x.whine = osc('sine', 600); x.whineG = gain(); chain(x.whine, x.whineG, this.eng);
     x.nitro = loopSrc(this.white); x.nitroBP = filt('bandpass', 2400, 0.7); x.nitroG = gain(); chain(x.nitro, x.nitroBP, x.nitroG, this.eng);
     this.x = x;
+    // engine layers that are silent for most cars / most of the time (turbo and compressor on an NA car, whine, nitro, intake at idle)
+    this.gx = { intake: new BranchGate(x.intakeG, this.eng, .6), turbo: new BranchGate(x.turboG, this.eng, .6), compressor: new BranchGate(x.compressorG, this.eng, .8),
+      whine: new BranchGate(x.whineG, this.eng, .8), nitro: new BranchGate(x.nitroG, this.eng, 1) };
+    for (const gate of Object.values(this.gx)) gate.close();
 
     // --- TYRES / ROAD / SUSPENSION / WIND
     const t = {};
-    this.tyres = Array.from({ length: 4 }, (_, i) => new TyreVoice(ctx, this.chassis, i));
+    this.tyres = Array.from({ length: 4 }, (_, i) => new TyreVoice(ctx, this.chassis, i, { lowCost: this.lowCost }));
     // wind: recorded gusts, brighter and faster with speed; a slow gust swell on top
     t.windLP = filt('lowpass', 900, 0.5); t.windMod = gain(1); t.windG = gain(); chain(t.windLP, t.windMod, t.windG, this.chassis);
     t.gust = osc('sine', 0.13); t.gustG = gain(0.25); chain(t.gust, t.gustG, t.windMod.gain);
     t.whistle = loopSrc(this.white); t.whistleBP = filt('bandpass', 2200, 14); t.whistleG = gain(); chain(t.whistle, t.whistleBP, t.whistleG, this.chassis);
     this.t = t;
+    this.gt = { wind: new BranchGate(t.windG, this.chassis, 2.5), whistle: new BranchGate(t.whistleG, this.chassis, 2.5) };
+    for (const gate of Object.values(this.gt)) gate.close();
 
     // --- AMBIENCE beds (recorded; each fades in when it arrives): sea on the shore side, muffled with distance
     const a = {};
@@ -302,7 +324,7 @@ export class Audio {
 
     // --- TRAFFIC voices (assigned each frame to the nearest vehicles): recorded idle + running loops crossfaded by
     // rpm, an electric whine, and tyre roll
-    this.externalEngines = new ExternalEngines(ctx, this.trafficBus, (level, pan) => this.passBy(level, pan));
+    this.externalEngines = new ExternalEngines(ctx, this.trafficBus, (level, pan) => this.passBy(level, pan), { detail: this.lowCost ? 3 : 6 });
 
     // --- recorded world sounds
     this.S = {};
@@ -403,6 +425,12 @@ export class Audio {
   }
 
 
+  /** what the audio thread is doing, for the perf overlay and tests: context state, output latency, voice cap, under-runs */
+  health() {
+    const c = this.ctx;
+    return !c ? null : { state: c.state, baseLatencyMs: +((c.baseLatency || 0) * 1000).toFixed(1), outputLatencyMs: +((c.outputLatency || 0) * 1000).toFixed(1),
+      voices: this.voices.active, voiceLimit: this.voices.limit, voicesDropped: this.voices.dropped, resumes: this.watchdog.resumes, underruns: playoutUnderruns(c) };
+  }
   /** hook a recorded sound into the graph built in start() */
   attach(name, snd) {
     this.externalEngines?.attachWorld(name, snd);
@@ -414,10 +442,11 @@ export class Audio {
 
   }
   /** play a recorded one-shot; returns false when it has not loaded (callers fall back to synthesis) */
-  sample(name, { gain = 1, rate = 1, pan = 0, at = 0, bus, offset = 0, dur, lp } = {}) {
+  sample(name, { gain = 1, rate = 1, pan = 0, at = 0, bus, offset = 0, dur, lp, priority = 0 } = {}) {
     const snd = this.S && this.S[name];
     if (!snd) return false;
     const ctx = this.ctx, t = ctx.currentTime + at;
+    if (!this.voices.take(ctx.currentTime, t + (dur || Math.max(0, snd.buffer.duration - offset) / Math.max(0.1, rate)), priority)) return true; // over the voice cap: skipped, not re-synthesised
     const s = ctx.createBufferSource(); s.buffer = snd.buffer; s.playbackRate.value = rate;
     const g = ctx.createGain(); g.gain.value = gain;
     const pn = ctx.createStereoPanner(); pn.pan.value = Math.max(-1, Math.min(1, pan));
@@ -440,6 +469,7 @@ export class Audio {
   update(p) {
     if (!this.ctx) return;
     const ctx = this.ctx, now = p.audioTime ?? ctx.currentTime, x = this.x, t = this.t, a = this.a;
+    this.watchdog.check(ctx, performance.now() / 1000);
     const v = Math.max(0, p.speed), red = p.redline || 7000, rn = Math.min(1.1, p.rpm / red);
     const load = p.muted ? 0 : p.load, E = this.E || ENGINE_SOUND.turbo4;
     this.menuRequested = !!(p.menuOpen || p.muted); this.syncMenu(now);
@@ -454,13 +484,16 @@ export class Audio {
     if (this.engineVoice) this.engineVoice.set(this.lifecycle.rpm, load, mute * startLevel, now, 1, p.limiter);
     const on = Math.max(0, load) * startLevel;
     x.intakeBP.frequency.setTargetAtTime(260 + rn * 2600, now, 0.05);
-    x.intakeG.gain.setTargetAtTime(mute * on * (p.open ? 0.02 + 0.045 * rn : 0.025 + 0.085 * rn), now, 0.05);
+    const intakeLevel = mute * on * (p.open ? 0.02 + 0.045 * rn : 0.025 + 0.085 * rn);
+    x.intakeG.gain.setTargetAtTime(intakeLevel, now, 0.05); this.gx.intake.use(intakeLevel, now);
     const boost = p.boost || 0, tb = this.profile?.turbo ? (E.knock ? .6 : 1) : 0;
     x.turbo.frequency.setTargetAtTime(1800 + boost * 5200 * (0.6 + 0.4 * rn), now, 0.06);
     x.turbo2.frequency.setTargetAtTime((1800 + boost * 5200 * (0.6 + 0.4 * rn)) * 2.01, now, 0.06);
-    x.turboG.gain.setTargetAtTime(mute * tb * boost * boost * 0.006, now, 0.05);
+    const turboLevel = mute * tb * boost * boost * 0.006;
+    x.turboG.gain.setTargetAtTime(turboLevel, now, 0.05); this.gx.turbo.use(turboLevel, now);
     x.compressorBP.frequency.setTargetAtTime(1800 + boost * 3600, now, .10);
-    x.compressorG.gain.setTargetAtTime(tb * boost * boost * .013 * startLevel, now, .08);
+    const compressorLevel = tb * boost * boost * .013 * startLevel;
+    x.compressorG.gain.setTargetAtTime(compressorLevel, now, .08); this.gx.compressor.use(compressorLevel, now);
     // blow-off valve / wastegate flutter when the throttle snaps shut on boost
     const lift = (this.lastLoad ?? 0) > 0.3 && load < 0.05;
     if (lift && tb && boost > 0.35) {
@@ -481,8 +514,9 @@ export class Audio {
     this.lastOverrun = !!p.overrun;
     this.lastLoad = load;
     x.whine.frequency.setTargetAtTime(p.rpm / 60 * 7.3 / Math.max(0.6, (p.gearRatio || 1) * 0.35), now, 0.05);
-    x.whineG.gain.setTargetAtTime(mute * E.whine * 0.012 * (0.3 + Math.abs(load)) * Math.min(1, v / 8), now, 0.08);
-    x.nitroG.gain.setTargetAtTime(p.nitro ? 0.07 : 0, now, p.nitro ? 0.05 : 0.2);
+    const whineLevel = mute * E.whine * 0.012 * (0.3 + Math.abs(load)) * Math.min(1, v / 8);
+    x.whineG.gain.setTargetAtTime(whineLevel, now, 0.08); this.gx.whine.use(whineLevel, now);
+    x.nitroG.gain.setTargetAtTime(p.nitro ? 0.07 : 0, now, p.nitro ? 0.05 : 0.2); this.gx.nitro.use(p.nitro ? 0.07 : 0, now);
 
     // ---- four contact patches: unloaded wheels are silent, combined slip reveals the grip limit.
     const sk = Math.min(1.3, p.skid || 0), sq = Math.max(0, sk - 0.25) / 1.05;
@@ -495,10 +529,12 @@ export class Audio {
     const open = p.open ? 1 : 0;
     this.roadLP.frequency.setTargetAtTime(open ? 14000 : 1100, now, 0.2);
     this.roadCabin.gain.setTargetAtTime(open ? 1 : 0.65, now, 0.2);
-    t.windG.gain.setTargetAtTime(mute * Math.min(0.2, v * v * 0.00003) * (0.45 + 0.55 * open), now, 0.25);
+    const windLevel = mute * Math.min(0.2, v * v * 0.00003) * (0.45 + 0.55 * open);
+    t.windG.gain.setTargetAtTime(windLevel, now, 0.25); this.gt.wind.use(windLevel, now);
     t.windLP.frequency.setTargetAtTime(Math.min(12000, 450 + v * (open ? 110 : 45)), now, 0.3);
     t.wind?.playbackRate.setTargetAtTime(0.75 + Math.min(0.45, v / 110), now, 0.4);
-    t.whistleG.gain.setTargetAtTime(mute * (1 - open) * Math.max(0, v - 25) * 0.00015, now, 0.4);
+    const whistleLevel = mute * (1 - open) * Math.max(0, v - 25) * 0.00015;
+    t.whistleG.gain.setTargetAtTime(whistleLevel, now, 0.4); this.gt.whistle.use(whistleLevel, now);
     t.whistleBP.frequency.setTargetAtTime(1800 + v * 12, now, 0.4);
     // cabin: roof up filters the outside world
     this.cabinLP.frequency.setTargetAtTime(open ? 15000 : 2600, now, 0.2);
@@ -602,9 +638,10 @@ export class Audio {
     this.noise({ dur: 0.25, f: 5200, type: 'bandpass', q: 1, gain: 0.08 * level, pan, bus: this.trafficBus });
   }
   // ------------------------------------------------------------------ primitives
-  noise({ dur = 0.2, f = 1000, type = 'lowpass', q = 1, gain = 0.3, attack = 0.002, at = 0, pan = 0, sweep, bus, buf }) {
+  noise({ dur = 0.2, f = 1000, type = 'lowpass', q = 1, gain = 0.3, attack = 0.002, at = 0, pan = 0, sweep, bus, buf, priority = 0 }) {
     if (!this.ctx) return;
     const ctx = this.ctx, t = ctx.currentTime + at;
+    if (!this.voices.take(ctx.currentTime, t + dur + 0.05, priority)) return;
     const s = ctx.createBufferSource(); s.buffer = buf || this.white;
     const fl = ctx.createBiquadFilter(); fl.type = type; fl.frequency.setValueAtTime(f, t); fl.Q.value = q;
     if (sweep) fl.frequency.exponentialRampToValueAtTime(sweep, t + dur);
@@ -613,9 +650,10 @@ export class Audio {
     s.connect(fl); fl.connect(g); g.connect(pn); pn.connect(bus || this.sfx);
     s.start(t, Math.random() * 1.5); s.stop(t + dur + 0.05);
   }
-  tone({ f = 440, dur = 0.2, gain = 0.2, type = 'sine', slide, at = 0, attack = 0.004, vib = 0, vibF = 6, pan = 0, bus, lp }) {
+  tone({ f = 440, dur = 0.2, gain = 0.2, type = 'sine', slide, at = 0, attack = 0.004, vib = 0, vibF = 6, pan = 0, bus, lp, priority = 0 }) {
     if (!this.ctx) return;
     const ctx = this.ctx, t = ctx.currentTime + at;
+    if (!this.voices.take(ctx.currentTime, t + dur + 0.05, priority)) return;
     const o = ctx.createOscillator(); o.type = type; o.frequency.setValueAtTime(f, t);
     if (slide) o.frequency.exponentialRampToValueAtTime(slide, t + dur);
     if (vib) { const l = ctx.createOscillator(); l.frequency.value = vibF; const lg = ctx.createGain(); lg.gain.value = vib; l.connect(lg); lg.connect(o.frequency); l.start(t); l.stop(t + dur + 0.05); }
@@ -641,6 +679,7 @@ export class Audio {
     if (!this.ctx) return;
     const F = { a: [800, 1250, 2600], o: [460, 820, 2800], e: [500, 1750, 2500], i: [300, 2250, 2950], u: [330, 760, 2500], ah: [700, 1100, 2450] };
     const ctx = this.ctx; let t = ctx.currentTime + 0.01 + at;
+    if (!this.voices.take(ctx.currentTime, t + segs.reduce((n, s) => n + (s.dur || s.gap || 0), 0.25), 0)) return;
     const src = ctx.createOscillator(); src.type = 'sawtooth';
     const vib = ctx.createOscillator(); vib.frequency.value = 5.5; const vg = ctx.createGain(); vg.gain.value = 4; vib.connect(vg); vg.connect(src.frequency);
     const amp = ctx.createGain(); amp.gain.value = 0;
@@ -684,7 +723,7 @@ export class Audio {
   /** traffic-police whistle trill */
   whistle() { if (!this.ctx) return; for (const [at, d] of [[0, 0.18], [0.26, 0.6]]) this.tone({ f: 2950, dur: d, gain: 0.06, type: 'sine', at, vib: 140, vibF: 26, attack: 0.008 }); }
   /** the blind-assist ticker on a crossing's green man */
-  pedTick(fast = false, pan = 0) { if (!this.ctx) return; this.tone({ f: fast ? 1250 : 980, dur: 0.025, gain: 0.05, type: 'square', lp: 2400, pan }); }
+  pedTick(fast = false, pan = 0, level = 1) { if (!this.ctx || level < 0.05) return; this.tone({ f: fast ? 1250 : 980, dur: 0.025, gain: 0.05 * level, type: 'square', lp: 2400, pan }); }
   meow() { this.voice([{ v: 'i', dur: 0.1, f0: 720, f1: 820 }, { v: 'a', dur: 0.22, f0: 820, f1: 640 }, { v: 'u', dur: 0.15, f0: 640, f1: 520 }], 0.16, 0.2); }
   woof() { for (const at of [0, 0.22]) this.voice([{ v: 'u', dur: 0.04, f0: 190, f1: 230 }, { v: 'a', dur: 0.1, f0: 230, f1: 160 }], 0.3, -0.1, at); }
 
@@ -693,14 +732,14 @@ export class Audio {
     if (!this.ctx) return;
     severity = Math.max(0, Math.min(1, Number.isFinite(severity) ? severity : 0));
     const heavy = kind === 'heavy', glass = material.glass ?? (heavy && severity > .5), r = 0.92 + Math.random() * 0.16;
-    if (glass) this.sample('crash-glass', { gain: .30 * Math.sqrt(severity), rate: r, at: .03 });
+    if (glass) this.sample('crash-glass', { gain: .30 * Math.sqrt(severity), rate: r, at: .03, priority: 1 });
     if (material.metal && severity > .15) this.noise({ dur: .12 + severity * .15, f: 1500, type: 'bandpass', q: 2, gain: .08 * severity, at: .04 });
     // body thud under the recorded impact, for weight
     this.tone({ f: heavy ? 110 : 170, slide: heavy ? 40 : 65, dur: 0.3, gain: (heavy ? 0.4 : 0.25) * severity, type: 'sine' });
     const g = Math.min(1, 0.35 + 0.75 * severity);
     if (heavy) {
-      if (this.sample(Math.random() < 0.5 ? 'crash-heavy' : 'crash-medium', { gain: 0.75 * g, rate: r })) return;
-    } else if (this.sample(severity > 0.45 ? 'hit-clank' : 'hit-fast', { gain: 0.7 * g, rate: r })) return;
+      if (this.sample(Math.random() < 0.5 ? 'crash-heavy' : 'crash-medium', { gain: 0.75 * g, rate: r, priority: 1 })) return;
+    } else if (this.sample(severity > 0.45 ? 'hit-clank' : 'hit-fast', { gain: 0.7 * g, rate: r, priority: 1 })) return;
     // synthesized fallback until the recordings load
     this.noise({ dur: heavy ? 0.4 : 0.2, f: heavy ? 600 : 1400, type: 'lowpass', gain: 0.45 * severity });
     if (heavy) {

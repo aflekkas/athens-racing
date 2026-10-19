@@ -1,6 +1,7 @@
 // Recorded world sounds: ambience beds, traffic engine loops, impacts and horns (assets/audio/world, built by
 // tools/build_world_audio.mjs). Everything loads in the background
 // after the first key press; the game plays without any of it and each sound fades in once it arrives.
+import { seamlessBuffer } from './audio/robust.js';
 const WORLD = new URL('../assets/audio/world/', import.meta.url);
 const ENGINES = new URL('../assets/audio/engines/', import.meta.url);
 const AMBIENCE = new URL('../assets/audio/world/ambience/', import.meta.url);
@@ -35,6 +36,8 @@ export async function loadWorldSounds(ctx, onLoad) {
         if (off >= lim) off = 0;
       }
       sound.loopStart = off / ctx.sampleRate; sound.loopEnd = (off + len) / ctx.sampleRate;
+      // a loop whose end does not meet its start (rain, wipers, town) clicked once per lap: blend the seam once, here
+      if (off + len <= buffer.length) { const fixed = seamlessBuffer(buffer, off, Math.round(off + len), { fade: Math.round(ctx.sampleRate * 0.05) }); if (fixed) sound.loopStart = fixed.start / ctx.sampleRate; }
     } else if (m.kind === 'loop') { sound.loopStart = 0; sound.loopEnd = buffer.duration; }
     onLoad(name, sound);
   };

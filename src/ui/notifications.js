@@ -51,7 +51,10 @@ export class NotificationManager {
   }
   update(){
     if(!this.root)return;
-    const time=now(),active=raceNotificationsActive(),changed=active!==this.active;this.active=active;
+    // update() is also called every frame by the input loop: state flips mark the manager dirty (MutationObservers), so the DOM
+    // probe behind raceNotificationsActive() (getElementById + classList + querySelector) runs at most every 50 ms otherwise.
+    const time=now();if(!this.dirty&&time<(this.nextProbe||0))return;this.nextProbe=time+50;
+    const active=raceNotificationsActive(),changed=active!==this.active;this.active=active;
     if(!this.dirty&&!changed&&time<this.nextAt)return;this.nextAt=time+100;this.dirty=false;
     const items=this.queue.candidates(time,active);
     if(!active||!items.length){this.root.hidden=true;this.queue.commitVisible([]);return;}
