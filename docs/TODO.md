@@ -56,11 +56,13 @@ Running (Sonnet; Enterprise unless noted):
 - [?] 911 silhouette pass (`68878224`): better but still lumpy/wedge nose; owner to judge on staging whether it needs a dedicated modelling pass
 - [x] Athens road screenshots re-made and checked (`914c48e3`)
 - [x] Athens stage 3: Piraeus/Faliro, 289 cells, 871 km of road, all gates green, 2×2 set 36.6/64 MiB (`1f61c0fd`, `eac1f7f5`)
-- [~] Athens stage 4: the centre, first 47 cells in (`2ead313f`), rest in progress (Personal); north follows without owner wait
+- [x] Athens centre (partial): 47 cells, 336-cell world at 183.8/192 MiB, gates green (`2ead313f`, `5f95eb8b`)
+- [~] Athens: Piraeus entry (Tavros underpasses) + ≥35% smaller cells, then Kypseli/Patisia up to the cap (Personal)
+- [?] Owner: raise the 192 MiB Athens world ceiling (lead recommends 2 GB; player-side caps unchanged). North waits on this without owner wait
 - [x] Online: remote cars glide (jitter buffer, 20 Hz sim-clock samples, 50 ms relay) and car-to-car contacts symmetric (`3f35e7de`); owner to retest with a friend
 - [x] Multiplayer: restart and tow land where the car is (0 m off the grid after a host restart, guards in `server/mp-restart-tow.test.mjs`); lobby double-JOIN error and a lobby keeping the old track's traffic fixed; traffic seed equal on every client (`tools/traffic-seed.test.mjs`); owner to retest with a friend
 - [x] Badges one per end, catalogue guard (`5a9dccf9`); car vs trim chips (`50dc18db`); sharper car on weak classes (`bfdb468d`); Riviera draw calls ~540→~340 on Low (`c5025607`)
-- [~] Riviera draw calls under 200 on Low/Potato: instancing round (Personal)
+- [x] Riviera draw calls round 2: ~290–300 on Potato/Low (`508f0fcd`); <200 needs a far-road cull on Potato, owner decision
 - [~] Release cutover (lead): after the batch is checked on staging
 
 Waiting on the owner:
