@@ -8,6 +8,8 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Cars: model lettering and the A-Class star now sit on the bodywork instead of floating by the tail lights, and door mirrors are mounted lower and sturdier.
+
 - Multiplayer: other drivers' tyre smoke, burnouts and skid marks are now visible, and so are your own online. Sparks and dust show too.
 
 - Multiplayer lobby: CHANGE CAR / TRIM is its own button under your car, says it opens the garage, and explains when your car is locked.
