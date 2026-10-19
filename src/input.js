@@ -3,13 +3,14 @@ import { notifications } from './ui/notifications.js';
 // Unified input. No rendering/physics dependencies; injectable browser APIs make mapping testable in Node.
 import { settings as preferences, setSetting } from './settings.js';
 import { tiltAxis, requestTiltPermission, enterDrivingScreen } from './mobile.js';
+import { WHEEL_DEFAULTS, WHEEL_LIMITS, WHEEL_MODES, isWheel, inferProfile, resolveProfile, wheelAxes, wheelSettings, WheelCalibration, deviceKey, deviceName, canRumble, playRumble, wheelRumble, axisCount } from './steering-wheel.js';
 const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, Number.isFinite(x) ? x : 0));
 const copy = x => JSON.parse(JSON.stringify(x));
 export const DEFAULT_BINDINGS = {
   keyboard: {
     throttle: ['KeyW', 'ArrowUp'], brake: ['KeyS', 'ArrowDown'], left: ['KeyA', 'ArrowLeft'], right: ['KeyD', 'ArrowRight'],
     handbrake: ['Space'], nitro: ['ShiftLeft', 'ShiftRight'], camera: ['KeyC'], restart: ['Enter'], pause: ['Escape'],
-    garage: ['KeyG'], shiftUp: ['KeyE'], shiftDown: ['KeyQ'], lookBack: ['KeyB'], tow: ['KeyR', 'KeyT'], reset: ['Backspace', 'KeyR'], transmission: ['KeyL'], tractionControl: ['KeyV'], map: ['KeyM'],
+    garage: ['KeyG'], shiftUp: ['KeyE'], shiftDown: ['KeyQ'], lookBack: ['KeyV'], tow: ['KeyR', 'KeyT'], reset: ['Backspace', 'KeyR'], transmission: ['KeyL'], tractionControl: ['KeyX'], map: ['KeyM'],
     up: ['ArrowUp', 'KeyW'], down: ['ArrowDown', 'KeyS'], confirm: ['Enter', 'Space'], back: ['Escape', 'Backspace'],
   },
   gamepad: {
@@ -21,7 +22,10 @@ export const DEFAULT_BINDINGS = {
 };
 export const EDGE_ACTIONS = ['camera', 'restart', 'pause', 'garage', 'shiftUp', 'shiftDown', 'lookBack', 'tow', 'reset', 'transmission', 'tractionControl', 'map',
   'up', 'down', 'left', 'right', 'confirm', 'back'];
-const DEFAULT_SETTINGS = { deadzone: 0.15, sensitivity: 1, linearity: 1, touchSteering: 'screen' };
+// Racing wheel choices live beside the stick ones (wheelMode, wheelRange, wheelDeadzone, wheelLinearity, wheelPedalDeadzone, wheelForce);
+// each wheel's calibrated axes are saved apart, per device.
+const DEFAULT_SETTINGS = { deadzone: 0.15, sensitivity: 1, linearity: 1, touchSteering: 'screen', wheelMode: WHEEL_DEFAULTS.mode, wheelRange: WHEEL_DEFAULTS.range, wheelDeadzone: WHEEL_DEFAULTS.deadzone, wheelLinearity: WHEEL_DEFAULTS.linearity, wheelPedalDeadzone: WHEEL_DEFAULTS.pedalDeadzone, wheelForce: WHEEL_DEFAULTS.force };
+const WHEEL_SETTING_KEYS = { wheelMode: 'mode', wheelRange: 'range', wheelDeadzone: 'deadzone', wheelLinearity: 'linearity', wheelPedalDeadzone: 'pedalDeadzone', wheelForce: 'force' };
 const editable = e => !!e.target?.closest?.('input, select, textarea, button, [contenteditable]');
 export function axisValue(value, deadzone = 0.15, sensitivity = 1, linearity = 1) {
   const v = clamp(value, -1, 1), a = Math.abs(v);
@@ -43,11 +47,12 @@ export class Input {
       ...Object.fromEntries(EDGE_ACTIONS.map(a => [a, false])) };
     this.cameraLook = { x: 0, y: 0 }; this.touch = {}; this.connected = new Map(); this.listeners = [];
     this.nitrousEnabled = false; this.drivingSource = 'keyboard'; this.padSignature = ''; this.touchSignature = '{}'; this.localRevision = 0; this.lastLocalRevision = 0;
+    this.wheelProfiles = {}; this.wheel = null; this.wheelCal = null; this.wheelRumbleAt = 0;
     this.load();
     this.listen('keydown', e => this.keyDown(e)); this.listen('keyup', e => { if (e.code === 'KeyR' && this.keys.has('KeyR') && !this.inMenu && !this.resetHeld) this.pending.add('tow'); this.keys.delete(e.code); this.localRevision++; this.drivingSource = 'keyboard'; });
     this.listen('blur', () => this.clear());
     this.listen('gamepadconnected', e => this.connect(e.gamepad));
-    this.listen('gamepaddisconnected', e => { this.connected.delete(e.gamepad.index); this.pad = null; });
+    this.listen('gamepaddisconnected', e => { this.connected.delete(e.gamepad.index); this.pad = null; if (this.wheelGuess) for (const k of Object.keys(this.wheelGuess)) if (k.startsWith(e.gamepad.index + ':')) delete this.wheelGuess[k]; });
     this.listen('deviceorientation', e => {
       if (!this.tiltAllowed) return;
       const value = tiltAxis(e, this.target?.screen?.orientation?.angle ?? this.target?.orientation ?? 0);
@@ -97,15 +102,20 @@ export class Input {
         if (kind === 'keyboard' && saved?.restart?.join(',') === 'KeyR,Enter') saved.restart = ['Enter'];
         // M is the big map now; migrate the old gearbox binding to L.
         if (kind === 'keyboard' && saved?.transmission?.join(',') === 'KeyM') saved.transmission = [...DEFAULT_BINDINGS.keyboard.transmission];
+        // V looks back and X toggles TC / ESC now; a saved set that still has the old V (TC) and B (look back) follows.
+        if (kind === 'keyboard' && saved?.tractionControl?.join(',') === 'KeyV' && saved?.lookBack?.join(',') === 'KeyB') { saved.tractionControl = [...DEFAULT_BINDINGS.keyboard.tractionControl]; saved.lookBack = [...DEFAULT_BINDINGS.keyboard.lookBack]; }
         for (const [a, bs] of Object.entries(saved || {})) if (a in this.bindings[kind] && Array.isArray(bs) && bs.every(b => typeof b === 'string' && (kind === 'keyboard' ? /^[A-Za-z0-9]+$/.test(b) : /^(b\d+|a\d+[+-])$/.test(b)))) this.bindings[kind][a] = bs;
       } catch {}
     }
     try { this.configure(JSON.parse(this.storage?.getItem('paraliaki.input.settings') || 'null') || {}, false); } catch {}
+    try { const saved = JSON.parse(this.storage?.getItem('paraliaki.input.wheel') || 'null'); if (saved && typeof saved === 'object' && !Array.isArray(saved)) this.wheelProfiles = saved; } catch {}
   }
   save(key, value) { try { this.storage?.setItem('paraliaki.input.' + key, JSON.stringify(value)); } catch {} }
   configure(settings, persist = true) {
     for (const [key, lo, hi] of [['deadzone', 0, 0.45], ['sensitivity', 0.25, 2], ['linearity', 0.25, 3]]) if (Number.isFinite(+settings[key])) this.settings[key] = clamp(+settings[key], lo, hi);
     if (['screen', 'tilt'].includes(settings.touchSteering)) this.settings.touchSteering = settings.touchSteering;
+    const wheel = wheelSettings(Object.fromEntries(Object.entries(WHEEL_SETTING_KEYS).map(([key, short]) => [short, key in settings ? settings[key] : this.settings[key]])));
+    for (const [key, short] of Object.entries(WHEEL_SETTING_KEYS)) this.settings[key] = wheel[short];
     if (persist) this.save('settings', this.settings);
   }
   async enableTilt() {
@@ -131,6 +141,7 @@ export class Input {
   resetBindings() {
     this.bindings = copy(DEFAULT_BINDINGS); this.settings = { ...DEFAULT_SETTINGS };
     for (const kind of ['keyboard', 'gamepad']) this.save(kind, this.bindings[kind]);
+    this.wheelProfiles = {}; this.wheelCal = null; this.saveWheelProfiles();
     this.save('settings', this.settings); this.cancelCapture(); this.clear();
   }
   keyDown(e) {
@@ -159,20 +170,28 @@ export class Input {
     Object.assign(this.state, { throttle: 0, brake: 0, steer: 0, steerRaw: 0, handbrake: false, nitro: false, lookBack: false });
     for (const a of EDGE_ACTIONS) this.state[a] = false;
     this.cameraLook.x = this.cameraLook.y = 0;
+    if (this.lookDragging) { this.lookDragging = false; this.lookDragCb?.(false); }
     this.releaseMouseLook();
   }
-  // Race gestures request lock; denied/unavailable lock falls back to cursor position, without clicks.
-  mountMouseLook(canvas, { enabled, move, position, unlock }) {
-    this.lookCanvas = canvas; this.lookEnabled = enabled;
+  // Mouse look is opt-in. By default the mouse never moves the camera, so cursor movement while driving on the keyboard
+  // cannot pan it: only holding the right button and dragging looks around, and the view returns when it is released.
+  // With free look on (`free()`), raw movement looks around under pointer lock; if the lock is unavailable the left or right
+  // button must be held, never the cursor's position. `drag(true|false)` reports the hold so the view can re-centre quickly.
+  mountMouseLook(canvas, { enabled, free = () => false, move, drag, unlock }) {
+    this.lookCanvas = canvas; this.lookEnabled = enabled; this.lookFree = free; this.lookDragCb = drag;
+    const setDrag = on => { if (this.lookDragging === on) return; this.lookDragging = on; drag?.(on); };
+    this.listen('mousedown', e => { if (e.button === 2 && enabled() && e.target === canvas && !e.sourceCapabilities?.firesTouchEvents) setDrag(true); });
+    for (const name of ['mouseup', 'blur']) this.listen(name, e => { if (name === 'blur' || e.button === 2) setDrag(false); });
+    this.listen('contextmenu', () => setDrag(false));
     this.listen('mousemove', e => {
       if (!enabled() || e.sourceCapabilities?.firesTouchEvents || editable(e)) return;
       if (Date.now() - (this.lastTouchAt || 0) < 1000) return;
-      if (this.document?.pointerLockElement === canvas) {
-        if (e.movementX || e.movementY) move(e.movementX || 0, e.movementY || 0);
-      } else {
-        const width = this.target?.innerWidth || canvas.clientWidth || 1, height = this.target?.innerHeight || canvas.clientHeight || 1;
-        position?.(clamp((e.clientX - width / 2) / (width / 2), -1, 1), clamp((e.clientY - height / 2) / (height / 2), -1, 1));
-      }
+      const dx = e.movementX || 0, dy = e.movementY || 0;
+      if (!dx && !dy) return;
+      if (this.lookDragging && (e.buttons & 2)) { move(dx, dy); return; }
+      if (this.lookDragging) setDrag(false);
+      if (!free()) return;
+      if (this.document?.pointerLockElement === canvas || (e.buttons & 3)) move(dx, dy);
     });
     this.lookLockChange = () => {
       const locked = this.document?.pointerLockElement === canvas;
@@ -183,7 +202,7 @@ export class Input {
     this.document?.addEventListener?.('pointerlockchange', this.lookLockChange);
   }
   requestMouseLock() {
-    if (!this.lookCanvas || this.lookRequestPending || this.document?.pointerLockElement === this.lookCanvas || this.navigator?.userActivation?.isActive === false) return;
+    if (!this.lookCanvas || !this.lookFree?.() || this.lookRequestPending || this.document?.pointerLockElement === this.lookCanvas || this.navigator?.userActivation?.isActive === false) return;
     try {
       this.lookLockWanted = true; this.lookRequestPending = true;
       const request = this.lookCanvas.requestPointerLock?.();
@@ -215,7 +234,12 @@ export class Input {
     for (const pad of pads) this.connect(pad);
     for (const index of this.connected.keys()) if (!pads.some(p => p.index === index)) this.connected.delete(index);
     this.pad = pads.find(p => p.buttons?.some(b => (b.value || 0) > 0.05) || p.axes?.some(a => Math.abs(a) > this.settings.deadzone)) || pads[0];
-    const gp = a => Math.max(0, ...(this.bindings.gamepad[a] || []).flatMap(b => pads.map(p => padValue(p, b))));
+    // A racing wheel is a gamepad whose axes are the wheel and the pedals: those come from its calibrated profile, never from
+    // the stick bindings (a pedal resting at -1 would otherwise hold a menu direction), while its buttons bind as usual.
+    const wheelPad = pads.find(p => isWheel(p, this.settings.wheelMode)) || null;
+    this.updateWheel(wheelPad);
+    const wheelAxesNow = this.wheel?.values || { steer: 0, throttle: 0, brake: 0 };
+    const gp = a => Math.max(0, ...(this.bindings.gamepad[a] || []).flatMap(b => pads.map(p => p === wheelPad && b[0] === 'a' ? 0 : padValue(p, b))));
     if (this.capture?.kind === 'gamepad') {
       const active = pads.flatMap(p => [...(p.buttons || []).map((b, i) => (b.value ?? +b.pressed) > 0.6 ? 'b' + i : null), ...(p.axes || []).map((a, i) => Math.abs(a) > 0.65 ? 'a' + i + (a > 0 ? '+' : '-') : null)]).filter(Boolean);
       if (!active.length) this.capture.ready = true;
@@ -226,6 +250,7 @@ export class Input {
     // Only changes claim an active input source.
     if (this.localRevision !== this.lastLocalRevision) { this.lastLocalRevision = this.localRevision; this.drivingSource = 'keyboard'; }
     const padValues = ['throttle','brake','left','right','handbrake',...EDGE_ACTIONS].map(a => Math.round((a === 'left' || a === 'right' ? axisValue(gp(a),this.settings.deadzone) : gp(a)) * 100));
+    if (wheelPad) padValues.push(Math.round(wheelAxesNow.steer * 100), Math.round(wheelAxesNow.throttle * 100), Math.round(wheelAxesNow.brake * 100));
     const padSignature = JSON.stringify(padValues);
     if (padSignature !== this.padSignature && (this.padSignature || padValues.some(Boolean))) this.drivingSource = 'gamepad';
     this.padSignature = padSignature;
@@ -237,7 +262,7 @@ export class Input {
       if (this.resetHoldT >= 0.75 && !this.resetHeld) { this.pending.add('reset'); this.resetHeld = true; }
     } else { this.resetHoldT = 0; this.resetHeld = false; }
     for (const a of EDGE_ACTIONS) {
-      const down = a === 'left' || a === 'right' ? k(a) || gp('menu' + (a === 'left' ? 'Left' : 'Right')) > 0.55 : held(a);
+      const down = a === 'left' || a === 'right' ? k(a) || gp('menu' + (a === 'left' ? 'Left' : 'Right')) > 0.55 || (inMenu && wheelAxesNow.steer * (a === 'left' ? -1 : 1) > 0.6) : held(a);
       this.state[a] = !capturing && !blocked && (this.pending.has(a) || (down && !this.previous[a]));
       this.previous[a] = down;
     }
@@ -251,15 +276,17 @@ export class Input {
     // slow ramp followed by a 1.4 power curve swallowed short turn-in taps.
     const rate = target === 0 ? 8 : s.steerRaw !== 0 && Math.sign(target) !== Math.sign(s.steerRaw) ? 10 : 5 + 2 * base;
     s.steerRaw += clamp(target - s.steerRaw, -rate * dt, rate * dt);
-    const analog = axisValue(gp('right') - gp('left'), this.settings.deadzone, this.settings.sensitivity, this.settings.linearity);
+    const stick = axisValue(gp('right') - gp('left'), this.settings.deadzone, this.settings.sensitivity, this.settings.linearity);
+    const analog = Math.abs(wheelAxesNow.steer) > Math.abs(stick) ? wheelAxesNow.steer : stick;
+    const padThrottle = Math.max(gp('throttle'), wheelAxesNow.throttle), padBrake = Math.max(gp('brake'), wheelAxesNow.brake);
     const touchSteer = this.settings.touchSteering === 'tilt' && Number.isFinite(this.tilt) ? this.tilt : this.touch.steer || 0;
     const keyboardSteer = Math.sign(s.steerRaw) * Math.pow(Math.abs(s.steerRaw), 1.1);
     s.steer = lf || rt || Math.abs(keyboardSteer) > Math.max(Math.abs(analog), Math.abs(touchSteer)) ? keyboardSteer : Math.abs(touchSteer) > Math.abs(analog) ? touchSteer : analog;
-    s.throttle = Math.max(this.keyThrottle, gp('throttle'), this.touch.throttle || 0);
-    s.brake = Math.max(this.keyBrake, gp('brake'), this.touch.brake || 0);
+    s.throttle = Math.max(this.keyThrottle, padThrottle, this.touch.throttle || 0);
+    s.brake = Math.max(this.keyBrake, padBrake, this.touch.brake || 0);
     s.handbrake = held('handbrake'); s.nitro = this.nitrousEnabled && held('nitro'); s.lookBack = held('lookBack');
     if (this.drivingSource === 'keyboard') { s.steer = keyboardSteer; s.throttle = this.keyThrottle; s.brake = this.keyBrake; s.handbrake = k('handbrake'); s.nitro = this.nitrousEnabled && k('nitro'); s.lookBack = k('lookBack'); }
-    if (this.drivingSource === 'gamepad') { s.steer = analog; s.throttle = gp('throttle'); s.brake = gp('brake'); s.handbrake = gp('handbrake') > .55; s.nitro = this.nitrousEnabled && gp('nitro') > .55; s.lookBack = gp('lookBack') > .55; }
+    if (this.drivingSource === 'gamepad') { s.steer = analog; s.throttle = padThrottle; s.brake = padBrake; s.handbrake = gp('handbrake') > .55; s.nitro = this.nitrousEnabled && gp('nitro') > .55; s.lookBack = gp('lookBack') > .55; }
     if (this.drivingSource === 'touch') { s.steer = touchSteer; s.throttle = this.touch.throttle || 0; s.brake = this.touch.brake || 0; s.handbrake = !!this.touch.handbrake; s.nitro = this.nitrousEnabled && !!this.touch.nitro; s.lookBack = !!this.touch.lookBack; }
     this.cameraLook.x = axisValue(gp('lookRight') - gp('lookLeft'), this.settings.deadzone);
     this.cameraLook.y = axisValue(gp('lookDown') - gp('lookUp'), this.settings.deadzone);
@@ -270,6 +297,53 @@ export class Input {
     }
     if (this.touchUI) this.touchUI.hidden = inMenu || blocked;
     return s;
+  }
+  // ---- racing wheel: the device in front of us, its calibration, and force feedback (src/steering-wheel.js)
+  updateWheel(pad) {
+    if (!pad) { this.wheel = null; if (this.wheelCal) this.wheelCal = null; return; }
+    // the first guess is taken when the device appears (pedals at rest), then kept: pressing a pedal must not change the mapping
+    const key = deviceKey(pad), guess = (this.wheelGuess ||= {})[pad.index + ':' + key] ||= inferProfile(pad), profile = resolveProfile(this.wheelProfiles[key], pad, guess);
+    this.wheel = { pad, key, name: deviceName(pad), profile, saved: !!this.wheelProfiles[key], axisCount: axisCount(pad), canRumble: canRumble(pad), values: wheelAxes(pad, profile, { ...WHEEL_DEFAULTS, range: this.settings.wheelRange, deadzone: this.settings.wheelDeadzone, linearity: this.settings.wheelLinearity, pedalDeadzone: this.settings.wheelPedalDeadzone }) };
+    this.wheelCal?.feed(pad);
+  }
+  get wheelActive() { return !!this.wheel; }
+  saveWheelProfiles() { this.save('wheel', this.wheelProfiles); }
+  /** steps of the guided calibration: turn the wheel, press each pedal. Returns false without a wheel. */
+  startWheelCalibration() { if (!this.wheel) return false; this.wheelCal = new WheelCalibration(this.wheel.pad); return true; }
+  cancelWheelCalibration() { this.wheelCal = null; }
+  /** finish the open step; after the last one the result is saved for this device. { ok, done, error } */
+  nextWheelCalibration() {
+    const cal = this.wheelCal; if (!cal || !this.wheel) return { ok: false, done: false, error: 'NO WHEEL' };
+    const ok = cal.next(this.wheel.pad);
+    if (!ok) return { ok: false, done: false, error: cal.error };
+    if (cal.done) { this.wheelProfiles[this.wheel.key] = cal.profile(); this.saveWheelProfiles(); this.wheelCal = null; this.updateWheel(this.wheel.pad); return { ok: true, done: true, error: '' }; }
+    return { ok: true, done: false, error: '' };
+  }
+  /** change one thing about this wheel's mapping: role 'steer' | 'throttle' | 'brake', patch e.g. { axis: 2 } or { invert: true } */
+  setWheelMapping(role, patch) {
+    if (!this.wheel || !['steer', 'throttle', 'brake'].includes(role)) return false;
+    const pad = this.wheel.pad, base = JSON.parse(JSON.stringify(this.wheel.profile)), cur = base[role] || (role === 'steer' ? { axis: 0, center: 0, lock: 1, invert: false } : { axis: 1, min: 1, max: -1 });
+    if (patch.axis !== undefined) {
+      if (!Number.isInteger(patch.axis) || patch.axis < 0 || patch.axis >= axisCount(pad)) return false;
+      cur.axis = patch.axis; const rest = pad.axes[patch.axis] || 0;
+      // a new axis starts from how it reads now (released / centred), spanning the usual full travel
+      if (role === 'steer') { cur.center = rest; cur.lock = 1; } else { cur.min = rest; cur.max = Math.abs(rest) > 0.9 ? -rest : 1; }
+    }
+    if (patch.invert !== undefined) {
+      if (role === 'steer') cur.invert = !!patch.invert;
+      else if ((cur.max < cur.min) !== !!patch.invert) [cur.min, cur.max] = [cur.max, cur.min];
+    }
+    base[role] = cur; delete base.combined;
+    if (role !== 'steer' && !base.throttle) base.throttle = { axis: cur.axis, min: cur.min, max: cur.max };
+    this.wheelProfiles[this.wheel.key] = base; this.saveWheelProfiles(); this.updateWheel(pad); return true;
+  }
+  resetWheelProfile() { if (!this.wheel) return false; delete this.wheelProfiles[this.wheel.key]; this.saveWheelProfiles(); this.wheelCal = null; this.updateWheel(this.wheel.pad); return true; }
+  /** Force feedback, at most ~8 times a second, from `telemetry()` (called only when due): see wheelRumble */
+  wheelFeedback(telemetry, now = Date.now()) {
+    if (!this.wheel?.canRumble || this.settings.wheelForce <= 0 || this.document?.hidden || now - this.wheelRumbleAt < 120) return false;
+    this.wheelRumbleAt = now;
+    void playRumble(this.wheel.pad, wheelRumble(telemetry(), this.settings.wheelForce), 160);
+    return true;
   }
   async rumble(strong = 0, weak = 0, ms = 100) {
     const actuator = this.pad?.vibrationActuator;

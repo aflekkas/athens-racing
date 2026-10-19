@@ -60,6 +60,8 @@
     "tools/driver-name.test.mjs",
     "tools/character-presets.test.mjs",
     "tools/input.test.mjs",
+    "tools/look-controls.test.mjs",
+    "tools/steering-wheel.test.mjs",
     "tools/owner-locked-no-music.test.mjs",
     "tools/settings.test.mjs",
     "tools/hud-sway.test.mjs",

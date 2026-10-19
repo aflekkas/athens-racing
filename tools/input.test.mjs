@@ -18,14 +18,14 @@ const gamepad = () => ({ id: 'test standard', index: 0, mapping: 'standard', con
 test('quick TC/ESC has its own keyboard binding and one edge per key or pad press', () => {
   const { input, key, pads } = setup(), pad = gamepad();
   try {
-    assert.equal(Object.entries(DEFAULT_BINDINGS.keyboard).filter(([, codes]) => codes.includes('KeyV')).length, 1);
-    key('keydown', 'KeyV'); key('keyup', 'KeyV'); input.update(1/60);
+    assert.equal(Object.entries(DEFAULT_BINDINGS.keyboard).filter(([, codes]) => codes.includes('KeyX')).length, 1);
+    key('keydown', 'KeyX'); key('keyup', 'KeyX'); input.update(1/60);
     assert.equal(input.state.tractionControl, true); assert.equal(input.state.tow, false);
     input.update(1/60); assert.equal(input.state.tractionControl, false);
     pads([pad]); pad.buttons[14].value = 1; input.update(1/60); assert.equal(input.state.tractionControl, true);
     for (let i=0;i<60;i++) { input.update(1/60); assert.equal(input.state.tractionControl, false); }
     pad.buttons[14].value = 0; input.update(1/60); pad.buttons[14].value = 1; input.update(1/60); assert.equal(input.state.tractionControl, true);
-    key('keydown','KeyV',false,true); input.update(1/60); assert.equal(input.state.tractionControl,false,'editing never toggles');
+    key('keydown','KeyX',false,true); input.update(1/60); assert.equal(input.state.tractionControl,false,'editing never toggles');
   } finally { input.destroy(); }
 });
 
@@ -199,7 +199,7 @@ test('a pointer lock granted after pause/quit is released without reopening paus
   doc.exitPointerLock = () => { doc.pointerLockElement = null; doc.dispatchEvent(new Event('pointerlockchange')); };
   const canvas = { requestPointerLock: () => new Promise(resolve => { grant = () => { doc.pointerLockElement = canvas; doc.dispatchEvent(new Event('pointerlockchange')); resolve(); }; }) };
   input.document = doc;
-  input.mountMouseLook(canvas, { enabled: () => true, unlock: () => unlocks++ });
+  input.mountMouseLook(canvas, { enabled: () => true, free: () => true, unlock: () => unlocks++ });
   input.requestMouseLock(); input.clear();
   grant(); await Promise.resolve();
   assert.equal(doc.pointerLockElement, null);
@@ -208,4 +208,29 @@ test('a pointer lock granted after pause/quit is released without reopening paus
   input.requestMouseLock(); grant(); await Promise.resolve();
   assert.equal(doc.pointerLockElement, canvas, 'a new driving request can still acquire lock');
   input.destroy(); assert.equal(unlocks, 0);
+});
+
+// Owner playtest 2026-10-18: a look-back camera on V, held to look behind, on keyboard and controller.
+test('V is held to look behind (no TC toggle on it), the controller has a look-back button, and old saved bindings move over', () => {
+  const { input, key, pads, storage } = setup(), pad = gamepad();
+  try {
+    assert.deepEqual(DEFAULT_BINDINGS.keyboard.lookBack, ['KeyV']);
+    assert.equal(Object.entries(DEFAULT_BINDINGS.keyboard).filter(([, codes]) => codes.includes('KeyV')).length, 1, 'V belongs to the look-back camera alone');
+    assert.deepEqual(DEFAULT_BINDINGS.gamepad.lookBack, ['b11']);
+    key('keydown', 'KeyV'); input.update(1 / 60); assert.equal(input.state.lookBack, true); assert.equal(input.state.tractionControl, false);
+    input.update(1 / 60); assert.equal(input.state.lookBack, true, 'held, not a tap');
+    key('keyup', 'KeyV'); input.update(1 / 60); assert.equal(input.state.lookBack, false);
+    pads([pad]); pad.buttons[11].value = 1; input.update(1 / 60); assert.equal(input.state.lookBack, true);
+    pad.buttons[11].value = 0; input.update(1 / 60); assert.equal(input.state.lookBack, false);
+    // looking back is not available in a menu
+    key('keydown', 'KeyV'); input.update(1 / 60, { inMenu: true }); assert.equal(input.state.lookBack, false); key('keyup', 'KeyV');
+  } finally { input.destroy(); }
+  // a saved set from before (V = TC, B = look back) follows the new defaults; a customised one is left alone
+  const old = { ...DEFAULT_BINDINGS.keyboard, tractionControl: ['KeyV'], lookBack: ['KeyB'] };
+  const first = setup(); first.storage.setItem('paraliaki.input.keyboard', JSON.stringify(old));
+  const migrated = new Input({ target: new EventTarget(), navigator: { getGamepads: () => [] }, storage: first.storage, document: null });
+  assert.deepEqual(migrated.bindings.keyboard.lookBack, ['KeyV']); assert.deepEqual(migrated.bindings.keyboard.tractionControl, ['KeyX']); migrated.destroy(); first.input.destroy();
+  const second = setup(); second.storage.setItem('paraliaki.input.keyboard', JSON.stringify({ ...old, lookBack: ['KeyN'] }));
+  const kept = new Input({ target: new EventTarget(), navigator: { getGamepads: () => [] }, storage: second.storage, document: null });
+  assert.deepEqual(kept.bindings.keyboard.lookBack, ['KeyN']); assert.deepEqual(kept.bindings.keyboard.tractionControl, ['KeyV']); kept.destroy(); second.input.destroy();
 });
