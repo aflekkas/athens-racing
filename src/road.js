@@ -239,6 +239,7 @@ export function buildRoad(map, scene, heightC, assets) {
   const vergeMat = terrainMaterial();
   const P = () => new THREE.Vector3();
   const sMin = route.closed ? 0 : -60, sMax = route.length + (route.closed ? 0 : 60);
+  const cPink = new THREE.Color('#d6a49a'), cSlab = new THREE.Color('#c9c9c6');
   const cConc = new THREE.Color('#bdb8ad'), cSoil = new THREE.Color('#6b5a40'), cGravel = new THREE.Color('#9c917c'), cDirt = new THREE.Color('#8f8064');
 
   const chunkMeshes = []; let chunkIndex = 0;
@@ -272,7 +273,8 @@ export function buildRoad(map, scene, heightC, assets) {
         curb.row(pts.map(([u, y], i) => { const p = route.point(s, side * u, P()); p.y = y + (i === 3 ? -0.0 : 0); return { p, s, u: side * u }; }));
         const walk = side > 0 ? walkR : walkL;
         const urb = route.urban(s);
-        const wc = urb > 0.5 ? cConc : cGravel;
+        // Psychiko footways: pink tiles on the Diamantidou avenue and around the squares, pale slabs elsewhere (Street View survey).
+        const wc = section ? section.k === 'A9' || roundaboutRange(route, s) ? cPink : cSlab : urb > 0.5 ? cConc : cGravel;
         const wp = [[eA + 0.18, yTop], [eA + 0.18 + sw * 0.5, yTop + 0.01], [eA + 0.18 + sw, yTop + 0.02]];
         walk.row(wp.map(([u, y]) => { const p = route.point(s, side * u, P()); p.y = y; return { p, s, u: side * u, c: wc }; }));
         // skirt down to the terrain

@@ -13,12 +13,12 @@ function area(poly){let sum=0;for(let i=1;i+1<poly.length;i++)sum+=cross(poly[0]
 function half(poly,a,b,inside){const out=[];for(let i=0,j=poly.length-1;i<poly.length;j=i++){const p=poly[j],q=poly[i],d=cross(a,b,p),e=cross(a,b,q),P=inside?d>=-1e-7:d<=1e-7,Q=inside?e>=-1e-7:e<=1e-7;if(P!==Q){const t=d/(d-e);out.push([p[0]+(q[0]-p[0])*t,p[1]+(q[1]-p[1])*t]);}if(Q)out.push(q);}return out;}
 function subtract(poly,clip){let rem=poly;const result=[];for(let i=0;rem.length>=3&&Math.abs(area(rem))>1e-5&&i<clip.length;i++){const a=clip[i],b=clip[(i+1)%clip.length],outer=half(rem,a,b,false);if(outer.length>=3&&Math.abs(area(outer))>1e-5)result.push(outer);rem=half(rem,a,b,true);}return result;}
 function capsule(s,r){const angle=Math.atan2(s.dz,s.dx),p=[];for(let j=0;j<=6;j++){const a=angle-Math.PI/2+j*Math.PI/6;p.push([s.bx+Math.cos(a)*r,s.bz+Math.sin(a)*r]);}for(let j=0;j<=6;j++){const a=angle+Math.PI/2+j*Math.PI/6;p.push([s.ax+Math.cos(a)*r,s.az+Math.sin(a)*r]);}return p;}
-export function roadNetworkMaterial(psychiko=false){const m=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.94,vertexColors:true});m.customProgramCacheKey=()=> psychiko?'osm-road-network-psychiko-v4':'osm-road-network-v3';m.onBeforeCompile=sh=>{
+export function roadNetworkMaterial(psychiko=false){const m=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.94,vertexColors:true});m.customProgramCacheKey=()=> psychiko?'osm-road-network-psychiko-v5':'osm-road-network-v3';m.onBeforeCompile=sh=>{
  sh.uniforms.roadAlbedo={value:TX.asphalt_diff};sh.uniforms.roadNormal={value:TX.asphalt_nor};sh.uniforms.nPaving={value:TX.paver_diff};
  sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute float aRoadHalfWidth; varying float nHalfWidth; varying vec2 nUV; varying vec2 nWorld;').replace('#include <begin_vertex>','#include <begin_vertex>\nnHalfWidth=aRoadHalfWidth;nUV=uv;nWorld=(modelMatrix*vec4(position,1.)).xz;');
  sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying vec2 nUV; varying vec2 nWorld; varying float nHalfWidth; uniform sampler2D nPaving;'+ASPHALT_GLSL).replace('#include <color_fragment>',`#include <color_fragment>
  float paving=step(.5,vColor.r);
- vec3 asphalt=roadAsphalt(nWorld,nHalfWidth-abs(nUV.x),vColor.b);vec3 tile=texture2D(nPaving,nWorld*.31).rgb*.74;tile=mix(tile,vec3(.19,.23,.11),step(1.5,vColor.r));
+ vec3 asphalt=roadAsphalt(nWorld,nHalfWidth-abs(nUV.x),vColor.b);vec3 tile=texture2D(nPaving,nWorld*.31).rgb*.74;${psychiko?'tile*=mix(vec3(1.06,1.07,1.08),vec3(1.2,.86,.8),vColor.b);':''}tile=mix(tile,vec3(.19,.23,.11),step(1.5,vColor.r));
  float fw=max(fwidth(nUV.x),.012);float line=1.-smoothstep(.055-fw,.055+fw,abs(nUV.x));
  float dash=step(fract(nUV.y/9.),.36);
  float ink=vColor.g;
@@ -37,7 +37,7 @@ export function buildRoadNetwork(network,scene){
   else if(seg.road.oneway||seg.road.junction==='roundabout')paint=0;
   else if(network.route.streetCircuit)paint=psychikoStreet(seg.road.n,seg.az < -900).paint;
   if(paint)for(const other of network.candidates(...p))if(other.road.id!==seg.road.id&&network.distance(other,...p)<other.hw+2){paint=0;break;}
-  tile.pos.push(p[0],network.height(...p)+(pavement?.14:0),p[1]);tile.uv.push(u,s);tile.halfWidth.push(seg.hw);tile.col.push(pavement?1:0,paint,seg.road.sf==='gravel'?1:0);
+  tile.pos.push(p[0],network.height(...p)+(pavement?.14:0),p[1]);tile.uv.push(u,s);tile.halfWidth.push(seg.hw);tile.col.push(pavement?1:0,paint,pavement?(network.route.streetCircuit&&(seg.road.k==='A9'||seg.road.junction==='roundabout')?1:0):seg.road.sf==='gravel'?1:0);
  }
  function triangle(a,b,c,seg,pavement,depth=0){if(Math.abs(cross(a,b,c))<1e-6)return;const ab=Math.hypot(a[0]-b[0],a[1]-b[1]),bc=Math.hypot(b[0]-c[0],b[1]-c[1]),ca=Math.hypot(c[0]-a[0],c[1]-a[1]),length=Math.max(ab,bc,ca);
   // Subdivide for actual DEM curvature rather than making long, flat streets spend triangles on uniform metre grids.
