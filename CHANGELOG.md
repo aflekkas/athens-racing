@@ -8,6 +8,8 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- ATHENS RACING is made for computers: phones and tablets now see a page asking you to open it on a laptop or desktop. Touchscreen laptops keep playing.
+
 - Weak laptops: far-off road, hills and buildings now fade into haze instead of being drawn, so Riviera runs smoother on the weakest computers.
 
 - Weak laptops: Riviera draws about a tenth fewer things per frame, with the same picture.

@@ -34,9 +34,9 @@ test('objective off-course warning uses the shared slot and clears without a sep
  notifications.clear();const trips=[{pickup:{s:100,x:0,y:0,z:0,district:'ASTIR'},dropoff:{s:500,x:0,y:0,z:0}}],state={mode:'taxi',phase:'pickup',routeIndex:0,done:false};
  objectiveNotice(state,trips,{s:200});assert.equal(notifications.queue.items.get('objective-direction').slot,'banner');assert.match(notifications.queue.items.get('objective-direction').text,/ASTIR/);objectiveNotice(state,trips,{s:80});assert.equal(notifications.queue.items.has('objective-direction'),false);notifications.clear();
 });
-test('five viewport placements never overlap timer/minimap/dial/touch/route obstacles',()=>{
- for(const[width,height]of[[1280,720],[1920,1080],[2560,1440],[390,844],[844,390]]){
-  const obstacles=[{left:12,right:width<500?210:290,top:12,bottom:90},{left:10,right:110,top:105,bottom:205},{left:width-200,right:width-10,top:height-350,bottom:height-150},{left:10,right:width-10,top:height-150,bottom:height-10}];
+test('desktop viewport placements never overlap timer/minimap/dial/route obstacles',()=>{
+ for(const[width,height]of[[1280,720],[1920,1080],[2560,1440]]){
+  const obstacles=[{left:12,right:290,top:12,bottom:90},{left:10,right:110,top:105,bottom:205},{left:width-200,right:width-10,top:height-350,bottom:height-150},{left:10,right:width-10,top:height-150,bottom:height-10}];
   const heights=[46,40,76],p=notificationPlacement({width,height,routeBottom:height<480?42:160,obstacles,heights});let y=p.top;
   for(const i of p.shown){const rect={left:p.left,right:p.left+p.width,top:y,bottom:y+heights[i]};assert.ok(rect.left>=0&&rect.right<=width&&rect.top>=0&&rect.bottom<=height);for(const b of obstacles)assert.ok(!(rect.left<b.right&&rect.right>b.left&&rect.top<b.bottom&&rect.bottom>b.top),`${width}x${height} overlap`);y=rect.bottom+6;}
   assert.ok(p.shown.length>0,`${width}x${height} has a safe lane`);
@@ -64,8 +64,8 @@ test('related police callouts preempt persistent status without duplicating it a
  const q=new NotificationQueue();q.post({id:'police-status',title:'POLICE PURSUIT',slot:'banner',priority:70,persistent:true},0);q.post({title:'BUSTED',priority:98},0);assert.deepEqual(commit(q,0).map(n=>n.title),['BUSTED']);
 });
 import {mirrorNoticeBounds} from '../src/ui/notification-queue.js';
-test('mirror glass and HUD obstacles stay clear at desktop, phone and landscape sizes in both views',()=>{
- for(const[width,height]of[[1280,800],[1920,1080],[390,844],[844,390]])for(const view of ['chase','cockpit']){
+test('mirror glass and HUD obstacles stay clear at desktop sizes in both views',()=>{
+ for(const[width,height]of[[1280,800],[1920,1080]])for(const view of ['chase','cockpit']){
   const mirrors=view==='cockpit'&&width>700?[{left:width*.74,right:width,top:height*.28,bottom:height*.43},{left:width*.15,right:width*.29,top:height*.54,bottom:height*.66}]:[];
   const obstacles=[...mirrors,{left:8,right:110,top:110,bottom:220},{left:width-170,right:width-10,top:height-200,bottom:height-10}],heights=[90,42];
   const p=notificationPlacement({width,height,obstacles,heights});let y=p.top;for(const i of p.shown){const r={left:p.left,right:p.left+p.width,top:y,bottom:y+heights[i]};for(const b of obstacles)assert.ok(!(r.left<b.right&&r.right>b.left&&r.top<b.bottom&&r.bottom>b.top),`${width}/${view}`);y=r.bottom+6;}assert.ok(p.shown.length||heights[0]>height*.12,`${width}/${view}`);
@@ -90,7 +90,7 @@ test('a higher-priority duplicate upgrades the visible action without extending 
  const q=new NotificationQueue();q.post({id:'first',title:'TOW AVAILABLE',ms:1000},0);const signature=q.items.get('first').signature;const run=()=>{};q.post({id:'second',title:'TOW AVAILABLE',priority:90,tone:'bad',slot:'banner',actions:[{label:'Repair',run}]},200);const item=q.items.get('first');assert.equal(q.items.size,1);assert.equal(item.priority,90);assert.equal(item.slot,'banner');assert.equal(item.actions[0].run,run);assert.notEqual(item.signature,signature);assert.equal(item.remaining,1000);
 });
 
-test('phone disconnection and rejected shifts retain their actual severity',async()=>{
+test('controller disconnection and rejected shifts retain their actual severity',async()=>{
  const {noticeStyle}=await import('../src/ui/notice-style.js');assert.equal(noticeStyle({title:'GAMEPAD DISCONNECTED',tone:'warn'}).tone,'warn');assert.equal(noticeStyle({title:'GAMEPAD CONNECTED',tone:'good'}).tone,'good');assert.equal(noticeStyle({title:'SHIFT REJECTED',tone:'bad'}).tone,'bad');
 });
 

@@ -163,3 +163,42 @@ test('bundle: the page entry is the gate, the game is only a dynamic import, and
     assert.ok(Object.entries(meta.outputs).filter(([, o]) => Object.keys(o.inputs).includes('src/menu-shell.js')).every(([path]) => initial.has('/' + path.replace('.deploy/assets/', ''))));
   } finally { await rm(root, { recursive: true, force: true }); }
 });
+
+// ---------------------------------------------------------------- the phone and tablet support stays removed
+async function walk(dir) {
+  const out = [];
+  for (const entry of await readdir(new URL('../' + dir, import.meta.url), { withFileTypes: true })) {
+    const path = dir + entry.name;
+    if (entry.isDirectory()) out.push(...await walk(path + '/')); else out.push(path);
+  }
+  return out;
+}
+test('no touch controls, tilt steering, add-to-home-screen card, manifest or phone caps return', async () => {
+  const sources = (await walk('src/')).filter(path => /\.(?:js|css)$/.test(path));
+  const banned = [
+    [/touch-controls|touch-driving|\.touch-(?:steer|pedals|buttons|gears|actions|rotate)|mountTouch|touchUI|touchSteering(?!['":,\s]*['"]?tilt['"]?\s*[,}])/, 'on-screen touch driving controls'],
+    [/deviceorientation|DeviceOrientationEvent|requestFullscreen|orientation\.lock/, 'tilt steering and fullscreen/orientation lock'],
+    [/beforeinstallprompt|appinstalled|install-notice|display-mode:\s*standalone|navigator\.standalone/, 'the add-to-home-screen card'],
+    [/safe-area-inset/, 'notch padding'],
+    [/mobileDevice|showroomPixelRatio|\bMobile\b[^'"`\n]*Android|Android\|iPhone/, 'phone performance paths'],
+  ];
+  const hits = [];
+  for (const path of sources) {
+    if (path === 'src/device-gate.js') continue; // the gate is where phones are recognised, and stopped
+    const text = await read(path);
+    for (const [pattern, what] of banned) if (pattern.test(text)) hits.push(`${path}: ${what}`);
+  }
+  assert.deepEqual(hits, [], LOCK);
+  for (const gone of ['src/mobile.js', 'src/install-prompt.js', 'src/ui/install-card.js', 'assets/manifest.webmanifest', 'assets/apple-touch-icon.png', 'assets/icon-192.png', 'assets/icon-512.png', 'assets/icon-maskable-192.png', 'assets/icon-maskable-512.png']) {
+    await assert.rejects(readFile(new URL('../' + gone, import.meta.url)), { code: 'ENOENT' }, `${gone} stays removed. ${LOCK}`);
+  }
+  const html = await read('index.html');
+  assert.doesNotMatch(html, /manifest|apple-touch-icon|apple-mobile-web-app|mobile-web-app-capable|user-scalable|maximum-scale|viewport-fit/, `index.html carries no app-install or phone viewport tags. ${LOCK}`);
+});
+test('narrow desktop windows keep their layouts: the 860, 900, 1000 and 1100 px queries stay, the phone-width ones do not', async () => {
+  const css = (await Promise.all(['style.css', 'src/ui/ui.css', 'src/menu.css', 'src/multiplayer.css', 'src/map-select.css', 'src/recovery-prompt.css', 'src/input.css'].map(read))).join('\n');
+  const queries = [...css.matchAll(/@media\s*([^{]+)\{/g)].map(m => m[1]);
+  for (const width of [860, 900, 1100]) assert.ok(queries.some(q => new RegExp(`max-width:\\s*${width}px`).test(q)), `the ${width}px narrow-window layout stays`);
+  const phone = queries.filter(q => /max-width:\s*(?:[1-6]\d{2}|7[0-2]\d)px|max-height:\s*(?:[1-4]\d{2}|500)px|pointer:\s*coarse|orientation:\s*portrait|hover:\s*none/.test(q.replace(/any-pointer/g, '')));
+  assert.deepEqual(phone, [], `no phone-width, short-landscape, coarse-pointer or portrait query returns. ${LOCK}`);
+});

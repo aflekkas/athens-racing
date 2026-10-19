@@ -825,7 +825,6 @@ function restart(idx = G.carIdx) {
 
 // ------------------------------------------------------------------ input
 function requestRaceLook(action) {
-  if (G.inputDevice === 'touch') return;
   if ((menu?.screen === 'car' && action === 'carConfirm' && !menu.data.garage) || (G.state === 'paused' && action === 'resume')) {
     G.cameraStarting = true; controls.requestMouseLock();
   }
@@ -839,8 +838,7 @@ addEventListener('keydown', e => {
   if (!multiplayer.panel.hidden && !menu?.open) { clearDriveInput(); return; } // the lobby screens are menus: their keys navigate
   G.inputDevice = 'keyboard'; audio.start();
 });
-addEventListener('pointerdown', e => { G.inputDevice = e.pointerType === 'touch' ? 'touch' : 'keyboard'; audio.start(); });
-addEventListener('touchend', () => audio.start(), { passive: true });
+addEventListener('pointerdown', e => { G.inputDevice = 'keyboard'; audio.start(); });
 addEventListener('click', () => audio.start());
 
 function readInput(dt) {
@@ -850,7 +848,6 @@ function readInput(dt) {
   controls.update(dt, { speed: player ? Math.abs(player.veh.vLong) : 0, inMenu, blocked, retainMouseLock: !!G.cameraStarting });
   const pad = controls.pad;
   if (controls.keys.size) G.inputDevice = 'keyboard';
-  else if (Object.values(controls.touch).some(Boolean)) G.inputDevice = 'touch';
   else if (pad && (pad.buttons?.some(b => (b.value || 0) > 0.05) || pad.axes?.some(a => Math.abs(a) > controls.settings.deadzone))) G.inputDevice = 'gamepad';
   else if (!G.inputDevice || G.inputDevice === 'gamepad' && !pad) G.inputDevice = pad ? 'gamepad' : 'keyboard';
   { const hint = ui.hintDevice(G.inputDevice); if (document.body.dataset.input !== hint) document.body.dataset.input = hint; } // device-aware key hints (ui.css)
@@ -1056,7 +1053,6 @@ function onFlowSettings(s, key) {
     if (player) applyVehicleAids(player.veh, player.spec, s);
   } else if (key === 'transmission' || !key) applyDriving();
   if (key === 'aids' || !key) {
-    controls.setAidsEnabled(s.aids);
     if (!s.aids) G.lampTC = G.lampESC = 0;
     if (menu?.screen === 'settings') menu.refreshValues();
   }

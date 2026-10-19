@@ -51,9 +51,9 @@ const browser = await chromium.launch({
 });
 const report = [];
 try {
-  for (const width of [1280, 390]) {
+  for (const width of [1280, 960]) {
     const page = await browser.newPage({
-      viewport: { width, height: width === 390 ? 844 : 900 },
+      viewport: { width, height: width === 960 ? 700 : 900 },
     });
     const errors = [];
     page.on("pageerror", (e) => errors.push(e.message));

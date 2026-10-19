@@ -56,10 +56,6 @@ export const icon = (name, cls = '') => name ? `<svg class="ico ${cls}" aria-hid
 export const iconLabel = (text, name) => !name ? text : `<span class="icon-label">${icon(name)}<span>${text}</span></span>`;
 export function iconEl(name, cls = '') { const t = document.createElement('template'); t.innerHTML = icon(name, cls); return t.content.firstChild; }
 
-/** Compact driving controls share the same SVG labels as the menus. */
-export function touchControlLabel(action, label) { return action === 'pause' ? icon('pause') : action === 'camera' ? icon('camera') : esc(label); }
-export function touchSteeringLabel() { return `${icon('chevron-left')}<span>STEER</span>${icon('chevron-right')}`; }
-
 /** Startup HTML declares icons without duplicating the shared SVG markup. */
 export function mountIconPlaceholders(root = document) {
   for (const el of root.querySelectorAll('[data-ui-icon]')) el.replaceWith(iconEl(el.dataset.uiIcon));
@@ -69,7 +65,7 @@ if (typeof document !== 'undefined') {
   else mountIconPlaceholders();
 }
 
-// Backdrop effects exist only on mounted overlays. Low performance classes and touch devices use tint.
+// Backdrop effects exist only on mounted overlays. Low performance classes use tint.
 if (typeof document !== 'undefined') {
   const syncBackdrop = () => { document.documentElement.dataset.uiBackdrop = ['potato', 'low'].includes(settings.perfClass) ? 'tint' : 'blur'; };
   syncBackdrop(); onSettings(syncBackdrop);
@@ -103,12 +99,6 @@ export function option({ icon: ic, title, desc = '', act, attrs, cls = '', disab
 }
 export function panel(title, body, { icon: ic, cls = '', notch = false, right = '', attrs } = {}) {
   return `<section class="panel ${notch ? 'panel--notch' : ''} ${cls}"${attrStr(attrs)}>${title ? `<header class="panel__head"><h3 class="panel__title">${icon(ic)}${title}</h3>${right}</header>` : ''}${body}</section>`;
-}
-/** A small, dismissible card that sits over a screen without blocking it (the install hint): a lead icon plate, a title, one
- *  line of text, optional numbered steps ({ icon, text }) and actions. Not a dialog: nothing behind it is dimmed or trapped.
- *  It fades in by itself; set data-leaving on it to fade it out. */
-export function notice({ icon: ic = 'info', title = '', text = '', steps = [], actions = '', dismiss = '', dismissTitle = 'Dismiss', cls = '', attrs } = {}) {
-  return `<aside class="panel panel--float notice ${cls}" role="region"${attrStr(attrs)}><header class="notice__head"><span class="option__ico">${icon(ic)}</span><h3 class="notice__title">${title}</h3>${dismiss ? button({ icon: 'x', variant: 'ghost', size: 'sm', act: dismiss, title: dismissTitle }) : ''}</header>${text ? `<p class="notice__text">${text}</p>` : ''}${steps.length ? `<ol class="notice__steps">${steps.map((st) => `<li><span class="option__ico">${icon(st.icon)}</span><span>${st.text}</span></li>`).join('')}</ol>` : ''}${actions ? `<div class="field-actions notice__actions">${actions}</div>` : ''}</aside>`;
 }
 export function card({ media = '', badge = '', title = '', text = '', body = '', foot = '', act, attrs, cls = '', selected } = {}) {
   return `<div class="mi card ${selected ? 'selected' : ''} ${cls}" role="button"${attrStr({ 'data-act': act, ...attrs })}>${media ? `<div class="card__media">${media}${badge ? `<span class="card__badge">${badge}</span>` : ''}</div>` : ''}<div class="card__body"><h3 class="card__title">${title}</h3>${text ? `<p class="card__text">${text}</p>` : ''}${body}${foot ? `<div class="card__foot">${foot}</div>` : ''}</div>${icon('check', 'card__selected')}</div>`;
@@ -154,7 +144,7 @@ export const spinner = () => '<span class="spinner" role="status" aria-label="Lo
 export function setProgress(el, v) { if (!el) return; v = clamp(+v || 0, 0, 1); el.style.setProperty('--p', v); el.setAttribute('aria-valuenow', Math.round(v * 100)); }
 
 // key hints (the soft-key bar): purely informational. Never focusable, clickable or in the .mi
-// focus order; the named input actions (keys / gamepad / touch buttons) drive everything they describe.
+// focus order; the named input actions (keys / gamepad buttons) drive everything they describe.
 const bindingIcons = { UP: 'arrow-up', DOWN: 'arrow-down', LEFT: 'arrow-left', RIGHT: 'arrow-right' };
 const bindingMarkup = text => String(text).replace(/\b(UP|DOWN|LEFT|RIGHT)\b/g, direction => icon(bindingIcons[direction]));
 const KB = (k) => `<kbd class="kbd">${bindingMarkup(k)}</kbd>`, PAD = (k, c = '') => `<kbd class="kbd kbd--pad ${c}">${bindingMarkup(k)}</kbd>`;
@@ -232,9 +222,9 @@ export function stageInspector({ stage = '', inspector = '', actions = '', stage
   return layoutFrame('stage-inspector', frame, region('stage-inspector', region('stage', stage) + region('inspector', inspector, 'scroll-y')));
 }
 /** Full-bleed map/canvas behind the frame with a floating, independently scrolling card. */
-export function mapStage({ stage = '', card = '', nav = '', cardHint = '', stageAttrs = {}, cardAttrs = {}, intro = '', foot = '', variant = 'page', ...frame } = {}) {
+export function mapStage({ stage = '', card = '', nav = '', stageAttrs = {}, cardAttrs = {}, intro = '', foot = '', variant = 'page', ...frame } = {}) {
   if (variant === 'loading') return `<div id="loading" class="layout--map-stage-loading" data-layout="map-stage" role="region" aria-labelledby="ldName" aria-hidden="true" inert data-state="active"><div class="ld-art" id="ldArt" data-layout-region="stage">${stage}</div><div class="ld-shade"></div><div class="ld-wrap"><div class="ld-brand" data-layout-region="intro">${intro}</div><div class="ld-map" data-layout-region="content">${card}</div><div class="ld-foot" data-layout-region="progress">${foot}</div></div><canvas id="overview" width="560" height="640" hidden></canvas></div>`;
-  if (variant === 'floating') return layoutFrame('map-stage', { ...frame, variant, foot }, `<div class="attica-map layout-map-stage__map" data-layout-region="map"${attrStr(stageAttrs)}>${stage}</div><aside class="map-preview panel panel--float" data-layout-region="map-card"${attrStr(cardAttrs)}>${nav ? `<nav class="map-track-nav" aria-label="Browse tracks" data-layout-region="nav">${nav}</nav>` : ''}<div class="map-preview-content" aria-live="polite" data-layout-region="content">${card}</div>${cardHint ? `<div class="map-cycle-hint" aria-hidden="true">${cardHint}</div>` : ''}</aside>`);
+  if (variant === 'floating') return layoutFrame('map-stage', { ...frame, variant, foot }, `<div class="attica-map layout-map-stage__map" data-layout-region="map"${attrStr(stageAttrs)}>${stage}</div><aside class="map-preview panel panel--float" data-layout-region="map-card"${attrStr(cardAttrs)}>${nav ? `<nav class="map-track-nav" aria-label="Browse tracks" data-layout-region="nav">${nav}</nav>` : ''}<div class="map-preview-content" aria-live="polite" data-layout-region="content">${card}</div></aside>`);
   return layoutFrame('map-stage', { ...frame, foot }, region('map', stage) + region('map-card', card, 'scroll-y'));
 }
 /** A readable sheet with optional supporting rows and actions. */
@@ -602,7 +592,7 @@ export const listboxOpen = () => !!lb;
 // There are no native select elements in the game. Code that builds its own DOM (the standings' spectator pick,
 // multiplayer transport state) uses <ui-select>: the same API as a native select
 // (value, selectedIndex, options, disabled, <option> children, 'input' / 'change' events, onchange) drawn as the kit's
-// Select with the animated listbox, keyboard / gamepad / touch alike. Menu screens use the select() row builder.
+// Select with the animated listbox, keyboard / gamepad / mouse alike. Menu screens use the select() row builder.
 // With class "mi" it is also a menu focus item: OK opens it, left / right cycle it.
 if (typeof customElements !== 'undefined' && typeof HTMLElement !== 'undefined' && !customElements.get('ui-select')) {
   class UISelect extends HTMLElement {
@@ -707,14 +697,12 @@ function action(name) {
 }
 // Keyboard/gamepad focus is a surface only; pointer activation adds no focus decoration.
 export function navigationFocus() { if (typeof document !== 'undefined') document.documentElement.dataset.uiFocus = 'navigation'; }
-// which hints to show: a touch tap since the last key press means touch (main.js passes the gamepad / keyboard device)
-let lastPointer = typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches && !matchMedia('(any-pointer: fine)').matches ? 'touch' : null;
 if (typeof window !== 'undefined') {
-  window.addEventListener('pointerdown', (e) => { lastPointer = e.pointerType === 'touch' ? 'touch' : null; document.documentElement.dataset.uiFocus = 'pointer'; }, true);
-  window.addEventListener('keydown', () => { lastPointer = null; navigationFocus(); }, true);
+  window.addEventListener('pointerdown', () => { document.documentElement.dataset.uiFocus = 'pointer'; }, true);
+  window.addEventListener('keydown', () => { navigationFocus(); }, true);
 }
-/** the device the key hints should be drawn for: 'gamepad' wins, then a recent touch, else the given device */
-const hintDevice = (device = 'keyboard') => device === 'gamepad' ? 'gamepad' : lastPointer || device;
+/** the device the key hints should be drawn for: the gamepad or the keyboard (main.js passes the active one) */
+const hintDevice = (device = 'keyboard') => device === 'gamepad' ? 'gamepad' : 'keyboard';
 export const ui = {
   prompt, closePrompt, toast, action, closeListbox, hintDevice,
   get modalOpen() { return !!modal; }, get overlayOpen() { return !!modal || !!lb; },

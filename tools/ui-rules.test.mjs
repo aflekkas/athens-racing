@@ -16,13 +16,13 @@ test('no native <select> in the game UI (src/ and index.html)', () => {
   assert.deepEqual(hits, [], 'use C.select() in menus or <ui-select> elsewhere');
 });
 
-// Key hints and tooltip chips are purely informational: keys / gamepad / touch buttons drive the
+// Key hints and tooltip chips are purely informational: keys / gamepad buttons drive the
 // actions, never the hint labels. A hint element must not carry click handling, a pointer cursor
 // or keyboard/gamepad focus (tabindex, data-act, role=button, .mi), and it must be hidden from
 // assistive tech (aria-hidden) or exposed as a description, never as a control.
 test('key hints and tooltip chips are not clickable, have no pointer cursor and are not focusable', () => {
   const read = (f) => readFileSync(f, 'utf8');
-  const hintLine = /(hints|tabs__hint|driving-controls|map-cycle-hint|car-stage__hint|id="keys"|attica-caption)/;
+  const hintLine = /(hints|tabs__hint|driving-controls|car-stage__hint|id="keys"|attica-caption)/;
   const clickable = [/tabindex/i, /data-act/i, /role="button"/i, /\bonclick\b/i, /addEventListener\(\s*['"]click['"]/i,
     /closest\(\s*['"]\.hints?['"]\s*\)/, /querySelector[^\n]*\.hints?['"\]]\s*\)?\s*\.\s*click/i];
   const hits = [];
@@ -43,7 +43,6 @@ test('key hints and tooltip chips are not clickable, have no pointer cursor and 
     ['src/ui/components.js', '<div class="hints ${cls}" aria-hidden="true">'],
     ['src/ui/components.js', 'tabs__hint on-key" aria-hidden="true"'],
     ['src/ui/driving-hints.js', '<div class="driving-controls" aria-hidden="true">'],
-    ['src/ui/components.js', '<div class="map-cycle-hint" aria-hidden="true"'],
     ['index.html', '<div id="keys" aria-hidden="true">'],
   ];
   const missing = decorative.filter(([f, s]) => !read(f).includes(s)).map(([f, s]) => `${f}: missing ${s}`);
@@ -57,11 +56,11 @@ test('key hints and tooltip chips are not clickable, have no pointer cursor and 
   const pointerHits = [];
   for (const m of stripped.matchAll(/([^{}]+)\{([^}]*)\}/g)) {
     const sel = m[1], body = m[2];
-    if (!/(\.hints?|\.tabs__hint|\.driving-controls|#keys|\.map-cycle-hint|\.car-stage__hint)/.test(sel)) continue;
+    if (!/(\.hints?|\.tabs__hint|\.driving-controls|#keys|\.car-stage__hint)/.test(sel)) continue;
     if (/cursor\s*:\s*pointer/.test(body)) pointerHits.push(sel.trim().slice(0, 120));
   }
   assert.deepEqual(pointerHits, [], 'hint/tooltip selectors must not use cursor: pointer');
-  for (const sel of ['.hints', '.hint', '.tabs__hint', '.driving-controls', '#keys', '.map-cycle-hint', '.car-stage__hint']) {
+  for (const sel of ['.hints', '.hint', '.tabs__hint', '.driving-controls', '#keys', '.car-stage__hint']) {
     const covered = [...stripped.matchAll(/([^{}]+)\{([^}]*)\}/g)].some((m) => m[1].includes(sel) && /pointer-events\s*:\s*none/.test(m[2]));
     assert.ok(covered, `${sel} must have a pointer-events: none rule`);
   }

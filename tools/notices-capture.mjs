@@ -64,8 +64,8 @@ try{
   }
   n.dirty=true;n.update();
  },[kind,variant]);
- for(const[width,height]of[[1280,800],[1920,1080],[390,844],[844,390]]){
-  await page.setViewportSize({width,height});if(width<900)await page.evaluate(async()=>{window.dispatchEvent(new Event('touchstart'));const{input}=await import('/src/input.js');if(input.touchUI)input.touchUI.hidden=false;});await fs.mkdir(resolve(out,phase),{recursive:true});
+ for(const[width,height]of[[1280,800],[1920,1080]]){
+  await page.setViewportSize({width,height});await fs.mkdir(resolve(out,phase),{recursive:true});
   for(const view of ['chase','cockpit']){
    console.log('VIEW',width,view);await page.evaluate(view=>{if(__sim.G.cam!==view)__flow.action('camera');document.body.dataset.cameraView=view;__sim.cameraBlend.active=false;__sim.step(2);__sim.cameraBlend.active=false;__sim.render();},view);await page.waitForTimeout(250);
    await fixture('engine');await page.waitForTimeout(300);await shot(resolve(out,phase,`placement-${view}-${width}.png`));

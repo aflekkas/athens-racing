@@ -1,8 +1,6 @@
-import { touchControlLabel, touchSteeringLabel } from './ui/components.js';
 import { notifications } from './ui/notifications.js';
 // Unified input. No rendering/physics dependencies; injectable browser APIs make mapping testable in Node.
 import { settings as preferences, setSetting } from './settings.js';
-import { tiltAxis, requestTiltPermission, enterDrivingScreen } from './mobile.js';
 import { WHEEL_DEFAULTS, WHEEL_LIMITS, WHEEL_MODES, isWheel, inferProfile, resolveProfile, wheelAxes, wheelSettings, WheelCalibration, deviceKey, deviceName, canRumble, playRumble, wheelRumble, axisCount } from './steering-wheel.js';
 const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, Number.isFinite(x) ? x : 0));
 const copy = x => JSON.parse(JSON.stringify(x));
@@ -24,7 +22,7 @@ export const EDGE_ACTIONS = ['camera', 'restart', 'pause', 'garage', 'shiftUp', 
   'up', 'down', 'left', 'right', 'confirm', 'back'];
 // Racing wheel choices live beside the stick ones (wheelMode, wheelRange, wheelDeadzone, wheelLinearity, wheelPedalDeadzone, wheelForce);
 // each wheel's calibrated axes are saved apart, per device.
-const DEFAULT_SETTINGS = { deadzone: 0.15, sensitivity: 1, linearity: 1, touchSteering: 'screen', wheelMode: WHEEL_DEFAULTS.mode, wheelRange: WHEEL_DEFAULTS.range, wheelDeadzone: WHEEL_DEFAULTS.deadzone, wheelLinearity: WHEEL_DEFAULTS.linearity, wheelPedalDeadzone: WHEEL_DEFAULTS.pedalDeadzone, wheelForce: WHEEL_DEFAULTS.force };
+const DEFAULT_SETTINGS = { deadzone: 0.15, sensitivity: 1, linearity: 1, wheelMode: WHEEL_DEFAULTS.mode, wheelRange: WHEEL_DEFAULTS.range, wheelDeadzone: WHEEL_DEFAULTS.deadzone, wheelLinearity: WHEEL_DEFAULTS.linearity, wheelPedalDeadzone: WHEEL_DEFAULTS.pedalDeadzone, wheelForce: WHEEL_DEFAULTS.force };
 const WHEEL_SETTING_KEYS = { wheelMode: 'mode', wheelRange: 'range', wheelDeadzone: 'deadzone', wheelLinearity: 'linearity', wheelPedalDeadzone: 'pedalDeadzone', wheelForce: 'force' };
 const editable = e => !!e.target?.closest?.('input, select, textarea, button, [contenteditable]');
 export function axisValue(value, deadzone = 0.15, sensitivity = 1, linearity = 1) {
@@ -45,60 +43,36 @@ export class Input {
     this.keys = new Set(); this.pending = new Set(); this.previous = {}; this.actions = [];
     this.state = { throttle: 0, brake: 0, steer: 0, steerRaw: 0, handbrake: false, nitro: false, lookBack: false,
       ...Object.fromEntries(EDGE_ACTIONS.map(a => [a, false])) };
-    this.cameraLook = { x: 0, y: 0 }; this.touch = {}; this.connected = new Map(); this.listeners = [];
-    this.nitrousEnabled = false; this.drivingSource = 'keyboard'; this.padSignature = ''; this.touchSignature = '{}'; this.localRevision = 0; this.lastLocalRevision = 0;
+    this.cameraLook = { x: 0, y: 0 }; this.connected = new Map(); this.listeners = [];
+    this.nitrousEnabled = false; this.drivingSource = 'keyboard'; this.padSignature = ''; this.localRevision = 0; this.lastLocalRevision = 0;
     this.wheelProfiles = {}; this.wheel = null; this.wheelCal = null; this.wheelRumbleAt = 0;
     this.load();
     this.listen('keydown', e => this.keyDown(e)); this.listen('keyup', e => { if (e.code === 'KeyR' && this.keys.has('KeyR') && !this.inMenu && !this.resetHeld) this.pending.add('tow'); this.keys.delete(e.code); this.localRevision++; this.drivingSource = 'keyboard'; });
     this.listen('blur', () => this.clear());
     this.listen('gamepadconnected', e => this.connect(e.gamepad));
     this.listen('gamepaddisconnected', e => { this.connected.delete(e.gamepad.index); this.pad = null; if (this.wheelGuess) for (const k of Object.keys(this.wheelGuess)) if (k.startsWith(e.gamepad.index + ':')) delete this.wheelGuess[k]; });
-    this.listen('deviceorientation', e => {
-      if (!this.tiltAllowed) return;
-      const value = tiltAxis(e, this.target?.screen?.orientation?.angle ?? this.target?.orientation ?? 0);
-      if (value !== null) this.tilt = value;
-    });
-    this.listen('orientationchange', () => { this.tilt = 0; });
+    // A touchscreen laptop's synthesised mouse events must not look around: remember when a finger last touched.
     this.listen('pointerdown', e => {
       if (e.pointerType === 'touch') this.lastTouchAt = Date.now();
     });
-    this.listen('click', () => {
-      if (this.settings.touchSteering === 'tilt' && !this.tiltRequested) void this.enableTilt();
-    });
-    this.listen('gesturestart', e => { if (this.touchUI) e.preventDefault(); });
-    if (document) this.mountTouch();
+    if (document) this.mountStyles();
   }
   setNitrousEnabled(enabled) {
     this.nitrousEnabled = enabled === true;
-    if (!this.nitrousEnabled) { this.state.nitro = false; this.touch.nitro = 0; }
-    const button = this.touchUI?.querySelector('[data-action="nitro"]');
-    if (button && button.hidden !== !this.nitrousEnabled) button.hidden = !this.nitrousEnabled;
-    if (!this.nitrousEnabled && button?.classList.contains('held')) button.classList.remove('held');
+    if (!this.nitrousEnabled) this.state.nitro = false;
     for (const hint of this.document?.querySelectorAll?.('[data-nitrous]') || []) if (hint.hidden !== !this.nitrousEnabled) hint.hidden = !this.nitrousEnabled;
   }
   // Production polls the selected spec every frame, including car switches and menu resumes.
   setCarSpec(spec) {
-    // Polled every frame, but it only touches the DOM (querySelector / querySelectorAll) when the car's nitrous flag or the
-    // aids preference changed, and once a second to catch hints rendered later by a menu.
-    const nitrous = spec?.nitrous === true, aids = !!preferences.aids;
-    if (nitrous === this._specNitrous && aids === this._specAids && (this._specPoll = (this._specPoll || 0) + 1) < 60) return;
-    this._specPoll = 0; this._specNitrous = nitrous; this._specAids = aids;
-    this.setAidsEnabled(preferences.aids);
+    // Polled every frame, but it only touches the DOM (querySelectorAll) when the car's nitrous flag changed, and once a
+    // second to catch hints rendered later by a menu.
+    const nitrous = spec?.nitrous === true;
+    if (nitrous === this._specNitrous && (this._specPoll = (this._specPoll || 0) + 1) < 60) return;
+    this._specPoll = 0; this._specNitrous = nitrous;
     this.setNitrousEnabled(nitrous);
-    if (this.touchUI && this.touchUI.dataset.auxColumns !== '5') this.touchUI.dataset.auxColumns = '5';
   }
   listen(name, cb) { this.target?.addEventListener(name, cb); this.listeners.push([name, cb]); }
-  setAidsEnabled(enabled) {
-    const button = this.touchUI?.querySelector('[data-action="tractionControl"]');
-    const value = String(!!enabled);
-    if (!button || button.dataset.aidsEnabled === value) return;
-    button.dataset.aidsEnabled = value;
-    const label = enabled ? 'TC ON' : 'TC OFF';
-    if (button.textContent !== label) button.textContent = label;
-    button.setAttribute('aria-label', 'Toggle traction and stability control');
-    button.setAttribute('aria-pressed', String(!!enabled));
-  }
-  destroy() { this.releaseMouseLook(); this.document?.removeEventListener?.('pointerlockchange', this.lookLockChange); for (const [name, cb] of this.listeners) this.target?.removeEventListener(name, cb); for(const id of this.toastIds||[])notifications.dismiss(id);this.toastIds?.clear(); this.touchUI?.remove(); this.cancelCapture(); }
+  destroy() { this.releaseMouseLook(); this.document?.removeEventListener?.('pointerlockchange', this.lookLockChange); for (const [name, cb] of this.listeners) this.target?.removeEventListener(name, cb); for(const id of this.toastIds||[])notifications.dismiss(id);this.toastIds?.clear(); this.cancelCapture(); }
   load() {
     for (const kind of ['keyboard', 'gamepad']) {
       try {
@@ -118,20 +92,9 @@ export class Input {
   save(key, value) { try { this.storage?.setItem('paraliaki.input.' + key, JSON.stringify(value)); } catch {} }
   configure(settings, persist = true) {
     for (const [key, lo, hi] of [['deadzone', 0, 0.45], ['sensitivity', 0.25, 2], ['linearity', 0.25, 3]]) if (Number.isFinite(+settings[key])) this.settings[key] = clamp(+settings[key], lo, hi);
-    if (['screen', 'tilt'].includes(settings.touchSteering)) this.settings.touchSteering = settings.touchSteering;
     const wheel = wheelSettings(Object.fromEntries(Object.entries(WHEEL_SETTING_KEYS).map(([key, short]) => [short, key in settings ? settings[key] : this.settings[key]])));
     for (const [key, short] of Object.entries(WHEEL_SETTING_KEYS)) this.settings[key] = wheel[short];
     if (persist) this.save('settings', this.settings);
-  }
-  async enableTilt() {
-    this.tiltRequested = true;
-    const allowed = await requestTiltPermission(this.target);
-    this.tiltAllowed = allowed; this.tilt = undefined;
-    if (!allowed) {
-      this.configure({ touchSteering: 'screen' });
-      this.toast('Tilt unavailable; use on-screen steering');
-    }
-    return allowed;
   }
   bind(kind, action, bindings) {
     if (!(action in this.bindings[kind]) || !bindings.every(b => kind === 'keyboard' ? /^[A-Za-z0-9]+$/.test(b) : /^(b\d+|a\d+[+-])$/.test(b))) return false;
@@ -169,7 +132,7 @@ export class Input {
   }
   clear() {
     // Preserve edge latches for a held controller button when pause/menu code clears driving.
-    this.keys.clear(); this.pending.clear(); this.touch = {}; this.resetHoldT = 0; this.resetHeld = false;
+    this.keys.clear(); this.pending.clear(); this.resetHoldT = 0; this.resetHeld = false;
     this.actions = [];
     this.keyThrottle = this.keyBrake = 0;
     Object.assign(this.state, { throttle: 0, brake: 0, steer: 0, steerRaw: 0, handbrake: false, nitro: false, lookBack: false });
@@ -228,9 +191,6 @@ export class Input {
   }
   updateToast() { notifications.update(); }
   update(dt, { speed = 0, inMenu = false, blocked = false, retainMouseLock = false } = {}) {
-    if ((inMenu || blocked) && Object.values(this.touch).some(Boolean)) {
-      for (const action of Object.keys(this.touch)) if (this.touch[action]) { this.pending.delete(action); this.touch[action] = 0; }
-    }
     this.inMenu = inMenu; this.blocked = blocked; this.updateToast();
     const capturing = !!this.capture;
     dt = clamp(dt, 0, 0.5);
@@ -251,7 +211,7 @@ export class Input {
       else if (this.capture.ready) { const { action, done } = this.capture; this.capture = null; this.bind('gamepad', action, [active[0]]); done?.(); }
     }
     const k = a => (this.bindings.keyboard[a] || []).some(c => this.keys.has(c));
-    const localHeld = a => (this.bindings.keyboard[a] || []).some(c => this.keys.has(c) && !(c === 'KeyR' && (a === 'reset' || a === 'tow'))) || gp(a) > 0.55 || !!this.touch[a];
+    const localHeld = a => (this.bindings.keyboard[a] || []).some(c => this.keys.has(c) && !(c === 'KeyR' && (a === 'reset' || a === 'tow'))) || gp(a) > 0.55;
     // Only changes claim an active input source.
     if (this.localRevision !== this.lastLocalRevision) { this.lastLocalRevision = this.localRevision; this.drivingSource = 'keyboard'; }
     const padValues = ['throttle','brake','left','right','handbrake',...EDGE_ACTIONS].map(a => Math.round((a === 'left' || a === 'right' ? axisValue(gp(a),this.settings.deadzone) : gp(a)) * 100));
@@ -259,8 +219,6 @@ export class Input {
     const padSignature = JSON.stringify(padValues);
     if (padSignature !== this.padSignature && (this.padSignature || padValues.some(Boolean))) this.drivingSource = 'gamepad';
     this.padSignature = padSignature;
-    const touchSignature = JSON.stringify({...this.touch, ...(this.settings.touchSteering === 'tilt' && Number.isFinite(this.tilt) ? {steer:this.tilt} : {})});
-    if (touchSignature !== this.touchSignature) { this.touchSignature = touchSignature; this.drivingSource = 'touch'; }
     const held = localHeld;
     if (!inMenu && !blocked && !capturing && this.keys.has('KeyR')) {
       this.resetHoldT = (this.resetHoldT || 0) + dt;
@@ -284,15 +242,13 @@ export class Input {
     const stick = axisValue(gp('right') - gp('left'), this.settings.deadzone, this.settings.sensitivity, this.settings.linearity);
     const analog = Math.abs(wheelAxesNow.steer) > Math.abs(stick) ? wheelAxesNow.steer : stick;
     const padThrottle = Math.max(gp('throttle'), wheelAxesNow.throttle), padBrake = Math.max(gp('brake'), wheelAxesNow.brake);
-    const touchSteer = this.settings.touchSteering === 'tilt' && Number.isFinite(this.tilt) ? this.tilt : this.touch.steer || 0;
     const keyboardSteer = Math.sign(s.steerRaw) * Math.pow(Math.abs(s.steerRaw), 1.1);
-    s.steer = lf || rt || Math.abs(keyboardSteer) > Math.max(Math.abs(analog), Math.abs(touchSteer)) ? keyboardSteer : Math.abs(touchSteer) > Math.abs(analog) ? touchSteer : analog;
-    s.throttle = Math.max(this.keyThrottle, padThrottle, this.touch.throttle || 0);
-    s.brake = Math.max(this.keyBrake, padBrake, this.touch.brake || 0);
+    s.steer = lf || rt || Math.abs(keyboardSteer) > Math.abs(analog) ? keyboardSteer : analog;
+    s.throttle = Math.max(this.keyThrottle, padThrottle);
+    s.brake = Math.max(this.keyBrake, padBrake);
     s.handbrake = held('handbrake'); s.nitro = this.nitrousEnabled && held('nitro'); s.lookBack = held('lookBack');
     if (this.drivingSource === 'keyboard') { s.steer = keyboardSteer; s.throttle = this.keyThrottle; s.brake = this.keyBrake; s.handbrake = k('handbrake'); s.nitro = this.nitrousEnabled && k('nitro'); s.lookBack = k('lookBack'); }
     if (this.drivingSource === 'gamepad') { s.steer = analog; s.throttle = padThrottle; s.brake = padBrake; s.handbrake = gp('handbrake') > .55; s.nitro = this.nitrousEnabled && gp('nitro') > .55; s.lookBack = gp('lookBack') > .55; }
-    if (this.drivingSource === 'touch') { s.steer = touchSteer; s.throttle = this.touch.throttle || 0; s.brake = this.touch.brake || 0; s.handbrake = !!this.touch.handbrake; s.nitro = this.nitrousEnabled && !!this.touch.nitro; s.lookBack = !!this.touch.lookBack; }
     this.cameraLook.x = axisValue(gp('lookRight') - gp('lookLeft'), this.settings.deadzone);
     this.cameraLook.y = axisValue(gp('lookDown') - gp('lookUp'), this.settings.deadzone);
     if (blocked || inMenu || capturing) {
@@ -300,7 +256,6 @@ export class Input {
       this.cameraLook.x = this.cameraLook.y = 0;
       if (!retainMouseLock) this.releaseMouseLook();
     }
-    if (this.touchUI) this.touchUI.hidden = inMenu || blocked;
     return s;
   }
   // ---- racing wheel: the device in front of us, its calibration, and force feedback (src/steering-wheel.js)
@@ -377,13 +332,6 @@ export class Input {
       slider.type = 'range'; slider.min = min; slider.max = max; slider.step = step; slider.value = this.settings[key]; value.textContent = slider.value;
       slider.addEventListener('input', () => { this.configure({ [key]: +slider.value }); value.textContent = slider.value; }); row.append(slider, value); panel.append(row);
     }
-    const tilt = doc.createElement('button'); tilt.type = 'button'; tilt.textContent = 'Touch steering: ' + this.settings.touchSteering;
-    tilt.addEventListener('click', async () => {
-      if (this.settings.touchSteering === 'screen') {
-        if (!await this.enableTilt()) return;
-      }
-      this.configure({ touchSteering: this.settings.touchSteering === 'screen' ? 'tilt' : 'screen' }); tilt.textContent = 'Touch steering: ' + this.settings.touchSteering;
-    }); panel.append(tilt);
     const table = doc.createElement('table');
     const head = doc.createElement('tr'); for (const title of ['Action', 'Keyboard', 'Controller']) { const th = doc.createElement('th'); th.textContent = title; head.append(th); } table.append(head);
     const rows = [...new Set([...Object.keys(this.bindings.keyboard), ...Object.keys(this.bindings.gamepad)])].filter(a => a !== 'nitro' || this.nitrousEnabled);
@@ -404,44 +352,11 @@ export class Input {
     const reset = doc.createElement('button'); reset.type = 'button'; reset.textContent = 'Reset controls to defaults'; reset.addEventListener('click', () => { this.resetBindings(); this.openBindings(containerEl); }); panel.append(reset);
     containerEl.replaceChildren(panel); return panel;
   }
-  mountTouch() {
+  // The shared styles of the input toast and the key-binding panel (src/input.css).
+  mountStyles() {
     const doc = this.document;
-    if (!doc.body) { doc.addEventListener('DOMContentLoaded', () => this.mountTouch(), { once: true }); return; }
+    if (!doc.body) { doc.addEventListener('DOMContentLoaded', () => this.mountStyles(), { once: true }); return; }
     if (!doc.getElementById('input-css')) { const link = doc.createElement('link'); link.id = 'input-css'; link.rel = 'stylesheet'; link.href = new URL('./input.css', import.meta.url).href; doc.head.append(link); }
-    const enable = () => {
-      if (this.touchUI) return;
-      doc.body.classList.add('touch-driving');
-      doc.body.dataset.input = 'touch';
-      const root = doc.createElement('div'); root.id = 'touch-controls'; root.hidden = true; root.setAttribute('aria-label', 'Touch driving controls');
-      const rotate = doc.createElement('p'); rotate.className = 'touch-rotate'; rotate.textContent = 'Rotate your phone for a wider road view'; root.append(rotate);
-      const steer = doc.createElement('div'); steer.className = 'touch-steer'; steer.innerHTML = touchSteeringLabel(); steer.setAttribute('role', 'group'); steer.setAttribute('aria-label', 'Drag left or right to steer');
-      let pointer;
-      const move = e => { if (e.pointerId !== pointer) return; const r = steer.getBoundingClientRect(); this.touch.steer = clamp((e.clientX - r.left - r.width / 2) / (r.width * 0.4), -1, 1); };
-      steer.addEventListener('pointerdown', e => { e.preventDefault(); if (pointer !== undefined) return; pointer = e.pointerId; steer.setPointerCapture(pointer); move(e); });
-      steer.addEventListener('pointermove', move);
-      for (const name of ['pointerup', 'pointercancel', 'lostpointercapture']) steer.addEventListener(name, e => { if (e.pointerId === pointer) { pointer = undefined; this.touch.steer = 0; } }); root.append(steer);
-      const pedals = doc.createElement('div'); pedals.className = 'touch-pedals';
-      const aux = doc.createElement('div'); aux.className = 'touch-buttons';
-      const actions = doc.createElement('div'); actions.className = 'touch-actions';
-      const gears = doc.createElement('div'); gears.className = 'touch-gears'; gears.setAttribute('role', 'group'); gears.setAttribute('aria-label', 'Gear shifts');
-      for (const [action, label] of [['brake', 'BRAKE'], ['throttle', 'GAS'], ['handbrake', 'HB'], ['nitro', 'N₂O'], ['camera', 'CAM'], ['shiftUp', 'GEAR +'], ['shiftDown', 'GEAR −'], ['transmission', 'MODE'], ['tractionControl', 'TC ON'], ['tow', 'TOW'], ['pause', 'PAUSE']]) {
-        const button = doc.createElement('button'); button.type = 'button'; button.innerHTML = touchControlLabel(action, label); button.dataset.action = action; button.setAttribute('aria-label', action); if (action === 'nitro') button.hidden = !this.nitrousEnabled;
-        const pointers = new Set();
-        button.addEventListener('pointerdown', e => { e.preventDefault(); pointers.add(e.pointerId); button.setPointerCapture(e.pointerId); this.touch[action] = 1; if (EDGE_ACTIONS.includes(action)) this.pending.add(action); button.classList.add('held'); });
-        for (const name of ['pointerup', 'pointercancel', 'lostpointercapture']) button.addEventListener(name, e => { pointers.delete(e.pointerId); if (!pointers.size) { this.touch[action] = 0; button.classList.remove('held'); } });
-        (action === 'throttle' || action === 'brake' ? pedals : action === 'shiftUp' || action === 'shiftDown' ? gears : actions).append(button);
-      }
-      root.dataset.auxColumns = '5';
-      // Fullscreen must also start directly in a tap; unsupported Safari keeps browser mode.
-      if (doc.documentElement?.requestFullscreen) {
-        const button = doc.createElement('button'); button.type = 'button'; button.textContent = 'FULL'; button.dataset.action = 'fullscreen'; button.setAttribute('aria-label', 'Fullscreen landscape');
-        button.addEventListener('click', () => { void enterDrivingScreen(doc, this.target?.screen); }); actions.append(button);
-      }
-      aux.append(actions, gears); root.append(pedals, aux); doc.body.append(root); this.touchUI = root;
-      this.setAidsEnabled(preferences.aids);
-    };
-    if ((this.navigator?.maxTouchPoints || 0) > 0 || this.target?.matchMedia?.('(pointer: coarse)').matches) enable();
-    else this.listen('touchstart', enable);
   }
 }
 export const input = new Input();

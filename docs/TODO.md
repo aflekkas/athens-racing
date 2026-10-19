@@ -18,7 +18,7 @@ Done and checked by the lead:
 - [x] Title cleanup (`91bb033d`), simple header and no clock (`bd8ff407`)
 - [x] Lucide icons (`5ed5152d`, `ea499482`)
 - [x] Garage cards/filters/viewer (`fdedb0f5`); Ducato dashboard (`ab85a17e`)
-- [x] Mobile playable; bodyless-car fix (`c222bc29`, `8f16ab59`); solo HUD MULTIPLAYER button removed (`854ba390`)
+- [x] ~~Mobile playable~~ (superseded 2026-10-19: computer only, phones and tablets get a gate and the touch support is removed, `docs/plans/desktop-only.md`); bodyless-car fix (`c222bc29`, `8f16ab59`); solo HUD MULTIPLAYER button removed (`854ba390`)
 - [x] Multiplayer lobby browser and solo RACE (`74611cfc`); full-page track map (`20fa3196`, `7d6e589f`)
 - [x] Credits and What's New as full-page articles (`8a5117e2`, `a220b106`)
 - [x] Release-PR versioning written (`accfaef6`, not on prod yet). Lead does the cutover after this batch
@@ -147,7 +147,7 @@ Waiting on the owner:
 
 ## Controls
 - [x] Phone as steering wheel: QR pairing, P2P with relay fallback, tilt, pedals, safe release (`fe12576`).
-- [?] Owner: test on a real iPhone/Android.
+- [~] ~~Owner: test on a real iPhone/Android.~~ Superseded 2026-10-19: phones and tablets can't play.
 
 ## Quality
 - [x] Review findings fixed: trim-step DOM leak, touch rotate, frozen scooter rider, rider protocol bounds, 8 unwired test suites plus a coverage guard (`b2798b9`). CLE margin and mild-language silence were already fixed.

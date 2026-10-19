@@ -30,7 +30,7 @@ test('actual city, sports, van and bus vertices stay centred within half a pixel
  const model=new CarModel(CARS.find(c=>c.id===id));model.root.traverse(o=>{if(o.isLOD){o.autoUpdate=false;o.levels.forEach((l,i)=>l.object.visible=i===0);}});
  const framing=createVehicleFraming(model.root),camera=new THREE.PerspectiveCamera(35);
  assert.ok(model.root.children.filter(o=>o.geometry?.type==='PlaneGeometry'&&o.renderOrder===1).every(o=>!o.visible),id+' on-road shadow is excluded from the studio silhouette');
- for(const [width,height] of [[800,600],[390,220],[320,600]])for(let a=0;a<Math.PI*2;a+=Math.PI/6){
+ for(const [width,height] of [[800,600],[960,500],[640,600]])for(let a=0;a<Math.PI*2;a+=Math.PI/6){
  model.root.rotation.y=a;frameVehicle(camera,model.root,framing,width,height);let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
  model.root.updateMatrixWorld(true);camera.updateMatrixWorld(true);
  model.root.traverseVisible(o=>{if(!o.isMesh)return;const pos=o.geometry.attributes.position;for(let i=0;i<pos.count;i++){const p=new THREE.Vector3().fromBufferAttribute(pos,i).applyMatrix4(o.matrixWorld).project(camera);minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x);minY=Math.min(minY,p.y);maxY=Math.max(maxY,p.y);}});
@@ -40,7 +40,7 @@ test('actual city, sports, van and bus vertices stay centred within half a pixel
 test('static thumbnails fill their image bounds with consistent margins',()=>{
  for(const id of ['a160','panda','golf','carrera','huracan','van','bus']){
   const model=new CarModel(CARS.find(c=>c.id===id)),framing=createVehicleFraming(model.root),camera=new THREE.PerspectiveCamera(31);
-  for(const [width,height] of [[480,240],[390,220],[800,380]]){
+  for(const [width,height] of [[480,240],[600,300],[800,380]]){
    frameVehicle(camera,model.root,framing,width,height,{fit:'bounds',viewDirection:new THREE.Vector3(.68,.31,-.74).normalize()});
    let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
    model.root.traverseVisible(o=>{if(!o.isMesh)return;const pos=o.geometry.attributes.position;for(let i=0;i<pos.count;i++){const p=new THREE.Vector3().fromBufferAttribute(pos,i).applyMatrix4(o.matrixWorld).project(camera);minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x);minY=Math.min(minY,p.y);maxY=Math.max(maxY,p.y);}});
@@ -55,8 +55,8 @@ test('spec panel has shared tiles, segmented trims and no unavailable paint or i
 
 // Use the shared VPS queue allowance, plus ten minutes for the browser itself.
 const browserQueueWait = Number(process.env.BROWSER_SLOT_WAIT || 5400);
-test('browser measures drive-pill containment, manufacturer options and brand selection at desktop and phone sizes', {timeout:(browserQueueWait+610)*1000}, async()=>{
+test('browser measures drive-pill containment, manufacturer options and brand selection at desktop and narrow-window sizes', {timeout:(browserQueueWait+610)*1000}, async()=>{
  const {execFile}=await import('node:child_process'),{promisify}=await import('node:util');
  const {stdout}=await promisify(execFile)('bash',['tools/browser-slot.sh',process.execPath,'tools/garage-cards.browser.mjs'],{timeout:(browserQueueWait+600)*1000,env:{...process.env,BROWSER_SLOT_WAIT:String(browserQueueWait)},maxBuffer:1024*1024});
- assert.match(stdout,/Garage browser bounds, logos and brand filter PASS 1280/);assert.match(stdout,/Garage browser bounds, logos and brand filter PASS 390/);assert.match(stdout,/Garage viewer container and equal spec tiles PASS 390/);
+ assert.match(stdout,/Garage browser bounds, logos and brand filter PASS 1280/);assert.match(stdout,/Garage browser bounds, logos and brand filter PASS 960/);assert.match(stdout,/Garage viewer container and equal spec tiles PASS 960/);
 });

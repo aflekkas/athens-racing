@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { settings, setSetting } from './settings.js';
 import { CU, AP_UNIFORMS, AERIAL_GLSL, AP_K } from './env.js';
-import { mobileDevice } from './mobile.js';
 
 // ---------------------------------------------------------------- the one graphics look (OWNER-LOCKED)
 // There is exactly ONE look: what the old Lighting = OFF + Effects = OFF levels produced. No presets, no lighting /
@@ -75,25 +74,23 @@ export const RESOURCE_BUDGETS = Object.freeze({
  * ranges. renderScale 'auto' = the class's resolution, otherwise a fixed 0.5..1 fraction of the screen's pixels
  * (device pixel ratio, capped at 2).
  */
-export function resolveGraphics(s = settings, { deviceRatio = typeof devicePixelRatio === 'number' ? devicePixelRatio : 1, gpuName = '', userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : '' } = {}) {
-  const perfClass = PERFORMANCE[s.perfClass] ? s.perfClass : detectPerfClass(gpuName, userAgent), P = PERFORMANCE[perfClass];
-  const mobile = mobileDevice(userAgent);
-  const screen = Math.min(deviceRatio || 1, mobile ? 1 : 2), scale = s.renderScale === 'auto' || s.renderScale == null ? null : +s.renderScale;
+export function resolveGraphics(s = settings, { deviceRatio = typeof devicePixelRatio === 'number' ? devicePixelRatio : 1, gpuName = '' } = {}) {
+  const perfClass = PERFORMANCE[s.perfClass] ? s.perfClass : detectPerfClass(gpuName), P = PERFORMANCE[perfClass];
+  const screen = Math.min(deviceRatio || 1, 2), scale = s.renderScale === 'auto' || s.renderScale == null ? null : +s.renderScale;
   const pixelRatio = +(scale ? screen * scale : Math.min(screen, P.pixelRatio)).toFixed(3);
-  const draw = +s.drawDistance > 0 ? +s.drawDistance : Math.min(P.drawDistance, mobile ? 500 : Infinity);
-  const resources = RESOURCE_BUDGETS[mobile && PERF_CLASSES.indexOf(perfClass) > 1 ? 'low' : perfClass];
+  const draw = +s.drawDistance > 0 ? +s.drawDistance : P.drawDistance;
+  const resources = RESOURCE_BUDGETS[perfClass];
   return { R: RENDER, perfClass, P, resources, pixelRatio, resolution: pixelRatio / screen, drawDistance: draw, trafficDraw: P.trafficDraw, crowd: P.crowd, detail: P.detail, traffic: P.traffic, walkers: P.walkers, trafficHz: P.trafficHz, hud: P.hud, chunkScale: P.chunk, vehicleLod: P.lod, farCull: P.farCull };
 }
 const SOFTWARE_GPU = /SwiftShader|llvmpipe|softpipe|Software|Microsoft Basic Render/i;
-// integrated / mobile GPUs: medium. Apple M-series and discrete cards stay on high.
+// integrated GPUs (and the ARM laptop parts): medium. Apple M-series and discrete cards stay on high.
 const MID_GPU = /Intel\(R\) (HD|UHD)|Intel.*(HD|UHD) Graphics|Mali|Adreno|PowerVR|Apple GPU|Radeon\(TM\) Graphics|Radeon Vega [0-9]|Iris(?! Xe)/i;
 // old / very weak integrated parts: potato
 const WEAK_GPU = /Intel\(R\) HD Graphics( [2-5][0-9]{2,3})?$|Intel.*HD Graphics (2000|2500|3000|4000|4400|4600|5000|5500|6000|500|505|510|405|400)\b|Mali-(G31|G51|G52|T[0-9]+)\b|Adreno \(TM\) [2-5][0-9]{2}\b|PowerVR/i;
-/** the performance class for what the browser reports (GPU name, user agent) */
-export function detectPerfClass(gpuName = '', userAgent = '') {
+/** the performance class for what the browser reports (GPU name) */
+export function detectPerfClass(gpuName = '') {
   if (SOFTWARE_GPU.test(gpuName)) return 'low';
   if (WEAK_GPU.test(gpuName)) return 'potato';
-  if (mobileDevice(userAgent)) return 'low';
   if (MID_GPU.test(gpuName)) return 'med';
   return 'high';
 }
@@ -158,12 +155,12 @@ export const CPU_PROBE_LIMITS = Object.freeze({ potato: 100, low: 65, med: 45 })
  * can only lower it. Resolves { perfClass, reasons[], gpu, cores, memory, msPerPass }. Performance only: it picks
  * the 'auto' resolution and draw distance, never the look.
  */
-export async function detectPerformance({ probe = true, gpuName = '', userAgent = navigator.userAgent } = {}) {
+export async function detectPerformance({ probe = true, gpuName = '' } = {}) {
   const cores = navigator.hardwareConcurrency || 4, memory = navigator.deviceMemory || 8, reasons = [];
   let probed = null;
   if (probe) { await new Promise(r => setTimeout(r, 0)); try { probed = gpuProbe(); } catch { probed = null; } }
   const gpu = gpuName || probed?.gpu || '';
-  let perfClass = detectPerfClass(gpu, userAgent);
+  let perfClass = detectPerfClass(gpu);
   reasons.push(`gpu:${gpu || 'unknown'} to ${perfClass}`);
   // the CPU: best of three short probes (a busy moment must not condemn a fast machine)
   let cpu = null;

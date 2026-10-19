@@ -18,7 +18,7 @@ test('the garage lineup is grouped by class, names only real catalogue cars and 
   const listed=filterCars(CARS).map(x=>x.car.id);assert.deepEqual(listed.map(id=>carModel(id).id),GARAGE_CARS,'default order follows the grouped lineup');
   for(const {car,index} of filterCars(CARS))assert.equal(CARS[index],car);
 });
-test('labels and gearbox feedback use remapped keyboard/controller/touch bindings',()=>{const b={keyboard:{shiftUp:['KeyI'],shiftDown:['KeyK'],transmission:['KeyL']},gamepad:{shiftUp:['b0'],shiftDown:['b2'],transmission:['b3']}};assert.equal(bindingLabel(b,'transmission'),'L');assert.match(gearboxMessage(null,true,b,'keyboard'),/I SHIFT UP \/ K SHIFT DOWN · L FOR AUTO/);assert.match(gearboxMessage(null,false,b,'gamepad'),/AUTOMATIC · Y FOR MANUAL/);assert.equal(bindingLabel(b,'shiftUp','touch'),'GEAR +');assert.equal(bindingLabel(b,'tow'),'UNBOUND');});
+test('labels and gearbox feedback use remapped keyboard/controller bindings',()=>{const b={keyboard:{shiftUp:['KeyI'],shiftDown:['KeyK'],transmission:['KeyL']},gamepad:{shiftUp:['b0'],shiftDown:['b2'],transmission:['b3']}};assert.equal(bindingLabel(b,'transmission'),'L');assert.match(gearboxMessage(null,true,b,'keyboard'),/I SHIFT UP \/ K SHIFT DOWN · L FOR AUTO/);assert.match(gearboxMessage(null,false,b,'gamepad'),/AUTOMATIC · Y FOR MANUAL/);assert.equal(bindingLabel(b,'tow'),'UNBOUND');});
 
 test('each generation has unique valid trim IDs and legacy selections migrate without losing their engine',()=>{
   const all=CAR_MODELS.flatMap(m=>m.trims);

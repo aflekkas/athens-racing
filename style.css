@@ -5,9 +5,7 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; overflow: hidden; overscroll-behavior: none; touch-action: pan-x pan-y; background: #050608; }
 body { font-family: var(--sans); color: #fff; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
-/* Safari magnifies small text fields even when pinch zoom is disabled. */
-body.touch-driving input, body.touch-driving textarea,
-body.touch-driving input.text-field__input, body.touch-driving input.search__input { font-size: max(16px, 1em); }
+
 canvas#c { touch-action: none; }
 canvas#c { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
 b { font-weight: inherit; }
@@ -134,30 +132,13 @@ body.menu #hud > :not(#pops) { opacity: 0; transition: opacity .4s; }
 #msg i { font-style: normal; color: var(--gold); }
 #keys { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); display: flex; gap: 18px; padding: 6px 14px; border-radius: 4px; background: rgba(8,10,14,.55); font-family: var(--cond); font-weight: 700; font-size: 13px; letter-spacing: .14em; color: rgba(255,255,255,.8); white-space: nowrap; transition: opacity 1s; pointer-events: none; cursor: default; }
 #keys i { display: inline-block; font-style: normal; color: #07090c; background: #e9edf1; padding: 1px 6px; margin-right: 6px; border-radius: 3px; box-shadow: inset 0 -2px 0 rgba(0,0,0,.25); font-weight: 800; letter-spacing: .05em; }
-body[data-input=gamepad] #keys, body[data-input=touch] #keys { display: none; }
+body[data-input=gamepad] #keys { display: none; }
 body.started #keys { opacity: 0; }
 
 #credit { position: fixed; right: 10px; bottom: 4px; font-family: var(--sans); font-size: 10px; color: rgba(255,255,255,.7); text-shadow: 0 1px 2px #000; z-index: 20; }
 #credit a { color: inherit; }
 
 /* ---------------------------------------------------------------- loading screen (src/ui/loading.js) */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #ldTip.in { animation: ldTip .5s ease both; }
 @keyframes ldTip { from { opacity: .35; transform: translateY(4px); } }
@@ -169,7 +150,6 @@ body.started #keys { opacity: 0; }
   
   
 }
-@media (max-height: 500px) {   }
 
 /* ---------------------------------------------------------------- results / garage */
 #menu { position: fixed; inset: 0; z-index: 8; display: grid; grid-template-columns: 1fr 440px; align-items: center; padding: 0 6vw; pointer-events: none; opacity: 0; transition: opacity .45s;

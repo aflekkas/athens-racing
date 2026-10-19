@@ -31,11 +31,7 @@ body[data-mode=pursuit] #posBox .row.rv { display:none; }
   #evBox { top: auto; bottom: 200px; right: 12px; min-width: 150px; }
   #evBox b { font-size: 26px; }
 }
-@media (max-width: 700px) {
-  #wrongWay { top: 30%; }
-  #wrongWay b { font-size: 40px; padding: 2px 18px; }
-  #wrongWay span { font-size: 11px; }
-}
+
 /* event / district banner: at <=1100px wide style.css drops the route bar to top:130px, right where the banner's 17%
    sits — push the banner below the route bar (and the split box), smaller on short screens */
 @media (max-width: 1100px) {
@@ -43,14 +39,7 @@ body[data-mode=pursuit] #posBox .row.rv { display:none; }
   #wrongWay { top: 29%; }
   #banner .b1 { font-size: 50px; }
 }
-@media (max-height: 480px) {
-  #banner { top: 150px; padding: 5px 34px 6px 22px; border-left-width: 5px; }
-  #wrongWay { top: 140px; white-space: nowrap; }
-  #wrongWay b { font-size: 44px; padding: 2px 22px; }
-  #wrongWay span { font-size: 11px; margin-top: 3px; }
-  #banner .b1 { font-size: 32px; }
-  #banner .b2 { font-size: 11px; letter-spacing: .14em; }
-}
+
 /* A quieter race HUD: timing, one slim progress bar, instruments and the map. */
 #hud #routeBox { top: 32px; left: 42%; right: 5%; width: auto; transform: none; }
 #hud #routeBox .rt, #hud #rticks, #hud #rMe, #hud #rRival, #hud #rbar .flag, #hud #sigBox, #hud #penRow, body.racing #credit { display:none; }
@@ -68,26 +57,7 @@ body #hud #mapBox.is-big { width: min(62vmin, 560px) !important; height: min(62v
 #hud #posBox .rows { padding:8px 20px; }
 #hud .row b { font-size:24px; }
 #hud #keys { font-size:11px; }
-@media (max-width:700px) {
-  #hud #routeBox { top:111px; left:20px; right:20px; }
-  #hud #posBox { left:16px; top:20px; }
-  #hud #mapBox { left:16px; width:124px; height:124px; bottom:24px; }
-  #hud #dialBox { right:0; bottom:0; width:210px; height:210px; }
-  #hud #posBox .rows { min-width:160px; padding:8px 18px; }
-  #hud .row .k { font-size:11px; }
-  #hud .row b { font-size:22px; }
-}
-/* touch driving (src/input.css lifts the dial above the pedals and moves the minimap up): the lean-HUD #hud rules above
-   are more specific, so restate the touch placement at the same specificity, and keep the route bar clear of the map */
-body.touch-driving #hud #mapBox { top: 105px; bottom: auto; left: 10px; width: 100px; height: 100px; }
-body.touch-driving #hud #dialBox { right: 10px; bottom: 128px; width: 160px; height: 160px; }
-@media (max-width: 700px) {
-  body.touch-driving #hud #routeBox { left: 122px; right: 16px; }
-}
-@media (max-height: 480px) {
-  body.touch-driving #hud #mapBox { top: 90px; width: 84px; height: 84px; }
-  body.touch-driving #hud #dialBox { width: 125px; height: 125px; bottom: 120px; }
-}
+
 /* the non-modal tow offer (main.js offerTow) */
 body .tow-prompt { top: 22%; width: min(26rem, calc(100vw - 32px)); padding: var(--s-4) var(--s-5) var(--s-4); border: 1px solid var(--c-line-2); border-top: 3px solid var(--c-gold); border-radius: var(--r-3);
   background: rgba(16,22,28,.95); box-shadow: 0 1.2rem 3rem rgba(0,0,0,.55); font: 500 var(--t-sm)/1.45 var(--f-sans); color: #fff; animation: ui-pop .22s var(--ease) both; }
@@ -120,17 +90,10 @@ body:not(.loaded) #mp-toggle, body[data-ui=title] #mp-toggle, body.ui-open #mp-t
 #drivingTip { position: fixed; z-index: 24; bottom: 4.5rem; left: 50%; transform: translateX(-50%); width: min(34rem,calc(100vw - 2rem)); padding: .8rem 1rem; display: flex; align-items: center; gap: .7rem; border: 1px solid var(--c-line-2); border-left: 3px solid var(--c-cyan); border-radius: var(--r-2); background: #0b1119ed; color: white; font: 600 .85rem/1.4 var(--f-sans); }
 #drivingTip .btn { flex: none; }
 body.ui-open #drivingHints, body.ui-open #drivingTip { display: none; }
-@media (max-width: 650px), (max-height: 500px) {
-  #drivingHints { bottom: 8.7rem; max-width: calc(100vw - 1.5rem); padding: .5rem; }
-  #drivingHints .driving-controls { gap: .3rem .6rem; }
-  #drivingHints .driving-controls > span:last-child { display: none; }
-  #drivingTip { bottom: 9rem; font-size: .8rem; }
-  .driving-dismiss { padding-inline: .4rem; }
-}
+
 /* The binding-aware strip replaces the legacy hardcoded driving footer. */
 #keys { display: none; }
-body.touch-driving #drivingHints { bottom: 8.7rem; }
-body.touch-driving #drivingTip { bottom: 10rem; }
+
 /* Condition appears only when the physics reports wear, heat, a stall or failure. */
 body #engineHud { position: absolute; right: 0; top: -.7rem; display: flex; align-items: center; gap: .5rem; width: 12rem; padding: .55rem .65rem .8rem; border: 1px solid #ffd06480; border-radius: var(--r-2); background: #0b1119ed; color: #ffd064; font: 800 .7rem var(--f-cond); letter-spacing: .05em; overflow: hidden; }
 body #engineHud[hidden] { display: none; }
@@ -141,23 +104,13 @@ body #engineHud[data-tone=bad] { color: #ff7e74; border-color: #ff7e7480; }
 
 /* The limit sign sits beside the dial (the gear and mode live on the cluster itself). */
 body #limitSign { left: calc(-2.625rem - 42px); bottom: calc(16px + 3.9rem - 32px); width: 60px; height: 60px; border-width: 7.5px; }
-@media(max-width:500px) {
-  body.touch-driving #hud #dialBox { bottom: calc(208px + env(safe-area-inset-bottom)); }
-}
-/* Keep district captions inside the touch minimap's bottom-left cut corner. */
-body.touch-driving #hud #mapLabel { left: 18px; right: 4px; bottom: 12px; padding: 2px 0; font-size: 9px; letter-spacing: .02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 #race-settings { position: fixed; right: 12px; top: 14px; z-index: 48; display: flex; align-items: center; gap: 6px; min-height: 40px; padding: 8px 10px; color: white; background: #151d27; border: 1px solid #ffffff55; border-radius: 6px; font: 800 12px var(--f-cond); }
 #race-settings .ico { width: 18px; height: 18px; }
 body:not(.racing):not(.counting) #race-settings, body.ui-open #race-settings, body:has(#multiplayer:not([hidden])) #race-settings { display: none; }
 body #mp-toggle { right: 118px; top: 14px; }
 body.racing #hud #routeBox { right: 285px; }
-@media(max-width:700px),(max-height:480px) {
-  #race-settings, body #mp-toggle { top: 76px; }
-}
-@media(max-width:700px) {
-  body.racing #hud #routeBox { top: 128px; right: 16px; }
-}
+
 body[data-mode="taxi"] #hud #routeBox, body[data-mode="getaway"] #hud #routeBox { display: none; }
 #evBox:has(.objective-card) { top: 22px; left: 320px; right: auto; width: 320px; transform: none; padding: 0; background: none; clip-path: none; text-align: left; }
 .objective-card { color: white; background: #0b131eee; border: 1px solid #ffffff25; border-left: 3px solid #ffc21a; border-radius: 7px; padding: 12px; font-family: var(--f-cond); }
@@ -175,18 +128,7 @@ body[data-mode="taxi"] #hud #routeBox, body[data-mode="getaway"] #hud #routeBox 
 .objective-card footer { color: #d0dde6; font-size: 11px; font-weight: 700; letter-spacing: .07em; }
 .objective-hold { height: 4px; margin-top: 8px; background: #ffffff18; }
 .objective-hold i { display: block; height: 100%; background: #62e9bf; }
-@media(max-height:480px) {
-  #evBox:has(.objective-card) { top: 8px; left: 228px; width: 300px; }
-  .objective-card { padding: 8px; }
-}
-@media(max-width:500px) {
-  #evBox:has(.objective-card) { top: 128px; left: 122px; width: calc(100vw - 134px); }
-  .objective-card { padding: 9px; }
-  .objective-card header { gap: 6px; font-size: 11px; }
-  .objective-card header small { display: none; }
-  .objective-body h3 { font-size: 14px; }
-  body[data-mode="taxi"] #input-toast, body[data-mode="getaway"] #input-toast { top: 316px; }
-}
+
 /* Free roam has no route, race clock, position or progress to show (owner decision 2026-10-18). */
 body[data-mode=free] :is(#routeBox,#lapTiming,#posBox,#evBox) { display:none!important }
 /* Every detached race widget follows the same menu visibility policy as the main HUD. */

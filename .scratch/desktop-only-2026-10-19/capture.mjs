@@ -50,7 +50,8 @@ try {
       await page.waitForSelector('#ui .scr--title', { timeout: 60000 });
       await page.waitForTimeout(2500);
       await go(page);
-      await page.waitForTimeout(2500);
+      await page.waitForFunction(() => { const s = document.querySelector('#ui .scr'); return s && getComputedStyle(s).opacity === '1'; }, null, { timeout: 90000 }); // the screen has finished its fade-in
+      await page.waitForTimeout(name === 'maps' ? 7000 : 2500); // the map art streams in
       await page.screenshot({ path: resolve(outdir, `${prefix}-${name}-${w}x${h}.png`) });
       console.log('captured', name, w, h);
       await context.close();

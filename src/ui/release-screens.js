@@ -141,8 +141,6 @@ export function renderCreditFile(menu) {
 }
 
 // ---------------------------------------------------------------- title screen: version corner + one-time card
-/** is the one-time news card on the title right now? (call after titleExtras, which decides it) */
-export const newsCardUp = () => !!state.card && !racing();
 export function titleExtras(menu) {
   ensure(menu, 'release', 'release.json');
   settle(menu, false); // already rendering the title

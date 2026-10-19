@@ -13,8 +13,8 @@ const { chromium } = await import(pathToFileURL(process.env.PLAYWRIGHT_MODULE ||
 const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROME_BIN, args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 const url = `http://127.0.0.1:${app.server.address().port}/?menu&quality=low`, report = { errors: [], checks: [], captures: [] };
 try {
-  for (const width of [1280, 390]) {
-    const context = await browser.newContext({ viewport: { width, height: width === 390 ? 844 : 720 }, serviceWorkers: 'block' });
+  for (const width of [1280, 960]) {
+    const context = await browser.newContext({ viewport: { width, height: width === 960 ? 700 : 720 }, serviceWorkers: 'block' });
     const page = await context.newPage();
     page.on('pageerror', e => report.errors.push(e.stack));
     // Hold only the continuous 3D loop on this software GPU. UI animation frames still run.
