@@ -53,18 +53,22 @@ function carrera(car,d,M,low){
   // 991.1 halogen/bi-xenon architecture: one main projector and a separate lower reflector.
   // The lens is inclined with the front wing, with a fine polished rim, not an upright circle.
   for(const s of [-1,1]){
-    const cx=s*.603,cz=-1.91;
+    const cx=s*.603,cz=-2.03;
     const at=(pts,z)=>{for(let i=1;i<pts.length;i++)if(z<=pts[i][0]){const [a,b]=[pts[i-1],pts[i]],t=smooth((z-a[0])/(b[0]-a[0]));return a[1]+(b[1]-a[1])*t;}return pts.at(-1)[1];};
-    const wing=(x,z)=>{const h=at([[-d.L/2,.645],[-1.9,.765],[-1.25,.84],[d.cowl,d.belt]],z),w=at([[-d.L/2,d.W/2*.84],[-2.0,d.W/2*.93],[-1.72,d.W/2*.97],[-1.1,d.W/2*.95]],z)-.014,q=x/w;return h+.028*(1-q*q)-.11*Math.exp(-(((z+1.55)/.58)**2))*(1-Math.exp(-(((Math.abs(q)-.72)/.22)**2)))*clamp((d.cowl-z)/.5);};
+    const wing=(x,z)=>{const h=at([[-d.L/2,.625],[-2.14,.665],[-1.96,.765],[-1.25,.84],[d.cowl,d.belt]],z),w=at([[-d.L/2,d.W/2*.84],[-2.0,d.W/2*.93],[-1.72,d.W/2*.97],[-1.1,d.W/2*.95]],z)-.014,q=x/w;return h+.028*(1-q*q)-.11*Math.exp(-(((z+1.55)/.58)**2))*(1-Math.exp(-(((Math.abs(q)-.72)/.22)**2)))*clamp((d.cowl-z)/.5);};
     if(s===1){const crest=add(front,new THREE.PlaneGeometry(.074,.074),M.badge,'carrera-bonnet-crest',[0,wing(0,-2.09)+.015,-2.09],[-Math.PI/2,0,Math.PI]);}
     // Round 911 headlamps: a chrome ring, dark bowl, clear lens and a projector, each a polar disc that follows the wing.
     // The lenses face forward and up at about 45 degrees, nested in the crest of the wing.
-    const tilt=.5,lampAt=(r,dy,dz=0)=>(a,t)=>{const k=r*1.16*Math.sin(a)*t,x=cx+r*Math.cos(a)*t,zc=cz+dz,y0=wing(x,zc);return[x,y0+dy-.006+k*Math.sin(tilt),zc+k*Math.cos(tilt)];};
-    disc(front,M.chrome,lampAt(.128,.010),20,'carrera-headlamp-rim');
-    disc(front,lampBowl,lampAt(.117,.014),20,'carrera-headlamp-housing');
-    disc(front,M.lens,lampAt(.106,.020),20,'carrera-headlamp-glass');
-    disc(front,M.optical,lampAt(.068,.026,.0),16,'carrera-recessed-projector');
-    disc(front,M.head,lampAt(.035,.031,.0),12,'carrera-recessed-projector');
+    const down=new THREE.Vector3(0,-1,0),caster=new THREE.Raycaster(),skin=[];
+    p.updateWorldMatrix(true,true);p.traverse(o=>{if(o.isMesh&&['bonnet','body-side'].includes(o.name))skin.push(o);});
+    // Seat each lamp layer on the finished (faceted) wing skin so the discs lie flush and cannot hover or sink, whatever the tessellation.
+    const onSkin=(x,z,fallback)=>{caster.set(p.localToWorld(new THREE.Vector3(x,1.6,z)),down.clone().transformDirection(p.matrixWorld));const hit=caster.intersectObjects(skin,false)[0];return hit?p.worldToLocal(hit.point.clone()).y:fallback;};
+    const lampAt=(r,dy,dome=0)=>(a,t)=>{const x=cx+r*Math.cos(a)*t,z=cz-.02+r*1.04*Math.sin(a)*t;return[x,onSkin(x,z,wing(x,z))+dy+dome*(1-t*t),z];};
+    disc(front,M.chrome,lampAt(.134,.006),20,'carrera-headlamp-rim');
+    disc(front,lampBowl,lampAt(.118,.012),20,'carrera-headlamp-housing');
+    disc(front,M.lens,lampAt(.108,.016,.014),20,'carrera-headlamp-glass');
+    disc(front,M.optical,lampAt(.070,.020,.012),16,'carrera-recessed-projector');
+    disc(front,M.head,lampAt(.036,.024,.010),12,'carrera-recessed-projector');
     const intake=polygon(p,M.black,[[s*.33,.39,F],[s*.73,.41,F],[s*.75,.26,F],[s*.37,.24,F]],'carrera-radiator-inlet');
     for(let j=0;j<3;j++)tube(p,M.darkAlloy,[[s*.365,.275+j*.04,F-.009],[s*.70,.288+j*.04,F-.009]],.007,'carrera-intake-louvre');
     tube(front,M.led,[[s*.35,.414,F-.013],[s*.56,.43,F-.013],[s*.73,.42,F-.013]],.007,'carrera-drl');
