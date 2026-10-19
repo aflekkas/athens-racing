@@ -127,3 +127,15 @@ The lead approved the next area, **Piraeus / Faliro, connected to the coast**, w
 ## 2026-10-19 — Athens centre: what fits the 192 MiB world ceiling
 
 The lead approved the centre (Kallithea / Nea Smyrni / Koukaki, the historic centre, Kypseli / Patisia) as the next extension of the same single world, same road model, same gates. The world ceiling (192 MiB compressed) and the phone cap (64 MiB 2×2) were not raised: the baked centre is **47 inland cells, 183.8 MiB**, worst 2×2 36.6 MiB. Kypseli / Patisia and 114 other candidate cells (about 118 MiB more, about 301 MiB in all) are listed in `tools/world-gen/areas/centre-candidates.json` and wait for a decision on the ceiling or on the cost per cell. Left out by rule and counted, as before (191 of the world's roads): 51 tunnels, 41 stacked or odd-layer bridges and layered non-bridges, 81 roads of decks that cannot be lifted safely plus 7 stubs under their dip, 10 steep Kastella streets, 1 on the coast. Piraeus is exit-only by direction because its inbound carriageways are tunnels; details in [docs/world-areas.md](world-areas.md).
+
+## 2026-10-19 — Athens world ceiling raised to 2 GB
+
+Owner decision: **the Athens world's total compressed size ceiling rises from 192 MiB to 2 GiB.** The lead explained that the total-world size barely affects players, because only the cells near the car stream in, and recommended 2 GB with every player-side limit unchanged. Owner: "raise it". Unchanged:
+- the initial drive download (≤15 MiB);
+- the worst 2×2 safety set (≤64 MiB phone cap);
+- the 64 MiB stream-resident cap;
+- the fixed quality-tier resource caps;
+- the ten-minute session download measurement;
+- the R2 staging bucket total of ≤5 GB.
+
+The rest of the centre (Kypseli/Patisia and the 114 candidate cells) and then the north can be baked into the same single world. It stays behind `?map=athens` until the owner activates it.
