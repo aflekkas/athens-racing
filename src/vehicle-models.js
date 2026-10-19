@@ -121,14 +121,14 @@ function skin(car,d,M,low) {
 function profileAt(points,z){for(let i=1;i<points.length;i++)if(z<=points[i][0]){const [a,b]=[points[i-1],points[i]],t=clamp((z-a[0])/(b[0]-a[0]),0,1);return lerp(a[1],b[1],t*t*(3-2*t));}return points.at(-1)[1];}
 function shoulderY(d,z){
   const F=-d.L/2,R=d.L/2;
-  if(d.profile==='carrera')return profileAt([[F,.62],[-1.82,.78],[-1.25,.86],[d.cowl,d.belt],[.35,.88],[1.04,1.00],[1.47,.97],[R,.79]],z);
+  if(d.profile==='carrera')return profileAt([[F,.645],[-1.9,.765],[-1.25,.84],[d.cowl,d.belt],[.35,.88],[1.04,1.00],[1.47,.97],[R,.79]],z);
   if(d.profile==='yaris')return profileAt([[F,.78],[-1.35,.88],[d.cowl,.98],[.5,1.00],[1.38,1.08],[R,1.04]],z);
   return profileAt([[F,.77],[-1.93,.82],[d.cowl,.88],[.6,.88],[d.back,.89],[R,.87]],z);
 }
 function shapedWidth(d,z,y){
   const W=d.W/2,F=-d.L/2,R=d.L/2,ax=d.axleOffset||0;
   let w;
-  if(d.profile==='carrera')w=profileAt([[F,W*.78],[-1.72,W*.95],[-1.1,W*.95],[-.35,W*.86],[.35,W*.90],[1.05,W],[1.60,W*.98],[R,W*.84]],z);
+  if(d.profile==='carrera')w=profileAt([[F,W*.84],[-2.0,W*.93],[-1.72,W*.97],[-1.1,W*.95],[-.35,W*.86],[.35,W*.90],[1.05,W],[1.60,W*.98],[R,W*.84]],z);
   else if(d.profile==='yaris')w=profileAt([[F,W*.88],[-1.30,W],[-.58,W*.91],[.42,W*.92],[1.25,W],[R,W*.91]],z);
   else w=profileAt([[F,W*.91],[-1.2,W*.99],[.4,W],[1.3,W*.99],[R,W*.94]],z);
   const v=clamp((y-.17)/(shoulderY(d,z)-.17),0,1);

@@ -35,7 +35,7 @@ export function seatMirrors(car,scope=car.body,{bike=false}={}){
     if(car.spec?.id==='gtv')center.z=car.shape.cowl-.12;
     if(car.spec?.mass&&car.spec.id!=='gtv'){
       // Door-corner mounting, independent of the cockpit camera's field of view.
-      center.x=side*(car.dims.W/2+.055);center.y=car.shape.belt+.10;
+      center.x=side*(car.dims.W/2+.055);center.y=car.shape.belt+.10-(car.shape.belt>=1?.04:0);// tall SUV sills: straddle the beltline instead of floating in the glass
       center.z=car.shape.cowl+.10;
     }
     const size=bounds.getSize(V());const classic=car.spec?.id==='gtv',modern=!!car.spec?.mass&&!classic,z4=car.spec?.id==='z4';
@@ -51,7 +51,7 @@ export function seatMirrors(car,scope=car.body,{bike=false}={}){
     // Position the housing from actual door metal, so narrow upper bodies and
     // coarse LOD shells cannot produce a long bridge from nominal car width.
     // The Huracan's raked A-pillar needs the foot aft of the sail and a raised stalk.
-    if(modern)center.copy(hit.point).add(new THREE.Vector3(side*(car.modelKind==='huracan'?.12:.15),car.modelKind==='huracan'?.075:.085,car.modelKind==='huracan'?.025:.035));
+    if(modern)center.copy(hit.point).add(new THREE.Vector3(side*(car.modelKind==='huracan'?.12:.125),car.modelKind==='huracan'?.075:.085,car.modelKind==='huracan'?.025:.035));
     const commercial=group.userData.commercialMirror;
     const shell=new THREE.Mesh(commercial?new THREE.BoxGeometry(2,2,2):classic?new THREE.SphereGeometry(1,12,8):new THREE.SphereGeometry(1,low?6:modern?16:10,low?4:modern?10:6),classic?car.materials.chrome:bike||commercial?car.materials.black:car.paint);
     const vertices=shell.geometry.attributes.position;for(let i=0;i<vertices.count;i++){const x=vertices.getX(i),y=vertices.getY(i);vertices.setZ(i,commercial?vertices.getZ(i):Math.min(0,vertices.getZ(i)));if(modern){vertices.setY(i,y*(.88+.12*side*x));}}shell.geometry.computeVertexNormals();
@@ -62,14 +62,14 @@ export function seatMirrors(car,scope=car.body,{bike=false}={}){
     glass.removeFromParent();glass.geometry=commercial?new THREE.PlaneGeometry(2,2):new THREE.CircleGeometry(1,modern&&!low?32:16);if(modern){const a=glass.geometry.attributes.position;for(let i=0;i<a.count;i++){const x=a.getX(i),y=a.getY(i);a.setY(i,y*(.88+.12*side*x));}}glass.scale.set(width*(z4?.43:.41),height*(z4?.45:.37),1);glass.position.copy(center);glass.position.add(new THREE.Vector3(0,0,commercial?depth/2+.002:.002).applyQuaternion(orientation));glass.quaternion.copy(orientation);glass.name='mirror-face';group.add(glass);
     if(scope===car.body&&car.spec?.mass)car[side<0?'mirrorL':'mirrorR']=glass;
     const tip=center.clone().add(new THREE.Vector3(-side*width*.28,-height*.2,-depth*.25).applyQuaternion(orientation));
-    const stalkRadius=bike||classic?.009:car.modelKind==='huracan'?.026:modern?.020:.019;
+    const stalkRadius=bike||classic?.009:car.modelKind==='huracan'?.026:modern?.026:.019;
     // A dog-leg arm: door metal -> an elbow just below and behind the housing -> up into the housing. The door root sits
     // on the glass side of the glass plane, so a straight arm pierced the glass; the upper leg now lies wholly behind
     // that plane and the lower one crosses it clear below the glass.
     const elbow=center.clone().add(new THREE.Vector3(-side*width*.18,-(height*.37+stalkRadius*1.6),-depth*.3).applyQuaternion(orientation));
     const armMat=car.materials.black||car.materials.chrome||car.paint;
     const arm=new THREE.Mesh(armGeometry(hit.point,elbow,stalkRadius),armMat);arm.name='mirror-stalk';arm.userData.mirrorArm=true;group.add(arm);
-    const upper=new THREE.Mesh(armGeometry(elbow,tip,stalkRadius),armMat);upper.name='mirror-stalk-upper';upper.userData.mirrorArm=true;group.add(upper);
+    const upper=new THREE.Mesh(armGeometry(elbow,tip,stalkRadius),modern&&!commercial?car.paint:armMat);upper.name='mirror-stalk-upper';upper.userData.mirrorArm=true;group.add(upper);
     group.userData.mirrorRoot=hit.point.toArray();group.userData.mirrorCenter=center.toArray();scope.updateWorldMatrix(true,true);const shellCenter=scope.worldToLocal(new THREE.Box3().setFromObject(shell).getCenter(V()));group.userData.mirrorTipOffset=tip.clone().sub(shellCenter).toArray();group.userData.mirrorElbowOffset=elbow.clone().sub(shellCenter).toArray();group.userData.mirrorRadius=stalkRadius;
   }
 }

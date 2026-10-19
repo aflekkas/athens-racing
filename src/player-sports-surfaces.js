@@ -14,6 +14,13 @@ function box(p,m,size,pos,name,rad=.01){const fine=Math.min(...size)<.012;return
 function tube(p,m,points,r,name,closed=false){const c=new THREE.CatmullRomCurve3(points.map(v),closed,'centripetal');return add(p,new THREE.TubeGeometry(c,(points.length===2?1:Math.min(32,Math.max(8,points.length*2))),r,4,closed),m,name);}
 function surface(p,m,fn,nu,nv,name){
   nu=Math.min(nu, /body-side|painted-side/.test(name||" ")?24:4); nv=Math.min(nv,/body-side|painted-side/.test(name||" ")?2:1);const a=[],uv=[],ix=[];for(let i=0;i<=nu;i++)for(let j=0;j<=nv;j++){a.push(...fn(i/nu,j/nv));uv.push(i/nu,j/nv);}for(let i=0;i<nu;i++)for(let j=0;j<nv;j++){const k=i*(nv+1)+j;ix.push(k,k+nv+1,k+1,k+1,k+nv+1,k+nv+2);}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(a,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.userData.vehicleGrid={nu,nv};g.computeVertexNormals();return add(p,g,m,name);}
+function disc(p,m,fn,seg,name){
+  const pos=[...fn(0,0)],uv=[.5,.5],ix=[];
+  for(let i=0;i<seg;i++){const a=i/seg*Math.PI*2;pos.push(...fn(a,1));uv.push(.5+.5*Math.cos(a),.5+.5*Math.sin(a));}
+  for(let i=0;i<seg;i++)ix.push(0,1+(i+1)%seg,1+i);
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();
+  return add(p,g,m,name);
+}
 function polygon(p,m,points,name){const shape=new THREE.Shape();points.forEach(([x,y],i)=>i?shape.lineTo(x,y):shape.moveTo(x,y));shape.closePath();return add(p,new THREE.ShapeGeometry(shape,16),m,name,[0,0,points[0][2]]);}
 function ellipse(p,m,rx,ry,pos,name){const o=add(p,new THREE.CircleGeometry(1,24),m,name,pos);o.scale.set(rx,ry,1);return o;}
 function textMat(label,fg='#d1d5d6',bg=null){const c=document.createElement('canvas');c.width=512;c.height=96;const g=c.getContext('2d');if(bg){g.fillStyle=bg;g.fillRect(0,0,512,96);}g.fillStyle=fg;g.font='italic 52px serif';g.textAlign='center';g.textBaseline='middle';g.fillText(label,256,52);const map=new THREE.CanvasTexture(c);map.colorSpace=THREE.SRGBColorSpace;return new THREE.MeshStandardMaterial({map,transparent:true,depthWrite:false,roughness:.3,metalness:.4,side:THREE.DoubleSide});}
@@ -48,14 +55,16 @@ function carrera(car,d,M,low){
   for(const s of [-1,1]){
     const cx=s*.603,cz=-1.91;
     const at=(pts,z)=>{for(let i=1;i<pts.length;i++)if(z<=pts[i][0]){const [a,b]=[pts[i-1],pts[i]],t=smooth((z-a[0])/(b[0]-a[0]));return a[1]+(b[1]-a[1])*t;}return pts.at(-1)[1];};
-    const wing=(x,z)=>{const h=at([[-d.L/2,.62],[-1.82,.78],[-1.25,.86],[d.cowl,d.belt]],z),w=at([[-d.L/2,d.W/2*.78],[-1.72,d.W/2*.95],[-1.1,d.W/2*.95]],z)-.014,q=x/w;return h+.028*(1-q*q)-.11*Math.exp(-(((z+1.55)/.58)**2))*(1-Math.exp(-(((Math.abs(q)-.72)/.22)**2)))*clamp((d.cowl-z)/.5);};
+    const wing=(x,z)=>{const h=at([[-d.L/2,.645],[-1.9,.765],[-1.25,.84],[d.cowl,d.belt]],z),w=at([[-d.L/2,d.W/2*.84],[-2.0,d.W/2*.93],[-1.72,d.W/2*.97],[-1.1,d.W/2*.95]],z)-.014,q=x/w;return h+.028*(1-q*q)-.11*Math.exp(-(((z+1.55)/.58)**2))*(1-Math.exp(-(((Math.abs(q)-.72)/.22)**2)))*clamp((d.cowl-z)/.5);};
     if(s===1){const crest=add(front,new THREE.PlaneGeometry(.074,.074),M.badge,'carrera-bonnet-crest',[0,wing(0,-2.09)+.015,-2.09],[-Math.PI/2,0,Math.PI]);}
-    const outline=[];for(let i=0;i<32;i++){const t=i*Math.PI/16,x=cx+.150*Math.cos(t),z=cz+.225*Math.sin(t);outline.push([x,wing(x,z)+.006,z]);}
-    const lamp=surface(front,lampBowl,(u,t)=>{const a=u*Math.PI*2,rad=t;const x=cx+.150*Math.cos(a)*rad,z=cz+.225*Math.sin(a)*rad;return[x,wing(x,z)+.008,z];},28,4,'carrera-headlamp-housing');
-    tube(front,M.chrome,outline,.004,'carrera-headlamp-rim',true);
-    for(const [r,mat,dy]of [[.063,M.chrome,.011],[.050,M.optical,.013],[.029,M.head,.015]])surface(front,mat,(u,t)=>{const a=u*Math.PI*2,x=cx+r*Math.cos(a)*t,z=cz+.035+r*1.12*Math.sin(a)*t;return[x,wing(x,z)+dy,z];},20,3,'carrera-recessed-projector');
-    const reflector=add(front,new THREE.SphereGeometry(1,12,8),M.chrome,'carrera-secondary-reflector',[cx,wing(cx,cz-.088)+.013,cz-.088]);reflector.scale.set(.066,.019,.037);
-    surface(front,M.lens,(u,t)=>{const a=u*Math.PI*2,x=cx+.147*Math.cos(a)*t,z=cz+.222*Math.sin(a)*t;return[x,wing(x,z)+.026+.013*(1-t*t),z];},28,4,'carrera-headlamp-glass');
+    // Round 911 headlamps: a chrome ring, dark bowl, clear lens and a projector, each a polar disc that follows the wing.
+    // The lenses face forward and up at about 45 degrees, nested in the crest of the wing.
+    const tilt=.5,lampAt=(r,dy,dz=0)=>(a,t)=>{const k=r*1.16*Math.sin(a)*t,x=cx+r*Math.cos(a)*t,zc=cz+dz,y0=wing(x,zc);return[x,y0+dy-.006+k*Math.sin(tilt),zc+k*Math.cos(tilt)];};
+    disc(front,M.chrome,lampAt(.128,.010),20,'carrera-headlamp-rim');
+    disc(front,lampBowl,lampAt(.117,.014),20,'carrera-headlamp-housing');
+    disc(front,M.lens,lampAt(.106,.020),20,'carrera-headlamp-glass');
+    disc(front,M.optical,lampAt(.068,.026,.0),16,'carrera-recessed-projector');
+    disc(front,M.head,lampAt(.035,.031,.0),12,'carrera-recessed-projector');
     const intake=polygon(p,M.black,[[s*.33,.39,F],[s*.73,.41,F],[s*.75,.26,F],[s*.37,.24,F]],'carrera-radiator-inlet');
     for(let j=0;j<3;j++)tube(p,M.darkAlloy,[[s*.365,.275+j*.04,F-.009],[s*.70,.288+j*.04,F-.009]],.007,'carrera-intake-louvre');
     tube(front,M.led,[[s*.35,.414,F-.013],[s*.56,.43,F-.013],[s*.73,.42,F-.013]],.007,'carrera-drl');
@@ -71,6 +80,9 @@ function carrera(car,d,M,low){
   polygon(p,M.black,[[-.29,.345,F],[.29,.345,F],[.27,.235,F],[-.27,.235,F]],'carrera-central-radiator');
   if(!low)for(let i=0;i<7;i++)tube(p,M.darkAlloy,[[-.25,.245+i*.013,F-.009],[.25,.245+i*.013,F-.009]],.002,'carrera-radiator-fins');
   label(p,'911 Carrera',[.32,.038],[0,.62,R+.021],'carrera-script');
+  // Slim lamp bar and block lettering across the tail, as on the 991.
+  box(p,M.tail,[.66,.016,.012],[0,.776,R+.008],'carrera-tail-bar',.004);
+  label(p,'P O R S C H E',[.34,.04],[0,.735,R+.016],'carrera-porsche-script');
   box(p,M.black,[1.30,.10,.035],[0,.255,R],'carrera-rear-valance');
   polygon(p,M.black,[[-.285,.458,R+.020],[.285,.458,R+.020],[.355,.294,R+.020],[-.355,.294,R+.020]],'carrera-registration-recess');
   // Three broad horizontal engine-cover slats, as on 991.1 (not the vertical 991.2 grille).
@@ -231,15 +243,15 @@ function roundEnds(car,d){
       const t=smooth((Math.abs(z)-(half-.60))/.60),sign=Math.sign(z);
       if(isYaris)q.z-=.25*smooth((z-.25)/1.18)*smooth((q.y-.96)/.22);
       if(is911){
-        q.y-=.105*smooth((-z-1.82)/.425)*smooth((q.y-.35)/.28);
+        q.y-=.085*smooth((-z-1.82)/.425)*smooth((q.y-.35)/.28);
         // Press-photo 991.1 wing crests rise above the low bonnet; carry the
         // same map through lenses and skin so the larger ovals remain seated.
-        q.y+=.092*Math.exp(-(((z+1.74)/.38)**2))*Math.exp(-(((ax-.70)/.23)**2))*smooth((q.y-.53)/.19);
+        q.y+=.105*Math.exp(-(((z+1.82)/.42)**2))*Math.exp(-(((ax-.68)/.25)**2))*smooth((q.y-.53)/.19);
         const cabinFront=smooth((z+1.13)/.40)*(1-smooth((z+.30)/.86));q.z-=.16*cabinFront*smooth((q.y-.73)/.15);
         // Soften the roof crown and fastback rather than leave planar-looking rails.
         q.y+=.020*Math.sin(clamp((z+.1)/1.0)*Math.PI)*smooth((q.y-1.06)/.15);
       }
-      if(t){const corner=(classic?.070:is911?(sign<0?.29:.24):.16)*ax**4;const capHeight=sign<0?d.front:d.rear;const belly=(classic?.035:.10)*Math.sin(clamp((q.y-.18)/(capHeight-.18))*Math.PI);q.z+=sign*t*(belly-corner);q.y+=t*.024*ax**4*(1-smooth((q.y-.18)/.38));}
+      if(t){const corner=(classic?.070:is911?(sign<0?.20:.24):.16)*ax**4;const capHeight=sign<0?d.front:d.rear;const belly=(classic?.035:.10)*Math.sin(clamp((q.y-.18)/(capHeight-.18))*Math.PI);q.z+=sign*t*(belly-corner);q.y+=t*.024*ax**4*(1-smooth((q.y-.18)/.38));}
       // Convex side surfaces and rounded shoulders produce a softer light roll on the front/rear wings.
       if(classic&&z<0)q.y+=.095*smooth((-z-(half-.76))/.6)*(1-smooth((q.y-.20)/.32));
       if(z>0)q.y+=(classic?.085:is911?.145:.080)*smooth((z-(half-.88))/.72)*(1-smooth((q.y-.20)/.37));

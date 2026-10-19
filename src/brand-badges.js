@@ -19,6 +19,25 @@ export function brandBadgeMaterial(spec){
   m.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShader.replace('#include <uv_vertex>',`#include <uv_vertex>\n#ifdef USE_MAP\nvMapUv = vMapUv * vec2(.25,.20) + vec2(${(cell%4/4).toFixed(2)},${(1-(Math.floor(cell/4)+1)/5).toFixed(2)});\n#endif`);};
   m.customProgramCacheKey=()=>`brand-badge-${cell}`;materials.set(cell,m);return m;
 }
+// Rear trim lettering is authored as a flat plane at the nominal tail line. Seat it on the finished boot or
+// tailgate skin (following the chord across its width) and slide it clear of the tail lamps.
+function seatTrimBadges(car,shells){
+  const body=car.body,d=car.shape,badges=[];body.traverse(o=>{if(o.isMesh&&o.name==='trim-badge')badges.push(o);});
+  if(!badges.length)return;
+  const lamps=[];body.traverse(o=>{if(o.isMesh&&o.name!=='trim-badge'&&(o.material===car.tail||o.material===car.materials.plate||/^light_r/.test(o.userData.damagePart||''))){
+    const b=new THREE.Box3().setFromObject(o);b.min.copy(body.worldToLocal(b.min.clone()));b.max.copy(body.worldToLocal(b.max.clone()));if(b.min.z>d.L*.3&&b.max.y>.3)lamps.push(b);}});
+  const dir=new THREE.Vector3(0,0,-1).transformDirection(body.matrixWorld),caster=new THREE.Raycaster();caster.far=2;
+  const zAt=(x,y)=>{caster.set(body.localToWorld(new THREE.Vector3(x,y,d.L/2+.5)),dir);const hit=caster.intersectObjects(shells,false)[0];return hit?body.worldToLocal(hit.point.clone()).z:null;};
+  for(const badge of badges){
+    const {width:w,height:h}=badge.geometry.parameters,x0=Math.abs(badge.position.x),y0=badge.position.y,margin=.02;
+    const clear=(x,y)=>!lamps.some(b=>b.min.x<x+w/2+margin&&b.max.x>x-w/2-margin&&b.min.y<y+h/2+margin&&b.max.y>y-h/2-margin);
+    let best=[x0,y0];
+    search:for(let dy=0;dy>=-.4;dy-=.02)for(let x=x0;x>=.1+w/2;x-=.02)if(clear(x,y0+dy)){best=[x,y0+dy];break search;}
+    const [x,y]=best,left=zAt(x-w/2,y),mid=zAt(x,y),right=zAt(x+w/2,y);
+    if(mid===null)continue;
+    badge.position.set(x,y,Math.max(mid,left??mid,right??mid)+.004);badge.rotation.y=-Math.atan2((right??mid)-(left??mid),w);
+  }
+}
 // Body construction uses varied shell shapes. Seat missing medallions on the
 // actual end-cap surface rather than guessing a Z plane through the bodywork.
 export function finishBrandBadges(car){
@@ -35,7 +54,7 @@ export function finishBrandBadges(car){
   const shells=[];body.traverse(o=>{if(o.isMesh&&!o.material.transparent&&o.geometry?.attributes.position)shells.push(o);});
   for(const sign of [-1,1]){
     let existing=false;body.traverse(o=>{if(o.isMesh&&o.material===M.badge){const p=body.worldToLocal(o.getWorldPosition(new THREE.Vector3()));if(sign*p.z>d.L*.3)existing=true;}});
-    if(existing||d.mercedes)continue;
+    if(existing||(d.mercedes&&!d.a160))continue;
     const hood=sign<0&&car.modelKind==='huracan';
     const y=sign<0?d.front-.04:car.modelKind==='gr_yaris'?.87:d.rear-.09;
     const origin=body.localToWorld(hood?new THREE.Vector3(0,1.1,-d.L/2+.19):new THREE.Vector3(0,y,sign*(d.L/2+.5))),direction=(hood?new THREE.Vector3(0,-1,0):new THREE.Vector3(0,0,-sign)).transformDirection(body.matrixWorld);
@@ -45,6 +64,7 @@ export function finishBrandBadges(car){
     badge.position.z+=sign*.003;badge.rotation.y=sign<0?Math.PI:0;
     body.add(badge);
   }
+  seatTrimBadges(car,shells);
   // Seat both inherited and new artwork against the finished body (the sports
   // refinements can put a curved panel or grille in front of the old flat disk).
   const badges=[];body.traverse(o=>{if(o.isMesh&&o.material===M.badge)badges.push(o);});
