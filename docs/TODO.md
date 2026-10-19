@@ -55,7 +55,8 @@ Running (Sonnet; Enterprise unless noted):
 - [x] One-piece door mirrors on modern cars (`68878224`)
 - [?] 911 silhouette pass (`68878224`): better but still lumpy/wedge nose; owner to judge on staging whether it needs a dedicated modelling pass
 - [x] Athens road screenshots re-made and checked (`914c48e3`)
-- [~] Athens stage 3: Piraeus/Faliro committed (`1f61c0fd`), report pending; owner said keep going overnight, so centre then north follow without waiting
+- [x] Athens stage 3: Piraeus/Faliro, 289 cells, 871 km of road, all gates green, 2×2 set 36.6/64 MiB (`1f61c0fd`, `eac1f7f5`)
+- [~] Athens stage 4: the centre (Kallithea→Syntagma/Omonia/Plaka→Kypseli) (Enterprise); north follows without owner wait
 - [~] Multiplayer sync (Enterprise): remote cars stepping, asymmetric ramming, restart teleport, lobby join glitches, traffic seed
 - [~] Playtest leftovers (Enterprise): Riviera draw calls <200 on Low/Potato, blurry player car, GLA badge clutter, clearer car vs trim picker
 - [~] Release cutover (lead): after the batch is checked on staging
