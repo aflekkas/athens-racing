@@ -27,15 +27,36 @@ export const RENDER = Object.freeze({
 // (src/scenery.js) · trafficDraw / crowd: traffic and pedestrian draw ranges (m, null = from the draw distance) · detail:
 // small-prop range factor (src/scenery.js) · traffic / walkers: offline traffic density and pedestrian count (x the
 // map's; online the server owns the shared traffic, so it is never scaled there) · trafficHz: traffic AI rate (60 = every
-// step) · hud: minimap / tacho redraw rates in Hz (src/hud.js)
+// step) · chunk: how much coarser the instanced prop chunks are drawn (batch.js: fewer draw calls) · lod: how early other drivers' cars drop to their road-distance model (vehicle-lod.js) · hud: minimap / tacho redraw rates in Hz (src/hud.js)
 const hudRates = (tacho, map, mapBig) => Object.freeze({ tacho, map, mapBig });
 export const PERFORMANCE = Object.freeze({
-  potato: { pixelRatio: 0.6, drawDistance: 500, trafficDraw: 220, crowd: 70, detail: 0.5, traffic: 0.4, walkers: 0.5, trafficHz: 30, hud: hudRates(20, 8, 15) },
-  low: { pixelRatio: 0.8, drawDistance: 1000, trafficDraw: 320, crowd: 110, detail: 0.7, traffic: 0.6, walkers: 0.7, trafficHz: 60, hud: hudRates(24, 10, 20) },
-  med: { pixelRatio: 1.1, drawDistance: 1000, trafficDraw: 420, crowd: 140, detail: 0.85, traffic: 0.85, walkers: 1, trafficHz: 60, hud: hudRates(30, 15, 30) },
-  high: { pixelRatio: 1.5, drawDistance: 2000, trafficDraw: null, crowd: 175, detail: 1, traffic: 1, walkers: 1, trafficHz: 60, hud: hudRates(30, 15, 30) },
+  potato: { pixelRatio: 0.6, drawDistance: 500, trafficDraw: 220, crowd: 70, detail: 0.5, traffic: 0.4, walkers: 0.5, trafficHz: 30, chunk: 3, lod: 0.45, hud: hudRates(20, 8, 15) },
+  low: { pixelRatio: 0.8, drawDistance: 1000, trafficDraw: 320, crowd: 110, detail: 0.7, traffic: 0.6, walkers: 0.7, trafficHz: 60, chunk: 3, lod: 0.6, hud: hudRates(24, 10, 20) },
+  med: { pixelRatio: 1.1, drawDistance: 1000, trafficDraw: 420, crowd: 140, detail: 0.85, traffic: 0.85, walkers: 1, trafficHz: 60, chunk: 2, lod: 0.85, hud: hudRates(30, 15, 30) },
+  high: { pixelRatio: 1.5, drawDistance: 2000, trafficDraw: null, crowd: 175, detail: 1, traffic: 1, walkers: 1, trafficHz: 60, chunk: 1.5, lod: 1, hud: hudRates(30, 15, 30) },
 });
 export const PERF_CLASSES = Object.keys(PERFORMANCE);
+// How low dynamic resolution may drop the picture. The car in front of the camera is the first thing a player looks at, and it
+// turns to mush well before the frame rate gains much: playtest 2026-10-18 "the car looks really low-res" (dynamic resolution
+// walked down to 0.5-0.6 of the screen's pixels on every class, and the governor then moved the machine to potato, whose own
+// base ratio is 0.6). `min` is an absolute pixel ratio the picture never goes under, `frac` the share of the class's ratio it
+// may drop to on a sharper screen; the larger of the two wins, and never more than the ratio itself. Potato's ratio is
+// unchanged (it is the cheapest picture there is, and it keeps its frame time): it only loses the last 8% it used to shed.
+export const DYNAMIC_FLOOR = Object.freeze({
+  potato: Object.freeze({ min: 0.55, frac: 0.92 }), low: Object.freeze({ min: 0.72, frac: 0.9 }),
+  med: Object.freeze({ min: 0.8, frac: 0.65 }), high: Object.freeze({ min: 0.8, frac: 0.6 }),
+});
+/** the canvas's pixel ratio for a scene drawn at `sceneRatio`: a scene below this is shown on a canvas this large and filled by
+ * the post chain's crisp reconstruction (src/post.js) instead of the browser's bilinear stretch of a tiny canvas */
+export const UPSCALE_OUTPUT = 0.85;
+export function outputRatio(sceneRatio, deviceRatio = 1) {
+  return +Math.min(Math.min(deviceRatio || 1, 2), Math.max(sceneRatio, UPSCALE_OUTPUT)).toFixed(3);
+}
+/** the lowest pixel ratio dynamic resolution may use for a class whose full-quality ratio is `ratio` */
+export function dynamicFloor(perfClass, ratio) {
+  const f = DYNAMIC_FLOOR[perfClass] || DYNAMIC_FLOOR.high;
+  return Math.min(ratio, Math.max(f.min, ratio * f.frac));
+}
 // Admission targets include all live page/worker allocations. Stream reservations
 // are subsets of these totals, including decode overlap; never add them twice.
 const MiB = 1024 * 1024;
@@ -61,7 +82,7 @@ export function resolveGraphics(s = settings, { deviceRatio = typeof devicePixel
   const pixelRatio = +(scale ? screen * scale : Math.min(screen, P.pixelRatio)).toFixed(3);
   const draw = +s.drawDistance > 0 ? +s.drawDistance : Math.min(P.drawDistance, mobile ? 500 : Infinity);
   const resources = RESOURCE_BUDGETS[mobile && PERF_CLASSES.indexOf(perfClass) > 1 ? 'low' : perfClass];
-  return { R: RENDER, perfClass, P, resources, pixelRatio, resolution: pixelRatio / screen, drawDistance: draw, trafficDraw: P.trafficDraw, crowd: P.crowd, detail: P.detail, traffic: P.traffic, walkers: P.walkers, trafficHz: P.trafficHz, hud: P.hud };
+  return { R: RENDER, perfClass, P, resources, pixelRatio, resolution: pixelRatio / screen, drawDistance: draw, trafficDraw: P.trafficDraw, crowd: P.crowd, detail: P.detail, traffic: P.traffic, walkers: P.walkers, trafficHz: P.trafficHz, hud: P.hud, chunkScale: P.chunk, vehicleLod: P.lod };
 }
 const SOFTWARE_GPU = /SwiftShader|llvmpipe|softpipe|Software|Microsoft Basic Render/i;
 // integrated / mobile GPUs: medium. Apple M-series and discrete cards stay on high.

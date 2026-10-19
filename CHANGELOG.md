@@ -8,6 +8,18 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Weak laptops: Riviera draws fewer things per frame, which takes load off the processor.
+
+- Weak laptops: the picture no longer drops as low when your computer struggles, so your car stays sharp.
+
+- Garage: the car and its trims are now clearly separate: the car is named at the top, its trims sit below as labelled chips with power and 0-100 time.
+
+- Multiplayer lobby: your trim now has its own chip under your car's name.
+
+- Cars: badges now sit on the bodywork. The 911 crest is no longer buried and the 928 shows its model name once.
+
+- Cars: the 348 has one horse at the front, and the BMW and MINI roundels no longer float off the car.
+
 - Multiplayer: other drivers' cars now glide instead of moving in steps, even when their computer or connection is slow.
 
 - Multiplayer: bumping another car now affects both of you the same way, whoever hits whom and whoever has the slower connection.

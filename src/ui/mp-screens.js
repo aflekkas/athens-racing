@@ -13,7 +13,7 @@ import * as C from './components.js';
 import { notifications } from './notifications.js';
 import { TIMES, WEATHERS, TRAFFIC_LEVELS, POLICE_LEVELS } from '../race-setup.js';
 import { configFromLobby, describeMode } from '../mp-setup.js';
-import { carCategory, classLabel, inGarage, GARAGE_CLASSES, sortTrims } from '../car-catalog.js';
+import { carCategory, classLabel, inGarage, GARAGE_CLASSES, sortTrims, carModel, trimName } from '../car-catalog.js';
 import { classifyCar, PI_CLASSES } from '../car-performance.js';
 import { defaultCarRules, describeRules, carEligibility } from '../mp-car-rules.js';
 import { driverName } from '../driver-name.js';
@@ -86,7 +86,9 @@ function carPlate(mp, car, extra = '') {
   const spec = car ? `${esc(classLabel(carCategory(car)))} · ${Math.round(car.power * 1.341)} HP · ${esc(String(car.drive || '').toUpperCase())}` : '';
   // Changing car or engine trim is its own obvious action, with the garage it opens named, and the reason when it is locked.
   const locked = !!mp && !mp.canChangeCar;
-  return `<span class="kick">YOUR CAR</span><b class="mp-plate__name">${esc(car?.name || '—')}</b><span class="mp-plate__spec">${spec}</span>
+  const model = car && carModel(car), trims = model && model.trims.length > 1;
+  // the car (model) is the name; its trim is a labelled chip of its own, so a trim can never read as another car
+  return `<span class="kick">YOUR CAR</span><b class="mp-plate__name">${esc((model?.name || car?.name) || '—')}</b>${trims ? C.chip(`TRIM · ${esc(trimName(car, model))}`, { icon: 'sliders-horizontal', cls: 'mp-plate__trim' }) : ''}<span class="mp-plate__spec">${spec}</span>
     <div class="mp-plate__car">${C.button({ label: 'CHANGE CAR / TRIM', icon: 'car', variant: 'secondary', act: 'mpCar', disabled: locked, attrs: { 'data-fid': 'car' } })}</div>
     <p class="mp-plate__hint">${locked ? 'Your car is locked while the race runs. Change it back in the lobby.' : 'Opens the garage: pick another car or engine trim.'}</p>
     <div class="mp-plate__acts">${extra}</div>`;

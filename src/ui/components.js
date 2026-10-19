@@ -304,8 +304,8 @@ export function carCard({ id, brand, name = '', line = '', hp, kg, drive = '', l
     foot: `<span class="car-card__spec"><b>${hp} HP</b><span>${kg} KG</span></span>${locked && lockLabel ? badge(esc(lockLabel), '', 'lock') : ''}` });
 }
 /** Vehicle specifications share a single panel hierarchy in every picker. */
-export function vehicleSpecs({ brand, name, trim, transmission, specs, choices = '', paint = '', extra = '', action = '' } = {}) {
-  return `<section class="vehicle-specs panel scroll-y"><header class="vehicle-specs__head">${manufacturerBadge(brand)}${sheetHead({kick:name,title:trim,status:transmission,statusIcon:'settings'})}</header>${choices}<div class="stats stats--boxed">${specs.map(([k,v,ic])=>stat(esc(k),esc(v),{icon:ic})).join('')}</div>${extra}${paint}<div class="vehicle-specs__action">${action}</div></section>`;
+export function vehicleSpecs({ brand, kick, name, transmission, specs, choices = '', paint = '', extra = '', action = '' } = {}) {
+  return `<section class="vehicle-specs panel scroll-y"><header class="vehicle-specs__head">${manufacturerBadge(brand)}${sheetHead({kick:kick||'CAR',title:name,status:transmission,statusIcon:'settings'})}</header>${choices}<div class="stats stats--boxed">${specs.map(([k,v,ic])=>stat(esc(k),esc(v),{icon:ic})).join('')}</div>${extra}${paint}<div class="vehicle-specs__action">${action}</div></section>`;
 }
 /** an inline search box (a text focus row without a label): the magnifier, the input, the kit's pill shape */
 export function searchField({ name, label = 'Search', value = '', placeholder = 'SEARCH', icon: ic = 'search', inputAttrs, cls = '' } = {}) {
@@ -340,6 +340,13 @@ const segOpts = (options, value, dflt) => options.map(([v, l, ic]) => `<span cla
 /** options: [[value, label, icon?]]; dflt marks the event / factory default with a dot */
 export function segmented({ key, label, value, options, icon: ic, note, noteCls, dflt, type, attrs, cls } = {}) {
   return field(label, `<div class="seg" role="radiogroup">${IND}${segOpts(options, value, dflt)}</div>`, { icon: ic, note, noteCls, cls, kind: 'choice', key, type, attrs: { 'data-value': value, ...attrs } });
+}
+/** The trims of ONE car (same body, different engine and specification), as segmented chips that name each trim and what it
+ *  changes: power and 0-100 time. The lit chip slides between trims like every segmented control, so changing trim is a
+ *  visible, labelled action that cannot be mistaken for choosing another car. options: [{ id, label, hp, acc }] */
+export function trimPicker({ key, label = 'TRIM', value, options, attrs } = {}) {
+  const chips = options.map(o => [o.id, `<span class="trim-chip"><b class="trim-chip__name">${esc(o.label)}</b><span class="trim-chip__meta"><span>${esc(o.hp)} HP</span><span>${esc(o.acc)}</span></span></span>`]);
+  return segmented({ key, label: `${esc(label)}<small class="trim-picker__count">${options.length} OF THIS CAR</small>`, icon: 'sliders-horizontal', value, options: chips, cls: 'trim-picker field--stack', attrs });
 }
 /** numeric (min / max / step / format) or a list (options: [[value, label]]) */
 export function stepper({ key, label, value, min, max, step = 1, format = 'int', options, icon: ic, note, noteCls, type, attrs } = {}) {

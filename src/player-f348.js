@@ -41,7 +41,6 @@ export function buildF348(car,d,M,low,plate,H){
   const endPanel=(material,x0,x1,y0,y1,z,name)=>surface(p,material,(u,v)=>[mix(Math.min(x0,x1),Math.max(x0,x1),u),mix(y0,y1,v),z],32,2,name);
   const intakeBounds=z=>{const t=clamp((z+.72)/1.52);return [.305+.035*(1-t)**4+.02*t**8,.645-.018*(1-t)**4-.01*t**8];};
   const amber=new THREE.MeshStandardMaterial({color:'#e49632',roughness:.25,side:THREE.DoubleSide});
-  const horse=M.badge; // Shared atlas: no per-instance badge texture.
 
   for(const s of [-1,1]){
     const arch=d.r+.037;
@@ -142,9 +141,8 @@ export function buildF348(car,d,M,low,plate,H){
   box(p,M.black,[.76,.090,.018],[0,.395,F-.016],.008,[0,0,0],'348-front-grille');
   for(let j=-4;j<=4;j++)box(p,M.darkAlloy,[.006,.075,.009],[j*.073,.395,F-.028],.001);
   endPanel(M.black,-.80,.80,.20,.277,F-.014,'348-front-grille-lip');
-  mesh(p,new THREE.PlaneGeometry(.044,.058),horse,[0,deck(0,F+.12)+.004,F+.12],[-Math.PI/2,0,0],'348-prancing-horse-badge');
   const silverHorse=M.badge;
-  mesh(p,new THREE.PlaneGeometry(.025,.034),silverHorse,[0,.403,F-.038],[0,Math.PI,0],'348-front-grille-horse');
+  mesh(p,new THREE.PlaneGeometry(.034,.046),silverHorse,[0,.403,F-.038],[0,Math.PI,0],'348-front-grille-horse');
   mesh(p,new THREE.PlaneGeometry(.043,.058),silverHorse,[0,.705,R+.043],[0,0,0],'348-tail-grille-horse');
   // Closely sampled strips follow the rounded tail instead of vanishing into its centre.
   // The dark backing is inset behind the rectangular coloured lenses.

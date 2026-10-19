@@ -167,7 +167,7 @@ export class Traffic {
       for (let k = 2; k < 13; k += 3) this.cones.push({ s: s0 + k * 3.5 + 1.5, u: uc + LANE_W * 0.35, s0: s0 + k * 3.5 + 1.5, u0: uc + LANE_W * 0.35, y: 0, vs: 0, vu: 0, vy: 0, rx: 0, rz: 0, w: 0, hit: false });
     }
     this.coneMesh = new THREE.InstancedMesh(coneGeo, coneMat, this.cones.length + 64); // + room for police roadblocks
-    this.coneMesh.count = this.cones.length; this.coneBase = this.cones.length;
+    this.coneMesh.count = this.cones.length; this.coneMesh.visible = this.cones.length > 0; this.coneBase = this.cones.length;
     this.coneMesh.castShadow = true; this.coneMesh.frustumCulled = false; scene.add(this.coneMesh);
     this._m = new THREE.Matrix4(); this._q = new THREE.Quaternion(); this._e = new THREE.Euler(); this._p = new THREE.Vector3(); this._s = new THREE.Vector3(1, 1, 1);
     this.t = 0;

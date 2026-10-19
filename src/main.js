@@ -6,6 +6,8 @@ import { seatPosition } from './seat-position.js';
 import { CpuMetrics } from './cpu-metrics.js';
 import { RenderScale } from './render-scale.js';
 import { FrameLimiter, dynamicBudgetMs } from './frame-pacing.js';
+import { scaleVehicleLod } from './vehicle-lod.js';
+import { mergeInstancedCells } from './batch.js';
 import { importWithUpdate } from './client-release.js';
 import { notifications } from './ui/notifications.js';
 import { objectiveNotice } from './ui/objective-notice.js';
@@ -82,7 +84,7 @@ import { createBlackout } from './blackout.js';
 import { SessionTransitions } from './session-transitions.js';
 import { speedLimitAt } from './speed-limit.js';
 import { updateSceneryLod, setDrawDistance, drawDistance } from './scenery.js';
-import { RENDER, resolveGraphics, applyRenderResolution, releaseSceneryVariants, trimShadowCasters } from './graphics.js';
+import { RENDER, resolveGraphics, dynamicFloor, outputRatio, applyRenderResolution, releaseSceneryVariants, trimShadowCasters } from './graphics.js';
 import { DistanceDetail } from './batch.js';
 import { PARKED_RANGE, fleetModel } from './traffic-fleet.js';
 import { initGhostLap } from './ghost-lap-mode.js';
@@ -143,10 +145,9 @@ addEventListener('keydown', (e) => {
 let pixelRatio = GFX.pixelRatio;
 let dynamicScale = makeDynamicScale();
 function makeDynamicScale() {
-  const floor = { potato: .83, low: .75, med: .65, high: .6 }[GFX.perfClass];
-  return new RenderScale({ max: GFX.pixelRatio, min: Math.min(GFX.pixelRatio, Math.max(.5, GFX.pixelRatio * floor)), budgetMs: dynamicBudgetMs(settings.frameCap) });
+  return new RenderScale({ max: GFX.pixelRatio, min: dynamicFloor(GFX.perfClass, GFX.pixelRatio), budgetMs: dynamicBudgetMs(settings.frameCap) });
 }
-renderer.setPixelRatio(pixelRatio);
+renderer.setPixelRatio(outputRatio(pixelRatio, window.devicePixelRatio));
 renderer.setSize(innerWidth, innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.NoToneMapping; // tone mapping happens in the post pipeline (post.js)
@@ -269,11 +270,14 @@ setDrawDistance(+Q.get('draw') || GFX.drawDistance, R.horizon, GFX.detail);
 // The performance class's CPU budget: offline traffic density, pedestrian count, traffic AI rate, HUD redraw rates. Online the server
 // owns the shared traffic, so only the HUD rates apply there.
 const applyCpuBudget = () => { G.trafficTier = GFX.traffic; if (people) people.budgetMul = GFX.walkers; hud?.setRates(GFX.hud); };
+// Weaker classes draw the instanced props in coarser chunks (batch.js mergeInstancedCells): fewer draw calls, same look.
+const consolidateWorld = (w) => { if (w && GFX.chunkScale > 1) mergeInstancedCells(w.group, 400 * GFX.chunkScale, { lod: w.lod }); };
 const applyDrawDistance = () => { if (traffic) PARKED_RANGE.far = traffic.drawRange = Math.min(GFX.trafficDraw ?? Infinity, clamp(drawDistance() * 0.55, 220, 1150)); if (people) people.drawRadius = Math.min(GFX.crowd, Math.max(60, drawDistance() * 0.35)); };
 const GRAPHICS_KEYS = new Set(['perfClass', 'renderScale', 'dynamicResolution', 'frameCap', 'drawDistance']);
 /** re-resolve resolution / draw distance and apply them live (no reload, the world is kept); the look never changes */
 function applyGraphics() {
   GFX = resolveGraphics(settings, { deviceRatio: window.devicePixelRatio, gpuName });
+  for (const c of [...grid, ...remoteCars.values()]) if (c.model) scaleVehicleLod(c.model, GFX.vehicleLod);
   dynamicScale = makeDynamicScale();
   if (GFX.pixelRatio !== pixelRatio) { pixelRatio = GFX.pixelRatio; onResize(); post?.resetHistory(); }
   setDrawDistance(+Q.get('draw') || GFX.drawDistance, R.horizon, GFX.detail); applyDrawDistance(); applyCpuBudget(); updateLod();
@@ -326,6 +330,7 @@ async function loadFirstMap(id) {
   bindMapWorld(world);
   policeHud ||= new PoliceHud();
   post ||= createPost(renderer, scene, camera); window.__post = post;
+  post.setSize(innerWidth, innerHeight, pixelRatio, outputRatio(pixelRatio, window.devicePixelRatio)); // the scene's own ratio; the canvas may be larger (graphics.js outputRatio)
   probe ||= createProbe();
   setCarEnv(probe.envRT.texture);
   bindMapWeather(); // time of day + weather (?tod=&wx=)
@@ -452,6 +457,7 @@ function makeCar(spec, isPlayer, plate) {
   // lobby plate, or undefined for a random registration. Single player shows
   // the driver name; multiplayer shows every driver's name.
   const model = new CarModel(spec, { plate });
+  if (!isPlayer) scaleVehicleLod(model, GFX.vehicleLod); // other drivers' cars drop to the road-distance model sooner on weaker classes
   scene.add(model.root);
   if(model.exhaustFlames){scene.add(model.exhaustFlames.mirrorRoot);if(flamesWarmable)warmExhaustFlames();} // a remote SVJ joining mid-session: first pop must not compile
   trimShadowCasters(model.root);
@@ -2377,9 +2383,10 @@ function render() {
 
 function onResize() {
   const w = innerWidth, h = innerHeight;
-  renderer.setPixelRatio(pixelRatio); renderer.setSize(w, h);
+  const out = outputRatio(pixelRatio, window.devicePixelRatio);
+  renderer.setPixelRatio(out); renderer.setSize(w, h);
   camera.aspect = w / h; camera.updateProjectionMatrix();
-  if (post) post.setSize(w, h, pixelRatio);
+  if (post) post.setSize(w, h, pixelRatio, out);
   if (water) water.setSize(w * pixelRatio, h * pixelRatio);
 }
 addEventListener('resize', onResize);

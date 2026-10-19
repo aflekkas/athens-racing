@@ -221,7 +221,7 @@ export class Crowd {
       im.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
       im.setColorAt(0, new THREE.Color(1, 1, 1)); im.instanceColor.setUsage(THREE.DynamicDrawUsage);
       im.frustumCulled = false; im.castShadow = SHADOW.has(name); im.receiveShadow = true;
-      im.count = 0;
+      im.count = 0; im.visible = false; // drawn only while it holds instances: end() shows it
       scene.add(im);
       this.parts[name] = { im, mult, n: 0 };
     }
@@ -321,7 +321,7 @@ export class Crowd {
   }
   end() {
     for (const p of Object.values(this.parts)) {
-      p.im.count = p.n * p.mult;
+      p.im.count = p.n * p.mult; p.im.visible = p.im.count > 0; // an empty InstancedMesh still costs a draw call
       if (p.n) { p.im.instanceMatrix.needsUpdate = true; p.im.instanceColor.needsUpdate = true; p.im.instanceMatrix.clearUpdateRanges(); p.im.instanceMatrix.addUpdateRange(0, p.n * p.mult * 16); p.im.instanceColor.clearUpdateRanges(); p.im.instanceColor.addUpdateRange(0, p.n * p.mult * 3); }
     }
   }

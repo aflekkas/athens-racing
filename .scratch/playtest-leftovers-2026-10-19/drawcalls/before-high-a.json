@@ -1,0 +1,216 @@
+{
+  "root": "/tmp/athens-leftovers.tZt1/base",
+  "map": "riviera",
+  "class": "high",
+  "throttle": 4,
+  "viewport": [
+    640,
+    360
+  ],
+  "seconds": 15,
+  "cap": 60,
+  "dyn": false,
+  "noworld": false,
+  "errors": [],
+  "breakdown": {
+    "total": {
+      "calls": 498,
+      "tris": 734506
+    },
+    "rows": [
+      {
+        "label": "map-world:riviera",
+        "calls": 343,
+        "tris": 723343
+      },
+      {
+        "label": "map-world:riviera > terrain",
+        "calls": 18,
+        "tris": 298985
+      },
+      {
+        "label": "map-world:riviera > road",
+        "calls": 63,
+        "tris": 92728
+      },
+      {
+        "label": "map-world:riviera > terrain > Mesh",
+        "calls": 1,
+        "tris": 57749
+      },
+      {
+        "label": "map-world:riviera > terrain > Mesh",
+        "calls": 1,
+        "tris": 38483
+      },
+      {
+        "label": "map-world:riviera > terrain > Mesh",
+        "calls": 1,
+        "tris": 30935
+      },
+      {
+        "label": "map-world:riviera > terrain > Mesh",
+        "calls": 1,
+        "tris": 29196
+      },
+      {
+        "label": "map-world:riviera > nature",
+        "calls": 22,
+        "tris": 22749
+      },
+      {
+        "label": "map-world:riviera > terrain > Mesh",
+        "calls": 1,
+        "tris": 22251
+      },
+      {
+        "label": "map-world:riviera > Group",
+        "calls": 5,
+        "tris": 15040
+      },
+      {
+        "label": "map-world:riviera > terrain > Mesh",
+        "calls": 1,
+        "tris": 11027
+      },
+      {
+        "label": "map-world:riviera > terrain > Mesh",
+        "calls": 1,
+        "tris": 7569
+      },
+      {
+        "label": "map-world:riviera > terrain > Mesh",
+        "calls": 1,
+        "tris": 6127
+      },
+      {
+        "label": "map-world:riviera > road > Mesh",
+        "calls": 1,
+        "tris": 6000
+      },
+      {
+        "label": "map-world:riviera > road > Mesh",
+        "calls": 1,
+        "tris": 6000
+      },
+      {
+        "label": "map-world:riviera > road > Mesh",
+        "calls": 1,
+        "tris": 5000
+      },
+      {
+        "label": "map-world:riviera > road > Mesh",
+        "calls": 1,
+        "tris": 5000
+      },
+      {
+        "label": "Group",
+        "calls": 72,
+        "tris": 3952
+      },
+      {
+        "label": "map-world:riviera > road > Mesh",
+        "calls": 1,
+        "tris": 3764
+      },
+      {
+        "label": "map-world:riviera > road > Mesh",
+        "calls": 1,
+        "tris": 3764
+      },
+      {
+        "label": "map-world:riviera > road > Mesh",
+        "calls": 1,
+        "tris": 3492
+      },
+      {
+        "label": "map-world:riviera > road > Mesh",
+        "calls": 1,
+        "tris": 3344
+      },
+      {
+        "label": "map-world:riviera > terrain > Mesh",
+        "calls": 1,
+        "tris": 3292
+      },
+      {
+        "label": "Group",
+        "calls": 49,
+        "tris": 1932
+      },
+      {
+        "label": "map-world:riviera > block-buildings",
+        "calls": 5,
+        "tris": 360
+      },
+      {
+        "label": "Group > front-left-steering",
+        "calls": 6,
+        "tris": 98
+      },
+      {
+        "label": "Group > front-right-steering",
+        "calls": 6,
+        "tris": 98
+      },
+      {
+        "label": "Group > rear-right-steering",
+        "calls": 5,
+        "tris": 86
+      }
+    ]
+  },
+  "snapshot": {
+    "systems": {
+      "signals": 0.0949999988079071,
+      "people": 1.0116666694482168,
+      "hud": 3.3933333337306975,
+      "audio": 0.0683333396911621,
+      "renderSubmission": 0.011666667461395264,
+      "playerPhysics": 1.3549999992052715,
+      "rivals": 3.691666664679845,
+      "traffic": 2.165000011523565,
+      "police": 0.30833333333333335
+    },
+    "stepMs": 20.418333333730697,
+    "stepMedianBlockMs": 26.008333337306976,
+    "stepP95": 40.299999952316284,
+    "stepMax": 50.199999928474426,
+    "renderMsMedian": 85.89999997615814,
+    "calls": 629,
+    "triangles": 1337439,
+    "pixelRatio": 1,
+    "drawDistance": 2000,
+    "perfClass": "high",
+    "programs": 80,
+    "trafficActive": 55,
+    "peds": 11,
+    "heapMB": 443.64002895355225
+  },
+  "summary": {
+    "class": "high",
+    "map": "riviera",
+    "throttle": 4,
+    "stepMs": 20.42,
+    "stepMedianBlockMs": 26.01,
+    "stepP95": 40.3,
+    "signals": 0.09,
+    "people": 1.01,
+    "hud": 3.39,
+    "audio": 0.07,
+    "renderSubmission": 0.01,
+    "playerPhysics": 1.35,
+    "rivals": 3.69,
+    "traffic": 2.17,
+    "police": 0.31,
+    "other": 8.32,
+    "renderMsMedian": 85.9,
+    "calls": 629,
+    "triangles": 1337439,
+    "pixelRatio": 1,
+    "drawDistance": 2000,
+    "trafficActive": 55,
+    "peds": 11,
+    "heapMB": 444
+  }
+}

@@ -594,7 +594,7 @@ export class Police {
       const site = { s, u: uc, len: 6, wid: 3.2, lane: -1, police: true };
       tr.sites.push(site); b.sites.push(site);
     }
-    tr.coneMesh.count = tr.cones.length;
+    tr.coneMesh.count = tr.cones.length; tr.coneMesh.visible = tr.cones.length > 0;
     this.blocks.push(b);
     this.blockAt = s;
   }
@@ -603,7 +603,7 @@ export class Police {
     for (const c of b.cars) if (c.cop && c.cop.block === b) { c.active = false; c.m.root.visible = false; c.cop = null; }
     for (const cone of b.cones) { const i = tr.cones.indexOf(cone); if (i >= 0) tr.cones.splice(i, 1); }
     for (const st of b.sites) { const i = tr.sites.indexOf(st); if (i >= 0) tr.sites.splice(i, 1); }
-    tr.coneMesh.count = tr.cones.length;
+    tr.coneMesh.count = tr.cones.length; tr.coneMesh.visible = tr.cones.length > 0;
     this.blocks.splice(this.blocks.indexOf(b), 1);
   }
 

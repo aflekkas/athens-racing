@@ -3,7 +3,7 @@
 // headless Chromium. Private server on its own random port, ?simhook race with traffic + 2 rivals + police.
 //   tools/browser-slot.sh node tools/lowend-profile.mjs --root <archive> --map riviera --class potato --throttle 4 --out r.json
 // Options: --map riviera|megara · --class potato|low|med|high (settings.perfClass) · --throttle N (CDP CPU rate) ·
-//   --viewport 640x360 · --seconds 15 · --warm 6 · --cap 60 · --dyn (leave dynamic resolution on) · --noworld (world detail off)
+//   --realtime (wait on the live loop instead of the deterministic stepped warm-up) · --rivals N (grid rivals, default 2) · --traffic N · --police off · --calls [--depth N] (draw calls per owner) · --viewport 640x360 · --seconds 15 · --warm 6 · --cap 60 · --dyn (leave dynamic resolution on) · --noworld (world detail off)
 import { createGameServer } from '../server/index.mjs';
 import fs from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -38,16 +38,23 @@ try {
   await page.goto(`http://127.0.0.1:${port}/?simhook&map=${map}&guest=1&autodrive&cpuProfile&car=mini`, { waitUntil: 'domcontentloaded', timeout: 180000 });
   await page.waitForFunction(() => window.__sim?.player && document.body.classList.contains('loaded'), null, { timeout: 600000 });
   console.log('loaded', map, cls);
-  await page.evaluate(async () => {
+  await page.evaluate(async (opts) => {
     const s = window.__sim, f = window.__flow;
-    await f.startEvent({ ...f.event().def, id: 'lowend', rivals: 2, traffic: 2, police: true, rules: { police: true }, conditions: { time: 'morning', weather: 'clear' } });
+    if (opts.det) { // deterministic scenario: freeze the real-time loop, reseed, then everything below is stepped by hand at a fixed dt
+      window.__freeze = true; await new Promise(r => setTimeout(r, 400));
+      let seed = 777; Math.random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
+    }
+    await f.startEvent({ ...f.event().def, id: 'lowend', rivals: opts.rivals, traffic: opts.traffic, police: opts.police, rules: { police: opts.police }, conditions: { time: 'morning', weather: 'clear' } });
     s.G.state = 'race'; s.G.autodrive = true; f.menu.hide(); document.body.classList.remove('counting'); document.body.classList.add('racing');
     window.__police?.reset?.(true);
-  });
+  }, { rivals: +arg('rivals', 2), traffic: +arg('traffic', 2), police: arg('police', 'on') !== 'off', det: !arg('realtime', false) });
+  // --warm seconds of the race, simulated: stepped by hand (fixed 1/60 s), so the scene at the measurement is the same on every run
+  // (--realtime: the old behaviour, wait on the live loop; counts then depend on machine load and frame timing)
+  if (!arg('realtime', false)) await page.evaluate(({ warm }) => { const s = window.__sim; for (let i = 0; i < warm * 60; i++) s.step(1); }, { warm });
   const cdp = await ctx.newCDPSession(page);
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: throttle });
   await cdp.send('Performance.enable');
-  await page.waitForTimeout(warm * 1000);
+  if (arg('realtime', false)) await page.waitForTimeout(warm * 1000);
   // CPU phase: the game loop is frozen and stepped by hand (no GL in the timing), so SwiftShader cannot pollute JS ms.
   const frames = +arg('frames', 360);
   const snap = await page.evaluate(async ({ frames }) => {
@@ -67,10 +74,17 @@ try {
     const best = blocks[0], median = blocks[3];
     const systems = best.systems, total = best.stepMs, ms = [best.p95], frames2 = 1;
     // render phase: submit cost + draw calls / triangles of the last frame
-    const rms = []; for (let i = 0; i < 20; i++) { const t = performance.now(); s.render(); s.renderer.getContext().finish(); rms.push(performance.now() - t); }
+    // the in-car mirror pass runs every 3rd render only while frames are quick (cockpit.js: it is skipped when < 150 ms passed); a throttled software-GL run is
+    // slower than that, which would put a mirror pass in EVERY frame and make counts depend on machine load. Pin the cadence: exactly every 3rd render.
+    const ck = s.player?.cockpit; if (ck) { ck.mirrorCalls = 0; ck.rearLast = performance.now(); }
+    const rms = [], jsMs = [], callsEach = []; for (let i = 0; i < 24; i++) { if (ck) ck.rearLast = performance.now(); const t = performance.now(); s.render(); const t1 = performance.now(); s.renderer.getContext().finish(); rms.push(performance.now() - t); jsMs.push(t1 - t); callsEach.push(s.renderer.info.render.calls); }
+    // renderSubmitMs: the main-thread JS cost of drawing a frame (scene traversal, state changes, draw calls issued), before the GPU is waited on
+    jsMs.sort((a, b) => a - b);
+    // the in-car mirror pass redraws the scene every 3rd frame: calls = the mean over 24 frames, callsMain = a frame without the mirror, callsMax = a mirror frame
+    const callsMean = callsEach.reduce((a, b) => a + b, 0) / callsEach.length, callsMain = Math.min(...callsEach), callsMax = Math.max(...callsEach);
     rms.sort((a, b) => a - b);
     const r = window.__renderInfo();
-    return { systems, stepMs: total, stepMedianBlockMs: median.stepMs, stepP95: best.p95, stepMax: best.max, renderMsMedian: rms[10], calls: r.calls, triangles: r.triangles, pixelRatio: r.pixelRatio, drawDistance: r.drawDistance, perfClass: r.perfClass, programs: r.programs,
+    return { systems, stepMs: total, stepMedianBlockMs: median.stepMs, stepP95: best.p95, stepMax: best.max, renderMsMedian: rms[12], renderSubmitMs: jsMs[12], calls: Math.round(callsMean), callsMain, callsMax, programs2: r.programs, triangles: r.triangles, pixelRatio: r.pixelRatio, drawDistance: r.drawDistance, perfClass: r.perfClass, programs: r.programs,
       trafficActive: s.traffic.cars.filter(c => c.active).length, peds: s.people.peds ? s.people.peds.filter(p => p.active).length : null, heapMB: performance.memory ? performance.memory.usedJSHeapSize / 1048576 : null };
   }, { frames });
   if (arg('hot', false)) {
@@ -115,10 +129,44 @@ try {
       return { total: { calls: c0, tris: t0 }, rows: rows.sort((a, b) => b.tris - a.tris).slice(0, 40) };
     });
   }
+  if (arg('calls', false)) {
+    // who the draw calls are: record every renderBufferDirect of 3 consecutive frames (one of them has the mirror pass), grouped by owner path
+    // (the first --depth named ancestors, with the material name from depth 4 on); reported for the lightest frame and the heaviest one
+    report.calls = await page.evaluate((depth) => {
+      const s = window.__sim, r = s.renderer, orig = r.renderBufferDirect, frames = [];
+      const mine = s.player?.model?.root;
+      const path = (o) => { const p = []; let own = false; for (let c = o; c && c !== s.scene; c = c.parent) { if (c === mine) own = true; p.unshift(c.name || c.type); } return (own ? 'PLAYER ' : '') + p.slice(0, depth).join(' > '); };
+      const ck = s.player?.cockpit; if (ck) { ck.mirrorCalls = 0; ck.rearLast = performance.now(); }
+      for (let f = 0; f < 3; f++) {
+        if (ck) ck.rearLast = performance.now();
+        const rows = new Map(), mats = new Set(); let total = 0;
+        r.renderBufferDirect = function (camera, scene, geometry, material, object, group) {
+          const kind = (object.isInstancedMesh ? 'instanced' : object.isSkinnedMesh ? 'skinned' : object.isSprite ? 'sprite' : object.isPoints ? 'points' : object.isLine ? 'line' : 'mesh') + (material.transparent ? '/transparent' : '');
+          const key = path(object) + ' | ' + kind + (depth > 3 ? ' | ' + (material.name || material.type) : ''); const e = rows.get(key) || { calls: 0, tris: 0, materials: new Set() };
+          e.calls++; total++; e.tris += (geometry.index ? geometry.index.count : geometry.attributes.position?.count || 0) / 3; e.materials.add(material.uuid); mats.add(material.uuid); rows.set(key, e);
+          return orig.apply(this, arguments);
+        };
+        s.render(); r.renderBufferDirect = orig;
+        frames.push({ total, materials: mats.size, rows: [...rows].map(([k, v]) => ({ owner: k, calls: v.calls, tris: Math.round(v.tris), materials: v.materials.size })).sort((a, b) => b.calls - a.calls).slice(0, 90) });
+      }
+      frames.sort((a, b) => a.total - b.total);
+      return { main: frames[0], mirror: frames[2] };
+    }, +arg('depth', 3));
+  }
+  if (arg('inspect', false)) {
+    // what the draw-call owners are: the instanced chunks and static meshes of the map group, with their user data, sizes and chunk radius
+    report.inspect = await page.evaluate(() => {
+      const s = window.__sim, rows = [];
+      s.scene.traverse(o => { if (!o.isMesh || o.userData.dynamic === 'x') return; let top = o; while (top.parent && top.parent !== s.scene && !(top.parent.name || '').startsWith('map-world')) top = top.parent;
+        if (!(top.parent?.name || '').startsWith('map-world')) return;
+        rows.push({ top: top.name || top.type, inst: !!o.isInstancedMesh, count: o.isInstancedMesh ? o.count : 1, verts: o.geometry.attributes.position?.count, radius: o.boundingSphere ? Math.round(o.boundingSphere.radius) : (o.geometry.boundingSphere ? Math.round(o.geometry.boundingSphere.radius) : null), far: o.userData.far, near: o.userData.near, staticCell: !!o.userData.staticCell, visible: o.visible, mat: o.material.name || o.material.type, geo: o.geometry.uuid.slice(0, 6), matId: o.material.uuid.slice(0, 6), parent: o.parent.name || o.parent.type }); });
+      return rows;
+    });
+  }
   report.snapshot = snap;
   const sum = Object.values(snap.systems).reduce((a, b) => a + b, 0);
   report.summary = { class: cls, map, throttle, stepMs: +snap.stepMs.toFixed(2), stepMedianBlockMs: +snap.stepMedianBlockMs.toFixed(2), stepP95: +snap.stepP95.toFixed(2), ...Object.fromEntries(Object.entries(snap.systems).map(([k, v]) => [k, +v.toFixed(2)])), other: +(snap.stepMs - sum).toFixed(2),
-    renderMsMedian: +snap.renderMsMedian.toFixed(1), calls: snap.calls, triangles: snap.triangles, pixelRatio: snap.pixelRatio, drawDistance: snap.drawDistance, trafficActive: snap.trafficActive, peds: snap.peds, heapMB: snap.heapMB && +snap.heapMB.toFixed(0) };
+    renderMsMedian: +snap.renderMsMedian.toFixed(1), renderSubmitMs: +snap.renderSubmitMs.toFixed(2), calls: snap.calls, callsMain: snap.callsMain, callsMax: snap.callsMax, materials: snap.programs, triangles: snap.triangles, pixelRatio: snap.pixelRatio, drawDistance: snap.drawDistance, trafficActive: snap.trafficActive, peds: snap.peds, heapMB: snap.heapMB && +snap.heapMB.toFixed(0) };
   console.log(JSON.stringify(report.summary));
 } catch (e) { console.error('PROFILE FAILED', e); report.failed = String(e); process.exitCode = 1; }
 finally { if (out && out !== true) await fs.writeFile(out, JSON.stringify(report, null, 2)); await browser.close(); await app.close(); await fs.rm(dataDir, { recursive: true, force: true }); }

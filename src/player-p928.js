@@ -103,7 +103,6 @@ export function buildP928(car,d,M,low,plate,H){
   for(const end of [-1,1])line(p,M.seam,[[-.68,.56,end<0?F-.005:R+.005],[0,.56,end<0?F-.005:R+.005],[.68,.56,end<0?F-.005:R+.005]],.004,'bumper-joint');
   surface(p,M.red,(u,v)=>[mix(-.52,.52,u),mix(.665,.815,v),R+.024],24,4,'gts-red-reflector-panel');
   mesh(p,new THREE.PlaneGeometry(.77,.045,32,2),textMaterial('P O R S C H E',null,'#292327'),[0,.756,R+.029],[0,0,0],'rear-badge');
-  mesh(p,new THREE.PlaneGeometry(.24,.035,16,2),textMaterial(car.spec.short,null),[.45,.632,R+.017],[0,0,0],'model-badge');
   // Body-coloured GTS bridge spoiler sits across the foot of the glass hatch.
   for(const s of [-1,1])box(p,M.paint,[.09,.075,.17],[s*.73,.91,1.95],.025,[0,0,0],'spoiler-support');
   surface(p,M.paint,(u,v)=>{const x=(2*u-1)*.83,z=mix(1.88,2.12,v);return[x,.968-.038*(x/.83)**2+.014*Math.sin(v*Math.PI),z];},32,8,'gts-rear-spoiler');

@@ -88,3 +88,32 @@ export function finishBrandBadges(car){
   }
 
 }
+
+// Last word on placement, run once the bodywork is final (compaction and LOD grouping can leave a model-specific crest sunk
+// into a panel or standing well off it): look at every manufacturer mark from outside along its own facing and, when it is
+// sunk or hovering more than 4 cm, slide it along that axis until it rests on the first skin it meets (a mark that sits a
+// finger's width proud of a grille is authored that way). Wheel caps are seated by the wheel builders.
+export function settleBadges(car){
+  const body=car.body;if(!body)return 0;
+  body.updateWorldMatrix(true,true);
+  const hidden=o=>{for(let p=o;p&&p!==body;p=p.parent)if(p.name==='player-road-detail'||p.name==='player-distance-shell'||p.name==='cockpit-lod'||p.userData.vehicleCabin||p.userData.damageInterior)return true;return false;};
+  const marks=[],shells=[];
+  body.traverse(o=>{
+    if(!o.isMesh||!o.geometry?.attributes.position||!o.visible||hidden(o))return;
+    if([].concat(o.material).some(m=>m?.userData?.brandBadge)){marks.push(o);return;}
+    if(!o.material.transparent&&!/cockpit|interior|seat|distant|distance|trim-badge/.test(o.name))shells.push(o);
+  });
+  const centre=body.localToWorld(new THREE.Vector3(0,(car.dims?.H||1.3)*.4,0)),caster=new THREE.Raycaster();caster.far=.45;
+  let moved=0;
+  for(const mark of marks){
+    const c=new THREE.Box3().setFromObject(mark).getCenter(new THREE.Vector3());
+    if(Math.abs(body.worldToLocal(c.clone()).z)<(car.dims?.L||4)*.3)continue;
+    const normal=new THREE.Vector3(0,0,1).transformDirection(mark.matrixWorld),out=normal.dot(c.clone().sub(centre))>=0?normal:normal.negate();
+    caster.set(c.clone().addScaledVector(out,.3),out.clone().negate());
+    const hit=caster.intersectObjects(shells,false)[0];if(!hit)continue;
+    const gap=hit.distance-.3;if(gap>-.004&&gap<.04)continue;if(Math.abs(gap)>.25)continue;
+    const to=c.clone().addScaledVector(out,.004-gap);
+    mark.position.add(mark.parent.worldToLocal(to.clone()).sub(mark.parent.worldToLocal(c.clone())));mark.updateMatrixWorld(true);moved++;
+  }
+  return moved;
+}
