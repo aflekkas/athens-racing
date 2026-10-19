@@ -8,6 +8,10 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Multiplayer: other drivers' cars now glide instead of moving in steps, even when their computer or connection is slow.
+
+- Multiplayer: bumping another car now affects both of you the same way, whoever hits whom and whoever has the slower connection.
+
 - Porsche 911: a fastback roofline falling to a lower tail, raised front wings with upright oval headlamps, wider rear haunches; door mirrors are one piece with their arm.
 
 - Weak laptops: the lowest graphics classes now run fewer cars and pedestrians and refresh the HUD less often, and the first-run check also tests your processor.

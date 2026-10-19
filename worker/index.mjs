@@ -9,7 +9,7 @@ import { canSaveResults } from '../server/smoke-session.mjs';
 export { FriendsPresence } from './presence.mjs';
 import { isTerminalImpact } from '../src/damage-math.js';
 import { socketAttachment } from './socket-attachment.mjs';
-import { connectionProtocol, MULTIPLAYER_PROTOCOL, AUTH_CLOSE_CODE } from '../src/multiplayer-protocol.js';
+import { connectionProtocol, MULTIPLAYER_PROTOCOL, AUTH_CLOSE_CODE, RELAY_MS } from '../src/multiplayer-protocol.js';
 import { DurableObject } from 'cloudflare:workers';
 import { cleanupLegacyStorage } from './legacy-storage.mjs';
 import { rewriteShareMetadata } from './share-metadata.mjs';
@@ -107,14 +107,14 @@ export class GameArena extends DurableObject {
   }
   relay() {
     if (this.timer !== null || ![...this.core.lobbies.values()].some(l => l.dirty && ['countdown', 'race'].includes(l.status))) return;
-    // Coalesce all drivers into one snapshot per lobby, at most 10 Hz. No idle interval.
+    // Coalesce all drivers into one snapshot per lobby, at most 20 Hz (RELAY_MS). No idle interval.
     this.timer = setTimeout(() => {
       this.timer = null;
       try { this.core.tick(); } catch (error) {
         console.error('Multiplayer arena event failed', { instanceId: this.instanceId, phase: 'relay', name: error?.name, message: error?.message || String(error), stack: error?.stack });
         throw error;
       }
-    }, 100);
+    }, RELAY_MS);
   }
   async fetch(request) {
     return this.event('fetch', async () => {
@@ -193,7 +193,7 @@ export class GameArena extends DurableObject {
       // Lobby transitions and finishes still persist immediately.
       const after = this.core.clientData(ws);
       const checkpoint = ['state', 'states', 'world-frame', 'world-contact'].includes(type) && after?.state && Date.now() - (this.persistedAt || 0) >= 2000;
-      if (!['state', 'states', 'world-frame', 'world-contact', 'ping', 'discover'].includes(type) || before !== after?.finish || checkpoint) await this.persist();
+      if (!['state', 'states', 'world-frame', 'world-contact', 'contact', 'ping', 'discover'].includes(type) || before !== after?.finish || checkpoint) await this.persist();
       this.relay();
     });
   }

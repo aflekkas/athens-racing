@@ -1,6 +1,6 @@
 import { icon } from './ui/components.js';
 import { ReconnectHistory, reconnectDelay } from './reconnect-history.js';
-import { MULTIPLAYER_PROTOCOL, UPDATE_CLOSE_CODE, AUTH_CLOSE_CODE, protocolVersion, clientHello } from './multiplayer-protocol.js';
+import { MULTIPLAYER_PROTOCOL, UPDATE_CLOSE_CODE, AUTH_CLOSE_CODE, STATE_BATCHING, protocolVersion, clientHello } from './multiplayer-protocol.js';
 import { renderLiveBoard } from './ui/live-board.js';
 import { driverId, getLeaderboard } from './leaderboard.js';
 import { MAPS } from './map-catalog.js';
@@ -189,6 +189,12 @@ export class Multiplayer {
     this.cancelRecovery('Driver retired.'); this.retiredRace = l.raceId; this.wreckSent = false;
     this.stateSender.reset(); this.hooks.wrecked(); this.sendWreck(); return true;
   }
+  // A contact this driver resolved against another car: the arena checks it and relays it to that driver (server/core.mjs 'contact').
+  sendContact(event) {
+    const l = this.lobby;
+    if (!this.connected || !l?.raceId || l.status !== 'race') return false;
+    this.send({ type: 'contact', raceId: l.raceId, generation: l.generation || 0, ...event }); return true;
+  }
   sendWreck() {
     if (this.connected && this.retired && !this.me?.dnf && !this.wreckSent) { this.wreckSent = true; this.send({ type: 'dnf', raceId: this.lobby.raceId, generation: this.lobby.generation, reason: 'retired' }); }
   }
@@ -297,8 +303,8 @@ export class Multiplayer {
       if (m.type === 'reload' && m.reason === 'update') { this.requireReload(); return; }
       if (m.type === 'hello') {
         if (protocolVersion(m.protocol) !== MULTIPLAYER_PROTOCOL) { this.requireReload(); ws.close(UPDATE_CLOSE_CODE, 'Game updated, reload'); return; }
-        // Immediate 10 Hz samples avoid an additional 100–200ms batching delay.
-        this.stateBatching = false;
+        // 20 Hz samples, two per message: the arena still takes at most 10 messages/s/player (docs/multiplayer-cost.md).
+        this.stateBatching = STATE_BATCHING && m.features?.stateBatching === true;
         if (!this.loaded) this.trackVersion = m.track.version;
         this.maps = getPlayableMaps(m.maps || [{ id: 'riviera', name: MAPS[0].name, track: m.track, events: m.events || [] }]);
         this.events = m.events || this.maps.flatMap(map => (map.events || []).map(e => ({ ...e, mapId: map.id })));
@@ -320,6 +326,7 @@ export class Multiplayer {
       else if (m.type === 'pong') { this.latency = Math.max(0, Date.now() - m.sent); }
       else if (m.type === 'world' && m.raceId === this.lobby?.raceId && m.generation === this.lobby?.generation) this.hooks.world?.(m.world, Math.max(0, (this.now() - m.now) / 1000));
       else if (['world-frame', 'world-contact'].includes(m.type) && m.raceId === this.lobby?.raceId && m.generation === this.lobby?.generation) this.hooks.sharedWorld?.(m);
+      else if (m.type === 'contact' && m.raceId === this.lobby?.raceId && m.generation === (this.lobby?.generation || 0)) this.hooks.contact?.(m);
       else if (m.type === 'discovery') this.renderDiscovery(m.lobbies);
       else if (m.type === 'error') { this.creating = false; if (this.$) this.$('mp-create').disabled = false; this.status(m.message); this.panel.hidden = false; }
       else if (m.type === 'left' || m.type === 'kicked') { this.left(); this.panel.hidden = false; if (m.message || m.reason) this.status(m.message || m.reason); if (m.type === 'kicked') { this.kickCooldown = { lobbyCode: m.lobbyCode, until: m.until }; this.hooks.kicked?.(m); } }
@@ -567,7 +574,10 @@ export class Multiplayer {
       entries.forEach((e, i) => { const row = document.createElement('p'); row.textContent = `${i + 1}. ${e.name} · ${e.time.toFixed(2)} s · ${e.car}`; box.append(row); });
     } catch { box.textContent = 'Best times are unavailable. Try again shortly.'; }
   }
-  update(dt, state) {
+  // `stateAt`: the performance.now() time this physics state stands at (the frame clock plus the slices simulated so far). A slow
+  // frame simulates several slices at once, so the wall time of this call is later than the state by up to a whole frame; stamping
+  // samples with it put tens of milliseconds of noise into the other drivers' view of this car.
+  update(dt, state, stateAt) {
     if (!this.lobby || !this.worldReady) return;
     this.hooks.remote(this.peers, dt);
     const l = this.lobby;
@@ -581,7 +591,7 @@ export class Multiplayer {
       if (this.now() >= l.startAt && this.me?.finish == null && !this.retired && !this.recoveryPending) {
         const force = this.finishSent !== l.raceId && (state.s - l.event.s1) * l.event.dir >= 0 && Math.abs(state.u) < 30;
         if (force) this.finishSent = l.raceId;
-        this.stateSender.sample(state, l.raceId, { batching: this.stateBatching, force });
+        this.stateSender.sample(state, l.raceId, { batching: this.stateBatching, force, at: Number.isFinite(stateAt) && Math.abs(stateAt - performance.now()) < 500 ? stateAt : undefined });
       }
     }
     if (this.connected) this.reconnectHistory?.flush(p => this.send(p), l.generation || 0, performance.now());

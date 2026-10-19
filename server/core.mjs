@@ -63,6 +63,16 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
   };
   const sharedWorld = createSharedWorldRelay(send, { period: l => maps.get(l.mapId)?.closed ? maps.get(l.mapId).track.finish - maps.get(l.mapId).track.start : 0 });
   const handlers = new Map();
+  // Every accepted car sample since the last snapshot, so a receiver interpolates the sender's real 20 Hz data instead of only
+  // the newest sample. Motion fields only (cosmetics ride on the newest `state`); keyed by race so an old race can never leak in.
+  const trails = new WeakMap();
+  const TRAIL_KEYS = ['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear', 'vy', 'bodyDynamic', 'air', 'bodyQ', 'angularX', 'angularY', 'angularZ', 'bodyHeave', 'bodyPitch', 'bodyRoll', 'motionEpoch', 'sampleTime', 'sampleAge'];
+  const rememberSample = (c, raceId, state, now) => {
+    let trail = trails.get(c); if (trail?.raceId !== raceId) trails.set(c, trail = { raceId, list: [] });
+    trail.list.push({ ...Object.fromEntries(TRAIL_KEYS.filter(k => state[k] !== undefined).map(k => [k, state[k]])), stateAt: now });
+    if (trail.list.length > 6) trail.list.shift();
+  };
+  const takeTrail = (c, raceId) => { const trail = trails.get(c); trails.delete(c); return trail?.raceId === raceId && trail.list.length > 1 ? trail.list.slice(0, -1) : null; };
   const track = maps.get('riviera').track;
   const lobbies = new Map(), clients = new Set(), sessions = new Map();
   const lobbyEvent = l => maps.get(l.mapId).definitions.get(l.eventId);
@@ -413,8 +423,27 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
           const event = publicLobby(l).event;
           const recovery = requestRecovery(c, event, l.raceId, m.motionEpoch, now, { route: maps.get(l.mapId).geometry, capture: m.capture === true });
           if (!recovery) return deny(c.state ? 'Recovery needs a fresh position. Try again.' : 'Recovery needs a current race position.', Number.isSafeInteger(c.state?.motionEpoch) ? { epoch: c.state.motionEpoch } : {});
-          clearObjectiveHold(l, c.id);
+          clearObjectiveHold(l, c.id); trails.delete(c);
           l.dirty = true; send(c.ws, { type: 'recovered', generation: l.generation, ...recovery }); return;
+        }
+        if (m.type === 'contact') {
+          // A driver reports a car-to-car contact so the other driver applies the matching impulse (src/multiplayer-contact.js).
+          // The arena only relays what could have happened: both cars racing and near each other, bounded numbers, bounded rate.
+          if (l.status !== 'race' || m.raceId !== l.raceId || m.generation !== undefined && m.generation !== l.generation || c.finish !== null || c.dnf || !c.state) return;
+          const target = l.players.get(m.to);
+          if (!target || target === c || !target.state || target.connected === false || target.finish !== null || target.dnf) return;
+          if (c.contactRaceId !== l.raceId) { c.contactRaceId = l.raceId; c.contactNonce = -1; }
+          if (!Number.isSafeInteger(m.nonce) || m.nonce <= c.contactNonce) return;
+          if (!(c.contactWindow > now - 1000)) { c.contactWindow = now; c.contactCount = 0; }
+          if (++c.contactCount > 10) return;
+          const numbers = ['x', 'z', 'vx', 'vz', 'm', 'nx', 'nz', 'closing'];
+          if (numbers.some(k => !Number.isFinite(m[k])) || Math.abs(m.vx) > 150 || Math.abs(m.vz) > 150 || m.m < 100 || m.m > 100000 || m.closing < 0 || m.closing > 150) return;
+          // Both last accepted poses are at most a few hundred ms old: 30 m covers two cars closing at 100 m/s plus their length.
+          if (Math.hypot(c.state.x - target.state.x, c.state.z - target.state.z) > 30) return;
+          const length = Math.hypot(m.nx, m.nz);
+          c.contactNonce = m.nonce;
+          send(target.ws, { type: 'contact', raceId: l.raceId, generation: l.generation || 0, from: c.id, nonce: m.nonce, at: now, x: m.x, z: m.z, vx: m.vx, vz: m.vz, m: m.m, nx: length ? m.nx / length : 0, nz: length ? m.nz / length : 0, closing: m.closing });
+          return;
         }
         if (m.type === 'world') return; // Environment belongs to the arena clock.
 
@@ -463,6 +492,7 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
             c.state.sampleTime = s.sampleTime;
             c.state.sampleAge = Number.isFinite(s.sampleAge) ? Math.max(0, Math.min(1000, s.sampleAge)) : 0;
           }
+          rememberSample(c, l.raceId, c.state, now);
           rememberRecoveryRoad(c, event, l.raceId);
           // Objective modes never take the crossing finish; reversed runs keep
           // their time but stay off the leaderboard.
@@ -504,11 +534,13 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
           if (moved) { l.dirty = true; publish(l); }
           if ([...l.objectives.values()].every(o => o.done)) { results(l); continue; }
         }
+        if (!l.dirty) continue; l.dirty = false;
         const world = arenaEnvironment(l, effectiveEvent(lobbyEvent(l), l.config), now);
         const standings = raceStandings(l, effectiveEvent(lobbyEvent(l), l.config));
-        if (!l.dirty) continue; l.dirty = false;
-        const players = [...l.players.values()].map(p => ({ id: p.id, state: p.state, stateAt: p.stateAt, finish: p.finish, dnf: p.dnf, objective: snapshotPlayerObjective(l, p.id) }));
-        for (const p of l.players.values()) send(p.ws, { type: 'snapshot', raceId: l.raceId, generation: l.generation || 0, now, players, standings, world });
+        const players = [...l.players.values()].map(p => { const trail = p.state ? takeTrail(p, l.raceId) : null; return { id: p.id, state: p.state, stateAt: p.stateAt, ...(trail ? { trail } : {}), finish: p.finish, dnf: p.dnf, objective: snapshotPlayerObjective(l, p.id) }; });
+        // One encoding for every recipient.
+        const text = JSON.stringify({ type: 'snapshot', raceId: l.raceId, generation: l.generation || 0, now, players, standings, world });
+        for (const p of l.players.values()) send(p.ws, text);
       }
     }
   };

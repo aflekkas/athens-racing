@@ -17,19 +17,19 @@ function sender() {
   return { sender, packets, advance, timers };
 }
 
-test('moving clients produce at most five immutable two-sample messages per second', () => {
+test('moving clients sample at 20 Hz but produce at most ten immutable two-sample messages per second', () => {
   const q = sender();
-  for (let t = 0; t < 1000; t += 10) { q.advance(t); const s = state({ s: t / 100, vLong: 10 }); q.sender.sample(s, 'race', { batching: true }); s.s = -999; s.damage.front = 1; }
-  assert.equal(q.packets.length, 5);
+  for (let t = 0; t < 1000; t += 10) { q.advance(t); const s = state({ s: t / 50, vLong: 10 }); q.sender.sample(s, 'race', { batching: true }); s.s = -999; s.damage.front = 1; }
+  assert.equal(q.packets.length, 10);
   assert.ok(q.packets.every(p => p.type === 'states' && p.states.length === 2 && p.raceId === 'race'));
   assert.deepEqual(q.packets[0].states.map(s => s.s), [0, 1]);
   assert.equal(q.packets[0].states[0].damage.front, 0);
 });
 
-test('a single sample flushes at 200ms and unchanged stationary clients remain quiet', () => {
+test('a single sample flushes after two sample intervals (100ms) and unchanged stationary clients remain quiet', () => {
   const q = sender(); q.sender.sample(state(), 'race', { batching: true });
-  q.advance(199); assert.equal(q.packets.length, 0);
-  q.advance(200); assert.equal(q.packets.length, 1); assert.equal(q.packets[0].states.length, 1);
+  q.advance(99); assert.equal(q.packets.length, 0);
+  q.advance(100); assert.equal(q.packets.length, 1); assert.equal(q.packets[0].states.length, 1);
   for (let t = 300; t <= 10000; t += 100) { q.advance(t); q.sender.sample(state({ rpm: 950 }), 'race', { batching: true }); }
   assert.equal(q.packets.length, 1);
   q.advance(10100); q.sender.sample(state({ gear: 2 }), 'race', { batching: true }); q.advance(10300);

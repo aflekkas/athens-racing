@@ -120,6 +120,8 @@
     "tools/penteli-world.test.mjs",
     "tools/race-lifecycle.test.mjs",
     "tools/remote-motion.test.mjs",
+    "tools/remote-sync-sim.test.mjs",
+    "server/mp-contact.test.mjs",
     "tools/riviera-landmarks.test.mjs",
     "tools/road-network-overlay.test.mjs",
     "tools/road-network.test.mjs",

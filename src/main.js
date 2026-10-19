@@ -50,13 +50,13 @@ import { configureTextureCodecs } from './compressed-textures.js';
 import { createPost } from './post.js';
 import { loadTextures, uploadTextures, setAnisotropy } from './tex.js';
 import { clamp, lerp, damp, smoothstep, frameYield, RNG } from './util.js';
-import { resolvePlayerContacts, containOnlineVehicle } from './multiplayer-contact.js';
+import { ContactCoordinator, containOnlineVehicle } from './multiplayer-contact.js';
 import { applyBalance } from './mp-car-rules.js';
 import { SharedWorld } from './mp-shared-world.js';
 import { onlineWorldVisibility } from './mp-world-policy.js';
 import { setOnlineWeather } from './weather.js';
 import { Multiplayer } from './multiplayer.js';
-import { applyRemotePose } from './remote-timeline.js';
+import { applyRemotePose, remoteContactPose } from './remote-timeline.js';
 import { personalBestSetup, getPersonalBests, recordPersonalBest, exactBestKey } from './personal-bests.js';
 import { captureResultFrame, shareResultCard } from './result-share.js';
 import { spectatorState, applySpectatorState, restoreVehicleState } from './race-lifecycle.js';
@@ -1957,6 +1957,7 @@ function frame(now) {
   let dt = Math.min(0.5, wallDt); last = now;
   if (Q.has('fixeddt')) dt = 1 / 60;
   G.lastDt = dt;
+  G.simNow = now - dt * 1000; // the clock the simulation state stands at: slices advance it, and the online sender stamps samples with it
   if (settings.dynamicResolution && !document.hidden && !Q.has('fixeddt') && (G.state === 'race' || G.state === 'onlineRace')) {
     const ratio = dynamicScale.sample(wallDt * 1000);
     if (ratio !== null && ratio !== pixelRatio) { pixelRatio = ratio; onResize(); post?.resetHistory(); }
@@ -1995,7 +1996,8 @@ function step(dt, draw = true, visual = true, frameDt = dt) {
   bootFrameLog('first-frame');
   readInput(dt);
   if (multiplayer.active && inMenu() && G.pFinish == null) { player.veh.vLong = player.veh.vLat = player.veh.w = 0; player.veh.syncWheels(); }
-  if (multiplayer.active) multiplayer.update(dt, networkState(player.veh));
+  if (multiplayer.active) multiplayer.update(dt, networkState(player.veh), G.simNow);
+  G.simNow += dt * 1000;
   if (!multiplayer.active && grid.length) rival = focusRival(); // the car the HUD gap, audio and slipstream follow
   const pv = player.veh, rv = rival.veh;
   ACTORS[0].veh = pv; ACTORS[1].veh = rv;
@@ -2088,11 +2090,18 @@ function step(dt, draw = true, visual = true, frameDt = dt) {
       if (!multiplayer.active) racerCollide(dt);
       else {
         multiplayer.contacts ||= new Map();
-        const now = performance.now();
-        multiplayer.lastContacts = G.state === 'race' && !holdingRecovery ? resolvePlayerContacts(pv, [...remoteCars].map(([id, car]) => {
+        const now = performance.now(), simNow = Number.isFinite(G.simNow) && Math.abs(G.simNow - now) < 1000 ? G.simNow : now;
+        if (contactCoordinator.raceId !== multiplayer.lobby.raceId) contactCoordinator.reset(multiplayer.lobby.raceId);
+        // Contacts are tested against where the other car most likely is NOW (not its delayed drawn pose), and reported so the
+        // other driver applies the matching impulse (src/multiplayer-contact.js).
+        multiplayer.lastContacts = G.state === 'race' && !holdingRecovery ? contactCoordinator.step(pv, [...remoteCars].map(([id, car]) => {
           const peer = multiplayer.peers.get(id), member = multiplayer.lobby.players.find(p => p.id === id);
-          return { id, vehicle: car.veh, age: peer ? now - peer.at : Infinity, ghost: !member?.loaded || member.connected === false || member.dnf || member.finish != null || !peer?.state || peer.state.recoveryUntil > multiplayer.now() };
-        }), dt, now, multiplayer.contacts) : [];
+          // At the time THIS physics slice stands at (a slow frame runs several slices at one wall-clock time): the other car then moves
+          // between slices too, so a long frame cannot tunnel through it.
+          const pose = peer?.state && remoteContactPose(peer, simNow, member?.finish != null || !!member?.dnf), proxy = car.contactProxy ||= {};
+          if (pose) Object.assign(proxy, { x: pose.x, y: pose.y, z: pose.z, yaw: pose.yaw, vLong: pose.vLong, vLat: pose.vLat, stale: pose.stale === true, halfW: car.veh.halfW, halfL: car.veh.halfL, m: car.veh.m, hcg: car.veh.hcg });
+          return { id, vehicle: pose ? proxy : car.veh, age: pose?.parked ? 0 : peer ? now - peer.at : Infinity, ghost: !pose || !member?.loaded || member.connected === false || member.dnf || member.finish != null || peer.state.recoveryUntil > multiplayer.now() };
+        }), dt, now, { rtt: multiplayer.latency }) : [];
         for (const hit of multiplayer.lastContacts) playerImpactVoice({ kind: 'crash', dv: hit.impulse });
         containOnlineVehicle(pv, route);
       }
@@ -2491,6 +2500,16 @@ const multiplayer = new Multiplayer(CARS, {
       syncCar(c, dt);
     }
   },
+  // The other driver reported a contact with this car: apply the matching impulse unless it was already resolved here.
+  contact(event) {
+    if (G.state !== 'race' || !player || multiplayer.retired || recoveryHeld(G.towing, towOffer)) return;
+    if (contactCoordinator.raceId !== multiplayer.lobby.raceId) contactCoordinator.reset(multiplayer.lobby.raceId);
+    const member = multiplayer.lobby.players.find(p => p.id === event.from);
+    const known = multiplayer.peers.get(event.from)?.state;
+    const hit = contactCoordinator.receive(event, player.veh, performance.now(), { ghost: !member?.loaded || member.connected === false || member.dnf || member.finish != null, rtt: multiplayer.latency,
+      knownVelocity: known ? { x: -Math.sin(known.yaw) * known.vLong + Math.cos(known.yaw) * known.vLat, z: -Math.cos(known.yaw) * known.vLong - Math.sin(known.yaw) * known.vLat } : null });
+    if (hit) { multiplayer.lastContacts = [hit]; playerImpactVoice({ kind: 'crash', dv: hit.impulse }); }
+  },
   wrecked() {
     clearDriveInput(); G.pFinish = null;
     controls.releaseMouseLook();
@@ -2523,6 +2542,7 @@ const multiplayer = new Multiplayer(CARS, {
     document.body.classList.remove('racing', 'counting');
   },
 });
+const contactCoordinator = new ContactCoordinator({ send: event => multiplayer.sendContact(event), serverNow: () => multiplayer.now() });
 const sharedWorld = new SharedWorld(multiplayer, () => ({ traffic, player, G, remotes: [...remoteCars].map(([id, car]) => ({ id, car, member: multiplayer.lobby?.players.find(p => p.id === id) })) }));
 window.__sharedWorld = sharedWorld;
 window.__multiplayer = multiplayer;
@@ -2540,7 +2560,7 @@ document.addEventListener('visibilitychange', () => {
   clearDriveInput(); last = performance.now(); multiplayer.advanceClock();
   if (!document.hidden) multiplayer.hooks.remote(multiplayer.peers, 0.1);
 });
-if (Q.has('debug')) { window.__vehicle = () => player?.veh; window.__onlineCars = () => [...remoteCars].map(([id, c]) => ({ id, car: c.spec.id, visible: c.model.root.visible, s: c.veh.s })); }
+if (Q.has('debug')) { window.__vehicle = () => player?.veh; window.__onlineCars = () => [...remoteCars].map(([id, c]) => ({ id, car: c.spec.id, visible: c.model.root.visible, s: c.veh.s, x: c.veh.x, y: c.veh.y, z: c.veh.z, yaw: c.veh.yaw, vLong: c.veh.vLong })); }
 
 gameReady = boot().catch(error => { fail(error); throw error; });
 

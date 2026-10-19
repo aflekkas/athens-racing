@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { StateSender } from '../src/multiplayer-state.js';
 import { Multiplayer } from '../src/multiplayer.js';
-import { RemoteTimeline, applyRemotePose, receiveRemoteSnapshot } from '../src/remote-timeline.js';
+import { RemoteTimeline, applyRemotePose, receiveRemoteSnapshot, remoteContactPose } from '../src/remote-timeline.js';
 import { applySpectatorState } from '../src/race-lifecycle.js';
 import { createGameCore } from '../server/core.mjs';
 
@@ -58,7 +58,7 @@ function pipeline(t, { fps = 60, duration = 5000, jitter = false, loss = false, 
     if (now + .001 >= nextFrame) {
       render.remote(client.peers, 1/fps);
       const target = client.peers.get('driver')?.state.z ?? 0; oldZ += (target-oldZ)*(1-Math.exp(-18/fps));
-      if (now > 1000) { frames.push({ at: now, z: render.vehicle.z, s: render.vehicle.s }); oldFrames.push({ at: now, z: oldZ }); }
+      if (now > 2000) { frames.push({ at: now, z: render.vehicle.z, s: render.vehicle.s }); oldFrames.push({ at: now, z: oldZ }); } // the jitter buffer settles during its first second or two
       nextFrame += 1000/fps;
     }
   }
@@ -91,14 +91,16 @@ test('jitter, delayed/out-of-order duplicate snapshots and one lost batch remain
   assert.equal(client.peers.get('driver').state, original); assert.equal(peer.timeline.samples.length, length); assert.ok(peer.timeline.delay <= 400);
 });
 
+// The render clock runs `delay` behind the newest data: this is the wall-clock time at which a timeline plays source time `time`.
+const when = (timeline, time) => time + timeline.base + timeline.delay;
 const push = (timeline, time, extra = {}, options = {}) => timeline.push(state(time, { sampleTime: time, sampleAge: 0, motionEpoch: 1, ...extra }), { receivedAt: time+100, serverNow: time+100000, stateAt: time+100000, car: 'mini', ...options });
 
 test('accelerating positions use endpoint velocities; yaw crosses ±pi along the short arc', () => {
   const timeline = new RemoteTimeline();
   push(timeline, 0, { z: 0, vLong: 0 }); push(timeline, 200, { z: -.4, vLong: 4 });
-  const middle = timeline.sample(220); close(middle.z, -.1); close(middle.vLong, 2);
+  const middle = timeline.sample(when(timeline, 100)); close(middle.z, -.1); close(middle.vLong, 2);
   const turn = new RemoteTimeline(); push(turn, 0, { yaw: Math.PI-.1 }); push(turn, 200, { yaw: -Math.PI+.1 });
-  close(Math.abs(turn.sample(220).yaw), Math.PI);
+  close(Math.abs(turn.sample(when(turn, 100)).yaw), Math.PI);
 });
 
 test('a parked/finished/wrecked car cannot extrapolate; a missing stream coasts at most 350ms then freezes wheels', () => {
@@ -140,7 +142,7 @@ test('sender tow epoch cancels the pending pre-tow sample and preserves bounded 
 test('legacy snapshots without timing metadata still interpolate, suppress repeated held poses and freeze', () => {
   const peers = new Map();
   for (const time of [0,200,400]) receiveRemoteSnapshot(peers, { now: 100000+time, players: [{ id: 'p', state: state(time) }] }, { receivedAt: time+100 });
-  const peer = peers.get('p'), v = {}; applyRemotePose(peer,v,650); close(v.z,-10.6);
+  const peer = peers.get('p'), v = {}; applyRemotePose(peer,v,when(peer.timeline,100530)); close(v.z,-10.6);
   receiveRemoteSnapshot(peers, { now: 100800, players: [{ id: 'p', state: state(400) }] }, { receivedAt: 900 });
   assert.equal(peer.at,500); applyRemotePose(peer,v,2000); close(v.z,-15); applyRemotePose(peer,v,4000); close(v.z,-15); close(v.vLong,0);
 });
@@ -179,14 +181,14 @@ test('recorded ~4.78Hz Worker arrivals survive queued receiver bursts without re
   console.log('Recorded WebGL arrival replay', JSON.stringify(stats));
   assert.equal(timeline.resetCount, 0, 'continuous source samples must survive >1.5sec receiver stalls');
   assert.ok(stats.cv < .04, 'recorded burst timing must not cause the old clock-reset oscillations');
-  assert.ok(stats.max <= 20.001, 'recovery must not accelerate the car to chase its target');
-  assert.ok(timeline.samples.length <= 16); assert.ok(timeline.delay >= 20 && timeline.delay <= 100);
+  assert.ok(stats.max <= 21.001, 'recovery may re-time at most 5% fast, never chase its target');
+  assert.ok(timeline.samples.length <= 24); assert.ok(timeline.delay >= 100 && timeline.delay <= 280);
 });
 
-test('4.78Hz snapshots with measured-scale arrival jitter and two dropped batches freeze and resume at normal speed', () => {
+test('4.78Hz snapshots with measured-scale arrival jitter and three dropped batches freeze and resume without chasing', () => {
   const peers = new Map(), interval = 1000 / 4.78;
   const jitter = [30, 62, 15, 95, 20, 5, 80, 40];
-  const arrivals = Array.from({ length: 55 }, (_, i) => ({ source: i * interval, at: i * interval + 100 + jitter[i % jitter.length] })).filter((_, i) => i !== 16 && i !== 17);
+  const arrivals = Array.from({ length: 55 }, (_, i) => ({ source: i * interval, at: i * interval + 100 + jitter[i % jitter.length] })).filter((_, i) => i < 16 || i > 18);
   let index = 0, previous, freezes = 0; const frames = [];
   for (let now = 0; now < 12000; now += 1000 / 60) {
     while (index < arrivals.length && arrivals[index].at <= now) {
@@ -198,7 +200,7 @@ test('4.78Hz snapshots with measured-scale arrival jitter and two dropped batche
     if (t.mode === 'freeze') { freezes++; close(p.vLong, 0); }
     if (previous && now > 1000) {
       const velocity = (p.s - previous.s) * 1000 / (now - previous.at);
-      assert.ok(velocity >= -1e-7 && velocity <= 20.001, `${velocity} m/s: recovery must not chase a target`);
+      assert.ok(velocity >= -1e-7 && velocity <= 21.001, `${velocity} m/s: recovery must not chase a target`);
     }
     frames.push({ at: now, z: p.z }); previous = { at: now, s: p.s };
   }
@@ -212,14 +214,19 @@ test('a frozen playhead stays at the prediction horizon and resumes without a 1.
   const frozen = timeline.sample(1000), head = timeline.playhead;
   close(head, 550); close(timeline.sample(1016).z, frozen.z); close(timeline.playhead, head);
   push(timeline, 600, {}, { receivedAt: 1030 });
-  const resumed = timeline.sample(1032); close(Math.abs(resumed.z - frozen.z), 20 * .016, .0001);
+  const resumed = timeline.sample(1032); close(Math.abs(resumed.z - frozen.z), 20 * .016, .32 * .02); // at most the 5% re-timing rate, never a 1.5x catch-up
   assert.equal(timeline.resetCount, 0); assert.equal(timeline.mode, 'interpolate');
 });
 
 
-test('bounded half-RTT compensation predicts toward current time without changing authoritative state', () => {
+test('contact pose predicts toward the present without moving the drawn pose or the authoritative state', () => {
  const peers=new Map();
  for(const time of [0,100])receiveRemoteSnapshot(peers,{now:100000+time,players:[{id:'p',stateAt:100000+time,state:state(time,{sampleTime:time,motionEpoch:1})}]},{receivedAt:time+150,networkDelay:50});
- const peer=peers.get('p'),p=peer.timeline.sample(300);
- close(p.s,3.6);close(peer.state.s,2);assert.ok(peer.timeline.delay<=100);
+ const peer=peers.get('p'),t=peer.timeline,now=when(t,50),drawn=applyRemotePose(peer,{}, now);
+ const ahead=remoteContactPose(peer,now);
+ // The drawn car is mid-segment (s=1); the newest sample arrived 130 ms ago and spent ~100 ms in flight (my 50 ms leg, assumed twice).
+ assert.ok(ahead.s>drawn.s+2,'the contact pose is the newest sample dead-reckoned across its time in flight');
+ assert.ok(ahead.s<=peer.state.s+20*.5+1e-6,'extrapolation for contacts is capped at 500 ms');
+ close(peer.state.s,2); close(drawn.s,1,.01); close(ahead.s,6.6,.01);
+ assert.equal(t.mode,'interpolate');
 });

@@ -13,10 +13,10 @@ const state=(t,extra={})=>({x:0,y:2+4*t-4.905*t*t,z:0,s:0,u:0,yaw:0,vLong:0,vLat
 test('vertical-only airborne snapshots interpolate the apex and rotate smoothly, then freeze',()=>{
   const timeline=new RemoteTimeline();
   for(const t of [0,.2,.4])timeline.push(state(t),{receivedAt:t*1000,serverNow:t*1000,stateAt:t*1000});
-  const mid=timeline.sample(320);assert.ok(Math.abs(mid.y-(2+4*.3-4.905*.3*.3))<1e-8);
+  const when=source=>source+timeline.base+timeline.delay,mid=timeline.sample(when(300));assert.ok(Math.abs(mid.y-(2+4*.3-4.905*.3*.3))<1e-8);
   assert.ok(Math.abs(mid.bodyQ[2]-Math.sin(.15))<1e-6);
-  const predicted=timeline.sample(520);assert.ok(predicted.y>2.7&&predicted.y<2.9);
-  const frozen=timeline.sample(2000),again=timeline.sample(3000);
+  const predicted=timeline.sample(when(500));assert.ok(predicted.y>2.7&&predicted.y<2.9);
+  const frozen=timeline.sample(when(2000)),again=timeline.sample(when(3000));
   assert.equal(frozen.y,again.y);assert.deepEqual(frozen.bodyQ,again.bodyQ);
 });
 test('stopped horizontal motion cannot suppress rising/rotating sender samples',()=>{
