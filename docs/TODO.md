@@ -56,9 +56,10 @@ Running (Sonnet; Enterprise unless noted):
 - [?] 911 silhouette pass (`68878224`): better but still lumpy/wedge nose; owner to judge on staging whether it needs a dedicated modelling pass
 - [x] Athens road screenshots re-made and checked (`914c48e3`)
 - [x] Athens stage 3: Piraeus/Faliro, 289 cells, 871 km of road, all gates green, 2×2 set 36.6/64 MiB (`1f61c0fd`, `eac1f7f5`)
-- [~] Athens stage 4: the centre (Kallithea→Syntagma/Omonia/Plaka→Kypseli) (Enterprise); north follows without owner wait
-- [~] Multiplayer sync (Enterprise): remote cars stepping, asymmetric ramming, restart teleport, lobby join glitches, traffic seed
-- [~] Playtest leftovers (Enterprise): Riviera draw calls <200 on Low/Potato, blurry player car, GLA badge clutter, clearer car vs trim picker
+- [~] Athens stage 4: the centre (Kallithea→Syntagma/Omonia/Plaka→Kypseli) (Personal, rate limit on Enterprise); north follows without owner wait
+- [x] Online: remote cars glide (jitter buffer, 20 Hz sim-clock samples, 50 ms relay) and car-to-car contacts symmetric (`3f35e7de`); owner to retest with a friend
+- [~] Multiplayer: restart teleport, lobby join glitches, traffic seed (Personal, rate limit on Enterprise)
+- [~] Playtest leftovers (Personal, rate limit on Enterprise): Riviera draw calls <200 on Low/Potato, blurry player car, GLA badge clutter, clearer car vs trim picker
 - [~] Release cutover (lead): after the batch is checked on staging
 
 Waiting on the owner:
