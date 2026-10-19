@@ -8,6 +8,8 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Porsche 911: a fastback roofline falling to a lower tail, raised front wings with upright oval headlamps, wider rear haunches; door mirrors are one piece with their arm.
+
 - Weak laptops: the lowest graphics classes now run fewer cars and pedestrians and refresh the HUD less often, and the first-run check also tests your processor.
 
 - Sound: engines and tyres no longer cut out or tick on a slow machine, and sound comes back by itself if the browser pauses it.
