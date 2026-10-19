@@ -1,0 +1,220 @@
+{
+  "directedEdges": 95192,
+  "directedKm": 5103.762618817622,
+  "mainComponent": {
+    "edges": 88325,
+    "km": 4761.468776567884,
+    "share": 0.9329330402264993
+  },
+  "otherComponents": 3120,
+  "minorKm": 195.293587452596,
+  "significant": [
+    {
+      "edges": 452,
+      "metres": 21276,
+      "sample": "osm:way:1295545186:0-0:b:-19:7",
+      "names": [
+        "Γρηγορίου Λαμπράκη",
+        "Αθανάσιου Διάκου",
+        "Κωνσταντίνου Κανάρη",
+        "Γ. Αφαρά"
+      ],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 229,
+      "metres": 12822,
+      "sample": "osm:way:1050039632:0-0:b:-17:7",
+      "names": [
+        "Ακτή Βασιλειάδη"
+      ],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 272,
+      "metres": 12400,
+      "sample": "osm:way:1329465411:0-0:f:8:-13",
+      "names": [],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 133,
+      "metres": 7270,
+      "sample": "osm:way:1027514800:0-0:b:10:-14",
+      "names": [],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 167,
+      "metres": 5464,
+      "sample": "osm:way:1227285469:0-0:b:-10:8",
+      "names": [],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 130,
+      "metres": 4431,
+      "sample": "osm:way:217690567:0-0:b:16:-15",
+      "names": [],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 74,
+      "metres": 4328,
+      "sample": "osm:way:192996690:0-0:b:3:27",
+      "names": [],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 74,
+      "metres": 3624,
+      "sample": "osm:way:1292373591:0-0:b:12:-7",
+      "names": [],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 36,
+      "metres": 3292,
+      "sample": "osm:way:215535897:0-0:b:-12:7",
+      "names": [],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 82,
+      "metres": 2797,
+      "sample": "osm:way:405121505:0-0:b:0:-15",
+      "names": [],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 55,
+      "metres": 2788,
+      "sample": "osm:way:1009144553:0-0:b:-16:7",
+      "names": [
+        "Ακτή Τζελέπη"
+      ],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 59,
+      "metres": 2566,
+      "sample": "osm:way:1240430382:0-0:b:12:-14",
+      "names": [
+        "Χειμάρρας",
+        "Κηφισίας",
+        "Γραβιάς",
+        "Γρανικού"
+      ],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 60,
+      "metres": 2400,
+      "sample": "osm:way:401072894:0-0:b:8:-15",
+      "names": [
+        "Κηφισίας",
+        "Ανάφης",
+        "Παπαϊωάννου Ι.",
+        "Θεσσαλίας"
+      ],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 46,
+      "metres": 2342,
+      "sample": "osm:way:80536712:0-0:b:8:-14",
+      "names": [],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 31,
+      "metres": 2302,
+      "sample": "osm:way:132374416:6-0:f:-11:7",
+      "names": [
+        "Διαμαντή",
+        "Δαβάκη - Πίνδου",
+        "Κατσουλάκου",
+        "Χρυσοστόμου Σμύρνης"
+      ],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 48,
+      "metres": 2107,
+      "sample": "osm:way:1387958621:0-0:b:2:-4",
+      "names": [],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 20,
+      "metres": 2076,
+      "sample": "osm:way:1328524347:0-0:b:1:19",
+      "names": [
+        "25η Οδός",
+        "Ελευθερίου Βενιζέλου"
+      ],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 38,
+      "metres": 1885,
+      "sample": "osm:way:802682658:13-0:b:-18:9",
+      "names": [],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 62,
+      "metres": 1805,
+      "sample": "osm:way:1215279319:0-0:b:3:0",
+      "names": [],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 48,
+      "metres": 1666,
+      "sample": "osm:way:274701962:1-1:b:4:-19",
+      "names": [
+        "Ζακύνθου",
+        "Ιθάκης",
+        "Λήμνου",
+        "Θράκης"
+      ],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 36,
+      "metres": 1640,
+      "sample": "osm:way:107542742:0-0:f:16:-8",
+      "names": [],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 16,
+      "metres": 1484,
+      "sample": "osm:way:1484423541:0-0:b:-11:8",
+      "names": [],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 44,
+      "metres": 1453,
+      "sample": "osm:way:1560753516:0-0:b:0:17",
+      "names": [],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 96,
+      "metres": 1398,
+      "sample": "osm:way:634697291:0-0:b:-2:10",
+      "names": [],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 20,
+      "metres": 1343,
+      "sample": "osm:way:921858484:2-0:b:10:-23",
+      "names": [],
+      "bridgeEdges": 0
+    }
+  ]
+}
