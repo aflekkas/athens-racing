@@ -1,0 +1,336 @@
+{
+ "world": "athens-centre-development",
+ "revision": "77476f339632bfb021376a6d0b088f0bcfc400f495cbf25dfa03b00e3b0978ee",
+ "manifestKey": "manifests/d61171c865ba119a2919d99905b36e6c12f01950ec3251a98b601281c5164aae.json",
+ "cells": 336,
+ "newCentreCells": 47,
+ "compressedBytes": 192718845,
+ "compressedMiB": 183.8,
+ "ceilingMiB": 192,
+ "headroomMiB": 8.2,
+ "largestCellBytes": 2080968,
+ "largestResidentBytes": 10709584,
+ "worst2x2SafetyMiB": 36.6,
+ "worst2x2SafetyCell": "-17,9",
+ "phoneCapMiB": 64,
+ "worst3x3NeighbourhoodMiB": 58.4,
+ "maxTransientMiB": 56.2,
+ "dependencies": 0,
+ "triangles": 7345586,
+ "graph": {
+  "directedEdges": 28175,
+  "nodes": 15496,
+  "turnRules": 462,
+  "roadKmDirectionsMerged": 1175.9,
+  "directedKm": 1594.9,
+  "towAnchors": 16986
+ },
+ "connectivity": {
+  "drivableDirectedEdges": 26314,
+  "drivableKm": 1480,
+  "mainComponentKm": 1162,
+  "mainComponentShare": 0.785,
+  "significantOtherComponents": [
+   {
+    "edges": 3258,
+    "metres": 148063,
+    "sample": "osm:way:1009144554:0-0:f:-15:8",
+    "names": [
+     "\u0391\u03ba\u03c4\u03ae \u039c\u03b9\u03b1\u03bf\u03cd\u03bb\u03b7",
+     "\u0391\u03bb\u03ad\u03be\u03b1\u03bd\u03b4\u03c1\u03bf\u03c5 \u03a0\u03b1\u03c0\u03b1\u03bd\u03b1\u03c3\u03c4\u03b1\u03c3\u03af\u03bf\u03c5",
+     "\u0391\u03ba\u03c4\u03ae \u0391\u03b8\u03b7\u03bd\u03ac\u03c2 \u0394\u03b7\u03bb\u03b1\u03b2\u03ad\u03c1\u03b7",
+     "\u0391\u03ba\u03c4\u03ae \u0398\u03b5\u03bc\u03b9\u03c3\u03c4\u03bf\u03ba\u03bb\u03ad\u03bf\u03c5\u03c2"
+    ],
+    "bridgeEdges": 16
+   },
+   {
+    "edges": 452,
+    "metres": 21276,
+    "sample": "osm:way:1295545186:0-0:b:-19:7",
+    "names": [
+     "\u0393\u03c1\u03b7\u03b3\u03bf\u03c1\u03af\u03bf\u03c5 \u039b\u03b1\u03bc\u03c0\u03c1\u03ac\u03ba\u03b7",
+     "\u0391\u03b8\u03b1\u03bd\u03ac\u03c3\u03b9\u03bf\u03c5 \u0394\u03b9\u03ac\u03ba\u03bf\u03c5",
+     "\u039a\u03c9\u03bd\u03c3\u03c4\u03b1\u03bd\u03c4\u03af\u03bd\u03bf\u03c5 \u039a\u03b1\u03bd\u03ac\u03c1\u03b7",
+     "\u0393. \u0391\u03c6\u03b1\u03c1\u03ac"
+    ],
+    "bridgeEdges": 0
+   },
+   {
+    "edges": 229,
+    "metres": 12822,
+    "sample": "osm:way:1050039632:0-0:b:-17:7",
+    "names": [
+     "\u0391\u03ba\u03c4\u03ae \u0392\u03b1\u03c3\u03b9\u03bb\u03b5\u03b9\u03ac\u03b4\u03b7"
+    ],
+    "bridgeEdges": 0
+   },
+   {
+    "edges": 167,
+    "metres": 5464,
+    "sample": "osm:way:1227285469:0-0:b:-10:8",
+    "names": [],
+    "bridgeEdges": 0
+   },
+   {
+    "edges": 74,
+    "metres": 4328,
+    "sample": "osm:way:192996690:0-0:b:3:27",
+    "names": [],
+    "bridgeEdges": 0
+   },
+   {
+    "edges": 36,
+    "metres": 3292,
+    "sample": "osm:way:215535897:0-0:b:-12:7",
+    "names": [],
+    "bridgeEdges": 0
+   },
+   {
+    "edges": 55,
+    "metres": 2788,
+    "sample": "osm:way:1009144553:0-0:b:-16:7",
+    "names": [
+     "\u0391\u03ba\u03c4\u03ae \u03a4\u03b6\u03b5\u03bb\u03ad\u03c0\u03b7"
+    ],
+    "bridgeEdges": 0
+   },
+   {
+    "edges": 30,
+    "metres": 2740,
+    "sample": "osm:way:132371520:0-0:f:-11:7",
+    "names": [
+     "\u03a6\u03c1\u03b1\u03b3\u03ba\u03b9\u03c3\u03ba\u03ac\u03c4\u03bf\u03c5",
+     "\u0395\u03b8\u03bd\u03ac\u03c1\u03c7\u03bf\u03c5 \u039c\u03b1\u03ba\u03b1\u03c1\u03af\u03bf\u03c5",
+     "\u0393\u03b9\u03b1\u03bd\u03bd\u03bf\u03c0\u03bf\u03cd\u03bb\u03bf\u03c5",
+     "\u03a3\u03bc\u03bf\u03bb\u03ad\u03bd\u03c3\u03ba\u03c5"
+    ],
+    "bridgeEdges": 0
+   },
+   {
+    "edges": 31,
+    "metres": 2302,
+    "sample": "osm:way:132374416:6-0:f:-11:7",
+    "names": [
+     "\u0394\u03b9\u03b1\u03bc\u03b1\u03bd\u03c4\u03ae",
+     "\u0394\u03b1\u03b2\u03ac\u03ba\u03b7 - \u03a0\u03af\u03bd\u03b4\u03bf\u03c5",
+     "\u039a\u03b1\u03c4\u03c3\u03bf\u03c5\u03bb\u03ac\u03ba\u03bf\u03c5",
+     "\u03a7\u03c1\u03c5\u03c3\u03bf\u03c3\u03c4\u03cc\u03bc\u03bf\u03c5 \u03a3\u03bc\u03cd\u03c1\u03bd\u03b7\u03c2"
+    ],
+    "bridgeEdges": 0
+   },
+   {
+    "edges": 20,
+    "metres": 2076,
+    "sample": "osm:way:1328524347:0-0:b:1:19",
+    "names": [
+     "25\u03b7 \u039f\u03b4\u03cc\u03c2",
+     "\u0395\u03bb\u03b5\u03c5\u03b8\u03b5\u03c1\u03af\u03bf\u03c5 \u0392\u03b5\u03bd\u03b9\u03b6\u03ad\u03bb\u03bf\u03c5"
+    ],
+    "bridgeEdges": 0
+   },
+   {
+    "edges": 38,
+    "metres": 1885,
+    "sample": "osm:way:802682658:13-0:b:-18:9",
+    "names": [],
+    "bridgeEdges": 0
+   },
+   {
+    "edges": 16,
+    "metres": 1484,
+    "sample": "osm:way:1484423541:0-0:b:-11:8",
+    "names": [],
+    "bridgeEdges": 0
+   },
+   {
+    "edges": 44,
+    "metres": 1453,
+    "sample": "osm:way:1560753516:0-0:b:0:17",
+    "names": [],
+    "bridgeEdges": 0
+   },
+   {
+    "edges": 24,
+    "metres": 1291,
+    "sample": "osm:way:101064155:0-0:f:-1:4",
+    "names": [
+     "\u039a\u03c1\u03b9\u03c4\u03af\u03bf\u03c5",
+     "\u039a\u03af\u03c4\u03c3\u03bf\u03c5 & \u03a0\u03ac\u03bd\u03bf\u03c5 \u039a\u03bf\u03c3\u03bc\u03ac",
+     "\u0397\u03bb\u03af\u03b1 \u0397\u03bb\u03b9\u03bf\u03cd",
+     "\u0391\u03bc\u03b2\u03c1\u03bf\u03c3\u03af\u03bf\u03c5 \u03a6\u03c1\u03b1\u03bd\u03c4\u03b6\u03ae"
+    ],
+    "bridgeEdges": 0
+   },
+   {
+    "edges": 27,
+    "metres": 1227,
+    "sample": "osm:way:101357275:0-0:b:-2:1",
+    "names": [
+     "\u0394\u03b7\u03bc\u03b7\u03c4\u03c1\u03af\u03bf\u03c5 \u0391\u03b9\u03b3\u03b9\u03bd\u03ae\u03c4\u03bf\u03c5",
+     "\u039f\u03c4\u03c1\u03c5\u03bd\u03ad\u03c9\u03bd",
+     "\u03a0\u03bd\u03c5\u03ba\u03cc\u03c2",
+     "\u0391\u03c3\u03c4\u03b5\u03c1\u03bf\u03c3\u03ba\u03bf\u03c0\u03b5\u03af\u03bf\u03c5"
+    ],
+    "bridgeEdges": 0
+   },
+   {
+    "edges": 24,
+    "metres": 1204,
+    "sample": "osm:way:1215329878:0-0:b:-12:9",
+    "names": [],
+    "bridgeEdges": 0
+   },
+   {
+    "edges": 48,
+    "metres": 1190,
+    "sample": "osm:way:154624996:0-0:b:-18:7",
+    "names": [],
+    "bridgeEdges": 0
+   },
+   {
+    "edges": 14,
+    "metres": 1162,
+    "sample": "osm:way:911542342:0-0:b:-19:8",
+    "names": [],
+    "bridgeEdges": 0
+   },
+   {
+    "edges": 43,
+    "metres": 1006,
+    "sample": "osm:way:377644631:11-0:f:0:15",
+    "names": [
+     "\u039a\u03cc\u03c1\u03b7\u03c2"
+    ],
+    "bridgeEdges": 0
+   },
+   {
+    "edges": 7,
+    "metres": 918,
+    "sample": "osm:way:1533232467:0-0:f:0:18",
+    "names": [],
+    "bridgeEdges": 0
+   },
+   {
+    "edges": 18,
+    "metres": 851,
+    "sample": "osm:way:1014425445:0-1:b:-8:7",
+    "names": [
+     "\u039a\u03bf\u03bb\u03bf\u03ba\u03bf\u03c4\u03c1\u03ce\u03bd\u03b7",
+     "\u0391\u03c3\u03ba\u03bb\u03b7\u03c0\u03b9\u03bf\u03cd",
+     "\u03a4\u03bf\u03bc\u03c0\u03ac\u03b6\u03b7"
+    ],
+    "bridgeEdges": 0
+   },
+   {
+    "edges": 16,
+    "metres": 818,
+    "sample": "osm:way:144429679:2-0:b:-8:10",
+    "names": [
+     "\u03a0\u03c1\u03bf\u03b2\u03bb\u03ae\u03c4\u03b1 E"
+    ],
+    "bridgeEdges": 0
+   },
+   {
+    "edges": 22,
+    "metres": 808,
+    "sample": "osm:way:1567997906:1-0:f:0:16",
+    "names": [],
+    "bridgeEdges": 0
+   },
+   {
+    "edges": 14,
+    "metres": 771,
+    "sample": "osm:way:170056499:1-1:b:4:23",
+    "names": [
+     "\u03a0\u03c1\u03bf\u03c6\u03ae\u03c4\u03bf\u03c5 \u0397\u03bb\u03af\u03b1"
+    ],
+    "bridgeEdges": 0
+   },
+   {
+    "edges": 20,
+    "metres": 754,
+    "sample": "osm:way:31617073:0-2:b:-3:3",
+    "names": [
+     "\u03a0\u03bb\u03b5\u03b9\u03ac\u03b4\u03bf\u03c2",
+     "\u0391\u03bd\u03b8\u03af\u03bf\u03c5",
+     "\u0397\u03c1\u03b1\u03af\u03c9\u03bd",
+     "\u0391\u03c1\u03ba\u03ac\u03b4\u03c9\u03bd"
+    ],
+    "bridgeEdges": 0
+   }
+  ],
+  "otherComponents": 1577,
+  "minorKm": 88
+ },
+ "gates": {
+  "asphaltTriangles": 1015913,
+  "asphaltAbove30": 0,
+  "maxAsphaltDegrees": 27.02,
+  "shoulderSamples": 55396467,
+  "maxShoulderStepCm": 14.37,
+  "maxShoulderDegrees": 29.89,
+  "missingContacts": 0,
+  "maxProfileGrade": 0.424,
+  "bridgeEdgeSamples": 9968,
+  "bridgeUnguarded": 0,
+  "clearanceSamples": 2584,
+  "clearanceBlocked": 0,
+  "minClearanceM": 4.73,
+  "unsafeAnchors": 0,
+  "cellsWithDecks": 13,
+  "junctionsChecked": 11194,
+  "junctionHoles": 0,
+  "overlapArea": 0,
+  "sidewalkSamples": 561836,
+  "sidewalkMissing": 0,
+  "zebras": 5170,
+  "fillets": 48286
+ },
+ "roads": {
+  "roadPartsPerCell": 20905,
+  "withSidewalks": 17824
+ },
+ "structures": {
+  "keptDeckGroups": 9,
+  "bridgeWaysDrawnAsGround": 43,
+  "planExclusions": 89,
+  "excludedRoads": 191,
+  "excludedByKind": {
+   "listed hillside street (coast)": 1,
+   "deck group cannot be lifted safely": 81,
+   "tunnel": 51,
+   "layered, not a modelled bridge": 41,
+   "steep street": 10,
+   "meets a deck inside its underpass dip": 7
+  },
+  "excludedByReason": {
+   "117 m residential street in cell 9,26 on a 30-degree hillside, 34 m below a parallel street: no surface on the shared 8 m lattice keeps both 6 m shoulders under 30 degrees and 15 cm steps. Owner gates are not relaxed; the street is left out and reported.": 1,
+   "deck group w203578886:0 cannot be lifted safely: approaches too short (-5 m)": 5,
+   "tunnel": 51,
+   "deck group w203578882:0 cannot be lifted safely: approaches too short (-5 m)": 7,
+   "deck group w203578885:0 cannot be lifted safely: approaches too short (-13 m)": 4,
+   "layer -1 without a bridge": 6,
+   "layer 1 without a bridge": 22,
+   "steep street, cell -16,8: 3 asphalt triangles over 30 degrees or a shoulder sweep past 15 cm / 30 degrees; no surface on the shared 8 m lattice keeps both 6 m shoulders inside the gates. Gates are not relaxed; the street is left out and reported.": 2,
+   "steep street, cell -16,8: asphalt up to 36 degrees and shoulder step 20.5 cm on a 44% street grade (Kastella slope); no surface on the shared 8 m lattice keeps both 6 m shoulders inside 30 degrees and 15 cm steps. Gates are not relaxed; the street is left out and reported.": 6,
+   "steep street, cell -15,7: shoulder slope 30.6 degrees on a 31% street grade; no surface on the shared 8 m lattice keeps both 6 m shoulders inside 30 degrees and 15 cm steps. Gates are not relaxed; the street is left out and reported.": 2,
+   "deck group w159134193:0 cannot be lifted safely: approaches too short (-12 m)": 2,
+   "meets a deck inside its underpass dip": 7,
+   "deck group w45203915:0 cannot be lifted safely: approaches too short (16 m)": 6,
+   "deck group w1412522680:0 cannot be lifted safely: approaches too short (13 m)": 13,
+   "deck group w45190029:0 cannot be lifted safely: approaches too short (-7 m)": 7,
+   "bridge on layer 2": 12,
+   "deck group w1339106044:0 cannot be lifted safely: approaches too short (25 m)": 3,
+   "deck group w1064153706:0 cannot be lifted safely: approaches too short (-18 m)": 2,
+   "layer 2 without a bridge": 1,
+   "deck group w1106702282:0 cannot be lifted safely: underpass clearance -0.20 m": 3,
+   "deck group w1365077650:0 cannot be lifted safely: underpass clearance 4.39 m": 4,
+   "deck group w15412852:0 cannot be lifted safely: approaches too short (17 m)": 10,
+   "deck group w23182600:0 cannot be lifted safely: approaches too short (15 m)": 9,
+   "deck group w168807552:0 cannot be lifted safely: approaches too short (-2 m)": 6
+  }
+ },
+ "clippedBuildingPieces": 7549,
+ "clippedBuildingPiecesDropped": 105,
+ "generatorCpuSeconds": 8177
+}

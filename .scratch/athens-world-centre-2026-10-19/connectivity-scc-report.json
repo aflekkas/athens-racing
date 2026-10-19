@@ -1,0 +1,240 @@
+{
+  "directedEdges": 26314,
+  "directedKm": 1480.364928267482,
+  "mainComponent": {
+    "edges": 19587,
+    "km": 1161.6018929003762,
+    "share": 0.7846726646380605
+  },
+  "otherComponents": 1577,
+  "minorKm": 87.566843374144,
+  "significant": [
+    {
+      "edges": 3258,
+      "metres": 148063,
+      "sample": "osm:way:1009144554:0-0:f:-15:8",
+      "names": [
+        "Ακτή Μιαούλη",
+        "Αλέξανδρου Παπαναστασίου",
+        "Ακτή Αθηνάς Δηλαβέρη",
+        "Ακτή Θεμιστοκλέους"
+      ],
+      "bridgeEdges": 16
+    },
+    {
+      "edges": 452,
+      "metres": 21276,
+      "sample": "osm:way:1295545186:0-0:b:-19:7",
+      "names": [
+        "Γρηγορίου Λαμπράκη",
+        "Αθανάσιου Διάκου",
+        "Κωνσταντίνου Κανάρη",
+        "Γ. Αφαρά"
+      ],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 229,
+      "metres": 12822,
+      "sample": "osm:way:1050039632:0-0:b:-17:7",
+      "names": [
+        "Ακτή Βασιλειάδη"
+      ],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 167,
+      "metres": 5464,
+      "sample": "osm:way:1227285469:0-0:b:-10:8",
+      "names": [],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 74,
+      "metres": 4328,
+      "sample": "osm:way:192996690:0-0:b:3:27",
+      "names": [],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 36,
+      "metres": 3292,
+      "sample": "osm:way:215535897:0-0:b:-12:7",
+      "names": [],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 55,
+      "metres": 2788,
+      "sample": "osm:way:1009144553:0-0:b:-16:7",
+      "names": [
+        "Ακτή Τζελέπη"
+      ],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 30,
+      "metres": 2740,
+      "sample": "osm:way:132371520:0-0:f:-11:7",
+      "names": [
+        "Φραγκισκάτου",
+        "Εθνάρχου Μακαρίου",
+        "Γιαννοπούλου",
+        "Σμολένσκυ"
+      ],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 31,
+      "metres": 2302,
+      "sample": "osm:way:132374416:6-0:f:-11:7",
+      "names": [
+        "Διαμαντή",
+        "Δαβάκη - Πίνδου",
+        "Κατσουλάκου",
+        "Χρυσοστόμου Σμύρνης"
+      ],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 20,
+      "metres": 2076,
+      "sample": "osm:way:1328524347:0-0:b:1:19",
+      "names": [
+        "25η Οδός",
+        "Ελευθερίου Βενιζέλου"
+      ],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 38,
+      "metres": 1885,
+      "sample": "osm:way:802682658:13-0:b:-18:9",
+      "names": [],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 16,
+      "metres": 1484,
+      "sample": "osm:way:1484423541:0-0:b:-11:8",
+      "names": [],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 44,
+      "metres": 1453,
+      "sample": "osm:way:1560753516:0-0:b:0:17",
+      "names": [],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 24,
+      "metres": 1291,
+      "sample": "osm:way:101064155:0-0:f:-1:4",
+      "names": [
+        "Κριτίου",
+        "Κίτσου & Πάνου Κοσμά",
+        "Ηλία Ηλιού",
+        "Αμβροσίου Φραντζή"
+      ],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 27,
+      "metres": 1227,
+      "sample": "osm:way:101357275:0-0:b:-2:1",
+      "names": [
+        "Δημητρίου Αιγινήτου",
+        "Οτρυνέων",
+        "Πνυκός",
+        "Αστεροσκοπείου"
+      ],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 24,
+      "metres": 1204,
+      "sample": "osm:way:1215329878:0-0:b:-12:9",
+      "names": [],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 48,
+      "metres": 1190,
+      "sample": "osm:way:154624996:0-0:b:-18:7",
+      "names": [],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 14,
+      "metres": 1162,
+      "sample": "osm:way:911542342:0-0:b:-19:8",
+      "names": [],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 43,
+      "metres": 1006,
+      "sample": "osm:way:377644631:11-0:f:0:15",
+      "names": [
+        "Κόρης"
+      ],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 7,
+      "metres": 918,
+      "sample": "osm:way:1533232467:0-0:f:0:18",
+      "names": [],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 18,
+      "metres": 851,
+      "sample": "osm:way:1014425445:0-1:b:-8:7",
+      "names": [
+        "Κολοκοτρώνη",
+        "Ασκληπιού",
+        "Τομπάζη"
+      ],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 16,
+      "metres": 818,
+      "sample": "osm:way:144429679:2-0:b:-8:10",
+      "names": [
+        "Προβλήτα E"
+      ],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 22,
+      "metres": 808,
+      "sample": "osm:way:1567997906:1-0:f:0:16",
+      "names": [],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 14,
+      "metres": 771,
+      "sample": "osm:way:170056499:1-1:b:4:23",
+      "names": [
+        "Προφήτου Ηλία"
+      ],
+      "bridgeEdges": 0
+    },
+    {
+      "edges": 20,
+      "metres": 754,
+      "sample": "osm:way:31617073:0-2:b:-3:3",
+      "names": [
+        "Πλειάδος",
+        "Ανθίου",
+        "Ηραίων",
+        "Αρκάδων"
+      ],
+      "bridgeEdges": 0
+    }
+  ]
+}
