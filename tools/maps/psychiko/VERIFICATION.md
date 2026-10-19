@@ -1,4 +1,37 @@
-# Psychiko drawn-loop verification — 2026-10-15
+# Psychiko realism verification — 2026-10-19
+
+Worktree `psychiko-realism`, branch `vas-per/psychiko-realism` (base `8351f10`). No push or deployment. Headless only: one SwiftShader Chromium at a time, each stopped by its own handle; evidence (small `.webp`/JSON) in the ignored `.scratch/psychiko-realism/impl-a/`.
+
+## Result
+
+- **Elevation:** one Copernicus GLO-30 field (sigma-20 m) for lap, streets, junctions, rings and terrain. Lap 178.5–239.4 m (was 185.0–239.9), ascent 79.0 m/lap (was 61.9), peak 20 m grade 12.2% up / 13.1% down (was 8.4% / 8.4%), 60 m 12.5%; runtime conformance is a no-op (validator). Steepest street Ouranou 30.2% over 20 m, matching the elevation research; no side-street step exceeds the field grade by 6% over 6 m (was 25–45% next to the lap). Terrain clears every road and shoulder (rendered-terrain scan); race closures follow the street slope.
+- **Direction:** no reverse Psychiko course anywhere (setup, events, server, lobby). Racing line, every network ring part and a 6,000-frame free-roam traffic simulation never move clockwise; no civilian runs against a one-way lap street (Areaki approaches included). Eleftherias is a ring (rim pieces only; approaches stay two-way). Arrows, give-way lines and P-1/P-40 signs at every public ring entry and mini-roundabout 351945852; Athens College 31270034 untouched. Border island 31486890 no longer self-intersects.
+- **Coverage:** 25is Martiou 97722996 and Stefanou Delta 97723003/790219496 restored (448 network road parts, 62.31 km; was 445, 62.16 km). 15 municipal building relations (50 ≤10-vertex blocks, courtyards open), Stefanou Delta stadium 3000647 and tracks, Attiko Alsos 1741088. Kifisias tunnels 25117418/113339568/113339581 still omitted (no grade separation).
+
+## Checks (clean `git archive` of the candidate)
+
+| Check | Result |
+|---|---|
+| `npm test` | 2,240 / 2,253 pass, 10 skipped, 3 fail in 2 files: `garage-cards` (browser bounds) and `traffic-race` (Riviera afternoon / rush hour). The **same three fail on clean 8351f10** (2,233 / 2,246). |
+| Physics regression | **1,261 passed, 0 failed** |
+| Browser imports / syntax | 291 modules / 372 modules |
+| `validate.mjs`, events, ghost lap | pass; 12 / 10 pass |
+| Offline rebuild `route.mjs && build.mjs && build-detail-records.mjs` | `map.json`, `terrain.bin`, `route.json` and every other map bundle byte-identical |
+
+## Performance (identical harness and poses, `.scratch/psychiko-realism/coverage/bake-baseline.mjs` + `perf-browser.mjs`, 960×600)
+
+| Class | Pose | Draw calls before → after | Triangles before → after |
+|---|---|---|---|
+| Low | start | 228 → 229 | 1,640,257 → 1,645,963 (+0.35%) |
+| Low | mid | 312 → 313 | 922,640 → 928,789 (+0.67%) |
+| Low | overview | 1,808 → 1,811 | 1,739,436 → 1,747,416 (+0.46%) |
+| High | start | 231 → 233 | 1,597,691 → 1,601,473 (+0.24%) |
+| High | mid | 319 → 319 | 883,866 → 886,891 (+0.34%) |
+| High | overview | 1,836 → 1,839 | 2,131,490 → 2,144,164 (+0.59%) |
+
+Side-road pack 1,074,658 → 1,087,238 triangles (+1.2%; three restored streets, 1.5 cm road chord tolerance on Psychiko's hills); terrain pack 1,135,069 → 1,135,513 triangles. Downloads (gzip): terrain.bin 130 → 160 KB (same 361×381 grid, more real relief), roads pack 27.95 → 28.62 MB, terrain pack 7.69 → 8.07 MB, map.json 378 → 390 KB. In-game fixed-pose detail budget (Psychiko mid): 407 → 406 draw calls, +0.65% triangles.
+
+# Psychiko drawn-loop verification — 2026-10-15 (historical)
 
 Worktree: `t3-ff227117`, branch `psychiko-track`. No push or deployment. All browser captures used headless Chromium; the private server used port 8117 and was stopped with its browser after capture. Other worktrees' servers were untouched.
 
