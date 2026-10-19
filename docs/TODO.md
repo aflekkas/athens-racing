@@ -5,7 +5,7 @@ This is the lead's single list of open work. It's updated as tasks are assigned,
 Last updated: 2026-10-18 20:40 UTC.
 
 ## In flight (lead thread "Fix Floor Visibility in All Cars", check-up every 30 min)
-Production is on hold (`~/.local/state/athens-release/production-hold`). Staging live at `914c48e3` (train, 2026-10-19 02:50 UTC). Agents use Haiku/Sonnet only (Codex quota ran out; no Opus).
+Production is on hold (`~/.local/state/athens-release/production-hold`). Staging live at `1f61c0fd` (train, 2026-10-19 05:15 UTC). Agents use Haiku/Sonnet only (Codex quota ran out; no Opus).
 
 Done and checked by the lead:
 - [x] Leaderboards inside Quick Race (`5149f16d`, `9a7c06ca`, `c9619d55`)
@@ -55,7 +55,9 @@ Running (Sonnet; Enterprise unless noted):
 - [x] One-piece door mirrors on modern cars (`68878224`)
 - [?] 911 silhouette pass (`68878224`): better but still lumpy/wedge nose; owner to judge on staging whether it needs a dedicated modelling pass
 - [x] Athens road screenshots re-made and checked (`914c48e3`)
-- [~] Athens stage 3: Piraeus/Faliro connected to the coast, ground + guardrail polish (Personal); hold before the centre
+- [~] Athens stage 3: Piraeus/Faliro committed (`1f61c0fd`), report pending; owner said keep going overnight, so centre then north follow without waiting
+- [~] Multiplayer sync (Enterprise): remote cars stepping, asymmetric ramming, restart teleport, lobby join glitches, traffic seed
+- [~] Playtest leftovers (Enterprise): Riviera draw calls <200 on Low/Potato, blurry player car, GLA badge clutter, clearer car vs trim picker
 - [~] Release cutover (lead): after the batch is checked on staging
 
 Waiting on the owner:
