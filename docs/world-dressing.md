@@ -70,3 +70,39 @@ Counts, 16 test cells: **194 heads** (Syntagma cell 25, Kypseli 33 + 20, Piraeus
 CACHE=/home/dev/data/athens-world-cache
 $CACHE/venv/bin/python tools/world-gen/street_nodes.py $CACHE/attica.osm.pbf $CACHE/street-nodes.sqlite $CACHE/attica-tree-nodes.osm.pbf
 ```
+
+## Street details (instanced, from OSM)
+
+Everything below is a row of `worldDetail.props` (x, y, z, yaw, variant as Float32, plus one Uint8 kind: 21 bytes per prop), placed by `props.py` from `street-nodes.sqlite` and road tags, kept off buildings (0.5 to 1.4 m clearance) and inside the cell. **One instanced mesh per model in view** (`src/athens-props.js`): at most one draw call per model, none for a model with nothing in range, in total one nearest-first pool of 900 instances. Each model has its own range (`PROP_NEAR`): lamps 210 m, signals 230, bus stops and kiosks 140, fountains and monuments 160, parked cars 120, signs 100 to 110, benches and bollards 80, so a street scene shows a handful of models. Models are unlit coloured boxes: street props 12 to 120 triangles (signal head 132, fountain 120), signs at most 48. World detail Off hides the layer and builds nothing. Draw cost is per model in view, not per tile or per prop.
+
+| model | OSM source and rule | triangles | per km² in the centre test cells |
+|---|---|---|---|
+| street lamp | `highway=street_lamp` nodes, and every 42 m (alternating sides) along `lit=yes` roads of class residential or larger | 36 | 151 |
+| bench | `amenity=bench`, `leisure=picnic_table` nodes | 48 | 142 |
+| kiosk (periptero) | `shop=kiosk`, `amenity=kiosk` nodes | 36 | 20 |
+| bus stop, bus shelter | `highway=bus_stop` (or `public_transport=platform` + `bus=yes`) nodes; a shelter if `shelter=yes`; moved to the kerb of the side of the road it is on | 24, 60 | 3, 20 |
+| pedestrian-crossing sign | `highway=crossing` nodes (not `crossing=no`), 3 m before the crossing on the right kerb of each approach | 48 | 36 |
+| stop and give-way sign | `highway=stop`, `highway=give_way` on the least important road that ends at the node (all arms if equal), 4.5 m before it; never at a signal | 36 | 11 (stop) |
+| one-way sign | edges with `oneway`, 7 m after their start, half of them by a hash of the edge id; not at a signal | 48 | 50 |
+| bollard | `barrier=bollard` nodes | 12 | 3 |
+| fountain, monument | `amenity=fountain`; `historic=monument` or `memorial` nodes | 120, 36 | 3, 17 |
+| parked car | edges with `parking:lane:left/right` in parallel, diagonal, perpendicular, marked or yes: a car every 6.5 m on 55% of slots, six paint colours through the instance colour | 72 | 0 in the centre, 172 over the three Piraeus cells |
+| trees | existing `worldDetail.vegetation` (OSM trees, tree rows and park samples), unchanged | n/a | 153 |
+| traffic signals | see above | 132 | 68 |
+
+Density is the six centre test cells (Syntagma, Plaka, Kypseli; 1.57 km²). OSM is the limit: nothing here is invented, so a district with few tagged benches has few. Not done: pedestrian-street paving (`highway=pedestrian` ways are not in the road tables or in the node cache; a pedestrian mesh needs the ways from the extract), awnings and cafe tables, kerb ramps, street signs with names, trees beyond the existing vegetation layer.
+
+### Where the nodes come from
+
+A way-complete Attica extract has only the nodes that belong to ways, so it lacks most benches, kiosks, bus stops and lamps (3 kiosks and 19 benches in the whole region). `street-nodes.sqlite` is therefore built from the pinned full Greece source (`greece-261014.osm.pbf`, 342 MB, hash-checked; delete it afterwards as `vegetation-nodes.py` says), 6.5 MB, 2.7 minutes: 11,824 crossings, 8,814 bus stops, 8,257 stop signs, 6,760 benches, 5,532 signals, 5,095 lamps, 1,173 kiosks, 608 monuments, 517 bollards, 276 give-way signs, 200 fountains. The cache in the shared cache directory is this full one.
+
+```sh
+CACHE=/home/dev/data/athens-world-cache
+# fetch the Greece source into the cache once (tools/world-gen/fetch.py), then
+$CACHE/venv/bin/python tools/world-gen/street_nodes.py $CACHE/greece-261014.osm.pbf $CACHE/street-nodes.sqlite
+```
+
+### Cost, 16 test cells (compared with the bake of step 1)
+
+* Compressed **+0.04 to +6.8 KB per cell** (+0.1% to +1.8%: signals, props and the kind column), resident **+0.2 to +12 KB** (+0.1% to +0.3%). Dense cells hold 100 to 400 rows (2 to 8 KB raw).
+* Draw calls and triangles in the dense views, whole layer (signals + details) On against the step-1 tree, `step3/measure.json`: Syntagma 113 to 121 calls (+7.1%), triangles +12.5%; Plaka 153 to 156 (+2.0%), +0.4%; Kypseli 122 to 127 (+4.1%), +2.6%; Piraeus 130 to 139 (+6.9%), +5.0%. With World detail Off: unchanged in all four (the layer builds nothing).

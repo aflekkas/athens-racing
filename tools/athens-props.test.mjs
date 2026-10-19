@@ -2,7 +2,7 @@
 import test from 'node:test';import {readFileSync} from 'node:fs';import assert from 'node:assert/strict';import * as THREE from 'three';
 import {CYCLE,GREEN,AMBER,RED0,STOP_OFF,signalState} from '../src/signal-plan.js';
 
-import {AthensProps,KINDS,PROP_LIMITS,propParts,propGeometry,signalMaterial} from '../src/athens-props.js';
+import {AthensProps,KINDS,PROP_LIMITS,PROP_NEAR,propParts,propGeometry,signalMaterial} from '../src/athens-props.js';
 const row=(...v)=>Float32Array.from(v);
 function packet(origin,{props=[],signals=[]}={}){
   const ids=['','osm:edge:a','osm:edge:b'],arrays=[],add=a=>arrays.push(a)-1;
@@ -42,6 +42,11 @@ test('tile rows become instances, one mesh per model; the nearest come first; re
   p.update({position:{x:512,z:0}},0);assert.equal(count(p,'kiosk'),1,'positions are absolute: the second tile\'s origin is added');
   const m=new THREE.Matrix4();p.meshes.get(KINDS.kiosk).mesh.getMatrixAt(0,m);assert.equal(m.elements[12],517);
   p.removeTile('0,0');p.removeTile('1,0');p.update({position:{x:5000,z:0}},0);assert.equal(p.stats.instances,0);assert.equal(p.stats.drawCalls,0,'nothing in range costs no draw call');
+});
+test('small models stop earlier than lamps and signals, so few models are in view at once',()=>{
+  assert.deepEqual(Object.keys(PROP_NEAR).sort(),Object.keys(KINDS).sort());assert.ok(PROP_NEAR.bench<PROP_NEAR.lamp&&PROP_NEAR.crossing<PROP_NEAR.signal&&Math.max(...Object.values(PROP_NEAR))<=PROP_LIMITS.near);
+  const p=new AthensProps(parent());p.addTile('0,0',packet([0,0,0],{props:[{kind:KINDS.bench,x:90,z:0},{kind:KINDS.lamp,x:90,z:5},{kind:KINDS.crossing,x:105,z:0},{kind:KINDS.stop,x:105,z:5}]}));
+  p.update({position:{x:0,z:0}},0);assert.equal(count(p,'bench'),0,'a bench 90 m away is not drawn');assert.equal(count(p,'lamp'),1);assert.equal(count(p,'crossing'),0);assert.equal(count(p,'stop'),1,'a stop sign 105 m away is');
 });
 test('a signal head lights the lamp of its phase, rewriting state only when the phase changes',()=>{
   const p=new AthensProps(parent());p.addTile('0,0',packet([0,0,0],{signals:[{x:5,z:5,edge:1,group:0,offset:0},{x:6,z:6,edge:2,group:1,offset:0}]}));

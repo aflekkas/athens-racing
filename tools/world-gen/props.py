@@ -13,7 +13,7 @@ from shapely.strtree import STRtree
 CYCLE=28.;WAVE_V=80/3.6;STOP_OFF=9.;CLUSTER_R=35.;ARM_R=25.
 KINDS=dict(lamp=0,bus_stop=1,bus_shelter=2,kiosk=3,bench=4,bollard=5,stop=6,give_way=7,oneway=8,fountain=9,monument=10,parked_car=11,crossing=12)
 NODE_KINDS=('signals','stop','give_way','lamp','bus_stop','bollard','bench','kiosk','fountain','monument','crossing')
-FURNITURE=False  # step 2 emits signals only; step 3 turns the street furniture on
+FURNITURE=True
 LAMP_SPACING=42.;PARK_SPACING=6.5;MAX_PROPS=900;MAX_SIGNALS=96
 PARKING_VALUES=('parallel','diagonal','perpendicular','marked','yes')
 RANK=dict(motorway=0,trunk=1,primary=2,secondary=3,tertiary=4,unclassified=5,residential=6,living_street=7,service=8,road=6)
@@ -107,23 +107,6 @@ def build(emitted,field,ox,oz,nodes,extras,footprints,height):
         ex,ez=world(points[-1])
         if any(math.hypot(ex-m['x'],ez-m['z'])<ARM_R for j in junctions for m in j['members']):signalled.add(edge['id'])
     if not FURNITURE:return sig,props
-    # ---- lamps along lit roads (forward edges only, so each two-way road gets one staggered side), and OSM lamps
-    for edge,points,total,hw,road in edges:
-        extra=extras.get((road or {}).get('way','').split(':')[0]) if road else None
-        if not extra:continue
-        lit,parking=extra
-        if lit and ':f:' in edge['id'] and road['highway'] in RANK and RANK[road['highway']]<=6 and total[-1]>=2*18:
-            n=int((total[-1]-24)//LAMP_SPACING)+1
-            for k in range(max(n,0)):
-                s=12+k*LAMP_SPACING;x,z,dx,dz=at(points,total,s);px,pz=side_offset(x,z,dx,dz,hw+.7,'right' if k%2==0 else 'left')
-                if free(px,pz,.5):prop('lamp',px,pz,math.atan2(-dx,-dz))
-        if parking and ':f:' in edge['id']:
-            for side in parking:
-                s=14.
-                while s<total[-1]-14 and len(props['kind'])<MAX_PROPS:
-                    x,z,dx,dz=at(points,total,s);px,pz=side_offset(x,z,dx,dz,hw-1.1,side)
-                    if hash01(edge['id'],side,int(s))<.55 and free(px,pz,1.4):prop('parked_car',px,pz,math.atan2(-dx,-dz),int(hash01(edge['id'],side,int(s),'c')*6))
-                    s+=PARK_SPACING
     # ---- one-way signs at the start of one-way edges that begin at a junction
     for edge,points,total,hw,road in edges:
         if edge['flags']&1 and total[-1]>=30 and edge['id'] not in signalled:
@@ -176,4 +159,22 @@ def build(emitted,field,ox,oz,nodes,extras,footprints,height):
             if free(sx,sz,.8):prop('bus_shelter' if n['tags'].get('shelter')=='yes' else 'bus_stop',sx,sz,math.atan2(-dx,-dz)+(0. if sgn==1 else math.pi))
         elif k in ('bench','bollard','kiosk','fountain','monument'):
             if free(lx,lz,.5):prop(k,lx,lz,hash01(n['id'])*6.283)
+    # Procedural fill goes last so the cell cap never costs the OSM-mapped furniture above.
+    # ---- lamps along lit roads (forward edges only, so each two-way road gets one staggered side), and OSM lamps
+    for edge,points,total,hw,road in edges:
+        extra=extras.get((road or {}).get('way','').split(':')[0]) if road else None
+        if not extra:continue
+        lit,parking=extra
+        if lit and ':f:' in edge['id'] and road['highway'] in RANK and RANK[road['highway']]<=6 and total[-1]>=2*18:
+            n=int((total[-1]-24)//LAMP_SPACING)+1
+            for k in range(max(n,0)):
+                s=12+k*LAMP_SPACING;x,z,dx,dz=at(points,total,s);px,pz=side_offset(x,z,dx,dz,hw+.7,'right' if k%2==0 else 'left')
+                if free(px,pz,.5):prop('lamp',px,pz,math.atan2(-dx,-dz))
+        if parking and ':f:' in edge['id']:
+            for side in parking:
+                s=14.
+                while s<total[-1]-14 and len(props['kind'])<MAX_PROPS:
+                    x,z,dx,dz=at(points,total,s);px,pz=side_offset(x,z,dx,dz,hw-1.1,side)
+                    if hash01(edge['id'],side,int(s))<.55 and free(px,pz,1.4):prop('parked_car',px,pz,math.atan2(-dx,-dz),int(hash01(edge['id'],side,int(s),'c')*6))
+                    s+=PARK_SPACING
     return sig,props
