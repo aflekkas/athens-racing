@@ -1,0 +1,176 @@
+{
+  "root": "/tmp/athens-leftovers.tZt1/base",
+  "map": "riviera",
+  "class": "potato",
+  "throttle": 4,
+  "viewport": [
+    640,
+    360
+  ],
+  "seconds": 15,
+  "cap": 60,
+  "dyn": false,
+  "noworld": false,
+  "errors": [],
+  "breakdown": {
+    "total": {
+      "calls": 237,
+      "tris": 612331
+    },
+    "rows": [
+      {
+        "label": "map-world:riviera",
+        "calls": 152,
+        "tris": 605216
+      },
+      {
+        "label": "map-world:riviera > terrain",
+        "calls": 18,
+        "tris": 295801
+      },
+      {
+        "label": "map-world:riviera > surrounding-osm-roads",
+        "calls": 5,
+        "tris": 84512
+      },
+      {
+        "label": "map-world:riviera > terrain > Mesh",
+        "calls": 1,
+        "tris": 37459
+      },
+      {
+        "label": "map-world:riviera > terrain > Mesh",
+        "calls": 1,
+        "tris": 28748
+      },
+      {
+        "label": "map-world:riviera > terrain > Mesh",
+        "calls": 1,
+        "tris": 24763
+      },
+      {
+        "label": "map-world:riviera > terrain > Mesh",
+        "calls": 1,
+        "tris": 24258
+      },
+      {
+        "label": "map-world:riviera > terrain > Mesh",
+        "calls": 1,
+        "tris": 22315
+      },
+      {
+        "label": "map-world:riviera > terrain > Mesh",
+        "calls": 1,
+        "tris": 20074
+      },
+      {
+        "label": "map-world:riviera > surrounding-osm-roads > Mesh",
+        "calls": 1,
+        "tris": 17553
+      },
+      {
+        "label": "map-world:riviera > surrounding-osm-roads > Mesh",
+        "calls": 1,
+        "tris": 15898
+      },
+      {
+        "label": "map-world:riviera > Group",
+        "calls": 5,
+        "tris": 15040
+      },
+      {
+        "label": "map-world:riviera > terrain > Mesh",
+        "calls": 1,
+        "tris": 11027
+      },
+      {
+        "label": "map-world:riviera > terrain > Mesh",
+        "calls": 1,
+        "tris": 6127
+      },
+      {
+        "label": "map-world:riviera > surrounding-osm-roads > Mesh",
+        "calls": 1,
+        "tris": 5922
+      },
+      {
+        "label": "map-world:riviera > terrain > Mesh",
+        "calls": 1,
+        "tris": 4169
+      },
+      {
+        "label": "map-world:riviera > terrain > Mesh",
+        "calls": 1,
+        "tris": 3356
+      },
+      {
+        "label": "Group",
+        "calls": 24,
+        "tris": 484
+      },
+      {
+        "label": "map-world:riviera > Group",
+        "calls": 9,
+        "tris": 456
+      },
+      {
+        "label": "map-world:riviera > block-buildings",
+        "calls": 5,
+        "tris": 360
+      }
+    ]
+  },
+  "snapshot": {
+    "systems": {
+      "signals": 0.21500001351038614,
+      "people": 1.1333333412806192,
+      "hud": 5.0650000154972075,
+      "audio": 0.1400000055631002,
+      "renderSubmission": 0.011666667461395264,
+      "playerPhysics": 2.0450000067551932,
+      "rivals": 4.693333315849304,
+      "traffic": 1.3833333333333333,
+      "police": 0.57000000278155
+    },
+    "stepMs": 26.07833333412806,
+    "stepMedianBlockMs": 30.051666669050853,
+    "stepP95": 39.700000047683716,
+    "stepMax": 80.89999997615814,
+    "renderMsMedian": 83.60000002384186,
+    "calls": 237,
+    "triangles": 612331,
+    "pixelRatio": 0.6,
+    "drawDistance": 500,
+    "perfClass": "potato",
+    "programs": 79,
+    "trafficActive": 22,
+    "peds": 8,
+    "heapMB": 478.44377613067627
+  },
+  "summary": {
+    "class": "potato",
+    "map": "riviera",
+    "throttle": 4,
+    "stepMs": 26.08,
+    "stepMedianBlockMs": 30.05,
+    "stepP95": 39.7,
+    "signals": 0.22,
+    "people": 1.13,
+    "hud": 5.07,
+    "audio": 0.14,
+    "renderSubmission": 0.01,
+    "playerPhysics": 2.05,
+    "rivals": 4.69,
+    "traffic": 1.38,
+    "police": 0.57,
+    "other": 10.82,
+    "renderMsMedian": 83.6,
+    "calls": 237,
+    "triangles": 612331,
+    "pixelRatio": 0.6,
+    "drawDistance": 500,
+    "trafficActive": 22,
+    "peds": 8,
+    "heapMB": 478
+  }
+}

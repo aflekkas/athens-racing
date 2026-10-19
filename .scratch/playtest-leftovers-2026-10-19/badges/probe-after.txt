@@ -1,0 +1,78 @@
+mini             F ?(b gap0.004) | R ?(b gap0.004),trim-badge(l gap-0.004) | wheel 4
+z4               F ?(b gap0.004) | R ?(b gap0.004),trim-badge(l gap-0.028) | wheel 4
+taxi             F ?(b gap0.004) | R ?(b gap0.004),trim-badge(l gap-0.042) | wheel 4
+carrera          F carrera-bonnet-crest(b gap0.004) | R brand-badge-rear(b gap0.006) | wheel 4
+gr_yaris         F brand-badge-front(b gap0.006) | R brand-badge-rear(b gap0.006) | wheel 4
+gtv              F gtv-round-alfa-emblem(b gap0.034) | R brand-badge-rear(b gap0.003) | wheel 4
+golf             F manufacturer-emblem(b gap0.017) | R trim-badge(l gap0.035),brand-badge-rear(b gap0.003) | wheel 4
+corolla          F manufacturer-emblem(b gap0.017) | R trim-badge(l gap0.037),brand-badge-rear(b gap0.003) | wheel 4
+superb           F manufacturer-emblem(b gap0.009) | R trim-badge(l gap0.034),brand-badge-rear(b gap0.003) | wheel 4
+police_octavia   F manufacturer-emblem(b gap0.009) | R brand-badge-rear(b gap0.003) | wheel 4
+mini_jcw         F brand-badge(b gap0.007) | R trim-badge(l gap0.017),brand-badge-rear(b gap0.003) | wheel 4
+cle              F brand-badge(b gap0.001) | R brand-badge(b gap0.001),trim-badge(l gap0.041) | wheel 4
+gla              F brand-badge(b gap0.001) | R brand-badge(b gap0.001),trim-badge(l gap0.024) | wheel 4
+gla45            F brand-badge(b gap0.001) | R brand-badge(b gap0.001),trim-badge(l gap0.040) | wheel 4
+cla              F brand-badge(b gap0.001) | R brand-badge(b gap0.001),trim-badge(l gap0.042) | wheel 4
+aventador_svj    F brand-badge(b gap0.012) | R trim-badge(l gap0.004),brand-badge-rear(b gap0.003) | wheel 4
+huracan          F brand-badge-front(b gap0.006) | R brand-badge(b gap0.004),trim-badge(l gap0.028) | wheel 4
+ibiza            F brand-badge(b gap0.003) | R trim-badge(l gap0.027),brand-badge-rear(b gap0.003) | wheel 4
+panda            F brand-badge(b gap0.026) | R trim-badge(l gap0.019),brand-badge-rear(b gap0.003) | wheel 4
+yaris            F brand-badge(b gap0.007) | R trim-badge(l gap0.018),brand-badge-rear(b gap0.003) | wheel 4
+e36              F brand-badge(b gap0.009) | R trim-badge(l gap0.027),brand-badge-rear(b gap0.003) | wheel 4
+cle200           F brand-badge(b gap0.001) | R brand-badge(b gap0.001),trim-badge(l gap0.041) | wheel 4
+cle450           F brand-badge(b gap0.001) | R brand-badge(b gap0.001),trim-badge(l gap0.041) | wheel 4
+cle53            F brand-badge(b gap0.001) | R brand-badge(b gap0.001),trim-badge(l gap0.041) | wheel 4
+e36_m3           F brand-badge(b gap0.009) | R trim-badge(l gap0.027),brand-badge-rear(b gap0.003) | wheel 4
+panda_11         F brand-badge(b gap0.026) | R trim-badge(l gap0.019),brand-badge-rear(b gap0.003) | wheel 4
+panda_100hp      F brand-badge(b gap0.026) | R trim-badge(l gap0.019),brand-badge-rear(b gap0.003) | wheel 4
+yaris_13         F brand-badge(b gap0.007) | R trim-badge(l gap0.018),brand-badge-rear(b gap0.003) | wheel 4
+yaris_ts         F brand-badge(b gap0.007) | R trim-badge(l gap0.018),brand-badge-rear(b gap0.003) | wheel 4
+ibiza_cupra      F brand-badge(b gap0.003) | R trim-badge(l gap0.027),brand-badge-rear(b gap0.003) | wheel 4
+golf_gti         F manufacturer-emblem(b gap0.017) | R trim-badge(l gap0.035),brand-badge-rear(b gap0.003) | wheel 4
+golf_gtd         F manufacturer-emblem(b gap0.017) | R trim-badge(l gap0.035),brand-badge-rear(b gap0.003) | wheel 4
+golf_r           F manufacturer-emblem(b gap0.017) | R trim-badge(l gap0.035),brand-badge-rear(b gap0.003) | wheel 4
+mini_cooper      F brand-badge(b gap0.007) | R trim-badge(l gap0.017),brand-badge-rear(b gap0.003) | wheel 4
+mini_s           F brand-badge(b gap0.007) | R trim-badge(l gap0.017),brand-badge-rear(b gap0.003) | wheel 4
+mini_cabrio_cooper F ?(b gap0.004) | R ?(b gap0.004),trim-badge(l gap-0.004) | wheel 4
+corolla_15       F manufacturer-emblem(b gap0.017) | R trim-badge(l gap0.037),brand-badge-rear(b gap0.003) | wheel 4
+octavia_16tdi    F ?(b gap0.004) | R ?(b gap0.004),trim-badge(l gap-0.042) | wheel 4
+octavia_rs       F ?(b gap0.004) | R ?(b gap0.004),trim-badge(l gap-0.042) | wheel 4
+superb_15        F manufacturer-emblem(b gap0.009) | R trim-badge(l gap0.034),brand-badge-rear(b gap0.003) | wheel 4
+superb_4x4       F manufacturer-emblem(b gap0.009) | R trim-badge(l gap0.034),brand-badge-rear(b gap0.003) | wheel 4
+cla250           F brand-badge(b gap0.001) | R brand-badge(b gap0.001),trim-badge(l gap0.042) | wheel 4
+cla35            F brand-badge(b gap0.001) | R brand-badge(b gap0.001),trim-badge(l gap0.042) | wheel 4
+cla45s           F brand-badge(b gap0.001) | R brand-badge(b gap0.001),trim-badge(l gap0.042) | wheel 4
+gla250           F brand-badge(b gap0.001) | R brand-badge(b gap0.001),trim-badge(l gap0.024) | wheel 4
+z4_20i           F ?(b gap0.004) | R ?(b gap0.004),trim-badge(l gap-0.028) | wheel 4
+z4_30i           F ?(b gap0.004) | R ?(b gap0.004),trim-badge(l gap-0.028) | wheel 4
+carrera_s        F carrera-bonnet-crest(b gap0.004) | R brand-badge-rear(b gap0.006) | wheel 4
+carrera_gts      F carrera-bonnet-crest(b gap0.004) | R brand-badge-rear(b gap0.006) | wheel 4
+huracan_rwd      F brand-badge-front(b gap0.006) | R brand-badge(b gap0.004),trim-badge(l gap0.028) | wheel 4
+gtv1750          F gtv-round-alfa-emblem(b gap0.034) | R brand-badge-rear(b gap0.003) | wheel 4
+e36_318i         F brand-badge(b gap0.009) | R trim-badge(l gap0.027),brand-badge-rear(b gap0.003) | wheel 4
+mini_cabrio_jcw  F ?(b gap0.004) | R ?(b gap0.004),trim-badge(l gap-0.004) | wheel 4
+cle300e          F brand-badge(b gap0.001) | R brand-badge(b gap0.001),trim-badge(l gap0.041) | wheel 4
+jazz             F brand-badge(b gap0.020) | R brand-badge(b gap0.013),trim-badge(l gap0.022) | wheel 4
+jazz_dynamic     F brand-badge(b gap0.020) | R brand-badge(b gap0.013),trim-badge(l gap0.022) | wheel 4
+jazz_drift       F brand-badge(b gap0.020) | R brand-badge(b gap0.013),trim-badge(l gap0.022) | wheel 4
+aygo             F  | R  | wheel 0
+qashqai          F  | R  | wheel 0
+qashqai_dci      F  | R  | wheel 0
+dolphin          F  | R  | wheel 0
+atto3            F  | R  | wheel 0
+van              F  | R  | wheel 0
+van_150          F  | R  | wheel 0
+truck            F  | R  | wheel 0
+bus              F  | R  | wheel 0
+a160             F brand-badge-front(b gap0.003) | R trim-badge(l gap0.017),brand-badge-rear(b gap0.003) | wheel 4
+a190             F brand-badge-front(b gap0.003) | R trim-badge(l gap0.017),brand-badge-rear(b gap0.003) | wheel 4
+sl400            F brand-badge(b gap0.001) | R brand-badge(b gap0.001),trim-badge(l gap0.040) | wheel 4
+sl500            F brand-badge(b gap0.001) | R brand-badge(b gap0.001),trim-badge(l gap0.040) | wheel 4
+sl63             F brand-badge(b gap0.001) | R brand-badge(b gap0.001),trim-badge(l gap0.040) | wheel 4
+sl65             F brand-badge(b gap0.001) | R brand-badge(b gap0.001),trim-badge(l gap0.040) | wheel 4
+f348             F 348-front-grille-horse(b gap0.006) | R 348-tail-grille-horse(b gap0.034),trim-badge(l gap0.025) | wheel 4
+f348_ts          F 348-front-grille-horse(b gap0.006) | R 348-tail-grille-horse(b gap0.034),trim-badge(l gap0.025) | wheel 4
+f348_spider      F 348-front-grille-horse(b gap0.006) | R 348-tail-grille-horse(b gap0.034),trim-badge(l gap0.025) | wheel 4
+p928_s4          F bonnet-badge(b gap0.004) | R rear-badge(l gap-0.012),trim-badge(l gap0.018),brand-badge-rear(b gap0.003) | wheel 4
+p928_gt          F bonnet-badge(b gap0.004) | R rear-badge(l gap-0.012),trim-badge(l gap0.018),brand-badge-rear(b gap0.003) | wheel 4
+p928             F bonnet-badge(b gap0.004) | R rear-badge(l gap-0.011),trim-badge(l gap0.017),brand-badge-rear(b gap0.003) | wheel 4

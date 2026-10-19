@@ -1,0 +1,1000 @@
+{
+  "root": "/tmp/athens-leftovers.tZt1/base",
+  "map": "riviera",
+  "class": "low",
+  "throttle": 4,
+  "viewport": [
+    640,
+    360
+  ],
+  "seconds": 15,
+  "cap": 60,
+  "dyn": false,
+  "noworld": false,
+  "errors": [],
+  "calls": {
+    "main": {
+      "total": 443,
+      "materials": 193,
+      "rows": [
+        {
+          "owner": "map-world:riviera > road > Mesh | mesh | MeshStandardMaterial",
+          "calls": 47,
+          "tris": 90694,
+          "materials": 10
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-close-detail | mesh | MeshStandardMaterial",
+          "calls": 47,
+          "tris": 2220,
+          "materials": 15
+        },
+        {
+          "owner": "map-world:riviera > Mesh | instanced | MeshStandardMaterial",
+          "calls": 28,
+          "tris": 1496,
+          "materials": 6
+        },
+        {
+          "owner": "map-world:riviera > Group > LOD > Group | mesh | MeshStandardMaterial",
+          "calls": 23,
+          "tris": 43916,
+          "materials": 14
+        },
+        {
+          "owner": "map-world:riviera > Isuzu NPR delivery box > Group > fleet-node-1 | mesh | MeshStandardMaterial",
+          "calls": 22,
+          "tris": 1580,
+          "materials": 11
+        },
+        {
+          "owner": "map-world:riviera > terrain > Mesh | mesh | MeshStandardMaterial",
+          "calls": 20,
+          "tris": 415619,
+          "materials": 20
+        },
+        {
+          "owner": "Group > Group > cockpit > authored-cockpit-furniture | mesh | MeshStandardMaterial",
+          "calls": 19,
+          "tris": 1384,
+          "materials": 6
+        },
+        {
+          "owner": "map-world:riviera > nature > Mesh | instanced | MeshStandardMaterial",
+          "calls": 15,
+          "tris": 552,
+          "materials": 3
+        },
+        {
+          "owner": "Group > Group > cockpit > cockpit-structure | mesh | MeshStandardMaterial",
+          "calls": 13,
+          "tris": 146,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > road > Group > Mesh | mesh | MeshStandardMaterial",
+          "calls": 11,
+          "tris": 72,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > Group > Group > Mesh | mesh | MeshStandardMaterial",
+          "calls": 10,
+          "tris": 896,
+          "materials": 10
+        },
+        {
+          "owner": "map-world:riviera > Group > LOD > Group | mesh/transparent | MeshStandardMaterial",
+          "calls": 10,
+          "tris": 588,
+          "materials": 10
+        },
+        {
+          "owner": "map-world:riviera > surrounding-osm-roads > Mesh | mesh | MeshStandardMaterial",
+          "calls": 9,
+          "tris": 125436,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > road > Mesh | instanced | MeshStandardMaterial",
+          "calls": 8,
+          "tris": 96,
+          "materials": 3
+        },
+        {
+          "owner": "map-world:riviera > Group > Group > Sprite | sprite/transparent | SpriteMaterial",
+          "calls": 7,
+          "tris": 14,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > Isuzu NPR delivery box > Group > Mesh | mesh | MeshStandardMaterial",
+          "calls": 6,
+          "tris": 72,
+          "materials": 3
+        },
+        {
+          "owner": "map-world:riviera > traffic-proxies > traffic-proxy-static | mesh | MeshStandardMaterial",
+          "calls": 6,
+          "tris": 8466,
+          "materials": 6
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-road-detail | mesh | MeshStandardMaterial",
+          "calls": 6,
+          "tris": 86,
+          "materials": 3
+        },
+        {
+          "owner": "Group > front-right-steering > wheel-spin > LOD | mesh | MeshStandardMaterial",
+          "calls": 6,
+          "tris": 154,
+          "materials": 6
+        },
+        {
+          "owner": "Group > front-left-steering > wheel-spin > LOD | mesh | MeshStandardMaterial",
+          "calls": 6,
+          "tris": 154,
+          "materials": 6
+        },
+        {
+          "owner": "map-world:riviera > traffic-proxies > traffic-proxy-head | mesh | MeshStandardMaterial",
+          "calls": 5,
+          "tris": 376,
+          "materials": 5
+        },
+        {
+          "owner": "Group > rear-right-steering > wheel-spin > LOD | mesh | MeshStandardMaterial",
+          "calls": 5,
+          "tris": 140,
+          "materials": 5
+        },
+        {
+          "owner": "Group > rear-left-steering > wheel-spin > LOD | mesh | MeshStandardMaterial",
+          "calls": 5,
+          "tris": 140,
+          "materials": 5
+        },
+        {
+          "owner": "map-world:riviera > road > timing-gantries > Group | mesh | MeshStandardMaterial",
+          "calls": 4,
+          "tris": 28,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > Mesh | mesh | MeshStandardMaterial",
+          "calls": 4,
+          "tris": 81876,
+          "materials": 4
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-close-detail | mesh | MeshBasicMaterial",
+          "calls": 4,
+          "tris": 32,
+          "materials": 4
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-road-detail | mesh/transparent | MeshStandardMaterial",
+          "calls": 4,
+          "tris": 8,
+          "materials": 1
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-close-detail | mesh/transparent | brand-badge",
+          "calls": 4,
+          "tris": 32,
+          "materials": 1
+        },
+        {
+          "owner": "Group > rear-left-steering > wheel-spin > LOD | mesh/transparent | brand-badge",
+          "calls": 4,
+          "tris": 32,
+          "materials": 2
+        },
+        {
+          "owner": "Group > rear-right-steering > wheel-spin > LOD | mesh/transparent | brand-badge",
+          "calls": 4,
+          "tris": 32,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > traffic-proxies > traffic-proxy-tail | mesh | MeshStandardMaterial",
+          "calls": 3,
+          "tris": 400,
+          "materials": 3
+        },
+        {
+          "owner": "map-world:riviera > Athens Riviera roadside > roadside instances | instanced | MeshStandardMaterial",
+          "calls": 3,
+          "tris": 26,
+          "materials": 3
+        },
+        {
+          "owner": "Group > Group > cockpit > authored-cockpit-furniture | mesh | MeshPhysicalMaterial",
+          "calls": 3,
+          "tris": 68,
+          "materials": 1
+        },
+        {
+          "owner": "Group > Group > cockpit > authored-cockpit-furniture | mesh | MeshBasicMaterial",
+          "calls": 3,
+          "tris": 52,
+          "materials": 3
+        },
+        {
+          "owner": "map-world:riviera > Isuzu NPR delivery box > Group > fleet-node-1 | mesh/transparent | MeshStandardMaterial",
+          "calls": 3,
+          "tris": 6,
+          "materials": 1
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-close-detail | mesh/transparent | MeshStandardMaterial",
+          "calls": 3,
+          "tris": 12,
+          "materials": 3
+        },
+        {
+          "owner": "Group > Group > cockpit > authored-cockpit-furniture | mesh/transparent | MeshBasicMaterial",
+          "calls": 3,
+          "tris": 6,
+          "materials": 3
+        },
+        {
+          "owner": "map-world:riviera > Points | points/transparent | ShaderMaterial",
+          "calls": 3,
+          "tris": 1000,
+          "materials": 3
+        },
+        {
+          "owner": "Mesh | mesh | ShaderMaterial",
+          "calls": 2,
+          "tris": 2209,
+          "materials": 2
+        },
+        {
+          "owner": "Group > Group > cockpit-lod > exterior-cabin | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 2932,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Isuzu NPR delivery box > fleet-node-47 > fleet-node-48 | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 74,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > Isuzu NPR delivery box > fleet-node-42 > fleet-node-43 | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 74,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > Isuzu NPR delivery box > fleet-node-37 > fleet-node-38 | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 74,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > Isuzu NPR delivery box > fleet-node-32 > fleet-node-33 | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 74,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > traffic-proxies > traffic-proxy-tail-brake | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 352,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > world-detail-layers > Mesh | instanced | MeshBasicMaterial",
+          "calls": 2,
+          "tris": 14,
+          "materials": 2
+        },
+        {
+          "owner": "Group > Group > cockpit > cabin-foundation | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 192,
+          "materials": 2
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-road-detail | mesh | MeshPhysicalMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 1
+        },
+        {
+          "owner": "Group > front-left-steering > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 2
+        },
+        {
+          "owner": "Group > front-right-steering > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 2
+        },
+        {
+          "owner": "Group > rear-left-steering > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 2
+        },
+        {
+          "owner": "Group > rear-right-steering > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 2
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-close-detail | mesh | MeshPhysicalMaterial",
+          "calls": 2,
+          "tris": 48,
+          "materials": 1
+        },
+        {
+          "owner": "Group > front-right-steering > wheel-spin > LOD | mesh/transparent | brand-badge",
+          "calls": 2,
+          "tris": 16,
+          "materials": 1
+        },
+        {
+          "owner": "Group > front-left-steering > wheel-spin > LOD | mesh/transparent | brand-badge",
+          "calls": 2,
+          "tris": 16,
+          "materials": 1
+        },
+        {
+          "owner": "Group > Group > cockpit > authored-cockpit-furniture | mesh/transparent | brand-badge",
+          "calls": 2,
+          "tris": 16,
+          "materials": 1
+        },
+        {
+          "owner": "Points | points/transparent | ShaderMaterial",
+          "calls": 2,
+          "tris": 97,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > nature > Mesh | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 2426,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > nature > Mesh | mesh | ShaderMaterial",
+          "calls": 1,
+          "tris": 55,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Group > Arsida | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 3008,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Group > Fleves | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 3008,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Group > Distant coastal ridge | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 3008,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Group > Patroklou | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 3008,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Isuzu NPR delivery box > fleet-node-47 > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 12,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Isuzu NPR delivery box > fleet-node-42 > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 12,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Isuzu NPR delivery box > fleet-node-37 > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 12,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Isuzu NPR delivery box > fleet-node-32 > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 12,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > block-buildings > building-blocks:2,4 | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 164,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > block-buildings > building-blocks:2,5 | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 144,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > block-buildings > building-blocks:2,6 | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 88,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > block-buildings > building-blocks:0,7 | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 52,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > block-buildings > building-blocks:5,6 | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 428,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > block-buildings > building-blocks:3,7 | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 12,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Mesh | mesh | ShaderMaterial",
+          "calls": 1,
+          "tris": 2,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > traffic-proxies > traffic-proxy-static | mesh/transparent | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 152,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Mesh | mesh/transparent | MeshBasicMaterial",
+          "calls": 1,
+          "tris": 10000,
+          "materials": 1
+        }
+      ]
+    },
+    "mirror": {
+      "total": 535,
+      "materials": 195,
+      "rows": [
+        {
+          "owner": "map-world:riviera > road > Mesh | mesh | MeshStandardMaterial",
+          "calls": 58,
+          "tris": 109580,
+          "materials": 10
+        },
+        {
+          "owner": "map-world:riviera > Mesh | instanced | MeshStandardMaterial",
+          "calls": 56,
+          "tris": 2992,
+          "materials": 6
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-close-detail | mesh | MeshStandardMaterial",
+          "calls": 47,
+          "tris": 2220,
+          "materials": 15
+        },
+        {
+          "owner": "map-world:riviera > terrain > Mesh | mesh | MeshStandardMaterial",
+          "calls": 28,
+          "tris": 689821,
+          "materials": 22
+        },
+        {
+          "owner": "map-world:riviera > Group > LOD > Group | mesh | MeshStandardMaterial",
+          "calls": 23,
+          "tris": 43916,
+          "materials": 14
+        },
+        {
+          "owner": "map-world:riviera > Isuzu NPR delivery box > Group > fleet-node-1 | mesh | MeshStandardMaterial",
+          "calls": 22,
+          "tris": 1580,
+          "materials": 11
+        },
+        {
+          "owner": "Group > Group > cockpit > authored-cockpit-furniture | mesh | MeshStandardMaterial",
+          "calls": 19,
+          "tris": 1384,
+          "materials": 6
+        },
+        {
+          "owner": "map-world:riviera > Group > Group > Mesh | mesh | MeshStandardMaterial",
+          "calls": 15,
+          "tris": 1344,
+          "materials": 10
+        },
+        {
+          "owner": "map-world:riviera > nature > Mesh | instanced | MeshStandardMaterial",
+          "calls": 15,
+          "tris": 552,
+          "materials": 3
+        },
+        {
+          "owner": "map-world:riviera > surrounding-osm-roads > Mesh | mesh | MeshStandardMaterial",
+          "calls": 14,
+          "tris": 226570,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > road > Mesh | instanced | MeshStandardMaterial",
+          "calls": 14,
+          "tris": 168,
+          "materials": 3
+        },
+        {
+          "owner": "Group > Group > cockpit > cockpit-structure | mesh | MeshStandardMaterial",
+          "calls": 13,
+          "tris": 146,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > traffic-proxies > traffic-proxy-static | mesh | MeshStandardMaterial",
+          "calls": 12,
+          "tris": 16932,
+          "materials": 6
+        },
+        {
+          "owner": "map-world:riviera > road > Group > Mesh | mesh | MeshStandardMaterial",
+          "calls": 11,
+          "tris": 72,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > traffic-proxies > traffic-proxy-head | mesh | MeshStandardMaterial",
+          "calls": 10,
+          "tris": 752,
+          "materials": 5
+        },
+        {
+          "owner": "map-world:riviera > Group > LOD > Group | mesh/transparent | MeshStandardMaterial",
+          "calls": 10,
+          "tris": 588,
+          "materials": 10
+        },
+        {
+          "owner": "map-world:riviera > Group > Group > Sprite | sprite/transparent | SpriteMaterial",
+          "calls": 7,
+          "tris": 14,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > traffic-proxies > traffic-proxy-tail | mesh | MeshStandardMaterial",
+          "calls": 6,
+          "tris": 800,
+          "materials": 3
+        },
+        {
+          "owner": "map-world:riviera > Points | points/transparent | ShaderMaterial",
+          "calls": 6,
+          "tris": 2000,
+          "materials": 3
+        },
+        {
+          "owner": "map-world:riviera > Isuzu NPR delivery box > Group > Mesh | mesh | MeshStandardMaterial",
+          "calls": 6,
+          "tris": 72,
+          "materials": 3
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-road-detail | mesh | MeshStandardMaterial",
+          "calls": 6,
+          "tris": 86,
+          "materials": 3
+        },
+        {
+          "owner": "Group > front-right-steering > wheel-spin > LOD | mesh | MeshStandardMaterial",
+          "calls": 6,
+          "tris": 154,
+          "materials": 6
+        },
+        {
+          "owner": "Group > front-left-steering > wheel-spin > LOD | mesh | MeshStandardMaterial",
+          "calls": 6,
+          "tris": 154,
+          "materials": 6
+        },
+        {
+          "owner": "map-world:riviera > Mesh | mesh | MeshStandardMaterial",
+          "calls": 5,
+          "tris": 151968,
+          "materials": 4
+        },
+        {
+          "owner": "Group > rear-right-steering > wheel-spin > LOD | mesh | MeshStandardMaterial",
+          "calls": 5,
+          "tris": 140,
+          "materials": 5
+        },
+        {
+          "owner": "Group > rear-left-steering > wheel-spin > LOD | mesh | MeshStandardMaterial",
+          "calls": 5,
+          "tris": 140,
+          "materials": 5
+        },
+        {
+          "owner": "map-world:riviera > traffic-proxies > traffic-proxy-tail-brake | mesh | MeshStandardMaterial",
+          "calls": 4,
+          "tris": 704,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > world-detail-layers > Mesh | instanced | MeshBasicMaterial",
+          "calls": 4,
+          "tris": 28,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > road > timing-gantries > Group | mesh | MeshStandardMaterial",
+          "calls": 4,
+          "tris": 28,
+          "materials": 2
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-close-detail | mesh | MeshBasicMaterial",
+          "calls": 4,
+          "tris": 32,
+          "materials": 4
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-road-detail | mesh/transparent | MeshStandardMaterial",
+          "calls": 4,
+          "tris": 8,
+          "materials": 1
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-close-detail | mesh/transparent | brand-badge",
+          "calls": 4,
+          "tris": 32,
+          "materials": 1
+        },
+        {
+          "owner": "Group > rear-left-steering > wheel-spin > LOD | mesh/transparent | brand-badge",
+          "calls": 4,
+          "tris": 32,
+          "materials": 2
+        },
+        {
+          "owner": "Group > rear-right-steering > wheel-spin > LOD | mesh/transparent | brand-badge",
+          "calls": 4,
+          "tris": 32,
+          "materials": 2
+        },
+        {
+          "owner": "Mesh | mesh | ShaderMaterial",
+          "calls": 3,
+          "tris": 4417,
+          "materials": 2
+        },
+        {
+          "owner": "Points | points/transparent | ShaderMaterial",
+          "calls": 3,
+          "tris": 193,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Athens Riviera roadside > roadside instances | instanced | MeshStandardMaterial",
+          "calls": 3,
+          "tris": 26,
+          "materials": 3
+        },
+        {
+          "owner": "Group > Group > cockpit > authored-cockpit-furniture | mesh | MeshPhysicalMaterial",
+          "calls": 3,
+          "tris": 68,
+          "materials": 1
+        },
+        {
+          "owner": "Group > Group > cockpit > authored-cockpit-furniture | mesh | MeshBasicMaterial",
+          "calls": 3,
+          "tris": 52,
+          "materials": 3
+        },
+        {
+          "owner": "map-world:riviera > Isuzu NPR delivery box > Group > fleet-node-1 | mesh/transparent | MeshStandardMaterial",
+          "calls": 3,
+          "tris": 6,
+          "materials": 1
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-close-detail | mesh/transparent | MeshStandardMaterial",
+          "calls": 3,
+          "tris": 12,
+          "materials": 3
+        },
+        {
+          "owner": "Group > Group > cockpit > authored-cockpit-furniture | mesh/transparent | MeshBasicMaterial",
+          "calls": 3,
+          "tris": 6,
+          "materials": 3
+        },
+        {
+          "owner": "map-world:riviera > nature > Mesh | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 4852,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > block-buildings > building-blocks:2,4 | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 328,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Mesh | mesh | ShaderMaterial",
+          "calls": 2,
+          "tris": 4,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > traffic-proxies > traffic-proxy-static | mesh/transparent | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 304,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Mesh | mesh/transparent | MeshBasicMaterial",
+          "calls": 2,
+          "tris": 20000,
+          "materials": 1
+        },
+        {
+          "owner": "Group > Group > cockpit-lod > exterior-cabin | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 2932,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Isuzu NPR delivery box > fleet-node-47 > fleet-node-48 | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 74,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > Isuzu NPR delivery box > fleet-node-42 > fleet-node-43 | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 74,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > Isuzu NPR delivery box > fleet-node-37 > fleet-node-38 | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 74,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > Isuzu NPR delivery box > fleet-node-32 > fleet-node-33 | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 74,
+          "materials": 2
+        },
+        {
+          "owner": "Group > Group > cockpit > cabin-foundation | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 192,
+          "materials": 2
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-road-detail | mesh | MeshPhysicalMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 1
+        },
+        {
+          "owner": "Group > front-left-steering > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 2
+        },
+        {
+          "owner": "Group > front-right-steering > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 2
+        },
+        {
+          "owner": "Group > rear-left-steering > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 2
+        },
+        {
+          "owner": "Group > rear-right-steering > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 2
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-close-detail | mesh | MeshPhysicalMaterial",
+          "calls": 2,
+          "tris": 48,
+          "materials": 1
+        },
+        {
+          "owner": "Group > front-right-steering > wheel-spin > LOD | mesh/transparent | brand-badge",
+          "calls": 2,
+          "tris": 16,
+          "materials": 1
+        },
+        {
+          "owner": "Group > front-left-steering > wheel-spin > LOD | mesh/transparent | brand-badge",
+          "calls": 2,
+          "tris": 16,
+          "materials": 1
+        },
+        {
+          "owner": "Group > Group > cockpit > authored-cockpit-furniture | mesh/transparent | brand-badge",
+          "calls": 2,
+          "tris": 16,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > nature > Mesh | mesh | ShaderMaterial",
+          "calls": 1,
+          "tris": 55,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Group > Arsida | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 3008,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Group > Fleves | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 3008,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Group > Distant coastal ridge | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 3008,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Group > Patroklou | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 3008,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Isuzu NPR delivery box > fleet-node-47 > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 12,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Isuzu NPR delivery box > fleet-node-42 > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 12,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Isuzu NPR delivery box > fleet-node-37 > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 12,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Isuzu NPR delivery box > fleet-node-32 > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 12,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > block-buildings > building-blocks:2,5 | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 144,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > block-buildings > building-blocks:2,6 | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 88,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > block-buildings > building-blocks:0,7 | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 52,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > block-buildings > building-blocks:5,6 | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 428,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > block-buildings > building-blocks:3,7 | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 12,
+          "materials": 1
+        }
+      ]
+    }
+  },
+  "snapshot": {
+    "systems": {
+      "signals": 0.33999999761581423,
+      "people": 1.1200000286102294,
+      "hud": 7.650000023841858,
+      "audio": 0.04000000953674317,
+      "renderSubmission": 0.010000002384185792,
+      "playerPhysics": 3.2700000047683715,
+      "rivals": 10.32000000476837,
+      "traffic": 2.4699999928474425,
+      "police": 0.1799999952316284
+    },
+    "stepMs": 42.47000000476837,
+    "stepMedianBlockMs": 69.02000000476838,
+    "stepP95": 84,
+    "stepMax": 84,
+    "renderMsMedian": 224.60000002384186,
+    "calls": 508,
+    "callsMain": 435,
+    "callsMax": 518,
+    "programs2": 80,
+    "triangles": 1266139,
+    "pixelRatio": 0.8,
+    "drawDistance": 1000,
+    "perfClass": "low",
+    "programs": 80,
+    "trafficActive": 38,
+    "peds": 9,
+    "heapMB": 447.38524532318115
+  },
+  "summary": {
+    "class": "low",
+    "map": "riviera",
+    "throttle": 4,
+    "stepMs": 42.47,
+    "stepMedianBlockMs": 69.02,
+    "stepP95": 84,
+    "signals": 0.34,
+    "people": 1.12,
+    "hud": 7.65,
+    "audio": 0.04,
+    "renderSubmission": 0.01,
+    "playerPhysics": 3.27,
+    "rivals": 10.32,
+    "traffic": 2.47,
+    "police": 0.18,
+    "other": 17.07,
+    "renderMsMedian": 224.6,
+    "calls": 508,
+    "callsMain": 435,
+    "callsMax": 518,
+    "materials": 80,
+    "triangles": 1266139,
+    "pixelRatio": 0.8,
+    "drawDistance": 1000,
+    "trafficActive": 38,
+    "peds": 9,
+    "heapMB": 447
+  }
+}

@@ -1,0 +1,474 @@
+{
+ "potato": {
+  "calls": {
+   "before": 455,
+   "after": 342,
+   "beforeRuns": [
+    478,
+    455,
+    453
+   ],
+   "afterRuns": [
+    335,
+    342,
+    345
+   ]
+  },
+  "callsMain": {
+   "before": 429,
+   "after": 313,
+   "beforeRuns": [
+    451,
+    429,
+    427
+   ],
+   "afterRuns": [
+    307,
+    313,
+    315
+   ]
+  },
+  "callsMax": {
+   "before": 507,
+   "after": 400,
+   "beforeRuns": [
+    528,
+    507,
+    506
+   ],
+   "afterRuns": [
+    390,
+    400,
+    404
+   ]
+  },
+  "triangles": {
+   "before": 1250122,
+   "after": 1249297,
+   "beforeRuns": [
+    1259567,
+    1250122,
+    1248870
+   ],
+   "afterRuns": [
+    1255519,
+    1247337,
+    1249297
+   ]
+  },
+  "renderSubmitMs": {
+   "before": 125.8,
+   "after": 111.1,
+   "beforeRuns": [
+    125.8,
+    106.5,
+    133.1
+   ],
+   "afterRuns": [
+    111.1,
+    67.1,
+    116
+   ]
+  },
+  "stepMs": {
+   "before": 26.34,
+   "after": 27.23,
+   "beforeRuns": [
+    26.34,
+    22.49,
+    42.87
+   ],
+   "afterRuns": [
+    22.61,
+    27.23,
+    32.02
+   ]
+  },
+  "materials": {
+   "before": 79,
+   "after": 75,
+   "beforeRuns": [
+    79,
+    79,
+    79
+   ],
+   "afterRuns": [
+    75,
+    75,
+    75
+   ]
+  }
+ },
+ "low": {
+  "calls": {
+   "before": 460,
+   "after": 342,
+   "beforeRuns": [
+    541,
+    460,
+    401
+   ],
+   "afterRuns": [
+    343,
+    341,
+    342
+   ]
+  },
+  "callsMain": {
+   "before": 435,
+   "after": 313,
+   "beforeRuns": [
+    516,
+    435,
+    369
+   ],
+   "afterRuns": [
+    315,
+    313,
+    313
+   ]
+  },
+  "callsMax": {
+   "before": 511,
+   "after": 397,
+   "beforeRuns": [
+    592,
+    511,
+    455
+   ],
+   "afterRuns": [
+    398,
+    396,
+    397
+   ]
+  },
+  "triangles": {
+   "before": 1275279,
+   "after": 1272147,
+   "beforeRuns": [
+    1276910,
+    1275040,
+    1275279
+   ],
+   "afterRuns": [
+    1272147,
+    1261009,
+    1275247
+   ]
+  },
+  "renderSubmitMs": {
+   "before": 114.8,
+   "after": 103.5,
+   "beforeRuns": [
+    130.1,
+    57.8,
+    114.8
+   ],
+   "afterRuns": [
+    92.5,
+    106.2,
+    103.5
+   ]
+  },
+  "stepMs": {
+   "before": 22.44,
+   "after": 19.58,
+   "beforeRuns": [
+    20.41,
+    22.44,
+    23.27
+   ],
+   "afterRuns": [
+    19.58,
+    14.92,
+    32.06
+   ]
+  },
+  "materials": {
+   "before": 80,
+   "after": 76,
+   "beforeRuns": [
+    80,
+    80,
+    78
+   ],
+   "afterRuns": [
+    76,
+    76,
+    76
+   ]
+  }
+ },
+ "high": {
+  "calls": {
+   "before": 525,
+   "after": 504,
+   "beforeRuns": [
+    576,
+    521,
+    525
+   ],
+   "afterRuns": [
+    502,
+    504,
+    524
+   ]
+  },
+  "callsMain": {
+   "before": 493,
+   "after": 472,
+   "beforeRuns": [
+    546,
+    489,
+    493
+   ],
+   "afterRuns": [
+    470,
+    472,
+    490
+   ]
+  },
+  "callsMax": {
+   "before": 584,
+   "after": 567,
+   "beforeRuns": [
+    635,
+    580,
+    584
+   ],
+   "afterRuns": [
+    565,
+    567,
+    588
+   ]
+  },
+  "triangles": {
+   "before": 1398169,
+   "after": 1398422,
+   "beforeRuns": [
+    1398169,
+    1395250,
+    1412232
+   ],
+   "afterRuns": [
+    1398422,
+    1411504,
+    1395316
+   ]
+  },
+  "renderSubmitMs": {
+   "before": 113.9,
+   "after": 94.2,
+   "beforeRuns": [
+    113.9,
+    109.4,
+    119.4
+   ],
+   "afterRuns": [
+    132.2,
+    84.7,
+    94.2
+   ]
+  },
+  "stepMs": {
+   "before": 29.86,
+   "after": 30.65,
+   "beforeRuns": [
+    29.86,
+    26.51,
+    32.28
+   ],
+   "afterRuns": [
+    30.65,
+    38.24,
+    24.94
+   ]
+  },
+  "materials": {
+   "before": 79,
+   "after": 78,
+   "beforeRuns": [
+    79,
+    79,
+    79
+   ],
+   "afterRuns": [
+    78,
+    78,
+    79
+   ]
+  }
+ },
+ "potato (no rivals)": {
+  "calls": {
+   "before": 262,
+   "after": 275,
+   "beforeRuns": [
+    262,
+    270
+   ],
+   "afterRuns": [
+    282,
+    275
+   ]
+  },
+  "callsMain": {
+   "before": 237,
+   "after": 254,
+   "beforeRuns": [
+    237,
+    251
+   ],
+   "afterRuns": [
+    259,
+    254
+   ]
+  },
+  "callsMax": {
+   "before": 302,
+   "after": 318,
+   "beforeRuns": [
+    302,
+    307
+   ],
+   "afterRuns": [
+    329,
+    318
+   ]
+  },
+  "triangles": {
+   "before": 1092920,
+   "after": 1189982,
+   "beforeRuns": [
+    1092920,
+    1182498
+   ],
+   "afterRuns": [
+    1189982,
+    1192112
+   ]
+  },
+  "renderSubmitMs": {
+   "before": 57.4,
+   "after": 49.9,
+   "beforeRuns": [
+    78.9,
+    57.4
+   ],
+   "afterRuns": [
+    49.9,
+    74.5
+   ]
+  },
+  "stepMs": {
+   "before": 10.86,
+   "after": 12.01,
+   "beforeRuns": [
+    10.86,
+    13.88
+   ],
+   "afterRuns": [
+    12.01,
+    20.72
+   ]
+  },
+  "materials": {
+   "before": 79,
+   "after": 79,
+   "beforeRuns": [
+    79,
+    79
+   ],
+   "afterRuns": [
+    79,
+    79
+   ]
+  }
+ },
+ "low (no rivals)": {
+  "calls": {
+   "before": 283,
+   "after": 286,
+   "beforeRuns": [
+    283,
+    286
+   ],
+   "afterRuns": [
+    286,
+    286
+   ]
+  },
+  "callsMain": {
+   "before": 263,
+   "after": 263,
+   "beforeRuns": [
+    263,
+    265
+   ],
+   "afterRuns": [
+    263,
+    263
+   ]
+  },
+  "callsMax": {
+   "before": 322,
+   "after": 332,
+   "beforeRuns": [
+    322,
+    326
+   ],
+   "afterRuns": [
+    332,
+    332
+   ]
+  },
+  "triangles": {
+   "before": 1180604,
+   "after": 1204836,
+   "beforeRuns": [
+    1180604,
+    1195548
+   ],
+   "afterRuns": [
+    1204836,
+    1204836
+   ]
+  },
+  "renderSubmitMs": {
+   "before": 84.5,
+   "after": 62,
+   "beforeRuns": [
+    84.5,
+    91
+   ],
+   "afterRuns": [
+    102.7,
+    62
+   ]
+  },
+  "stepMs": {
+   "before": 17.96,
+   "after": 14.14,
+   "beforeRuns": [
+    18.6,
+    17.96
+   ],
+   "afterRuns": [
+    17.45,
+    14.14
+   ]
+  },
+  "materials": {
+   "before": 80,
+   "after": 80,
+   "beforeRuns": [
+    80,
+    80
+   ],
+   "afterRuns": [
+    80,
+    80
+   ]
+  }
+ }
+}
