@@ -39,7 +39,7 @@ test('route projections preserve unwrapped progress and elevation across laps',(
 test('all public junction exits have exactly one solid race closure, with no raced edge blocked',async()=>{
  const {publicRoad}=await import('./maps/psychiko/neighbourhood.mjs');
  const {gunzipSync}=await import('node:zlib');
- const osm=JSON.parse(gunzipSync(readFileSync(new URL('./maps/psychiko/raw/osm.json.gz',import.meta.url)))).elements;
+ const osm=(await import('./maps/psychiko/corrections.mjs')).loadPsychikoOsm();
  const course=JSON.parse(readFileSync(new URL('./maps/psychiko/raw/route.json',import.meta.url)));
  // Independently count non-raced half-edges. A junction may be visited twice after taking the legal roundabout exit.
  const graph=new Map();for(const w of osm.filter(publicRoad))for(let i=1;i<w.nodes.length;i++)for(const [a,b] of [[w.nodes[i-1],w.nodes[i]],[w.nodes[i],w.nodes[i-1]]]){if(!graph.has(a))graph.set(a,new Set());graph.get(a).add(b);}
@@ -76,7 +76,7 @@ test('every preserved garden-course centreline sample remains on drivable asphal
 });
 test('whole municipal street network and the interior of the drawing are included',async()=>{
  const {publicRoad,boundaryRing,inside}=await import('./maps/psychiko/neighbourhood.mjs'),{gunzipSync}=await import('node:zlib');
- const elements=JSON.parse(gunzipSync(readFileSync(new URL('./maps/psychiko/raw/osm.json.gz',import.meta.url)))).elements;
+ const elements=(await import('./maps/psychiko/corrections.mjs')).loadPsychikoOsm();
  const nodes=new Map(elements.filter(e=>e.type==='node').map(n=>[n.id,n])),p=n=>[(n.lon-data.proj.lon0)*data.proj.mlon,-(n.lat-data.proj.lat0)*data.proj.mlat];
  const ring=boundaryRing(JSON.parse(readFileSync(new URL('./maps/psychiko/raw/boundaries.json',import.meta.url))),p);
  const selected=new Set(data.psychiko.networkWayIds),drawn=data.route.x.map((x,i)=>[x,data.route.z[i]]);
@@ -173,7 +173,7 @@ test('owner lock: road closures only in races, never in free roam',async()=>{
 const raw = JSON.parse(readFileSync(new URL('./maps/psychiko/raw/route.json', import.meta.url)));
 async function osmFixture() {
  const {publicRoad}=await import('./maps/psychiko/neighbourhood.mjs'),{gunzipSync}=await import('node:zlib');
- const elements=JSON.parse(gunzipSync(readFileSync(new URL('./maps/psychiko/raw/osm.json.gz',import.meta.url)))).elements;
+ const elements=(await import('./maps/psychiko/corrections.mjs')).loadPsychikoOsm();
  return {publicRoad,elements,nodes:new Map(elements.filter(e=>e.type==='node').map(n=>[n.id,n])),ways:new Map(elements.filter(e=>e.type==='way').map(w=>[w.id,w]))};
 }
 test('Garden Circuit follows real public OSM streets only: every metre is within a street, no cutting through blocks',async()=>{
@@ -216,7 +216,7 @@ test('Psychiko times are a new board: leaderboard version, local records and sel
 });
 test('Copernicus hills: real lap grades, no artificial side-street steps, closures follow the slope',async()=>{
  const {readCopernicus,copernicusField,roundaboutPlanes,plannedHeight}=await import('./maps/psychiko/elevation.mjs'),{roundaboutLoops}=await import('./roundabouts.mjs'),{gunzipSync}=await import('node:zlib');
- const osm=JSON.parse(gunzipSync(readFileSync(new URL('./maps/psychiko/raw/osm.json.gz',import.meta.url)))).elements,P=n=>[(n.lon-data.proj.lon0)*data.proj.mlon,-(n.lat-data.proj.lat0)*data.proj.mlat];
+ const osm=(await import('./maps/psychiko/corrections.mjs')).loadPsychikoOsm(),P=n=>[(n.lon-data.proj.lon0)*data.proj.mlon,-(n.lat-data.proj.lat0)*data.proj.mlat];
  const field=copernicusField(readCopernicus(new URL('./maps/psychiko/raw/copernicus.json.gz',import.meta.url)),data.proj),planned=plannedHeight(field,roundaboutPlanes(roundaboutLoops(osm,P),field));
  const h=[];for(let s=0;s<=route.length;s+=2)h.push(route.y(s));let up=0,down=0;
  for(let i=0;i+10<h.length;i++){const g=(h[i+10]-h[i])/20;up=Math.max(up,g);down=Math.max(down,-g);}

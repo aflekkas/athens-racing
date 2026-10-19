@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
 import { psychikoStreet } from '../src/maps/psychiko-streets.js';
 import { roundaboutLoops } from './roundabouts.mjs';
+import { correctPsychikoOsm } from './maps/psychiko/corrections.mjs';
 import { limitForWay } from './speed-signs.mjs';
 export const ROAD_WIDTHS = Object.freeze({primary:9,secondary:7.5,tertiary:7,unclassified:6,residential:5.6,living_street:4.5,service:4,primary_link:6,secondary_link:6,tertiary_link:5});
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),round=v=>Math.round(v*100)/100;
@@ -48,8 +49,9 @@ export function readNetworkSource(root,id){
  if(id==='riviera')return read('data/raw/roads.json').elements;
  if(id==='megara')return read('tools/maps/megara/raw/context.json').map(w=>({type:'way',...w}));
  const full=resolve(root,`tools/maps/${id}/raw/osm.json.gz`),fixture=resolve(root,'tools/maps/penteli/road-network-source.json.gz');
- const elements=JSON.parse(gunzipSync(fs.readFileSync(fs.existsSync(full)?full:fixture))).elements;
+ let elements=JSON.parse(gunzipSync(fs.readFileSync(fs.existsSync(full)?full:fixture))).elements;
  if(id!=='psychiko')return elements;
+ elements=correctPsychikoOsm(elements);
  // The neighbourhood pipeline freezes its public municipal/route-corridor selection.
  // Rebuilding the generic network must use that exact set rather than the whole regional bbox.
  const ids=read('data/maps/psychiko/map.json').psychiko?.networkWayIds;

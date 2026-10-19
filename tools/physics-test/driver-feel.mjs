@@ -119,7 +119,10 @@ export function driveCorner(spec, route, kmh, { device = 'keyboard', instant = f
   const yaw = mean(settled, 'yawRate'), speed = mean(settled, 'kmh') / 3.6;
   const reach = trace.find(r => r.yawRate >= yaw * 0.9);
   const steer90 = trace.find(r => Math.abs(r.steerInput) >= 0.9);
-  const peakG = Math.max(...trace.slice(14).map((_, j) => mean(trace.slice(j, j + 15), 'lateralG')));
+  // Grip scales with tyre load: in a sag or over a crest (Psychiko's real hills) compare lateral g with the
+  // effective vertical g, so a valley-bottom bend is not mistaken for invented grip. Flat roads are unchanged.
+  for (const r of trace) r.loadG = r.lateralG / (r.effectiveGravity || 1);
+  const peakG = Math.max(...trace.slice(14).map((_, j) => mean(trace.slice(j, j + 15), 'loadG')));
   return { car: spec.id, kmh, corner: { s: bend.s, k: bend.k, radius: bend.radius, requiredG: (kmh / 3.6) ** 2 / (bend.radius * G) },
     device, instant, gear, aids, assist: vehicle.steerAssist, yaw90: reach?.t ?? null, input90: steer90?.t ?? null,
     yawGain: yaw / (speed * Math.tan(Math.abs(mean(settled, 'rackDeg')) / DEG) / vehicle.wb),

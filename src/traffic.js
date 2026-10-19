@@ -285,10 +285,12 @@ export class Traffic {
 
   spawn(ps, initial = false, behind = false) {
     const rng = this.rng, route = this.route;
-    const oncoming = !behind && rng.chance(0.42);
+    let oncoming = !behind && rng.chance(0.42);
     const D = this.dir, sAhead = behind ? ps - D * rng.range(160, 230) : initial ? ps + D * rng.range(oncoming ? 110 : 40, 950) : ps + D * rng.range(800, 1000);
     const s = sAhead;
     if (s > route.length - 30 || s < 20) return;
+    // Never against a source one-way street: on those stretches every car runs with the lap.
+    if ((oncoming ? -1 : 1) * D < 0 && (route.oneWayAhead?.(s, -1) ?? Infinity) < 80) { if (D < 0) return; oncoming = false; }
     const z = this.zone(s), n = this.laneCount(s);
     // vehicle mix by zone: scooters everywhere, buses on the bus routes, more SUVs and cruisers at the beaches
     const c = this.pickFree((q) => {
@@ -328,7 +330,7 @@ export class Traffic {
     if (this.busStops.some((b) => Math.abs(b - s) < 30)) return;
     if (this.sites.some((st) => Math.abs(st.s - s) < 70)) return;
     const c = this.pickFree((q) => !q.type.scooter && q.kind !== 'bus' && q.kind !== 'taxi'); if (!c) return;
-    c.dir = rng.chance(0.62) ? 1 : -1; c.s = s; c.lane = n - 1;
+    c.dir = rng.chance(0.62) || (route.oneWayAhead?.(s, -1) ?? Infinity) < 80 ? 1 : -1; c.s = s; c.lane = n - 1;
     for (const q of this.cars) if (q.active && q !== c && Math.abs(q.s - s) < 14) return;
     this.personality(c);
     c.active = true; c.crash = null; c.cross = null; this.repair(c);
@@ -556,6 +558,9 @@ export class Traffic {
     let gap = L.gap, lv = L.lv;
     const yieldGap=route.roundabouts?.length?entryYieldDistance(route,c,[...this.cars,...(this.racers||[]).map(r=>r.a?.veh||r)]):null;
     if(yieldGap!==null&&yieldGap<gap){gap=yieldGap;lv=0;}
+    // Oncoming traffic never drives into a forward-only street: it slows for the junction and turns off there.
+    const oneWay=c.dir<0&&route.oneway?.length?route.oneWayAhead(c.s,c.dir):null;
+    if(oneWay!==null&&oneWay<70&&c.mode==='drive'){if(oneWay<14){if(c.task)this.dropTask(c);this.startExit(c,{j:null,blink:true});return;}const stop=Math.max(.2,oneWay-6);if(stop<gap){gap=stop;lv=0;}}
 
     // red lights (stop line), pedestrians are already in the obstacle list
     let sigGap = null;

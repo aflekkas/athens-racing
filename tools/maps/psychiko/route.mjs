@@ -1,17 +1,17 @@
 // Frozen OSM motor-road loop matched to the user drawing (Palaio Psychiko / Filothei).
 import fs from 'node:fs';
 import {roundaboutLoops,legalRoundaboutCourse,repairRoundaboutArms} from '../../roundabouts.mjs';
-import {gunzipSync} from 'node:zlib';
+import {loadPsychikoOsm,wayForEdge} from './corrections.mjs';
 import {fileURLToPath} from 'node:url';
 const dir=fileURLToPath(new URL('./',import.meta.url));
-const elements=JSON.parse(gunzipSync(fs.readFileSync(dir+'raw/osm.json.gz'))).elements;
+const elements=loadPsychikoOsm();
 const lat0=38.009,lon0=23.775,phi=lat0*Math.PI/180;
 const mlat=111132.92-559.82*Math.cos(2*phi)+1.175*Math.cos(4*phi),mlon=111412.84*Math.cos(phi)-93.5*Math.cos(3*phi);
 const nodes=new Map(elements.filter(e=>e.type==='node').map(e=>[e.id,e]));
 const ways=new Map(elements.filter(e=>e.type==='way').map(e=>[e.id,e]));
 const pos=id=>{const n=nodes.get(id);return[(n.lon-lon0)*mlon,-(n.lat-lat0)*mlat];},dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
 // Reviewed exact node/way list: no runtime shortest-path or georeference heuristics.
-const course=JSON.parse(fs.readFileSync(dir+'raw/drawn-course.json'));
+const course=JSON.parse(fs.readFileSync(dir+'raw/drawn-course.json'));course.edgeWays=course.edgeWays.map((id,i)=>wayForEdge(ways,id,course.nodes[i],course.nodes[i+1]));
 const P=n=>[(n.lon-lon0)*mlon,-(n.lat-lat0)*mlat],loops=roundaboutLoops(elements,P);
 const legal=repairRoundaboutArms(legalRoundaboutCourse(course.nodes,course.edgeWays,loops),loops,elements,P);
 const chain=legal.nodes,edgeWays=legal.edgeWays,vias=[...course.stations,course.stations[0]];

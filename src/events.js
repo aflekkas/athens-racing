@@ -1,4 +1,4 @@
-import { MAPS } from './map-catalog.js';
+import { MAPS, canReverse } from './map-catalog.js';
 import { buildCourse, observeCourse } from './course.js';
 // EVENTS: data-driven race events (sprints against a grid of 3 by default, time trials, police pursuits), their route segments /
 // direction, medal targets and saved results; plus the event hook API other systems listen to. Straight time: no points.
@@ -156,6 +156,8 @@ function nearestName(s, ctx) { let n = (ctx.route.from || '').toUpperCase(); for
 
 export function resolve(def, ctx) {
   if (isDrivingMode(def)) return resolveDrivingMode(def, ctx);
+  if (def.reverse && !canReverse(def.mapId)) def = { ...def, reverse: false }; // one-way-only course
+
   const a = locate(def.from, ctx), b = locate(def.to, ctx);
   if (def.type === 'free') return { s0: a.s, s1: b.s, dir: def.reverse ? -1 : 1, len: ctx.route.length, fromName: a.name, toName: b.name, sectors: [], reverse: def.reverse === true, timeLimit: 0, targetTimes: null, free: true };
   if (ctx.route.closed) {

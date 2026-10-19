@@ -36,7 +36,7 @@ export function loadTraffic() {
   const ROAD = { gutter: 0.55, sidewalk: () => 2.4 };
   const T = new Function('THREE', 'COND', 'trafficByHour', 'hourForTime', 'TRAFFIC_TYPES', 'trafficModel', 'skipHiddenMatrices', 'RNG', 'clamp', 'lerp', 'smoothstep',
     'ROAD', 'LANE_W', 'SURF', 'mergeGeometries', 'bakeParkedFleet', 'damageIncrement', 'equivalentBarrierSpeed', 'TrafficProxies', 'PROXY_LAMP_RANGE', 'impactTarget', 'LIFE', 'STEP', 'roundaboutHelpers',
-    'const {circulatingPoint,roundaboutRange,entryYieldDistance,ringStation,ringPoint,polylinePoint,polylineStation,trafficRoundaboutRange,roundaboutYield}=roundaboutHelpers;\n'+strip(process.env.TRAFFIC_JS ? readFileSync(process.env.TRAFFIC_JS, 'utf8') : read('traffic.js')) + '\nreturn { Traffic, routeVel, extents };')(
+    'const {circulatingPoint,roundaboutRange,entryYieldDistance,ringStation,ringPoint,polylinePoint,polylineStation,trafficRoundaboutRange,roundaboutYield,reverseStation}=roundaboutHelpers;\n'+strip(process.env.TRAFFIC_JS ? readFileSync(process.env.TRAFFIC_JS, 'utf8') : read('traffic.js')) + '\nreturn { Traffic, routeVel, extents };')(
     THREE, COND, trafficByHour, () => 15, TRAFFIC_TYPES, trafficModel, () => {}, RNG, clamp, lerp, smoothstep,
     ROAD, 3.3, {}, () => null, () => null, damageIncrement, equivalentBarrierSpeed,
     class { begin() {} add() {} end() {} }, 110, impactTarget, LIFE, STEP, roundaboutHelpers); // distant-car draw batches (src/traffic-proxies.js): nothing to draw here

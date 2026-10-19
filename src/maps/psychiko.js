@@ -7,6 +7,7 @@ import { batchStatic } from '../batch.js';
 import { CellInstances, GeoBatch, M } from '../util.js';
 import { municipalBinGeometry } from '../street-life.js';
 import { assertWorldBudget } from '../world-art-direction.js';
+import { buildRoundaboutGuidance } from '../roundabout-guidance.js';
 
 export function psychikoLampGeometry() {
   const batch = new GeoBatch();
@@ -27,6 +28,8 @@ export function buildScenery(scene, map, { heightC, assets } = {}) {
     if(i%5===0)bins.add(M(x,y,z,0,yaw));
   }
   lamps.build(group); bins.build(group);
+  // Counter-clockwise ring arrows, give-way lines and P-1/P-40 signs at every public roundabout entry.
+  const guidance = buildRoundaboutGuidance(map, heightC, material); if (guidance) group.add(guidance.mesh);
   const people = new People(map, group, assets, group);
   for (const root of [road.group, buildings.group]) batchStatic(root);
   return { group, road, people, obstacles: [] };

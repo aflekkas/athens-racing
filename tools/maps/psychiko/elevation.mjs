@@ -27,8 +27,13 @@ export function copernicusField(raw,proj,{sigma=20}={}){
   return (A[j*nx+i]*(1-a)+A[j*nx+i+1]*a)*(1-b)+(A[(j+1)*nx+i]*(1-a)+A[(j+1)*nx+i+1]*a)*b;};
  return {height:(x,z)=>sample(H,x,z),raw:(x,z)=>sample(rawH,x,z),source:raw.source};
 }
-// Each complete roundabout ring is one gently sloping plane (centre height and gradient of the field),
-// blended back into the field over 20 m beyond the outer kerb, so the ring and all its entries share it.
+// Each complete roundabout ring is one gently sloping plane, least-squares fitted to the field along its own
+// carriageway (every ~2 m of the OSM ring), then blended back into the field over 20 m beyond the outer kerb,
+// so the ring and all its entries share it. Fitting on the ring (not at the centre) matters for 70 m circles.
 export function roundaboutPlanes(loops,field){return loops.map(q=>{const cx=q.p.reduce((s,p)=>s+p[0],0)/q.p.length,cz=q.p.reduce((s,p)=>s+p[1],0)/q.p.length,R=Math.max(...q.p.map(p=>Math.hypot(p[0]-cx,p[1]-cz)))+q.w/2;
- return {id:q.id,cx,cz,R,h:field.height(cx,cz),gx:(field.height(cx+25,cz)-field.height(cx-25,cz))/50,gz:(field.height(cx,cz+25)-field.height(cx,cz-25))/50};});}
+ const S=[[0,0,0],[0,0,0],[0,0,0]],b=[0,0,0];
+ q.p.forEach((a,i)=>{const c=q.p[(i+1)%q.p.length],n=Math.max(1,Math.ceil(Math.hypot(c[0]-a[0],c[1]-a[1])/2));for(let k=0;k<n;k++){const x=a[0]+(c[0]-a[0])*k/n-cx,z=a[1]+(c[1]-a[1])*k/n-cz,h=field.height(x+cx,z+cz),v=[1,x,z];for(let r=0;r<3;r++){b[r]+=v[r]*h;for(let t=0;t<3;t++)S[r][t]+=v[r]*v[t];}}});
+ // Cramer's rule on the 3x3 normal equations.
+ const det=m=>m[0][0]*(m[1][1]*m[2][2]-m[1][2]*m[2][1])-m[0][1]*(m[1][0]*m[2][2]-m[1][2]*m[2][0])+m[0][2]*(m[1][0]*m[2][1]-m[1][1]*m[2][0]),D=det(S),col=k=>det(S.map((row,r)=>row.map((v,t)=>t===k?b[r]:v)));
+ return {id:q.id,cx,cz,R,h:col(0)/D,gx:col(1)/D,gz:col(2)/D};});}
 export function plannedHeight(field,planes){return (x,z)=>{let h=field.height(x,z);for(const q of planes){const d=Math.hypot(x-q.cx,z-q.cz);if(d>q.R+20)continue;let t=clamp((d-q.R)/20,0,1);t=t*t*(3-2*t);h=h*t+(q.h+q.gx*(x-q.cx)+q.gz*(z-q.cz))*(1-t);}return h;};}
