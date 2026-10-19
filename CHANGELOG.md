@@ -8,6 +8,10 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Cars: badges now sit on the bodywork. The 911 crest is no longer buried and the 928 shows its model name once.
+
+- Cars: the 348 has one horse at the front, and the BMW and MINI roundels no longer float off the car.
+
 - Multiplayer: other drivers' cars now glide instead of moving in steps, even when their computer or connection is slow.
 
 - Multiplayer: bumping another car now affects both of you the same way, whoever hits whom and whoever has the slower connection.

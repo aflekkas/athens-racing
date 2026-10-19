@@ -2,7 +2,7 @@ import {blockyWheel} from './vehicle-wheel.js';
 // Reference-proportioned, editable vehicle meshes. Metres; nose -Z; wheels turn about X.
 import * as THREE from './vehicle-primitives.js';
 import { AVENTADOR, buildAventador } from './player-aventador.js';
-import { brandBadgeMaterial, finishBrandBadges } from './brand-badges.js';
+import { brandBadgeMaterial, finishBrandBadges, settleBadges } from './brand-badges.js';
 import { MERCEDES_MODELS, buildMercedes } from './player-mercedes.js';
 import { ROAD_MODELS, buildRoadCar } from './player-road-cars.js';
 import { PASSENGER_MODELS, buildPassengerModel } from './traffic-passenger-models.js';
@@ -480,6 +480,7 @@ export function buildDetailedCar(car,kind,opts={}) {
   }else compactMeshes(car.body, new Set([car.windscreen,car.mirrorL,car.mirrorR,...car.exteriorDash.children]));
   for(const w of car.wheels)compactMeshes(w.spin);
   installPlayerLOD(car,d);
+  settleBadges(car);
   if(opts.damage!==false)damageSystem(car);
   if(!low){
     const cloud=canvasTex(32,32,(g,w,h)=>{const a=g.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);a.addColorStop(0,'rgba(220,225,225,.6)');a.addColorStop(1,'rgba(220,225,225,0)');g.fillStyle=a;g.fillRect(0,0,w,h);});
