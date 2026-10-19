@@ -36,11 +36,15 @@ export class WorldTileRoads {
       if(tile?.state!=='active'||!this.stream.readyAt(x,z))continue;
       const {tables:t,metadata:m,contactIndex:index}=tile.packet,lx=x-m.origin[0],lz=z-m.origin[2],cell=Math.min(31,Math.floor(lz/16))*32+Math.min(31,Math.floor(lx/16));
       for(let k=index.offsets[cell];k<index.offsets[cell+1];k++){
-        const row=index.refs[k];if(row&0x80000000)continue;
-        const id=key+':'+row;if(visited.has(id))continue;visited.add(id);
-        const i=row*5;if(!(t.contactTriangles[i+4]&1)||t.contactTriangles[i+4]&8||surfaces.get(m.ids[t.contactTriangles[i+3]])!==t.contactLayers[row])continue;
+        const ref=index.refs[k],fine=!!(ref&0x80000000),row=ref&0x7fffffff;
+        // Compact tiles hold their ground contact rows as the fine triangles; legacy tiles hold them in contactTriangles.
+        if(fine&&!t.fineSurface)continue;
+        const id=key+':'+ref;if(visited.has(id))continue;visited.add(id);
+        const positions=fine?t.finePositions:t.contactPositions,triangles=fine?t.fineTriangles:t.contactTriangles,i=row*(fine?3:5);
+        const flags=fine?t.fineFlags[row]:t.contactTriangles[i+4],surface=fine?t.fineSurface[row]:t.contactTriangles[i+3],layer=fine?0:t.contactLayers[row];
+        if(!(flags&1)||flags&8||surfaces.get(m.ids[surface])!==layer)continue;
         const vertices=[];
-        for(let j=0;j<3;j++){const p=t.contactTriangles[i+j]*3,dx=t.contactPositions[p]+m.origin[0]-point.x,dz=t.contactPositions[p+2]+m.origin[2]-point.z;vertices.push({d:dx*rx+dz*rz,f:dx*(-rz)+dz*rx,y:t.contactPositions[p+1]});}
+        for(let j=0;j<3;j++){const p=triangles[i+j]*3,dx=positions[p]+m.origin[0]-point.x,dz=positions[p+2]+m.origin[2]-point.z;vertices.push({d:dx*rx+dz*rz,f:dx*(-rz)+dz*rx,y:positions[p+1]});}
         const hits=[];
         for(let j=0;j<3;j++){const a=vertices[j],b=vertices[(j+1)%3];if(Math.abs(a.f)<1e-7)hits.push(a);if(a.f*b.f<0){const f=a.f/(a.f-b.f);hits.push({d:a.d+(b.d-a.d)*f,y:a.y+(b.y-a.y)*f});}}
         if(hits.length>=2&&hits.every(h=>Math.abs(h.y-point.y)<=heightTolerance))intervals.push([Math.min(...hits.map(h=>h.d)),Math.max(...hits.map(h=>h.d))]);

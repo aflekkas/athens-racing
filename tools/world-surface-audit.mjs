@@ -1,11 +1,13 @@
 // Physical acceptance for AWT contacts. Samples the emitted triangle planes,
 // including exposed junction boundaries; never substitutes the generator field.
 import {buildTileContactIndex,sampleTileContact} from '../src/world-tile-contact.js';
+import {legacyTables} from '../src/world-tile-format.js';
 export const MAX_GRADE=Math.tan(Math.PI/6),MAX_STEP=.15,MAX_PROFILE_GRADE=.45;
 // Coastal OSM hillsides and service-road switchbacks reach 42% over a few metres
 // (survey of the 127-cell coast). The owner gate is asphalt <=30 degrees (57%),
 // checked per triangle; this is only a sanity bound on emitted graph samples.
-export function auditWorldSurface(t,{spacing=2,sweepStep=.25,sweepMetres=6,structures=[],ids=[]}={}) {
+export function auditWorldSurface(tile,{spacing=2,sweepStep=.25,sweepMetres=6,structures=[],ids=[]}={}) {
+  const t=legacyTables(tile);
   const guarded=new Set();
   for(const s of structures){
     if(s.kind!=='osm-bridge-guarded'||s.layer!==1||s.shoulderMetres!==.25||!s.bridgeSources?.length||!s.bridgeSources.every(id=>s.roads?.includes(id)))throw Error('Invalid guarded OSM bridge shoulder exception');

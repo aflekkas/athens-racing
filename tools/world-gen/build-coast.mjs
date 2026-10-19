@@ -4,7 +4,7 @@
 import {spawn} from 'node:child_process';
 import {mkdir,writeFile,appendFile,readFile} from 'node:fs/promises';
 import {resolve,join} from 'node:path';
-import {packTiles} from './pack.mjs';
+import {packTiles,WORLD_CEILING_BYTES} from './pack.mjs';
 import {WorldRoadGraph} from '../../src/world-tile-graph.js';
 import {validateWorldManifest,tileTables} from '../../src/world-tile-format.js';
 import {tileRenderVariants} from '../../src/world-tile-gpu.js';
@@ -23,7 +23,7 @@ const {execFileSync}=await import('node:child_process');const {rm}=await import(
 execFileSync('mkfifo',[fifo]);const writer=createWriteStream(fifo);writer.on('error',()=>{if(generator.exitCode===null)generator.kill('SIGTERM');});generator.stdout.pipe(writer);
 let entries;
 try{
- entries=await packTiles(fifo,join(output,'cells'),{maxBytes:192*1024*1024,onTile:async({key,entry,physical,bridges,roads,decoded,packet,seams:edgeHashes})=>{
+ entries=await packTiles(fifo,join(output,'cells'),{maxBytes:WORLD_CEILING_BYTES,onTile:async({key,entry,physical,bridges,roads,decoded,packet,seams:edgeHashes})=>{
   if(!roads)throw Error('Coastal cell '+key+' has no road cross-sections');
   const m=decoded.metadata,t=tileTables(decoded),playable=true;
   // Every cell of the area is a contact cell, and buildings are clipped to cells: no ownership dependencies.
@@ -56,7 +56,7 @@ try{
  for(const a of pythonAudits){for(const [id,reason] of Object.entries(a.excludedRoads||{}))excluded.set(id,reason);for(const id of a.unresolvedBridges||[])unresolved.add(id);clippedPieces+=a.clippedBuildings?.pieces||0;clippedDropped+=a.clippedBuildings?.dropped||0;}
  const excludedByReason={};for(const reason of excluded.values())excludedByReason[reason]=(excludedByReason[reason]||0)+1;
  await writeFile(join(output,'python-audit.ndjson'),pythonAudits.map(a=>JSON.stringify(a)).join('\n')+'\n');
- await writeFile(join(output,'summary.json'),JSON.stringify({area:areaName,world:area.world,excludedRoads:excluded.size,excludedByReason,excludedRoadIds:[...excluded.keys()].sort(),unresolvedBridges:[...unresolved].sort(),clippedBuildingPieces:clippedPieces,clippedBuildingPiecesDropped:clippedDropped,cells:audits.length,bytes:audits.reduce((n,r)=>n+r.bytes,0),maxSafetyBytes,worstSafetyCell,maxNeighbourhoodBytes,maxTransientBytes,graphEdges:graph.edges.size,graphNodes:graph.nodes.size,turnRules:graph.turns.size},null,2));
+ await writeFile(join(output,'summary.json'),JSON.stringify({area:areaName,world:area.world,atGradeUnderpasses:JSON.parse(await readFile(new URL('./tunnels.json',import.meta.url),'utf8')),excludedRoads:excluded.size,excludedByReason,excludedRoadIds:[...excluded.keys()].sort(),unresolvedBridges:[...unresolved].sort(),clippedBuildingPieces:clippedPieces,clippedBuildingPiecesDropped:clippedDropped,cells:audits.length,bytes:audits.reduce((n,r)=>n+r.bytes,0),maxSafetyBytes,worstSafetyCell,maxNeighbourhoodBytes,maxTransientBytes,graphEdges:graph.edges.size,graphNodes:graph.nodes.size,turnRules:graph.turns.size},null,2));
  if(maxSafetyBytes>64*1024*1024||maxTransientBytes>64*1024*1024)throw Error('Phone minimum safety set/reservation conflicts with unchanged cap');
  console.error('Coastal bake complete; assets remain uncommitted pending hosting agreement.');
 }catch(e){if(e.failures)await writeFile(join(output,'failures.json'),JSON.stringify(e.failures,null,1));throw e;}finally{if(generator.exitCode===null)generator.kill('SIGTERM');writer.destroy();await rm(fifo,{force:true});}

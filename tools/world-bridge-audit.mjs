@@ -2,7 +2,9 @@
 // connected approaches may replace six-metre shoulders with guarded edges.
 // The surface audit still enforces asphalt/shoulder slopes and approach grades.
 import {buildTileContactIndex,sampleTileContact} from '../src/world-tile-contact.js';
-export function auditBridgeGuards(t,m){
+import {legacyTables} from '../src/world-tile-format.js';
+export function auditBridgeGuards(tile,m){
+ const t=legacyTables(tile);
  const structures=m.structures||[],rails=m.rails||[];
  if(!structures.length)return {passed:rails.length===0,edgeSamples:0,unguarded:0,clearanceSamples:0,blocked:0,unsafeAnchors:0};
  const c={...t,finePositions:[],fineTriangles:[],coarseHeights:Array(1089).fill(NaN)},index=buildTileContactIndex(c),p=t.contactPositions,ix=t.contactTriangles;

@@ -1,0 +1,12 @@
+[
+ {"name":"tavros-link-street","car":[-5816,3980],"carcam":[0,3.8,9,10],"far":700,"wait":8000},
+ {"name":"tavros-link-above","car":[-5816,3980],"at":[-5816,3980],"cam":[30,70,55],"far":1200,"wait":10000},
+ {"name":"syntagma-street","car":[421,501],"carcam":[0,3.8,9,10],"far":700},
+ {"name":"syntagma-above","car":[421,501],"at":[421,501],"cam":[40,110,80],"far":1200,"wait":12000},
+ {"name":"kypseli-street","car":[-200,-2900],"carcam":[0,3.8,9,10],"far":700},
+ {"name":"kypseli-above","car":[-200,-2900],"at":[-200,-2900],"cam":[40,110,80],"far":1200,"wait":12000},
+ {"name":"patisia-above","car":[-700,-3300],"at":[-700,-3300],"cam":[60,150,120],"far":1600,"wait":12000},
+ {"name":"plaka-street","car":[-44,835],"carcam":[0,3.4,8,8],"far":600},
+ {"name":"syngrou-avenue","car":[-149,1291],"carcam":[0,3.8,9,10],"far":700},
+ {"name":"overview-centre-north","car":[0,-800],"at":[0,-800],"cam":[300,700,500],"far":3500,"wait":16000}
+]

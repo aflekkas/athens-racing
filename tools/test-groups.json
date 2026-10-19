@@ -11,6 +11,7 @@
     "tools/car-rest-pose.test.mjs",
     "tools/vehicle-budgets.test.mjs",
     "tools/world-tile-scene.test.mjs",
+    "tools/world-tile-compact.test.mjs",
     "tools/world-tile-stream.test.mjs",
     "tools/svj.test.mjs",
     "tools/exhaust-pops-hitch.test.mjs",

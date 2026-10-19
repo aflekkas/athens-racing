@@ -39,14 +39,14 @@ Every table is required, using a zero-length array for absent features. IDs in r
 | `edgePoints` | Float32 / 3 | local x,y,z; directed order |
 | `edgeLayers` | Int8 / 1 | OSM layer for each edge; ordering only |
 | `turns` | Uint32 / 4 | fromEdgeId, viaNodeId, toEdgeId, rule (0 allowed connector, 1 prohibited, 2 only) |
-| `ribbons` | Uint32 / 5 | surfaceId, edgeId, firstVertex, vertexCount, materialIndex |
-| `ribbonVertices` | Float32 / 5 | local x,y,z, globalStationMetres, signedLateralMetres; triangle-list spans, vertexCount divisible by 3 |
+| `ribbons` | Uint32 / 5 | surfaceId, edgeId, firstVertex, vertexCount, materialIndex. Never read at run time; compact tiles emit none |
+| `ribbonVertices` | Float32 / 5 | local x,y,z, globalStationMetres, signedLateralMetres; triangle-list spans, vertexCount divisible by 3. Empty in compact tiles |
 | `junctions` | Uint32 / 5 | surfaceId, nodeId, firstVertex, vertexCount, materialIndex |
 | `junctionVertices` | Float32 / 3 | local x,y,z; simple polygon in clockwise XZ order |
 | `markings` | Float32 / 7 | edgeIdIndex, stationStart, stationEnd, lateral, width, dashLength, gapLength |
 | `contactPositions` | Float32 / 3 | local x,y,z; exact surface, not lowered decorative asphalt |
-| `contactTriangles` | Uint32 / 5 | vertexA, vertexB, vertexC, surfaceId, flags |
-| `contactLayers` | Int8 / 1 | layer per contact triangle |
+| `contactTriangles` | Uint32 / 5 | vertexA, vertexB, vertexC, surfaceId, flags. In a compact tile only the rows that are not ground (deck rows) |
+| `contactLayers` | Int8 / 1 | layer per contact triangle row |
 | `coarseHeights` | Float32 / 1 | exactly 1089 heights, row-major Z then X; includes both edges |
 | `finePositions` | Float32 / 3 | adaptive road-conformed terrain x,y,z, 1–4 m near road |
 | `fineTriangles` | Uint32 / 3 | vertexA, vertexB, vertexC; same diagonal/contact surface as rendered terrain |
@@ -57,6 +57,19 @@ Every table is required, using a zero-length array for absent features. IDs in r
 | `signTransforms` | Float32 / 5 | local x,y,z,yawRadians,widthMetres; one transform per sign |
 | `anchors` | Uint32 / 5 | anchorId, positionIndex, edgeId, kind (0 spawn,1 tow,2 race,3 parking), nameString |
 | `anchorTransforms` | Float32 / 4 | local x,y,z,yawRadians; one transform per anchor |
+
+### Compact tiles (cost per cell)
+
+A dense cell used to store the same geometry two or three times. Compact tiles, which the generator emits from the centre area on, carry each thing once; a tile without the optional tables below is a classic tile and stays valid.
+
+| What | Compact form |
+|---|---|
+| Ground contact rows | Optional tables `fineSurface` (Uint32 / 1) and `fineFlags` (Uint8 / 1), one row per `fineTriangles` triangle: its surface ID and contact flags. The ground contact rows *are* the fine triangles (layer 0), so `contactTriangles`/`contactLayers` hold only the deck rows. `legacyTables(t)` expands to the classic shape (ground rows first) for offline audits; the runtime contact index holds one reference per ground triangle and answers both the contact and the fine fallback from it. Both tables are present or neither |
+| Positions | `finePositions` and `contactPositions` are the same array (the table indices are equal; deck vertices are appended after the ground ones). Render meshes use that array too unless a platform lowers the terrain under an approach deck (that cell keeps a second, lowered array). Draw calls are windows (`drawRange`) over one shared index array, which is also `fineTriangles` (triangles sorted by drawing class) |
+| Buildings | `extensions.derivedBuildings: {version: 1}`: no building meshes are stored. The worker builds them from `buildings`/`buildingCorners`/`buildingHeights` after validation: one wall quad per footprint edge (4 vertices, flat shade), one ear-clipped roof sharing the top ring, Uint8 shade (walls 15–35% darker by the fixed NW sun, roofs full), Uint16 index, grouped by palette entry, at most 16,384 triangles and 65,535 vertices per mesh. Triangles per footprint are exactly `3*cornerCount-2` and count in `budgets.triangles` |
+| Ribbons | Not emitted (see above) |
+
+Measured on nine dense cells it is 62% smaller compressed than the previous shared-buffer format and 39% lower resident.
 
 Edge flags bits: 0 one-way (every edge is directed; two-way roads emit reverse edges), 1 bridge, 2 tunnel, 3 restricted, 4 primary race route. Contact flags bits: 0 drivable asphalt, 1 terrain, 2 shoulder, 3 barrier. `surfaceId` is a world ID dictionary index. Unknown lane/speed is 0; routing must apply manifest defaults explicitly. Reverse edges share physical surface IDs but never duplicate contact triangles. Lane count describes travel direction; explicit lane-specific turn restrictions use separately identified lane edges. Layer arrays align with rows. Markings' edge ID indexes must be exactly representable as Float32 (<2^24); other ID fields use Uint32. On clipped edges, endpoints are stable portal nodes, edge IDs use `osm:way:<id>:<segment>:<direction>:<cell>`; `ids` also retains original way IDs. No fabricated connectivity at planar crossings with different layers.
 

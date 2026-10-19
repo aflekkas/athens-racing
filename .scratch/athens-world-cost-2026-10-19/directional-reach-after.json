@@ -1,0 +1,47 @@
+{
+ "startEdge": "osm:way:23182990:2-0:f:0:1",
+ "edges": 49368,
+ "reachableKm": 2419.6,
+ "buckets": {
+  "Piraeus (x<=-13, z<=11)": {
+   "km": 195.6,
+   "enterableKm": 142.9,
+   "enterablePercent": 73.1
+  },
+  "Neo Faliro / Tavros / Moschato (-12..-7, z<=10)": {
+   "km": 171.3,
+   "enterableKm": 140.3,
+   "enterablePercent": 81.9
+  },
+  "Faliro / Kallithea coast (-6..-1, z 9..16)": {
+   "km": 299.2,
+   "enterableKm": 294.3,
+   "enterablePercent": 98.4
+  },
+  "Centre: historic (-4..4, z -4..3)": {
+   "km": 595.4,
+   "enterableKm": 573.1,
+   "enterablePercent": 96.3
+  },
+  "Kallithea / Nea Smyrni / Koukaki (z 2..10, x -8..1)": {
+   "km": 801.9,
+   "enterableKm": 780.9,
+   "enterablePercent": 97.4
+  },
+  "Kypseli / Patisia (z<=-5)": {
+   "km": 269.4,
+   "enterableKm": 261,
+   "enterablePercent": 96.9
+  },
+  "Alimos / Elliniko / Glyfada / Riviera (z>=17)": {
+   "km": 551.9,
+   "enterableKm": 535.5,
+   "enterablePercent": 97
+  },
+  "whole world": {
+   "km": 2568.7,
+   "enterableKm": 2419.6,
+   "enterablePercent": 94.2
+  }
+ }
+}

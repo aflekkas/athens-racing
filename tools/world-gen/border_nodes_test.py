@@ -11,4 +11,5 @@ class Borders(unittest.TestCase):
  def test_negative_and_multiple_cells(self):
   p=split_borders([[-600,12],[1100,12]])
   self.assertEqual([a[0] for a in p],[-600,-512,0,512,1024,1100])
+
 if __name__=='__main__':unittest.main()

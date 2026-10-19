@@ -12,7 +12,10 @@ import {prepareTilePacket} from '../../src/world-tile-worker.js';
 import { auditBridgeGuards } from '../world-bridge-audit.mjs';
 import { auditWorldSurface } from '../world-surface-audit.mjs';
 import { auditRoadSections } from '../world-roads-audit.mjs';
-import { TILE_TABLES, validateWorldTile, tileEdgeSignatures } from '../../src/world-tile-format.js';
+import { TILE_TABLES, TILE_COMPACT_TABLES, validateWorldTile, tileEdgeSignatures, legacyTables } from '../../src/world-tile-format.js';
+/** Total compressed size a world may reach. Owner decision 2026-10-19 (docs/OWNER-DECISIONS.md): raised from 192 MiB to 2 GiB.
+ * The player-side limits are separate and unchanged: 15 MiB initial download, 64 MiB worst 2x2 set, 64 MiB stream, R2 staging <= 5 GB. */
+export const WORLD_CEILING_BYTES = 2 * 1024 ** 3;
 const types = { Int8Array, Uint8Array, Uint16Array, Uint32Array, Float32Array };
 const digest = bytes => createHash('sha256').update(bytes).digest('hex');
 function typed(type, values) {
@@ -32,7 +35,7 @@ export function encodeTile(input) {
   const intern = new Map();
   arrays.forEach((a,i)=>{const hash=key(a);if(!intern.has(hash))intern.set(hash,i);});
   const tables = {};
-  for (const [name,[type]] of Object.entries(TILE_TABLES)) {
+  for (const [name,[type]] of [...Object.entries(TILE_TABLES),...Object.entries(TILE_COMPACT_TABLES).filter(([k])=>input.tables[k]?.length)]) {
     const array=typed(type,input.tables[name]),hash=key(array);
     if(!intern.has(hash)){intern.set(hash,arrays.length);arrays.push(array);}
     tables[name]=intern.get(hash);
