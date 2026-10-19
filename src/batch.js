@@ -101,3 +101,44 @@ export class DistanceDetail {
     else { for (const o of this.off) o.visible = true; this.off = []; }
   }
 }
+
+/** Draw-call budget by performance class (graphics.js PERFORMANCE.chunk): merge the instanced prop chunks the world builders emit
+ * (CellInstances, userData.staticCell) that share a geometry, material and distance range into coarser chunks of `cell` metres: one
+ * draw call per kind and chunk instead of one per 240-600 m cell. Per-instance fades and culling are untouched (the fade works on each
+ * instance's own position). Only instanced props are coarsened (a few dozen triangles per instance): merging the road, terrain and
+ * building meshes into bigger chunks was tried first and cut 7% of the calls for 70% more triangles (bounding spheres that always
+ * straddle the frustum). Runs on a finished world; `lod` is the scenery LOD list (scenery.js prepareSceneryLod), kept in step. */
+export function mergeInstancedCells(root, cell = 1200, { lod = null } = {}) {
+  root.updateMatrixWorld(true);
+  const groups = new Map();
+  root.traverse((o) => {
+    if (!o.isInstancedMesh || !o.userData.staticCell || !o.parent || !o.boundingSphere || !o.matrix.equals(IDENTITY)) return;
+    const u = o.userData, c = o.boundingSphere.center;
+    const key = [o.parent.uuid, o.geometry.uuid, o.material.uuid, !!o.instanceColor, o.castShadow, o.receiveShadow, o.layers.mask, o.renderOrder, o.frustumCulled, u.far, u.near, JSON.stringify(u.impostor ?? null), o.name].join('|') + `#${Math.floor(c.x / cell)},${Math.floor(c.z / cell)}`;
+    let list = groups.get(key); if (!list) groups.set(key, list = []);
+    list.push(o);
+  });
+  let before = 0, after = 0;
+  for (const list of groups.values()) {
+    before += list.length; after++;
+    if (list.length < 2) continue;
+    const total = list.reduce((n, o) => n + o.count, 0), first = list[0];
+    const merged = new THREE.InstancedMesh(first.geometry, first.material, total);
+    if (first.instanceColor) merged.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(total * 3), 3);
+    let at = 0; const sphere = first.boundingSphere.clone();
+    for (const o of list) {
+      merged.instanceMatrix.array.set(o.instanceMatrix.array.subarray(0, o.count * 16), at * 16);
+      if (merged.instanceColor) merged.instanceColor.array.set(o.instanceColor.array.subarray(0, o.count * 3), at * 3);
+      at += o.count; if (o !== first) sphere.union(o.boundingSphere);
+    }
+    merged.instanceMatrix.needsUpdate = true; if (merged.instanceColor) merged.instanceColor.needsUpdate = true;
+    merged.boundingSphere = sphere; merged.userData = { ...first.userData }; merged.name = first.name;
+    merged.castShadow = first.castShadow; merged.receiveShadow = first.receiveShadow; merged.layers.mask = first.layers.mask; merged.renderOrder = first.renderOrder; merged.frustumCulled = first.frustumCulled;
+    merged.matrixAutoUpdate = false; merged.matrixWorldAutoUpdate = false; merged.updateMatrixWorld(true);
+    first.parent.add(merged);
+    if (lod) { const at = lod.indexOf(first); for (const o of list) { const i = lod.indexOf(o); if (i >= 0) lod.splice(i, 1); } lod.splice(Math.max(0, Math.min(at, lod.length)), 0, merged); }
+    for (const o of list) { o.removeFromParent(); o.dispose(); }
+  }
+  return { before, after };
+}
+const IDENTITY = new THREE.Matrix4();

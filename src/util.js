@@ -86,9 +86,10 @@ export class GeoBatch {
  * whole cells. add(x,y,z, ry, scale, color?) then build(scene).
  */
 export class CellInstances {
-  constructor(geo, mat, { cell = 400, shadow = true, receive = true, colors = false, far = 1400, near = 0 } = {}) {
+  // dynamic: the caller keeps and rewrites these chunks at run time (tyre walls), so the draw-call merge (batch.js mergeInstancedCells) leaves them alone
+  constructor(geo, mat, { cell = 400, shadow = true, receive = true, colors = false, far = 1400, near = 0, dynamic = false } = {}) {
     this.geo = geo; this.mat = mat; this.cell = cell; this.cells = new Map(); this.shadow = shadow; this.receive = receive; this.colors = colors; this.far = far; this.near = near;
-    this.meshes = [];
+    this.meshes = []; this.dynamic = dynamic;
   }
   add(matrix, color) {
     const e = matrix.elements;
@@ -116,6 +117,7 @@ export class CellInstances {
       m.boundingSphere = sph;
       m.castShadow = this.shadow; m.receiveShadow = this.receive;
       m.userData.far = this.far; m.userData.near = this.near; // distance culling / LOD (see main.js)
+      if (!this.dynamic) m.userData.staticCell = true;
       parent.add(m); this.meshes.push(m);
     }
     return this;

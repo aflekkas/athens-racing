@@ -27,13 +27,13 @@ export const RENDER = Object.freeze({
 // (src/scenery.js) · trafficDraw / crowd: traffic and pedestrian draw ranges (m, null = from the draw distance) · detail:
 // small-prop range factor (src/scenery.js) · traffic / walkers: offline traffic density and pedestrian count (x the
 // map's; online the server owns the shared traffic, so it is never scaled there) · trafficHz: traffic AI rate (60 = every
-// step) · hud: minimap / tacho redraw rates in Hz (src/hud.js)
+// step) · chunk: how much coarser the instanced prop chunks are drawn (batch.js: fewer draw calls) · lod: how early other drivers' cars drop to their road-distance model (vehicle-lod.js) · hud: minimap / tacho redraw rates in Hz (src/hud.js)
 const hudRates = (tacho, map, mapBig) => Object.freeze({ tacho, map, mapBig });
 export const PERFORMANCE = Object.freeze({
-  potato: { pixelRatio: 0.6, drawDistance: 500, trafficDraw: 220, crowd: 70, detail: 0.5, traffic: 0.4, walkers: 0.5, trafficHz: 30, hud: hudRates(20, 8, 15) },
-  low: { pixelRatio: 0.8, drawDistance: 1000, trafficDraw: 320, crowd: 110, detail: 0.7, traffic: 0.6, walkers: 0.7, trafficHz: 60, hud: hudRates(24, 10, 20) },
-  med: { pixelRatio: 1.1, drawDistance: 1000, trafficDraw: 420, crowd: 140, detail: 0.85, traffic: 0.85, walkers: 1, trafficHz: 60, hud: hudRates(30, 15, 30) },
-  high: { pixelRatio: 1.5, drawDistance: 2000, trafficDraw: null, crowd: 175, detail: 1, traffic: 1, walkers: 1, trafficHz: 60, hud: hudRates(30, 15, 30) },
+  potato: { pixelRatio: 0.6, drawDistance: 500, trafficDraw: 220, crowd: 70, detail: 0.5, traffic: 0.4, walkers: 0.5, trafficHz: 30, chunk: 3, lod: 0.45, hud: hudRates(20, 8, 15) },
+  low: { pixelRatio: 0.8, drawDistance: 1000, trafficDraw: 320, crowd: 110, detail: 0.7, traffic: 0.6, walkers: 0.7, trafficHz: 60, chunk: 3, lod: 0.6, hud: hudRates(24, 10, 20) },
+  med: { pixelRatio: 1.1, drawDistance: 1000, trafficDraw: 420, crowd: 140, detail: 0.85, traffic: 0.85, walkers: 1, trafficHz: 60, chunk: 2, lod: 0.85, hud: hudRates(30, 15, 30) },
+  high: { pixelRatio: 1.5, drawDistance: 2000, trafficDraw: null, crowd: 175, detail: 1, traffic: 1, walkers: 1, trafficHz: 60, chunk: 1.5, lod: 1, hud: hudRates(30, 15, 30) },
 });
 export const PERF_CLASSES = Object.keys(PERFORMANCE);
 // How low dynamic resolution may drop the picture. The car in front of the camera is the first thing a player looks at, and it
@@ -82,7 +82,7 @@ export function resolveGraphics(s = settings, { deviceRatio = typeof devicePixel
   const pixelRatio = +(scale ? screen * scale : Math.min(screen, P.pixelRatio)).toFixed(3);
   const draw = +s.drawDistance > 0 ? +s.drawDistance : Math.min(P.drawDistance, mobile ? 500 : Infinity);
   const resources = RESOURCE_BUDGETS[mobile && PERF_CLASSES.indexOf(perfClass) > 1 ? 'low' : perfClass];
-  return { R: RENDER, perfClass, P, resources, pixelRatio, resolution: pixelRatio / screen, drawDistance: draw, trafficDraw: P.trafficDraw, crowd: P.crowd, detail: P.detail, traffic: P.traffic, walkers: P.walkers, trafficHz: P.trafficHz, hud: P.hud };
+  return { R: RENDER, perfClass, P, resources, pixelRatio, resolution: pixelRatio / screen, drawDistance: draw, trafficDraw: P.trafficDraw, crowd: P.crowd, detail: P.detail, traffic: P.traffic, walkers: P.walkers, trafficHz: P.trafficHz, hud: P.hud, chunkScale: P.chunk, vehicleLod: P.lod };
 }
 const SOFTWARE_GPU = /SwiftShader|llvmpipe|softpipe|Software|Microsoft Basic Render/i;
 // integrated / mobile GPUs: medium. Apple M-series and discrete cards stay on high.
