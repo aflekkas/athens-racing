@@ -8,6 +8,8 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Engine sounds: the 911 now has a real flat-six, the Aventador and SL 65 a V12, and hot hatches, small turbos and mainstream turbo fours stop all sharing the MINI sound.
+
 - Porsche 911: round headlamps, a lower bonnet and a rear light bar with PORSCHE lettering.
 
 - Cars: model lettering and the A-Class star now sit on the bodywork instead of floating by the tail lights, and door mirrors are mounted lower and sturdier.

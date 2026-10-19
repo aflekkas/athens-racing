@@ -8,6 +8,11 @@ export const ENGINE_RECORDINGS = {
   mini: { engine: 'turbo4', start: 'mini-start', catchAt: .7, loops: [loop('mini-idle', 900), loop('mini-low', 1800), loop('mini-mid', 4300, 'c58f458b'), loop('mini-high', 6100)] },
   z4: { engine: 'turbo6', start: 'z4-start', catchAt: .45, loops: [loop('z4-idle', 745), loop('z4-low', 1545), loop('z4-mid', 3000), loop('z4-high', 5050)] },
   taxi: { engine: 'diesel', start: 'taxi-start', catchAt: .85, loops: [loop('taxi-idle', 860), loop('taxi-low', 2000), loop('taxi-high', 3000)] },
+  // 2026-10-18: one recording per engine family so cars stop sharing the MINI. Substitutes, see sources.json.
+  flat6: { cylinders: 6, engine: 'flat6', start: 'flat6-start', catchAt: .42, loops: [loop('flat6-idle', 1011), loop('flat6-low', 2099), loop('flat6-mid', 2647), loop('flat6-high', 3513)] },
+  v12: { cylinders: 12, engine: 'v12', start: 'v12-start', catchAt: .34, loops: [loop('v12-idle', 970), loop('v12-low', 2009), loop('v12-mid', 2974), loop('v12-high', 3528)] },
+  focus: { cylinders: 4, engine: 'turbo4', start: 'mini-start', catchAt: .7, loops: [loop('focus-idle', 917), loop('focus-low', 1929), loop('focus-mid', 3397), loop('focus-high', 5400), loop('focus-top', 6383)] },
+  abarth: { cylinders: 4, engine: 'turbo4', start: 'mini-start', catchAt: .7, loops: [loop('abarth-idle', 953), loop('abarth-low', 1872), loop('abarth-mid', 2495), loop('abarth-high', 3238)] },
 };
 const downloads = new Map();
 const banks = new WeakMap();
@@ -154,7 +159,7 @@ export class GranularEngineLoop {
 
 export class RecordedEngineVoice {
   constructor(ctx, bank, dest, spec, gain = 1) {
-    this.ctx = ctx; this.bank = bank; this.spec = spec; this.level = gain;
+    this.ctx = ctx; this.bank = bank; this.spec = spec; this.level = gain; this.tone = engineProfile(spec).tone ?? 1;
     this.sources = []; this.gains = [];
     this.points = bank.loops.map(s => s.rpm); this.weights = new Float32Array(this.points.length);
     this.filter = ctx.createBiquadFilter(); this.filter.type = 'lowpass'; this.filter.Q.value = .55;
@@ -163,7 +168,7 @@ export class RecordedEngineVoice {
     for (const sample of bank.loops) {
       const g = ctx.createGain(); g.gain.value = 0; g.connect(this.filter);
       const source = spec.id === 'mini' || sample.buffer.duration < 1.25
-        ? new GranularEngineLoop(ctx, sample.buffer, g, sample.rpm, spec.engine === 'turbo6' ? 6 : 4)
+        ? new GranularEngineLoop(ctx, sample.buffer, g, sample.rpm, bank.cylinders || (spec.engine === 'turbo6' ? 6 : 4))
         : ctx.createBufferSource();
       if (!(source instanceof GranularEngineLoop)) { source.buffer = sample.buffer; source.loop = true; source.loopStart = sample.loopStart || 0; source.loopEnd = sample.loopEnd || sample.buffer.duration; source.connect(g); }
       const offset = (sample.loopStart || 0) + Math.random() * ((sample.loopEnd || sample.buffer.duration) - (sample.loopStart || 0));
@@ -187,7 +192,7 @@ export class RecordedEngineVoice {
       this.gains[i].gain.setTargetAtTime(weights[i], now, .06);
     }
     const rn = Math.min(1, r / this.spec.redline);
-    this.filter.frequency.setTargetAtTime((this.spec.engine === 'diesel' ? 1700 : 2200) + on * 8300 + rn * (700 + on * 1100), now, .07);
+    this.filter.frequency.setTargetAtTime(((this.spec.engine === 'diesel' ? 1700 : 2200) + on * 8300 + rn * (700 + on * 1100)) * this.tone, now, .07);
     const amplitude = level * this.level * (.37 + .46 * on + .17 * rn);
     this.out.gain.setTargetAtTime(amplitude, now, .055);
     this.limiterGain.gain.setTargetAtTime(limiter ? -amplitude * .35 : 0, now, .015);

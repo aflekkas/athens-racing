@@ -57,7 +57,7 @@ happens once per decoded take, not during steady-state frame updates.
 
 ## Licences and substitutions
 
-No new downloaded assets. MINI loops and substitute petrol starter: CC0,
+Engine-family recordings added 2026-10-18 under the same Sonniss GDC licence (game use only): Porsche 911 ST / 997 Cup flat-six, Lamborghini Aventador V12, Ford Focus RS and Fiat Abarth 595 turbo fours (see credits; all are substitutes). MINI loops and substitute petrol starter: CC0,
 TheLittleCrow / sound_catcher99. Diesel idle/start: **CC BY 3.0, Loffy**, with the
 existing crop/filter/mono/loop transformations. BMW M4 I6 and running diesel
 substitutes: the existing **Sonniss GDC bundle licence**, game use only, not an
@@ -65,7 +65,7 @@ asset-library redistribution licence. Full provenance and source URLs remain in
 [credits](../../assets/audio/engines/CREDITS.txt) and
 [sources](../../assets/audio/engines/sources.json). New mechanical effects are
 original procedural synthesis. V6/V8 profiles exist for future catalogue entries;
-no current trim is falsely mapped to a V engine based only on cylinder count.
+no current trim is falsely mapped to a V engine based only on cylinder count. The 911 uses the flat-six take; the Aventador SVJ and SL 65 the V12 take; sport and mainstream turbo fours share the Focus RS take with different tone/overrun calibrations; the Panda family, Ibiza Cupra and Jazz Drift use the Abarth take; buses and trucks use the synthesized diesel-six.
 
 ## Profiles by car
 

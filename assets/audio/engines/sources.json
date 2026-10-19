@@ -72,6 +72,56 @@
       "licenseUrl": "https://sonniss.com/gdc-bundle-license/",
       "formatNote": "Original 96 kHz WAV from Sonniss GameAudioGDC 2020",
       "sha256": "a31daa24826be72999233fbf1485056bd67b799ac0ae04f6297d164256f09e7b"
+    },
+    "porsche-911st": {
+      "cacheFile": "Porsche, 911, ST, t4, Onbrd, Fast, Drive, Engine, Left, DPA4061.wav",
+      "title": "Porsche 911 ST 1972 onboard fast drive, engine mic (air-cooled flat-six)",
+      "author": "Pole Position Production",
+      "pageUrl": "https://sonniss.com/gameaudiogdc/",
+      "downloadUrl": "https://ftpmirror.your.org/pub/misc/sonniss2020/individual/Pole%20Position%20-%20Porsche%20911%20ST%201972/Porsche%2C%20911%2C%20ST%2C%20t4%2C%20Onbrd%2C%20Fast%2C%20Drive%2C%20Engine%2C%20Left%2C%20DPA4061.wav",
+      "licenseUrl": "https://sonniss.com/gdc-bundle-license/",
+      "formatNote": "Original WAV from Sonniss GameAudioGDC 2020",
+      "sha256": "76c64f3e9f827b31085701be558256529285bec5a5ead59859415798b1397f50"
+    },
+    "porsche-997cup-start": {
+      "cacheFile": "Porsche, 997, Cup, t4, Onbrd, Start, Drive, Gearshifts, Stall, Drive, Stop, Off, Engine, Right, PZM.wav",
+      "title": "Porsche 997 Cup 2012 onboard start, drive and gearshifts, engine mic (water-cooled flat-six)",
+      "author": "Pole Position Production",
+      "pageUrl": "https://sonniss.com/gameaudiogdc/",
+      "downloadUrl": "https://ftpmirror.your.org/pub/misc/sonniss2020/individual/Pole%20Position%20-%20Porsche%20997%20Cup%202012/Porsche%2C%20997%2C%20Cup%2C%20t4%2C%20Onbrd%2C%20Start%2C%20Drive%2C%20Gearshifts%2C%20Stall%2C%20Drive%2C%20Stop%2C%20Off%2C%20Engine%2C%20Right%2C%20PZM.wav",
+      "licenseUrl": "https://sonniss.com/gdc-bundle-license/",
+      "formatNote": "Original WAV from Sonniss GameAudioGDC 2020",
+      "sha256": "8808278f84e7569a95d4435a7b915e3bf414a263f33dbafefce49a5579d0bb61"
+    },
+    "aventador": {
+      "cacheFile": "lamborghini_aventador_t14_onbrd_start_drive_ramps_stop_off_exhaust_right_DPA4062.wav",
+      "title": "Lamborghini Aventador 2014 onboard start, drive and ramps, exhaust mic (V12)",
+      "author": "Pole Position Production",
+      "pageUrl": "https://sonniss.com/gameaudiogdc/",
+      "downloadUrl": "https://ftpmirror.your.org/pub/misc/sonniss2020/individual/Pole%20Position%20-%20Lamborghini%20Aventador%202014/lamborghini_aventador_t14_onbrd_start_drive_ramps_stop_off_exhaust_right_DPA4062.wav",
+      "licenseUrl": "https://sonniss.com/gdc-bundle-license/",
+      "formatNote": "Original WAV from Sonniss GameAudioGDC 2020",
+      "sha256": "92986d10dd09f45cda5b57cca3805387e25c7235154741234f1aed60a5355a54"
+    },
+    "focus-rs": {
+      "cacheFile": "Ford_Focus_RS_t5_Onbrd_Drive_Ramps_Stop_Off_Engine_MKH8020.wav",
+      "title": "Ford Focus RS 2016 onboard drive and ramps, engine mic (2.3 EcoBoost turbo four)",
+      "author": "Pole Position Production",
+      "pageUrl": "https://sonniss.com/gameaudiogdc/",
+      "downloadUrl": "https://ftpmirror.your.org/pub/misc/sonniss2020/individual/Pole%20Position%20-%20Ford%20Focus%20RS%202016/Ford_Focus_RS_t5_Onbrd_Drive_Ramps_Stop_Off_Engine_MKH8020.wav",
+      "licenseUrl": "https://sonniss.com/gdc-bundle-license/",
+      "formatNote": "Original WAV from Sonniss GameAudioGDC 2020",
+      "sha256": "6d76c09f1f29ed457a951de947bdd145a1b876cf4db4e15bace242b306a9109d"
+    },
+    "abarth-595": {
+      "cacheFile": "fiat_500_t6_onbrd_fast_drive_short_stop_off_exhaust_left_DPA4062.wav",
+      "title": "Fiat Abarth 595 2016 onboard fast drive, exhaust mic (1.4 T-Jet turbo four)",
+      "author": "Pole Position Production",
+      "pageUrl": "https://sonniss.com/gameaudiogdc/",
+      "downloadUrl": "https://ftpmirror.your.org/pub/misc/sonniss2020/individual/Pole%20Position%20-%20Fiat%20Abarth%20595%202016/fiat_500_t6_onbrd_fast_drive_short_stop_off_exhaust_left_DPA4062.wav",
+      "licenseUrl": "https://sonniss.com/gdc-bundle-license/",
+      "formatNote": "Original WAV from Sonniss GameAudioGDC 2020",
+      "sha256": "c0e47462cc47d97fb73adb921ef0a02a9bea71d9ebf35a78d4c55e6debff733f"
     }
   },
   "assets": [
@@ -262,6 +312,255 @@
       "stabilize": false,
       "duration": 5.91,
       "sha256": "0f63ba4a69c353749298947571f109867570c3d5a728a089cc61750068c6d054"
+    },
+    {
+      "file": "flat6-idle.wav",
+      "source": "porsche-911st",
+      "trim": [
+        118.7,
+        120.9
+      ],
+      "kind": "loop",
+      "rpm": 1011,
+      "cylinders": 6,
+      "duration": 2.08721,
+      "sha256": "7c75cae36d5c17808df907a84c943d9d0895e910690211c473e98bef38e6a5e0"
+    },
+    {
+      "file": "flat6-low.wav",
+      "source": "porsche-911st",
+      "trim": [
+        54.6,
+        56.8
+      ],
+      "kind": "loop",
+      "rpm": 2099,
+      "cylinders": 6,
+      "duration": 2.10957,
+      "sha256": "719229c19bab73ae6a8a2c8914c91598ebd85f923489578a19fcaadcfc2c4475"
+    },
+    {
+      "file": "flat6-mid.wav",
+      "source": "porsche-911st",
+      "trim": [
+        30.0,
+        32.2
+      ],
+      "kind": "loop",
+      "rpm": 2647,
+      "cylinders": 6,
+      "duration": 2.11281,
+      "sha256": "83ad77b9e8e26b852e76d4345e4275c8a92190f85b0727cc4efc9dc6c8edb722"
+    },
+    {
+      "file": "flat6-high.wav",
+      "source": "porsche-911st",
+      "trim": [
+        135.6,
+        137.8
+      ],
+      "kind": "loop",
+      "rpm": 3513,
+      "cylinders": 6,
+      "duration": 2.05848,
+      "sha256": "a8c3c4fcde879a2d263b27d400ae764288f0d65c8da8cdf73acfeaa4f0f9ede2"
+    },
+    {
+      "file": "flat6-start.wav",
+      "source": "porsche-997cup-start",
+      "trim": [
+        1.95,
+        4.45
+      ],
+      "kind": "start",
+      "duration": 2.5,
+      "sha256": "ce99c42509468614fcd97d30dfe54053edb46d532c703e8ce22d6861b7138ee3"
+    },
+    {
+      "file": "v12-idle.wav",
+      "source": "aventador",
+      "trim": [
+        256.3,
+        258.7
+      ],
+      "kind": "loop",
+      "rpm": 970,
+      "cylinders": 12,
+      "duration": 2.30916,
+      "sha256": "59da862ea8552000763f5fc35b17cf284044052f69c10623c223336304a5e8a7"
+    },
+    {
+      "file": "v12-low.wav",
+      "source": "aventador",
+      "trim": [
+        165.7,
+        168.1
+      ],
+      "kind": "loop",
+      "rpm": 2009,
+      "cylinders": 12,
+      "duration": 2.29345,
+      "sha256": "1f4fac006f0a0cd6851dc8428f2e7e1d2b115e1dfbd27214396dfd047cd8be53"
+    },
+    {
+      "file": "v12-mid.wav",
+      "source": "aventador",
+      "trim": [
+        173.3,
+        175.7
+      ],
+      "kind": "loop",
+      "rpm": 2974,
+      "cylinders": 12,
+      "duration": 2.30381,
+      "sha256": "4eac034e6184fa00b7bd37a7ba8327787077a00cca0d20636dccdf08c87919c4"
+    },
+    {
+      "file": "v12-high.wav",
+      "source": "aventador",
+      "trim": [
+        223.1,
+        225.5
+      ],
+      "kind": "loop",
+      "rpm": 3528,
+      "cylinders": 12,
+      "duration": 2.28968,
+      "sha256": "251db832e41f11d6447a2dbb2afdc17df13781235afdc216c94616b46e5e00e8"
+    },
+    {
+      "file": "v12-start.wav",
+      "source": "aventador",
+      "trim": [
+        0.35,
+        3.0
+      ],
+      "kind": "start",
+      "duration": 2.65,
+      "sha256": "75834e991e4234510d31cad82e82691433f898bca7be75648e81344956d1dac5"
+    },
+    {
+      "file": "focus-idle.wav",
+      "source": "focus-rs",
+      "trim": [
+        369.8,
+        371.4
+      ],
+      "kind": "loop",
+      "rpm": 917,
+      "cylinders": 4,
+      "notches": [
+        [
+          3089,
+          20
+        ]
+      ],
+      "duration": 1.53005,
+      "sha256": "0824ddc346e0b6b93f97de1b440a15525c3d44a8fb343b00c61181d60b7f0c63"
+    },
+    {
+      "file": "focus-low.wav",
+      "source": "focus-rs",
+      "trim": [
+        104.2,
+        105.8
+      ],
+      "kind": "loop",
+      "rpm": 1929,
+      "cylinders": 4,
+      "duration": 1.55821,
+      "sha256": "c0469bb229bc7b645864c222aa4f7fe0221d208bf5b50af49ad0a04a0148d58b"
+    },
+    {
+      "file": "focus-mid.wav",
+      "source": "focus-rs",
+      "trim": [
+        41.0,
+        42.6
+      ],
+      "kind": "loop",
+      "rpm": 3397,
+      "cylinders": 4,
+      "duration": 1.52841,
+      "sha256": "ef16331d09da24bf1186cdf43639feec5837ed50eac0914e53b368a7e75d5735"
+    },
+    {
+      "file": "focus-high.wav",
+      "source": "focus-rs",
+      "trim": [
+        203.9,
+        205.5
+      ],
+      "kind": "loop",
+      "rpm": 5400,
+      "cylinders": 4,
+      "duration": 1.52016,
+      "sha256": "cda87bf907dc6511d2df465dfdb9926124d32376e314be982551fc5270dc0ca1"
+    },
+    {
+      "file": "focus-top.wav",
+      "source": "focus-rs",
+      "trim": [
+        198.5,
+        200.1
+      ],
+      "kind": "loop",
+      "rpm": 6383,
+      "cylinders": 4,
+      "duration": 1.52476,
+      "sha256": "cabc0755be90d18e159bf517680529d250f6d490c84bbefcff9b0907ce94410f"
+    },
+    {
+      "file": "abarth-idle.wav",
+      "source": "abarth-595",
+      "trim": [
+        40.7,
+        42.5
+      ],
+      "kind": "loop",
+      "rpm": 953,
+      "cylinders": 4,
+      "duration": 1.70329,
+      "sha256": "887fb3f8e3cfcfd92d125c768a58ad3cd3c3cdd7c9fe3abf5f16ce4551337a76"
+    },
+    {
+      "file": "abarth-low.wav",
+      "source": "abarth-595",
+      "trim": [
+        31.9,
+        33.7
+      ],
+      "kind": "loop",
+      "rpm": 1872,
+      "cylinders": 4,
+      "duration": 1.72485,
+      "sha256": "1a9f6421306ea0cee08a427cb5e9e13b89da567c12c8b9a0bd2c983c38642339"
+    },
+    {
+      "file": "abarth-mid.wav",
+      "source": "abarth-595",
+      "trim": [
+        8.9,
+        10.7
+      ],
+      "kind": "loop",
+      "rpm": 2495,
+      "cylinders": 4,
+      "duration": 1.72061,
+      "sha256": "67ede56150ac76fa7418b73463e8c7b776b2543a3a26706e35540151f545fec9"
+    },
+    {
+      "file": "abarth-high.wav",
+      "source": "abarth-595",
+      "trim": [
+        13.45,
+        14.65
+      ],
+      "kind": "loop",
+      "rpm": 3238,
+      "cylinders": 4,
+      "duration": 1.12989,
+      "sha256": "7222da25a224dfb84973c84da63cf516c9e5ad32a20c7cbaa8450f5962d2656c"
     }
   ],
   "notes": [
@@ -270,6 +569,8 @@
     "Octavia taxi is represented by VW Passat diesel startup/idle, Audi 1.9 TDI 2000 RPM and VW Caravelle 2.0 TDI 3000 RPM. These are related diesel substitutes, NOT an exact Octavia recording.",
     "RPM references are estimates from harmonic analysis except the producer-labelled 2000/3000 RPM loops. Loops are trimmed, mono mixed, high-pass filtered, pitch-stabilized where specified, overlapped at their seams and level matched.",
     "Sonniss recordings are licensed for use inside this game; they are not CC0 and must not be redistributed as a standalone sound pack. License version 2.0 effective 2026-08-27 applies.",
-    "Runtime MINI/short-take playback uses a cached 24-second circular overlap-add bed with random source offsets, +/-40% onset jitter, sine equal-power windows and >=60% overlap. Phase-aligned firing body uses amplitude-sum normalization; stochastic texture uses power-sum normalization. Smooth look-ahead RMS normalization follows grain summation. Pitch remains RPM/Doppler driven. Source assets and licences are unchanged."
+    "Runtime MINI/short-take playback uses a cached 24-second circular overlap-add bed with random source offsets, +/-40% onset jitter, sine equal-power windows and >=60% overlap. Phase-aligned firing body uses amplitude-sum normalization; stochastic texture uses power-sum normalization. Smooth look-ahead RMS normalization follows grain summation. Pitch remains RPM/Doppler driven. Source assets and licences are unchanged.",
+    "2026-10-18 additions: flat-six = Porsche 911 ST (1972, air-cooled 2.5) engine-mic loops with a 997 Cup (water-cooled 3.6) starter; V12 = Lamborghini Aventador exhaust-mic loops and starter; hot turbo four = Ford Focus RS 2.3 EcoBoost engine-mic ramp; small turbo four = Fiat Abarth 595 exhaust-mic. All are Sonniss GameAudioGDC 2020 (Pole Position Production), licensed for use inside this game. They are substitutes, never exact recordings of the cars they voice. The masters top out at roughly 3.5k (flat-six, V12, Abarth) to 6.4k rpm (Focus RS); the highest loop is pitch-extended by the RPM-driven playback rate above that.",
+    "focus-idle.wav carries a 3.09 kHz notch (Q 20): the Focus RS idle take has a narrow-band whine that is not a firing harmonic of the engine."
   ]
 }
