@@ -21,6 +21,7 @@
     "tools/install-prompt.test.mjs",
     "tools/web-manifest.test.mjs",
     "tools/owner-locked-install-prompt.test.mjs",
+    "tools/owner-locked-desktop-only.test.mjs",
     "tools/release-data.test.mjs",
     "tools/cockpit-telltales.test.mjs",
     "tools/personal-bests.test.mjs",

@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 const root = resolve(import.meta.dirname, '..');
 const result = await build({
   absWorkingDir: root,
-  entryPoints: ['src/world-tile-worker.js', 'src/boot.js', 'src/main.js', 'src/world-worker.js'],
+  entryPoints: ['src/world-tile-worker.js', 'src/entry.js', 'src/boot.js', 'src/main.js', 'src/world-worker.js'],
   outdir: '.scratch/import-check',
   bundle: true,
   format: 'esm',
