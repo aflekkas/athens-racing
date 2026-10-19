@@ -1,0 +1,462 @@
+{
+  "root": "/tmp/athens-leftovers-r2.JoSZ",
+  "map": "riviera",
+  "class": "potato",
+  "throttle": 4,
+  "viewport": [
+    640,
+    360
+  ],
+  "seconds": 15,
+  "cap": 60,
+  "dyn": false,
+  "noworld": false,
+  "errors": [],
+  "calls": {
+    "main": {
+      "total": 225,
+      "materials": 118,
+      "rows": [
+        {
+          "owner": "map-world:riviera > road > Mesh | mesh",
+          "calls": 47,
+          "tris": 114702,
+          "materials": 10
+        },
+        {
+          "owner": "PLAYER Group > Group > cockpit | mesh",
+          "calls": 39,
+          "tris": 1830,
+          "materials": 14
+        },
+        {
+          "owner": "map-world:riviera > terrain > Mesh | mesh",
+          "calls": 25,
+          "tris": 479760,
+          "materials": 25
+        },
+        {
+          "owner": "map-world:riviera > Group > LOD | mesh",
+          "calls": 23,
+          "tris": 43916,
+          "materials": 14
+        },
+        {
+          "owner": "map-world:riviera > Group > Group | mesh",
+          "calls": 10,
+          "tris": 896,
+          "materials": 10
+        },
+        {
+          "owner": "map-world:riviera > Group > LOD | mesh/transparent",
+          "calls": 10,
+          "tris": 588,
+          "materials": 10
+        },
+        {
+          "owner": "map-world:riviera > surrounding-osm-roads > Mesh | mesh",
+          "calls": 8,
+          "tris": 119010,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Group > Group | sprite/transparent",
+          "calls": 7,
+          "tris": 14,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > nature > Mesh | instanced",
+          "calls": 6,
+          "tris": 204,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Mesh | mesh",
+          "calls": 5,
+          "tris": 81878,
+          "materials": 5
+        },
+        {
+          "owner": "map-world:riviera > road > Mesh | instanced",
+          "calls": 5,
+          "tris": 60,
+          "materials": 3
+        },
+        {
+          "owner": "PLAYER Group > Group > cockpit | mesh/transparent",
+          "calls": 5,
+          "tris": 22,
+          "materials": 4
+        },
+        {
+          "owner": "map-world:riviera > road > Group | mesh",
+          "calls": 4,
+          "tris": 28,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > road > timing-gantries | mesh",
+          "calls": 4,
+          "tris": 28,
+          "materials": 2
+        },
+        {
+          "owner": "PLAYER Group > Group > player-body-lod | mesh",
+          "calls": 4,
+          "tris": 80,
+          "materials": 3
+        },
+        {
+          "owner": "map-world:riviera > Athens Riviera roadside > roadside instances | instanced",
+          "calls": 3,
+          "tris": 26,
+          "materials": 3
+        },
+        {
+          "owner": "map-world:riviera > Points | points/transparent",
+          "calls": 3,
+          "tris": 1000,
+          "materials": 3
+        },
+        {
+          "owner": "Mesh | mesh",
+          "calls": 2,
+          "tris": 2209,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > nature > Mesh | mesh",
+          "calls": 2,
+          "tris": 2481,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > world-detail-layers > Mesh | instanced",
+          "calls": 2,
+          "tris": 14,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > Group > Arsida | mesh",
+          "calls": 1,
+          "tris": 3008,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Group > Fleves | mesh",
+          "calls": 1,
+          "tris": 3008,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Group > Distant coastal ridge | mesh",
+          "calls": 1,
+          "tris": 3008,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Group > Patroklou | mesh",
+          "calls": 1,
+          "tris": 3008,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > block-buildings > building-blocks:2,4 | mesh",
+          "calls": 1,
+          "tris": 164,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > block-buildings > building-blocks:2,5 | mesh",
+          "calls": 1,
+          "tris": 144,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > block-buildings > building-blocks:2,6 | mesh",
+          "calls": 1,
+          "tris": 88,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > block-buildings > building-blocks:5,6 | mesh",
+          "calls": 1,
+          "tris": 428,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > block-buildings > building-blocks:3,7 | mesh",
+          "calls": 1,
+          "tris": 12,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Mesh | mesh/transparent",
+          "calls": 1,
+          "tris": 10000,
+          "materials": 1
+        },
+        {
+          "owner": "Points | points/transparent",
+          "calls": 1,
+          "tris": 1,
+          "materials": 1
+        }
+      ]
+    },
+    "mirror": {
+      "total": 272,
+      "materials": 121,
+      "rows": [
+        {
+          "owner": "map-world:riviera > road > Mesh | mesh",
+          "calls": 59,
+          "tris": 144616,
+          "materials": 10
+        },
+        {
+          "owner": "PLAYER Group > Group > cockpit | mesh",
+          "calls": 39,
+          "tris": 1830,
+          "materials": 14
+        },
+        {
+          "owner": "map-world:riviera > terrain > Mesh | mesh",
+          "calls": 34,
+          "tris": 768414,
+          "materials": 28
+        },
+        {
+          "owner": "map-world:riviera > Group > LOD | mesh",
+          "calls": 23,
+          "tris": 43916,
+          "materials": 14
+        },
+        {
+          "owner": "map-world:riviera > Group > Group | mesh",
+          "calls": 15,
+          "tris": 1344,
+          "materials": 10
+        },
+        {
+          "owner": "map-world:riviera > surrounding-osm-roads > Mesh | mesh",
+          "calls": 11,
+          "tris": 198391,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > road > Mesh | instanced",
+          "calls": 11,
+          "tris": 132,
+          "materials": 3
+        },
+        {
+          "owner": "map-world:riviera > Group > LOD | mesh/transparent",
+          "calls": 10,
+          "tris": 588,
+          "materials": 10
+        },
+        {
+          "owner": "map-world:riviera > Group > Group | sprite/transparent",
+          "calls": 8,
+          "tris": 16,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > Mesh | mesh",
+          "calls": 7,
+          "tris": 151972,
+          "materials": 5
+        },
+        {
+          "owner": "map-world:riviera > Points | points/transparent",
+          "calls": 6,
+          "tris": 2000,
+          "materials": 3
+        },
+        {
+          "owner": "map-world:riviera > nature > Mesh | instanced",
+          "calls": 6,
+          "tris": 204,
+          "materials": 1
+        },
+        {
+          "owner": "PLAYER Group > Group > cockpit | mesh/transparent",
+          "calls": 5,
+          "tris": 22,
+          "materials": 4
+        },
+        {
+          "owner": "map-world:riviera > world-detail-layers > Mesh | instanced",
+          "calls": 4,
+          "tris": 28,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > road > Group | mesh",
+          "calls": 4,
+          "tris": 28,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > road > timing-gantries | mesh",
+          "calls": 4,
+          "tris": 28,
+          "materials": 2
+        },
+        {
+          "owner": "PLAYER Group > Group > player-body-lod | mesh",
+          "calls": 4,
+          "tris": 80,
+          "materials": 3
+        },
+        {
+          "owner": "Mesh | mesh",
+          "calls": 3,
+          "tris": 4417,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > nature > Mesh | mesh",
+          "calls": 3,
+          "tris": 4907,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > Athens Riviera roadside > roadside instances | instanced",
+          "calls": 3,
+          "tris": 26,
+          "materials": 3
+        },
+        {
+          "owner": "map-world:riviera > block-buildings > building-blocks:2,4 | mesh",
+          "calls": 2,
+          "tris": 328,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Mesh | mesh/transparent",
+          "calls": 2,
+          "tris": 20000,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Group > Arsida | mesh",
+          "calls": 1,
+          "tris": 3008,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Group > Fleves | mesh",
+          "calls": 1,
+          "tris": 3008,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Group > Distant coastal ridge | mesh",
+          "calls": 1,
+          "tris": 3008,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Group > Patroklou | mesh",
+          "calls": 1,
+          "tris": 3008,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > block-buildings > building-blocks:2,5 | mesh",
+          "calls": 1,
+          "tris": 144,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > block-buildings > building-blocks:2,6 | mesh",
+          "calls": 1,
+          "tris": 88,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > block-buildings > building-blocks:5,6 | mesh",
+          "calls": 1,
+          "tris": 428,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > block-buildings > building-blocks:3,7 | mesh",
+          "calls": 1,
+          "tris": 12,
+          "materials": 1
+        },
+        {
+          "owner": "Points | points/transparent",
+          "calls": 1,
+          "tris": 1,
+          "materials": 1
+        }
+      ]
+    }
+  },
+  "snapshot": {
+    "systems": {
+      "signals": 0.019999980926513672,
+      "people": 0.18000001907348634,
+      "hud": 0.5600000143051147,
+      "audio": 0.1,
+      "renderSubmission": 0,
+      "playerPhysics": 0,
+      "rivals": 0,
+      "traffic": 0,
+      "police": 0
+    },
+    "stepMs": 5.379999995231628,
+    "stepMedianBlockMs": 14.799999976158142,
+    "stepP95": 11.5,
+    "stepMax": 11.5,
+    "renderMsMedian": 50.60000002384186,
+    "renderSubmitMs": 47.699999928474426,
+    "calls": 241,
+    "callsMain": 225,
+    "callsMax": 272,
+    "programs2": 79,
+    "triangles": 1321659,
+    "pixelRatio": 0.6,
+    "drawDistance": 500,
+    "perfClass": "potato",
+    "programs": 79,
+    "trafficActive": 0,
+    "peds": 8,
+    "heapMB": 475.50318813323975
+  },
+  "summary": {
+    "class": "potato",
+    "map": "riviera",
+    "throttle": 4,
+    "stepMs": 5.38,
+    "stepMedianBlockMs": 14.8,
+    "stepP95": 11.5,
+    "signals": 0.02,
+    "people": 0.18,
+    "hud": 0.56,
+    "audio": 0.1,
+    "renderSubmission": 0,
+    "playerPhysics": 0,
+    "rivals": 0,
+    "traffic": 0,
+    "police": 0,
+    "other": 4.52,
+    "renderMsMedian": 50.6,
+    "renderSubmitMs": 47.7,
+    "calls": 241,
+    "callsMain": 225,
+    "callsMax": 272,
+    "materials": 79,
+    "triangles": 1321659,
+    "pixelRatio": 0.6,
+    "drawDistance": 500,
+    "trafficActive": 0,
+    "peds": 8,
+    "heapMB": 476
+  }
+}

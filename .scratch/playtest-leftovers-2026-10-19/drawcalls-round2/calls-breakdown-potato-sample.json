@@ -1,0 +1,1170 @@
+{
+  "root": "/tmp/athens-leftovers-r2.JoSZ",
+  "map": "riviera",
+  "class": "potato",
+  "throttle": 4,
+  "viewport": [
+    640,
+    360
+  ],
+  "seconds": 15,
+  "cap": 60,
+  "dyn": false,
+  "noworld": false,
+  "errors": [],
+  "calls": {
+    "main": {
+      "total": 376,
+      "materials": 166,
+      "rows": [
+        {
+          "owner": "map-world:riviera > road > Mesh | mesh | MeshStandardMaterial",
+          "calls": 32,
+          "tris": 135922,
+          "materials": 10
+        },
+        {
+          "owner": "map-world:riviera > Group > LOD > Group > Mesh | mesh | MeshStandardMaterial",
+          "calls": 23,
+          "tris": 43916,
+          "materials": 14
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > trim | mesh | MeshStandardMaterial",
+          "calls": 22,
+          "tris": 352,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > terrain > Mesh | mesh | MeshStandardMaterial",
+          "calls": 20,
+          "tris": 415619,
+          "materials": 20
+        },
+        {
+          "owner": "map-world:riviera > Mesh | instanced | MeshStandardMaterial",
+          "calls": 15,
+          "tris": 180,
+          "materials": 5
+        },
+        {
+          "owner": "map-world:riviera > Group > Group > Mesh | mesh | MeshStandardMaterial",
+          "calls": 10,
+          "tris": 896,
+          "materials": 10
+        },
+        {
+          "owner": "map-world:riviera > Group > LOD > Group > Mesh | mesh/transparent | MeshStandardMaterial",
+          "calls": 10,
+          "tris": 588,
+          "materials": 10
+        },
+        {
+          "owner": "map-world:riviera > nature > Mesh | instanced | MeshStandardMaterial",
+          "calls": 9,
+          "tris": 288,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > surrounding-osm-roads > Mesh | mesh | MeshStandardMaterial",
+          "calls": 8,
+          "tris": 119010,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Group > Group > Sprite | sprite/transparent | SpriteMaterial",
+          "calls": 7,
+          "tris": 14,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > Mesh | mesh | MeshStandardMaterial",
+          "calls": 6,
+          "tris": 72,
+          "materials": 3
+        },
+        {
+          "owner": "Group > rear-left-steering > wheel-spin > LOD > Group > Mesh | mesh | MeshStandardMaterial",
+          "calls": 6,
+          "tris": 168,
+          "materials": 6
+        },
+        {
+          "owner": "Group > rear-right-steering > wheel-spin > LOD > Group > Mesh | mesh | MeshStandardMaterial",
+          "calls": 6,
+          "tris": 168,
+          "materials": 6
+        },
+        {
+          "owner": "Group > front-left-steering > wheel-spin > LOD > Group > Mesh | mesh | MeshStandardMaterial",
+          "calls": 6,
+          "tris": 168,
+          "materials": 6
+        },
+        {
+          "owner": "Group > front-right-steering > wheel-spin > LOD > Group > Mesh | mesh | MeshStandardMaterial",
+          "calls": 6,
+          "tris": 168,
+          "materials": 6
+        },
+        {
+          "owner": "map-world:riviera > road > Mesh | instanced | MeshStandardMaterial",
+          "calls": 5,
+          "tris": 60,
+          "materials": 3
+        },
+        {
+          "owner": "PLAYER Group > Group > cockpit > authored-cockpit-furniture > Mesh | mesh | MeshStandardMaterial",
+          "calls": 5,
+          "tris": 60,
+          "materials": 4
+        },
+        {
+          "owner": "map-world:riviera > road > Group > Mesh | mesh | MeshStandardMaterial",
+          "calls": 4,
+          "tris": 28,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > handle | mesh | MeshStandardMaterial",
+          "calls": 4,
+          "tris": 48,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > painted-side | mesh | MeshStandardMaterial",
+          "calls": 4,
+          "tris": 64,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > projector | mesh | MeshStandardMaterial",
+          "calls": 4,
+          "tris": 32,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > traffic-proxies > traffic-proxy-static | mesh | MeshStandardMaterial",
+          "calls": 4,
+          "tris": 8298,
+          "materials": 4
+        },
+        {
+          "owner": "map-world:riviera > traffic-proxies > traffic-proxy-head | mesh | MeshStandardMaterial",
+          "calls": 4,
+          "tris": 328,
+          "materials": 4
+        },
+        {
+          "owner": "map-world:riviera > Mesh | mesh | MeshStandardMaterial",
+          "calls": 4,
+          "tris": 81876,
+          "materials": 4
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-road-detail > distant-mirror | mesh | MeshStandardMaterial",
+          "calls": 4,
+          "tris": 8,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > Athens Riviera roadside > roadside instances | instanced | MeshStandardMaterial",
+          "calls": 3,
+          "tris": 26,
+          "materials": 3
+        },
+        {
+          "owner": "PLAYER Group > Group > cockpit > authored-cockpit-furniture > cockpit-batch-fixed | mesh | MeshStandardMaterial",
+          "calls": 3,
+          "tris": 744,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > Points | points/transparent | ShaderMaterial",
+          "calls": 3,
+          "tris": 1000,
+          "materials": 3
+        },
+        {
+          "owner": "Mesh | mesh | ShaderMaterial",
+          "calls": 2,
+          "tris": 2209,
+          "materials": 2
+        },
+        {
+          "owner": "Group > Group > cockpit-lod > exterior-cabin | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 2932,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > road > timing-gantries > Group > Mesh | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 4,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > road > timing-gantries > Group > gantry-leg | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > registration | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 4,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > fleet-assembly | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 972,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > plate-recess | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > golf-fog-recess | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 100,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > traffic-proxies > traffic-proxy-tail | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 352,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > world-detail-layers > Mesh | instanced | MeshBasicMaterial",
+          "calls": 2,
+          "tris": 14,
+          "materials": 2
+        },
+        {
+          "owner": "PLAYER Group > Group > cockpit > cockpit-structure > cockpit-mirror-mount | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 2
+        },
+        {
+          "owner": "PLAYER Group > Group > cockpit > authored-cockpit-furniture > steering-wheel > Group > cockpit-batch-fixed | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 156,
+          "materials": 2
+        },
+        {
+          "owner": "PLAYER Group > Group > cockpit > authored-cockpit-furniture > authored-binnacle > Mesh | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 52,
+          "materials": 1
+        },
+        {
+          "owner": "PLAYER Group > Group > cockpit > cockpit-structure > cockpit-door-top | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 1
+        },
+        {
+          "owner": "PLAYER Group > Group > cockpit > cockpit-structure > cockpit-pillar | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 1
+        },
+        {
+          "owner": "PLAYER Group > Group > cockpit > cockpit-structure > cockpit-wiper > cockpit-wiper-blade | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 1
+        },
+        {
+          "owner": "PLAYER Group > Group > cockpit > cockpit-structure > cockpit-wiper > cockpit-wiper-pivot | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 1
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-road-detail > distant-body | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 92,
+          "materials": 2
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-road-detail > distance-light_rl | mesh | MeshPhysicalMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 2
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-road-detail > distance-light_rr | mesh | MeshPhysicalMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 2
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-road-detail > distance-light_fl | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 2
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-road-detail > distance-light_fr | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 2
+        },
+        {
+          "owner": "Group > front-left-steering > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 2
+        },
+        {
+          "owner": "Group > front-right-steering > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 2
+        },
+        {
+          "owner": "Group > rear-left-steering > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 2
+        },
+        {
+          "owner": "Group > rear-right-steering > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > front-door-glass | mesh/transparent | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 16,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > rear-door-glass | mesh/transparent | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 16,
+          "materials": 1
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-road-detail > distant-glass | mesh/transparent | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 4,
+          "materials": 1
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-road-detail > distant-side-glass | mesh/transparent | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 4,
+          "materials": 1
+        },
+        {
+          "owner": "PLAYER Group > Group > cockpit > authored-cockpit-furniture > Mesh | mesh/transparent | MeshBasicMaterial",
+          "calls": 2,
+          "tris": 4,
+          "materials": 2
+        },
+        {
+          "owner": "PLAYER Group > Group > cockpit > authored-cockpit-furniture > steering-wheel > Group > Mesh | mesh/transparent | brand-badge",
+          "calls": 2,
+          "tris": 16,
+          "materials": 1
+        },
+        {
+          "owner": "Points | points/transparent | ShaderMaterial",
+          "calls": 2,
+          "tris": 97,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > nature > Mesh | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 2426,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > nature > Mesh | mesh | ShaderMaterial",
+          "calls": 1,
+          "tris": 55,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > SkinnedMesh | skinned | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 204,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Group > Arsida | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 3008,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Group > Fleves | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 3008,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Group > Distant coastal ridge | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 3008,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Group > Patroklou | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 3008,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > bumper_r | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 8,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > boot | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 8,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > mirror_r > mirror-housing | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 48,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > mirror_l > mirror-housing | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 48,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > bonnet | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 8,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > bumper_f | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 8,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > exhaust-outlet | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 8,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > exhaust-recess | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 12,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > fleet-node-86 > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 12,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > fleet-node-78 > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 12,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > mirror_r > mirror-stalk | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 16,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > mirror_r > mirror-stalk-upper | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 16,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > mirror_l > mirror-stalk | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 16,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > mirror_l > mirror-stalk-upper | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 16,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > fleet-node-82 > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 12,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > fleet-node-74 > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 12,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > golf-thin-grille | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 50,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > golf-lower-intake | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 50,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > light_fr | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 50,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > light_fl | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 50,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > exhaust-lip | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 48,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > exhaust-pipe | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 8,
+          "materials": 1
+        }
+      ]
+    },
+    "mirror": {
+      "total": 441,
+      "materials": 168,
+      "rows": [
+        {
+          "owner": "map-world:riviera > road > Mesh | mesh | MeshStandardMaterial",
+          "calls": 40,
+          "tris": 200158,
+          "materials": 10
+        },
+        {
+          "owner": "map-world:riviera > Mesh | instanced | MeshStandardMaterial",
+          "calls": 30,
+          "tris": 360,
+          "materials": 5
+        },
+        {
+          "owner": "map-world:riviera > terrain > Mesh | mesh | MeshStandardMaterial",
+          "calls": 28,
+          "tris": 689821,
+          "materials": 22
+        },
+        {
+          "owner": "map-world:riviera > Group > LOD > Group > Mesh | mesh | MeshStandardMaterial",
+          "calls": 23,
+          "tris": 43916,
+          "materials": 14
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > trim | mesh | MeshStandardMaterial",
+          "calls": 22,
+          "tris": 352,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > surrounding-osm-roads > Mesh | mesh | MeshStandardMaterial",
+          "calls": 12,
+          "tris": 200543,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > road > Mesh | instanced | MeshStandardMaterial",
+          "calls": 11,
+          "tris": 132,
+          "materials": 3
+        },
+        {
+          "owner": "map-world:riviera > Group > Group > Mesh | mesh | MeshStandardMaterial",
+          "calls": 10,
+          "tris": 896,
+          "materials": 10
+        },
+        {
+          "owner": "map-world:riviera > Group > LOD > Group > Mesh | mesh/transparent | MeshStandardMaterial",
+          "calls": 10,
+          "tris": 588,
+          "materials": 10
+        },
+        {
+          "owner": "map-world:riviera > nature > Mesh | instanced | MeshStandardMaterial",
+          "calls": 9,
+          "tris": 288,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > traffic-proxies > traffic-proxy-static | mesh | MeshStandardMaterial",
+          "calls": 8,
+          "tris": 16596,
+          "materials": 4
+        },
+        {
+          "owner": "map-world:riviera > traffic-proxies > traffic-proxy-head | mesh | MeshStandardMaterial",
+          "calls": 8,
+          "tris": 656,
+          "materials": 4
+        },
+        {
+          "owner": "map-world:riviera > Group > Group > Sprite | sprite/transparent | SpriteMaterial",
+          "calls": 7,
+          "tris": 14,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > Points | points/transparent | ShaderMaterial",
+          "calls": 6,
+          "tris": 2000,
+          "materials": 3
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > Mesh | mesh | MeshStandardMaterial",
+          "calls": 6,
+          "tris": 72,
+          "materials": 3
+        },
+        {
+          "owner": "Group > rear-left-steering > wheel-spin > LOD > Group > Mesh | mesh | MeshStandardMaterial",
+          "calls": 6,
+          "tris": 168,
+          "materials": 6
+        },
+        {
+          "owner": "Group > rear-right-steering > wheel-spin > LOD > Group > Mesh | mesh | MeshStandardMaterial",
+          "calls": 6,
+          "tris": 168,
+          "materials": 6
+        },
+        {
+          "owner": "Group > front-left-steering > wheel-spin > LOD > Group > Mesh | mesh | MeshStandardMaterial",
+          "calls": 6,
+          "tris": 168,
+          "materials": 6
+        },
+        {
+          "owner": "Group > front-right-steering > wheel-spin > LOD > Group > Mesh | mesh | MeshStandardMaterial",
+          "calls": 6,
+          "tris": 168,
+          "materials": 6
+        },
+        {
+          "owner": "map-world:riviera > Mesh | mesh | MeshStandardMaterial",
+          "calls": 5,
+          "tris": 151968,
+          "materials": 4
+        },
+        {
+          "owner": "PLAYER Group > Group > cockpit > authored-cockpit-furniture > Mesh | mesh | MeshStandardMaterial",
+          "calls": 5,
+          "tris": 60,
+          "materials": 4
+        },
+        {
+          "owner": "map-world:riviera > traffic-proxies > traffic-proxy-tail | mesh | MeshStandardMaterial",
+          "calls": 4,
+          "tris": 704,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > world-detail-layers > Mesh | instanced | MeshBasicMaterial",
+          "calls": 4,
+          "tris": 28,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > road > Group > Mesh | mesh | MeshStandardMaterial",
+          "calls": 4,
+          "tris": 28,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > handle | mesh | MeshStandardMaterial",
+          "calls": 4,
+          "tris": 48,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > painted-side | mesh | MeshStandardMaterial",
+          "calls": 4,
+          "tris": 64,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > projector | mesh | MeshStandardMaterial",
+          "calls": 4,
+          "tris": 32,
+          "materials": 1
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-road-detail > distant-mirror | mesh | MeshStandardMaterial",
+          "calls": 4,
+          "tris": 8,
+          "materials": 2
+        },
+        {
+          "owner": "Mesh | mesh | ShaderMaterial",
+          "calls": 3,
+          "tris": 4417,
+          "materials": 2
+        },
+        {
+          "owner": "Points | points/transparent | ShaderMaterial",
+          "calls": 3,
+          "tris": 193,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Athens Riviera roadside > roadside instances | instanced | MeshStandardMaterial",
+          "calls": 3,
+          "tris": 26,
+          "materials": 3
+        },
+        {
+          "owner": "PLAYER Group > Group > cockpit > authored-cockpit-furniture > cockpit-batch-fixed | mesh | MeshStandardMaterial",
+          "calls": 3,
+          "tris": 744,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > nature > Mesh | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 4852,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > SkinnedMesh | skinned | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 408,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > block-buildings > building-blocks:2,4 | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 328,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Mesh | mesh | ShaderMaterial",
+          "calls": 2,
+          "tris": 4,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > traffic-proxies > traffic-proxy-static | mesh/transparent | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 304,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Mesh | mesh/transparent | MeshBasicMaterial",
+          "calls": 2,
+          "tris": 20000,
+          "materials": 1
+        },
+        {
+          "owner": "Group > Group > cockpit-lod > exterior-cabin | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 2932,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > road > timing-gantries > Group > Mesh | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 4,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > road > timing-gantries > Group > gantry-leg | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > registration | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 4,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > fleet-assembly | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 972,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > plate-recess | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > golf-fog-recess | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 100,
+          "materials": 1
+        },
+        {
+          "owner": "PLAYER Group > Group > cockpit > cockpit-structure > cockpit-mirror-mount | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 2
+        },
+        {
+          "owner": "PLAYER Group > Group > cockpit > authored-cockpit-furniture > steering-wheel > Group > cockpit-batch-fixed | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 156,
+          "materials": 2
+        },
+        {
+          "owner": "PLAYER Group > Group > cockpit > authored-cockpit-furniture > authored-binnacle > Mesh | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 52,
+          "materials": 1
+        },
+        {
+          "owner": "PLAYER Group > Group > cockpit > cockpit-structure > cockpit-door-top | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 1
+        },
+        {
+          "owner": "PLAYER Group > Group > cockpit > cockpit-structure > cockpit-pillar | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 1
+        },
+        {
+          "owner": "PLAYER Group > Group > cockpit > cockpit-structure > cockpit-wiper > cockpit-wiper-blade | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 1
+        },
+        {
+          "owner": "PLAYER Group > Group > cockpit > cockpit-structure > cockpit-wiper > cockpit-wiper-pivot | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 1
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-road-detail > distant-body | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 92,
+          "materials": 2
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-road-detail > distance-light_rl | mesh | MeshPhysicalMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 2
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-road-detail > distance-light_rr | mesh | MeshPhysicalMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 2
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-road-detail > distance-light_fl | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 2
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-road-detail > distance-light_fr | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 2
+        },
+        {
+          "owner": "Group > front-left-steering > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 2
+        },
+        {
+          "owner": "Group > front-right-steering > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 2
+        },
+        {
+          "owner": "Group > rear-left-steering > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 2
+        },
+        {
+          "owner": "Group > rear-right-steering > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 24,
+          "materials": 2
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > front-door-glass | mesh/transparent | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 16,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > rear-door-glass | mesh/transparent | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 16,
+          "materials": 1
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-road-detail > distant-glass | mesh/transparent | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 4,
+          "materials": 1
+        },
+        {
+          "owner": "Group > Group > player-body-lod > player-road-detail > distant-side-glass | mesh/transparent | MeshStandardMaterial",
+          "calls": 2,
+          "tris": 4,
+          "materials": 1
+        },
+        {
+          "owner": "PLAYER Group > Group > cockpit > authored-cockpit-furniture > Mesh | mesh/transparent | MeshBasicMaterial",
+          "calls": 2,
+          "tris": 4,
+          "materials": 2
+        },
+        {
+          "owner": "PLAYER Group > Group > cockpit > authored-cockpit-furniture > steering-wheel > Group > Mesh | mesh/transparent | brand-badge",
+          "calls": 2,
+          "tris": 16,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > nature > Mesh | mesh | ShaderMaterial",
+          "calls": 1,
+          "tris": 55,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Group > Arsida | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 3008,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Group > Fleves | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 3008,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Group > Distant coastal ridge | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 3008,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Group > Patroklou | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 3008,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > bumper_r | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 8,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > boot | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 8,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > mirror_r > mirror-housing | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 48,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > mirror_l > mirror-housing | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 48,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > bonnet | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 8,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > bumper_f | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 8,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > exhaust-outlet | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 8,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > exhaust-recess | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 12,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > fleet-node-86 > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 12,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > fleet-node-78 > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 12,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > mirror_r > mirror-stalk | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 16,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > mirror_r > mirror-stalk-upper | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 16,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > mirror_l > mirror-stalk | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 16,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > mirror_l > mirror-stalk-upper | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 16,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > fleet-node-82 > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 12,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > fleet-node-74 > fixed-brake-caliper | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 12,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > golf-thin-grille | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 50,
+          "materials": 1
+        },
+        {
+          "owner": "map-world:riviera > Volkswagen Golf VII > Group > fleet-node-1 > golf-lower-intake | mesh | MeshStandardMaterial",
+          "calls": 1,
+          "tris": 50,
+          "materials": 1
+        }
+      ]
+    }
+  },
+  "snapshot": {
+    "systems": {
+      "signals": 0.1,
+      "people": 0.31999998092651366,
+      "hud": 0.3000000238418579,
+      "audio": 0,
+      "renderSubmission": 0,
+      "playerPhysics": 0,
+      "rivals": 0,
+      "traffic": 0,
+      "police": 0
+    },
+    "stepMs": 2.5800000190734864,
+    "stepMedianBlockMs": 21,
+    "stepP95": 3,
+    "stepMax": 3,
+    "renderMsMedian": 54.200000047683716,
+    "renderSubmitMs": 53.10000002384186,
+    "calls": 397,
+    "callsMain": 376,
+    "callsMax": 440,
+    "programs2": 76,
+    "triangles": 1329392,
+    "pixelRatio": 0.6,
+    "drawDistance": 500,
+    "perfClass": "potato",
+    "programs": 76,
+    "trafficActive": 22,
+    "peds": 8,
+    "heapMB": 464.8598756790161
+  },
+  "summary": {
+    "class": "potato",
+    "map": "riviera",
+    "throttle": 4,
+    "stepMs": 2.58,
+    "stepMedianBlockMs": 21,
+    "stepP95": 3,
+    "signals": 0.1,
+    "people": 0.32,
+    "hud": 0.3,
+    "audio": 0,
+    "renderSubmission": 0,
+    "playerPhysics": 0,
+    "rivals": 0,
+    "traffic": 0,
+    "police": 0,
+    "other": 1.86,
+    "renderMsMedian": 54.2,
+    "renderSubmitMs": 53.1,
+    "calls": 397,
+    "callsMain": 376,
+    "callsMax": 440,
+    "materials": 76,
+    "triangles": 1329392,
+    "pixelRatio": 0.6,
+    "drawDistance": 500,
+    "trafficActive": 22,
+    "peds": 8,
+    "heapMB": 465
+  }
+}
