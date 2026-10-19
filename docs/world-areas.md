@@ -87,6 +87,7 @@ Seam and gate checks on every shared border are unchanged and exact. Making a un
 ## Look
 
 * **Bridge guardrail.** The deck edge is a slab with a 10 cm kerb lip, and on it a post-and-beam rail (galvanised grey, posts every 4 m, beam 28 cm tall) whose top is the collision rail's 0.65 m. It follows the deck edge exactly. The collision rail is unchanged: a solid, swept 0.3 m × 0.65 m volume, tested at 150 km/h glancing and head-on (`tools/world-tile-barriers.test.mjs`), so what is drawn is always inside what a car hits.
+* **Ground, facade and sea textures** (procedural, per land class, World detail Off removes them): [docs/world-dressing.md](world-dressing.md).
 * **Ground between buildings.** Ground whose every corner is urban land (residential, commercial, retail, industrial, garages, railway) is its own mesh with `tileSurface: 'urban'`. It keeps a muted warm vertex colour (`#86837a`) and at run time gets the shared paving scan at 6.4 m (twice the paving period, 80 repeats per tile), blended at 70%, with a tone drift whose wavelengths divide the tile so it never seams. No new texture is loaded. Other ground is unchanged.
 
 ## Gates added

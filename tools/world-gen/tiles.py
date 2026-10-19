@@ -12,7 +12,7 @@ from elevation import Elevation
 from coastal import Coast, Structures
 from bridge_policy import exclusion_reason
 import tunnels
-from tile_detail import water_mesh,vegetation_rows,bridge_edges
+from tile_detail import water_mesh,vegetation_rows,bridge_edges,foam_mesh,park_areas,facade_styles
 from details import fnv1a
 from influence import blended_height, profile_height, lattice_height, smooth_lattice_sample, SUPPORT, ROAD_QUERY_HALO
 from appearance import BUILDINGS,linear,ground_colour
@@ -158,12 +158,12 @@ class Field:
   tags=self.land[min(candidates,key=lambda i:self.land[i][0].area)][1] if candidates else {}
   if h is None:h=self.height(x,z)
   if slope is None:slope=math.hypot(self.height(x+1,z)-self.height(x-1,z),self.height(x,z+1)-self.height(x,z-1))/2
-  return ground_colour(x,z,h,slope,tags.get('landuse',''),tags.get('natural',''))
+  return ground_colour(x,z,h,slope,tags.get('landuse',''),tags.get('natural',''),leisure=tags.get('leisure',''))
 
 SURFACES={'asphalt':(1,'asphalt'),'concrete':(12,'asphalt'),'paving':(13,'paving'),'unpaved':(14,None)}
 TABLES={'nodes':[],'nodePositions':[],'edges':[],'edgePoints':[],'edgeLayers':[],'turns':[],'ribbons':[],'ribbonVertices':[],'junctions':[],'junctionVertices':[],'markings':[],'contactPositions':[],'contactTriangles':[],'contactLayers':[],'fineSurface':[],'fineFlags':[],'coarseHeights':[],'finePositions':[],'fineTriangles':[],'buildings':[],'buildingCorners':[],'buildingHeights':[],'signs':[],'signTransforms':[],'anchors':[],'anchorTransforms':[]}
 
-def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=False,vegetation=None,osm=None,sections=None,extent=None,plan=None):
+def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=False,vegetation=None,osm=None,sections=None,extent=None,plan=None,details=None):
  db=sqlite3.connect(f'file:{dbpath}?mode=ro',uri=True);source=sqlite3.connect(f'file:{sourcepath}?mode=ro',uri=True)
  sectiondb=sqlite3.connect(f'file:{sections}?mode=ro',uri=True) if sections else None
  bridge_tags={}
@@ -175,6 +175,8 @@ def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=F
    if value:bridge_tags[identifier]=value
   raw.close()
  field=Field(db,source,cell,dems,coastal,bridge_tags,sectiondb,extent,plan=plan)
+ # Parks (OSM leisure=park) are not in the landuse table; the vegetation cache holds their polygons.
+ field.land.extend(park_areas(vegetation,field.ox,field.oz));field.landtree=STRtree([p for p,t in field.land])
  # Surfaces within 96 m of the cell decide everything inside it (reach, fillets and ramps are all < 40 m): a
  # window keeps the global geometry identical across cells without unioning the whole 1.5 km height halo.
  window=box(field.ox-96,field.oz-96,field.ox+608,field.oz+608);near_roads=[r for r in field.ground_roads if r['line'].intersects(window)]
@@ -190,16 +192,18 @@ def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=F
   if s not in ids:ids.append(s)
   return ids.index(s)
  def array(type,data):arrays.append(dict(type=type,data=data));return len(arrays)-1
- def mesh(positions,indices,material,colours=None,user_data=None):
+ def mesh(positions,indices,material,colours=None,user_data=None,extra=None):
   # Split by triangle blocks; compact remapping bounds each upload job.
   for start in range(0,len(indices),16384*3):
-   selected=indices[start:start+16384*3];remap={};ps=[];cs=[];ix=[]
+   selected=indices[start:start+16384*3];remap={};ps=[];cs=[];es=[];ix=[]
    for old in selected:
     if old not in remap:
      remap[old]=len(ps)//3;ps.extend(positions[old*3:old*3+3])
      if colours is not None:cs.extend(colours[old*3:old*3+3])
+     if extra is not None:es.append(extra[1][old])
     ix.append(remap[old])
    attrs=dict(position=dict(array=array('Float32Array',ps),itemSize=3,normalized=False))
+   if extra is not None:attrs[extra[0]]=dict(array=array('Uint8Array',[round(e*255) for e in es]),itemSize=1,normalized=True)
    if colours is not None:attrs['color']=dict(array=array('Uint8Array',[round(c*255) for c in cs]),itemSize=3,normalized=True)
    meshes.append(dict(name='probe',material=material,attributes=attrs,index=array('Uint16Array',ix),userData=dict(worldSurface=material in (0,1,8,9,12,13,14),**(user_data or {})),layers=1,drawRange=dict(start=0,count=len(ix))))
  p=surface['positions']
@@ -387,12 +391,14 @@ def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=F
  if field.coast:
   water=field.coast.water(cell,field.roads);ps,ix=water_mesh(water,ox,oz)
   palette.append(linear('#426b80'));mesh(ps,ix,len(palette)-1,user_data=dict(water=True))
+  fp,fi,fv=foam_mesh(water,ox,oz)
+  if fi:mesh(fp,fi,len(palette)-1,user_data=dict(tileSurface='foam'),extra=('aFoam',fv))
  triangles=derived_triangles+sum((m['drawRange']['count'] if m.get('drawRange') else len(arrays[m['index']]['data']))//3 for m in meshes)
  road_sections=dict(schema=['class','width','lanes','sidewalkLeft','sidewalkRight','surface','oneway'],roads={owner:[(sec:=field.byid[owner]['section'])['class'],sec['width'],sec['lanes'],sec['sidewalk']['left'],sec['sidewalk']['right'],sec['surface'],sec['oneway']] for owner in sorted(roadtri)})
  extensions=dict(derivedBuildings=dict(version=1))
  if vegetation:
   vp,vk,vs=vegetation_rows(vegetation,field,all_building_footprints,rendered_height,int(triangles*.25))
-  extensions=dict(derivedBuildings=dict(version=1),worldDetail=dict(version=1,buildings=dict(facadeStyle=array('Uint8Array',[0]*(len(t['buildings'])//4)),detailSeed=array('Uint32Array',[fnv1a(ids[t['buildings'][i]]) for i in range(0,len(t['buildings']),4)])),vegetation=dict(positionHeight=array('Float32Array',vp),kind=array('Uint8Array',vk),seed=array('Uint32Array',vs))))
+  extensions=dict(derivedBuildings=dict(version=1),worldDetail=dict(version=1,buildings=dict(facadeStyle=array('Uint8Array',facade_styles(details,[ids[t['buildings'][i]] for i in range(0,len(t['buildings']),4)])),detailSeed=array('Uint32Array',[fnv1a(ids[t['buildings'][i]]) for i in range(0,len(t['buildings']),4)])),vegetation=dict(positionHeight=array('Float32Array',vp),kind=array('Uint8Array',vk),seed=array('Uint32Array',vs))))
   validation['vegetationInstances']=len(vk)
 
  validation['streets']=streets;validation['clippedBuildings']=clipped;validation['excludedRoads']=dict(sorted(field.excluded_here.items()));validation['unresolvedBridges']=list(field.structures.unresolved) if field.structures else [];validation['renderContactTopIdentity']=True;validation['structures']=structure_records

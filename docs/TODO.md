@@ -59,6 +59,7 @@ Running (Sonnet; Enterprise unless noted):
 - [x] Athens centre (partial): 47 cells, 336-cell world at 183.8/192 MiB, gates green (`2ead313f`, `5f95eb8b`)
 - [x] Athens: Piraeus enterable from Syntagma (Tavros underpass link drawn at grade, 0% → 73% of Piraeus km; the rest is cut by gated port roads and the world edge), cells 67% smaller (compact tiles), Kypseli/Patisia and every other centre candidate baked: 450 cells, 104.1 of 192 MiB, worst 2×2 set 22.8 MiB (`tunnels.json`, `world-tile-compact`)
 - [x] Owner raised the Athens world ceiling to 2 GiB, player-side caps unchanged (`07be9d90`); rest of the centre then the north follow
+- [~] Athens world dressing (owner 2026-10-19, all procedural): ground classes + facade textures + sea with foam done; traffic lights and street details next; the next full bake picks them up (docs/world-dressing.md)
 - [~] Potato: stop drawing distant road (fogged cull) to get Riviera under 200 draw calls (owner approved; Enterprise) without owner wait
 - [x] Online: remote cars glide (jitter buffer, 20 Hz sim-clock samples, 50 ms relay) and car-to-car contacts symmetric (`3f35e7de`); owner to retest with a friend
 - [x] Multiplayer: restart and tow land where the car is (0 m off the grid after a host restart, guards in `server/mp-restart-tow.test.mjs`); lobby double-JOIN error and a lobby keeping the old track's traffic fixed; traffic seed equal on every client (`tools/traffic-seed.test.mjs`); owner to retest with a friend

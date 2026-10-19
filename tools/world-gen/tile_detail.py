@@ -21,6 +21,49 @@ def water_mesh(geometry,ox,oz):
  return positions,indices
 
 
+def foam_mesh(water,ox,oz,width=6.):
+ """Strip of sea along this cell's coastline (not its edges): (positions, indices, foam), foam 1 on the shore to 0 `width` m out."""
+ from shapely.geometry import box
+ if water is None or water.is_empty:return [],[],[]
+ shore=water.boundary.difference(box(ox,oz,ox+512,oz+512).boundary.buffer(.05))
+ if shore.is_empty:return [],[],[]
+ band=water.intersection(shore.buffer(width,cap_style='flat')).simplify(.25)
+ positions=[];indices=[];foam=[]
+ parts=[band] if band.geom_type=='Polygon' else [g for g in getattr(band,'geoms',[]) if g.geom_type=='Polygon']
+ for part in parts:
+  if part.is_empty or part.area<1:continue
+  for triangle in constrained_delaunay_triangles(part).geoms:
+   points=list(triangle.exterior.coords)[:-1]
+   if (points[1][0]-points[0][0])*(points[2][1]-points[0][1])-(points[1][1]-points[0][1])*(points[2][0]-points[0][0])>0:points.reverse()
+   start=len(positions)//3
+   for x,z in points:positions.extend([x-ox,.03,z-oz]);foam.append(max(0.,1.-shore.distance(Point(x,z))/width))
+   indices.extend([start,start+1,start+2])
+ return positions,indices,foam
+
+
+def park_areas(path,ox,oz):
+ """OSM leisure=park polygons (the vegetation cache's `areas`) that touch the cell, as (geometry, tags) land records."""
+ if not path:return []
+ from shapely import wkb
+ from shapely.geometry import box
+ db=sqlite3.connect(f'file:{path}?mode=ro',uri=True);cell=box(ox,oz,ox+512,oz+512);out=[]
+ for blob, in db.execute('SELECT geometry FROM areas'):
+  g=wkb.loads(blob)
+  if g.intersects(cell):out.append((g,{'leisure':'park'}))
+ db.close();return out
+
+
+def facade_styles(path,identifiers):
+ """Facade style (details.py: 0 unknown, 1..3 apartments, 4 shops, 5 offices, 6 masonry, 7 industrial) per building id
+ `building:<w|r><osm id>:<part>`, from the building-details cache; 0 where it has no record."""
+ if not path:return [0]*len(identifiers)
+ db=sqlite3.connect(f'file:{path}?mode=ro',uri=True);out=[]
+ for identifier in identifiers:
+  row=db.execute('SELECT data FROM buildings WHERE id=?',(identifier.split(':')[1],)).fetchone() if identifier.count(':')>=1 else None
+  out.append(int(json.loads(row[0]).get('facadeStyle',0)) if row else 0)
+ db.close();return out
+
+
 def vegetation_rows(path,field,buildings,height,triangle_budget):
  if not path:return [],[],[]
  db=sqlite3.connect(f'file:{path}?mode=ro',uri=True);ox,oz=field.ox,field.oz

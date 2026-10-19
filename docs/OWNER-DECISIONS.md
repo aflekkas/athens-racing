@@ -167,3 +167,13 @@ Owner decision: **free roam has no tracks. You pick where on the map to start.**
 - **What stays:** the 2026-10-18 "free roam has no route or start/finish" rule still holds.
 - **What's gone:** free roam no longer shows a track name, length, laps or leaderboard. Races (Quick Race and multiplayer) keep the track picker.
 - **Guard:** `tools/owner-locked-free-roam-spawn.test.mjs`. Ask the owner before changing.
+
+## 2026-10-19 — Athens world dressing: textures and street detail, all procedural
+
+Owner feedback on the Athens screenshots: "the roads look good (even something simple like that is fine)", "building textures, i cant see any texture", "nor does the sea have texture", "the ground could have at least a texture that is supposed to look somewhat realistic", traffic lights "yeah", "are there any small details like this we can do". Owner clarification: **"all procedural stuff, not telling you to go step by step for each, but at least adding some sort of texture"**.
+
+* Everything is generated in code at load time (canvas or shader noise, tiled patterns, one small noise texture): no hand-made art, no per-building or per-place special cases, facades kept simple (a window / balcony-band rhythm scaled by floor height with the existing per-building tint).
+* The locked look stays: unlit colour only, no lights, shadow maps, sea reflection pass or post effects. Textures and vertex colour carry the look.
+* Budgets: all new textures under 3 MB (one 256 px noise texture, 0.33 MB), instanced props, **World detail Off removes the layers** (plain colour, no props, no foam draw call), every addition reports its bytes per cell. Details, costs and the data caches: [docs/world-dressing.md](world-dressing.md).
+* Guards: `tools/athens-detail.test.mjs`, `tools/world-gen/dressing.test.mjs`.
+

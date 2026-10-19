@@ -11,6 +11,8 @@ import {WorldTileObstacles} from './world-tile-obstacles.js';
 import {AthensRoute,AthensGround} from './athens-ground.js';
 import {WorldDetail} from './world-detail.js';
 import {athensMaterial,loadAthensTextures} from './athens-materials.js';
+import {SEA_TIME} from './athens-detail.js';
+import {DRESSING_VARIANTS} from './world-tile-dressing.js';
 import {Vehicle} from './physics.js';
 import {CARS,CarModel,setCarEnv,catalogueTrafficTypes} from './cars.js';
 import {fleetModel} from './traffic-fleet.js';
@@ -60,7 +62,7 @@ export async function bootAthens(){
   }
  };
  stream=new WorldTileStream(manifest,{...resources.stream,adapter,baseURL:manifestURL,activationMs:3});roads=new WorldTileRoads(stream);
- if(manifest.renderVariants)await sceneTiles.prewarm(manifest.renderVariants);
+ if(manifest.renderVariants){const declared=new Set(manifest.renderVariants.map(v=>v.key));await sceneTiles.prewarm([...manifest.renderVariants,...DRESSING_VARIANTS.filter(v=>!declared.has(v.key))]);}
  const spec=CARS.find(c=>c.id===query.get('car'))||CARS.find(c=>c.id==='carrera')||CARS[0];
  function place(v,p){v.reset(0,0,0);Object.assign(v,{x:p.x,y:p.y,z:p.z,yaw:p.yaw,vLong:0,vLat:0,w:0,_network:true});Object.assign(v,v.route.project(v.x,v.z));v.ground.referenceY=p.y;v.ground.begin(v);v.ground.resolve(v,1/240);v.syncWheels();}
  await stream.spawn(p=>{const route=new AthensRoute(p),veh=new Vehicle(spec,route),model=new CarModel(spec);veh.ground=new AthensGround(stream,route,barriers,obstacles);place(veh,p);scene.add(model.root);player={veh,model,spec};},{halfWidth:(spec.width||2)/2,halfLength:(spec.length||5)/2,timeoutMs:180000});
@@ -105,7 +107,7 @@ export async function bootAthens(){
   const v=player.veh,o=stream.origin;v.place(player.model.root);player.model.root.position.x-=o.x;player.model.root.position.z-=o.z;player.model.update(dt,v.vLong,v.steer,input.state.brake>.2,v.pose,v.corners,v.w);
   for(const c of traffic)if(c.active){c.veh.place(c.model.root);c.model.root.position.x-=o.x;c.model.root.position.z-=o.z;}
   const fx=-Math.sin(v.yaw),fz=-Math.cos(v.yaw),target=new THREE.Vector3(v.x-o.x-fx*8,v.y+3.8,v.z-o.z-fz*8);
-  camera.position.copy(target);camera.lookAt(v.x-o.x+fx*8,v.y+1,v.z-o.z+fz*8);if(cameraHook)cameraHook(camera,v,o);sky.position.copy(camera.position);ENV.updateSun(sun,player.model.root.position);ENV.U.time.value=elapsed;
+  camera.position.copy(target);camera.lookAt(v.x-o.x+fx*8,v.y+1,v.z-o.z+fz*8);if(cameraHook)cameraHook(camera,v,o);sky.position.copy(camera.position);ENV.updateSun(sun,player.model.root.position);ENV.U.time.value=elapsed;SEA_TIME.value=elapsed;
   detail.update({position:{x:v.x,z:v.z}});post.render(dt);
   dial.drawTacho({...v,redline:spec.redline,kmh:Math.abs(v.vLong)*3.6,gearLabel:v.reverse?'R':String(v.gear),aidsOff:!settings.aids});document.getElementById('tRace').textContent=fmtTime(elapsed);
  }
