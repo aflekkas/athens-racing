@@ -144,6 +144,8 @@
     "tools/police-tuning.test.mjs",
     "tools/police-online.test.mjs",
     "tools/tow-road-placement.test.mjs",
+    "tools/owner-locked-free-roam-spawn.test.mjs",
+    "tools/greek-caps.test.mjs",
     "tools/tow-nearest-road.test.mjs",
     "tools/test-runner-coverage.test.mjs",
     "tools/offtrack-corridor.test.mjs",

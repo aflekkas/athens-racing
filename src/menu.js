@@ -13,6 +13,7 @@ import { install as installAccounts } from './ui/account-loader.js';
 import { getEvents, QUICK_RACE, TYPES, resolve, rivalCount, SP_RIVALS, MAX_RIVALS } from './events.js';
 import * as S from './settings.js';
 import { renderMapSelect, selectMap, mountMapSelect } from './map-select.js';
+import { renderSpawnSelect, mountSpawnSelect, driveFromSpawn } from './spawn-select.js';
 import { CARS } from './cars.js';
 import { GARAGE_CARS } from './car-catalog.js';
 let garage;
@@ -117,7 +118,7 @@ export class Menu {
     cancelAnimationFrame(this.settling); this.settling = requestAnimationFrame(() => { this.settling = requestAnimationFrame(() => this.root.classList.remove('is-settling')); });
     if (stage) this.root.querySelector('#carStage')?.replaceWith(stage);
     else if (this.screen === 'car') this.carView = this.data.detail ? garage.mountCarSelect(this.root, this.data.index || 0) : garage.mountCarGrid(this.root);
-    if (this.screen === 'maps') this.mapView = mountMapSelect(this.root);
+    if (this.screen === 'maps') this.mapView = this.data.mode === 'free' ? mountSpawnSelect(this.root, this) : mountMapSelect(this.root);
     for (const t of this.root.querySelectorAll('.tabs')) { const on = t.querySelector('.tab.on'); if (on && t.scrollWidth > t.clientWidth) t.scrollLeft = on.offsetLeft - (t.clientWidth - on.offsetWidth) / 2; }
     if (this.screen === 'settings' && this.data.tab === 'controls') this.h.cancelBindings?.();
     const it = this.items();
@@ -153,7 +154,7 @@ export class Menu {
     for (const [k, el] of it.entries()) el.classList.toggle('focus', k === this.focus);
     const el = it[this.focus];
     if (scroll) el.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
-    if (this.screen === 'maps' && el.dataset.mapId) this.mapView?.preview(el.dataset.mapId);
+    if (this.screen === 'maps' && (el.dataset.mapId || el.dataset.spot)) this.mapView?.preview(el.dataset.mapId || el.dataset.spot);
   }
   /** spatial focus movement: the nearest item in that direction; up / down wrap at the ends of a column */
   move(dir) {
@@ -231,6 +232,7 @@ export class Menu {
     if (el.classList.contains('off') || el.getAttribute('aria-disabled') === 'true') return;
     if (el.dataset.kind && C.activate(el)) { this.h.ui?.(true); return; }
     if (el.dataset.mapId) { this.h.ui?.(true); selectMap(this, el.dataset.mapId); return; }
+    if (el.dataset.spot) { this.h.ui?.(true); driveFromSpawn(this); return; } // confirm on a spawn pin: DRIVE from the chosen place
     if (el.dataset.landmark) { window.__flow.teleportLandmark(el.dataset.landmark); this.back(); return; }
     const a = el.dataset.act;
     this.h.ui?.(true);
@@ -239,6 +241,8 @@ export class Menu {
     switch (a) {
       case 'seatReset': { resetSeatPosition(this.h.carSpec?.()?.id); for(const key of ['height','position']){const el=this.root.querySelector('[data-key=seat-'+key+']');if(el)C.setValue(el,0,false);} break; }
       case 'mapPrev': case 'mapNext': case 'mapZoomIn': case 'mapZoomOut': this.mapView?.action(a); break;
+      case 'spawnDrive': driveFromSpawn(this); break;
+      case 'spawnCar': this.h.garage?.(); break;
       case 'saveDriverName': { const input = this.root.querySelector('[data-driver-name]'); try { driverName.set(input.value); input.value = driverName.get(); C.ui.toast('DRIVER NAME SAVED'); } catch (error) { C.ui.toast(error.message, { icon: 'triangle-alert', tone: 'bad' }); input.focus(); } break; }
       case 'drivingHints': drivingHints.toggle(); this.refresh(); break;
       case 'account': this.show('account', {}, true); break;
@@ -334,7 +338,7 @@ export class Menu {
     const art = (src) => `<img src="${esc(src)}" alt="" decoding="async">`;
     const tile = (act, ic, title, desc, src, cta) => C.option({ icon: ic, title, desc, act, cls: 'option--tile option--feature', media: art(src), cta });
     return C.heroTiles({ variant: 'choices', cls: 'scr--mode', kick: 'CHOOSE YOUR MODE', title: 'RACE', hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'BACK']],
-      tiles: `${tile('quick', 'flag', 'QUICK RACE', quickBlurb(), MAPS.find((m) => m.id === 'penteli')?.preview || MAPS[0].preview, 'CHOOSE TRACK')}${tile('free', 'car', 'FREE ROAM', 'Explore any map in traffic. Change car, weather and time anytime.', './assets/maps/attica.svg', 'CHOOSE MAP')}` });
+      tiles: `${tile('quick', 'flag', 'QUICK RACE', quickBlurb(), MAPS.find((m) => m.id === 'penteli')?.preview || MAPS[0].preview, 'CHOOSE TRACK')}${tile('free', 'car', 'FREE ROAM', 'Pick where to start on the map and explore the roads in traffic. Change car, weather and time anytime.', './assets/maps/attica.svg', 'CHOOSE SPAWN')}` });
   }
 
   // ---------------------------------------------------------------- multiplayer (src/ui/mp-screens.js)
@@ -349,7 +353,7 @@ export class Menu {
   r_mpResults() { return MP.renderResults(this, window.__multiplayer); }
 
   // ---------------------------------------------------------------- maps
-  r_maps() { return renderMapSelect(this.h.ctx?.().mapId, this.data.mode); }
+  r_maps() { return this.data.mode === 'free' ? renderSpawnSelect(this) : renderMapSelect(this.h.ctx?.().mapId); }
   r_mapConfirm(d) {
     const map = MAPS.find(m => m.id === d.mapId) || MAPS[0], def = this.setupDef();
     d.eventId = (def.baseId || def.id).split('~')[0];

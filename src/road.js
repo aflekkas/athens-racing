@@ -1,4 +1,5 @@
 import {roundaboutRange} from './roundabouts.js';
+import { upperName } from './greek-caps.js';
 import { signFaceOffset } from './sign-mount.js';
 import { gantryLegFrame } from './gantry-legs.js';
 import { squarePost, signFace } from './world-prop-geometries.js';
@@ -487,5 +488,5 @@ function addBusStop(group, route, f, regions, signMat, assets) {
   const back = new THREE.Mesh(new THREE.PlaneGeometry(4.0, 2.0), glass); back.position.set(0.9, 1.3, 0); back.rotation.y = -Math.PI / 2; g.add(back);
   const bench = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.06, 2.6), frame); bench.position.set(0.6, 0.48, 0); g.add(bench);
   const sign = new THREE.Mesh(uvRect(new THREE.PlaneGeometry(0.6, 0.6), regions.bus), signMat); sign.position.set(-0.5, 2.9, -2.0); sign.rotation.y = Math.PI / 2; g.add(sign);
-  if (f.n && assets.makeLabel) { const lab = assets.makeLabel(f.n.toUpperCase(), 3.2, 0.42, '#0b4ea2', '#ffffff'); lab.position.set(-0.3, 2.66, 0); lab.rotation.y = -Math.PI / 2; g.add(lab); const lab2 = lab.clone(); lab2.rotation.y = Math.PI / 2; lab2.position.x = -0.32; g.add(lab2); }
+  if (f.n && assets.makeLabel) { const lab = assets.makeLabel(upperName(f.n), 3.2, 0.42, '#0b4ea2', '#ffffff'); lab.position.set(-0.3, 2.66, 0); lab.rotation.y = -Math.PI / 2; g.add(lab); const lab2 = lab.clone(); lab2.rotation.y = Math.PI / 2; lab2.position.x = -0.32; g.add(lab2); }
 }

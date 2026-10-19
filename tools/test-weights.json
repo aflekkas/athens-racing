@@ -32,6 +32,7 @@
  "tools/physics-test/corner-entry.test.mjs": 4,
  "tools/police-tuning.test.mjs": 3,
  "tools/tow-road-placement.test.mjs": 3,
+ "tools/owner-locked-free-roam-spawn.test.mjs": 3,
  "tools/tow-nearest-road.test.mjs": 3,
  "tools/sign-mount.test.mjs": 3,
  "tools/world-detail.test.mjs": 3,

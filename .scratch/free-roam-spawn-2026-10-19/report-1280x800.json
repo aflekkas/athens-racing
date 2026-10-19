@@ -1,0 +1,28 @@
+{
+ "sizes": [
+  {
+   "size": "1280x800",
+   "steps": [
+    {
+     "spot": "psychiko:kifisias",
+     "map": "psychiko",
+     "x": 650.7,
+     "z": -389.6,
+     "y": 177.18,
+     "yaw": -0.617,
+     "speed": 0,
+     "network": true,
+     "roadDistance": 0,
+     "nearest": "street",
+     "tarmac": true,
+     "roadY": 177.18,
+     "state": "race",
+     "mode": "free",
+     "routeHud": true
+    }
+   ],
+   "overview": 26
+  }
+ ],
+ "errors": []
+}

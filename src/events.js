@@ -1,4 +1,5 @@
 import { MAPS } from './map-catalog.js';
+import { upperName } from './greek-caps.js';
 import { buildCourse, observeCourse } from './course.js';
 // EVENTS: data-driven race events (sprints against a grid of 3 by default, time trials, police pursuits), their route segments /
 // direction, medal targets and saved results; plus the event hook API other systems listen to. Straight time: no points.
@@ -111,8 +112,9 @@ export const TYPES = {
   timetrial: { label: 'TIME TRIAL', short: 'TT', desc: 'You, the road and the clock.' },
   pursuit: { label: 'PURSUIT', short: 'PURSUIT', desc: 'Shake the ΕΛ.ΑΣ. off your tail. Get busted and it is over.' },
 };
-/** Map-local untimed session; never part of the competitive event catalogue. */
-export const freeRoam = (mapId = 'riviera') => ({ id: 'free:' + mapId, mapId, name: 'FREE ROAM', type: 'free', reverse: MAPS.find(m => m.id === mapId)?.defaultReverse === true, free: true, from: 'start', to: 'finish', rivals: 0, traffic: mapId === 'megara' ? 0 : 1, targets: {} });
+/** Map-local untimed session; never part of the competitive event catalogue. `spawn` ({ x, z, name }, map metres) is where the
+ *  player chose to start (owner 2026-10-19): the car goes on the nearest drivable road to it. Without one the session starts at the map's start. */
+export const freeRoam = (mapId = 'riviera', spawn = null) => ({ id: 'free:' + mapId, mapId, name: 'FREE ROAM', type: 'free', ...(spawn ? { spawn } : {}), reverse: MAPS.find(m => m.id === mapId)?.defaultReverse === true, free: true, from: 'start', to: 'finish', rivals: 0, traffic: mapId === 'megara' ? 0 : 1, targets: {} });
 export const MEDALS = ['bronze', 'silver', 'gold'];
 
 export const EVENTS = [
@@ -146,13 +148,13 @@ export const getEvent = (id) => (isDrivingMode(id?.split(':')[0]) ? drivingModeD
 /** ctx = { route: {start, finish, length, from, to, curv?}, marks: [{id, name, sub, s}] } */
 export function locate(loc, ctx) {
   if (typeof loc === 'number') return { s: loc, name: nearestName(loc, ctx) };
-  if (loc === 'start') return { s: ctx.route.start, name: (ctx.route.from || 'START').toUpperCase() };
-  if (loc === 'finish') return { s: ctx.route.finish, name: (ctx.route.to || 'FINISH').toUpperCase() };
+  if (loc === 'start') return { s: ctx.route.start, name: upperName(ctx.route.from || 'START') };
+  if (loc === 'finish') return { s: ctx.route.finish, name: upperName(ctx.route.to || 'FINISH') };
   const m = ctx.marks.find((q) => q.id === loc);
   if (!m) throw new Error('unknown event location ' + loc);
   return { s: m.s, name: m.name };
 }
-function nearestName(s, ctx) { let n = (ctx.route.from || '').toUpperCase(); for (const m of ctx.marks) if (s >= m.s - 1) n = m.name; return n; }
+function nearestName(s, ctx) { let n = upperName(ctx.route.from || ''); for (const m of ctx.marks) if (s >= m.s - 1) n = m.name; return n; }
 
 export function resolve(def, ctx) {
   if (isDrivingMode(def)) return resolveDrivingMode(def, ctx);

@@ -12,7 +12,8 @@ import { input as controls } from './input.js';
 import { Audio } from './audio.js';
 const query = new URLSearchParams(location.search);
 const direct = !query.has('menu') && ['simhook', 'autodrive', 'car', 's', 'event', 'quick', 'fixeddt', 'turbo'].some(key => query.has(key));
-if (query.get('map')==='athens' || direct || query.has('lobby')) {
+// ?map=athens boots the open world directly; with ?menu=1 it opens the menu, whose free roam spawn picker then offers the open world.
+if ((query.get('map')==='athens' && !query.has('menu')) || direct || query.has('lobby')) {
   await (await importWithUpdate(() => import('./main.js'))).gameReady;
 } else {
   let mapId = initialMapId(query), car = 0, runtime;
@@ -40,6 +41,7 @@ if (query.get('map')==='athens' || direct || query.has('lobby')) {
       if (menu.screen !== 'car' || menu.data.def !== def) return;
       await flow.startEvent(def, { car: index });
     },
+    startFree: async def => { const flow = await ensureRuntime(); if (menu.screen !== 'maps') return; await flow.startEvent(def, { car }); },
     openEvent: id => menu.show('car', { def: typeof id === 'object' ? id : quickMapEvent(mapId), index: car }, true),
     quickRace: () => menu.show('car', { def: quickMapEvent(mapId), index: car }, true),
   });
