@@ -22,4 +22,5 @@ Map: <!-- Riviera / Penteli / Megara -->  ·  Graphics preset: <!-- Potato / Low
 - [ ] Performance noted if I added models/effects/scenery (draw calls / frame time on Low and High)
 - [ ] Multiplayer: looks the same for every player, or is hidden online
 - [ ] New assets are ours or CC0/CC-BY with credits added
+- [ ] No third-party/copyrighted media committed (Street View, Google Maps/Earth, web images, photos, map tiles, unlicensed audio/video go in `.reference/`, never in the PR); committed audio/images have source and licence recorded
 - [ ] Follows the design rules in CONTRIBUTING.md (time-only racing, simple HUD, free Cloudflare plan)

@@ -3,6 +3,8 @@ node_modules/
 __pycache__/
 .cache/
 .scratch/
+.reference/*
+!.reference/README.md
 .data/
 
 .deploy/

@@ -235,7 +235,8 @@
     "tools/dynamic-floor.test.mjs",
     "tools/draw-call-budget.test.mjs",
     "tools/far-cull.test.mjs",
-    "tools/far-cull-budget.test.mjs"
+    "tools/far-cull-budget.test.mjs",
+    "tools/no-third-party-media.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",
