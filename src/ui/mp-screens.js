@@ -74,7 +74,9 @@ const carOf = (mp, id) => mp?.cars?.find((c) => c.id === id);
 // A trim's short name is just the trim ("1.1"): the lobby names the whole car so changing trim is legible.
 const carTitle = (c, fallback = '') => c?.name || c?.short || fallback;
 const mapName = (mp, id) => mp?.maps?.find((m) => m.id === (id || 'riviera'))?.name || 'ATHENS RIVIERA';
-const statusChip = (mp) => C.chip(`${mp?.preparing ? C.spinner() : ''}${esc(statusText(mp) || 'Connecting…')}`, { tone: mp?.connected ? '' : 'warn', icon: mp?.preparing ? null : mp?.connected ? 'globe' : 'triangle-alert', cls: 'mp-status', attrs: { role: 'status' } });
+// The connection as one quiet status: a dot and a word while all is well; the server's own message when something is happening.
+const statusChip = (mp) => { const text = statusText(mp), calm = mp?.connected && !mp?.preparing && (!text || /^Connected\b/.test(text));
+  return C.chip(`${mp?.preparing ? C.spinner() : ''}${esc(calm ? 'Connected' : text || 'Connecting…')}`, { tone: calm ? 'good' : mp?.connected ? 'idle' : 'warn', cls: 'mp-status', attrs: { role: 'status' } }); };
 /** the car the session will use: yours in the lobby, otherwise the car you would join or host with */
 export function showroomCar(mp) { return mp?.lobby ? mp.me?.car : mp?.$?.('mp-car')?.value || mp?.cars?.[mp?.hooks?.carIndex?.() ?? 0]?.id; }
 
@@ -110,30 +112,30 @@ const hostOf = (l) => l.players?.find((p) => p.id === l.host)?.name || l.players
 /** one open lobby as a browser row; full lobbies stay listed but cannot be picked */
 export function lobbyRow(mp, l) {
   const n = l.players?.length || 0, cap = l.capacity || MAX_DRIVERS, full = n >= cap, open = l.status === 'waiting', cfg = l.config || {};
-  return C.listRow({ media: trackArt(l.mapId), title: esc(l.name), desc: hostOf(l) ? `HOST · ${esc(hostOf(l))}` : '', act: 'mpJoinLobby', fid: 'lobby:' + l.code, disabled: full, cls: 'list-row--card', attrs: { 'data-code': l.code },
+  return C.listRow({ media: trackArt(l.mapId), title: esc(l.name), desc: hostOf(l) ? `Hosted by ${esc(hostOf(l))}` : '', act: 'mpJoinLobby', fid: 'lobby:' + l.code, disabled: full, cls: 'list-row--card', attrs: { 'data-code': l.code },
     cells: [[`<b>${esc(mapName(mp, l.mapId))}</b><span>${esc(describeMode(l.mode || l.event?.type || 'sprint'))}</span>`, 'track'],
       [`<b>${esc(label(TIMES, cfg.time || 'afternoon'))}</b><span>${esc(label(WEATHERS, cfg.weather || 'clear'))}</span>`, 'conditions'],
       [`<b class="tnum">${n}/${cap}</b>${C.progress(n / cap)}`, 'drivers']],
-    meta: C.chip(full ? 'FULL' : open ? 'OPEN' : 'RACING', { tone: full ? '' : open ? 'good' : 'warn' }) });
+    meta: C.chip(full ? 'FULL' : open ? 'OPEN' : 'RACING', { tone: full ? 'idle' : open ? 'good' : 'warn' }) });
 }
 export function renderMp(menu, mp) {
   const net = netState(mp), live = net === 'live', lobbies = live ? mp.__lobbies || [] : [];
   const joinable = lobbies.some((l) => (l.players?.length || 0) < (l.capacity || MAX_DRIVERS));
   const ready = /^[A-Z0-9]{6}$/.test(form.code), car = carOf(mp, showroomCar(mp));
-  const status = C.chip(live ? `ONLINE · ${esc(driverName.get())}` : net === 'connecting' ? 'CONNECTING…' : net === 'reload' ? 'UPDATE REQUIRED' : 'OFFLINE',
-    { tone: live ? 'good' : net === 'connecting' ? '' : 'bad', icon: live ? 'globe' : net === 'connecting' ? null : 'triangle-alert', cls: 'mp-net', attrs: { role: 'status' } });
+  const status = C.chip(live ? 'ONLINE' : net === 'connecting' ? 'CONNECTING…' : net === 'reload' ? 'UPDATE REQUIRED' : 'OFFLINE',
+    { tone: live ? 'good' : net === 'connecting' ? 'idle' : 'bad', cls: 'mp-net', attrs: { role: 'status' } });
   const join = `${C.searchField({ name: 'code', label: 'Lobby code', value: form.code, placeholder: 'LOBBY CODE', icon: 'link', cls: 'search--code', inputAttrs: { type: 'text', maxlength: 6, autocapitalize: 'characters', enterkeyhint: 'go' } })}${C.button({ label: form.pending === 'join' ? 'JOINING…' : 'JOIN', iconRight: 'chevron-right', variant: ready ? 'primary' : 'secondary', act: 'mpJoinCode', disabled: !ready || !live || !!form.pending, attrs: { 'data-fid': 'join' } })}`, identity = `${status}${C.button({ label: esc(car?.name || car?.short || 'CHOOSE CAR'), icon: 'car', iconRight: 'chevron-right', variant: 'ghost', size: 'sm', act: 'mpCar', disabled: !mp?.canChangeCar, title: 'Your car', attrs: { 'data-fid': 'car' } })}`, hostAction = `${C.button({ label: 'HOST A LOBBY', icon: 'plus', iconRight: 'chevron-right', variant: 'primary', size: 'lg', act: 'mpHost', disabled: !live, cls: 'mp-bar__host', attrs: { 'data-fid': 'host', ...(joinable ? {} : { 'data-default': '' }) } })}`;
   let items;
   if (net === 'connecting') items = C.emptyState({ busy: true, title: 'CONNECTING TO THE LOBBY SERVER', text: 'Open lobbies appear here as soon as you are online.' });
   else if (net === 'reload') items = C.emptyState({ icon: 'refresh-cw', tone: 'warn', title: 'GAME UPDATED', text: 'Reload to get the latest version and race online again.', action: C.button({ label: 'RELOAD', icon: 'refresh-cw', variant: 'primary', act: 'mpReload', attrs: { 'data-default': '' } }) });
   else if (net === 'offline') items = C.emptyState({ icon: 'triangle-alert', tone: 'bad', title: 'CAN’T REACH THE LOBBY SERVER', text: 'Check your connection. We keep retrying in the background.', action: C.button({ label: 'TRY AGAIN', icon: 'rotate-ccw', act: 'mpRetry', attrs: { 'data-default': '' } }) });
-  else if (!lobbies.length) items = C.emptyState({ icon: 'flag', title: 'NO OPEN LOBBIES RIGHT NOW', text: 'Host one and share its code, or join a friend’s invite-only lobby with theirs. New lobbies appear here live.' });
+  else if (!lobbies.length) items = C.emptyState({ icon: 'flag', title: 'NO OPEN LOBBIES RIGHT NOW', text: 'Host one, or join a friend with their code.' });
   else {
     const rows = lobbies.map((l) => lobbyRow(mp, l)), first = lobbies.findIndex((l) => (l.players?.length || 0) < (l.capacity || MAX_DRIVERS));
     if (first >= 0) rows[first] = rows[first].replace(' role="button"', ' role="button" data-default=""');
     items = C.listHead([[`${lobbies.length} OPEN ${lobbies.length === 1 ? 'LOBBY' : 'LOBBIES'}`, 2], 'TRACK', 'CONDITIONS', 'DRIVERS', ['STATUS', 2]]) + rows.join('');
   }
-  return C.browseGrid({ variant: 'lobby', cls: 'scr--mp scr--mp-browse', kick: 'LIVE RACING <span class="acc">/</span> 2–8 DRIVERS', title: 'MULTIPLAYER', join, identity, actions: hostAction, items, list: true,
+  return C.browseGrid({ variant: 'lobby', cls: 'scr--mp scr--mp-browse', title: 'MULTIPLAYER', join, identity, actions: hostAction, items, list: true,
     hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'BACK']] });
 }
 
@@ -147,19 +149,19 @@ export function renderHost(menu, mp) {
   const A = { 'data-scope': 'mpHost' }, car = carOf(mp, showroomCar(mp));
   const tracks = maps.length ? maps.map((m) => {
     const cat = MAPS.find((x) => x.id === m.id);
-    return C.card({ media: trackArt(m.id), badge: m.id === map ? C.badge('SELECTED', 'accent', 'check') : '', title: esc(m.name), text: esc(cat?.subtitle || ''), act: 'mpTrack',
+    return C.card({ media: trackArt(m.id), selected: m.id === map, title: esc(m.name), text: esc(cat?.subtitle || ''), act: 'mpTrack',
       foot: cat ? `<span>${esc(fmtDist(cat.length))}</span><span>${cat.type === 'circuit' ? 'CIRCUIT' : 'POINT TO POINT'}</span>` : '', attrs: { 'data-map': m.id, 'data-fid': 'track:' + m.id } });
   }).join('') : C.emptyState({ busy: !live, icon: 'triangle-alert', title: live ? 'NO TRACKS AVAILABLE' : 'CONNECTING TO THE LOBBY SERVER', text: 'Tracks load from the lobby server.' });
   const fields = [
     C.textField({ name: 'name', label: 'LOBBY NAME', value: form.name, placeholder: (driverName.get() || 'MY') + '’S RACE', maxlength: 28, inputAttrs: { enterkeyhint: 'done' } }),
     C.segmented({ key: 'mode', label: 'MODE', icon: 'flag', value: form.mode, options: MODES, attrs: A }),
     C.segmented({ key: 'private', label: 'WHO CAN JOIN', icon: 'lock', value: String(form.private), type: 'bool', options: [['false', 'ANYONE'], ['true', 'INVITE ONLY']], attrs: A,
-      note: form.private ? 'Hidden from open lobbies. Share the code or invite link.' : 'Listed under open lobbies for any driver to join.' }),
-    C.listRow({ icon: 'car', title: esc(car?.name || 'CHOOSE CAR'), desc: 'YOUR CAR · CHANGE IT IN THE LOBBY TOO', act: 'mpCar', fid: 'car', disabled: !mp?.canChangeCar }),
+      note: form.private ? 'Only drivers with the code or invite link can join.' : 'Anyone can find it in the list.' }),
+    C.listRow({ icon: 'car', title: esc(car?.name || 'CHOOSE CAR'), desc: 'Change car', act: 'mpCar', fid: 'car', disabled: !mp?.canChangeCar }),
   ].join('');
-  const inspector = C.panel('LOBBY', `<div class="mp-fields">${fields}</div><p class="group__note">Time of day, weather, traffic, police and car rules are set in the lobby. 2–8 drivers, rejoin within 90 seconds.</p>
-    <div class="mp-go">${C.button({ label: mp?.creating ? 'CREATING…' : 'CREATE LOBBY', icon: 'plus', iconRight: 'chevron-right', variant: 'primary', size: 'lg', block: true, act: 'mpCreate', disabled: !!mp?.creating || !live || !map, attrs: { 'data-default': '', 'data-fid': 'create' } })}</div>`, { icon: 'users', cls: 'mp-host' });
-  return C.stageInspector({ variant: 'tracks', collection: !!maps.length, cls: 'scr--mp scr--mp-host', kick: 'MULTIPLAYER <span class="acc">/</span> HOST A LOBBY', title: 'CHOOSE A TRACK', stage: tracks, inspector,
+  const inspector = C.panel('', `<div class="mp-fields">${fields}</div><p class="group__note">Weather, traffic, police and car rules are set in the lobby. Up to 8 drivers.</p>
+    <div class="mp-go">${C.button({ label: mp?.creating ? 'CREATING…' : 'CREATE LOBBY', icon: 'plus', iconRight: 'chevron-right', variant: 'primary', size: 'lg', block: true, act: 'mpCreate', disabled: !!mp?.creating || !live || !map, attrs: { 'data-default': '', 'data-fid': 'create' } })}</div>`, { cls: 'mp-host' });
+  return C.stageInspector({ variant: 'tracks', collection: !!maps.length, cls: 'scr--mp scr--mp-host', kick: 'MULTIPLAYER', title: 'HOST A LOBBY', stage: tracks, inspector,
     hints: [['select', 'SELECT'], ['leftright', 'CHANGE'], ['confirm', 'OK'], ['back', 'BACK']] });
 }
 
@@ -195,7 +197,7 @@ export function renderLobby(menu, mp) {
     const r = driverRow(p, l, mp.id), c = carOf(mp, r.car);
     const ctl = host && !r.me ? `<span class="mp-driver__ctl">${C.button({ label: 'KICK', icon: 'log-out', variant: 'ghost', size: 'sm', act: 'mpKick', attrs: { 'data-id': p.id, 'data-fid': 'kick:' + p.id, 'aria-label': 'Kick ' + p.name } })}${C.button({ label: 'BLOCK', icon: 'x', variant: 'ghost', size: 'sm', act: 'mpBlock', cls: 'mp-block', attrs: { 'data-id': p.id, 'data-fid': 'block:' + p.id, 'aria-label': 'Block ' + p.name } })}</span>` : '';
     return `<div class="mp-driver ${r.me ? 'me' : ''}" data-player="${esc(p.id)}"><i class="mp-dot" data-state="${r.state}"></i>
-      <span class="mp-driver__who"><b>${esc(r.name)}</b>${r.me ? C.chip('YOU', { tone: 'accent' }) : ''}${r.host ? C.chip('HOST', { tone: 'gold', icon: 'crown' }) : ''}</span>
+      <span class="mp-driver__who"><b>${esc(r.name)}</b>${[r.me && 'You', r.host && 'Host'].filter(Boolean).map(t => `<span class="mp-driver__tag">${t}</span>`).join('')}</span>
       <span class="mp-driver__car">${esc(carTitle(c, r.car))}${p.balance && (p.balance.ballastKg > 0 || p.balance.powerCapKW > 0) ? ` · ${esc(p.balance.label)}` : ''}</span><span class="mp-driver__state" data-state="${r.state}">${r.text}</span>${ctl}</div>`;
   }).join('');
   const blocked = host ? (l.blockedPlayers || []) : [];
@@ -212,12 +214,13 @@ export function renderLobby(menu, mp) {
     acts.push(C.button({ label: 'BACK TO THE RACE', icon: 'play', variant: 'primary', act: 'back', attrs: { 'data-default': '', 'data-fid': 'resume' } }));
     if (host) acts.push(C.button({ label: 'RESTART', icon: 'rotate-ccw', act: 'mpRestart', attrs: { 'data-fid': 'restart' } }), C.button({ label: 'BACK TO LOBBY', icon: 'users', act: 'mpToLobby', attrs: { 'data-fid': 'tolobby' } }));
   }
-  const caption = `${C.sheetHead({ kick: `LOBBY · ${live ? 'RACE IN PROGRESS' : waiting ? 'WAITING FOR DRIVERS' : 'RESULTS'}`, title: `${esc(l.name)}` })}
-    <div class="mp-show__meta">${C.chip(esc(l.code || ''), { tone: 'accent', icon: 'lock', attrs: { title: 'Lobby code' } })}${C.chip(esc(mapName(mp, l.mapId)), { icon: 'map' })}${C.chip(esc(describeMode(mode)), { icon: 'flag' })}</div>`;
+  // The lobby's name, then one quiet line: its code (what you share), track and mode. The state is the status line.
+  const caption = `${C.sheetHead({ title: `${esc(l.name)}`, status: live ? 'Race in progress' : waiting ? 'Waiting for drivers' : 'Results', statusIcon: '' })}
+    <p class="mp-show__meta"><span title="Lobby code">Code <b class="tnum">${esc(l.code || '')}</b></span> · ${esc(mapName(mp, l.mapId))} · ${esc(describeMode(mode))}</p>`;
   const tools = `<div class="mp-side__bar">${statusChip(mp)}<div class="mp-tools">${C.button({ label: 'INVITE', icon: 'link', variant: 'ghost', size: 'sm', act: 'mpCopy', attrs: { 'data-fid': 'copy' } })}${C.button({ icon: 'settings', variant: 'ghost', size: 'sm', act: 'settings', title: 'SETTINGS', attrs: { 'data-fid': 'settings' } })}${C.button({ label: 'LEAVE', icon: 'log-out', variant: 'ghost', size: 'sm', act: 'mpLeave', cls: 'mp-leave', attrs: { 'data-fid': 'leave' } })}</div></div>`;
   const sessionPanel = C.panel('SESSION', `<div class="mp-fields">${session}</div>`, { icon: 'sliders-horizontal', cls: 'mp-session' });
   const drivers = C.panel(`DRIVERS <span class="mp-count">${l.players.length}/${MAX_DRIVERS}</span>`, `<div class="mp-drivers__list">${rows}${blockedList}</div><p class="mp-help">${esc(helpText(mp, l, host))}</p>`, { icon: 'users', cls: 'mp-drivers' });
-  return C.stageInspector({ variant: 'showroom', cls: 'scr--mp scr--showroom scr--mp-lobby', kick: `MULTIPLAYER <span class="acc">/</span> ${live ? 'RACE IN PROGRESS' : 'LOBBY'}`,
+  return C.stageInspector({ variant: 'showroom', cls: 'scr--mp scr--showroom scr--mp-lobby', kick: 'MULTIPLAYER',
     hints: [['updown', 'SELECT'], ['leftright', 'CHANGE'], ['confirm', 'OK'], ['back', 'CLOSE']],
     caption, summary: carPlate(mp, carOf(mp, me?.car), `<div class="mp-actions">${acts.join('')}</div>`), inspector: tools + drivers + sessionPanel });
 }

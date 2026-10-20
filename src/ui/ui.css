@@ -1069,13 +1069,14 @@ body[data-ui] #mp-toggle { display: none !important; }
 .mp-show__cap { grid-column: 1; grid-row: 1; z-index: 1; min-width: 0; pointer-events: none; }
 .mp-show__cap .chip { pointer-events: auto; }
 .mp-show__sub { margin: .4rem 0 0; font: 500 var(--t-sm) var(--f-sans); color: var(--c-text-3); }
-.mp-show__meta { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-3); }
+.mp-show__meta { margin: var(--s-2) 0 0; font: 500 var(--t-sm) var(--f-sans); color: var(--c-text-3); }
+.mp-show__meta b { color: var(--c-text); font-weight: 600; letter-spacing: .08em; }
 .mp-plate { grid-column: 1; grid-row: 3; z-index: 1; justify-self: center; display: grid; justify-items: center; gap: .2rem; text-align: center; max-width: 100%; }
 .mp-plate__name { font: 400 var(--t-2xl) var(--f-sans); letter-spacing: .1em; text-transform: uppercase; text-shadow: 0 2px 18px rgba(0,0,0,.6); }
-.mp-plate__spec { font: 600 var(--t-xs) var(--f-cond); letter-spacing: .18em; color: var(--hu-ice); min-height: 1em; }
+.mp-plate__spec { font: 600 var(--t-xs) var(--f-cond); letter-spacing: .18em; color: var(--c-text-3); min-height: 1em; }
 .mp-plate__car { margin-top: var(--s-2); }
 .mp-plate__trim { align-self: flex-start; }
-.mp-plate__hint { margin: 0; font: 600 var(--t-xs) var(--f-cond); letter-spacing: .12em; color: var(--hu-ice); opacity: .8; text-transform: uppercase; }
+.mp-plate__hint { margin: 0; font: 500 var(--t-sm) var(--f-sans); color: var(--c-text-3); }
 .mp-plate__acts { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: var(--s-2); margin-top: var(--s-2); }
 .mp-actions { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: var(--s-2); }
 .mp-actions > .btn:not(.btn--sm) { min-width: 11rem; min-height: 3rem; }
@@ -1103,7 +1104,7 @@ body[data-ui] #mp-toggle { display: none !important; }
 .mp-driver.me { background: rgba(255,255,255,.07); }
 .mp-driver__who { min-width: 0; display: flex; align-items: center; gap: var(--s-2); }
 .mp-driver__who b { min-width: 0; font: 500 var(--t-md) var(--f-sans); letter-spacing: .06em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.mp-driver__who .chip { height: 1.5rem; }
+.mp-driver__tag { font: 600 var(--t-2xs) var(--f-cond); letter-spacing: var(--track-caps); color: var(--c-text-3); text-transform: uppercase; }
 .mp-driver__car { grid-column: 2; grid-row: 2; font: 600 var(--t-2xs) var(--f-cond); letter-spacing: .14em; color: var(--c-text-3); text-transform: uppercase; white-space: nowrap;  overflow: hidden; text-overflow: ellipsis; min-width: 0;}
 .mp-driver__state { grid-column: 3; grid-row: 1 / 3; text-align: right; font: 600 var(--t-xs) var(--f-cond); letter-spacing: .14em; color: var(--c-text-3); white-space: nowrap; transition: color var(--dur); }
 .mp-driver__state[data-state=ready] { color: var(--tt-green, #38e07b); }
@@ -1333,3 +1334,6 @@ html[data-device="blocked"] #device-gate { display: block; position: fixed; inse
   :is(#race-settings, .tow-actions button):hover { background: #35414b; }
 }
 .lb-note { margin: 0 0 var(--s-3); font-size: var(--t-sm); }
+/* idle status: a grey dot (full lobby, connecting) */
+.chip--idle { background: none; box-shadow: none; padding-inline: 0; color: var(--c-text-3); }
+.chip--idle::before { content: ""; width: .5em; height: .5em; border-radius: 50%; flex: none; background: var(--c-text-4); }

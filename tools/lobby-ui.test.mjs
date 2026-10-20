@@ -86,7 +86,7 @@ test('the lobby browser: open lobbies fill the page, join lights up at six chara
   form.code = 'AB12CD';
   const list = renderMp(menu, mp);
   assert.match(list, /btn--primary[^"]*" role="button" data-act="mpJoinCode"/, 'a full code lights JOIN up');
-  assert.match(list, /data-code="QWE123"/); assert.match(list, /PENTELI/); assert.match(list, /HOST · GR-4821/); assert.match(list, /1\/8/); assert.match(list, /NIGHT/);
+  assert.match(list, /data-code="QWE123"/); assert.match(list, /PENTELI/); assert.match(list, /Hosted by GR-4821/); assert.match(list, /1\/8/); assert.match(list, /NIGHT/);
   assert.match(list, /list-row[^"]* off[^"]*" role="button" data-act="mpJoinLobby" data-fid="lobby:FULL88"/, 'a full lobby is not selectable');
   assert.match(list, /role="button" data-default="" data-act="mpJoinLobby" data-fid="lobby:QWE123"/, 'the first joinable lobby takes focus');
   assert.match(list, /data-act="mpHost"/, 'HOST A LOBBY leads to its setup');
