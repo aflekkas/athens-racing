@@ -15,8 +15,6 @@ import { cameraRelativeSource, cameraDirectionPan, syncAudioListener } from './a
 // PARALIAKI: race a rival down the real Athens Riviera coast road, Vouliagmeni -> the lake -> Limanakia -> Varkiza -> Lomvarda.
 // World built from OpenStreetMap data (see tools/). Menus boot without a world; direct race URLs load on demand.
 import * as THREE from 'three';
-import {exhaustPopsEnabled} from './exhaust-pops.js';
-import {flashLight,flashEnabled,warmFlamePipelines} from './exhaust-flames.js';
 import { loadMap, LANE_W } from './map.js';
 import { getMap } from './map-catalog.js';
 import { menuMapContext, quickMapEvent, initialMapId } from './menu-map.js';
@@ -27,7 +25,7 @@ import { ROAD } from './road.js';
 import { CARS, CarModel, setCarEnv, setPaint, catalogueTrafficTypes } from './cars.js';
 import { normalizeDriverAppearance } from './driver-appearance-data.js';
 import { ENGINE_HOT_C } from './driving-feedback-model.js';
-import { inGarage } from './car-catalog.js';
+import { inGarage, canonicalCarId, DEFAULT_CAR_ID } from './car-catalog.js';
 import { shiftTransmission } from './transmission.js';
 import { savedPaint } from './vehicle-paint.js';
 import { Vehicle } from './physics.js';
@@ -109,7 +107,7 @@ const $ = (id) => document.getElementById(id);
 const RED_GRACE = 0.3; // s at both ends of the red, as the signals' own amber/all-red margins
 function lawsEnabled() { return police?.enabled === true && G.ev?.def.rules?.laws !== false; }
 const RIVAL_NAME = 'STAVROS';
-const RIVAL_BODY = { mini: 'z4', z4: 'mini', taxi: 'mini' };
+const RIVAL_BODY = { mini_jcw: 'z4', z4: 'mini_jcw', octavia_rs: 'mini_jcw' };
 
 function fail(e) { console.error(e); const el = $('err'); el.style.display = 'block'; el.textContent = 'Error: ' + (e && e.message || e); }
 window.addEventListener('error', (e) => fail(e.error || e.message));
@@ -133,7 +131,7 @@ await firstRunPerformanceCheck({ gpuName });
 // ONE graphics look, hard-wired (graphics.js RENDER, owner-locked: docs/OWNER-DECISIONS.md). GFX only carries the
 // performance side: resolution and draw ranges.
 let GFX = resolveGraphics(settings, { deviceRatio: window.devicePixelRatio, gpuName });
-const R = RENDER, quality = R.exhaust, sceneryQuality = R.scenery, lowGraphics = R.simple;
+const R = RENDER, sceneryQuality = R.scenery, lowGraphics = R.simple;
 setAnisotropy(R.anisotropy);
 window.__renderInfo = () => ({ gpu: gpuName, perfClass: GFX.perfClass, lowGraphics, pixelRatio, drawDistance: GFX.drawDistance, geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures, fps: G.fps, renderScale: settings.renderScale });
 // In-game performance readout (Settings > Graphics, or F3): fps, frame ms, draw calls. Refreshed at 2 Hz.
@@ -159,10 +157,6 @@ const scene = new THREE.Scene();
 scene.matrixAutoUpdate = false; // never moves; its children update themselves (static world: batch.js freezeStatic)
 const drivingFeedback = new DrivingFeedback({ scene, input: controls });
 scene.fog = new THREE.FogExp2(new THREE.Color('#c3cdd6'), 0.00011); // only switches USE_FOG on; see ENV.installAerial
-// One always-visible exhaust-pop flash light (intensity 0 until a pop): showing/hiding a light, or cars with flames joining or
-// leaving, would change the light count and re-resolve/recompile every material's program mid-race
-flashLight.visible = flashEnabled(R.exhaust); scene.add(flashLight);
-let flamesWarmable = false; // set once the load-time warm-up has run: later joins warm on arrival
 const camera = new THREE.PerspectiveCamera(settings.cockpitFov, innerWidth / innerHeight, 0.1, 90000);
 renderer.terrainLodCamera = camera; // Auxiliary passes reuse the main view's terrain selection.
 const audio = window.__bootAudio || new Audio();
@@ -341,7 +335,7 @@ async function loadFirstMap(id) {
   bindMapWeather(); // time of day + weather (?tod=&wx=)
   tlog('traffic+post');
   // ?car= takes a 1-based number or a car id (?car=2, ?car=z4); anything else falls back to the saved car
-  const qCar = Q.get('car'), qIdx = qCar == null ? -1 : /^\d+$/.test(qCar) ? clamp(+qCar - 1, 0, CARS.length - 1) : CARS.findIndex((c) => c.id === qCar);
+  const qCar = canonicalCarId(Q.get('car')), qIdx = qCar == null ? -1 : /^\d+$/.test(qCar) ? clamp(+qCar - 1, 0, CARS.length - 1) : CARS.findIndex((c) => c.id === qCar);
   setCar(qIdx >= 0 ? qIdx : savedCar(), false);
   prepareEvent('quick');
   resetRace();
@@ -356,8 +350,6 @@ async function loadFirstMap(id) {
   const compileStarted = performance.now(); await compileScene();
   assetMetrics.compileSceneMs = performance.now() - compileStarted;
   if (renderer.shadowMap.enabled) warmShadowPrograms(); // compileAsync skips the shadow depth variants
-  try { await warmExhaustFlames(); } catch (e) { console.warn('Exhaust flame warm-up skipped:', e?.message || e); }
-  flamesWarmable = true;
   tlog('compiled');
   onResize();
   multiplayer.mapId = map.id;
@@ -465,7 +457,6 @@ function makeCar(spec, isPlayer, plate) {
   const model = new CarModel(spec, { plate });
   if (!isPlayer) scaleVehicleLod(model, GFX.vehicleLod); // other drivers' cars drop to the road-distance model sooner on weaker classes
   scene.add(model.root);
-  if(model.exhaustFlames){scene.add(model.exhaustFlames.mirrorRoot);if(flamesWarmable)warmExhaustFlames();} // a remote SVJ joining mid-session: first pop must not compile
   trimShadowCasters(model.root);
   return { model };
 }
@@ -481,7 +472,6 @@ function attachRivalFar(c) {
   c.casters = []; c.model.root.traverse((o) => { if (o.isMesh && o.castShadow) c.casters.push(o); });
 }
 function disposeCar(c) {
-  c?.model?.exhaustFlames?.dispose();
   if (!c) return;
   if (c.far) {
     scene.remove(c.far.root);
@@ -935,7 +925,8 @@ function applyDriving() {
 function carBest(i) { return +localStorage.getItem('paraliaki.best.' + CARS[i].id) || 0; }
 // dev / test URLs (?simhook, ?autodrive, ?car=, ?s=, ?event=, ?quick) skip the title menu; ?menu forces it
 const SKIP_MENU = !Q.has('menu') && ['simhook', 'autodrive', 'car', 's', 'event', 'quick', 'fixeddt', 'turbo'].some((k) => Q.has(k));
-function savedCar() { try { const i = CARS.findIndex((c) => c.id === localStorage.getItem('paraliaki.car')); return i >= 0 && inGarage(CARS[i]) ? i : 0; } catch { return 0; } } // a car since dropped from the garage falls back to the default
+const defaultCar = () => Math.max(0, CARS.findIndex((c) => c.id === DEFAULT_CAR_ID));
+function savedCar() { try { const i = CARS.findIndex((c) => c.id === canonicalCarId(localStorage.getItem('paraliaki.car'))); return i >= 0 && inGarage(CARS[i]) ? i : defaultCar(); } catch { return defaultCar(); } } // a removed trim maps to its model's top trim; anything else unknown falls back to the default
 function initFlow() {
   let plate = driverName.plate();
   driverName.onChange(() => { const next = driverName.plate(); if (next !== plate) { plate = next; player?.model.setPlate(next); } });
@@ -1032,7 +1023,7 @@ function buildGrid() {
   G.gridKey = key;
   for (const c of grid) if (c !== rival) disposeCar(c);
   grid = [];
-  const raceCars=CARS.filter(isRivalCar),ids=raceCars.map(c=>c.id);
+  const raceCars=CARS.filter(c=>isRivalCar(c)&&inGarage(c)),ids=raceCars.map(c=>c.id);
   for (const [i, d] of drivers.entries()) {
     const spec = raceCars.find((c) => c.id === (def.car && ids.includes(def.car) ? def.car : EV.driverCar(d, ids, player.spec.id))) || raceCars[0];
     let c;
@@ -1082,7 +1073,7 @@ async function startEvent(id, opts = {}) {
   const token = ++soloStart;
   const def = mapEvent(id); if (!def) return;
   const car = def.car || opts.car;
-  const idx = car == null ? G.carIdx : typeof car === 'number' ? clamp(Math.floor(car), 0, CARS.length - 1) : Math.max(0, CARS.findIndex(c => c.id === car));
+  const idx = car == null ? G.carIdx : typeof car === 'number' ? clamp(Math.floor(car), 0, CARS.length - 1) : Math.max(0, CARS.findIndex(c => c.id === canonicalCarId(car)));
   const mapId = def.mapId || selectedMapId;
   menu?.hide();
   try {
@@ -1098,7 +1089,7 @@ async function startEvent(id, opts = {}) {
 function openEvent(id, index = G.carIdx) {
   if (multiplayer.active) { multiplayer.open(); return; }
   const def = mapEvent(id); if (!def) return;
-  const idx = def.car ? Math.max(0, CARS.findIndex(c => c.id === def.car)) : index;
+  const idx = def.car ? Math.max(0, CARS.findIndex(c => c.id === canonicalCarId(def.car))) : index;
   // Keep the paused/result state so BACK from the picker restores a working menu.
   if (!['paused', 'results'].includes(G.state)) G.state = 'menu'; controls.clear();
   menu.show('car', { def, index: idx }, true);
@@ -1113,7 +1104,7 @@ function openCarPicker({ inFreeRoam: roaming = false, onPick } = {}) {
 }
 function switchRoamCar(carId) {
   if (!inFreeRoam()) return false;
-  const idx = CARS.findIndex(c => c.id === carId); if (idx < 0) return false;
+  const idx = CARS.findIndex(c => c.id === canonicalCarId(carId)); if (idx < 0) return false;
   const old = player.veh, pose = Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'w', 'grade', 'bank'].map(k => [k, old[k]]));
   const gear = old.gear, bodyPose = { ...old.pose };
   beginCameraBlend(); setCar(idx);
@@ -1549,8 +1540,6 @@ function syncCar(c, dt) {
     if (shadowsOff !== c.shadowsOff) { c.shadowsOff = shadowsOff; for (const o of c.casters) o.castShadow = !shadowsOff; }
   }
   c.model.steamAmount = multiplayer.active ? 0 : v.steamAmount || 0; c.model.wheelCamber = v.wheelCamber;
-  if(!multiplayer.active)c.remoteExhaust=null;
-  if(c.model.exhaustFlames)c.model.exhaustFlames.update(dt,c.remoteExhaust||v.powertrainSignals,c.remoteExhaust?c.remoteExhaust.exhaustEnabled:exhaustPopsEnabled(c.spec),quality);
   if (!far) c.model.update(dt, v.vLong, v.steer, (c === player ? input.brake > 0.3 : c.lastBrake) || false, v.bodyDynamic ? (v._rigidVisualPose ||= { heave: 0, pitch: 0, roll: 0 }) : v.pose, v.corners || v.wheel, v.bodyDynamic ? 0 : v.w);
   v.fxWheels = c.model.wheels; // Fx owns burnout tread deformation; the model keeps its normal wheel rig.
   if (c !== player) {
@@ -1725,7 +1714,6 @@ function updateAudio(dt) {
     const v = c.veh, vel = v.velocityWorld(_av), rel = listenerRel(v.x, v.y, v.z, vel.x, vel.z);
     const r = _rivN < _rivals.length ? _rivals[_rivN] : (_rivals[_rivN] = {});
     _rivN++;
-    r.exhaustPulse=c.model.exhaustFlames?.pulse;
     r.id = id; r.spec = c.spec; r.rpm = v.rpm; r.limiter = v.limiter; r.load = load;
     r.d = rel.d; r.pan = rel.pan; r.vr = rel.vr;
   };
@@ -1742,7 +1730,6 @@ function updateAudio(dt) {
   for (let i = 0; i < 4; i++) Object.assign(_wheelArgs[i], pv.corners[i], { vgx: pv._S?.[i]?.vgx ?? pv.vLong });
   _audioRival.rpm = rv.rpm; _audioRival.load = rival.lastBrake ? -0.3 : counting ? (G.countT > 1 ? 0.7 : 0.1) : rv.load;
   _audioRival.dist = RL.d; _audioRival.pan = RL.pan; _audioRival.vr = RL.vr;
-  _audioParam.exhaustPulse = player.model.exhaustFlames?.pulse;
   _audioParam.dt = dt; _audioParam.damage = pv.damage; _audioParam.rpm = pv.rpm; _audioParam.redline = pv.spec.redline;
   _audioParam.load = counting ? input.throttle * 0.9 - 0.1 : racing ? pv.load : Math.min(pv.load, 0.3);
   _audioParam.throttle = input.throttle;
@@ -2201,7 +2188,7 @@ function step(dt, draw = true, visual = true, frameDt = dt) {
   // Select own-car glass/structure visibility; the empty cabin stays visible outside.
   player.cockpit.setDetail(G.cam === 'cockpit');
   player.cockpit.setVisible(G.cam === 'cockpit');
-  player.cockpit.update(dt, { vehicle: pv, ignition: ['countdown', 'onlineCountdown', 'race'].includes(G.state), aidsOff: !settings.aids, lowBeam: !!ENV.COND_STATE.headlights, highBeam: !!pv.highBeam, indicator: pv.indicator, hazards: pv.hazards, handbrake: input.handbrake && G.state === 'race', manual: pv.manual, gearChangeEvent: pv.gearChangeEvent, steerInput: pv.steer / Math.max(0.05, pv.lockAt(Math.abs(pv.vLong))) * (0.55 + 0.45 * Math.min(1, pv.lockAt(Math.abs(pv.vLong)) / pv.spec.steer * 2.5)), rpm: pv.rpm, redline: pv.spec.redline, gear: pv.gear, gearLabel: pv.reverse ? 'R' : String(pv.gear), kmh: pv.kmh, nitrous: pv.spec.nitrous === true, nitro: pv.nitro, nitroOn: pv.nitroOn });
+  player.cockpit.update(dt, { vehicle: pv, ignition: ['countdown', 'onlineCountdown', 'race'].includes(G.state), aidsOff: !settings.aids, lowBeam: !!ENV.COND_STATE.headlights, highBeam: !!pv.highBeam, indicator: pv.indicator, hazards: pv.hazards, handbrake: (input.handbrake || pv.handbrakeInput === true) && G.state === 'race', manual: pv.manual, gearChangeEvent: pv.gearChangeEvent, steerInput: pv.steer / Math.max(0.05, pv.lockAt(Math.abs(pv.vLong))) * (0.55 + 0.45 * Math.min(1, pv.lockAt(Math.abs(pv.vLong)) / pv.spec.steer * 2.5)), rpm: pv.rpm, redline: pv.spec.redline, gear: pv.gear, gearLabel: pv.reverse ? 'R' : String(pv.gear), kmh: pv.kmh, nitrous: pv.spec.nitrous === true, nitro: pv.nitro, nitroOn: pv.nitroOn });
   window.__ghostLap?.visual(dt);
   updateCamera(dt);
   updateRacerMarkers();
@@ -2300,13 +2287,6 @@ function step(dt, draw = true, visual = true, frameDt = dt) {
 // Build every material's program behind the loading screen. The main view draws into post's linear HDR target, never
 // the sRGB canvas, and the output colour space is part of a program's key: compiled against the canvas, every material
 // compiled a second time on its first appearance mid-race (traffic glass, buses: hitches near the Riviera tunnel).
-// Build the exhaust flame programs and per-target pipelines (once per session) before anyone pops: see src/exhaust-flames.js.
-// Targets: the main view's linear target and a throwaway twin of the cockpit mirror's sRGB target.
-async function warmExhaustFlames() {
-  const mirror = new THREE.WebGLRenderTarget(32, 18, { depthBuffer: true }); mirror.texture.colorSpace = THREE.SRGBColorSpace;
-  try { await warmFlamePipelines(renderer, camera, scene.fog, [post?.sceneRT ?? null, mirror]); }
-  finally { mirror.dispose(); }
-}
 async function compileScene() {
   const target = renderer.getRenderTarget();
   let done;
@@ -2434,7 +2414,7 @@ function updateRacerMarkers() {
   _markerItems.length = n;
   racerMarkers.update(_markerItems);
 }
-const networkState = v => ({ recordMeta: { tc: settings.aids, abs: settings.abs, steering: steeringAssistChoice(settings.steeringAssist, activeInputDevice()), gearbox: v.manual ? 'manual' : 'auto', carName: v.spec.name, ...(v.spec.generation ? { carGeneration: v.spec.generation } : {}), ...(v.spec.trimLabel || v.spec.trim ? { carTrim: v.spec.trimLabel || v.spec.trim } : {}) },  exhaustSerial: player.model.exhaustFlames?.pulse.serial || 0, exhaustKind: player.model.exhaustFlames?.pulse.kind || 0, exhaustEnabled: exhaustPopsEnabled(v.spec), ...Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear', 'nitro', 'reverse'].map(k => [k, v[k]])), nitro: v.spec.nitrous === true ? v.nitro : 0, braking: input.brake > .3, damage: { ...v.damage }, ...spectatorState(v), paint: player.model.paintColor, pursuit: police?.online ? police.pursuitCode() : 0 });
+const networkState = v => ({ recordMeta: { tc: settings.aids, abs: settings.abs, steering: steeringAssistChoice(settings.steeringAssist, activeInputDevice()), gearbox: v.manual ? 'manual' : 'auto', carName: v.spec.name },  ...Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear', 'nitro', 'reverse'].map(k => [k, v[k]])), nitro: v.spec.nitrous === true ? v.nitro : 0, braking: input.brake > .3, damage: { ...v.damage }, ...spectatorState(v), paint: player.model.paintColor, pursuit: police?.online ? police.pursuitCode() : 0 });
 function clearDriveInput() { controls.clear(); closeTowOffer(TOW_PROMPT_COOLDOWN); }
 function onlineWait() {
   if (!world || !player || !multiplayer.loaded) return;
@@ -2512,7 +2492,6 @@ const multiplayer = new Multiplayer(CARS, {
       const member = multiplayer.lobby.players.find(p => p.id === id);
       const p = applyRemotePose(peer, c.veh, performance.now(), member?.finish != null || !!member?.dnf), v = c.veh;
       applySpectatorState(v, p);
-      c.remoteExhaust=p;
       if(p.paint && p.paint !== c.model.paintColor)setPaint(c.model,p.paint);
       c.lastBrake = p.braking === true; c.model.root.visible = member?.connected !== false || performance.now() - peer.at < 3000;
       syncCar(c, dt);

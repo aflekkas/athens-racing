@@ -761,23 +761,13 @@ body[data-ui] #mp-toggle { display: none !important; }
 .vehicle-specs .field { flex-direction: column; align-items: stretch; gap: var(--s-2); }
 .vehicle-specs .field__ctl { width: 100%; }
 .vehicle-specs .seg { width: 100%; flex-wrap: wrap; }
-/* laptop-height screens: the spec panel (car, body, trim, six stats, paint, action) tightens so the primary action never covers a control */
+/* laptop-height screens: the spec panel (car, six stats, paint, action) tightens so the primary action never covers a control */
 @media (max-height: 860px) and (min-width: 861px) {
   .vehicle-specs { gap: var(--s-3); padding: var(--s-4); }
   .vehicle-specs .field { min-height: 0; padding-block: var(--s-1); }
   .stats--specs { gap: var(--s-3); }
   .stats--specs .stat-tile__v { font-size: var(--t-lg); }
 }
-/* trim picker: the trims of one car, each chip naming the trim and what it changes (power, 0-100); the lit chip slides */
-.trim-picker .seg { display: grid; grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr)); gap: 3px; border-radius: var(--r-4); }
-.trim-picker .seg__opt { flex-direction: column; align-items: stretch; justify-content: center; gap: .1rem; min-height: 2.9rem; padding-block: .35rem; border-radius: var(--r-3); text-align: center; }
-.trim-picker__count { margin-left: .6em; font-size: var(--t-xs); letter-spacing: .1em; color: var(--c-text-3); }
-.trim-picker .sel-ind { border-radius: var(--r-3); }
-.trim-chip { display: flex; flex-direction: column; align-items: center; gap: .2rem; min-width: 0; }
-.trim-chip__name { font-weight: 700; letter-spacing: .08em; overflow-wrap: anywhere; }
-.trim-chip__meta { display: inline-flex; flex-wrap: wrap; justify-content: center; gap: .1rem .6rem; font-size: var(--t-xs); font-weight: 500; letter-spacing: .06em; opacity: .72; transition: opacity var(--dur); }
-.trim-picker .seg__opt.on .trim-chip__meta { opacity: 1; }
-.vehicle-specs .seg__opt { flex: 1 1 auto; min-width: 0; justify-content: center; white-space: normal; overflow-wrap: anywhere; padding: .5rem .75rem; }
 
 /* Native HUD controls keep their authored paint/surface while keyboard focus gently changes its tone. */
 :root[data-ui-focus="navigation"] button:not(.btn):focus-visible { filter: contrast(.8) brightness(1.05); }
@@ -1075,7 +1065,6 @@ body[data-ui] #mp-toggle { display: none !important; }
 .mp-plate__name { font: 400 var(--t-2xl) var(--f-sans); letter-spacing: .1em; text-transform: uppercase; text-shadow: 0 2px 18px rgba(0,0,0,.6); }
 .mp-plate__spec { font: 600 var(--t-xs) var(--f-cond); letter-spacing: .18em; color: var(--c-text-3); min-height: 1em; }
 .mp-plate__car { margin-top: var(--s-2); }
-.mp-plate__trim { align-self: flex-start; }
 .mp-plate__hint { margin: 0; font: 500 var(--t-sm) var(--f-sans); color: var(--c-text-3); }
 .mp-plate__acts { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: var(--s-2); margin-top: var(--s-2); }
 .mp-actions { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: var(--s-2); }

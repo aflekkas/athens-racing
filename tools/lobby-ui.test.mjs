@@ -6,10 +6,10 @@ import { wantedScreen, driverRow, shownValue, setPending, renderLobby, renderMp,
 function fakeMp({ host = true, players, status = 'waiting', lobbies } = {}) {
   const mp = {
     id: host ? 'a' : 'b', connected: true, worldReady: true, canChangeCar: true, preparing: null, creating: false, objectiveMode: null,
-    cars: [{ id: 'mini', name: 'Mini Cooper S', short: 'MINI', power: 141, drive: 'fwd' }, { id: 'z4', name: 'BMW Z4', short: 'Z4', power: 285, drive: 'rwd' }, { id: 'police_x', name: 'Police', short: 'POL', power: 200, drive: 'rwd' }],
+    cars: [{ id: 'mini_jcw', name: 'Mini Cooper S', short: 'MINI', power: 141, drive: 'fwd' }, { id: 'z4', name: 'BMW Z4', short: 'Z4', power: 285, drive: 'rwd' }, { id: 'police_x', name: 'Police', short: 'POL', power: 200, drive: 'rwd' }],
     maps: [{ id: 'riviera', name: 'ATHENS RIVIERA' }, { id: 'penteli', name: 'PENTELI' }],
     lobby: { code: 'ABC123', name: 'TEST RUN', host: 'a', status, mode: 'sprint', mapId: 'riviera', config: { time: 'afternoon', weather: 'clear', police: false, traffic: 1 },
-      players: players || [{ id: 'a', name: 'GR-1001', car: 'mini', ready: false, loaded: true }, { id: 'b', name: 'GR-2002', car: 'z4', ready: false, loaded: true }] },
+      players: players || [{ id: 'a', name: 'GR-1001', car: 'mini_jcw', ready: false, loaded: true }, { id: 'b', name: 'GR-2002', car: 'z4', ready: false, loaded: true }] },
     get me() { return this.lobby?.players.find((p) => p.id === this.id); },
     get allowedCars() { return this.cars.map((c) => c.id); },
     $: () => ({ textContent: 'Connected · 12 ms · 2/8 drivers' }),
@@ -109,16 +109,16 @@ test('allowed cars and results render from lobby state', () => {
   assert.match(cars, /ADVANCED · PER-CAR OVERRIDE/, 'the per-car list survives as an override');
   const ruled = fakeMp(); ruled.carRules = { preset: 'same-class', class: 'C', maxPI: null, category: null, spec: null, balanced: false, allowedCars: null };
   const limited = renderCars(menu, ruled);
-  assert.equal((limited.match(/data-scope="mpAllow"/g) || []).length, 1, 'only class-C trims stay toggleable');
+  assert.equal((limited.match(/data-scope="mpAllow"/g) || []).length, 1, 'only class-C cars stay toggleable');
   assert.match(limited, /class A · this lobby races class C/, 'the rest grey out with the reason');
-  const sent = []; globalThis.window = { __multiplayer: { ...ruled, allowedCars: ['mini', 'z4'], setCarRules: (p) => { sent.push(p); return true; } } };
+  const sent = []; globalThis.window = { __multiplayer: { ...ruled, allowedCars: ['mini_jcw', 'z4'], setCarRules: (p) => { sent.push(p); return true; } } };
   const m = { refresh() {} }, el = (scope, key) => ({ dataset: { scope, key } });
   change(m, { key: 'preset', value: 'max-pi', el: el('mpRules', 'preset') });
   assert.deepEqual(sent, [{ preset: 'max-pi', maxPI: 420 }], 'switching preset seeds the cap from the host car');
   change(m, { key: 'class', value: 'B', el: el('mpRules', 'class') });
   assert.deepEqual(sent[1], { class: 'B' });
   delete globalThis.window;
-  const mp = fakeMp({ status: 'results' }); mp.lobby.results = [{ id: 'a', name: 'GR-1001', car: 'mini', finish: 80.5 }, { id: 'b', name: 'GR-2002', car: 'z4', dnf: 'retired' }];
+  const mp = fakeMp({ status: 'results' }); mp.lobby.results = [{ id: 'a', name: 'GR-1001', car: 'mini_jcw', finish: 80.5 }, { id: 'b', name: 'GR-2002', car: 'z4', dnf: 'retired' }];
   const res = renderResults(menu, mp);
   assert.match(res, /P1/); assert.match(res, /80\.50/); assert.match(res, /DNF/); assert.match(res, /data-act="mpStart"/);
   const guest = fakeMp({ host: false, status: 'results' }); guest.lobby.results = mp.lobby.results;
@@ -151,12 +151,12 @@ test('the host sets POLICE and CAN BE BUSTED for everyone; guests read them', ()
   delete globalThis.window;
 });
 
-// Owner playtest 2026-10-18: "how do I change car?", "the trim picker is unclear". It is its own named action, with its reason when locked.
+// Owner playtest 2026-10-18: "how do I change car?", "the garage is unclear". It is its own named action, with its reason when locked.
 test('the lobby names the change-car action, says what it opens, and explains when it is locked', () => {
   for (const host of [true, false]) {
     const open = renderLobby(menu, fakeMp({ host }));
-    assert.match(open, /data-act="mpCar"[^>]*>|data-act="mpCar"/); assert.match(open, /CHANGE CAR \/ TRIM/);
-    assert.match(open, /Opens the garage: pick another car or engine trim/);
+    assert.match(open, /data-act="mpCar"[^>]*>|data-act="mpCar"/); assert.match(open, /CHANGE CAR/);
+    assert.match(open, /Opens the garage: pick another car\./);
     assert.doesNotMatch(open, /class="mp-plate__acts">[^<]*<button[^>]*mpCar/, 'it no longer hides among the race buttons');
     const mp = fakeMp({ host, status: 'race' }); mp.canChangeCar = false;
     const locked = renderLobby(menu, mp);

@@ -71,7 +71,7 @@ export async function bootAthens(){
  };
  stream=new WorldTileStream(manifest,{...resources.stream,adapter,baseURL:manifestURL,activationMs:3});roads=new WorldTileRoads(stream);
  if(manifest.renderVariants){const declared=new Set(manifest.renderVariants.map(v=>v.key));await sceneTiles.prewarm([...manifest.renderVariants,...DRESSING_VARIANTS.filter(v=>!declared.has(v.key))]);}
- const spec=CARS.find(c=>c.id===query.get('car'))||CARS.find(c=>c.id==='carrera')||CARS[0];
+ const spec=CARS.find(c=>c.id===query.get('car'))||CARS.find(c=>c.id==='carrera_gts')||CARS[0];
  function place(v,p){v.reset(0,0,0);Object.assign(v,{x:p.x,y:p.y,z:p.z,yaw:p.yaw,vLong:0,vLat:0,w:0,_network:true});Object.assign(v,v.route.project(v.x,v.z));v.ground.referenceY=p.y;v.ground.begin(v);v.ground.resolve(v,1/240);v.syncWheels();}
  await stream.spawn(p=>{const route=new AthensRoute(p),veh=new Vehicle(spec,route),model=new CarModel(spec);veh.ground=new AthensGround(stream,route,barriers,obstacles);place(veh,p);scene.add(model.root);player={veh,model,spec};},{halfWidth:(spec.width||2)/2,halfLength:(spec.length||5)/2,timeoutMs:180000});
  // The free roam spawn picker (?map=athens&menu=1) sends the chosen point as ?spawn=x,z (Athens world metres): the car goes on the nearest safe road anchor there.
@@ -96,7 +96,7 @@ export async function bootAthens(){
   for(const c of traffic)if(c.active&&Math.hypot(c.veh.x-v.x,c.veh.z-v.z)>300){c.active=false;c.model.root.visible=false;}
   const available=[...roads.anchors({validate:false})].filter(a=>{const d=Math.hypot(a.x-v.x,a.z-v.z);return d>40&&d<180&&!traffic.some(c=>c.active&&Math.hypot(c.veh.x-a.x,c.veh.z-a.z)<20);});
   while(traffic.filter(c=>c.active).length<count&&available.length){const p=available.shift();if(!roads.safe(p))continue;let c=traffic.find(c=>!c.active);
-   if(!c){const type=catalogueTrafficTypes(CARS)[0],trafficSpec=CARS.find(c=>c.id===type.catalogueCar?.id)||CARS.find(c=>c.id==='mini')||spec,route=new AthensRoute(p),veh=new Vehicle(trafficSpec,route),model=fleetModel(type,'#869da2',rng,{low:true});veh.ground=new AthensGround(stream,route,barriers,obstacles);c={id:'traffic:'+traffic.length,veh,model,spec:trafficSpec,active:false};traffic.push(c);scene.add(model.root);}
+   if(!c){const type=catalogueTrafficTypes(CARS)[0],trafficSpec=CARS.find(c=>c.id===type.catalogueCar?.id)||CARS.find(c=>c.id==='mini_jcw')||spec,route=new AthensRoute(p),veh=new Vehicle(trafficSpec,route),model=fleetModel(type,'#869da2',rng,{low:true});veh.ground=new AthensGround(stream,route,barriers,obstacles);c={id:'traffic:'+traffic.length,veh,model,spec:trafficSpec,active:false};traffic.push(c);scene.add(model.root);}
    place(c.veh,p);c.point={...p,layer:0};c.active=true;c.model.root.visible=true;
   }
  }

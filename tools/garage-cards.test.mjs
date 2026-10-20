@@ -3,17 +3,17 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import * as THREE from 'three';
 import {CARS,CarModel} from './vehicle-budget-support.mjs';
-import {filterCars,carModel} from '../src/car-catalog.js';
+import {filterCars,carModel,inGarage} from '../src/car-catalog.js';
 import {badgeBrand,manufacturerOptions,BRAND_BADGES} from '../src/manufacturers.js';
 import {createVehicleFraming,frameVehicle,createVehicleContactShadow} from '../src/ui/vehicle-framing.js';
 const read=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8');
-test('every garage trim has the manufacturer artwork and drive pill inside its card media',async()=>{
+test('every garage car has the manufacturer artwork and drive pill inside its card media',async()=>{
  const doc=globalThis.document;delete globalThis.document;const C=await import('../src/ui/components.js');globalThis.document=doc;
- for(const car of CARS.filter(c=>carModel(c))){const brand=badgeBrand(car);assert.ok(BRAND_BADGES[brand],car.id);const html=C.carCard({id:car.id,brand,drive:car.drive,name:car.name});assert.match(html,new RegExp(`data-manufacturer="${brand}"`));assert.match(html,/car-card__brand/);assert.match(html,/atlas\.svg/);assert.match(html,/<div class="card__media">[\s\S]*<span class="card__badge">/);}
+ for(const car of CARS.filter(c=>inGarage(c))){const brand=badgeBrand(car);assert.ok(BRAND_BADGES[brand],car.id);const html=C.carCard({id:car.id,brand,drive:car.drive,name:car.name});assert.match(html,new RegExp(`data-manufacturer="${brand}"`));assert.match(html,/car-card__brand/);assert.match(html,/atlas\.svg/);assert.match(html,/<div class="card__media">[\s\S]*<span class="card__badge">/);}
  const css=read('src/ui/ui.css');assert.match(css,/\.card--car \.card__media \{[^}]*position: relative;[^}]*overflow: visible/);assert.match(css,/\.card--car \.card__badge \{[^}]*inset: \.75rem \.75rem auto auto/);
 });
 test('brand filter covers every manufacturer and combines with the other filters',()=>{
- const options=manufacturerOptions(CARS.filter(c=>carModel(c)));assert.equal(options.length,new Set(CARS.filter(c=>carModel(c)).map(badgeBrand)).size);
+ const options=manufacturerOptions(CARS.filter(c=>inGarage(c)));assert.equal(options.length,new Set(CARS.filter(c=>inGarage(c)).map(badgeBrand)).size);
  for(const [brand] of options){const list=filterCars(CARS,{brand});assert.ok(list.length,brand);assert.ok(list.every(({car})=>badgeBrand(car)===brand));}
  assert.deepEqual(filterCars(CARS,{brand:'volkswagen',search:'golf',category:'city',drive:'AWD',power:'mid',sort:'power'}).map(({car})=>car.id),['golf_r']);
  assert.equal(filterCars(CARS,{brand:'fiat',category:'super'}).length,0);
@@ -48,9 +48,9 @@ test('static thumbnails fill their image bounds with consistent margins',()=>{
   }model.disposeDamage?.();
  }
 });
-test('spec panel has shared tiles, segmented trims and no unavailable paint or internal copy',async()=>{
+test('spec panel has shared tiles, no trim or body control and no unavailable paint or internal copy',async()=>{
  const doc=globalThis.document;delete globalThis.document;const {renderCarSelect}=await import('../src/car-select.js');globalThis.document=doc;
- for(const id of ['golf','van']){const html=renderCarSelect({index:CARS.findIndex(c=>c.id===id),detail:true,garage:true});assert.match(html,/vehicle-specs panel/);assert.doesNotMatch(html,/class="car-trim-browser"/);assert.match(html,/stats--specs/);assert.equal((html.match(/class="stat-tile /g)||[]).length,6);assert.match(html,/data-key="carTrim"/);assert.match(html,/data-act="carConfirm"/);assert.doesNotMatch(html,/Existing fleet model|Custom paint|nativeFleet|placeholder|TODO|WIP/);assert.equal(html.includes('class="car-paints"'),id==='golf');}
+ for(const id of ['golf_r','van_150']){const html=renderCarSelect({index:CARS.findIndex(c=>c.id===id),detail:true,garage:true});assert.match(html,/vehicle-specs panel/);assert.doesNotMatch(html,/class="car-trim-browser"/);assert.match(html,/stats--specs/);assert.equal((html.match(/class="stat-tile /g)||[]).length,6);assert.doesNotMatch(html,/data-key="carTrim"|data-key="carBody"/);assert.match(html,/data-act="carConfirm"/);assert.doesNotMatch(html,/Existing fleet model|Custom paint|nativeFleet|placeholder|TODO|WIP/);assert.equal(html.includes('class="car-paints"'),id==='golf_r');}
 });
 
 // Use the shared VPS queue allowance, plus ten minutes for the browser itself.

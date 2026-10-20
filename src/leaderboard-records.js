@@ -1,15 +1,16 @@
 // Shared presentation/filter logic. Missing historical settings stay unknown.
+import { canonicalCarId } from './car-ids.js';
 export const SETUP_FIELDS = ['time', 'weather', 'traffic', 'rivals', 'police', 'tc', 'abs', 'steering', 'gearbox'];
 export const recordSetup = r => r?.setup || {};
 export const recordMap = r => r.setup?.map || r.mapId || 'riviera';
 export const recordEvent = r => r.setup?.event || r.eventId || 'unknown';
-export const recordCar = r => r.setup?.car || r.car;
+export const recordCar = r => canonicalCarId(r.setup?.car || r.car);
 export function matchesRecord(r, filters = {}) {
   const s = recordSetup(r);
   return (!filters.mapId || recordMap(r) === filters.mapId) &&
     (!filters.eventId || recordEvent(r) === filters.eventId) &&
     (!filters.route || routeId(r) === filters.route) &&
-    (!filters.car || recordCar(r) === filters.car) &&
+    (!filters.car || recordCar(r) === canonicalCarId(filters.car)) &&
     ['weather', 'tc', 'abs', 'steering', 'gearbox'].every(k => filters[k] === undefined || filters[k] === '' || String(s[k]) === String(filters[k])) &&
     (filters.traffic === undefined || (typeof filters.traffic === 'boolean' ? (s.traffic !== undefined ? s.traffic > 0 : r.traffic) === filters.traffic : s.traffic === filters.traffic));
 }
@@ -23,7 +24,7 @@ export function setupLabels(r) {
 }
 export function carLabel(r, cars = []) {
   const spec = cars.find(c => c.id === recordCar(r));
-  return [r.carName || r.setup?.carName || spec?.name || recordCar(r) || 'Unknown car', r.carGeneration || r.setup?.carGeneration, r.carTrim || r.setup?.carTrim].filter(Boolean).join(' · ');
+  return r.carName || r.setup?.carName || spec?.name || recordCar(r) || 'Unknown car';
 }
 export function routeLabel(r) {
   const s = recordSetup(r);

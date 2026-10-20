@@ -25,30 +25,13 @@ Ypsilon signatures per side, fixed carbon wing, diffuser and hexagonal high
 central exhausts. Cabin uses shared fittings and a live SVJ digital cluster;
 logos use the shared brand badge atlas. No downloaded model or audio samples.
 
-ExhaustPulse consumes durable powertrain event serials and high-rpm overrun.
-One shared pulse drives pooled crossed flame ribbons, tip sprites, sparks and procedural
-noise/triangle audio. Render updates allocate no geometry, arrays or vectors;
-the powertrain getter now reuses its snapshot. Potato and Low render no point
-light; Potato also omits sparks. Flames are children of the body at the exact
-exhaust tip coordinates, so mirror passes reuse the same scene geometry.
-Network state sends bounded pulse serial/kind/enabled fields; remote playback
-ignores duplicate serials and suppresses historical pulses on initial join.
-AI uses the same physical signals. Exhaust setting is saved per trim.
+Exhaust pops, flames, the shared flash light, the pop audio and the per-car toggle were
+removed by owner decision (2026-10-20, docs/OWNER-DECISIONS.md). The SVJ keeps its normal
+V12 engine sound.
 
 Evidence and gate logs: `.scratch/svj/`.
 
-The mirror renderer normally hides the owner's complete root to avoid cabin
-occlusion. SVJ therefore preallocates a mirror-only copy sharing the flame
-geometry/materials, with its matrix copied from the body for that render pass.
-No world/local attach/detach or geometry allocation occurs in mirror frames.
-The geometry bench verifies matching world positions with body pitch and roll.
-
 The limited-production SVJ is a player/rival car (civilian traffic weight 0),
-so ambient commuter pool probabilities remain unchanged. AI rivals use the
-same physical powertrain signals and exhaust effects as the player.
+so ambient commuter pool probabilities remain unchanged.
 
-Flames v2: three crossed quads per tip use a shared seeded noise texture,
-animated turbulent taper and blue-white-to-orange axial gradient. Loaded ISR
-cut: 80 ms, up to 0.8 m; engagement: small lick. Lift: uneven 60 ms licks;
-limiter: medium 75 ms jets. Small blue tip halos only; SVJ rear Y signatures
-use saturated red emissive geometry without the generic weather tail halos.
+SVJ rear Y signatures use saturated red emissive geometry without the generic weather tail halos.

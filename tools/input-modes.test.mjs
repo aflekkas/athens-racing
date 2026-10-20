@@ -26,7 +26,7 @@ test('no touch controls are mounted, even on a touchscreen laptop',()=>{
 test('the nitrous key hint follows the selected car, on every car',()=>{
  const{input,frame,hint}=setup();
  try{
-  const seat=cars.find(c=>c.id==='ibiza'),mini=cars.find(c=>c.id==='mini');
+  const seat=cars.find(c=>c.id==='ibiza_cupra'),mini=cars.find(c=>c.id==='mini_jcw');
   assert.equal(seat.nitrous,true);
   frame(seat);assert.equal(hint.hidden,false);frame(mini);assert.equal(hint.hidden,true);
   for(const car of cars){frame(car);assert.equal(hint.hidden,car.nitrous!==true,car.id);}

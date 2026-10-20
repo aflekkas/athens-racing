@@ -289,7 +289,7 @@ export function manufacturerBadge(brand, cls = '') {
   return `<svg class="manufacturer-badge ${cls}" viewBox="${cell % 4 * 128} ${Math.floor(cell / 4) * 128} 128 128" role="img" aria-label="${esc(MANUFACTURER_NAMES[brand] || 'Manufacturer')}" data-manufacturer="${esc(brand || '')}"><image href="${MANUFACTURER_ATLAS}" width="512" height="640"/></svg>`;
 }
 const selectLabel = option => option ? option[2]?.brand ? `${manufacturerBadge(option[2].brand)}<span>${option[1]}</span>` : iconLabel(option[1], option[2]?.icon) : '';
-/** a car tile for every car grid (garage, lobby car picks): thumbnail, name, class / trims line, HP + weight, drive badge */
+/** a car tile for every car grid (garage, lobby car picks): thumbnail, name, class line, HP + weight, drive badge */
 export function carCard({ id, brand, name = '', line = '', hp, kg, drive = '', locked = false, lockLabel = '', act = 'carDetail', selected, attrs, cls = '' } = {}) {
   return card({ cls: `card--car car-card ${locked ? 'off' : ''} ${cls}`, act, selected, attrs,
     media: `${manufacturerBadge(brand, 'car-card__brand')}<img data-car-thumb="${esc(id)}" alt="${esc(name)}" />`, badge: drive ? badge(esc(drive)) : '', title: name, text: line,
@@ -332,13 +332,6 @@ const segOpts = (options, value, dflt) => options.map(([v, l, ic]) => `<span cla
 /** options: [[value, label, icon?]]; dflt marks the event / factory default with a dot */
 export function segmented({ key, label, value, options, icon: ic, note, noteCls, dflt, type, attrs, cls } = {}) {
   return field(label, `<div class="seg" role="radiogroup">${IND}${segOpts(options, value, dflt)}</div>`, { icon: ic, note, noteCls, cls, kind: 'choice', key, type, attrs: { 'data-value': value, ...attrs } });
-}
-/** The trims of ONE car (same body, different engine and specification), as segmented chips that name each trim and what it
- *  changes: power and 0-100 time. The lit chip slides between trims like every segmented control, so changing trim is a
- *  visible, labelled action that cannot be mistaken for choosing another car. options: [{ id, label, hp, acc }] */
-export function trimPicker({ key, label = 'TRIM', value, options, attrs } = {}) {
-  const chips = options.map(o => [o.id, `<span class="trim-chip"><b class="trim-chip__name">${esc(o.label)}</b><span class="trim-chip__meta"><span>${esc(o.hp)} HP</span><span>${esc(o.acc)}</span></span></span>`]);
-  return segmented({ key, label: `${esc(label)}<small class="trim-picker__count">${options.length} OF THIS CAR</small>`, icon: 'sliders-horizontal', value, options: chips, cls: 'trim-picker field--stack', attrs });
 }
 /** numeric (min / max / step / format) or a list (options: [[value, label]]) */
 export function stepper({ key, label, value, min, max, step = 1, format = 'int', options, icon: ic, note, noteCls, type, attrs } = {}) {

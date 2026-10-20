@@ -8,6 +8,12 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- One car per model: the garage keeps each car's top trim, with no trim or body choice. Saved cars, paints and times move to it.
+- Honda Jazz: the drift spec is gone. The Jazz is the Dynamic road car.
+- Simpler cars: no spoilers, wings, diffusers, splitters, side vents, stripes or two-tone roofs. One clean body in its paint.
+- Handbrake: the lever in the cabin swings up while you hold it. Cars with an electric parking brake light their button.
+- Aventador SVJ: the exhaust pops, flames and the EXHAUST POPS switch are gone. The V12 sounds the same otherwise.
+
 - Free Roam: pick where to start. Choose a place such as Vouliagmeni or Varkiza, or click any road, then drive. No more tracks to pick.
   ![The Free Roam map with Vouliagmeni chosen, the Riviera roads lit and your car beside the DRIVE button](assets/changelog/2026.10.16.1/free-roam-spawn.webp "Pick a place or click any road, then drive.")
 

@@ -1,7 +1,6 @@
 import { renderLeaderboards, renderBestRecord, renderTrackTimes, leaderboardChange } from './leaderboards-screen.js';
 import { seatPosition, setSeatPosition, resetSeatPosition } from './seat-position.js';
 import { importWithUpdate } from './client-release.js';
-import {setExhaustPops} from './exhaust-pops.js';
 import { install as installAccounts } from './ui/account-loader.js';
 // MENUS: title, mode select, map select, race setup, car select, settings, pause and results.
 // Plain DOM in #ui (index.html), built from the UI kit (src/ui/components.js + ui.css) and styled by src/menu.css.
@@ -286,7 +285,6 @@ export class Menu {
   onChange({ key, value, el }) {
     const scope = el.dataset.scope;
     if (scope === 'leaderboard' || key === 'leaderboardTab') { leaderboardChange(this, key, value); return; }
-    if(scope==='exhaust'){setExhaustPops(CARS[this.data.index||0],value);return;}
     if (MP.isMpScreen(this.screen) && MP.change(this, { key, value, el })) return;
     if (scope === 'catalog') { this.data.filters = { ...this.data.filters, [key]: value }; this.refresh(); return; }
     if (el.dataset.kind === 'tabs') {

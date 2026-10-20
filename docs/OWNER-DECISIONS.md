@@ -227,3 +227,4 @@ Owner decisions:
 - **More punishing damage.** "we should arguably make the damage more punishing, rn it's not punishing". Crashes cost real time and performance, with the same rules for every driver in multiplayer and on the leaderboards.
 - **No Honda Jazz drift spec.** "remove the honda jazz drift spec". The Jazz keeps its top road trim, never the drift-spec variant.
 - **Handbrake shown in the cabin.** "in cars, when the handbrake is pulled make sure it is pulled". The cabin's handbrake lever (or the button/indicator on cars that have an electric one) visibly moves to the pulled position while the handbrake is held, and returns when it is released.
+- **Guard:** `tools/owner-locked-car-library.test.mjs` pins these decisions (the SVJ pop code and its toggle are gone from the sources and the wire). Ask the owner before changing it.

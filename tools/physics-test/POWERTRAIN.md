@@ -22,7 +22,7 @@ Power, peak torque, factory ratios, mass, 0–100 and top speed remain the trims
 - Braking coefficient multiplies peak torque by `0.2 + 1.1 * (rpm/redline)^1.5`, with throttle lift blending and drivetrain direction. It is disconnected when the clutch is open. Limiter cut also exposes friction so a held gear can decelerate and refire. This produces negative sound load on overrun without injecting body/yaw forces.
 - CLE 48 V transient assistance remains metadata; continuous ICE outputs are unchanged. CLE 300 e preserves the charged blended catalogue curve with zero boost lag. It is **not** a battery/SOC, motor torque split, electric-only, regeneration or battery-depletion model. Engine sound RPM still represents its running ICE approximation, not an EV motor.
 
-The concurrent GK Jazz 1.3/1.5 Dynamic additions use the same NA4/manual rules (0.19 kg m², 4500 RPM/s, 360 ms). Their factory output/ratio references are in [the trim notes](../car-trims-notes.md). The third Jazz is explicitly a **fantasy** turbo RWD Drift Spec: its 0.16 kg m² lightweight rotating assembly, 5800 RPM/s response, 300 ms manual and 3000–5500 RPM plateau are build assumptions, not Honda production specifications. All three retain their literal trim data.
+The concurrent GK Jazz 1.3/1.5 Dynamic additions use the same NA4/manual rules (0.19 kg m², 4500 RPM/s, 360 ms). Their factory output/ratio references are in [the trim notes](../car-trims-notes.md). The fantasy turbo RWD Drift Spec was removed on 2026-10-20 (docs/OWNER-DECISIONS.md). Both road Jazzes retain their literal trim data.
 
 ## Gearboxes and driver policy
 
@@ -137,7 +137,6 @@ Units: RPM; inertia kg m²; free rise RPM/s; spool/shift seconds. `brake` is the
 | cle300e | turbo4 | 750 | 6500 | 6600 | 0.4 | 4200 | 0 | 0.16 | automatic | 360 | blended |
 | jazz | na4 | 750 | 6800 | 6900 | 0.19 | 4500 | 0 | 0.15 | manual | 360 | NA |
 | jazz_dynamic | na4 | 750 | 6800 | 6900 | 0.19 | 4500 | 0 | 0.15 | manual | 360 | NA |
-| jazz_drift | turbo4 | 850 | 7000 | 7100 | 0.16 | 5800 | 0.3 | 0.15 | manual | 300 | 3000–5500 |
 
 ## SVJ single-clutch AMT
 

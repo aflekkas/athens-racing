@@ -9,6 +9,7 @@
 // the PI gap so the entered cars end up close in pace, and syncs the table so
 // every client shows the same "+40 KG BALLAST" effect line.
 import { classifyCar, carPerformanceIndex, PI_CLASSES } from './car-performance.js';
+import { canonicalCarId } from './car-ids.js';
 
 export const RULESET_PRESETS = ['open', 'same-class', 'max-pi', 'category', 'spec', 'balanced'];
 export const MAX_BALLAST_KG = 150;
@@ -56,8 +57,9 @@ export function sanitizeCarRules(input, ctx = {}) {
     rules.category = input.category;
   }
   if (preset === 'spec') {
-    if (typeof input.spec !== 'string' || (known.size && !known.has(input.spec))) return { error: 'Pick a single trim for the spec race.' };
-    rules.spec = input.spec;
+    const spec = canonicalCarId(input.spec, known);
+    if (typeof spec !== 'string' || (known.size && !known.has(spec))) return { error: 'Pick a single car for the spec race.' };
+    rules.spec = spec;
   }
   if (input.balanced === true) {
     if (['open', 'spec'].includes(preset)) return { error: 'Balancing needs a class, PI cap or category field to equalize.' };
@@ -67,7 +69,7 @@ export function sanitizeCarRules(input, ctx = {}) {
   }
   if (input.allowedCars !== undefined && input.allowedCars !== null) {
     if (!Array.isArray(input.allowedCars)) return { error: 'Allow at least one car.' };
-    const list = [...new Set(input.allowedCars.filter((id) => !known.size || known.has(id)))].slice(0, 64);
+    const list = [...new Set(input.allowedCars.map(id => canonicalCarId(id, known)).filter((id) => !known.size || known.has(id)))].slice(0, 64);
     if (!list.length) return { error: 'Allow at least one car.' };
     rules.allowedCars = list;
   }

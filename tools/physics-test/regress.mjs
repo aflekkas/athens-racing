@@ -340,13 +340,6 @@ for (const id of ['cle200','carrera','golf_gti','taxi','e36_m3','huracan','avent
   }
 }
 
-// The fantasy Jazz must hold a real slide with throttle and steering inputs alone.
-{
- const {jazzSlide}=await import('./jazz-slide.mjs');
- const r=jazzSlide(Vehicle,catalogue().find(c=>c.id==='jazz_drift'),route);
- check('Jazz Drift Spec: sustained 17–34 degree slide for at least five seconds',r.best>=5&&r.minSpeed>20&&r.peakBeta<1.4&&finite(r.v),`${f2(r.best)} s, minimum ${f1(r.minSpeed)} km/h, peak ${f1(r.peakBeta*180/Math.PI)} degrees`);
-}
-
 // Playtest 3: neutral steering stability, progressive power breakaway and driver recovery.
 {
   const { stabilityScenarios } = await import('./stability.mjs');

@@ -13,7 +13,7 @@ import * as C from './components.js';
 import { notifications } from './notifications.js';
 import { TIMES, WEATHERS, TRAFFIC_LEVELS, POLICE_LEVELS } from '../race-setup.js';
 import { configFromLobby, describeMode } from '../mp-setup.js';
-import { carCategory, classLabel, inGarage, GARAGE_CLASSES, sortTrims, carModel, trimName } from '../car-catalog.js';
+import { carCategory, classLabel, inGarage, GARAGE_CLASSES, sortCars, carModel } from '../car-catalog.js';
 import { classifyCar, PI_CLASSES } from '../car-performance.js';
 import { defaultCarRules, describeRules, carEligibility } from '../mp-car-rules.js';
 import { driverName } from '../driver-name.js';
@@ -71,7 +71,7 @@ export function setPending(key, value, now = Date.now()) { pending.set(key, { va
 
 const statusText = (mp) => mp?.$?.('mp-status')?.textContent || '';
 const carOf = (mp, id) => mp?.cars?.find((c) => c.id === id);
-// A trim's short name is just the trim ("1.1"): the lobby names the whole car so changing trim is legible.
+// A garage car is named whole in the lobby: the model name, then class, power and drive.
 const carTitle = (c, fallback = '') => c?.name || c?.short || fallback;
 const mapName = (mp, id) => mp?.maps?.find((m) => m.id === (id || 'riviera'))?.name || 'ATHENS RIVIERA';
 // The connection as one quiet status: a dot and a word while all is well; the server's own message when something is happening.
@@ -86,13 +86,12 @@ export function showroomCar(mp) { return mp?.lobby ? mp.me?.car : mp?.$?.('mp-ca
 // so in-place refreshes never touch the canvas; afterRender() mounts, keeps or swaps the studio.
 function carPlate(mp, car, extra = '') {
   const spec = car ? `${esc(classLabel(carCategory(car)))} · ${Math.round(car.power * 1.341)} HP · ${esc(String(car.drive || '').toUpperCase())}` : '';
-  // Changing car or engine trim is its own obvious action, with the garage it opens named, and the reason when it is locked.
+  // Changing car is its own obvious action, with the garage it opens named, and the reason when it is locked.
   const locked = !!mp && !mp.canChangeCar;
-  const model = car && carModel(car), trims = model && model.trims.length > 1;
-  // the car (model) is the name; its trim is a labelled chip of its own, so a trim can never read as another car
-  return `<span class="kick">YOUR CAR</span><b class="mp-plate__name">${esc((model?.name || car?.name) || '—')}</b>${trims ? C.chip(`TRIM · ${esc(trimName(car, model))}`, { icon: 'sliders-horizontal', cls: 'mp-plate__trim' }) : ''}<span class="mp-plate__spec">${spec}</span>
-    <div class="mp-plate__car">${C.button({ label: 'CHANGE CAR / TRIM', icon: 'car', variant: 'secondary', act: 'mpCar', disabled: locked, attrs: { 'data-fid': 'car' } })}</div>
-    <p class="mp-plate__hint">${locked ? 'Your car is locked while the race runs. Change it back in the lobby.' : 'Opens the garage: pick another car or engine trim.'}</p>
+  const model = car && carModel(car);
+  return `<span class="kick">YOUR CAR</span><b class="mp-plate__name">${esc((model?.name || car?.name) || '—')}</b><span class="mp-plate__spec">${spec}</span>
+    <div class="mp-plate__car">${C.button({ label: 'CHANGE CAR', icon: 'car', variant: 'secondary', act: 'mpCar', disabled: locked, attrs: { 'data-fid': 'car' } })}</div>
+    <p class="mp-plate__hint">${locked ? 'Your car is locked while the race runs. Change it back in the lobby.' : 'Opens the garage: pick another car.'}</p>
     <div class="mp-plate__acts">${extra}</div>`;
 }
 
@@ -261,12 +260,12 @@ export function helpText(mp, l, host) {
 // ---------------------------------------------------------------- car rules (host)
 // Speed-range rulesets replace picking cars one by one: the host chooses a
 // preset (open / same class / max PI / category / spec / balanced) and the
-// server resolves which trims may race. The per-car list survives below as an
+// server resolves which cars may race. The per-car list survives below as an
 // Advanced override that can only narrow the field further.
 const RULESET_OPTIONS = [['open', 'OPEN', 'globe'], ['same-class', 'SAME CLASS', 'flag'], ['max-pi', 'MAX PI', 'gauge'], ['category', 'CATEGORY', 'car'], ['spec', 'SPEC', 'circle-dot'], ['balanced', 'BALANCED', 'sliders-horizontal']];
-/** pace facts for every garage trim, used by the rules screen and its reasons */
+/** pace facts for every garage car, used by the rules screen and its reasons */
 export function ruleViews(mp) {
-  return sortTrims((mp?.cars || []).filter(inGarage)).map((car) => {
+  return sortCars((mp?.cars || []).filter(inGarage)).map((car) => {
     const { pi, class: cls } = classifyCar(car);
     return { car, id: car.id, name: car.short || car.name || car.id, pi, class: cls, category: carCategory(car) };
   });
@@ -296,7 +295,7 @@ export function renderCars(menu, mp) {
   if (['same-class', 'balanced'].includes(rules.preset)) params = C.segmented({ key: 'class', label: 'CLASS', icon: 'flag', value: rules.class || 'B', options: PI_CLASSES.map((c) => [c, `${c} · ${counts[c] || 0}`]), attrs: R });
   else if (rules.preset === 'max-pi') params = C.stepper({ key: 'maxPI', label: 'MAX PERFORMANCE INDEX', icon: 'gauge', value: rules.maxPI || 550, min: 150, max: 900, step: 10, format: 'int', attrs: R });
   else if (rules.preset === 'category') params = C.select({ key: 'category', label: 'CATEGORY', icon: 'car', value: rules.category || 'hot hatch', options: GARAGE_CLASSES.map(([id, label]) => [id, label]), attrs: R });
-  else if (rules.preset === 'spec') params = C.select({ key: 'spec', label: 'SPEC CAR · EVERYONE THE SAME TRIM', icon: 'circle-dot', value: rules.spec || views[0]?.id, options: views.map((v) => [v.id, `${v.name} · PI ${v.pi} · ${v.class}`]), attrs: R });
+  else if (rules.preset === 'spec') params = C.select({ key: 'spec', label: 'SPEC CAR · EVERYONE THE SAME CAR', icon: 'circle-dot', value: rules.spec || views[0]?.id, options: views.map((v) => [v.id, `${v.name} · PI ${v.pi} · ${v.class}`]), attrs: R });
   const balanceRow = ['same-class', 'max-pi', 'category'].includes(rules.preset)
     ? C.toggle({ key: 'balanced', label: 'EQUALIZE PACE (BALLAST)', icon: 'sliders-horizontal', value: rules.balanced === true, note: 'The slowest car sets the pace · faster cars carry ballast or a power cap', attrs: R }) : '';
   const rows = views.map((v) => {
@@ -416,7 +415,7 @@ export function act(menu, el) {
       if (!mp.canChangeCar) return true;
       const cars = mp.cars || [], index = Math.max(0, cars.findIndex((c) => c.id === showroomCar(mp)));
       mp.setCarPickerOpen(true);
-      // The garage greys out ineligible trims with the ruleset reason; the
+      // The garage greys out ineligible cars with the ruleset reason; the
       // merged rule (ruleset + effective allow-list) keeps the reason precise.
       menu.show('car', { garage: true, index, allowedCars: mp.allowedCars, rules: { ...(mp.carRules || defaultCarRules()), allowedCars: mp.allowedCars }, onPick(id) { if (mp.changeCar(id) === false) return false; mp.setCarPickerOpen(false); return true; }, onCancel() { mp.setCarPickerOpen(false); } }, true);
       return true;
@@ -442,7 +441,7 @@ export function change(menu, { key, value, el }) {
     menu.refresh(); return true;
   }
   if (scope === 'mpAllow') {
-    const garage = sortTrims((mp.cars || []).filter(inGarage)).map((c) => c.id), all = new Set(mp.allowedCars), allowed = new Set(garage.filter((id) => all.has(id)));
+    const garage = sortCars((mp.cars || []).filter(inGarage)).map((c) => c.id), all = new Set(mp.allowedCars), allowed = new Set(garage.filter((id) => all.has(id)));
     if (value) allowed.add(key); else allowed.delete(key);
     if (!mp.setAllowedCars([...allowed])) C.ui.toast('KEEP AT LEAST ONE CAR', { icon: 'triangle-alert', tone: 'bad' });
     menu.refresh(); return true;

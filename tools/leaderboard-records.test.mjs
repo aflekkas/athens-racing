@@ -4,7 +4,7 @@ import { setupLabels, carLabel, matchesRecord, routeId, formatRecordTime, record
 test('old records explicitly disclose unknown settings; missing values never match assist/weather filters', () => {
  const old={car:'mini',traffic:true,time:90};assert.match(setupLabels(old).join(' '),/density unknown/);assert.match(setupLabels(old).join(' '),/TC unknown/);
  assert(!matchesRecord(old,{tc:'true'}));assert(!matchesRecord(old,{weather:'clear'}));assert(matchesRecord(old,{mapId:'riviera'}));
- assert.equal(carLabel({...old,carGeneration:'F57',carTrim:'Cooper S'},[{id:'mini',name:'MINI'}]),'MINI · F57 · Cooper S');assert.equal(recordDate(old),'Date unknown');assert.equal(formatRecordTime(65.25),'1:05.25');assert.equal(formatRecordTime(59.999),'1:00.00');
+ const jcw=[{id:'mini_jcw',name:'MINI JCW'}];assert.equal(carLabel({...old,car:'mini_jcw',carGeneration:'F57',carTrim:'Cooper S'},jcw),'MINI JCW','a car label never carries generation or trim text');assert.equal(carLabel(old,jcw),'MINI JCW','a record still naming a removed trim shows the kept car');assert(matchesRecord(old,{car:'mini_jcw'})&&matchesRecord({...old,car:'mini_jcw'},{car:'mini_cooper'}),'the car filter treats a removed trim as its kept car');assert.equal(recordDate(old),'Date unknown');assert.equal(formatRecordTime(65.25),'1:05.25');assert.equal(formatRecordTime(59.999),'1:00.00');
 });
 test('route filtering keeps lap counts and directions distinct', () => {
  const r={eventId:'quick',setup:{from:0,to:6000,laps:3,direction:1}};

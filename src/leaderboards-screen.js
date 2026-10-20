@@ -2,6 +2,7 @@ import * as C from './ui/components.js';
 import { MAPS } from './map-catalog.js';
 import { getEvents } from './events.js';
 import { CARS } from './cars.js';
+import { inGarage } from './car-catalog.js';
 import { listPersonalBests } from './personal-bests.js';
 import { getLeaderboard } from './leaderboard.js';
 import { matchesRecord, recordEvent, carLabel, routeId, routeLabel, setupLabels, recordDate, formatRecordTime } from './leaderboard-records.js';
@@ -55,7 +56,7 @@ export function renderLeaderboards(menu, d) {
   const filters = pick('mapId', 'TRACK', MAPS.map(m => [m.id, esc(m.name)])) +
     pick('eventId', 'EVENT', [ALL, ...[...events].map(([id, label]) => [id, esc(label)])]) +
     (routes.length ? pick('route', 'ROUTE', [ALL, ...routes.map(([id, label]) => [id, esc(label)])]) : '') +
-    pick('car', 'CAR', [ALL, ...CARS.map(c => [c.id, esc(c.name)])]) +
+    pick('car', 'CAR', [ALL, ...CARS.filter(inGarage).map(c => [c.id, esc(c.name)])]) +
     C.button({ label: d.advanced ? 'FEWER FILTERS' : 'WEATHER & ASSISTS', icon: 'sliders-horizontal', act: 'leaderboardAdvanced', block: true, size: 'sm' }) +
     (d.advanced ? pick('weather', 'WEATHER', [ALL, ...['clear', 'overcast', 'rain', 'dynamic'].map(v => [v, v.toUpperCase()])]) +
       pick('tc', 'TC', [ALL, ['true', 'ON'], ['false', 'OFF']]) + pick('abs', 'ABS', [ALL, ['true', 'ON'], ['false', 'OFF']]) +

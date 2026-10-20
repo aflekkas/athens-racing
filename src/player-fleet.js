@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import {buildPassengerModel,PASSENGER_MODELS} from './traffic-passenger-models.js';
 import {buildCommercialModel,COMMERCIAL_MODELS} from './traffic-commercial-models.js';
 import {damageSystem} from './vehicle-models.js';
+import {stripAddOnPanels} from './vehicle-styling.js';
 export const NATIVE_FLEET_MODELS={...PASSENGER_MODELS,...COMMERCIAL_MODELS};
 export function buildPlayerFleet(car){
  const spec=car.spec,id=spec.nativeFleet,d=NATIVE_FLEET_MODELS[id];
@@ -16,6 +17,7 @@ export function buildPlayerFleet(car){
  const w=spec.cameraRig.wheel||[car.seat.x,car.seat.y-.4,car.seat.z-.43];
  car.dash={w:d.W-.25,y:w[1],z:w[2],x:w[0],wheelY:w[1],wheelZ:w[2],wheelR:.19};
  car.exhaust=spec.electric?[]:[new THREE.Vector3(-d.W*.28,.25,d.L/2-.1)];
+ stripAddOnPanels(car.body); // one clean body here too (src/vehicle-styling.js); the traffic copies of these bodies keep theirs
  car.root.userData.playerDetail=true;
  for(const wheel of car.wheels){wheel.restY=wheel.pivot.position.y;wheel.angle=0;}
  installFleetLOD(car);

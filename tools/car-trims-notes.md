@@ -1,3 +1,5 @@
+> 2026-10-20: the product has no trims any more (docs/OWNER-DECISIONS.md, "One car per model"). Players drive the kept top trim of each model; the other specs stay in `CARS` for traffic and physics regression data. This file keeps the factory-data sources of those specs.
+
 # Trim catalogue conventions
 
 Garage `CAR_MODELS` groups a generation family; each `trims` member names an executable `CARS` physics spec and multiplayer wire ID. Retaining existing IDs is intentional. `migrateCarSelection` upgrades string IDs to `{entry,trim}` without losing an old engine selection. The compatibility `paraliaki.car` string remains authoritative; the garage also writes `paraliaki.car.selection`.

@@ -15,7 +15,7 @@ function archClearance(model,wheel,dz){
  return hit?hit.point.y-(centre.y+Math.sqrt(Math.max(0,wheel.r*wheel.r-dz*dz))):NaN;
 }
 test('every player car rests level on its wheels with the wheels centred in their arches',()=>{
- assert.ok(CARS.length>=78,'expected every player configuration');
+ assert.ok(CARS.length>=77,'expected every player configuration');
  for(const spec of CARS){
   const model=new CarModel(spec);model.update(.016,0,0,false,{heave:0,pitch:0,roll:0},null);model.root.updateMatrixWorld(true);
   const id=spec.id;

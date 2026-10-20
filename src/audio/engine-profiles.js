@@ -58,12 +58,12 @@ export function engineProfile(spec) {
     // MINI Cooper S and the B48 Z4s keep the MINI recording; AMG/GTI/RS trims get the Focus RS; the Cupra and Jazz drift car the Abarth.
     if (/^(mini|z4)/.test(id)) key = 'turbo4';
     else if (/gla45|cla35|cla45|golf_r|golf_gti|octavia_rs/.test(id)) key = 'hot4';
-    else if (/ibiza_cupra|jazz_drift/.test(id)) key = 'small4';
+    else if (/ibiza_cupra/.test(id)) key = 'small4';
     else key = 'comfort4';
   }
   let selected = ENGINE_PROFILES[key] || ENGINE_PROFILES.turbo4;
   // Sport exhaust calibrations belong to trim IDs, not every turbo commuter.
-  if ((selected === ENGINE_PROFILES.turbo4 || selected === ENGINE_PROFILES.small4) && /jazz_drift|jcw|gti|cupra|_rs|golf_r|gla45|cla35|cla45/.test(spec.id || '')) {
+  if ((selected === ENGINE_PROFILES.turbo4 || selected === ENGINE_PROFILES.small4) && /jcw|gti|cupra|_rs|golf_r|gla45|cla35|cla45/.test(spec.id || '')) {
     selected = Object.freeze({ ...selected, id: selected.id + '-sport', pops: .65 });
   }
   cache.set(spec, selected); return selected;
