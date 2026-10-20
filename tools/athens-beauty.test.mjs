@@ -109,7 +109,7 @@ test('World detail gates every addition and the layer is wired once in the Athen
   const world = src('src/athens-world.js');
   assert.match(world, /new AthensHorizon\(scene,scene\.fog,\{enabled:settings\.worldDetail!==false\}\)/);
   assert.match(world, /new AthensLandmarks\(detailRoot,scene\.fog,\{enabled:settings\.worldDetail!==false,groundAt:/);
-  assert.match(world, /horizon\.setEnabled\(s\.worldDetail!==false\);landmarks\.setEnabled\(s\.worldDetail!==false\);plazas\.setEnabled\(s\.worldDetail!==false\);lawns\.setEnabled\(s\.worldDetail!==false\);trees\.setEnabled\(s\.worldDetail!==false\);syncBoxes\(\)/);
+  assert.match(world, /horizon\.setEnabled\(s\.worldDetail!==false\);landmarks\.setEnabled\(s\.worldDetail!==false\);plazas\.setEnabled\(s\.worldDetail!==false\);lawns\.setEnabled\(s\.worldDetail!==false\);(signs\.setEnabled\(s\.worldDetail!==false\);)?(marks\.setEnabled\(s\.worldDetail!==false\);)?trees\.setEnabled\(s\.worldDetail!==false\);syncBoxes\(\)/);
   assert.match(world, /new AthensTrees\(detailRoot,\{enabled:settings\.worldDetail!==false\}\)/);
   assert.match(world, /new AthensPlazas\(detailRoot,\{enabled:settings\.worldDetail!==false,/);
   assert.match(world, /c\.userData\.landmarkBox\)c\.visible=!hidden/);

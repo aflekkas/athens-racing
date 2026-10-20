@@ -19,3 +19,9 @@ export function inOldQuarter(x, z) {
   for (const q of OLD_QUARTERS) if (x >= q.x0 && x <= q.x1 && z >= q.z0 && z <= q.z1) return true;
   return false;
 }
+/** The quarters known for their street art: Exarchia and Neapoli, Psyrri and Thiseio, Metaxourgeio and Kerameikos. */
+const ART = new Set(['exarchia-neapoli', 'thiseio-psyrri', 'metaxourgeio-kerameikos']);
+export function inArtQuarter(x, z) {
+  for (const q of OLD_QUARTERS) if (ART.has(q.name) && x >= q.x0 && x <= q.x1 && z >= q.z0 && z <= q.z1) return true;
+  return false;
+}
