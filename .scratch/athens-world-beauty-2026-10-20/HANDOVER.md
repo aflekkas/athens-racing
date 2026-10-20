@@ -31,3 +31,6 @@ Everything is derived in the tile worker from the cells already published (road 
 
 ### Step 6b (road marks): nothing to rebake
 Rows come from the road graph and the asphalt of each cell. A fuller OSM extract with `emergency=fire_hydrant` nodes would let `deriveStreetArt` paint a red and white kerb block beside each hydrant (not implemented: none in the cache's extract).
+
+### Step 6c (murals): nothing to rebake
+Mural sites come from the long road-facing walls of each cell's buildings; 24 designs are drawn in the browser. If a later bake stores a per-building facade or wall type, blank party walls could replace the long-wall guess.
