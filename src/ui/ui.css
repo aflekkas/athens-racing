@@ -1009,7 +1009,8 @@ body[data-ui] #mp-toggle { display: none !important; }
     radial-gradient(130% 100% at 42% 55%, rgba(3,5,8,0) 52%, rgba(3,5,8,.5)); }
 #ui .layout--map-stage-floating .map-preview { grid-column: 2; position: relative; z-index: 2; pointer-events: auto; touch-action: pan-y; display: flex; flex-direction: column; width: clamp(19rem, 26vw, 23rem); max-height: 100%; padding: 0; overflow: hidden; border-radius: var(--r-4, 12px); }
 #ui .layout--map-stage-floating .map-track-nav { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: .5rem; padding: .75rem 1rem; border-bottom: 1px solid var(--c-line, #ffffff12); }
-#ui .layout--map-stage-floating .map-track-nav > div { display: flex; justify-content: center; align-items: center; gap: .8rem; font: 500 12px var(--f-sans, sans-serif); letter-spacing: .16em; }
+#ui .layout--map-stage-floating .map-track-nav > div { display: flex; justify-content: center; align-items: center; gap: .8rem; min-width: 0; font: 500 12px var(--f-sans, sans-serif); letter-spacing: .16em; }
+#ui .layout--map-stage-floating .map-track-count { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #ui .layout--map-stage-floating .map-track-count { color: var(--hu-text, var(--c-text, #e4effa)); font-size: 16px; font-variant-numeric: tabular-nums; }
 #ui .layout--map-stage-floating .map-track-count span { color: var(--hu-text-3, var(--c-text-3, #7e93a5)); font-weight: 400; font-size: 12px; }
 #ui .layout--map-stage-floating .map-preview-content { display: flex; flex-direction: column; min-height: 0; overflow-y: auto; touch-action: pan-y; }

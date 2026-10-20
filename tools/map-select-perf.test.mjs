@@ -160,13 +160,16 @@ test('src/map-select.js draws on demand: no polling, no drawing from gesture han
   assert.doesNotMatch(js + render, /setInterval|setTimeout\(/, `no timers: the map is driven by animation frames only while it has work. ${owner}`);
   assert.doesNotMatch(js + render, /shadowBlur|ctx\.filter\s*=/, `no per-frame blur or filter on the canvas. ${owner}`);
   assert.doesNotMatch(js, /ctx\.(clip|drawImage)\(/, `the base layer (images, clip, roads) is painted by map-select-render.js only. ${owner}`);
-  // The frame loop re-arms only while the camera, the route trace or background painting has work.
-  assert.match(js, /if \(motion \|\| reveal \|\| base\?\.busy\) frame = requestAnimationFrame\(run\);/, owner);
+  // The frame loop re-arms only while the camera, the route trace, a released drag's glide or background painting has work.
+  assert.match(js, /if \(motion \|\| reveal \|\| glide\.active \|\| base\?\.busy\) frame = requestAnimationFrame\(run\);/, owner);
   assert.equal([...js.matchAll(/requestAnimationFrame\(run\)/g)].length, 2, 'only run() and start() schedule the frame loop');
   // Pointer gestures only mark the frame dirty; the painting happens once per animation frame, however fast the mouse reports.
   const gesture = js.slice(js.indexOf("map.addEventListener('pointermove'"), js.indexOf('  const up ='));
   assert.doesNotMatch(gesture, /\bsync\(|\bdraw\(|\.paint\(/, `pointermove must not paint. ${owner}`);
   assert.match(gesture, /want\(\)/, owner);
+  // A trackpad scroll pans by marking the frame dirty too (src/map-wheel.js, owner 2026-10-20).
+  const wheel = js.slice(js.indexOf("map.addEventListener('wheel'"), js.indexOf("map.addEventListener('pointerdown'"));
+  assert.doesNotMatch(wheel, /\bsync\(|\bdraw\(|\.paint\(/, `the wheel handler must not paint. ${owner}`); assert.match(wheel, /want\(\)/, owner);
   // Hidden tab, another screen or a closed menu: cancel the frame and do nothing until visible again.
   assert.match(js, /document\.addEventListener\('visibilitychange'/, owner);
   assert.match(js, /new IntersectionObserver\(/, owner);
