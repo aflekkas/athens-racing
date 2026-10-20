@@ -198,3 +198,20 @@ The owner refined the 2026-10-19 spawn picker. The owner's words: "clicking into
 - Placement still uses the tow placement (on a road, lane-centred, at road level).
 
 Guard: `tools/owner-locked-free-roam-spawn.test.mjs`, updated by the change. Ask the owner before changing it.
+
+## 2026-10-20 — The open world must feel like Athens: detail and beauty within the performance budgets
+
+Owner decision: the Athens open world should look and feel like the real city. Detail and beauty are added without giving up performance. Owner: "is there any way we can add detail and beauty without sacrificing performance, the map and stuff is still kind of bland, that's something we need to make sure we do, what's the point of an open world if it feels nothing like the real world".
+
+**How it is built:**
+- Every addition is procedural or generated from data, not hand-made per place (landmarks are the only exception, see below).
+- Repeated elements are instanced.
+- Textures stay atlas-based and small.
+- Far detail drops out by distance.
+- World detail Off removes the additions.
+
+**What it must stay within:**
+- the measured budgets: per-cell size, stream resident memory, the draw-call budget tests and the locked Lighting Off + Effects Off look;
+- tone mapping and colour grading only, with no shadow maps or post effects.
+
+**Landmarks:** a small set of recognisable landmarks (Acropolis/Parthenon, Lycabettus, Parliament/Syntagma, Panathenaic Stadium, Zappeion, Temple of Olympian Zeus, Hymettus and Parnitha on the horizon) may be modelled once, low-poly, and placed at their OSM positions.
