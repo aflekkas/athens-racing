@@ -24,7 +24,7 @@ export const DRESSING_VARIANTS = Object.freeze([
 /** Bytes the run-time facade attribute adds to a tile (CPU array and its GPU copy). A manifest baked before it existed
  * did not budget them; the stream's 20% headroom covers the ~1% involved. */
 export function dressingBytes(pack) {
-  let bytes = 0;
+  let bytes = pack.derivedExtraBytes || 0;
   for (const m of pack.metadata.meshes) if (m.attributes.aFacade) bytes += 2 * pack.arrays[m.attributes.aFacade.array].byteLength;
   return bytes;
 }

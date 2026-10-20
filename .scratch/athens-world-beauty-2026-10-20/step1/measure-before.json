@@ -1,0 +1,93 @@
+{
+ "syntagma-on": {
+  "calls": 134,
+  "triangles": 94201,
+  "textures": 16,
+  "geometries": 182,
+  "medianRenderCallMs": 13.4,
+  "gpuBytes": 38047422,
+  "tileGPU": 4170586,
+  "tileJS": 6631968,
+  "props": {
+   "instances": 103,
+   "signals": 14,
+   "drawCalls": 8,
+   "rebuilds": 5
+  },
+  "landmarks": null,
+  "horizon": null
+ },
+ "syntagma-off": {
+  "calls": 125,
+  "triangles": 88563,
+  "textures": 15,
+  "geometries": 182,
+  "medianRenderCallMs": 11.7,
+  "gpuBytes": 37960041,
+  "tileGPU": 4170586,
+  "tileJS": 6631968,
+  "props": {
+   "instances": 103,
+   "signals": 14,
+   "drawCalls": 8,
+   "rebuilds": 5
+  },
+  "landmarks": null,
+  "horizon": null
+ },
+ "kypseli-on": {
+  "calls": 128,
+  "triangles": 88841,
+  "textures": 16,
+  "geometries": 204,
+  "medianRenderCallMs": 6,
+  "gpuBytes": 39884956,
+  "tileGPU": 6008120,
+  "tileJS": 9529218,
+  "props": {
+   "instances": 52,
+   "signals": 30,
+   "drawCalls": 5,
+   "rebuilds": 6
+  },
+  "landmarks": null,
+  "horizon": null
+ },
+ "kypseli-off": {
+  "calls": 122,
+  "triangles": 83951,
+  "textures": 15,
+  "geometries": 204,
+  "medianRenderCallMs": 7.9,
+  "gpuBytes": 39797575,
+  "tileGPU": 6008120,
+  "tileJS": 9529218,
+  "props": {
+   "instances": 52,
+   "signals": 30,
+   "drawCalls": 5,
+   "rebuilds": 6
+  },
+  "landmarks": null,
+  "horizon": null
+ },
+ "peristeri-on": {
+  "calls": 116,
+  "triangles": 79602,
+  "textures": 16,
+  "geometries": 216,
+  "medianRenderCallMs": 5.9,
+  "gpuBytes": 43545678,
+  "tileGPU": 9667642,
+  "tileJS": 15189952,
+  "props": {
+   "instances": 20,
+   "signals": 11,
+   "drawCalls": 4,
+   "rebuilds": 7
+  },
+  "landmarks": null,
+  "horizon": null
+ },
+ "failure": "page.evaluate: Target page, context or browser has been closed\n    at /tmp/athens-beauty.9Q4E/.scratch/athens-world-beauty-2026-10-20/scripts/measure.mjs:14:57"
+}

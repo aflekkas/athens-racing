@@ -54,7 +54,7 @@ export function prepareTilePacket(pack,{entry,world,revision,cell}){
   for(const bytes of gpuViews.values())gpuBytes+=bytes;
   const gpuPlan=tileGPUPlan(pack),renderVariants=tileRenderVariants(pack),obstacleIndex=buildTileObstacleIndex(checked.tables);
   const bytes=obstacleBytes(obstacleIndex)+residentArrayBytes(pack.arrays)+contactIndex.offsets.byteLength+contactIndex.refs.byteLength+gpuBytes+new TextEncoder().encode(JSON.stringify({metadata:pack.metadata,gpuPlan,renderVariants})).byteLength;
-  if(bytes-dressingBytes(pack)>(entry.residentBytes??entry.decodedBytes))throw new Error('Tile resident budget understated');
+  if(bytes-dressingBytes(pack)>(entry.residentBytes??entry.decodedBytes))throw new Error('Tile resident budget understated: '+(bytes-dressingBytes(pack))+' > '+(entry.residentBytes??entry.decodedBytes));
   if(checked.triangles!==entry.triangles)throw new Error('Tile triangles mismatch');
   return {...pack,contactIndex,obstacleIndex,bytes,jsBytes:bytes-gpuBytes,gpuBytes,gpuPlan,renderVariants};
 }
