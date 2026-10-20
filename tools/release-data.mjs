@@ -41,7 +41,11 @@ const SKIP_DIRS = new Set(['node_modules', '.git', '.deploy', '.scratch', '.wran
 /** the credits / licence files that feed the in-game Credits screen; any new one is found by name */
 const CREDIT_NAME = /^(?:credits.*|(?:attribution|licen[cs]e|notice)(?:\.(?:md|txt))?)$/i;
 export const isCreditFile = (rel) => CREDIT_NAME.test(basename(rel)) || /^assets\/.*\/MODELS\.(md|txt)$/.test(rel);
-const BOTS = /^(T3 Code|Claude\b|github-actions|dependabot|.*\[bot\])/i;
+// Agent identities that author commits but are not human contributors: their work is
+// covered by the AI note in CREDITS.md, never by a ## Team entry.
+const AGENT_NAMES = ['Codex', 'muse', 'T3 Code', 'Claude'];
+const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const BOTS = new RegExp(`^(${AGENT_NAMES.map(esc).join('|')}|github-actions|dependabot|.*\\[bot\\])`, 'i');
 
 async function walk(root, dir = root, out = []) {
   for (const e of await readdir(dir, { withFileTypes: true })) {
