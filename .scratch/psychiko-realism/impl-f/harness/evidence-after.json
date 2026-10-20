@@ -1,0 +1,1367 @@
+{
+  "rows": [
+    {
+      "id": "faros-across",
+      "label": "faros-across",
+      "lat": 38.00475438730675,
+      "lon": 23.77600284829711,
+      "heading": 305,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/faros-across-305.webp",
+      "x": 88.07195316027347,
+      "y": 184.13930140848097,
+      "z": 471.24865933106855,
+      "ground": 181.63930140848097,
+      "info": {
+        "frame": 1,
+        "calls": 168,
+        "triangles": 1567213,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 18,
+        "builds": 18,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "faros-across-extra",
+      "label": "faros-across-extra",
+      "lat": 38.00475438730675,
+      "lon": 23.77600284829711,
+      "heading": 125,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/faros-across-125.webp",
+      "x": 88.07195316027347,
+      "y": 184.13930140848097,
+      "z": 471.24865933106855,
+      "ground": 181.63930140848097,
+      "info": {
+        "frame": 2,
+        "calls": 40,
+        "triangles": 675951,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 18,
+        "builds": 18,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-0000",
+      "label": "lap-0000",
+      "lat": 38.0051751311253,
+      "lon": 23.775597392347134,
+      "heading": 212,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-0000-212.webp",
+      "x": 52.46407753465535,
+      "y": 181.68297469310866,
+      "z": 424.54751753134565,
+      "ground": 179.34747671424543,
+      "info": {
+        "frame": 3,
+        "calls": 74,
+        "triangles": 919926,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 19,
+        "builds": 19,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-0000-extra",
+      "label": "lap-0000-extra",
+      "lat": 38.0051751311253,
+      "lon": 23.775597392347134,
+      "heading": 32,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-0000-032.webp",
+      "x": 52.46407753465535,
+      "y": 181.68297469310866,
+      "z": 424.54751753134565,
+      "ground": 179.34747671424543,
+      "info": {
+        "frame": 4,
+        "calls": 150,
+        "triangles": 1686173,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 19,
+        "builds": 19,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-0018",
+      "label": "lap-0018",
+      "lat": 38.00500803589673,
+      "lon": 23.7754400579227,
+      "heading": 86,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-0018-086.webp",
+      "x": 38.64668351898741,
+      "y": 182.22999572753906,
+      "z": 443.0945231423424,
+      "ground": 179.75299987792968,
+      "info": {
+        "frame": 5,
+        "calls": 74,
+        "triangles": 1169209,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 20,
+        "builds": 20,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-0018-extra",
+      "label": "lap-0018-extra",
+      "lat": 38.00500803589673,
+      "lon": 23.7754400579227,
+      "heading": 86,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-0018-086.webp",
+      "x": 38.64668351898741,
+      "y": 182.22999572753906,
+      "z": 443.0945231423424,
+      "ground": 179.75299987792968,
+      "info": {
+        "frame": 6,
+        "calls": 74,
+        "triangles": 1169209,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 20,
+        "builds": 20,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-0028-extra",
+      "label": "lap-0028-extra",
+      "lat": 38.00509099373588,
+      "lon": 23.77539566291497,
+      "heading": 161,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-0028-161.webp",
+      "x": 34.74783356067802,
+      "y": 182.22263430557777,
+      "z": 433.88648338370666,
+      "ground": 179.6621320045998,
+      "info": {
+        "frame": 7,
+        "calls": 46,
+        "triangles": 835853,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 20,
+        "builds": 20,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-0045-extra",
+      "label": "lap-0045-extra",
+      "lat": 38.00528079722824,
+      "lon": 23.77530968729624,
+      "heading": 162,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-0045-162.webp",
+      "x": 27.197299060486564,
+      "y": 183.63012503053287,
+      "z": 412.81893724278046,
+      "ground": 181.04779890110808,
+      "info": {
+        "frame": 8,
+        "calls": 55,
+        "triangles": 845937,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 22,
+        "builds": 22,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-0090",
+      "label": "lap-0090",
+      "lat": 38.005626565102084,
+      "lon": 23.775159343413662,
+      "heading": 342,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-0090-342.webp",
+      "x": 13.993827087309201,
+      "y": 185.020978052238,
+      "z": 374.4398718964655,
+      "ground": 182.44272183894086,
+      "info": {
+        "frame": 9,
+        "calls": 187,
+        "triangles": 1686446,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 20,
+        "builds": 22,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-0360",
+      "label": "lap-0360",
+      "lat": 38.00788362789824,
+      "lon": 23.774694874962332,
+      "heading": 327,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-0360-327.webp",
+      "x": -26.796633252274347,
+      "y": 188.0406129140553,
+      "z": 123.91353010276288,
+      "ground": 185.5406129140553,
+      "info": {
+        "frame": 10,
+        "calls": 161,
+        "triangles": 1560593,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 19,
+        "builds": 27,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-0390",
+      "label": "lap-0390",
+      "lat": 38.008044601095264,
+      "lon": 23.774323644896878,
+      "heading": 287,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-0390-287.webp",
+      "x": -59.39872973138111,
+      "y": 188.96505991803855,
+      "z": 106.04604930137161,
+      "ground": 186.48705454896123,
+      "info": {
+        "frame": 11,
+        "calls": 97,
+        "triangles": 1152232,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 20,
+        "builds": 29,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-0675",
+      "label": "lap-0675",
+      "lat": 38.01038640192999,
+      "lon": 23.773271779553685,
+      "heading": 343,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-0675-343.webp",
+      "x": -151.77544862632092,
+      "y": 191.1156850979546,
+      "z": -153.88592837042003,
+      "ground": 188.77681473120788,
+      "info": {
+        "frame": 12,
+        "calls": 142,
+        "triangles": 1081212,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 18,
+        "builds": 35,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-0990",
+      "label": "lap-0990",
+      "lat": 38.013065754134345,
+      "lon": 23.772563362578286,
+      "heading": 3,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-0990-003.webp",
+      "x": -213.98991003088526,
+      "y": 194.88348537223,
+      "z": -451.28496719081204,
+      "ground": 192.38348537223,
+      "info": {
+        "frame": 13,
+        "calls": 128,
+        "triangles": 1110936,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 17,
+        "builds": 41,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-1035",
+      "label": "lap-1035",
+      "lat": 38.01347320735572,
+      "lon": 23.77223988543218,
+      "heading": 293,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-1035-293.webp",
+      "x": -242.39825867355557,
+      "y": 196.1076809781332,
+      "z": -496.51089762472384,
+      "ground": 193.6076809781332,
+      "info": {
+        "frame": 14,
+        "calls": 89,
+        "triangles": 940805,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 18,
+        "builds": 42,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-1350",
+      "label": "lap-1350",
+      "lat": 38.01603624777539,
+      "lon": 23.771045841763954,
+      "heading": 343,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-1350-343.webp",
+      "x": -347.2613354941656,
+      "y": 209.70613446529623,
+      "z": -780.9997214635803,
+      "ground": 207.12928980282825,
+      "info": {
+        "frame": 15,
+        "calls": 91,
+        "triangles": 746247,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 20,
+        "builds": 53,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-1552",
+      "label": "lap-1552",
+      "lat": 38.01775142170508,
+      "lon": 23.770403697172487,
+      "heading": 30,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-1552-030.webp",
+      "x": -403.65563615224187,
+      "y": 226.13863060884825,
+      "z": -971.378230593731,
+      "ground": 223.42982379430828,
+      "info": {
+        "frame": 16,
+        "calls": 97,
+        "triangles": 982072,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 22,
+        "builds": 56,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-1710",
+      "label": "lap-1710",
+      "lat": 38.018156580879605,
+      "lon": 23.77193610906979,
+      "heading": 354,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-1710-354.webp",
+      "x": -269.07644882121593,
+      "y": 220.05276395731948,
+      "z": -1016.3495295807462,
+      "ground": 217.46521867484464,
+      "info": {
+        "frame": 17,
+        "calls": 83,
+        "triangles": 704320,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 21,
+        "builds": 57,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-1800",
+      "label": "lap-1800",
+      "lat": 38.018961834515714,
+      "lon": 23.771743820175505,
+      "heading": 334,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-1800-334.webp",
+      "x": -285.96360766628106,
+      "y": 226.3994817425139,
+      "z": -1105.7299615360487,
+      "ground": 223.82343339580137,
+      "info": {
+        "frame": 18,
+        "calls": 72,
+        "triangles": 649514,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 19,
+        "builds": 59,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-1980",
+      "label": "lap-1980",
+      "lat": 38.02023029865498,
+      "lon": 23.7710055318481,
+      "heading": 34,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-1980-034.webp",
+      "x": -350.8014252875513,
+      "y": 218.16374458257795,
+      "z": -1246.5251937502774,
+      "ground": 215.66374458257795,
+      "info": {
+        "frame": 19,
+        "calls": 78,
+        "triangles": 919927,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 20,
+        "builds": 62,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-2138",
+      "label": "lap-2138",
+      "lat": 38.0209260889644,
+      "lon": 23.772571896634446,
+      "heading": 64,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-2138-064.webp",
+      "x": -213.24043376753474,
+      "y": 203.97732816448988,
+      "z": -1323.7555664151234,
+      "ground": 201.50285239599773,
+      "info": {
+        "frame": 20,
+        "calls": 87,
+        "triangles": 889941,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 19,
+        "builds": 67,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-2340",
+      "label": "lap-2340",
+      "lat": 38.0215661105168,
+      "lon": 23.77378091677999,
+      "heading": 64,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-2340-064.webp",
+      "x": -107.06209559327465,
+      "y": 197.96955840693246,
+      "z": -1394.795795541671,
+      "ground": 195.39188542917606,
+      "info": {
+        "frame": 21,
+        "calls": 85,
+        "triangles": 741527,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 18,
+        "builds": 68,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-2565",
+      "label": "lap-2565",
+      "lat": 38.02243426371605,
+      "lon": 23.776048423487236,
+      "heading": 72,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-2565-072.webp",
+      "x": 92.0744488732462,
+      "y": 183.3986430185617,
+      "z": -1491.1578664131737,
+      "ground": 180.81933132126147,
+      "info": {
+        "frame": 22,
+        "calls": 62,
+        "triangles": 653593,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 18,
+        "builds": 73,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-2745",
+      "label": "lap-2745",
+      "lat": 38.02156586672817,
+      "lon": 23.777607691790713,
+      "heading": 135,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-2745-135.webp",
+      "x": 229.01221441925097,
+      "y": 183.30262308430224,
+      "z": -1394.7687358273015,
+      "ground": 180.72518332591747,
+      "info": {
+        "frame": 23,
+        "calls": 110,
+        "triangles": 1162901,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 18,
+        "builds": 75,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-2970",
+      "label": "lap-2970",
+      "lat": 38.0202325170796,
+      "lon": 23.779638410482985,
+      "heading": 144,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-2970-144.webp",
+      "x": 407.35360669405753,
+      "y": 179.9308629846561,
+      "z": -1246.771431385012,
+      "ground": 177.45307271853838,
+      "info": {
+        "frame": 24,
+        "calls": 102,
+        "triangles": 1224880,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 21,
+        "builds": 83,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-3150",
+      "label": "lap-3150",
+      "lat": 38.01938085740171,
+      "lon": 23.781320320384026,
+      "heading": 182,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-3150-182.webp",
+      "x": 555.0619793869596,
+      "y": 189.58629285233755,
+      "z": -1152.2400856382376,
+      "ground": 187.08629285233755,
+      "info": {
+        "frame": 25,
+        "calls": 163,
+        "triangles": 1439850,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 19,
+        "builds": 87,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-3240",
+      "label": "lap-3240",
+      "lat": 38.01929278145589,
+      "lon": 23.78031104799309,
+      "heading": 261,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-3240-261.webp",
+      "x": 466.4258506760689,
+      "y": 192.50759947433068,
+      "z": -1142.4639533376662,
+      "ground": 189.9325447635838,
+      "info": {
+        "frame": 26,
+        "calls": 160,
+        "triangles": 1366336,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 18,
+        "builds": 90,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-3465",
+      "label": "lap-3465",
+      "lat": 38.01869568436333,
+      "lon": 23.777901205938345,
+      "heading": 231,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-3465-231.webp",
+      "x": 254.78915828660416,
+      "y": 201.1316272633839,
+      "z": -1076.1881941743397,
+      "ground": 198.6316272633839,
+      "info": {
+        "frame": 27,
+        "calls": 206,
+        "triangles": 1470404,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 19,
+        "builds": 94,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-3645",
+      "label": "lap-3645",
+      "lat": 38.01733000601295,
+      "lon": 23.77758018334219,
+      "heading": 143,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-3645-143.webp",
+      "x": 226.59637266462687,
+      "y": 205.55824495304697,
+      "z": -924.6025130975853,
+      "ground": 203.08004803574755,
+      "info": {
+        "frame": 28,
+        "calls": 120,
+        "triangles": 1473655,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 21,
+        "builds": 100,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-3780",
+      "label": "lap-3780",
+      "lat": 38.016390124916256,
+      "lon": 23.778489232393532,
+      "heading": 142,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-3780-142.webp",
+      "x": 306.4307062329428,
+      "y": 201.50023333132327,
+      "z": -820.2788880410045,
+      "ground": 198.92264957339725,
+      "info": {
+        "frame": 29,
+        "calls": 103,
+        "triangles": 1052798,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 20,
+        "builds": 103,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-4005",
+      "label": "lap-4005",
+      "lat": 38.01447749107344,
+      "lon": 23.778424682972496,
+      "heading": 188,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-4005-188.webp",
+      "x": 300.76185920748566,
+      "y": 189.44323099570212,
+      "z": -607.9829959429245,
+      "ground": 186.866648460493,
+      "info": {
+        "frame": 30,
+        "calls": 167,
+        "triangles": 1457089,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 21,
+        "builds": 109,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-4060",
+      "label": "lap-4060",
+      "lat": 38.01393383931669,
+      "lon": 23.778506391099047,
+      "heading": 183,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-4060-183.webp",
+      "x": 307.937614817911,
+      "y": 187.75220585632934,
+      "z": -547.6394884160442,
+      "ground": 185.2713588164106,
+      "info": {
+        "frame": 31,
+        "calls": 148,
+        "triangles": 1362882,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 22,
+        "builds": 110,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-4140",
+      "label": "lap-4140",
+      "lat": 38.01403429772396,
+      "lon": 23.777729255511215,
+      "heading": 297,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-4140-297.webp",
+      "x": 239.68816045098822,
+      "y": 189.57415141611244,
+      "z": -558.79003208635,
+      "ground": 186.99769731812373,
+      "info": {
+        "frame": 32,
+        "calls": 141,
+        "triangles": 1220525,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 21,
+        "builds": 112,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-4455",
+      "label": "lap-4455",
+      "lat": 38.01355817264813,
+      "lon": 23.775557355143793,
+      "heading": 120,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-4455-120.webp",
+      "x": 48.94793784784469,
+      "y": 194.5668285370576,
+      "z": -505.9417579104433,
+      "ground": 191.98728518767862,
+      "info": {
+        "frame": 33,
+        "calls": 110,
+        "triangles": 1164247,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 20,
+        "builds": 117,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-4635",
+      "label": "lap-4635",
+      "lat": 38.01272786517834,
+      "lon": 23.77731617479229,
+      "heading": 120,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-4635-120.webp",
+      "x": 203.41066381134405,
+      "y": 188.76747638154748,
+      "z": -413.78043509520666,
+      "ground": 186.29018475697745,
+      "info": {
+        "frame": 34,
+        "calls": 97,
+        "triangles": 1138454,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 19,
+        "builds": 119,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-4905",
+      "label": "lap-4905",
+      "lat": 38.010888683501776,
+      "lon": 23.778499400515383,
+      "heading": 185,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-4905-185.webp",
+      "x": 307.3236891037368,
+      "y": 181.61155210946671,
+      "z": -209.63748519186132,
+      "ground": 179.12712909737962,
+      "info": {
+        "frame": 35,
+        "calls": 122,
+        "triangles": 1242199,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 20,
+        "builds": 128,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-5040",
+      "label": "lap-5040",
+      "lat": 38.01018109714909,
+      "lon": 23.779717485608444,
+      "heading": 126,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-5040-126.webp",
+      "x": 414.2981273814166,
+      "y": 179.05027684965683,
+      "z": -131.09779159420617,
+      "ground": 176.4734179237226,
+      "info": {
+        "frame": 36,
+        "calls": 50,
+        "triangles": 672821,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 19,
+        "builds": 129,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-5085",
+      "label": "lap-5085",
+      "lat": 38.00987656680008,
+      "lon": 23.77990232707197,
+      "heading": 216,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-5085-216.webp",
+      "x": 430.5312393731004,
+      "y": 177.86011306259957,
+      "z": -97.29595212688085,
+      "ground": 175.28413479934167,
+      "info": {
+        "frame": 37,
+        "calls": 135,
+        "triangles": 1475062,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 19,
+        "builds": 130,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-5310",
+      "label": "lap-5310",
+      "lat": 38.00822209359663,
+      "lon": 23.778366397834404,
+      "heading": 217,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-5310-217.webp",
+      "x": 295.643152852045,
+      "y": 180.32961731894943,
+      "z": 86.34498155149474,
+      "ground": 177.75255400028394,
+      "info": {
+        "frame": 38,
+        "calls": 122,
+        "triangles": 1356825,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 22,
+        "builds": 137,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-5580",
+      "label": "lap-5580",
+      "lat": 38.00634226219195,
+      "lon": 23.776545937256355,
+      "heading": 213,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-5580-213.webp",
+      "x": 135.76700885127195,
+      "y": 183.55041113712127,
+      "z": 294.99991388461495,
+      "ground": 180.96972943977664,
+      "info": {
+        "frame": 39,
+        "calls": 89,
+        "triangles": 926907,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 21,
+        "builds": 145,
+        "parked": 394,
+        "roofs": 1158
+      }
+    },
+    {
+      "id": "lap-5715-extra",
+      "label": "lap-5715-extra",
+      "lat": 38.00531567722093,
+      "lon": 23.77570225167469,
+      "heading": 212,
+      "fovH": 90,
+      "w": 1024,
+      "h": 512,
+      "reference": "../references/views/lap-5715-212.webp",
+      "x": 61.67301353385902,
+      "y": 181.04472767384271,
+      "z": 408.9473759440741,
+      "ground": 178.5677216809169,
+      "info": {
+        "frame": 40,
+        "calls": 80,
+        "triangles": 920598,
+        "points": 3000,
+        "lines": 0
+      },
+      "streetscape": {
+        "cells": 22,
+        "builds": 147,
+        "parked": 394,
+        "roofs": 1158
+      }
+    }
+  ],
+  "frames": [],
+  "errors": [],
+  "facadeRegression": {
+    "samples": [
+      {
+        "style": 4,
+        "delta": 0,
+        "differences": 0,
+        "pixel": [
+          20,
+          220,
+          40,
+          255
+        ]
+      },
+      {
+        "style": 4,
+        "delta": -0.000002,
+        "differences": 0,
+        "pixel": [
+          20,
+          220,
+          40,
+          255
+        ]
+      },
+      {
+        "style": 4,
+        "delta": 0.000002,
+        "differences": 0,
+        "pixel": [
+          20,
+          220,
+          40,
+          255
+        ]
+      },
+      {
+        "style": 5,
+        "delta": 0,
+        "differences": 0,
+        "pixel": [
+          43,
+          201,
+          57,
+          255
+        ]
+      },
+      {
+        "style": 5,
+        "delta": -0.000002,
+        "differences": 0,
+        "pixel": [
+          43,
+          201,
+          57,
+          255
+        ]
+      },
+      {
+        "style": 5,
+        "delta": 0.000002,
+        "differences": 0,
+        "pixel": [
+          43,
+          201,
+          57,
+          255
+        ]
+      }
+    ],
+    "shells": [
+      {
+        "name": "building-blocks:-2,1",
+        "facadeAtlas": true,
+        "stoneAttribute": false,
+        "stoneBinding": false
+      },
+      {
+        "name": "building-blocks:0,-4",
+        "facadeAtlas": true,
+        "stoneAttribute": false,
+        "stoneBinding": false
+      },
+      {
+        "name": "building-blocks:0,-1",
+        "facadeAtlas": true,
+        "stoneAttribute": false,
+        "stoneBinding": false
+      },
+      {
+        "name": "building-blocks:0,-3",
+        "facadeAtlas": true,
+        "stoneAttribute": false,
+        "stoneBinding": false
+      },
+      {
+        "name": "building-blocks:1,-3",
+        "facadeAtlas": true,
+        "stoneAttribute": false,
+        "stoneBinding": false
+      },
+      {
+        "name": "building-blocks:1,-2",
+        "facadeAtlas": true,
+        "stoneAttribute": false,
+        "stoneBinding": false
+      },
+      {
+        "name": "building-blocks:1,-1",
+        "facadeAtlas": true,
+        "stoneAttribute": false,
+        "stoneBinding": false
+      },
+      {
+        "name": "building-blocks:0,-2",
+        "facadeAtlas": true,
+        "stoneAttribute": false,
+        "stoneBinding": false
+      },
+      {
+        "name": "building-blocks:-1,-1",
+        "facadeAtlas": true,
+        "stoneAttribute": false,
+        "stoneBinding": false
+      },
+      {
+        "name": "building-blocks:-1,0",
+        "facadeAtlas": true,
+        "stoneAttribute": false,
+        "stoneBinding": false
+      },
+      {
+        "name": "building-blocks:-2,2",
+        "facadeAtlas": true,
+        "stoneAttribute": false,
+        "stoneBinding": false
+      },
+      {
+        "name": "building-blocks:-1,1",
+        "facadeAtlas": true,
+        "stoneAttribute": false,
+        "stoneBinding": false
+      },
+      {
+        "name": "building-blocks:1,-4",
+        "facadeAtlas": true,
+        "stoneAttribute": false,
+        "stoneBinding": false
+      },
+      {
+        "name": "building-blocks:-1,-3",
+        "facadeAtlas": true,
+        "stoneAttribute": false,
+        "stoneBinding": false
+      },
+      {
+        "name": "building-blocks:-1,-4",
+        "facadeAtlas": true,
+        "stoneAttribute": false,
+        "stoneBinding": false
+      },
+      {
+        "name": "building-blocks:-2,-4",
+        "facadeAtlas": true,
+        "stoneAttribute": false,
+        "stoneBinding": false
+      },
+      {
+        "name": "building-blocks:-2,-3",
+        "facadeAtlas": true,
+        "stoneAttribute": false,
+        "stoneBinding": false
+      },
+      {
+        "name": "building-blocks:-2,-2",
+        "facadeAtlas": true,
+        "stoneAttribute": false,
+        "stoneBinding": false
+      },
+      {
+        "name": "building-blocks:-1,2",
+        "facadeAtlas": true,
+        "stoneAttribute": false,
+        "stoneBinding": false
+      },
+      {
+        "name": "building-blocks:-1,-2",
+        "facadeAtlas": true,
+        "stoneAttribute": false,
+        "stoneBinding": false
+      },
+      {
+        "name": "building-blocks:-2,-1",
+        "facadeAtlas": true,
+        "stoneAttribute": false,
+        "stoneBinding": false
+      },
+      {
+        "name": "building-blocks:-3,-2",
+        "facadeAtlas": true,
+        "stoneAttribute": false,
+        "stoneBinding": false
+      },
+      {
+        "name": "building-blocks:0,0",
+        "facadeAtlas": true,
+        "stoneAttribute": false,
+        "stoneBinding": false
+      },
+      {
+        "name": "building-blocks:-2,0",
+        "facadeAtlas": true,
+        "stoneAttribute": false,
+        "stoneBinding": false
+      },
+      {
+        "name": "building-blocks:-3,0",
+        "facadeAtlas": true,
+        "stoneAttribute": false,
+        "stoneBinding": false
+      },
+      {
+        "name": "building-blocks:-3,1",
+        "facadeAtlas": true,
+        "stoneAttribute": false,
+        "stoneBinding": false
+      },
+      {
+        "name": "building-blocks:0,1",
+        "facadeAtlas": true,
+        "stoneAttribute": false,
+        "stoneBinding": false
+      },
+      {
+        "name": "building-blocks:1,0",
+        "facadeAtlas": true,
+        "stoneAttribute": false,
+        "stoneBinding": false
+      }
+    ],
+    "pass": true
+  }
+}

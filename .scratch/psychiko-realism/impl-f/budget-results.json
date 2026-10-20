@@ -1,0 +1,162 @@
+{
+  "pass": true,
+  "runtimeHashesMatch": true,
+  "checks": [
+    {
+      "name": "Low \u00b7 matched",
+      "before": {
+        "calls": 69,
+        "triangles": 742178
+      },
+      "after": {
+        "calls": 68,
+        "triangles": 742703
+      },
+      "triangleLimit": 909000,
+      "callLimit": 75.9,
+      "pass": true
+    },
+    {
+      "name": "Low \u00b7 Faros",
+      "before": {
+        "calls": 166,
+        "triangles": 1430751
+      },
+      "after": {
+        "calls": 165,
+        "triangles": 1428179
+      },
+      "triangleLimit": 1600000,
+      "callLimit": 166,
+      "pass": true
+    },
+    {
+      "name": "High \u00b7 matched",
+      "before": {
+        "calls": 81,
+        "triangles": 846421
+      },
+      "after": {
+        "calls": 82,
+        "triangles": 869894
+      },
+      "triangleLimit": 935000,
+      "callLimit": 89.10000000000001,
+      "pass": true
+    },
+    {
+      "name": "High \u00b7 Faros",
+      "before": {
+        "calls": 192,
+        "triangles": 1644785
+      },
+      "after": {
+        "calls": 190,
+        "triangles": 1638149
+      },
+      "triangleLimit": 1700000,
+      "callLimit": 192,
+      "pass": true
+    },
+    {
+      "name": "Game \u00b7 day-chase",
+      "before": {
+        "calls": 79,
+        "triangles": 738647
+      },
+      "after": {
+        "calls": 79,
+        "triangles": 751322,
+        "camera": [
+          -108.78222951930925,
+          213.21437931076613,
+          -1127.650052330762
+        ],
+        "quaternion": [
+          0.0057965578862904585,
+          0.6589205353013747,
+          -0.005077915076930943,
+          0.7521730803832932
+        ]
+      },
+      "triangleLimit": 821000,
+      "callLimit": 86.9,
+      "pass": true
+    },
+    {
+      "name": "Game \u00b7 day-cockpit",
+      "before": {
+        "calls": 78,
+        "triangles": 734891
+      },
+      "after": {
+        "calls": 78,
+        "triangles": 747566,
+        "camera": [
+          -116.47143842243051,
+          211.53937931076612,
+          -1128.7597972776693
+        ],
+        "quaternion": [
+          -0.01735408448293786,
+          0.6362407242702797,
+          0.01431783251186613,
+          0.7711624836595407
+        ]
+      },
+      "triangleLimit": 821000,
+      "callLimit": 86.9,
+      "pass": true
+    },
+    {
+      "name": "Game \u00b7 night-chase",
+      "before": {
+        "calls": 81,
+        "triangles": 739607
+      },
+      "after": {
+        "calls": 81,
+        "triangles": 752282,
+        "camera": [
+          -108.78222951930925,
+          213.21437931076613,
+          -1127.650052330762
+        ],
+        "quaternion": [
+          0.0057965578862904585,
+          0.6589205353013747,
+          -0.005077915076930943,
+          0.7521730803832932
+        ]
+      },
+      "triangleLimit": 821000,
+      "callLimit": 86.9,
+      "pass": true
+    },
+    {
+      "name": "Game \u00b7 night-cockpit",
+      "before": {
+        "calls": 80,
+        "triangles": 735851
+      },
+      "after": {
+        "calls": 80,
+        "triangles": 748526,
+        "camera": [
+          -116.47143842243051,
+          211.53937931076612,
+          -1128.7597972776693
+        ],
+        "quaternion": [
+          -0.01735408448293786,
+          0.6362407242702797,
+          0.01431783251186613,
+          0.7711624836595407
+        ]
+      },
+      "triangleLimit": 821000,
+      "callLimit": 86.9,
+      "pass": true
+    }
+  ]
+}

@@ -1,0 +1,1143 @@
+{
+  "method": "Production buildMapWorld, fixed RENDER look, actual Low/High performance ranges/chunks; race roadworks; inactive traffic; no player/rivals/HUD/post. Three fixed poses; no FPS claim.",
+  "errors": [],
+  "rows": [
+    {
+      "tier": "low",
+      "viewport": [
+        960,
+        600
+      ],
+      "pixelRatio": 0.8,
+      "drawDistance": 1000,
+      "detail": 0.7,
+      "chunk": 3,
+      "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+      "resident": {
+        "triangles": 2863286,
+        "meshes": 5246,
+        "geometryBytes": 251286382
+      },
+      "poses": [
+        {
+          "name": "start",
+          "eye": [
+            38.727311901378854,
+            184.83990331982946,
+            442.12157220946665
+          ],
+          "target": [
+            23.934679182557435,
+            180.83990331982946,
+            397.51016091990914
+          ],
+          "render": {
+            "frame": 1,
+            "calls": 165,
+            "triangles": 1428179,
+            "points": 3000,
+            "lines": 0,
+            "costs": [
+              {
+                "name": "terrain",
+                "triangles": 121168
+              },
+              {
+                "name": "terrain",
+                "triangles": 120836
+              },
+              {
+                "name": "terrain",
+                "triangles": 120568
+              },
+              {
+                "name": "terrain",
+                "triangles": 120342
+              },
+              {
+                "name": "terrain",
+                "triangles": 110937
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 110740
+              },
+              {
+                "name": "terrain",
+                "triangles": 82364
+              },
+              {
+                "name": "terrain",
+                "triangles": 71180
+              },
+              {
+                "name": "terrain",
+                "triangles": 66727
+              },
+              {
+                "name": "terrain",
+                "triangles": 55775
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 36873
+              },
+              {
+                "name": "terrain",
+                "triangles": 28327
+              },
+              {
+                "name": "terrain",
+                "triangles": 24326
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 23406
+              },
+              {
+                "name": "terrain",
+                "triangles": 20929
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 16152
+              },
+              {
+                "name": "psychiko-surveyed-parking",
+                "triangles": 15760
+              },
+              {
+                "name": "map-world:psychiko",
+                "triangles": 10000
+              },
+              {
+                "name": "terrain",
+                "triangles": 9936
+              },
+              {
+                "name": "building-blocks:0,0",
+                "triangles": 7100
+              },
+              {
+                "name": "psychiko-tiled-roofs",
+                "triangles": 6948
+              },
+              {
+                "name": "building-blocks:-2,0",
+                "triangles": 6844
+              },
+              {
+                "name": "Mesh",
+                "triangles": 6000
+              },
+              {
+                "name": "Mesh",
+                "triangles": 6000
+              },
+              {
+                "name": "Mesh",
+                "triangles": 6000
+              }
+            ],
+            "geometries": 156,
+            "textures": 23,
+            "detail": {
+              "updates": 1,
+              "updateMs": 0.2999999998137355,
+              "boxes": 139,
+              "impostors": 0
+            },
+            "streetscape": {
+              "cells": 10,
+              "builds": 10,
+              "parked": 394,
+              "roofs": 1158
+            }
+          }
+        },
+        {
+          "name": "mid",
+          "eye": [
+            -105.1685579627324,
+            215.21437931076613,
+            -1125.2701620221162
+          ],
+          "target": [
+            -151.3125422635443,
+            211.21437931076613,
+            -1134.1994796246222
+          ],
+          "render": {
+            "frame": 2,
+            "calls": 68,
+            "triangles": 742703,
+            "points": 3000,
+            "lines": 0,
+            "costs": [
+              {
+                "name": "terrain",
+                "triangles": 121168
+              },
+              {
+                "name": "terrain",
+                "triangles": 120552
+              },
+              {
+                "name": "terrain",
+                "triangles": 82364
+              },
+              {
+                "name": "terrain",
+                "triangles": 66695
+              },
+              {
+                "name": "terrain",
+                "triangles": 55999
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 30016
+              },
+              {
+                "name": "terrain",
+                "triangles": 28327
+              },
+              {
+                "name": "terrain",
+                "triangles": 24326
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 21839
+              },
+              {
+                "name": "psychiko-surveyed-parking",
+                "triangles": 15760
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 12864
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 11929
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 11640
+              },
+              {
+                "name": "map-world:psychiko",
+                "triangles": 10000
+              },
+              {
+                "name": "psychiko-tiled-roofs",
+                "triangles": 6948
+              },
+              {
+                "name": "Mesh",
+                "triangles": 6000
+              },
+              {
+                "name": "Mesh",
+                "triangles": 6000
+              },
+              {
+                "name": "building-blocks:-1,-2",
+                "triangles": 5548
+              },
+              {
+                "name": "building-blocks:-2,-2",
+                "triangles": 5196
+              },
+              {
+                "name": "terrain",
+                "triangles": 4896
+              },
+              {
+                "name": "Mesh",
+                "triangles": 4812
+              },
+              {
+                "name": "Mesh",
+                "triangles": 4230
+              },
+              {
+                "name": "roundabout-guidance",
+                "triangles": 3879
+              },
+              {
+                "name": "building-blocks:-1,-3",
+                "triangles": 3776
+              },
+              {
+                "name": "building-blocks:0,-3",
+                "triangles": 3756
+              }
+            ],
+            "geometries": 167,
+            "textures": 23,
+            "detail": {
+              "updates": 2,
+              "updateMs": 0.7000000001862645,
+              "boxes": 111,
+              "impostors": 0
+            },
+            "streetscape": {
+              "cells": 12,
+              "builds": 22,
+              "parked": 394,
+              "roofs": 1158
+            }
+          }
+        },
+        {
+          "name": "overview",
+          "eye": [
+            1219.4800109863281,
+            1677.9499969482422,
+            -114.1400146484375
+          ],
+          "target": [
+            319.4800109863281,
+            177.9499969482422,
+            -1314.1400146484375
+          ],
+          "render": {
+            "frame": 3,
+            "calls": 135,
+            "triangles": 1200055,
+            "points": 3000,
+            "lines": 0,
+            "costs": [
+              {
+                "name": "terrain",
+                "triangles": 121168
+              },
+              {
+                "name": "terrain",
+                "triangles": 120836
+              },
+              {
+                "name": "terrain",
+                "triangles": 120536
+              },
+              {
+                "name": "terrain",
+                "triangles": 120278
+              },
+              {
+                "name": "terrain",
+                "triangles": 110921
+              },
+              {
+                "name": "terrain",
+                "triangles": 82348
+              },
+              {
+                "name": "terrain",
+                "triangles": 71180
+              },
+              {
+                "name": "terrain",
+                "triangles": 66599
+              },
+              {
+                "name": "terrain",
+                "triangles": 55775
+              },
+              {
+                "name": "terrain",
+                "triangles": 28327
+              },
+              {
+                "name": "terrain",
+                "triangles": 24326
+              },
+              {
+                "name": "terrain",
+                "triangles": 20929
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 16789
+              },
+              {
+                "name": "psychiko-surveyed-parking",
+                "triangles": 15760
+              },
+              {
+                "name": "map-world:psychiko",
+                "triangles": 10000
+              },
+              {
+                "name": "terrain",
+                "triangles": 9936
+              },
+              {
+                "name": "building-blocks:0,0",
+                "triangles": 7100
+              },
+              {
+                "name": "psychiko-tiled-roofs",
+                "triangles": 6948
+              },
+              {
+                "name": "building-blocks:-2,0",
+                "triangles": 6844
+              },
+              {
+                "name": "Mesh",
+                "triangles": 6000
+              },
+              {
+                "name": "Mesh",
+                "triangles": 6000
+              },
+              {
+                "name": "Mesh",
+                "triangles": 6000
+              },
+              {
+                "name": "Mesh",
+                "triangles": 6000
+              },
+              {
+                "name": "Mesh",
+                "triangles": 6000
+              },
+              {
+                "name": "terrain",
+                "triangles": 5733
+              }
+            ],
+            "geometries": 166,
+            "textures": 23,
+            "detail": {
+              "updates": 3,
+              "updateMs": 0.2999999998137355,
+              "boxes": 0,
+              "impostors": 0
+            },
+            "streetscape": {
+              "cells": 3,
+              "builds": 25,
+              "parked": 394,
+              "roofs": 1158
+            }
+          }
+        },
+        {
+          "name": "course-mid",
+          "eye": [
+            309.77839235773035,
+            182.9499969482422,
+            -1321.2024926827569
+          ],
+          "target": [
+            347.77639865307157,
+            178.9499969482422,
+            -1293.5411203816725
+          ],
+          "render": {
+            "frame": 4,
+            "calls": 64,
+            "triangles": 751460,
+            "points": 3000,
+            "lines": 0,
+            "costs": [
+              {
+                "name": "terrain",
+                "triangles": 120536
+              },
+              {
+                "name": "terrain",
+                "triangles": 120278
+              },
+              {
+                "name": "terrain",
+                "triangles": 82444
+              },
+              {
+                "name": "terrain",
+                "triangles": 71196
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 29739
+              },
+              {
+                "name": "terrain",
+                "triangles": 28327
+              },
+              {
+                "name": "terrain",
+                "triangles": 24326
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 23361
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 23197
+              },
+              {
+                "name": "psychiko-surveyed-parking",
+                "triangles": 15760
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 14126
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 11989
+              },
+              {
+                "name": "map-world:psychiko",
+                "triangles": 10000
+              },
+              {
+                "name": "terrain",
+                "triangles": 9936
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 7863
+              },
+              {
+                "name": "psychiko-tiled-roofs",
+                "triangles": 6948
+              },
+              {
+                "name": "Mesh",
+                "triangles": 6000
+              },
+              {
+                "name": "Mesh",
+                "triangles": 6000
+              },
+              {
+                "name": "terrain",
+                "triangles": 5733
+              },
+              {
+                "name": "Mesh",
+                "triangles": 5346
+              },
+              {
+                "name": "Mesh",
+                "triangles": 4392
+              },
+              {
+                "name": "Mesh",
+                "triangles": 4230
+              },
+              {
+                "name": "building-blocks:0,-1",
+                "triangles": 4116
+              },
+              {
+                "name": "terrain",
+                "triangles": 3905
+              },
+              {
+                "name": "roundabout-guidance",
+                "triangles": 3879
+              }
+            ],
+            "geometries": 183,
+            "textures": 23,
+            "detail": {
+              "updates": 4,
+              "updateMs": 0.2999999998137355,
+              "boxes": 159,
+              "impostors": 0
+            },
+            "streetscape": {
+              "cells": 8,
+              "builds": 33,
+              "parked": 394,
+              "roofs": 1158
+            }
+          }
+        }
+      ]
+    },
+    {
+      "tier": "high",
+      "viewport": [
+        960,
+        600
+      ],
+      "pixelRatio": 1,
+      "drawDistance": 2000,
+      "detail": 1,
+      "chunk": 1.5,
+      "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+      "resident": {
+        "triangles": 2863286,
+        "meshes": 5256,
+        "geometryBytes": 251286382
+      },
+      "poses": [
+        {
+          "name": "start",
+          "eye": [
+            38.727311901378854,
+            184.83990331982946,
+            442.12157220946665
+          ],
+          "target": [
+            23.934679182557435,
+            180.83990331982946,
+            397.51016091990914
+          ],
+          "render": {
+            "frame": 1,
+            "calls": 190,
+            "triangles": 1638149,
+            "points": 3000,
+            "lines": 0,
+            "costs": [
+              {
+                "name": "terrain",
+                "triangles": 121184
+              },
+              {
+                "name": "terrain",
+                "triangles": 120852
+              },
+              {
+                "name": "terrain",
+                "triangles": 120568
+              },
+              {
+                "name": "terrain",
+                "triangles": 120342
+              },
+              {
+                "name": "terrain",
+                "triangles": 110953
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 110740
+              },
+              {
+                "name": "terrain",
+                "triangles": 82460
+              },
+              {
+                "name": "terrain",
+                "triangles": 71180
+              },
+              {
+                "name": "terrain",
+                "triangles": 66727
+              },
+              {
+                "name": "terrain",
+                "triangles": 55999
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 52560
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 36873
+              },
+              {
+                "name": "terrain",
+                "triangles": 28327
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 26504
+              },
+              {
+                "name": "terrain",
+                "triangles": 24326
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 23406
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 20951
+              },
+              {
+                "name": "terrain",
+                "triangles": 20929
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 19141
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 16152
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 16033
+              },
+              {
+                "name": "psychiko-surveyed-parking",
+                "triangles": 15760
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 14997
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 11566
+              },
+              {
+                "name": "map-world:psychiko",
+                "triangles": 10000
+              }
+            ],
+            "geometries": 172,
+            "textures": 23,
+            "detail": {
+              "updates": 1,
+              "updateMs": 0.39999999944120646,
+              "boxes": 139,
+              "impostors": 0
+            },
+            "streetscape": {
+              "cells": 20,
+              "builds": 20,
+              "parked": 394,
+              "roofs": 1158
+            }
+          }
+        },
+        {
+          "name": "mid",
+          "eye": [
+            -105.1685579627324,
+            215.21437931076613,
+            -1125.2701620221162
+          ],
+          "target": [
+            -151.3125422635443,
+            211.21437931076613,
+            -1134.1994796246222
+          ],
+          "render": {
+            "frame": 2,
+            "calls": 82,
+            "triangles": 869894,
+            "points": 3000,
+            "lines": 0,
+            "costs": [
+              {
+                "name": "terrain",
+                "triangles": 121184
+              },
+              {
+                "name": "terrain",
+                "triangles": 120568
+              },
+              {
+                "name": "terrain",
+                "triangles": 82460
+              },
+              {
+                "name": "terrain",
+                "triangles": 66775
+              },
+              {
+                "name": "terrain",
+                "triangles": 55999
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 45709
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 30016
+              },
+              {
+                "name": "terrain",
+                "triangles": 28327
+              },
+              {
+                "name": "terrain",
+                "triangles": 24326
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 22877
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 21839
+              },
+              {
+                "name": "psychiko-surveyed-parking",
+                "triangles": 15760
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 12864
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 11929
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 11640
+              },
+              {
+                "name": "map-world:psychiko",
+                "triangles": 10000
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 7472
+              },
+              {
+                "name": "psychiko-tiled-roofs",
+                "triangles": 6948
+              },
+              {
+                "name": "Mesh",
+                "triangles": 6000
+              },
+              {
+                "name": "Mesh",
+                "triangles": 6000
+              },
+              {
+                "name": "building-blocks:-1,-2",
+                "triangles": 5548
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 5234
+              },
+              {
+                "name": "building-blocks:-2,-2",
+                "triangles": 5196
+              },
+              {
+                "name": "terrain",
+                "triangles": 4960
+              },
+              {
+                "name": "Mesh",
+                "triangles": 4812
+              }
+            ],
+            "geometries": 199,
+            "textures": 23,
+            "detail": {
+              "updates": 2,
+              "updateMs": 0.09999999962747097,
+              "boxes": 111,
+              "impostors": 0
+            },
+            "streetscape": {
+              "cells": 18,
+              "builds": 38,
+              "parked": 394,
+              "roofs": 1158
+            }
+          }
+        },
+        {
+          "name": "overview",
+          "eye": [
+            1219.4800109863281,
+            1677.9499969482422,
+            -114.1400146484375
+          ],
+          "target": [
+            319.4800109863281,
+            177.9499969482422,
+            -1314.1400146484375
+          ],
+          "render": {
+            "frame": 3,
+            "calls": 151,
+            "triangles": 1434315,
+            "points": 3000,
+            "lines": 0,
+            "costs": [
+              {
+                "name": "terrain",
+                "triangles": 121184
+              },
+              {
+                "name": "terrain",
+                "triangles": 120852
+              },
+              {
+                "name": "terrain",
+                "triangles": 120568
+              },
+              {
+                "name": "terrain",
+                "triangles": 120342
+              },
+              {
+                "name": "terrain",
+                "triangles": 110937
+              },
+              {
+                "name": "terrain",
+                "triangles": 82460
+              },
+              {
+                "name": "terrain",
+                "triangles": 71180
+              },
+              {
+                "name": "terrain",
+                "triangles": 66727
+              },
+              {
+                "name": "terrain",
+                "triangles": 55999
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 52560
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 47310
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 40722
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 28917
+              },
+              {
+                "name": "terrain",
+                "triangles": 28327
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 26830
+              },
+              {
+                "name": "terrain",
+                "triangles": 24326
+              },
+              {
+                "name": "terrain",
+                "triangles": 20929
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 16789
+              },
+              {
+                "name": "psychiko-surveyed-parking",
+                "triangles": 15760
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 13943
+              },
+              {
+                "name": "map-world:psychiko",
+                "triangles": 10000
+              },
+              {
+                "name": "terrain",
+                "triangles": 9936
+              },
+              {
+                "name": "building-blocks:0,0",
+                "triangles": 7100
+              },
+              {
+                "name": "psychiko-tiled-roofs",
+                "triangles": 6948
+              },
+              {
+                "name": "building-blocks:-2,0",
+                "triangles": 6844
+              }
+            ],
+            "geometries": 202,
+            "textures": 23,
+            "detail": {
+              "updates": 3,
+              "updateMs": 0,
+              "boxes": 0,
+              "impostors": 0
+            },
+            "streetscape": {
+              "cells": 9,
+              "builds": 47,
+              "parked": 394,
+              "roofs": 1158
+            }
+          }
+        },
+        {
+          "name": "course-mid",
+          "eye": [
+            309.77839235773035,
+            182.9499969482422,
+            -1321.2024926827569
+          ],
+          "target": [
+            347.77639865307157,
+            178.9499969482422,
+            -1293.5411203816725
+          ],
+          "render": {
+            "frame": 4,
+            "calls": 86,
+            "triangles": 891397,
+            "points": 3000,
+            "lines": 0,
+            "costs": [
+              {
+                "name": "terrain",
+                "triangles": 120568
+              },
+              {
+                "name": "terrain",
+                "triangles": 120342
+              },
+              {
+                "name": "terrain",
+                "triangles": 82460
+              },
+              {
+                "name": "terrain",
+                "triangles": 71212
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 29739
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 28917
+              },
+              {
+                "name": "terrain",
+                "triangles": 28327
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 26830
+              },
+              {
+                "name": "terrain",
+                "triangles": 24326
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 23361
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 23197
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 20163
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 18471
+              },
+              {
+                "name": "psychiko-surveyed-parking",
+                "triangles": 15760
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 14126
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 11989
+              },
+              {
+                "name": "map-world:psychiko",
+                "triangles": 10000
+              },
+              {
+                "name": "terrain",
+                "triangles": 9936
+              },
+              {
+                "name": "surrounding-osm-roads",
+                "triangles": 7863
+              },
+              {
+                "name": "psychiko-tiled-roofs",
+                "triangles": 6948
+              },
+              {
+                "name": "Mesh",
+                "triangles": 6000
+              },
+              {
+                "name": "Mesh",
+                "triangles": 6000
+              },
+              {
+                "name": "terrain",
+                "triangles": 5749
+              },
+              {
+                "name": "Mesh",
+                "triangles": 5346
+              },
+              {
+                "name": "Mesh",
+                "triangles": 4392
+              }
+            ],
+            "geometries": 233,
+            "textures": 23,
+            "detail": {
+              "updates": 4,
+              "updateMs": 0.40000000037252903,
+              "boxes": 159,
+              "impostors": 0
+            },
+            "streetscape": {
+              "cells": 21,
+              "builds": 68,
+              "parked": 394,
+              "roofs": 1158
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "sourceHashes": {
+    "data/maps/psychiko/map.json": "2e5cf09fb01cdf4422be5899bc06f4d219ed95d470f2e3efe495447aa00c86c0",
+    "data/maps/psychiko/terrain.bin": "fa138d47b8a78db644618cb943c0529138fd9d1a9e3fa548742c391e18283aa8",
+    "src/terrain.js": "e7472515b0d8f36b7ded1764b6560a1522c2eff08cd1cada006b17d595f46440",
+    "src/road-network.js": "d3bd4d3ad95162e198d043bc36bb113d1a44ef705897eacf4c2b8a8a5dbeff9f",
+    "src/roadworks.js": "14816dff0350a4d1945b52cd3a13e928b9616e3155dc9edc52dc060573415898",
+    "src/maps/psychiko-recognition.js": "dbdd9049026c0c3355f74047f83252161edda13a72862d5d2a4465408ff7530a",
+    "src/maps/psychiko-streetscape.js": "fbe13656882642a63d110c87e1af022178c86574511ad44d0a09fd979b5e62d2",
+    "src/facade-atlas.js": "52c7f3caf1fa1176f376d40ffd2416c69996c2df9674d3287069e4658e66d414",
+    "src/buildings.js": "c518abd13eed9de886bc521e143ed327ea0ada915f8b534758144a9419d82fe3"
+  }
+}
