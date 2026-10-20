@@ -53,7 +53,7 @@ export function indexRecognition(street,put) {
  for(const [s,side] of [[2745,1],[1620,1],[4680,1]])add(s,side*(route.edge(s)+1.9),'scooter');
  // Trolley contact/suspension wires on the actual arterial; a shallow two-span sag uses 8 triangles per span.
  for(let s=5085;s<5730;s+=38){add(s,0,'crosswire',{span:21});add(s,0,'trolleySpan',{length:38});}
- add(0,0,'crosswire',{span:28});
+ for(const s of [-24,0,26]){add(s,0,'crosswire',{span:32});add(s,0,'trolleySpan',{length:38});}
  for(const s of [5215,5310])add(s,0,'roadSign');
  // The surface slip is separated from the main Kifisias corridor by a steel safety rail, visible from the grid.
  for(let s=5420;s<5725;s+=8)add(s,-(route.edge(s)+.8),'separator',{length:8});
@@ -69,28 +69,43 @@ export function drawRecognition(street,m,r,box,lathe) {
  if(r.asset==='trolleySpan')local(()=>{for(const x of [-1.4,1.4]){m.quad([x,6.3,-19],[x,6.3,19],[x,6.335,19],[x,6.335,-19],'#3b4441');m.quad([x,6.3,19],[x,6.3,-19],[x,6.335,-19],[x,6.335,19],'#3b4441');}});
  if(r.asset==='roadSign')local(()=>{box(m,0,6.8,0,23,.14,.14,'#949d99');for(const x of [-10,10])box(m,x,0,0,.15,7,.15,'#949d99');for(const x of [-5,0,5]){box(m,x,5.7,0,3.3,1.1,.12,'#376281');box(m,x,6.1,-.08,1.6,.06,.02,'#e0e3d7');}});
  if(r.asset==='frontage'){
-  const b=r.building,p=blockFootprint(b.p),n=p.length/2;
+  const b=r.building,p=blockFootprint(b.p),n=p.length/2,shell=street.shells.get(b.id);
   // Decorate the two sides closest to public roads, preserving the source footprint and all its concavities.
-  const edges=[];for(let i=0;i<n;i++){const j=(i+1)%n,ax=p[i*2],az=p[i*2+1],bx=p[j*2],bz=p[j*2+1],L=Math.hypot(bx-ax,bz-az);if(L<5)continue;const q=street.network.project((ax+bx)/2,(az+bz)/2);edges.push({ax,az,bx,bz,L,d:Math.abs(q.u)});}
+  const edges=[];for(let i=0;i<n;i++){const j=(i+1)%n,ax=p[i*2],az=p[i*2+1],bx=p[j*2],bz=p[j*2+1],L=Math.hypot(bx-ax,bz-az);if(L<5)continue;const mx=(ax+bx)/2,mz=(az+bz)/2,q=street.network.project(mx,mz);let d=Math.max(0,Math.abs(q.u)-street.route.edge(q.s));for(const seg of street.network.candidates(mx,mz))d=Math.min(d,Math.max(0,street.network.distance(seg,mx,mz)-seg.hw));edges.push({ax,az,bx,bz,L,d});}
   edges.sort((a,b)=>a.d-b.d);
   const heights=p.filter((_,i)=>i%2===0).map((x,i)=>street.height(x,p[i*2+1]));
-  const base=Math.min(...heights)-.6,top=Math.max(...heights)+b.h,storey=(top-base)/(b.lv||3);
+  const base=(shell?.gmin??Math.min(...heights))-.6,top=shell?.top??Math.max(...heights)+b.h,storey=(top-base)/(b.lv||3);
   for(const e of edges.slice(0,r.commercial?2:1)){
    const dx=(e.bx-e.ax)/e.L,dz=(e.bz-e.az)/e.L,midX=(e.ax+e.bx)/2,midZ=(e.az+e.bz)/2;
    const outward=Math.sign((midX-r.x)*-dz+(midZ-r.z)*dx)||1,nx=-dz*outward,nz=dx*outward;
    const quad=(h0,h1,a0,a1,color,depth=.04)=>{const P=(a,h)=>[e.ax+dx*a+nx*depth,base+h,e.az+dz*a+nz*depth],a=P(a0,h0),bb=P(a1,h0),c=P(a1,h1),d=P(a0,h1);m.quad(a,bb,c,d,color,[midX-nx,base+(h0+h1)/2,midZ-nz]);};
    for(let lv=1;lv<(b.lv||3);lv++){
-    const h=lv*storey;quad(h,h+.25,0,e.L,'#eee9dc',r.commercial?.08:1.1);
-    if(r.commercial)quad(h+.35,h+Math.min(2,storey-.3),1,e.L-1,r.accent||'#526e7c');
+    const h=lv*storey,projection=r.balcony??1.1;quad(h,h+.25,0,e.L,'#eee9dc',r.commercial?.08:projection);
+    if(r.commercial){for(let a=.9;a<e.L-1;a+=3.2){quad(h+.55,h+Math.min(2.3,storey-.3),a,Math.min(a+2.2,e.L-.5),'#64818a',.09);quad(h+.55,h+Math.min(2.3,storey-.3),a+1,a+1.07,'#ddd9ce',.11);}}
     else{
-     quad(h+.25,h+1.1,0,e.L,r.accent||'#b6b3a5',1.1);quad(h+1.1,h+1.17,0,e.L,'#e9e6db',1.15);
+     quad(h+.25,h+1.1,0,e.L,r.accent||'#b6b3a5',projection);quad(h+1.1,h+1.17,0,e.L,'#e9e6db',projection+.05);
      // A visible deck and end returns give the surveyed stacked balconies depth.
      const P=(a,d,y)=>[e.ax+dx*a+nx*d,base+y,e.az+dz*a+nz*d];
-     m.quad(P(0,0,h+.25),P(0,1.1,h+.25),P(e.L,1.1,h+.25),P(e.L,0,h+.25),'#ddd9ca');
-     for(const a of [0,e.L])m.quad(P(a,0,h),P(a,1.1,h),P(a,1.1,h+1.1),P(a,0,h+1.1),r.accent||'#b6b3a5');
+     m.quad(P(0,0,h+.25),P(0,projection,h+.25),P(e.L,projection,h+.25),P(e.L,0,h+.25),'#ddd9ca');
+     for(const a of [0,e.L])m.quad(P(a,0,h),P(a,projection,h),P(a,projection,h+1.1),P(a,0,h+1.1),r.accent||'#b6b3a5');
     }
    }
-   if(r.commercial){quad(.4,2.6,.5,e.L-.5,'#3c555a');quad(2.7,3.6,.5,e.L-.5,r.accent||'#396b87');for(let a=2;a<e.L-1;a+=3)quad(0,3.6,a,a+.18,'#e3dece',.1);}
+   if(r.commercial){
+    quad(.25,2.8,.3,e.L-.3,'#3c555a',.12);
+    quad(2.85,3.65,.2,e.L-.2,r.accent||'#396b87',.15);
+    for(let a=1.7;a<e.L-1;a+=3.1){quad(.2,2.85,a,a+.12,'#e4dfd0',.17);quad(3.1,3.23,a-.7,a+.65,'#ede8d9',.18);}
+    // Projecting cream shop awning and dark valance, on the real frontage edge.
+    const P=(a,d,h)=>[e.ax+dx*a+nx*d,base+h,e.az+dz*a+nz*d];
+    m.quad(P(.3,.1,2.85),P(e.L-.3,.1,2.85),P(e.L-.3,1.3,2.55),P(.3,1.3,2.55),'#d9d1b8');
+    quad(2.4,2.58,.3,e.L-.3,r.accent||'#486777',1.3);
+   }else if(r.residential){
+    // Terrace parapet follows the unchanged footprint; shallow coping reads at street height.
+    const h=top-base;quad(h,h+.55,.1,e.L-.1,'#ddd9cd',.08);quad(h+.55,h+.64,0,e.L,'#f0ece1',.12);
+    if(r.pergola&&e.L>8){const P=(a,d,h)=>[e.ax+dx*a+nx*d,base+h,e.az+dz*a+nz*d];
+      for(let a=1;a<Math.min(e.L-1,10);a+=1.2)m.quad(P(a,0,h+2.1),P(a+.12,0,h+2.1),P(a+.12,-2.3,h+2.1),P(a,-2.3,h+2.1),'#89765b');
+      for(const a of [1,Math.min(e.L-1,9)])quad(h,h+2.1,a,a+.1,'#89765b',.12);
+    }
+   }
   }
  }
 }

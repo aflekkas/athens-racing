@@ -17,7 +17,7 @@ export function buildScenery(scene, map, { heightC, assets } = {}) {
   for (const root of [road.group, buildings.group]) batchStatic(root);
   // Survey-based streetscape (boundaries, species canopy, kerb parking, lamps, wires, zebras, tiled roofs).
   // Its canopy replaces the generic all-broadleaf detail trees, which WorldDetail then skips for this map.
-  const streetscape = new PsychikoStreetscape(map, group, heightC);
+  const streetscape = new PsychikoStreetscape(map, group, heightC, buildings.roofs);
   streetscape.buildRoofs(buildings.roofs);
   map.ownVegetation = true; map.pitchedRoofs = true;
   return { group, road, people, obstacles: streetscape.obstacles, streetscape, dispose: () => streetscape.dispose() };
