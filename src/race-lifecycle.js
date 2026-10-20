@@ -49,7 +49,7 @@ export function driverTelemetry({ member, state, event, startAt, now, ranked, pr
   };
 }
 
-const engineFields = ['impactMechanical', 'maxImpactEbs', 'engineDamage', 'engHealth', 'coolantTemp', 'engineStalled', 'drivetrainBroken', 'engineFailureReason', 'mechanicalOverrevRpm'];
+const engineFields = ['impactMechanical', 'frontMechanical', 'maxImpactEbs', 'engineDamage', 'engHealth', 'coolantTemp', 'engineStalled', 'drivetrainBroken', 'engineFailureReason', 'mechanicalOverrevRpm'];
 // Lightweight cosmetic telemetry rides the existing state cadence; no wheel-force arrays.
 export function spectatorState(vehicle) {
   const state = Object.fromEntries(engineFields.filter(k => vehicle[k] !== undefined).map(k => [k, vehicle[k]]));

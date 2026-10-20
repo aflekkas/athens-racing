@@ -1,0 +1,1 @@
+before: rain-light — -58.2 LUFS, -39.4 dBFS peak; spectrogram and waveform at default mix, no normalization.

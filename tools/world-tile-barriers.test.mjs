@@ -19,7 +19,9 @@ for(const angle of [Math.PI/2,Math.PI/18])for(const dt of [1/240,1/15]){
       minX=Math.min(minX,v.x);maxHeight=Math.max(maxHeight,v.y);maxVertical=Math.max(maxVertical,Math.abs(v.vy||0));
     }
     assert.ok(hits>0);assert.ok(maxHeight<.1);assert.ok(maxVertical<.1);assert.ok(minX>-20);
-    if(angle===Math.PI/2)assert.ok(Math.hypot(v.vLong,v.vLat)<1);
+    // A square hit is a stop and a small bounce (restitution ~0.1 at this speed, src/crash-contact.js), not a dead stop on the rail: the car
+    // ends well under 15 % of its approach speed and has come back past where it started.
+    if(angle===Math.PI/2){assert.ok(Math.hypot(v.vLong,v.vLat)<speed*.15);assert.ok(v.x<-6,'bounced back off the rail');}
   });
 }
 test('guardrail sweep catches a complete crossing and ignores cars in the underpass',()=>{

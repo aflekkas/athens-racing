@@ -5,26 +5,28 @@ import { getPlayableMaps, isMapEnabled } from './enabled-maps.js';
 import { MAP_VIEW, MAP_ASSETS, TRACK_ROUTES, MAP_LABELS } from './attica-map-data.js';
 import { coverScale, routeBounds, fitTracks, focusTrack, clampCamera, flight, MAX_SCALE } from './map-select-camera.js';
 import { createMapRenderer } from './map-select-render.js';
+import { createWheelClassifier, wheelZoomFactor, wheelPan, createGlide } from './map-wheel.js';
 import { fmtDist } from './settings.js';
 import * as C from './ui/components.js';
 import { getMapPersonalBest } from './personal-bests.js';
 
-const { esc, icon } = C;
+const { esc } = C;
 const playable = () => getPlayableMaps(MAPS).filter(m => TRACK_ROUTES[m.id]);
 const color = id => id === 'penteli' ? '#71d5c1' : id === 'megara' ? '#e4bf70' : id === 'psychiko' ? '#d7cf83' : '#ff7868';
 function style() {
   if (document.getElementById('map-select-style')) return;
   const link = document.createElement('link'); link.id = 'map-select-style'; link.rel = 'stylesheet'; link.href = new URL('./map-select.css', import.meta.url).href; document.head.append(link);
 }
-const KIND = m => m.type === 'circuit' ? ['CIRCUIT', 'refresh-cw'] : m.id === 'penteli' ? ['HILL CLIMB', 'mountain'] : ['POINT TO POINT', 'route'];
+const KIND = m => m.type === 'circuit' ? 'Circuit' : m.id === 'penteli' ? 'Hill climb' : 'Point to point';
 const lapTime = t => `${Math.floor(t / 60)}:${(t % 60).toFixed(2).padStart(5, '0')}`;
 // The big map frames the selected route, so the card carries only what the map cannot say.
 function preview(map) {
-  const [kind, ic] = KIND(map), pb = getMapPersonalBest(map.id);
+  const pb = getMapPersonalBest(map.id);
   // A best only appears once one exists; an empty record box is noise.
-  const best = pb ? `<div class="map-spec map-spec--best"><small>${icon('timer')}BEST</small><b>${lapTime(pb.time)}</b><span>${esc(pb.setup.car)} · ${pb.setup.laps} LAP${pb.setup.laps === 1 ? '' : 'S'}${pb.setup.direction < 0 ? ' · REV' : ''}</span></div>` : '';
-  return `<div class="map-preview__info"><div class="map-kind">${icon(ic)}${kind}</div><h3>${esc(map.name)}</h3><p>${esc(map.subtitle)}</p>
-    <div class="map-specs"><div class="map-spec"><small>LENGTH</small><b>${fmtDist(map.length)}${map.type === 'circuit' ? '<span> / LAP</span>' : ''}</b></div>${best}</div>
+  const best = pb ? `<div class="map-specs"><div class="map-spec map-spec--best"><small>YOUR BEST</small><b>${lapTime(pb.time)}</b><span>${esc(pb.setup.car)} · ${pb.setup.laps} LAP${pb.setup.laps === 1 ? '' : 'S'}${pb.setup.direction < 0 ? ' · REV' : ''}</span></div></div>` : '';
+  // One heading, one line of what the map cannot show (route ends), one quiet line of facts; no coloured kicker.
+  return `<div class="map-preview__info"><h3>${esc(map.name)}</h3><p>${esc(map.subtitle)}</p>
+    <p class="map-meta">${KIND(map)} · ${fmtDist(map.length).toLowerCase()}${map.type === 'circuit' ? ' a lap' : ''}</p>${best}
     ${C.button({ label: 'SELECT TRACK', icon: 'flag', iconRight: 'chevron-right', variant: 'primary', block: true, attrs: { 'data-confirm-track': '', 'data-map-id': map.id } })}</div>`;
 }
 const count = (selectable, m) => `${selectable.indexOf(m) + 1} <span>/ ${selectable.length}</span>`;
@@ -34,14 +36,14 @@ export function renderMapSelect(selectedId = 'riviera') {
   style(); const selectable = playable(), selected = selectable.find(m => m.id === selectedId) || selectable[0];
   const labels = MAP_LABELS.map((l, i) => `<span class="map-label map-label--${l.k}" data-label="${i}"><i></i><b>${esc(l.t)}${l.s ? `<small>${esc(l.s)}</small>` : ''}</b></span>`).join('');
   const pins = selectable.map((m, i) => `<span role="button" tabindex="-1" class="mi track-pin ${m.id === selected.id ? 'selected active' : ''}" aria-label="Preview ${esc(m.name)}" aria-pressed="${m.id === selected.id}" data-map-id="${m.id}" data-side="${side(TRACK_ROUTES[m.id])}" style="--pin:${color(m.id)}" ${m.id === selected.id ? 'data-default' : ''}><i class="track-pin__dot">${i + 1}</i><span>${esc(m.name)}</span></span>`).join('');
-  return C.mapStage({ variant: 'floating', cls: 'scr--maps', kick: 'QUICK RACE', title: 'ATTICA / CHOOSE YOUR TRACK',
+  return C.mapStage({ variant: 'floating', cls: 'scr--maps', kick: 'QUICK RACE', title: 'CHOOSE A TRACK',
     hints: [['leftright', 'TRACK'], ['confirm', 'SELECT'], ['back', 'BACK']],
     stageAttrs: { role: 'img', 'aria-label': `Map of Attica with ${selectable.length} tracks: ${selectable.map(m => m.name).join(', ')}` },
     stage: `<canvas class="attica-canvas" aria-hidden="true"></canvas>
       <div class="attica-overlay"><div class="attica-labels" aria-hidden="true">${labels}</div>${pins}</div>
       <p class="attica-credit"><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a> · <a href="https://github.com/tilezen/joerd/blob/master/docs/attribution.md" target="_blank" rel="noopener">EU-DEM, Copernicus</a></p>`,
     cardAttrs: { 'data-map': selected.id, style: `--track:${color(selected.id)}` },
-    nav: `${C.button({ icon: 'chevron-left', variant: 'ghost', act: 'mapPrev', title: 'Previous track' })}<div><small>TRACK</small><b class="map-track-count">${count(selectable, selected)}</b></div>${C.button({ icon: 'chevron-right', variant: 'ghost', act: 'mapNext', title: 'Next track' })}`, card: preview(selected) });
+    nav: `${C.button({ icon: 'chevron-left', variant: 'ghost', act: 'mapPrev', title: 'Previous track' })}<div><b class="map-track-count">${count(selectable, selected)}</b></div>${C.button({ icon: 'chevron-right', variant: 'ghost', act: 'mapNext', title: 'Next track' })}`, card: preview(selected) });
 }
 
 // ---------------------------------------------------------------- map assets (fetched once per page, shared by every visit)
@@ -98,7 +100,7 @@ export function mountMapSelect(root) {
     const pts = r.path.slice(1).split('L').map(p => p.split(',').map(Number)), samples = [];
     pts.forEach((p, i) => { const q = pts[i + 1]; if (!q) return samples.push(p); const n = Math.ceil(Math.hypot(q[0] - p[0], q[1] - p[1]) / .5); for (let k = 0; k < n; k++) samples.push([p[0] + (q[0] - p[0]) * k / n, p[1] + (q[1] - p[1]) * k / n]); });
     return [m.id, { ...r, path2d: path, samples, color: color(m.id) }]; }));
-  const pointers = new Map();
+  const pointers = new Map(), wheelKind = createWheelClassifier(), glide = createGlide();
   const pins = [...overlay.querySelectorAll('.track-pin')].map(el => ({ el, id: el.dataset.mapId, side: el.dataset.side, prefer: el.dataset.side, at: TRACK_ROUTES[el.dataset.mapId].start }));
   const DOT = 24, anchor = p => p.side === 'l' ? p.w - DOT / 2 : DOT / 2;
   // The chip part of a pin (not its dot) for a side, in screen px.
@@ -212,14 +214,16 @@ export function mountMapSelect(root) {
       const k = reduced.matches ? 1 : 1 - Math.exp(-dt / .09), log = Math.log(camera.scale) + (motion.log - Math.log(camera.scale)) * k;
       camera = cameraFor(Math.exp(log), motion.world, ...motion.anchor); if (Math.abs(log - motion.log) < 1e-3) { camera = cameraFor(Math.exp(motion.log), motion.world, ...motion.anchor); motion = null; settle = true; }
     }
+    // A released drag keeps sliding for a moment and eases to a stop.
+    if (!motion && glide.active) { const d = glide.step(dt); if (d) { camera.x += d[0]; camera.y += d[1]; } else settle = true; }
     tint();
-    if (wasDirty || motion || reveal || settle || base?.busy) sync(now, settle);
+    if (wasDirty || motion || reveal || settle || glide.active || base?.busy) sync(now, settle);
     base?.pump(now); tint();
-    if (motion || reveal || base?.busy) frame = requestAnimationFrame(run);
+    if (motion || reveal || glide.active || base?.busy) frame = requestAnimationFrame(run);
   };
   const start = () => { if (!frame && onScreen && !document.hidden) { last = 0; frame = requestAnimationFrame(run); } };
   const want = (settle = false) => { dirty = true; settling ||= settle; start(); };
-  const stop = () => { motion = null; base?.cancelPrepare(); cancelAnimationFrame(frame); frame = 0; };
+  const stop = () => { motion = null; glide.halt(); base?.cancelPrepare(); cancelAnimationFrame(frame); frame = 0; };
   const flyTo = target => {
     if (!camera || !view) return;
     const to = clampCamera(target, view, MAP_VIEW), from = { ...camera }, path = flight(from, to, view, MAP_VIEW);
@@ -269,7 +273,13 @@ export function mountMapSelect(root) {
   root.addEventListener('keydown', e => { if (e.target.closest('input,textarea,select,[contenteditable]')) return; if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); e.stopPropagation(); if (!e.repeat) cycle(e.key === 'ArrowRight' ? 1 : -1); } }, { capture: true, signal });
   // Where overflow: clip is unsupported, a focused off-screen pin could scroll the map layer: pin it back.
   map.addEventListener('scroll', () => { map.scrollLeft = 0; map.scrollTop = 0; }, { signal });
-  map.addEventListener('wheel', e => { e.preventDefault(); const dy = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1); zoomAt(Math.exp(-Math.max(-300, Math.min(300, dy)) * .0016), ...local(e)); }, { passive: false, signal });
+  // Two-finger trackpad scroll pans, a pinch (ctrl+wheel) or a mouse wheel zooms (src/map-wheel.js, owner 2026-10-20).
+  map.addEventListener('wheel', e => {
+    e.preventDefault(); if (!camera || !view) return;
+    if (wheelKind(e) === 'zoom') { zoomAt(wheelZoomFactor(e), ...local(e)); return; }
+    if (motion || glide.active) { stop(); reveal = null; }
+    const [dx, dy] = wheelPan(e); camera.x += dx; camera.y += dy; want();
+  }, { passive: false, signal });
   map.addEventListener('pointerdown', e => { if (e.target.closest('.mi,a') || !camera) return; stop(); reveal = null; map.setPointerCapture(e.pointerId); pointers.set(e.pointerId, local(e)); drag = local(e); pinch = null; map.classList.add('dragging'); }, { signal });
   map.addEventListener('pointermove', e => {
     if (!pointers.has(e.pointerId)) return; pointers.set(e.pointerId, local(e));
@@ -279,9 +289,9 @@ export function mountMapSelect(root) {
       if (pinch) { const scale = Math.max(minScale(), Math.min(MAX_SCALE, camera.scale * d / pinch.d)); camera = cameraFor(scale, worldAt(camera, ...pinch.mid), ...mid); panning = true; want(); }
       pinch = { d, mid }; drag = null; return;
     }
-    if (drag && !pinch) { const [x, y] = local(e); camera.x += x - drag[0]; camera.y += y - drag[1]; panning = true; want(); drag = [x, y]; }
+    if (drag && !pinch) { const [x, y] = local(e); camera.x += x - drag[0]; camera.y += y - drag[1]; glide.track(x - drag[0], y - drag[1], e.timeStamp); panning = true; want(); drag = [x, y]; }
   }, { signal });
-  const up = e => { pointers.delete(e.pointerId); if (pointers.size < 2) pinch = null; drag = pointers.size ? [...pointers.values()][0] : null; if (!pointers.size) { map.classList.remove('dragging'); panning = false; want(true); } };
+  const up = e => { pointers.delete(e.pointerId); if (pointers.size < 2) pinch = null; drag = pointers.size ? [...pointers.values()][0] : null; if (!pointers.size) { map.classList.remove('dragging'); panning = false; if (e.type === 'pointerup') glide.release(e.timeStamp); want(true); } };
   map.addEventListener('pointerup', up, { signal }); map.addEventListener('pointercancel', up, { signal });
   // ResizeObserver callbacks run during layout: defer writes to avoid another
   // resize notification in the same delivery cycle (and the global error banner).

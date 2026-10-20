@@ -1,0 +1,1 @@
+before: stress — -10.9 LUFS, 0.8 dBFS peak; spectrogram and waveform at default mix, no normalization.

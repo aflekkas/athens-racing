@@ -148,7 +148,6 @@ export function installPlayerLOD(car,d){
   // Distance bodies use the same proportions without reintroducing close-up
   // mirror housings or thousands of optical triangles.
   for(const side of [-1,1]){const mirror=mesh(low,new THREE.PlaneGeometry(.13,.075),car.paint,'distant-mirror',[side*(d.W/2+.06),d.belt+.10,d.cowl+.10]);mirror.rotation.y=side*Math.PI/3;}
-  if(car.spec.visual?.wing||car.modelKind==='aventador')box(low,car.materials.black,[d.W*.85,.045,.22],[0,d.H+.08,d.L*.34],'distant-wing');
   const medium=low.clone(true);medium.name='player-road-detail';
   for(const side of [-1,1])for(const end of [-1,1]){const lamp=mesh(low,new THREE.PlaneGeometry(.22,.075),end<0?car.materials.led:car.materials.tail,'distant-lamp',[side*d.W*.32,end<0?d.front*.8:d.rear*.8,end*(d.L/2+.01)]);if(end<0)lamp.rotation.y=Math.PI;}
 

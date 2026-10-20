@@ -22,22 +22,25 @@ for (const transport of ['Node', 'Worker SQLite']) test(`${transport}: keeps set
   else { const db = new DatabaseSync(':memory:'); t.after(() => db.close()); board = createSqlLeaderboard(sqlAdapter(db), maps, cars); }
   await board.submit(base);
   await board.submit({ ...base, time: 140, setup: { ...setup, weather: 'clear' } });
-  await board.submit({ ...base, time: 110, carTrim: 'JCW' });
+  await board.submit({ ...base, time: 110, carTrim: 'JCW', carGeneration: 'F57' }); // trims are gone (owner decision 2026-10-20): same board, the faster time wins
   await board.submit({ ...base, mapId: 'penteli', setup: { ...setup, map: 'penteli' }, time: 105 });
   await board.submit({ ...base, car: 'z4', carName: 'BMW Z4', setup: { ...setup, car: 'z4' }, time: 100 });
   await board.submit({ ...base, driverId: 'legacy-driver-123', setup: undefined, carName: undefined, carGeneration: undefined, carTrim: undefined, time: 90 });
-  assert.equal(board.list({ mapId: 'riviera' }).length, 5);
+  assert.equal(board.list({ mapId: 'riviera' }).length, 4);
   const filtered = board.list({ mapId: 'riviera', car: 'mini', weather: 'clear', tc: 'false', abs: 'true', steering: 'light', gearbox: 'manual', limit: 1 });
-  assert.equal(filtered.length, 1); assert.equal(filtered[0].time, 140); assert.equal(filtered[0].setup.traffic, 1.5); assert.equal(filtered[0].carTrim, 'Cooper S'); assert.equal(filtered[0].carGeneration, 'F57'); assert.equal(filtered[0].driverId, undefined); assert.equal(filtered[0].name, 'LOCAL-NAME');
+  assert.equal(filtered.length, 1); assert.equal(filtered[0].time, 140); assert.equal(filtered[0].setup.traffic, 1.5); assert.equal(filtered[0].carName, 'MINI Cooper S'); assert.equal(filtered[0].carTrim, undefined); assert.equal(filtered[0].carGeneration, undefined); assert.equal(filtered[0].driverId, undefined); assert.equal(filtered[0].name, 'LOCAL-NAME');
   assert.equal(board.list({ mapId: 'penteli' }).length, 1);
-  assert.equal(board.list({ mapId: 'riviera', weather: 'rain' }).length, 3);
+  assert.equal(board.list({ mapId: 'riviera', weather: 'rain' }).length, 2);
+  assert.deepEqual(board.list({ mapId: 'riviera', car: 'mini', weather: 'rain' }).map(e => e.time), [110], 'the trim run replaced the earlier time on the one board');
+  assert(!JSON.stringify(board.list({ mapId: 'riviera' })).includes('carTrim'));
   assert.equal(board.list({ mapId: 'riviera' })[0].setup, undefined);
   assert.equal((await board.submit({ ...base, time: 130 })).saved, false);
-  for (const patch of [{ traffic: 3 }, { rivals: MAX_RIVALS + 1 }, { police: 'yes' }, { tc: 1 }, { abs: null }, { steering: 'magic' }, { gearbox: 'cvt' }, { time: 'fake' }, { weather: 'snow' }, { from: 100 }, { laps: 0 }, { map: 'penteli' }, { car: 'z4' }, { direction: 0 }, { type: {} }, { carTrim: '<script>' }]) {
+  for (const patch of [{ traffic: 3 }, { rivals: MAX_RIVALS + 1 }, { police: 'yes' }, { tc: 1 }, { abs: null }, { steering: 'magic' }, { gearbox: 'cvt' }, { time: 'fake' }, { weather: 'snow' }, { from: 100 }, { laps: 0 }, { map: 'penteli' }, { car: 'z4' }, { direction: 0 }, { type: {} }]) {
     await assert.rejects(board.submit({ ...base, setup: { ...setup, ...patch } }), { status: 400 }, JSON.stringify(patch));
   }
   await assert.rejects(board.submit({ ...base, carName: '<img>' }), { status: 400 });
-  await assert.rejects(board.submit({ ...base, carTrim: 'x'.repeat(81) }), { status: 400 });
+  assert.equal((await board.submit({ ...base, driverId: 'trim-driver-456', carTrim: '<script>' + 'x'.repeat(81), carGeneration: '<b>', time: 150 })).saved, true, 'removed trim fields are dropped, never validated');
+  assert(!JSON.stringify(board.list({ mapId: 'riviera' })).includes('script'));
 });
 test('route validation supports reverse and bounded circuit laps, scales plausibility with distance', () => {
   assert(validResult({ ...base, setup: { ...setup, from: 4010, to: 10, direction: -1 } }, event, cars));
@@ -57,7 +60,8 @@ test('HTTP endpoint passes setup/assist filters and preserves submitted metadata
   const url = `http://127.0.0.1:${app.server.address().port}`;
   const response = await fetch(url + '/api/leaderboard', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...base, valid: true, time: 180, setup: undefined }) });
   assert.equal(response.status, 200);
-  assert.equal((await (await fetch(url + '/api/leaderboard?mapId=riviera&car=mini')).json())[0].carTrim, 'Cooper S');
+  const posted = (await (await fetch(url + '/api/leaderboard?mapId=riviera&car=mini')).json())[0];
+  assert.equal(posted.car, 'mini_jcw', 'a removed trim posted by an older client lands on the kept car'); assert.equal(posted.carTrim, undefined); assert.equal(posted.carName, undefined, 'the removed trim display name goes with it; the garage names the kept car');
   assert.deepEqual(await (await fetch(url + '/api/leaderboard?mapId=riviera&weather=rain')).json(), []);
   assert.deepEqual(leaderboardFilters(new URLSearchParams('mapId=penteli&weather=rain&tc=false&abs=true&steering=off&gearbox=manual')), { mapId: 'penteli', weather: 'rain', tc: 'false', abs: 'true', steering: 'off', gearbox: 'manual' });
 });
@@ -70,6 +74,6 @@ test('online runs use authoritative route/conditions with bounded client car/ass
  assert.equal(captureRecordMeta(raw,changed,'race-2').changed,false);
  assert.equal(captureRecordMeta({...raw,carName:'<img>'},null,'race-1'),null);
  const result=onlineLeaderboardResult({id:'online-driver-123',car:'z4',name:'LOCAL-DRIVER',finish:120,state:{recordMeta:meta}},{eventId:'quick',mapId:'riviera',traffic:false,config:{weather:'rain',time:'night',police:true}},event);
- assert.equal(result.setup.traffic,0);assert.equal(result.setup.rivals,0);assert.equal(result.setup.from,event.s0);assert.equal(result.carTrim,'M40i');assert(validResult(result,event,cars));
+ assert.equal(result.setup.traffic,0);assert.equal(result.setup.rivals,0);assert.equal(result.setup.from,event.s0);assert.equal(result.carName,'BMW Z4');assert.equal(result.carTrim,undefined);assert.equal(result.carGeneration,undefined);assert(validResult(result,event,cars));
  assert.equal(onlineLeaderboardResult({state:{recordMeta:changed}},{},event).setup,undefined,'mixed assists are disclosed as unknown');
 });

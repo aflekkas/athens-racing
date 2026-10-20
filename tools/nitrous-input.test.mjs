@@ -10,7 +10,7 @@ const poll = source.slice(source.indexOf('function readInput(dt)'), source.index
 const cars = Function('return ' + readFileSync(new URL('../src/cars.js', import.meta.url), 'utf8').split('export const CARS = ')[1].split('\n];')[0] + '\n];')();
 const route = { GR: null, frame(s, o) { return Object.assign(o, { tx: 0, tz: -1, rx: 1, rz: 0, grade: 0, bank: 0 }); }, point: (s, u) => ({ x: u, z: -s, y: 0 }), y: () => 0, surfaceY: () => 0, urban: () => 1, edge: () => 900, lin: () => 0, project: (x, z) => ({ s: -z, u: x }) };
 
-for (const id of ['mini', 'golf', 'corolla', 'ibiza']) test(`${id}: real ShiftLeft events through production player polling and physics`, () => {
+for (const id of ['mini_jcw', 'golf_r', 'corolla', 'ibiza_cupra']) test(`${id}: real ShiftLeft events through production player polling and physics`, () => {
   const run = boost => {
     const target = new EventTarget(), controls = new Input({ target, navigator: { getGamepads: () => [] }, storage: null, document: null });
     const veh = new Vehicle(cars.find(c => c.id === id), route); veh.reset(0, 0, 20); veh.nitro = 1;
@@ -23,6 +23,6 @@ for (const id of ['mini', 'golf', 'corolla', 'ibiza']) test(`${id}: real ShiftLe
     const result = { inputNitro: controls.state.nitro, nitro: veh.nitro, nitroOn: veh.nitroOn, speed: veh.vLong }; controls.destroy(); return result;
   };
   const shifted = run(true), ordinary = run(false);
-  if (id === 'ibiza') { assert.equal(shifted.inputNitro, true); assert.equal(shifted.nitroOn, true); assert.ok(shifted.nitro < 1 && shifted.nitro > 0); assert.ok(shifted.speed > ordinary.speed); }
+  if (id === 'ibiza_cupra') { assert.equal(shifted.inputNitro, true); assert.equal(shifted.nitroOn, true); assert.ok(shifted.nitro < 1 && shifted.nitro > 0); assert.ok(shifted.speed > ordinary.speed); }
   else { assert.equal(shifted.inputNitro, false); assert.equal(shifted.nitroOn, false); assert.equal(shifted.nitro, 0); assert.equal(shifted.speed, ordinary.speed); }
 });

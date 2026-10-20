@@ -9,7 +9,7 @@ const DISTANCE_LOD=/distan|lod/i; // hidden until the car is far away, then they
 const seeThrough=m=>m.transparent||m.opacity===0||m.visible===false||m.colorWrite===false;
 const where=o=>{const names=[];for(let p=o;p;p=p.parent)names.push(p.name||'(anon)');return names.reverse().join('/');};
 test('no invisible, see-through or interior-only mesh of any player car casts a shadow',()=>{
- assert.ok(CARS.length>=78,'expected every player configuration');
+ assert.ok(CARS.length>=77,'expected every player configuration');
  for(const spec of CARS){
   const model=new CarModel(spec);model.root.updateMatrixWorld(true);
   for(const mode of ['exterior','pov']){

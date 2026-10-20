@@ -1,6 +1,7 @@
 // Solid vertical bridge guardrails. Continuous swept-OBB collision prevents
 // tunnelling even when a whole car crosses a thin rail between physics steps.
 // Rails impart horizontal impulses only; they are never wheel contact ramps.
+import {solveContact,alignAlong,noteHit,noteWall} from './crash-contact.js';
 const EPS=.002;
 function sweep(a,b,halfL,halfW,rail,origin){
   const ax=rail[0]+origin[0],az=rail[2]+origin[2],bx=rail[3]+origin[0],bz=rail[5]+origin[2];
@@ -44,22 +45,35 @@ export class WorldTileBarriers{
     if(!first)return false;
     const {t,nx,nz,penetration}=first;
     const fx=-Math.sin(vehicle.yaw),fz=-Math.cos(vehicle.yaw),rx=Math.cos(vehicle.yaw),rz=-Math.sin(vehicle.yaw);
-    let vx=fx*vehicle.vLong+rx*vehicle.vLat,vz=fz*vehicle.vLong+rz*vehicle.vLat;
-    const speed=Math.max(0,-vx*nx-vz*nz);
+    // Back to the moment of contact (position and heading), then a rigid-body blow at the corner that touches the rail, with the
+    // car's yaw inertia: a glancing hit turns the car along the rail and scrubs speed (friction), a square one stops it and bounces
+    // it back a little. The old response froze the heading and zeroed the yaw rate, which pinned a glancing car to the rail
+    // until it stopped. The rail still never lifts or rolls the car: the block is planar.
+    const dyaw=Math.atan2(Math.sin(vehicle.yaw-previous.yaw),Math.cos(vehicle.yaw-previous.yaw));
     vehicle.x=previous.x+(vehicle.x-previous.x)*t+nx*(EPS+penetration);
     vehicle.z=previous.z+(vehicle.z-previous.z)*t+nz*(EPS+penetration);
-    vehicle.yaw=previous.yaw;vehicle.w=0;
-    if(speed>0){
-      const forward=-(nx*fx+nz*fz),right=-(nx*rx+nz*rz);
-      const zone=Math.abs(forward)>Math.abs(right)?(forward>0?'front':'rear'):(right>0?'right':'left');
-      vehicle.addDamage?.(zone,speed,{kind:'wall',localPoint:{x:right*vehicle.halfW,y:.45,z:-forward*vehicle.halfL},localNormal:{x:-right,y:0,z:forward}});
-      vx=(vx+nx*speed)*.96;vz=(vz+nz*speed)*.96;
-      vehicle.wallHit=Math.max(vehicle.wallHit||0,speed);vehicle.wallNx=nx;vehicle.wallNz=nz;
+    vehicle.yaw=previous.yaw+dyaw*t;
+    const fx2=-Math.sin(vehicle.yaw),fz2=-Math.cos(vehicle.yaw),rx2=Math.cos(vehicle.yaw),rz2=-Math.sin(vehicle.yaw);
+    // the corners nearest the rail; those level with the deepest (a square hit meets with the whole face) share the blow
+    const corners=[];
+    for(const a of [vehicle.halfL,-vehicle.halfL])for(const b of [vehicle.halfW,-vehicle.halfW]){
+      const cx=vehicle.x+fx2*a+rx2*b,cz=vehicle.z+fz2*a+rz2*b;corners.push({x:cx,z:cz,d:cx*nx+cz*nz});
     }
-    // No impactDynamics lift/roll impulse. Suspension keeps its normal road
-    // contact response; neither y nor vertical velocity is changed by a rail.
-    const sin=Math.sin(vehicle.yaw),cos=Math.cos(vehicle.yaw);
-    vehicle.vLong=-sin*vx-cos*vz;vehicle.vLat=cos*vx-sin*vz;vehicle.syncWheels?.();
+    const low=Math.min(...corners.map(c=>c.d)),near=corners.filter(c=>c.d<=low+.1);
+    let best={x:near.reduce((s,c)=>s+c.x,0)/near.length,z:near.reduce((s,c)=>s+c.z,0)/near.length};
+    const dF=-(nx*fx2+nz*fz2),dR=-(nx*rx2+nz*rz2);
+    // (lying along the rail, the middle of the side that touches it)
+    if(Math.abs(dF)<.12)best={x:vehicle.x+rx2*Math.sign(dR||1)*vehicle.halfW,z:vehicle.z+rz2*Math.sign(dR||1)*vehicle.halfW};
+    const blow=solveContact(vehicle,nx,nz,best.x,best.z,{mu:.22});
+    if(blow){
+      const zone=Math.abs(dF)>Math.abs(dR)?(dF>0?'front':'rear'):(dR>0?'right':'left');
+      vehicle.addDamage?.(zone,blow.vn,{kind:'wall',localPoint:{x:blow.py,y:.45,z:-blow.px},localNormal:{x:-dR,y:0,z:dF}});
+      noteHit(vehicle,blow.dv);
+      vehicle.wallHit=Math.max(vehicle.wallHit||0,blow.vn);vehicle.wallNx=nx;vehicle.wallNz=nz;
+    }
+    alignAlong(vehicle,nx,nz,1/240);noteWall(vehicle,nx,nz);
+    void fx;void fz;void rx;void rz;
+    vehicle.syncWheels?.();
     return true;
   }
 }

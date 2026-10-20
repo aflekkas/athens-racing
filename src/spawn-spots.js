@@ -1,6 +1,6 @@
-// Free roam spawn picker data (owner decision 2026-10-19: "free roam should have no tracks, it should be more of like i
-// just pick where to be spawned"): the named spawn spots, the Attica <-> map-local projections, and the road snapper the
-// picker uses to turn a click on the map into a drivable point. Pure: no DOM, no three.js (node tests import it).
+// Free roam spawn picker data (owner decisions 2026-10-19 "free roam should have no tracks" and 2026-10-20 "click anywhere
+// on the map"): the areas the arrows step through, the Attica <-> map-local projections, and the road snapper the picker
+// uses to turn a click on the map into a drivable point. Pure: no DOM, no three.js (node tests import it).
 import { MAPS } from './map-catalog.js';
 import { getPlayableMaps } from './enabled-maps.js';
 
@@ -27,60 +27,62 @@ export const ATHENS_PROJECTION = Object.freeze({ lat0: 37.98, lon0: 23.73, mlat:
 export const ATHENS_CELL = 512;
 export const athensFromLonLat = (lon, lat) => [(lon - ATHENS_PROJECTION.lon0) * ATHENS_PROJECTION.mlon, -(lat - ATHENS_PROJECTION.lat0) * ATHENS_PROJECTION.mlat];
 export const athensFromAttica = (ax, ay) => athensFromLonLat(...lonLatFromAttica(ax, ay));
+export const lonLatFromAthens = (x, z) => [ATHENS_PROJECTION.lon0 + x / ATHENS_PROJECTION.mlon, ATHENS_PROJECTION.lat0 - z / ATHENS_PROJECTION.mlat];
+export const atticaFromAthens = (x, z) => atticaFromLonLat(...lonLatFromAthens(x, z));
 export const athensCell = (x, z) => `${Math.floor(x / ATHENS_CELL)},${Math.floor(z / ATHENS_CELL)}`;
 /** The open world joins the picker only under ?map=athens (owner: players do not see it until the owner activates it). */
 export const athensEnabled = (search = typeof location === 'undefined' ? '' : location.search) => new URLSearchParams(search).get('map') === 'athens';
 
 // What the panel calls the place a spot is in: an area, never a track.
-export const AREA_NAMES = Object.freeze({ riviera: 'ATHENS RIVIERA', penteli: 'MOUNT PENTELI', psychiko: 'PALAIO PSYCHIKO', megara: 'MEGARA', athens: 'ATHENS OPEN WORLD · DEV' });
+export const AREA_NAMES = Object.freeze({ riviera: 'ATHENS RIVIERA', penteli: 'PENTELI', psychiko: 'PSYCHIKO', megara: 'MEGARA', athens: 'ATHENS' });
 
-// ---------------------------------------------------------------- named spots
-// Real places on each map's own road network (checked against it by tools/owner-locked-free-roam-spawn.test.mjs).
-// lat/lon are the place; the game puts the car on the nearest drivable road to it, centred in a lane (src/tow-placement.js).
-const spot = (mapId, id, name, lat, lon, note = '') => Object.freeze({ id: `${mapId}:${id}`, mapId, name, note, lat, lon });
-export const SPAWN_SPOTS = Object.freeze([
-  spot('riviera', 'kavouri', 'KAVOURI', 37.81657, 23.77487, 'Seaside lanes above the bay'),
-  spot('riviera', 'vouliagmeni', 'VOULIAGMENI', 37.81348, 23.78291, 'The suburb above the marina'),
-  spot('riviera', 'astir', 'ASTIR PENINSULA', 37.80982, 23.78226, 'The coast road round the cape'),
-  spot('riviera', 'lake', 'LAKE VOULIAGMENI', 37.8075, 23.78426, 'Under the cliffs by the lake'),
-  spot('riviera', 'limanakia', 'LIMANAKIA', 37.8018, 23.79045, 'The coves along the cliff road'),
-  spot('riviera', 'varkiza', 'VARKIZA', 37.81501, 23.80073, 'The beach town on the Athens Riviera'),
-  spot('riviera', 'athinon-souniou', 'ATHINON–SOUNIOU AVENUE', 37.8164, 23.82016, 'The fast coastal avenue'),
-  spot('riviera', 'lomvarda', 'LOMVARDA', 37.82052, 23.83765, 'The far end of the coast road'),
-  spot('penteli', 'dionysos', 'PENTELI START', 38.0959, 23.8913, 'Dionysos, at the foot of the mountain road'),
-  spot('penteli', 'village', 'DIONYSOS VILLAGE', 38.09447, 23.894, 'Village streets below Penteli'),
-  spot('penteli', 'rapentosa', 'RAPENTOSA SLOPES', 38.08296, 23.90852, 'The climb through the pines'),
-  spot('penteli', 'agios-petros', 'AGIOS PETROS', 38.07197, 23.93454, 'High on the mountain road'),
-  spot('penteli', 'ascent', 'PENTELI ASCENT', 38.0724, 23.92221, 'Hairpins up the mountain'),
-  spot('penteli', 'karakanta', 'KARAKANTA PASS', 38.0669, 23.90099, 'The pass at the top'),
-  spot('psychiko', 'faros', 'FAROS TRAFFIC LIGHT', 38.00512, 23.77551, 'At the lights on surface Kifisias'),
-  spot('psychiko', 'elikonos', 'ELIKONOS LIGHT', 38.01009, 23.77978, 'Turn onto surface Kifisias'),
-  spot('psychiko', 'diamantidou', 'DIAMANTIDOU', 38.01166, 23.77274, 'Where the garden streets begin'),
-  spot('psychiko', 'benaki', 'EMMANOUIL BENAKI', 38.01399, 23.78042, 'The eastern edge of the neighbourhood'),
-  spot('psychiko', 'drydon', 'DRYADON', 38.01955, 23.77113, 'The northern loop'),
-  spot('psychiko', 'lytra', 'NIKIFOROU LYTRA', 38.01724, 23.76886, 'The western loop'),
-  spot('psychiko', 'kifisias', 'KIFISIAS AVENUE', 38.01251, 23.78241, 'The long avenue on the east side'),
-  spot('psychiko', 'venizelou', 'VENIZELOU AVENUE', 38.02226, 23.7707, 'The avenue past the northern roundabout'),
-  spot('megara', 'start', 'MEGARA START STRAIGHT', 37.98707, 23.36316, 'The pit straight'),
-  spot('megara', 'back', 'MEGARA BACK STRAIGHT', 37.9883, 23.36285, 'The long straight at the far side'),
-  spot('megara', 'hairpin', 'MEGARA FINAL HAIRPIN', 37.98599, 23.36222, 'The tight hairpin at the far end'),
-  spot('megara', 'service', 'MEGARA SERVICE ROAD', 37.98384, 23.36122, 'The service road to the south'),
+// ---------------------------------------------------------------- areas
+// Owner 2026-10-20: "would it not make sense for free roam to just be click anywhere on the map" and "cycling through 40
+// POIs rather than general areas". There are no named POIs: you click anywhere and the click snaps to the nearest drivable
+// road. The arrows step through general areas, one per playable map. Each area has a start: a real point on that map's own
+// road network (checked by tools/owner-locked-free-roam-spawn.test.mjs) that the picker pre-selects when you step to it.
+const start = (mapId, lat, lon) => Object.freeze({ id: mapId, mapId, name: AREA_NAMES[mapId], lat, lon });
+export const AREA_STARTS = Object.freeze([
+  start('riviera', 37.81348, 23.78291), // Vouliagmeni, above the marina
+  start('penteli', 38.0959, 23.8913), // Dionysos, at the foot of the mountain road
+  start('psychiko', 38.01166, 23.77274), // Diamantidou, where the garden streets begin
+  start('megara', 37.98707, 23.36316), // the start straight
 ]);
-// The dev-flagged open world: real places of the streamed Athens basin. Only spots whose 512 m cell is hosted are offered.
-export const ATHENS_SPOTS = Object.freeze([
-  ['glyfada', 'GLYFADA', 37.8660, 23.7540, 'The seafront road'], ['elliniko', 'ELLINIKO', 37.8850, 23.7420, 'The old airport coast'],
-  ['faliro', 'NEO FALIRO', 37.9440, 23.6650, 'Along the Faliro waterfront'], ['piraeus', 'PIRAEUS', 37.9420, 23.6470, 'The port streets'],
-  ['syntagma', 'SYNTAGMA', 37.9755, 23.7348, 'Parliament and the avenues'], ['omonia', 'OMONIA', 37.9842, 23.7281, 'The central roundabout'],
-  ['kypseli', 'KYPSELI', 38.0, 23.74, 'Dense neighbourhood grid'], ['patisia', 'PATISIA', 38.0170, 23.7250, 'North of the centre'],
-].map(([id, name, lat, lon, note]) => Object.freeze({ id: `athens:${id}`, mapId: 'athens', name, note, lat, lon })));
+// The dev-flagged open world is one connected city, so its areas are its districts (owner 2026-10-20 on the Athens world:
+// "it does not have proper UI in the Athens thing"). The arrows step through the ones whose 512 m cell the published world
+// hosts, centre first; each start is a point in the district that the picker snaps to its nearest street.
+const district = (id, name, lat, lon) => Object.freeze({ id: 'athens:' + id, mapId: 'athens', name, lat, lon });
+export const ATHENS_DISTRICTS = Object.freeze([
+  district('syntagma', 'SYNTAGMA', 37.9755, 23.7348), district('plaka', 'PLAKA', 37.9718, 23.7296), district('kolonaki', 'KOLONAKI', 37.9781, 23.7428),
+  district('exarcheia', 'EXARCHEIA', 37.9868, 23.7335), district('kypseli', 'KYPSELI', 38.0004, 23.7389), district('patisia', 'PATISIA', 38.0163, 23.7334),
+  district('peristeri', 'PERISTERI', 38.0136, 23.6912), district('aigaleo', 'AIGALEO', 37.9918, 23.6813), district('piraeus', 'PIRAEUS', 37.9421, 23.6465),
+  district('kallithea', 'KALLITHEA', 37.9553, 23.7022), district('nea-smyrni', 'NEA SMYRNI', 37.9446, 23.7137), district('palaio-faliro', 'PALAIO FALIRO', 37.9276, 23.7008),
+  district('glyfada', 'GLYFADA', 37.8647, 23.7531), district('voula', 'VOULA', 37.8436, 23.7745), district('chalandri', 'CHALANDRI', 38.0212, 23.7993),
+  district('marousi', 'MAROUSI', 38.0502, 23.8071), district('kifisia', 'KIFISIA', 38.0737, 23.8114),
+  district('zografou', 'ZOGRAFOU', 37.9915, 23.768), district('kaisariani', 'KAISARIANI', 37.957, 23.791),
+  district('vyronas', 'VYRONAS', 37.955, 23.762), district('ilioupoli', 'ILIOUPOLI', 37.918, 23.756),
+  district('argyroupoli', 'ARGYROUPOLI', 37.907, 23.75), district('agia-paraskevi', 'AGIA PARASKEVI', 38.005, 23.82),
+]);
+/** the hosted districts, each with its Attica-map point and its Athens-world metres */
+export function athensDistricts(athensCells = null) {
+  return ATHENS_DISTRICTS.filter(d => !athensCells || athensCells.has(athensCell(...athensFromLonLat(d.lon, d.lat))))
+    .map(d => ({ ...d, at: atticaFromLonLat(d.lon, d.lat), local: athensFromLonLat(d.lon, d.lat) }));
+}
+/** the district a point of the Athens world is in: the nearest district centre (Attica units in, the district out) */
+export function nearestDistrict(districts, [ax, ay]) {
+  let best = null, bd = Infinity;
+  for (const d of districts) { const k = (d.at[0] - ax) ** 2 + (d.at[1] - ay) ** 2; if (k < bd) { bd = k; best = d; } }
+  return best;
+}
 
 const playableIds = () => new Set(getPlayableMaps(MAPS).map(m => m.id));
-/** The spots players can pick: every playable map's, in menu order (the map catalogue), plus the dev-flagged Athens world's. */
-export function spawnSpots({ athens = false, athensCells = null } = {}) {
+/** The areas the arrows step through: every playable map's, in menu order (the map catalogue). Under the dev flag the picker
+ * is the Athens open world instead, and its areas are the hosted districts (the world already contains the Riviera roads). */
+export function spawnAreas({ athens = false, athensCells = null } = {}) {
+  if (athens) return athensDistricts(athensCells);
   const playable = playableIds(), order = getPlayableMaps(MAPS).map(m => m.id);
-  const spots = SPAWN_SPOTS.filter(s => playable.has(s.mapId)).sort((a, b) => order.indexOf(a.mapId) - order.indexOf(b.mapId));
-  if (athens) spots.push(...ATHENS_SPOTS.filter(s => !athensCells || athensCells.has(athensCell(...athensFromLonLat(s.lon, s.lat)))));
-  return spots.map(s => ({ ...s, at: atticaFromLonLat(s.lon, s.lat), local: s.mapId === 'athens' ? athensFromLonLat(s.lon, s.lat) : localFromLonLat(s.mapId, s.lon, s.lat) }));
+  const areas = AREA_STARTS.filter(s => playable.has(s.mapId)).sort((a, b) => order.indexOf(a.mapId) - order.indexOf(b.mapId));
+  return areas.map(s => ({ ...s, at: atticaFromLonLat(s.lon, s.lat), local: localFromLonLat(s.mapId, s.lon, s.lat) }));
 }
 
 // ---------------------------------------------------------------- roads and snapping
@@ -107,11 +109,5 @@ export function snapToRoad(roads, ax, ay, radius) {
       if (d < bd) { bd = d; best = { mapId, at: [x, y], street: road.name, major: road.major, distance: Math.sqrt(d) }; }
     }
   }
-  return best && { ...best, local: localFromAttica(best.mapId, ...best.at) };
-}
-/** The spawn spot nearest to a point of a map (for naming a clicked road "near ..."). */
-export function nearestSpot(spots, mapId, ax, ay) {
-  let best = null, bd = Infinity;
-  for (const s of spots) if (s.mapId === mapId) { const d = Math.hypot(s.at[0] - ax, s.at[1] - ay); if (d < bd) { bd = d; best = s; } }
-  return best;
+  return best && { ...best, local: best.mapId === 'athens' ? athensFromAttica(...best.at) : localFromAttica(best.mapId, ...best.at) };
 }

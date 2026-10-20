@@ -13,6 +13,7 @@ import { defaultConfig, sanitizeConfig, effectiveEvent, configInvalidates, nextG
 import { isMapEnabled } from '../src/enabled-maps.js';
 import { canReverse } from '../src/map-catalog.js';
 import { carCategory, CAR_CLASSES } from '../src/car-catalog.js';
+import { canonicalCarId, DEFAULT_CAR_ID } from '../src/car-ids.js';
 import { classifyCar, PI_CLASSES } from '../src/car-performance.js';
 import { defaultCarRules, sanitizeCarRules, carEligibility, eligibleIds, balanceTable } from '../src/mp-car-rules.js';
 import { normalizeDriverAppearance } from '../src/driver-appearance-data.js';
@@ -109,9 +110,10 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
   // Host-submitted car lists must be a non-empty deduped subset of the
   // Host-submitted car lists must be a non-empty deduped subset of the
   // server catalogue; anything else is rejected, never coerced silently.
+  const fallbackCar = () => CARS.has(DEFAULT_CAR_ID) ? DEFAULT_CAR_ID : [...CARS][0];
   const sanitizeCarList = (ids) => {
     if (!Array.isArray(ids)) return null;
-    const list = [...new Set(ids.filter(id => CARS.has(id)))].slice(0, 64);
+    const list = [...new Set(ids.map(id => canonicalCarId(id, CARS)).filter(id => CARS.has(id)))].slice(0, 64);
     return list.length ? list : null;
   };
   const leave = (c) => {
@@ -199,7 +201,7 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
           // A second click or a retried message for the lobby the driver is already in is the same request: answer with the lobby, not an error toast.
           if (l && m.type === 'join' && String(m.code ?? '').trim().toUpperCase() === l.code) { publish(l); return; }
           if (l) return error('Leave your current lobby first.');
-          c.name = clean(m.name, c.name, 16); c.plate = formatPlate(c.name); c.car = CARS.has(m.car) ? m.car : 'mini';
+          c.name = clean(m.name, c.name, 16); c.plate = formatPlate(c.name); c.car = CARS.has(canonicalCarId(m.car, CARS)) ? canonicalCarId(m.car, CARS) : fallbackCar();
           c.ready = false; c.loaded = false; c.finish = null; c.dnf = false; c.state = null; c.stateAt = null; c.course = null; c.recovery = null;
           c.paint = /^#[a-f\d]{6}$/i.test(m.paint || '') ? m.paint.toLowerCase() : null; c.driver = normalizeDriverAppearance(m.driver);
           c.driverId = /^[a-zA-Z0-9_-]{8,64}$/.test(m.driverId || '') ? m.driverId : c.id;
@@ -343,6 +345,8 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
           // Car-only updates (ready:false/undefined) never need the track
           // version, so guests keep choosing cars while the lobby track loads.
           if (m.ready === true && ((m.mapId !== undefined && m.mapId !== l.mapId) || m.version !== maps.get(l.mapId).track.version)) return error('The track changed. Reload the game to join this race.');
+          // Owner decision 2026-10-20: an older client may still name a removed trim; it drives the model's top trim.
+          if (m.car !== undefined) m.car = canonicalCarId(m.car, CARS);
           if (m.car !== undefined && !CARS.has(m.car)) return error('Unknown car.');
           // Car and ready votes validate against the host ruleset, with the
           // reason in the message so the garage can show why a pick failed.
@@ -572,7 +576,9 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
       const c = { ...connection, name: clean(data.name, 'GR-1000', 16), plate: formatPlate(data.name || 'GR-1000'), ws, lobby: null, connected: sockets.has(data.token) };
       // Catalogue removals must not resurrect a retired vehicle after Worker hibernation.
       if(!CARS.has(c.car)){
-        c.car=CARS.has('mini')?'mini':[...CARS][0];c.ready=false;c.loaded=false;c.state=null;c.courseCursor=null;c.recovery=null;
+        const kept = canonicalCarId(c.car, CARS);
+        if(CARS.has(kept))c.car=kept;
+        else{c.car=fallbackCar();c.ready=false;c.loaded=false;c.state=null;c.courseCursor=null;c.recovery=null;}
       }
       // A platform replacement can drop every socket without close callbacks.
       // Start the reservation when that loss is discovered, not at race creation.

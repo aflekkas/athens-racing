@@ -1,5 +1,6 @@
 import { courseTowLimits, towCourseTo, coursePoseValid } from '../src/course.js';
 import { planTow, rawRoute, RoadIndex, roadSegments } from '../src/tow-placement.js';
+import { impactPowerFactor } from '../src/damage-math.js';
 export const RECOVERY_MS = 250;
 export const CAPTURE_RECOVERY_MS = 5000;
 export const RECOVERY_COOLDOWN_MS = 1000;
@@ -56,8 +57,9 @@ export function requestRecovery(driver, event, raceId, epoch, now, { route = nul
     vLong: 0, vLat: 0, steer: 0, gear: 1, rpm: 900, reverse: false,
     bodyDynamic: false, bodyQ: null, air: false, vy: 0, angularX: 0, angularY: 0, angularZ: 0,
     bodyHeave: 0, bodyPitch: 0, bodyRoll: 0,
-    damage: { front: 0, rear: 0, left: 0, right: 0 }, impactMechanical: 0, maxImpactEbs: 0,
-    engHealth: 1, engineDamage: 0, coolantTemp: 90, engineStalled: false, drivetrainBroken: false,
+    // (a tow keeps the car's damage: body, bent corners and mechanical wear stay until the run is restarted; only the acute
+    // failures that stopped it are cleared, so it comes back running. `damage`, `impactMechanical` and `engHealth` are left as they were.)
+    maxImpactEbs: 0, engHealth: impactPowerFactor(Math.min(0.9, Number(driver.state.impactMechanical) || 0)), engineDamage: 0, coolantTemp: 90, engineStalled: false, drivetrainBroken: false,
     engineFailureReason: null, mechanicalOverrevRpm: 0, motionEpoch: epoch, recoveryUntil: recovery.until };
   driver.stateAt = now;
   if (driver.course) towCourseTo(driver.course, { ...driver.state, kind }, now / 1000);

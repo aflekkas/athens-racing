@@ -1,0 +1,146 @@
+{
+ "syntagma-on": {
+  "calls": 121,
+  "triangles": 50570,
+  "textures": 16,
+  "geometries": 169,
+  "medianRenderCallMs": 8.7,
+  "gpuBytes": 38047422,
+  "tileGPU": 4170586,
+  "tileJS": 6631968,
+  "props": {
+   "instances": 103,
+   "signals": 14,
+   "drawCalls": 8,
+   "rebuilds": 4
+  },
+  "landmarks": null,
+  "horizon": null
+ },
+ "syntagma-off": {
+  "calls": 112,
+  "triangles": 44932,
+  "textures": 15,
+  "geometries": 169,
+  "medianRenderCallMs": 11.1,
+  "gpuBytes": 37960041,
+  "tileGPU": 4170586,
+  "tileJS": 6631968,
+  "props": {
+   "instances": 103,
+   "signals": 14,
+   "drawCalls": 8,
+   "rebuilds": 4
+  },
+  "landmarks": null,
+  "horizon": null
+ },
+ "kypseli-on": {
+  "calls": 128,
+  "triangles": 88841,
+  "textures": 16,
+  "geometries": 191,
+  "medianRenderCallMs": 14.6,
+  "gpuBytes": 39884956,
+  "tileGPU": 6008120,
+  "tileJS": 9529218,
+  "props": {
+   "instances": 52,
+   "signals": 30,
+   "drawCalls": 5,
+   "rebuilds": 5
+  },
+  "landmarks": null,
+  "horizon": null
+ },
+ "kypseli-off": {
+  "calls": 122,
+  "triangles": 83951,
+  "textures": 15,
+  "geometries": 191,
+  "medianRenderCallMs": 9.2,
+  "gpuBytes": 39797575,
+  "tileGPU": 6008120,
+  "tileJS": 9529218,
+  "props": {
+   "instances": 52,
+   "signals": 30,
+   "drawCalls": 5,
+   "rebuilds": 5
+  },
+  "landmarks": null,
+  "horizon": null
+ },
+ "peristeri-on": {
+  "calls": 116,
+  "triangles": 79602,
+  "textures": 16,
+  "geometries": 203,
+  "medianRenderCallMs": 5.2,
+  "gpuBytes": 43545678,
+  "tileGPU": 9667642,
+  "tileJS": 15189952,
+  "props": {
+   "instances": 20,
+   "signals": 11,
+   "drawCalls": 4,
+   "rebuilds": 6
+  },
+  "landmarks": null,
+  "horizon": null
+ },
+ "peristeri-off": {
+  "calls": 111,
+  "triangles": 77748,
+  "textures": 15,
+  "geometries": 203,
+  "medianRenderCallMs": 6.6,
+  "gpuBytes": 43458297,
+  "tileGPU": 9667642,
+  "tileJS": 15189952,
+  "props": {
+   "instances": 20,
+   "signals": 11,
+   "drawCalls": 4,
+   "rebuilds": 6
+  },
+  "landmarks": null,
+  "horizon": null
+ },
+ "glyfada-on": {
+  "calls": 147,
+  "triangles": 102310,
+  "textures": 16,
+  "geometries": 203,
+  "medianRenderCallMs": 4.3,
+  "gpuBytes": 43545678,
+  "tileGPU": 9667642,
+  "tileJS": 15189952,
+  "props": {
+   "instances": 13,
+   "signals": 0,
+   "drawCalls": 3,
+   "rebuilds": 7
+  },
+  "landmarks": null,
+  "horizon": null
+ },
+ "glyfada-off": {
+  "calls": 142,
+  "triangles": 101635,
+  "textures": 15,
+  "geometries": 203,
+  "medianRenderCallMs": 4.3,
+  "gpuBytes": 43458297,
+  "tileGPU": 9667642,
+  "tileJS": 15189952,
+  "props": {
+   "instances": 13,
+   "signals": 0,
+   "drawCalls": 3,
+   "rebuilds": 7
+  },
+  "landmarks": null,
+  "horizon": null
+ }
+}

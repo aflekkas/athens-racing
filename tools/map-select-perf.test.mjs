@@ -34,7 +34,7 @@ function layersFromAsset() {
 }
 
 // ---- a recording canvas: every call is counted per surface; a fake clock advances 0.02 ms per call so time budgets are testable
-function rig({ dpr = 1, width = 1280, height = 800 } = {}) {
+function rig({ dpr = 1, width = 1280, height = 800, layers = null } = {}) {
   let now = 0; const tally = new Map(), ops = label => tally.get(label) || tally.set(label, {}).get(label);
   const context = label => new Proxy({ getImageData: () => ({}) }, {
     get(target, name) { if (name in target) return target[name]; return (...args) => { const o = ops(label); o[name] = (o[name] || 0) + 1; now += .02; target.last = { name, args }; if (name === 'drawImage') (target.draws ||= []).push(args); }; },
@@ -44,12 +44,12 @@ function rig({ dpr = 1, width = 1280, height = 800 } = {}) {
   const makeCanvas = (w, h) => { const label = `tile${n++}`, g = context(label); const c = { width: w, height: h, getContext: () => g, label, g }; surfaces.push(c); return c; };
   const main = context('main');
   const image = (w, h) => ({ width: w, height: h });
-  const data = { art: { sea: image(750, 342), land: image(3000, 1370), detail: MAP_ASSETS.detail.map(d => ({ ...d, img: image(400, 300) })) }, layers: layersFromAsset(), size: MAP_VIEW };
+  const data = { art: { sea: image(750, 342), land: image(3000, 1370), detail: MAP_ASSETS.detail.map(d => ({ ...d, img: image(400, 300) })) }, layers: { ...layersFromAsset(), ...layers }, size: MAP_VIEW };
   const renderer = createMapRenderer({ ctx: main, data, makeCanvas, clock: () => now });
   const view = { width, height }; renderer.resize(view, dpr);
   const sum = (label, names) => Object.entries(ops(label)).filter(([k]) => !names || names.includes(k)).reduce((a, [, v]) => a + v, 0);
   const offscreen = names => [...tally].filter(([k]) => k !== 'main').reduce((a, [k]) => a + sum(k, names), 0);
-  return { renderer, main, view, dpr, surfaces, ops, now: () => now, advance: ms => { now += ms; },
+  return { renderer, data, main, view, dpr, surfaces, ops, now: () => now, advance: ms => { now += ms; },
     mainOps: names => sum('main', names), offOps: offscreen, mainDraws: () => main.draws || [], reset: () => { for (const k of tally.keys()) tally.set(k, {}); main.draws = []; } };
 }
 const VECTOR = ['stroke', 'fill', 'clip'];
@@ -63,12 +63,14 @@ const frame = (t, camera, now) => { t.renderer.paint(camera, now); return t.rend
 function settle(t, camera, start = 0, max = 400) { let now = start, frames = 0; do { now += 16.7; frames++; t.advance(16.7); } while (frame(t, camera, now) && frames < max); return { now, frames }; }
 
 test('the pyramid level is a power-of-two zoom step, at most a modest upscale of its tiles', () => {
-  for (const dpr of [1, 1.5, 2]) for (let scale = .8; scale <= 20; scale *= 1.07) {
+  for (const dpr of [1, 1.5, 2]) for (let scale = .8; scale <= 64; scale *= 1.07) {
     const j = levelFor(scale, dpr), shown = scale * dpr / 2 ** j;
     assert.ok(j >= 0 && j <= MAX_LEVEL, `level ${j}`);
     if (j > 0 && j < MAX_LEVEL) assert.ok(shown > .59 && shown <= 1.19 + 1e-9, `scale ${scale} dpr ${dpr}: tiles shown at ${shown.toFixed(2)}x`);
   }
-  assert.equal(levelFor(20, 2), MAX_LEVEL, 'the closest zoom on a retina screen is still inside the pyramid');
+  // Track select stops at 20 px / unit; the free roam picker zooms to street level, 64 (src/spawn-select.js MAX_ZOOM).
+  assert.equal(levelFor(64, 2), MAX_LEVEL, 'the closest picker zoom on a retina screen is still inside the pyramid');
+  assert.ok(levelFor(20, 2) < MAX_LEVEL, 'and Track select\'s closest zoom is well inside it');
 });
 
 test('a resting map does no work: the renderer reports idle and a pump issues no canvas calls', () => {
@@ -160,13 +162,16 @@ test('src/map-select.js draws on demand: no polling, no drawing from gesture han
   assert.doesNotMatch(js + render, /setInterval|setTimeout\(/, `no timers: the map is driven by animation frames only while it has work. ${owner}`);
   assert.doesNotMatch(js + render, /shadowBlur|ctx\.filter\s*=/, `no per-frame blur or filter on the canvas. ${owner}`);
   assert.doesNotMatch(js, /ctx\.(clip|drawImage)\(/, `the base layer (images, clip, roads) is painted by map-select-render.js only. ${owner}`);
-  // The frame loop re-arms only while the camera, the route trace or background painting has work.
-  assert.match(js, /if \(motion \|\| reveal \|\| base\?\.busy\) frame = requestAnimationFrame\(run\);/, owner);
+  // The frame loop re-arms only while the camera, the route trace, a released drag's glide or background painting has work.
+  assert.match(js, /if \(motion \|\| reveal \|\| glide\.active \|\| base\?\.busy\) frame = requestAnimationFrame\(run\);/, owner);
   assert.equal([...js.matchAll(/requestAnimationFrame\(run\)/g)].length, 2, 'only run() and start() schedule the frame loop');
   // Pointer gestures only mark the frame dirty; the painting happens once per animation frame, however fast the mouse reports.
   const gesture = js.slice(js.indexOf("map.addEventListener('pointermove'"), js.indexOf('  const up ='));
   assert.doesNotMatch(gesture, /\bsync\(|\bdraw\(|\.paint\(/, `pointermove must not paint. ${owner}`);
   assert.match(gesture, /want\(\)/, owner);
+  // A trackpad scroll pans by marking the frame dirty too (src/map-wheel.js, owner 2026-10-20).
+  const wheel = js.slice(js.indexOf("map.addEventListener('wheel'"), js.indexOf("map.addEventListener('pointerdown'"));
+  assert.doesNotMatch(wheel, /\bsync\(|\bdraw\(|\.paint\(/, `the wheel handler must not paint. ${owner}`); assert.match(wheel, /want\(\)/, owner);
   // Hidden tab, another screen or a closed menu: cancel the frame and do nothing until visible again.
   assert.match(js, /document\.addEventListener\('visibilitychange'/, owner);
   assert.match(js, /new IntersectionObserver\(/, owner);
@@ -176,4 +181,46 @@ test('src/map-select.js draws on demand: no polling, no drawing from gesture han
   assert.match(read('src/ui/ui.css'), /\.panel--float\.panel--moving \{[^}]*backdrop-filter: none/, owner);
   assert.match(js, /card\.classList\.toggle\('panel--moving'/, owner);
   assert.match(read('src/ui/ui.css'), /\.panel--float \{[^}]*backdrop-filter: blur\(/, owner);
+});
+
+test('a pan into unpainted map is covered by the coarse floor tile first, so no dark hole waits on the fine tiles', () => {
+  // Owner 2026-10-20 ("trackpad pans"): two-finger scrolls expose new parts of the map often. A fine tile that is not painted
+  // yet is drawn from a coarser one; when even the coarse floor level has not reached that part, its floor tile goes first.
+  const t = rig(), scale = 14, cam = cameraAt(t.view, scale, ...TRACK_ROUTES.riviera.start), j = levelFor(scale, 1), s = TILE / 2 ** j;
+  const k = cam.scale, ox = t.view.width / 2 + cam.x - MAP_VIEW.width / 2 * k, oy = t.view.height / 2 + cam.y - MAP_VIEW.height / 2 * k;
+  const vis = [-ox / k, -oy / k, (t.view.width - ox) / k, (t.view.height - oy) / k];
+  const shown = (Math.floor(vis[2] / s) - Math.floor(vis[0] / s) + 1) * (Math.floor(vis[3] / s) - Math.floor(vis[1] / s) + 1);
+  frame(t, cam, 16.7);
+  t.reset(); t.renderer.paint(cam, 33.4);
+  assert.ok(t.mainDraws().length >= shown, `after one frame every one of the ${shown} visible tiles is drawn, from a stand-in if need be (${t.mainDraws().length} draws). ${owner}`);
+});
+
+// Free roam in the Athens world (lead 2026-10-20, owner: "the whole thing felt jank"): a whole city of streets is drawn into
+// the tiles as an overlay. That is far more ink than the base map, so a tile's paint is sliced across frames, and the
+// overlay arriving late repaints tiles behind the old ones instead of blanking the map.
+function cityOverlay(cells = 3000) {
+  const square = (i, size) => { const x = 690 + (i % 60) * size, y = 300 + Math.floor(i / 60) * size; return { path: {}, box: [x, y, x + size, y + size] }; };
+  return { major: Array.from({ length: cells / 4 }, (_, i) => square(i, 2)), minor: Array.from({ length: cells }, (_, i) => square(i, 1)), colour: '#8fb4ff', streetsFrom: 0, streetsFull: 1 };
+}
+test('a tile heavy with streets is painted over several frames, each within the frame budget', () => {
+  const t = rig({ layers: { overlay: cityOverlay() } }), cam = cameraAt(t.view, 24, 720, 320);
+  let now = 0, worst = 0, frames = 0;
+  t.renderer.prime(cameraAt(t.view, 1, 750, 400));
+  for (; frames < 4000; frames++) { const start = t.now(); now += 16.7; t.renderer.paint(cam, now); const more = t.renderer.pump(now); worst = Math.max(worst, t.now() - start); t.advance(16.7); if (!more) break; }
+  assert.ok(frames < 4000, 'it settles');
+  assert.ok(worst <= BUDGET + 2, `the slowest frame did ${worst.toFixed(2)} ms of canvas work (budget ${BUDGET} ms)`);
+  assert.ok(t.renderer.stats().painted > 0);
+});
+test('an overlay that arrives late repaints behind the old tiles: no frame shows an empty map', () => {
+  const t = rig(), cam = cameraAt(t.view, 6, 735, 337);
+  settle(t, cam);
+  t.data.layers.overlay = cityOverlay(400); t.renderer.refresh();
+  let now = 100000, blank = 0, strokes = 0;
+  for (let f = 0; f < 600; f++) {
+    strokes += t.offOps(['stroke']); t.reset(); now += 16.7; t.advance(16.7); t.renderer.paint({ ...cam, x: cam.x + f, y: cam.y }, now);
+    if (!t.mainDraws().length) blank++;
+    if (!t.renderer.pump(now) && f > 5) break;
+  }
+  assert.equal(blank, 0, 'every frame blits map tiles (old ones until the new ones are ready)');
+  assert.ok(strokes + t.offOps(['stroke']) > 0, 'and the tiles were painted again, with the overlay');
 });

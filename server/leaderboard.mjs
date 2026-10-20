@@ -1,19 +1,29 @@
 import { mkdir, readFile, writeFile, rename, unlink } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { resultContext, validResult, resultEntry, leaderboardVersion, boardKey, filterEntries } from './leaderboard-policy.mjs';
+import { resultContext, validResult, resultEntry, leaderboardVersion, boardKey, filterEntries, canonicalResult, canonicalEntries } from './leaderboard-policy.mjs';
 
 export async function createLeaderboard(file, definitions, cars, version, maps) {
   let entries;
   try { entries = JSON.parse(await readFile(file, 'utf8')).entries; if (!Array.isArray(entries)) throw new Error('Invalid leaderboard file'); }
   catch (e) { if (e.code !== 'ENOENT') throw e; entries = []; }
   let pending = Promise.resolve();
-  const validate = r => validResult(r, resultContext(r, definitions, version, maps).event, cars);
+  const write = async next => {
+    await mkdir(dirname(file), { recursive: true });
+    const temp = file + '.' + randomUUID() + '.tmp';
+    try { await writeFile(temp, JSON.stringify({ schema: 1, entries: next }) + '\n', { mode: 0o600 }); await rename(temp, file); }
+    catch (e) { await unlink(temp).catch(() => {}); throw e; }
+  };
+  // Owner decision 2026-10-20: entries stored under a removed trim move to that model's top trim (docs/OWNER-DECISIONS.md).
+  const migrated = canonicalEntries(entries, cars);
+  if (migrated.changed) { entries = migrated.entries; await write(entries); }
+  const validate = r => validResult(canonicalResult(r, cars), resultContext(r, definitions, version, maps).event, cars);
   const list = (filters = {}) => {
     const mapId = filters.mapId || 'riviera';
     return filterEntries(entries.filter(e => (e.mapId || 'riviera') === mapId && e.version === leaderboardVersion(mapId, maps ? maps.get(mapId)?.track.version : version)), { ...filters, mapId });
   };
   const submit = r => {
+    r = canonicalResult(r, cars);
     if (!validate(r)) return Promise.reject(Object.assign(new Error('Unknown event/car or implausible result time.'), { status: 400 }));
     const run = pending.then(async () => {
       const { event, version: entryVersion, mapId } = resultContext(r, definitions, version, maps);
@@ -29,10 +39,7 @@ export async function createLeaderboard(file, definitions, cars, version, maps) 
         const count = (buckets.get(key) || 0) + 1; buckets.set(key, count); return count <= 200;
       });
       if (!next.includes(entry)) return { saved: false, best: old?.time ?? null, reason: 'This board retains its fastest 200 drivers.' };
-      await mkdir(dirname(file), { recursive: true });
-      const temp = file + '.' + randomUUID() + '.tmp';
-      try { await writeFile(temp, JSON.stringify({ schema: 1, entries: next }) + '\n', { mode: 0o600 }); await rename(temp, file); }
-      catch (e) { await unlink(temp).catch(() => {}); throw e; }
+      await write(next);
       entries = next;
       return { saved: true, best: entry.time };
     });

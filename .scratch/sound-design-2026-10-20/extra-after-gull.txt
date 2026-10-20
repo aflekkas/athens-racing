@@ -1,0 +1,1 @@
+extra-after: gull — -39.6 LUFS, -22.6 dBFS peak; spectrogram and waveform at default mix, no normalization.

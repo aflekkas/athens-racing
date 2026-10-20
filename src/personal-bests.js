@@ -1,4 +1,5 @@
 import { matchesRecord } from './leaderboard-records.js';
+import { canonicalCarId } from './car-ids.js';
 // Personal records are versioned separately from the event medal/leaderboard store.
 // Only a completed, normally driven run can enter this local board.
 const STORAGE_KEY = 'paraliaki.personalBests.v1';
@@ -12,8 +13,6 @@ export function personalBestSetup({ mapId, def = {}, route = {}, car, carSpec = 
     type: def.type || 'sprint', from: station(route.s0), to: station(route.s1), direction: route.dir || 1,
     laps: route.laps || 1, car: car || def.car || 'unknown',
     ...(carSpec.name ? { carName: carSpec.name } : {}),
-    ...(carSpec.generation ? { carGeneration: carSpec.generation } : {}),
-    ...(carSpec.trimLabel || carSpec.trim ? { carTrim: carSpec.trimLabel || carSpec.trim } : {}),
     traffic: Number(def.traffic ?? 1), time: def.setup?.time ?? def.conditions?.time ?? conditions.time ?? 'afternoon',
     weather: def.setup?.weather ?? def.conditions?.weather ?? conditions.weather ?? 'clear',
     rivals: Number(def.rivalCount ?? (Array.isArray(def.rivals) ? def.rivals.length : def.rivals) ?? 0),
@@ -26,19 +25,41 @@ const legacyBestKey = setup => JSON.stringify(personalBestSetup({
   route: { s0: setup.from, s1: setup.to, dir: setup.direction, laps: setup.laps }, car: setup.car,
   conditions: { time: setup.time, weather: setup.weather }, assists: { tc: setup.tc, abs: setup.abs, steering: setup.steering, gearbox: setup.gearbox },
 }));
-export const exactBestKey = setup => {
-  const base = JSON.parse(legacyBestKey(setup));
-  // Display names are metadata, while generation/trim can change performance.
-  for (const k of ['carGeneration', 'carTrim']) if (setup[k]) base[k] = setup[k];
-  return JSON.stringify(base);
-};
+// One board per car: the car id is the only car field in the key (names are display metadata). Trim fields no longer exist.
+// A setup that still names a removed trim reads and writes its model's top-trim board.
+export const exactBestKey = setup => legacyBestKey(canonicalSetup(setup));
 // Route board intentionally spans cars, event names, weather, traffic and aids.
 export const routeBestKey = s => JSON.stringify([s.map, s.from, s.to, s.direction, s.laps]);
 export const bestGhostEvent = setup => 'personal-best:' + exactBestKey(setup);
-function read(st) { try { const d = JSON.parse(st.getItem(STORAGE_KEY) || '{}'); return d?.version === 1 && d.exact && d.routes ? d : { version: 1, exact: {}, routes: {} }; } catch { return { version: 1, exact: {}, routes: {} }; } }
+// Owner decision 2026-10-20 (docs/OWNER-DECISIONS.md): a record set with a removed trim belongs to that model's top trim, and the trim
+// fields are gone. Idempotent; where two records land on one board the faster time wins.
+const canonicalSetup = setup => {
+  if (!setup || typeof setup !== 'object' || Array.isArray(setup)) return setup;
+  const { carName, carGeneration, carTrim, ...rest } = setup, car = canonicalCarId(rest.car);
+  return carTrim === undefined && carGeneration === undefined && car === rest.car ? setup : { ...rest, car, ...(car === rest.car && carName ? { carName } : {}) };
+};
+const canonicalRecord = raw => {
+  if (!raw || typeof raw !== 'object') return raw;
+  const setup = canonicalSetup(raw.setup), car = canonicalCarId(raw.car);
+  return setup === raw.setup && car === raw.car ? raw : { ...raw, car, ...(setup ? { setup } : {}) };
+};
+function canonicalStore(d) {
+  const keyOf = (key, setup) => { if (setup) return exactBestKey(setup); try { const s = JSON.parse(key); return s && typeof s === 'object' && !Array.isArray(s) ? exactBestKey(canonicalSetup(s)) : key; } catch { return key; } };
+  const exact = {}, routes = {};
+  for (const [key, raw] of Object.entries(d.exact)) {
+    const record = canonicalRecord(raw), next = keyOf(key, record?.setup);
+    if (!exact[next] || !valid(exact[next]) || (valid(record) && record.time < exact[next].time)) exact[next] = record;
+  }
+  for (const [key, raw] of Object.entries(d.routes)) {
+    const record = canonicalRecord(raw);
+    if (!routes[key] || !valid(routes[key]) || (valid(record) && record.time < routes[key].time)) routes[key] = record;
+  }
+  return { ...d, exact, routes };
+}
+function read(st) { try { const d = JSON.parse(st.getItem(STORAGE_KEY) || '{}'); return d?.version === 1 && d.exact && d.routes ? canonicalStore(d) : { version: 1, exact: {}, routes: {} }; } catch { return { version: 1, exact: {}, routes: {} }; } }
 const valid = record => record && Number.isFinite(record.time) && record.time > 0;
 export function getPersonalBests(setup, st = storage()) {
-  const d = read(st), exact = d.exact[exactBestKey(setup)] || (!setup.carTrim && !setup.carGeneration ? d.exact[legacyBestKey(setup)] : null), route = d.routes[routeBestKey(setup)];
+  const d = read(st), exact = d.exact[exactBestKey(setup)], route = d.routes[routeBestKey(setup)];
   return { exact: valid(exact) ? exact : null, route: valid(route) ? route : null };
 }
 export function recordPersonalBest(setup, result, st = storage()) {

@@ -1,6 +1,7 @@
-// Owner decision 2026-10-19 (docs/OWNER-DECISIONS.md, "Free roam: pick where to spawn, not a track"):
-// "free roam should have no tracks, it should be more of like i just pick where to be spawned".
-// FREE ROAM opens a spawn picker (named spots plus a click on any drivable road) on the Attica map, and the car is placed on
+// Owner decisions 2026-10-19 ("Free roam: pick where to spawn, not a track") and 2026-10-20 ("Free roam: click anywhere on
+// the map, no POI list; trackpad pans"), docs/OWNER-DECISIONS.md: "would it not make sense for free roam to just be click
+// anywhere on the map". FREE ROAM opens a spawn picker on the Attica map: a click anywhere snaps to the nearest drivable
+// road, the arrows step through general areas (one per playable map), there are no POI pins, and the car is placed on
 // the nearest road with the tow placement. Do not bring the track list, a track name, length, laps or a leaderboard back to
 // free roam, and do not show the open world to players before the owner activates it, without a new owner decision.
 import test from 'node:test';
@@ -18,10 +19,10 @@ import { CARS } from '../src/cars.js';
 import { freeRoam } from '../src/events.js';
 import { TRACK_ROUTES } from '../src/attica-map-data.js';
 import { initialMapId } from '../src/menu-map.js';
-import { SPAWN_SPOTS, ATHENS_SPOTS, spawnSpots, athensEnabled, decodeSpawnRoads, snapToRoad, atticaFromLocal, localFromAttica, atticaFromLonLat, lonLatFromAttica, athensFromAttica, athensFromLonLat, athensCell } from '../src/spawn-spots.js';
+import { AREA_STARTS, ATHENS_DISTRICTS, spawnAreas, athensEnabled, decodeSpawnRoads, snapToRoad, atticaFromLocal, localFromAttica, atticaFromLonLat, lonLatFromAttica, athensFromAttica, athensFromLonLat, athensCell } from '../src/spawn-spots.js';
 import { buildSpawnRoads, UNIT } from './build-spawn-roads.mjs';
 
-const OWNER = 'Owner-locked decision (2026-10-19: free roam picks a spawn point, no tracks), see docs/OWNER-DECISIONS.md. Ask the owner before changing.';
+const OWNER = 'Owner-locked decision (2026-10-19 free roam picks a spawn point, no tracks; 2026-10-20 click anywhere, areas not POIs), see docs/OWNER-DECISIONS.md. Ask the owner before changing.';
 const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8');
 const strip = text => text.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
 const main = read('src/main.js'), menu = read('src/menu.js'), boot = read('src/boot.js'), pickerSource = read('src/spawn-select.js');
@@ -47,8 +48,11 @@ test('FREE ROAM opens the spawn picker on the full-page Attica map, not the trac
   assert.match(html, /data-act="spawnDrive"/, `the panel has DRIVE. ${OWNER}`); assert.match(html, /data-act="spawnCar"/, `and the existing change-car path. ${OWNER}`);
   assert.match(html, /list-row[^>]*data-act="spawnCar"[^]*?<b>TEST CAR<\/b>/, `and the car. ${OWNER}`);
   assert.doesNotMatch(html, /RESET|mapReset/, `no reset button. ${OWNER}`);
-  // Every named spot is a pin, with its place name.
-  for (const spot of spawnSpots()) { assert.ok(html.includes(`data-spot="${spot.id}"`), `${spot.id} has a pin`); assert.ok(html.includes(`<span>${spot.name}</span>`), `${spot.id} shows its name`); }
+  // No POI pins or list: one marker names the chosen road point, and the panel's arrows step through areas.
+  assert.doesNotMatch(html, /spawn-pin|data-spot=|track-pin/, `no POI pins. ${OWNER}`);
+  assert.match(html, /class="spawn-marker on"[^]*?class="spawn-marker__name">ATHENS RIVIERA</, `the marker names the place. ${OWNER}`);
+  assert.match(html, /map-track-count">ATHENS RIVIERA</, `the arrows show the area. ${OWNER}`);
+  assert.match(html, /Click anywhere/, OWNER);
   assert.doesNotMatch(html, /data-map-id|track-pin__dot">\d|data-confirm-track|SELECT TRACK/, `no track pins or SELECT TRACK. ${OWNER}`);
   // The menu routes FREE ROAM to it and keeps the track picker for Quick Race.
   assert.match(menu, /case 'free': this\.filter = 'free'; this\.show\('maps', \{ filter: 'free', mode: 'free' \}, true\)/, OWNER);
@@ -58,33 +62,34 @@ test('FREE ROAM opens the spawn picker on the full-page Attica map, not the trac
   assert.doesNotMatch(read('src/map-select.js'), /mode === 'free'|'free:' \+ id/, `the track picker no longer has a free roam branch. ${OWNER}`);
   assert.match(menu, /'FREE ROAM', 'Pick where to start on the map[^']*', '[^']*', 'CHOOSE SPAWN'/, OWNER);
 });
-test('the picker has the named spots, snaps clicks to roads, flies to a chosen spot and has no reset', () => {
+test('the picker snaps a click anywhere to a road, steps through areas with the arrows and has no reset', () => {
   const code = strip(pickerSource);
   assert.match(code, /snapToRoad\(roads, wx, wy, radius\)/, `a click snaps to the nearest drivable road. ${OWNER}`);
   assert.match(code, /NO ROAD HERE/, `and says so when there is none. ${OWNER}`);
-  assert.match(code, /flyTo\(focusOn\(choice\.at, flyScale\)\)/, `choosing flies the camera. ${OWNER}`);
+  assert.match(code, /render\(roadChoice\(snap(?:, areas)?\)\);/, `a click places the start where you clicked. ${OWNER}`);
+  assert.match(code, /flyTo\(areaCamera\(/, `stepping to an area flies the camera there. ${OWNER}`);
+  assert.match(code, /const cycle = delta => \{ const i = Math\.max\(0, areas\.findIndex/, `the arrows cycle areas, not POIs. ${OWNER}`);
+  assert.doesNotMatch(code, /spawnSpots|SPAWN_SPOTS|spawn-pin/, `no POI list. ${OWNER}`);
   assert.match(code, /\['left', 'shiftDown', 'mapPrev'\]\.includes\(name\)\) \{ cycle\(-1\)/, `A / LB / previous. ${OWNER}`); assert.match(code, /\['right', 'shiftUp', 'mapNext'\]\.includes\(name\)\) \{ cycle\(1\)/, `D / RB / next. ${OWNER}`);
   assert.match(code, /e\.key === 'ArrowLeft' \|\| e\.key === 'ArrowRight'/, OWNER);
-  assert.match(code, /map\.addEventListener\('wheel'/, `scroll zooms. ${OWNER}`); assert.match(code, /pinch/, `pinch zooms. ${OWNER}`); assert.match(code, /drag/, `drag pans. ${OWNER}`);
+  assert.match(code, /map\.addEventListener\('wheel'/, `wheel and trackpad input (tools/map-wheel.test.mjs). ${OWNER}`); assert.match(code, /pinch/, `pinch zooms. ${OWNER}`); assert.match(code, /drag/, `drag pans. ${OWNER}`);
   assert.doesNotMatch(code, /reset|RESET|rotate-ccw/, `no reset control. ${OWNER}`);
   assert.doesNotMatch(code, /<select|C\.dialog\(|role="dialog"/, `no native dropdowns or dialogs. ${OWNER}`);
-  const css = strip(read('src/map-select.css')), spawn = css.slice(css.indexOf('.spawn-pin'), css.indexOf('Map labels'));
+  const css = strip(read('src/map-select.css')), spawn = css.slice(css.indexOf('.spawn-marker'), css.indexOf('Map labels'));
   assert.doesNotMatch(spawn, /outline|:focus|border-color:\s*(?:#[0-9a-f]*[bf]\b|blue)/i, `no outlines. ${OWNER}`);
   assert.match(spawn, /transition:/, `selection states animate. ${OWNER}`);
 });
-test('named spots: 4 to 8 real places per playable map, all on that map\'s own road network', () => {
-  const playable = getPlayableMaps(MAPS).map(m => m.id), spots = spawnSpots();
-  assert.deepEqual([...new Set(spots.map(s => s.mapId))].sort(), [...playable].sort(), 'every playable map has spots, and only playable maps');
-  for (const id of playable) { const n = spots.filter(s => s.mapId === id).length; assert.ok(n >= 4 && n <= 8, `${id} has ${n} spots`); }
+test('areas: exactly one per playable map, each with a start on that map\'s own road network', () => {
+  const playable = getPlayableMaps(MAPS).map(m => m.id), areas = spawnAreas();
+  assert.deepEqual(areas.map(a => a.mapId), playable.filter(id => areas.some(a => a.mapId === id)), 'in menu order');
+  assert.deepEqual(areas.map(a => a.mapId).sort(), [...playable].sort(), `one area per playable map, and only playable maps. ${OWNER}`);
   for (const id of ['riviera', 'penteli', 'psychiko', 'megara']) assert.ok(playable.includes(id));
-  assert.equal(new Set(spots.map(s => s.id)).size, spots.length, 'unique ids'); assert.equal(new Set(spots.map(s => s.name)).size, spots.length, 'unique names');
-  for (const name of ['VOULIAGMENI', 'VARKIZA', 'PENTELI START', 'DIONYSOS VILLAGE', 'KIFISIAS AVENUE']) assert.ok(spots.some(s => s.name === name), name);
-  for (const spot of spots) {
-    assert.ok(/^[A-Z0-9 –·.'-]+$/.test(spot.name), `${spot.id}: a place name`);
-    const snap = snapToRoad(roads, ...spot.at, 40 / METRES);
-    assert.ok(snap && snap.mapId === spot.mapId, `${spot.id} is on a drivable road of ${spot.mapId}`);
+  for (const area of areas) {
+    assert.ok(/^[A-Z ]+$/.test(area.name), `${area.id}: a general area name, not a POI`);
+    const snap = snapToRoad(roads, ...area.at, 40 / METRES);
+    assert.ok(snap && snap.mapId === area.mapId, `${area.id}: its start is on a drivable road of ${area.mapId}`);
   }
-  assert.ok(SPAWN_SPOTS.every(s => PLAYABLE_MAPS.includes(s.mapId)), 'no spot belongs to a map players cannot drive');
+  assert.ok(AREA_STARTS.every(s => PLAYABLE_MAPS.includes(s.mapId)), 'no area belongs to a map players cannot drive');
 });
 test('clicking the map snaps to the nearest drivable road within a sensible radius, otherwise there is no road', () => {
   const [ax, ay] = atticaFromLonLat(23.78291, 37.81348), snap = snapToRoad(roads, ax, ay, 1.4);
@@ -112,7 +117,7 @@ test('assets/maps/spawn-roads.json is the maps\' drivable roads (regenerate with
 
 // ---------------------------------------------------------------- the placement
 const forward = yaw => [-Math.sin(yaw), -Math.cos(yaw)];
-for (const def of getPlayableMaps(MAPS)) test(`${def.id}: every spawn spot and clicked road point puts the car on the road, at road level, facing along it, clear of traffic`, async () => {
+for (const def of getPlayableMaps(MAPS)) test(`${def.id}: the area start and every clicked road point puts the car on the road, at road level, facing along it, clear of traffic`, async () => {
   const beforeFetch = globalThis.fetch; globalThis.fetch = async u => new Response(readFileSync(new URL('../' + u, import.meta.url)));
   let map; try { map = await loadMap(undefined, './', def.id, { preload: false }); } finally { globalThis.fetch = beforeFetch; }
   const r = map.route, network = new RoadNetwork(map); network.source = map.terrain.H; map.roadNetwork = network;
@@ -142,7 +147,7 @@ for (const def of getPlayableMaps(MAPS)) test(`${def.id}: every spawn spot and c
     }
   };
   let spots = 0, clicks = 0, streets = 0;
-  for (const spot of spawnSpots().filter(s => s.mapId === def.id)) {
+  for (const spot of spawnAreas().filter(s => s.mapId === def.id)) {
     const plan = spawnOnRoad(v, { x: spot.local[0], z: spot.local[1], name: spot.name }); onRoad(plan, spot.id); spots++; streets += plan.kind === 'road';
     assert.ok(plan.distance < 45, `${spot.id}: the spot is a road, the car lands within ${plan.distance.toFixed(1)} m of it`);
     ground.resolve(v, 1 / 60); assert.ok(v._network ? network.sample(v.x, v.z)?.step === 0 : Math.abs(v.u) + v.halfW < r.edge(v.s) + .05, `${spot.id}: the first live step stays on the road`);
@@ -158,7 +163,7 @@ for (const def of getPlayableMaps(MAPS)) test(`${def.id}: every spawn spot and c
     const p = list[i].pts, k = Math.floor(p.length / 4) * 2, snap = snapToRoad({ [def.id]: roads[def.id] }, p[k], p[k + 1], 1.4);
     if (!snap) continue; for (const away of [0, 20]) { const plan = spawnOnRoad(v, { x: snap.local[0] + away, z: snap.local[1] }); onRoad(plan, `${def.id} click ${i} +${away} m`); clicks++; }
   }
-  assert.ok(spots >= 4 && clicks >= 10, `${def.id}: ${spots} spots and ${clicks} clicks placed (${streets} on side streets)`);
+  assert.ok(spots === 1 && clicks >= 10, `${def.id}: its area start and ${clicks} clicks placed (${streets} on side streets)`);
 });
 
 // ---------------------------------------------------------------- free roam stays clean
@@ -178,20 +183,27 @@ test('free roam carries a spawn and nothing of a track: no route, start/finish, 
   assert.match(boot, /startFree: async def => \{[^}]*flow\.startEvent\(def, \{ car \}\)/, OWNER); assert.match(main, /startFree: def => startEvent\(def, \{ car: G\.carIdx \}\)/, OWNER);
     assert.match(main, /const spawn = solo && def\.type === 'free' \? def\.spawn : null;[^\n]*\n\s*if \(spawn\) spawnOnRoad\(player\.veh, spawn\);/, OWNER);
   assert.match(section('/** Free roam starts where', '/** offline reset onto the active event'), /planTow\(\{ x: spawn\.x, z: spawn\.z, yaw: spawn\.yaw \?\? 0, route: kit\.adapter, index: kit\.index, dir: 1, course: null, clear: towClearance\(pv\) \}\)/, OWNER);
-  assert.match(menu, /if \(el\.dataset\.spot\) \{ this\.h\.ui\?\.\(true\); driveFromSpawn\(this\); return; \}/, `confirm on a pin drives. ${OWNER}`);
+  assert.doesNotMatch(menu, /dataset\.spot/, `there are no spawn pins to confirm on. ${OWNER}`);
   assert.match(menu, /case 'spawnDrive': driveFromSpawn\(this\); break;/, OWNER); assert.match(menu, /case 'spawnCar': this\.h\.garage\?\.\(\); break;/, OWNER);
 });
 
 // ---------------------------------------------------------------- the open world stays hidden
 test('the whole-Athens open world is hidden without ?map=athens', async () => {
   assert.equal(athensEnabled(''), false); assert.equal(athensEnabled('?menu=1'), false); assert.equal(athensEnabled('?map=riviera'), false); assert.equal(athensEnabled('?map=athens'), true);
-  assert.ok(!spawnSpots().some(s => s.mapId === 'athens'), `no Athens spot without the flag. ${OWNER}`); assert.ok(spawnSpots({ athens: true }).filter(s => s.mapId === 'athens').length >= 4, 'with the flag it joins');
-  assert.ok(ATHENS_SPOTS.every(s => s.mapId === 'athens' && s.id.startsWith('athens:')));
-  const plain = await renderPicker('?menu=1'); assert.doesNotMatch(plain, /data-spot="athens:|ATHENS OPEN WORLD/, `players never see the open world. ${OWNER}`);
-  const flagged = await renderPicker('?map=athens&menu=1'); assert.match(flagged, /data-spot="athens:glyfada"/, 'the dev flag shows it');
+  assert.ok(!spawnAreas().some(s => s.mapId === 'athens'), `no Athens area without the flag. ${OWNER}`);
+  // With the flag the picker is the open world, one connected city: its areas are its districts (lead 2026-10-20), centre first.
+  const districts = spawnAreas({ athens: true });
+  assert.ok(districts.length >= 10 && districts.every(s => s.mapId === 'athens'), 'with the flag the areas are the Athens districts');
+  assert.equal(districts[0].name, 'SYNTAGMA');
+  assert.equal(spawnAreas({ athens: true, athensCells: new Set() }).length, 0, 'none that the world does not host');
+  assert.ok(ATHENS_DISTRICTS.every(s => s.mapId === 'athens' && s.id.startsWith('athens:')));
+  const plain = await renderPicker('?menu=1'); assert.doesNotMatch(plain, /SYNTAGMA|KYPSELI|athens:/, `players never see the open world. ${OWNER}`);
+  const flagged = await renderPicker('?map=athens&menu=1'); assert.match(flagged, /map-track-count">SYNTAGMA</, 'the dev flag shows it');
   assert.ok(!PLAYABLE_MAPS.includes('athens') && !MAPS.some(m => m.id === 'athens'), 'it is not a catalogue map');
   assert.ok(!JSON.stringify(roadsJson).includes('athens'), 'the road data is only the playable maps\'');
-  const code = strip(pickerSource); assert.match(code, /if \(athensEnabled\(\)\) loadAthens\(\)/, 'its cells and roads load only behind the flag'); assert.match(code, /athensEnabled\(\)/, OWNER);
+  const code = strip(pickerSource); assert.match(code, /const athensMode = athensEnabled\(\)/, OWNER);
+  assert.match(code, /if \(athensMode\) loadAthens\(\)/, 'its cells load only behind the flag'); assert.match(code, /loadRoads\(athensMode\)/, 'and so does its street file');
+  assert.match(code, /athens \? 'assets\/athens\/streets\.json' : 'assets\/maps\/spawn-roads\.json'/, OWNER);
   // The flag still boots the world directly (dev tooling); the menu route needs ?menu=1.
   assert.match(boot, /\(query\.get\('map'\)==='athens' && !query\.has\('menu'\)\) \|\| direct/, OWNER);
   assert.doesNotThrow(() => initialMapId(new URLSearchParams('map=athens&menu=1')), 'the catalogue lookup ignores the open world');

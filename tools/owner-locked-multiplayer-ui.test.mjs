@@ -54,7 +54,7 @@ test('MULTIPLAYER is a lobby browser: lobbies are the hero, join by code is inli
   assert.match(html, /data-layout="browse-grid"/, `${OWNER}\nthe shared browse layout`);
   assert.match(html, /data-field="code"[\s\S]*data-act="mpJoinCode"/, `${OWNER}\njoin by code is a compact inline field`);
   assert.match(html, /btn--primary[^"]*" role="button" data-act="mpHost"[^>]*>[\s\S]*HOST A LOBBY/, OWNER);
-  for (const fact of ['NIGHT RUN', 'HOST · GR-4821', 'PENTELI HILL CLIMB', 'QUICK RACE', 'NIGHT', '2/8', 'OPEN']) assert.ok(html.includes(fact), `${OWNER}\nlobby row is missing ${fact}`);
+  for (const fact of ['NIGHT RUN', 'Hosted by GR-4821', 'PENTELI HILL CLIMB', 'QUICK RACE', 'NIGHT', '2/8', 'OPEN']) assert.ok(html.includes(fact), `${OWNER}\nlobby row is missing ${fact}`);
   assert.doesNotMatch(html, /data-kind="tabs"|JOIN \/ HOST|id="carStage"|data-dialog/, `${OWNER}\nno JOIN / HOST tabs, showroom car or dialog`);
   assert.match(M.renderMp({}, fakeMp({ __lobbies: [] })), /NO OPEN LOBBIES RIGHT NOW/, OWNER);
   assert.match(M.renderMp({}, fakeMp({ connected: false })), /CONNECTING TO THE LOBBY SERVER/, OWNER);

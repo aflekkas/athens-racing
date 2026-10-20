@@ -1,0 +1,1 @@
+extra-after: voice-shout-3 — -32.9 LUFS, -20.5 dBFS peak; spectrogram and waveform at default mix, no normalization.

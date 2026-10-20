@@ -1,0 +1,82 @@
+{
+ "startEdge": "osm:way:23182990:2-0:f:0:1",
+ "edges": 180677,
+ "reachableKm": 9079.3,
+ "buckets": {
+  "Piraeus (x<=-13, z<=11)": {
+   "km": 1307.1,
+   "enterableKm": 1184.3,
+   "enterablePercent": 90.6
+  },
+  "Neo Faliro / Tavros / Moschato (-12..-7, z<=10)": {
+   "km": 1075.6,
+   "enterableKm": 1023,
+   "enterablePercent": 95.1
+  },
+  "Faliro / Kallithea coast (-6..-1, z 9..16)": {
+   "km": 343.4,
+   "enterableKm": 340.3,
+   "enterablePercent": 99.1
+  },
+  "Centre: historic (-4..4, z -4..3)": {
+   "km": 595.4,
+   "enterableKm": 579.4,
+   "enterablePercent": 97.3
+  },
+  "Kallithea / Nea Smyrni / Koukaki (z 2..10, x -8..1)": {
+   "km": 801.9,
+   "enterableKm": 784.7,
+   "enterablePercent": 97.9
+  },
+  "Kypseli / Patisia (z<=-5)": {
+   "km": 4417.8,
+   "enterableKm": 4271.7,
+   "enterablePercent": 96.7
+  },
+  "Alimos / Elliniko / Glyfada / Riviera (z>=17)": {
+   "km": 843.5,
+   "enterableKm": 832.6,
+   "enterablePercent": 98.7
+  },
+  "whole world": {
+   "km": 9543.3,
+   "enterableKm": 9079.3,
+   "enterablePercent": 95.1
+  },
+  "district: agios-dimitrios": {
+   "km": 44.1,
+   "enterableKm": 43.8,
+   "enterablePercent": 99.2
+  },
+  "district: ilioupoli": {
+   "km": 412.9,
+   "enterableKm": 401.8,
+   "enterablePercent": 97.3
+  },
+  "district: ano-glyfada": {
+   "km": 31,
+   "enterableKm": 29.3,
+   "enterablePercent": 94.4
+  },
+  "district: vyronas": {
+   "km": 319.5,
+   "enterableKm": 309.5,
+   "enterablePercent": 96.8
+  },
+  "district: glyfada-inland": {
+   "km": 223.5,
+   "enterableKm": 222.5,
+   "enterablePercent": 99.6
+  },
+  "district: zografou": {
+   "km": 266.1,
+   "enterableKm": 224.7,
+   "enterablePercent": 84.5
+  },
+  "district: kaisariani": {
+   "km": 147.5,
+   "enterableKm": 104.4,
+   "enterablePercent": 70.8
+  }
+ }
+}

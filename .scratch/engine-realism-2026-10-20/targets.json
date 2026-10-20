@@ -1,0 +1,157 @@
+{
+  "sl65": [
+    "bad",
+    "V12 biturbo: deep, dense growl with smooth upper harmonics",
+    "NA Aventador substitute is too bright; no turbo-muffled low-mid body; abrupt lift."
+  ],
+  "a190": [
+    "weak",
+    "M166 NA I4: subdued four-cylinder buzz",
+    "Same resonant synthetic tone as the Alfa; excessive sport overrun setting."
+  ],
+  "p928": [
+    "bad",
+    "5.4 cross-plane V8: uneven bank rumble, smooth loaded growl",
+    "Thin periodic pulse tone, insufficient uneven-bank texture and intake body."
+  ],
+  "f348_spider": [
+    "bad",
+    "3.4 flat-plane V8: dry idle, metallic rising scream",
+    "Quiet, hollow synthetic tone; lacks real mechanical texture and upper harmonics."
+  ],
+  "aygo": [
+    "bad",
+    "1.0 NA I3: light, buzzy uneven beat",
+    "Too bass-heavy/loud for a small city car; short cyclic texture."
+  ],
+  "qashqai": [
+    "weak",
+    "1.2 DIG-T I4: muffled four-cylinder with restrained turbo hiss",
+    "Focus RS substitute; nearly identical to police Octavia; weak load contrast."
+  ],
+  "dolphin": [
+    "bad",
+    "Permanent-magnet motor: quiet stopped, rotor/inverter whine moving",
+    "Voice creation throws RangeError at idle=0: missing all five phases."
+  ],
+  "atto3": [
+    "bad",
+    "Permanent-magnet motor: restrained whine, gentle regeneration tone",
+    "Voice creation throws RangeError at idle=0: missing all five phases."
+  ],
+  "van_150": [
+    "weak",
+    "2.3 Multijet I4 diesel: clatter, low exhaust and turbo",
+    "Car-diesel substitute lacks van body; petrol blow-off on lift is inappropriate."
+  ],
+  "truck": [
+    "bad",
+    "5.2 4HK1 I4 diesel: slow heavy firing/clatter",
+    "Incorrect six-cylinder bus profile; synthetic low drone; petrol blow-off."
+  ],
+  "bus": [
+    "bad",
+    "O530 inline-six diesel: deep even pulses and clatter",
+    "Very short repetitive low drone; limited clatter/load contrast."
+  ],
+  "police_octavia": [
+    "weak",
+    "TSI I4: modest four-cylinder body and turbo",
+    "Numerically identical to Qashqai; excessive hot-hatch ancestry."
+  ],
+  "panda_100hp": [
+    "bad",
+    "1.4 FIRE NA I4: fizzy intake, modest rasp",
+    "Turbo Abarth exhaust substitute; insufficient naturally aspirated induction character."
+  ],
+  "jazz_dynamic": [
+    "weak",
+    "1.5 i-VTEC NA I4: light buzz becoming induction snarl",
+    "Same generic Alfa/A190 bank; upper-register intake does not open up."
+  ],
+  "yaris_ts": [
+    "weak",
+    "1.5 1NZ NA I4: light coarse buzz at high rpm",
+    "Generic city4; too much low body; no distinct intake resonance."
+  ],
+  "ibiza_cupra": [
+    "weak",
+    "1.8 20VT I4: rounded low-mid note and recirculation hiss",
+    "Small Abarth substitute over-stretched above 3238 rpm; excessive crackle tendency."
+  ],
+  "golf_r": [
+    "weak",
+    "EA888 turbo I4: gruff loaded note, brief DSG cut, restrained burble",
+    "Same Focus recording as AMGs; lift events sparse and attack too hard."
+  ],
+  "mini_jcw": [
+    "weak",
+    "B48 turbo I4: gruff note, intake growl, short overrun cluster",
+    "Existing real MINI texture useful; load adds loudness more than growl; uniform pops."
+  ],
+  "gr_yaris": [
+    "bad",
+    "G16E turbo I3: low 1.5-order beat, intake roar, recirculation whoosh",
+    "Too smooth/repetitive, bass-heavy; lacks rough loaded texture."
+  ],
+  "gla45": [
+    "weak",
+    "M139 turbo I4: hard-edged four-cylinder snarl",
+    "Same Focus bank as Golf; no trim-specific growl/overrun shaping."
+  ],
+  "corolla": [
+    "weak",
+    "1.6 NA I4: restrained mechanical buzz",
+    "Generic city4 synthetic tone; same timbre as Yaris despite different engine."
+  ],
+  "octavia_rs": [
+    "weak",
+    "EA888 turbo I4: rounded gruff midrange",
+    "Same Focus bank as Golf; load/cruise distinction mostly amplitude."
+  ],
+  "superb_4x4": [
+    "weak",
+    "EA888 turbo I4: quiet insulated low-mid note",
+    "Focus character remains; same comfort profile as Qashqai/police."
+  ],
+  "cla45s": [
+    "weak",
+    "M139 turbo I4: sharp rasp and controlled overrun",
+    "Same voice as GLA/Golf; downshift cut hides blip."
+  ],
+  "cle53": [
+    "weak",
+    "M256 turbo inline-six: smooth dense snarl",
+    "BMW M4 substitute; identical profile to Z4; not enough low-mid load."
+  ],
+  "z4": [
+    "weak",
+    "B58 turbo inline-six: smooth rise into growl, short burble",
+    "M4 S55 substitute; little intake/exhaust separation and weak lift cluster."
+  ],
+  "carrera_gts": [
+    "bad",
+    "991.1 3.8 NA flat-six: rasp becoming metallic howl",
+    "1972 ST substitute heavily filtered; upper bank stretched beyond 2x; restrained intake."
+  ],
+  "aventador_svj": [
+    "weak",
+    "6.5 NA V12: complex shriek; owner requires NO pops",
+    "Real Aventador texture exists; repetitive high loop/pitch stretch; smooth load only. Preserve zero pops."
+  ],
+  "huracan": [
+    "bad",
+    "5.2 NA V10: strong fifth-order shriek with bank texture",
+    "Small pure harmonic loop sounds like a tone; lacks upper-register texture and throaty idle."
+  ],
+  "gtv": [
+    "bad",
+    "2.0 twin-cam NA I4: open carburettor bark and metallic exhaust",
+    "Generic na4 shared with commuters; no separate induction bark."
+  ],
+  "e36_m3": [
+    "bad",
+    "S50B32 NA inline-six: smooth rising metallic snarl",
+    "Too quiet and pure; synthetic idle; insufficient intake character at load."
+  ]
+}

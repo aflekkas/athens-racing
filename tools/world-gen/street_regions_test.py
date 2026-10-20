@@ -1,11 +1,14 @@
 """Street surface regions and markings on synthetic scenes (needs shapely; the runner skips without it)."""
-import math, random, unittest
+import json, math, random, unittest
+from pathlib import Path
+import shapely
 from shapely.geometry import LineString, Point, Polygon
 from shapely.ops import unary_union
 from road_section import KERB_RISE, KERB_RUN, cross_section
 from street_audit import audit_regions, check
 from street_details import line_offsets, road_markings
-from street_regions import RAMP, StreetRegions, polygons_of, fill_junction_holes
+from street_regions import RAMP, StreetRegions, polygons_of, fill_junction_holes, diff, meet, side_region
+from border_nodes import canonical_polygon
 from street_details import ribbon_polygon
 
 
@@ -170,6 +173,60 @@ class JunctionHoles(unittest.TestCase):
         self.assertEqual(holes, [1.4, 5.8], 'the 1.4 m2 pocket 5 m from the node is closed; the larger island and the far hole stay')
         bend = fill_junction_holes(ground, roads[:2])
         self.assertEqual(sum(len(p.interiors) for p in polygons_of(bend)), 3, 'a plain two-street bend is not a junction: nothing is closed')
+
+
+WEST = json.loads((Path(__file__).parent / 'fixtures' / 'west-robust-geometry.json').read_text())
+
+
+class WestBakeCrashes(unittest.TestCase):
+    """Inputs that stopped the west bake: each cell used to raise, and must now give clean polygonal geometry."""
+
+    def test_overlay_of_invalid_rings_does_not_throw(self):
+        for case in WEST['overlays']:
+            a, b = shapely.from_wkb(case['a']), shapely.from_wkb(case['b'])
+            self.assertFalse(a.is_valid, 'the fixture keeps the invalid ring that broke cell %s' % case['cell'])
+            with self.assertRaises(shapely.errors.GEOSException):
+                shapely.difference(a, b)
+            result = diff(a, b)
+            self.assertTrue(result.is_valid)
+            self.assertIn(result.geom_type, ('Polygon', 'MultiPolygon'))
+            self.assertGreater(result.area, 0)
+            self.assertLessEqual(result.area, shapely.make_valid(a).area + 1e-6)
+            self.assertLessEqual(meet(a, b).area, min(shapely.make_valid(a).area, b.area) + 1e-6)
+
+    def test_valid_overlays_are_untouched(self):
+        a, b = Polygon([(0, 0), (10, 0), (10, 10), (0, 10)]), Polygon([(5, 5), (15, 5), (15, 15), (5, 15)])
+        self.assertTrue(diff(a, b).equals_exact(shapely.difference(a, b), 0))
+        self.assertTrue(meet(a, b).equals_exact(shapely.intersection(a, b), 0))
+
+    def test_a_polygon_whose_snapping_splits_stays_flat_inside_a_multipolygon(self):
+        polygon = shapely.from_wkb(WEST['splitPolygon']['wkb'])
+        self.assertEqual(canonical_polygon(polygon).geom_type, 'MultiPolygon', 'the fixture still splits when snapped')
+        far = Polygon([(100, 100), (110, 100), (110, 110), (100, 110)])
+        result = canonical_polygon(shapely.MultiPolygon([polygon, far]))
+        self.assertTrue(result.is_valid)
+        self.assertTrue(all(g.geom_type == 'Polygon' for g in result.geoms))
+        self.assertAlmostEqual(result.area, polygon.area + far.area, delta=1)
+
+    def test_a_street_that_crosses_itself_keeps_a_sidewalk_beside_it(self):
+        street = WEST['loopStreet']
+        line = LineString(street['line'])
+        self.assertFalse(line.is_simple, 'the fixture is the self-crossing street of cell -13,-9')
+        for side, right in (('left', False), ('right', True)):
+            width = street['sidewalk'][side]
+            region = side_region(line, street['width'] / 2, width, right)
+            self.assertTrue(region.is_valid)
+            # a strip out to the sidewalk edge beside a 1.5 km street, not a filled loop: about length x reach
+            reach = street['width'] / 2 + KERB_RUN + width
+            self.assertLess(region.area, line.length * (reach + 1.5))
+            self.assertGreater(region.area, line.length * reach * .8)
+            for station in range(6, int(line.length) - 6, 3):
+                a, b = line.interpolate(station - .5), line.interpolate(station + .5)
+                dx, dz = b.x - a.x, b.y - a.y
+                length = math.hypot(dx, dz) or 1.
+                u = (1 if right else -1) * (street['width'] / 2 + KERB_RUN + width / 2); c = line.interpolate(station)
+                point = Point(c.x - dz / length * u, c.y + dx / length * u)
+                self.assertTrue(region.covers(point), 'sidewalk sample %s at station %d' % (side, station))
 
 
 if __name__ == '__main__':

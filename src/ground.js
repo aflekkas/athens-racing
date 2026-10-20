@@ -29,6 +29,7 @@ export const SURF = {
 // tarmac grip in the rain (soft ground much less, sand not at all), wet 0..1 (lighter skid marks, little tyre smoke),
 // ambient 0..1 light level (night darkens the unlit smoke / dust sprites in fx.js)
 import { WEATHER } from './wet-grip.js';
+import { solveContact, scrapeContact, alignAlong, noteHit, noteWall, correction } from './crash-contact.js';
 export { WEATHER } from './wet-grip.js';
 const WET_K = { asphalt: 1, pavement: 1, rock: 1, verge: 0.4, gravel: 0.4, dirt: 0.5, scrub: 0.4, sand: 0.2, deepsand: 0.2, water: 0 }; // rain packs nothing here: sand only gets (a little) worse
 const MAX_CLIMB = 0.5;    // steepest hillside a road car will drive up (~27 deg); steeper is a wall
@@ -38,6 +39,8 @@ const MAX_OFF = 45;       // ... or this far out from the road edge
 const STEP_UP = 0.32;     // a ledge higher than this between two substeps is a wall (curbs are 0.16 m)
 const WATER_Y = -0.05;    // sea level as the water mesh draws it
 const CURB_REF = 0.16;    // a full-height town curb; lower kerbs (out of town, the median's edge) hit softer
+
+const RAIL = { kind: 'rail', friction: 0.2 }; // a painted guard rail: slick, and it gives
 
 export class Ground {
   constructor(map, heightC, assets) {
@@ -323,47 +326,61 @@ export class Ground {
   blocked(y0, y1, d) { return y1 - y0 > STEP_UP + MAX_CLIMB * d; }
 
   /**
-   * stop the car's centre against a wall with outward normal (nx, nz): slide along it, lose some speed. k: where along
-   * the body (m forward of the centre) the contact circle sits, when known; otherwise the body corner facing the wall.
+   * A wall, rail, post or parked car touches the car at (nx, nz) (outward normal, pointing at the car), `pen` deep, with
+   * the contact on the body at k metres forward of the centre when known (a body circle), else at the body corner facing the
+   * wall. The blow is a rigid-body impulse AT that point (src/crash-contact.js): the car's mass and yaw inertia, a normal
+   * restitution that falls with speed, Coulomb friction along the face. Then the car is pushed out by what it penetrated (never
+   * more than 30 cm in one step). A car already sliding along the face gets a sustained scrape instead of a free ride.
    * The crash dents the body there: addDamage with the contact's closing speed, zone, local point and normal.
    */
-  _hit(v, nx, nz, pen, k, collider = null) {
+  _hit(v, nx, nz, pen, k, collider = null, corner = null) {
     if (v.bodyDynamic) {
       const base = this.at?.(v.x,v.z,v.s,v.u,{})?.y ?? v.y;
       if (v.y > base + (collider?.height ?? (collider?.kind === 'bollard' ? 1 : 3))) return;
     }
-    const restitution = clamp(collider?.restitution ?? 0.15, 0, 1);
-    // Soft barriers absorb crush energy; apply the square root to EBS, not a second delta-v.
-    const damageScale = clamp(collider?.damageScale ?? 1, 0, 1);
-    v.x += nx * pen; v.z += nz * pen;
     const fx = -Math.sin(v.yaw), fz = -Math.cos(v.yaw), rx = Math.cos(v.yaw), rz = -Math.sin(v.yaw);
-    const wvx = fx * v.vLong + rx * v.vLat, wvz = fz * v.vLong + rz * v.vLat;
-    const vn = -(wvx * nx + wvz * nz); // speed into the wall
-    if (vn <= 0) return;
-    collider?.onImpact?.({ vx: wvx, vz: wvz, speed: vn });
-    if (v.addDamage) {
-      // the direction from the car into the wall, in the body frame (forward / right)
-      const dF = -(nx * fx + nz * fz), dR = -(nx * rx + nz * rz);
-      const px = k !== undefined ? k + dF * v.halfW : Math.sign(dF) * v.halfL, py = k !== undefined ? dR * v.halfW : Math.sign(dR) * v.halfW;
-      // closing speed at that point (yaw rate adds w x r; w > 0 yaws right)
-      const vxp = v.vLong - v.w * py, vyp = v.vLat + v.w * px;
-      const vc = Math.max(vn, -((fx * vxp + rx * vyp) * nx + (fz * vxp + rz * vyp) * nz));
-      const zone = Math.abs(dF) > Math.abs(dR) * 0.8 ? (dF > 0 ? 'front' : 'rear') : (dR > 0 ? 'right' : 'left'); // a 45° corner hit is the nose / tail
-      // local frame for the damage model: x right, y up, z backward (three.js, the car faces -z)
-      v.addDamage(zone, vc * Math.sqrt(damageScale), { kind: collider?.kind === 'tyre' ? 'tyre' : 'wall', localPoint: { x: py, y: 0.45, z: -px }, localNormal: { x: nx * rx + nz * rz, y: 0, z: -(nx * fx + nz * fz) } });
-    }
-    const keep = 1 - Math.min(0.45, vn * 0.03);
-    const tx = wvx + nx * vn, tz = wvz + nz * vn; // tangential part
-    const nvx = tx * keep + nx * vn * restitution, nvz = tz * keep + nz * vn * restitution;
-    v.vLong = nvx * fx + nvz * fz; v.vLat = nvx * rx + nvz * rz;
-
-    if (vn > v.wallHit) { v.wallNx = nx; v.wallNz = nz; }
-    v.wallHit = Math.max(v.wallHit, vn);
     const dF = -(nx * fx + nz * fz), dR = -(nx * rx + nz * rz);
-    v.impactDynamics?.({dv: vn * (1 + restitution), nx, nz,
-      forward: k !== undefined ? k + dF * v.halfW : dF * v.halfL,
-      right: dR * v.halfW, height: collider?.contactHeight ?? .45,
-      kind: collider?.kind, lift: Math.sqrt(damageScale)});
+    // the point on the car that touches: a body circle's skin, or the corner / face the wall presses on
+    const r = v.halfW + 0.05;
+    let cx, cz;
+    if (corner) { cx = corner.x; cz = corner.z; }
+    else if (k !== undefined) { cx = v.x + fx * k - nx * r; cz = v.z + fz * k - nz * r; }
+    else { cx = v.x + fx * Math.sign(dF) * v.halfL + rx * Math.sign(dR) * v.halfW; cz = v.z + fz * Math.sign(dF) * v.halfL + rz * Math.sign(dR) * v.halfW; }
+    const wvx = fx * v.vLong + rx * v.vLat, wvz = fz * v.vLong + rz * v.vLat;
+    const vn = -(wvx * nx + wvz * nz); // centre's speed into the wall
+    const push = correction(pen);
+    const cdt = this._dt || 1 / 240;
+    const restitution = collider?.restitution, damageScale = clamp(collider?.damageScale ?? 1, 0, 1);
+    // (a soft barrier absorbs crush energy: the square root goes to EBS, not a second delta-v)
+    const c0 = { px: (cx - v.x) * fx + (cz - v.z) * fz, py: (cx - v.x) * rx + (cz - v.z) * rz }; // (before the push-out: the car has not moved yet)
+    // closing speed at that point (yaw rate adds w x r; w > 0 yaws right)
+    const vxp = v.vLong - v.w * c0.py, vyp = v.vLat + v.w * c0.px;
+    const vc = Math.max(vn, -((fx * vxp + rx * vyp) * nx + (fz * vxp + rz * vyp) * nz));
+    if (vn < -0.15 && !(vc > 0.05)) { v.x += nx * push; v.z += nz * push; return; } // leaving it: nothing to scrub, just clear the face
+    if (!(vc > 0.05) && !(vn > 0)) { // pressed or sliding along it: scrub
+      const sc = scrapeContact(v, nx, nz, cx, cz, cdt, { mass: collider?.mass, mu: collider?.friction });
+      if (sc > 0) { v.scrapeDv = Math.max(v.scrapeDv || 0, sc); v.scrapeMaterial = collider?.kind === 'rail' ? 'metal' : 'wall'; }
+      alignAlong(v, nx, nz, cdt); noteWall(v, nx, nz);
+      if (v.syncWheels) v.syncWheels();
+      v.x += nx * push; v.z += nz * push;
+      return;
+    }
+    collider?.onImpact?.({ vx: wvx, vz: wvz, speed: Math.max(vn, vc) });
+    const zone = Math.abs(dF) > Math.abs(dR) * 0.8 ? (dF > 0 ? 'front' : 'rear') : (dR > 0 ? 'right' : 'left'); // a 45° corner hit is the nose / tail
+    const hit = solveContact(v, nx, nz, cx, cz, { restitution, mass: collider?.mass, mu: collider?.friction });
+    v.x += nx * push; v.z += nz * push;
+    if (!hit) return;
+    alignAlong(v, nx, nz, cdt); noteWall(v, nx, nz);
+    if (v.addDamage) {
+      // local frame for the damage model: x right, y up, z backward (three.js, the car faces -z)
+      v.addDamage(zone, Math.max(vc, hit.vn) * Math.sqrt(damageScale), { kind: collider?.kind === 'tyre' ? 'tyre' : 'wall', localPoint: { x: hit.py, y: 0.45, z: -hit.px }, localNormal: { x: nx * rx + nz * rz, y: 0, z: -(nx * fx + nz * fz) } });
+    }
+    noteHit(v, hit.dv);
+    if (vn > v.wallHit) { v.wallNx = nx; v.wallNz = nz; }
+    v.wallHit = Math.max(v.wallHit, hit.vn);
+    // the out-of-plane part only: roll and pitch about the real contact height (the planar blow, yaw included, is solved above)
+    v.impactDynamics?.({dv: hit.dv, nx, nz, forward: hit.px, right: hit.py, height: collider?.contactHeight ?? .45,
+      kind: collider?.kind, lift: Math.sqrt(damageScale), yawSolved: true});
     if (v.syncWheels) v.syncWheels(); else for (const W of v.corners || v.wheel) W.vw = v.vLong;
   }
   /**
@@ -445,19 +462,46 @@ export class Ground {
     let pr = route.project(v.x, v.z, v.s, 6);
     if (Math.abs(pr.u) > 30) { const nearest = route.project(v.x, v.z, null); if (route.closed) nearest.s += Math.round((v.s - nearest.s) / route.length) * route.length; pr = nearest; } // far off the road: re-find the nearest stretch
     v.s = pr.s; v.u = pr.u;
-    // guard rails (the only walls the road itself has)
-    const lim = this.limits(v.s, v.halfW, v._lim || (v._lim = {}));
+    // guard rails (the only walls the road itself has). The limit is for the car's outermost point, not its centre: a car
+    // angled to the rail touches it with a corner, and that corner is where the blow lands.
+    const fx = -Math.sin(v.yaw), fz = -Math.cos(v.yaw), rx = Math.cos(v.yaw), rz = -Math.sin(v.yaw), r = v.halfW + 0.05, w = this._w || (this._w = {});
+    this._dt = dt;
+    const f = route.contactFrame?.(v.s, v.u, v._f || (v._f = {})) || route.frame(v.s, v._f || (v._f = {}));
+    const along = fx * f.rx + fz * f.rz, across = rx * f.rx + rz * f.rz; // the car's forward / right axes on the road's cross direction
+    const ext = v.halfL * Math.abs(along) + v.halfW * Math.abs(across);
+    const lim = this.limits(v.s, ext, v._lim || (v._lim = {}));
     const exploring = v._network && this.network?.sample(v.x, v.z);
     if (!exploring && v.y - route.surfaceY(v.s,v.u) < 1.1 && (v.u > lim.max || v.u < lim.min)) {
-      const f = route.contactFrame?.(v.s, v.u, v._f || (v._f = {})) || route.frame(v.s, v._f || (v._f = {})), side = v.u > lim.max ? 1 : -1;
-      this._hit(v, -f.rx * side, -f.rz * side, side > 0 ? v.u - lim.max : lim.min - v.u);
-      v.u = side > 0 ? lim.max : lim.min;
+      const side = v.u > lim.max ? 1 : -1, sa = Math.sign(along * side) || 1, sr = Math.sign(across * side) || 1;
+      // (a car lying along the rail meets it with the middle of its side, an angled one with the leading corner)
+      const lx = Math.abs(along) < 0.12 ? 0 : sa * v.halfL, ly = sr * v.halfW;
+      const corner = { x: v.x + fx * lx + rx * ly, z: v.z + fz * lx + rz * ly };
+      this._hit(v, -f.rx * side, -f.rz * side, side > 0 ? v.u - lim.max : lim.min - v.u, undefined, RAIL, corner);
+      v.u = side > 0 ? Math.min(v.u, lim.max) : Math.max(v.u, lim.min);
     }
-    // buildings and parked cars: two circles along the body
-    const fx = -Math.sin(v.yaw), fz = -Math.cos(v.yaw), r = v.halfW + 0.05, w = this._w || (this._w = {});
-    for (const k of [v.halfL - r, -(v.halfL - r)]) {
-      const c = this.walls(v.x + fx * k, v.z + fz * k, r, w);
-      if (c) this._hit(v, c.nx, c.nz, c.pen, k, c.collider);
+    // buildings and parked cars: a row of circles along the body (a capsule: a post at the door is met as surely as one at the
+    // nose) plus the four corners, which poke out past the circles (a glancing blow lands on a corner). Everything touching one
+    // obstacle at this step is one contact, at the depth-weighted centre of where it touches: a square hit stays square.
+    const hits = this._hits || (this._hits = []); hits.length = 0;
+    const reach = v.halfL - r, n = reach > 0.05 ? Math.ceil(2 * reach / 0.7) + 1 : 1;
+    for (let i = 0; i < n; i++) {
+      const k = n === 1 ? 0 : -reach + 2 * reach * i / (n - 1), cx = v.x + fx * k, cz = v.z + fz * k, c = this.walls(cx, cz, r, w);
+      if (c) hits.push({ nx: c.nx, nz: c.nz, pen: c.pen, collider: c.collider, x: cx - c.nx * r, z: cz - c.nz * r });
+    }
+    for (const lx of [v.halfL, -v.halfL]) for (const ly of [-v.halfW, v.halfW]) {
+      const cx = v.x + fx * lx + rx * ly, cz = v.z + fz * lx + rz * ly, c = this.walls(cx, cz, 0.06, w);
+      if (c) hits.push({ nx: c.nx, nz: c.nz, pen: c.pen, collider: c.collider, x: cx, z: cz });
+    }
+    for (let i = 0; i < hits.length; i++) {
+      const h = hits[i]; if (!h) continue;
+      let deep = h, sx = 0, sz = 0, sw = 0;
+      for (let j = i; j < hits.length; j++) if (hits[j] && hits[j].collider === h.collider) { if (hits[j].pen > deep.pen) deep = hits[j]; }
+      for (let j = i; j < hits.length; j++) {
+        const o = hits[j]; if (!o || o.collider !== h.collider) continue;
+        if (o.pen >= deep.pen * 0.5) { sx += o.x * o.pen; sz += o.z * o.pen; sw += o.pen; }
+        if (j > i) hits[j] = null;
+      }
+      this._hit(v, deep.nx, deep.nz, deep.pen, undefined, deep.collider, { x: sx / sw, z: sz / sw });
     }
     this._curbs(v);
     // the ground: too steep to climb (cliff face, retaining wall, a building's plinth) acts as a wall
@@ -480,7 +524,7 @@ export class Ground {
     const S = SURF[g.surf] || SURF.dirt;
     // height, and the attitude of the ground under the wheelbase (grade along the car, bank across it)
     // the ground under each wheel: a car astride a kerb sits on all four, tilted
-    const q = this._q || (this._q = {}), rx = Math.cos(v.yaw), rz = -Math.sin(v.yaw), t2 = v.track / 2;
+    const q = this._q || (this._q = {}), t2 = v.track / 2;
     const wy = v._wy || (v._wy = [0, 0, 0, 0]), ws = v._wsurf || (v._wsurf = ['', '', '', '']); // per car: fx reads them later
     const fw = route.contactFrame?.(v.s, v.u, v._f || (v._f = {})) || route.frame((route.closed ? route.wrap(v.s) : clamp(v.s, 0, route.length)), v._f || (v._f = {}));
     const ft = fx * fw.tx + fz * fw.tz, fr = fx * fw.rx + fz * fw.rz, rt = rx * fw.tx + rz * fw.tz, rr = rx * fw.rx + rz * fw.rz;

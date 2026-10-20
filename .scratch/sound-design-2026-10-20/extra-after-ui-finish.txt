@@ -1,0 +1,1 @@
+extra-after: ui-finish — -48.2 LUFS, -31.9 dBFS peak; spectrogram and waveform at default mix, no normalization.

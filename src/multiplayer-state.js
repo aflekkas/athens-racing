@@ -7,7 +7,6 @@ function stationaryUnchanged(a, b) {
   // A stationary burnout is exactly the moment the tyres smoke: toggling it or the wheelspin must be sent.
   if (!!a.burnout !== !!b.burnout || Math.abs((a.wheelspin || 0) - (b.wheelspin || 0)) > .1) return false;
   if (JSON.stringify(a.bodyQ) !== JSON.stringify(b.bodyQ)) return false;
-  if(a.exhaustSerial!==b.exhaustSerial||a.exhaustEnabled!==b.exhaustEnabled)return false;
   if (JSON.stringify(a.recordMeta || null) !== JSON.stringify(b.recordMeta || null)) return false;
   if (a.gear !== b.gear || a.reverse !== b.reverse || a.braking !== b.braking || (a.pursuit ?? 0) !== (b.pursuit ?? 0)) return false;
   if (a.paint !== b.paint || JSON.stringify(a.driver || null) !== JSON.stringify(b.driver || null)) return false;

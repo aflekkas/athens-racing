@@ -1,0 +1,1 @@
+before: rain-heavy — -45 LUFS, -29.4 dBFS peak; spectrogram and waveform at default mix, no normalization.

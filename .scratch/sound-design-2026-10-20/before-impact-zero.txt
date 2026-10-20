@@ -1,0 +1,1 @@
+before: impact-zero — -35.5 LUFS, -21.7 dBFS peak; spectrogram and waveform at default mix, no normalization.

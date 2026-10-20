@@ -122,7 +122,7 @@ test('the team is Alexandros and Vassilis; agents and bots are the AI note, not 
 test('every human git author is listed in CREDITS.md (skipped without .git)', async (t) => {
   const authors = existsSync(join(root, '.git')) ? await gitAuthors(root) : null;
   if (!authors) return t.skip('no git history here');
-  assert.ok(!authors.some((a) => /T3 Code|\[bot\]|anthropic/i.test(a.name + a.email)), 'agents are filtered out');
+  assert.ok(!authors.some((a) => /T3 Code|Codex|muse|Claude|\[bot\]|anthropic|openai\.com/i.test(a.name + a.email)), 'agents are filtered out');
   const { unlisted } = mergeTeam(parseCreditsMd(readFileSync(resolve(root, 'CREDITS.md'), 'utf8')).team, authors);
   assert.deepEqual(unlisted, [], `add to CREDITS.md (## Team): ${unlisted.join(', ')}`);
 });

@@ -7,11 +7,11 @@ import { readCarCapabilities } from './car-capabilities.mjs';
 
 const capabilities = readCarCapabilities(readFileSync(new URL('../src/cars.js', import.meta.url), 'utf8'));
 test('both server catalogue consumers identify only the equipped SEAT', () => {
-  assert.deepEqual(capabilities.nitrousCars, ['ibiza']);
-  for (const car of ['mini', 'golf', 'corolla', 'ibiza']) assert.ok(capabilities.cars.includes(car));
+  assert.deepEqual(capabilities.nitrousCars, ['ibiza_cupra']);
+  for (const car of ['mini_jcw', 'golf_r', 'corolla', 'ibiza_cupra']) assert.ok(capabilities.cars.includes(car));
 });
 
-for (const car of ['mini', 'golf', 'corolla', 'ibiza']) test(`${car}: validated snapshots and restored sessions enforce nitrous capability`, () => {
+for (const car of ['mini_jcw', 'golf_r', 'corolla', 'ibiza_cupra']) test(`${car}: validated snapshots and restored sessions enforce nitrous capability`, () => {
   const map = { id: 'riviera', name: 'proof', track: { start: 0, finish: 1000, version: 'v1' }, definitions: new Map([['quick', { id: 'quick', type: 'sprint', s0: 0, s1: 1000, dir: 1, len: 1000 }]]) };
   const opts = { maps: new Map([['riviera', map]]), cars: new Set(capabilities.cars), nitrousCars: new Set(capabilities.nitrousCars), countdownMs: 0 };
   const core = createGameCore(opts);
@@ -23,7 +23,7 @@ for (const car of ['mini', 'golf', 'corolla', 'ibiza']) test(`${car}: validated 
   send(a, { type: 'start' }); core.tick();
   const raceId = a.messages.findLast(m => m.type === 'lobby').lobby.raceId;
   send(a, { type: 'state', raceId, state: { x: 0, y: 0, z: 0, yaw: 0, s: 0, u: 0, vLong: 20, vLat: 0, steer: 0, rpm: 3000, gear: 2, nitro: .7, nitroOn: true } });
-  const expected = car === 'ibiza' ? .7 : 0;
+  const expected = car === 'ibiza_cupra' ? .7 : 0;
   const client = [...core.clients].find(c => c.ws === a);
   assert.equal(client.state.nitro, expected);
   assert.equal(client.state.nitroOn, undefined, 'unvalidated boost flags are never relayed');

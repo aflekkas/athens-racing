@@ -1,0 +1,1 @@
+after: impact-medium — -35.8 LUFS, -19.7 dBFS peak; spectrogram and waveform at default mix, no normalization.

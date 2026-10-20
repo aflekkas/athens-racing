@@ -6,6 +6,7 @@ import { gearboxSound } from './engine-profiles.js';
 export class EngineLifecycle {
   constructor(host) { this.host = host; this.state = 'running'; this.level = 1; this.rpm = 800; this.lastShiftStart = 0; this.lastShiftEnd = 0; }
   start(now, recorded = false) {
+    if(this.host.profile?.synth==='electric'){this.state='running';this.level=1;return;}
     this.state = 'starting'; this.at = now; this.recorded = recorded;
     if (!recorded) {
       const a = this.host;
@@ -19,11 +20,13 @@ export class EngineLifecycle {
   stop(now, stall = false) {
     if (this.state === 'off') return;
     this.state = 'off'; this.at = now;
+    if(this.host.profile?.synth==='electric')return;
     const a = this.host;
     a.tone({f:stall ? 65 : 95, slide:28, dur:stall ? .3 : .45, gain:.055, type:'triangle', bus:a.eng});
     a.noise({dur:.16, f:350, type:'lowpass', gain:.025, bus:a.eng});
   }
   shift(p, now, start, end) {
+    if(this.host.profile?.synth==='electric')return 'auto';
     const a = this.host, selected = gearboxSound(a.engineSpec, p.gearboxType);
     const kind = selected === 'manual' && p.manual === false ? 'auto' : selected;
     const cabin = p.cockpit ?? !p.open, cabinGain = cabin ? 1 : .045;
@@ -37,7 +40,9 @@ export class EngineLifecycle {
         a.tone({f:(up ? 165 : 125)*variation, slide:75, dur:.055, gain:cabinGain*(.028+.024*fast), type:'triangle', bus:a.eng});
         a.noise({dur:.14, f:420*variation, type:'bandpass', q:1.3, gain:.012*cabinGain, attack:.025, bus:a.eng});
       } else {
-        a.noise({dur:.014, f:2100*variation, type:'highpass', gain:.018*cabinGain, bus:a.eng});
+        // Muted actuator/engagement click with a little body, not a broadband spit.
+        a.noise({dur:.035, f:1050*variation, type:'bandpass', q:.8, gain:.028*cabinGain, bus:a.eng});
+        a.tone({f:145*variation, slide:85, dur:.055, gain:.022*cabinGain, bus:a.eng});
       }
       // Only an explicit powertrain diagnostic authorizes grinding.
       if (kind === 'manual' && (p.gearGrind || p.shiftGrind))

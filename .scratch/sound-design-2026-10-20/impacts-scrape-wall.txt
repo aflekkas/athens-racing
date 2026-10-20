@@ -1,0 +1,1 @@
+impacts: scrape-wall — -27.7 LUFS, -16.0 dBFS peak; spectrogram and waveform at default mix, no normalization.

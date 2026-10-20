@@ -46,13 +46,16 @@ export function rigidImpulse(v,j,point) {
   const torque=cross(point,j);v.rigid.L=v.rigid.L.map((x,i)=>x+torque[i]);
 }
 // Add the missing out-of-plane part after an existing horizontal collision solve.
-// A bumper/rail's rising contact face redirects part of a hard impact upward;
-// smooth glancing scrapes and parking knocks stay in the established contact model.
+// A kerb's or a tyre wall's rising face redirects part of a hard impact upward. A flat wall, a rail or another car's side does not:
+// they add only a small hop (a bumper riding up a bumper), and the roll or pitch they cause comes from where the blow lands
+// relative to the centre of mass, never from a lift made up for the purpose. The blow itself (yaw included) is solved by
+// src/crash-contact.js; smooth glancing scrapes and parking knocks stay in the established contact model.
 export function impactDynamics(v,{dv,nx,nz,forward=0,right=0,height=.45,kind='wall',lift=1,yawSolved=false}) {
   if(!(dv>2))return;
   const fx=-Math.sin(v.yaw),fz=-Math.cos(v.yaw),rx=Math.cos(v.yaw),rz=-Math.sin(v.yaw);
-  const ramp=kind==='kerb'?.34:kind==='tyre'?.07:.18;
-  const up=Math.max(0,dv-4)*ramp*lift;
+  const risen=kind==='kerb'||kind==='tyre';
+  const ramp=kind==='kerb'?.34:kind==='tyre'?.07:kind==='car'?.025:.012;
+  const up=risen?Math.max(0,dv-4)*ramp*lift:clamp((dv-6)*ramp*lift,0,.7);
   const point=[fx*forward+rx*right,height-v.hcg,fz*forward+rz*right];
   if(!v.rigid&&up<.35&&Math.abs(height-v.hcg)*dv<1.5){return;}
   startFlight(v);
@@ -63,7 +66,7 @@ export function impactDynamics(v,{dv,nx,nz,forward=0,right=0,height=.45,kind='wa
   // Bound added rotation/lift by the normal collision energy dissipated by
   // the planar solve. An off-centre hit must not manufacture kinetic energy.
   const invTorque=invInertia(v,torque),A=.5*dot(torque,invTorque),B=dot(v.rigid.L,invTorque);
-  const budget=Math.max(0,.45*v.m*dv*dv-.5*v.m*(up*up+2*Math.max(0,v.vy)*up));
+  const budget=Math.max(0,(risen?.45:.1)*v.m*dv*dv-.5*v.m*(up*up+2*Math.max(0,v.vy)*up));
   const scale=A>0?Math.min(1,Math.max(0,(-B+Math.sqrt(Math.max(0,B*B+4*A*budget)))/(2*A))):1;
   v.rigid.L=v.rigid.L.map((x,i)=>x+scale*torque[i]);v.vy+=up;
 }
@@ -161,6 +164,8 @@ export function stepFlight(v,dt,y,grade=0,bank=0,slope=0) {
     const kinetic=.5*v.m*dot(worldVelocity(v),worldVelocity(v))+.5*dot(B.L,angularVelocity(v));
     const budget=Math.max(0,energyBefore-v.m*G*B.cy);
     if(kinetic>budget){const scale=Math.sqrt(budget/kinetic);setVelocity(v,worldVelocity(v).map(x=>x*scale));B.L=B.L.map(x=>x*scale);}
+    // At rest there is no kinetic energy to pay with: a projection that rounding leaves a few nanometres high would still add energy.
+    const excess=mechanicalEnergy(v)-energyBefore;if(excess>0)B.cy-=excess/(v.m*G);
   }
   v.y=B.cy-v.hcg;v.yAir=v.y;v.air=B.contact?0:1;
   if(B.contact){v.bumpHit=Math.max(v.bumpHit,clamp(impact*.12,0,1));if(impact>v.landingSpeed+1||!v.landingSpeed){v.landingSpeed=impact;landingDamage(v,impact);} }

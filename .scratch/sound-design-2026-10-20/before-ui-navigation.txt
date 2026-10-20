@@ -1,0 +1,1 @@
+before: ui-navigation — -47 LUFS, -30.7 dBFS peak; spectrogram and waveform at default mix, no normalization.

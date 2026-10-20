@@ -1,0 +1,89 @@
+// Parked cars and scooters of the streamed Athens world, derived when a tile is read, the same way as the street trees (src/world-tile-trees.js): Athens kerbs are
+// packed. Along every quiet edge of the tile's road graph, on its right kerb (a two-way street has both), a car in about two of every three 5.3 m slots, half on the
+// pavement on the narrow streets (the carriageway is measured from the tile's asphalt, and the lane stays at least 3 m wide), none within 12 m of a junction, a gap every so often (a driveway), and groups of two to four
+// scooters on the pavement. Nothing parks in a building, near another street or on a bake prop. Rows are tile-local metres: x, y, z, yaw, code = kind * 8 + paint
+// (kind 0 car, 1 scooter). At most 700 rows (14 KB) per cell. Rendered by src/athens-props.js (kinds `parked_car` and `scooter`), which World detail Off hides.
+import { CELL, hashN, inRing } from './world-tile-trees.js';
+import { asphaltIndex } from './world-tile-asphalt.js';
+
+export const PARKING_LIMIT = 700;
+/** A car-sized oriented rectangle: corners of the box centred on (x, z), `hl` long along (sin yaw, cos yaw), `hw` wide. */
+export const boxCorners = (x, z, yaw, hl, hw) => { const tx = Math.sin(yaw), tz = Math.cos(yaw), nx = tz, nz = -tx; return [[x + tx * hl + nx * hw, z + tz * hl + nz * hw], [x + tx * hl - nx * hw, z + tz * hl - nz * hw], [x - tx * hl - nx * hw, z - tz * hl - nz * hw], [x - tx * hl + nx * hw, z - tz * hl + nz * hw]]; };
+const segDist = (p, a, b) => { const dx = b[0] - a[0], dz = b[1] - a[1], q = dx * dx + dz * dz || 1, u = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dz) / q)); return Math.hypot(p[0] - a[0] - u * dx, p[1] - a[1] - u * dz); };
+const within = (p, r) => { let s = 0; for (let i = 0; i < 4; i++) { const a = r[i], b = r[(i + 1) % 4], c = (b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0]); s += c > 0 ? 1 : c < 0 ? -1 : 0; } return Math.abs(s) === 4; };
+/** Gap in metres between two convex quadrilaterals (0 when they overlap). */
+export function boxGap(r1, r2) {
+  if (r1.some(p => within(p, r2)) || r2.some(p => within(p, r1))) return 0;
+  let d = Infinity; for (const [A, B] of [[r1, r2], [r2, r1]]) for (const p of A) for (let i = 0; i < 4; i++) d = Math.min(d, segDist(p, B[i], B[(i + 1) % 4]));
+  return d;
+}
+/** The player car and the traffic: 4.5 x 1.9 m. A parked car keeps at least this far from one standing on any tow anchor of the tile. */
+export const PLAYER_HALF = [2.25, .95], ANCHOR_CLEAR = .7;
+/** Paint indices of src/athens-props.js CAR_PAINT (0 white, 1 grey, 2 black, 3 blue, 4 red, 5 tan), weighted like the Athens fleet: mostly white, silver and dark. */
+const PAINT = [0, 0, 0, 1, 1, 1, 2, 2, 3, 4, 5];
+export function deriveParking(t, rings, inQuarter = () => false, occupied = [], trees = []) {
+  const out = [], n = t.edges.length / 10;
+  if (!n) return new Float32Array(0);
+  const grid = (g, x0, z0, x1, z1, item) => { for (let i = Math.floor(Math.min(x0, x1) / CELL); i <= Math.floor(Math.max(x0, x1) / CELL); i++) for (let j = Math.floor(Math.min(z0, z1) / CELL); j <= Math.floor(Math.max(z0, z1) / CELL); j++) { const k = i * 4096 + j; (g.get(k) || g.set(k, []).get(k)).push(item); } };
+  const near = (g, x, z, pad) => { const r = []; for (let i = Math.floor((x - pad) / CELL); i <= Math.floor((x + pad) / CELL); i++) for (let j = Math.floor((z - pad) / CELL); j <= Math.floor((z + pad) / CELL); j++) { const l = g.get(i * 4096 + j); if (l) r.push(...l); } return r; };
+  const bGrid = new Map(), sGrid = new Map(), oGrid = new Map(), cGrid = new Map(), asphalt = asphaltIndex(t), measured = asphalt.count > 0;
+  for (const ring of rings) { let x0 = Infinity, z0 = Infinity, x1 = -Infinity, z1 = -Infinity; for (const p of ring) { x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); z0 = Math.min(z0, p[1]); z1 = Math.max(z1, p[1]); } grid(bGrid, x0, z0, x1, z1, ring); }
+  const E = t.edges, P = t.edgePoints;
+  for (let e = 0; e < n; e++) for (let k = E[e * 10 + 3]; k < E[e * 10 + 3] + E[e * 10 + 4] - 1; k++) grid(sGrid, P[k * 3], P[k * 3 + 2], P[k * 3 + 3], P[k * 3 + 5], [e, P[k * 3], P[k * 3 + 2], P[k * 3 + 3], P[k * 3 + 5]]);
+  for (let i = 0; i < occupied.length; i += 2) grid(oGrid, occupied[i], occupied[i + 1], occupied[i], occupied[i + 1], [occupied[i], occupied[i + 1], 3.4]);
+  for (let i = 0; i < trees.length; i += 5) grid(oGrid, trees[i], trees[i + 2], trees[i], trees[i + 2], [trees[i], trees[i + 2], 2.5]);
+  const aGrid = new Map(), AT = t.anchorTransforms; if (AT) for (let a = 0; a < AT.length; a += 4) grid(aGrid, AT[a], AT[a + 2], AT[a], AT[a + 2], [AT[a], AT[a + 2], AT[a + 3]]);
+  const twin = (a, b) => (E[a * 10 + 1] === E[b * 10 + 2] && E[a * 10 + 2] === E[b * 10 + 1]) || (E[a * 10 + 1] === E[b * 10 + 1] && E[a * 10 + 2] === E[b * 10 + 2]);
+  /** Is a footprint centred on (x, z), `hl` long and `hw` wide along the street direction (tx, tz), clear of every building? */
+  const clearOfBuildings = (x, z, tx, tz, hl, hw) => {
+    const pts = []; for (const a of [-1, 0, 1]) for (const b of [-1, 0, 1]) pts.push([x + tx * hl * a - tz * hw * b, z + tz * hl * a + tx * hw * b]);
+    for (const ring of near(bGrid, x, z, hl + 1)) for (const [qx, qz] of pts) if (inRing(ring, qx, qz)) return false;
+    return true;
+  };
+  const free = (e, x, z, tx, tz, hl, hw, apart = 2.6) => {
+    if (!clearOfBuildings(x, z, tx, tz, hl, hw)) return false;
+    const me = boxCorners(x, z, Math.atan2(tx, tz), hl, hw);
+    for (const [ax, az, ayaw] of near(aGrid, x, z, 7)) if (boxGap(boxCorners(ax, az, ayaw, PLAYER_HALF[0], PLAYER_HALF[1]), me) < ANCHOR_CLEAR) return false; // never on a tow anchor, where the player spawns and the traffic drives
+    for (const [oe, x0, z0, x1, z1] of near(sGrid, x, z, 6)) { if (oe === e || twin(oe, e)) continue; const dx = x1 - x0, dz = z1 - z0, q = dx * dx + dz * dz, u = q ? Math.max(0, Math.min(1, ((x - x0) * dx + (z - z0) * dz) / q)) : 0; if (Math.hypot(x - x0 - u * dx, z - z0 - u * dz) < 4) return false; }
+    for (const [ox, oz, d] of near(oGrid, x, z, 4)) if (Math.hypot(x - ox, z - oz) < d) return false;
+    for (const [cx, cz] of near(cGrid, x, z, 5)) if (Math.hypot(x - cx, z - cz) < apart) return false;
+    return true;
+  };
+  for (let e = 0; e < n && out.length < PARKING_LIMIT * 5; e++) {
+    const o = e * 10, lanes = E[o + 6], speed = E[o + 7], flags = E[o + 8], first = E[o + 3], count = E[o + 4], id = E[o];
+    if ((flags & 6) || (t.edgeLayers && t.edgeLayers[e] !== 0) || lanes > 2 || speed > 50 || count < 2) continue;
+    const seg = []; let length = 0; for (let k = 0; k < count - 1; k++) { const l = Math.hypot(P[(first + k + 1) * 3] - P[(first + k) * 3], P[(first + k + 1) * 3 + 2] - P[(first + k) * 3 + 2]); seg.push(l); length += l; }
+    if (length < 26) continue;
+    let slot = 0, run = 0;
+    for (let s = 12 + 2.65; s < length - 12; s += 5.3, slot++) {
+      let acc = 0, k = 0; while (k < seg.length - 1 && acc + seg[k] < s) { acc += seg[k]; k++; }
+      const a = first + k, ax = P[a * 3], ay = P[a * 3 + 1], az = P[a * 3 + 2], bx = P[a * 3 + 3], by = P[a * 3 + 4], bz = P[a * 3 + 5], l = seg[k] || 1, f = Math.min(1, Math.max(0, (s - acc) / l));
+      const tx = (bx - ax) / l, tz = (bz - az) / l, h = hashN(id * 7919 + slot * 131 + 17), px = ax + (bx - ax) * f, pz = az + (bz - az) * f, py = ay + (by - ay) * f, yaw = Math.atan2(tx, tz);
+      if (run >= 4 + (h >>> 5) % 3) { run = 0; continue; } // after four to six cars in a row, a gap: a driveway, a shop door, a bin
+      if ((slot * 5 + id) % 9 === 0 || (h >>> 9) % 100 >= (inQuarter(px, pz) ? 76 : 66)) { run = 0; continue; }
+      // the carriageway on the right of the edge, measured: its half width w from the axis. A kerbside car stands with its outer flank on the kerb when the street
+      // is wide enough to keep 1.5 m clear of the axis on this side (a street with a row on both sides keeps 3 m); on a narrow street it stands half on the pavement.
+      let w = -1; if (measured) w = asphalt.reach(px, pz, -tz, tx, 9); else w = lanes >= 2 ? 3.2 : 2.5;
+      if (w < 1.6 || w > 8.5) continue;
+      // Players, traffic and tow anchors drive up to 2.7 m off the axis (anchors lie 0.5 to 1.7 m off it, a car is 1.9 m wide). So a car stands against the kerb with its inner flank
+      // at least 3.2 m from the axis, which is the case on streets whose carriageway is 10 m wide (w >= 5); on every narrower street it stands wholly on the pavement beyond
+      // the kerb (centre w + 1.05) or, if a building is there, not at all.
+      const carOff = w >= 5 ? w - .8 : w + 1.05;
+      if ((h >>> 3) % 100 < 13) { // scooters: a group on the pavement, noses to the kerb
+        const m = 2 + (h >>> 12) % 3, off = w + 1.1;
+        for (let q = 0; q < m; q++) { const sx = px + tx * (q - (m - 1) / 2) * .9 - tz * off, sz = pz + tz * (q - (m - 1) / 2) * .9 + tx * off; if (!free(e, sx, sz, tx, tz, .5, .3, .7)) continue; grid(cGrid, sx, sz, sx, sz, [sx, sz]); out.push(sx, py, sz, yaw + Math.PI / 2 + ((h >>> (q * 3)) % 5 - 2) * .06, 8 + (h >>> (16 + q * 2)) % 6); }
+        continue;
+      }
+      const x = px - tz * carOff, z = pz + tx * carOff; if (!free(e, x, z, tx, tz, 2.15, .9)) { run = 0; continue; }
+      run++; grid(cGrid, x, z, x, z, [x, z]); out.push(x, py, z, yaw + ((h >>> 20) % 9 - 4) * .01, PAINT[(h >>> 14) % PAINT.length]);
+    }
+  }
+  return Float32Array.from(out.slice(0, PARKING_LIMIT * 5));
+}
+
+/** The collision boxes of the derived rows (cars 4.3 x 1.8 x 1.4 m, scooters 1.1 x .6 x 1 m): [x, y, z, yaw, halfLength, halfWidth, height] per box, for the obstacle index. */
+export function parkedBoxes(rows) {
+  const out = new Float32Array(rows.length / 5 * 7);
+  for (let i = 0, o = 0; i < rows.length; i += 5, o += 7) { const scooter = rows[i + 4] >> 3; out.set([rows[i], rows[i + 1], rows[i + 2], rows[i + 3], scooter ? .55 : 2.15, scooter ? .3 : .9, scooter ? 1 : 1.4], o); }
+  return out;
+}

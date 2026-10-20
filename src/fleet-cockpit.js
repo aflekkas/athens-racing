@@ -23,7 +23,7 @@ export class FleetCockpit{
   this.lamps=new CockpitLamps();this.draw(-1,'N');group.visible=false;buildCockpitStructure(model,this);buildFleetInterior(this,model);derivePovEye(model,this);seatCockpitControls(model,this);installCabinLOD(model,this);
  }
  draw(speed,gear){const key=[Math.round(speed),gear,Math.round((this.state?.rpm||0)/50),lampArtVersion,...(this.lampState||[]).map(l=>l[1])].join('|');if(key===this.last)return;this.last=key;drawFleetInstruments(this.canvas,{...this.state,kmh:speed,gearLabel:gear},this.lampState,this.spec);this.texture.needsUpdate=true;}
- update(dt,st){this.updateStructure(st);this.state=st;this.lampState=this.lamps.update(dt,st);this.wheelInfo.angle=-st.steerInput*2.35;this.draw(st.kmh,st.gearLabel);}
+ update(dt,st){this.updateStructure(st);this.handbrake?.update(dt,!!st.handbrake);this.state=st;this.lampState=this.lamps.update(dt,st);this.wheelInfo.angle=-st.steerInput*2.35;this.draw(st.kmh,st.gearLabel);}
  mirrorFov(){return 60;}
  renderMirrors(){}
  setVisible(v){if(this.steering)this.steering.visible=true;this.structure.visible=v;this.lod.visible=true;this.lod.autoUpdate=!v;if(v)this.lod.levels.forEach((l,i)=>l.object.visible=i===0);setVehicleCockpitView(this.model,v);}

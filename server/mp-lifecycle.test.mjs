@@ -322,7 +322,7 @@ async function wsSetup(t, opts = {}) {
     ws.on('message', (data) => { const m = JSON.parse(data); const i = waiting.findIndex((w) => w.pred(m)); if (i >= 0) waiting.splice(i, 1)[0].resolve(m); else inbox.push(m); });
     const next = (pred) => new Promise((resolve, reject) => { const i = inbox.findIndex(pred); if (i >= 0) return resolve(inbox.splice(i, 1)[0]); const timer = setTimeout(() => reject(new Error('Message timeout')), 3000); waiting.push({ pred, resolve: (m) => { clearTimeout(timer); resolve(m); } }); });
     const hello = await next((m) => m.type === 'hello');
-    return { ws, id: hello.id, token: hello.token, version: hello.track.version, next, send: (m) => ws.send(JSON.stringify({ name, car: 'mini', ...m })) };
+    return { ws, id: hello.id, token: hello.token, version: hello.track.version, next, send: (m) => ws.send(JSON.stringify({ name, car: 'mini_jcw', ...m })) };
   }
   return { app, client };
 }
@@ -332,29 +332,29 @@ test('three real clients converge on one room through concurrent create/edit/joi
   const env = await wsSetup(t);
   const host = await env.client('Host'), g1 = await env.client('Gus'), g2 = await env.client('Zed');
   // Host creates and immediately edits (the playtest create/edit race); guests join mid-edit.
-  host.send({ type: 'create', lobbyName: 'Converge', mapId: 'riviera', allowedCars: ['mini', 'z4'] });
+  host.send({ type: 'create', lobbyName: 'Converge', mapId: 'riviera', allowedCars: ['mini_jcw', 'z4'] });
   const created = (await wroom(host)).lobby;
   host.send({ type: 'options', config: { rivals: 1, time: 'sunset', traffic: 1 } });
   g1.send({ type: 'join', code: created.code, car: 'z4' });
-  g2.send({ type: 'join', code: created.code, car: 'mini' });
+  g2.send({ type: 'join', code: created.code, car: 'mini_jcw' });
   await wroom(g1); await wroom(g2); await wroom(host);
   // Guests pick cars while the host edits again.
   g1.send({ type: 'ready', ready: true, car: 'z4', version: g1.version });
   await host.next((m) => m.type === 'lobby' && m.lobby.players.some((p) => p.id === g1.id && p.ready));
-  host.send({ type: 'options', allowedCars: ['mini'] });
+  host.send({ type: 'options', allowedCars: ['mini_jcw'] });
   const hg = await host.next((m) => m.type === 'lobby' && m.lobby.allowedCars.length === 1);
   await g1.next((m) => m.type === 'lobby' && m.lobby.allowedCars.length === 1);
   await g2.next((m) => m.type === 'lobby' && m.lobby.allowedCars.length === 1);
   assert.equal(hg.lobby.code, created.code, 'room code is stable');
   assert.equal(hg.lobby.config.rivals, 1);
-  assert.deepEqual(hg.lobby.allowedCars, ['mini']);
+  assert.deepEqual(hg.lobby.allowedCars, ['mini_jcw']);
   const gus = hg.lobby.players.find((p) => p.id === g1.id);
-  assert.equal(gus.car, 'mini', 'guest gets an allowed car after host filter edits');
+  assert.equal(gus.car, 'mini_jcw', 'guest gets an allowed car after host filter edits');
   assert.equal(gus.ready, false, 'disallowed guest deterministically unreadied');
   assert.equal(hg.lobby.players.find((p) => p.id === host.id).ready, false);
   assert.equal(hg.lobby.generation, 0, 'waiting-room edits do not burn generations');
   // Converge: guest on mini readies, everyone readies, host starts, restarts, returns.
-  g1.send({ type: 'ready', ready: false, car: 'mini', version: g1.version }); await wroom(host);
+  g1.send({ type: 'ready', ready: false, car: 'mini_jcw', version: g1.version }); await wroom(host);
   host.send({ type: 'ready', ready: true, version: host.version });
   g1.send({ type: 'ready', ready: true, version: g1.version });
   g2.send({ type: 'ready', ready: true, version: g2.version });

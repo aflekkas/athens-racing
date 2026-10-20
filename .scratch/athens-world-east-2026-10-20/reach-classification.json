@@ -1,0 +1,87 @@
+{
+ "buckets": {
+  "Argyroupoli (real, x2..5 z14..17)": {
+   "reachableKm": 92,
+   "unreachableKm": 4.5,
+   "pocketKm": 4.3,
+   "noPredKm": 0.2,
+   "turnBlockedKm": 0
+  },
+  "Kaisariani (x8..14, z-4..5 east)": {
+   "reachableKm": 104.4,
+   "unreachableKm": 43.1,
+   "pocketKm": 41.5,
+   "noPredKm": 1.6,
+   "turnBlockedKm": 0
+  },
+  "Zografou (east)": {
+   "reachableKm": 224.7,
+   "unreachableKm": 41.4,
+   "pocketKm": 40.5,
+   "noPredKm": 0.9,
+   "turnBlockedKm": 0
+  }
+ },
+ "stall": [
+  {
+   "id": "osm:way:191429388:0-0:b:7:19",
+   "distM": 6,
+   "reachable": true,
+   "outdeg": 2,
+   "reachableOut": 2,
+   "indeg": 2,
+   "reachableIn": 2,
+   "flags": 0
+  },
+  {
+   "id": "osm:way:191429388:0-0:f:7:19",
+   "distM": 6,
+   "reachable": true,
+   "outdeg": 2,
+   "reachableOut": 2,
+   "indeg": 2,
+   "reachableIn": 2,
+   "flags": 0
+  },
+  {
+   "id": "osm:way:24809291:2-0:f:7:19",
+   "distM": 21,
+   "reachable": true,
+   "outdeg": 2,
+   "reachableOut": 2,
+   "indeg": 2,
+   "reachableIn": 2,
+   "flags": 1
+  },
+  {
+   "id": "osm:way:24809291:3-0:f:7:19",
+   "distM": 21,
+   "reachable": true,
+   "outdeg": 2,
+   "reachableOut": 2,
+   "indeg": 2,
+   "reachableIn": 2,
+   "flags": 1
+  },
+  {
+   "id": "osm:way:977846100:0-0:b:7:19",
+   "distM": 27,
+   "reachable": true,
+   "outdeg": 2,
+   "reachableOut": 2,
+   "indeg": 1,
+   "reachableIn": 1,
+   "flags": 0
+  },
+  {
+   "id": "osm:way:977846100:0-0:f:7:19",
+   "distM": 27,
+   "reachable": true,
+   "outdeg": 1,
+   "reachableOut": 1,
+   "indeg": 2,
+   "reachableIn": 2,
+   "flags": 0
+  }
+ ]
+}

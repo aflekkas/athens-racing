@@ -53,11 +53,13 @@ test('fast roof-first fall cannot tunnel through flat terrain',()=>{
   assert.ok(minimum>=0&&Number.isFinite(v.y));assert.ok(v.speed<.2);
 });
 
-test('a hard player contact can launch the local body without changing the remote state',()=>{
+test('a hard player contact changes only the local body, keeps it on the ground and leaves the remote state alone',()=>{
+  // (it used to launch the car: an invented lift of up to 5 m/s on every car-to-car blow. The blow is now planar, src/crash-contact.js.)
   const local=make('carrera'),remote=make('carrera');local.reset(0,0,150/3.6);remote.reset(3.5,0,0);
   const before=JSON.stringify({x:remote.x,y:remote.y,z:remote.z,vLong:remote.vLong,vLat:remote.vLat,w:remote.w});
   const hits=resolvePlayerContacts(local,[{id:'peer',vehicle:remote}],1/60,1000);
-  assert.equal(hits.length,1);assert.ok(local.bodyDynamic&&local.vy>1);
+  assert.equal(hits.length,1);assert.ok(local.vLong<150/3.6*.6,'the blow takes real speed off the local car');
+  assert.ok(!(local.vy>1),'a flat car-to-car blow does not throw the car into the air');
   assert.equal(JSON.stringify({x:remote.x,y:remote.y,z:remote.z,vLong:remote.vLong,vLat:remote.vLat,w:remote.w}),before);
 });
 

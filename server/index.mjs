@@ -53,7 +53,7 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
       const auth = protectedPath(path) ? await authorizeGame(request, accountEnv) : {};
       if (auth.response) { json(auth.response.status, await auth.response.json()); req.resume(); return; }
       if (path === '/api/leaderboard') {
-        if (req.method === 'GET') { json(200, leaderboard.list(leaderboardFilters(url.searchParams))); return; }
+        if (req.method === 'GET') { json(200, leaderboard.list(leaderboardFilters(url.searchParams, CARS))); return; }
         if (req.method !== 'POST') { json(405, { error: 'Use GET or POST.' }); return; }
         if (!canSaveResults(auth.identity)) { json(403, { error: 'Smoke sessions cannot save results.' }); req.resume(); return; }
         if (req.headers.origin && new URL(req.headers.origin).host !== req.headers.host) { json(403, { error: 'Origin mismatch.' }); return; }

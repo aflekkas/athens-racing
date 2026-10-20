@@ -133,6 +133,5 @@ body[data-mode="taxi"] #hud #routeBox, body[data-mode="getaway"] #hud #routeBox 
 body[data-mode=free] :is(#routeBox,#lapTiming,#posBox,#evBox) { display:none!important }
 /* Every detached race widget follows the same menu visibility policy as the main HUD. */
 body.ui-open :is(#hud,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-prompt,#police-hud), body:has(#multiplayer:not([hidden])) :is(#hud,#mp-board,#racer-markers,#drivingHints,#drivingTip,#tow-prompt,#police-hud) { visibility: hidden !important; pointer-events: none !important; }
-.graphics-live-note { font:500 var(--t-xs)/1.5 var(--f-sans);color:var(--c-text-3);margin:var(--s-2) var(--s-4) 0 }
 /* Account/build controls survive the owner-chosen title restoration. */
 #ui.s-account { background: #0b141a; }

@@ -5,6 +5,7 @@ import { tileGPUPlan, tileRenderVariants } from './world-tile-gpu.js';
 import { addDerivedBuildings } from './world-tile-buildings.js';
 import { tagDressedSurfaces, dressingBytes } from './world-tile-dressing.js';
 import {buildTileObstacleIndex,obstacleBytes} from './world-tile-obstacles.js';
+import {parkedBoxes} from './world-tile-parking.js';
 const controllers = new Map();
 async function limitedBuffer(stream,limit,onBytes=null) {
   const reader=stream.getReader(),chunks=[]; let bytes=0;
@@ -26,6 +27,7 @@ export async function fetchTilePacket({url,entry,world,revision,cell},signal,onB
   const buffer=await limitedBuffer(stream,entry.decodedBytes);
   return prepareTilePacket(await decodeTilePack(buffer,entry.decodedBytes),{entry,world,revision,cell});
 }
+const parkedBoxesOf=pack=>{const i=pack.metadata.extensions?.worldDetail?.parking;return i==null?null:parkedBoxes(pack.arrays[i]);};
 export function prepareTilePacket(pack,{entry,world,revision,cell}){
   const checked=validateWorldTile(pack,{world,revision,cell});
   // Footprints are stored once; their wall and roof meshes are built here, before bounds, GPU plan and byte accounting.
@@ -52,9 +54,9 @@ export function prepareTilePacket(pack,{entry,world,revision,cell}){
     if(mesh.index!=null)gpuViews.set(`index:${mesh.index}`,pack.arrays[mesh.index].byteLength);
   }
   for(const bytes of gpuViews.values())gpuBytes+=bytes;
-  const gpuPlan=tileGPUPlan(pack),renderVariants=tileRenderVariants(pack),obstacleIndex=buildTileObstacleIndex(checked.tables);
+  const gpuPlan=tileGPUPlan(pack),renderVariants=tileRenderVariants(pack),obstacleIndex=buildTileObstacleIndex(checked.tables,parkedBoxesOf(pack));
   const bytes=obstacleBytes(obstacleIndex)+residentArrayBytes(pack.arrays)+contactIndex.offsets.byteLength+contactIndex.refs.byteLength+gpuBytes+new TextEncoder().encode(JSON.stringify({metadata:pack.metadata,gpuPlan,renderVariants})).byteLength;
-  if(bytes-dressingBytes(pack)>(entry.residentBytes??entry.decodedBytes))throw new Error('Tile resident budget understated');
+  if(bytes-dressingBytes(pack)>(entry.residentBytes??entry.decodedBytes))throw new Error('Tile resident budget understated: '+(bytes-dressingBytes(pack))+' > '+(entry.residentBytes??entry.decodedBytes));
   if(checked.triangles!==entry.triangles)throw new Error('Tile triangles mismatch');
   return {...pack,contactIndex,obstacleIndex,bytes,jsBytes:bytes-gpuBytes,gpuBytes,gpuPlan,renderVariants};
 }

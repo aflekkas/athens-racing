@@ -10,6 +10,7 @@ import {setVehicleCockpitView} from './glass-tint.js';
 // and a windscreen frame, headliner and door trim fitted to each body.
 import * as THREE from './vehicle-primitives.js';
 import {FleetCockpit} from './fleet-cockpit.js';
+import {buildHandbrake} from './cockpit-handbrake.js';
 import { RoundedBoxGeometry } from './vehicle-primitives.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { clamp } from './util.js';
@@ -311,13 +312,9 @@ export class Cockpit {
       this.selectorParts=[lever,knob,this._prndLabel];
     }
     if(isBMW||isMini)part(new THREE.CylinderGeometry(.028,.031,.023,24),alu,.069,consoleY+.066,faceZ+.46);
-    // A tactile lever is available even in cars with a factory electronic brake.
-    const brakePivot=this.handbrakePivot=new THREE.Group();brakePivot.name='handbrake-pivot';
-    brakePivot.position.set(.09,consoleY+.075,faceZ+.57);g.add(brakePivot);
-    const brakeGrip=new THREE.Mesh(new RoundedBoxGeometry(.031,.029,.18,1,.009),trim);
-    brakeGrip.name='handbrake-grip';brakeGrip.position.z=-.08;brakePivot.add(brakeGrip);
+    // Mechanical lever, or the lit button of an electric parking brake (src/cockpit-handbrake.js).
+    const handbrake=this.handbrake=buildHandbrake(g,spec,new THREE.Vector3(.09,consoleY+.058,faceZ+.66),{dark:trim,alu});
     this.controlTargets={handbrake:new THREE.Vector3(),shifter:new THREE.Vector3(),pull:0,manual:false,gear:1,shiftSerial:0,shiftBlend:0,paddleL:0,paddleR:0,paddleLT:new THREE.Vector3(),paddleRT:new THREE.Vector3()};
-    this._brakeGrip=brakeGrip;
     for(const x of (manual||dual)?[eye.x-.15,eye.x-.04,eye.x+.075]:[eye.x-.07,eye.x+.075]){
       const pedal=box(.06,.014,.105,alu,x,.31,faceZ-.02,.003,-.5);
       for(let j=-1;j<=1;j++)box(.052,.002,.005,trim,x,.321+j*.008,faceZ-.02+j*.023,.001,-.5);
@@ -444,12 +441,9 @@ export class Cockpit {
     const ang = -st.steerInput * 2.35;
     this.wheelSpin.rotation.z = ang; this.wheelInfo.angle = ang;
     const controls=this.controlTargets;
-    // Reach first, then raise the lever; keep the palm target on its moving grip.
-    controls.pull += ((st.handbrake?1:0)-controls.pull)*(1-Math.exp(-12*Math.max(0,dt)));
-    this.handbrakePivot.rotation.x=-.12+Math.max(0,(controls.pull-.55)/.45)*.52;
-    this.handbrakePivot.updateMatrix();
-    controls.handbrake.copy(this._brakeGrip.position).applyMatrix4(this.handbrakePivot.matrix);
-    controls.handbrake.y+=.018;
+    // The lever swings (or the button lights and sinks) while the handbrake is held; the palm target follows the grip.
+    controls.handbrake.copy(this.handbrake.update(dt,!!st.handbrake));
+    controls.pull=this.handbrake.pull;
     controls.manual=!!st.manual;controls.gear=st.gear;controls.held=!!st.handbrake;
     this.updateShiftControls(dt,st,controls);
     const activeKnob=(this.stickKnob&&controls.manual)?this.stickKnob:this.knob;
@@ -660,13 +654,12 @@ export class Cockpit {
     if(interior){interior.geometry.computeBoundingBox();interior.geometry.boundingBox.getCenter(_rp);interior.localToWorld(cam.position.copy(_rp));}
     else body.localToWorld(cam.position.set(0,this.model.shape?.H??1.2,0));
     cam.quaternion.copy(body.getWorldQuaternion(_rq)).multiply(MIRROR_FLIP).multiply(REAR_TILT);cam.updateMatrixWorld(true);
-    this.model.exhaustFlames?.beginMirror(body);
     root.visible=false;renderer.shadowMap.autoUpdate=false;
     try{
       renderer.setRenderTarget(this.rearTarget);renderer.render(scene,cam);
       for(const m of this.mirrors){m.material.map=this.rearTarget.texture;m.material.color.set(0xffffff);}
       this.mirrorUpdates++;this.mirrorCalls=0;this.rearLast=now;
-    }finally{this.model.exhaustFlames?.endMirror();renderer.setRenderTarget(target);renderer.shadowMap.autoUpdate=shadow;root.visible=visible;}
+    }finally{renderer.setRenderTarget(target);renderer.shadowMap.autoUpdate=shadow;root.visible=visible;}
   }
   disposeMirrors(){this.rearTarget?.dispose();this.rearTarget=null;if(this.ownsMirrorFallback)this.mirrorFallback.dispose();}
   setVisible(v) { this.wheel.visible=true;this.structure.visible=v;this.lod.visible = true;this.lod.autoUpdate=!v;if(v)this.lod.levels.forEach((l,i)=>l.object.visible=i===0); setVehicleCockpitView(this.model,v); }

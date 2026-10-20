@@ -1,4 +1,5 @@
 import {blockyWheel} from './vehicle-wheel.js';
+import {stripAddOnPanels} from './vehicle-styling.js';
 // Reference-proportioned, editable vehicle meshes. Metres; nose -Z; wheels turn about X.
 import * as THREE from './vehicle-primitives.js';
 import { AVENTADOR, buildAventador } from './player-aventador.js';
@@ -40,7 +41,7 @@ const mat = (color,roughness=0.45,metalness=0) => new THREE.MeshStandardMaterial
 function mesh(parent,geo,m,pos=[0,0,0],rot=[0,0,0],name='') { const o=new THREE.Mesh(geo,m);o.position.set(...pos);o.rotation.set(...rot);o.name=name;parent.add(o);return o; }
 function playerDetailParent(p){for(let o=p;o;o=o.parent)if(o.userData.playerDetail)return true;return false;}
 function box(p,m,size,pos,rad=0.02,rot=[0,0,0],name='') {return mesh(p,new RoundedBoxGeometry(...size,playerDetailParent(p)?1:2,Math.min(rad,...size.map(v=>v/2))),m,pos,rot,name);}
-function line(p,m,points,r=0.004) {const curve=new THREE.CurvePath();for(let i=1;i<points.length;i++)curve.add(new THREE.LineCurve3(V(...points[i-1]),V(...points[i])));return mesh(p,new THREE.TubeGeometry(curve,playerDetailParent(p)?Math.min(40,Math.max(8,points.length*2)):Math.max(8,points.length*2),r,5,false),m);}
+function line(p,m,points,r=0.004,name='') {const curve=new THREE.CurvePath();for(let i=1;i<points.length;i++)curve.add(new THREE.LineCurve3(V(...points[i-1]),V(...points[i])));return mesh(p,new THREE.TubeGeometry(curve,playerDetailParent(p)?Math.min(40,Math.max(8,points.length*2)):Math.max(8,points.length*2),r,5,false),m,[0,0,0],[0,0,0],name);}
 function surface(p,m,fn,nu=32,nv=12,name='') {
   nu=Math.min(nu, /body-side|painted-side/.test(name||" ")?24:4); nv=Math.min(nv,/body-side|painted-side/.test(name||" ")?2:1);
   if(playerDetailParent(p)&&!m.transparent){nu=Math.min(nu,96);nv=Math.min(nv,12);}
@@ -155,7 +156,6 @@ function shapedSkin(car,d,M,low){
     const curve=new THREE.CatmullRomCurve3(shut.map(([z,y])=>V(0,y,z)));
     line(p,M.seam,curve.getPoints(90).map(({y,z})=>[s*(shapedWidth(d,z,y)+.002),y,z]),.0024);
     box(p,d.classic?M.chrome:M.paint,[.024,.028,.14],[s*(shapedWidth(d,end-.17,d.belt-.1)+.008),d.belt-.1,end-.17],.01);
-    const sill=[];for(let i=0;i<=24;i++){const z=lerp(-d.wb/2+ax+.37,d.wb/2+ax-.38,i/24);sill.push([s*(shapedWidth(d,z,.22)+.005),.225,z]);}line(p,d.classic?M.chrome:M.black,sill,d.classic?.012:.025);
   }
   for(const [a,b,name]of [[F,d.cowl,'bonnet'],[d.back,R,'boot']])surface(p,M.paint,(u,v)=>{const z=lerp(a,b,u),x=(2*v-1)*shapedWidth(d,z,shoulderY(d,z));return[x,deckY(d,x,z),z];},48,32,name);
   for(const z of [F,R])surface(p,M.paint,(u,v)=>{const y=lerp(.18,shoulderY(d,z),v),x=(2*u-1)*shapedWidth(d,z,y);return[x,y+.028*(1-(2*u-1)**2)*v**8,z];},32,12,z<0?'front-bumper':'rear-bumper');
@@ -333,8 +333,6 @@ function fascia(car,d,M,low,plate) {
     box(p,M.red,[.18,.028,.02],[s*W*.77,.32,R+.012],.01);
     if(!low)for(const end of [-1,1])disk(p,M.black,.013,[s*W*.58,.40,end*(d.L/2+.013)],[0,end<0?Math.PI:0,0]);
   }
-  box(p,M.black,[d.W*.82,.14,.055],[0,.245,R],.025);
-  for(const x of [-.34,-.17,0,.17,.34])box(p,M.black,[.018,.09,.19],[x,.195,R-.06],.008);
   // Actual open, soot-darkened exhaust outlets (EVs deliberately have none).
   car.exhaust=[];
   if(mini)for(const x of [-.061,.061])car.exhaust.push(exhaust(p,M,x,.26,R+.008));
@@ -401,6 +399,7 @@ export function buildDetailedCar(car,kind,opts={}) {
   if(visual.tyreWidth)d.tyreF=d.tyreR=visual.tyreWidth;
   if(visual.rim)d.rim=visual.rim*.0254/2;
   if(visual.ride)car.body.position.y=visual.ride;
+  d.blackRoof=false;d.archTrim=false; // one paint, no two-tone roof or arch trim (src/vehicle-styling.js)
   car.dims={L:d.L,W:d.W,H:d.H};car.shape={...d,ws:[-d.header/(d.L/2),-d.cowl/(d.L/2)],roofT:[-d.roofBack/(d.L/2),-d.header/(d.L/2)]};
   car.seat=V(-d.W*.215,d.eyeY,d.seatZ);car.dash={y:d.belt,z:d.cowl+.14,w:d.W-.28,x:car.seat.x,wheelY:d.eyeY-.30,wheelZ:d.seatZ-.43,wheelR:.18};
   const M=palette(car,d);car.paint=M.paint;car.tail=M.tail;car.materials=M;
@@ -435,35 +434,19 @@ export function buildDetailedCar(car,kind,opts={}) {
     if(!playerModel||!buildOriginalPlayerSkin(car,d,M,low))skin(car,d,M,low);
     cabin(car,d,M,low);wheels(car,d,M,low);fascia(car,d,M,low,opts.plate||nextRegistration(car.spec.taxi));
   }
-  if(car.spec.visual?.lip)box(car.body,M.black,[d.W*.84,.035,.12],[0,['panda','yaris','ibiza','golf','mini_jcw','gr_yaris','jazz'].includes(kind)?d.H-.04:d.rear+.035,['panda','yaris','ibiza','golf','mini_jcw','gr_yaris','jazz'].includes(kind)?d.roofBack+.12:d.L/2-.11],.012,[0,0,0],'trim-spoiler-lip');
-  if(car.spec.visual?.m){
-    box(car.body,M.black,[d.W*.80,.09,.10],[0,.22,-d.L/2+.03],.012,[0,0,0],'m-front-splitter');
-    box(car.body,M.black,[d.W*.76,.12,.10],[0,.24,d.L/2-.03],.012,[0,0,0],'m-rear-diffuser');
-  }
   if(car.spec.visual){
     const badge=mesh(car.body,new THREE.PlaneGeometry(.34,.055),textMaterial(car.spec.short,null),[d.W*.25,d.rear-.10,d.L/2+.025]);badge.name='trim-badge';
   }
   if(playerModel){refinePlayerDetails(car,d,M);refineOriginalPlayer(car,d,M,low);refineSportsPlayer(car,d,M,low);}
-  // Apply trim parts after body refinements, which can replace the stock fascia.
+  // Tailpipes go on after the body refinements, which can replace the stock fascia.
   if(visual.exhaust){
     const old=[];car.body.traverse(o=>{if(/exhaust/.test(o.name))old.push(o);});for(const o of old)o.removeFromParent();
     const n=visual.exhaust,mid=kind==='mini'||kind==='mini_jcw',high=kind==='huracan';
     const xs=visual.m?[-.49,-.40]:n===4?[-.66,-.54,.54,.66]:n===2?(mid?[-.065,.065]:[-d.W*.30,d.W*.30]):[-d.W*.29];
     car.exhaust=xs.map(x=>exhaust(car.body,M,x,high?.626:.25,d.L/2+(high?.07:-.03)));
   }
-  if(visual.wing){
-    for(const x of [-.48,.48])box(car.body,M.black,[.045,.25,.10],[x,d.H+.045,d.roofBack+.20],.008,[0,0,0],'trim-wing-mount');
-    box(car.body,M.black,[d.W*.94,.055,.32],[0,d.H+.18,d.roofBack+.24],.015,[.06,0,0],'trim-big-rear-wing');
-    for(const x of [-d.W*.47,d.W*.47])box(car.body,M.black,[.025,.16,.35],[x,d.H+.20,d.roofBack+.24],.006,[0,0,0],'trim-wing-endplate');
-  }
   if(visual.exhaustScale)car.body.traverse(o=>{if(/exhaust/.test(o.name))o.scale.multiplyScalar(visual.exhaustScale);});
-  if(visual.kit){
-    box(car.body,M.black,[d.W*.82,.055,.14],[0,.20,-d.L/2+.08],.012,[0,0,0],'trim-front-splitter');
-    box(car.body,M.black,[d.W*.77,.11,.14],[0,.22,d.L/2-.04],.012,[0,0,0],'trim-rear-diffuser');
-    for(const x of [-.48,-.24,0,.24,.48])box(car.body,M.black,[.025,.12,.20],[x,.18,d.L/2-.04],.005,[0,0,0],'trim-diffuser-fin');
-    const stripe=visual.kit==='GTI'?M.red:M.chrome;
-    box(car.body,stripe,[d.W*.54,.018,.015],[0,.56,-d.L/2-.008],.003,[0,0,0],'trim-grille-stripe');
-  }
+  stripAddOnPanels(car.body);
   // Light reflective exterior glazing; hidden only for the own cockpit.
   tintGlass(M.glass,d.open?'open':'cabin');
   M.glass.forceSinglePass=true;

@@ -8,6 +8,9 @@ test('only an explicit production identity removes the environment badge', () =>
   for (const id of ['staging', 'preview-abc', 'test']) assert.equal(environmentBadge(id, '2026.10.15.1'), 'STAGING · 2026.10.15.1');
   assert.equal(environmentBadge(undefined), 'DEV');
   assert.equal(environmentBadge('dev', 'local'), 'DEV');
+  // A staging build names its commit (everything since the last release), not the last release's version.
+  assert.equal(environmentBadge('staging', '2026.10.15.3', 'acce710'), 'STAGING · acce710');
+  assert.equal(environmentBadge('production', '2026.10.15.3', 'acce710'), '');
 });
 test('Wrangler injects distinct build identities for staging and production', () => {
   const config = JSON.parse(readFileSync(new URL('../wrangler.jsonc', import.meta.url), 'utf8'));

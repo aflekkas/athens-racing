@@ -1,0 +1,1 @@
+extra-after: curb — -39.8 LUFS, -22.1 dBFS peak; spectrogram and waveform at default mix, no normalization.

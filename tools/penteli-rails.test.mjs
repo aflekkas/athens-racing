@@ -46,8 +46,8 @@ test('solid rail limits and glancing collision retain forward motion',()=>{
  const rails=[{side:1,pts:[{s:100,u:4.5}]}];
  const ground=new Ground({id:'penteli',route,data:{buildings:[]},terrain:{height:()=>0}},()=>0,{rails});
  const limits=ground.limits(100,1,{});assert.equal(limits.max,3.25);
- const v={x:0,z:0,yaw:0,vLong:20,vLat:3,w:.1,halfW:1,halfL:2,wallHit:0,pose:{rollV:0,heaveV:0},wheel:[]};
- ground._hit(v,-1,0,.3);assert.equal(v.x,-.3);assert.ok(v.vLong>18&&v.vLong<20);assert.ok(v.vLat<=0);assert.equal(v.wallHit,3);
+ const v={x:0,z:0,yaw:0,vLong:20,vLat:3,w:.1,halfW:1,halfL:2,m:1500,Iz:2200,wallHit:0,pose:{rollV:0,heaveV:0},wheel:[]};
+ ground._hit(v,-1,0,.3);assert.equal(v.x,-.3);console.log('rail result',v.vLong,v.vLat,v.w,v.wallHit);assert.ok(v.vLong>16&&v.vLong<20);assert.ok(v.vLat<=0);assert.ok(Math.abs(v.wallHit-3)<.4,'closing speed at the contact point, about the 3 m/s the car was moving into the rail');
  // Tangential or departing contact neither brakes nor sticks.
  v.vLong=20;v.vLat=-1;ground._hit(v,-1,0,0);assert.equal(v.vLong,20);assert.equal(v.vLat,-1);
 });

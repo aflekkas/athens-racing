@@ -144,8 +144,8 @@ test('OWNER LOCK 2026-10-17: leaderboards belong to the Quick Race track, never 
     const menu = { screen: 'setup', setupDef: () => ({ id: 'megara-race' }) };
     const track = Menu.prototype.r_mapConfirm.call(menu, { mapId: 'megara', mode: 'quick' });
     assert.match(track, /data-act="leaderboards"/);
-    assert.match(track, /YOUR PERSONAL BEST/);
-    assert.match(track, /GLOBAL \/ TOP 3/);
+    assert.match(track, /PERSONAL BEST/);
+    assert.match(track, /TOP 3/);
     assert.match(track, /data-act="mapContinue"/);
     const { renderLeaderboards } = await import('../src/leaderboards-screen.js');
     const emptyBoard = renderLeaderboards({ screen: 'setup' }, { tab: 'personal', filters: { mapId: 'penteli', eventId: 'penteli-race' } });
@@ -169,7 +169,7 @@ test('OWNER LOCK 2026-10-17: title taglines and environment identity leave the h
   try {
     let environment = 'staging';
     globalThis.document = {
-      querySelector: selector => ({ content: selector.includes('asr-environment') ? environment : '2026.10.15.3' }),
+      querySelector: selector => ({ content: selector.includes('asr-environment') ? environment : selector.includes('asr-sha') ? 'acce710' : '2026.10.15.3' }),
       createElement: () => ({ className: '', textContent: '' }),
     };
     const makeFooter = withVersion => {
@@ -181,8 +181,9 @@ test('OWNER LOCK 2026-10-17: title taglines and environment identity leave the h
     const title = makeFooter(true), settings = makeFooter(false);
     const root = { querySelectorAll: () => [title, settings] };
     syncFooterBadge(root);
-    assert.equal(title.badge.textContent, 'STAGING · ');
-    assert.equal(settings.badge.textContent, 'STAGING · 2026.10.15.3');
+    // A staging build is named by its commit; on the title it sits before the release version link.
+    assert.equal(title.badge.textContent, 'STAGING · acce710 · ');
+    assert.equal(settings.badge.textContent, 'STAGING · acce710');
     const original = title.badge;
     syncFooterBadge(root);
     assert.equal(title.badge, original, 'repeated renders must not duplicate badges');

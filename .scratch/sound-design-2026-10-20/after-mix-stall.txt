@@ -1,0 +1,1 @@
+after: mix-stall — -19 LUFS, -7.1 dBFS peak; spectrogram and waveform at default mix, no normalization.

@@ -17,7 +17,7 @@
 //  - crash damage per zone (front / rear / left / right) from the equivalent barrier speed of each impact
 import * as THREE from 'three';
 import { clamp, lerp, damp, smoothstep } from './util.js';
-import { damageIncrement, equivalentBarrierSpeed, isGroundContact, frontalBarrierSpeed, mechanicalIncrement, impactPowerFactor, isTerminalImpact } from './damage-math.js';
+import { damageIncrement, equivalentBarrierSpeed, isGroundContact, frontalBarrierSpeed, mechanicalIncrement, impactPowerFactor, impactDragFactor, isTerminalImpact } from './damage-math.js';
 import { ROAD } from './road.js';
 import { manualMode, powertrainFor, powertrainCurve, shiftSchedule } from './transmission.js';
 import { ENGINE_ABUSE, resetEngineAbuse, predictedGearRpm, shiftFeedback, updateMechanicalOverrev, updateManualHeat, engineWearFactor } from './engine-abuse.js';
@@ -25,6 +25,7 @@ import { wetBaseGrip, wetTyreScale, wetPeakScale } from './wet-grip.js';
 import { suspensionRoadInput } from './suspension-road-input.js';
 import { tyreTelemetry } from './tyre-telemetry.js';
 import { angularVelocity, bodyContact, impactDynamics, placeRigid } from './airborne-dynamics.js';
+import { CRASH, alignAlong } from './crash-contact.js';
 
 const G = 9.81, RHO = 1.2;
 // Steady-state understeer gradient (deg per g of road-wheel angle beyond Ackermann): road cars run ~1-3, and the catalogue's nose-heavy
@@ -168,7 +169,7 @@ export class Vehicle {
     this.rigid = null; this.bodyDynamic = false; this.bodyQ = null; this._supportY = undefined; this._crestTime = 0; this.landingSpeed = 0;
     this.air = 0; this.vy = 0; this.yAir = undefined; this.sink = 0; this.water = 0; this.gradeG = undefined; this.grade = 0; this.bank = 0;
     this.wallNx = this.wallNz = 0; this.curbScrape = false;
-    this.wallHit = 0; this.offroad = 0; this.reverse = false; this.topSpeed = 0; this.drift = 0; this.driftLatch = 0;
+    this.wallHit = 0; this.crashDv = 0; this.crashRecover = 0; this.wallSlide = null; this.offroad = 0; this.reverse = false; this.topSpeed = 0; this.drift = 0; this.driftLatch = 0;
     this.powertrainTime = 0; this.powertrainEvents = []; this.shiftStartEvent = this.shiftEndEvent = this.limiterEvent = null;
     this.converterLocked = false; this.converterSlip = 0; this.overrun = false; this.limiterHold = 0;
     this.shiftEvent = 0; this.gearChangeEvent = null; this.bumpHit = 0; this.rough = 0; this.absOn = false; this.tcOn = false; this.escOn = false;
@@ -312,9 +313,20 @@ export class Vehicle {
       ? { x: v.x, y: Number.isFinite(v.y) ? v.y : 0, z: v.z } : undefined;
     const point = vector(e.localPoint), normal = vector(e.localNormal);
     const frontalEbs = frontalBarrierSpeed(ebs, zone, e);
-    const mechanical = mechanicalIncrement(frontalEbs);
-    this.impactMechanical = Math.min(1, this.impactMechanical + mechanical);
-    const bend = mechanical * 0.4; // dents and side-swipes never bend the steering rack
+    // lasting damage from a hit in any direction (tyre walls give: their kind is excluded by crush energy already, and a tyre
+    // strike never counts as frontal). It costs power, top speed and a straight wheel until the run is restarted.
+    const mechanical = e.kind === 'landing-impact' ? 0 : mechanicalIncrement(e.kind === 'tyre' ? ebs * 0.4 : ebs, zone, this.spec.engineZone); // (a hard landing hurts the suspension, not the engine)
+    // Hits pile up to a crippled-but-running car (90 %: about half power, a much lower top speed); only one terminal blow (a
+    // 90 km/h frontal) takes it to a wreck, so a run of 60 km/h hits is costly but never ends it on its own.
+    const cap = isTerminalImpact(frontalEbs) ? 1 : 0.9;
+    this.impactMechanical = Math.min(this.impactMechanical + mechanical, Math.max(this.impactMechanical, cap));
+    // Only a hit on the nose can burst the radiator, and only a hit on the nose or a front wheel can knock the steering rack out of
+    // line: a rear hit hurts the engine (power, drag) but is never "frontal" damage, in a rear-engine car or any other.
+    if (zone === 'front') this.frontMechanical = Math.min((this.frontMechanical || 0) + mechanical, Math.max(this.frontMechanical || 0, cap));
+    // the steering rack is knocked out of line towards the side that was hit (a centred hit: either way, but always the same way)
+    const side = point && Math.abs(point.x) > 0.05 ? Math.sign(point.x) : hash(Math.round(ebs * 10) + 7) < 0.5 ? -1 : 1;
+    if (zone !== 'rear') this.steerPull = clamp((this.steerPull || 0) + side * mechanical * 0.012, -0.012, 0.012);
+    const bend = mechanical * 0.4;
     for (let i = 0; i < 4; i++) {
       let exposure;
       if (point) {
@@ -324,6 +336,7 @@ export class Vehicle {
         exposure = zone === 'front' ? (i < 2 ? 0.75 : 0.03) : zone === 'rear' ? (i > 1 ? 0.75 : 0.03)
           : (i % 2 === (zone === 'right' ? 1 : 0) ? (i < 2 ? 0.9 : 0.5) : 0.015);
       }
+      if (zone === 'rear' && i < 2) exposure = 0; // a rear hit never bends a front wheel
       this.cornerDamage[i] = Math.min(1, this.cornerDamage[i] + bend * exposure);
     }
     this.maxImpactEbs = Math.max(this.maxImpactEbs, frontalEbs);
@@ -338,6 +351,30 @@ export class Vehicle {
     return inc;
   }
 
+  /**
+   * What a crash leaves behind, to carry across a tow or a reset (a restart builds the car afresh and clears it): the body, the bent
+   * corners, the steering pull and the mechanical damage. Acute failures (a stalled engine, a broken driveshaft, a boiling radiator,
+   * the wreck flag that offers a tow) do not survive the tow: the car comes back running, in whatever state the damage has left it.
+   */
+  damageSnapshot() {
+    this.damageFx();
+    return { damage: { ...this.damage }, cornerDamage: this.cornerDamage.slice(), impactMechanical: this.impactMechanical, frontMechanical: this.frontMechanical || 0, radiatorDamage: this.radiatorDamage,
+      steerPull: this.steerPull || 0, serial: this._damageSerial || 0 };
+  }
+  restoreDamageSnapshot(s) {
+    if (!s) return;
+    this.damage = { front: 0, rear: 0, left: 0, right: 0 };
+    for (const k of Object.keys(this.damage)) this.damage[k] = clamp(Number.isFinite(s.damage?.[k]) ? s.damage[k] : 0, 0, 1);
+    this.damageFx(); // new damage object: caches re-initialised, then the history goes back in
+    this.cornerDamage = [0, 1, 2, 3].map(i => clamp(Number.isFinite(s.cornerDamage?.[i]) ? s.cornerDamage[i] : 0, 0, 1));
+    this.impactMechanical = clamp(Number.isFinite(s.impactMechanical) ? s.impactMechanical : 0, 0, 0.9);
+    this.frontMechanical = clamp(Number.isFinite(s.frontMechanical) ? s.frontMechanical : 0, 0, 0.9);
+    this.radiatorDamage = Math.min(0.3, clamp(Number.isFinite(s.radiatorDamage) ? s.radiatorDamage : 0, 0, 1));
+    this.steerPull = clamp(Number.isFinite(s.steerPull) ? s.steerPull : 0, -0.012, 0.012);
+    this._damageSerial = s.serial || 0;
+    this.damageFx();
+  }
+
   /** Bounded corner alignment, delayed cooling failure, and light intermittent steam. Call once per step
    * with dt; zero-dt calls apply new damage without advancing thermal / wobble time. */
   damageFx(dt = 0) {
@@ -345,7 +382,7 @@ export class Vehicle {
     if (this._damageState !== this.damage || !this.cornerDamage) {
       this._damageState = this.damage;
       // Cosmetic replay totals cannot reconstruct mechanical impact history.
-      this.cornerDamage = [0, 0, 0, 0]; this.impactMechanical = 0;
+      this.cornerDamage = [0, 0, 0, 0]; this.impactMechanical = 0; this.frontMechanical = 0; this.steerPull = 0;
       this.coolantTemp = 90; this.radiatorDamage = 0; this.maxImpactEbs = 0;
       this.engineStalled = false; this.drivetrainBroken = false;
       resetEngineAbuse(this); // Vehicle.reset/tow replaces damage and fully repairs engine abuse too.
@@ -355,7 +392,7 @@ export class Vehicle {
     const av = Number.isFinite(this.vLong) ? Math.abs(this.vLong) : 0;
     this._damageClock += h;
     this._damageWheelPhase = (this._damageWheelPhase + h * av / Math.max(0.2, this.spec.wheelR || 0.33)) % (Math.PI * 2);
-    this.radiatorDamage = Math.max(this.radiatorDamage, 0.8 * smoothstep(0.65, 1, this.impactMechanical));
+    this.radiatorDamage = Math.max(this.radiatorDamage, 0.8 * smoothstep(0.65, 1, this.frontMechanical || 0));
     const heatRate = this.engineStalled ? -0.6 : this.radiatorDamage * (1.2 + 0.9 * clamp(this.load || 0, 0, 1));
     this.coolantTemp = clamp(this.coolantTemp + h * (heatRate - (1 - this.radiatorDamage) *
       Math.max(0, this.coolantTemp - 90) * (0.025 + av * 0.001)), 90, 145);
@@ -366,10 +403,10 @@ export class Vehicle {
     this.engHealth = this.engineStalled || this.drivetrainBroken ? 0 : impactPowerFactor(this.impactMechanical) * clamp(1 - 0.65 * thermalLoss, 0.08, 1) * wearFactor;
     const c = this.cornerDamage;
     this.wheelWobble = 0.002 * Math.max(c[0], c[1]) * Math.sin(this._damageWheelPhase) * smoothstep(1, 8, av);
-    this.toePull = clamp(0.04 * (c[1] - c[0]) + 0.015 * (c[3] - c[2]) + this.wheelWobble, -0.055, 0.055);
+    this.toePull = clamp(0.04 * (c[1] - c[0]) + 0.015 * (c[3] - c[2]) + this.wheelWobble + (this.steerPull || 0), -0.06, 0.06);
     this.wheelCamber ||= [0, 0, 0, 0];
     for (let i = 0; i < 4; i++) this.wheelCamber[i] = (i % 2 ? -1 : 1) * c[i] * 0.22;
-    this.dmgDrag = 1 + 0.04 * Math.max(d.front, d.rear) + 0.03 * Math.max(d.left, d.right) + 0.06 * Math.max(...c);
+    this.dmgDrag = (1 + 0.04 * Math.max(d.front, d.rear) + 0.03 * Math.max(d.left, d.right) + 0.06 * Math.max(...c)) * impactDragFactor(this.impactMechanical);
     // A ruptured hot radiator emits little intermittent vapour, never a perpetual white exhaust plume.
     const pulse = Math.max(0, Math.sin(this._damageClock * 2.3) - 0.3) / 0.7;
     this.steamAmount = 0.18 * this.radiatorDamage * smoothstep(104, 120, this.coolantTemp) * pulse;
@@ -579,6 +616,13 @@ export class Vehicle {
 
   step(dt, inp) {
     this.damageFx(dt);
+    // after a hard hit: a short stabilised moment (the yaw a blow put in dies away faster than the tyres alone would take it)
+    // and, while still touching a wall, help round to run along it (src/crash-contact.js). Drivable, not a spin-out.
+    if (this.crashRecover > 0) {
+      this.crashRecover = Math.max(0, this.crashRecover - dt);
+      if (!this.bodyDynamic) this.w *= Math.exp(-2.4 * Math.min(1, this.crashRecover / CRASH.recover) * dt);
+    }
+    if (this.wallSlide && this.wallSlide.t > 0) { this.wallSlide.t -= dt; if (!this.bodyDynamic) alignAlong(this, this.wallSlide.nx, this.wallSlide.nz, dt); }
     const sp = this.spec, route = this.route;
     const vx = this.vLong, vy = this.vLat, av = Math.abs(vx), vt = Math.hypot(vx, vy);
     const thrIn = clamp(inp.throttle, 0, 1), brk = clamp(inp.brake, 0, 1);

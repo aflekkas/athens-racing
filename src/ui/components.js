@@ -1,5 +1,5 @@
 import { BRAND_BADGES, MANUFACTURER_NAMES } from '../manufacturers.js';
-import { buildBadge } from '../build-environment.js';
+import { buildBadge, buildSha } from '../build-environment.js';
 import { notifications, raceNotificationsActive } from './notifications.js';
 // UI COMPONENTS: the ATHENS RACING kit. Plain JS, no dependencies; styles in src/ui/ui.css (design tokens at the top).
 //
@@ -97,8 +97,9 @@ export function button({ label = '', icon: ic, iconRight, logo = '', variant = '
 export function option({ icon: ic, title, desc = '', act, attrs, cls = '', disabled, media = '', cta = '' } = {}) {
   return `<div class="mi option ${disabled ? 'off' : ''} ${cls}" role="button"${attrStr({ 'data-act': act, ...attrs })}><span class="option__ico">${icon(ic)}</span><span><b class="option__title">${title}</b>${desc ? `<span class="option__desc">${desc}</span>` : ''}${cta ? `<span class="option__cta">${cta}${icon('chevron-right')}</span>` : ''}</span><span class="option__go">${icon('chevron-right')}</span>${cls.split(/\s+/).includes('option--hero') ? `<span class="option__start">START${icon('chevron-right')}</span>` : ''}${media ? `<span class="option__media" aria-hidden="true">${media}</span>` : ''}</div>`;
 }
-export function panel(title, body, { icon: ic, cls = '', notch = false, right = '', attrs } = {}) {
-  return `<section class="panel ${notch ? 'panel--notch' : ''} ${cls}"${attrStr(attrs)}>${title ? `<header class="panel__head"><h3 class="panel__title">${icon(ic)}${title}</h3>${right}</header>` : ''}${body}</section>`;
+/** A panel title is a quiet caption; it carries no icon (the `icon` option is accepted and ignored, 2026-10-20 taste pass). */
+export function panel(title, body, { cls = '', notch = false, right = '', attrs } = {}) {
+  return `<section class="panel ${notch ? 'panel--notch' : ''} ${cls}"${attrStr(attrs)}>${title || right ? `<header class="panel__head">${title ? `<h3 class="panel__title">${title}</h3>` : '<span></span>'}${right}</header>` : ''}${body}</section>`;
 }
 export function card({ media = '', badge = '', title = '', text = '', body = '', foot = '', act, attrs, cls = '', selected } = {}) {
   return `<div class="mi card ${selected ? 'selected' : ''} ${cls}" role="button"${attrStr({ 'data-act': act, ...attrs })}>${media ? `<div class="card__media">${media}${badge ? `<span class="card__badge">${badge}</span>` : ''}</div>` : ''}<div class="card__body"><h3 class="card__title">${title}</h3>${text ? `<p class="card__text">${text}</p>` : ''}${body}${foot ? `<div class="card__foot">${foot}</div>` : ''}</div>${icon('check', 'card__selected')}</div>`;
@@ -107,8 +108,9 @@ export function card({ media = '', badge = '', title = '', text = '', body = '',
 export function paintSwatch({ name = '', color, selected = false } = {}) {
   return `<div class="mi paint ${selected ? 'selected' : ''}" role="button" aria-pressed="${selected}" aria-label="${esc(name)}" title="${esc(name)}" data-act="paint" data-color="${esc(color)}" style="--paint:${esc(color)}">${icon('check', 'ico--paint-check ico--selection-check')}</div>`;
 }
-export function stat(label, value, { icon: ic, tone, cls = '' } = {}) {
-  return `<div class="stat-tile ${tone ? 'stat-tile--' + tone : ''} ${cls}"><span class="stat-tile__k">${icon(ic)}${label}</span><b class="stat-tile__v">${value}</b></div>`;
+/** a readout: a caption over a value. Captions carry no icon (the `icon` option is accepted and ignored). */
+export function stat(label, value, { tone, cls = '' } = {}) {
+  return `<div class="stat-tile ${tone ? 'stat-tile--' + tone : ''} ${cls}"><span class="stat-tile__k">${label}</span><b class="stat-tile__v">${value}</b></div>`;
 }
 export const stats = (tiles, cls = '') => `<div class="stats ${cls}">${tiles.map((t) => Array.isArray(t) ? stat(...t) : t).join('')}</div>`;
 /** a focusable list row (lobbies, landmarks, any pick-one list): icon, title + one line, right-side meta, chevron.
@@ -287,7 +289,7 @@ export function manufacturerBadge(brand, cls = '') {
   return `<svg class="manufacturer-badge ${cls}" viewBox="${cell % 4 * 128} ${Math.floor(cell / 4) * 128} 128 128" role="img" aria-label="${esc(MANUFACTURER_NAMES[brand] || 'Manufacturer')}" data-manufacturer="${esc(brand || '')}"><image href="${MANUFACTURER_ATLAS}" width="512" height="640"/></svg>`;
 }
 const selectLabel = option => option ? option[2]?.brand ? `${manufacturerBadge(option[2].brand)}<span>${option[1]}</span>` : iconLabel(option[1], option[2]?.icon) : '';
-/** a car tile for every car grid (garage, lobby car picks): thumbnail, name, class / trims line, HP + weight, drive badge */
+/** a car tile for every car grid (garage, lobby car picks): thumbnail, name, class line, HP + weight, drive badge */
 export function carCard({ id, brand, name = '', line = '', hp, kg, drive = '', locked = false, lockLabel = '', act = 'carDetail', selected, attrs, cls = '' } = {}) {
   return card({ cls: `card--car car-card ${locked ? 'off' : ''} ${cls}`, act, selected, attrs,
     media: `${manufacturerBadge(brand, 'car-card__brand')}<img data-car-thumb="${esc(id)}" alt="${esc(name)}" />`, badge: drive ? badge(esc(drive)) : '', title: name, text: line,
@@ -295,7 +297,7 @@ export function carCard({ id, brand, name = '', line = '', hp, kg, drive = '', l
 }
 /** Vehicle specifications share a single panel hierarchy in every picker. */
 export function vehicleSpecs({ brand, kick, name, transmission, specs, choices = '', paint = '', extra = '', action = '' } = {}) {
-  return `<section class="vehicle-specs panel scroll-y"><header class="vehicle-specs__head">${manufacturerBadge(brand)}${sheetHead({kick:kick||'CAR',title:name,status:transmission,statusIcon:'settings'})}</header>${choices}<div class="stats stats--boxed">${specs.map(([k,v,ic])=>stat(esc(k),esc(v),{icon:ic})).join('')}</div>${extra}${paint}<div class="vehicle-specs__action">${action}</div></section>`;
+  return `<section class="vehicle-specs panel scroll-y"><header class="vehicle-specs__head">${manufacturerBadge(brand)}${sheetHead({kick:kick||'',title:name,status:transmission,statusIcon:''})}</header>${choices}<div class="stats stats--specs">${specs.map(([k,v])=>stat(esc(k),esc(v))).join('')}</div>${extra}${paint}<div class="vehicle-specs__action">${action}</div></section>`;
 }
 /** an inline search box (a text focus row without a label): the magnifier, the input, the kit's pill shape */
 export function searchField({ name, label = 'Search', value = '', placeholder = 'SEARCH', icon: ic = 'search', inputAttrs, cls = '' } = {}) {
@@ -330,13 +332,6 @@ const segOpts = (options, value, dflt) => options.map(([v, l, ic]) => `<span cla
 /** options: [[value, label, icon?]]; dflt marks the event / factory default with a dot */
 export function segmented({ key, label, value, options, icon: ic, note, noteCls, dflt, type, attrs, cls } = {}) {
   return field(label, `<div class="seg" role="radiogroup">${IND}${segOpts(options, value, dflt)}</div>`, { icon: ic, note, noteCls, cls, kind: 'choice', key, type, attrs: { 'data-value': value, ...attrs } });
-}
-/** The trims of ONE car (same body, different engine and specification), as segmented chips that name each trim and what it
- *  changes: power and 0-100 time. The lit chip slides between trims like every segmented control, so changing trim is a
- *  visible, labelled action that cannot be mistaken for choosing another car. options: [{ id, label, hp, acc }] */
-export function trimPicker({ key, label = 'TRIM', value, options, attrs } = {}) {
-  const chips = options.map(o => [o.id, `<span class="trim-chip"><b class="trim-chip__name">${esc(o.label)}</b><span class="trim-chip__meta"><span>${esc(o.hp)} HP</span><span>${esc(o.acc)}</span></span></span>`]);
-  return segmented({ key, label: `${esc(label)}<small class="trim-picker__count">${options.length} OF THIS CAR</small>`, icon: 'sliders-horizontal', value, options: chips, cls: 'trim-picker field--stack', attrs });
 }
 /** numeric (min / max / step / format) or a list (options: [[value, label]]) */
 export function stepper({ key, label, value, min, max, step = 1, format = 'int', options, icon: ic, note, noteCls, type, attrs } = {}) {
@@ -532,7 +527,8 @@ export function syncFooterBadge(root) {
     const version = footer.querySelector('.title-meta [data-act="whatsNew"]');
     const badge = document.createElement('span');
     badge.className = 'build-badge';
-    badge.textContent = version ? identity.split(' · ')[0] + ' · ' : identity;
+    // Beside the title's version link the badge keeps the build's commit: "STAGING · acce710 · 2026.10.15.3".
+    badge.textContent = version ? (buildSha() ? identity : identity.split(' · ')[0]) + ' · ' : identity;
     if (version) version.prepend(badge);
     else footer.prepend(badge);
   }

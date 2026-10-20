@@ -10,6 +10,7 @@
 // Importing this module never touches globals; `runLink` swaps Date.now/performance.now only while it runs.
 import { createGameCore } from '../server/core.mjs';
 import * as protocol from '../src/multiplayer-protocol.js';
+import { restitutionAt } from '../src/crash-contact.js';
 import { StateSender } from '../src/multiplayer-state.js';
 // Namespace imports: the simulator also runs against older trees (to reproduce a bug before its fix), which lack the new exports.
 import * as timeline from '../src/remote-timeline.js';
@@ -198,7 +199,8 @@ export function runCollision({ attacker = 'B', closing = 10, fps = { A: 60, B: 6
     const result = {};
     for (const n of ['A', 'B']) { const c = clients[n]; result[n] = { m: masses[n], v0: c.speed0, v1: c.v.vLong, dv: c.v.vLong - c.speed0, applications: c.impacts.filter(i => i.dv > .2).length, firstAt: c.impacts[0]?.at ?? null, reported: c.hits.filter(h => h.reported).length }; }
     const a = result[attacker], b = result[victim], expect = closing / (a.m + b.m);
-    const expectedAttacker = -closing * b.m / (a.m + b.m), expectedVictim = closing * a.m / (a.m + b.m);
+    // a rigid contact with restitution e(closing speed) (src/crash-contact.js): each car's change is (1 + e) x its share of the closing speed
+    const bounce = 1 + restitutionAt(closing), expectedAttacker = -bounce * closing * b.m / (a.m + b.m), expectedVictim = bounce * closing * a.m / (a.m + b.m);
     if (arguments[0]?.debug) for (const n of ['A','B']) console.log(n, clients[n].hits.map(h => `t${h.at} c${h.closing.toFixed(1)} i${h.impulse.toFixed(1)}${h.reported?' R':''} ${JSON.stringify(h.proxy||{})}`).join(' | '));
     if (arguments[0]?.debug) for (const n of ['A','B']) console.log(n, JSON.stringify(clients[n].coordinator.stats));
     return { attacker, closing, mode, fps, result, attackerDv: a.dv, victimDv: b.dv, expectedAttacker, expectedVictim, momentumError: a.m * a.dv + b.m * b.dv, applications: [a.applications, b.applications], contactStart: [result[attacker].firstAt, result[victim].firstAt] };

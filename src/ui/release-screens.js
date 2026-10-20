@@ -115,7 +115,7 @@ export function renderWhatsNew(menu) {
   if (r === null) return article(menu, frame, note(`${C.spinner()} LOADING`));
   if (!r?.notes?.length) return article(menu, frame, note('RELEASE NOTES COME WITH PUBLISHED BUILDS'));
   return article(menu, frame, r.notes.map((n, i) => C.articleSection({ level: 'heading', id: 'release-' + n.version.replaceAll('.', '-'), title: esc(versionLabel(n.version)),
-    meta: `${esc(formatDate(n.date))}${n.version === now ? C.chip('THIS VERSION', { tone: 'accent' }) : i === 0 ? C.chip('LATEST') : ''}`, body: releaseBody(n) })).join(''));
+    meta: `${esc(formatDate(n.date))}${n.version === now ? C.chip('CURRENT') : i === 0 ? C.chip('LATEST') : ''}`, body: releaseBody(n) })).join(''));
 }
 
 /** the Credits screen: the team, then each kind of credit; long attributions and licences open as their own page */

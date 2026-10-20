@@ -12,7 +12,13 @@ import {AthensRoute,AthensGround} from './athens-ground.js';
 import {WorldDetail} from './world-detail.js';
 import {athensMaterial,loadAthensTextures} from './athens-materials.js';
 import {SEA_TIME} from './athens-detail.js';
-import {AthensProps} from './athens-props.js';
+import {AthensProps,KINDS as PROP_KINDS} from './athens-props.js';
+import {AthensHorizon} from './athens-horizon.js';
+import {AthensLandmarks,insideLandmark,forecourtPlazas} from './athens-landmarks.js';
+import {AthensPlazas,plazaMaterial,lawnMaterial} from './athens-plazas.js';
+import {AthensTrees} from './athens-trees.js';
+import {AthensSigns} from './athens-signs.js';
+import {AthensMarks} from './athens-marks.js';
 import {DRESSING_VARIANTS} from './world-tile-dressing.js';
 import {Vehicle} from './physics.js';
 import {CARS,CarModel,setCarEnv,catalogueTrafficTypes} from './cars.js';
@@ -40,7 +46,11 @@ export async function bootAthens(){
  scene.fog=new THREE.Fog('#9caeae',camera.far*.65,camera.far);const sky=ENV.createSky();scene.add(sky);const baked=ENV.bakeSky(renderer,sky);scene.environment=baked.env;setCarEnv(baked.env);const {sun}=ENV.createLights(scene);sun.castShadow=false;
  const post=createPost(renderer,scene,camera),detailRoot=new THREE.Group();scene.add(detailRoot);
  const detail=new WorldDetail({id:'athens',terrain:{},data:{buildings:[],vegetation:[]},route:{length:0}},detailRoot,()=>0);
- const props=new AthensProps(detailRoot,{enabled:settings.worldDetail!==false}),unsubscribeProps=onSettings((s,key)=>{if(!key||key==='worldDetail')props.setEnabled(s.worldDetail!==false);});
+ const props=new AthensProps(detailRoot,{enabled:settings.worldDetail!==false,skip:(kind,x,z)=>settings.worldDetail!==false&&(kind===PROP_KINDS.monument||kind===PROP_KINDS.fountain)&&insideLandmark(x,z)}),horizon=new AthensHorizon(scene,scene.fog,{enabled:settings.worldDetail!==false}),landmarks=new AthensLandmarks(detailRoot,scene.fog,{enabled:settings.worldDetail!==false,groundAt:(x,z,y)=>{const c=stream?.contact(x,z,{referenceY:y,layer:0});return c?c.y:null;}}),boxRoots=new Set(),trees=new AthensTrees(detailRoot,{enabled:settings.worldDetail!==false}),signs=new AthensSigns(detailRoot,{enabled:settings.worldDetail!==false}),marks=new AthensMarks(detailRoot,{enabled:settings.worldDetail!==false}),lawns=new AthensPlazas(detailRoot,{enabled:settings.worldDetail!==false,material:lawnMaterial(),isRoad:(x,z,y)=>{const c=stream?.contact(x,z,{referenceY:y,layer:0});return !!c&&(c.flags&1)===1;},groundAt:(x,z,y)=>{const c=stream?.contact(x,z,{referenceY:y,layer:0});return c?c.y:null;}}),plazas=new AthensPlazas(detailRoot,{enabled:settings.worldDetail!==false,material:plazaMaterial(),extra:forecourtPlazas(),isRoad:(x,z,y)=>{const c=stream?.contact(x,z,{referenceY:y,layer:0});return !!c&&(c.flags&1)===1;},groundAt:(x,z,y)=>{const c=stream?.contact(x,z,{referenceY:y,layer:0});return c?c.y:null;}});
+ // Buildings a landmark model replaces stay in their tile as hidden meshes; World detail Off shows the old boxes again.
+ const syncBoxes=()=>{const hidden=settings.worldDetail!==false;for(const root of boxRoots)for(const c of root.children)if(c.userData.landmarkBox)c.visible=!hidden;};
+ const unsubscribeProps=onSettings((s,key)=>{if(!key||key==='worldDetail'){props.setEnabled(s.worldDetail!==false);horizon.setEnabled(s.worldDetail!==false);landmarks.setEnabled(s.worldDetail!==false);plazas.setEnabled(s.worldDetail!==false);lawns.setEnabled(s.worldDetail!==false);signs.setEnabled(s.worldDetail!==false);marks.setEnabled(s.worldDetail!==false);trees.setEnabled(s.worldDetail!==false);syncBoxes();}});
+ horizon.load(new URL('./assets/athens/horizon.bin',document.baseURI)).catch(e=>console.warn(e.message));plazas.load(new URL('./assets/athens/plazas.json',document.baseURI)).catch(e=>console.warn(e.message));lawns.load(new URL('./assets/athens/lawns.json',document.baseURI)).catch(e=>console.warn(e.message));signs.load(new URL('./assets/athens/pois.json',document.baseURI)).catch(e=>console.warn(e.message));
  await loadAthensTextures(renderer);const sceneTiles=new WorldTileScene(scene,{renderer,materialFactory:athensMaterial}),barriers=new WorldTileBarriers(),obstacles=new WorldTileObstacles();
  loading.show('athens','FREE ROAM');document.getElementById('ldName').textContent='ATHENS';
  const manifestURL=new URL('./data/athens/manifest.json',document.baseURI),response=await fetch(manifestURL);
@@ -56,16 +66,15 @@ export async function bootAthens(){
     try{
      if(manifest.tiles[key].contactEligible!==false)roads.graph.install(key,packet);
      barriers.install(key,packet);obstacles.install(key,packet);
-     const ext=packet.metadata.extensions?.worldDetail?.vegetation,records=[];
-     if(ext){const p=packet.arrays[ext.positionHeight],k=packet.arrays[ext.kind],seed=packet.arrays[ext.seed],o=packet.metadata.origin;for(let i=0;i<k.length;i++)records.push({kind:'tree',treeKind:k[i],x:p[i*4]+o[0],y:p[i*4+1],z:p[i*4+2]+o[2],height:p[i*4+3],seed:seed[i]});}
-     detail.addRecords(key,records);props.addTile(key,packet);installed=true;return build.commit();
-    }catch(e){roads.graph.remove(key);barriers.remove(key);obstacles.remove(key);detail.removeTile(key);props.removeTile(key);build.dispose();throw e;}
-   },dispose(){if(installed){roads.graph.remove(key);barriers.remove(key);obstacles.remove(key);detail.removeTile(key);props.removeTile(key);installed=false;}build.dispose();}};
+     // the bake's tree rows are drawn by the Athens tree layer (species models, shadows); the box trees of the shared detail layer are not used
+     detail.addRecords(key,[]);props.addTile(key,packet);trees.addTile(key,packet);signs.addTile(key,packet);marks.addTile(key,packet);landmarks.addTile(key);plazas.addTile(key);lawns.addTile(key);installed=true;const handle=build.commit();boxRoots.add(handle.root);syncBoxes();return handle;
+    }catch(e){roads.graph.remove(key);barriers.remove(key);obstacles.remove(key);detail.removeTile(key);props.removeTile(key);trees.removeTile(key);signs.removeTile(key);marks.removeTile(key);landmarks.removeTile(key);plazas.removeTile(key);lawns.removeTile(key);build.dispose();throw e;}
+   },dispose(){if(installed){roads.graph.remove(key);barriers.remove(key);obstacles.remove(key);detail.removeTile(key);props.removeTile(key);trees.removeTile(key);signs.removeTile(key);marks.removeTile(key);landmarks.removeTile(key);plazas.removeTile(key);lawns.removeTile(key);installed=false;}for(const r of [...boxRoots])if(r.name==='tile:'+key)boxRoots.delete(r);build.dispose();}};
   }
  };
  stream=new WorldTileStream(manifest,{...resources.stream,adapter,baseURL:manifestURL,activationMs:3});roads=new WorldTileRoads(stream);
  if(manifest.renderVariants){const declared=new Set(manifest.renderVariants.map(v=>v.key));await sceneTiles.prewarm([...manifest.renderVariants,...DRESSING_VARIANTS.filter(v=>!declared.has(v.key))]);}
- const spec=CARS.find(c=>c.id===query.get('car'))||CARS.find(c=>c.id==='carrera')||CARS[0];
+ const spec=CARS.find(c=>c.id===query.get('car'))||CARS.find(c=>c.id==='carrera_gts')||CARS[0];
  function place(v,p){v.reset(0,0,0);Object.assign(v,{x:p.x,y:p.y,z:p.z,yaw:p.yaw,vLong:0,vLat:0,w:0,_network:true});Object.assign(v,v.route.project(v.x,v.z));v.ground.referenceY=p.y;v.ground.begin(v);v.ground.resolve(v,1/240);v.syncWheels();}
  await stream.spawn(p=>{const route=new AthensRoute(p),veh=new Vehicle(spec,route),model=new CarModel(spec);veh.ground=new AthensGround(stream,route,barriers,obstacles);place(veh,p);scene.add(model.root);player={veh,model,spec};},{halfWidth:(spec.width||2)/2,halfLength:(spec.length||5)/2,timeoutMs:180000});
  // The free roam spawn picker (?map=athens&menu=1) sends the chosen point as ?spawn=x,z (Athens world metres): the car goes on the nearest safe road anchor there.
@@ -90,7 +99,7 @@ export async function bootAthens(){
   for(const c of traffic)if(c.active&&Math.hypot(c.veh.x-v.x,c.veh.z-v.z)>300){c.active=false;c.model.root.visible=false;}
   const available=[...roads.anchors({validate:false})].filter(a=>{const d=Math.hypot(a.x-v.x,a.z-v.z);return d>40&&d<180&&!traffic.some(c=>c.active&&Math.hypot(c.veh.x-a.x,c.veh.z-a.z)<20);});
   while(traffic.filter(c=>c.active).length<count&&available.length){const p=available.shift();if(!roads.safe(p))continue;let c=traffic.find(c=>!c.active);
-   if(!c){const type=catalogueTrafficTypes(CARS)[0],trafficSpec=CARS.find(c=>c.id===type.catalogueCar?.id)||CARS.find(c=>c.id==='mini')||spec,route=new AthensRoute(p),veh=new Vehicle(trafficSpec,route),model=fleetModel(type,'#869da2',rng,{low:true});veh.ground=new AthensGround(stream,route,barriers,obstacles);c={id:'traffic:'+traffic.length,veh,model,spec:trafficSpec,active:false};traffic.push(c);scene.add(model.root);}
+   if(!c){const type=catalogueTrafficTypes(CARS)[0],trafficSpec=CARS.find(c=>c.id===type.catalogueCar?.id)||CARS.find(c=>c.id==='mini_jcw')||spec,route=new AthensRoute(p),veh=new Vehicle(trafficSpec,route),model=fleetModel(type,'#869da2',rng,{low:true});veh.ground=new AthensGround(stream,route,barriers,obstacles);c={id:'traffic:'+traffic.length,veh,model,spec:trafficSpec,active:false};traffic.push(c);scene.add(model.root);}
    place(c.veh,p);c.point={...p,layer:0};c.active=true;c.model.root.visible=true;
   }
  }
@@ -117,7 +126,9 @@ export async function bootAthens(){
   for(const c of traffic)if(c.active){c.veh.place(c.model.root);c.model.root.position.x-=o.x;c.model.root.position.z-=o.z;}
   const fx=-Math.sin(v.yaw),fz=-Math.cos(v.yaw),target=new THREE.Vector3(v.x-o.x-fx*8,v.y+3.8,v.z-o.z-fz*8);
   camera.position.copy(target);camera.lookAt(v.x-o.x+fx*8,v.y+1,v.z-o.z+fz*8);if(cameraHook)cameraHook(camera,v,o);sky.position.copy(camera.position);ENV.updateSun(sun,player.model.root.position);ENV.U.time.value=elapsed;SEA_TIME.value=elapsed;
-  detail.update({position:{x:v.x,z:v.z}});props.update({position:{x:v.x,z:v.z}},elapsed);post.render(dt);
+  detail.update({position:{x:v.x,z:v.z}});props.update({position:{x:v.x,z:v.z}},elapsed);trees.update({position:{x:v.x,z:v.z}});signs.update({position:{x:v.x,z:v.z}});marks.update({position:{x:v.x,z:v.z}});
+  {const ax=camera.position.x+o.x,az=camera.position.z+o.z;horizon.update(camera,ax,camera.position.y,az);landmarks.update(ax,camera.position.y,az,camera.far);plazas.update(ax,camera.position.y,az);lawns.update(ax,camera.position.y,az);}
+  post.render(dt);
   dial.drawTacho({...v,redline:spec.redline,kmh:Math.abs(v.vLong)*3.6,gearLabel:v.reverse?'R':String(v.gear),aidsOff:!settings.aids});document.getElementById('tRace').textContent=fmtTime(elapsed);
  }
  function tick(now){if(stopped)return;if(scripted){last=now;frameId=requestAnimationFrame(tick);return;}const cpu=performance.now(),delta=Math.min(.1,(now-last)/1000);stats.frameMs.push(now-last);if(stats.frameMs.length>900)stats.frameMs.shift();last=now;
@@ -130,7 +141,7 @@ export async function bootAthens(){
   }catch(e){paused=true;document.getElementById('err').style.display='block';document.getElementById('err').textContent=e.message;console.error(e);}
   stats.cpuMs.push(performance.now()-cpu);if(stats.cpuMs.length>900)stats.cpuMs.shift();frameId=requestAnimationFrame(tick);
  }
- function dispose(){if(stopped)return;stopped=true;cancelAnimationFrame(frameId);stream.dispose();roads.dispose();barriers.dispose();obstacles.dispose();detail.dispose();unsubscribeProps();props.dispose();sceneTiles.dispose();renderer.dispose();}
+ function dispose(){if(stopped)return;stopped=true;cancelAnimationFrame(frameId);stream.dispose();roads.dispose();barriers.dispose();obstacles.dispose();detail.dispose();unsubscribeProps();props.dispose();trees.dispose();signs.dispose();marks.dispose();horizon.dispose();landmarks.dispose();plazas.dispose();lawns.dispose();sceneTiles.dispose();renderer.dispose();}
  addEventListener('pagehide',dispose,{once:true});addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();post.setSize(innerWidth,innerHeight,gfx.pixelRatio);});
  document.addEventListener('visibilitychange',()=>{last=performance.now();accumulator=0;if(!document.hidden)void account.revalidate();});
  // Scripted measurement drive: wall-clock paced like a 30 fps game, optional sparse rendering.
@@ -145,6 +156,6 @@ export async function bootAthens(){
   }}finally{scripted=false;last=performance.now();}
  }
  async function goto(id,x,z){towing=true;try{await stream.teleport({x,z},()=>{const p=stream.anchor(id);if(!p)throw Error('Unknown anchor '+id);place(player.veh,p);});}finally{towing=false;}}
- window.__athens={props,place:p=>place(player.veh,p),advance,goto,setDriver:fn=>{driver=fn;},setCameraHook:fn=>{cameraHook=fn;},stream,roads,barriers,obstacles,player,traffic,scene,renderer,camera,stats,inventory,tow,dispose,step,render,setPaused:value=>{paused=!!value;},get paused(){return paused;}};
+ window.__athens={props,trees,signs,marks,horizon,landmarks,plazas,lawns,place:p=>place(player.veh,p),advance,goto,setDriver:fn=>{driver=fn;},setCameraHook:fn=>{cameraHook=fn;},stream,roads,barriers,obstacles,player,traffic,scene,renderer,camera,stats,inventory,tow,dispose,step,render,setPaused:value=>{paused=!!value;},get paused(){return paused;}};
  last=performance.now();frameId=requestAnimationFrame(tick);return window.__athens;
 }

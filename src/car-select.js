@@ -3,7 +3,6 @@ import { FrameLimiter } from './frame-pacing.js';
 import { importWithUpdate } from './client-release.js';
 // The pre-race showroom uses the same model and cockpit as the driven car.
 import * as THREE from 'three';
-import {exhaustPopsEnabled} from './exhaust-pops.js';
 import { createVehicleFraming, frameVehicle, createVehicleContactShadow } from './ui/vehicle-framing.js';
 import { badgeBrand, manufacturerOptions } from './manufacturers.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
@@ -12,10 +11,11 @@ import { TurntableControl } from './turntable-control.js';
 import { driverName } from './driver-name.js';
 import { Cockpit } from './cockpit.js';
 import { PAINTS, savedPaint, savePaint } from './vehicle-paint.js';
-import { GARAGE_CLASSES, GARAGE_CARS, carCategory, classLabel, filterCars, carModel, trimName, migrateCarSelection, bodyTrim, trimChoices, stepTrim, readCarSelection } from './car-catalog.js';
+import { GARAGE_CLASSES, GARAGE_CARS, carCategory, classLabel, filterCars, carModel, inGarage } from './car-catalog.js';
+const sentence = t => String(t).charAt(0) + String(t).slice(1).toLowerCase();
 import { classifyCar } from './car-performance.js';
 import { carEligibility } from './mp-car-rules.js';
-// Why a trim is locked by lobby car rules (null without rules or when eligible).
+// Why a car is locked by lobby car rules (null without rules or when eligible).
 const ruleReason = (car, rules) => {
   if (!rules || !car) return null;
   const { pi, class: cls } = classifyCar(car);
@@ -33,40 +33,34 @@ const ruleReason = (car, rules) => {
 export const ACCELERATION = { mini: 7.2, z4: 4.5, taxi: 8.7, carrera: 4.8, gr_yaris: 5.2, gtv: 9.0 };
 import * as C from './ui/components.js';
 const { esc, icon } = C;
-const displayTrim = trimName;
 export function renderCarSelect({ index = 0, def, garage = false, detail = false, filters = {}, allowedCars, rules } = {}) {
   const c = CARS[index] || CARS[0], allowed = !allowedCars || allowedCars.includes(c.id), paints = PAINTS[c.id] || PAINTS[carModel(c)?.id] || [], acc = c.zeroTo100 || ACCELERATION[c.id], model = carModel(c);
   if (!detail) {
-    let saved;try{saved=readCarSelection(localStorage);}catch{}
-    const list = filterCars(CARS, filters, saved).map(item=>{const ids=carModel(item.car).trims, wanted=ids.find(id=>(!allowedCars || allowedCars.includes(id)) && (!def?.car || def.car===id));return wanted && (def?.car || allowedCars && !allowedCars.includes(item.car.id)) ? {car:CARS.find(c=>c.id===wanted),index:CARS.findIndex(c=>c.id===wanted)} : item;}), attrs = { 'data-scope': 'catalog' };
+    const list = filterCars(CARS, filters), attrs = { 'data-scope': 'catalog' };
     const toolbar = `${C.searchField({ name: 'car-search', label: 'Search cars', placeholder: 'SEARCH CARS', value: filters.search || '', inputAttrs: { 'data-car-search': '' } })}
-      ${C.select({ key: 'brand', label: 'BRAND', compact: true, value: filters.brand || 'all', options: [['all', 'ALL'], ...manufacturerOptions(CARS.filter(car=>carModel(car))).map(([id,name])=>[id,name,{brand:id}])], attrs })}
+      ${C.select({ key: 'brand', label: 'BRAND', compact: true, value: filters.brand || 'all', options: [['all', 'ALL'], ...manufacturerOptions(CARS.filter(car=>inGarage(car))).map(([id,name])=>[id,name,{brand:id}])], attrs })}
       ${C.select({ key: 'category', label: 'CLASS', compact: true, value: filters.category || 'all', options: [['all', 'ALL'], ...GARAGE_CLASSES.map(([id, label]) => [id, label])], attrs })}
       ${C.select({ key: 'drive', label: 'DRIVE', compact: true, value: filters.drive || 'all', options: [['all', 'ALL'], ['FWD', 'FWD'], ['RWD', 'RWD'], ['AWD', 'AWD']], attrs })}
       ${C.select({ key: 'power', label: 'POWER', compact: true, value: filters.power || 'all', options: [['all', 'ALL'], ['low', 'UNDER 150 HP'], ['mid', '150–300 HP'], ['high', 'OVER 300 HP']], attrs })}
       ${C.select({ key: 'sort', label: 'SORT', compact: true, value: filters.sort || 'lineup', options: [['lineup', 'LINEUP'], ['power', 'POWER', { icon: 'arrow-down' }], ['weight', 'WEIGHT', { icon: 'arrow-up' }]], attrs })}`;
-    const count = `${list.length} / ${GARAGE_CARS.length} CARS${def?.car ? ' · EVENT CAR LOCKED' : allowedCars ? ' · LOBBY CAR RULES APPLY' : ''}`;
-    return C.browseGrid({ variant: 'catalog', cls: 'scr--catalog', kick: `${garage ? 'GARAGE' : esc(def?.name || 'CHOOSE YOUR CAR')} · ${count}`, title: 'GARAGE', hints: [['select', 'BROWSE'], ['confirm', 'DETAILS'], ['back', 'BACK']],
+    // The breadcrumb is a real parent (the event or the lobby), never a count; the grid shows what matches.
+    const kick = def?.car ? `${esc(def.name || 'EVENT')} · EVENT CAR` : allowedCars ? 'MULTIPLAYER · LOBBY CAR RULES' : garage ? '' : esc(def?.name || '');
+    return C.browseGrid({ variant: 'catalog', cls: 'scr--catalog', kick, title: 'GARAGE', hints: [['select', 'BROWSE'], ['confirm', 'DETAILS'], ['back', 'BACK']],
       filters: toolbar, items: list.map(({ car, index: i }) => {
         const locked = !!(def?.car && def.car !== car.id) || !!(allowedCars && !allowedCars.includes(car.id));
-        const reason = locked && !def?.car ? ruleReason(car, rules) : null, m = carModel(car), trims = m.bodies ? m.bodies[0][2].length : m.trims.length;
-        return C.carCard({ id: car.id, brand: badgeBrand(car), name: esc(m?.name || car.name), hp: Math.round(car.power * 1.341), kg: car.mass, drive: car.drive.toUpperCase(), locked, selected: carModel(CARS[index])===m,
+        const reason = locked && !def?.car ? ruleReason(car, rules) : null, m = carModel(car);
+        return C.carCard({ id: car.id, brand: badgeBrand(car), name: esc(m?.name || car.name), hp: Math.round(car.power * 1.341), kg: car.mass, drive: car.drive.toUpperCase(), locked, selected: CARS[index]?.id === car.id,
           lockLabel: def?.car ? 'EVENT CAR ONLY' : 'HOST RULES',
-          line: `${classLabel(carCategory(car))} · ${trims} TRIM${m.trims.length === 1 ? '' : 'S'}${m.bodies ? ' · 2 BODIES' : ''}${reason ? ` · ${esc(reason)}` : ''}`,
-          attrs: { 'data-car-index': i, 'aria-disabled': locked ? 'true' : 'false', title: locked ? def?.car ? 'THIS EVENT USES ITS FIXED CAR' : reason || 'THE HOST DOES NOT ALLOW THIS CAR' : 'VIEW CAR', ...(carModel(CARS[index])===m && !locked ? { 'data-default': '' } : {}) } });
-      }).join('') || '<div class="empty">NO CARS MATCH · CHANGE YOUR FILTERS</div>' });
+          line: `${sentence(classLabel(carCategory(car)))}${reason ? ` · ${esc(reason)}` : ''}`,
+          attrs: { 'data-car-index': i, 'aria-disabled': locked ? 'true' : 'false', title: locked ? def?.car ? 'THIS EVENT USES ITS FIXED CAR' : reason || 'THE HOST DOES NOT ALLOW THIS CAR' : 'VIEW CAR', ...(CARS[index]?.id === car.id && !locked ? { 'data-default': '' } : {}) } });
+      }).join('') || C.emptyState({ icon: 'search', title: 'NO CARS MATCH', text: 'Try fewer filters.' }) });
   }
-  const available=id=>(!allowedCars || allowedCars.includes(id)) && (!def?.car || def.car===id);
-  const body=model?.bodies?.find(([, ,ids])=>ids.includes(c.id));
-  const trims=trimChoices(c.id,{allowedCars,def,cars:CARS});
   const specs = [['POWER', `${Math.round(c.power * 1.341)} HP`, 'zap'], ['TORQUE', `${c.torque} NM`, 'gauge'], ['WEIGHT', `${c.mass} KG`, 'box'], ['DRIVE', c.drive.toUpperCase(), 'circle-dot'], ['0–100 KM/H', acc ? `${c.id === 'gtv' ? '≈ ' : ''}${acc.toFixed(1)} S` : '—', 'timer'], ['TOP SPEED', `${c.vmax} KM/H`, 'gauge']];
-  return C.stageInspector({ variant: 'vehicle', cls: 'scr--car', kick: classLabel(carCategory(c)), title: c.name,
-    hints: [['leftright', 'TRIM · A/D · LB/RB'], ['confirm', garage ? 'SELECT' : 'RACE'], ['back', 'CATALOGUE']],
-    stageAttrs: { id: 'carStage', 'data-trim-current': c.id, 'aria-label': `Rotating 3D view of ${c.name}` },
+  return C.stageInspector({ variant: 'vehicle', cls: 'scr--car', kick: 'GARAGE', title: c.name,
+    hints: [['confirm', garage ? 'SELECT' : 'RACE'], ['back', 'CATALOGUE']],
+    stageAttrs: { id: 'carStage', 'aria-label': `Rotating 3D view of ${c.name}` },
     stage: '<div class="car-preview-viewport" data-ui-keep="preview"></div>',
-    inspector: C.vehicleSpecs({ brand: badgeBrand(c), kick: 'CAR', name: model?.name || c.name, transmission: `${c.gears.length}-SPEED ${c.gearbox === 'MT' ? 'MANUAL' : c.gearbox || ''} · ${c.drive.toUpperCase()}`, specs,
-      choices: `${body ? C.segmented({key:'carBody',label:'BODY',value:body[0],options:model.bodies.filter(([, ,ids])=>ids.some(available)).map(([id,label])=>[id,label]),attrs:{'data-scope':'car-body'}}) : ''}${trims.length > 1 ? C.trimPicker({key:'carTrim',value:c.id,options:trims.map(id=>{const car=CARS.find(c=>c.id===id),t=car.zeroTo100||ACCELERATION[car.id];return {id,label:displayTrim(car,model),hp:Math.round(car.power*1.341),acc:t?`${car.id==='gtv'?'≈ ':''}${t.toFixed(1)} S`:'—'};}),attrs:{'data-scope':'car-trim'}}) : ''}`,
-      extra: c.exhaustPops ? C.toggle({key:'exhaustPops',label:'EXHAUST POPS',value:exhaustPopsEnabled(c),attrs:{'data-scope':'exhaust'}}) : '',
+    inspector: C.vehicleSpecs({ brand: badgeBrand(c), name: model?.name || c.name, transmission: `${c.gears.length}-SPEED ${c.gearbox === 'MT' ? 'MANUAL' : c.gearbox || ''} · ${c.drive.toUpperCase()}`, specs,
       paint: paints.length ? `<div class="car-paints"><span class="label">PAINT</span><div class="car-paints__row">${paints.map(([name, color]) => C.paintSwatch({ name, color, selected: savedPaint(c) === color })).join('')}</div><div class="car-paint-name">${esc(paints.find(p => p[1] === savedPaint(c))?.[0] || '')}</div></div>` : '',
       action: `${!allowed && !def?.car && ruleReason(c, rules) ? `<p class="group__note">${icon('lock')} ${esc(ruleReason(c, rules))}</p>` : ''}${C.button({ label: garage ? 'SELECT CAR' : 'RACE', icon: garage ? 'check' : 'flag', variant: 'primary', block: true, act: 'carConfirm', disabled: !allowed, attrs: { 'data-default': '' } })}`
     }) });
@@ -90,23 +84,6 @@ export function openCarPicker(options = {}) {
 /** opts (all optional): container (default #carStage under root), lite (the multiplayer showroom: pixel ratio 1, a
  *  soft contact shadow, at most 30 fps under a frame rate limit, no hint; it sits behind menu panels, so it stays light on the GPU) */
 export function mountCarSelect(root, index, opts = {}) {
-  // Keep trim events inside this component; the shared menu owns navigation/layout.
-  const onTrim = e => {
-    const scope=e.detail?.el?.dataset.scope;
-    if(!['car-trim','car-body'].includes(scope)) return;
-    e.stopPropagation();
-    const menu=window.__flow?.menu, model=carModel(CARS[index]);
-    const allowed=menu?.data?.def?.car ? [menu.data.def.car] : menu?.data?.allowedCars;
-    const id=scope==='car-body'?bodyTrim(model,CARS[index].id,e.detail.value,allowed):e.detail.value;
-    const next=CARS.findIndex(c=>c.id===id);
-    if(allowed && !allowed.includes(id))return;
-    if(next>=0 && carModel(CARS[next])===carModel(CARS[index]) && menu)swapTo(next);
-  };
-  const onConfirm = e => {
-    if(!e.target.closest('[data-act="carConfirm"]')) return;
-    try { localStorage.setItem('paraliaki.car.selection',JSON.stringify(migrateCarSelection(CARS[index].id))); } catch {}
-  };
-  root.addEventListener('ui:change',onTrim,true); root.addEventListener('click',onConfirm,true);
   const container = opts.container || root.querySelector('.car-preview-viewport') || root.querySelector('#carStage'), lite = !!opts.lite;
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio || 1, lite ? 1 : 1.5));
@@ -159,25 +136,6 @@ export function mountCarSelect(root, index, opts = {}) {
   container.addEventListener('pointerdown',down);container.addEventListener('pointermove',move);
   for(const name of ['pointerup','pointercancel','lostpointercapture'])container.addEventListener(name,up);
   const hint=document.createElement('span');hint.className='car-stage__hint';hint.setAttribute('aria-hidden','true');hint.textContent='DRAG TO ROTATE';if(!lite)container.append(hint);
-  const rules=()=>window.__flow?.menu?.data || {};
-  const swapTo = next => {
-    if(next===index)return false;
-    const nextSpec=CARS[next],old=model;
-    const nextModel=new CarModel(nextSpec,{plate:driverName.plate()});new Cockpit(nextSpec,nextModel);studioMaterials(nextModel);
-    nextModel.root.rotation.y=turntable.angle;scene.add(nextModel.root);old.root.removeFromParent();old.disposeDamage?.();
-    old.root.traverse(o=>{if(o.geometry&&!o.geometry.userData.shared)o.geometry.dispose();});
-    const nextMaterials=new Set(),nextTextures=new Set();nextModel.root.traverse(o=>{for(const m of Array.isArray(o.material)?o.material:o.material?[o.material]:[]){nextMaterials.add(m);for(const v of Object.values(m))if(v?.isTexture)nextTextures.add(v);}});
-    for(const [original,copy]of materialCopies)if(!nextMaterials.has(copy)){for(const v of Object.values(copy))if(v?.isCanvasTexture&&!nextTextures.has(v))v.dispose();copy.dispose();materialCopies.delete(original);}
-    model=nextModel;index=next;framing=prepareFraming();resize();
-    const menu=window.__flow?.menu;if(menu){menu.data={...menu.data,index,detail:true};C.morph(root,renderCarSelect(menu.data));C.indicators(root);}
-    renderer.render(scene,camera);return true;
-  };
-  const step = direction => {const id=stepTrim(CARS[index].id,direction,{...rules(),cars:CARS});return id?swapTo(CARS.findIndex(c=>c.id===id)):false;};
-  const onStepClick=e=>{const act=e.target.closest('[data-act]')?.dataset.act;if(!['carTrimPrev','carTrimNext'].includes(act))return;e.preventDefault();e.stopImmediatePropagation();step(act==='carTrimNext'?1:-1);};
-  const onKey=e=>{if(lite||window.__flow?.menu?.screen!=='car'||e.repeat||e.ctrlKey||e.altKey||e.metaKey||e.target.closest?.('input,textarea,[contenteditable]')||!['KeyA','KeyD'].includes(e.code))return;e.preventDefault();e.stopImmediatePropagation();step(e.code==='KeyD'?1:-1);};
-  root.addEventListener('click',onStepClick,true);document.addEventListener('keydown',onKey,true);
-  let previousShoulders=[false,false],padFrame;
-  const pollPad=()=>{const pads=navigator.getGamepads?.()||[];const buttons=[...pads].filter(Boolean).reduce((a,p)=>[a[0]||!!p.buttons[4]?.pressed,a[1]||!!p.buttons[5]?.pressed],[false,false]);for(let i=0;i<2;i++)if(!lite&&window.__flow?.menu?.screen==='car'&&buttons[i]&&!previousShoulders[i])step(i?1:-1);previousShoulders=buttons;padFrame=requestAnimationFrame(pollPad);};padFrame=requestAnimationFrame(pollPad);
   const limiter = new FrameLimiter();
   // The showroom follows Settings > Graphics > FRAME RATE LIMIT like the race does (NO LIMIT: every display refresh).
   // The multiplayer lobby's light variant also stays at or under 30 fps while a limit is set.
@@ -207,13 +165,12 @@ export function mountCarSelect(root, index, opts = {}) {
   const showroomVis = () => { if (document.hidden) showroomPause(); else if (showroomVisible) showroomResume(); };
   document.addEventListener('visibilitychange', showroomVis);
   return {
-    get index() { return index; }, stepTrim:step, get rotation() { return turntable.angle; },
+    get index() { return index; }, get rotation() { return turntable.angle; },
     captureFrame(angle) { renderer.setAnimationLoop(null); if(Number.isFinite(angle)){turntable.angle=angle;model.root.rotation.y=angle;} frame();renderer.render(scene, camera); },
     get framingBounds() { return frame(); },
     paint(color) { if (savePaint(CARS[index].id,color)) setPaint(model,color); },
     dispose() {
-      cancelAnimationFrame(padFrame);root.removeEventListener('click',onStepClick,true);document.removeEventListener('keydown',onKey,true);root.removeEventListener('ui:change',onTrim,true);root.removeEventListener('click',onConfirm,true);
-      document.removeEventListener('visibilitychange', showroomVis); showroomObserver.disconnect();
+            document.removeEventListener('visibilitychange', showroomVis); showroomObserver.disconnect();
       showroomRunning = false; renderer.setAnimationLoop(null); observer.disconnect();container.removeEventListener('pointerdown',down);container.removeEventListener('pointermove',move);for(const name of ['pointerup','pointercancel','lostpointercapture'])container.removeEventListener(name,up); model.disposeDamage?.();
       const geometry=new Set(), materials=new Set(), textures=new Set();
       scene.traverse(o=>{if(o.geometry && !o.geometry.userData.shared)geometry.add(o.geometry);for(const m of Array.isArray(o.material)?o.material:o.material?[o.material]:[]){materials.add(m);for(const v of Object.values(m))if(v?.isCanvasTexture)textures.add(v);}});

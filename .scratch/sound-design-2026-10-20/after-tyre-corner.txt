@@ -1,0 +1,1 @@
+after: tyre-corner — -36 LUFS, -26.4 dBFS peak; spectrogram and waveform at default mix, no normalization.

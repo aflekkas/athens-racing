@@ -1,0 +1,7 @@
+[
+{"name":"parliament-street","car":[450,520],"eye":[470,560,2.6],"look":[614,527,125],"far":850,"wait":6000},
+{"name":"horizon-east","car":[421,501],"eye":[421,501,40],"look":[8000,1500,420],"far":850,"wait":6000},
+{"name":"stadium-above","car":[760,1180],"eye":[760,1180,90],"look":[976,1312,95],"far":900,"wait":6000},
+{"name":"zappeion-street","car":[600,1130],"eye":[600,1130,2.6],"look":[594,936,105],"far":850,"wait":6000},
+{"name":"syntagma-above-city","car":[421,501],"eye":[421,501,260],"look":[-100,1050,100],"far":900,"wait":6000}
+]

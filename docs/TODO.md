@@ -59,12 +59,18 @@ Running (Sonnet; Enterprise unless noted):
 - [x] Athens centre (partial): 47 cells, 336-cell world at 183.8/192 MiB, gates green (`2ead313f`, `5f95eb8b`)
 - [x] Athens: Piraeus enterable from Syntagma (Tavros underpass link drawn at grade, 0% → 73% of Piraeus km; the rest is cut by gated port roads and the world edge), cells 67% smaller (compact tiles), Kypseli/Patisia and every other centre candidate baked: 450 cells, 104.1 of 192 MiB, worst 2×2 set 22.8 MiB (`tunnels.json`, `world-tile-compact`)
 - [x] Owner raised the Athens world ceiling to 2 GiB, player-side caps unchanged (`07be9d90`); rest of the centre then the north follow
+- [x] Athens west (Peristeri, Egaleo, Chaidari, Ilion, Petroupoli, Kamatero, Nikaia/Korydallos, Keratsini, Perama): 1,139-cell world, 303.6 MiB, worst 2×2 26 MiB, all gates green, 95.4% enterable from Syntagma, staged to R2 staging; the western port suburbs have few OSM buildings (Nikaia 42, Perama 9 per cell). Next: east / south-east
 - [~] Athens world dressing (owner 2026-10-19, all procedural): ground classes + facade textures + sea with foam done (`590fb520`); working traffic lights done (`c7fdab54`); street details done (lamps, benches, kiosks, bus stops, crossing/stop/one-way signs, fountains, monuments, parked cars; not pedestrian paving). **The next full bake picks all of it up** (HANDOVER in `.scratch/athens-world-dressing-2026-10-19/HANDOVER.md`, docs/world-dressing.md)
 - [x] Potato far cull on Riviera, 340 m + haze; <200 calls on open road (`a413b4ce`). Psychiko ~600+ calls on Potato, owner to decide without owner wait
 - [x] Online: remote cars glide (jitter buffer, 20 Hz sim-clock samples, 50 ms relay) and car-to-car contacts symmetric (`3f35e7de`); owner to retest with a friend
 - [x] Multiplayer: restart and tow land where the car is (0 m off the grid after a host restart, guards in `server/mp-restart-tow.test.mjs`); lobby double-JOIN error and a lobby keeping the old track's traffic fixed; traffic seed equal on every client (`tools/traffic-seed.test.mjs`); owner to retest with a friend
 - [x] Badges one per end, catalogue guard (`5a9dccf9`); car vs trim chips (`50dc18db`); sharper car on weak classes (`bfdb468d`); Riviera draw calls ~540→~340 on Low (`c5025607`)
 - [x] Riviera draw calls round 2: ~290–300 on Potato/Low (`508f0fcd`)
+- [x] Athens east: 1,369-cell world, 357.5 MiB, worst 2×2 26 MiB, every gate green, staging pointer moved to it (north `f220bd03`, west `1925f9d3`). Open: the drive stalled at 300 s (pilot/physics, not a graph pocket), Zografou/Kaisariani pockets, infill waits for owner go
+- [~] UI taste pass: Opus agent auditing and cleaning every screen (owner 2026-10-20 "un ai-slop")
+- [~] Free roam: click anywhere, arrows cycle areas, trackpad two-finger pan (owner `30f25cb4`; Opus UI agent, first item)
+- [~] Athens beauty pass: landmarks, polykatoikia facades, fake lighting, Athens vegetation, street life, within budgets (owner `41895c7d`; Sonnet)
+- [~] Crash physics: crash bench, contact-point impulses, friction, no tunnelling, traffic reacts (owner 2026-10-20; Sonnet). Physics and punishing persistent damage landed (docs/crash-physics.md). Not done: knockable bollards/signs/bins (props are baked into shared meshes with no per-object handle)
 - [~] Release cutover (lead): after the batch is checked on staging
 
 Waiting on the owner:

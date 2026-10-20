@@ -1,0 +1,29 @@
+[
+  {
+    "car": "carrera_gts",
+    "seconds": 42,
+    "excludeStart": 1,
+    "rmsWindowMs": 100,
+    "rmsRangeDb": 0.6965103149414062,
+    "peakDb": -12.174271583557129,
+    "maxSampleStep": 0.07580989599227905
+  },
+  {
+    "car": "mini_jcw",
+    "seconds": 42,
+    "excludeStart": 1,
+    "rmsWindowMs": 100,
+    "rmsRangeDb": 1.010061264038086,
+    "peakDb": -9.635056495666504,
+    "maxSampleStep": 0.04967188835144043
+  },
+  {
+    "car": "huracan",
+    "seconds": 42,
+    "excludeStart": 1,
+    "rmsWindowMs": 100,
+    "rmsRangeDb": 0.3437385559082031,
+    "peakDb": -13.692475318908691,
+    "maxSampleStep": 0.0730130672454834
+  }
+]

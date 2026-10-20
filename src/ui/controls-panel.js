@@ -58,9 +58,9 @@ function ensureLive() {
 function wheelGroup(A) {
   const w = input.wheel, s = input.settings, cal = input.wheelCal;
   const mode = C.segmented({ key: 'wheelMode', label: 'RACING WHEEL', value: s.wheelMode, options: [['auto', 'AUTO'], ['gamepad', 'OFF'], ['wheel', 'ON']], attrs: A,
-    note: 'AUTO USES A RECOGNISED WHEEL (LOGITECH G29 / G920, THRUSTMASTER T300, FANATEC) · ON TREATS ANY NON-STANDARD DEVICE AS ONE' });
+    note: 'Auto finds Logitech, Thrustmaster and Fanatec wheels. On treats any unusual device as a wheel.' });
   let body = '';
-  if (!w) body = `<p class="group__note">${icon('circle-dot')} NO WHEEL DETECTED. Plug it in and turn it or press a pedal, so the browser lists it.</p>`;
+  if (!w) body = `<p class="group__note">No wheel found. Plug it in, then turn it or press a pedal.</p>`;
   else if (cal) {
     const step = cal.name, n = CALIBRATION_STEPS.indexOf(step) + 1, [title, text] = CALIBRATION_TEXT[step];
     body = `<p class="group__note">${icon('circle-dot')} ${C.esc(w.name)} · STEP ${n} OF ${CALIBRATION_STEPS.length}: <b>${title}</b></p>
@@ -72,12 +72,12 @@ function wheelGroup(A) {
       + C.toggle({ key: invKey, label: label + ' INVERTED', value: role === 'steer' ? !!m.invert : m.max < m.min, attrs: A }) : ''; };
     body = `<p class="group__note">${icon('circle-dot')} ${C.esc(w.name)} · ${w.saved ? 'CALIBRATED' : 'DEFAULT MAPPING, CALIBRATE FOR BEST RESULTS'}</p>${liveRows()}
       <div class="field-actions">${C.button({ label: 'CALIBRATE', icon: 'refresh-cw', variant: 'secondary', act: 'wheelCalibrate', size: 'sm' })}${w.saved ? C.button({ label: 'RESET WHEEL', icon: 'rotate-ccw', variant: 'ghost', act: 'wheelReset', size: 'sm' }) : ''}</div>
-      ${C.slider({ key: 'wheelRange', label: 'STEERING RANGE', value: s.wheelRange, min: WHEEL_LIMITS.range[0], max: WHEEL_LIMITS.range[1], step: 0.05, format: 'pct', attrs: A, note: 'SHARE OF THE WHEEL\'S TURN FROM CENTRE THAT GIVES FULL LOCK · LOWER IS QUICKER' })}
+      ${C.slider({ key: 'wheelRange', label: 'STEERING RANGE', value: s.wheelRange, min: WHEEL_LIMITS.range[0], max: WHEEL_LIMITS.range[1], step: 0.05, format: 'pct', attrs: A, note: 'How far you turn the wheel for full lock. Lower is quicker.' })}
       ${C.slider({ key: 'wheelDeadzone', label: 'STEERING DEADZONE', value: s.wheelDeadzone, min: 0, max: WHEEL_LIMITS.deadzone[1], step: 0.01, format: 'pct', attrs: A })}
-      ${C.slider({ key: 'wheelLinearity', label: 'STEERING CURVE', value: s.wheelLinearity, min: WHEEL_LIMITS.linearity[0], max: WHEEL_LIMITS.linearity[1], step: 0.05, format: 'f2', attrs: A, note: '1.00 IS LINEAR · HIGHER IS GENTLER NEAR CENTRE' })}
-      ${C.slider({ key: 'wheelPedalDeadzone', label: 'PEDAL DEADZONE', value: s.wheelPedalDeadzone, min: 0, max: WHEEL_LIMITS.pedalDeadzone[1], step: 0.01, format: 'pct', attrs: A, note: 'TRAVEL IGNORED AT THE TOP AND BOTTOM OF EACH PEDAL' })}
+      ${C.slider({ key: 'wheelLinearity', label: 'STEERING CURVE', value: s.wheelLinearity, min: WHEEL_LIMITS.linearity[0], max: WHEEL_LIMITS.linearity[1], step: 0.05, format: 'f2', attrs: A, note: '1.00 is linear. Higher is gentler near centre.' })}
+      ${C.slider({ key: 'wheelPedalDeadzone', label: 'PEDAL DEADZONE', value: s.wheelPedalDeadzone, min: 0, max: WHEEL_LIMITS.pedalDeadzone[1], step: 0.01, format: 'pct', attrs: A, note: 'Travel ignored at each end of the pedal.' })}
       ${mapRow('steer', 'STEERING AXIS', 'wheelSteerAxis', 'wheelSteerInvert')}${mapRow('throttle', 'THROTTLE AXIS', 'wheelThrottleAxis', 'wheelThrottleInvert')}${mapRow('brake', 'BRAKE AXIS', 'wheelBrakeAxis', 'wheelBrakeInvert')}
-      ${C.slider({ key: 'wheelForce', label: 'FORCE FEEDBACK', value: s.wheelForce, min: 0, max: 1, step: 0.05, format: 'pct', icon: 'zap', attrs: A, note: w.canRumble ? 'RUMBLE AS THE FRONT TYRES REACH THEIR GRIP LIMIT AND OVER KERBS · 0% IS OFF' : 'THIS WHEEL DOES NOT OFFER FORCE FEEDBACK TO THE BROWSER, SO THIS HAS NO EFFECT' })}`;
+      ${C.slider({ key: 'wheelForce', label: 'FORCE FEEDBACK', value: s.wheelForce, min: 0, max: 1, step: 0.05, format: 'pct', icon: 'zap', attrs: A, note: w.canRumble ? 'Rumble at the grip limit and over kerbs. 0% is off.' : 'This wheel has no force feedback in the browser.' })}`;
   }
   ensureLive();
   return `<div class="group"><h3 class="group__title">${icon('circle-dot')}STEERING WHEEL</h3>${mode}${body}</div>`;
@@ -92,7 +92,7 @@ export function renderControls(menu) {
   return `<div class="group"><h3 class="group__title">${icon('gamepad-2')}STEERING RESPONSE</h3>
       ${C.slider({ key: 'deadzone', label: 'STICK DEADZONE', value: s.deadzone, min: 0, max: 0.45, step: 0.01, format: 'f2', attrs: A })}
       ${C.slider({ key: 'sensitivity', label: 'STEERING SENSITIVITY', value: s.sensitivity, min: 0.25, max: 2, step: 0.05, format: 'x', attrs: A })}
-      ${C.slider({ key: 'linearity', label: 'STEERING CURVE', value: s.linearity, min: 0.25, max: 3, step: 0.05, format: 'f2', attrs: A, note: '1.00 IS LINEAR · HIGHER IS GENTLER NEAR CENTRE' })}</div>
+      ${C.slider({ key: 'linearity', label: 'STEERING CURVE', value: s.linearity, min: 0.25, max: 3, step: 0.05, format: 'f2', attrs: A, note: '1.00 is linear. Higher is gentler near centre.' })}</div>
     ${wheelGroup(A)}
     <div class="bind-head"><span></span><span>${icon('keyboard')}KEYBOARD</span><span>${icon('gamepad-2')}CONTROLLER</span></div>
     ${groups.map(([title, ic, g]) => `<div class="group"><h3 class="group__title">${icon(ic)}${title}</h3>${Object.entries(g).filter(([a]) => all.includes(a)).map(([a, l]) => bindRow(a, l)).join('')}</div>`).join('')}

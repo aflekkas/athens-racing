@@ -2,6 +2,7 @@ import * as C from './ui/components.js';
 import { MAPS } from './map-catalog.js';
 import { getEvents } from './events.js';
 import { CARS } from './cars.js';
+import { inGarage } from './car-catalog.js';
 import { listPersonalBests } from './personal-bests.js';
 import { getLeaderboard } from './leaderboard.js';
 import { matchesRecord, recordEvent, carLabel, routeId, routeLabel, setupLabels, recordDate, formatRecordTime } from './leaderboard-records.js';
@@ -23,14 +24,14 @@ export function renderBestRecord(r, { rank, global = false, title, compact = fal
 // The track preview shares the full board's record presentation and filter semantics.
 export function renderTrackTimes(menu, d, filters) {
   const best = listPersonalBests(filters)[0], state = d.trackTimes ||= { loading: true };
-  const personal = best ? renderBestRecord(best, { title: `YOUR PERSONAL BEST · ${formatRecordTime(best.time)}` }) :
-    C.panel('YOUR PERSONAL BEST', '<p>Complete a clean race on this track to set a time.</p>', { icon: 'timer' });
+  const personal = best ? renderBestRecord(best, { title: `PERSONAL BEST · ${formatRecordTime(best.time)}` }) :
+    C.panel('PERSONAL BEST', '<p class="muted">No time yet. Finish a clean race to set one.</p>');
   let global;
   if (state.loading) global = C.spinner();
   else if (state.error) global = `<p>${esc(state.error)}</p>${C.button({ label: 'TRY AGAIN', act: 'trackTimesRetry', size: 'sm' })}`;
-  else global = state.entries.length ? state.entries.map((r, i) => renderBestRecord(r, { rank: i + 1, global: true, compact: true })).join('') : '<p>No global times yet. Set the first clean time.</p>';
+  else global = state.entries.length ? state.entries.map((r, i) => renderBestRecord(r, { rank: i + 1, global: true, compact: true })).join('') : '<p class="muted">No times yet. Be the first.</p>';
   queueMicrotask(() => loadTrackTimes(menu, d, state, filters));
-  return `${personal}${C.panel('GLOBAL / TOP 3', global, { icon: 'globe', attrs: { 'aria-live': 'polite', 'aria-busy': !!state.loading } })}<p class="muted">Fastest times for this track and event, across routes and setups.</p>`;
+  return `${personal}${C.panel('TOP 3', global, { attrs: { 'aria-live': 'polite', 'aria-busy': !!state.loading } })}`;
 }
 async function loadTrackTimes(menu, d, state, filters) {
   if (menu.screen !== 'mapConfirm' || menu.data !== d || d.trackTimes !== state || state.requested) return;
@@ -55,7 +56,7 @@ export function renderLeaderboards(menu, d) {
   const filters = pick('mapId', 'TRACK', MAPS.map(m => [m.id, esc(m.name)])) +
     pick('eventId', 'EVENT', [ALL, ...[...events].map(([id, label]) => [id, esc(label)])]) +
     (routes.length ? pick('route', 'ROUTE', [ALL, ...routes.map(([id, label]) => [id, esc(label)])]) : '') +
-    pick('car', 'CAR', [ALL, ...CARS.map(c => [c.id, esc(c.name)])]) +
+    pick('car', 'CAR', [ALL, ...CARS.filter(inGarage).map(c => [c.id, esc(c.name)])]) +
     C.button({ label: d.advanced ? 'FEWER FILTERS' : 'WEATHER & ASSISTS', icon: 'sliders-horizontal', act: 'leaderboardAdvanced', block: true, size: 'sm' }) +
     (d.advanced ? pick('weather', 'WEATHER', [ALL, ...['clear', 'overcast', 'rain', 'dynamic'].map(v => [v, v.toUpperCase()])]) +
       pick('tc', 'TC', [ALL, ['true', 'ON'], ['false', 'OFF']]) + pick('abs', 'ABS', [ALL, ['true', 'ON'], ['false', 'OFF']]) +
@@ -64,14 +65,15 @@ export function renderLeaderboards(menu, d) {
     C.button({ label: 'CLEAR FILTERS', act: 'leaderboardReset', variant: 'ghost', size: 'sm', block: true });
   const rows = (d.tab === 'personal' ? local : d.entries || []).filter(r => matchesRecord(r, f));
   let content;
-  if (d.tab === 'global' && d.loading) content = C.panel('LOADING TIMES', C.spinner(), { attrs: { role: 'status' } });
-  else if (d.tab === 'global' && d.error) content = C.panel('GLOBAL TIMES UNAVAILABLE', `<p>${esc(d.error)}</p>${C.button({ label: 'TRY AGAIN', act: 'leaderboardRetry' })}`, { attrs: { role: 'status' } });
-  else content = rows.length ? `<ol class="lb-records" aria-label="Ranked times">${rows.map((r, i) => `<li>${renderBestRecord(r, { rank: i + 1, global: d.tab === 'global' })}</li>`).join('')}</ol>` : C.panel('NO TIMES YET', '<p>No records match these filters. Try another setup or complete a race on this track.</p>', { attrs: { role: 'status' } });
+  // One state at a time in the results column: loading, failed, empty or the ranked list.
+  if (d.tab === 'global' && d.loading) content = C.emptyState({ busy: true, title: 'LOADING TIMES' });
+  else if (d.tab === 'global' && d.error) content = C.emptyState({ icon: 'triangle-alert', tone: 'bad', title: 'TIMES UNAVAILABLE', text: esc(d.error), action: C.button({ label: 'TRY AGAIN', act: 'leaderboardRetry' }) });
+  else content = rows.length ? `<ol class="lb-records" aria-label="Ranked times">${rows.map((r, i) => `<li>${renderBestRecord(r, { rank: i + 1, global: d.tab === 'global' })}</li>`).join('')}</ol>` : C.emptyState({ icon: 'timer', title: 'NO TIMES YET', text: d.tab === 'personal' ? 'Finish a clean race on this track to set one.' : 'No one has set a time with these filters.' });
   // A render schedules one request per filter key. Responses from an abandoned screen are ignored.
   if (d.tab === 'global') queueMicrotask(() => loadGlobal(menu, d));
-  return C.browseGrid({ variant: 'filtered', title: 'LEADERBOARDS', kick: 'PURE TIME', cls: 'scr--leaderboards', hints: [['select', 'SELECT'], ['leftright', 'FILTER'], ['tabs', 'TAB'], ['back', 'BACK']], filters:
-    C.tabs({ key: 'leaderboardTab', value: d.tab, options: [['personal', 'PERSONAL BESTS', 'timer'], ['global', 'GLOBAL', 'globe']] }), aside: C.panel('FILTER TIMES', filters), busy: d.tab === 'global' && !!d.loading,
-    items: `${C.panel('COMPARE TIMES', `<p>${d.tab === 'personal' ? 'Your fastest clean run for each setup · saved on this device.' : 'Fastest runs from all drivers · up to 100 matching times.'} Different routes and setups are ranked together unless filtered.</p>`)}${content}` });
+  return C.browseGrid({ variant: 'filtered', title: 'LEADERBOARDS', kick: 'QUICK RACE', cls: 'scr--leaderboards', hints: [['select', 'SELECT'], ['leftright', 'FILTER'], ['tabs', 'TAB'], ['back', 'BACK']], filters:
+    C.tabs({ key: 'leaderboardTab', value: d.tab, options: [['personal', 'PERSONAL BESTS'], ['global', 'ALL DRIVERS']] }), aside: C.panel('', filters), busy: d.tab === 'global' && !!d.loading,
+    items: `<p class="muted lb-note">${d.tab === 'personal' ? 'Your fastest clean runs, saved on this device.' : 'The 100 fastest clean runs from all drivers.'}</p>${content}` });
 }
 async function loadGlobal(menu, d) {
   if (menu.screen !== 'leaderboards' || menu.data !== d) return;

@@ -1,0 +1,2 @@
+{"bucket":"athens-racing-world-staging","objects":1370,"pending":85,"skipped":1285,"manifest":"manifests/a2cc091deae3900dbf11180f19acbc29577d406b6173b6e39d23d39d6b4209e6.json","beforeBytes":1546903073,"plannedAddedBytes":10228036,"afterBytes":1557131109,"limitBytes":5000000000,"upload":true}
+{"uploaded":85,"manifest":"manifests/a2cc091deae3900dbf11180f19acbc29577d406b6173b6e39d23d39d6b4209e6.json"}

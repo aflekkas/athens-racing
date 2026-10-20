@@ -9,7 +9,7 @@
 // caller asks for another frame only while it is.
 
 const BG = '#060b10';
-export const TILE = 256, PAD = 2, MAX_LEVEL = 6, UPSCALE = 1.19, MARGIN = 96, FADE = 160, HOLD = 120, BUDGET = 4, CACHE_BYTES = 72 << 20;
+export const TILE = 256, PAD = 2, MAX_LEVEL = 7, UPSCALE = 1.19, MARGIN = 96, FADE = 160, HOLD = 120, BUDGET = 4, CACHE_BYTES = 72 << 20;
 
 // Roads: calm and few at region scale; the street hierarchy fades in only as the camera closes on a track.
 // [layer, width px at region scale, width px close up, colour, opacity, zoom (px/unit) where it starts and is fully in]
@@ -49,14 +49,23 @@ export function* paintBase(ctx, { art, layers, size }, scale, vis) {
   ctx.globalAlpha = 1; ctx.restore();
   yield;
   ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-  function* stroke(cells, width, colour, alpha) {
+  function* stroke(cells, width, colour, alpha, every = 24) {
     if (alpha < .01) return;
     ctx.globalAlpha = alpha; ctx.strokeStyle = colour; ctx.lineWidth = width * px;
-    let n = 0; for (const cell of cells) if (hit(cell.box, cull)) { ctx.stroke(cell.path); if (++n % 24 === 0) yield; }
+    let n = 0; for (const cell of cells) if (hit(cell.box, cull)) { ctx.stroke(cell.path); if (++n % every === 0) { yield; ctx.globalAlpha = alpha; ctx.strokeStyle = colour; ctx.lineWidth = width * px; } }
   }
   yield* stroke(layers.coast, 2.6 + near * 2, '#1d3a48', .55);
   yield* stroke(layers.coast, .9 + near * .5, '#86a9b8', .62);
   for (const [id, w0, w1, colour, alpha, z0, z1] of ROADS) yield* stroke(layers[id], w0 + (w1 - w0) * near, colour, alpha * smooth(z0, z1, scale));
+  // An optional overlay of drivable roads (the free roam picker's open world): a dark casing, then the lit line. It is part
+  // of the cached tiles, so panning over a whole city of streets still only blits bitmaps.
+  const o = layers.overlay;
+  if (o) {
+    const street = smooth(o.streetsFrom ?? 0, o.streetsFull ?? 6, scale), w = smooth(4, 40, scale);
+    // A city of streets is far more ink than the base map: it yields every few squares so no frame waits on a whole tile.
+    yield* stroke(o.major, 2.4 + w * 4, '#05080b', .55, 3); if (street > 0) yield* stroke(o.minor, 1.6 + w * 3, '#05080b', .45 * street, 1);
+    yield* stroke(o.major, 1.3 + w * 2.6, o.colour, .95, 3); if (street > 0) yield* stroke(o.minor, .8 + w * 2, o.colour, (.45 + .35 * w) * street, 1);
+  }
   ctx.globalAlpha = 1;
 }
 
@@ -66,9 +75,9 @@ export function createMapRenderer({ ctx, data, makeCanvas, clock = () => perform
   // A canvas records its draw calls and rasterises them later; reading a pixel makes that happen now, inside the time budget.
   const flush = g => { g.getImageData?.(0, 0, 1, 1); };
   const cost = { tiles: 0, ms: 0 };
-  const tiles = new Map(), ahead = [], needNow = new Map();
-  let dpr = 1, vw = 0, vh = 0, cw = 0, ch = 0, bytes = 0, tick = 0, floor = -1, detailSeen = 0;
-  let snap = null, job = null, spare = null, last = null, still = 0, busy = false;
+  const tiles = new Map(), ahead = [], needNow = new Map(), needFloor = new Map();
+  let dpr = 1, vw = 0, vh = 0, cw = 0, ch = 0, bytes = 0, tick = 0, floor = -1, detailSeen = 0, gen = 0;
+  let snap = null, job = null, spare = null, last = null, still = 0, busy = false, tiling = null;
 
   const xf = cam => { const k = cam.scale * dpr; return [k, (vw / 2 + cam.x - W / 2 * cam.scale) * dpr, (vh / 2 + cam.y - H / 2 * cam.scale) * dpr]; };
   const visible = (k, ox, oy, pad = 0) => [(-pad - ox) / k, (-pad - oy) / k, (cw + pad - ox) / k, (ch + pad - oy) / k];
@@ -76,19 +85,33 @@ export function createMapRenderer({ ctx, data, makeCanvas, clock = () => perform
   const span = j => TILE / 2 ** j, cols = j => Math.ceil(W / span(j)), rows = j => Math.ceil(H / span(j));
   const range = (j, vis) => { const s = span(j); return [Math.max(0, Math.floor(vis[0] / s)), Math.max(0, Math.floor(vis[1] / s)), Math.min(cols(j) - 1, Math.floor(vis[2] / s)), Math.min(rows(j) - 1, Math.floor(vis[3] / s))]; };
 
-  const drop = () => { tiles.clear(); ahead.length = 0; needNow.clear(); bytes = 0; snap = job = spare = null; floor = -1; };
-  function paintTile(j, x, y) {
+  const drop = () => { tiles.clear(); ahead.length = 0; needNow.clear(); needFloor.clear(); bytes = 0; snap = job = spare = tiling = null; floor = -1; };
+  // A tile is painted by a generator that can stop between layers (startTile / stepTile), or all at once (paintTile).
+  function startTile(j, x, y) {
     const k = 2 ** j, s = span(j), size = TILE + 2 * PAD, { c, g } = surface(size, size), x0 = x * s, y0 = y * s;
     g.fillStyle = BG; g.fillRect(0, 0, size, size);
     g.setTransform(k, 0, 0, k, PAD - x0 * k, PAD - y0 * k);
-    const t0 = clock(); for (const _ of paintBase(g, data, k / dpr, [x0 - PAD / k, y0 - PAD / k, x0 + s + PAD / k, y0 + s + PAD / k])); flush(g);
-    cost.tiles++; cost.ms += clock() - t0;
-    const tile = { j, x, y, c, used: tick, size: size * size * 4 }; tiles.set(key(j, x, y), tile); bytes += tile.size;
+    return { j, x, y, c, g, gen, ms: 0, run: paintBase(g, data, k / dpr, [x0 - PAD / k, y0 - PAD / k, x0 + s + PAD / k, y0 + s + PAD / k]) };
+  }
+  /** one slice of a tile's paint; the finished tile once it is done */
+  function stepTile(t) {
+    const t0 = clock(), done = t.run.next().done; flush(t.g); t.ms += clock() - t0;
+    return done ? commitTile(t) : null;
+  }
+  function paintTile(j, x, y) { const t = startTile(j, x, y); let out = null; while (!out) out = stepTile(t); return out; }
+  function commitTile({ j, x, y, c, ms, gen: painted }) {
+    cost.tiles++; cost.ms += ms;
+    const size = TILE + 2 * PAD, old = tiles.get(key(j, x, y)); if (old) bytes -= old.size;
+    const tile = { j, x, y, c, used: tick, size: size * size * 4, gen: painted }; tiles.set(key(j, x, y), tile); bytes += tile.size;
     // Least recently used tiles go; the floor level (the whole map, one step coarser than its closest zoom: what every flight falls back on) stays.
     if (bytes > CACHE_BYTES) for (const [id, t] of tiles) { if (bytes <= CACHE_BYTES) break; if (t.j !== floor && t.used < tick - 2) { tiles.delete(id); bytes -= t.size; } }
     return tile;
   }
   const tile = (j, x, y) => { const t = tiles.get(key(j, x, y)); if (t) t.used = tick; return t; };
+  // A tile painted before the latest invalidation is stale: it is still drawn (no flash of empty map) but painted again.
+  const fresh = k => tiles.get(k)?.gen === gen;
+  // The exact view at rest is up to date for a camera (painted from the current layers).
+  const current = c => !!snap && snap.gen === gen && sameCamera(snap.cam, c);
 
   // A tile (or the part of a coarser one) drawn into the padded world rect of tile j/x/y.
   function blit(t, [k, ox, oy], j, x, y) {
@@ -104,9 +127,12 @@ export function createMapRenderer({ ctx, data, makeCanvas, clock = () => perform
     for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
       // A tile wholly under the opaque exact view is not drawn (nor painted: it is only there as a stand-in).
       if (over) { const l = ox + (x * span(j) - PAD / 2 ** j) * k, tp = oy + (y * span(j) - PAD / 2 ** j) * k; if (l >= over[0] && tp >= over[1] && l + len <= over[0] + over[2] && tp + len <= over[1] + over[3]) continue; }
-      const got = tile(j, x, y); if (got) { blit(got, t, j, x, y); continue; }
+      const got = tile(j, x, y); if (got) { blit(got, t, j, x, y); if (got.gen !== gen) needNow.set(key(j, x, y), { j, x, y }); continue; }
       needNow.set(key(j, x, y), { j, x, y });
       const up = ancestor(j, x, y); if (up) blit(up, t, j, x, y);
+      // No stand-in at all (a pan into a part of the map the coarse floor level has not reached yet): that floor tile, which
+      // covers many of these, is painted before anything else so the hole is filled within a frame or two.
+      else if (floor >= 0 && j > floor) { const fx = x >> (j - floor), fy = y >> (j - floor); needFloor.set(key(floor, fx, fy), { j: floor, x: fx, y: fy }); }
       // Zooming out: finer tiles that are already painted sit on top of the coarse stand-in.
       if (j < MAX_LEVEL) for (let cy = 0; cy < 2; cy++) for (let cx = 0; cx < 2; cx++) { const f = tile(j + 1, x * 2 + cx, y * 2 + cy); if (f) blit(f, t, j + 1, x * 2 + cx, y * 2 + cy); }
     }
@@ -128,15 +154,17 @@ export function createMapRenderer({ ctx, data, makeCanvas, clock = () => perform
     const s = spare && spare.c.width === w && spare.c.height === h ? spare : surface(w, h); spare = null;
     s.g.setTransform(1, 0, 0, 1, 0, 0); s.g.fillStyle = BG; s.g.fillRect(0, 0, w, h); s.g.setTransform(k, 0, 0, k, ox + M, oy + M);
     // The generator's world rect is the whole snapshot canvas, margins included.
-    job = { cam: { ...cam }, prepared, s, k, ox, oy, M, run: paintBase(s.g, data, cam.scale, [(-M - ox) / k, (-M - oy) / k, (cw + M - ox) / k, (ch + M - oy) / k]) };
+    job = { gen, cam: { ...cam }, prepared, s, k, ox, oy, M, run: paintBase(s.g, data, cam.scale, [(-M - ox) / k, (-M - oy) / k, (cw + M - ox) / k, (ch + M - oy) / k]) };
   }
 
+  // Everything painted so far is out of date (late relief, a new overlay). Old tiles keep standing in until repainted.
+  function invalidate() { gen++; job = null; ahead.length = 0; queueFloor(); busy = true; }
   /** draw the base layer for `cam` (the caller draws the routes over it) */
   function paint(cam, now = clock()) {
-    tick++; needNow.clear();
+    tick++; needNow.clear(); needFloor.clear();
     // Late-arriving close-up relief invalidates everything painted without it.
     const seen = data.art.detail.reduce((n, d) => n + (d.img ? 1 : 0), 0);
-    if (seen !== detailSeen) { detailSeen = seen; const f = floor; tiles.clear(); bytes = 0; snap = job = null; floor = f; ahead.length = 0; queueFloor(); }
+    if (seen !== detailSeen) { detailSeen = seen; invalidate(); }
     const moved = !last || !sameCamera(last, cam);
     if (moved) { still = now; if (job && !job.prepared) job = null; }
     last = { ...cam };
@@ -150,18 +178,18 @@ export function createMapRenderer({ ctx, data, makeCanvas, clock = () => perform
 
   function queueFloor() {
     if (floor < 0) return;
-    for (let y = 0; y < rows(floor); y++) for (let x = 0; x < cols(floor); x++) if (!tiles.has(key(floor, x, y))) ahead.push({ j: floor, x, y });
+    for (let y = 0; y < rows(floor); y++) for (let x = 0; x < cols(floor); x++) if (!fresh(key(floor, x, y))) ahead.push({ j: floor, x, y });
   }
   const queueView = (cam, list) => {
     const j = levelFor(cam.scale, dpr), [k, ox, oy] = xf(cam), [x0, y0, x1, y1] = range(j, visible(k, ox, oy));
-    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (!tiles.has(key(j, x, y))) list.push({ j, x, y });
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (!fresh(key(j, x, y))) list.push({ j, x, y });
   };
 
   /** Flights know where they are going: paint the tiles along the way and the exact view at the end before they arrive. */
   function prepare(cams, dest) {
     const list = []; for (const cam of cams) queueView(cam, list);
     ahead.unshift(...list.filter((t, i) => list.findIndex(u => u.j === t.j && u.x === t.x && u.y === t.y) === i));
-    if (dest && !(snap && sameCamera(snap.cam, dest))) startSnapshot(dest, true);
+    if (dest && !current(dest)) startSnapshot(dest, true);
     busy = true;
   }
   const cancelPrepare = () => { if (job?.prepared) job = null; };
@@ -173,11 +201,13 @@ export function createMapRenderer({ ctx, data, makeCanvas, clock = () => perform
     const end = clock() + BUDGET; let worked = 0;
     const more = () => !worked || clock() < end;
     while (more()) {
-      const need = needNow.values().next().value;
-      if (need) { needNow.delete(key(need.j, need.x, need.y)); if (!tiles.has(key(need.j, need.x, need.y))) { paintTile(need.j, need.x, need.y); worked++; } continue; }
-      while (ahead.length && tiles.has(key(ahead[0].j, ahead[0].x, ahead[0].y))) ahead.shift();
-      if (ahead.length) { const t = ahead.shift(); paintTile(t.j, t.x, t.y); worked++; continue; }
-      if (!job && last && now - still >= HOLD && !(snap && sameCamera(snap.cam, last))) startSnapshot(last, false);
+      // The tile being painted continues first: it is sliced, so a heavy one spreads over frames instead of stalling one.
+      if (tiling) { worked++; if (stepTile(tiling) || tiling.gen !== gen) tiling = null; continue; }
+      const need = needFloor.values().next().value || needNow.values().next().value;
+      if (need) { needFloor.delete(key(need.j, need.x, need.y)); needNow.delete(key(need.j, need.x, need.y)); if (!fresh(key(need.j, need.x, need.y))) { tiling = startTile(need.j, need.x, need.y); worked++; } continue; }
+      while (ahead.length && fresh(key(ahead[0].j, ahead[0].x, ahead[0].y))) ahead.shift();
+      if (ahead.length) { const t = ahead.shift(); tiling = startTile(t.j, t.x, t.y); worked++; continue; }
+      if (!job && last && now - still >= HOLD && !current(last)) startSnapshot(last, false);
       if (job) {
         worked++;
         const step = job.run.next(); flush(job.s.g);
@@ -190,13 +220,15 @@ export function createMapRenderer({ ctx, data, makeCanvas, clock = () => perform
       }
       break;
     }
-    const waiting = last && !(snap && sameCamera(snap.cam, last));
-    busy = needNow.size > 0 || ahead.length > 0 || !!job || !!waiting || !!(snap && now - snap.t0 < FADE && last && sameCamera(snap.cam, last));
+    const waiting = last && !current(last);
+    busy = !!tiling || needFloor.size > 0 || needNow.size > 0 || ahead.length > 0 || !!job || !!waiting || !!(snap && now - snap.t0 < FADE && last && sameCamera(snap.cam, last));
     return busy;
   }
 
   return {
     paint, pump, prepare, cancelPrepare, prime,
+    /** the layers changed (an overlay arrived): repaint every tile, drawing the old ones until each is ready */
+    refresh() { invalidate(); },
     get busy() { return busy; },
     /** the canvas is `view` css px at `ratio` device px per css px; all cached pixels are for the previous size */
     resize(view, ratio) {

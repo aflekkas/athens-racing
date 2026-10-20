@@ -1,0 +1,274 @@
+{
+ "errors": [
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/ws?protocol=8' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/api/account/presence' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/ws?protocol=8' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/ws?protocol=8' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/ws?protocol=8' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/ws?protocol=8' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/ws?protocol=8' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/ws?protocol=8' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/api/account/presence' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/ws?protocol=8' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/ws?protocol=8' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/ws?protocol=8' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/ws?protocol=8' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/api/account/presence' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/ws?protocol=8' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/ws?protocol=8' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/ws?protocol=8' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/api/account/presence' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/ws?protocol=8' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/ws?protocol=8' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/ws?protocol=8' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/api/account/presence' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/ws?protocol=8' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/ws?protocol=8' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/ws?protocol=8' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/ws?protocol=8' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/api/account/presence' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/ws?protocol=8' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/ws?protocol=8' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/ws?protocol=8' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/ws?protocol=8' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/api/account/presence' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/ws?protocol=8' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/ws?protocol=8' failed: Error during WebSocket handshake: Unexpected response code: 404",
+  "console: WebSocket connection to 'ws://127.0.0.1:43163/ws?protocol=8' failed: Error during WebSocket handshake: Unexpected response code: 404"
+ ],
+ "spots": [
+  {
+   "label": "Syntagma",
+   "region": "centre",
+   "expect": true,
+   "ok": false,
+   "street": "ΙΑΣΟΝΟΣ",
+   "area": "ATHENS RIVIERA",
+   "nohere": false,
+   "metresFromClick": null,
+   "zoomScale": 9.5,
+   "cursorDriftPx": 0
+  },
+  {
+   "label": "Omonia",
+   "region": "centre",
+   "expect": true,
+   "ok": false,
+   "street": "ΙΑΣΟΝΟΣ",
+   "area": "ATHENS RIVIERA",
+   "nohere": false,
+   "metresFromClick": null,
+   "zoomScale": 9.5,
+   "cursorDriftPx": 0
+  },
+  {
+   "label": "Kypseli",
+   "region": "centre",
+   "expect": true,
+   "ok": false,
+   "street": "ΙΑΣΟΝΟΣ",
+   "area": "ATHENS RIVIERA",
+   "nohere": false,
+   "metresFromClick": null,
+   "zoomScale": 9.5,
+   "cursorDriftPx": 0
+  },
+  {
+   "label": "Marousi",
+   "region": "north",
+   "expect": true,
+   "ok": false,
+   "street": "ΙΑΣΟΝΟΣ",
+   "area": "ATHENS RIVIERA",
+   "nohere": false,
+   "metresFromClick": null,
+   "zoomScale": 9.5,
+   "cursorDriftPx": 0
+  },
+  {
+   "label": "Kifisia",
+   "region": "north",
+   "expect": true,
+   "ok": false,
+   "street": "ΙΑΣΟΝΟΣ",
+   "area": "ATHENS RIVIERA",
+   "nohere": false,
+   "metresFromClick": null,
+   "zoomScale": 9.5,
+   "cursorDriftPx": 0
+  },
+  {
+   "label": "Chalandri",
+   "region": "north",
+   "expect": true,
+   "ok": false,
+   "street": "ΙΑΣΟΝΟΣ",
+   "area": "ATHENS RIVIERA",
+   "nohere": false,
+   "metresFromClick": null,
+   "zoomScale": 9.5,
+   "cursorDriftPx": 0
+  },
+  {
+   "label": "Peristeri",
+   "region": "west",
+   "expect": true,
+   "ok": false,
+   "street": "ΙΑΣΟΝΟΣ",
+   "area": "ATHENS RIVIERA",
+   "nohere": false,
+   "metresFromClick": null,
+   "zoomScale": 9.5,
+   "cursorDriftPx": 0
+  },
+  {
+   "label": "Aigaleo",
+   "region": "west",
+   "expect": true,
+   "ok": false,
+   "street": "ΙΑΣΟΝΟΣ",
+   "area": "ATHENS RIVIERA",
+   "nohere": false,
+   "metresFromClick": null,
+   "zoomScale": 9.5,
+   "cursorDriftPx": 0
+  },
+  {
+   "label": "Piraeus",
+   "region": "coast",
+   "expect": true,
+   "ok": false,
+   "street": "ΙΑΣΟΝΟΣ",
+   "area": "ATHENS RIVIERA",
+   "nohere": false,
+   "metresFromClick": null,
+   "zoomScale": 9.5,
+   "cursorDriftPx": 0
+  },
+  {
+   "label": "Palaio Faliro",
+   "region": "coast",
+   "expect": true,
+   "ok": false,
+   "street": "ΙΑΣΟΝΟΣ",
+   "area": "ATHENS RIVIERA",
+   "nohere": false,
+   "metresFromClick": null,
+   "zoomScale": 9.5,
+   "cursorDriftPx": 0
+  },
+  {
+   "label": "Glyfada",
+   "region": "coast",
+   "expect": true,
+   "ok": false,
+   "street": "ΙΑΣΟΝΟΣ",
+   "area": "ATHENS RIVIERA",
+   "nohere": false,
+   "metresFromClick": null,
+   "zoomScale": 9.5,
+   "cursorDriftPx": 0
+  },
+  {
+   "label": "Voula",
+   "region": "coast",
+   "expect": true,
+   "ok": false,
+   "street": "ΙΑΣΟΝΟΣ",
+   "area": "ATHENS RIVIERA",
+   "nohere": false,
+   "metresFromClick": null,
+   "zoomScale": 9.5,
+   "cursorDriftPx": 0
+  },
+  {
+   "label": "Saronic sea",
+   "region": "sea",
+   "expect": false,
+   "ok": false,
+   "street": "ΙΑΣΟΝΟΣ",
+   "area": "ATHENS RIVIERA",
+   "nohere": false,
+   "metresFromClick": null,
+   "zoomScale": 9.5,
+   "cursorDriftPx": 0
+  }
+ ],
+ "input": {
+  "wheelOut": {
+   "before": 9.55,
+   "after": 9.55,
+   "zoomedOut": false
+  },
+  "keys": {
+   "start": 9.55,
+   "afterPlus": 9.55,
+   "afterMinus": 9.55,
+   "ok": false
+  },
+  "drag": {
+   "moved": [
+    200,
+    80
+   ],
+   "ok": true
+  },
+  "trackpadPan": {
+   "moved": [
+    -78,
+    -39
+   ],
+   "ok": true
+  },
+  "pinch": {
+   "before": 9.55,
+   "after": 19.34,
+   "ok": true
+  }
+ },
+ "perf": {
+  "loadAverage": [
+   39.9,
+   38.9,
+   37.1
+  ],
+  "cpus": 8,
+  "work": {
+   "callbacks": 46,
+   "p50": 0.3,
+   "p95": 18.5,
+   "max": 33.5
+  },
+  "frames": 14,
+  "events": 5,
+  "p50": 316.6,
+  "p95": 483.4,
+  "p99": 483.4,
+  "max": 483.4,
+  "over33": 14,
+  "renderer": null
+ },
+ "drive": null,
+ "initial": {
+  "name": "ΙΑΣΟΝΟΣ",
+  "area": "ATHENS RIVIERA",
+  "mapId": "riviera",
+  "at": [
+   782.9139528734025,
+   541.4606828786018
+  ],
+  "local": [
+   1136.8020307324712,
+   2388.4681527844955
+  ],
+  "nohere": false,
+  "marker": "ΙΑΣΟΝΟΣ"
+ },
+ "areas": [
+  "ATHENS RIVIERA",
+  "MEGARA",
+  "PENTELI",
+  "PSYCHIKO",
+  "ATHENS OPEN WORLD · DEV"
+ ]
+}

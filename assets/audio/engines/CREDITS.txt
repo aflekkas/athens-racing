@@ -132,6 +132,12 @@ when decoded: CC0 bus idle by bikesnbassboi, scooter idle by lovretta, scooter
 running by dif1891 (assets/audio/world/CREDITS.txt). Bus running uses the
 existing Sonniss TDI substitute; synthesis is the missing/decode fallback.
 
-Aventador SVJ exhaust: original procedural noise/triangle synthesis in
-src/audio/exhaust-voice.js, created for Athens Racing. No third-party samples.
 V12 uses the original 12-cylinder procedural engine bank (engine-synth.js).
+
+2026-10-20 engine realism additions (449,816 bytes total):
+- ferrari-*.wav: Pole Position Production, Ferrari 308 GTB 1985 onboard engine; flat-plane V8 substitute for the 348 Spider.
+- cross-idle/low/start.wav: Pole Position Production, Mercedes AMG C63 2009 onboard engine; cross-plane substitute for the 928 GTS.
+- cross-high.wav: Soundholder, Porsche Cayenne 4.8 V8 5k RPM loop; cross-plane substitute for the 928 GTS.
+All three from Sonniss GameAudioGDC 2020, acquired 2026-10-20 under the published v2.0 licence: https://sonniss.com/gdc-bundle-license/
+Edited, phase-stabilized, filtered and level-matched for this game. No original recording authorship or model-exact source is claimed.
+Source URLs, trim ranges and hashes: sources.json. Full explanation: docs/audio-sources.md.

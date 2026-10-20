@@ -1,0 +1,1 @@
+before: turbo-lift — -19.5 LUFS, -8.5 dBFS peak; spectrogram and waveform at default mix, no normalization.

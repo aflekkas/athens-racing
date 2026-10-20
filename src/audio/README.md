@@ -133,7 +133,6 @@ audio retains the documented TDI substitute used by the previous traffic pool.
 | cle300e | turbo-i4 | mini | auto |
 | jazz | na-i4 | procedural fallback | manual |
 | jazz_dynamic | na-i4 | procedural fallback | manual |
-| jazz_drift | turbo-i4-sport | mini | manual |
 
 ## Verification
 

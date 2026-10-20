@@ -1,0 +1,1 @@
+after: impact-fallback — -29.5 LUFS, -13.5 dBFS peak; spectrogram and waveform at default mix, no normalization.

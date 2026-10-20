@@ -45,9 +45,9 @@ export function buildF348(car,d,M,low,plate,H){
   for(const s of [-1,1]){
     const arch=d.r+.037;
     const floor=z=>{let y=.18;for(const a of [-d.wb/2,d.wb/2])if(Math.abs(z-a)<arch)y=Math.max(y,d.r+Math.sqrt(arch*arch-(z-a)**2));return y;};
-    // Leave a real opening behind the strakes between the wheel arches.
+    // One closed painted flank: the side strakes and the opening behind them are gone (owner decision 2026-10-20, simpler car styling).
     for(const lower of [false,true])surface(p,M.paint,(u,v)=>{
-      const z=mix(F,R,u),b=floor(z),cut=z>-.72&&z<.80,[bottom,top]=intakeBounds(z);
+      const z=mix(F,R,u),b=floor(z),cut=false,[bottom,top]=intakeBounds(z);
       const y=lower?mix(b,cut?Math.max(b,bottom):b,v):mix(cut?Math.max(b,top):b,edge(z),v);
       return[s*side(z,y),y,z];
     },low?100:200,8,lower?'348-lower-flank':'body-side');

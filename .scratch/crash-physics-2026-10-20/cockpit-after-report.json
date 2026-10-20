@@ -1,0 +1,189 @@
+{
+ "report": [
+  {
+   "w": 1280,
+   "h": 800,
+   "state": "clean",
+   "damageMeshes": 74,
+   "cockpitView": true,
+   "crackPov": false,
+   "crackPovVisible": false,
+   "parts": [
+    {
+     "id": "mirror_l",
+     "state": "intact",
+     "damage": 0
+    },
+    {
+     "id": "mirror_r",
+     "state": "intact",
+     "damage": 0
+    }
+   ],
+   "front": 0,
+   "left": 0
+  },
+  {
+   "w": 1280,
+   "h": 800,
+   "state": "front60",
+   "damageMeshes": 86,
+   "cockpitView": true,
+   "crackPov": true,
+   "crackPovVisible": true,
+   "parts": [
+    {
+     "id": "mirror_l",
+     "state": "intact",
+     "damage": 0
+    },
+    {
+     "id": "mirror_r",
+     "state": "intact",
+     "damage": 0
+    }
+   ],
+   "front": 1,
+   "left": 0
+  },
+  {
+   "w": 1280,
+   "h": 800,
+   "state": "side60",
+   "damageMeshes": 86,
+   "cockpitView": true,
+   "crackPov": false,
+   "crackPovVisible": false,
+   "parts": [
+    {
+     "id": "mirror_l",
+     "state": "detached",
+     "damage": 0.95
+    },
+    {
+     "id": "mirror_r",
+     "state": "intact",
+     "damage": 0
+    }
+   ],
+   "front": 0,
+   "left": 1
+  },
+  {
+   "w": 1280,
+   "h": 800,
+   "state": "front100",
+   "damageMeshes": 86,
+   "cockpitView": true,
+   "crackPov": true,
+   "crackPovVisible": true,
+   "parts": [
+    {
+     "id": "mirror_l",
+     "state": "intact",
+     "damage": 0
+    },
+    {
+     "id": "mirror_r",
+     "state": "intact",
+     "damage": 0
+    }
+   ],
+   "front": 1,
+   "left": 0
+  },
+  {
+   "w": 1920,
+   "h": 1080,
+   "state": "clean",
+   "damageMeshes": 86,
+   "cockpitView": true,
+   "crackPov": false,
+   "crackPovVisible": false,
+   "parts": [
+    {
+     "id": "mirror_l",
+     "state": "intact",
+     "damage": 0
+    },
+    {
+     "id": "mirror_r",
+     "state": "intact",
+     "damage": 0
+    }
+   ],
+   "front": 0,
+   "left": 0
+  },
+  {
+   "w": 1920,
+   "h": 1080,
+   "state": "front60",
+   "damageMeshes": 86,
+   "cockpitView": true,
+   "crackPov": true,
+   "crackPovVisible": true,
+   "parts": [
+    {
+     "id": "mirror_l",
+     "state": "intact",
+     "damage": 0
+    },
+    {
+     "id": "mirror_r",
+     "state": "intact",
+     "damage": 0
+    }
+   ],
+   "front": 1,
+   "left": 0
+  },
+  {
+   "w": 1920,
+   "h": 1080,
+   "state": "side60",
+   "damageMeshes": 86,
+   "cockpitView": true,
+   "crackPov": false,
+   "crackPovVisible": false,
+   "parts": [
+    {
+     "id": "mirror_l",
+     "state": "detached",
+     "damage": 0.95
+    },
+    {
+     "id": "mirror_r",
+     "state": "intact",
+     "damage": 0
+    }
+   ],
+   "front": 0,
+   "left": 1
+  },
+  {
+   "w": 1920,
+   "h": 1080,
+   "state": "front100",
+   "damageMeshes": 86,
+   "cockpitView": true,
+   "crackPov": true,
+   "crackPovVisible": true,
+   "parts": [
+    {
+     "id": "mirror_l",
+     "state": "intact",
+     "damage": 0
+    },
+    {
+     "id": "mirror_r",
+     "state": "intact",
+     "damage": 0
+    }
+   ],
+   "front": 1,
+   "left": 0
+  }
+ ],
+ "errors": []
+}

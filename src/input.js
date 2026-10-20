@@ -142,21 +142,23 @@ export class Input {
     this.releaseMouseLook();
   }
   // Mouse look is opt-in. By default the mouse never moves the camera, so cursor movement while driving on the keyboard
-  // cannot pan it: only holding the right button and dragging looks around, and the view returns when it is released.
+  // cannot pan it: only holding the left or right button and dragging looks around, and the view returns when it is released.
   // With free look on (`free()`), raw movement looks around under pointer lock; if the lock is unavailable the left or right
   // button must be held, never the cursor's position. `drag(true|false)` reports the hold so the view can re-centre quickly.
   mountMouseLook(canvas, { enabled, free = () => false, move, drag, unlock }) {
     this.lookCanvas = canvas; this.lookEnabled = enabled; this.lookFree = free; this.lookDragCb = drag;
     const setDrag = on => { if (this.lookDragging === on) return; this.lookDragging = on; drag?.(on); };
-    this.listen('mousedown', e => { if (e.button === 2 && enabled() && e.target === canvas && !e.sourceCapabilities?.firesTouchEvents) setDrag(true); });
-    for (const name of ['mouseup', 'blur']) this.listen(name, e => { if (name === 'blur' || e.button === 2) setDrag(false); });
-    this.listen('contextmenu', () => setDrag(false));
+    this.listen('mousedown', e => { if ((e.button === 0 || e.button === 2) && enabled() && e.target === canvas && !e.sourceCapabilities?.firesTouchEvents) setDrag(true); });
+    for (const name of ['mouseup', 'blur']) this.listen(name, e => { if (name === 'blur' || e.button === 0 || e.button === 2) setDrag(false); });
+    // The press-time context menu (Linux/GTK) must not cancel the drag it belongs to; a menu with no
+    // button held still ends the hold. This keeps drag working on Mac (Arc/Chrome), Linux and Windows.
+    this.listen('contextmenu', e => { if (!(e.buttons & 3)) setDrag(false); });
     this.listen('mousemove', e => {
       if (!enabled() || e.sourceCapabilities?.firesTouchEvents || editable(e)) return;
       if (Date.now() - (this.lastTouchAt || 0) < 1000) return;
       const dx = e.movementX || 0, dy = e.movementY || 0;
       if (!dx && !dy) return;
-      if (this.lookDragging && (e.buttons & 2)) { move(dx, dy); return; }
+      if (this.lookDragging && (e.buttons & 3)) { move(dx, dy); return; }
       if (this.lookDragging) setDrag(false);
       if (!free()) return;
       if (this.document?.pointerLockElement === canvas || (e.buttons & 3)) move(dx, dy);

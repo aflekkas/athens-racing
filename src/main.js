@@ -15,8 +15,6 @@ import { cameraRelativeSource, cameraDirectionPan, syncAudioListener } from './a
 // PARALIAKI: race a rival down the real Athens Riviera coast road, Vouliagmeni -> the lake -> Limanakia -> Varkiza -> Lomvarda.
 // World built from OpenStreetMap data (see tools/). Menus boot without a world; direct race URLs load on demand.
 import * as THREE from 'three';
-import {exhaustPopsEnabled} from './exhaust-pops.js';
-import {flashLight,flashEnabled,warmFlamePipelines} from './exhaust-flames.js';
 import { loadMap, LANE_W } from './map.js';
 import { getMap } from './map-catalog.js';
 import { menuMapContext, quickMapEvent, initialMapId } from './menu-map.js';
@@ -27,13 +25,13 @@ import { ROAD } from './road.js';
 import { CARS, CarModel, setCarEnv, setPaint, catalogueTrafficTypes } from './cars.js';
 import { normalizeDriverAppearance } from './driver-appearance-data.js';
 import { ENGINE_HOT_C } from './driving-feedback-model.js';
-import { inGarage } from './car-catalog.js';
+import { inGarage, canonicalCarId, DEFAULT_CAR_ID } from './car-catalog.js';
 import { shiftTransmission } from './transmission.js';
 import { savedPaint } from './vehicle-paint.js';
 import { Vehicle } from './physics.js';
 import { RivalAI } from './rival-ai.js';
 import { input as controls } from './input.js';
-import { routeVel, setRouteVel, pushVeh, extents } from './traffic.js';
+import { routeVel } from './traffic.js';
 import { Police, pursuit } from './police.js';
 import { PoliceHud } from './police-hud.js';
 import { Cockpit, mirrorsInView } from './cockpit.js';
@@ -52,6 +50,7 @@ import { configureTextureCodecs } from './compressed-textures.js';
 import { createPost } from './post.js';
 import { loadTextures, uploadTextures, setAnisotropy } from './tex.js';
 import { clamp, lerp, damp, smoothstep, frameYield, RNG } from './util.js';
+import { resolveCarPair } from './crash-contact.js';
 import { ContactCoordinator, containOnlineVehicle } from './multiplayer-contact.js';
 import { applyBalance } from './mp-car-rules.js';
 import { SharedWorld } from './mp-shared-world.js';
@@ -108,7 +107,7 @@ const $ = (id) => document.getElementById(id);
 const RED_GRACE = 0.3; // s at both ends of the red, as the signals' own amber/all-red margins
 function lawsEnabled() { return police?.enabled === true && G.ev?.def.rules?.laws !== false; }
 const RIVAL_NAME = 'STAVROS';
-const RIVAL_BODY = { mini: 'z4', z4: 'mini', taxi: 'mini' };
+const RIVAL_BODY = { mini_jcw: 'z4', z4: 'mini_jcw', octavia_rs: 'mini_jcw' };
 
 function fail(e) { console.error(e); const el = $('err'); el.style.display = 'block'; el.textContent = 'Error: ' + (e && e.message || e); }
 window.addEventListener('error', (e) => fail(e.error || e.message));
@@ -132,7 +131,7 @@ await firstRunPerformanceCheck({ gpuName });
 // ONE graphics look, hard-wired (graphics.js RENDER, owner-locked: docs/OWNER-DECISIONS.md). GFX only carries the
 // performance side: resolution and draw ranges.
 let GFX = resolveGraphics(settings, { deviceRatio: window.devicePixelRatio, gpuName });
-const R = RENDER, quality = R.exhaust, sceneryQuality = R.scenery, lowGraphics = R.simple;
+const R = RENDER, sceneryQuality = R.scenery, lowGraphics = R.simple;
 setAnisotropy(R.anisotropy);
 window.__renderInfo = () => ({ gpu: gpuName, perfClass: GFX.perfClass, lowGraphics, pixelRatio, drawDistance: GFX.drawDistance, geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures, fps: G.fps, renderScale: settings.renderScale });
 // In-game performance readout (Settings > Graphics, or F3): fps, frame ms, draw calls. Refreshed at 2 Hz.
@@ -158,10 +157,6 @@ const scene = new THREE.Scene();
 scene.matrixAutoUpdate = false; // never moves; its children update themselves (static world: batch.js freezeStatic)
 const drivingFeedback = new DrivingFeedback({ scene, input: controls });
 scene.fog = new THREE.FogExp2(new THREE.Color('#c3cdd6'), 0.00011); // only switches USE_FOG on; see ENV.installAerial
-// One always-visible exhaust-pop flash light (intensity 0 until a pop): showing/hiding a light, or cars with flames joining or
-// leaving, would change the light count and re-resolve/recompile every material's program mid-race
-flashLight.visible = flashEnabled(R.exhaust); scene.add(flashLight);
-let flamesWarmable = false; // set once the load-time warm-up has run: later joins warm on arrival
 const camera = new THREE.PerspectiveCamera(settings.cockpitFov, innerWidth / innerHeight, 0.1, 90000);
 renderer.terrainLodCamera = camera; // Auxiliary passes reuse the main view's terrain selection.
 const audio = window.__bootAudio || new Audio();
@@ -220,7 +215,7 @@ function driverVoice(c, category = 'driver', options = {}) {
 
 // ------------------------------------------------------------------ game state
 const G = {
-  state: 'loading', t: 0, raceT: 0, countT: 0, cam: Q.get('cam') === 'chase' ? 'chase' : 'cockpit', userCam: Q.get('cam') === 'chase' ? 'chase' : 'cockpit', carIdx: 0, selIdx: 0, menuFrom: null,
+  state: 'loading', t: 0, raceT: 0, countT: 0, cam: ['chase', 'front'].includes(Q.get('cam')) ? Q.get('cam') : 'cockpit', userCam: ['chase', 'front'].includes(Q.get('cam')) ? Q.get('cam') : 'cockpit', carIdx: 0, selIdx: 0, menuFrom: null,
   crashes: 0, topSpeed: 0, pFinish: null, rFinish: null, lastLead: 0, leadT: 0,
   shake: 0, flash: 0, driftAcc: 0, driftT: 0, markIdx: 0, finishedT: 0, orbitA: 0, autodrive: Q.has('autodrive'),
 };
@@ -340,7 +335,7 @@ async function loadFirstMap(id) {
   bindMapWeather(); // time of day + weather (?tod=&wx=)
   tlog('traffic+post');
   // ?car= takes a 1-based number or a car id (?car=2, ?car=z4); anything else falls back to the saved car
-  const qCar = Q.get('car'), qIdx = qCar == null ? -1 : /^\d+$/.test(qCar) ? clamp(+qCar - 1, 0, CARS.length - 1) : CARS.findIndex((c) => c.id === qCar);
+  const qCar = canonicalCarId(Q.get('car')), qIdx = qCar == null ? -1 : /^\d+$/.test(qCar) ? clamp(+qCar - 1, 0, CARS.length - 1) : CARS.findIndex((c) => c.id === qCar);
   setCar(qIdx >= 0 ? qIdx : savedCar(), false);
   prepareEvent('quick');
   resetRace();
@@ -355,8 +350,6 @@ async function loadFirstMap(id) {
   const compileStarted = performance.now(); await compileScene();
   assetMetrics.compileSceneMs = performance.now() - compileStarted;
   if (renderer.shadowMap.enabled) warmShadowPrograms(); // compileAsync skips the shadow depth variants
-  try { await warmExhaustFlames(); } catch (e) { console.warn('Exhaust flame warm-up skipped:', e?.message || e); }
-  flamesWarmable = true;
   tlog('compiled');
   onResize();
   multiplayer.mapId = map.id;
@@ -464,7 +457,6 @@ function makeCar(spec, isPlayer, plate) {
   const model = new CarModel(spec, { plate });
   if (!isPlayer) scaleVehicleLod(model, GFX.vehicleLod); // other drivers' cars drop to the road-distance model sooner on weaker classes
   scene.add(model.root);
-  if(model.exhaustFlames){scene.add(model.exhaustFlames.mirrorRoot);if(flamesWarmable)warmExhaustFlames();} // a remote SVJ joining mid-session: first pop must not compile
   trimShadowCasters(model.root);
   return { model };
 }
@@ -480,7 +472,6 @@ function attachRivalFar(c) {
   c.casters = []; c.model.root.traverse((o) => { if (o.isMesh && o.castShadow) c.casters.push(o); });
 }
 function disposeCar(c) {
-  c?.model?.exhaustFlames?.dispose();
   if (!c) return;
   if (c.far) {
     scene.remove(c.far.root);
@@ -640,7 +631,7 @@ function offerTow() {
   const el = document.createElement('aside'); el.className = 'tow-prompt ui-prompt'; el.id = 'tow-prompt';
   el.setAttribute('role', 'region'); el.setAttribute('aria-label', 'Tow assistance');
   const recoveryKey = kbd(esc(bindingLabel(controls.bindings, activeInputDevice() === 'gamepad' ? 'down' : 'tow', activeInputDevice()).split(' / ')[0]), activeInputDevice() === 'gamepad') + (activeInputDevice() === 'gamepad' ? icon('chevron-right') + kbd(esc(bindingLabel(controls.bindings,'confirm','gamepad').split(' / ')[0]),true) : '');
-  el.innerHTML = '<strong>NEED A TOW?</strong><p>' + 'Return to the road and repair your car.' + '</p><div class="tow-actions"><button type="button" data-tow="accept">' + recoveryKey + ' Tow and repair</button><button type="button" data-tow="dismiss">Keep driving</button></div>';
+  el.innerHTML = '<strong>NEED A TOW?</strong><p>' + 'Return to the road.' + '</p><div class="tow-actions"><button type="button" data-tow="accept">' + recoveryKey + ' Tow to the road</button><button type="button" data-tow="dismiss">Keep driving</button></div>';
   el.querySelector('[data-tow=accept]').onclick = () => { el.querySelector('button').blur(); tow(player.veh); };
   el.querySelector('[data-tow=dismiss]').onclick = () => { el.querySelector('[data-tow=dismiss]').blur(); closeTowOffer(TOW_PROMPT_COOLDOWN); };
   if (!inFreeRoam() && !multiplayer.active) {
@@ -648,7 +639,7 @@ function offerTow() {
     retire.onclick = () => { closeTowOffer(); if (multiplayer.active) multiplayer.retire(); else finishRace('retired'); };
     el.querySelector('.tow-actions').append(retire);
   }
-  const chip = document.createElement('button'); chip.type = 'button'; chip.className = 'tow-chip'; chip.innerHTML = recoveryKey + ' Tow and repair'; chip.setAttribute('aria-label', 'Tow to road'); chip.onclick = () => tow(player.veh); el.append(chip);
+  const chip = document.createElement('button'); chip.type = 'button'; chip.className = 'tow-chip'; chip.innerHTML = recoveryKey + ' Tow to the road'; chip.setAttribute('aria-label', 'Tow to road'); chip.onclick = () => tow(player.veh); el.append(chip);
   towOffer.element = el; towOffer.elapsed = 0; notifications.adopt('tow',el,{priority:60,persistent:true});
 }
 // Water still produces its splash, but recovery waits for the driver to accept the offer.
@@ -691,8 +682,9 @@ function backOnRoad(pv, recovery = null, { reset = false } = {}) {
     const d = f ? (-Math.sin(recovery.yaw) * f.tx - Math.cos(recovery.yaw) * f.tz >= 0 ? 1 : -1) : dir;
     plan = recovery.kind === 'road' && Number.isFinite(recovery.x) && Number.isFinite(recovery.z) ? { kind: 'road', ...recovery } : { kind: 'route', ...kit.adapter.pose(recovery.s, d, dir) };
   } else plan = planTow({ x: pv.x, z: pv.z, yaw: pv.yaw, route: kit.adapter, index: kit.index, dir, course: course ? courseTowLimits(course) : null, clear: towClearance(pv) });
-  const nitro = pv.nitro; beginCameraBlend();
+  const nitro = pv.nitro, kept = pv.damageSnapshot(); beginCameraBlend();
   pv.reset(plan.s, plan.kind === 'road' ? 0 : plan.u, 0); pv.yaw = plan.yaw;
+  pv.restoreDamageSnapshot(kept); // a tow or a reset puts you back on the road, not back in a new car: the damage stays until the run is restarted
   // A side street is not on the route: the car sits on that street's own surface.
   if (plan.kind === 'road') { pv.x = plan.x; pv.z = plan.z; pv.y = ground.network.height(plan.x, plan.z); pv.u = plan.u; pv._network = true; }
   if (online && !recovery) multiplayer.stateSender.discontinuity();
@@ -763,6 +755,7 @@ function tow(pv, { reset = false, automatic = false, capture = false } = {}) {
       if (G.state !== 'race' || player.veh !== pv || multiplayer.retired || multiplayer.lobby?.raceId !== raceId) { blackout(false); return; }
       // Both controls put the car on the nearest road; online keeps the server's pose.
       backOnRoad(pv, recovery, { reset });
+      audio.recovery();
       towOffer.hold = multiplayer.active && recovery ? Math.max(0, (recovery.until - multiplayer.now()) / 1000) : 0;
       towOffer.recovering = towOffer.hold > 0; towOffer.rearm = .8;
       towOffer.offT = towOffer.stuckT = towOffer.severeT = 0;
@@ -933,7 +926,8 @@ function applyDriving() {
 function carBest(i) { return +localStorage.getItem('paraliaki.best.' + CARS[i].id) || 0; }
 // dev / test URLs (?simhook, ?autodrive, ?car=, ?s=, ?event=, ?quick) skip the title menu; ?menu forces it
 const SKIP_MENU = !Q.has('menu') && ['simhook', 'autodrive', 'car', 's', 'event', 'quick', 'fixeddt', 'turbo'].some((k) => Q.has(k));
-function savedCar() { try { const i = CARS.findIndex((c) => c.id === localStorage.getItem('paraliaki.car')); return i >= 0 && inGarage(CARS[i]) ? i : 0; } catch { return 0; } } // a car since dropped from the garage falls back to the default
+const defaultCar = () => Math.max(0, CARS.findIndex((c) => c.id === DEFAULT_CAR_ID));
+function savedCar() { try { const i = CARS.findIndex((c) => c.id === canonicalCarId(localStorage.getItem('paraliaki.car'))); return i >= 0 && inGarage(CARS[i]) ? i : defaultCar(); } catch { return defaultCar(); } } // a removed trim maps to its model's top trim; anything else unknown falls back to the default
 function initFlow() {
   let plate = driverName.plate();
   driverName.onChange(() => { const next = driverName.plate(); if (next !== plate) { plate = next; player?.model.setPlate(next); } });
@@ -1030,7 +1024,7 @@ function buildGrid() {
   G.gridKey = key;
   for (const c of grid) if (c !== rival) disposeCar(c);
   grid = [];
-  const raceCars=CARS.filter(isRivalCar),ids=raceCars.map(c=>c.id);
+  const raceCars=CARS.filter(c=>isRivalCar(c)&&inGarage(c)),ids=raceCars.map(c=>c.id);
   for (const [i, d] of drivers.entries()) {
     const spec = raceCars.find((c) => c.id === (def.car && ids.includes(def.car) ? def.car : EV.driverCar(d, ids, player.spec.id))) || raceCars[0];
     let c;
@@ -1080,7 +1074,7 @@ async function startEvent(id, opts = {}) {
   const token = ++soloStart;
   const def = mapEvent(id); if (!def) return;
   const car = def.car || opts.car;
-  const idx = car == null ? G.carIdx : typeof car === 'number' ? clamp(Math.floor(car), 0, CARS.length - 1) : Math.max(0, CARS.findIndex(c => c.id === car));
+  const idx = car == null ? G.carIdx : typeof car === 'number' ? clamp(Math.floor(car), 0, CARS.length - 1) : Math.max(0, CARS.findIndex(c => c.id === canonicalCarId(car)));
   const mapId = def.mapId || selectedMapId;
   menu?.hide();
   try {
@@ -1096,7 +1090,7 @@ async function startEvent(id, opts = {}) {
 function openEvent(id, index = G.carIdx) {
   if (multiplayer.active) { multiplayer.open(); return; }
   const def = mapEvent(id); if (!def) return;
-  const idx = def.car ? Math.max(0, CARS.findIndex(c => c.id === def.car)) : index;
+  const idx = def.car ? Math.max(0, CARS.findIndex(c => c.id === canonicalCarId(def.car))) : index;
   // Keep the paused/result state so BACK from the picker restores a working menu.
   if (!['paused', 'results'].includes(G.state)) G.state = 'menu'; controls.clear();
   menu.show('car', { def, index: idx }, true);
@@ -1111,7 +1105,7 @@ function openCarPicker({ inFreeRoam: roaming = false, onPick } = {}) {
 }
 function switchRoamCar(carId) {
   if (!inFreeRoam()) return false;
-  const idx = CARS.findIndex(c => c.id === carId); if (idx < 0) return false;
+  const idx = CARS.findIndex(c => c.id === canonicalCarId(carId)); if (idx < 0) return false;
   const old = player.veh, pose = Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'w', 'grade', 'bank'].map(k => [k, old[k]]));
   const gear = old.gear, bodyPose = { ...old.pose };
   beginCameraBlend(); setCar(idx);
@@ -1134,7 +1128,8 @@ function setRoamConditions(conditions) {
 function teleportLandmark(id) {
   if (!inFreeRoam()) return false;
   const mark = map.data.marks.find(m => m.id === id); if (!mark) return false;
-  beginCameraBlend(0.8); placeVeh(player.veh, mark.s, route.closed ? 0 : route.laneU(mark.s, 0), 1);
+  const kept = player.veh.damageSnapshot();
+  beginCameraBlend(0.8); placeVeh(player.veh, mark.s, route.closed ? 0 : route.laneU(mark.s, 0), 1); player.veh.restoreDamageSnapshot(kept);
   resetTowOffer(); traffic.reset(mark.s); people.reset(mark.s); syncCar(player, 0); updateCamera(0, true);
   return true;
 }
@@ -1216,7 +1211,7 @@ function flowAction(name) {
   if (MENU_STATES.includes(G.state)) return true;
   if (notifications.action(name, {gamepad: activeInputDevice() === 'gamepad'})) return true;
   switch (name) {
-    case 'camera': G.cam = G.cam === 'cockpit' ? 'chase' : 'cockpit'; G.userCam = G.cam; applyCamMode(); hud.message(G.cam === 'cockpit' ? '<i>COCKPIT</i> CAM' : '<i>CHASE</i> CAM', 1.2); return true;
+    case 'camera': G.cam = G.cam === 'cockpit' ? 'chase' : G.cam === 'chase' ? 'front' : 'cockpit'; G.userCam = G.cam; applyCamMode(); hud.message(G.cam === 'cockpit' ? '<i>COCKPIT</i> CAM' : G.cam === 'chase' ? '<i>CHASE</i> CAM' : '<i>FRONT</i> CAM', 1.2); return true;
     case 'tow': tow(player.veh); return true;
     case 'map': hud?.toggleBigMap(); return true;
     case 'tractionControl':
@@ -1299,7 +1294,7 @@ function raceTiming(dt) {
     const pos = racePosition();
     if (G.raceT > 2 && G.lastPos && pos !== G.lastPos && G.t - G.leadT > 1.2) {
       G.leadT = G.t;
-      if (pos < G.lastPos) { audio.pluck(587, 0, 0.14); audio.pluck(880, 0.08, 0.14); } // the position box shows it; no pop
+      if (pos < G.lastPos) audio.ui(true); // brief acknowledgement; the position box shows the change
     }
     G.lastPos = pos;
   }
@@ -1546,8 +1541,6 @@ function syncCar(c, dt) {
     if (shadowsOff !== c.shadowsOff) { c.shadowsOff = shadowsOff; for (const o of c.casters) o.castShadow = !shadowsOff; }
   }
   c.model.steamAmount = multiplayer.active ? 0 : v.steamAmount || 0; c.model.wheelCamber = v.wheelCamber;
-  if(!multiplayer.active)c.remoteExhaust=null;
-  if(c.model.exhaustFlames)c.model.exhaustFlames.update(dt,c.remoteExhaust||v.powertrainSignals,c.remoteExhaust?c.remoteExhaust.exhaustEnabled:exhaustPopsEnabled(c.spec),quality);
   if (!far) c.model.update(dt, v.vLong, v.steer, (c === player ? input.brake > 0.3 : c.lastBrake) || false, v.bodyDynamic ? (v._rigidVisualPose ||= { heave: 0, pitch: 0, roll: 0 }) : v.pose, v.corners || v.wheel, v.bodyDynamic ? 0 : v.w);
   v.fxWheels = c.model.wheels; // Fx owns burnout tread deformation; the model keeps its normal wheel rig.
   if (c !== player) {
@@ -1570,34 +1563,25 @@ function racerCollide(dt) {
   racerPair(player.veh, rival.veh, true);
 }
 function racerPair(a, b, mine) {
-  const ds = b.s - a.s; if (Math.abs(ds) > 8) return;
-  const ea = extents(a, route), eb = extents(b, route);
-  const du = b.u - a.u;
-  const ox = ea.hs + eb.hs - Math.abs(ds), oy = ea.hu + eb.hu - Math.abs(du);
-  if (ox <= 0 || oy <= 0) return;
-  const ra = routeVel(a, route), rb = routeVel(b, route);
-  let sev = 0;
-  if (ox < oy) {
-    const n = Math.sign(ds) || 1; pushVeh(a, ra.f, -n * ox / 2, 0); pushVeh(b, rb.f, n * ox / 2, 0);
-    const cl = (ra.vs - rb.vs) * n; if (cl > 0) { const j = cl * 0.6; ra.vs -= n * j; rb.vs += n * j; sev = cl; b.w += (Math.random() - 0.5) * 0.4; }
-  } else {
-    const n = Math.sign(du) || 1; pushVeh(a, ra.f, 0, -n * oy / 2); pushVeh(b, rb.f, 0, n * oy / 2);
-    const cl = (ra.vu - rb.vu) * n; if (cl > 0) { const j = cl * 0.6; ra.vu -= n * j; rb.vu += n * j; sev = cl; }
-  }
-  setRouteVel(a, ra.f, ra.vs, ra.vu); setRouteVel(b, rb.f, rb.vs, rb.vu);
+  if (Math.abs(b.s - a.s) > 8) return;
+  // a rigid-body contact between the two cars (src/crash-contact.js): at the contact point, with both masses and yaw inertias,
+  // restitution by closing speed and friction along the face, so an offset hit spins them and a glancing one scrubs speed
+  const r = resolveCarPair(a, b, { route });
+  if (!r) return;
+  const sev = r.vn;
   if (sev > 2.2) {
-    const sign = ox < oy ? Math.sign(ds) || 1 : Math.sign(du) || 1;
-    const nx = sign * (ox < oy ? ra.f.tx : ra.f.rx), nz = sign * (ox < oy ? ra.f.tz : ra.f.rz);
-    const px = (a.x + b.x) * .5, pz = (a.z + b.z) * .5;
-    for (const [v, other, inward] of [[a, b, -1], [b, a, 1]]) {
-      const c = Math.cos(v.yaw), s = Math.sin(v.yaw), dx = px - v.x, dz = pz - v.z;
-      const localPoint = { x: clamp(dx * c - dz * s, -v.halfW, v.halfW), y: .55, z: clamp(dx * s + dz * c, -v.halfL, v.halfL) };
-      const localNormal = { x: inward * (nx * c - nz * s), y: 0, z: inward * (nx * s + nz * c) };
+    const n = r.c;
+    for (const [v, other, hit, sign] of [[a, b, r.hitA, 1], [b, a, r.hitB, -1]]) {
+      if (!hit) continue;
+      const c = Math.cos(v.yaw), s = Math.sin(v.yaw), nx = n.nx * sign, nz = n.nz * sign;
+      const localPoint = { x: clamp(hit.py, -v.halfW, v.halfW), y: .55, z: clamp(-hit.px, -v.halfL, v.halfL) };
+      const localNormal = { x: nx * c - nz * s, y: 0, z: nx * s + nz * c };
       const zone = Math.abs(localNormal.x) > Math.abs(localNormal.z) ? (localNormal.x > 0 ? 'left' : 'right') : (localNormal.z > 0 ? 'front' : 'rear');
       v.addDamage?.(zone, sev * .6, { kind: 'crash', sev, car: { mass: other.m }, localPoint, localNormal });
     }
   }
-  if (sev > 1.5 && mine && G.t - (G.paintT || 0) > 1.2) { G.paintT = G.t; hud.pop('info cyan', 'TRADING PAINT!'); audio.crash('light', Math.min(1, sev / 8)); G.shake = Math.max(G.shake, 0.35); }
+  if (mine) { const dv = Math.max(r.hitA?.dv ?? 0, r.hitB?.dv ?? 0); G.shake = Math.max(G.shake, clamp(dv / 16, 0, 0.7)); }
+  if (sev > 1.5 && mine && G.t - (G.paintT || 0) > 1.2) { G.paintT = G.t; hud.pop('info cyan', 'TRADING PAINT!'); audio.crash(sev > 9 ? 'heavy' : 'light', Math.min(1, (sev / 12) ** 1.4)); }
 }
 
 /** pursuit transitions (src/police.js): call-outs, sounds. In a pursuit event BUSTED ends the run (events flow) */
@@ -1652,7 +1636,7 @@ function handleEvents(events) {
         hud.pop('opa', 'OPA!', '', (Math.random() - 0.5) * 10);
       } else hud.pop('info bad', e.car.type.bus ? 'BUS BUMP!' : 'BUMP!');
       if (!multiplayer.active && e.target !== 'rider' && Math.random() < 0.6) audio.horn(e.car.type.bus, 0.9, -e.side * 0.4, 0.25);
-    } else if (e.kind === 'scrape') { audio.scrape(Math.min(1, e.sev / 4)); G.shake = Math.max(G.shake, 0.15); }
+    } else if (e.kind === 'scrape') { audio.scrape(Math.min(1, e.sev / 4), 'metal'); G.shake = Math.max(G.shake, 0.15); }
     else if (e.kind === 'cone') {
       G.cones++; audio.tone({ f: 380 + Math.random() * 200, slide: 900, dur: 0.18, gain: 0.08, type: 'triangle' }); audio.noise({ dur: 0.08, f: 1200, type: 'bandpass', gain: 0.12 });
     }
@@ -1731,9 +1715,8 @@ function updateAudio(dt) {
     const v = c.veh, vel = v.velocityWorld(_av), rel = listenerRel(v.x, v.y, v.z, vel.x, vel.z);
     const r = _rivN < _rivals.length ? _rivals[_rivN] : (_rivals[_rivN] = {});
     _rivN++;
-    r.exhaustPulse=c.model.exhaustFlames?.pulse;
     r.id = id; r.spec = c.spec; r.rpm = v.rpm; r.limiter = v.limiter; r.load = load;
-    r.d = rel.d; r.pan = rel.pan; r.vr = rel.vr;
+    r.d = rel.d; r.pan = rel.pan; r.vr = rel.vr; r.v = Math.hypot(v.vLong, v.vLat);
   };
   if (multiplayer.active) {
     for (const [id, c] of remoteCars) if (c.model.root.visible) _pushRival(id, c, 0.4);
@@ -1748,10 +1731,10 @@ function updateAudio(dt) {
   for (let i = 0; i < 4; i++) Object.assign(_wheelArgs[i], pv.corners[i], { vgx: pv._S?.[i]?.vgx ?? pv.vLong });
   _audioRival.rpm = rv.rpm; _audioRival.load = rival.lastBrake ? -0.3 : counting ? (G.countT > 1 ? 0.7 : 0.1) : rv.load;
   _audioRival.dist = RL.d; _audioRival.pan = RL.pan; _audioRival.vr = RL.vr;
-  _audioParam.exhaustPulse = player.model.exhaustFlames?.pulse;
   _audioParam.dt = dt; _audioParam.damage = pv.damage; _audioParam.rpm = pv.rpm; _audioParam.redline = pv.spec.redline;
   _audioParam.load = counting ? input.throttle * 0.9 - 0.1 : racing ? pv.load : Math.min(pv.load, 0.3);
   _audioParam.throttle = input.throttle;
+  _audioParam.handbrake = input.handbrake;
   _audioParam.cockpit = G.cam === 'cockpit'; _audioParam.manual = pv.manual;
   _audioParam.gearboxType = pv.powertrain?.gearboxType || pv.spec.gearboxType || pv.spec.gearbox;
   _audioParam.overrun = pv.overrun; _audioParam.shifting = pv.shiftT > 0; _audioParam.stalled = pv.engineStalled;
@@ -1795,7 +1778,7 @@ controls.mountMouseLook(canvas, { enabled: canLook, free: () => settings.mouseLo
   unlock() { if (G.state === 'race' && !towOffer.element) pauseGame(); },
 });
 canvas.addEventListener('contextmenu', e => { if (canLook()) e.preventDefault(); });
-canvas.addEventListener('wheel', e => { if (!canLook() || G.cam !== 'chase') return; e.preventDefault(); look.zoom = clamp(look.zoom * Math.exp(e.deltaY * 0.0012), 0.55, 3); }, { passive: false });
+canvas.addEventListener('wheel', e => { if (!canLook() || (G.cam !== 'chase' && G.cam !== 'front')) return; e.preventDefault(); look.zoom = clamp(look.zoom * Math.exp(e.deltaY * 0.0012), 0.55, 3); }, { passive: false });
 // Exact critically damped spring update: stable across frame rates and shortest-path yaw wrapping.
 function spring(state, key, velocity, target, omega, dt) {
   const delta = state[key] - target, c = (state[velocity] + omega * delta) * dt, decay = Math.exp(-omega * dt);
@@ -1931,6 +1914,23 @@ function updateCamera(dt, snap = false) {
     const ahead = 5 * Math.max(0, Math.cos(look.yaw + look.back)) * clamp(1 - look.pitch, 0, 1);
     const lk = _v2.set(veh.x, veh.y + targetY, veh.z).addScaledVector(_qForward.set(-Math.sin(camState.followYaw), 0, -Math.cos(camState.followYaw)), ahead);
     camera.lookAt(lk);
+    const fov = settings.chaseFov + (settings.speedFov ? Math.min(3, sk * 2 + (veh.nitroOn ? 1 : 0)) : 0);
+    camState.fov = snap ? fov : damp(camState.fov, fov, 3, dt);
+  } else if (G.cam === 'front') {
+    // ahead of the car looking back at it, swung round by the same free look: yaw about the car, pitch, wheel zoom
+    const {back,up,targetY}=chaseRig(player.spec,sk);
+    const dist = Math.hypot(back, up) * look.zoom, el = clamp(Math.atan2(up, back) + look.pitch, -0.08, 1.35);
+    if (snap || camState.followYaw === undefined) { camState.followYaw = veh.yaw; camState.followYawV = 0; }
+    const yawTarget = camState.followYaw + Math.atan2(Math.sin(veh.yaw - camState.followYaw), Math.cos(veh.yaw - camState.followYaw));
+    spring(camState, 'followYaw', 'followYawV', yawTarget, 12, dt);
+    const hd = camState.followYaw + Math.PI + look.yaw + look.back, hx = Math.sin(hd), hz = Math.cos(hd);
+    const target = _v1.set(veh.x + hx * Math.cos(el) * dist, veh.y + Math.sin(el) * dist, veh.z + hz * Math.cos(el) * dist);
+    // Follow translation directly; the spring damps the camera offset, keeping its distance natural at speed.
+    if (!snap && camState.carX !== undefined) { camState.pos.x += veh.x - camState.carX; camState.pos.z += veh.z - camState.carZ; }
+    target.y = Math.max(target.y, route.surfaceY(veh.s, veh.u) + 0.6);
+    springPosition(target, dt, snap, look.idleT < 1.5 || look.back > 0.01 ? 16 : 10);
+    camera.position.copy(camState.pos);
+    camera.lookAt(veh.x, veh.y + targetY, veh.z);
     const fov = settings.chaseFov + (settings.speedFov ? Math.min(3, sk * 2 + (veh.nitroOn ? 1 : 0)) : 0);
     camState.fov = snap ? fov : damp(camState.fov, fov, 3, dt);
   } else { // orbit
@@ -2122,7 +2122,10 @@ function step(dt, draw = true, visual = true, frameDt = dt) {
           if (pose) Object.assign(proxy, { x: pose.x, y: pose.y, z: pose.z, yaw: pose.yaw, vLong: pose.vLong, vLat: pose.vLat, stale: pose.stale === true, halfW: car.veh.halfW, halfL: car.veh.halfL, m: car.veh.m, hcg: car.veh.hcg });
           return { id, vehicle: pose ? proxy : car.veh, age: pose?.parked ? 0 : peer ? now - peer.at : Infinity, ghost: !pose || !member?.loaded || member.connected === false || member.dnf || member.finish != null || peer.state.recoveryUntil > multiplayer.now() };
         }), dt, now, { rtt: multiplayer.latency }) : [];
-        for (const hit of multiplayer.lastContacts) playerImpactVoice({ kind: 'crash', dv: hit.impulse });
+        for (const hit of multiplayer.lastContacts) {
+          playerImpactVoice({ kind: 'crash', dv: hit.impulse });
+          if (hit.impulse > 1.5 && G.t - (G.mpHitT || 0) > 0.25) { G.mpHitT = G.t; G.shake = Math.max(G.shake, clamp(0.08 + hit.impulse / 16, 0, 0.8)); audio.crash(hit.impulse > 8 ? 'heavy' : 'light', Math.min(1, (hit.impulse / 14) ** 1.4)); controls.rumble(Math.min(1, hit.impulse / 12), 0.6, 220); }
+        }
         containOnlineVehicle(pv, route);
       }
       // Online the units are shared (src/mp-shared-world.js); this client judges only its own driver.
@@ -2138,12 +2141,13 @@ function step(dt, draw = true, visual = true, frameDt = dt) {
       if (pv.bumpHit > 0.1) G.shake = Math.max(G.shake, pv.bumpHit * 0.22);
       // a racing wheel's force feedback (when the browser lets the wheel rumble): grip limit and kerbs, ~8 times a second
       if (G.state === 'race' && controls.wheelActive) controls.wheelFeedback(() => ({ frontSlip: pv.tyreTelemetry?.front?.slipDemand ?? 0, kerb: Math.max(pv.curbHit || 0, pv.bumpHit || 0), speed: Math.abs(pv.vLong) }));
-      if (pv.wallHit > 2.5 && G.state === 'race') { playerImpactVoice({ kind: 'wall', dv: pv.wallHit }); audio.scrape(Math.min(1, pv.wallHit / 10)); G.shake = Math.max(G.shake, Math.min(0.6, pv.wallHit / 12)); }
+      if (pv.wallHit > 2.5 && G.state === 'race') { playerImpactVoice({ kind: 'wall', dv: pv.wallHit }); audio.scrape(Math.min(1, pv.wallHit / 10)); G.shake = Math.max(G.shake, Math.min(0.85, 0.06 + (pv.crashDv || pv.wallHit) / 16)); }
+      if (pv.scrapeDv > 0 && G.state === 'race') audio.scrape(Math.min(1, Math.hypot(pv.vLong, pv.vLat) / 22), pv.scrapeMaterial);
       if (pv.wallHit > 3) { fx.sparks(pv, pv.wallHit / 12); controls.rumble(Math.min(1, pv.wallHit / 10), 0.6, 220); }
       if (!multiplayer.active) for (const c of grid) if (c.veh.wallHit > 3) fx.sparks(c.veh, c.veh.wallHit / 12);
       // kerb strikes: a thump (scrape when the tyre rubs along the face), a jolt through the camera
       if (pv.curbHit > 0.12 && G.t - (G.curbT || 0) > 0.08) { G.curbT = G.t; audio.curb(Math.min(1, pv.curbHit * (pv.curbScrape ? 0.7 : 1.2))); if (pv.curbScrape) audio.scrape(0.25); G.shake = Math.max(G.shake, pv.curbHit * 0.3); controls.rumble(pv.curbScrape ? 0.15 : 0.5 * pv.curbHit, pv.curbScrape ? 0.5 : 0.8 * pv.curbHit, pv.curbScrape ? 140 : 110); }
-      pv.wallHit = 0; rv.wallHit = 0; for (const c of grid) c.veh.wallHit = 0;
+      pv.wallHit = 0; rv.wallHit = 0; pv.crashDv = 0; rv.crashDv = 0; pv.scrapeDv = 0; for (const c of grid) { c.veh.wallHit = 0; c.veh.crashDv = 0; }
       // ---- slipstream
       const dd = (rv.s - pv.s) * (G.dir || 1), du = Math.abs(rv.u - pv.u);
       const drafting = (!multiplayer.active || (remoteCars.size > 0 && rival.model.root.visible)) && dd > 4 && dd < 32 && du < 1.6 && pv.vLong > 22;
@@ -2204,7 +2208,7 @@ function step(dt, draw = true, visual = true, frameDt = dt) {
   // Select own-car glass/structure visibility; the empty cabin stays visible outside.
   player.cockpit.setDetail(G.cam === 'cockpit');
   player.cockpit.setVisible(G.cam === 'cockpit');
-  player.cockpit.update(dt, { vehicle: pv, ignition: ['countdown', 'onlineCountdown', 'race'].includes(G.state), aidsOff: !settings.aids, lowBeam: !!ENV.COND_STATE.headlights, highBeam: !!pv.highBeam, indicator: pv.indicator, hazards: pv.hazards, handbrake: input.handbrake && G.state === 'race', manual: pv.manual, gearChangeEvent: pv.gearChangeEvent, steerInput: pv.steer / Math.max(0.05, pv.lockAt(Math.abs(pv.vLong))) * (0.55 + 0.45 * Math.min(1, pv.lockAt(Math.abs(pv.vLong)) / pv.spec.steer * 2.5)), rpm: pv.rpm, redline: pv.spec.redline, gear: pv.gear, gearLabel: pv.reverse ? 'R' : String(pv.gear), kmh: pv.kmh, nitrous: pv.spec.nitrous === true, nitro: pv.nitro, nitroOn: pv.nitroOn });
+  player.cockpit.update(dt, { vehicle: pv, ignition: ['countdown', 'onlineCountdown', 'race'].includes(G.state), aidsOff: !settings.aids, lowBeam: !!ENV.COND_STATE.headlights, highBeam: !!pv.highBeam, indicator: pv.indicator, hazards: pv.hazards, handbrake: (input.handbrake || pv.handbrakeInput === true) && G.state === 'race', manual: pv.manual, gearChangeEvent: pv.gearChangeEvent, steerInput: pv.steer / Math.max(0.05, pv.lockAt(Math.abs(pv.vLong))) * (0.55 + 0.45 * Math.min(1, pv.lockAt(Math.abs(pv.vLong)) / pv.spec.steer * 2.5)), rpm: pv.rpm, redline: pv.spec.redline, gear: pv.gear, gearLabel: pv.reverse ? 'R' : String(pv.gear), kmh: pv.kmh, nitrous: pv.spec.nitrous === true, nitro: pv.nitro, nitroOn: pv.nitroOn });
   window.__ghostLap?.visual(dt);
   updateCamera(dt);
   updateRacerMarkers();
@@ -2230,7 +2234,7 @@ function step(dt, draw = true, visual = true, frameDt = dt) {
   G.shiftFlash = Math.max(0, (G.shiftFlash || 0) - dt);
   if (pv.shiftEvent) { G.shiftFlash = 0.25; }
   G.lampTC = pv.tcOn ? 0.35 : Math.max(0, (G.lampTC || 0) - dt); G.lampABS = pv.absOn ? 0.35 : Math.max(0, (G.lampABS || 0) - dt); G.lampESC = pv.escOn ? 0.35 : Math.max(0, (G.lampESC || 0) - dt);
-  const st = { damageLabel: pv.engineStalled || pv.drivetrainBroken ? 'ENGINE STOP' : pv.coolantTemp >= ENGINE_HOT_C ? 'OVERHEATING' : pv.damageSignificant ? 'DAMAGE' : '', aidsOff: !settings.aids, tc: G.lampTC > 0, abs: G.lampABS > 0, esc: G.lampESC > 0, pos, time: G.pFinish ?? (G.raceT + G.pen), gap, pen: G.pen, junctions: signals.J, s: pv.s, rs: rv.s, rpm: pv.rpm, redline: pv.spec.redline, kmh: speedIn(pv.kmh), unit: speedUnit(),
+  const st = { damageLabel: pv.engineStalled || pv.drivetrainBroken ? 'ENGINE STOP' : pv.coolantTemp >= ENGINE_HOT_C ? 'OVERHEATING' : pv.engHealth <= .55 ? 'LIMP MODE' : pv.damageSignificant ? 'DAMAGE' : '', aidsOff: !settings.aids, tc: G.lampTC > 0, abs: G.lampABS > 0, esc: G.lampESC > 0, pos, time: G.pFinish ?? (G.raceT + G.pen), gap, pen: G.pen, junctions: signals.J, s: pv.s, rs: rv.s, rpm: pv.rpm, redline: pv.spec.redline, kmh: speedIn(pv.kmh), unit: speedUnit(),
     manual: pv.manual, limiter: pv.limiter, canUpshift: !pv.engineStalled && !(pv.engHealth <= 0) && !pv.reverse && pv.gear < pv.spec.gears.length && pv.shiftT <= 0,
     gearLabel: pv.reverse ? 'R' : (G.state === 'countdown' ? 'N' : String(pv.gear)), nitrous: pv.spec.nitrous === true, nitro: pv.nitro, nitroOn: pv.nitroOn, shiftFlash: G.shiftFlash, draft: G.draft || 0,
     free: inFreeRoam(), x: pv.x, z: pv.z, yaw: pv.yaw, rx: grid.length || multiplayer.active ? rv.x : null, rz: grid.length || multiplayer.active ? rv.z : null, traffic: traffic.cars, limit: speedLimitAt(map, pv.x, pv.z, pv.s) };
@@ -2303,13 +2307,6 @@ function step(dt, draw = true, visual = true, frameDt = dt) {
 // Build every material's program behind the loading screen. The main view draws into post's linear HDR target, never
 // the sRGB canvas, and the output colour space is part of a program's key: compiled against the canvas, every material
 // compiled a second time on its first appearance mid-race (traffic glass, buses: hitches near the Riviera tunnel).
-// Build the exhaust flame programs and per-target pipelines (once per session) before anyone pops: see src/exhaust-flames.js.
-// Targets: the main view's linear target and a throwaway twin of the cockpit mirror's sRGB target.
-async function warmExhaustFlames() {
-  const mirror = new THREE.WebGLRenderTarget(32, 18, { depthBuffer: true }); mirror.texture.colorSpace = THREE.SRGBColorSpace;
-  try { await warmFlamePipelines(renderer, camera, scene.fog, [post?.sceneRT ?? null, mirror]); }
-  finally { mirror.dispose(); }
-}
 async function compileScene() {
   const target = renderer.getRenderTarget();
   let done;
@@ -2437,7 +2434,7 @@ function updateRacerMarkers() {
   _markerItems.length = n;
   racerMarkers.update(_markerItems);
 }
-const networkState = v => ({ recordMeta: { tc: settings.aids, abs: settings.abs, steering: steeringAssistChoice(settings.steeringAssist, activeInputDevice()), gearbox: v.manual ? 'manual' : 'auto', carName: v.spec.name, ...(v.spec.generation ? { carGeneration: v.spec.generation } : {}), ...(v.spec.trimLabel || v.spec.trim ? { carTrim: v.spec.trimLabel || v.spec.trim } : {}) },  exhaustSerial: player.model.exhaustFlames?.pulse.serial || 0, exhaustKind: player.model.exhaustFlames?.pulse.kind || 0, exhaustEnabled: exhaustPopsEnabled(v.spec), ...Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear', 'nitro', 'reverse'].map(k => [k, v[k]])), nitro: v.spec.nitrous === true ? v.nitro : 0, braking: input.brake > .3, damage: { ...v.damage }, ...spectatorState(v), paint: player.model.paintColor, pursuit: police?.online ? police.pursuitCode() : 0 });
+const networkState = v => ({ recordMeta: { tc: settings.aids, abs: settings.abs, steering: steeringAssistChoice(settings.steeringAssist, activeInputDevice()), gearbox: v.manual ? 'manual' : 'auto', carName: v.spec.name },  ...Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear', 'nitro', 'reverse'].map(k => [k, v[k]])), nitro: v.spec.nitrous === true ? v.nitro : 0, braking: input.brake > .3, damage: { ...v.damage }, ...spectatorState(v), paint: player.model.paintColor, pursuit: police?.online ? police.pursuitCode() : 0 });
 function clearDriveInput() { controls.clear(); closeTowOffer(TOW_PROMPT_COOLDOWN); }
 function onlineWait() {
   if (!world || !player || !multiplayer.loaded) return;
@@ -2515,7 +2512,6 @@ const multiplayer = new Multiplayer(CARS, {
       const member = multiplayer.lobby.players.find(p => p.id === id);
       const p = applyRemotePose(peer, c.veh, performance.now(), member?.finish != null || !!member?.dnf), v = c.veh;
       applySpectatorState(v, p);
-      c.remoteExhaust=p;
       if(p.paint && p.paint !== c.model.paintColor)setPaint(c.model,p.paint);
       c.lastBrake = p.braking === true; c.model.root.visible = member?.connected !== false || performance.now() - peer.at < 3000;
       syncCar(c, dt);

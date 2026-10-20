@@ -1,0 +1,1 @@
+after: wind-open — -38.7 LUFS, -26.0 dBFS peak; spectrogram and waveform at default mix, no normalization.
