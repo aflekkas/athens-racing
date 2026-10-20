@@ -354,7 +354,10 @@ export function signTexture(route) {
     });
     panel('start', 1024, 256, (w, h) => {
       g.fillStyle = '#0b0d10'; g.fillRect(0, 0, w, h); g.fillStyle = '#ff3d2e'; g.fillRect(0, 0, 40, h); g.fillRect(w - 40, 0, 40, h);
-      g.fillStyle = '#fff'; g.font = `italic 900 110px "Barlow Condensed", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(route.closed ? 'START / FINISH · ' + (route.from || 'CIRCUIT').toUpperCase() : 'RIVIERA RUN · START', w / 2, h / 2 + 6, w - 128);
+      g.fillStyle = '#fff'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      if(route.streetCircuit&&route.from==='Faros'){
+        g.save();g.translate(w/2,h/2);g.scale(.3,1);g.font='700 190px sans-serif';g.fillText('FAROS · START / FINISH',0,8,2400);g.restore();
+      }else{g.font = `italic 900 110px "Barlow Condensed", sans-serif`; g.fillText(route.closed ? 'START / FINISH · ' + (route.from || 'CIRCUIT').toUpperCase() : 'RIVIERA RUN · START', w / 2, h / 2 + 6, w - 128);}
     });
   });
   return { tex, regions };
@@ -476,7 +479,8 @@ export function buildFurniture(map, group, heightC, assets) {
   const gantry = (s, key, tint) => {
     const wHalf = route.edge(s) + 1.2;
     const g = gantryLegFrame(route, s, new THREE.MeshStandardMaterial({ color: tint, roughness: 0.5, metalness: 0.3 })); timing.add(g);
-    const banner = new THREE.Mesh(uvRect(new THREE.PlaneGeometry(wHalf * 2, wHalf * 0.5), regions[key]), signMat); banner.position.set(0, 6.4, -signFaceOffset(.5)); banner.rotation.y = Math.PI; banner.castShadow = true; g.add(banner);
+    const bannerHeight=route.streetCircuit&&route.from==='Faros'?.65:wHalf*.5;
+    const banner = new THREE.Mesh(uvRect(new THREE.PlaneGeometry(wHalf * 2, bannerHeight), regions[key]), signMat); banner.position.set(0, 6.4, -signFaceOffset(.5)); banner.rotation.y = Math.PI; banner.castShadow = true; g.add(banner);
     const banner2 = banner.clone(); banner2.rotation.set(0, 0, 0); banner2.position.z = signFaceOffset(.5); g.add(banner2);
   };
   gantry(route.start, 'start', '#ff3d2e');

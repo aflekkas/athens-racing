@@ -3,7 +3,7 @@ import { signFaceOffset } from './sign-mount.js';
 import { squarePost } from './world-prop-geometries.js';
 // Shared by the rendered arches and the cockpit-clearance raycast guard.
 export function gantryLegFrame(route, s, material, kind = 'road', dir = 1) {
-  const height = kind === 'road' ? 7.5 : 7, width = kind === 'road' ? .5 : .45;
+  const height = kind === 'road' ? 7.5 : 7, width = kind === 'road' ? (route.streetCircuit&&route.from==='Faros'?.18:.5) : .45;
   const f = route.frame(s, {}), group = new THREE.Group();
   group.position.copy(route.point(s, 0));
   group.rotation.y = Math.atan2(f.tx, f.tz) + (dir > 0 ? Math.PI : 0);

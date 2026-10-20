@@ -71,6 +71,14 @@ export function drawRecognition(street,m,r,box,lathe) {
  const y=street.groundY(r.x,r.z),yaw=r.yaw||0,assets=street.recognitionAssets;
  if(assets[r.asset]){m.add(r.asset==='kiosk'&&r.color!=='#e9e7da'?assets.kioskGreen:assets[r.asset],r.x,y,r.z,yaw);return;}
  const local=(build)=>{const old=m.v;build();const cs=Math.cos(yaw),sn=Math.sin(yaw);for(let i=old;i<m.v;i++){const j=i*3,x=m.p[j],z=m.p[j+2],nx=m.n[j],nz=m.n[j+2];m.p[j]=r.x+x*cs+z*sn;m.p[j+1]+=y;m.p[j+2]=r.z-x*sn+z*cs;m.n[j]=nx*cs+nz*sn;m.n[j+2]=-nx*sn+nz*cs;}};
+ if(r.asset==='busShelter')local(()=>{
+  for(const x of [-2.1,2.1])box(m,x,0,0,.09,2.6,.09,'#64716c');
+  box(m,0,2.6,0,4.7,.12,1.8,'#858f87');box(m,0,.48,0,3.5,.12,.48,'#807560');
+  box(m,0,1.1,.66,4.1,1.3,.035,'#627d80');box(m,2.05,.65,0,.06,1.7,1.3,'#365c64');
+  box(m,2.1,1.1,-.68,.8,1.05,.04,'#e0dfcc');box(m,2.1,2.1,-.7,.8,.3,.04,'#2c627e');
+ });
+ if(r.asset==='planter')local(()=>{box(m,0,0,0,2.6,.48,1,'#a7a48f');box(m,0,.48,0,2.4,.5,.85,'#4f6b3d');});
+ if(r.asset==='treePit')local(()=>{box(m,0,0,0,1.65,.16,1.65,'#c9c5b8');box(m,0,.16,0,1.4,.02,1.4,'#655f45');});
  if(r.asset==='flowers')local(()=>{for(let k=0;k<4;k++){box(m,k*.65-1,1.8,0,.95,.55,.55,'#4d6940');for(let j=0;j<3;j++)box(m,k*.65-1+j*.18,2.1+j*.08,-.32,.3,.22,.18,'#a94a77');}});
  if(r.asset==='separator')local(()=>{box(m,0,.65,0,.08,.17,r.length,'#a7aaa3');for(const z of [-3,1])box(m,0,0,z,.08,.8,.1,'#7f8b86');});
  if(r.asset==='crosswire')local(()=>{for(const z of [-.45,.45])for(let k=0;k<2;k++){const x0=-r.span/2+k*r.span/2,x1=x0+r.span/2,h0=k?6.3:6.8,h1=k?6.8:6.3;m.quad([x0,h0,z],[x1,h1,z],[x1,h1+.035,z],[x0,h0+.035,z],'#3b4441');m.quad([x1,h1,z],[x0,h0,z],[x0,h0+.035,z],[x1,h1+.035,z],'#3b4441');}});
@@ -86,12 +94,19 @@ export function drawRecognition(street,m,r,box,lathe) {
   for(const e of edges.slice(0,r.commercial?2:1)){
    const dx=(e.bx-e.ax)/e.L,dz=(e.bz-e.az)/e.L,midX=(e.ax+e.bx)/2,midZ=(e.az+e.bz)/2;
    const outward=Math.sign((midX-r.x)*-dz+(midZ-r.z)*dx)||1,nx=-dz*outward,nz=dx*outward;
-   const quad=(h0,h1,a0,a1,color,depth=.04)=>{const P=(a,h)=>[e.ax+dx*a+nx*depth,base+h,e.az+dz*a+nz*depth],a=P(a0,h0),bb=P(a1,h0),c=P(a1,h1),d=P(a0,h1);m.quad(a,bb,c,d,color,[midX-nx,base+(h0+h1)/2,midZ-nz]);};
+   const shopBase=a=>r.commercial?Math.max(base,street.groundY(e.ax+dx*a+nx*.3,e.az+dz*a+nz*.3)-.05):base;
+   const quad=(h0,h1,a0,a1,color,depth=.04)=>{const P=(a,h)=>[e.ax+dx*a+nx*depth,shopBase(a)+h,e.az+dz*a+nz*depth],a=P(a0,h0),bb=P(a1,h0),c=P(a1,h1),d=P(a0,h1);m.quad(a,bb,c,d,color,[midX-nx,base+(h0+h1)/2,midZ-nz]);};
    for(let lv=1;lv<(b.lv||3);lv++){
-    const h=lv*storey,projection=r.balcony??1.1;quad(h,h+.25,0,e.L,'#eee9dc',r.commercial?.08:projection);
+    const h=lv*storey,style=r.residential?Math.abs(b.id|0)%3:0,projection=(r.balcony??1.1)*(style===2?.8:1);quad(h,h+.25,0,e.L,'#eee9dc',r.commercial?.08:projection);
     if(r.commercial){for(let a=.9;a<e.L-1;a+=3.2){quad(h+.55,h+Math.min(2.3,storey-.3),a,Math.min(a+2.2,e.L-.5),'#64818a',.09);quad(h+.55,h+Math.min(2.3,storey-.3),a+1,a+1.07,'#ddd9ce',.11);}}
     else{
-     quad(h+.25,h+1.1,0,e.L,r.accent||'#b6b3a5',projection);quad(h+1.1,h+1.17,0,e.L,'#e9e6db',projection+.05);
+     if(style===1){
+      quad(h+.25,h+.30,0,e.L,'#4e5d55',projection);quad(h+1.03,h+1.1,0,e.L,'#4e5d55',projection);
+      for(let a=.15;a<e.L;a+=1.25)quad(h+.30,h+1.03,a,Math.min(a+.045,e.L),'#4e5d55',projection);
+     }else if(style===2){
+      for(let a=0;a<e.L;a+=4.6)quad(h+.25,h+1.1,a,Math.min(a+3.8,e.L),r.accent||'#b6b3a5',projection);
+     }else quad(h+.25,h+1.1,0,e.L,r.accent||'#b6b3a5',projection);
+     quad(h+1.1,h+1.17,0,e.L,style===1?'#4e5d55':'#e9e6db',projection+.05);
      // A visible deck and end returns give the surveyed stacked balconies depth.
      const P=(a,d,y)=>[e.ax+dx*a+nx*d,base+y,e.az+dz*a+nz*d];
      m.quad(P(0,0,h+.25),P(0,projection,h+.25),P(e.L,projection,h+.25),P(e.L,0,h+.25),'#ddd9ca');
@@ -102,8 +117,15 @@ export function drawRecognition(street,m,r,box,lathe) {
     quad(.25,2.8,.3,e.L-.3,'#3c555a',.12);
     quad(2.85,3.65,.2,e.L-.2,r.accent||'#396b87',.15);
     for(let a=1.7;a<e.L-1;a+=3.1){quad(.2,2.85,a,a+.12,'#e4dfd0',.17);quad(3.1,3.23,a-.7,a+.65,'#ede8d9',.18);}
+    for(let a=.8,bay=0;a<e.L-2;a+=5.8,bay++){
+     const end=Math.min(a+4.9,e.L-.4),accent=['#45655e','#496b80','#975943','#62685a'][(Math.abs(b.id|0)+bay)%4];
+     quad(2.9,3.55,a,end,accent,.19);
+     // Small original sign strokes, display bases and recessed entrances; no photographed brands/textures.
+     for(let k=0;k<3;k++)quad(3.14,3.25,a+.3+k*.6,Math.min(a+.7+k*.6,end-.1),'#e2dfce',.205);
+     quad(.22,.55,a+.15,end-.15,'#8b9690',.14);quad(.2,2.7,a+.25,a+1.05,'#233d41',.145);
+    }
     // Projecting cream shop awning and dark valance, on the real frontage edge.
-    const P=(a,d,h)=>[e.ax+dx*a+nx*d,base+h,e.az+dz*a+nz*d];
+    const P=(a,d,h)=>[e.ax+dx*a+nx*d,shopBase(a)+h,e.az+dz*a+nz*d];
     m.quad(P(.3,.1,2.85),P(e.L-.3,.1,2.85),P(e.L-.3,1.3,2.55),P(.3,1.3,2.55),'#d9d1b8');
     quad(2.4,2.58,.3,e.L-.3,r.accent||'#486777',1.3);
    }else if(r.residential){

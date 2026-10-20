@@ -4,7 +4,10 @@
 // Blocky low-poly merged geometry, streamed in camera-centred cells: one draw call per cell and only nearby cells
 // resident (ranges follow the draw-distance class), so memory and draw calls stay bounded. World detail Off hides it.
 import * as THREE from 'three';
+import { indexFaros, drawFarosPaving } from './psychiko-faros.js';
+import { parkedCarTemplates, PARKED_CAR_COLORS as CAR_COLORS } from './psychiko-parked-cars.js';
 import { stoneTexture, recognitionAssets, indexRecognition, drawRecognition } from './psychiko-recognition.js';
+import { TX } from '../tex.js';
 import { settings, onSettings } from '../settings.js';
 import { drawScale } from '../scenery.js';
 import { blockFootprint } from '../buildings.js';
@@ -69,7 +72,7 @@ function box(m, x, y, z, w, h, d, color, top = color, ox = 0) {
   m.quad([x1, y, z1], [x1, y, z0], [x1, y1, z0], [x1, y1, z1], color, c);
   m.quad([x0, y, z0], [x0, y, z1], [x0, y1, z1], [x0, y1, z0], color, c);
 }
-const template = (build, budget) => { const m = new Mesher(256); build(m); if (budget) { const g = m.geometry(); assertWorldBudget(budget, g); g.dispose(); } return { p: m.p.slice(0, m.v * 3), n: m.n.slice(0, m.v * 3), c: m.c.slice(0, m.v * 3) }; };
+const template = (build, budget) => { const m = new Mesher(256); build(m); if (budget) { const g = m.geometry(); assertWorldBudget(budget, g); g.dispose(); } return { p: m.p.slice(0, m.v * 3), n: m.n.slice(0, m.v * 3), c: m.c.slice(0, m.v * 3), paint: m.st.slice(0,m.v) }; };
 const hash = (...v) => { let h = 0x9e3779b9; for (const x of v) { h = Math.imul(h ^ (x | 0), 0x85ebca6b); h ^= h >>> 13; h = Math.imul(h, 0xc2b2ae35); h ^= h >>> 16; } return (h >>> 0) / 4294967296; };
 
 // Unit-height tree templates (scaled per tree). Species: 0 umbrella pine, 1 cypress, 2 broadleaf, 3 palm, 4 small/pollard, 5 shrub.
@@ -95,13 +98,6 @@ function treeTemplates() {
   ];
 }
 // Kerb car (≈5 m bay), gooseneck lamp, utility pole with side arm.
-const CAR_COLORS = ['#eeeeea', '#d0d2d2', '#8e9597', '#292d30', '#e4e5df', '#acb1b2', '#5d6468', '#202426', '#303d55', '#953d36', '#e9c546'];
-const carTemplates = () => CAR_COLORS.map(color => template(m => {
-  box(m, 0, .1, 0, 1.6, .26, 3.85, '#1c1e20');
-  box(m, 0, .36, 0, 1.74, .5, 4.1, color);
-  box(m, 0, .86, -.1, 1.5, .46, 2.15, '#33393e', color);
-  box(m, 0, .86, 1.05, 1.66, .06, .5, color);
-}, 'streetProp'));
 const gooseneck = () => template(m => {
   box(m, 0, 0, 0, .34, .45, .34, '#2f4a3b');
   lathe(m, [[.45, .075], [4.7, .055]], 5, ['#2f4a3b']);
@@ -135,7 +131,7 @@ export class PsychikoStreetscape {
     this.stoneTexture = stoneTexture();
     this.recognitionAssets = recognitionAssets(template,box,lathe);
     this.materials = { props: this.fadeMaterial(260), trees: this.fadeMaterial(420) }; this.cells = new Map(); this.last = { x: Infinity, z: Infinity }; this.obstacles = [];
-    this.trees = treeTemplates(); this.cars = carTemplates(); this.lamps = [gooseneck(), utilityPole(), arterialLamp()];
+    this.trees = treeTemplates(); this.cars = parkedCarTemplates(template,box); this.lamps = [gooseneck(), utilityPole(), arterialLamp()];
     this.stats = { cells: 0, builds: 0 };
     this.index(scenery);
     this.buildParking();
@@ -148,10 +144,10 @@ export class PsychikoStreetscape {
     m.userData.far = far; m.customProgramCacheKey = () => 'psychiko-streetscape-rubble-v2';
     // Dithered fade over the last 40 m of the ring, so streamed cells never pop in.
     m.onBeforeCompile = sh => {
-      sh.uniforms.uStreetFar = far; sh.uniforms.tStreetStone = {value:this.stoneTexture};
+      sh.uniforms.uStreetPaving={value:TX.paver_diff};sh.uniforms.uStreetFar = far; sh.uniforms.tStreetStone = {value:this.stoneTexture};
       sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vStreetWorld; attribute float aStone; varying float vStoneWeight;').replace('#include <project_vertex>', '#include <project_vertex>\nvec4 streetLocal=vec4(transformed,1.);\n#ifdef USE_INSTANCING\nstreetLocal=instanceMatrix*streetLocal;\n#endif\nvStreetWorld=(modelMatrix*streetLocal).xyz;vStoneWeight=aStone;');
-      sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vStreetWorld; uniform float uStreetFar; uniform sampler2D tStreetStone; varying float vStoneWeight;')
-        .replace('#include <color_fragment>', '#include <color_fragment>\nif(vStoneWeight>.5){vec2 stoneUV=vec2(abs(dFdx(vStreetWorld.z))+abs(dFdy(vStreetWorld.z))>abs(dFdx(vStreetWorld.x))+abs(dFdy(vStreetWorld.x))?vStreetWorld.z:vStreetWorld.x,vStreetWorld.y)*.42;diffuseColor.rgb*=texture2D(tStreetStone,stoneUV).rgb*1.15;}')
+      sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vStreetWorld; uniform float uStreetFar; uniform sampler2D tStreetStone; uniform sampler2D uStreetPaving; varying float vStoneWeight;')
+        .replace('#include <color_fragment>', '#include <color_fragment>\nif(vStoneWeight>.2&&vStoneWeight<.3)diffuseColor.rgb*=texture2D(uStreetPaving,vStreetWorld.xz*.31).rgb*1.15;\nif(vStoneWeight>.5){vec2 stoneUV=vec2(abs(dFdx(vStreetWorld.z))+abs(dFdy(vStreetWorld.z))>abs(dFdx(vStreetWorld.x))+abs(dFdy(vStreetWorld.x))?vStreetWorld.z:vStreetWorld.x,vStreetWorld.y)*.42;diffuseColor.rgb*=texture2D(tStreetStone,stoneUV).rgb*1.15;}')
         .replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\n{if(vStoneWeight>.4&&vStoneWeight<.6&&fract((vStreetWorld.x+vStreetWorld.z)*2.)>.10)discard;float far=uStreetFar;float d=distance(vStreetWorld.xz,cameraPosition.xz);float r=fract(52.9829189*fract(dot(gl_FragCoord.xy,vec2(.06711056,.00583715))));if(r<smoothstep(far-40.,far,d))discard;}');
     };
     return m;
@@ -218,9 +214,11 @@ export class PsychikoStreetscape {
     for (const r of this.map.data.psychiko?.arterial?.signals || []) put(this.props, 200, r.x, r.z, { ...r, kind: 'signal' });
     for (const r of this.map.data.psychiko?.arterial?.medians || []) put(this.props, 200, r.x, r.z, { ...r, kind: 'median' });
     indexRecognition(this,put);
+    indexFaros(this,put);
     const Z = sc.zebras || [];
     for (let i = 0; i < Z.length; i += 2) { const st = strip(Z[i]); if (!st) continue; const d = Z[i + 1] / 10, p = st.at(d); put(this.props, 200, p.x, p.z, { kind: 'zebra', st, d, ref: Z[i] }); }
   }
+  farosPaving(m,r) { drawFarosPaving(this,m,r); }
   recognition(m,r) { drawRecognition(this,m,r,box,lathe); }
   groundY(x, z) { const n = this.network?.sample(x, z); return n ? n.y : this.height(x, z); }
   buildCell(kind, key) {
@@ -231,20 +229,42 @@ export class PsychikoStreetscape {
     mesh.matrixAutoUpdate = false; mesh.updateMatrixWorld(true); this.stats.builds++; return mesh;
   }
   tree(m, r) {
-    const set = this.trees[r.sp], t = set[r.seed % set.length], y = this.network.islandAt(r.x, r.z) ? this.network.height(r.x, r.z) - .04 : this.height(r.x, r.z) - .25, s = r.h, wide = r.sp === 0 ? 1 + hash(r.seed) * .25 : r.sp === 1 ? .85 + hash(r.seed) * .4 : 1;
+    const set = this.trees[r.sp], t = set[r.seed % set.length], y = r.pavement ? this.network.height(r.x,r.z)+.13 : this.network.islandAt(r.x, r.z) ? this.network.height(r.x, r.z) - .04 : this.height(r.x, r.z) - .25, s = r.h, wide = r.sp === 0 ? 1 + hash(r.seed) * .25 : r.sp === 1 ? .85 + hash(r.seed) * .4 : 1;
     m.add(t, r.x, y, r.z, hash(r.seed, 1) * 6.283, s * wide, s, s * wide, .86 + hash(r.seed, 2) * .3);
   }
-  /** All surveyed parking shares one small instanced pool/material; never one mesh per vehicle. */
+  /** Three shared pools; paint alone receives instance colour, glass/tyres/lamps keep their authored colour. */
   buildParking() {
     const cars=[...this.props.values()].flat().filter(r=>r.kind==='car');
-    const m=new Mesher(256);m.add(this.cars[0],0,0,0);
-    this.parking=new THREE.InstancedMesh(m.geometry(),this.materials.props,cars.length);
-    this.parking.name='psychiko-surveyed-parking';this.parking.frustumCulled=false;
+    const material=this.fadeMaterial(260),fade=material.onBeforeCompile;
+    material.roughness=.62;material.customProgramCacheKey=()=> 'psychiko-parked-paint-v1';
+    material.onBeforeCompile=sh=>{fade(sh);
+      sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute float aPaint;')
+        .replace('#include <color_vertex>',THREE.ShaderChunk.color_vertex.replace('vColor.xyz *= instanceColor.xyz;', 'vColor.xyz *= mix(vec3(1.),instanceColor.xyz,aPaint);'));
+    };
+    this.materials.parking=material;
     const matrix=new THREE.Matrix4(),rotation=new THREE.Quaternion(),axis=new THREE.Vector3(0,1,0),scale=new THREE.Vector3(1,1,1);
-    cars.forEach((r,i)=>{rotation.setFromAxisAngle(axis,r.yaw);const y=r.lap?this.route.point(r.lap.d,r.lap.u).y+.08:this.network.height(r.x,r.z)-.02;
-      matrix.compose(new THREE.Vector3(r.x,y,r.z),rotation,scale);this.parking.setMatrixAt(i,matrix);this.parking.setColorAt(i,C.set(CAR_COLORS[r.color]));
+    this.parking=this.cars.map((t,variant)=>{
+      const m=new Mesher(1024);m.add(t,0,0,0);const geometry=m.geometry();
+      geometry.setAttribute('aPaint',new THREE.BufferAttribute(t.paint,1,true));
+      const records=cars.filter(r=>Math.floor(hash(Math.round(r.x*10),Math.round(r.z*10),71)*3)===variant).map(r=>{
+        rotation.setFromAxisAngle(axis,r.yaw);const y=r.lap?this.route.point(r.lap.d,r.lap.u).y+.08:this.network.height(r.x,r.z)-.02;
+        return {x:r.x,z:r.z,color:r.color,matrix:matrix.compose(new THREE.Vector3(r.x,y,r.z),rotation,scale).clone()};
+      });
+      const mesh=new THREE.InstancedMesh(geometry,material,records.length);mesh.name='psychiko-surveyed-parking:'+variant;mesh.frustumCulled=false;
+      mesh.userData.parkingRecords=records;mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      records.forEach((r,i)=>{mesh.setMatrixAt(i,r.matrix);mesh.setColorAt(i,C.set(CAR_COLORS[r.color]));});
+      this.group.add(mesh);return mesh;
     });
-    this.group.add(this.parking);this.stats.parked=cars.length;
+    this.stats.parked=cars.length;
+  }
+  updateParking(p,far) {
+    this.materials.parking.userData.far.value=far;
+    let visible=0;
+    for(const mesh of this.parking){let n=0;
+      for(const r of mesh.userData.parkingRecords)if(Math.hypot(r.x-p.x,r.z-p.z)<far+4){mesh.setMatrixAt(n,r.matrix);mesh.setColorAt(n++,C.set(CAR_COLORS[r.color]));}
+      mesh.count=n;mesh.visible=n>0;mesh.instanceMatrix.needsUpdate=true;mesh.instanceColor.needsUpdate=true;visible+=n;
+    }
+    this.stats.parkingActive=visible;
   }
 
   pole(m, r) {
@@ -342,6 +362,7 @@ export class PsychikoStreetscape {
     const p = camera.position || camera, k = drawScale(), farProps = 260 * k, farTrees = 420 * k;
     this.materials.props.userData.far.value = farProps; this.materials.trees.userData.far.value = farTrees;
     const jump = Math.hypot(p.x - this.last.x, p.z - this.last.z); if (jump < 8) return;
+    this.updateParking(p,farProps);
     let budget = jump > 150 ? Infinity : 2; // a teleport builds everything now; driving adds at most two cells per pass
     const want = new Set();
     for (const [kind, size, far] of [['props', 256, farProps], ['trees', 320, farTrees]]) {
@@ -357,7 +378,7 @@ export class PsychikoStreetscape {
     if (budget > 0 || jump > 150) this.last = { x: p.x, z: p.z };
     this.stats.cells = this.cells.size;
   }
-  dispose() { this.unsubscribe(); for (const mesh of this.cells.values()) mesh?.geometry.dispose(); this.cells.clear(); this.parking?.geometry.dispose(); this.roofs?.geometry.dispose(); this.roofs?.material.dispose(); this.stoneTexture.dispose(); for (const mat of Object.values(this.materials)) mat.dispose(); }
+  dispose() { this.unsubscribe(); for (const mesh of this.cells.values()) mesh?.geometry.dispose(); this.cells.clear(); for(const mesh of this.parking||[])mesh.geometry.dispose(); this.roofs?.geometry.dispose(); this.roofs?.material.dispose(); this.stoneTexture.dispose(); for (const mat of Object.values(this.materials)) mat.dispose(); }
 }
 const POST = template(m => box(m, 0, 0, 0, .4, 2, .4, '#efece4'));
 

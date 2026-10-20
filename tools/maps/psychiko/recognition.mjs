@@ -8,6 +8,11 @@ const frontages=[
  {id:213205098,station:'lap-3150',label:'College ochre school block behind pines',h:12.5,lv:3,color:'#d6b474',facadeStyle:1,accent:'#e6ddc4'},
  // Existing OSM footprints, visual storeys/colours checked in the listed station (no brand marks).
  ...HOUSE_SURVEY.buildings,
+ ...[
+  [425080450,9.6,3,'#e6e0d2'],[425080471,7.2,2,'#dedbcf'],[425080457,12.8,4,'#dad9cf'],
+  [425080459,10.1,3,'#e7e3d9'],[425080461,13.3,4,'#d9ddd8'],[425081844,16.3,5,'#d8d9d3'],
+  [425081852,9.9,3,'#e9e3d4'],[425081854,7.3,2,'#dddcd2'],[424912505,12.4,4,'#dddcd1']
+ ].map(([id,h,lv,color])=>({id,h,lv,color,station:'lap-0018',label:'Faros commercial continuation',facadeStyle:5,accent:'#4e6d70',commercial:true})),
  {id:329309489,station:'lap-0360',label:'A square balcony block',h:12.5,lv:4,color:'#e7dfcb',facadeStyle:1,accent:'#92754f'},
  {id:308022552,station:'lap-2138',label:'Davaki stacked brown balconies',h:11.3,lv:3,color:'#d2c3a9',facadeStyle:1,accent:'#665149'},
  {id:425320935,station:'lap-5310',label:'Kifisias glass office frontage',h:16,lv:5,color:'#81999c',facadeStyle:5,accent:'#355b6c',commercial:true},

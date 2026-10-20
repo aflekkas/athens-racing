@@ -348,9 +348,21 @@ test('station-backed parking records cover both panes, preserve empty kerbs and 
  }
  assert(!survey.runs.some(r=>r.s0>5068&&r.s0<5630),'Kifisias through lanes/frontage slip contain traffic, not kerb parking');
  const THREE=await import('three'),{PsychikoStreetscape}=await import('../src/maps/psychiko-streetscape.js'),street=new PsychikoStreetscape(map,new THREE.Group(),(x,z)=>terrain.height(x,z));
- try{assert(street.parking.isInstancedMesh);assert.equal(street.parking.count,street.obstacles.length);assert(street.parking.count<700);
+ try{assert.equal(street.parking.length,3);assert(street.parking.every(m=>m.isInstancedMesh));
+  assert.equal(street.parking.reduce((n,m)=>n+m.count,0),street.obstacles.length);
+  assert(street.obstacles.length<700);
+  for(const mesh of street.parking){const g=mesh.geometry;g.computeBoundingBox();
+   assert(g.boundingBox.max.x<=.87&&g.boundingBox.min.x>=-.87,'rendered car stays within unchanged collider width');
+   assert(g.boundingBox.max.z<=2.08&&g.boundingBox.min.z>=-2.08,'rendered car stays within unchanged collider length');
+   assert(g.attributes.position.count/3<450,'bounded template geometry');
+   assert(g.attributes.aPaint.array.some(v=>v===255)&&g.attributes.aPaint.array.some(v=>v===0),'paint mask preserves glass and wheel colours');
+  }
+  const camera={position:route.point(1100,0)};street.update(camera);
+  assert(street.stats.parkingActive>0&&street.stats.parkingActive<street.stats.parked,'distant cars are omitted from submitted instances');
+  assert.equal(street.obstacles.length,394,'distance culling never changes physical colliders');
   const F=data.psychiko.arterial.faros.openApron,cx=(F.lon-data.proj.lon0)*data.proj.mlon,cz=-(F.lat-data.proj.lat0)*data.proj.mlat;
-  const trees=[...street.canopy.values(),...street.props.values()].flat().filter(r=>r.kind==='tree');assert(!trees.some(t=>Math.hypot(t.x-cx,t.z-cz)<F.radius-.4),'commercial junction apron remains open');
+  const trees=[...street.canopy.values(),...street.props.values()].flat().filter(r=>r.kind==='tree');assert(!trees.some(t=>!t.pavement&&Math.hypot(t.x-cx,t.z-cz)<F.radius-.4),'commercial junction apron excludes garden filler');
+  assert(trees.filter(t=>t.pavement).length<=8,'only sparse pavement-pit trees in the open apron');
  }finally{street.dispose();}
 });
 
