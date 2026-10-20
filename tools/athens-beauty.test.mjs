@@ -113,3 +113,19 @@ test('World detail gates every addition and the layer is wired once in the Athen
   for (const f of ['src/athens-horizon.js', 'src/athens-landmarks.js', 'src/athens-landmark-models.js']) assert.doesNotMatch(src(f), /castShadow|DirectionalLight|PointLight|SpotLight|MeshStandardMaterial|MeshPhysicalMaterial|MeshLambertMaterial/, 'unlit colour only');
   assert.ok(statSync(new URL('../assets/athens/horizon.bin', import.meta.url)).size < 100 * 1024);
 });
+
+test('houses with pitched roofs derive without overflowing their index, and the extra bytes are counted', () => {
+  const N = 300, corners = [], buildings = [], heights = [], ids = [];
+  for (let i = 0; i < N; i++) {
+    const x = (i % 20) * 20, z = Math.floor(i / 20) * 20, h = i % 3 === 0 ? 6 : 9 + (i % 4) * 3;
+    buildings.push(i, i * 4, 4, i % 2); heights.push(10, h); ids.push(`w${900000 + i}`);
+    corners.push(x, z, x + 12, z, x + 12, z + 9, x, z + 9);
+  }
+  const t = { buildings: Uint32Array.from(buildings), buildingCorners: Float32Array.from(corners), buildingHeights: Float32Array.from(heights) };
+  const out = deriveBuildingMeshes(t, { origin: [-300, 0, 950], ids }, null, null);   // inside Plaka: old houses with hipped roofs
+  const vertices = out.meshes.reduce((n, m) => n + out.arrays[m.attributes.position.array].length / 3, 0);
+  assert.ok(out.extra.vertices > 0, 'some houses got a pitched roof');
+  assert.equal(vertices, N * 20 + out.extra.vertices, 'the counted extra vertices are the ones added');
+  const indices = out.meshes.reduce((n, m) => n + out.arrays[m.index].length, 0);
+  assert.equal(indices, N * 30 + out.extra.indices, 'the counted extra indices are the ones added');
+});

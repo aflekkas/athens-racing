@@ -6,6 +6,8 @@
 import { LANDMARK_HIDDEN, osmBuildingId } from './athens-landmark-hide.js';
 import { inOldQuarter } from './athens-quarters.js';
 export const BUILDING_MESH_TRIANGLES = 16384;
+/** A hipped house: four walls (8 triangles) and six roof triangles. */
+export const PITCHED_TRIANGLES = 14;
 const MAX_VERTICES = 65535;
 /** Triangles one footprint of `n` corners draws: 2n wall triangles and n-2 roof triangles. */
 export const buildingTriangleCount = n => 3 * n - 2;
@@ -71,7 +73,7 @@ export function roofFor(ring, height, hash, quarter, stored = 0) {
   if ((known ? height > 20 : height > 13.5) || ((hash >>> 5) % 1000) / 1000 >= p) return null;
   return { rect, rise: Math.min(4.4, .3 * rect.s + .5) };
 }
-const pieceVertices = piece => piece.roof ? 22 : 5 * piece.ring.length, pieceTriangles = piece => piece.roof ? 12 : buildingTriangleCount(piece.ring.length);
+const pieceVertices = piece => piece.roof ? 22 : 5 * piece.ring.length, pieceTriangles = piece => piece.roof ? PITCHED_TRIANGLES : buildingTriangleCount(piece.ring.length);
 /** Meshes (shared vertices, Uint16 index) for every building row, grouped by palette entry. `styles` is the optional per-row Uint8 facade style
  * from the bake, `roofs` the optional per-row roof shape (ROOF). Each vertex also carries `aFacade`, two Uint16: the distance along the wall in
  * decimetres (65535 on a roof) and the height above the base in decimetres plus 4096 x style (0..15). On a roof vertex the low bits are free: bit 10
@@ -90,7 +92,7 @@ export function deriveBuildingMeshes(t, m, styles = null, roofs = null) {
     if (!target.has(material)) target.set(material, []);
     const height = top - base, centre = ring.reduce((c, p) => [c[0] + p[0] / n, c[1] + p[1] / n], [0, 0]), quarter = inOldQuarter(ox + centre[0], oz + centre[1]), stored = roofs ? roofs[row] : 0;
     const roof = target === groups ? roofFor(ring, height, hash, quarter, stored) : null;
-    if (roof) { extra.vertices += 22 - 5 * n; extra.indices += 3 * (12 - buildingTriangleCount(n)); }
+    if (roof) { extra.vertices += 22 - 5 * n; extra.indices += 3 * (PITCHED_TRIANGLES - buildingTriangleCount(n)); }
     target.get(material).push({ ring, base, top, roof, style: richStyleFor(facadeStyleFor(styles ? styles[row] : 0, height, hash), height, hash, quarter, stored === ROOF.historic) });
   }
   const arrays = [], meshes = [];
