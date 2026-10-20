@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
 import { psychikoStreet } from '../src/maps/psychiko-streets.js';
 import { psychikoWayClass } from './maps/psychiko/street-classes.mjs';
+import { FAROS } from './maps/psychiko/arterial.mjs';
 import { roundaboutLoops } from './roundabouts.mjs';
 import { correctPsychikoOsm } from './maps/psychiko/corrections.mjs';
 import { limitForWay } from './speed-signs.mjs';
@@ -43,6 +44,9 @@ export function extractRoadNetwork(data, elements, {radius=550,excludeWays=[],bo
    }
   }finish();
  }
+ // The surveyed Faros refuges belong to extraction, so standalone network rebuilds
+ // reproduce the same footways as the full Psychiko bundle builder.
+ if(data.psychiko)for(const road of roads)if(FAROS.pavementWays.includes(road.id))road.fw=FAROS.pavementWidth;
  const length=roads.reduce((sum,r)=>sum+r.p.slice(2).filter((_,i)=>i%2===0).reduce((s,_,i)=>s+Math.hypot(r.p[2*i+2]-r.p[2*i],r.p[2*i+3]-r.p[2*i+1]),0),0);
  const used=new Set(roads.map(r=>r.roundabout)),roundabouts=loops.filter(l=>used.has(l.id)||l.ways.some(id=>excluded.has(id))).map(({id,ways,p,w})=>({id,ways,p,w}));
  return {version:2,radius,...(roundabouts.length?{roundabouts}:{}),source:'OpenStreetMap highway ways · © OpenStreetMap contributors (ODbL)',length:round(length),roads};

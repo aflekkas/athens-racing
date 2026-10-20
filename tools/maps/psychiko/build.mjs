@@ -12,7 +12,7 @@ import {psychikoWayClass} from './street-classes.mjs';
 import {inject} from '../../inject-speed-signs.mjs';
 import {routeRoundabouts,roundaboutLoops} from '../../roundabouts.mjs';
 import {extractRoadNetwork} from '../../build-road-network.mjs';
-import {arterialRecords,FAROS} from './arterial.mjs';
+import {arterialRecords} from './arterial.mjs';
 import {loadPsychikoOsm} from './corrections.mjs';
 import {multipolygons,footprintPieces} from './multipolygon.mjs';
 import {readCopernicus,copernicusField,roundaboutPlanes,plannedHeight,gridExtent} from './elevation.mjs';
@@ -182,8 +182,6 @@ data.roadworks=data.psychiko.sideStreetExits.map(exit=>{
  }
  return chosen;
 });
-// Wide paved junction refuges are the clipped footways around these real slip arcs.
-for(const road of data.roadNetwork.roads)if(FAROS.pavementWays.includes(road.id))road.fw=FAROS.pavementWidth;
 data.psychiko.arterial=arterialRecords(selected,P);
 data.psychiko.recognition=buildRecognition(data,osm);
 data.psychiko.scenery=buildPsychikoScenery(data,fs.readFileSync(path.join(out,'terrain.bin')),osm);
