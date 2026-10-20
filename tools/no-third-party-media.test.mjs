@@ -44,21 +44,30 @@ test('no tracked media remains under `.scratch/psychiko-realism/` (moved to `.re
   assert.deepEqual(leftovers, [], `reference images belong in .reference/psychiko-realism/ (local-only): ${leftovers.slice(0, 10).join(', ')}`);
 });
 
-test('no suspect media carries a Google caption or Google bytes', () => {
+test('no tracked image has a sibling caption mentioning Google, Street View or Maps', () => {
+  const bad = [];
+  for (const f of tracked()) {
+    if (f.startsWith('.reference/') || PROVENANCE_ALLOWLIST.has(f) || !MEDIA_RE.test(f)) continue;
+    const base = join(root, f).replace(MEDIA_RE, '');
+    for (const ext of ['.txt', '.caption']) {
+      const sib = base + ext;
+      if (existsSync(sib) && GOOGLE_RE.test(readFileSync(sib, 'utf8')))
+        bad.push(`${f} (sibling ${ext} mentions Google/Street View/Maps)`);
+    }
+  }
+  assert.deepEqual(bad, [], `third-party reference media must live in .reference/: ${bad.slice(0, 10).join('; ')}`);
+});
+
+test('no suspect media carries Google bytes', () => {
   const suspects = tracked().filter(
     (f) =>
       !f.startsWith('.reference/') &&
       !PROVENANCE_ALLOWLIST.has(f) &&
       MEDIA_RE.test(f) &&
-      (f.startsWith('.scratch/psychiko-realism/') || MARKER_RE.test(f)),
+      (f.startsWith('.scratch/psychiko-realism/') || f.startsWith('.scratch/riviera-rails/refs/') || MARKER_RE.test(f)),
   );
   const bad = [];
   for (const f of suspects) {
-    const base = join(root, f).replace(MEDIA_RE, '');
-    for (const ext of ['.txt', '.caption']) {
-      const sib = base + ext;
-      if (existsSync(sib) && GOOGLE_RE.test(readFileSync(sib, 'utf8'))) bad.push(`${f} (sibling ${ext} mentions Google/Street View)`);
-    }
     const head = readHead(join(root, f));
     if (head !== null && GOOGLE_RE.test(head)) bad.push(`${f} (file bytes mention Google/Street View)`);
   }
