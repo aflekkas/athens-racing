@@ -11,6 +11,7 @@
 //   3. A pair is applied once per contact episode: after a local hit, or after an applied report, further reports and local
 //      detections for that pair are ignored for CONTACT_DEDUPE_MS, so a hit is never applied twice.
 // Stale streams and recovery ghosts are ignored.
+import { resolveHalf, pointOnFace, carOverlap, easeApart } from './crash-contact.js';
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const velocity = v => ({ x: -Math.sin(v.yaw) * v.vLong + Math.cos(v.yaw) * v.vLat, z: -Math.cos(v.yaw) * v.vLong - Math.sin(v.yaw) * v.vLat });
 const axes = v => [{ x: Math.cos(v.yaw), z: -Math.sin(v.yaw) }, { x: -Math.sin(v.yaw), z: -Math.cos(v.yaw) }];
@@ -28,26 +29,29 @@ export const contactWindow = (rttMs = 0, frameMs = 0) => clamp(2 * (Number.isFin
 
 // One car's half of a collision against `remote`, whose velocity at the contact is `remoteVelocity` (default: its own).
 // `normal` points from the other car to this one. Returns the hit record, with this car's pre-impulse state for reporting.
-function exchange(local, remote, normal, depth, dt, now, contacts, id, remoteVelocity) {
+// The blow is src/crash-contact.js's: at the contact point, with both cars' mass and inertia, restitution by closing speed and
+// friction along the face. Both drivers compute it from the same normal, point and masses, so the halves are equal and opposite.
+function exchange(local, remote, normal, depth, dt, now, contacts, id, remoteVelocity, contactPoint) {
   const a = velocity(local), b = remoteVelocity || velocity(remote);
   const before = { x: local.x, z: local.z, vx: a.x, vz: a.z, m: massOf(local) };
   const closing = Math.max(0, -((a.x-b.x)*normal.x + (a.z-b.z)*normal.z));
-  const share = massOf(remote) / (massOf(local) + massOf(remote));
-  const impulse = Math.min(CONTACT_MAX_IMPULSE, closing * share);
-  a.x += normal.x*impulse; a.z += normal.z*impulse;
-  local.vLong = -a.x*Math.sin(local.yaw) - a.z*Math.cos(local.yaw);
-  local.vLat = a.x*Math.cos(local.yaw) - a.z*Math.sin(local.yaw);
-  const push = Math.min(.35, depth*.5, Math.max(0, dt)*5);
-  local.x += normal.x*push; local.z += normal.z*push;
-  const projected = local.route?.project(local.x, local.z, local.s, 6);
-  if (projected) { local.s = projected.s; local.u = projected.u; }
+  // the other car as the blow sees it: its pose (from the report, a proxy or a vehicle), moving at `b`
+  const yawOf = b.x*b.x + b.z*b.z > 1 ? Math.atan2(-b.x, -b.z) : (remote.yaw ?? local.yaw);
+  const other = { x: remote.x, y: remote.y, z: remote.z, yaw: remoteVelocity ? yawOf : (remote.yaw ?? yawOf), halfL: remote.halfL || 2.2, halfW: remote.halfW || 1, m: massOf(remote), hcg: remote.hcg, Iz: remote.Iz, w: remote.w || 0, spec: remote.spec };
+  const so = Math.sin(other.yaw), co = Math.cos(other.yaw);
+  other.vLong = -so*b.x - co*b.z; other.vLat = co*b.x - so*b.z;
+  // (both drivers use the middle of where the two boxes overlap, so the blow lands on the same point for each)
+  const point = contactPoint || pointOnFace(local, normal.x, normal.z, depth);
+  const c = { nx: normal.x, nz: normal.z, x: point.x, z: point.z, depth };
+  const route = local.route;
+  const hit = resolveHalf(local, other, c, { route: route?.project ? route : null, maxDv: remoteVelocity ? CONTACT_MAX_IMPULSE : undefined });
+  const impulse = hit ? Math.min(CONTACT_MAX_IMPULSE, hit.dv) : 0;
 
   const r = axes(local)[0], f = axes(local)[1];
   const side = normal.x*r.x + normal.z*r.z, front = normal.x*f.x + normal.z*f.z;
-  local.impactDynamics?.({dv: impulse, nx: normal.x, nz: normal.z,
-    forward: clamp((remote.x-local.x)*f.x+(remote.z-local.z)*f.z,-local.halfL,local.halfL),
-    right: clamp((remote.x-local.x)*r.x+(remote.z-local.z)*r.z,-local.halfW,local.halfW),
-    height: Math.max(.3, Math.min(local.hcg || .5, remote.hcg || .5)), kind: 'car'});
+  // the planar blow (yaw included) is solved above: only roll and pitch about the real contact height remain
+  if (hit) local.impactDynamics?.({dv: impulse, nx: normal.x, nz: normal.z, forward: hit.px, right: hit.py,
+    height: Math.max(.3, Math.min(local.hcg || .5, remote.hcg || .5)), kind: 'car', yawSolved: true});
   const zone = Math.abs(front) > Math.abs(side) ? front < 0 ? 'front' : 'rear' : side < 0 ? 'right' : 'left';
   if (closing > 2 && now - (contacts.get(id) ?? -Infinity) > 600) {
     local.addDamage?.(zone, impulse, { kind: 'player', sev: Math.min(closing, 16), car: { mass: massOf(remote) } });
@@ -58,8 +62,13 @@ function exchange(local, remote, normal, depth, dt, now, contacts, id, remoteVel
 
 export function resolvePlayerContacts(local, proxies, dt, now, contacts = new Map()) {
   const hits = [];
-  for (const { id, vehicle: remote, age = 0, ghost = false } of proxies) {
+  for (const { id, vehicle: remote, age = 0, ghost = false, settling = false } of proxies) {
     if (ghost || age > 350 || Math.abs(local.y - remote.y) > 1.5) continue;
+    if (settling) { // the pair has just exchanged its blow: no second impulse, but whatever still overlaps is eased apart (never a jump)
+      const c = carOverlap(local, remote);
+      if (c) easeApart(local, c, c.depth, massOf(remote) / (massOf(local) + massOf(remote)), local.route?.project ? local.route : null);
+      continue;
+    }
     const dx = local.x - remote.x, dz = local.z - remote.z;
     if (Math.hypot(dx, dz) > (local.halfL || 2.2) + (remote.halfL || 2.2) + 1) continue;
     // Separating-axis test. Among the axes the cars are actually closing along, take the shallowest: a predicted pose can arrive
@@ -76,7 +85,7 @@ export function resolvePlayerContacts(local, proxies, dt, now, contacts = new Ma
     }
     if (!hit) continue;
     if (approach) { normal = approach; depth = approachDepth; }
-    hits.push(exchange(local, remote, normal, depth, dt, now, contacts, id));
+    hits.push(exchange(local, remote, normal, depth, dt, now, contacts, id, undefined, carOverlap(local, remote) || undefined));
   }
   return hits;
 }
@@ -94,7 +103,7 @@ export class ContactCoordinator {
     const window = contactWindow(rtt, this.frameMs);
     // A pair that has just exchanged momentum (here or by a report) is not tested again for CONTACT_DEDUPE_MS: the other car's
     // predicted velocity is still the pre-impact one for a few hundred ms and would be hit again every frame.
-    const open = proxies.map(p => ({ ...p, ghost: p.ghost || p.vehicle.stale === true || now - this.pair(p.id).handledAt < window }));
+    const open = proxies.map(p => ({ ...p, ghost: p.ghost || p.vehicle.stale === true, settling: now - this.pair(p.id).handledAt < window }));
     const hits = resolvePlayerContacts(local, open, dt, now, this.damage);
     for (const hit of hits) {
       const pair = this.pair(hit.id);

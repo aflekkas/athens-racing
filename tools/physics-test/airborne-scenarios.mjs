@@ -21,10 +21,13 @@ export function scenarioVehicle(Vehicle,specs,name,Ground=null) {
   }
   if(name==='barrier') {
     const a=Math.PI/4,nx=Math.sin(a),nz=Math.cos(a);
-    if(v.ground)v.ground._hit(v,nx,nz,.01,v.a*.7,{kind:'wall'});
+    // A flat wall or rail no longer launches a car (src/crash-contact.js: the blow is planar, the lift term is gone). What still does is a
+    // ramped face (a kerb-height lip or tyre bank taking the nose at 45 degrees), so the flight, rebound, energy and rest gates below
+    // keep their launch from that: kind 'kerb' with the lift scaled so the first touchdown stays inside the old 1-2 s window.
+    if(v.ground)v.ground._hit(v,nx,nz,.01,v.a*.7,{kind:'kerb',damageScale:.4});
     else {
       const dv=v.vLong*nz*1.15,wx=nx*dv,wz=-v.vLong+nz*dv;v.vLong=-wz;v.vLat=wx;
-      v.impactDynamics?.({dv,nx,nz,forward:v.a,right:-v.halfW*.7,height:.45});
+      v.impactDynamics?.({dv,nx,nz,forward:v.a,right:-v.halfW*.7,height:.45,kind:'kerb',lift:Math.sqrt(.4)});
     }
   }
   return v;

@@ -6,6 +6,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { runLink, runCollision, NET } from './mp-link-sim.mjs';
 import { ContactCoordinator, resolvePlayerContacts, contactWindow, CONTACT_DEDUPE_MS } from '../src/multiplayer-contact.js';
+import { restitutionAt } from '../src/crash-contact.js';
 import { RELAY_MS, STATE_BATCHING, STATE_INTERVAL_MS } from '../src/multiplayer-protocol.js';
 
 test('the car-state path samples at 20 Hz, relays every 50 ms and still sends at most ten messages a second', () => {
@@ -65,7 +66,7 @@ test('a parked car is solid: it stops sending, and is still rammed and shoved li
   for (const [label, net] of Object.entries(nets)) for (const attacker of ['A', 'B']) {
     const r = runCollision({ closing: 12, attacker, baseSpeed: 0, net, fps: { A: 15, B: 60 } });
     assert.deepEqual(r.applications, [1, 1], `${label}: ${attacker} rams a parked car`);
-    assert.ok(Math.abs(r.attackerDv + 6) < .5 && Math.abs(r.victimDv - 6) < .5, `${label}: ${r.attackerDv} / ${r.victimDv}`);
+    assert.ok(Math.abs(r.attackerDv - r.expectedAttacker) < .5 && Math.abs(r.victimDv - r.expectedVictim) < .5, `${label}: ${r.attackerDv} / ${r.victimDv} (want ${r.expectedAttacker} / ${r.expectedVictim})`);
   }
   // The old rule skipped any car whose last packet was over 350 ms old, and a parked car's last packet is minutes old.
   const old = runCollision({ mode: 'legacy', closing: 12, attacker: 'B', baseSpeed: 0, net: NET.rtt150 });
@@ -113,7 +114,7 @@ test('the shallowest axis the cars are closing along is the contact normal, even
   const car = (z, vLong) => ({ x: 0, y: 0, z, yaw: 0, vLong, vLat: 0, halfW: .9, halfL: 2.2, m: 1500, hcg: .5, impactDynamics() {}, addDamage() {} });
   const local = car(0, 40), hits = resolvePlayerContacts(local, [{ id: 'x', vehicle: car(-2.7, 20) }], .016, 1000);
   assert.equal(hits.length, 1); assert.ok(Math.abs(hits[0].closing - 20) < 1e-6, `${hits[0].closing}: a car 1.7 m inside another is still a head-on hit`);
-  assert.ok(Math.abs(local.vLong - 30) < 1e-6);
+  assert.ok(Math.abs(local.vLong - (40 - 10 * (1 + restitutionAt(20)))) < 1e-6);
 });
 
 // ---- the production wiring in main.js, executed as written (only the world around it is stubbed)

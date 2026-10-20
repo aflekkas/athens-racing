@@ -25,6 +25,7 @@ import { wetBaseGrip, wetTyreScale, wetPeakScale } from './wet-grip.js';
 import { suspensionRoadInput } from './suspension-road-input.js';
 import { tyreTelemetry } from './tyre-telemetry.js';
 import { angularVelocity, bodyContact, impactDynamics, placeRigid } from './airborne-dynamics.js';
+import { CRASH, alignAlong } from './crash-contact.js';
 
 const G = 9.81, RHO = 1.2;
 // Steady-state understeer gradient (deg per g of road-wheel angle beyond Ackermann): road cars run ~1-3, and the catalogue's nose-heavy
@@ -168,7 +169,7 @@ export class Vehicle {
     this.rigid = null; this.bodyDynamic = false; this.bodyQ = null; this._supportY = undefined; this._crestTime = 0; this.landingSpeed = 0;
     this.air = 0; this.vy = 0; this.yAir = undefined; this.sink = 0; this.water = 0; this.gradeG = undefined; this.grade = 0; this.bank = 0;
     this.wallNx = this.wallNz = 0; this.curbScrape = false;
-    this.wallHit = 0; this.offroad = 0; this.reverse = false; this.topSpeed = 0; this.drift = 0; this.driftLatch = 0;
+    this.wallHit = 0; this.crashDv = 0; this.crashRecover = 0; this.wallSlide = null; this.offroad = 0; this.reverse = false; this.topSpeed = 0; this.drift = 0; this.driftLatch = 0;
     this.powertrainTime = 0; this.powertrainEvents = []; this.shiftStartEvent = this.shiftEndEvent = this.limiterEvent = null;
     this.converterLocked = false; this.converterSlip = 0; this.overrun = false; this.limiterHold = 0;
     this.shiftEvent = 0; this.gearChangeEvent = null; this.bumpHit = 0; this.rough = 0; this.absOn = false; this.tcOn = false; this.escOn = false;
@@ -579,6 +580,13 @@ export class Vehicle {
 
   step(dt, inp) {
     this.damageFx(dt);
+    // after a hard hit: a short stabilised moment (the yaw a blow put in dies away faster than the tyres alone would take it)
+    // and, while still touching a wall, help round to run along it (src/crash-contact.js). Drivable, not a spin-out.
+    if (this.crashRecover > 0) {
+      this.crashRecover = Math.max(0, this.crashRecover - dt);
+      if (!this.bodyDynamic) this.w *= Math.exp(-2.4 * Math.min(1, this.crashRecover / CRASH.recover) * dt);
+    }
+    if (this.wallSlide && this.wallSlide.t > 0) { this.wallSlide.t -= dt; if (!this.bodyDynamic) alignAlong(this, this.wallSlide.nx, this.wallSlide.nz, dt); }
     const sp = this.spec, route = this.route;
     const vx = this.vLong, vy = this.vLat, av = Math.abs(vx), vt = Math.hypot(vx, vy);
     const thrIn = clamp(inp.throttle, 0, 1), brk = clamp(inp.brake, 0, 1);

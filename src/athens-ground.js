@@ -25,6 +25,7 @@ export class AthensGround{
  }
  resolve(v,dt){
   if(this.barriers.resolve(v,this.previous))this.barrierHits++;
+  this.previous={x:v.x,y:v.y,z:v.z,yaw:v.yaw}; // each substep sweeps from where the last one ended
   let fx=-Math.sin(v.yaw),fz=-Math.cos(v.yaw),rx=Math.cos(v.yaw),rz=-Math.sin(v.yaw);
   const radius=v.halfW+.05;
   for(const k of [v.halfL-radius,0,-v.halfL+radius]){
@@ -33,6 +34,7 @@ export class AthensGround{
   }
   // A building impulse must not push the car through an adjacent bridge rail.
   if(this.barriers.resolve(v,this.previous))this.barrierHits++;
+  this.previous={x:v.x,y:v.y,z:v.z,yaw:v.yaw};
   fx=-Math.sin(v.yaw);fz=-Math.cos(v.yaw);rx=Math.cos(v.yaw);rz=-Math.sin(v.yaw);
   const c=this.at(v.x,v.z),ys=[],surfaces=[];v.wheelBump||=[0,0,0,0];v.wheelMu||=[1,1,1,1];v.wheelPeak||=[1,1,1,1];v.wheelSlide||=[null,null,null,null];v.wheelSlideV||=[null,null,null,null];
   let mu=0,drag=0,res=0,soft=0;
