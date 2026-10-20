@@ -225,3 +225,5 @@ Owner decisions:
 - **No SVJ exhaust pops.** "remove the exhaust pops from the svj". The flame and pop effect and its toggle are removed.
 - **Simpler car styling.** "simplify the styling of the cars, we have these weird body panels and stuff". Decorative add-on panels, two-tone kit pieces, stripes and similar clutter are removed. Each car keeps one clean body in its paint, with normal glass, lights, wheels and badges.
 - **More punishing damage.** "we should arguably make the damage more punishing, rn it's not punishing". Crashes cost real time and performance, with the same rules for every driver in multiplayer and on the leaderboards.
+- **No Honda Jazz drift spec.** "remove the honda jazz drift spec". The Jazz keeps its top road trim, never the drift-spec variant.
+- **Handbrake shown in the cabin.** "in cars, when the handbrake is pulled make sure it is pulled". The cabin's handbrake lever (or the button/indicator on cars that have an electric one) visibly moves to the pulled position while the handbrake is held, and returns when it is released.
