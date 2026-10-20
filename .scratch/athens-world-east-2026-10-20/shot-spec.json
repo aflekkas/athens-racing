@@ -1,0 +1,15 @@
+[
+ {"name":"vyronas-street","car":[2740,2855],"at":[2740,2855],"cam":[-40,4,-70],"far":2500,"wait":25000},
+ {"name":"vyronas-above","car":[2740,2855],"at":[2740,2855],"cam":[500,1100,700],"far":6000,"wait":25000},
+ {"name":"zografou-street","car":[2990,-698],"at":[2990,-698],"cam":[-40,4,-70],"far":2500,"wait":25000},
+ {"name":"zografou-above","car":[2990,-698],"at":[2990,-698],"cam":[500,1100,700],"far":6000,"wait":25000},
+ {"name":"ilioupoli-street","car":[2401,6829],"at":[2401,6829],"cam":[-40,4,-70],"far":2500,"wait":25000},
+ {"name":"ilioupoli-above","car":[2401,6829],"at":[2401,6829],"cam":[500,1100,700],"far":6000,"wait":25000},
+ {"name":"argyroupoli-street","car":[1960,7874],"at":[1960,7874],"cam":[-40,4,-70],"far":2500,"wait":25000},
+ {"name":"argyroupoli-above","car":[1960,7874],"at":[1960,7874],"cam":[500,1100,700],"far":6000,"wait":25000},
+ {"name":"agia-paraskevi-street","car":[8144,-2647],"at":[8144,-2647],"cam":[-40,4,-70],"far":2500,"wait":25000},
+ {"name":"agia-paraskevi-above","car":[8144,-2647],"at":[8144,-2647],"cam":[500,1100,700],"far":6000,"wait":25000},
+ {"name":"kaisariani-street","car":[5537,133],"at":[5537,133],"cam":[-40,4,-70],"far":2500,"wait":25000},
+ {"name":"kaisariani-above","car":[5537,133],"at":[5537,133],"cam":[500,1100,700],"far":6000,"wait":25000},
+ {"name":"overview-east","car":[2850,3780],"at":[2850,3780],"cam":[500,1100,700],"far":6000,"wait":25000}
+]
