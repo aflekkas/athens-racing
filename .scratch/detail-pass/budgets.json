@@ -20,7 +20,13 @@
     "data/map.json": "702e5f0940896675ef9d7806f8d7bb8799f8599692178f0c5d7b7e041ef15447",
     "data/maps/penteli/map.json": "6df1ac6460958a0a9841c7b03df255931a7a27ccdcba457745bfdb390b62bb07",
     "data/maps/megara/map.json": "b1d6873460ce7676f6a22f7804f22453e7aad2c9d41642f869d9b39b031e37c7",
-    "data/maps/psychiko/map.json": "2e5cf09fb01cdf4422be5899bc06f4d219ed95d470f2e3efe495447aa00c86c0"
+    "data/maps/psychiko/map.json": "58bd941099b23a9c4b57d021e3a1efe6a950930b645b95a26d1828b4ee08ed0b",
+    "src/maps/psychiko-parked-cars.js": "01adb242570f9c74314e3c2e6fa75298ded9c5ba3aac91328eeb9d73535929c9",
+    "src/maps/psychiko-faros.js": "49e30965a13bc2439f8af30458034c5c7158b48ae9526888b4e5fd7388c97f0f",
+    "src/traffic-passenger-shapes.js": "2a8f199519cee184f9bc6e05e579267cacb5af08d397371933557f1b1e98968b",
+    "src/traffic-passenger-models.js": "7d10c7595114bf448dc2a04fef6fd28735e4cc580db74e47f3381f9ff039e10d",
+    "src/road.js": "758c008f3f4a02efe94edd75b5aabcb568dcb477327e21b181cfea0cab052503",
+    "src/gantry-legs.js": "45657a40df79c75ac4a43e2bfc13fe97bc18ce84f79ae95f845aa3a13ca09626"
   },
   "rows": [
     {
@@ -1162,7 +1168,7 @@
         ],
         "calls": 159,
         "triangles": 629167,
-        "geometryBytes": 253140318,
+        "geometryBytes": 253183638,
         "textureBytes": 92168192.00000003,
         "shadows": false
       },
@@ -1182,7 +1188,7 @@
         ],
         "calls": 159,
         "triangles": 629167,
-        "geometryBytes": 253140318,
+        "geometryBytes": 253183638,
         "textureBytes": 92168192.00000003,
         "shadows": false
       },
@@ -1200,9 +1206,9 @@
           0.04230307744253829,
           -0.48195706386840204
         ],
-        "calls": 168,
-        "triangles": 713258,
-        "geometryBytes": 257938407,
+        "calls": 169,
+        "triangles": 700316,
+        "geometryBytes": 258034737,
         "textureBytes": 95051776.00000004,
         "shadows": false
       }
@@ -1226,7 +1232,7 @@
         ],
         "calls": 139,
         "triangles": 694284,
-        "geometryBytes": 253298870,
+        "geometryBytes": 253342190,
         "textureBytes": 95838212,
         "shadows": false
       },
@@ -1246,7 +1252,7 @@
         ],
         "calls": 139,
         "triangles": 694284,
-        "geometryBytes": 253298870,
+        "geometryBytes": 253342190,
         "textureBytes": 95838212,
         "shadows": false
       },
@@ -1264,9 +1270,9 @@
           0.02005071810149271,
           -0.45345997466552923
         ],
-        "calls": 148,
-        "triangles": 778387,
-        "geometryBytes": 258096959,
+        "calls": 149,
+        "triangles": 765445,
+        "geometryBytes": 258193289,
         "textureBytes": 98721796.00000001,
         "shadows": false
       }
@@ -1290,7 +1296,7 @@
         ],
         "calls": 161,
         "triangles": 630127,
-        "geometryBytes": 253140318,
+        "geometryBytes": 253183638,
         "textureBytes": 91774980.00000003,
         "shadows": false
       },
@@ -1310,7 +1316,7 @@
         ],
         "calls": 161,
         "triangles": 630127,
-        "geometryBytes": 253140318,
+        "geometryBytes": 253183638,
         "textureBytes": 91774980.00000003,
         "shadows": false
       },
@@ -1328,9 +1334,9 @@
           0.04230307744253829,
           -0.48195706386840204
         ],
-        "calls": 170,
-        "triangles": 714218,
-        "geometryBytes": 257938407,
+        "calls": 171,
+        "triangles": 701276,
+        "geometryBytes": 258034737,
         "textureBytes": 94658564.00000004,
         "shadows": false
       }
@@ -1354,7 +1360,7 @@
         ],
         "calls": 141,
         "triangles": 695244,
-        "geometryBytes": 253298870,
+        "geometryBytes": 253342190,
         "textureBytes": 95838212,
         "shadows": false
       },
@@ -1374,7 +1380,7 @@
         ],
         "calls": 141,
         "triangles": 695244,
-        "geometryBytes": 253298870,
+        "geometryBytes": 253342190,
         "textureBytes": 95838212,
         "shadows": false
       },
@@ -1392,9 +1398,9 @@
           0.02005071810149271,
           -0.45345997466552923
         ],
-        "calls": 150,
-        "triangles": 779347,
-        "geometryBytes": 258096959,
+        "calls": 151,
+        "triangles": 766405,
+        "geometryBytes": 258193289,
         "textureBytes": 98721796.00000001,
         "shadows": false
       }
