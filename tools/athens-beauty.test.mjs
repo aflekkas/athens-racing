@@ -12,7 +12,7 @@ import { parseHorizon, horizonHeight, bandSlopes, HORIZON_BANDS, HORIZON_AZIMUTH
 import { deriveBuildingMeshes } from '../src/world-tile-buildings.js';
 import { fixture } from './world-tile-format.test.mjs';
 import { tileTables } from '../src/world-tile-format.js';
-import { parsePlazas, pointInPlaza, AthensPlazas, PLAZA_MAX_TRIANGLES } from '../src/athens-plazas.js';
+import { parsePlazas, pointInPlaza, AthensPlazas, PLAZA_MAX_TRIANGLES, lawnMaterial } from '../src/athens-plazas.js';
 import * as THREE from 'three';
 
 const bin = readFileSync(new URL('../assets/athens/horizon.bin', import.meta.url));
@@ -109,7 +109,7 @@ test('World detail gates every addition and the layer is wired once in the Athen
   const world = src('src/athens-world.js');
   assert.match(world, /new AthensHorizon\(scene,scene\.fog,\{enabled:settings\.worldDetail!==false\}\)/);
   assert.match(world, /new AthensLandmarks\(detailRoot,scene\.fog,\{enabled:settings\.worldDetail!==false,groundAt:/);
-  assert.match(world, /horizon\.setEnabled\(s\.worldDetail!==false\);landmarks\.setEnabled\(s\.worldDetail!==false\);plazas\.setEnabled\(s\.worldDetail!==false\);trees\.setEnabled\(s\.worldDetail!==false\);syncBoxes\(\)/);
+  assert.match(world, /horizon\.setEnabled\(s\.worldDetail!==false\);landmarks\.setEnabled\(s\.worldDetail!==false\);plazas\.setEnabled\(s\.worldDetail!==false\);lawns\.setEnabled\(s\.worldDetail!==false\);trees\.setEnabled\(s\.worldDetail!==false\);syncBoxes\(\)/);
   assert.match(world, /new AthensTrees\(detailRoot,\{enabled:settings\.worldDetail!==false\}\)/);
   assert.match(world, /new AthensPlazas\(detailRoot,\{enabled:settings\.worldDetail!==false,/);
   assert.match(world, /c\.userData\.landmarkBox\)c\.visible=!hidden/);
@@ -123,6 +123,8 @@ test('the plaza outlines cover Syntagma Square and are small', () => {
   assert.ok(plazas.some(p => pointInPlaza(p.p, 470, 520)), 'the square in front of the Parliament is a plaza');
   assert.ok(plazas.some(p => pointInPlaza(p.p, 640, 570)), 'the pedestrian strip between the forecourt and the National Garden is a plaza (an OSM multipolygon without area=yes)');
   assert.ok(!plazas.some(p => pointInPlaza(p.p, 800, 640)), 'the National Garden is not');
+  assert.ok(plazas.some(p => pointInPlaza(p.p, 672, 550)), 'the unmapped 8 m strip between the pedestrian area and the National Garden lawn is paved (outlines are grown by 8 m)');
+  assert.ok(!plazas.some(p => pointInPlaza(p.p, 690, 550)), 'but the lawn is not');
 });
 test('plaza paving follows the streamed ground, only where a cell is loaded, and is gone with World detail Off', () => {
   const square = { p: new Float32Array([0, 0, 40, 0, 40, 40, 0, 40]), x0: 0, z0: 0, x1: 40, z1: 40, area: 1600 };
@@ -133,6 +135,8 @@ test('plaza paving follows the streamed ground, only where a cell is loaded, and
   assert.equal(plazas.mesh.visible, true); plazas.setEnabled(false); assert.equal(plazas.mesh.visible, false);
   plazas.update(20, 12, 20); plazas.setEnabled(true); plazas.update(20, 12, 20); assert.equal(plazas.mesh.visible, true);
   assert.ok(PLAZA_MAX_TRIANGLES <= 30000);
+  const roads = new AthensPlazas(new THREE.Group(), { groundAt: () => 10, isRoad: x => x > 20 && x < 30, material: new THREE.MeshBasicMaterial() });
+  roads.setPlazas([square]); roads.addTile('0,0'); roads.update(20, 12, 20); assert.equal(roads.stats.triangles, 20 * 20 * 2 - 5 * 20 * 2, 'the 10 m strip that is carriageway is not paved');
 });
 test('houses with pitched roofs derive without overflowing their index, and the extra bytes and rooftop rows are counted', () => {
   const N = 300, corners = [], buildings = [], heights = [], ids = [];
@@ -158,4 +162,17 @@ test('the Parliament and the Zappeion get a paved forecourt in front of their en
   assert.ok(toward[0] * c[0] + toward[1] * c[1] > 0, 'the forecourt lies on the Syntagma side of the Parliament');
   for (const p of f) assert.ok(p.area > 1000 && !pointInPlaza(p.p, par.x, par.z), 'it does not cover the building');
   void inFront;
+});
+test('garden and lawn outlines are shipped small, cover the garden in the Syntagma strip, and are drawn as a second plaza layer with the lawn material', () => {
+  const file = new URL('../assets/athens/lawns.json', import.meta.url), lawns = parsePlazas(JSON.parse(readFileSync(file, 'utf8')));
+  assert.ok(lawns.length > 400 && statSync(file).size < 120 * 1024 && gzipSync(readFileSync(file)).length < 45 * 1024, `${lawns.length} lawns`);
+  assert.ok(lawns.some(p => pointInPlaza(p.p, 670, 570)), 'the OSM garden beside the paved Syntagma square (the bake leaves it as earth)');
+  const m = lawnMaterial(); assert.ok(m.color.g > m.color.b && !m.transparent, 'grass green, opaque');
+  const group = new THREE.Group(), layer = new AthensPlazas(group, { groundAt: () => 10, material: m }); layer.setPlazas([{ p: new Float32Array([0, 0, 20, 0, 20, 20, 0, 20]), x0: 0, z0: 0, x1: 20, z1: 20, area: 400 }]); layer.addTile('0,0'); layer.update(10, 12, 10);
+  assert.equal(layer.stats.triangles, 10 * 10 * 2); layer.setEnabled(false); assert.equal(layer.mesh.visible, false);
+  const world = src('src/athens-world.js'); assert.match(world, /lawns=new AthensPlazas\(detailRoot,\{enabled:settings\.worldDetail!==false,material:lawnMaterial\(\)/);
+});
+test('the plaza and lawn shaders use no reserved GLSL word as an identifier (the lawn failed to compile once on `patch`)', () => {
+  const code = readFileSync(new URL('../src/athens-plazas.js', import.meta.url), 'utf8'), shaders = [...code.matchAll(/`([^`]*)`/g)].map(m => m[1]).join('\n');
+  for (const word of ['patch', 'sample', 'input', 'output', 'filter', 'common', 'active', 'partition', 'subroutine', 'resource', 'precise', 'smooth', 'flat', 'centroid', 'noperspective']) assert.doesNotMatch(shaders, new RegExp(`\\b(float|vec2|vec3|vec4|int)\\s+${word}\\b`), word);
 });
