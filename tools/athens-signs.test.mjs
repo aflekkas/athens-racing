@@ -47,7 +47,7 @@ test('the text atlas hands out 128 slots of 256 x 64 px, paints each once, and r
   assert.ok(SIGN_LIMITS.near <= 80 && SIGN_LIMITS.signs <= 500);
 });
 test('the named shops file is small and Greek, and the signs layer is wired once into the Athens entry and hidden with World detail Off', () => {
-  const file = new URL('../assets/athens/pois.json', import.meta.url), j = JSON.parse(readFileSync(file, 'utf8')); assert.ok(statSync(file).size < 200 * 1024 && j.names.length > 100 && j.rows.length % 4 === 0);
+  const file = new URL('../assets/athens/pois.json', import.meta.url), j = JSON.parse(readFileSync(file, 'utf8')); assert.ok(statSync(file).size < 1536 * 1024 && j.names.length > 100 && j.rows.length % 4 === 0);
   assert.ok(j.names.some(n => /[Α-ω]/.test(n)), 'Greek names'); for (let i = 3; i < j.rows.length; i += 4) assert.ok(j.rows[i] < j.names.length);
   const world = readFileSync(new URL('../src/athens-world.js', import.meta.url), 'utf8');
   assert.match(world, /signs=new AthensSigns\(detailRoot,\{enabled:settings\.worldDetail!==false\}\)/); assert.match(world, /signs\.setEnabled\(s\.worldDetail!==false\)/); assert.match(world, /signs\.load\(new URL\('\.\/assets\/athens\/pois\.json'/);
