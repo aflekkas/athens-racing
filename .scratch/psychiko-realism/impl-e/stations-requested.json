@@ -129,6 +129,26 @@
     "fovH": 90
   },
   {
+    "id": "jct-272499261",
+    "s": 302.01,
+    "street": "Unnamed paved junction",
+    "lat": 38.0074929,
+    "lon": 23.77411,
+    "heading": 19,
+    "reason": "public junction at source node 272499261",
+    "fovH": 90
+  },
+  {
+    "id": "jct-2436338813",
+    "s": 302.01,
+    "street": "Unnamed paved junction",
+    "lat": 38.0076353,
+    "lon": 23.7739646,
+    "heading": 19,
+    "reason": "public junction at source node 2436338813",
+    "fovH": 90
+  },
+  {
     "id": "lap-0315",
     "s": 315,
     "street": "Unnamed paved junction",
@@ -549,6 +569,16 @@
     "fovH": 90
   },
   {
+    "id": "jct-272561334",
+    "s": 1548.08,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.0177287,
+    "lon": 23.7701801,
+    "heading": 0,
+    "reason": "public junction at source node 272561334",
+    "fovH": 90
+  },
+  {
     "id": "lap-1552",
     "s": 1552.08,
     "street": "Νικηφόρου Λύτρα",
@@ -779,6 +809,16 @@
     "fovH": 90
   },
   {
+    "id": "jct-351947283",
+    "s": 2182.11,
+    "street": "Συνταγματάρχου Δαβάκη",
+    "lat": 38.0211315,
+    "lon": 23.7730809,
+    "heading": 6,
+    "reason": "public junction at source node 351947283",
+    "fovH": 90
+  },
+  {
     "id": "lap-2205",
     "s": 2205,
     "street": "Λεωφ. Ελευθερίου Βενιζέλου",
@@ -796,6 +836,16 @@
     "lon": 23.77255038287469,
     "heading": 17,
     "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "jct-351949089",
+    "s": 2232.11,
+    "street": "Λεωφ. Ελευθερίου Βενιζέλου",
+    "lat": 38.0214609,
+    "lon": 23.7724852,
+    "heading": 17,
+    "reason": "public junction at source node 351949089",
     "fovH": 90
   },
   {
@@ -909,6 +959,16 @@
     "fovH": 90
   },
   {
+    "id": "jct-351949751",
+    "s": 2570.67,
+    "street": "Λεωφ. Ελ. Βενιζέλου",
+    "lat": 38.0227082,
+    "lon": 23.7760779,
+    "heading": 86,
+    "reason": "public junction at source node 351949751",
+    "fovH": 90
+  },
+  {
     "id": "jct-351949741",
     "s": 2572.7,
     "street": "Unnamed paved junction",
@@ -916,6 +976,36 @@
     "lon": 23.7761258,
     "heading": 97,
     "reason": "public lap junction 351949741",
+    "fovH": 90
+  },
+  {
+    "id": "jct-353239224",
+    "s": 2604.13,
+    "street": "Unnamed paved junction",
+    "lat": 38.0228197,
+    "lon": 23.7764222,
+    "heading": 86,
+    "reason": "public junction at source node 353239224",
+    "fovH": 90
+  },
+  {
+    "id": "jct-7226638625",
+    "s": 2606.13,
+    "street": "Unnamed paved junction",
+    "lat": 38.0227841,
+    "lon": 23.7764922,
+    "heading": 102,
+    "reason": "public junction at source node 7226638625",
+    "fovH": 90
+  },
+  {
+    "id": "jct-351949744",
+    "s": 2606.7,
+    "street": "25is Martiou",
+    "lat": 38.0226071,
+    "lon": 23.7765881,
+    "heading": 107,
+    "reason": "public junction at source node 351949744",
     "fovH": 90
   },
   {
@@ -1089,6 +1179,16 @@
     "fovH": 90
   },
   {
+    "id": "jct-347784872",
+    "s": 3000.64,
+    "street": "25is Martiou",
+    "lat": 38.0203498,
+    "lon": 23.7799146,
+    "heading": 98,
+    "reason": "public junction at source node 347784872",
+    "fovH": 90
+  },
+  {
     "id": "lap-3015",
     "s": 3015,
     "street": "25is Martiou",
@@ -1126,6 +1226,16 @@
     "lon": 23.781268150462612,
     "heading": 182,
     "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "jct-347780192",
+    "s": 3152.16,
+    "street": "25is Martiou",
+    "lat": 38.0193851,
+    "lon": 23.7814084,
+    "heading": 207,
+    "reason": "public junction at source node 347780192",
     "fovH": 90
   },
   {
@@ -1369,6 +1479,16 @@
     "fovH": 90
   },
   {
+    "id": "jct-272560242",
+    "s": 4058.2,
+    "street": "Αρεακη",
+    "lat": 38.0140134,
+    "lon": 23.7787226,
+    "heading": 176,
+    "reason": "public junction at source node 272560242",
+    "fovH": 90
+  },
+  {
     "id": "lap-4060",
     "s": 4060.2,
     "street": "Unnamed paved junction",
@@ -1376,6 +1496,16 @@
     "lon": 23.778491387529684,
     "heading": 183,
     "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "jct-272560244",
+    "s": 4062.65,
+    "street": "Unnamed paved junction",
+    "lat": 38.0138762,
+    "lon": 23.7788324,
+    "heading": 189,
+    "reason": "public junction at source node 272560244",
     "fovH": 90
   },
   {
@@ -1396,6 +1526,26 @@
     "lon": 23.77846406703075,
     "heading": 225,
     "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "jct-272560246",
+    "s": 4074.2,
+    "street": "Μαλακάση",
+    "lat": 38.0137399,
+    "lon": 23.7786776,
+    "heading": 225,
+    "reason": "public junction at source node 272560246",
+    "fovH": 90
+  },
+  {
+    "id": "jct-272560247",
+    "s": 4074.2,
+    "street": "Μαλακάση",
+    "lat": 38.0137473,
+    "lon": 23.7785873,
+    "heading": 225,
+    "reason": "public junction at source node 272560247",
     "fovH": 90
   },
   {

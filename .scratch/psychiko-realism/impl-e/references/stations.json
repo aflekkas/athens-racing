@@ -740,6 +740,120 @@
     "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
+    "id": "jct-272499261",
+    "s": 302.01,
+    "street": "Unnamed paved junction",
+    "lat": 38.00751095264228,
+    "lon": 23.77412663592657,
+    "heading": 19,
+    "reason": "public junction at source node 272499261",
+    "fovH": 90,
+    "panoId": "tlaDkAA10-ykRKBHBPPLkQ",
+    "captureDate": [
+      2024,
+      9
+    ],
+    "googleAddress": [
+      [
+        "Πλ. Βασιλέως Γεωργίου Β",
+        "el"
+      ],
+      [
+        "Psychiko, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      126.168495,
+      88.15009,
+      357.4692
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0074929,
+      "lon": 23.77411
+    },
+    "snapDistanceM": 2.5,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 19,
+        "path": "views/jct-272499261-019.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=tlaDkAA10-ykRKBHBPPLkQ&heading=19&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=tlaDkAA10-ykRKBHBPPLkQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=19&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 199,
+        "path": "views/jct-272499261-199.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=tlaDkAA10-ykRKBHBPPLkQ&heading=199&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=tlaDkAA10-ykRKBHBPPLkQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=199&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-2436338813",
+    "s": 302.01,
+    "street": "Unnamed paved junction",
+    "lat": 38.00765210562175,
+    "lon": 23.773991271655586,
+    "heading": 19,
+    "reason": "public junction at source node 2436338813",
+    "fovH": 90,
+    "panoId": "4pvY39CFrDifXo0zPlmYjA",
+    "captureDate": [
+      2024,
+      9
+    ],
+    "googleAddress": [
+      [
+        "Πλ. Βασιλέως Γεωργίου Β",
+        "el"
+      ],
+      [
+        "Psychiko, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      162.62836,
+      89.562904,
+      357.4135
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0076353,
+      "lon": 23.7739646
+    },
+    "snapDistanceM": 3.0,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 19,
+        "path": "views/jct-2436338813-019.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=4pvY39CFrDifXo0zPlmYjA&heading=19&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=4pvY39CFrDifXo0zPlmYjA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=19&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 199,
+        "path": "views/jct-2436338813-199.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=4pvY39CFrDifXo0zPlmYjA&heading=199&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=4pvY39CFrDifXo0zPlmYjA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=199&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
     "id": "lap-0315",
     "s": 315,
     "street": "Unnamed paved junction",
@@ -3110,6 +3224,63 @@
     "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
+    "id": "jct-272561334",
+    "s": 1548.08,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.01775006912523,
+    "lon": 23.77015838738097,
+    "heading": 0,
+    "reason": "public junction at source node 272561334",
+    "fovH": 90,
+    "panoId": "I38AxbFisTGYnrxaGXqqDQ",
+    "captureDate": [
+      2026,
+      4
+    ],
+    "googleAddress": [
+      [
+        "19 Νικηφόρου Λύτρα",
+        "el"
+      ],
+      [
+        "Psychiko, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      123.21528,
+      82.65695,
+      3.681864
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0177287,
+      "lon": 23.7701801
+    },
+    "snapDistanceM": 3.0,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 0,
+        "path": "views/jct-272561334-000.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=I38AxbFisTGYnrxaGXqqDQ&heading=0&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=I38AxbFisTGYnrxaGXqqDQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=0&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 180,
+        "path": "views/jct-272561334-180.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=I38AxbFisTGYnrxaGXqqDQ&heading=180&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=I38AxbFisTGYnrxaGXqqDQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=180&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
     "id": "lap-1552",
     "s": 1552.08,
     "street": "Νικηφόρου Λύτρα",
@@ -4421,6 +4592,63 @@
     "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
+    "id": "jct-351947283",
+    "s": 2182.11,
+    "street": "Συνταγματάρχου Δαβάκη",
+    "lat": 38.02115065126167,
+    "lon": 23.773069322922698,
+    "heading": 6,
+    "reason": "public junction at source node 351947283",
+    "fovH": 90,
+    "panoId": "GgqrOnplgEBLc-jR-__V4Q",
+    "captureDate": [
+      2026,
+      4
+    ],
+    "googleAddress": [
+      [
+        "8 Leof. El. Venizelou",
+        "en"
+      ],
+      [
+        "Filothei, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      93.35866,
+      89.255486,
+      357.31305
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0211315,
+      "lon": 23.7730809
+    },
+    "snapDistanceM": 2.4,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 6,
+        "path": "views/jct-351947283-006.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=GgqrOnplgEBLc-jR-__V4Q&heading=6&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=GgqrOnplgEBLc-jR-__V4Q&cb_client=maps_sv.tactile&w=1024&h=512&yaw=6&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 186,
+        "path": "views/jct-351947283-186.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=GgqrOnplgEBLc-jR-__V4Q&heading=186&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=GgqrOnplgEBLc-jR-__V4Q&cb_client=maps_sv.tactile&w=1024&h=512&yaw=186&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
     "id": "lap-2205",
     "s": 2205,
     "street": "Λεωφ. Ελευθερίου Βενιζέλου",
@@ -4526,6 +4754,63 @@
       {
         "heading": 197,
         "path": "views/lap-2232-197.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=2FX4FNITSP7-RhA9APFfhw&heading=197&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=2FX4FNITSP7-RhA9APFfhw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=197&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-351949089",
+    "s": 2232.11,
+    "street": "Λεωφ. Ελευθερίου Βενιζέλου",
+    "lat": 38.02148281666038,
+    "lon": 23.772506257028706,
+    "heading": 17,
+    "reason": "public junction at source node 351949089",
+    "fovH": 90,
+    "panoId": "2FX4FNITSP7-RhA9APFfhw",
+    "captureDate": [
+      2026,
+      4
+    ],
+    "googleAddress": [
+      [
+        "2 Leof. El. Venizelou",
+        "el-Latn"
+      ],
+      [
+        "Filothei, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      289.1343,
+      92.83064,
+      0.4802049
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0214609,
+      "lon": 23.7724852
+    },
+    "snapDistanceM": 3.1,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 17,
+        "path": "views/jct-351949089-017.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=2FX4FNITSP7-RhA9APFfhw&heading=17&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=2FX4FNITSP7-RhA9APFfhw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=17&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 197,
+        "path": "views/jct-351949089-197.webp",
         "width": 1024,
         "height": 512,
         "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=2FX4FNITSP7-RhA9APFfhw&heading=197&pitch=0&fov=90",
@@ -5162,6 +5447,59 @@
     "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
+    "id": "jct-351949751",
+    "s": 2570.67,
+    "street": "Λεωφ. Ελ. Βενιζέλου",
+    "lat": 38.022693722888675,
+    "lon": 23.77602817793514,
+    "heading": 86,
+    "reason": "public junction at source node 351949751",
+    "fovH": 90,
+    "panoId": "ROpCNuOznHRZ_J048fPEgw",
+    "captureDate": [
+      2024,
+      1
+    ],
+    "googleAddress": [
+      [
+        "Filothei, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      204.54196,
+      92.6288,
+      355.11517
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0227082,
+      "lon": 23.7760779
+    },
+    "snapDistanceM": 4.6,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 86,
+        "path": "views/jct-351949751-086.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=ROpCNuOznHRZ_J048fPEgw&heading=86&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=ROpCNuOznHRZ_J048fPEgw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=86&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 266,
+        "path": "views/jct-351949751-266.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=ROpCNuOznHRZ_J048fPEgw&heading=266&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=ROpCNuOznHRZ_J048fPEgw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=266&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
     "id": "jct-351949741",
     "s": 2572.7,
     "street": "Unnamed paved junction",
@@ -5214,6 +5552,165 @@
         "height": 512,
         "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=vgpTYhph98XkBxIzD8BV-A&heading=277&pitch=0&fov=90",
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=vgpTYhph98XkBxIzD8BV-A&cb_client=maps_sv.tactile&w=1024&h=512&yaw=277&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-353239224",
+    "s": 2604.13,
+    "street": "Unnamed paved junction",
+    "lat": 38.02281661950998,
+    "lon": 23.776378434954488,
+    "heading": 86,
+    "reason": "public junction at source node 353239224",
+    "fovH": 90,
+    "panoId": "3dInAnlV67jiB1Z54hazzg",
+    "captureDate": [
+      2026,
+      2
+    ],
+    "googleAddress": [
+      [
+        "Filothei, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      279.92792,
+      91.02122,
+      359.85718
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0228197,
+      "lon": 23.7764222
+    },
+    "snapDistanceM": 3.9,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 86,
+        "path": "views/jct-353239224-086.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=3dInAnlV67jiB1Z54hazzg&heading=86&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=3dInAnlV67jiB1Z54hazzg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=86&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 266,
+        "path": "views/jct-353239224-266.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=3dInAnlV67jiB1Z54hazzg&heading=266&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=3dInAnlV67jiB1Z54hazzg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=266&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-7226638625",
+    "s": 2606.13,
+    "street": "Unnamed paved junction",
+    "lat": 38.02283361523439,
+    "lon": 23.776534407289322,
+    "heading": 102,
+    "reason": "public junction at source node 7226638625",
+    "fovH": 90,
+    "panoId": "isz5AZ7OuBUaCgsVIfLb2Q",
+    "captureDate": [
+      2026,
+      2
+    ],
+    "googleAddress": [
+      [
+        "Filothei, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      347.27075,
+      91.44954,
+      2.7019935
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0227841,
+      "lon": 23.7764922
+    },
+    "snapDistanceM": 6.6,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 102,
+        "path": "views/jct-7226638625-102.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=isz5AZ7OuBUaCgsVIfLb2Q&heading=102&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=isz5AZ7OuBUaCgsVIfLb2Q&cb_client=maps_sv.tactile&w=1024&h=512&yaw=102&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 282,
+        "path": "views/jct-7226638625-282.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=isz5AZ7OuBUaCgsVIfLb2Q&heading=282&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=isz5AZ7OuBUaCgsVIfLb2Q&cb_client=maps_sv.tactile&w=1024&h=512&yaw=282&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-351949744",
+    "s": 2606.7,
+    "street": "25is Martiou",
+    "lat": 38.02259685250558,
+    "lon": 23.776589061146517,
+    "heading": 107,
+    "reason": "public junction at source node 351949744",
+    "fovH": 90,
+    "panoId": "nl0ilOQrdFRgPECUnEBoGQ",
+    "captureDate": [
+      2026,
+      2
+    ],
+    "googleAddress": [
+      [
+        "Filothei, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      4.242597,
+      86.30176,
+      1.1987584
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0226071,
+      "lon": 23.7765881
+    },
+    "snapDistanceM": 1.1,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 107,
+        "path": "views/jct-351949744-107.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=nl0ilOQrdFRgPECUnEBoGQ&heading=107&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=nl0ilOQrdFRgPECUnEBoGQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=107&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 287,
+        "path": "views/jct-351949744-287.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=nl0ilOQrdFRgPECUnEBoGQ&heading=287&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=nl0ilOQrdFRgPECUnEBoGQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=287&pitch=0&thumbfov=90"
       }
     ],
     "observationStatus": "visually-reviewed-2026-10-19"
@@ -6180,6 +6677,63 @@
     "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
+    "id": "jct-347784872",
+    "s": 3000.64,
+    "street": "25is Martiou",
+    "lat": 38.02036224334421,
+    "lon": 23.779955618778413,
+    "heading": 98,
+    "reason": "public junction at source node 347784872",
+    "fovH": 90,
+    "panoId": "xk3aL_2T6QxCvu0hOikWBQ",
+    "captureDate": [
+      2026,
+      4
+    ],
+    "googleAddress": [
+      [
+        "26 Leof. Geor. Stavrou",
+        "el-Latn"
+      ],
+      [
+        "Filothei, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      255.08705,
+      93.758415,
+      3.620113
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0203498,
+      "lon": 23.7799146
+    },
+    "snapDistanceM": 3.9,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 98,
+        "path": "views/jct-347784872-098.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=xk3aL_2T6QxCvu0hOikWBQ&heading=98&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=xk3aL_2T6QxCvu0hOikWBQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=98&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 278,
+        "path": "views/jct-347784872-278.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=xk3aL_2T6QxCvu0hOikWBQ&heading=278&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=xk3aL_2T6QxCvu0hOikWBQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=278&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
     "id": "lap-3015",
     "s": 3015,
     "street": "25is Martiou",
@@ -6403,6 +6957,63 @@
         "height": 512,
         "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=4lLEELHgj9CTmRJ2aY_dhA&heading=2&pitch=0&fov=90",
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=4lLEELHgj9CTmRJ2aY_dhA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=2&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-347780192",
+    "s": 3152.16,
+    "street": "25is Martiou",
+    "lat": 38.01940128853723,
+    "lon": 23.78138850089878,
+    "heading": 207,
+    "reason": "public junction at source node 347780192",
+    "fovH": 90,
+    "panoId": "0XVcBa5T3p7JSZEx72_J1g",
+    "captureDate": [
+      2024,
+      9
+    ],
+    "googleAddress": [
+      [
+        "1 25is Martiou",
+        "el-Latn"
+      ],
+      [
+        "Filothei, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      305.41135,
+      88.725746,
+      1.2098086
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0193851,
+      "lon": 23.7814084
+    },
+    "snapDistanceM": 2.5,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 207,
+        "path": "views/jct-347780192-207.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=0XVcBa5T3p7JSZEx72_J1g&heading=207&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=0XVcBa5T3p7JSZEx72_J1g&cb_client=maps_sv.tactile&w=1024&h=512&yaw=207&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 27,
+        "path": "views/jct-347780192-027.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=0XVcBa5T3p7JSZEx72_J1g&heading=27&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=0XVcBa5T3p7JSZEx72_J1g&cb_client=maps_sv.tactile&w=1024&h=512&yaw=27&pitch=0&thumbfov=90"
       }
     ],
     "observationStatus": "visually-reviewed-2026-10-19"
@@ -7776,6 +8387,59 @@
     "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
+    "id": "jct-272560242",
+    "s": 4058.2,
+    "street": "Αρεακη",
+    "lat": 38.014012761640366,
+    "lon": 23.778718469021182,
+    "heading": 176,
+    "reason": "public junction at source node 272560242",
+    "fovH": 90,
+    "panoId": "1jyjkTpdNKhOQsT9VvuMqg",
+    "captureDate": [
+      2026,
+      4
+    ],
+    "googleAddress": [
+      [
+        "Psychiko, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      292.46048,
+      88.01117,
+      359.52225
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0140134,
+      "lon": 23.7787226
+    },
+    "snapDistanceM": 0.4,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 176,
+        "path": "views/jct-272560242-176.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=1jyjkTpdNKhOQsT9VvuMqg&heading=176&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=1jyjkTpdNKhOQsT9VvuMqg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=176&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 356,
+        "path": "views/jct-272560242-356.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=1jyjkTpdNKhOQsT9VvuMqg&heading=356&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=1jyjkTpdNKhOQsT9VvuMqg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=356&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
     "id": "lap-4060",
     "s": 4060.2,
     "street": "Unnamed paved junction",
@@ -7824,6 +8488,59 @@
         "height": 512,
         "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=wweSs5kCTvkoNX-aOKj8Uw&heading=3&pitch=0&fov=90",
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=wweSs5kCTvkoNX-aOKj8Uw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=3&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-272560244",
+    "s": 4062.65,
+    "street": "Unnamed paved junction",
+    "lat": 38.01385493719931,
+    "lon": 23.778820513333155,
+    "heading": 189,
+    "reason": "public junction at source node 272560244",
+    "fovH": 90,
+    "panoId": "zQEYj5RrXexBqiUkW1gxzA",
+    "captureDate": [
+      2026,
+      4
+    ],
+    "googleAddress": [
+      [
+        "Psychiko, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      25.206318,
+      90.634224,
+      1.1269996
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0138762,
+      "lon": 23.7788324
+    },
+    "snapDistanceM": 2.6,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 189,
+        "path": "views/jct-272560244-189.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=zQEYj5RrXexBqiUkW1gxzA&heading=189&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=zQEYj5RrXexBqiUkW1gxzA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=189&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 9,
+        "path": "views/jct-272560244-009.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=zQEYj5RrXexBqiUkW1gxzA&heading=9&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=zQEYj5RrXexBqiUkW1gxzA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=9&pitch=0&thumbfov=90"
       }
     ],
     "observationStatus": "visually-reviewed-2026-10-19"
@@ -7930,6 +8647,120 @@
         "height": 512,
         "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=D_Uefk3aT0uEHg_E8hFoLw&heading=45&pitch=0&fov=90",
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=D_Uefk3aT0uEHg_E8hFoLw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=45&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-272560246",
+    "s": 4074.2,
+    "street": "Μαλακάση",
+    "lat": 38.01374425296795,
+    "lon": 23.778641754200564,
+    "heading": 225,
+    "reason": "public junction at source node 272560246",
+    "fovH": 90,
+    "panoId": "Sfq2p6OmqRq7U_VvvbwZlw",
+    "captureDate": [
+      2026,
+      4
+    ],
+    "googleAddress": [
+      [
+        "14 Πριγκηπισσης Ελένης Του Νικολάου",
+        "el"
+      ],
+      [
+        "Psychiko, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      60.394432,
+      89.59363,
+      1.1754677
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0137399,
+      "lon": 23.7786776
+    },
+    "snapDistanceM": 3.2,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 225,
+        "path": "views/jct-272560246-225.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=Sfq2p6OmqRq7U_VvvbwZlw&heading=225&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=Sfq2p6OmqRq7U_VvvbwZlw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=225&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 45,
+        "path": "views/jct-272560246-045.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=Sfq2p6OmqRq7U_VvvbwZlw&heading=45&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=Sfq2p6OmqRq7U_VvvbwZlw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=45&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-272560247",
+    "s": 4074.2,
+    "street": "Μαλακάση",
+    "lat": 38.01374425296795,
+    "lon": 23.778641754200564,
+    "heading": 225,
+    "reason": "public junction at source node 272560247",
+    "fovH": 90,
+    "panoId": "Sfq2p6OmqRq7U_VvvbwZlw",
+    "captureDate": [
+      2026,
+      4
+    ],
+    "googleAddress": [
+      [
+        "14 Πριγκηπισσης Ελένης Του Νικολάου",
+        "el"
+      ],
+      [
+        "Psychiko, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      60.394432,
+      89.59363,
+      1.1754677
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0137473,
+      "lon": 23.7785873
+    },
+    "snapDistanceM": 4.8,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 225,
+        "path": "views/jct-272560247-225.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=Sfq2p6OmqRq7U_VvvbwZlw&heading=225&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=Sfq2p6OmqRq7U_VvvbwZlw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=225&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 45,
+        "path": "views/jct-272560247-045.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=Sfq2p6OmqRq7U_VvvbwZlw&heading=45&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=Sfq2p6OmqRq7U_VvvbwZlw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=45&pitch=0&thumbfov=90"
       }
     ],
     "observationStatus": "visually-reviewed-2026-10-19"

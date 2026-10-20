@@ -1,5 +1,5 @@
 {
-  "source": "Visual review of 191 stations / 382 Google Street View panes, 2026-10-19, including all 89 public lap/ring junction nodes within 6 m of requested stations; panorama metadata in impl-e/references/stations.json. Sizes are visual estimates, OSM footprints retained. No imagery is a build input.",
+  "source": "Visual review of 206 stations / 412 Google Street View panes, 2026-10-19, including all 89 public lap/ring junction nodes within 6 m in world space of requested positions; panorama metadata in impl-e/references/stations.json. Sizes are visual estimates, OSM footprints retained. No imagery is a build input.",
   "sections": [
     {
       "s0": 0,
