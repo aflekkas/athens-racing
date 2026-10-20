@@ -64,14 +64,15 @@ export function renderLeaderboards(menu, d) {
     C.button({ label: 'CLEAR FILTERS', act: 'leaderboardReset', variant: 'ghost', size: 'sm', block: true });
   const rows = (d.tab === 'personal' ? local : d.entries || []).filter(r => matchesRecord(r, f));
   let content;
-  if (d.tab === 'global' && d.loading) content = C.panel('LOADING TIMES', C.spinner(), { attrs: { role: 'status' } });
-  else if (d.tab === 'global' && d.error) content = C.panel('GLOBAL TIMES UNAVAILABLE', `<p>${esc(d.error)}</p>${C.button({ label: 'TRY AGAIN', act: 'leaderboardRetry' })}`, { attrs: { role: 'status' } });
-  else content = rows.length ? `<ol class="lb-records" aria-label="Ranked times">${rows.map((r, i) => `<li>${renderBestRecord(r, { rank: i + 1, global: d.tab === 'global' })}</li>`).join('')}</ol>` : C.panel('NO TIMES YET', '<p>No records match these filters. Try another setup or complete a race on this track.</p>', { attrs: { role: 'status' } });
+  // One state at a time in the results column: loading, failed, empty or the ranked list.
+  if (d.tab === 'global' && d.loading) content = C.emptyState({ busy: true, title: 'LOADING TIMES' });
+  else if (d.tab === 'global' && d.error) content = C.emptyState({ icon: 'triangle-alert', tone: 'bad', title: 'TIMES UNAVAILABLE', text: esc(d.error), action: C.button({ label: 'TRY AGAIN', act: 'leaderboardRetry' }) });
+  else content = rows.length ? `<ol class="lb-records" aria-label="Ranked times">${rows.map((r, i) => `<li>${renderBestRecord(r, { rank: i + 1, global: d.tab === 'global' })}</li>`).join('')}</ol>` : C.emptyState({ icon: 'timer', title: 'NO TIMES YET', text: d.tab === 'personal' ? 'Finish a clean race on this track to set one.' : 'No one has set a time with these filters.' });
   // A render schedules one request per filter key. Responses from an abandoned screen are ignored.
   if (d.tab === 'global') queueMicrotask(() => loadGlobal(menu, d));
-  return C.browseGrid({ variant: 'filtered', title: 'LEADERBOARDS', kick: 'PURE TIME', cls: 'scr--leaderboards', hints: [['select', 'SELECT'], ['leftright', 'FILTER'], ['tabs', 'TAB'], ['back', 'BACK']], filters:
-    C.tabs({ key: 'leaderboardTab', value: d.tab, options: [['personal', 'PERSONAL BESTS', 'timer'], ['global', 'GLOBAL', 'globe']] }), aside: C.panel('FILTER TIMES', filters), busy: d.tab === 'global' && !!d.loading,
-    items: `${C.panel('COMPARE TIMES', `<p>${d.tab === 'personal' ? 'Your fastest clean run for each setup · saved on this device.' : 'Fastest runs from all drivers · up to 100 matching times.'} Different routes and setups are ranked together unless filtered.</p>`)}${content}` });
+  return C.browseGrid({ variant: 'filtered', title: 'LEADERBOARDS', kick: 'QUICK RACE', cls: 'scr--leaderboards', hints: [['select', 'SELECT'], ['leftright', 'FILTER'], ['tabs', 'TAB'], ['back', 'BACK']], filters:
+    C.tabs({ key: 'leaderboardTab', value: d.tab, options: [['personal', 'PERSONAL BESTS'], ['global', 'ALL DRIVERS']] }), aside: C.panel('', filters), busy: d.tab === 'global' && !!d.loading,
+    items: `<p class="muted lb-note">${d.tab === 'personal' ? 'Your fastest clean runs, saved on this device.' : 'The 100 fastest clean runs from all drivers.'}</p>${content}` });
 }
 async function loadGlobal(menu, d) {
   if (menu.screen !== 'leaderboards' || menu.data !== d) return;

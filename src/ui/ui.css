@@ -1332,3 +1332,4 @@ html[data-device="blocked"] #device-gate { display: block; position: fixed; inse
   button:not(.btn, .hu-driver, .scr__back):hover { filter: contrast(.8) brightness(1.05); }
   :is(#race-settings, .tow-actions button):hover { background: #35414b; }
 }
+.lb-note { margin: 0 0 var(--s-3); font-size: var(--t-sm); }
