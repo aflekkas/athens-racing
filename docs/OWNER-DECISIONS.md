@@ -177,3 +177,41 @@ Owner feedback on the Athens screenshots: "the roads look good (even something s
 * Budgets: all new textures under 3 MB (one 256 px noise texture, 0.33 MB), instanced props, **World detail Off removes the layers** (plain colour, no props, no foam draw call), every addition reports its bytes per cell. Details, costs and the data caches: [docs/world-dressing.md](world-dressing.md).
 * Guards: `tools/athens-detail.test.mjs`, `tools/world-gen/dressing.test.mjs`.
 
+
+## 2026-10-20 — Free roam: click anywhere on the map, no POI list; trackpad pans
+
+The owner refined the 2026-10-19 spawn picker. The owner's words: "clicking into specific POIs ... is weird", "on trackpad it does not pan well (it is very hard to do so)", "clicking through the arrows of free roam has me cycling through 40 POIs rather than general areas", and "would it not make sense for free roam to just be click anywhere on the map".
+
+**How it works now:**
+- **Click to spawn:** free roam is click anywhere on the Attica map. The click snaps to the nearest drivable road, shows a marker with the street or area name, and you press DRIVE.
+- **No pins:** there are no named POI pins, and no list of POIs to cycle through.
+- **Arrows:** the keys (A/D, ←/→, LB/RB) step through general areas only, one per playable map (Riviera, Penteli, Psychiko, Megara, and Athens when it is enabled). Each step flies the camera to that area and pre-selects a sensible road point there.
+- **Trackpad and mouse:**
+  - A two-finger trackpad scroll pans the map (wheel deltaX/deltaY).
+  - A pinch (ctrl+wheel) zooms.
+  - A mouse wheel without ctrl keeps zooming when the input is clearly a mouse wheel (line-mode or large discrete deltas).
+  - Click-drag pans with either.
+  - This applies to the Track select map as well.
+
+**Unchanged:**
+- Free roam still has no route, no start/finish and no track UI.
+- Placement still uses the tow placement (on a road, lane-centred, at road level).
+
+Guard: `tools/owner-locked-free-roam-spawn.test.mjs`, updated by the change. Ask the owner before changing it.
+
+## 2026-10-20 — The open world must feel like Athens: detail and beauty within the performance budgets
+
+Owner decision: the Athens open world should look and feel like the real city. Detail and beauty are added without giving up performance. Owner: "is there any way we can add detail and beauty without sacrificing performance, the map and stuff is still kind of bland, that's something we need to make sure we do, what's the point of an open world if it feels nothing like the real world".
+
+**How it is built:**
+- Every addition is procedural or generated from data, not hand-made per place (landmarks are the only exception, see below).
+- Repeated elements are instanced.
+- Textures stay atlas-based and small.
+- Far detail drops out by distance.
+- World detail Off removes the additions.
+
+**What it must stay within:**
+- the measured budgets: per-cell size, stream resident memory, the draw-call budget tests and the locked Lighting Off + Effects Off look;
+- tone mapping and colour grading only, with no shadow maps or post effects.
+
+**Landmarks:** a small set of recognisable landmarks (Acropolis/Parthenon, Lycabettus, Parliament/Syntagma, Panathenaic Stadium, Zappeion, Temple of Olympian Zeus, Hymettus and Parnitha on the horizon) may be modelled once, low-poly, and placed at their OSM positions.
