@@ -1,6 +1,6 @@
 // Per-cell CSR building-wall index. All retained buffers are counted in worker
 // admission and transferred with the contact packet; no whole-map wall hash.
-export function buildTileObstacleIndex(t){
+export function buildTileObstacleIndex(t,boxes=null){
  let minX=0,minZ=0,maxX=512,maxZ=512;for(let i=0;i<t.buildingCorners.length;i+=2){minX=Math.min(minX,t.buildingCorners[i]);maxX=Math.max(maxX,t.buildingCorners[i]);minZ=Math.min(minZ,t.buildingCorners[i+1]);maxZ=Math.max(maxZ,t.buildingCorners[i+1]);}
  const bounds=new Float32Array([minX,minZ,(maxX-minX)/32,(maxZ-minZ)/32,maxX,maxZ]);
  const rows=[],buckets=Array.from({length:1024},()=>[]);
@@ -12,6 +12,12 @@ export function buildTileObstacleIndex(t){
    for(let z=loZ;z<=hiZ;z++)for(let x=loX;x<=hiX;x++)buckets[z*32+x].push(row);
   }
  }
+ // parked cars and scooters (world-tile-parking.js): four walls each, so the player and the traffic hit them like a building
+ if(boxes)for(let b=0;b<boxes.length;b+=7){const x=boxes[b],y=boxes[b+1],z=boxes[b+2],yaw=boxes[b+3],hl=boxes[b+4],hw=boxes[b+5],h=boxes[b+6],tx=Math.sin(yaw),tz=Math.cos(yaw),nx=tz,nz=-tx;
+  const c=[[x+tx*hl+nx*hw,z+tz*hl+nz*hw],[x+tx*hl-nx*hw,z+tz*hl-nz*hw],[x-tx*hl-nx*hw,z-tz*hl-nz*hw],[x-tx*hl+nx*hw,z-tz*hl+nz*hw]];
+  for(let j=0;j<4;j++){const [ax,az]=c[j],[bx,bz]=c[(j+1)%4],row=rows.length/6;rows.push(ax,az,bx,bz,y,y+h);
+   const loX=Math.min(31,Math.max(0,Math.floor((Math.min(ax,bx)-bounds[0])/bounds[2]))),hiX=Math.min(31,Math.max(0,Math.floor((Math.max(ax,bx)-bounds[0])/bounds[2]))),loZ=Math.min(31,Math.max(0,Math.floor((Math.min(az,bz)-bounds[1])/bounds[3]))),hiZ=Math.min(31,Math.max(0,Math.floor((Math.max(az,bz)-bounds[1])/bounds[3])));
+   for(let zz=loZ;zz<=hiZ;zz++)for(let xx=loX;xx<=hiX;xx++)buckets[zz*32+xx].push(row);}}
  const segments=new Float32Array(rows),offsets=new Uint32Array(1025);for(let i=0;i<1024;i++)offsets[i+1]=offsets[i]+buckets[i].length;
  const refs=new Uint32Array(offsets[1024]);for(let i=0;i<1024;i++)refs.set(buckets[i],offsets[i]);return {segments,offsets,refs,bounds};
 }
