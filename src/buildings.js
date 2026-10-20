@@ -142,7 +142,7 @@ export function buildBuildings(map,scene,heightC,labels,infill=[]) {
     const g=buildingBlockGeometry(p,top-base);g.translate(0,base,0);
     const key=Math.floor(cx/500)+','+Math.floor(cz/500);if(!chunks.has(key))chunks.set(key,new GeoBatch());
     const batch=chunks.get(key),start=batch.count;
-    batch.add(g,M(0,0,0),palette[Math.abs(Number(b.id)||0)%palette.length]);
+    batch.add(g,M(0,0,0),b.color || palette[Math.abs(Number(b.id)||0)%palette.length]);
     bakeBlockShade(batch,start,base,top);
     batch.facade ||= [];const style=buildingStyle(b);
     for(let i=start;i<batch.count;i++){

@@ -23,6 +23,20 @@ export function buildRoadworks(map, scene, ground, assets = {}) {
     // Local ground offset at (lx,lz): each barrier section and cone follows a sloping street.
     const y = at(b.x, b.z), rise = (lx, lz) => at(b.x + cos * lx + sin * lz, b.z - sin * lx + cos * lz) - y;
     root.position.set(b.x, y, b.z); root.rotation.y = b.yaw; group.add(root);
+    if (b.dressing === 'guardrail') {
+      // Signal slips retain the same visible/physical closure, dressed as the local steel separators.
+      // No cones, orange plastic or works signs in the Faros/Elikonos junction sightlines.
+      const count = Math.ceil(b.hl * 2 / 3), length = b.hl * 2 / count;
+      for (let i = 0; i < count; i++) {
+        const z = -b.hl + (i + .5) * length, dy = rise(0, z);
+        for (const h of [.43, .77]) {
+          const rail=mesh(root, box, white, 0, h + dy, z, .12, .12, length);
+          rail.rotation.x=-Math.atan2(rise(0,z+length/2)-rise(0,z-length/2),length);
+        }
+        mesh(root, box, dark, 0, .43 + dy, z, .1, .86, .1);
+      }
+      continue;
+    }
     // Alternating water-filled safety barriers; continuous width includes the footways.
     const count = Math.ceil(b.hl * 2 / 1.8), length = b.hl * 2 / count;
     for (let i = 0; i < count; i++) {
@@ -50,6 +64,7 @@ export function buildRoadworks(map, scene, ground, assets = {}) {
     group.traverse(o => { if (o.isMesh && o.geometry === box && o.scale.y < .09) { o.getWorldPosition(p); footings.push([p.x, p.y - o.scale.y / 2, p.z]); } });
     group.userData.footings = footings;
     group.userData.batches = batchStatic(group, 200);
+    group.traverse(o=>{if(!o.isMesh)return;o.geometry.computeBoundingSphere();o.boundingSphere=o.geometry.boundingSphere;o.userData={...o.userData,lod:true,far:300,impostor:false};});
   }
   const base = ground.parked || [];
   const colliders = blocks.map(b => ({ ...b, kind: 'roadworks', restitution: .05, damageScale: .65 }));

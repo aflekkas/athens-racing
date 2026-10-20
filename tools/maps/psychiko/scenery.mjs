@@ -11,6 +11,7 @@
 //   parking [ref, side, s0, s1]                    kerb rows (lap bays sit outside the raced width)
 //   poles   [ref, side, s, type]                   0 green gooseneck + cream bell (avenues), 1 utility pole + side arm
 //   zebras  [ref, s]                               marked crossings across the whole carriageway
+import { lapCharacter } from './recognition.mjs';
 import { Route, Terrain } from '../../../src/map.js';
 import { RoadNetwork } from '../../../src/road-network-surface.js';
 import { pointInPoly, polyBounds } from '../../../src/util.js';
@@ -100,22 +101,32 @@ export function buildPsychikoScenery(data, bytes, osm = []) {
           // Driveway: a 3.5 m opening in most villa plots, half of them closed by a dark metal gate.
           if (type && type !== 'school-stone' && r > .25) { const d0 = .2 + hash(plot, ref, side, 7) * .55; if (local >= d0 && local < d0 + 3.5 / 24) type = hash(ref, plot, side) < .5 ? 'gate' : null; }
         }
+        // Explicit lap-side observations replace the municipal fallback mix where the survey is dense.
+        const seen = ref < 0 && lapCharacter(s);
+        if (seen && clear(x, z, .1, own) && !inBuilding(x - p.tz * side * 1.2, z + p.tx * side * 1.2)) {
+          type = seen[side < 0 ? 'left' : 'right']; if (type === 'open') type = null;
+          // Keep the mapped College gates open in the continuous wall, plus ordinary villa drives.
+          if ((s > 3201 && s < 3210 && side < 0) || (s > 3640 && s < 3651 && side > 0)) type = null;
+          else if (type && !['school-stone','metal-fence'].includes(type) && (s % 28) > 22 && (s % 28) < 26) type = 'gate';
+        }
         if (!type) { flush(); continue; }
-        const h = type === 'school-stone' ? 2.6 + hash(ref, side) * .6 : type === 'hedge' ? 1.7 + r * .9 : type === 'gate' ? 1.8 : type === 'stone' ? 1.1 + r * .8 : type === 'plaster' ? 1.7 + r * .5 : type === 'metal-fence' ? 1.6 + r * .3 : 1.7 + r * .4;
+        const h = type === 'school-stone' ? 3.25 + hash(ref, side) * .35 : type === 'hedge' ? 1.7 + r * .9 : type === 'gate' ? 1.8 : type === 'stone' ? 1.1 + r * .8 : type === 'plaster' ? 1.7 + r * .5 : type === 'metal-fence' ? 1.6 + r * .3 : 1.7 + r * .4;
         if (!run || run.type !== type || Math.abs(run.h - h) > .01) { flush(); run = { type, h, s0: s - 1, s1: s + 1 }; } else run.s1 = s + 1;
       }
       flush();
     }
     // Street trees in footway pits and garden trees beyond the boundary.
     for (let s = 4; s < length - 4; s += 3) {
-      const p = at(s), sec = strip.section(s), [prob, mix] = STREET_TREES[sec.kind] || STREET_TREES.residential;
+      const p = at(s), sec = strip.section(s), [prob, baseMix] = STREET_TREES[sec.kind] || STREET_TREES.residential;
+      const character=ref<0&&lapCharacter(s)?.character;
+      const mix=character==='cypress-lane'?[.2,.45,.15,0,.2]:character==='college'?[.65,.2,.15,0,0]:baseMix;
       for (const side of [-1, 1]) {
         const r = hash(ref, side, Math.floor(s), 11);
         // Mature avenue rows: roughly 7.5 m between pits, with gaps at mouths and buildings. Crowns overlap above
         // the street; trunks stay on the footway. The survey's A9/A8 classes alone receive this denser treatment.
         const avenue = sec.k === 'A9' || sec.k === 'A8', phase = side > 0 ? 3 : 0;
         const streetTree = avenue ? Math.floor((s + phase + 3) / 7.5) !== Math.floor((s + phase) / 7.5) && r < .94 : r < prob / 3.4;
-        if (strip.fw(s) >= .9 && streetTree) { const u = strip.hw(s) + .55, x = p.x - p.tz * u * side, z = p.z + p.tx * u * side;
+        if (strip.fw(s) >= .9 && streetTree && !(ref < 0 && s < 70)) { const u = strip.hw(s) + .55, x = p.x - p.tz * u * side, z = p.z + p.tx * u * side;
           if (!inBuilding(x, z) && roadClear(x, z, -strip.fw(s) + .3, own) && lapClear(x, z, -1.8 + .2) && !network.islandAt(x, z)) { const sp = pickSpecies(mix, hash(ref, side, Math.floor(s), 12)), h = avenue && sp === 2 ? 13 + hash(s, ref, 13) * 4 : treeHeight(sp, hash(s, ref, 13)) * (sp === 4 ? 1 : .85); tree(x, z, sp, h); } }
         if (r > .55 && r < .55 + .25) { const u = strip.hw(s) + strip.fw(s) + 2.5 + hash(ref, side, s, 14) * 9, x = p.x - p.tz * u * side, z = p.z + p.tx * u * side;
           if (clear(x, z, 1.5, null) && !inBuilding(x + 2, z) && !inBuilding(x - 2, z) && !inBuilding(x, z + 2) && !inBuilding(x, z - 2)) { const sp = inCampus(x, z) ? pickSpecies([.5, .3, .2, 0, 0], hash(x | 0, z | 0)) : pickSpecies(GARDEN, hash(ref, side, s, 15)); tree(x, z, sp, treeHeight(sp, hash(ref, s, side, 16))); } }
@@ -132,7 +143,7 @@ export function buildPsychikoScenery(data, bytes, osm = []) {
         const end = s => { if (s0 !== null && s - s0 >= 5) parking.push(ref, side, dm(s0), dm(s)); s0 = null; };
         for (let s = 8; s <= length - 8; s += 1) {
           const sec = strip.section(s), block = Math.floor(s / 60), e = route.edge(s), u = e + 1.15, p = at(s), x = p.x - p.tz * u * side, z = p.z + p.tx * u * side;
-          const ok = ['A9', 'A8'].includes(sec.k) && e >= 3.9 && hash(side, block, 31) < (sec.parking ?? .5) * 1.3 && !route.roundabouts.some(r => s > r.s0 - 18 && s < r.s1 + 18)
+          const ok = ['A9','A8','R6','N5','H6','P7','I7'].includes(sec.k) && e >= 2.6 && s > 90 && hash(side, block, 31) < (sec.parking ?? .5) * 1.3 && !route.roundabouts.some(r => s > r.s0 - 18 && s < r.s1 + 18)
             && !network.mouth(s, side, 6) && !network.candidates(x, z).some(seg => network.distance(seg, x, z) < seg.hw + 6) && !((s % 26) / 26 > .6 && (s % 26) / 26 < .6 + 4 / 26 && hash(side, Math.floor(s / 26), 32) < .5);
           if (ok && s0 === null) s0 = s; else if (!ok) end(s);
         }
@@ -156,6 +167,9 @@ export function buildPsychikoScenery(data, bytes, osm = []) {
       end(length - 6);
     }
   }
+
+  for(const s of [52,70,88]) {const p=route.frame(s,{}),u=route.edge(s)+5.5,x=p.x-p.tz*u,z=p.z+p.tx*u;
+    if(clear(x,z,.5,null))tree(x,z,3,10.5);}
 
   // Each square keeps an open centre/path corridor and irregular crown groups. These are class-level garden
   // estimates from the survey notes, not satellite-derived trunk coordinates. Use the actual inset island polygon,

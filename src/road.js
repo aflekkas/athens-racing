@@ -104,7 +104,8 @@ function asphaltMaterial(psychiko = false) {
         float wearK = 0.32 + polish * 0.25 * heavy + (1.0 - lumA) * 0.25;
         float chip = smoothstep(wearK - 0.05, wearK + 0.08, wearN);
         ${psychiko ? `// Class paint: solid two-way avenues, dashed lane dividers on D8/T10, no paint on unmarked streets.
-        if(nl>.02&&nl<.75){float lanes=max(2.,floor(e/1.65+.5)),lw=2.*e/lanes,q=(fract((u+e)/lw+.5)-.5)*lw;m=band(q,0.,.12)*step(lw*.5,e-au)*step(fract(s/12.),.25);}
+        if(nl>.5&&nl<.75){m=band(u,e*.5,.14)+(band(u,0.,.12)+band(u,-e*.5,.12))*step(fract(s/12.),.25);}
+        else if(nl>.02&&nl<.75){float lanes=max(2.,floor(e/1.65+.5)),lw=2.*e/lanes,q=(fract((u+e)/lw+.5)-.5)*lw;m=band(q,0.,.12)*step(lw*.5,e-au)*step(fract(s/12.),.25);}
         else {m*=step(.75,nl);chip=mix(.72,1.,chip);}
         if(nl<-.5){vec2 bq=vec2(u,s)/vec2(.14,.22);float seam=step(.07,fract(bq.x+floor(bq.y)*.5))*step(.08,fract(bq.y));base=mix(vec3(.17,.13,.11),vec3(.29,.23,.20),seam)*(.85+.3*macro);}` : ''}
         paint = clamp(m, 0.0, 1.0) * (1.0 - gut) * chip;

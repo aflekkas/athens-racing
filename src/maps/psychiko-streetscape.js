@@ -4,6 +4,7 @@
 // Blocky low-poly merged geometry, streamed in camera-centred cells: one draw call per cell and only nearby cells
 // resident (ranges follow the draw-distance class), so memory and draw calls stay bounded. World detail Off hides it.
 import * as THREE from 'three';
+import { stoneTexture, recognitionAssets, indexRecognition, drawRecognition } from './psychiko-recognition.js';
 import { settings, onSettings } from '../settings.js';
 import { drawScale } from '../scenery.js';
 import { blockFootprint } from '../buildings.js';
@@ -13,8 +14,8 @@ import { assertWorldBudget } from '../world-art-direction.js';
 const C = new THREE.Color();
 /** Growable flat-shaded triangle soup: float positions, normalised byte normals and colours. */
 class Mesher {
-  constructor(n = 4096) { this.p = new Float32Array(n * 3); this.n = new Int8Array(n * 3); this.c = new Uint8Array(n * 3); this.v = 0; }
-  grow() { const k = this.p.length * 2, p = new Float32Array(k), n = new Int8Array(k), c = new Uint8Array(k); p.set(this.p); n.set(this.n); c.set(this.c); this.p = p; this.n = n; this.c = c; }
+  constructor(n = 4096) { this.p = new Float32Array(n * 3); this.n = new Int8Array(n * 3); this.c = new Uint8Array(n * 3); this.st = new Uint8Array(n); this.stone = 0; this.v = 0; }
+  grow() { const k = this.p.length * 2, p = new Float32Array(k), n = new Int8Array(k), c = new Uint8Array(k); p.set(this.p); n.set(this.n); c.set(this.c); const st = new Uint8Array(k / 3); st.set(this.st); this.st = st; this.p = p; this.n = n; this.c = c; }
   /** One flat triangle; with `inside` ([x,y,z] behind the face) the winding is flipped so the face looks away from it. */
   tri(ax, ay, az, bx, by, bz, cx, cy, cz, color, inside = null) {
     if ((this.v + 3) * 3 > this.p.length) this.grow();
@@ -22,7 +23,7 @@ class Mesher {
     let nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx; const l = Math.hypot(nx, ny, nz) || 1; nx = nx / l * 127; ny = ny / l * 127; nz = nz / l * 127;
     if (inside && nx * ((ax + bx + cx) / 3 - inside[0]) + ny * ((ay + by + cy) / 3 - inside[1]) + nz * ((az + bz + cz) / 3 - inside[2]) < 0) { nx = -nx; ny = -ny; nz = -nz; [bx, by, bz, cx, cy, cz] = [cx, cy, cz, bx, by, bz]; }
     C.set(color); const r = C.r * 255, g = C.g * 255, b = C.b * 255;
-    for (const [x, y, z] of [[ax, ay, az], [bx, by, bz], [cx, cy, cz]]) { const i = this.v++ * 3; this.p[i] = x; this.p[i + 1] = y; this.p[i + 2] = z; this.n[i] = nx; this.n[i + 1] = ny; this.n[i + 2] = nz; this.c[i] = r; this.c[i + 1] = g; this.c[i + 2] = b; }
+    for (const [x, y, z] of [[ax, ay, az], [bx, by, bz], [cx, cy, cz]]) { const i = this.v++ * 3; this.st[i / 3] = this.stone; this.p[i] = x; this.p[i + 1] = y; this.p[i + 2] = z; this.n[i] = nx; this.n[i + 1] = ny; this.n[i + 2] = nz; this.c[i] = r; this.c[i + 1] = g; this.c[i + 2] = b; }
   }
   quad(a, b, c, d, color, inside = null) { this.tri(...a, ...b, ...c, color, inside); this.tri(...a, ...c, ...d, color, inside); }
   /** Copy a template ({p,n,c} soup in model space) rotated by yaw, scaled and translated. */
@@ -31,7 +32,7 @@ class Mesher {
     while ((this.v + count) * 3 > this.p.length) this.grow();
     for (let k = 0; k < count; k++) {
       const j = k * 3, i = this.v++ * 3, px = t.p[j] * sx, pz = t.p[j + 2] * sz, nx = t.n[j], nz = t.n[j + 2];
-      this.p[i] = x + px * cs + pz * sn; this.p[i + 1] = y + t.p[j + 1] * sy; this.p[i + 2] = z - px * sn + pz * cs;
+      this.st[i / 3] = 0; this.p[i] = x + px * cs + pz * sn; this.p[i + 1] = y + t.p[j + 1] * sy; this.p[i + 2] = z - px * sn + pz * cs;
       this.n[i] = nx * cs + nz * sn; this.n[i + 1] = t.n[j + 1]; this.n[i + 2] = -nx * sn + nz * cs;
       if (tint === 1) { this.c[i] = t.c[j]; this.c[i + 1] = t.c[j + 1]; this.c[i + 2] = t.c[j + 2]; }
       else { this.c[i] = Math.min(255, t.c[j] * tint); this.c[i + 1] = Math.min(255, t.c[j + 1] * tint); this.c[i + 2] = Math.min(255, t.c[j + 2] * tint); }
@@ -42,6 +43,7 @@ class Mesher {
     g.setAttribute('position', new THREE.BufferAttribute(this.p.slice(0, n), 3));
     g.setAttribute('normal', new THREE.BufferAttribute(this.n.slice(0, n), 3, true));
     g.setAttribute('color', new THREE.BufferAttribute(this.c.slice(0, n), 3, true));
+    g.setAttribute('aStone', new THREE.BufferAttribute(this.st.slice(0,this.v),1,true));
     g.computeBoundingSphere(); return g;
   }
 }
@@ -117,7 +119,7 @@ const WALL = {
   0: { base: ['#ebe4d2', '#f1eee6', '#e3d9c3'], baseH: 1.05, top: '#2d3a32', topT: .05, t: .3 },
   1: { base: ['#b8a98c'], baseH: .35, top: '#4b6838', topT: .95, t: .35, hedge: true },
   2: { base: ['#c9bea6', '#ddd6c6'], baseH: .45, top: '#283430', topT: .05, t: .28 },
-  3: { base: ['#cdb48d', '#c4aa84'], baseH: 1, t: .5, cap: '#b39a76' },
+  3: { base: ['#d0c8b5', '#c9c2b1'], baseH: 1, t: .5, cap: '#b9b2a1' },
   4: { base: ['#c9b38e', '#d3bf9c', '#bea883'], baseH: 1, t: .4, cap: '#ab9575' },
   5: { base: ['#ede7d8', '#f3f0e8', '#e0d7c2'], baseH: 1, t: .25, cap: '#cfc6b1' },
   6: { base: ['#262f2b'], baseH: 1, t: .06, posts: '#efece4' },
@@ -129,6 +131,8 @@ export class PsychikoStreetscape {
     const scenery = map.data.psychiko?.scenery || {};
     this.group = new THREE.Group(); this.group.name = 'psychiko-streetscape'; parent.add(this.group);
     this.group.worldDetailController = this;
+    this.stoneTexture = stoneTexture();
+    this.recognitionAssets = recognitionAssets(template,box,lathe);
     this.materials = { props: this.fadeMaterial(260), trees: this.fadeMaterial(420) }; this.cells = new Map(); this.last = { x: Infinity, z: Infinity }; this.obstacles = [];
     this.trees = treeTemplates(); this.cars = carTemplates(); this.lamps = [gooseneck(), utilityPole(), arterialLamp()];
     this.stats = { cells: 0, builds: 0 };
@@ -139,13 +143,14 @@ export class PsychikoStreetscape {
   }
   fadeMaterial(range) {
     const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 }), far = { value: range };
-    m.userData.far = far; m.customProgramCacheKey = () => 'psychiko-streetscape-v1';
+    m.userData.far = far; m.customProgramCacheKey = () => 'psychiko-streetscape-rubble-v2';
     // Dithered fade over the last 40 m of the ring, so streamed cells never pop in.
     m.onBeforeCompile = sh => {
-      sh.uniforms.uStreetFar = far;
-      sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vStreetWorld;').replace('#include <project_vertex>', '#include <project_vertex>\nvStreetWorld=(modelMatrix*vec4(transformed,1.)).xyz;');
-      sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vStreetWorld; uniform float uStreetFar;')
-        .replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\n{float far=uStreetFar;float d=distance(vStreetWorld.xz,cameraPosition.xz);float r=fract(52.9829189*fract(dot(gl_FragCoord.xy,vec2(.06711056,.00583715))));if(r<smoothstep(far-40.,far,d))discard;}');
+      sh.uniforms.uStreetFar = far; sh.uniforms.tStreetStone = {value:this.stoneTexture};
+      sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vStreetWorld; attribute float aStone; varying float vStoneWeight;').replace('#include <project_vertex>', '#include <project_vertex>\nvStreetWorld=(modelMatrix*vec4(transformed,1.)).xyz;vStoneWeight=aStone;');
+      sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vStreetWorld; uniform float uStreetFar; uniform sampler2D tStreetStone; varying float vStoneWeight;')
+        .replace('#include <color_fragment>', '#include <color_fragment>\nif(vStoneWeight>.5){vec2 stoneUV=vec2(abs(dFdx(vStreetWorld.z))+abs(dFdy(vStreetWorld.z))>abs(dFdx(vStreetWorld.x))+abs(dFdy(vStreetWorld.x))?vStreetWorld.z:vStreetWorld.x,vStreetWorld.y)*.42;diffuseColor.rgb*=texture2D(tStreetStone,stoneUV).rgb*1.15;}')
+        .replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\n{if(vStoneWeight>.4&&vStoneWeight<.6&&fract((vStreetWorld.x+vStreetWorld.z)*2.)>.10)discard;float far=uStreetFar;float d=distance(vStreetWorld.xz,cameraPosition.xz);float r=fract(52.9829189*fract(dot(gl_FragCoord.xy,vec2(.06711056,.00583715))));if(r<smoothstep(far-40.,far,d))discard;}');
     };
     return m;
   }
@@ -210,9 +215,11 @@ export class PsychikoStreetscape {
     }
     for (const r of this.map.data.psychiko?.arterial?.signals || []) put(this.props, 200, r.x, r.z, { ...r, kind: 'signal' });
     for (const r of this.map.data.psychiko?.arterial?.medians || []) put(this.props, 200, r.x, r.z, { ...r, kind: 'median' });
+    indexRecognition(this,put);
     const Z = sc.zebras || [];
     for (let i = 0; i < Z.length; i += 2) { const st = strip(Z[i]); if (!st) continue; const d = Z[i + 1] / 10, p = st.at(d); put(this.props, 200, p.x, p.z, { kind: 'zebra', st, d, ref: Z[i] }); }
   }
+  recognition(m,r) { drawRecognition(this,m,r,box,lathe); }
   groundY(x, z) { const n = this.network?.sample(x, z); return n ? n.y : this.height(x, z); }
   buildCell(kind, key) {
     const m = new Mesher(2048), items = (kind === 'props' ? this.props : this.canopy).get(key) || [];
@@ -233,6 +240,7 @@ export class PsychikoStreetscape {
   signal(m, r) {
     const y = this.groundY(r.x, r.z);
     m.add(SIGNAL, r.x, y, r.z, r.yaw);
+    if(r.hub==='faros')m.add(SIGNAL_ARM,r.x,y,r.z,r.yaw);
   }
   median(m, r) {
     m.add(MEDIAN, r.x, this.groundY(r.x, r.z) + .02, r.z, r.yaw, r.width, 1, r.length);
@@ -268,10 +276,20 @@ export class PsychikoStreetscape {
       m.quad(a0, A0, A1, a1, front, c); m.quad(B0, b0, b1, B1, front, c);
     };
     if (r.type === 6) { slab(0, r.h, w.t, w.base[0]); for (const e of [A, B]) m.add(POST, e.x + nx * .1, this.height(e.x, e.z) - .25, e.z + nz * .1, Math.atan2(dx, dz)); return; }
-    const baseH = w.cap ? r.h : Math.min(r.h, w.baseH);
+    const school = r.type === 3, baseH = school ? r.h - .72 : w.cap ? r.h : Math.min(r.h, w.baseH);
+    m.stone = r.type === 3 || r.type === 4 ? 255 : 0;
     slab(0, baseH - (w.cap ? .12 : 0), w.t, color, color, true);
     if (w.cap) slab(baseH - .12, baseH, w.t + .06, w.cap);
-    if (w.top) slab(baseH, r.h, w.topT, w.top, w.hedge ? '#5a7843' : w.top, true);
+    m.stone = 0;
+    if (w.hedge) slab(baseH, r.h, w.topT, w.top, '#5a7843', true);
+    else if (w.top || school) {
+      const color = school ? '#35483b' : w.top, top = r.h;
+      const panel=(h0,h1)=>{const a=[A.x,ya+h0,A.z],b=[B.x,yb+h0,B.z],c=[B.x,yb+h1,B.z],d=[A.x,ya+h1,A.z];m.quad(a,b,c,d,color);m.quad(b,a,d,c,color);};
+      panel(baseH,baseH+.045); panel(top-.06,top);
+      // Shared cutout rail infill: two-sided panel, 10 triangles per run regardless of its length.
+      // Horizontal cap/base remain geometry; openings and slender pickets use the existing material.
+      m.stone=127; panel(baseH+.045,top-.06); m.stone=0;
+    }
   }
   /** Tiled hipped (or OSM-gabled) roofs on footprints with the pitched flag; flat roofs elsewhere stay as they are. */
   buildRoofs(roofs) {
@@ -325,7 +343,7 @@ export class PsychikoStreetscape {
     if (budget > 0 || jump > 150) this.last = { x: p.x, z: p.z };
     this.stats.cells = this.cells.size;
   }
-  dispose() { this.unsubscribe(); for (const mesh of this.cells.values()) mesh?.geometry.dispose(); this.cells.clear(); this.roofs?.geometry.dispose(); this.roofs?.material.dispose(); for (const mat of Object.values(this.materials)) mat.dispose(); }
+  dispose() { this.unsubscribe(); for (const mesh of this.cells.values()) mesh?.geometry.dispose(); this.cells.clear(); this.roofs?.geometry.dispose(); this.roofs?.material.dispose(); this.stoneTexture.dispose(); for (const mat of Object.values(this.materials)) mat.dispose(); }
 }
 const POST = template(m => box(m, 0, 0, 0, .4, 2, .4, '#efece4'));
 
@@ -341,3 +359,8 @@ const SIGNAL = template(m => {
   for (let k=0;k<3;k++) box(m, 0, 2.56+k*.3, -.141, .2, .19, .025, ['#3f8d66','#695c30','#612f2c'][k]);
 });
 const MEDIAN = template(m => box(m, 0, 0, 0, 1, .16, 1, '#b2ac96', '#8d9675'));
+
+const SIGNAL_ARM=template(m=>{
+  box(m,0,3.4,0,.12,2.8,.12,'#68716b');box(m,1.7,6.05,0,3.5,.12,.12,'#68716b');
+  box(m,3.2,4.85,0,.4,1.15,.28,'#202722');for(let k=0;k<3;k++)box(m,3.2,4.93+k*.32,-.15,.22,.21,.025,['#3f8d66','#695c30','#612f2c'][k]);
+},'lamp');

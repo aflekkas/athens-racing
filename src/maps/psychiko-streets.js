@@ -2,6 +2,7 @@
 // Kerb-to-kerb widths include kerb parking. Mirrors tools/maps/psychiko/raw/street-classes.json (asserted by tools/psychiko-world.test.mjs);
 // the per-OSM-way memberships stay offline and reach the runtime as each road's `k`.
 export const PSYCHIKO_CLASSES = Object.freeze({
+  J13: { w: 13, footway: 1.7, paint: 'split', kind: 'avenue' },
   A9: { w: 9, footway: 1.7, paint: 'double', kind: 'avenue' },
   A8: { w: 8, footway: 1.5, paint: 'double', kind: 'avenue' },
   R6: { w: 6, footway: 1.2, paint: 'none', kind: 'residential' },
@@ -16,9 +17,9 @@ export const PSYCHIKO_CLASSES = Object.freeze({
   C7: { w: 7, footway: 1.5, paint: 'none', kind: 'ring' },
 });
 // Paint code read by the road shaders: 1 double solid centre line, 0.25 dashed same-direction lane dividers.
-const PAINT = { double: 1, dashed: .25, none: 0 };
+const PAINT = { double: 1, split: .6, dashed: .25, none: 0 };
 // Share of kerb sides with parked cars per class, from the surveyed stations ((2·both + one side) / 2·stations).
-const PARKING = { A9: .71, A8: .73, R6: .68, N5: .62, N4: .5, H6: .51, P7: .22, I7: .75, F5: .36, D8: .13, T10: 0, C7: .88 };
+const PARKING = { J13: 0, A9: .71, A8: .73, R6: .68, N5: .62, N4: .5, H6: .51, P7: .22, I7: .75, F5: .36, D8: .13, T10: 0, C7: .88 };
 
 /** Cross-section for a street. `k` is the surveyed per-way class; C7 rings and unsurveyed ways keep the earlier name defaults. */
 export function psychikoStreet(name = '', north = false, k = null) {

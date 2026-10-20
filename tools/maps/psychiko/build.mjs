@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { buildRecognition } from './recognition.mjs';
 // Deterministic inland bundle. No coastal flattening, invented switchbacks or grade cap.
 import fs from 'node:fs';
 import {gunzipSync} from 'node:zlib';
@@ -157,11 +158,14 @@ data.psychiko.sideStreetExits=sideStreetExits(osm,R);
 // Closure placement follows each outgoing source arm, beyond the race carriageway.
 data.roadworks=data.psychiko.sideStreetExits.map(exit=>{
  const start=P(nodes.get(exit.node));let prev=start,travel=0,chosen=null,placed=false;
+ // The two signal junctions use quiet steel separator rails, like their arterial furniture.
+ // Very short slips cannot take an orange barricade farther back without blocking the raced road.
+ const signalMouth=[[38.005,23.7755],[38.01002,23.78001]].some(([lat,lon])=>Math.hypot(start[0]-(lon-proj.lon0)*proj.mlon,start[1]+(lat-proj.lat0)*proj.mlat)<135);
  for(const id of exit.path){const end=P(nodes.get(id));const L=Math.hypot(end[0]-prev[0],end[1]-prev[1]);
   for(let d=1;d<=Math.ceil(L);d++){const t=Math.min(1,d/L),x=prev[0]+(end[0]-prev[0])*t,z=prev[1]+(end[1]-prev[1])*t,q=nearest(x,z,100),dx=(end[0]-prev[0])/L,dz=(end[1]-prev[1])/L;
    const i=q?.i||0,a=(i-2+N-1)%(N-1),b=(i+2)%(N-1),tx=X[b]-X[a],tz=Z[b]-Z[a],alignment=Math.abs(dx*tx+dz*tz)/(Math.hypot(tx,tz)||1),hl=exit.width/2+3;
-   chosen={id:exit.id,node:exit.node,way:exit.way,x:r(x),z:r(z),dx:r(dx),dz:r(dz),yaw:Math.atan2(dz,-dx),hl,hw:.65};
-   if((q?.d??100)>6+hl*alignment&&travel+d>8){placed=true;break;}
+   chosen={id:exit.id,node:exit.node,way:exit.way,x:r(x),z:r(z),dx:r(dx),dz:r(dz),yaw:Math.atan2(dz,-dx),hl,hw:.65,...(signalMouth?{dressing:'guardrail'}:{})};
+   if((q?.d??100)>6+hl*alignment&&travel+d>(signalMouth?60:24)){placed=true;break;}
   }
   if(placed)break;travel+=L;prev=end;
   if(travel>70)break;
@@ -179,6 +183,7 @@ data.roadworks=data.psychiko.sideStreetExits.map(exit=>{
  return chosen;
 });
 data.psychiko.arterial=arterialRecords(selected,P);
+data.psychiko.recognition=buildRecognition(data,osm);
 data.psychiko.scenery=buildPsychikoScenery(data,fs.readFileSync(path.join(out,'terrain.bin')),osm);
 fs.writeFileSync(path.join(out,'map.json'),JSON.stringify(data));
 inject('psychiko');

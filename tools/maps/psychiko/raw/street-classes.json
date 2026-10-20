@@ -121,6 +121,16 @@
    ],
    "paint": "none",
    "footway": 1.5
+  },
+  "J13": {
+   "label": "Faros four-lane asymmetric signal mouth",
+   "w": 13,
+   "range": [
+    12,
+    14
+   ],
+   "paint": "split",
+   "footway": 1.7
   }
  },
  "ways": {

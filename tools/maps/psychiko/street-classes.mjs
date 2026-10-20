@@ -11,6 +11,8 @@ function samples(proj){let s=cache.get(proj);if(!s){s=new Map();for(const [id,v]
 // Eleftherias circular square (park 491349809): its rim and closing portions are ring work, kept on the C7 treatment.
 const ELEFTHERIAS={lat:38.0180861,lon:23.77022,r:60};
 export function psychikoWayClass(id,x,z,proj){
+ // Faros mouth: 3 outbound lanes + 1 inbound, checked at lap-0018/0028/0045 and OSM lane tags.
+ if([465224134,661584002].includes(+id))return 'J13';
  const arterial=KIFISIAS.get(+id);if(arterial)return arterial;
  const v=survey.ways[id];if(!v)return null;
  if(Math.hypot(x-(ELEFTHERIAS.lon-proj.lon0)*proj.mlon,z+(ELEFTHERIAS.lat-proj.lat0)*proj.mlat)<ELEFTHERIAS.r)return 'C7';

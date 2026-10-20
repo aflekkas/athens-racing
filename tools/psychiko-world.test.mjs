@@ -186,7 +186,8 @@ test('surveyed square gardens and start avenue retain planting, outer lamps and 
   }
   for(const pole of items.filter(r=>r.kind==='pole'))assert(!net.islandAt(pole.x,pole.z),'lamps stand outside garden islands');
   const startTrees=items.filter(r=>r.kind==='tree'&&r.sp!==5).filter(r=>{const q=route.project(r.x,r.z);return q.s>10&&q.s<130&&Math.abs(q.u)<route.edge(q.s)+2;});
-  assert(startTrees.length>=20,'mature avenue rows continue beside the start straight');
+  assert(startTrees.filter(t=>route.project(t.x,t.z).s>75).length>=6,'pine avenue begins beyond the open Faros mouth');
+  assert(startTrees.filter(t=>route.project(t.x,t.z).s<60).length<10,'the Faros signal mouth remains open');
   const cars=items.filter(r=>r.kind==='car');
   assert(!cars.some(r=>r.lap&&r.lap.d<18),'Faros traffic light and grid mouth stay clear');
   for(const car of cars){
@@ -317,4 +318,22 @@ test('Kifisias frontage is in free roam in both legal directions; the course nev
  for(const id of data.psychiko.sourceWayIds){const t=ways.get(id).tags;assert(!t.tunnel&&!t.bridge&&!Number(t.layer),'at-grade lap only');}
  for(const id of ['faros','elikonos'])assert(data.psychiko.arterial.signals.filter(s=>s.hub===id).length>=2);
  assert(data.psychiko.arterial.medians.length>20);
+});
+
+
+test('lap survey landmarks retain OSM anchors, safe kiosks and the asymmetric Faros mouth',async()=>{
+ const {loadPsychikoOsm}=await import('./maps/psychiko/corrections.mjs'),osm=loadPsychikoOsm(),nodes=new Map(osm.filter(e=>e.type==='node').map(n=>[n.id,n]));
+ const landmarks=data.psychiko.recognition.landmarks;
+ for(const id of [4285024427,4285022967,3445319234,8694632735,6193531311]){
+  const r=landmarks.find(r=>r.id===id),n=nodes.get(id);assert(r&&n);assert(Math.hypot(r.x-(n.lon-data.proj.lon0)*data.proj.mlon,r.z+(n.lat-data.proj.lat0)*data.proj.mlat)<.015);
+ }
+ assert(landmarks.some(r=>r.label==='Faros shopping block'));assert(landmarks.some(r=>r.label==='Elikonos cream corner office'));
+ assert(route.edge(40)>6.3,'four lanes fit the checked signal mouth');assert(route.edge(100)<4.5,'the wide signal mouth tapers onto the real residential avenue');
+ const THREE=await import('three'),{PsychikoStreetscape}=await import('../src/maps/psychiko-streetscape.js'),street=new PsychikoStreetscape(map,new THREE.Group(),(x,z)=>terrain.height(x,z));
+ try{const items=[...street.props.values()].flat();for(const kiosk of items.filter(r=>r.asset==='kiosk')){const q=route.project(kiosk.x,kiosk.z);assert(Math.abs(q.u)>=route.edge(q.s)+2.1,'kiosk body clears raced carriageway');assert((kiosk.setback||0)<4.5,'source kiosk node needs only a pavement setback');}
+ const walls=items.filter(r=>r.kind==='wall'&&r.side<0&&r.type===3&&route.project(r.A.x,r.A.z).s>3210&&route.project(r.A.x,r.A.z).s<3500);assert(walls.length>30,'continuous stone College boundary');
+ assert(walls.every(r=>r.h>=3.2),'College retaining stone and railing rise above parked cars');
+ const signalExits=data.roadworks.filter(b=>{const q=route.project(b.x,b.z);return q.s<120||q.s>4950&&q.s<5130;});
+ assert(signalExits.length>5);assert(signalExits.every(b=>b.dressing==='guardrail'),'signal sightlines use steel separators without orange works furniture');
+ }finally{street.dispose();}
 });
