@@ -1,0 +1,1651 @@
+[
+  {
+    "id": "lap-0000",
+    "s": 0,
+    "street": "Paraplefri Odos",
+    "lat": 38.00516474797422,
+    "lon": 23.775584478975198,
+    "heading": 212,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-0018",
+    "s": 18,
+    "street": "25is Martiou",
+    "lat": 38.005035198169615,
+    "lon": 23.775467546629702,
+    "heading": 266,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-0028",
+    "s": 28,
+    "street": "25is Martiou",
+    "lat": 38.005102301819704,
+    "lon": 23.775405143620286,
+    "heading": 341,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-0045",
+    "s": 45,
+    "street": "25is Martiou",
+    "lat": 38.00524779461095,
+    "lon": 23.77534456921338,
+    "heading": 342,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-0062",
+    "s": 62,
+    "street": "25is Martiou",
+    "lat": 38.00539328740177,
+    "lon": 23.775284108855875,
+    "heading": 342,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-0090",
+    "s": 90,
+    "street": "25is Martiou",
+    "lat": 38.00563292223197,
+    "lon": 23.775184480194177,
+    "heading": 342,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-0135",
+    "s": 135,
+    "street": "25is Martiou",
+    "lat": 38.00601795994711,
+    "lon": 23.775024334608595,
+    "heading": 342,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-0180",
+    "s": 180,
+    "street": "25is Martiou",
+    "lat": 38.00640308784184,
+    "lon": 23.774864188772906,
+    "heading": 342,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-0225",
+    "s": 225,
+    "street": "25is Martiou",
+    "lat": 38.006788215532055,
+    "lon": 23.774704099245316,
+    "heading": 342,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-0270",
+    "s": 270,
+    "street": "25is Martiou",
+    "lat": 38.00717334322257,
+    "lon": 23.774544010226116,
+    "heading": 342,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-0302",
+    "s": 302.01,
+    "street": "Unnamed paved junction",
+    "lat": 38.007449097775556,
+    "lon": 23.77444671235989,
+    "heading": 19,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-0315",
+    "s": 315,
+    "street": "Unnamed paved junction",
+    "lat": 38.00752499591843,
+    "lon": 23.774556584401566,
+    "heading": 48,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-0360",
+    "s": 360,
+    "street": "Unnamed paved junction",
+    "lat": 38.007895323522455,
+    "lon": 23.77461432455896,
+    "heading": 327,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-0390",
+    "s": 390.02,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.0080286209299,
+    "lon": 23.77432897509905,
+    "heading": 287,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-0405",
+    "s": 405,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.00809916388695,
+    "lon": 23.774186006994352,
+    "heading": 317,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-0414",
+    "s": 414.02,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.00816645678733,
+    "lon": 23.77412937614675,
+    "heading": 335,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-0450",
+    "s": 450,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.00847492812631,
+    "lon": 23.774003968303145,
+    "heading": 343,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-0495",
+    "s": 495,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.00886185772689,
+    "lon": 23.773850880488737,
+    "heading": 343,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-0540",
+    "s": 540,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.009248786129476,
+    "lon": 23.77369779385854,
+    "heading": 343,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-0585",
+    "s": 585,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.009635670594356,
+    "lon": 23.77354465206417,
+    "heading": 343,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-0630",
+    "s": 630,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.01002255506077,
+    "lon": 23.77339150857328,
+    "heading": 343,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-0675",
+    "s": 675,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.010409439527336,
+    "lon": 23.773238365211437,
+    "heading": 343,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-0720",
+    "s": 720,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.010795963679534,
+    "lon": 23.77308385549892,
+    "heading": 342,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-0765",
+    "s": 765,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.01118239765582,
+    "lon": 23.77292883531085,
+    "heading": 342,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-0810",
+    "s": 810,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.011568831764365,
+    "lon": 23.77277392494967,
+    "heading": 342,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-0855",
+    "s": 855,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.01195526553184,
+    "lon": 23.772618959588176,
+    "heading": 342,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-0900",
+    "s": 900,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.01234169957426,
+    "lon": 23.77246399694453,
+    "heading": 342,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-0934",
+    "s": 934.05,
+    "street": "Λεωφόρος Δ. Διαμαντίδου",
+    "lat": 38.01263446741716,
+    "lon": 23.77234837228007,
+    "heading": 347,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-0945",
+    "s": 945,
+    "street": "Λεωφόρος Δ. Διαμαντίδου",
+    "lat": 38.012732393940944,
+    "lon": 23.772336967380063,
+    "heading": 3,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-0964",
+    "s": 964.05,
+    "street": "Odos Eleftheriou Venizelou",
+    "lat": 38.01289454910125,
+    "lon": 23.77239997682955,
+    "heading": 33,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-0990",
+    "s": 990,
+    "street": "Odos Eleftheriou Venizelou",
+    "lat": 38.013103288361414,
+    "lon": 23.77251970850093,
+    "heading": 3,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-1035",
+    "s": 1035,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.01340513616807,
+    "lon": 23.772237274961537,
+    "heading": 293,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-1070",
+    "s": 1070.05,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.01360804325213,
+    "lon": 23.771946103499957,
+    "heading": 337,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-1080",
+    "s": 1080,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.01369301552316,
+    "lon": 23.771910173108097,
+    "heading": 343,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-1125",
+    "s": 1125,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.014080440332336,
+    "lon": 23.771759136129464,
+    "heading": 343,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-1170",
+    "s": 1170,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.01446786512678,
+    "lon": 23.771607985172704,
+    "heading": 343,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-1215",
+    "s": 1215,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.0148552002903,
+    "lon": 23.771456948194068,
+    "heading": 343,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-1260",
+    "s": 1260,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.015242625084745,
+    "lon": 23.771305911215435,
+    "heading": 343,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-1305",
+    "s": 1305,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.015630050429074,
+    "lon": 23.77115476025867,
+    "heading": 343,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-1350",
+    "s": 1350,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.01601738504271,
+    "lon": 23.77100372328004,
+    "heading": 343,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-1395",
+    "s": 1395,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.01640481038704,
+    "lon": 23.770852572670773,
+    "heading": 343,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-1440",
+    "s": 1440,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.0167922319608,
+    "lon": 23.770701535692137,
+    "heading": 343,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-1485",
+    "s": 1485,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.017179570345,
+    "lon": 23.770550437526662,
+    "heading": 343,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-1530",
+    "s": 1530,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.01756699513945,
+    "lon": 23.77039934775674,
+    "heading": 343,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-1552",
+    "s": 1552.08,
+    "street": "Νικηφόρου Λύτρα",
+    "lat": 38.017758305737054,
+    "lon": 23.77035322609078,
+    "heading": 30,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-1564",
+    "s": 1564.08,
+    "street": "Νικηφόρου Λύτρα",
+    "lat": 38.01780594962615,
+    "lon": 23.770472221778835,
+    "heading": 74,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-1575",
+    "s": 1575,
+    "street": "Νικηφόρου Λύτρα",
+    "lat": 38.01783157577118,
+    "lon": 23.770592259297178,
+    "heading": 75,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-1602",
+    "s": 1602.08,
+    "street": "Νικηφόρου Λύτρα",
+    "lat": 38.01789387549454,
+    "lon": 23.770890434488734,
+    "heading": 77,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-1620",
+    "s": 1620,
+    "street": "Νικηφόρου Λύτρα",
+    "lat": 38.01792553939233,
+    "lon": 23.77109050237081,
+    "heading": 79,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-1665",
+    "s": 1665,
+    "street": "Νικηφόρου Λύτρα",
+    "lat": 38.0179781758768,
+    "lon": 23.771598029918717,
+    "heading": 85,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-1674",
+    "s": 1674.08,
+    "street": "Νικηφόρου Λύτρα",
+    "lat": 38.017985946449095,
+    "lon": 23.77170101285378,
+    "heading": 84,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-1696",
+    "s": 1696.08,
+    "street": "Αχιλλέα Παράσχου",
+    "lat": 38.018038985400594,
+    "lon": 23.771933760980662,
+    "heading": 34,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-1710",
+    "s": 1710,
+    "street": "Αχιλλέα Παράσχου",
+    "lat": 38.01816095991366,
+    "lon": 23.771949027211626,
+    "heading": 354,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-1755",
+    "s": 1755,
+    "street": "Αχιλλέα Παράσχου",
+    "lat": 38.01856402747862,
+    "lon": 23.77189491329137,
+    "heading": 349,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-1800",
+    "s": 1800,
+    "street": "Αχιλλέα Παράσχου",
+    "lat": 38.01895128688298,
+    "lon": 23.771744981678143,
+    "heading": 334,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-1845",
+    "s": 1845,
+    "street": "Αχιλλέα Παράσχου",
+    "lat": 38.01929280729942,
+    "lon": 23.771471962408253,
+    "heading": 314,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-1890",
+    "s": 1890,
+    "street": "Δρυάδων",
+    "lat": 38.019561340253276,
+    "lon": 23.771089138750135,
+    "heading": 300,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-1935",
+    "s": 1935,
+    "street": "Παύλου Μελά",
+    "lat": 38.01987393017167,
+    "lon": 23.77080116335231,
+    "heading": 354,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-1980",
+    "s": 1980,
+    "street": "Παύλου Μελά",
+    "lat": 38.020248788761364,
+    "lon": 23.770966337680385,
+    "heading": 34,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-2025",
+    "s": 2025,
+    "street": "Συνταγματάρχου Δαβάκη",
+    "lat": 38.02046186541205,
+    "lon": 23.771395384224533,
+    "heading": 62,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-2070",
+    "s": 2070,
+    "street": "Συνταγματάρχου Δαβάκη",
+    "lat": 38.0206501999671,
+    "lon": 23.771849064356086,
+    "heading": 62,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-2115",
+    "s": 2115,
+    "street": "Συνταγματάρχου Δαβάκη",
+    "lat": 38.02083861494884,
+    "lon": 23.772302858543533,
+    "heading": 62,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-2138",
+    "s": 2138.11,
+    "street": "Συνταγματάρχου Δαβάκη",
+    "lat": 38.02093497355557,
+    "lon": 23.772536073925096,
+    "heading": 64,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-2160",
+    "s": 2160,
+    "street": "Συνταγματάρχου Δαβάκη",
+    "lat": 38.021017263000765,
+    "lon": 23.772762543367563,
+    "heading": 66,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-2182",
+    "s": 2182.11,
+    "street": "Λεωφ. Ελευθερίου Βενιζέλου",
+    "lat": 38.02113524990871,
+    "lon": 23.772949825981705,
+    "heading": 6,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-2205",
+    "s": 2205,
+    "street": "Λεωφ. Ελευθερίου Βενιζέλου",
+    "lat": 38.02127944112121,
+    "lon": 23.772785486595808,
+    "heading": 302,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-2232",
+    "s": 2232.11,
+    "street": "Λεωφ. Ελευθερίου Βενιζέλου",
+    "lat": 38.02142965192773,
+    "lon": 23.77255038287469,
+    "heading": 17,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-2250",
+    "s": 2250,
+    "street": "Λεωφ. Ελευθερίου Βενιζέλου",
+    "lat": 38.02143123413857,
+    "lon": 23.77274530270171,
+    "heading": 92,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-2295",
+    "s": 2295,
+    "street": "Λεωφ. Ελευθερίου Βενιζέλου",
+    "lat": 38.02146805494659,
+    "lon": 23.773255236766193,
+    "heading": 83,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-2340",
+    "s": 2340,
+    "street": "Λεωφ. Ελευθερίου Βενιζέλου",
+    "lat": 38.02155163894855,
+    "lon": 23.77375310628497,
+    "heading": 64,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-2385",
+    "s": 2385,
+    "street": "Λεωφ. Ελευθερίου Βενιζέλου",
+    "lat": 38.021743170133995,
+    "lon": 23.774204706591807,
+    "heading": 62,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-2420",
+    "s": 2420.12,
+    "street": "Λεωφ. Ελευθερίου Βενιζέλου",
+    "lat": 38.021893726060135,
+    "lon": 23.774556374014047,
+    "heading": 62,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-2430",
+    "s": 2430,
+    "street": "Λεωφ. Ελευθερίου Βενιζέλου",
+    "lat": 38.02193555908697,
+    "lon": 23.77465570430469,
+    "heading": 62,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-2475",
+    "s": 2475,
+    "street": "Λεωφ. Ελευθερίου Βενιζέλου",
+    "lat": 38.02212560622197,
+    "lon": 23.775108309838878,
+    "heading": 62,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-2520",
+    "s": 2520,
+    "street": "Λεωφ. Ελευθερίου Βενιζέλου",
+    "lat": 38.02231564798835,
+    "lon": 23.775560901393806,
+    "heading": 62,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-2544",
+    "s": 2544.13,
+    "street": "Λεωφ. Ελ. Βενιζέλου",
+    "lat": 38.02241456211579,
+    "lon": 23.77580542243547,
+    "heading": 71,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-2565",
+    "s": 2565,
+    "street": "Λεωφ. Ελ. Βενιζέλου",
+    "lat": 38.0224514612231,
+    "lon": 23.77603778778776,
+    "heading": 72,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-2610",
+    "s": 2610,
+    "street": "25is Martiou",
+    "lat": 38.02242175447319,
+    "lon": 23.77652121827056,
+    "heading": 133,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-2655",
+    "s": 2655,
+    "street": "25is Martiou",
+    "lat": 38.022124257334774,
+    "lon": 23.776867332837494,
+    "heading": 132,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-2700",
+    "s": 2700,
+    "street": "25is Martiou",
+    "lat": 38.02185024479549,
+    "lon": 23.77724482103664,
+    "heading": 134,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-2745",
+    "s": 2745,
+    "street": "25is Martiou",
+    "lat": 38.021564265281555,
+    "lon": 23.77760811079906,
+    "heading": 135,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-2790",
+    "s": 2790,
+    "street": "25is Martiou",
+    "lat": 38.021280740341105,
+    "lon": 23.777974160899518,
+    "heading": 131,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-2835",
+    "s": 2835,
+    "street": "25is Martiou",
+    "lat": 38.02101659491818,
+    "lon": 23.77836298150585,
+    "heading": 131,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-2880",
+    "s": 2880,
+    "street": "25is Martiou",
+    "lat": 38.02076687052749,
+    "lon": 23.77876618935855,
+    "heading": 125,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-2925",
+    "s": 2925,
+    "street": "25is Martiou",
+    "lat": 38.02055190641138,
+    "lon": 23.779200089904585,
+    "heading": 120,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-2954",
+    "s": 2954.15,
+    "street": "25is Martiou",
+    "lat": 38.02041807569548,
+    "lon": 23.77948559051035,
+    "heading": 128,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-2970",
+    "s": 2970,
+    "street": "25is Martiou",
+    "lat": 38.02031632114341,
+    "lon": 23.779611684213105,
+    "heading": 144,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-3000",
+    "s": 3000.15,
+    "street": "Unnamed paved junction",
+    "lat": 38.02019583398443,
+    "lon": 23.779872037465154,
+    "heading": 95,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-3015",
+    "s": 3015,
+    "street": "25is Martiou",
+    "lat": 38.020125793153106,
+    "lon": 23.78001328894143,
+    "heading": 127,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-3060",
+    "s": 3060,
+    "street": "25is Martiou",
+    "lat": 38.019904487250734,
+    "lon": 23.78044241226921,
+    "heading": 123,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-3105",
+    "s": 3105,
+    "street": "25is Martiou",
+    "lat": 38.01968078003766,
+    "lon": 23.780869799208702,
+    "heading": 124,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-3150",
+    "s": 3150,
+    "street": "25is Martiou",
+    "lat": 38.01943574470539,
+    "lon": 23.781268150462612,
+    "heading": 182,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-3195",
+    "s": 3195,
+    "street": "Μπιζανίου",
+    "lat": 38.01937245013114,
+    "lon": 23.78078798265461,
+    "heading": 260,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-3240",
+    "s": 3240,
+    "street": "Μπιζανίου",
+    "lat": 38.01930550748207,
+    "lon": 23.78028261819237,
+    "heading": 261,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-3285",
+    "s": 3285,
+    "street": "Μπιζανίου",
+    "lat": 38.019238526711746,
+    "lon": 23.77977730203511,
+    "heading": 261,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-3330",
+    "s": 3330,
+    "street": "Μπιζανίου",
+    "lat": 38.01917154612062,
+    "lon": 23.779271871899724,
+    "heading": 261,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-3375",
+    "s": 3375,
+    "street": "Μπιζανίου",
+    "lat": 38.019083904802834,
+    "lon": 23.778772144253246,
+    "heading": 255,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-3420",
+    "s": 3420,
+    "street": "Μπιζανίου",
+    "lat": 38.01894273145889,
+    "lon": 23.77829330923927,
+    "heading": 246,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-3465",
+    "s": 3465,
+    "street": "Μπιζανίου",
+    "lat": 38.01872725457377,
+    "lon": 23.777863116301035,
+    "heading": 231,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-3510",
+    "s": 3510,
+    "street": "Μπιζανίου",
+    "lat": 38.018433386382476,
+    "lon": 23.777512613872542,
+    "heading": 220,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-3540",
+    "s": 3540.18,
+    "street": "Κορυτσάς",
+    "lat": 38.01822033253255,
+    "lon": 23.77730055386337,
+    "heading": 200,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-3555",
+    "s": 3555,
+    "street": "Κορυτσάς",
+    "lat": 38.018087848217554,
+    "lon": 23.777299315056553,
+    "heading": 175,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-3600",
+    "s": 3600,
+    "street": "Κορυτσάς",
+    "lat": 38.01768402704016,
+    "lon": 23.77734423339681,
+    "heading": 175,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-3614",
+    "s": 3614.18,
+    "street": "Εμμανουήλ Μπενάκη",
+    "lat": 38.017557641879485,
+    "lon": 23.777365474870777,
+    "heading": 161,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-3645",
+    "s": 3645,
+    "street": "Εμμανουήλ Μπενάκη",
+    "lat": 38.01733119638018,
+    "lon": 23.77756714731692,
+    "heading": 143,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-3690",
+    "s": 3690,
+    "street": "Εμμανουήλ Μπενάκη",
+    "lat": 38.01700678831199,
+    "lon": 23.77787445888835,
+    "heading": 143,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-3735",
+    "s": 3735,
+    "street": "Εμμανουήλ Μπενάκη",
+    "lat": 38.016683390937224,
+    "lon": 23.77818350363838,
+    "heading": 142,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-3780",
+    "s": 3780,
+    "street": "Εμμανουήλ Μπενάκη",
+    "lat": 38.01636398247968,
+    "lon": 23.778498956391672,
+    "heading": 142,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-3825",
+    "s": 3825,
+    "street": "Εμμανουήλ Μπενάκη",
+    "lat": 38.01603919364441,
+    "lon": 23.778804799212143,
+    "heading": 156,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-3870",
+    "s": 3870,
+    "street": "Αρεακη",
+    "lat": 38.01564342877189,
+    "lon": 23.77872674339382,
+    "heading": 192,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-3915",
+    "s": 3915,
+    "street": "Αρεακη",
+    "lat": 38.01524676946974,
+    "lon": 23.778621023291258,
+    "heading": 192,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-3960",
+    "s": 3960,
+    "street": "Αρεακη",
+    "lat": 38.01485002053667,
+    "lon": 23.778515302841207,
+    "heading": 192,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-4005",
+    "s": 4005,
+    "street": "Αρεακη",
+    "lat": 38.01445292879539,
+    "lon": 23.77841256697117,
+    "heading": 188,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-4050",
+    "s": 4050,
+    "street": "Αρεακη",
+    "lat": 38.01405503564162,
+    "lon": 23.778467597997537,
+    "heading": 163,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-4060",
+    "s": 4060.2,
+    "street": "Unnamed paved junction",
+    "lat": 38.013965659047784,
+    "lon": 23.778491387529684,
+    "heading": 183,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-4074",
+    "s": 4074.2,
+    "street": "Μαλακάση",
+    "lat": 38.01384214722074,
+    "lon": 23.77846406703075,
+    "heading": 225,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-4095",
+    "s": 4095,
+    "street": "Μαλακάση",
+    "lat": 38.01387138633185,
+    "lon": 23.778235290460433,
+    "heading": 281,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-4140",
+    "s": 4140,
+    "street": "Μαλακάση",
+    "lat": 38.014016356626456,
+    "lon": 23.77776108852792,
+    "heading": 297,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-4185",
+    "s": 4185,
+    "street": "Μαλακάση",
+    "lat": 38.014175267223735,
+    "lon": 23.777289943867583,
+    "heading": 292,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-4230",
+    "s": 4230,
+    "street": "Μαλακάση",
+    "lat": 38.0142512409336,
+    "lon": 23.776794654544975,
+    "heading": 270,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-4275",
+    "s": 4275,
+    "street": "Μαλακάση",
+    "lat": 38.01417009738571,
+    "lon": 23.77629573243509,
+    "heading": 254,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-4288",
+    "s": 4288.21,
+    "street": "Μαλακάση",
+    "lat": 38.01413710053501,
+    "lon": 23.776151224064137,
+    "heading": 253,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-4320",
+    "s": 4320,
+    "street": "Μαλακάση",
+    "lat": 38.01404492534464,
+    "lon": 23.775808483664868,
+    "heading": 251,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-4365",
+    "s": 4365,
+    "street": "Μαλακάση",
+    "lat": 38.01391380155201,
+    "lon": 23.775323605326598,
+    "heading": 251,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-4398",
+    "s": 4398.22,
+    "street": "Stratigou Kallari",
+    "lat": 38.01380634972579,
+    "lon": 23.77497780871698,
+    "heading": 179,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-4410",
+    "s": 4410,
+    "street": "Stratigou Kallari",
+    "lat": 38.013746014379876,
+    "lon": 23.775086218658252,
+    "heading": 121,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-4455",
+    "s": 4455,
+    "street": "Stratigou Kallari",
+    "lat": 38.01353972730103,
+    "lon": 23.77552729212742,
+    "heading": 120,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-4500",
+    "s": 4500,
+    "street": "Stratigou Kallari",
+    "lat": 38.01333968599546,
+    "lon": 23.77597305906566,
+    "heading": 120,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-4545",
+    "s": 4545,
+    "street": "Stratigou Kallari",
+    "lat": 38.01313908977391,
+    "lon": 23.776418282300607,
+    "heading": 121,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-4590",
+    "s": 4590,
+    "street": "Stratigou Kallari",
+    "lat": 38.01293063559124,
+    "lon": 23.77685778686391,
+    "heading": 121,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-4635",
+    "s": 4635,
+    "street": "Stratigou Kallari",
+    "lat": 38.01272228539994,
+    "lon": 23.77729733514038,
+    "heading": 120,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-4680",
+    "s": 4680,
+    "street": "Stratigou Kallari",
+    "lat": 38.0125216829646,
+    "lon": 23.777742576549294,
+    "heading": 120,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-4692",
+    "s": 4692.23,
+    "street": "Stratigou Kallari",
+    "lat": 38.01246894529089,
+    "lon": 23.777864750086646,
+    "heading": 115,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-4725",
+    "s": 4725,
+    "street": "Stratigou Kallari",
+    "lat": 38.01236076103857,
+    "lon": 23.778211833880817,
+    "heading": 117,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-4770",
+    "s": 4770,
+    "street": "Stratigou Kallari",
+    "lat": 38.01206519095344,
+    "lon": 23.778553478153828,
+    "heading": 150,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-4798",
+    "s": 4798.24,
+    "street": "Stratigou Kallari",
+    "lat": 38.01183466368325,
+    "lon": 23.778687586979558,
+    "heading": 163,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-4815",
+    "s": 4815,
+    "street": "Stratigou Kallari",
+    "lat": 38.01168743716166,
+    "lon": 23.77872969941886,
+    "heading": 172,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-4860",
+    "s": 4860,
+    "street": "Stratigou Kallari",
+    "lat": 38.01128402138983,
+    "lon": 23.77871359870401,
+    "heading": 189,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-4905",
+    "s": 4905,
+    "street": "Stratigou Kallari",
+    "lat": 38.010906282045326,
+    "lon": 23.77853381098678,
+    "heading": 185,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-4950",
+    "s": 4950,
+    "street": "Elikonos",
+    "lat": 38.0106484281622,
+    "lon": 23.778906973025208,
+    "heading": 125,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-4995",
+    "s": 4995,
+    "street": "Elikonos",
+    "lat": 38.01041523392053,
+    "lon": 23.77932613851666,
+    "heading": 126,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-5022",
+    "s": 5022.25,
+    "street": "Elikonos",
+    "lat": 38.01027039428916,
+    "lon": 23.779576661567663,
+    "heading": 126,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-5040",
+    "s": 5040,
+    "street": "Elikonos",
+    "lat": 38.01017604930229,
+    "lon": 23.779739796335228,
+    "heading": 126,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-5058",
+    "s": 5058.25,
+    "street": "Elikonos",
+    "lat": 38.010081028594286,
+    "lon": 23.77990936428181,
+    "heading": 127,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-5068",
+    "s": 5068.25,
+    "street": "Kifisias",
+    "lat": 38.01001373654725,
+    "lon": 23.779979965822836,
+    "heading": 173,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-5085",
+    "s": 5085,
+    "street": "Kifisias",
+    "lat": 38.009882464383814,
+    "lon": 23.779893232772043,
+    "heading": 216,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-5130",
+    "s": 5130,
+    "street": "Kifisias",
+    "lat": 38.00955680584116,
+    "lon": 23.77958805620174,
+    "heading": 217,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-5175",
+    "s": 5175,
+    "street": "Kifisias",
+    "lat": 38.0092312830518,
+    "lon": 23.77928258091303,
+    "heading": 217,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-5220",
+    "s": 5220,
+    "street": "Kifisias",
+    "lat": 38.00890574878357,
+    "lon": 23.77897709121211,
+    "heading": 217,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-5240",
+    "s": 5240.26,
+    "street": "Kifisias",
+    "lat": 38.00875918134694,
+    "lon": 23.77883959255325,
+    "heading": 217,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-5265",
+    "s": 5265,
+    "street": "Kifisias",
+    "lat": 38.008580247806954,
+    "lon": 23.778671643746367,
+    "heading": 217,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-5310",
+    "s": 5310,
+    "street": "Kifisias",
+    "lat": 38.008254758478124,
+    "lon": 23.778366210688958,
+    "heading": 217,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-5332",
+    "s": 5332.26,
+    "street": "Kifisias",
+    "lat": 38.00809351866762,
+    "lon": 23.778215404618276,
+    "heading": 216,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-5355",
+    "s": 5355,
+    "street": "Kifisias",
+    "lat": 38.00792664732145,
+    "lon": 23.77806523005778,
+    "heading": 215,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-5388",
+    "s": 5388.27,
+    "street": "Paraplefri Odos",
+    "lat": 38.00768327472843,
+    "lon": 23.777844147818236,
+    "heading": 220,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-5400",
+    "s": 5400,
+    "street": "Paraplefri Odos",
+    "lat": 38.00760819924682,
+    "lon": 23.777750374382578,
+    "heading": 226,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-5445",
+    "s": 5445,
+    "street": "Paraplefri Odos",
+    "lat": 38.00732530317303,
+    "lon": 23.777383464341955,
+    "heading": 220,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-5490",
+    "s": 5490,
+    "street": "Paraplefri Odos",
+    "lat": 38.00699681552808,
+    "lon": 23.777083254970158,
+    "heading": 215,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-5535",
+    "s": 5535,
+    "street": "Paraplefri Odos",
+    "lat": 38.00666306276433,
+    "lon": 23.776792349426298,
+    "heading": 214,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-5580",
+    "s": 5580,
+    "street": "Paraplefri Odos",
+    "lat": 38.00632506358629,
+    "lon": 23.776509461216428,
+    "heading": 213,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-5625",
+    "s": 5625,
+    "street": "Paraplefri Odos",
+    "lat": 38.00598700721328,
+    "lon": 23.776226613945443,
+    "heading": 213,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-5670",
+    "s": 5670,
+    "street": "Paraplefri Odos",
+    "lat": 38.00564268196268,
+    "lon": 23.775956227777424,
+    "heading": 212,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "lap-5680",
+    "s": 5680.28,
+    "street": "Paraplefri Odos",
+    "lat": 38.005563782647684,
+    "lon": 23.775894890555097,
+    "heading": 212,
+    "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "lap-5715",
+    "s": 5715,
+    "street": "Paraplefri Odos",
+    "lat": 38.00529737334673,
+    "lon": 23.77568761287174,
+    "heading": 212,
+    "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "faros-across",
+    "s": 0,
+    "lat": 38.00477,
+    "lon": 23.77605,
+    "heading": 305,
+    "reason": "Faros opposite carriageway",
+    "fovH": 90
+  }
+]
