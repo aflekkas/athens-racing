@@ -201,6 +201,7 @@
     "tools/athens-detail.test.mjs",
     "tools/athens-props.test.mjs",
     "tools/athens-beauty.test.mjs",
+    "tools/athens-trees.test.mjs",
     "tools/athens-materials.test.mjs",
     "tools/athens-world-hud.test.mjs",
     "tools/world-gen/road-model.test.mjs",
