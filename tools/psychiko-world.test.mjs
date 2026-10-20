@@ -353,3 +353,23 @@ test('station-backed parking records cover both panes, preserve empty kerbs and 
   const trees=[...street.canopy.values(),...street.props.values()].flat().filter(r=>r.kind==='tree');assert(!trees.some(t=>Math.hypot(t.x-cx,t.z-cz)<F.radius-.4),'commercial junction apron remains open');
  }finally{street.dispose();}
 });
+
+test('all surveyed building decorations stay separate from boundary stone shading',async()=>{
+ const THREE=await import('three'),{PsychikoStreetscape}=await import('../src/maps/psychiko-streetscape.js');
+ const street=new PsychikoStreetscape(map,new THREE.Group(),(x,z)=>terrain.height(x,z));
+ const cells=street.props,frontages=[...cells.values()].flat().filter(r=>r.asset==='frontage');
+ try{
+  assert(frontages.length>300,'audit the whole surveyed lap, including Faros');
+  for(const r of frontages){
+   street.props=new Map([['fixture',[r]]]);const mesh=street.buildCell('props','fixture');
+   assert(mesh,`${r.id} has frontage geometry`);
+   assert(mesh.geometry.attributes.aStone.array.every(v=>v===0),`${r.id} cannot sample boundary stone or railing cutouts`);
+   mesh.geometry.dispose();
+  }
+  const wall=[...cells.values()].flat().find(r=>r.kind==='wall'&&r.type===3);
+  street.props=new Map([['fixture',[wall]]]);const mesh=street.buildCell('props','fixture');
+  assert(mesh.geometry.attributes.aStone.array.some(v=>v===255),'College boundary still receives stone shading');mesh.geometry.dispose();
+  for(const b of data.psychiko.recognition.landmarks.filter(r=>r.commercial&&r.label.startsWith('Faros')))
+   assert.equal(data.buildings.find(r=>r.id===b.id).facadeStyle,5,'Faros uses clean commercial glazing');
+ }finally{street.props=cells;street.dispose();}
+});
