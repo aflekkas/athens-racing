@@ -124,7 +124,7 @@ html { font-size: clamp(12px, calc(5px + .6vmin + .4vw), 22px); }
 .card__badge { position: absolute; top: var(--s-3); right: var(--s-3); }
 .card__body { display: flex; flex-direction: column; gap: var(--s-1); padding: var(--s-3) var(--s-4) var(--s-4); flex: 1; }
 .card__title { margin: 0; font-family: var(--f-sans); font-weight: 600; font-size: var(--t-md); line-height: 1.15; letter-spacing: .08em; text-transform: uppercase; }
-.card__text { margin: 0; font-family: var(--f-cond); font-weight: 600; font-size: var(--t-xs); letter-spacing: var(--track-caps); color: var(--c-text-3); text-transform: uppercase; }
+.card__text { margin: 0; font-family: var(--f-sans); font-weight: 500; font-size: var(--t-sm); letter-spacing: .01em; color: var(--c-text-3); }
 .card__foot { margin-top: auto; padding-top: var(--s-2); display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); font-family: var(--f-cond); font-weight: 600; font-size: var(--t-sm); letter-spacing: .06em; color: var(--c-text-2); }
 .card > .card__selected { position: absolute; left: 50%; bottom: .4rem; width: 1rem; height: 1rem; margin-left: -.5rem; border-radius: 3px; background: none; color: var(--c-text);
   opacity: 0; transform: scaleX(.2); transition: opacity var(--dur) var(--ease), transform .24s var(--ease); pointer-events: none; }
@@ -176,7 +176,7 @@ body[data-input=gamepad] .hint.no-pad { display: none; }
 .field--stack .field__ctl { justify-content: stretch; }
 .group + .group { margin-top: var(--s-5); }
 .group__title { margin: 0 0 var(--s-2); padding: 0 var(--s-4); display: flex; align-items: center; gap: var(--s-2); font-family: var(--f-cond); font-weight: 600; font-size: var(--t-xs); letter-spacing: var(--track-kick); color: var(--c-text-3); text-transform: uppercase; }
-.group__title .ico { color: var(--c-text-3); }
+.group__title .ico { display: none; }
 
 /* ---------------------------------------------------------------- slider (custom track / thumb / value) */
 .slider { --v: 0.5; display: flex; align-items: center; gap: var(--s-4); width: clamp(9rem, 24vw, 19rem); touch-action: none; outline: none; }
@@ -295,7 +295,7 @@ body[data-input=keyboard] .tabs__hint.on-pad, body:not([data-input]) .tabs__hint
 .stat-tile { display: flex; flex-direction: column; gap: .3rem; min-width: 0; padding: var(--s-2) 0 var(--s-1); border-top: 1px solid var(--ui-line-2); }
 .stat-tile__k { display: flex; align-items: center; gap: .4em; font-family: var(--f-cond); font-weight: 600; font-size: var(--t-2xs); letter-spacing: var(--track-caps); color: var(--c-text-3); text-transform: uppercase; white-space: nowrap; }
 .stat-tile__v { font-family: var(--f-sans); font-weight: 400; font-size: var(--t-xl); line-height: 1.05; letter-spacing: .02em; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: uppercase; }
-.stat-tile--hi .stat-tile__v { color: var(--c-gold); }
+.stat-tile--hi .stat-tile__v { color: var(--c-text); font-size: var(--t-2xl); font-weight: 500; }
 .stat-tile--good .stat-tile__v { color: var(--c-good); } .stat-tile--bad .stat-tile__v { color: var(--c-bad); }
 .stat-tile--accent { border-top-color: var(--hu-ice); }
 
@@ -378,8 +378,12 @@ body[data-input=keyboard] .tabs__hint.on-pad, body:not([data-input]) .tabs__hint
 .chip { display: inline-flex; align-items: center; gap: .4em; height: 1.9rem; padding: 0 .85em; border-radius: var(--r-pill); background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 1px var(--hu-hair);
   font: 600 var(--t-xs) var(--f-cond); letter-spacing: .14em; text-transform: uppercase; color: var(--c-text-2); white-space: nowrap; transition: background var(--dur), color var(--dur), box-shadow var(--dur); }
 .chip .ico { width: .95em; height: .95em; }
-.chip--accent { background: var(--hu-ice-tint); color: var(--hu-ice); } .chip--good { background: rgba(56,224,123,.12); color: var(--tt-green, #38e07b); }
-.chip--warn { background: rgba(255,178,26,.13); color: var(--c-warn); } .chip--bad { background: rgba(255,69,58,.12); color: #ff8a80; } .chip--gold { background: rgba(255,201,74,.14); color: var(--c-gold); }
+.chip--accent { background: var(--hu-ice-tint); color: var(--hu-ice); }
+/* status (good / warn / bad): a coloured dot before neutral text, no fill, no ring. Gold is the medal colour, so a "gold" chip is neutral. */
+.chip--good, .chip--warn, .chip--bad, .chip--gold { background: none; box-shadow: none; padding-inline: 0; color: var(--c-text-2); }
+.chip--good::before, .chip--warn::before, .chip--bad::before { content: ""; width: .5em; height: .5em; border-radius: 50%; flex: none; background: currentColor; }
+.chip--good::before { background: var(--tt-green, #38e07b); } .chip--warn::before { background: var(--c-warn); } .chip--bad::before { background: #ff8a80; }
+.chip--good > .ico, .chip--warn > .ico, .chip--bad > .ico { display: none; }
 .text-field .field__ctl { flex: 1 1 auto; }
 .text-field__input { box-sizing: border-box; width: min(18rem, 100%); min-height: 2.6rem; padding: 0 var(--s-4); border-radius: var(--r-pill); border: 1px solid var(--hu-hair-2); background: rgba(0,0,0,.35);
   color: var(--hu-text); font: 500 var(--t-md) var(--f-sans); letter-spacing: .06em; outline: none; appearance: none; transition: border-color var(--dur), box-shadow var(--dur); }
@@ -749,10 +753,8 @@ body[data-ui] #mp-toggle { display: none !important; }
 .vehicle-specs .sheet-head { min-width: 0; gap: .4rem; }
 .vehicle-specs .sheet-head__title { font-size: var(--t-lg); letter-spacing: .04em; overflow-wrap: anywhere; }
 .vehicle-specs .sheet-head__status { color: var(--c-text-3); font-size: var(--t-xs); }
-.stats--boxed { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: var(--s-2); }
-.stats--boxed .stat-tile { min-width: 0; padding: var(--s-3); border: 1px solid var(--ui-line); border-radius: var(--r-2); background: rgba(255,255,255,.025); }
-.stats--boxed .stat-tile__k { min-height: 1.2em; }
-.stats--boxed .stat-tile__v { margin-top: .5rem; font-size: var(--t-xl); }
+.stats--specs { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: var(--s-4) var(--s-4); }
+.stats--specs .stat-tile__v { font-size: var(--t-xl); }
 .vehicle-specs__action { margin-top: auto; position: sticky; bottom: calc(-1 * var(--s-5)); padding: var(--s-2) 0 var(--s-5); margin-bottom: calc(-1 * var(--s-5)); background: linear-gradient(to top, var(--ui-surface) 70%, transparent); } /* the panel scrolls when it is taller than the stage; the primary action stays in view */
 /* the panel scrolls when its content is taller than the stage: sections keep their height instead of squeezing into each other */
 .vehicle-specs > * { flex-shrink: 0; }
@@ -763,8 +765,8 @@ body[data-ui] #mp-toggle { display: none !important; }
 @media (max-height: 860px) and (min-width: 861px) {
   .vehicle-specs { gap: var(--s-3); padding: var(--s-4); }
   .vehicle-specs .field { min-height: 0; padding-block: var(--s-1); }
-  .stats--boxed .stat-tile { padding: var(--s-2) var(--s-3); }
-  .stats--boxed .stat-tile__v { margin-top: .2rem; font-size: var(--t-lg); }
+  .stats--specs { gap: var(--s-3); }
+  .stats--specs .stat-tile__v { font-size: var(--t-lg); }
 }
 /* trim picker: the trims of one car, each chip naming the trim and what it changes (power, 0-100); the lit chip slides */
 .trim-picker .seg { display: grid; grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr)); gap: 3px; border-radius: var(--r-4); }

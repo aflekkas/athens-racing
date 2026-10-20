@@ -50,7 +50,7 @@ test('static thumbnails fill their image bounds with consistent margins',()=>{
 });
 test('spec panel has shared tiles, segmented trims and no unavailable paint or internal copy',async()=>{
  const doc=globalThis.document;delete globalThis.document;const {renderCarSelect}=await import('../src/car-select.js');globalThis.document=doc;
- for(const id of ['golf','van']){const html=renderCarSelect({index:CARS.findIndex(c=>c.id===id),detail:true,garage:true});assert.match(html,/vehicle-specs panel/);assert.doesNotMatch(html,/class="car-trim-browser"/);assert.match(html,/stats--boxed/);assert.equal((html.match(/class="stat-tile /g)||[]).length,6);assert.match(html,/data-key="carTrim"/);assert.match(html,/data-act="carConfirm"/);assert.doesNotMatch(html,/Existing fleet model|Custom paint|nativeFleet|placeholder|TODO|WIP/);assert.equal(html.includes('class="car-paints"'),id==='golf');}
+ for(const id of ['golf','van']){const html=renderCarSelect({index:CARS.findIndex(c=>c.id===id),detail:true,garage:true});assert.match(html,/vehicle-specs panel/);assert.doesNotMatch(html,/class="car-trim-browser"/);assert.match(html,/stats--specs/);assert.equal((html.match(/class="stat-tile /g)||[]).length,6);assert.match(html,/data-key="carTrim"/);assert.match(html,/data-act="carConfirm"/);assert.doesNotMatch(html,/Existing fleet model|Custom paint|nativeFleet|placeholder|TODO|WIP/);assert.equal(html.includes('class="car-paints"'),id==='golf');}
 });
 
 // Use the shared VPS queue allowance, plus ten minutes for the browser itself.
