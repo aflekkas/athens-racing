@@ -6,18 +6,19 @@ import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {signalState,STOP_OFF} from './signal-plan.js';
 
-export const KINDS=Object.freeze({lamp:0,bus_stop:1,bus_shelter:2,kiosk:3,bench:4,bollard:5,stop:6,give_way:7,oneway:8,fountain:9,monument:10,parked_car:11,crossing:12,signal:13,rooftop:14,solar:15,antenna:16,pergola:17});
-export const PROP_LIMITS=Object.freeze({capacity:1500,near:230,rebuildMetres:10});
+export const KINDS=Object.freeze({lamp:0,bus_stop:1,bus_shelter:2,kiosk:3,bench:4,bollard:5,stop:6,give_way:7,oneway:8,fountain:9,monument:10,parked_car:11,crossing:12,signal:13,rooftop:14,solar:15,antenna:16,pergola:17,scooter:18});
+export const PROP_LIMITS=Object.freeze({capacity:2600,near:230,rebuildMetres:10});
 /** How far each model is drawn (metres). Small or rare models stop earlier, so a street scene costs a handful of draw calls, not one per model type. */
-export const PROP_NEAR=Object.freeze({lamp:210,signal:230,bus_stop:140,bus_shelter:140,kiosk:140,stop:110,give_way:110,oneway:100,crossing:100,bench:80,bollard:80,fountain:160,monument:160,parked_car:120,rooftop:120,solar:100,antenna:120,pergola:100});
+export const PROP_NEAR=Object.freeze({lamp:210,signal:230,bus_stop:140,bus_shelter:140,kiosk:140,stop:110,give_way:110,oneway:100,crossing:100,bench:80,bollard:80,fountain:160,monument:160,parked_car:100,rooftop:120,solar:100,antenna:120,pergola:100,scooter:80});
 const NEAR_BY_KIND=Object.fromEntries(Object.entries(PROP_NEAR).map(([n,d])=>[KINDS[n],d]));
 const CAR_PAINT=['#e9e9e6','#9ea4a8','#26292c','#2f4d78','#8c2f2b','#b9a98a'];
 const STATE_CODE={R:1,A:2,G:3};
 /** Contact shadow of each kind: half width and half length of the dark ellipse, in the model's frame (its long axis is z). */
-const SHADOW={[KINDS.parked_car]:[1.2,2.6],[KINDS.kiosk]:[1.3,1.1],[KINDS.bus_shelter]:[1.9,1.1],[KINDS.bench]:[.5,1],[KINDS.fountain]:[2.3,2.3],[KINDS.monument]:[1.1,1.1]};
+const SHADOW={[KINDS.parked_car]:[1.2,2.6],[KINDS.scooter]:[.5,1.05],[KINDS.kiosk]:[1.3,1.1],[KINDS.bus_shelter]:[1.9,1.1],[KINDS.bench]:[.5,1],[KINDS.fountain]:[2.3,2.3],[KINDS.monument]:[1.1,1.1]};
 
-function part(w,h,d,x,y,z,colour,{kind,lamp=0,rotZ=0,rotX=0,segments=0,faceZ=false}={}){
-  const g=segments?new THREE.CylinderGeometry(w/2,w/2,h,segments):new THREE.BoxGeometry(w,h,d);
+function part(w,h,d,x,y,z,colour,{kind,lamp=0,rotZ=0,rotX=0,segments=0,faceZ=false,quad=0}={}){
+  const g=quad?new THREE.PlaneGeometry(w,h):segments?new THREE.CylinderGeometry(w/2,w/2,h,segments):new THREE.BoxGeometry(w,h,d);
+  if(quad<0)g.rotateY(Math.PI);
   if(faceZ)g.rotateX(Math.PI/2);if(rotZ)g.rotateZ(rotZ);if(rotX)g.rotateX(rotX);g.translate(x,y,z);g.deleteAttribute('uv');g.deleteAttribute('normal');
   const c=new THREE.Color(colour),n=g.attributes.position.count,col=new Float32Array(n*3),k=new Float32Array(n).fill(kind),l=new Float32Array(n).fill(lamp);
   for(let i=0;i<n;i++){col[i*3]=c.r;col[i*3+1]=c.g;col[i*3+2]=c.b;}
@@ -48,8 +49,11 @@ export function propParts(){
   add(9,3.4,.5,3.4,0,.25,0,'#b7b8b2',{segments:8});add(9,3,.08,3,0,.5,0,'#5f8da0',{segments:8});add(9,.4,1.8,.4,0,1.2,0,'#cfcdc4',{segments:6});add(9,1.5,.2,1.5,0,2.1,0,'#b7b8b2',{segments:8});
   // monument: plinth, column, cap
   add(10,1.5,1,1.5,0,.5,0,'#d8d5cb');add(10,.55,2.6,.55,0,2.3,0,'#e2dfd5');add(10,.9,.35,.9,0,3.75,0,'#d8d5cb');
-  // parked car: body, cabin, four wheel blocks (paint arrives through the instance colour)
-  add(11,1.8,.7,4.2,0,.6,0,'#ffffff');add(11,1.55,.55,2.2,0,1.2,.2,'#9aa5ac');for(const x of [-.82,.82])for(const z of [-1.3,1.3])add(11,.22,.55,.55,x,.28,z,'#1a1c1e');
+  // parked car, 4.3 x 1.8 x 1.4 m, nose toward +z: a body with a lower bonnet and a lower boot (the steps), a low glasshouse (glass band) under a roof, wheels, head and tail lights;
+  // the paint arrives through the instance colour
+  add(11,1.8,.62,2.3,0,.59,-.1,'#ffffff');add(11,1.78,.5,1.15,0,.53,1.57,'#ffffff');add(11,1.78,.56,.85,0,.56,-1.72,'#ffffff');add(11,1.52,.36,1.95,0,1.08,-.15,'#26323a');add(11,1.46,.06,1.65,0,1.29,-.15,'#ffffff');
+  for(const x of [-.9,.9])for(const z of [-1.35,1.35])add(11,.22,.62,.62,x,.31,z,'#17191b');
+  for(const x of [-.55,.55]){add(11,.42,.14,0,x,.6,2.151,'#f4f0d8',{quad:1});add(11,.4,.14,0,x,.62,-2.151,'#b3261e',{quad:-1});}
   // pedestrian-crossing sign: post, blue plate, white pedestrian block
   add(12,.06,2.3,.06,0,1.15,0,grey);add(12,.62,.62,.04,0,2.1,0,'#2a5a9c');add(12,.3,.34,.05,0,2.1,0,'#f4f2ec');add(12,.14,.14,.05,0,2.28,0,'#2a5a9c');
   // rooftop kit of a polykatoikia, four small models: the stair head with a white tank on a stand (14), a solar water heater (a tilted panel on its frame and a drum tank, 15),
@@ -58,6 +62,8 @@ export function propParts(){
   add(15,1.5,.07,1.05,-.3,.75,.2,'#243a62',{rotX:-.6});add(15,.08,.7,.08,-.95,.35,.7,'#9a9fa2');add(15,.08,.7,.08,.35,.35,.7,'#9a9fa2');add(15,1.2,.56,.56,-.3,1.25,-.5,'#eeeeea',{segments:8,rotZ:Math.PI/2});
   add(16,.05,3.3,.05,0,1.65,0,'#8c9094');add(16,1.1,.04,.04,0,3.0,0,'#8c9094');add(16,.8,.04,.04,0,2.6,0,'#8c9094');add(16,.5,.04,.04,0,2.2,0,'#8c9094');add(16,.9,.04,.04,0,.12,0,'#6d7377');
   for(const x of [-1.4,1.4])for(const z of [-1,1])add(17,.1,2.2,.1,x,1.1,z,'#d8d3c4');for(const z of [-.8,-.27,.27,.8])add(17,3.2,.06,.12,0,2.25,z,'#9a7a56');add(17,2.6,.45,.5,0,.22,1.35,'#8d5a3d');add(17,2.4,.3,.4,0,.6,1.35,'#5f8c45');
+  // scooter (the paint arrives through the instance colour): two wheels, the floor board, the body cover, the seat, the leg shield, the handlebar
+  for(const z of [-.6,.62])add(18,.14,.5,.5,0,.25,z,'#202224',{segments:6,rotZ:Math.PI/2});add(18,.32,.1,1.05,0,.33,0,'#ffffff');add(18,.3,.38,.55,0,.5,-.5,'#ffffff');add(18,.3,.1,.6,0,.75,-.45,'#2a2c2e');add(18,.36,.62,.08,0,.62,.52,'#ffffff');add(18,.7,.05,.05,0,1.0,.55,'#3a3d40');add(18,.14,.4,.08,0,.82,.55,'#8a9094');
   // signal: pole, short arm over the kerb, head housing with a backplate and its three lamps (red, amber, green) on the face toward oncoming traffic
   add(13,.12,4.6,.12,0,2.3,0,grey);add(13,.8,.09,.09,-.4,4.15,0,grey);add(13,.44,1.3,.34,-.8,3.7,0,'#16181a');add(13,.7,1.55,.04,-.8,3.7,.19,'#16181a');add(13,.76,.06,.05,-.8,4.52,.2,'#e8e6dc');
   [['#ff2a14',1,.4],['#ffa800',2,0],['#14ff6a',3,-.4]].forEach(([c,i,y])=>P.push(part(.27,.04,.27,-.8,3.7+y,-.18,c,{kind:13,lamp:i,segments:6,faceZ:true})));
@@ -83,7 +89,7 @@ export function signalMaterial(){
   };
   return m;
 }
-const KIND_CAPACITY={[KINDS.lamp]:400,[KINDS.signal]:240,[KINDS.parked_car]:160,[KINDS.rooftop]:150,[KINDS.solar]:480,[KINDS.antenna]:260,[KINDS.pergola]:100};
+const KIND_CAPACITY={[KINDS.lamp]:400,[KINDS.signal]:240,[KINDS.parked_car]:300,[KINDS.scooter]:260,[KINDS.rooftop]:150,[KINDS.solar]:480,[KINDS.antenna]:260,[KINDS.pergola]:100};
 
 /** All instances: (kind, x, y, z, yaw, variant, state?) with absolute world x,z. */
 export class AthensProps{
@@ -109,6 +115,7 @@ export class AthensProps{
     this.removeTile(key);const m=packet.metadata,ext=m.extensions?.worldDetail,o=m.origin,records=[],edges=[];
     const sig=ext?.signals,props=ext?.props,roofs=ext?.rooftops;
     if(props){const r=packet.arrays[props.rows],k=packet.arrays[props.kind];for(let i=0;i<k.length;i++){const x=r[i*5]+o[0],z=r[i*5+2]+o[2];if(this.skip&&this.skip(k[i],x,z))continue;records.push({kind:k[i],x,y:r[i*5+1],z,yaw:r[i*5+3],variant:r[i*5+4]|0,state:0});}}
+    if(ext?.parking!=null){const r=packet.arrays[ext.parking];for(let i=0;i<r.length;i+=5){const code=r[i+4]|0;records.push({kind:(code>>3)?KINDS.scooter:KINDS.parked_car,x:r[i]+o[0],y:r[i+1],z:r[i+2]+o[2],yaw:r[i+3],variant:code&7,state:0});}}
     if(roofs!=null){const r=packet.arrays[roofs];for(let i=0;i<r.length;i+=5){const code=r[i+4]|0;records.push({kind:KINDS.rooftop+(code>>2),x:r[i]+o[0],y:r[i+1],z:r[i+2]+o[2],yaw:r[i+3],variant:code&3,state:0});}}
     if(sig){const r=packet.arrays[sig.rows],e=packet.arrays[sig.edge];
       for(let i=0;i<e.length;i++){const rec={kind:KINDS.signal,x:r[i*6]+o[0],y:r[i*6+1],z:r[i*6+2]+o[2],yaw:r[i*6+3],offset:r[i*6+4],group:r[i*6+5],variant:0,state:0,edge:m.ids[e[i]]};records.push(rec);edges.push(rec);this.byEdge.set(rec.edge,rec);}}
@@ -131,7 +138,7 @@ export class AthensProps{
     const near=this.collect(x,z),M=this._m,Q=this._q,E=this._e,V=this._p,S=this._s,C=this._c,used=new Map();this.near=[];
     for(const r of near){const slot=this.meshes.get(r.kind),n=used.get(r.kind)||0;if(n>=slot.cap)continue;used.set(r.kind,n+1);r.slot=n;this.near.push(r);
       M.compose(V.set(r.x,r.y,r.z),Q.setFromEuler(E.set(0,r.yaw,0)),S);slot.mesh.setMatrixAt(n,M);
-      slot.mesh.setColorAt(n,r.kind===KINDS.parked_car?C.set(CAR_PAINT[r.variant%CAR_PAINT.length]):C.set('#ffffff'));}
+      slot.mesh.setColorAt(n,r.kind===KINDS.parked_car||r.kind===KINDS.scooter?C.set(CAR_PAINT[r.variant%CAR_PAINT.length]):C.set('#ffffff'));}
     let sh=0;for(const r of this.near){const q=SHADOW[r.kind];if(!q)continue;const cs=Math.cos(r.yaw),sn=Math.sin(r.yaw);
       M.compose(V.set(r.x+.28+q[1]*.05,r.y+.04,r.z+.2+q[1]*.04),Q.setFromEuler(E.set(0,r.yaw,0)),S.set(q[0],1,q[1]));this.shadow.setMatrixAt(sh++,M);void cs;void sn;}
     this.shadow.count=sh;this.shadow.visible=sh>0;if(sh)this.shadow.instanceMatrix.needsUpdate=true;

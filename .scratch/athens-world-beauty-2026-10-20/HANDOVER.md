@@ -13,3 +13,9 @@ Street trees and the rooftop kit are derived from each cell's road graph and bui
 
 ## Step 4 (contact shadows under props, aerial perspective): no rebake needed
 Run-time only; nothing in the cells is read or written.
+
+## Step 5 (parked cars and scooters): no rebake needed
+Derived from each cell's road graph when the cell is read. The only thing a later bake could do better is to store a per-edge parking rule (OSM `parking:lane:*`, `parking:condition:*`) so that no-parking stretches and bays follow the map; the runtime currently parks on every quiet street except near junctions.
+
+## Summary for the bake agent, steps 1 to 5
+Nothing in the published cells has to change for any of the five steps. Static files that ship with the app: `assets/athens/horizon.bin` (78 KB), `assets/athens/plazas.json` (64 KB). If you rebake anyway, `worldDetail.buildings.roofShape` and `facadeStyle`, and `worldDetail.vegetation`, are read when present.

@@ -5,8 +5,8 @@
 // Nothing travels on the wire; the rows are about 14 KB for a dense cell. Rendered by src/athens-trees.js, which World detail Off hides.
 export const TREE = Object.freeze({ orange: 0, pine: 1, cypress: 2, palm: 3, oleander: 4 });
 export const STREET_TREE_LIMIT = 700;
-const CELL = 12, hashN = n => { let h = (n ^ 0x9e3779b9) >>> 0; h = Math.imul(h ^ (h >>> 16), 0x85ebca6b); h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35); return (h ^ (h >>> 16)) >>> 0; };
-const inRing = (ring, x, z) => {
+export const CELL = 12, hashN = n => { let h = (n ^ 0x9e3779b9) >>> 0; h = Math.imul(h ^ (h >>> 16), 0x85ebca6b); h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35); return (h ^ (h >>> 16)) >>> 0; };
+export const inRing = (ring, x, z) => {
   let inside = false;
   for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) if ((ring[i][1] > z) !== (ring[j][1] > z) && x < (ring[j][0] - ring[i][0]) * (z - ring[i][1]) / (ring[j][1] - ring[i][1]) + ring[i][0]) inside = !inside;
   return inside;

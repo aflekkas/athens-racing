@@ -6,6 +6,7 @@
 import { LANDMARK_HIDDEN, osmBuildingId } from './athens-landmark-hide.js';
 import { inOldQuarter } from './athens-quarters.js';
 import { deriveStreetTrees } from './world-tile-trees.js';
+import { deriveParking } from './world-tile-parking.js';
 export const BUILDING_MESH_TRIANGLES = 16384;
 export const ROOFTOP_LIMIT = 1400;
 /** A hipped house: four walls (8 triangles) and six roof triangles. */
@@ -187,11 +188,15 @@ export function addDerivedBuildings(pack, tables) {
   const wd = pack.metadata.extensions?.worldDetail?.buildings, styleIndex = wd?.facadeStyle, roofIndex = wd?.roofShape;
   const { arrays, meshes, extra } = deriveBuildingMeshes(tables, pack.metadata, styleIndex == null ? null : pack.arrays[styleIndex], roofIndex == null ? null : pack.arrays[roofIndex]), offset = pack.arrays.length;
   const ox = pack.metadata.origin?.[0] ?? 0, oz = pack.metadata.origin?.[2] ?? 0, trees = deriveStreetTrees(tables, extra.rings, (x, z) => inOldQuarter(ox + x, oz + z));
-  pack.derivedExtraBytes = extra.vertices * 16 * 2 + extra.indices * 2 * 2 + (extra.rooftops.byteLength + trees.byteLength) * 6; // pitched roofs: CPU copy and GPU copy of the added vertices and indices; the rooftop rows and the prop records made from them
+  const inQuarter = (x, z) => inOldQuarter(ox + x, oz + z), propsExt = pack.metadata.extensions?.worldDetail?.props, occupied = [];
+  if (propsExt) { const rows = pack.arrays[propsExt.rows]; for (let i = 0; i < rows.length; i += 5) occupied.push(rows[i], rows[i + 2]); } // the bake's own props (parked cars, kiosks, benches...) keep their places
+  const parking = deriveParking(tables, extra.rings, inQuarter, occupied, trees);
+  pack.derivedExtraBytes = extra.vertices * 16 * 2 + extra.indices * 2 * 2 + (extra.rooftops.byteLength + trees.byteLength + parking.byteLength) * 6 + parking.length / 5 * 4 * 40; // + four collision walls per car or scooter // pitched roofs: CPU copy and GPU copy of the added vertices and indices; the rooftop rows and the prop records made from them
   for (const a of arrays) pack.arrays.push(a);
   const wdExt = {};
   if (extra.rooftops.length) { pack.arrays.push(extra.rooftops); wdExt.rooftops = pack.arrays.length - 1; }
   if (trees.length) { pack.arrays.push(trees); wdExt.streetTrees = pack.arrays.length - 1; }
+  if (parking.length) { pack.arrays.push(parking); wdExt.parking = pack.arrays.length - 1; }
   if (Object.keys(wdExt).length) pack.metadata.extensions = { ...pack.metadata.extensions, worldDetail: { ...pack.metadata.extensions?.worldDetail, ...wdExt } };
   for (const mesh of meshes) {
     for (const a of Object.values(mesh.attributes)) a.array += offset;

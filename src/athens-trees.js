@@ -11,7 +11,7 @@ export const TREE_LIMITS = Object.freeze({ capacity: 420, near: 170, rebuildMetr
 const CAPACITY = { [TREE.orange]: 360, [TREE.pine]: 160, [TREE.cypress]: 140, [TREE.palm]: 90, [TREE.oleander]: 120 };
 const NEAR = { [TREE.orange]: 150, [TREE.pine]: 190, [TREE.cypress]: 170, [TREE.palm]: 170, [TREE.oleander]: 80 };
 /** Height in metres of the model as built: instance scale is height / this. */
-const BASE = { [TREE.orange]: 5.6, [TREE.pine]: 8, [TREE.cypress]: 9, [TREE.palm]: 8.5, [TREE.oleander]: 1.7 };
+const BASE = { [TREE.orange]: 4.3, [TREE.pine]: 8, [TREE.cypress]: 9, [TREE.palm]: 8.5, [TREE.oleander]: 1.7 };
 
 class Geo {
   constructor() { this.p = []; this.c = []; }
@@ -33,10 +33,9 @@ class Geo {
   }
 }
 const C = hex => new THREE.Color(hex);
-function orangeTree() {
-  const g = new Geo(); g.trunk(0, 0, 0, 2.6, .17, .12, 5, C('#6b5338'), C('#7a6045'));
-  g.blob(0, 3.9, 0, 2.15, 1.75, 2.15, 8, 3, C('#0d2415'), C('#74a64a'), {});
-  g.blob(.5, 5.2, .2, 1.2, .95, 1.2, 6, 2, C('#2c5a2d'), C('#86b252'));
+function orangeTree() { // a bitter orange: 3 to 5 m, a short trunk and a round crown
+  const g = new Geo(); g.trunk(0, 0, 0, 1.5, .14, .1, 5, C('#6b5338'), C('#7a6045'));
+  g.blob(0, 2.7, 0, 1.75, 1.55, 1.75, 10, 4, C('#0d2415'), C('#74a64a'));
   return g;
 }
 function pineTree() { // Aleppo pine: a long bare trunk, a flat umbrella of two layers
@@ -99,7 +98,7 @@ export class AthensTrees {
     if (veg) { const p = packet.arrays[veg.positionHeight], k = packet.arrays[veg.kind], seed = packet.arrays[veg.seed];
       for (let i = 0; i < k.length; i++) records.push({ species: speciesOfBakeRow(k[i], seed[i]), x: p[i * 4] + o[0], y: p[i * 4 + 1], z: p[i * 4 + 2] + o[2], height: Math.min(10, Math.max(3, p[i * 4 + 3])), yaw: (seed[i] % 628) / 100, variant: seed[i] % 8 }); }
     if (ext?.streetTrees != null) { const r = packet.arrays[ext.streetTrees];
-      for (let i = 0; i < r.length; i += 5) { const code = r[i + 4] | 0, species = code >> 3, v = code & 7; records.push({ species, x: r[i] + o[0], y: r[i + 1], z: r[i + 2] + o[2], height: BASE[species] * (species === TREE.orange ? .78 + v * .045 : .85 + v * .04), yaw: r[i + 3], variant: v }); } }
+      for (let i = 0; i < r.length; i += 5) { const code = r[i + 4] | 0, species = code >> 3, v = code & 7; records.push({ species, x: r[i] + o[0], y: r[i + 1], z: r[i + 2] + o[2], height: BASE[species] * (species === TREE.orange ? .72 + v * .06 : .85 + v * .04), yaw: r[i + 3], variant: v }); } }
     this.tiles.set(key, records); this.last.x = Infinity;
   }
   removeTile(key) { if (this.tiles.delete(key)) this.last.x = Infinity; }
@@ -116,7 +115,7 @@ export class AthensTrees {
       const slot = this.meshes.get(r.species), k = used.get(r.species) || 0; if (k >= slot.cap) continue; used.set(r.species, k + 1);
       const s = r.height / BASE[r.species], w = s * (r.species === TREE.cypress ? .9 + (r.variant & 3) * .05 : 1);
       M.compose(V.set(r.x, r.y, r.z), Q.setFromEuler(E.set(0, r.yaw, 0)), S.set(w, s, w)); slot.mesh.setMatrixAt(k, M); slot.mesh.setColorAt(k, Cc.set(GREENS[r.variant % GREENS.length]));
-      const radius = (r.species === TREE.cypress ? 1.2 : r.species === TREE.oleander ? 1.5 : r.species === TREE.pine ? 3.4 : r.species === TREE.palm ? 2.2 : 2.3) * w;
+      const radius = (r.species === TREE.cypress ? 1.2 : r.species === TREE.oleander ? 1.5 : r.species === TREE.pine ? 3.4 : r.species === TREE.palm ? 2.2 : 1.9) * w;
       M.compose(V.set(r.x + radius * .15, r.y + .05, r.z + radius * .1), Q.identity(), S.set(radius, 1, radius)); this.shadow.setMatrixAt(n++, M); tris += this.tris[r.species];
     }
     let calls = 0;
