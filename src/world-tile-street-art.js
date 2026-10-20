@@ -11,7 +11,7 @@ import { asphaltIndex } from './world-tile-asphalt.js';
 import { inArtQuarter } from './athens-quarters.js';
 
 /** Which parts of the street art are on (the commits of step 6 switch them on one group at a time). */
-export const STREET_ART = Object.freeze({ marks: true, murals: false });
+export const STREET_ART = Object.freeze({ marks: true, murals: true });
 export const ART_LIMITS = Object.freeze({ plates: 360, shops: 1300, walls: 520, marks: 1700 });
 const H24 = n => n & 0xffffff;
 const SHOP_STYLES = new Set([0, 1, 3, 4, 9, 10, 11]);
