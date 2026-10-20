@@ -19,3 +19,6 @@ Derived from each cell's road graph when the cell is read. The only thing a late
 
 ## Summary for the bake agent, steps 1 to 5
 Nothing in the published cells has to change for any of the five steps. Static files that ship with the app: `assets/athens/horizon.bin` (78 KB), `assets/athens/plazas.json` (64 KB). If you rebake anyway, `worldDetail.buildings.roofShape` and `facadeStyle`, and `worldDetail.vegetation`, are read when present.
+
+## Step 5b (Syntagma strip, lawns): no rebake needed, one thing for a later bake
+`assets/athens/plazas.json` and the new `assets/athens/lawns.json` ship with the app. For a later bake: leisure=garden, flower beds and landscape=lawn are not read as grass by the ground class, and the edge of a park blends over large ground triangles; classing them in `tools/world-gen/appearance.py` (and passing the polygons through ingest) would make the lawn layer unnecessary.
