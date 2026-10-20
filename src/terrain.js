@@ -228,7 +228,9 @@ export function buildTerrain(terrain, route, extraStamps, scene, { coastal = tru
   // Psychiko reserves two extra millimetres for its compact lattice quantisation.
   const conform = new RoadTerrain(route, network, { clearance: coastal ? .095 : gardens ? .077 : .075 }), refined = new Set();
   for (const seg of conform.segments) {
-    const feather = gardens ? 12 : 32, R = seg.width + feather + T;
+    // The six-metre drivable shoulder plus the containing 10 m cells stay refined.
+    // Psychiko's dense street grid needs no extra four-metre band behind garden walls.
+    const feather = gardens ? 8 : 32, R = seg.width + feather + T;
     const i0 = Math.max(0, Math.floor((Math.min(seg.ax, seg.bx) - R - minX) / T)), i1 = Math.min(GX - 2, Math.ceil((Math.max(seg.ax, seg.bx) + R - minX) / T));
     const j0 = Math.max(0, Math.floor((Math.min(seg.az, seg.bz) - R - minZ) / T)), j1 = Math.min(GZ - 2, Math.ceil((Math.max(seg.az, seg.bz) + R - minZ) / T));
     for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
