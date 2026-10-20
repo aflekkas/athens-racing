@@ -1,6 +1,5 @@
 // Car catalogue + procedural car models (lofted bodies), traffic vehicles, the curly-haired driver.
 import * as THREE from 'three';
-import {ExhaustFlames} from './exhaust-flames.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { clamp, lerp, smoothstep, RNG, canvasTex, damp } from './util.js';
 import { trimMat, Cockpit } from './cockpit.js';
@@ -12,7 +11,12 @@ import { savedPaint, setPaint } from './vehicle-paint.js';
 export { setPaint } from './vehicle-paint.js';
 
 // Every car supports the player’s Auto / Manual setting.
-// ------------------------------------------------------------------ catalogue (player-selectable)
+// ------------------------------------------------------------------ catalogue (physics specs)
+// Every spec the game can simulate; tools and the server read this literal as text. Players drive only the kept car of each model
+// (CAR_MODELS in car-catalog.js: one per model, its top trim; owner decision 2026-10-20, docs/OWNER-DECISIONS.md). The specs of the
+// removed trims stay here for background traffic only, so the street mix keeps its ordinary small, diesel and mid-range cars
+// instead of turning into Golf Rs and Octavia RSs. No garage, lobby, leaderboard or save offers them: canonicalCarId() maps every
+// removed id to its kept car.
 export const CARS = [
   {
     id: 'mini',
@@ -23,7 +27,7 @@ export const CARS = [
     convertible: true, body: "mini", drive: "fwd", frontW: 0.61, hcg: 0.5, track: 1.485, rsF: 0.59, susHz: 1.85, susZ: 0.55, rollK: 1, pitchK: 1,
     alphaPk: 0.115, mfC: 1.45, loadSens: 0.16, clA: 0.02, tc: 0.65, esc: 0.45, shiftT: 0.34, bias: 0.74, steerResponse: 0.10, steerRate: 1.15, ebrake: 0.16, engine: "turbo4",
     turbo: 1, stats: {"speed":0.58,"accel":0.56,"handling":0.88,"drift":0.38}, zeroTo100: 7.2,
-    visual: {"rim":17,"spokes":5,"exhaust":2,"ride":0,"caliper":"#45494b","lip":false}, trimLabel: "COOPER S", bodyStyle: "convertible",
+    visual: {"rim":17,"spokes":5,"exhaust":2,"ride":0,"caliper":"#45494b"}, bodyStyle: "convertible",
   },
   {
     id: 'z4',
@@ -34,7 +38,7 @@ export const CARS = [
     brake: 1.12, cyl: 6, pitch: 0.94, convertible: true, body: "z4", drive: "rwd", frontW: 0.5, hcg: 0.46, track: 1.6, rsF: 0.53, susHz: 1.75, susZ: 0.6,
     rollK: 0.7, pitchK: 0.7, alphaPk: 0.105, mfC: 1.5, loadSens: 0.14, clA: 0.05, tc: 0.45, esc: 0.3, shiftT: 0.28, bias: 0.64, steerRate: 1.15,
     ebrake: 0.14, engine: "turbo6", turbo: 1.15, lsd: 0.45, stats: {"speed":0.82,"accel":0.93,"handling":0.94,"drift":0.91}, zeroTo100: 4.5,
-    visual: {"rim":19,"spokes":7,"exhaust":2,"ride":-0.025,"caliper":"#bb2027","lip":true,"kit":"M"},
+    visual: {"rim":19,"spokes":7,"exhaust":2,"ride":-0.025,"caliper":"#bb2027"},
   },
   {
     id: 'taxi',
@@ -45,7 +49,7 @@ export const CARS = [
     body: "octavia", taxi: true, drive: "fwd", frontW: 0.6, hcg: 0.53, track: 1.54, rsF: 0.57, usGrad: 2.5, rollGrad: 4.8, susHz: 1.55, susZ: 0.5,
     rollK: 1.3, pitchK: 1.3, alphaPk: 0.125, mfC: 1.42, loadSens: 0.15, clA: 0, tc: 0.8, esc: 0.65, shiftT: 0.14, bias: 0.72, steerRate: 0.95,
     ebrake: 0.18, engine: "diesel", turbo: 0.8, driftAngle: 0.46, stats: {"speed":0.5,"accel":0.42,"handling":0.64,"drift":0.25}, zeroTo100: 8.6,
-    visual: {"rim":16,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b","lip":false},
+    visual: {"rim":16,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b"},
   },
   {
     id: 'carrera',
@@ -58,7 +62,7 @@ export const CARS = [
     brake: 1.16, cyl: 6, pitch: 1, body: "carrera", drive: "rwd", engine: "flat6", engineZone: "rear", tyres: ["235/40 ZR19","285/30 ZR19"], frontW: 0.39,
     hcg: 0.45, track: 1.525, rsF: 0.48, susHz: 2, susZ: 0.56, rollK: 0.8, pitchK: 0.8, alphaPk: 0.11, mfC: 1.47, loadSens: 0.15, clA: 0.02, tc: 0.5,
     esc: 0.4, shiftT: 0.34, bias: 0.6, steerResponse: 0.10, steerRate: 1.08, ebrake: 0.15, lsd: 0, stats: {"speed":0.96,"accel":0.91,"handling":0.94,"drift":0.78},
-    zeroTo100: 4.8, visual: {"rim":19,"spokes":5,"exhaust":2,"ride":0,"caliper":"#45494b","lip":false},
+    zeroTo100: 4.8, visual: {"rim":19,"spokes":5,"exhaust":2,"ride":0,"caliper":"#45494b"},
   },
   {
     id: 'gr_yaris',
@@ -71,7 +75,7 @@ export const CARS = [
     tyres: ["225/40 ZR18","225/40 ZR18"], frontW: 0.6, hcg: 0.49, track: 1.554, rsF: 0.59, rollGrad: 2.8, susHz: 2.05, susZ: 0.58, rollK: 0.8,
     pitchK: 0.85, alphaPk: 0.115, mfC: 1.45, loadSens: 0.15, clA: 0.01, tc: 0.5, esc: 0.4, shiftT: 0.32, bias: 0.72, steerRate: 1.2, ebrake: 0.16,
     lsd: 0.35, stats: {"speed":0.59,"accel":0.84,"handling":0.93,"drift":0.63}, zeroTo100: 5.5,
-    visual: {"rim":18,"spokes":7,"exhaust":2,"ride":-0.025,"caliper":"#bb2027","lip":true},
+    visual: {"rim":18,"spokes":7,"exhaust":2,"ride":-0.025,"caliper":"#bb2027"},
   },
   {
     id: 'gtv',
@@ -83,7 +87,7 @@ export const CARS = [
     yawI: 1.15, drift: 1, brake: 0.96, cyl: 4, pitch: 1, body: "gtv", drive: "rwd", engine: "na4", tyres: ["165 HR14","165 HR14"], frontW: 0.54, hcg: 0.48,
     track: 1.3, rsF: 0.58, rollGrad: 4.8, susHz: 1.65, susZ: 0.49, rollK: 1.15, pitchK: 1.15, alphaPk: 0.14, mfC: 1.4, loadSens: 0.16, clA: 0, tc: 0.5,
     esc: 0.3, edl: 0, shiftT: 0.44, bias: 0.66, steerRate: 0.98, ebrake: 0.14, lsd: 0.25, stats: {"speed":0.39,"accel":0.45,"handling":0.69,"drift":0.67},
-    zeroTo100: 8.9, visual: {"rim":14,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b","lip":false},
+    zeroTo100: 8.9, visual: {"rim":14,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b"},
   },
   {
     id: 'golf',
@@ -95,7 +99,7 @@ export const CARS = [
     cyl: 4, pitch: 1, body: "golf", fleet: "hatch", drive: "fwd", engine: "turbo4", turbo: 0.8, tyres: ["205/55 R16","205/55 R16"], frontW: 0.6, hcg: 0.51,
     track: 1.549, rsF: 0.59, susHz: 1.65, susZ: 0.54, rollK: 1.1, pitchK: 1.1, alphaPk: 0.125, mfC: 1.43, loadSens: 0.17, clA: 0, tc: 0.65, esc: 0.45,
     shiftT: 0.38, bias: 0.72, steerRate: 1.1, ebrake: 0.16, lsd: 0, stats: {"speed":0.46,"accel":0.44,"handling":0.76,"drift":0.34}, zeroTo100: 8.4,
-    visual: {"rim":16,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b","lip":false},
+    visual: {"rim":16,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b"},
   },
   {
     id: 'corolla',
@@ -107,7 +111,7 @@ export const CARS = [
     pitch: 1.05, body: "corolla", fleet: "sedan", drive: "fwd", engine: "na4", tyres: ["205/55 R16","205/55 R16"], frontW: 0.59, hcg: 0.51, track: 1.53,
     rsF: 0.6, susHz: 1.6, susZ: 0.53, rollK: 1.15, pitchK: 1.15, alphaPk: 0.13, mfC: 1.42, loadSens: 0.17, clA: 0, tc: 0.7, esc: 0.5, shiftT: 0.38,
     bias: 0.71, steerRate: 1.08, ebrake: 0.16, lsd: 0, stats: {"speed":0.4,"accel":0.34,"handling":0.71,"drift":0.31}, zeroTo100: 9.7,
-    visual: {"rim":16,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b","lip":false},
+    visual: {"rim":16,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b"},
   },
   {
     id: 'superb',
@@ -119,7 +123,7 @@ export const CARS = [
     body: "superb", fleet: "taxi_superb", drive: "fwd", engine: "turbo4", turbo: 1, tyres: ["215/55 R17","215/55 R17"], frontW: 0.6, hcg: 0.53,
     track: 1.584, rsF: 0.6, susHz: 1.6, susZ: 0.55, rollK: 1.15, pitchK: 1.15, alphaPk: 0.125, mfC: 1.44, loadSens: 0.17, clA: 0, tc: 0.7, esc: 0.5,
     shiftT: 0.14, bias: 0.72, steerRate: 1.02, ebrake: 0.16, lsd: 0, stats: {"speed":0.69,"accel":0.61,"handling":0.7,"drift":0.31}, zeroTo100: 7,
-    visual: {"rim":17,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b","lip":false},
+    visual: {"rim":17,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b"},
   },
   {
     id: 'police_octavia',
@@ -143,7 +147,7 @@ export const CARS = [
     body: "mini_jcw", cabinWidth: 0.8, drive: "fwd", engine: "turbo4", turbo: 1, playerDetail: true, tyres: ["205/45 R17","205/45 R17"], frontW: 0.62,
     hcg: 0.48, track: 1.485, rsF: 0.6, usGrad: 3, susHz: 2, susZ: 0.57, rollK: 0.85, pitchK: 0.85, alphaPk: 0.115, mfC: 1.45, loadSens: 0.16, clA: 0.02,
     tc: 0.6, esc: 0.4, shiftT: 0.32, bias: 0.73, steerRate: 1.18, ebrake: 0.16, lsd: 0, stats: {"speed":0.7,"accel":0.71,"handling":0.9,"drift":0.38},
-    zeroTo100: 6.3, visual: {"rim":18,"spokes":7,"exhaust":2,"ride":-0.025,"caliper":"#bb2027","lip":true,"kit":"JCW"}, trimLabel: "JCW",
+    zeroTo100: 6.3, visual: {"rim":18,"spokes":7,"exhaust":2,"ride":-0.025,"caliper":"#bb2027"},
     bodyStyle: "hardtop",
   },
   {
@@ -175,7 +179,7 @@ export const CARS = [
   {
     id: 'gla45',
     powertrain: {"idleRpm":850,"redlineRpm":7200,"limiterRpm":7300,"inertia":0.25,"maxFreeRevRate":6500,"spoolTime":0.48,"engineBraking":0.16,"gearboxType":"dct","shiftTime":0.1,"revMatch":true,"torqueConverter":false,"torquePlateau":[5000,5250],"limiterDrop":220},
-    gearbox: "DCT", visual: {"amg":true,"rim":20,"spokes":7,"exhaust":4,"caliper":"#bf2027","lip":true}, name: "MERCEDES-AMG GLA 45 S", short: "GLA 45 S",
+    gearbox: "DCT", visual: {"amg":true,"rim":20,"spokes":7,"exhaust":4,"caliper":"#bf2027"}, name: "MERCEDES-AMG GLA 45 S", short: "GLA 45 S",
     tag: "H247 wide · 421 PS. Panamericana grille. 4MATIC+.", color: "#737c83", accent: "#d7bd39", marque: "mercedes", mass: 1765, power: 310, torque: 500,
     redline: 7200, idle: 850, gears: [15.94,11.18,7.34,5.15,3.74,2.93,2.29,1.81], final: 1, wheelR: 0.346,
     torqueCurve: [[0,120],[850,140],[1800,240],[3000,385],[4000,460],[5000,500],[5250,500],[6000,480],[6750,438.62],[7200,375]], peakTorqueRpm: 5100,
@@ -196,7 +200,7 @@ export const CARS = [
     trackRear: 1.584, rsF: 0.6, susHz: 1.6, susZ: 0.56, rollK: 1.05, pitchK: 1.05, alphaPk: 0.12, mfC: 1.44, loadSens: 0.16, clA: 0, tc: 0.75, esc: 0.6,
     shiftT: 0.15, bias: 0.71, steerRate: 1.07, ebrake: 0.17, lsd: 0,
     stats: {"speed":0.7387096774193549,"accel":0.48780487804878053,"handling":0.8307692307692308,"drift":0.35}, zeroTo100: 8.2, trafficWeight: 0,
-    playerDetail: true, visual: {"rim":17,"spokes":5,"exhaust":2,"ride":0,"caliper":"#45494b","lip":false}, gearbox: "DCT",
+    playerDetail: true, visual: {"rim":17,"spokes":5,"exhaust":2,"ride":0,"caliper":"#45494b"}, gearbox: "DCT",
   },
   {
     id: 'aventador_svj',
@@ -209,8 +213,8 @@ export const CARS = [
     engineZone: "rear", playerDetail: true, trafficWeight: 0, tyres: ["255/30 ZR20","355/25 ZR21"], frontW: 0.43, hcg: 0.4, track: 1.72, rsF: 0.5,
     usGrad: 1.8, susHz: 1.9, susZ: 0.61, rollK: 0.65, pitchK: 0.65, alphaPk: 0.1, mfC: 1.5, loadSens: 0.14, clA: 0.32, rearSteering: true, activeAero: "ALA 2.0", tc: 0.8, esc: 0.4, shiftT: 0.18,
     bias: 0.62, steerRate: 1.15, ebrake: 0.15, lsd: 0.4, stats: {"speed":1,"accel":1,"handling":0.98,"drift":0.81},
-    launchRpmFraction: .78, exhaustPops: true, trimLabel: "SVJ LP770-4",
-    visual: {"rim":20,"spokes":7,"ride":0,"caliper":"#bb2027","lip":false},
+    launchRpmFraction: .78,
+    visual: {"rim":20,"spokes":7,"ride":0,"caliper":"#bb2027"},
   },
   {
     id: 'huracan',
@@ -223,7 +227,7 @@ export const CARS = [
     engineZone: "rear", playerDetail: true, trafficWeight: 0.1, tyres: ["245/30 ZR20","305/30 ZR20"], frontW: 0.43, hcg: 0.4, track: 1.668, rsF: 0.5,
     usGrad: 1.8, susHz: 1.9, susZ: 0.61, rollK: 0.65, pitchK: 0.65, alphaPk: 0.1, mfC: 1.5, loadSens: 0.14, clA: 0.12, tc: 0.8, esc: 0.4, shiftT: 0.09,
     steerResponse: 0.18, steerSlipGuard: 1.02, bias: 0.62, steerRate: 1.15, ebrake: 0.15, lsd: 0.4, stats: {"speed":1,"accel":1,"handling":0.98,"drift":0.81},
-    visual: {"rim":20,"spokes":7,"exhaust":2,"ride":-0.025,"caliper":"#bb2027","lip":true},
+    visual: {"rim":20,"spokes":7,"exhaust":2,"ride":-0.025,"caliper":"#bb2027"},
   },
   {
     id: 'ibiza',
@@ -233,10 +237,10 @@ export const CARS = [
     gears: [3.455,1.944,1.286,0.969,0.805], final: 4.063, wheelR: 0.289,
     torqueCurve: [[0,38],[850,48],[1800,85],[2800,107],[4000,99],[5200,80.8],[6200,57]], peakTorqueRpm: 2800, peakPowerRpm: 5200, wheelbase: 2.44,
     length: 3.813, width: 1.64, cdA: 0.65, vmax: 157, grip: 0.93, steer: 0.61, yawI: 1.05, drift: 1, brake: 0.97, cyl: 4, pitch: 1, body: "ibiza",
-    cabinWidth: 0.8, drive: "fwd", engine: "na4", playerDetail: true, trafficWeight: 18, nitrous: true, steelWheels: true, rearDrums: true, oldDash: true,
+    cabinWidth: 0.8, drive: "fwd", engine: "na4", playerDetail: true, trafficWeight: 18, steelWheels: true, rearDrums: true, oldDash: true,
     tyres: ["155/80 R13","155/80 R13"], frontW: 0.61, hcg: 0.5, track: 1.429, tyreK: 170000, rsF: 0.58, usGrad: 3.6, susHz: 1.55, susZ: 0.52, rollK: 1.2,
     pitchK: 1.15, alphaPk: 0.13, mfC: 1.42, loadSens: 0.17, clA: 0, tc: 0.45, esc: 0.3, shiftT: 0.44, bias: 0.72, steerRate: 1.05, ebrake: 0.16,
-    stats: {"speed":0.23,"accel":0.2,"handling":0.65,"drift":0.3}, visual: {"rim":13,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b","lip":false},
+    stats: {"speed":0.23,"accel":0.2,"handling":0.65,"drift":0.3}, visual: {"rim":13,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b"},
   },
   {
     id: 'panda',
@@ -248,7 +252,7 @@ export const CARS = [
     cabinWidth: 0.8, drive: "fwd", engine: "na4", playerDetail: true, trafficWeight: 18, steelWheels: true, rearDrums: true, oldDash: true,
     tyres: ["155/80 R13","155/80 R13"], frontW: 0.6, hcg: 0.55, track: 1.366, tyreK: 170000, rsF: 0.58, usGrad: 3.6, susHz: 1.55, susZ: 0.52, rollK: 1.2,
     pitchK: 1.15, alphaPk: 0.13, mfC: 1.42, loadSens: 0.17, clA: 0, tc: 0.45, esc: 0.3, shiftT: 0.44, bias: 0.72, steerRate: 1.05, ebrake: 0.16,
-    stats: {"speed":0.23,"accel":0.2,"handling":0.65,"drift":0.3}, visual: {"rim":13,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b","lip":false},
+    stats: {"speed":0.23,"accel":0.2,"handling":0.65,"drift":0.3}, visual: {"rim":13,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b"},
   },
   {
     id: 'yaris',
@@ -261,7 +265,7 @@ export const CARS = [
     centerCluster: true, tyres: ["155/80 R13","155/80 R13"], frontW: 0.61, hcg: 0.53, track: 1.44, tyreK: 170000, rsF: 0.58, usGrad: 3.4, susHz: 1.55,
     susZ: 0.52, rollK: 1.2, pitchK: 1.15, alphaPk: 0.13, mfC: 1.42, loadSens: 0.17, clA: 0, tc: 0.45, esc: 0.3, shiftT: 0.4, bias: 0.72, steerRate: 1.05,
     ebrake: 0.16, stats: {"speed":0.23,"accel":0.2,"handling":0.65,"drift":0.3},
-    visual: {"rim":13,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b","lip":false},
+    visual: {"rim":13,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b"},
   },
   {
     id: 'e36',
@@ -316,7 +320,7 @@ export const CARS = [
     frontW: 0.54, hcg: 0.5, track: 1.663, trackRear: 1.691, rsF: 0.56, susHz: 2, susZ: 0.58, rollK: 0.95, pitchK: 1, alphaPk: 0.115, mfC: 1.46,
     loadSens: 0.15, clA: 0.02, tc: 0.65, esc: 0.5, shiftT: 0.25, bias: 0.68, steerRate: 1.08, ebrake: 0.16, lsd: 0.35,
     stats: {"speed":0.73,"accel":0.72,"handling":0.79,"drift":0.6}, zeroTo100: 4.2,
-    visual: {"amg":true,"rim":20,"spokes":7,"ride":-0.015,"exhaust":4,"caliper":"#bf2027","lip":true}, trafficWeight: 0.25,
+    visual: {"amg":true,"rim":20,"spokes":7,"ride":-0.015,"exhaust":4,"caliper":"#bf2027"}, trafficWeight: 0.25,
     hybrid: {"type":"mhev","voltage":48,"electricPowerKW":17,"electricTorqueNm":205,"simulation":"ice-continuous-rating"},
   },
   {
@@ -330,7 +334,7 @@ export const CARS = [
     tyres: ["225/45 ZR17","245/40 ZR17"], frontW: 0.51, hcg: 0.48, track: 1.408, rsF: 0.58, usGrad: 2.3, susHz: 1.9, susZ: 0.52, rollK: 1.2, pitchK: 1.15,
     alphaPk: 0.13, mfC: 1.42, loadSens: 0.17, clA: 0, tc: 0.45, esc: 0.3, shiftT: 0.34, bias: 0.66, steerResponse: 0.10, steerRate: 1.05, ebrake: 0.16,
     stats: {"speed":0.55,"accel":0.59,"handling":0.65,"drift":0.77},
-    visual: {"rim":17,"spokes":10,"ride":-0.02,"exhaust":2,"caliper":"#242424","lip":true,"m":true},
+    visual: {"rim":17,"spokes":10,"ride":-0.02,"exhaust":2,"caliper":"#242424","m":true},
   },
   {
     id: 'panda_11',
@@ -343,7 +347,7 @@ export const CARS = [
     tyres: ["155/80 R13","155/80 R13"], frontW: 0.6, hcg: 0.55, track: 1.366, tyreK: 170000, rsF: 0.58, usGrad: 3.6, susHz: 1.55, susZ: 0.52, rollK: 1.2,
     pitchK: 1.15, alphaPk: 0.13, mfC: 1.42, loadSens: 0.17, clA: 0, tc: 0.45, esc: 0.3, shiftT: 0.44, bias: 0.72, steerRate: 1.05, ebrake: 0.16,
     stats: {"speed":0.4838709677419355,"accel":0.26666666666666666,"handling":0.7384615384615384,"drift":0.35},
-    visual: {"rim":13,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b","lip":false},
+    visual: {"rim":13,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b"},
   },
   {
     id: 'panda_100hp',
@@ -356,7 +360,7 @@ export const CARS = [
     rearDrums: false, oldDash: true, tyres: ["195/45 R15","195/45 R15"], frontW: 0.6, hcg: 0.55, track: 1.366, tyreK: 170000, rsF: 0.58, usGrad: 3.6,
     susHz: 1.55, susZ: 0.52, rollK: 1.2, pitchK: 1.15, alphaPk: 0.13, mfC: 1.42, loadSens: 0.17, clA: 0, tc: 0.45, esc: 0.3, shiftT: 0.36, bias: 0.72,
     steerRate: 1.05, ebrake: 0.16, stats: {"speed":0.5967741935483871,"accel":0.42105263157894735,"handling":0.8307692307692308,"drift":0.35},
-    visual: {"rim":15,"spokes":7,"exhaust":1,"ride":-0.025,"caliper":"#bb2027","lip":true,"kit":"100HP"},
+    visual: {"rim":15,"spokes":7,"exhaust":1,"ride":-0.025,"caliper":"#bb2027"},
   },
   {
     id: 'yaris_13',
@@ -370,7 +374,7 @@ export const CARS = [
     rsF: 0.58, usGrad: 3.4, susHz: 1.55, susZ: 0.52, rollK: 1.2, pitchK: 1.15, alphaPk: 0.13, mfC: 1.42, loadSens: 0.17, clA: 0, tc: 0.45, esc: 0.3,
     shiftT: 0.4, bias: 0.72, steerRate: 1.05, ebrake: 0.16,
     stats: {"speed":0.5645161290322581,"accel":0.3305785123966942,"handling":0.7461538461538461,"drift":0.35},
-    visual: {"rim":14,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b","lip":false},
+    visual: {"rim":14,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b"},
   },
   {
     id: 'yaris_ts',
@@ -384,11 +388,13 @@ export const CARS = [
     rsF: 0.58, usGrad: 3.4, susHz: 1.55, susZ: 0.52, rollK: 1.2, pitchK: 1.15, alphaPk: 0.13, mfC: 1.42, loadSens: 0.17, clA: 0, tc: 0.45, esc: 0.3,
     shiftT: 0.36, bias: 0.72, steerRate: 1.05, ebrake: 0.16,
     stats: {"speed":0.6129032258064516,"accel":0.4444444444444444,"handling":0.8230769230769232,"drift":0.35},
-    visual: {"rim":15,"spokes":7,"exhaust":1,"ride":-0.025,"caliper":"#bb2027","lip":true,"kit":"T SPORT"},
+    visual: {"rim":15,"spokes":7,"exhaust":1,"ride":-0.025,"caliper":"#bb2027"},
   },
   {
     id: 'ibiza_cupra',
     powertrain: {"idleRpm":850,"redlineRpm":6800,"limiterRpm":6900,"inertia":0.24,"maxFreeRevRate":4800,"spoolTime":0.65,"engineBraking":0.16,"gearboxType":"manual","shiftTime":0.38,"revMatch":false,"torqueConverter":false,"torquePlateau":[1950,4500],"limiterDrop":220},
+    // The model's one non-factory nitrous bottle (it used to sit on the removed base trim) rides in the kept Cupra.
+    nitrous: true,
     gearbox: "MT", name: "SEAT IBIZA · 1.8 20VT CUPRA", short: "1.8 20VT CUPRA", tag: "5-speed manual · FWD · 115 kW / 210 Nm", color: "#8d4948",
     accent: "#a7a5a0", zeroTo100: 7.9, mass: 1119, power: 115, torque: 210, redline: 6800, idle: 850, gears: [3.3,1.944,1.308,1.034,0.838], final: 3.684,
     wheelR: 0.296, torqueCurve: [[0,54.6],[850,71.4],[2200,210],[5800,189.33950126449616],[6800,147.684810986307]], peakTorqueRpm: 2200,
@@ -397,7 +403,7 @@ export const CARS = [
     rearDrums: false, oldDash: true, tyres: ["195/45 R16","195/45 R16"], frontW: 0.61, hcg: 0.5, track: 1.429, tyreK: 170000, rsF: 0.58, usGrad: 3.6,
     susHz: 1.55, susZ: 0.52, rollK: 1.2, pitchK: 1.15, alphaPk: 0.13, mfC: 1.42, loadSens: 0.17, clA: 0, tc: 0.45, esc: 0.3, shiftT: 0.38, bias: 0.72,
     steerRate: 1.05, ebrake: 0.16, stats: {"speed":0.7032258064516129,"accel":0.5063291139240506,"handling":0.8461538461538461,"drift":0.35},
-    visual: {"rim":16,"spokes":7,"exhaust":1,"ride":-0.025,"caliper":"#bb2027","lip":true,"kit":"CUPRA"}, turbo: 1,
+    visual: {"rim":16,"spokes":7,"exhaust":1,"ride":-0.025,"caliper":"#bb2027"}, turbo: 1,
   },
   {
     id: 'golf_gti',
@@ -410,7 +416,7 @@ export const CARS = [
     track: 1.549, rsF: 0.59, susHz: 1.65, susZ: 0.54, rollK: 1.1, pitchK: 1.1, alphaPk: 0.125, mfC: 1.43, loadSens: 0.17, clA: 0, tc: 0.65, esc: 0.45,
     shiftT: 0.34, bias: 0.72, steerResponse: 0.10, steerRate: 1.1, ebrake: 0.16, lsd: 0.15,
     stats: {"speed":0.7935483870967742,"accel":0.6153846153846154,"handling":0.8692307692307691,"drift":0.35}, zeroTo100: 6.5,
-    visual: {"rim":18,"spokes":7,"exhaust":2,"ride":-0.025,"caliper":"#bb2027","lip":true,"kit":"GTI"}, playerDetail: true,
+    visual: {"rim":18,"spokes":7,"exhaust":2,"ride":-0.025,"caliper":"#bb2027"}, playerDetail: true,
   },
   {
     id: 'golf_gtd',
@@ -423,7 +429,7 @@ export const CARS = [
     hcg: 0.51, track: 1.549, rsF: 0.59, susHz: 1.65, susZ: 0.54, rollK: 1.1, pitchK: 1.1, alphaPk: 0.125, mfC: 1.43, loadSens: 0.17, clA: 0, tc: 0.65,
     esc: 0.45, shiftT: 0.4, bias: 0.72, steerRate: 1.1, ebrake: 0.16, lsd: 0,
     stats: {"speed":0.7419354838709677,"accel":0.5333333333333333,"handling":0.8384615384615385,"drift":0.35}, zeroTo100: 7.5,
-    visual: {"rim":17,"spokes":7,"exhaust":2,"ride":-0.025,"caliper":"#bb2027","lip":true,"kit":"GTD"}, playerDetail: true,
+    visual: {"rim":17,"spokes":7,"exhaust":2,"ride":-0.025,"caliper":"#bb2027"}, playerDetail: true,
   },
   {
     id: 'golf_r',
@@ -436,7 +442,7 @@ export const CARS = [
     track: 1.549, rsF: 0.59, susHz: 1.65, susZ: 0.54, rollK: 1.1, pitchK: 1.1, alphaPk: 0.125, mfC: 1.43, loadSens: 0.17, clA: 0, tc: 0.65, esc: 0.45,
     shiftT: 0.11, bias: 0.72, steerRate: 1.1, ebrake: 0.16, lsd: 0,
     stats: {"speed":0.8064516129032258,"accel":0.8163265306122448,"handling":0.9076923076923076,"drift":0.35}, zeroTo100: 4.9,
-    visual: {"rim":19,"spokes":7,"exhaust":4,"ride":-0.025,"caliper":"#bb2027","lip":true,"kit":"R"}, playerDetail: true, gearbox: "DCT", awdRear: 0.45,
+    visual: {"rim":19,"spokes":7,"exhaust":4,"ride":-0.025,"caliper":"#bb2027"}, playerDetail: true, gearbox: "DCT", awdRear: 0.45,
   },
   {
     id: 'mini_cooper',
@@ -449,7 +455,7 @@ export const CARS = [
     hcg: 0.48, track: 1.485, rsF: 0.6, usGrad: 3, susHz: 2, susZ: 0.57, rollK: 0.85, pitchK: 0.85, alphaPk: 0.115, mfC: 1.45, loadSens: 0.16, clA: 0.02,
     tc: 0.6, esc: 0.4, shiftT: 0.36, bias: 0.73, steerRate: 1.18, ebrake: 0.16, lsd: 0,
     stats: {"speed":0.6774193548387096,"accel":0.5063291139240506,"handling":0.8076923076923077,"drift":0.35}, zeroTo100: 7.9,
-    visual: {"rim":15,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b","lip":false}, trafficWeight: 0, trimLabel: "COOPER", bodyStyle: "hardtop",
+    visual: {"rim":15,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b"}, trafficWeight: 0, bodyStyle: "hardtop",
   },
   {
     id: 'mini_s',
@@ -462,7 +468,7 @@ export const CARS = [
     hcg: 0.48, track: 1.485, rsF: 0.6, usGrad: 3, susHz: 2, susZ: 0.57, rollK: 0.85, pitchK: 0.85, alphaPk: 0.115, mfC: 1.45, loadSens: 0.16, clA: 0.02,
     tc: 0.6, esc: 0.4, shiftT: 0.34, bias: 0.73, steerRate: 1.18, ebrake: 0.16, lsd: 0,
     stats: {"speed":0.7580645161290323,"accel":0.5882352941176471,"handling":0.8461538461538461,"drift":0.35}, zeroTo100: 6.8,
-    visual: {"rim":17,"spokes":7,"exhaust":2,"ride":-0.025,"caliper":"#bb2027","lip":true,"kit":"S"}, trafficWeight: 0, trimLabel: "COOPER S",
+    visual: {"rim":17,"spokes":7,"exhaust":2,"ride":-0.025,"caliper":"#bb2027"}, trafficWeight: 0,
     bodyStyle: "hardtop",
   },
   {
@@ -474,8 +480,8 @@ export const CARS = [
     cyl: 3, pitch: 1, convertible: true, body: "mini", drive: "fwd", frontW: 0.61, hcg: 0.5, track: 1.485, rsF: 0.59, susHz: 1.85, susZ: 0.55, rollK: 1,
     pitchK: 1, alphaPk: 0.115, mfC: 1.45, loadSens: 0.16, clA: 0.02, tc: 0.65, esc: 0.45, shiftT: 0.36, bias: 0.74, steerRate: 1.15, ebrake: 0.16,
     engine: "turbo3", turbo: 1, stats: {"speed":0.6709677419354839,"accel":0.45454545454545453,"handling":0.8,"drift":0.35}, zeroTo100: 8.8,
-    visual: {"rim":16,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b","lip":false}, playerDetail: true, peakTorqueRpm: 2500, peakPowerRpm: 4500,
-    torqueCurve: [[0,57.2],[850,74.80000000000001],[2500,220],[4500,212.2065907891938],[6500,165.52114081557116]], trimLabel: "COOPER",
+    visual: {"rim":16,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b"}, playerDetail: true, peakTorqueRpm: 2500, peakPowerRpm: 4500,
+    torqueCurve: [[0,57.2],[850,74.80000000000001],[2500,220],[4500,212.2065907891938],[6500,165.52114081557116]],
     bodyStyle: "convertible",
   },
   {
@@ -489,7 +495,7 @@ export const CARS = [
     body: "corolla", fleet: "sedan", drive: "fwd", engine: "na3", tyres: ["205/55 R16","205/55 R16"], frontW: 0.59, hcg: 0.51, track: 1.53, rsF: 0.6,
     susHz: 1.6, susZ: 0.53, rollK: 1.15, pitchK: 1.15, alphaPk: 0.13, mfC: 1.42, loadSens: 0.17, clA: 0, tc: 0.7, esc: 0.5, shiftT: 0.38, bias: 0.71,
     steerRate: 1.08, ebrake: 0.16, lsd: 0, stats: {"speed":0.6129032258064516,"accel":0.3305785123966942,"handling":0.7692307692307692,"drift":0.35},
-    zeroTo100: 12.1, visual: {"rim":16,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b","lip":false}, playerDetail: true,
+    zeroTo100: 12.1, visual: {"rim":16,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b"}, playerDetail: true,
   },
   {
     id: 'octavia_16tdi',
@@ -501,7 +507,7 @@ export const CARS = [
     susHz: 1.55, susZ: 0.5, rollK: 1.3, pitchK: 1.3, alphaPk: 0.125, mfC: 1.42, loadSens: 0.15, clA: 0, tc: 0.8, esc: 0.65, shiftT: 0.42, bias: 0.72,
     steerRate: 0.95, ebrake: 0.18, engine: "diesel", turbo: 0.8, driftAngle: 0.46,
     stats: {"speed":0.635483870967742,"accel":0.37735849056603776,"handling":0.7846153846153846,"drift":0.35}, zeroTo100: 10.6,
-    visual: {"rim":16,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b","lip":false}, playerDetail: true, tyres: ["205/55 R16","205/55 R16"],
+    visual: {"rim":16,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b"}, playerDetail: true, tyres: ["205/55 R16","205/55 R16"],
     peakTorqueRpm: 2000, peakPowerRpm: 4000, torqueCurve: [[0,65],[800,85],[2000,250],[4000,193.37325585665286],[5000,150.83113956818923]],
   },
   {
@@ -514,7 +520,7 @@ export const CARS = [
     susHz: 1.55, susZ: 0.5, rollK: 1.3, pitchK: 1.3, alphaPk: 0.125, mfC: 1.42, loadSens: 0.15, clA: 0, tc: 0.8, esc: 0.65, shiftT: 0.34, bias: 0.72,
     steerRate: 0.95, ebrake: 0.18, engine: "turbo4", turbo: 0.8, driftAngle: 0.46,
     stats: {"speed":0.8,"accel":0.5882352941176471,"handling":0.8692307692307691,"drift":0.35}, zeroTo100: 6.8,
-    visual: {"rim":18,"spokes":7,"exhaust":2,"ride":-0.025,"caliper":"#bb2027","lip":true,"kit":"RS"}, playerDetail: true,
+    visual: {"rim":18,"spokes":7,"exhaust":2,"ride":-0.025,"caliper":"#bb2027"}, playerDetail: true,
     tyres: ["225/40 R18","225/40 R18"], peakTorqueRpm: 2500, peakPowerRpm: 5500,
     torqueCurve: [[0,91],[800,119.00000000000001],[2500,350],[5500,281.2701903369496],[6800,219.3907484628207]],
   },
@@ -529,7 +535,7 @@ export const CARS = [
     track: 1.584, rsF: 0.6, susHz: 1.6, susZ: 0.55, rollK: 1.15, pitchK: 1.15, alphaPk: 0.125, mfC: 1.44, loadSens: 0.17, clA: 0, tc: 0.7, esc: 0.5,
     shiftT: 0.4, bias: 0.72, steerRate: 1.02, ebrake: 0.16, lsd: 0,
     stats: {"speed":0.7096774193548387,"accel":0.4597701149425288,"handling":0.8076923076923077,"drift":0.35}, zeroTo100: 8.7,
-    visual: {"rim":17,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b","lip":false}, playerDetail: true,
+    visual: {"rim":17,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b"}, playerDetail: true,
   },
   {
     id: 'superb_4x4',
@@ -542,7 +548,7 @@ export const CARS = [
     hcg: 0.53, track: 1.584, rsF: 0.6, susHz: 1.6, susZ: 0.55, rollK: 1.15, pitchK: 1.15, alphaPk: 0.125, mfC: 1.44, loadSens: 0.17, clA: 0, tc: 0.7,
     esc: 0.5, shiftT: 0.12, bias: 0.72, steerResponse: 0.10, steerRate: 1.02, ebrake: 0.16, lsd: 0,
     stats: {"speed":0.8064516129032258,"accel":0.6896551724137931,"handling":0.8615384615384616,"drift":0.35}, zeroTo100: 5.8,
-    visual: {"rim":19,"spokes":7,"exhaust":2,"ride":-0.025,"caliper":"#bb2027","lip":true,"kit":"4x4"}, playerDetail: true, gearbox: "DCT", awdRear: 0.5,
+    visual: {"rim":19,"spokes":7,"exhaust":2,"ride":-0.025,"caliper":"#bb2027"}, playerDetail: true, gearbox: "DCT", awdRear: 0.5,
   },
   {
     id: 'cla250',
@@ -555,7 +561,7 @@ export const CARS = [
     track: 1.605, trackRear: 1.584, rsF: 0.6, susHz: 1.6, susZ: 0.56, rollK: 1.05, pitchK: 1.05, alphaPk: 0.12, mfC: 1.44, loadSens: 0.16, clA: 0,
     tc: 0.75, esc: 0.6, shiftT: 0.13, bias: 0.71, steerRate: 1.07, ebrake: 0.17, lsd: 0,
     stats: {"speed":0.8064516129032258,"accel":0.6349206349206349,"handling":0.8615384615384616,"drift":0.35}, zeroTo100: 6.3, trafficWeight: 0,
-    playerDetail: true, visual: {"rim":18,"spokes":5,"exhaust":2,"ride":0,"caliper":"#45494b","lip":false}, gearbox: "DCT", awdRear: 0.5,
+    playerDetail: true, visual: {"rim":18,"spokes":5,"exhaust":2,"ride":0,"caliper":"#45494b"}, gearbox: "DCT", awdRear: 0.5,
   },
   {
     id: 'cla35',
@@ -568,7 +574,7 @@ export const CARS = [
     trackRear: 1.584, rsF: 0.6, susHz: 1.6, susZ: 0.56, rollK: 1.05, pitchK: 1.05, alphaPk: 0.12, mfC: 1.44, loadSens: 0.16, clA: 0, tc: 0.75, esc: 0.6,
     shiftT: 0.11, bias: 0.71, steerRate: 1.07, ebrake: 0.17, lsd: 0,
     stats: {"speed":0.8064516129032258,"accel":0.8163265306122448,"handling":0.8999999999999999,"drift":0.35}, zeroTo100: 4.9, trafficWeight: 0,
-    playerDetail: true, visual: {"rim":18,"spokes":7,"exhaust":2,"ride":-0.025,"caliper":"#bb2027","lip":true,"kit":"AMG 35"}, gearbox: "DCT",
+    playerDetail: true, visual: {"rim":18,"spokes":7,"exhaust":2,"ride":-0.025,"caliper":"#bb2027"}, gearbox: "DCT",
     awdRear: 0.5,
   },
   {
@@ -582,12 +588,12 @@ export const CARS = [
     trackRear: 1.584, rsF: 0.6, susHz: 1.6, susZ: 0.56, rollK: 1.05, pitchK: 1.05, alphaPk: 0.12, mfC: 1.44, loadSens: 0.16, clA: 0, tc: 0.75, esc: 0.6,
     shiftT: 0.1, bias: 0.71, steerRate: 1.07, ebrake: 0.17, lsd: 0.35,
     stats: {"speed":0.8709677419354839,"accel":1,"handling":0.923076923076923,"drift":0.35}, zeroTo100: 4, trafficWeight: 0, playerDetail: true,
-    visual: {"rim":19,"spokes":7,"exhaust":4,"ride":-0.025,"caliper":"#bb2027","lip":true,"amg":true,"kit":"AMG 45 S"}, gearbox: "DCT", awdRear: 0.5,
+    visual: {"rim":19,"spokes":7,"exhaust":4,"ride":-0.025,"caliper":"#bb2027","amg":true}, gearbox: "DCT", awdRear: 0.5,
   },
   {
     id: 'gla250',
     powertrain: {"idleRpm":800,"redlineRpm":6500,"limiterRpm":6600,"inertia":0.27,"maxFreeRevRate":4800,"spoolTime":0.4,"engineBraking":0.17,"gearboxType":"dct","shiftTime":0.14,"revMatch":true,"torqueConverter":false,"torquePlateau":[1500,4411.78],"limiterDrop":220},
-    visual: {"rim":19,"spokes":5,"exhaust":2,"ride":0,"caliper":"#45494b","lip":false}, name: "MERCEDES-BENZ GLA · 250 4MATIC",
+    visual: {"rim":19,"spokes":5,"exhaust":2,"ride":0,"caliper":"#45494b"}, name: "MERCEDES-BENZ GLA · 250 4MATIC",
     short: "250 4MATIC", tag: "8-speed dual clutch · AWD · 165 kW / 350 Nm", color: "#b5bdc3", accent: "#c5cdd3", marque: "mercedes", mass: 1535,
     power: 165, torque: 350, redline: 6500, idle: 800, gears: [15,9.4,6.5,4.85,3.8,3,2.4,1.9], final: 1, wheelR: 0.346,
     torqueCurve: [[0,91],[800,119.00000000000001],[2500,350],[5500,286.4788975654116],[6800,223.45354010102108]], peakTorqueRpm: 2500, peakPowerRpm: 5500,
@@ -608,7 +614,7 @@ export const CARS = [
     rollK: 0.7, pitchK: 0.7, alphaPk: 0.105, mfC: 1.5, loadSens: 0.14, clA: 0.05, tc: 0.45, esc: 0.3, shiftT: 0.3, bias: 0.64, steerRate: 1.15,
     ebrake: 0.14, engine: "turbo4", turbo: 1.15, lsd: 0,
     stats: {"speed":0.7741935483870968,"accel":0.6060606060606061,"handling":0.8461538461538461,"drift":0.65}, zeroTo100: 6.6,
-    visual: {"rim":17,"spokes":5,"exhaust":2,"ride":0,"caliper":"#45494b","lip":false}, playerDetail: true, gearbox: "AT",
+    visual: {"rim":17,"spokes":5,"exhaust":2,"ride":0,"caliper":"#45494b"}, playerDetail: true, gearbox: "AT",
     tyres: ["225/50 R17","255/45 R17"], peakTorqueRpm: 2500, peakPowerRpm: 5500,
     torqueCurve: [[0,83.2],[750,108.80000000000001],[2500,320],[5500,251.7541827089981],[6500,196.36826251301852]],
   },
@@ -622,7 +628,7 @@ export const CARS = [
     rollK: 0.7, pitchK: 0.7, alphaPk: 0.105, mfC: 1.5, loadSens: 0.14, clA: 0.05, tc: 0.45, esc: 0.3, shiftT: 0.28, bias: 0.64, steerRate: 1.15,
     ebrake: 0.14, engine: "turbo4", turbo: 1.15, lsd: 0,
     stats: {"speed":0.8064516129032258,"accel":0.7407407407407407,"handling":0.8769230769230768,"drift":0.65}, zeroTo100: 5.4,
-    visual: {"rim":18,"spokes":5,"exhaust":2,"ride":0,"caliper":"#45494b","lip":false}, playerDetail: true, gearbox: "AT", peakTorqueRpm: 2500,
+    visual: {"rim":18,"spokes":5,"exhaust":2,"ride":0,"caliper":"#45494b"}, playerDetail: true, gearbox: "AT", peakTorqueRpm: 2500,
     peakPowerRpm: 5500, torqueCurve: [[0,104],[750,136],[2500,400],[5500,329.88479113592854],[6500,257.31013708602427]],
   },
   {
@@ -636,7 +642,7 @@ export const CARS = [
     tyres: ["235/40 ZR19","285/30 ZR19"], frontW: 0.39, hcg: 0.45, track: 1.525, rsF: 0.48, susHz: 2, susZ: 0.56, rollK: 0.8, pitchK: 0.8, alphaPk: 0.11,
     mfC: 1.47, loadSens: 0.15, clA: 0.02, tc: 0.5, esc: 0.4, shiftT: 0.32, bias: 0.6, steerRate: 1.08, ebrake: 0.15, lsd: 0.22,
     stats: {"speed":0.9806451612903225,"accel":0.8888888888888888,"handling":0.8999999999999999,"drift":0.65}, zeroTo100: 4.5,
-    visual: {"rim":20,"spokes":7,"exhaust":4,"ride":-0.025,"caliper":"#bb2027","lip":true,"kit":"S"}, playerDetail: true,
+    visual: {"rim":20,"spokes":7,"exhaust":4,"ride":-0.025,"caliper":"#bb2027"}, playerDetail: true,
   },
   {
     id: 'carrera_gts',
@@ -649,7 +655,7 @@ export const CARS = [
     tyres: ["235/40 ZR19","285/30 ZR19"], frontW: 0.39, hcg: 0.45, track: 1.525, rsF: 0.48, susHz: 2, susZ: 0.56, rollK: 0.8, pitchK: 0.8, alphaPk: 0.11,
     mfC: 1.47, loadSens: 0.15, clA: 0.02, tc: 0.5, esc: 0.4, shiftT: 0.32, bias: 0.6, steerRate: 1.08, ebrake: 0.15, lsd: 0.25,
     stats: {"speed":0.9870967741935484,"accel":0.9090909090909091,"handling":0.923076923076923,"drift":0.65}, zeroTo100: 4.4,
-    visual: {"rim":20,"spokes":7,"exhaust":4,"ride":-0.025,"caliper":"#bb2027","lip":true,"kit":"GTS"}, playerDetail: true,
+    visual: {"rim":20,"spokes":7,"exhaust":4,"ride":-0.025,"caliper":"#bb2027"}, playerDetail: true,
   },
   {
     id: 'huracan_rwd',
@@ -662,7 +668,7 @@ export const CARS = [
     playerDetail: true, trafficWeight: 0, tyres: ["245/35 R19","305/35 R19"], frontW: 0.43, hcg: 0.4, track: 1.668, rsF: 0.5, usGrad: 1.8, susHz: 1.9,
     susZ: 0.61, rollK: 0.65, pitchK: 0.65, alphaPk: 0.1, mfC: 1.5, loadSens: 0.14, clA: 0.12, tc: 0.8, esc: 0.4, shiftT: 0.1, bias: 0.62, steerRate: 1.15,
     ebrake: 0.15, lsd: 0.4, stats: {"speed":1,"accel":1,"handling":0.923076923076923,"drift":0.65},
-    visual: {"rim":19,"spokes":5,"exhaust":2,"ride":0,"caliper":"#45494b","lip":false},
+    visual: {"rim":19,"spokes":5,"exhaust":2,"ride":0,"caliper":"#45494b"},
   },
   {
     id: 'gtv1750',
@@ -675,12 +681,12 @@ export const CARS = [
     susHz: 1.65, susZ: 0.49, rollK: 1.15, pitchK: 1.15, alphaPk: 0.14, mfC: 1.4, loadSens: 0.16, clA: 0, tc: 0.5, esc: 0.3, edl: 0, shiftT: 0.44,
     bias: 0.66, steerRate: 0.98, ebrake: 0.14, lsd: 0,
     stats: {"speed":0.6129032258064516,"accel":0.42105263157894735,"handling":0.7615384615384615,"drift":0.65}, zeroTo100: 9.5,
-    visual: {"rim":14,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b","lip":false}, playerDetail: true,
+    visual: {"rim":14,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b"}, playerDetail: true,
   },
   {
     id: 'e36_318i',
     powertrain: {"idleRpm":750,"redlineRpm":6200,"limiterRpm":6300,"inertia":0.23,"maxFreeRevRate":3600,"spoolTime":0,"engineBraking":0.16,"gearboxType":"manual","shiftTime":0.42,"revMatch":false,"torqueConverter":false,"limiterDrop":220},
-    gearbox: "MT", visual: {"rim":15,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b","lip":false}, name: "BMW E36 · 318i", short: "318i",
+    gearbox: "MT", visual: {"rim":15,"spokes":5,"exhaust":1,"ride":0,"caliper":"#45494b"}, name: "BMW E36 · 318i", short: "318i",
     tag: "5-speed manual · RWD · 85 kW / 168 Nm", color: "#455948", accent: "#a7a5a0", zeroTo100: 11.3, mass: 1190, power: 85, torque: 168, redline: 6200,
     idle: 750, gears: [4.2,2.49,1.66,1.24,1], final: 3.38, wheelR: 0.309,
     torqueCurve: [[0,43.68],[750,57.120000000000005],[3900,168],[5500,147.5800381397575],[6200,115.11242974901086]], peakTorqueRpm: 3900,
@@ -701,8 +707,7 @@ export const CARS = [
     frontW: 0.62, hcg: 0.48, track: 1.485, rsF: 0.6, usGrad: 3, susHz: 2, susZ: 0.57, rollK: 0.85, pitchK: 0.85, alphaPk: 0.115, mfC: 1.45, loadSens: 0.16,
     clA: 0.02, tc: 0.6, esc: 0.4, shiftT: 0.32, bias: 0.73, steerRate: 1.18, ebrake: 0.16, lsd: 0,
     stats: {"speed":0.7,"accel":0.71,"handling":0.9,"drift":0.38}, zeroTo100: 6.6,
-    visual: {"rim":18,"spokes":7,"exhaust":2,"ride":-0.025,"caliper":"#bb2027","lip":true,"kit":"JCW"}, convertible: true, trafficWeight: 0,
-    trimLabel: "JCW", bodyStyle: "convertible",
+    visual: {"rim":18,"spokes":7,"exhaust":2,"ride":-0.025,"caliper":"#bb2027"}, convertible: true, trafficWeight: 0, bodyStyle: "convertible",
   },
   {
     id: 'cle300e',
@@ -724,7 +729,6 @@ export const CARS = [
     trafficWeight: 1,
     name: "HONDA JAZZ 1.3 i-VTEC",
     short: "JAZZ 1.3",
-    trimLabel: "1.3 i-VTEC",
     tag: "GK · Naturally aspirated i-VTEC · Six-speed manual",
     color: "#dce4e7",
     accent: "#c6cbd0",
@@ -786,7 +790,6 @@ export const CARS = [
     trafficWeight: 1,
     name: "HONDA JAZZ 1.5 i-VTEC DYNAMIC",
     short: "JAZZ DYNAMIC",
-    trimLabel: "1.5 i-VTEC DYNAMIC",
     tag: "GK · 130 PS i-VTEC Dynamic · Six-speed manual",
     color: "#dce4e7",
     accent: "#c6cbd0",
@@ -836,76 +839,11 @@ export const CARS = [
     tyres: ["185/55 R16","185/55 R16"],
     zeroTo100: 8.7,
     stats: {"speed":0.45,"accel":0.33,"handling":0.72,"drift":0.25},
-    visual: {"rim":16,"spokes":5,"exhaust":1,"ride":-0.01,"caliper":"#45494b","lip":true,"kit":"DYNAMIC"},
+    visual: {"rim":16,"spokes":5,"exhaust":1,"ride":-0.01,"caliper":"#45494b"},
     powertrain: {"idleRpm":750,"redlineRpm":6800,"limiterRpm":6900,"inertia":0.19,"maxFreeRevRate":4500,"spoolTime":0,"engineBraking":0.15,"gearboxType":"manual","shiftTime":0.36,"revMatch":false,"torqueConverter":false,"limiterDrop":220},
     torqueCurve: [[0,55],[750,70],[1800,115],[3500,145],[4600,155],[5800,150],[6600,138.8988594256541],[6800,130],[7400,105]],
     peakTorqueRpm: 4600,
     peakPowerRpm: 6600,
-  },
-  {
-    id: 'jazz_drift',
-    gearbox: "MT",
-    trafficWeight: 0,
-    name: "HONDA JAZZ DRIFT SPEC — FANTASY BUILD",
-    short: "JAZZ DRIFT SPEC",
-    trimLabel: "DRIFT SPEC · FANTASY",
-    tag: "Fantasy RWD conversion · 200 hp turbo · Locked differential. Jazz drift mode πρέπει.",
-    color: "#e7c238",
-    accent: "#c6cbd0",
-    mass: 1120,
-    power: 149,
-    torque: 240,
-    redline: 7000,
-    idle: 850,
-    gears: [3.5,2.15,1.52,1.17,0.94,0.78],
-    final: 4.1,
-    wheelR: 0.302,
-    wheelbase: 2.53,
-    length: 4.051,
-    width: 1.76,
-    cdA: 0.73,
-    vmax: 220,
-    grip: 1.12,
-    steer: 0.66,
-    yawI: 1,
-    drift: 1,
-    brake: 1,
-    cyl: 4,
-    pitch: 1,
-    body: "jazz", playerDetail: true,
-    drive: "rwd",
-    frontW: 0.52,
-    hcg: 0.45,
-    track: 1.53,
-    rsF: 0.53,
-    susHz: 2.05,
-    susZ: 0.6,
-    rollK: 0.8,
-    pitchK: 0.8,
-    alphaPk: 0.115,
-    mfC: 1.45,
-    loadSens: 0.16,
-    clA: 0,
-    tc: 0.45,
-    esc: 0.3,
-    shiftT: 0.3,
-    bias: 0.73,
-    steerRate: 1.35,
-    ebrake: 0.16,
-    engine: "turbo4",
-    turbo: 1,
-    lsd: 1,
-    tyres: ["215/40 R17","215/40 R17"],
-    zeroTo100: 6.7,
-    stats: {"speed":0.6,"accel":0.68,"handling":0.8,"drift":0.98},
-    visual: {"rim":17,"spokes":7,"exhaust":1,"exhaustScale":1.55,"ride":-0.055,"caliper":"#cf3333","kit":"DRIFT","wing":true,"track":1.53,"tyreWidth":0.215},
-    powertrain: {"idleRpm":850,"redlineRpm":7000,"limiterRpm":7100,"inertia":0.16,"maxFreeRevRate":5800,"spoolTime":0.3,"engineBraking":0.15,"gearboxType":"manual","shiftTime":0.3,"revMatch":false,"torqueConverter":false,"limiterDrop":220,"torquePlateau":[3000,5500]},
-    torqueCurve: [[0,65],[850,80],[1800,145],[3000,240],[5500,240],[6500,218.89926019100682],[7000,190],[7700,150]],
-    peakTorqueRpm: 4000,
-    peakPowerRpm: 6500,
-    fantasy: true,
-    gripRear: 1.0,
-    edl: 0,
   },
   {
     id: 'aygo',
@@ -1517,21 +1455,21 @@ export const CARS = [
     peakTorqueRpm: 1100,
     peakPowerRpm: 2000,
   },
-  {id: 'a160',name:"MERCEDES-BENZ A 160",short:"A 160 W168",tag:"2001 W168 · Sandwich floor. Tall body. ESP on moose duty.",color:"#b9bfc2",accent:"#a7a5a0",marque:"mercedes",category:"shitbox",zeroTo100:10.8,mass:1115,power:75,torque:150,redline:6200,idle:800,gears:[3.27,1.92,1.26,0.88,0.7],final:4.06,wheelR:0.288,torqueCurve:[[0,48],[800,62],[1500,102],[2500,128],[3500,145],[4000,150],[4500,147],[5250,136.42],[5800,115],[6200,91]],peakTorqueRpm:4000,peakPowerRpm:5250,wheelbase:2.423,length:3.606,width:1.719,height:1.575,cdA:0.67,vmax:180,grip:0.97,steer:0.61,yawI:1.03,drift:1,brake:0.98,cyl:4,pitch:1,body:"a160",drive:"fwd",engine:"na4",playerDetail:true,trafficWeight:4,rearDrums:true,oldDash:true,tyres:["195/50 R15","195/50 R15"],frontW:0.62,hcg:0.64,track:1.503,trackRear:1.452,tyreK:175000,rsF:0.64,usGrad:4.2,rollGrad:6.8,susHz:1.5,susZ:0.56,rollK:2.2,pitchK:1.4,alphaPk:0.135,mfC:1.42,loadSens:0.18,clA:0,tc:0.85,esc:0.95,shiftT:0.35,bias:0.73,steerRate:1,ebrake:0.16,lsd:0,stats:{speed:0.32,accel:0.29,handling:0.59,drift:0.23},trimLabel:"A 160",bodyStyle:"hatchback",engineLayout:"inline4",visual:{rim:15,spokes:5,exhaust:1},gearbox:"MT",gearboxType:"manual",powertrain:{idleRpm:800,redlineRpm:6200,limiterRpm:6300,inertia:0.24,maxFreeRevRate:5000,spoolTime:0,engineBraking:0.15,gearboxType:"manual",shiftTime:0.35,revMatch:false,torqueConverter:false,limiterDrop:220}},
-  {id: 'a190',name:"MERCEDES-BENZ A 190",short:"A 190 W168",tag:"W168 · 1.9 litre · Five-speed manual · ESP.",color:"#b9bfc2",accent:"#a7a5a0",marque:"mercedes",category:"shitbox",zeroTo100:8.8,mass:1180,power:92,torque:180,redline:6200,idle:800,gears:[3.27,1.92,1.34,1.03,0.83],final:3.72,wheelR:0.3007,torqueCurve:[[0,50.400000000000006],[800,64.8],[1500,118.80000000000001],[4000,180],[5500,159.73368833950227],[6200,125.99999999999999]],peakTorqueRpm:4000,peakPowerRpm:5500,wheelbase:2.423,length:3.606,width:1.719,height:1.575,cdA:0.67,vmax:198,grip:0.97,steer:0.61,yawI:1.03,drift:1,brake:0.98,cyl:4,pitch:1,body:"a160",drive:"fwd",engine:"na4",playerDetail:true,trafficWeight:1,rearDrums:false,oldDash:true,tyres:["195/50 R16","195/50 R16"],frontW:0.62,hcg:0.64,track:1.503,trackRear:1.452,tyreK:175000,rsF:0.64,usGrad:4.2,rollGrad:6.8,susHz:1.5,susZ:0.56,rollK:2.2,pitchK:1.4,alphaPk:0.135,mfC:1.42,loadSens:0.18,clA:0,tc:0.85,esc:0.95,shiftT:0.35,bias:0.73,steerRate:1,ebrake:0.16,lsd:0,stats:{speed:0.32,accel:0.29,handling:0.59,drift:0.23},trimLabel:"A 190",bodyStyle:"hatchback",engineLayout:"inline4",visual:{rim:16,spokes:5,exhaust:1},gearbox:"MT",gearboxType:"manual",powertrain:{idleRpm:800,redlineRpm:6200,limiterRpm:6300,inertia:0.24,maxFreeRevRate:5000,spoolTime:0,engineBraking:0.15,gearboxType:"manual",shiftTime:0.35,revMatch:false,torqueConverter:false,limiterDrop:220}},
-  {id: 'sl400',name:"MERCEDES-BENZ SL 400",short:"SL 400",tag:"R231 · 6-cylinder biturbo · Seven-speed 7G-TRONIC · RWD.",color:"#edece5",accent:"#b8c4cf",marque:"mercedes",zeroTo100:5.2,mass:1655,power:245,torque:480,redline:6500,idle:700,gears:[4.38,2.86,1.92,1.37,1,0.82,0.73],final:3.07,wheelR:0.33065,torqueCurve:[[0,105.6],[700,139.2],[1600,480],[4000,480],[5500,425.3777569910658],[6500,340.30220559285266]],peakTorqueRpm:3000,peakPowerRpm:5500,wheelbase:2.585,length:4.617,width:1.877,height:1.315,cdA:0.74,vmax:250,grip:1.13,gripRear:1.15,steer:0.55,yawI:1.2,drift:1,brake:1.14,cyl:6,pitch:0.9,convertible:true,body:"sl65",drive:"rwd",engine:"turbov6",trafficWeight:0.05,tyres:["255/45 R17","255/45 R17"],frontW:0.53,hcg:0.5,track:1.6,trackRear:1.604,rsF:0.56,usGrad:2.6,susHz:1.65,susZ:0.62,rollK:0.75,pitchK:0.8,alphaPk:0.115,mfC:1.47,loadSens:0.16,clA:0.02,tc:0.65,esc:0.45,shiftT:0.28,bias:0.67,steerRate:1.04,ebrake:0.15,lsd:0,stats:{speed:0.84,accel:0.95,handling:0.8,drift:0.9},engineLayout:"v6",trimLabel:"SL 400",bodyStyle:"roadster",visual:{rim:17,spokes:5,amg:false},gearbox:"AT",gearboxType:"automatic",powertrain:{idleRpm:700,redlineRpm:6500,limiterRpm:6600,inertia:0.3,maxFreeRevRate:4800,spoolTime:0.38,engineBraking:0.15,gearboxType:"automatic",shiftTime:0.28,revMatch:true,torqueConverter:true,limiterDrop:220,torquePlateau:[1600,4000]}},
-  {id: 'sl500',name:"MERCEDES-BENZ SL 500",short:"SL 500",tag:"R231 · 8-cylinder biturbo · Seven-speed 7G-TRONIC · RWD.",color:"#edece5",accent:"#b8c4cf",marque:"mercedes",zeroTo100:4.6,mass:1710,power:320,torque:700,redline:6500,idle:700,gears:[4.38,2.86,1.92,1.37,1,0.82,0.73],final:2.65,wheelR:0.3306,torqueCurve:[[0,154],[700,203],[1800,700],[3500,700],[5250,582.052363307503],[6500,465.6418906460024]],peakTorqueRpm:3000,peakPowerRpm:5250,wheelbase:2.585,length:4.617,width:1.877,height:1.315,cdA:0.74,vmax:250,grip:1.13,gripRear:1.15,steer:0.55,yawI:1.2,drift:1,brake:1.14,cyl:8,pitch:0.9,convertible:true,body:"sl65",drive:"rwd",engine:"turbov8",trafficWeight:0.05,tyres:["255/40 R18","285/35 R18"],frontW:0.53,hcg:0.5,track:1.597,trackRear:1.6,rsF:0.56,usGrad:2.6,susHz:1.65,susZ:0.62,rollK:0.75,pitchK:0.8,alphaPk:0.115,mfC:1.47,loadSens:0.16,clA:0.02,tc:0.65,esc:0.45,shiftT:0.28,bias:0.67,steerRate:1.04,ebrake:0.15,lsd:0,stats:{speed:0.84,accel:0.95,handling:0.8,drift:0.9},engineLayout:"v8",trimLabel:"SL 500",bodyStyle:"roadster",visual:{rim:18,spokes:5,amg:false},gearbox:"AT",gearboxType:"automatic",powertrain:{idleRpm:700,redlineRpm:6500,limiterRpm:6600,inertia:0.36,maxFreeRevRate:4800,spoolTime:0.38,engineBraking:0.15,gearboxType:"automatic",shiftTime:0.28,revMatch:true,torqueConverter:true,limiterDrop:220,torquePlateau:[1800,3500]}},
-  {id: 'sl63',name:"MERCEDES-BENZ SL 63 AMG",short:"SL 63 AMG",tag:"R231 · 8-cylinder biturbo · Seven-speed AMG MCT · RWD.",color:"#edece5",accent:"#b8c4cf",marque:"mercedes",zeroTo100:4.3,mass:1770,power:395,torque:800,redline:6500,idle:700,gears:[4.38,2.86,1.92,1.37,1,0.82,0.73],final:2.65,wheelR:0.33,torqueCurve:[[0,176],[700,231.99999999999997],[2000,800],[4500,800],[5500,685.8131184141673],[6500,548.6504947313339]],peakTorqueRpm:3000,peakPowerRpm:5500,wheelbase:2.585,length:4.631,width:1.877,height:1.314,cdA:0.74,vmax:250,grip:1.13,gripRear:1.15,steer:0.55,yawI:1.2,drift:1,brake:1.14,cyl:8,pitch:0.9,convertible:true,body:"sl65",drive:"rwd",engine:"turbov8",trafficWeight:0.05,tyres:["255/35 R19","285/30 R19"],frontW:0.53,hcg:0.5,track:1.61,trackRear:1.604,rsF:0.56,usGrad:2.6,susHz:1.65,susZ:0.62,rollK:0.75,pitchK:0.8,alphaPk:0.115,mfC:1.47,loadSens:0.16,clA:0.02,tc:0.65,esc:0.45,shiftT:0.25,bias:0.67,steerRate:1.04,ebrake:0.15,lsd:0.4,stats:{speed:0.84,accel:0.95,handling:0.8,drift:0.9},engineLayout:"v8",trimLabel:"SL 63 AMG",bodyStyle:"roadster",visual:{rim:19,spokes:5,amg:true},gearbox:"AT",gearboxType:"automatic",powertrain:{idleRpm:700,redlineRpm:6500,limiterRpm:6600,inertia:0.36,maxFreeRevRate:4800,spoolTime:0.38,engineBraking:0.15,gearboxType:"automatic",shiftTime:0.25,revMatch:true,torqueConverter:false,limiterDrop:220,torquePlateau:[2000,4500]}},
-  {id: 'sl65',name:"MERCEDES-AMG SL 65",short:"SL 65 AMG",tag:"R231 · 6.0 V12 biturbo. 1000 Nm. Open-top rear-wheel drive.",color:"#edece5",accent:"#b8c4cf",marque:"mercedes",zeroTo100:4,mass:1875,power:463,torque:1000,redline:6000,idle:700,gears:[4.38,2.86,1.92,1.37,1,0.82,0.73],final:2.65,wheelR:0.33,torqueCurve:[[0,220],[700,290],[2300,1000],[4300,1000],[4800,921.1092331443443],[6000,736.8873865154756]],peakTorqueRpm:3000,peakPowerRpm:4800,wheelbase:2.585,length:4.631,width:1.877,height:1.314,cdA:0.74,vmax:250,grip:1.13,gripRear:1.15,steer:0.55,yawI:1.2,drift:1,brake:1.14,cyl:12,pitch:0.9,convertible:true,body:"sl65",drive:"rwd",engine:"turbov12",trafficWeight:0.08,tyres:["255/35 R19","285/30 R19"],frontW:0.53,hcg:0.5,track:1.61,trackRear:1.604,rsF:0.56,usGrad:2.6,susHz:1.65,susZ:0.62,rollK:0.75,pitchK:0.8,alphaPk:0.115,mfC:1.47,loadSens:0.16,clA:0.02,tc:0.65,esc:0.45,shiftT:0.28,bias:0.67,steerRate:1.04,ebrake:0.15,lsd:0.4,stats:{speed:0.84,accel:0.95,handling:0.8,drift:0.9},engineLayout:"v12",trimLabel:"SL 65 AMG",bodyStyle:"roadster",visual:{rim:19,spokes:5,amg:true},gearbox:"AT",gearboxType:"automatic",powertrain:{idleRpm:700,redlineRpm:6000,limiterRpm:6100,inertia:0.42,maxFreeRevRate:4200,spoolTime:0.42,engineBraking:0.15,gearboxType:"automatic",shiftTime:0.28,revMatch:true,torqueConverter:true,limiterDrop:220,torquePlateau:[2300,4300]}},
-  {id: 'f348',name:"FERRARI 348 tb",short:"348 tb",tag:"Tipo F119 3.4 V8 · 300 CV. Mid-engine. Five-speed gated manual.",color:"#d51b21",accent:"#f3ca32",zeroTo100:5.6,mass:1500,power:221,torque:324,redline:7500,idle:1000,gears:[3.214,2.105,1.458,1.094,0.861],final:3.563,wheelR:0.331,torqueCurve:[[0,90],[1000,125],[2000,225],[3000,290],[4200,324],[5500,316],[6500,307],[7200,293.11],[7500,272],[8200,225]],peakTorqueRpm:4200,peakPowerRpm:7200,wheelbase:2.45,length:4.23,width:1.894,height:1.17,cdA:0.62,vmax:275,grip:1.08,gripRear:1.02,steer:0.58,yawI:0.87,drift:1,brake:1.03,cyl:8,pitch:1.05,body:"f348",cabinWidth:0.78,drive:"rwd",engine:"v8flat",engineZone:"rear",playerDetail:true,trafficWeight:0.08,oldDash:true,tyres:["215/50 ZR17","255/45 ZR17"],frontW:0.41,hcg:0.43,track:1.54,rsF:0.44,usGrad:1.1,susHz:1.85,susZ:0.59,rollK:0.8,pitchK:0.8,alphaPk:0.103,mfC:1.56,loadSens:0.16,clA:0,tc:0.45,esc:0.3,shiftT:0.32,bias:0.61,steerRate:1.18,ebrake:0.15,lsd:0.4,stats:{speed:0.9,accel:0.81,handling:0.87,drift:0.86},engineLayout:"flat-plane-v8",marque:"ferrari",trimLabel:"tb",bodyStyle:"berlinetta",visual:{rim:17,spokes:5,exhaust:2},gearbox:"MT",gearboxType:"manual",powertrain:{idleRpm:1000,redlineRpm:7500,limiterRpm:7600,inertia:0.2,maxFreeRevRate:7500,spoolTime:0,engineBraking:0.15,gearboxType:"manual",shiftTime:0.32,revMatch:false,torqueConverter:false,limiterDrop:220}},
-  {id: 'f348_ts',name:"FERRARI 348 ts",short:"348 ts",tag:"F119 3.4 flat-plane V8 · Removable targa roof · Five-speed manual.",color:"#d51b21",accent:"#f3ca32",zeroTo100:5.6,mass:1530,power:221,torque:324,redline:7500,idle:1000,gears:[3.214,2.105,1.458,1.094,0.861],final:3.563,wheelR:0.331,torqueCurve:[[0,90],[1000,125],[2000,225],[3000,290],[4200,324],[5500,316],[6500,307],[7200,293.11],[7500,272],[8200,225]],peakTorqueRpm:4200,peakPowerRpm:7200,wheelbase:2.45,length:4.23,width:1.894,height:1.17,cdA:0.62,vmax:275,grip:1.08,gripRear:1.02,steer:0.58,yawI:0.87,drift:1,brake:1.03,cyl:8,pitch:1.05,body:"f348",cabinWidth:0.78,drive:"rwd",engine:"v8flat",engineZone:"rear",playerDetail:true,trafficWeight:0.08,oldDash:true,tyres:["215/50 ZR17","255/45 ZR17"],frontW:0.41,hcg:0.43,track:1.54,rsF:0.44,usGrad:1.1,susHz:1.85,susZ:0.59,rollK:0.8,pitchK:0.8,alphaPk:0.103,mfC:1.56,loadSens:0.16,clA:0,tc:0.45,esc:0.3,shiftT:0.32,bias:0.61,steerRate:1.18,ebrake:0.15,lsd:0.4,stats:{speed:0.9,accel:0.81,handling:0.87,drift:0.86},engineLayout:"flat-plane-v8",marque:"ferrari",trimLabel:"ts",bodyStyle:"targa",visual:{rim:17,spokes:5,exhaust:2},gearbox:"MT",gearboxType:"manual",powertrain:{idleRpm:1000,redlineRpm:7500,limiterRpm:7600,inertia:0.2,maxFreeRevRate:7500,spoolTime:0,engineBraking:0.15,gearboxType:"manual",shiftTime:0.32,revMatch:false,torqueConverter:false,limiterDrop:220},convertible:true},
-  {id: 'f348_spider',name:"FERRARI 348 SPIDER",short:"348 Spider",tag:"F119 3.4 flat-plane V8 · 320 CV · Open-top five-speed manual.",color:"#d51b21",accent:"#f3ca32",zeroTo100:5.4,mass:1530,power:235,torque:324,redline:7800,idle:1000,gears:[3.214,2.105,1.458,1.094,0.861],final:3.563,wheelR:0.331,torqueCurve:[[0,90.72000000000001],[1000,116.64],[1500,213.84],[4200,324],[7200,311.6784302216284],[7800,226.79999999999998]],peakTorqueRpm:4200,peakPowerRpm:7200,wheelbase:2.45,length:4.23,width:1.894,height:1.17,cdA:0.62,vmax:280,grip:1.08,gripRear:1.02,steer:0.58,yawI:0.87,drift:1,brake:1.03,cyl:8,pitch:1.05,body:"f348",cabinWidth:0.78,drive:"rwd",engine:"v8flat",engineZone:"rear",playerDetail:true,trafficWeight:0.08,oldDash:true,tyres:["215/50 ZR17","255/45 ZR17"],frontW:0.41,hcg:0.43,track:1.54,rsF:0.44,usGrad:1.1,susHz:1.85,susZ:0.59,rollK:0.8,pitchK:0.8,alphaPk:0.103,mfC:1.56,loadSens:0.16,clA:0,tc:0.45,esc:0.3,shiftT:0.32,bias:0.61,steerRate:1.18,ebrake:0.15,lsd:0.4,stats:{speed:0.9,accel:0.81,handling:0.87,drift:0.86},engineLayout:"flat-plane-v8",marque:"ferrari",trimLabel:"Spider",bodyStyle:"spider",visual:{rim:17,spokes:5,exhaust:2},gearbox:"MT",gearboxType:"manual",powertrain:{idleRpm:1000,redlineRpm:7800,limiterRpm:7900,inertia:0.2,maxFreeRevRate:7500,spoolTime:0,engineBraking:0.15,gearboxType:"manual",shiftTime:0.32,revMatch:false,torqueConverter:false,limiterDrop:220},convertible:true},
-  {id: 'p928_s4',name:"PORSCHE 928 S4",short:"928 S4",tag:"5.0 V8 · S4 · Front engine, rear transaxle · Five-speed manual.",color:"#bd2629",accent:"#b7bec3",zeroTo100:5.9,mass:1580,power:235,torque:430,redline:6600,idle:750,gears:[4.067,2.714,1.934,1.463,1],final:2.2,wheelR:0.316,torqueCurve:[[0,120.4],[750,154.79999999999998],[1500,283.8],[3000,430],[6000,374.01411626595404],[6600,301]],peakTorqueRpm:3000,peakPowerRpm:6000,wheelbase:2.5,length:4.52,width:1.836,cdA:0.62,vmax:270,grip:1.1,gripRear:1.04,steer:0.56,yawI:1.16,drift:1,brake:1.06,cyl:8,pitch:1,body:"p928",cabinWidth:0.78,drive:"rwd",engine:"v8na",engineZone:"front",playerDetail:true,trafficWeight:0.15,oldDash:true,lsd:0.4,tyres:["225/50 ZR16","245/45 ZR16"],frontW:0.5,hcg:0.45,track:1.551,rsF:0.54,usGrad:1.8,susHz:1.75,susZ:0.58,rollK:0.9,pitchK:0.9,alphaPk:0.125,mfC:1.43,loadSens:0.16,clA:0,tc:0.45,esc:0.3,shiftT:0.34,bias:0.64,steerRate:1.02,ebrake:0.15,stats:{speed:0.9,accel:0.82,handling:0.82,drift:0.83},engineLayout:"cross-plane-v8",marque:"porsche",trimLabel:"S4",bodyStyle:"coupe",visual:{rim:16,spokes:5,exhaust:2},gearbox:"MT",gearboxType:"manual",powertrain:{idleRpm:750,redlineRpm:6600,limiterRpm:6700,inertia:0.3,maxFreeRevRate:4500,spoolTime:0,engineBraking:0.15,gearboxType:"manual",shiftTime:0.34,revMatch:false,torqueConverter:false,limiterDrop:220}},
-  {id: 'p928_gt',name:"PORSCHE 928 GT",short:"928 GT",tag:"5.0 V8 · GT · Front engine, rear transaxle · Five-speed manual.",color:"#bd2629",accent:"#b7bec3",zeroTo100:5.7,mass:1580,power:243,torque:430,redline:6600,idle:750,gears:[3.775,2.519,1.795,1.358,1],final:2.727,wheelR:0.316,torqueCurve:[[0,120.4],[750,154.79999999999998],[1500,283.8],[4100,430],[6200,374.27081778707],[6600,301]],peakTorqueRpm:4100,peakPowerRpm:6200,wheelbase:2.5,length:4.52,width:1.836,cdA:0.62,vmax:275,grip:1.1,gripRear:1.04,steer:0.56,yawI:1.16,drift:1,brake:1.06,cyl:8,pitch:1,body:"p928",cabinWidth:0.78,drive:"rwd",engine:"v8na",engineZone:"front",playerDetail:true,trafficWeight:0.15,oldDash:true,lsd:0.4,tyres:["225/50 ZR16","245/45 ZR16"],frontW:0.5,hcg:0.45,track:1.551,rsF:0.54,usGrad:1.8,susHz:1.75,susZ:0.58,rollK:0.9,pitchK:0.9,alphaPk:0.125,mfC:1.43,loadSens:0.16,clA:0,tc:0.45,esc:0.3,shiftT:0.34,bias:0.64,steerRate:1.02,ebrake:0.15,stats:{speed:0.9,accel:0.82,handling:0.82,drift:0.83},engineLayout:"cross-plane-v8",marque:"porsche",trimLabel:"GT",bodyStyle:"coupe",visual:{rim:16,spokes:5,exhaust:2},gearbox:"MT",gearboxType:"manual",powertrain:{idleRpm:750,redlineRpm:6600,limiterRpm:6700,inertia:0.3,maxFreeRevRate:4500,spoolTime:0,engineBraking:0.15,gearboxType:"manual",shiftTime:0.34,revMatch:false,torqueConverter:false,limiterDrop:220}},
-  {id: 'p928',name:"PORSCHE 928 GTS",short:"928 GTS",tag:"5.4 V8 · 350 PS. Front engine, rear transaxle. Five-speed manual.",color:"#bd2629",accent:"#b7bec3",zeroTo100:5.7,mass:1620,power:257,torque:500,redline:6600,idle:750,gears:[3.775,2.519,1.795,1.358,1],final:2.727,wheelR:0.318,torqueCurve:[[0,140],[750,180],[1500,310],[2500,420],[3500,480],[4250,500],[5000,480],[5700,430.55],[6200,385],[6600,330]],peakTorqueRpm:4250,peakPowerRpm:5700,wheelbase:2.5,length:4.52,width:1.89,cdA:0.62,vmax:275,grip:1.1,gripRear:1.04,steer:0.56,yawI:1.16,drift:1,brake:1.06,cyl:8,pitch:1,body:"p928",cabinWidth:0.78,drive:"rwd",engine:"v8na",engineZone:"front",playerDetail:true,trafficWeight:0.15,oldDash:true,lsd:0.4,tyres:["225/45 ZR17","255/40 ZR17"],frontW:0.5,hcg:0.45,track:1.56,rsF:0.54,usGrad:1.8,susHz:1.75,susZ:0.58,rollK:0.9,pitchK:0.9,alphaPk:0.125,mfC:1.43,loadSens:0.16,clA:0,tc:0.45,esc:0.3,shiftT:0.34,bias:0.64,steerRate:1.02,ebrake:0.15,stats:{speed:0.9,accel:0.82,handling:0.82,drift:0.83},engineLayout:"cross-plane-v8",marque:"porsche",trimLabel:"GTS",bodyStyle:"coupe",visual:{rim:17,spokes:5,exhaust:2},gearbox:"MT",gearboxType:"manual",powertrain:{idleRpm:750,redlineRpm:6600,limiterRpm:6700,inertia:0.32,maxFreeRevRate:4500,spoolTime:0,engineBraking:0.15,gearboxType:"manual",shiftTime:0.34,revMatch:false,torqueConverter:false,limiterDrop:220}},
+  {id: 'a160',name:"MERCEDES-BENZ A 160",short:"A 160 W168",tag:"2001 W168 · Sandwich floor. Tall body. ESP on moose duty.",color:"#b9bfc2",accent:"#a7a5a0",marque:"mercedes",category:"shitbox",zeroTo100:10.8,mass:1115,power:75,torque:150,redline:6200,idle:800,gears:[3.27,1.92,1.26,0.88,0.7],final:4.06,wheelR:0.288,torqueCurve:[[0,48],[800,62],[1500,102],[2500,128],[3500,145],[4000,150],[4500,147],[5250,136.42],[5800,115],[6200,91]],peakTorqueRpm:4000,peakPowerRpm:5250,wheelbase:2.423,length:3.606,width:1.719,height:1.575,cdA:0.67,vmax:180,grip:0.97,steer:0.61,yawI:1.03,drift:1,brake:0.98,cyl:4,pitch:1,body:"a160",drive:"fwd",engine:"na4",playerDetail:true,trafficWeight:4,rearDrums:true,oldDash:true,tyres:["195/50 R15","195/50 R15"],frontW:0.62,hcg:0.64,track:1.503,trackRear:1.452,tyreK:175000,rsF:0.64,usGrad:4.2,rollGrad:6.8,susHz:1.5,susZ:0.56,rollK:2.2,pitchK:1.4,alphaPk:0.135,mfC:1.42,loadSens:0.18,clA:0,tc:0.85,esc:0.95,shiftT:0.35,bias:0.73,steerRate:1,ebrake:0.16,lsd:0,stats:{speed:0.32,accel:0.29,handling:0.59,drift:0.23},bodyStyle:"hatchback",engineLayout:"inline4",visual:{rim:15,spokes:5,exhaust:1},gearbox:"MT",gearboxType:"manual",powertrain:{idleRpm:800,redlineRpm:6200,limiterRpm:6300,inertia:0.24,maxFreeRevRate:5000,spoolTime:0,engineBraking:0.15,gearboxType:"manual",shiftTime:0.35,revMatch:false,torqueConverter:false,limiterDrop:220}},
+  {id: 'a190',name:"MERCEDES-BENZ A 190",short:"A 190 W168",tag:"W168 · 1.9 litre · Five-speed manual · ESP.",color:"#b9bfc2",accent:"#a7a5a0",marque:"mercedes",category:"shitbox",zeroTo100:8.8,mass:1180,power:92,torque:180,redline:6200,idle:800,gears:[3.27,1.92,1.34,1.03,0.83],final:3.72,wheelR:0.3007,torqueCurve:[[0,50.400000000000006],[800,64.8],[1500,118.80000000000001],[4000,180],[5500,159.73368833950227],[6200,125.99999999999999]],peakTorqueRpm:4000,peakPowerRpm:5500,wheelbase:2.423,length:3.606,width:1.719,height:1.575,cdA:0.67,vmax:198,grip:0.97,steer:0.61,yawI:1.03,drift:1,brake:0.98,cyl:4,pitch:1,body:"a160",drive:"fwd",engine:"na4",playerDetail:true,trafficWeight:1,rearDrums:false,oldDash:true,tyres:["195/50 R16","195/50 R16"],frontW:0.62,hcg:0.64,track:1.503,trackRear:1.452,tyreK:175000,rsF:0.64,usGrad:4.2,rollGrad:6.8,susHz:1.5,susZ:0.56,rollK:2.2,pitchK:1.4,alphaPk:0.135,mfC:1.42,loadSens:0.18,clA:0,tc:0.85,esc:0.95,shiftT:0.35,bias:0.73,steerRate:1,ebrake:0.16,lsd:0,stats:{speed:0.32,accel:0.29,handling:0.59,drift:0.23},bodyStyle:"hatchback",engineLayout:"inline4",visual:{rim:16,spokes:5,exhaust:1},gearbox:"MT",gearboxType:"manual",powertrain:{idleRpm:800,redlineRpm:6200,limiterRpm:6300,inertia:0.24,maxFreeRevRate:5000,spoolTime:0,engineBraking:0.15,gearboxType:"manual",shiftTime:0.35,revMatch:false,torqueConverter:false,limiterDrop:220}},
+  {id: 'sl400',name:"MERCEDES-BENZ SL 400",short:"SL 400",tag:"R231 · 6-cylinder biturbo · Seven-speed 7G-TRONIC · RWD.",color:"#edece5",accent:"#b8c4cf",marque:"mercedes",zeroTo100:5.2,mass:1655,power:245,torque:480,redline:6500,idle:700,gears:[4.38,2.86,1.92,1.37,1,0.82,0.73],final:3.07,wheelR:0.33065,torqueCurve:[[0,105.6],[700,139.2],[1600,480],[4000,480],[5500,425.3777569910658],[6500,340.30220559285266]],peakTorqueRpm:3000,peakPowerRpm:5500,wheelbase:2.585,length:4.617,width:1.877,height:1.315,cdA:0.74,vmax:250,grip:1.13,gripRear:1.15,steer:0.55,yawI:1.2,drift:1,brake:1.14,cyl:6,pitch:0.9,convertible:true,body:"sl65",drive:"rwd",engine:"turbov6",trafficWeight:0.05,tyres:["255/45 R17","255/45 R17"],frontW:0.53,hcg:0.5,track:1.6,trackRear:1.604,rsF:0.56,usGrad:2.6,susHz:1.65,susZ:0.62,rollK:0.75,pitchK:0.8,alphaPk:0.115,mfC:1.47,loadSens:0.16,clA:0.02,tc:0.65,esc:0.45,shiftT:0.28,bias:0.67,steerRate:1.04,ebrake:0.15,lsd:0,stats:{speed:0.84,accel:0.95,handling:0.8,drift:0.9},engineLayout:"v6",bodyStyle:"roadster",visual:{rim:17,spokes:5,amg:false},gearbox:"AT",gearboxType:"automatic",powertrain:{idleRpm:700,redlineRpm:6500,limiterRpm:6600,inertia:0.3,maxFreeRevRate:4800,spoolTime:0.38,engineBraking:0.15,gearboxType:"automatic",shiftTime:0.28,revMatch:true,torqueConverter:true,limiterDrop:220,torquePlateau:[1600,4000]}},
+  {id: 'sl500',name:"MERCEDES-BENZ SL 500",short:"SL 500",tag:"R231 · 8-cylinder biturbo · Seven-speed 7G-TRONIC · RWD.",color:"#edece5",accent:"#b8c4cf",marque:"mercedes",zeroTo100:4.6,mass:1710,power:320,torque:700,redline:6500,idle:700,gears:[4.38,2.86,1.92,1.37,1,0.82,0.73],final:2.65,wheelR:0.3306,torqueCurve:[[0,154],[700,203],[1800,700],[3500,700],[5250,582.052363307503],[6500,465.6418906460024]],peakTorqueRpm:3000,peakPowerRpm:5250,wheelbase:2.585,length:4.617,width:1.877,height:1.315,cdA:0.74,vmax:250,grip:1.13,gripRear:1.15,steer:0.55,yawI:1.2,drift:1,brake:1.14,cyl:8,pitch:0.9,convertible:true,body:"sl65",drive:"rwd",engine:"turbov8",trafficWeight:0.05,tyres:["255/40 R18","285/35 R18"],frontW:0.53,hcg:0.5,track:1.597,trackRear:1.6,rsF:0.56,usGrad:2.6,susHz:1.65,susZ:0.62,rollK:0.75,pitchK:0.8,alphaPk:0.115,mfC:1.47,loadSens:0.16,clA:0.02,tc:0.65,esc:0.45,shiftT:0.28,bias:0.67,steerRate:1.04,ebrake:0.15,lsd:0,stats:{speed:0.84,accel:0.95,handling:0.8,drift:0.9},engineLayout:"v8",bodyStyle:"roadster",visual:{rim:18,spokes:5,amg:false},gearbox:"AT",gearboxType:"automatic",powertrain:{idleRpm:700,redlineRpm:6500,limiterRpm:6600,inertia:0.36,maxFreeRevRate:4800,spoolTime:0.38,engineBraking:0.15,gearboxType:"automatic",shiftTime:0.28,revMatch:true,torqueConverter:true,limiterDrop:220,torquePlateau:[1800,3500]}},
+  {id: 'sl63',name:"MERCEDES-BENZ SL 63 AMG",short:"SL 63 AMG",tag:"R231 · 8-cylinder biturbo · Seven-speed AMG MCT · RWD.",color:"#edece5",accent:"#b8c4cf",marque:"mercedes",zeroTo100:4.3,mass:1770,power:395,torque:800,redline:6500,idle:700,gears:[4.38,2.86,1.92,1.37,1,0.82,0.73],final:2.65,wheelR:0.33,torqueCurve:[[0,176],[700,231.99999999999997],[2000,800],[4500,800],[5500,685.8131184141673],[6500,548.6504947313339]],peakTorqueRpm:3000,peakPowerRpm:5500,wheelbase:2.585,length:4.631,width:1.877,height:1.314,cdA:0.74,vmax:250,grip:1.13,gripRear:1.15,steer:0.55,yawI:1.2,drift:1,brake:1.14,cyl:8,pitch:0.9,convertible:true,body:"sl65",drive:"rwd",engine:"turbov8",trafficWeight:0.05,tyres:["255/35 R19","285/30 R19"],frontW:0.53,hcg:0.5,track:1.61,trackRear:1.604,rsF:0.56,usGrad:2.6,susHz:1.65,susZ:0.62,rollK:0.75,pitchK:0.8,alphaPk:0.115,mfC:1.47,loadSens:0.16,clA:0.02,tc:0.65,esc:0.45,shiftT:0.25,bias:0.67,steerRate:1.04,ebrake:0.15,lsd:0.4,stats:{speed:0.84,accel:0.95,handling:0.8,drift:0.9},engineLayout:"v8",bodyStyle:"roadster",visual:{rim:19,spokes:5,amg:true},gearbox:"AT",gearboxType:"automatic",powertrain:{idleRpm:700,redlineRpm:6500,limiterRpm:6600,inertia:0.36,maxFreeRevRate:4800,spoolTime:0.38,engineBraking:0.15,gearboxType:"automatic",shiftTime:0.25,revMatch:true,torqueConverter:false,limiterDrop:220,torquePlateau:[2000,4500]}},
+  {id: 'sl65',name:"MERCEDES-AMG SL 65",short:"SL 65 AMG",tag:"R231 · 6.0 V12 biturbo. 1000 Nm. Open-top rear-wheel drive.",color:"#edece5",accent:"#b8c4cf",marque:"mercedes",zeroTo100:4,mass:1875,power:463,torque:1000,redline:6000,idle:700,gears:[4.38,2.86,1.92,1.37,1,0.82,0.73],final:2.65,wheelR:0.33,torqueCurve:[[0,220],[700,290],[2300,1000],[4300,1000],[4800,921.1092331443443],[6000,736.8873865154756]],peakTorqueRpm:3000,peakPowerRpm:4800,wheelbase:2.585,length:4.631,width:1.877,height:1.314,cdA:0.74,vmax:250,grip:1.13,gripRear:1.15,steer:0.55,yawI:1.2,drift:1,brake:1.14,cyl:12,pitch:0.9,convertible:true,body:"sl65",drive:"rwd",engine:"turbov12",trafficWeight:0.08,tyres:["255/35 R19","285/30 R19"],frontW:0.53,hcg:0.5,track:1.61,trackRear:1.604,rsF:0.56,usGrad:2.6,susHz:1.65,susZ:0.62,rollK:0.75,pitchK:0.8,alphaPk:0.115,mfC:1.47,loadSens:0.16,clA:0.02,tc:0.65,esc:0.45,shiftT:0.28,bias:0.67,steerRate:1.04,ebrake:0.15,lsd:0.4,stats:{speed:0.84,accel:0.95,handling:0.8,drift:0.9},engineLayout:"v12",bodyStyle:"roadster",visual:{rim:19,spokes:5,amg:true},gearbox:"AT",gearboxType:"automatic",powertrain:{idleRpm:700,redlineRpm:6000,limiterRpm:6100,inertia:0.42,maxFreeRevRate:4200,spoolTime:0.42,engineBraking:0.15,gearboxType:"automatic",shiftTime:0.28,revMatch:true,torqueConverter:true,limiterDrop:220,torquePlateau:[2300,4300]}},
+  {id: 'f348',name:"FERRARI 348 tb",short:"348 tb",tag:"Tipo F119 3.4 V8 · 300 CV. Mid-engine. Five-speed gated manual.",color:"#d51b21",accent:"#f3ca32",zeroTo100:5.6,mass:1500,power:221,torque:324,redline:7500,idle:1000,gears:[3.214,2.105,1.458,1.094,0.861],final:3.563,wheelR:0.331,torqueCurve:[[0,90],[1000,125],[2000,225],[3000,290],[4200,324],[5500,316],[6500,307],[7200,293.11],[7500,272],[8200,225]],peakTorqueRpm:4200,peakPowerRpm:7200,wheelbase:2.45,length:4.23,width:1.894,height:1.17,cdA:0.62,vmax:275,grip:1.08,gripRear:1.02,steer:0.58,yawI:0.87,drift:1,brake:1.03,cyl:8,pitch:1.05,body:"f348",cabinWidth:0.78,drive:"rwd",engine:"v8flat",engineZone:"rear",playerDetail:true,trafficWeight:0.08,oldDash:true,tyres:["215/50 ZR17","255/45 ZR17"],frontW:0.41,hcg:0.43,track:1.54,rsF:0.44,usGrad:1.1,susHz:1.85,susZ:0.59,rollK:0.8,pitchK:0.8,alphaPk:0.103,mfC:1.56,loadSens:0.16,clA:0,tc:0.45,esc:0.3,shiftT:0.32,bias:0.61,steerRate:1.18,ebrake:0.15,lsd:0.4,stats:{speed:0.9,accel:0.81,handling:0.87,drift:0.86},engineLayout:"flat-plane-v8",marque:"ferrari",bodyStyle:"berlinetta",visual:{rim:17,spokes:5,exhaust:2},gearbox:"MT",gearboxType:"manual",powertrain:{idleRpm:1000,redlineRpm:7500,limiterRpm:7600,inertia:0.2,maxFreeRevRate:7500,spoolTime:0,engineBraking:0.15,gearboxType:"manual",shiftTime:0.32,revMatch:false,torqueConverter:false,limiterDrop:220}},
+  {id: 'f348_ts',name:"FERRARI 348 ts",short:"348 ts",tag:"F119 3.4 flat-plane V8 · Removable targa roof · Five-speed manual.",color:"#d51b21",accent:"#f3ca32",zeroTo100:5.6,mass:1530,power:221,torque:324,redline:7500,idle:1000,gears:[3.214,2.105,1.458,1.094,0.861],final:3.563,wheelR:0.331,torqueCurve:[[0,90],[1000,125],[2000,225],[3000,290],[4200,324],[5500,316],[6500,307],[7200,293.11],[7500,272],[8200,225]],peakTorqueRpm:4200,peakPowerRpm:7200,wheelbase:2.45,length:4.23,width:1.894,height:1.17,cdA:0.62,vmax:275,grip:1.08,gripRear:1.02,steer:0.58,yawI:0.87,drift:1,brake:1.03,cyl:8,pitch:1.05,body:"f348",cabinWidth:0.78,drive:"rwd",engine:"v8flat",engineZone:"rear",playerDetail:true,trafficWeight:0.08,oldDash:true,tyres:["215/50 ZR17","255/45 ZR17"],frontW:0.41,hcg:0.43,track:1.54,rsF:0.44,usGrad:1.1,susHz:1.85,susZ:0.59,rollK:0.8,pitchK:0.8,alphaPk:0.103,mfC:1.56,loadSens:0.16,clA:0,tc:0.45,esc:0.3,shiftT:0.32,bias:0.61,steerRate:1.18,ebrake:0.15,lsd:0.4,stats:{speed:0.9,accel:0.81,handling:0.87,drift:0.86},engineLayout:"flat-plane-v8",marque:"ferrari",bodyStyle:"targa",visual:{rim:17,spokes:5,exhaust:2},gearbox:"MT",gearboxType:"manual",powertrain:{idleRpm:1000,redlineRpm:7500,limiterRpm:7600,inertia:0.2,maxFreeRevRate:7500,spoolTime:0,engineBraking:0.15,gearboxType:"manual",shiftTime:0.32,revMatch:false,torqueConverter:false,limiterDrop:220},convertible:true},
+  {id: 'f348_spider',name:"FERRARI 348 SPIDER",short:"348 Spider",tag:"F119 3.4 flat-plane V8 · 320 CV · Open-top five-speed manual.",color:"#d51b21",accent:"#f3ca32",zeroTo100:5.4,mass:1530,power:235,torque:324,redline:7800,idle:1000,gears:[3.214,2.105,1.458,1.094,0.861],final:3.563,wheelR:0.331,torqueCurve:[[0,90.72000000000001],[1000,116.64],[1500,213.84],[4200,324],[7200,311.6784302216284],[7800,226.79999999999998]],peakTorqueRpm:4200,peakPowerRpm:7200,wheelbase:2.45,length:4.23,width:1.894,height:1.17,cdA:0.62,vmax:280,grip:1.08,gripRear:1.02,steer:0.58,yawI:0.87,drift:1,brake:1.03,cyl:8,pitch:1.05,body:"f348",cabinWidth:0.78,drive:"rwd",engine:"v8flat",engineZone:"rear",playerDetail:true,trafficWeight:0.08,oldDash:true,tyres:["215/50 ZR17","255/45 ZR17"],frontW:0.41,hcg:0.43,track:1.54,rsF:0.44,usGrad:1.1,susHz:1.85,susZ:0.59,rollK:0.8,pitchK:0.8,alphaPk:0.103,mfC:1.56,loadSens:0.16,clA:0,tc:0.45,esc:0.3,shiftT:0.32,bias:0.61,steerRate:1.18,ebrake:0.15,lsd:0.4,stats:{speed:0.9,accel:0.81,handling:0.87,drift:0.86},engineLayout:"flat-plane-v8",marque:"ferrari",bodyStyle:"spider",visual:{rim:17,spokes:5,exhaust:2},gearbox:"MT",gearboxType:"manual",powertrain:{idleRpm:1000,redlineRpm:7800,limiterRpm:7900,inertia:0.2,maxFreeRevRate:7500,spoolTime:0,engineBraking:0.15,gearboxType:"manual",shiftTime:0.32,revMatch:false,torqueConverter:false,limiterDrop:220},convertible:true},
+  {id: 'p928_s4',name:"PORSCHE 928 S4",short:"928 S4",tag:"5.0 V8 · S4 · Front engine, rear transaxle · Five-speed manual.",color:"#bd2629",accent:"#b7bec3",zeroTo100:5.9,mass:1580,power:235,torque:430,redline:6600,idle:750,gears:[4.067,2.714,1.934,1.463,1],final:2.2,wheelR:0.316,torqueCurve:[[0,120.4],[750,154.79999999999998],[1500,283.8],[3000,430],[6000,374.01411626595404],[6600,301]],peakTorqueRpm:3000,peakPowerRpm:6000,wheelbase:2.5,length:4.52,width:1.836,cdA:0.62,vmax:270,grip:1.1,gripRear:1.04,steer:0.56,yawI:1.16,drift:1,brake:1.06,cyl:8,pitch:1,body:"p928",cabinWidth:0.78,drive:"rwd",engine:"v8na",engineZone:"front",playerDetail:true,trafficWeight:0.15,oldDash:true,lsd:0.4,tyres:["225/50 ZR16","245/45 ZR16"],frontW:0.5,hcg:0.45,track:1.551,rsF:0.54,usGrad:1.8,susHz:1.75,susZ:0.58,rollK:0.9,pitchK:0.9,alphaPk:0.125,mfC:1.43,loadSens:0.16,clA:0,tc:0.45,esc:0.3,shiftT:0.34,bias:0.64,steerRate:1.02,ebrake:0.15,stats:{speed:0.9,accel:0.82,handling:0.82,drift:0.83},engineLayout:"cross-plane-v8",marque:"porsche",bodyStyle:"coupe",visual:{rim:16,spokes:5,exhaust:2},gearbox:"MT",gearboxType:"manual",powertrain:{idleRpm:750,redlineRpm:6600,limiterRpm:6700,inertia:0.3,maxFreeRevRate:4500,spoolTime:0,engineBraking:0.15,gearboxType:"manual",shiftTime:0.34,revMatch:false,torqueConverter:false,limiterDrop:220}},
+  {id: 'p928_gt',name:"PORSCHE 928 GT",short:"928 GT",tag:"5.0 V8 · GT · Front engine, rear transaxle · Five-speed manual.",color:"#bd2629",accent:"#b7bec3",zeroTo100:5.7,mass:1580,power:243,torque:430,redline:6600,idle:750,gears:[3.775,2.519,1.795,1.358,1],final:2.727,wheelR:0.316,torqueCurve:[[0,120.4],[750,154.79999999999998],[1500,283.8],[4100,430],[6200,374.27081778707],[6600,301]],peakTorqueRpm:4100,peakPowerRpm:6200,wheelbase:2.5,length:4.52,width:1.836,cdA:0.62,vmax:275,grip:1.1,gripRear:1.04,steer:0.56,yawI:1.16,drift:1,brake:1.06,cyl:8,pitch:1,body:"p928",cabinWidth:0.78,drive:"rwd",engine:"v8na",engineZone:"front",playerDetail:true,trafficWeight:0.15,oldDash:true,lsd:0.4,tyres:["225/50 ZR16","245/45 ZR16"],frontW:0.5,hcg:0.45,track:1.551,rsF:0.54,usGrad:1.8,susHz:1.75,susZ:0.58,rollK:0.9,pitchK:0.9,alphaPk:0.125,mfC:1.43,loadSens:0.16,clA:0,tc:0.45,esc:0.3,shiftT:0.34,bias:0.64,steerRate:1.02,ebrake:0.15,stats:{speed:0.9,accel:0.82,handling:0.82,drift:0.83},engineLayout:"cross-plane-v8",marque:"porsche",bodyStyle:"coupe",visual:{rim:16,spokes:5,exhaust:2},gearbox:"MT",gearboxType:"manual",powertrain:{idleRpm:750,redlineRpm:6600,limiterRpm:6700,inertia:0.3,maxFreeRevRate:4500,spoolTime:0,engineBraking:0.15,gearboxType:"manual",shiftTime:0.34,revMatch:false,torqueConverter:false,limiterDrop:220}},
+  {id: 'p928',name:"PORSCHE 928 GTS",short:"928 GTS",tag:"5.4 V8 · 350 PS. Front engine, rear transaxle. Five-speed manual.",color:"#bd2629",accent:"#b7bec3",zeroTo100:5.7,mass:1620,power:257,torque:500,redline:6600,idle:750,gears:[3.775,2.519,1.795,1.358,1],final:2.727,wheelR:0.318,torqueCurve:[[0,140],[750,180],[1500,310],[2500,420],[3500,480],[4250,500],[5000,480],[5700,430.55],[6200,385],[6600,330]],peakTorqueRpm:4250,peakPowerRpm:5700,wheelbase:2.5,length:4.52,width:1.89,cdA:0.62,vmax:275,grip:1.1,gripRear:1.04,steer:0.56,yawI:1.16,drift:1,brake:1.06,cyl:8,pitch:1,body:"p928",cabinWidth:0.78,drive:"rwd",engine:"v8na",engineZone:"front",playerDetail:true,trafficWeight:0.15,oldDash:true,lsd:0.4,tyres:["225/45 ZR17","255/40 ZR17"],frontW:0.5,hcg:0.45,track:1.56,rsF:0.54,usGrad:1.8,susHz:1.75,susZ:0.58,rollK:0.9,pitchK:0.9,alphaPk:0.125,mfC:1.43,loadSens:0.16,clA:0,tc:0.45,esc:0.3,shiftT:0.34,bias:0.64,steerRate:1.02,ebrake:0.15,stats:{speed:0.9,accel:0.82,handling:0.82,drift:0.83},engineLayout:"cross-plane-v8",marque:"porsche",bodyStyle:"coupe",visual:{rim:17,spokes:5,exhaust:2},gearbox:"MT",gearboxType:"manual",powertrain:{idleRpm:750,redlineRpm:6600,limiterRpm:6700,inertia:0.32,maxFreeRevRate:4500,spoolTime:0,engineBraking:0.15,gearboxType:"manual",shiftTime:0.34,revMatch:false,torqueConverter:false,limiterDrop:220}},
 ];
 
-// Keep legacy and structured saved selections synchronized after catalogue removals.
+// A saved garage choice that points at a removed trim becomes that model's top trim.
 try { migrateStoredCarSelection(localStorage); } catch {} // Storage-disabled/headless imports remain supported.
 
 // Defaults also cover newly landed catalogue entries; specific variants should set metadata explicitly.
@@ -1714,7 +1652,7 @@ export class CarModel {
     const S = shared();
     this.paint = paintMaterial(savedPaint(spec), spec.id === 'gtv' ? 0.15 : 0.45);
     this.tail = tailMaterial();
-    if(spec.nativeFleet)buildPlayerFleet(this);else buildDetailedCar(this, spec.body, { plate: opts.plate || ({mini:'ΙΚΑ 1920',z4:'ΙΒΜ 4040',taxi:'ΤΑΑ 2150',carrera:'ΙΡΑ 0911',gr_yaris:'ΙΤΥ 0400',gtv:'ΙΡΟ 2000'}[spec.id]) });
+    if(spec.nativeFleet)buildPlayerFleet(this);else buildDetailedCar(this, spec.body, { plate: opts.plate || ({mini_jcw:'ΙΚΑ 1920',z4:'ΙΒΜ 4040',carrera_gts:'ΙΡΑ 0911',gr_yaris:'ΙΤΥ 0400',gtv:'ΙΡΟ 2000'}[spec.id]) });
     setPaint(this, savedPaint(spec));
     // Only solid, visible exterior parts cast: see-through glazing and hidden internals (crash-damage fill) never do;
     // distance-LOD bodies stay hidden until the car is far away, then they are the visible body.
@@ -1725,7 +1663,6 @@ export class CarModel {
       o.castShadow = (!hidden || distance) && ![].concat(o.material).every((m) => m.transparent || m.opacity === 0);
       o.receiveShadow = true;
     });
-    if(spec.exhaustPops)this.exhaustFlames=new ExhaustFlames(this);
     this.cockpit = new Cockpit(spec,this);
     this.wheelSpin = 0;
     // No ground-contact decal: a flat quad under the car cuts through crowned roads, kerbs and slopes as a hard-edged

@@ -39,6 +39,7 @@ const CARS = Function('return ' + catalogue.split('export const CARS = ')[1].spl
 const spec = id => { const c = CARS.find(c => c.id === id); if (!c) throw new Error('no car ' + id); return c; };
 
 // ---- constants / helpers
+export let lastVehicle = null;
 const DT = 1 / 60, G = 9.81, DEG = 180 / Math.PI;
 const KMH = [30, 60, 100, 160];
 const wrapPi = a => { while (a > Math.PI) a -= 2 * Math.PI; while (a < -Math.PI) a += 2 * Math.PI; return a; };
@@ -99,6 +100,7 @@ function makeCar(id, route, ground, ms, { s = 40, u = 0, yaw = 0 } = {}) {
 // ---- one static run: record a trace, then reduce it to the report columns
 function runStatic({ car, kmh, build, seconds = 3.5, approach = 0.5, pre = 0.4, obstacle, normal, input = { throttle: 0, brake: 0, steer: 0 }, tag }) {
   const ms = kmh / 3.6, w = build(ms, car);
+  lastVehicle = w.v;
   const { v, step = (dt) => v.update(dt, input), done = () => false } = w;
   const trace = [];
   let t = 0, first = null, last = null, prevAir = true, landingSpeed = 0;
@@ -245,6 +247,7 @@ function runTraffic({ tag, car, kmh, trafficKind = 'sedan', mode }) {
     const tArr = (c.s - 20 - v.halfL - c.wid / 2) / ms;
     c.cross = { j: 0, side: 1, P: null, t: 0, len: 1, mode: 'exit' }; c.xyaw = Math.PI / 2; c.xvs = 0; c.xvu = -4; c.u = 0.4 + 4 * tArr;
   }
+  lastVehicle = v;
   const actor = { veh: v, kind: 'player' }, events = [];
   const trace = []; let first = null, last = null, pre = null, m0 = null, dE = 0; const dP = [0, 0];
   const kin = (veh) => T.routeVel(veh, route);
@@ -264,6 +267,7 @@ function runTraffic({ tag, car, kmh, trafficKind = 'sedan', mode }) {
     Tr.collide(actor, events, t);
     const Pa = mom(), Ea = energy(); dP[0] += Pa[0] - Pb[0]; dP[1] += Pa[1] - Pb[1]; dE += Ea - Eb;
     const ev = events.find(e => e.kind === 'crash' || e.kind === 'bump' || e.kind === 'scrape');
+    for (const e of events) if (e.zone && e.dv > 0 && e.who === 'player') v.addDamage?.(e.zone, e.dv, e); // what main.js handleEvents does
     const A1 = kin(v), C1 = cState();
     const hit = !!ev || (!hadCrash && !!c.crash);
     const cPos = { x: c.u, z: -c.s }, cb = { x: cPos.x, z: cPos.z, yaw: -(cState().yaw) + Math.PI / 2 * 0, hw: c.wid / 2, hl: c.len / 2 };
@@ -351,6 +355,50 @@ function runPlayers({ tag, carA, carB, kmh, mode, solver }) {
 }
 const mpSolver = { step: (coord, local, remote, dt, now) => coord.step(local, [{ id: 'other', vehicle: remote, age: 0 }], dt, now, { rtt: 0 }) };
 
+// ---- lasting damage: what a crash costs afterwards. The damaged car's snapshot (what a tow or reset keeps) goes into a fresh car,
+// which drives 1.5 km flat out from a rolling 80 km/h on a straight, hands off the wheel.
+const HAS_SNAPSHOT = typeof Vehicle.prototype.damageSnapshot === 'function';
+// What a car keeps when it drives on after a crash. The same state goes in whether or not Vehicle has damageSnapshot, so the table
+// compares the damage models (before 2026-10-20 a tow or reset also cleared it; the trial never tows).
+const snapshotOf = v => HAS_SNAPSHOT ? v.damageSnapshot() : { damage: { ...v.damage }, cornerDamage: v.cornerDamage?.slice(), impactMechanical: v.impactMechanical, radiatorDamage: v.radiatorDamage };
+function restoreDamage(v, s) {
+  if (HAS_SNAPSHOT) return v.restoreDamageSnapshot(s);
+  v.damage = { ...s.damage }; v.damageFx(); v.cornerDamage = s.cornerDamage.slice(); v.impactMechanical = s.impactMechanical; v.radiatorDamage = s.radiatorDamage; v.damageFx();
+}
+function trial(id, snap, { metres = 1500, seconds = 90 } = {}) {
+  const route = flatRoute(), v = new Vehicle(spec(id), route);
+  v.reset(10, 0, 80 / 3.6); v.manual = false; v.roadEvents = false; v.syncWheels();
+  if (snap) restoreDamage(v, snap);
+  let t = 0, top = 0, x0 = v.s, effort = 0, worstU = 0;
+  for (let i = 0; i < seconds * 60; i++, t += DT) {
+    // a driver who holds the road: heading and offset feedback on the steering (yaw > 0 is the nose left, u > 0 is right of the road)
+    const steer = clamp(1.6 * v.yaw - 0.04 * v.u + 0.35 * -v.w, -1, 1);
+    v.update(DT, { throttle: 1, brake: 0, steer }); const p = route.project(v.x, v.z); v.s = p.s; v.u = p.u;
+    top = Math.max(top, v.kmh); effort += Math.abs(steer); worstU = Math.max(worstU, Math.abs(v.u));
+    if (v.s - x0 >= metres) return { time: t, topKmh: top, effort: effort / (i + 1), worstU, power: v.engHealth };
+  }
+  return { time: Infinity, topKmh: top, effort: effort / (seconds * 60), worstU, power: v.engHealth };
+}
+export function damageTrials({ car = 'z4' } = {}) {
+  const clean = trial(car, null), rows = [], row = (label, vehicle, extra = {}) => {
+    const snap = vehicle ? snapshotOf(vehicle) : null, r = trial(car, snap);
+    rows.push({ group: 'damage', scenario: label, mechanical: round(vehicle?.impactMechanical ?? 0, 3), powerPct: round(100 * (r.power ?? 1), 0), topKmh: round(r.topKmh, 0), wheelEffortPct: round(100 * r.effort, 1), worstOffsetM: round(r.worstU, 1),
+      timeS: round(r.time, 2), lossS: round(r.time - clean.time, 2), ...extra });
+  };
+  rows.push({ group: 'damage', scenario: 'undamaged', mechanical: 0, powerPct: 100, topKmh: round(clean.topKmh, 0), wheelEffortPct: round(100 * clean.effort, 1), worstOffsetM: round(clean.worstU, 1), timeS: round(clean.time, 2), lossS: 0 });
+  const crash = (tag, kmh, seconds = 3) => { const sc = STATIC[tag]({ car, kmh }), w = sc.build(kmh / 3.6); for (let i = 0; i < seconds * 60; i++) w.v.update(DT, { throttle: 0, brake: 0, steer: 0 }); return w.v; };
+  for (const kmh of [30, 60, 100, 160]) row(`head-on wall ${kmh} km/h`, crash('wall-headon', kmh));
+  row('30 degree wall glance 100 km/h', crash('wall-glance30', 100));
+  row('30 degree guard-rail glance 100 km/h', crash('guardrail-glance30', 100));
+  row('sideways into a post 60 km/h', crash('lamp-side', 60));
+  for (const kmh of [60, 100]) { runTraffic({ tag: 'r', car, kmh, mode: 'rear', trafficKind: 'sedan' }); row(`rear-end a sedan at ${kmh} km/h`, lastVehicle); }
+  runTraffic({ tag: 't', car, kmh: 60, mode: 'tbone', trafficKind: 'sedan' }); row('T-bone a crossing car at 60 km/h', lastVehicle);
+  const taps = new Vehicle(spec(car), flatRoute()); for (let i = 0; i < 10; i++) taps.addDamage('front', 20 / 3.6, { kind: 'wall' }); row('ten 20 km/h taps (trading paint)', taps);
+  const taps2 = new Vehicle(spec(car), flatRoute()); for (let i = 0; i < 4; i++) taps2.addDamage('front', 40 / 3.6, { kind: 'wall' }); row('four 40 km/h bumps', taps2);
+  const side = new Vehicle(spec(car), flatRoute()); side.addDamage('left', 50 / 3.6, { kind: 'wall' }); row('one 50 km/h side hit', side);
+  return rows;
+}
+
 // ---- driver
 export function runBench({ speeds = KMH, cars = ['z4', 'panda'], only = '' } = {}) {
   const rows = [], want = (s) => !only || s.includes(only);
@@ -386,6 +434,7 @@ function table(rows) {
 }
 if (import.meta.url === `file://${process.argv[1]}`) {
   const arg = (n, d) => (process.argv.find(a => a.startsWith('--' + n + '=')) || '').split('=')[1] ?? d;
+  if (process.argv.includes('--damage')) { const rows = damageTrials({ car: arg('car', 'z4') }); const o = arg('out', ''); const keys = Object.keys(rows[0]).filter(k => k !== 'group'); const md = `| ${keys.join(' | ')} |\n|${keys.map(() => '---').join('|')}|\n` + rows.map(r => `| ${keys.map(k => r[k]).join(' | ')} |`).join('\n') + '\n'; if (o) { mkdirSync(dirname(o), { recursive: true }); writeFileSync(o, JSON.stringify(rows, null, 1)); writeFileSync(o.replace(/\.json$/, '.md'), md); } else console.log(md); process.exit(0); }
   const rows = runBench({ speeds: arg('speeds', KMH.join(',')).split(',').map(Number), cars: arg('cars', 'z4,panda').split(','), only: arg('only', '') });
   const out = arg('out', '');
   if (out) { mkdirSync(dirname(out), { recursive: true }); writeFileSync(out, JSON.stringify(rows, null, 1)); if (process.argv.includes('--md')) writeFileSync(out.replace(/\.json$/, '.md'), table(rows)); }

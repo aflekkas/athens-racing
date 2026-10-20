@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { bestGhostEvent } from './personal-bests.js';
 import { Recorder, GhostStore, sampleGhost, ghostOpacity } from './ghost-lap.js';
 import { CARS, CarModel } from './cars.js';
+import { canonicalCarId } from './car-ids.js';
 import { events } from './events.js';
 import { settings, onSettings } from './settings.js';
 const q = new THREE.Quaternion(), euler = new THREE.Euler(0, 0, 0, 'YXZ');
@@ -71,7 +72,7 @@ class GhostLap {
   buildGhost(car) {
     if (this.ghost?.spec.id !== car) {
       if (this.ghost) this.disposeGhost();
-      const spec = CARS.find(c => c.id === car); if (!spec) return;
+      const spec = CARS.find(c => c.id === canonicalCarId(car)); if (!spec) return;
       const model = new CarModel(spec), mat = new THREE.MeshBasicMaterial({ color: '#8de8ff', transparent: true, opacity: .28, depthWrite: false });
       const materials = new Set(); model.root.traverse(o => { if (o.isMesh) { for (const m of Array.isArray(o.material) ? o.material : [o.material]) materials.add(m); o.material = mat; o.castShadow = o.receiveShadow = false; } });
       // CarModel's ground-contact blob is a visual shadow even with castShadow=false.

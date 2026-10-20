@@ -277,7 +277,7 @@ export function raceLimitFor(lobby, baseMs) {
 const finiteIn = (v, min, max) => Number.isFinite(v) && v >= min && v <= max ? v : undefined;
 const bool = (v) => v === true ? true : v === false ? false : undefined;
 
-const ENGINE_NUMERICS = { impactMechanical: [0, 1], maxImpactEbs: [0, 100], engHealth: [0, 1], engineDamage: [0, 1], coolantTemp: [90, 145], mechanicalOverrevRpm: [0, 20000] };
+const ENGINE_NUMERICS = { impactMechanical: [0, 1], frontMechanical: [0, 1], maxImpactEbs: [0, 100], engHealth: [0, 1], engineDamage: [0, 1], coolantTemp: [90, 145], mechanicalOverrevRpm: [0, 20000] };
 const ENGINE_FAILURE_REASONS = new Set(['overheating', 'impact', 'drivetrain', 'mechanical_overrev']);
 
 function pickEngine(s) {
@@ -333,9 +333,6 @@ export function pickTyreTelemetry(v) {
 // persist on c.state (numeric registry fields + engine/tyre objects).
 export function validateStateExtras(s, ctx = {}) {
   const extras = {};
-  if(Number.isSafeInteger(s?.exhaustSerial)&&s.exhaustSerial>=0&&s.exhaustSerial<=2147483647)extras.exhaustSerial=s.exhaustSerial;
-  if(Number.isInteger(s?.exhaustKind)&&s.exhaustKind>=0&&s.exhaustKind<=3)extras.exhaustKind=s.exhaustKind;
-  if(typeof s?.exhaustEnabled==='boolean')extras.exhaustEnabled=s.exhaustEnabled;
   if (typeof s?.braking === 'boolean') extras.braking = s.braking;
   // The driver's own police pursuit (src/police.js encodePursuit), for the world authority's shared units.
   if (Number.isSafeInteger(s?.pursuit) && s.pursuit >= 0 && s.pursuit <= 2047) extras.pursuit = s.pursuit;

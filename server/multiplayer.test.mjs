@@ -20,7 +20,7 @@ async function setup(t, opts = {}) {
     ws.on('message', data => { const m = JSON.parse(data); const i = waiting.findIndex(w => w.pred(m)); if (i >= 0) waiting.splice(i, 1)[0].resolve(m); else inbox.push(m); });
     const next = pred => new Promise((resolve, reject) => { const i = inbox.findIndex(pred); if (i >= 0) return resolve(inbox.splice(i, 1)[0]); const timer = setTimeout(() => reject(new Error('Message timeout')), 2000); waiting.push({ pred, resolve: m => { clearTimeout(timer); resolve(m); } }); });
     const hello = await next(m => m.type === 'hello');
-    return { ws, id: hello.id, token: hello.token, version: hello.track.version, next, send: m => ws.send(JSON.stringify({ name, car: 'mini', ...m })) };
+    return { ws, id: hello.id, token: hello.token, version: hello.track.version, next, send: m => ws.send(JSON.stringify({ name, car: 'mini_jcw', ...m })) };
   }
   return { app, base, client };
 }
@@ -182,7 +182,7 @@ test('host route/traffic choices clear ready votes; reverse finish follows event
 
 test('leaderboard HTTP rejects invalid times, aborted runs, unknown cars, cross-origin and oversized requests; rate limits POST', async t => {
   const env = await setup(t);
-  const result = { driverId: 'browser-driver-1', name: 'Alice', eventId: 'quick', car: 'mini', time: 2, valid: true };
+  const result = { driverId: 'browser-driver-1', name: 'Alice', eventId: 'quick', car: 'mini_jcw', time: 2, valid: true };
   const post = (body, headers = {}) => fetch(env.base + '/api/leaderboard', { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body: typeof body === 'string' ? body : JSON.stringify(body) });
   assert.equal((await post({ ...result, time: 0.001 })).status, 400);
   assert.equal((await post({ ...result, valid: false })).status, 400);
@@ -209,12 +209,19 @@ test('session switching cannot orphan a joined lobby or retain duplicate live so
   b.send({ type: 'leave' }); await b.next(m => m.type === 'left'); assert.equal(env.app.lobbies.size, 0);
 });
 
-test('all ten catalogue cars can switch while waiting; race car changes are locked', async t => {
+test('every kept garage car can switch while waiting, a removed trim picks its top trim; race car changes are locked', async t => {
   const env = await setup(t, { raceLimitMs: 5000 }); const { a, b } = await pair(env);
-  for (const car of ['mini', 'z4', 'taxi', 'carrera', 'gr_yaris', 'gtv', 'golf', 'corolla', 'superb', 'police_octavia', 'mini_jcw', 'huracan', 'e36', 'yaris', 'panda', 'ibiza', 'cle', 'gla', 'gla45', 'cla']) {
+  const { CAR_MODELS } = await import('../src/car-catalog.js');
+  for (const car of CAR_MODELS.map(m => m.car)) {
     a.send({ type: 'ready', ready: false, version: a.version, car }); const changed = (await room(a)).lobby; await room(b);
     assert.equal(changed.players.find(p => p.id === a.id).car, car);
   }
+  // Owner decision 2026-10-20 (docs/OWNER-DECISIONS.md): an older client that names a removed trim drives the model's top trim.
+  for (const [old, kept] of [['golf', 'golf_r'], ['mini_cabrio_cooper', 'mini_jcw'], ['taxi', 'octavia_rs'], ['jazz_drift', 'jazz_dynamic']]) {
+    a.send({ type: 'ready', ready: false, version: a.version, car: old }); const changed = (await room(a)).lobby; await room(b);
+    assert.equal(changed.players.find(p => p.id === a.id).car, kept, old);
+  }
+  a.send({ type: 'ready', ready: false, version: a.version, car: 'z4' }); await room(a); await room(b);
   const l = await readyAndStart(a, b); a.send({ type: 'ready', ready: false, version: a.version, car: 'z4' });
   assert.match((await a.next(m => m.type === 'error')).message, /already started/);
   assert.equal(env.app.lobbies.get(l.code).players.get(a.id).car, l.players.find(p => p.id === a.id).car);
@@ -242,13 +249,13 @@ test('retired routes return 404; local plates and lobby allow-lists work', async
   const a = await env.client('Alice'), b = await env.client('Bob');
   a.send({ type: 'create', lobbyName: 'Allowlist', allowedCars: ['mini', 'z4'] });
   const created = (await room(a)).lobby;
-  assert.deepEqual(created.allowedCars, ['mini', 'z4']);
+  assert.deepEqual([...created.allowedCars].sort(), ['mini_jcw', 'z4'], 'a removed trim in the allow-list becomes its top trim');
   assert.equal(created.players[0].plate, 'ALICE', 'the local name supplies the plate');
-  b.send({ type: 'join', code: created.code, car: 'carrera' });
+  b.send({ type: 'join', code: created.code, car: 'carrera_gts' });
   const joined = (await room(b)).lobby;
-  assert.equal(joined.players.find(p => p.id === b.id).car, 'mini', 'disallowed join car coerced');
-  b.send({ type: 'ready', ready: false, version: b.version, car: 'carrera' });
+  assert.equal(joined.players.find(p => p.id === b.id).car, created.allowedCars[0], 'disallowed join car coerced to the first allowed car');
+  b.send({ type: 'ready', ready: false, version: b.version, car: 'carrera_gts' });
   assert.match((await b.next(m => m.type === 'error')).message, /not allowed/);
-  b.send({ type: 'options', allowedCars: ['mini'] });
+  b.send({ type: 'options', allowedCars: ['mini_jcw'] });
   assert.match((await b.next(m => m.type === 'error')).message, /host/);
 });

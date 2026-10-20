@@ -6,6 +6,9 @@
 import { LANDMARK_HIDDEN, osmBuildingId } from './athens-landmark-hide.js';
 import { inOldQuarter } from './athens-quarters.js';
 export const BUILDING_MESH_TRIANGLES = 16384;
+export const ROOFTOP_LIMIT = 600;
+/** A hipped house: four walls (8 triangles) and six roof triangles. */
+export const PITCHED_TRIANGLES = 14;
 const MAX_VERTICES = 65535;
 /** Triangles one footprint of `n` corners draws: 2n wall triangles and n-2 roof triangles. */
 export const buildingTriangleCount = n => 3 * n - 2;
@@ -52,6 +55,11 @@ export function richStyleFor(style, height, hash, quarter, historic = false) {
   if (style === 1 || style === 3 || (style === 0 && height >= 9)) return r < 34 ? STYLE.pilotis : r < 68 ? STYLE.continuous : r < 84 ? STYLE.veranda : style;
   return style;
 }
+/** Wall colour family of a building (2 bits, the facade shader turns it into an Athens palette): 0 white, 1 cream, 2 ochre, 3 pale pink / terracotta. The old quarters lean warm. */
+export function paletteFor(hash, quarter) {
+  const r = (hash >>> 16) % 100;
+  return quarter ? (r < 18 ? 0 : r < 50 ? 1 : r < 78 ? 2 : 3) : (r < 40 ? 0 : r < 68 ? 1 : r < 83 ? 2 : 3);
+}
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1]], len = a => Math.hypot(a[0], a[1]);
 /** The footprint as a rectangle (corners rotated so that p0 -> p1 is a long side) if it has four right angles within about 13 degrees, else null. */
 export function rectangleOf(ring) {
@@ -71,14 +79,29 @@ export function roofFor(ring, height, hash, quarter, stored = 0) {
   if ((known ? height > 20 : height > 13.5) || ((hash >>> 5) % 1000) / 1000 >= p) return null;
   return { rect, rise: Math.min(4.4, .3 * rect.s + .5) };
 }
-const pieceVertices = piece => piece.roof ? 22 : 5 * piece.ring.length, pieceTriangles = piece => piece.roof ? 12 : buildingTriangleCount(piece.ring.length);
+/** The kit on a flat roof (solar water heater with its tank, TV antenna, stair head): a position on the roof and a yaw, or null. Flat roofs of two floors and up on a footprint
+ * of 45 m2 or more: about a third of the low ones and every other block. Tile-local metres, like the rings. */
+export function rooftopFor(ring, height, hash, area) {
+  if (height < 6.5 || area < 45) return null;
+  const p = height < 10 ? .35 : .55; if (((hash >>> 11) % 1000) / 1000 >= p) return null;
+  const rect = rectangleOf(ring), u = ((hash >>> 3) % 100) / 100 - .5, w = ((hash >>> 9) % 100) / 100 - .5;
+  if (rect) {
+    const m1 = [(rect.p[3][0] + rect.p[0][0]) / 2, (rect.p[3][1] + rect.p[0][1]) / 2], m2 = [(rect.p[1][0] + rect.p[2][0]) / 2, (rect.p[1][1] + rect.p[2][1]) / 2], d = sub(m2, m1), dl = len(d) || 1, c = [(m1[0] + m2[0]) / 2, (m1[1] + m2[1]) / 2];
+    const ax = [d[0] / dl, d[1] / dl], ay = [-ax[1], ax[0]], ox = u * Math.max(0, rect.l - 6) * .6, oz = w * Math.max(0, rect.s - 5) * .6;
+    return { x: c[0] + ax[0] * ox + ay[0] * oz, z: c[1] + ax[1] * ox + ay[1] * oz, yaw: -Math.atan2(ax[1], ax[0]) };
+  }
+  const c = ring.reduce((a, q) => [a[0] + q[0] / ring.length, a[1] + q[1] / ring.length], [0, 0]); let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) if ((ring[i][1] > c[1]) !== (ring[j][1] > c[1]) && c[0] < (ring[j][0] - ring[i][0]) * (c[1] - ring[i][1]) / (ring[j][1] - ring[i][1]) + ring[i][0]) inside = !inside;
+  return inside ? { x: c[0], z: c[1], yaw: ((hash >>> 6) % 628) / 100 } : null;
+}
+const pieceVertices = piece => piece.roof ? 22 : 5 * piece.ring.length, pieceTriangles = piece => piece.roof ? PITCHED_TRIANGLES : buildingTriangleCount(piece.ring.length);
 /** Meshes (shared vertices, Uint16 index) for every building row, grouped by palette entry. `styles` is the optional per-row Uint8 facade style
  * from the bake, `roofs` the optional per-row roof shape (ROOF). Each vertex also carries `aFacade`, two Uint16: the distance along the wall in
  * decimetres (65535 on a roof) and the height above the base in decimetres plus 4096 x style (0..15). On a roof vertex the low bits are free: bit 10
  * marks a pitched roof and bits 0..9 are the ridge's rise in decimetres, which World detail Off takes out in the vertex shader (the roof is flat
  * again). It is all derived here, so nothing extra travels on the wire. Pitched roofs add two vertices and two triangles per house; `extra` counts them. */
 export function deriveBuildingMeshes(t, m, styles = null, roofs = null) {
-  const groups = new Map(), landmarkGroups = new Map(), extra = { vertices: 0, indices: 0 }, ox = m.origin?.[0] ?? 0, oz = m.origin?.[2] ?? 0;
+  const groups = new Map(), landmarkGroups = new Map(), rooftops = [], extra = { vertices: 0, indices: 0 }, ox = m.origin?.[0] ?? 0, oz = m.origin?.[2] ?? 0;
   for (let row = 0; row < t.buildings.length / 4; row++) {
     const first = t.buildings[row * 4 + 1], n = t.buildings[row * 4 + 2], material = t.buildings[row * 4 + 3];
     const base = t.buildingHeights[row * 2], top = base + t.buildingHeights[row * 2 + 1];
@@ -90,8 +113,9 @@ export function deriveBuildingMeshes(t, m, styles = null, roofs = null) {
     if (!target.has(material)) target.set(material, []);
     const height = top - base, centre = ring.reduce((c, p) => [c[0] + p[0] / n, c[1] + p[1] / n], [0, 0]), quarter = inOldQuarter(ox + centre[0], oz + centre[1]), stored = roofs ? roofs[row] : 0;
     const roof = target === groups ? roofFor(ring, height, hash, quarter, stored) : null;
-    if (roof) { extra.vertices += 22 - 5 * n; extra.indices += 3 * (12 - buildingTriangleCount(n)); }
-    target.get(material).push({ ring, base, top, roof, style: richStyleFor(facadeStyleFor(styles ? styles[row] : 0, height, hash), height, hash, quarter, stored === ROOF.historic) });
+    if (roof) { extra.vertices += 22 - 5 * n; extra.indices += 3 * (PITCHED_TRIANGLES - buildingTriangleCount(n)); }
+    if (target === groups && !roof && rooftops.length < ROOFTOP_LIMIT * 5) { const r = rooftopFor(ring, height, hash, Math.abs(area) / 2); if (r) rooftops.push(r.x, top, r.z, r.yaw, hash % 4); }
+    target.get(material).push({ ring, base, top, roof, pal: paletteFor(hash, quarter), style: richStyleFor(facadeStyleFor(styles ? styles[row] : 0, height, hash), height, hash, quarter, stored === ROOF.historic) });
   }
   const arrays = [], meshes = [];
   const batches = [...[...groups.keys()].sort((a, b) => a - b).map(material => [material, groups.get(material), false]), ...[...landmarkGroups.keys()].sort((a, b) => a - b).map(material => [material, landmarkGroups.get(material), true])];
@@ -102,8 +126,8 @@ export function deriveBuildingMeshes(t, m, styles = null, roofs = null) {
       const position = new Float32Array(verts * 3), facade = new Uint16Array(verts * 2), index = new Uint16Array(tris * 3);
       let v = 0, ix = 0;
       const vertex = (x, y, z, u, w) => { position[v * 3] = x; position[v * 3 + 1] = y; position[v * 3 + 2] = z; facade[v * 2] = u; facade[v * 2 + 1] = w; return v++; };
-      for (const { ring, base, top, style, roof } of chunk) {
-        const n = ring.length, high = Math.min(4095, Math.round((top - base) * 10)), tag = style * 4096; let along = 0;
+      for (const { ring, base, top, style, roof, pal } of chunk) {
+        const n = ring.length, high = Math.min(1023, Math.round((top - base) * 10)), roofTag = style * 4096, tag = roofTag + pal * 1024; let along = 0;
         for (let k = 0; k < n; k++) {
           const a = ring[k], b = ring[(k + 1) % n], dx = b[0] - a[0], dz = b[1] - a[1], length = Math.hypot(dx, dz);
           const u0 = Math.min(65534, Math.round(along * 10)), u1 = Math.min(65534, Math.round((along + length) * 10)); along += length;
@@ -111,12 +135,12 @@ export function deriveBuildingMeshes(t, m, styles = null, roofs = null) {
           index.set([a0, a1, b0, b0, a1, b1], ix); ix += 6;
         }
         if (!roof) {
-          const flat = ring.map(p => vertex(p[0], top, p[1], 65535, tag));
+          const flat = ring.map(p => vertex(p[0], top, p[1], 65535, roofTag));
           for (const [a, b, c] of earClip(ring)) { index.set([flat[a], flat[c], flat[b]], ix); ix += 3; }
         } else {
           // hipped roof: four eave corners at the wall top, a ridge `rise` higher along the long axis (a pyramid on a square)
           const { p, l, s } = roof.rect, m1 = [(p[3][0] + p[0][0]) / 2, (p[3][1] + p[0][1]) / 2], m2 = [(p[1][0] + p[2][0]) / 2, (p[1][1] + p[2][1]) / 2], c = [(m1[0] + m2[0]) / 2, (m1[1] + m2[1]) / 2];
-          const d = sub(m2, m1), dl = len(d) || 1, half = Math.max(0, (l - s) / 2), rise = Math.round(roof.rise * 10), pitched = tag + 1024;
+          const d = sub(m2, m1), dl = len(d) || 1, half = Math.max(0, (l - s) / 2), rise = Math.round(roof.rise * 10), pitched = roofTag + 1024;
           const eave = p.map(q => vertex(q[0], top, q[1], 65535, pitched)), P = vertex(c[0] - d[0] / dl * half, top + rise / 10, c[1] - d[1] / dl * half, 65535, pitched + rise), Q = vertex(c[0] + d[0] / dl * half, top + rise / 10, c[1] + d[1] / dl * half, 65535, pitched + rise);
           const at = i => [position[i * 3], position[i * 3 + 1], position[i * 3 + 2]];
           for (const [a, b, c2] of [[eave[0], eave[1], Q], [eave[0], Q, P], [eave[2], eave[3], P], [eave[2], P, Q], [eave[3], eave[0], P], [eave[1], eave[2], Q]]) {
@@ -136,6 +160,7 @@ export function deriveBuildingMeshes(t, m, styles = null, roofs = null) {
     }
     flush();
   }
+  extra.rooftops = new Float32Array(rooftops);
   return { arrays, meshes, extra };
 }
 /** Append the derived building meshes to a decoded pack (arrays after the wire arrays, meshes after the wire meshes). */
@@ -144,8 +169,9 @@ export function addDerivedBuildings(pack, tables) {
   if (!flag || flag.derived) return pack;
   const wd = pack.metadata.extensions?.worldDetail?.buildings, styleIndex = wd?.facadeStyle, roofIndex = wd?.roofShape;
   const { arrays, meshes, extra } = deriveBuildingMeshes(tables, pack.metadata, styleIndex == null ? null : pack.arrays[styleIndex], roofIndex == null ? null : pack.arrays[roofIndex]), offset = pack.arrays.length;
-  pack.derivedExtraBytes = extra.vertices * 16 * 2 + extra.indices * 2 * 2; // pitched roofs: CPU copy and GPU copy of the added vertices and indices
+  pack.derivedExtraBytes = extra.vertices * 16 * 2 + extra.indices * 2 * 2 + extra.rooftops.byteLength * 6; // pitched roofs: CPU copy and GPU copy of the added vertices and indices; the rooftop rows and the prop records made from them
   for (const a of arrays) pack.arrays.push(a);
+  if (extra.rooftops.length) { pack.arrays.push(extra.rooftops); pack.metadata.extensions = { ...pack.metadata.extensions, worldDetail: { ...pack.metadata.extensions?.worldDetail, rooftops: pack.arrays.length - 1 } }; }
   for (const mesh of meshes) {
     for (const a of Object.values(mesh.attributes)) a.array += offset;
     mesh.index += offset; pack.metadata.meshes.push(mesh);

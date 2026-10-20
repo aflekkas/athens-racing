@@ -4,7 +4,7 @@ import { importWithUpdate } from './client-release.js';
 // Native development still enters main.js directly and needs no build step.
 import { Menu } from './menu.js';
 import { CARS } from './cars.js';
-import { inGarage } from './car-catalog.js';
+import { inGarage, canonicalCarId, DEFAULT_CAR_ID } from './car-catalog.js';
 import { menuMapContext, initialMapId, quickMapEvent } from './menu-map.js';
 import { freeRoam } from './events.js';
 import { settings, onSettings } from './settings.js';
@@ -16,8 +16,8 @@ const direct = !query.has('menu') && ['simhook', 'autodrive', 'car', 's', 'event
 if ((query.get('map')==='athens' && !query.has('menu')) || direct || query.has('lobby')) {
   await (await importWithUpdate(() => import('./main.js'))).gameReady;
 } else {
-  let mapId = initialMapId(query), car = 0, runtime;
-  try { const saved = CARS.findIndex(car => car.id === localStorage.getItem('paraliaki.car')); if (saved >= 0 && inGarage(CARS[saved])) car = saved; } catch {}
+  let mapId = initialMapId(query), car = Math.max(0, CARS.findIndex(c => c.id === DEFAULT_CAR_ID)), runtime;
+  try { const saved = CARS.findIndex(car => car.id === canonicalCarId(localStorage.getItem('paraliaki.car'))); if (saved >= 0 && inGarage(CARS[saved])) car = saved; } catch {}
   const ensureRuntime = () => runtime ||= importWithUpdate(() => import('./main.js')).then(async module => { await module.gameReady; stopVolumeSync(); menu.h.selectMap(mapId);
     if (window.__multiplayer?.pendingResume || window.__multiplayer?.active || window.__multiplayer?.pendingCode) (await importWithUpdate(() => import('./ui/mp-loader.js'))).installMpScreens(menu);
     return window.__flow; }).catch(error => { runtime = null; throw error; });

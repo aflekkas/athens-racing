@@ -14,9 +14,8 @@ export function renderSignIn(a, menu) {
   const actions = `${!a.ready ? C.spinner() : ""}${a.providers.includes("google") ? C.button({ label: "CONTINUE WITH GOOGLE", logo: GOOGLE_G, variant: "google", block: true, act: "account-oauth", attrs: { "data-default": "" } }) : C.button({ label: "RETRY CONNECTION", act: "account-retry", block: true, variant: "primary" })}`;
   return C.dialog({ fullScreen: true,
     under: menu?.r_title?.() || "",
-    kick: "ATHENS RACING",
-    title: "SIGN IN TO ATHENS RACING",
-    body: `<p>Sign in with Google to play. An internet connection is required.</p>${a.error ? `<p class="account-error" role="status">${esc(a.error)}</p>` : ""}`,
+    title: "SIGN IN",
+    body: `<p>Sign in with Google to race. You need to be online.</p>${a.error ? `<p class="account-error" role="status">${esc(a.error)}</p>` : ""}`,
     actions,
     foot: `${privacyLink}<a class="mi legal-link" href="/terms" target="_blank" rel="noopener">Terms of service</a>`,
   });

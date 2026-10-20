@@ -1,0 +1,6 @@
+[
+{"name":"plaka-street","car":[-60,940],"carcam":[0,2.4,7,14],"far":850,"wait":5000},
+{"name":"kypseli-street","car":[768,-1792],"carcam":[0,2.4,7,14],"far":850,"wait":5000},
+{"name":"kypseli-above","car":[768,-1792],"carcam":[0,38,30,0],"far":900,"wait":5000},
+{"name":"syntagma-street","car":[421,501],"carcam":[0,2.4,7,14],"far":850,"wait":5000}
+]

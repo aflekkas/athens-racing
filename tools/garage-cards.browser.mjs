@@ -40,7 +40,7 @@ try{
   for(const id of ['golf','van']){
    await page.evaluate(id=>window.showSpec(id),id);
    const layout=await page.evaluate(()=>{
-    const stage=document.querySelector('.car-stage').getBoundingClientRect(),view=document.querySelector('.car-preview-viewport').getBoundingClientRect(),tiles=[...document.querySelectorAll('.stats--boxed .stat-tile')].map(el=>{const r=el.getBoundingClientRect();return {width:r.width,height:r.height};});
+    const stage=document.querySelector('.car-stage').getBoundingClientRect(),view=document.querySelector('.car-preview-viewport').getBoundingClientRect(),tiles=[...document.querySelectorAll('.stats--specs .stat-tile')].map(el=>{const r=el.getBoundingClientRect();return {width:r.width,height:r.height};});
     return {frameError:Math.max(Math.abs(stage.left-view.left),Math.abs(stage.top-view.top),Math.abs(stage.width-view.width),Math.abs(stage.height-view.height)),tiles,paint:!!document.querySelector('.car-paints')};
    });
    assert.ok(layout.frameError<.5,`${id} viewer must fill its entire container`);assert.equal(layout.tiles.length,6);

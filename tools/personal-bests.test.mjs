@@ -35,16 +35,29 @@ test('lazy track setup and loaded geometry resolve identical personal-record key
  }
 });
 
-test('stores the full setup and car generation/trim, isolates trim PBs and lists by track and assists', async () => {
+test('stores the full setup and car name, with no trim fields, and lists by track and assists', async () => {
  const {listPersonalBests}=await import('../src/personal-bests.js'); const st=mem();
- const s=personalBestSetup({mapId:'penteli',def:{id:'quick',traffic:1.5,rivals:2,rules:{police:true}},route:{s0:0,s1:9896,dir:1,laps:1},car:'mini',carSpec:{name:'MINI Cooper S',generation:'F57',trim:'Cooper S'},conditions:{time:'night',weather:'rain'},assists:{tc:false,abs:true,steering:'light',gearbox:'manual'}});
+ const s=personalBestSetup({mapId:'penteli',def:{id:'quick',traffic:1.5,rivals:2,rules:{police:true}},route:{s0:0,s1:9896,dir:1,laps:1},car:'mini_jcw',carSpec:{name:'MINI JCW',generation:'F56',trim:'JCW',trimLabel:'JCW'},conditions:{time:'night',weather:'rain'},assists:{tc:false,abs:true,steering:'light',gearbox:'manual'}});
+ assert.equal(s.carName,'MINI JCW');assert.equal(s.carGeneration,undefined);assert.equal(s.carTrim,undefined);
  recordPersonalBest(s,{time:240,valid:true,date:'2026-10-17T12:00:00Z'},st);
- recordPersonalBest({...s,carTrim:'JCW'},{time:230,valid:true},st);
  recordPersonalBest({...s,map:'riviera'},{time:220,valid:true},st);
  const rows=listPersonalBests({mapId:'penteli',weather:'rain',tc:'false',gearbox:'manual'},st);
- assert.equal(rows.length,2);assert.equal(rows[1].setup.carGeneration,'F57');assert.equal(rows[1].setup.traffic,1.5);assert.equal(rows[1].setup.police,true);assert.equal(rows[1].date,'2026-10-17T12:00:00Z');
+ assert.equal(rows.length,1);assert.equal(rows[0].setup.carName,'MINI JCW');assert.equal(rows[0].setup.traffic,1.5);assert.equal(rows[0].setup.police,true);assert.equal(rows[0].date,'2026-10-17T12:00:00Z');
  assert.equal(getPersonalBests(s,st).exact.time,240);
- s.weather='clear';assert.equal(rows[1].setup.weather,'rain','record owns a snapshot');
+ s.weather='clear';assert.equal(rows[0].setup.weather,'rain','record owns a snapshot');
+});
+// Owner decision 2026-10-20 (docs/OWNER-DECISIONS.md): trims are gone; a record set with a removed trim belongs to the top trim.
+test('records set with removed trims move to the kept car, drop their trim fields and keep the faster time', async () => {
+ const {listPersonalBests}=await import('../src/personal-bests.js');const st=mem(),base=setup();
+ const old=(car,time,extra={})=>{const setup={...base,car,carName:'MINI '+car,...extra};return {key:JSON.stringify(JSON.parse(exactBestKey({...base,car}))),record:{time,car,date:'2026-01-0'+(time%9+1),setup}};};
+ const a=old('mini',100,{carGeneration:'F56',carTrim:'Cooper'}),b=old('mini_cooper',90,{carGeneration:'F56',carTrim:'Cooper'}),c=old('mini_s',95),kept=old('mini_jcw',99);
+ const exact={};for(const x of [a,b,c,kept])exact[JSON.stringify([x.record.setup.map,x.record.setup.event,x.record.setup.type,x.record.setup.from,x.record.setup.to,x.record.setup.direction,x.record.setup.laps,x.record.setup.car])+Math.random()]=x.record;
+ st.setItem('paraliaki.personalBests.v1',JSON.stringify({version:1,exact,routes:{[routeBestKey(base)]:b.record}}));
+ const best=getPersonalBests({...base,car:'mini_jcw'},st);assert.equal(best.exact.time,90);assert.equal(best.exact.car,'mini_jcw');assert.equal(best.exact.setup.car,'mini_jcw');
+ assert.equal(getPersonalBests({...base,car:'mini_cooper'},st).exact.time,90,'a lookup that still names a removed trim reads the kept car board');
+ const rows=listPersonalBests({mapId:base.map},st);assert.equal(rows.length,1,'one board for the one car');
+ assert(!JSON.stringify(rows).includes('carTrim')&&!JSON.stringify(rows).includes('carGeneration'));
+ assert.deepEqual(JSON.parse(st.getItem('paraliaki.personalBests.v1')).routes,{[routeBestKey(base)]:b.record},'the route board is unaffected');
 });
 test('legacy keys/records remain readable; list recovers key setup and avoids route duplicates', async () => {
  const {listPersonalBests}=await import('../src/personal-bests.js');const st=mem(),s=setup(),record={time:60,car:s.car,date:'2026-01-01'};

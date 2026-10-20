@@ -40,6 +40,18 @@ export function insideLandmark(x, z) {
   }
   return false;
 }
+/** The paved forecourts in front of the landmarks that have one, as plaza outlines (flat x, z pairs in metres, with bounds and area) for src/athens-plazas.js:
+ * a rectangle in the model's frame in front of its entrance, laid over the ground like any plaza instead of standing on a slab. */
+export function forecourtPlazas() {
+  const out = [];
+  for (const spec of LANDMARKS) {
+    const f = spec.forecourt; if (!f) continue;
+    const { site } = spec, a = faceToward(site, FACING[spec.id]), cos = Math.cos(a), sin = Math.sin(a), W = (site.width || 24) * spec.depth, p = new Float32Array(8);
+    [[-f.half, W / 2 + f.from], [f.half, W / 2 + f.from], [f.half, W / 2 + f.to], [-f.half, W / 2 + f.to]].forEach(([lx, lz], i) => { p[i * 2] = site.x + lx * cos + lz * sin; p[i * 2 + 1] = site.z - lx * sin + lz * cos; });
+    out.push({ p, x0: Math.min(p[0], p[2], p[4], p[6]), x1: Math.max(p[0], p[2], p[4], p[6]), z0: Math.min(p[1], p[3], p[5], p[7]), z1: Math.max(p[1], p[3], p[5], p[7]), area: 2 * f.half * (f.to - f.from) });
+  }
+  return out;
+}
 /** Fraction of the camera's far plane at which a distant landmark is drawn. */
 export const FAR_FRACTION = .96;
 export const HAZE = Object.freeze({ nearStart: 250, nearAmount: .5, farAmount: .74, farFull: 9000 });

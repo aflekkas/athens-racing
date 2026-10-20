@@ -180,3 +180,15 @@ test('src/map-select.js draws on demand: no polling, no drawing from gesture han
   assert.match(js, /card\.classList\.toggle\('panel--moving'/, owner);
   assert.match(read('src/ui/ui.css'), /\.panel--float \{[^}]*backdrop-filter: blur\(/, owner);
 });
+
+test('a pan into unpainted map is covered by the coarse floor tile first, so no dark hole waits on the fine tiles', () => {
+  // Owner 2026-10-20 ("trackpad pans"): two-finger scrolls expose new parts of the map often. A fine tile that is not painted
+  // yet is drawn from a coarser one; when even the coarse floor level has not reached that part, its floor tile goes first.
+  const t = rig(), scale = 14, cam = cameraAt(t.view, scale, ...TRACK_ROUTES.riviera.start), j = levelFor(scale, 1), s = TILE / 2 ** j;
+  const k = cam.scale, ox = t.view.width / 2 + cam.x - MAP_VIEW.width / 2 * k, oy = t.view.height / 2 + cam.y - MAP_VIEW.height / 2 * k;
+  const vis = [-ox / k, -oy / k, (t.view.width - ox) / k, (t.view.height - oy) / k];
+  const shown = (Math.floor(vis[2] / s) - Math.floor(vis[0] / s) + 1) * (Math.floor(vis[3] / s) - Math.floor(vis[1] / s) + 1);
+  frame(t, cam, 16.7);
+  t.reset(); t.renderer.paint(cam, 33.4);
+  assert.ok(t.mainDraws().length >= shown, `after one frame every one of the ${shown} visible tiles is drawn, from a stand-in if need be (${t.mainDraws().length} draws). ${owner}`);
+});

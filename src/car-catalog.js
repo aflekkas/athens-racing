@@ -1,39 +1,40 @@
 import {badgeBrand} from './manufacturers.js';
-import {carPerformanceIndex} from './car-performance.js';
-// Garage entries describe a generation/body style. Trim IDs remain the wire/physics IDs,
-// so old saves, event links, traffic and remote players retain their exact drivetrain.
+import {LEGACY_CAR_IDS, DEFAULT_CAR_ID, canonicalCarId, isLegacyCarId} from './car-ids.js';
+export {LEGACY_CAR_IDS, DEFAULT_CAR_ID, canonicalCarId, isLegacyCarId};
+// Owner decision 2026-10-20 (docs/OWNER-DECISIONS.md): one garage entry per model, and it is the top trim. `car` is the kept car's
+// id, which stays the wire/physics id. The ids of the removed trims live in LEGACY_CAR_IDS and map to it.
 export const CAR_MODELS = [
- {id:'sl65',name:'MERCEDES-BENZ SL R231',trims:["sl400","sl500","sl63","sl65"]},
- {id:'a160',name:'MERCEDES-BENZ A-CLASS W168',trims:["a160","a190"]},
- {id:'p928',name:'PORSCHE 928 S4 / GT / GTS',trims:["p928_s4","p928_gt","p928"]},
- {id:'f348',name:'FERRARI 348',trims:["f348_ts","f348","f348_spider"],bodies:[['berlinetta','BERLINETTA',['f348']],['targa','TARGA',['f348_ts']],['spider','SPIDER',['f348_spider']]]},
-  {"id": "aygo", "name": "TOYOTA AYGO II", "trims": ["aygo"]},
-  {"id": "qashqai", "name": "NISSAN QASHQAI J11", "trims": ["qashqai_dci","qashqai"]},
-  {"id": "dolphin", "name": "BYD DOLPHIN", "trims": ["dolphin"]},
-  {"id": "atto3", "name": "BYD ATTO 3", "trims": ["atto3"]},
-  {"id": "van", "name": "FIAT DUCATO L2H2", "trims": ["van","van_150"]},
-  {"id": "truck", "name": "ISUZU NPR", "trims": ["truck"]},
-  {"id": "bus", "name": "MERCEDES-BENZ CITARO O530", "trims": ["bus"]},
-  {"id": "police_octavia", "name": "ŠKODA OCTAVIA · ΕΛ.ΑΣ.", "trims": ["police_octavia"]},
-  { id:'panda', name:'FIAT PANDA 169', trims:["panda_11","panda","panda_100hp"] },
-  { id:'jazz', name:'HONDA JAZZ GK', trims:["jazz","jazz_dynamic","jazz_drift"] },
-  { id:'yaris', name:'TOYOTA YARIS XP10', trims:["yaris","yaris_13","yaris_ts"] },
-  { id:'ibiza', name:'SEAT IBIZA 6K', trims:["ibiza","ibiza_cupra"] },
-  { id:'golf', name:'VOLKSWAGEN GOLF VII', trims:["golf","golf_gtd","golf_gti","golf_r"] },
-  { id:'mini', name:'MINI F56 / F57', trims:["mini_cabrio_cooper","mini_cooper","mini","mini_s","mini_cabrio_jcw","mini_jcw"], bodies:[['hardtop','HARDTOP',['mini_cooper','mini_s','mini_jcw']],['convertible','CONVERTIBLE',['mini_cabrio_cooper','mini','mini_cabrio_jcw']]] },
-  { id:'gr_yaris', name:'TOYOTA GR YARIS GXPA16', trims:["gr_yaris"] },
-  { id:'gla', name:'MERCEDES-BENZ GLA H247', trims:["gla","gla250","gla45"] },
-  { id:'corolla', name:'TOYOTA COROLLA E210 SALOON', trims:["corolla_15","corolla"] },
-  { id:'taxi', name:'ŠKODA OCTAVIA III 5E', trims:["octavia_16tdi","taxi","octavia_rs"] },
-  { id:'superb', name:'ŠKODA SUPERB III', trims:["superb_15","superb","superb_4x4"] },
-  { id:'cla', name:'MERCEDES-BENZ CLA C118', trims:["cla","cla250","cla35","cla45s"] },
-  { id:'cle', name:'MERCEDES-BENZ CLE C236', trims:["cle200","cle","cle300e","cle450","cle53"] },
-  { id:'z4', name:'BMW Z4 G29', trims:["z4_20i","z4_30i","z4"] },
-  { id:'carrera', name:'PORSCHE 911 991.1', trims:["carrera","carrera_s","carrera_gts"] },
-  { id:'aventador_svj', name:'LAMBORGHINI AVENTADOR', trims:["aventador_svj"] },
-  { id:'huracan', name:'LAMBORGHINI HURACÁN EVO', trims:["huracan_rwd","huracan"] },
-  { id:'gtv', name:'ALFA ROMEO 105 GTV', trims:["gtv1750","gtv"] },
-  { id:'e36', name:'BMW 3 SERIES E36', trims:["e36_318i","e36","e36_m3"] },
+ {id:'sl65',name:'MERCEDES-BENZ SL R231',car:'sl65'},
+ {id:'a160',name:'MERCEDES-BENZ A-CLASS W168',car:'a190'},
+ {id:'p928',name:'PORSCHE 928 S4 / GT / GTS',car:'p928'},
+ {id:'f348',name:'FERRARI 348',car:'f348_spider'},
+ {id:'aygo',name:'TOYOTA AYGO II',car:'aygo'},
+ {id:'qashqai',name:'NISSAN QASHQAI J11',car:'qashqai'},
+ {id:'dolphin',name:'BYD DOLPHIN',car:'dolphin'},
+ {id:'atto3',name:'BYD ATTO 3',car:'atto3'},
+ {id:'van',name:'FIAT DUCATO L2H2',car:'van_150'},
+ {id:'truck',name:'ISUZU NPR',car:'truck'},
+ {id:'bus',name:'MERCEDES-BENZ CITARO O530',car:'bus'},
+ {id:'police_octavia',name:'ŠKODA OCTAVIA · ΕΛ.ΑΣ.',car:'police_octavia'},
+ {id:'panda',name:'FIAT PANDA 169',car:'panda_100hp'},
+ {id:'jazz',name:'HONDA JAZZ GK',car:'jazz_dynamic'},
+ {id:'yaris',name:'TOYOTA YARIS XP10',car:'yaris_ts'},
+ {id:'ibiza',name:'SEAT IBIZA 6K',car:'ibiza_cupra'},
+ {id:'golf',name:'VOLKSWAGEN GOLF VII',car:'golf_r'},
+ {id:'mini',name:'MINI F56 / F57',car:'mini_jcw'},
+ {id:'gr_yaris',name:'TOYOTA GR YARIS GXPA16',car:'gr_yaris'},
+ {id:'gla',name:'MERCEDES-BENZ GLA H247',car:'gla45'},
+ {id:'corolla',name:'TOYOTA COROLLA E210 SALOON',car:'corolla'},
+ {id:'taxi',name:'ŠKODA OCTAVIA III 5E',car:'octavia_rs'},
+ {id:'superb',name:'ŠKODA SUPERB III',car:'superb_4x4'},
+ {id:'cla',name:'MERCEDES-BENZ CLA C118',car:'cla45s'},
+ {id:'cle',name:'MERCEDES-BENZ CLE C236',car:'cle53'},
+ {id:'z4',name:'BMW Z4 G29',car:'z4'},
+ {id:'carrera',name:'PORSCHE 911 991.1',car:'carrera_gts'},
+ {id:'aventador_svj',name:'LAMBORGHINI AVENTADOR',car:'aventador_svj'},
+ {id:'huracan',name:'LAMBORGHINI HURACÁN EVO',car:'huracan'},
+ {id:'gtv',name:'ALFA ROMEO 105 GTV',car:'gtv'},
+ {id:'e36',name:'BMW 3 SERIES E36',car:'e36_m3'},
 ];
 export const GARAGE_CLASSES = [
   ['city','CITY',['a160','panda','jazz','yaris','ibiza','golf','aygo']],
@@ -50,31 +51,20 @@ export const GARAGE_CLASSES = [
 ];
 export const CAR_CLASSES = GARAGE_CLASSES.map(([id])=>id);
 export const GARAGE_CARS = GARAGE_CLASSES.flatMap(([, ,ids])=>ids);
-const MODELS = new Map(CAR_MODELS.flatMap(m=>m.trims.map(id=>[id,m])));
+// A kept id and every id that maps to it find the same model.
+const MODELS = new Map(CAR_MODELS.flatMap(m=>[[m.car,m],...Object.entries(LEGACY_CAR_IDS).filter(([,kept])=>kept===m.car).map(([id])=>[id,m])]));
 const CLASS_OF = new Map(GARAGE_CLASSES.flatMap(([id,,cars])=>cars.map(car=>[car,id])));
 export const carModel = c => MODELS.get(c?.id ?? c);
-/** the trim part of a car's name ("GLA 45 S" of the GLA H247 model): what changes between the entries of one model */
-export function trimName(c, model = carModel(c)) {
-  const label = c.trimLabel || c.short || c.name, prefix = model?.name || '';
-  return prefix && label.toUpperCase().startsWith(prefix.toUpperCase()) ? label.slice(prefix.length).trim() || label : label;
-}
-export const inGarage = c => MODELS.has(c?.id ?? c);
+export const inGarage = c => CAR_MODELS.some(m=>m.car===(c?.id ?? c));
 export const classLabel = id => GARAGE_CLASSES.find(([k])=>k===id)?.[1] || String(id).toUpperCase();
 export function carCategory(c) { return CLASS_OF.get(carModel(c)?.id) || (c?.police ? 'police' : 'sedan/coupe'); }
-// Used only after performance ties: the represented factory hierarchy wins over spelling.
-const HIERARCHY=new Map([
- ['cle200','cle220d','cle','cle300e','cle450','cle53'],['golf','golf_gtd','golf_gti','golf_r'],
- ['sl400','sl500','sl63','sl65'],['jazz','jazz_dynamic','jazz_drift'],['p928_s4','p928_gt','p928'],
- ['f348','f348_ts','f348_spider'],['mini_cooper','mini_cabrio_cooper','mini_s','mini','mini_jcw','mini_cabrio_jcw'],
-].flatMap(ids=>ids.map((id,i)=>[id,i])));
-/** One presentation order: keep generations together, then fantasy last, kW, PI and factory hierarchy. Never mutates CARS. */
-export function sortTrims(cars) {
- const generation=c=>GARAGE_CARS.indexOf(carModel(c)?.id), tier=c=>HIERARCHY.get(c.id)??carModel(c)?.trims.indexOf(c.id)??0;
- return [...cars].sort((a,b)=>generation(a)-generation(b)||Number(!!a.fantasy)-Number(!!b.fantasy)||
-  (a.power||0)-(b.power||0)||carPerformanceIndex(a)-carPerformanceIndex(b)||tier(a)-tier(b)||a.id.localeCompare(b.id));
+/** One presentation order: the garage lineup, then anything else by id. Never mutates the list. */
+export function sortCars(cars) {
+ const place=c=>{const i=GARAGE_CARS.indexOf(carModel(c)?.id);return i<0?GARAGE_CARS.length:i;};
+ return [...cars].sort((a,b)=>place(a)-place(b)||a.id.localeCompare(b.id));
 }
-export function baseTrim(model) { return model?.bodies?.[0]?.[2]?.[0]||model?.trims[0]; }
-// Reading a preference must not create a save or replace an explicit live trim choice.
+/** The saved garage choice as one kept car id (a removed trim maps to its model's top trim); null when nothing is saved.
+ *  Reading a preference must not create a save. Understands the original string format and the 2026-10 `{entry,trim}` JSON. */
 export function readCarSelection(storage) {
  try{
   const legacy=storage.getItem('paraliaki.car'),packed=storage.getItem('paraliaki.car.selection');
@@ -83,55 +73,48 @@ export function readCarSelection(storage) {
   return migrateCarSelection(legacy||saved);
  }catch{return null;}
 }
-// Idempotent migration, including the original string-only selection format.
+/** Idempotent: any saved value (an id, or the old `{entry,trim}` object) becomes a kept car id; unknown values fall back to the default car. */
 export function migrateCarSelection(saved) {
-  const trim = typeof saved === 'string' ? saved : saved?.trim;
-  const model = carModel(trim) || CAR_MODELS.find(m=>m.id===saved?.entry) || carModel('mini');
-  const selected=model.trims.includes(trim) ? trim : model.trims.includes(model.id) ? model.id : model.trims[0];
-  const body=model.bodies?.find(([, ,ids])=>ids.includes(selected))?.[0];
-  return { entry:model.id, trim:selected, ...(body?{body}:{}) };
+  const id=canonicalCarId(typeof saved==='string'?saved:saved?.trim);
+  if(inGarage(id))return id;
+  const entry=CAR_MODELS.find(m=>m.id===saved?.entry);
+  return entry?.car||DEFAULT_CAR_ID;
 }
-// Persist the normalized trim too, so boot, garage and online joins agree.
+// Persist the normalized car, so boot, garage and online joins agree. The old packed `{entry,trim,body}` key is dropped, and a
+// paint chosen on a removed trim carries over to the kept car unless that car already has its own.
 export function migrateStoredCarSelection(storage) {
-  const selection=readCarSelection(storage);if(!selection)return null;
-  for(const [key,value]of [['paraliaki.car',selection.trim],['paraliaki.car.selection',JSON.stringify(selection)]]){
-    try{storage.setItem(key,value);}catch{} // Private browsing can allow reads but deny writes.
+  const car=readCarSelection(storage);
+  let chosen;try{chosen=storage.getItem('paraliaki.car');}catch{}
+  if(car){
+    try{storage.setItem('paraliaki.car',car);}catch{} // Private browsing can allow reads but deny writes.
+    try{storage.removeItem?.('paraliaki.car.selection');}catch{}
   }
-  return selection;
+  try{
+    // The paint of the removed trim the player had selected wins over the paints of its siblings; the fastest single-car time carries over.
+    for(const id of new Set([chosen,...Object.keys(LEGACY_CAR_IDS)])){
+      if(!isLegacyCarId(id))continue;
+      const kept=LEGACY_CAR_IDS[id],paint=storage.getItem('paraliaki.paint.'+id);
+      if(paint&&!storage.getItem('paraliaki.paint.'+kept))storage.setItem('paraliaki.paint.'+kept,paint);
+      const best=+storage.getItem('paraliaki.best.'+id)||0,have=+storage.getItem('paraliaki.best.'+kept)||0;
+      if(best&&(!have||best<have))storage.setItem('paraliaki.best.'+kept,String(best));
+    }
+  }catch{}
+  return car;
 }
-export function filterCars(cars, filters = {}, selection = null) {
+/** Garage list: one {car,index} per model (the kept car), filtered by search, brand, class, drive and power. */
+export function filterCars(cars, filters = {}) {
   const q=String(filters.search||'').trim().toLocaleLowerCase(), list=[];
-  for(const id of GARAGE_CARS){
-    const model=carModel(id), members=sortTrims(cars.filter(c=>model.trims.includes(c.id))).map(car=>({car,index:cars.indexOf(car)}));
-    const match=members.filter(({car:c})=>(!q || `${model.name} ${c.name} ${c.short} ${c.tag}`.toLocaleLowerCase().includes(q)) &&
+  for(const model of CAR_MODELS){
+    const index=cars.findIndex(c=>c.id===model.car),c=cars[index];
+    if(!c)continue;
+    if((!q || `${model.name} ${c.name} ${c.short} ${c.tag}`.toLocaleLowerCase().includes(q)) &&
       (!filters.brand || filters.brand==='all' || badgeBrand(c)===filters.brand) &&
       (!filters.category || filters.category==='all' || carCategory(c)===filters.category) &&
       (!filters.drive || filters.drive==='all' || c.drive.toUpperCase()===filters.drive) &&
-      (!filters.power || filters.power==='all' || (filters.power==='low'?c.power*1.341<150:filters.power==='mid'?c.power*1.341>=150&&c.power*1.341<=300:c.power*1.341>300)));
-    const preferred=carModel(selection?.trim)===model?selection.trim:baseTrim(model);
-    if(match.length)list.push(match.find(x=>x.car.id===preferred)||match[0]);
+      (!filters.power || filters.power==='all' || (filters.power==='low'?c.power*1.341<150:filters.power==='mid'?c.power*1.341>=150&&c.power*1.341<=300:c.power*1.341>300)))list.push({car:c,index});
   }
   return list.sort((a,b)=>CAR_CLASSES.indexOf(carCategory(a.car))-CAR_CLASSES.indexOf(carCategory(b.car)) ||
     (filters.sort==='power'?b.car.power-a.car.power:filters.sort==='weight'?a.car.mass-b.car.mass:GARAGE_CARS.indexOf(carModel(a.car).id)-GARAGE_CARS.indexOf(carModel(b.car).id)));
-}
-
-// Switch body at the same engine level. Host/event rules may remove combinations.
-export function bodyTrim(model, current, body, allowed) {
-  const from=model?.bodies?.find(([, ,ids])=>ids.includes(current));
-  const to=model?.bodies?.find(([id])=>id===body);
-  if(!from || !to)return null;
-  const wanted=to[2][from[2].indexOf(current)];
-  return (!allowed || allowed.includes(wanted)) ? wanted : to[2].find(id=>!allowed || allowed.includes(id)) || null;
-}
-
-export function trimChoices(current, {allowedCars, def, cars} = {}) {
-  const model=carModel(current), body=model?.bodies?.find(([, ,ids])=>ids.includes(current));
-  const ids=body?.[2] || model?.trims || [], ordered=cars?sortTrims(cars.filter(c=>ids.includes(c.id))).map(c=>c.id):ids;
-  return ordered.filter(id=>(!allowedCars || allowedCars.includes(id)) && (!def?.car || def.car===id));
-}
-export function stepTrim(current, direction, rules) {
-  const ids=trimChoices(current,rules);if(!ids.length)return null;
-  return ids[(Math.max(0,ids.indexOf(current))+direction+ids.length)%ids.length];
 }
 
 // Fleet and fantasy builds remain available to players, never the fallback AI race pool.

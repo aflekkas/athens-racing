@@ -146,7 +146,7 @@ export class GameArena extends DurableObject {
       if (request.method === 'GET' && path === '/health') return json({ instanceId: this.instanceId, startedAt: this.startedAt, ok: true, transport: 'durable-object', clients: this.core.clients.size, lobbies: this.core.lobbies.size, track: this.core.track, maps: catalogue.maps.map(({ id, track }) => ({ id, track })) });
       if (request.method === 'GET' && path === '/api/lobbies') return json(this.core.discover().lobbies);
       if (path === '/api/leaderboard') {
-        if (request.method === 'GET') return json(this.leaderboard.list(leaderboardFilters(url.searchParams)));
+        if (request.method === 'GET') return json(this.leaderboard.list(leaderboardFilters(url.searchParams, cars)));
         if (request.method !== 'POST') return json({ error: 'Use GET or POST.' }, 405);
         if (!canSaveResults(auth.identity)) return json({ error: 'Smoke sessions cannot save results.' }, 403);
         const ip = request.headers.get('CF-Connecting-IP') || 'unknown', now = Date.now();

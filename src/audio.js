@@ -1,5 +1,4 @@
 import { AudioCadence } from './audio-cadence.js';
-import {ExhaustVoice} from './audio/exhaust-voice.js';
 import { preloadEngine, loadRecordedEngine, recordingFor, RecordedEngineVoice } from './engine-recordings.js';
 import { loadWorldSounds, loopSource, spatialAudio } from './world-sounds.js';
 import { WeatherAudio } from './weather-audio.js';
@@ -245,7 +244,6 @@ export class Audio {
     this.engineLP = ctx.createBiquadFilter(); this.engineLP.type = 'lowpass'; this.engineLP.frequency.value = 16000;
     // Preserve engine feedback while the master/headroom stages and surrounding voices become quieter.
     this.eng = ctx.createGain(); this.eng.channelCount = 1; this.eng.channelCountMode = 'explicit'; this.eng.gain.value = PLAYER_ENGINE_LEVEL; this.eng.connect(this.engineLP); this.engineLP.connect(this.mix.buses.engine);
-    this.exhaustVoice=new ExhaustVoice(ctx,this.eng);
     this.chassis = ctx.createGain(); this.chassis.channelCount = 1; this.chassis.channelCountMode = 'explicit'; this.chassis.gain.value = 0.7;
     this.roadLP = ctx.createBiquadFilter(); this.roadLP.type = 'lowpass'; this.roadLP.frequency.value = 14000; this.roadLP.Q.value = 0.5;
     this.roadCabin = ctx.createGain(); this.chassis.connect(this.roadLP); this.roadLP.connect(this.roadCabin); this.roadCabin.connect(this.mix.buses.tyres);
@@ -501,8 +499,7 @@ export class Audio {
     }
     // overrun: burble and pops from hot exhausts after a lift at high rpm, and on the upshift ignition cut
 
-    this.exhaustVoice.update(p.exhaustPulse,p.muted);
-    const crackle = p.exhaustPulse ? 0 : this.profile?.pops ?? 0;
+    const crackle = this.profile?.pops ?? 0;
     if ((lift || p.overrun && !this.lastOverrun) && rn > .42) this.overrunUntil = now + .7 + crackle * .9;
     if ((p.overrun ?? load < -0.05) && rn > 0.42 && !p.muted && now < (this.overrunUntil || 0)) {
       this.popAcc = (this.popAcc || 0) + Math.min(.1,p.dt || 0) * crackle * (rn - 0.35) * 9 * (this.lastLift < 2 ? 1 : 0.25);

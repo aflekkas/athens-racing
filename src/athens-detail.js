@@ -105,7 +105,7 @@ export const GROUND_APPLY=`{float k=uWorldDetail*(1.-smoothstep(160.,360.,vGroun
 
 /** Facade: tiled window / balcony / shopfront rhythm per 3.05 m floor, chosen by facade style 0..7 (FACADE_STYLES). */
 export const FACADE_GLSL=`${NOISE_GLSL}
-varying vec3 vFac;varying vec2 vFacP;varying float vFacDist;varying vec3 vFacW;varying vec3 vFacCam;
+varying vec3 vFac;varying vec2 vFacP;varying float vFacDist;varying vec3 vFacW;varying vec3 vFacCam;varying vec2 vFacB;
 // Derived buildings carry no vertex colour: each flat face is shaded here from its own normal (screen-space derivatives of the
 // local position), the bake's old face_shaded() values: roofs 1, walls .75+.10*(n.x*-.6+n.z*-.8) in display space, as linear.
 // A mesh that still has vertex colours (an older bake) is shaded by them, through color_fragment, and gets 1 here.
@@ -116,12 +116,13 @@ float wallShade(){
   vec3 n=normalize(cross(dFdx(vFacW),dFdy(vFacW)));
   if(dot(n,vFacCam-vFacW)<0.)n=-n; // the visible face is the outward one, whatever the handedness of the view (mirrors flip it)
   float level=abs(n.y)>.9?1.:.75+.10*(n.x*-.6+n.z*-.8);
+  if(abs(n.y)>.2&&abs(n.y)<=.9)level=min(1.,.88+.16*(n.x*-.6+n.z*-.8)); // a pitched roof slope: a little darker away from the sun, not a wall
   return level<=.04045?level/12.92:pow((level+.055)/1.055,2.4);
 #endif
 }
 float rect(vec2 q,vec2 lo,vec2 hi,vec2 aa){vec2 s=smoothstep(lo-aa,lo+aa,q)-smoothstep(hi-aa,hi+aa,q);return s.x*s.y;}
 vec3 signColour(float r){return r<.25?vec3(.62,.36,.3):r<.5?vec3(.3,.42,.5):r<.75?vec3(.82,.76,.58):vec3(.42,.52,.42);}
-vec3 facadeMul(float u,float v,float st){
+vec3 facadeBase(float u,float v,float st){
   float bayW=st>4.5&&st<5.5?2.2:st>6.5?5.2:st<.5?3.6:3.1;
   float bx=u/bayW,by=v/3.05;vec2 cell=vec2(floor(bx),floor(by)),q=vec2(fract(bx),fract(by));
   vec2 aa=max(fwidth(vec2(bx,by))*.8,vec2(.002));float rnd=h21(cell+st*7.),rnd2=h21(vec2(cell.x,3.)+st);
@@ -154,13 +155,85 @@ vec3 facadeMul(float u,float v,float st){
     m=mix(m,vec3(.17,.19,.2),max(rail*.8,hand*.95));}
   if(ground){m*=.9;float door=rect(q,vec2(.34,0.),vec2(.66,.72),aa)*step(mod(cell.x,3.),.5);m=mix(m,vec3(.2,.14,.1),door*.85);}
   return m;}
+
+vec3 awningColour(float r,float x){
+  vec3 a=r<.25?vec3(.1,.38,.22):r<.5?vec3(.58,.1,.08):r<.75?vec3(.12,.26,.46):vec3(.74,.5,.16);
+  float t=x*5.,stripe=mix(.5,step(.5,fract(t)),1.-smoothstep(.2,.55,fwidth(t)));return mix(a,vec3(.9,.88,.82),stripe);}
+vec3 airCon(vec3 m,vec2 q,vec2 aa,float on){ // a split-system outdoor unit hung on the wall: pale box, dark fan grille
+  float box=rect(q,vec2(.8,.14),vec2(.97,.34),aa)*on,grille=rect(q,vec2(.83,.17),vec2(.94,.31),aa)*on;
+  m=mix(m,vec3(.82,.84,.85),box);return mix(m,vec3(.34,.37,.4),grille*.55);}
+// The three Athens styles the bake's building type is turned into at run time (src/world-tile-buildings.js richStyleFor): 8 pilotis, 9 continuous balconies with
+// awnings, 10 neoclassical, 11 glazed veranda. Painted on the flat wall: no geometry, no bytes.
+vec3 facadeRich(float u,float v,float st,float pal){
+  float bayW=st>10.5?4.:st>9.5?3.3:3.6;
+  float bx=u/bayW,by=v/3.05;vec2 cell=floor(vec2(bx,by)),q=vec2(fract(bx),fract(by));
+  vec2 aa=max(fwidth(vec2(bx,by))*.8,vec2(.002));
+  float rnd=h21(cell+st*7.+pal*13.),rnd2=h21(vec2(cell.x,3.)+st+pal*5.),rowR=h21(vec2(cell.y,pal)+st*3.);
+  bool ground=cell.y<.5;vec3 m=vec3(.97+.06*texture2D(detailMap,vec2(u,v)/6.4).g);
+  vec3 glass=mix(vec3(.1,.14,.17),vec3(.33,.41,.46),smoothstep(.25,.9,q.y)*.6+rnd*.3);if(rnd>.86)glass=vec3(.46,.43,.36);
+  if(st<9.5){ // pilotis (8) and continuous balconies (9)
+    if(ground){
+      if(st<8.5){ // open ground floor: deep shadow between concrete pilotis, a lit lobby door
+        m=mix(m,vec3(.08,.08,.09),rect(q,vec2(.1,0.),vec2(1.1,.9),aa)*.92);
+        m=mix(m,vec3(.82,.8,.76),rect(q,vec2(-1.,-1.),vec2(.1,2.),aa));
+        m=mix(m,vec3(.26,.32,.36),rect(q,vec2(.38,0.),vec2(.62,.58),aa)*step(.62,rnd2));
+        m=mix(m,vec3(.92),rect(q,vec2(-1.,.9),vec2(2.,1.),aa)*.35);return m;}
+      float g=rect(q,vec2(.06,.08),vec2(.94,.66),aa),mull=rect(vec2(q.x,0.),vec2(.47,-1.),vec2(.53,1.),aa);
+      m=mix(m,vec3(.09,.12,.14)+.12*rnd,g*(1.-mull*.7));
+      m=mix(m,awningColour(rnd2,u/bayW+rnd2*3.),rect(q,vec2(0.,.66),vec2(1.,.86),aa)*.95);m*=1.-.4*rect(q,vec2(0.,.62),vec2(1.,.66),aa);return m;}
+    float slab=rect(q,vec2(-1.,0.),vec2(2.,.1),aa);m*=1.+.07*slab;m*=1.-.16*smoothstep(.8,1.,q.y);
+    float win=rect(q,vec2(.16,.12),vec2(.84,.88),aa),mull=rect(vec2(q.x,0.),vec2(.485,-1.),vec2(.515,1.),aa);
+    vec3 gl=glass;m=mix(m,gl,win);m=mix(m,vec3(.92,.91,.88),mull*win*.85);m*=1.-.12*rect(q,vec2(.16,.12),vec2(.84,.2),aa)*win;
+    float rail=rect(q,vec2(-1.,.1),vec2(2.,.4),aa)*mix(.5,step(.45,fract(u/.13)),1.-smoothstep(.03,.08,fwidth(u))),hand=rect(q,vec2(-1.,.38),vec2(2.,.43),aa);
+    m=mix(m,vec3(.17,.19,.2),max(rail*.75,hand*.95));
+    if(rowR>.35){float a=rect(q,vec2(.1,.7),vec2(.9,.94),aa);m=mix(m,awningColour(rowR*1.7,u/bayW),a*.96);m*=1.-.35*rect(q,vec2(.1,.66),vec2(.9,.7),aa);}
+    return airCon(m,q,aa,step(.74,rnd2));
+  }
+  if(st<10.5){ // neoclassical: plinth, tall shuttered windows with lintels, string courses
+    if(ground){
+      float rows=fract(v/.32);m*=mix(.92,1.,smoothstep(0.,.1,rows));
+      if(rnd2>.5){float g=rect(q,vec2(.2,.12),vec2(.8,.72),aa);m=mix(m,vec3(.1,.13,.15)+.12*rnd,g);m*=1.-.12*rect(q,vec2(.16,.7),vec2(.84,.76),aa);}
+      else{float d=rect(q,vec2(.32,0.),vec2(.68,.78),aa);m=mix(m,vec3(.24,.17,.12),d*.9);m=mix(m,vec3(.9,.88,.82),rect(q,vec2(.28,.78),vec2(.72,.86),aa)*.5);}
+      return m;}
+    vec2 lo=vec2(.3,.1),hi=vec2(.7,.86);float win=rect(q,lo,hi,aa);
+    m=mix(m,glass,win);m*=1.-.12*(rect(q,lo-vec2(.04,.03),hi+vec2(.04,.03),aa)-win);
+    m=mix(m,m*1.12,rect(q,vec2(.25,.86),vec2(.75,.95),aa));m*=1.-.2*rect(q,vec2(.28,.82),vec2(.72,.86),aa);
+    m=mix(m,m*1.1,rect(q,vec2(.26,.05),vec2(.74,.1),aa));
+    vec3 sh=rowR<.4?vec3(.18,.32,.24):rowR<.75?vec3(.36,.25,.17):vec3(.34,.4,.46);
+    float slat=mix(.8,.62+.38*step(.5,fract(v/.09)),1.-smoothstep(.04,.1,fwidth(v)));
+    float shut=rect(q,vec2(.12,.08),vec2(.29,.88),aa)+rect(q,vec2(.71,.08),vec2(.88,.88),aa);m=mix(m,sh*slat,shut*.95*step(.18,rnd));
+    m*=1.+.05*rect(q,vec2(-1.,0.),vec2(2.,.05),aa);
+    if(rnd2>.68&&cell.y<1.5){float b=rect(q,vec2(.2,.1),vec2(.8,.32),aa)*mix(.5,step(.5,fract(u/.1)),1.-smoothstep(.03,.08,fwidth(u)));m=mix(m,vec3(.12,.13,.14),max(b*.8,rect(q,vec2(.2,.3),vec2(.8,.34),aa)*.9));}
+    return m;
+  }
+  // glazed veranda
+  if(ground){float g=rect(q,vec2(.06,.08),vec2(.94,.7),aa);m=mix(m,vec3(.1,.13,.15)+.12*rnd,g);m=mix(m,awningColour(rnd2,u/bayW),rect(q,vec2(0.,.7),vec2(1.,.86),aa)*.9);return m;}
+  float glz=rect(q,vec2(.06,.16),vec2(.94,.9),aa);float mu=mix(.5,step(.5,fract(q.x*4.)),1.-smoothstep(.1,.3,fwidth(q.x*4.)));
+  m=mix(m,glass*.95,glz);m=mix(m,vec3(.9,.9,.88),glz*(1.-mu)*.6);m=mix(m,vec3(.9,.9,.88),rect(q,vec2(.06,.52),vec2(.94,.56),aa)*glz*.7);
+  m*=1.-.18*smoothstep(.8,1.,q.y);m*=1.+.07*rect(q,vec2(-1.,0.),vec2(2.,.1),aa);
+  return airCon(m,q,aa,step(.8,rnd2));
+}
+vec3 facadeMul(float u,float v,float st,float pal){
+  vec3 m=st>7.5?facadeRich(u,v,st,pal):facadeBase(u,v,st);
+  float low=1.-smoothstep(0.,2.2,v);m*=1.-.34*low*low; // the dark foot of every wall: grime, kerb and the contact shadow, baked AO
+  m*=1.-.1*(1.-smoothstep(0.,6.,v))*texture2D(detailMap,vec2(u*.4,v*.05)).g; // rain streaks running down from the first floor
+  return m;}
+vec3 tileColour(vec2 p){vec4 n=texture2D(detailMap,p/4.);vec3 c=mix(vec3(.4,.14,.08),vec3(.62,.29,.18),n.g);c*=.88+.2*n.r;float row=fract(p.x/.32+p.y/.5);return c*(.88+.12*smoothstep(0.,.14,row));}
+vec3 wallTint(float pal,float L){vec3 c=pal<.5?vec3(.945,.93,.89):pal<1.5?vec3(.9,.82,.63):pal<2.5?vec3(.85,.66,.42):vec3(.89,.69,.6);return pow(c,vec3(2.2))*clamp(.55+.8*L,.5,1.2);}
 vec3 roofMul(vec2 p){vec4 n=texture2D(detailMap,p/8.);return vec3((.78+.14*n.r)*(.92+.14*n.g));}
 vec3 facadeOrRoof(){
-  bool roof=vFac.x>6553.;vec3 m=roof?roofMul(vFacP):facadeMul(vFac.x,vFac.y,floor(vFac.z+.5));
+  bool roof=vFac.x>6553.;vec3 m=roof?roofMul(vFacP):facadeMul(vFac.x,vFac.y,floor(vFac.z+.5),vFacB.x);
   float k=uWorldDetail*(1.-smoothstep(150.,260.,vFacDist));return mix(vec3(1.),mix(vec3(.86),m,k),uWorldDetail);}`;
-export const FACADE_VERTEX_VARYINGS='attribute vec2 aFacade;varying vec3 vFac;varying vec2 vFacP;varying float vFacDist;varying vec3 vFacW;varying vec3 vFacCam;';
-export const FACADE_VERTEX_BODY='vFac=vec3(aFacade.x*.1,mod(aFacade.y,4096.)*.1,floor(aFacade.y/4096.));vFacP=position.xz;vFacW=position;vFacCam=cameraPosition-modelMatrix[3].xyz;vFacDist=length((modelViewMatrix*vec4(position,1.)).xyz);';
-export const FACADE_APPLY='diffuseColor.rgb*=facadeOrRoof()*wallShade();';
+export const FACADE_VERTEX_VARYINGS='attribute vec2 aFacade;uniform float uWorldDetail;varying vec3 vFac;varying vec2 vFacP;varying float vFacDist;varying vec3 vFacW;varying vec3 vFacCam;varying vec2 vFacB;';
+export const FACADE_VERTEX_BODY=`float yy=mod(aFacade.y,4096.),band=floor(yy/1024.);bool roofV=aFacade.x>65530.;
+// walls: height in decimetres (10 bits) and the colour family (2 bits); roofs: bit 10 marks a pitched roof, bits 0..9 its ridge's rise (World detail Off pulls the ridge down: a flat roof again)
+if(roofV&&mod(band,2.)>.5&&uWorldDetail<.5)transformed.y-=mod(yy,1024.)*.1;
+vFac=vec3(aFacade.x*.1,roofV?0.:mod(yy,1024.)*.1,floor(aFacade.y/4096.));vFacB=vec2(roofV?0.:band,roofV&&mod(band,2.)>.5?1.:0.);vFacP=position.xz;vFacW=position;vFacW.y=transformed.y;vFacCam=cameraPosition-modelMatrix[3].xyz;vFacDist=length((modelViewMatrix*vec4(transformed,1.)).xyz);`;
+export const FACADE_APPLY=`{
+  float st=floor(vFac.z+.5);
+  if(vFacB.y>.5)diffuseColor.rgb=mix(diffuseColor.rgb,tileColour(vFacP),uWorldDetail);
+  else if(vFac.x<6553.&&st<4.5||st>7.5&&st<11.5&&vFac.x<6553.){float L=dot(diffuseColor.rgb,vec3(.3,.59,.11));diffuseColor.rgb=mix(diffuseColor.rgb,wallTint(vFacB.x,L),.78*uWorldDetail);}
+  diffuseColor.rgb*=facadeOrRoof()*wallShade();}`;
 
 /** Sea: colour only. Two scrolling ridge layers (different scales and directions) over slow deep/shallow patches. */
 export const SEA_GLSL=`${NOISE_GLSL}

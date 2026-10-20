@@ -1,5 +1,6 @@
 import * as T from 'three';
 import {brandBadgeMaterial} from './brand-badges.js';
+import {buildHandbrake} from './cockpit-handbrake.js';
 // Native fleet furniture, kept in the player's POV group only. Stations come
 // from the original passenger/commercial cabs and each model's camera rig.
 export function buildFleetInterior(cockpit,model){
@@ -15,6 +16,7 @@ export function buildFleetInterior(cockpit,model){
  box([width,.18,Math.max(.35,face-front)], [0,top-.09,(face+front)/2],dark,kind+'-dashboard','dash');
  box([width*.96,.065,.08],[0,top-.125,face+.015],mid,kind+'-fascia','dash');
  box([bus?.48:.24,.18,.55],[bus?-.15:0,top-.33,face+.15],mid,kind+'-console','console');
+ cockpit.handbrake=buildHandbrake(g,s,new T.Vector3((bus?-.15:0)+.075,top-.24,face+.38),{dark,alu:metal});
  const wheel=new T.Group();wheel.name='authored-steering-wheel';wheel.position.set(model.seat.x,model.seat.y-.20,face+.23);wheel.rotation.x=bus?-1.20:-.4;g.add(wheel);cockpit.steering=wheel;cockpit.wheelInfo.pos.copy(wheel.position);cockpit.wheelInfo.r=bus?.21:truck?.18:.18;
  const spin=new T.Group();wheel.add(spin);cockpit.povSteering=spin;
  const rim=add(new T.TorusGeometry(cockpit.wheelInfo.r,.019,5,20),dark,[0,0,0],'wheel-rim','wheel-rim');spin.add(rim);

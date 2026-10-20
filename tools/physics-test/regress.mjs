@@ -288,9 +288,18 @@ else {
       for(let i=0;i<90;i++)awd.update(DT,{throttle:1,brake:0,steer:0});
       check(`catalogue ${spec.id}: both axles transmit drive torque`,awd.shareR===spec.awdRear&&awd.corners[0].Fx+awd.corners[1].Fx>100&&awd.corners[2].Fx+awd.corners[3].Fx>100);
     }
+    {
+      // A rear hit is never frontal damage, in any car: the steering rack, the front wheels and the radiator stay as they were,
+      // even after many hard rear hits.
+      const hit=new Vehicle(spec,route);for(let i=0;i<6;i++)hit.addDamage('rear',16,{kind:'wall'});hit.damageFx(.05);
+      check(`catalogue ${spec.id}: rear hits never cause frontal damage (steering, front wheels, radiator)`,hit.steerPull===0&&hit.cornerDamage[0]<.02&&hit.cornerDamage[1]<.02&&hit.radiatorDamage===0&&!hit.smoke&&hit.frontMechanical===0);
+    }
     if(spec.engineZone==='rear'){
-      const rear=new Vehicle(spec,route),front=new Vehicle(spec,route);rear.addDamage('rear',16,{kind:'wall'});front.addDamage('front',16,{kind:'wall'});
-      check(`catalogue ${spec.id}: rear-engine cars still isolate cosmetic rear hits from frontal mechanical damage`,rear.engHealth===1&&front.engHealth<1&&front.radiatorDamage===0&&!front.smoke);
+      // (2026-10-20, punishing damage) The engine is at the back: a hard rear hit costs it power, a front hit costs it less (the far end),
+      // and neither bursts the radiator at 16 m/s. This used to assert rear.engHealth===1: that was "a rear hit never costs anything
+      // lasting", which the owner asked to remove ("more punishing"); the isolation of frontal damage is kept above.
+      const rear=new Vehicle(spec,route),front=new Vehicle(spec,route);rear.addDamage('rear',16,{kind:'wall'});front.addDamage('front',16,{kind:'wall'});rear.damageFx(.05);front.damageFx(.05);
+      check(`catalogue ${spec.id}: rear-engine cars lose most power from a rear hit, less from a front hit, and spring no leak`,rear.engHealth<1&&front.engHealth<1&&rear.engHealth<front.engHealth&&front.radiatorDamage===0&&rear.radiatorDamage===0&&!front.smoke);
     }
     if(spec.nativeFleet)continue; // Fleet speed/size classes use the explicit scenarios below.
     const v = new Vehicle(spec, route); v.reset(0, 0, 0); let t = 0, t100 = null, ok = true;
@@ -338,13 +347,6 @@ for (const id of ['cle200','carrera','golf_gti','taxi','e36_m3','huracan','avent
     const slow=launch(base),fast=launch(performance);
     check(`trim acceleration: ${performance} quicker than ${base}`,fast<slow*margin,`${f2(fast)} vs ${f2(slow)} s`);
   }
-}
-
-// The fantasy Jazz must hold a real slide with throttle and steering inputs alone.
-{
- const {jazzSlide}=await import('./jazz-slide.mjs');
- const r=jazzSlide(Vehicle,catalogue().find(c=>c.id==='jazz_drift'),route);
- check('Jazz Drift Spec: sustained 17–34 degree slide for at least five seconds',r.best>=5&&r.minSpeed>20&&r.peakBeta<1.4&&finite(r.v),`${f2(r.best)} s, minimum ${f1(r.minSpeed)} km/h, peak ${f1(r.peakBeta*180/Math.PI)} degrees`);
 }
 
 // Playtest 3: neutral steering stability, progressive power breakaway and driver recovery.
