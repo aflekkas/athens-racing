@@ -359,7 +359,7 @@ export class Ground {
     if (vn < -0.15 && !(vc > 0.05)) { v.x += nx * push; v.z += nz * push; return; } // leaving it: nothing to scrub, just clear the face
     if (!(vc > 0.05) && !(vn > 0)) { // pressed or sliding along it: scrub
       const sc = scrapeContact(v, nx, nz, cx, cz, cdt, { mass: collider?.mass, mu: collider?.friction });
-      if (sc > 0) { v.scrapeDv = Math.max(v.scrapeDv || 0, sc); }
+      if (sc > 0) { v.scrapeDv = Math.max(v.scrapeDv || 0, sc); v.scrapeMaterial = collider?.kind === 'rail' ? 'metal' : 'wall'; }
       alignAlong(v, nx, nz, cdt); noteWall(v, nx, nz);
       if (v.syncWheels) v.syncWheels();
       v.x += nx * push; v.z += nz * push;

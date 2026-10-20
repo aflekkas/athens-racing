@@ -2,6 +2,46 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { AUDIO_DEFAULTS, externalEngineWeights } from '../src/audio.js';
 import { DEFAULTS } from '../src/settings.js';
+import { Audio, AudioMix } from '../src/audio.js';
+import { outputCeiling } from '../src/audio/contact-sound.js';
+import { createMockContext } from './audio-mock-context.mjs';
+
+test('output ceiling is transparent below the knee, monotone, symmetric and bounded', () => {
+  const curve = outputCeiling();
+  for (let i = 0; i < curve.length; i++) {
+    const x = 2 * i / (curve.length - 1) - 1;
+    assert.ok(Math.abs(curve[i]) < .84);
+    assert.ok(Math.abs(curve[i] + curve[curve.length - 1 - i]) < 1e-7);
+    if (i) assert.ok(curve[i] >= curve[i - 1]);
+    if (Math.abs(x) < .68) assert.ok(Math.abs(curve[i] - x) < 1e-7);
+  }
+  const ctx = createMockContext(), mix = new AudioMix(ctx);
+  assert.ok(mix.limiter.connections.includes(mix.ceiling));
+  assert.ok(mix.ceiling.connections.includes(ctx.destination));
+});
+
+test('zero/invalid impact is silent and recorded severity has no loudness floor', () => {
+  const calls = [], a = Object.create(Audio.prototype);
+  a.ctx = {}; a.sample = (name, opts) => { calls.push({name,...opts}); return true; };
+  a.noise = a.tone = opts => calls.push(opts);
+  for (const severity of [0, -1, NaN]) a.crash('heavy', severity, {glass:true,metal:true});
+  assert.equal(calls.length, 0);
+  a.crash('light', .01); const soft = calls.find(c=>c.name)?.gain; calls.length=0;
+  a.crash('light', 1); const hard = calls.find(c=>c.name)?.gain;
+  assert.ok(hard > soft * 20, 'gentle contact is much quieter than a full impact');
+});
+
+test('sustained scrape reuses one source and releases without any further frame', () => {
+  const ctx = createMockContext(), a = new Audio(); a.start({context:ctx,recordings:false});
+  const before = ctx.log.created.BufferSource;
+  for (let i=0;i<240;i++) { ctx.currentTime=i/60; a.scrape(.7, i<120?'wall':'metal'); }
+  assert.equal(ctx.log.created.BufferSource-before, 1);
+  assert.equal(a.voices.admitted, 0, 'contact does not consume the one-shot budget');
+  const v = a.contactSound.voice;
+  assert.ok(v.src.stopped > ctx.currentTime && v.src.stopped < ctx.currentTime+1);
+  assert.ok(ctx.log.scheduled.some(e=>e.node.born===v.out.born && e.param==='gain' && e.kind==='target' && e.args[0]===0));
+  v.src.onended(); assert.equal(a.contactSound.voice,null);
+});
 
 test('audio graph and stored preferences use the same comfortable defaults', () => {
   assert.equal(AUDIO_DEFAULTS.master, 0.6);

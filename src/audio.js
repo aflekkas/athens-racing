@@ -4,6 +4,7 @@ import { loadWorldSounds, loopSource, spatialAudio } from './world-sounds.js';
 import { WeatherAudio } from './weather-audio.js';
 import { Sirens } from './sirens.js';
 import { VoiceBudget, ContextWatchdog, playoutUnderruns, useKRate, BranchGate } from './audio/robust.js';
+import { ContactSound, outputCeiling } from './audio/contact-sound.js';
 
 // Recorded player/rival engines with procedural fallback; recorded world (WebAudio).
 // Starts on the first key press / click (autoplay policy).
@@ -48,11 +49,15 @@ export class AudioMix {
     this.ctx = ctx;
     const gain = (v, dest) => { const g = ctx.createGain(); g.gain.value = v; if (dest) g.connect(dest); return g; };
     this.limiter = ctx.createDynamicsCompressor();
-    this.limiter.threshold.value = -5; this.limiter.knee.value = 6; this.limiter.ratio.value = 8;
-    this.limiter.attack.value = 0.003; this.limiter.release.value = 0.16;
-    this.limiter.connect(ctx.destination);
+    this.limiter.threshold.value = -6; this.limiter.knee.value = 3; this.limiter.ratio.value = 20;
+    this.limiter.attack.value = 0.001; this.limiter.release.value = 0.14;
+    this.ceiling = ctx.createWaveShaper(); this.ceiling.curve = outputCeiling();
+    this.limiter.connect(this.ceiling); this.ceiling.connect(ctx.destination);
+    this.air = ctx.createBiquadFilter(); this.air.type = 'highshelf';
+    this.air.frequency.value = 4500; this.air.gain.value = -3;
+    this.air.connect(this.limiter);
     // Live race calibration: leave transients clear without continuously driving the limiter.
-    this.calibration = gain(1.5, this.limiter);
+    this.calibration = gain(1.28, this.air);
     this.master = gain(1, this.calibration);
     this.sfx = gain(1, this.master);
     this.worldDuck = gain(1, this.sfx);
@@ -238,7 +243,7 @@ export class Audio {
     const sr = ctx.sampleRate;
     this.mix = new AudioMix(ctx, this.vol);
     this.master = this.mix.sfx; this.mainOut = this.mix.master;
-    this.analyser = ctx.createAnalyser(); this.analyser.fftSize = 2048; this.mix.limiter.connect(this.analyser);
+    this.analyser = ctx.createAnalyser(); this.analyser.fftSize = 2048; this.mix.ceiling.connect(this.analyser);
     this.sfx = ctx.createGain(); this.sfx.gain.value = 0.55; this.sfx.connect(this.mix.worldDuck);
     this.uiBus = this.mix.buses.ui;
     this.engineLP = ctx.createBiquadFilter(); this.engineLP.type = 'lowpass'; this.engineLP.frequency.value = 16000;
@@ -301,6 +306,7 @@ export class Audio {
     // --- TYRES / ROAD / SUSPENSION / WIND
     const t = {};
     this.tyres = Array.from({ length: 4 }, (_, i) => new TyreVoice(ctx, this.chassis, i, { lowCost: this.lowCost }));
+    this.contactSound = new ContactSound(this);
     // wind: recorded gusts, brighter and faster with speed; a slow gust swell on top
     t.windLP = filt('lowpass', 900, 0.5); t.windMod = gain(1); t.windG = gain(); chain(t.windLP, t.windMod, t.windG, this.chassis);
     t.gust = osc('sine', 0.13); t.gustG = gain(0.25); chain(t.gust, t.gustG, t.windMod.gain);
@@ -728,20 +734,21 @@ export class Audio {
   crash(kind, severity = 1, material = {}) {
     if (!this.ctx) return;
     severity = Math.max(0, Math.min(1, Number.isFinite(severity) ? severity : 0));
+    if (!severity) return;
     const heavy = kind === 'heavy', glass = material.glass ?? (heavy && severity > .5), r = 0.92 + Math.random() * 0.16;
-    if (glass) this.sample('crash-glass', { gain: .30 * Math.sqrt(severity), rate: r, at: .03, priority: 1 });
-    if (material.metal && severity > .15) this.noise({ dur: .12 + severity * .15, f: 1500, type: 'bandpass', q: 2, gain: .08 * severity, at: .04 });
+    const energy = Math.pow(severity, .7), cutoff = 1400 + 3200 * Math.sqrt(severity);
+    const recordedGlass = glass && this.sample('crash-glass', { gain: .20 * energy, rate: r, at: .035, lp: 4600, priority: 1 });
+    if (material.metal && severity > .15) this.noise({ dur: .09 + severity * .15, f: 1100, type: 'bandpass', q: 1.2, gain: .11 * energy, at: .025, priority: 1 });
     // body thud under the recorded impact, for weight
-    this.tone({ f: heavy ? 110 : 170, slide: heavy ? 40 : 65, dur: 0.3, gain: (heavy ? 0.4 : 0.25) * severity, type: 'sine' });
-    const g = Math.min(1, 0.35 + 0.75 * severity);
-    if (heavy) {
-      if (this.sample(Math.random() < 0.5 ? 'crash-heavy' : 'crash-medium', { gain: 0.75 * g, rate: r, priority: 1 })) return;
-    } else if (this.sample(severity > 0.45 ? 'hit-clank' : 'hit-fast', { gain: 0.7 * g, rate: r, priority: 1 })) return;
+    this.tone({ f: heavy ? 105 : 155, slide: heavy ? 42 : 70, dur: .12 + severity * .18, gain: (heavy ? .42 : .22) * energy, type: 'sine', priority: 1 });
+    // Glass remains available without downloaded recordings, including when the body sample has loaded first.
+    if (glass && !recordedGlass) for (let i = 0; i < 4; i++) this.tone({ f: 1900 + Math.random() * 2400, dur: .06 + Math.random() * .12, gain: .022 * energy, at: .04 + Math.random() * .18, priority: 1 });
+    const body = heavy ? (Math.random() < .5 ? 'crash-heavy' : 'crash-medium') : severity > .45 ? 'hit-clank' : 'hit-fast';
+    if (this.sample(body, { gain: (heavy ? .72 : .58) * energy, rate: r, lp: cutoff, priority: 1 })) return;
     // synthesized fallback until the recordings load
-    this.noise({ dur: heavy ? 0.4 : 0.2, f: heavy ? 600 : 1400, type: 'lowpass', gain: 0.45 * severity });
+    this.noise({ dur: heavy ? .35 : .14, f: heavy ? 850 : 1100, type: 'lowpass', gain: .42 * energy, priority: 1 });
     if (heavy) {
-      for (let i = 0; i < 3; i++) this.noise({ dur: 0.08, f: 1300 + Math.random() * 1500, type: 'bandpass', q: 3, gain: 0.22, at: 0.03 + i * 0.05 });
-      if (glass) for (let i = 0; i < 6; i++) this.tone({ f: 2600 + Math.random() * 3600, dur: 0.12 + Math.random() * 0.3, gain: 0.04, type: 'sine', at: 0.08 + Math.random() * 0.25 }); // glass tinkle
+      for (let i = 0; i < 2; i++) this.noise({ dur: .09, f: 850 + Math.random() * 1300, type: 'bandpass', q: 1.3, gain: .16 * energy, at: .025 + i * .05, priority: 1 });
     }
   }
   hitObject(o) {
@@ -835,7 +842,7 @@ export class Audio {
     this.tone({ f: final ? 2640 : 1320, dur: final ? 0.5 : 0.15, gain: 0.04, type: 'sine' });
   }
   nitroStart() { this.noise({ dur: 0.5, f: 300, sweep: 4000, type: 'bandpass', q: 0.9, gain: 0.18, attack: 0.03, bus: this.eng }); this.tone({ f: 90, slide: 45, dur: 0.4, gain: 0.25 }); }
-  scrape(level = 0.5) { this.noise({ dur: 0.25, f: 3200, type: 'bandpass', q: 3, gain: 0.12 * level }); this.noise({ dur: 0.2, f: 600, type: 'lowpass', gain: 0.2 * level }); }
+  scrape(level = 0.5, material = 'wall') { this.contactSound?.touch(level, material); }
   ui(up = true) { this.tone({ f: up ? MIDI(74) : MIDI(69), dur: 0.12, gain: 0.1, type: 'sine', attack: 0.005, bus: this.uiBus }); }
   win() {
     if (!this.ctx) return;

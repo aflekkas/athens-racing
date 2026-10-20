@@ -1635,7 +1635,7 @@ function handleEvents(events) {
         hud.pop('opa', 'OPA!', '', (Math.random() - 0.5) * 10);
       } else hud.pop('info bad', e.car.type.bus ? 'BUS BUMP!' : 'BUMP!');
       if (!multiplayer.active && e.target !== 'rider' && Math.random() < 0.6) audio.horn(e.car.type.bus, 0.9, -e.side * 0.4, 0.25);
-    } else if (e.kind === 'scrape') { audio.scrape(Math.min(1, e.sev / 4)); G.shake = Math.max(G.shake, 0.15); }
+    } else if (e.kind === 'scrape') { audio.scrape(Math.min(1, e.sev / 4), 'metal'); G.shake = Math.max(G.shake, 0.15); }
     else if (e.kind === 'cone') {
       G.cones++; audio.tone({ f: 380 + Math.random() * 200, slide: 900, dur: 0.18, gain: 0.08, type: 'triangle' }); audio.noise({ dur: 0.08, f: 1200, type: 'bandpass', gain: 0.12 });
     }
@@ -2123,6 +2123,7 @@ function step(dt, draw = true, visual = true, frameDt = dt) {
       // a racing wheel's force feedback (when the browser lets the wheel rumble): grip limit and kerbs, ~8 times a second
       if (G.state === 'race' && controls.wheelActive) controls.wheelFeedback(() => ({ frontSlip: pv.tyreTelemetry?.front?.slipDemand ?? 0, kerb: Math.max(pv.curbHit || 0, pv.bumpHit || 0), speed: Math.abs(pv.vLong) }));
       if (pv.wallHit > 2.5 && G.state === 'race') { playerImpactVoice({ kind: 'wall', dv: pv.wallHit }); audio.scrape(Math.min(1, pv.wallHit / 10)); G.shake = Math.max(G.shake, Math.min(0.85, 0.06 + (pv.crashDv || pv.wallHit) / 16)); }
+      if (pv.scrapeDv > 0 && G.state === 'race') audio.scrape(Math.min(1, Math.hypot(pv.vLong, pv.vLat) / 22), pv.scrapeMaterial);
       if (pv.wallHit > 3) { fx.sparks(pv, pv.wallHit / 12); controls.rumble(Math.min(1, pv.wallHit / 10), 0.6, 220); }
       if (!multiplayer.active) for (const c of grid) if (c.veh.wallHit > 3) fx.sparks(c.veh, c.veh.wallHit / 12);
       // kerb strikes: a thump (scrape when the tyre rubs along the face), a jolt through the camera
