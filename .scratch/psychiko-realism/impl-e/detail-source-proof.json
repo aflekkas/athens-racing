@@ -1,0 +1,8 @@
+{
+  "unchangedOtherMapColourBranch": {
+    "data/map.json": 0,
+    "data/maps/megara/map.json": 0,
+    "data/maps/penteli/map.json": 0
+  },
+  "reason": "The sole shared building change uses an explicit optional colour. Other maps contain no such field; their existing fixed-pose measurements remain source-equivalent."
+}

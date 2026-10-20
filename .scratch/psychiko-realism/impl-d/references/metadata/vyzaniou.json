@@ -1,0 +1,26 @@
+{
+  "panoId": "0XVcBa5T3p7JSZEx72_J1g",
+  "lat": 38.01940128853723,
+  "lon": 23.78138850089878,
+  "captureDate": [
+    2024,
+    9
+  ],
+  "googleAddress": [
+    [
+      "1 25is Martiou",
+      "el-Latn"
+    ],
+    [
+      "Filothei, Decentralized Administration of Attica",
+      "en"
+    ]
+  ],
+  "copyright": "© 2026 Google",
+  "orientation": [
+    305.41135,
+    88.725746,
+    1.2098086
+  ],
+  "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch"
+}

@@ -1,0 +1,27 @@
+{
+  "testedCommit": "a6a153632ea998764c456b1475683c933933d980",
+  "npmSummary": "[summary] 252/252 files, 2306 tests, 2291 pass, 3 fail in first attempts, 12 skipped; 0 flaky (passed on isolated retry), 2 failed",
+  "acceptedFailedTitles": [
+    "Riviera, afternoon, player at matched pace: civilians keep moving and the field never stalls",
+    "Riviera, rush hour, slow player: civilians keep moving and the field never stalls",
+    "browser measures drive-pill containment, manufacturer options and brand selection at desktop and narrow-window sizes"
+  ],
+  "physics": {
+    "pass": 1261,
+    "fail": 0
+  },
+  "focused": {
+    "pass": 44,
+    "fail": 0
+  },
+  "terrain": {
+    "samples": 3074440,
+    "maxAbove": 0.0025094918792092358,
+    "maxStep": 0.14808013793447117,
+    "maxSlope": 0.5047527144689536
+  },
+  "comparisons": 34,
+  "onboardFrames": 11,
+  "budgetsPass": true,
+  "browserErrors": []
+}

@@ -1,0 +1,142 @@
+{
+  "head": "a6a153632ea998764c456b1475683c933933d980",
+  "archiveClean": true,
+  "nodeModules": "symlink to existing dependencies",
+  "started": "2026-10-20T04:52:54.146Z",
+  "pids": [
+    {
+      "gate": "physics",
+      "pid": 45466,
+      "started": "2026-10-20T04:52:54.148Z"
+    },
+    {
+      "gate": "wrangler-dry-run",
+      "pid": 45467,
+      "started": "2026-10-20T04:52:54.150Z"
+    },
+    {
+      "gate": "syntax",
+      "pid": 46504,
+      "started": "2026-10-20T04:54:44.902Z"
+    },
+    {
+      "gate": "browser-imports",
+      "pid": 47020,
+      "started": "2026-10-20T04:55:26.342Z"
+    },
+    {
+      "gate": "validator",
+      "pid": 47022,
+      "started": "2026-10-20T04:55:26.732Z"
+    },
+    {
+      "gate": "focused",
+      "pid": 47023,
+      "started": "2026-10-20T04:55:27.162Z"
+    },
+    {
+      "gate": "terrain",
+      "pid": 47079,
+      "started": "2026-10-20T04:55:39.730Z"
+    },
+    {
+      "gate": "lap",
+      "pid": 47636,
+      "started": "2026-10-20T04:58:08.125Z"
+    },
+    {
+      "gate": "detail-budget-clean",
+      "pid": 47637,
+      "started": "2026-10-20T04:58:11.054Z"
+    },
+    {
+      "gate": "npm-test",
+      "pid": 47639,
+      "started": "2026-10-20T04:58:11.290Z"
+    }
+  ],
+  "gates": [
+    {
+      "name": "physics",
+      "command": "/opt/homebrew/Cellar/node/25.9.0_2/bin/node --import ./tools/physics-test/register.mjs tools/physics-test/regress.mjs",
+      "code": 0,
+      "signal": null,
+      "seconds": 110.745,
+      "status": "pass"
+    },
+    {
+      "name": "syntax",
+      "command": "/opt/homebrew/Cellar/node/25.9.0_2/bin/node tools/check-syntax.mjs",
+      "code": 0,
+      "signal": null,
+      "seconds": 41.438,
+      "status": "pass"
+    },
+    {
+      "name": "browser-imports",
+      "command": "/opt/homebrew/Cellar/node/25.9.0_2/bin/node tools/check-browser-imports.mjs",
+      "code": 0,
+      "signal": null,
+      "seconds": 0.389,
+      "status": "pass"
+    },
+    {
+      "name": "validator",
+      "command": "/opt/homebrew/Cellar/node/25.9.0_2/bin/node tools/maps/psychiko/validate.mjs",
+      "code": 0,
+      "signal": null,
+      "seconds": 0.429,
+      "status": "pass"
+    },
+    {
+      "name": "focused",
+      "command": "/opt/homebrew/Cellar/node/25.9.0_2/bin/node --test tools/psychiko-world.test.mjs tools/roundabouts.test.mjs",
+      "code": 0,
+      "signal": null,
+      "seconds": 12.567,
+      "status": "pass"
+    },
+    {
+      "name": "terrain",
+      "command": "/opt/homebrew/Cellar/node/25.9.0_2/bin/node --test tools/world-tests-psychiko.test.mjs",
+      "code": 0,
+      "signal": null,
+      "seconds": 148.393,
+      "status": "pass"
+    },
+    {
+      "name": "wrangler-dry-run",
+      "command": "npx wrangler deploy --env staging --dry-run",
+      "code": 0,
+      "signal": null,
+      "seconds": 314.941,
+      "status": "pass"
+    },
+    {
+      "name": "lap",
+      "command": "/opt/homebrew/Cellar/node/25.9.0_2/bin/node tools/maps/psychiko/drive-lap.mjs /Users/vassilisperrotis/.t3/worktrees/athens-street-racers/psychiko-realism/.scratch/psychiko-realism/impl-e/lap.json",
+      "code": 0,
+      "signal": null,
+      "seconds": 2.93,
+      "status": "pass"
+    },
+    {
+      "name": "detail-budget-clean",
+      "command": "/opt/homebrew/Cellar/node/25.9.0_2/bin/node --test tools/detail-budgets.test.mjs",
+      "code": 0,
+      "signal": null,
+      "seconds": 0.232,
+      "status": "pass"
+    },
+    {
+      "name": "npm-test",
+      "command": "npm test",
+      "code": 1,
+      "signal": null,
+      "seconds": 175.554,
+      "status": "accepted-upstream-failures"
+    }
+  ],
+  "finished": "2026-10-20T05:01:06.843Z",
+  "pass": true
+}

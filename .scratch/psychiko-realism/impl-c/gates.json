@@ -1,0 +1,43 @@
+{
+  "implementationCommit": "bf48a56f",
+  "gateTree": "6a59e6caa44c6ac4d94a01923afa7b1494aca3b9",
+  "npmTest": {
+    "exitCode": 1,
+    "files": 252,
+    "passed": 2288,
+    "failed": 3,
+    "skipped": 12,
+    "acceptedFailures": [
+      "garage-cards.test.mjs browser evidence assertion",
+      "traffic-race.test.mjs Riviera afternoon",
+      "traffic-race.test.mjs Riviera rush hour"
+    ],
+    "originStaging": "79194f0b",
+    "allOtherTestsPassed": true
+  },
+  "physics": {
+    "passed": 1261,
+    "failed": 0
+  },
+  "browserImports": {
+    "modules": 299,
+    "passed": true
+  },
+  "syntax": {
+    "modules": 380,
+    "passed": true
+  },
+  "psychikoValidator": true,
+  "focused": {
+    "passed": 41,
+    "failed": 0
+  },
+  "detailBudget": true,
+  "wranglerStagingDryRun": {
+    "exitCode": 0,
+    "deploymentPerformed": false
+  },
+  "rebuildByteIdentical": true,
+  "browserErrors": [],
+  "captureStations": 14
+}

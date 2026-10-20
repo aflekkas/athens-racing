@@ -1,0 +1,54 @@
+{
+  "id": "kalari",
+  "lat": 38.01314899628184,
+  "lon": 23.776438082121796,
+  "heading": 119,
+  "fovH": 90,
+  "panoId": "uC-cMcSTTH0qRaVR7wKDbQ",
+  "captureDate": [
+    2026,
+    4
+  ],
+  "googleAddress": [
+    [
+      "33 Στρ. Καλλάρη",
+      "el"
+    ],
+    [
+      "Psychiko, Decentralized Administration of Attica",
+      "en"
+    ]
+  ],
+  "copyright": "© 2026 Google",
+  "orientation": [
+    119.33993,
+    86.244225,
+    359.4494
+  ],
+  "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+  "requestedPosition": {
+    "lat": 38.01314,
+    "lon": 23.77647
+  },
+  "snapDistanceM": 3.0,
+  "status": "captured",
+  "views": [
+    {
+      "heading": 119,
+      "path": "views/kalari-119.webp",
+      "width": 1024,
+      "height": 512,
+      "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=uC-cMcSTTH0qRaVR7wKDbQ&heading=119&pitch=0&fov=90",
+      "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=uC-cMcSTTH0qRaVR7wKDbQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=119&pitch=0&thumbfov=90"
+    },
+    {
+      "heading": 299,
+      "path": "views/kalari-299.webp",
+      "width": 1024,
+      "height": 512,
+      "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=uC-cMcSTTH0qRaVR7wKDbQ&heading=299&pitch=0&fov=90",
+      "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=uC-cMcSTTH0qRaVR7wKDbQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=299&pitch=0&thumbfov=90"
+    }
+  ],
+  "observationStatus": "pending-visual-review"
+}

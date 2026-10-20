@@ -1,0 +1,38 @@
+{
+  "sizes": {
+    "terrain": {
+      "rawPackBytes": 25077916,
+      "gzipBytes": 8070830
+    },
+    "roads": {
+      "rawPackBytes": 153370744,
+      "gzipBytes": 28123575
+    },
+    "map.json": {
+      "bytes": 1598196,
+      "gzipBytes": 443601
+    },
+    "terrain.bin": {
+      "bytes": 412655,
+      "gzipBytes": 159684
+    }
+  },
+  "geometry": {
+    "terrain": {
+      "triangles": 1135544,
+      "meshes": 23,
+      "geometryBytes": 17497560
+    },
+    "roads": {
+      "triangles": 1064709,
+      "meshes": 60,
+      "geometryBytes": 153318096
+    }
+  },
+  "network": {
+    "length": 62303.98,
+    "roads": 515,
+    "triangles": 1064709,
+    "tiles": 60
+  }
+}

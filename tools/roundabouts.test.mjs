@@ -7,7 +7,7 @@ import {buildRoadGraph} from '../src/road-graph.js';
 import {Route,Terrain} from '../src/map.js';import {RoadNetwork} from '../src/road-network-surface.js';import {DrivableCorridor} from '../src/drivable-corridor.js';
 import {RacingLine} from '../src/rival-ai.js';import {Ground} from '../src/ground.js';
 import {islandRing,insideIsland,circulatingPoint,ringStation,roundaboutYield,entryYieldDistance,polylinePoint,ringPoint} from '../src/roundabouts.js';
-const elements=JSON.parse(gunzipSync(fs.readFileSync(new URL('./maps/psychiko/raw/osm.json.gz',import.meta.url)))).elements;
+const {loadPsychikoOsm}=await import('./maps/psychiko/corrections.mjs'),elements=loadPsychikoOsm();
 const data=JSON.parse(fs.readFileSync(new URL('../data/maps/psychiko/map.json',import.meta.url))),r=new Route(data.route);
 const project=n=>[(n.lon-data.proj.lon0)*data.proj.mlon,-(n.lat-data.proj.lat0)*data.proj.mlat],loops=roundaboutLoops(elements,project);
 test('split and closed OSM roundabouts form CCW rings, with implicit one-way directed edges',()=>{
@@ -24,7 +24,7 @@ test('geometry-only OSM sources retain implicit one-way loops and reverse one-wa
 test('source course uses only forward edges around every roundabout, including implicit one-way ways',()=>{
  const source=JSON.parse(fs.readFileSync(new URL('./maps/psychiko/raw/route.json',import.meta.url))),chain=source.sourceNodeIds;
  for(const loop of loops){for(let i=1;i<chain.length;i++){const a=loop.nodes.slice(0,-1).indexOf(chain[i-1]),b=loop.nodes.slice(0,-1).indexOf(chain[i]);if(a>=0&&b>=0)assert.equal((a+1)%(loop.nodes.length-1),b);}}
- assert.equal(r.roundabouts.length,3,'the Garden Circuit passes the Kamara and Areaki roundabouts and the Venizelou hub');
+ assert.deepEqual(r.roundabouts.map(q=>q.id),[25053095,25053533,25053562,31486843,470144907,634346640],'Faros course: A/B squares, Eleftherias, Venizelou/25is Martiou, Georgiou Stavrou and Michalakopoulou');
 });
 test('racing line, route marks, and both civilian travel directions stay outside island polygons',()=>{
  const islands=data.roadNetwork.roundabouts.map(q=>({id:q.id,p:islandRing(q.p,q.w/2+.12)})),line=new RacingLine(r);
@@ -76,12 +76,73 @@ test('shared-world snapshots render the actual road-space position and resume th
  for(const q of r.roundabouts.filter(q=>q.reverse)){
  const {Traffic}=await import('../src/traffic.js'),{packCar}=await import('../src/shared-world-protocol.js'),{applySharedCar}=await import('../src/mp-shared-world.js'),c={id:0,s:q.s1-5,u:-1.77,dir:-1,len:4.5,wid:1.8,v:4,wheel:0,drv:{vf:1,a:1.5,b:2,T:1.2,s0:2},mass:1500,I:2500},traffic={route:r,cars:[c],racers:[],roadSpeed:()=>8,point:(c,o)=>circulatingPoint(r,c,o),idm:Traffic.prototype.idm,laneUOf:()=>-1.77,carBody:Traffic.prototype.carBody};
  Traffic.prototype.driveRoundabout.call(traffic,c,1/60);const point=c._world,row=packCar(traffic,c),remote={active:false,len:4.5,wid:1.8,indL:{},indR:{},flash:{},m:{},drv:c.drv};const guest={...traffic,cars:[remote],initDrive(){}};
- applySharedCar(guest,row,0);assert(remote._sharedPosition);const displayed=circulatingPoint(r,remote,{});assert(Math.hypot(displayed.x-point.x,displayed.z-point.z)<2,'road-space s/u reproduce the ring position within 2 m');
+ applySharedCar(guest,row,0);assert(remote._sharedPosition);const displayed=circulatingPoint(r,remote,{});assert(Math.hypot(displayed.x-point.x,displayed.z-point.z)<2,'road-space s/u reproduce the ring position within 2 m '+q.id+' '+Math.hypot(displayed.x-point.x,displayed.z-point.z)+' '+JSON.stringify(point));
  applySharedCar(guest,row,0,true);Traffic.prototype.driveRoundabout.call(guest,remote,1/60);assert(remote._roundabout);assert(Math.hypot(remote._world.x-point.x,remote._world.z-point.z)<1);assert(!remote._sharedPosition);
  }
 });
-test('road elevation follows the measured EU-DEM stations along the whole lap',()=>{
- const stations=JSON.parse(fs.readFileSync(new URL('./maps/psychiko/raw/route-dem.json',import.meta.url)));let total=0,worst=0;
- for(const q of stations){const d=Math.abs(r.y(q.s)-q.elevation);total+=d;worst=Math.max(worst,d);}
- assert(stations.length>150);assert(worst<4,`worst elevation gap ${worst}`);assert(total/stations.length<1.2);
+test('road elevation follows the shared Copernicus field along the whole lap',async()=>{
+ const {readCopernicus,copernicusField,roundaboutPlanes,plannedHeight}=await import('./maps/psychiko/elevation.mjs');
+ const field=copernicusField(readCopernicus(new URL('./maps/psychiko/raw/copernicus.json.gz',import.meta.url)),data.proj),height=plannedHeight(field,roundaboutPlanes(loops,field));let total=0,worst=0;
+ for(let i=0;i<r.N;i+=5){const d=Math.abs(r.Y[i]-height(data.route.x[i],data.route.z[i]));total+=d;worst=Math.max(worst,d);}
+ // Only junction vertical curves (sigma 12 m) and the 14% two-metre cap ease it, by at most 1.2 m on the steep Faros course.
+ assert(worst<1.2,`worst elevation gap ${worst}`);assert(total/(r.N/5)<.1);
+});
+const ccwStep=(p,a,b)=>{const s=ringStation(a.x,a.z,p),t=ringStation(b.x,b.z,p);return((t.s-s.s+s.length/2)%s.length+s.length)%s.length-s.length/2;};
+test('Psychiko never offers or runs a reverse course: solo setup, event resolution and multiplayer stay forward',async()=>{
+ const {setupFields,applySetup}=await import('../src/race-setup.js'),{resolve}=await import('../src/events.js'),{sanitizeConfig,effectiveEvent}=await import('../server/mp-lifecycle.mjs'),{canReverse}=await import('../src/map-catalog.js'),{quickMapEvent}=await import('../src/menu-map.js');
+ assert.equal(canReverse('psychiko'),false);assert.equal(canReverse('megara'),true);
+ for(const def of [...data.events,quickMapEvent('psychiko')]){
+  assert(!setupFields(def,{closed:true}).some(f=>f.key==='reverse'),def.id+' offers DIRECTION');
+  const run=applySetup(def,{reverse:true},{closed:true});assert.notEqual(run.reverse,true);assert(!/~rev/.test(run.id));
+  assert.equal(resolve({...def,reverse:true},{route:r,marks:data.marks}).dir,1,def.id+' resolves backwards');
+ }
+ assert.equal(sanitizeConfig({reverse:true},{mapId:'psychiko'}).config.reverse,false);
+ const sprint={mapId:'psychiko',type:'sprint',closed:true,dir:1,s0:0,s1:2*r.length,len:2*r.length,sectors:[]};assert.equal(effectiveEvent(sprint,{reverse:true}),sprint);
+ const ui=fs.readFileSync(new URL('../src/ui/mp-screens.js',import.meta.url),'utf8');assert.match(ui,/modeV === 'sprint' && canReverse\(mapV\)/,'the lobby hides DIRECTION on one-way-only tracks');
+});
+test('no driver path ever circulates clockwise: racing line, every network ring part and free-roam civilians',async()=>{
+ const line=new RacingLine(r),rings=new Map(data.roadNetwork.roundabouts.map(q=>[q.id,q]));
+ assert.deepEqual(r.roundabouts.map(q=>q.id),[25053095,25053533,25053562,31486843,470144907,634346640]);
+ for(const q of r.roundabouts){let prev=null;for(let i=0;i<line.n;i++){const s=i*line.step;if(s<q.s0||s>q.s1){prev=null;continue;}const p={x:line.x[i],z:line.z[i]};if(prev)assert(ccwStep(q.p,prev,p)>=-.05,`racing line clockwise at ${q.id} s=${s}`);prev=p;}}
+ // Rivals follow that forward line only: Psychiko has no reverse event (previous test).
+ const parts=data.roadNetwork.roads.filter(q=>q.junction==='roundabout');assert(parts.length>=20);
+ for(const q of parts){const ring=rings.get(q.roundabout);assert(ring,'ring metadata for '+q.id);assert.equal(q.oneway,1);for(let i=2;i<q.p.length;i+=2)assert(ccwStep(ring.p,{x:q.p[i-2],z:q.p[i-1]},{x:q.p[i],z:q.p[i+1]})>0,`network ring part ${q.id} runs clockwise`);}
+ const {buildWorld}=await import('./headless-traffic.mjs'),route=new Route(data.route),{traffic}=buildWorld(route,data);traffic.allowClosedRoam=true;
+ // Keyed by each ring visit, so a recycled pool car never compares against its previous life.
+ let ps=0,circulating=0,oncoming=0;const last=new WeakMap();traffic.reset(ps);
+ for(let f=0;f<6000;f++){ps=(ps+12/30)%route.length;traffic.update(1/30,ps,[]);
+  for(const c of traffic.cars){if(!c.active||c.cross)continue;const k=c._roundabout;
+   if(c.dir<0&&!k&&c.mode!=='parked'){oncoming++;assert.notEqual(route.oneWayAhead(c.s,-1),0,`civilian against a one-way street at s=${c.s.toFixed(1)}`);}
+   // Count only true ring travel; just past the exit node the leaving arm can project fractionally behind it.
+   if(k?.circulating&&c._world&&k.travel<k.exitDistance-.5){const p=last.get(k);if(p){circulating++;assert(ccwStep(k.r.p,p,c._world)>=-.01,`civilian clockwise on ${k.r.id}`);}last.set(k,{x:c._world.x,z:c._world.z});}}}
+ assert(circulating>1000&&oncoming>1000,'the simulation exercised rings and oncoming traffic');
+});
+test('free-roam one-way stretches cover every forward-only lap street, including the Areaki approaches',()=>{
+ const ways=new Map(elements.filter(w=>w.type==='way').map(w=>[w.id,w])),source=JSON.parse(fs.readFileSync(new URL('./maps/psychiko/raw/route.json',import.meta.url)));
+ for(const id of [662139350,216905683,371561413]){const w=source.orderedWays.find(q=>q.id===id);assert(w&&ways.get(id).tags.oneway==='yes');const p=project(elements.find(e=>e.id===w.from&&e.type==='node')),q=r.project(...p);assert.equal(r.oneWayAhead(q.s+2,-1),0,`way ${id} open to oncoming traffic`);}
+ assert.equal(r.oneWayAhead(4,-1),0,'Faros is one-way southbound');
+});
+test('every island inset is a simple CCW polygon inside its ring that clears the carriageway (incl. border loop 31486890)',()=>{
+ const cross=(a,b,c,e)=>{const o=(p,q,s)=>(q[0]-p[0])*(s[1]-p[1])-(q[1]-p[1])*(s[0]-p[0]);return o(a,b,c)*o(a,b,e)<0&&o(c,e,a)*o(c,e,b)<0;},area=p=>p.reduce((s,a,i)=>{const b=p[(i+1)%p.length];return s+a[0]*b[1]-b[0]*a[1];},0);
+ const dist=(x,z,p)=>{let d=Infinity;for(let i=0;i<p.length;i++){const a=p[i],b=p[(i+1)%p.length],dx=b[0]-a[0],dz=b[1]-a[1],t=Math.max(0,Math.min(1,((x-a[0])*dx+(z-a[1])*dz)/(dx*dx+dz*dz)));d=Math.min(d,Math.hypot(x-a[0]-t*dx,z-a[1]-t*dz));}return d;};
+ assert(data.roadNetwork.roundabouts.some(q=>q.id===31486890));
+ for(const q of data.roadNetwork.roundabouts){const ring=islandRing(q.p,q.w/2+.12),n=ring.length;
+  for(let i=0;i<n;i++)for(let j=i+2;j<n;j++)if(!(i===0&&j===n-1))assert(!cross(ring[i],ring[(i+1)%n],ring[j],ring[(j+1)%n]),`island ${q.id} self-intersects at edges ${i}/${j}`);
+  assert(area(ring)<0,`island ${q.id} is not CCW`);
+  for(const v of ring){assert(insideIsland(v[0],v[1],q.p),`island ${q.id} vertex outside its ring`);assert(dist(v[0],v[1],q.p)>=q.w/2-.01,`island ${q.id} kerb intrudes on the carriageway`);}
+ }
+});
+test('one-way guidance: CCW arrows on every public ring and the mini-roundabout, a sign and give-way line at each legal entry, one draw call',async()=>{
+ const {buildRoundaboutGuidance,ringArrowPlacements,miniRing}=await import('../src/roundabout-guidance.js');
+ const bytes=fs.readFileSync(new URL('../data/maps/psychiko/terrain.bin',import.meta.url)),terrain=new Terrain(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength)),map={id:'psychiko',route:r,terrain,data};map.roadNetwork=new RoadNetwork(map);
+ const g=data.psychiko.roundaboutGuidance,rings=new Map(data.roadNetwork.roundabouts.map(q=>[q.id,q]));
+ // Ten municipal rings (nine tagged plus Eleftherias) and the border loop; the gated Athens College drive is left alone.
+ for(const id of [25053074,25053095,25053106,25053533,25053545,25053562,31250243,31486890,634346640,737204781])assert(g.some(q=>q.id===id),'no guidance at '+id);
+ assert(!g.some(q=>q.id===31270034));
+ for(const q of g){assert(q.entries.length>=2,q.id+' entries');for(const a of ringArrowPlacements(rings.get(q.id).p))assert(ccwStep(rings.get(q.id).p,a,{x:a.x+a.tx,z:a.z+a.tz})>0,'arrow clockwise at '+q.id);}
+ const mini=data.psychiko.miniRoundabouts.find(q=>q.id===351945852);assert(mini&&mini.entries.length>=2,'mini-roundabout 351945852 entries');
+ for(const a of ringArrowPlacements(miniRing(mini)))assert(ccwStep(miniRing(mini),a,{x:a.x+a.tx,z:a.z+a.tz})>0);
+ const out=buildRoundaboutGuidance(map,(x,z)=>terrain.height(x,z),new THREE.MeshStandardMaterial({vertexColors:true}));
+ assert.equal(out.signs,g.reduce((s,q)=>s+q.entries.length,0)+mini.entries.length);assert.equal(out.arrows,g.length+1);
+ assert(out.mesh.isMesh&&out.triangles<6000,'one cheap mesh: '+out.triangles);
 });

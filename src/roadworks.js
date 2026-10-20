@@ -1,3 +1,4 @@
+import { batchStatic } from './batch.js';
 import { assertWorldBudget } from './world-art-direction.js';
 import * as THREE from 'three';
 
@@ -18,28 +19,52 @@ export function buildRoadworks(map, scene, ground, assets = {}) {
   }
   for (const b of blocks) {
     const root = new THREE.Group(); root.name = 'roadworks:' + b.id;
-    const y = ground.network?.height(b.x, b.z) ?? ground.heightC(b.x, b.z);
+    const at = (x, z) => ground.network?.height(x, z) ?? ground.heightC(x, z), sin = Math.sin(b.yaw), cos = Math.cos(b.yaw);
+    // Local ground offset at (lx,lz): each barrier section and cone follows a sloping street.
+    const y = at(b.x, b.z), rise = (lx, lz) => at(b.x + cos * lx + sin * lz, b.z - sin * lx + cos * lz) - y;
     root.position.set(b.x, y, b.z); root.rotation.y = b.yaw; group.add(root);
+    if (b.dressing === 'guardrail') {
+      // Signal slips retain the same visible/physical closure, dressed as the local steel separators.
+      // No cones, orange plastic or works signs in the Faros/Elikonos junction sightlines.
+      const count = Math.ceil(b.hl * 2 / 3), length = b.hl * 2 / count;
+      for (let i = 0; i < count; i++) {
+        const z = -b.hl + (i + .5) * length, dy = rise(0, z);
+        for (const h of [.43, .77]) {
+          const rail=mesh(root, box, white, 0, h + dy, z, .12, .12, length);
+          rail.rotation.x=-Math.atan2(rise(0,z+length/2)-rise(0,z-length/2),length);
+        }
+        mesh(root, box, dark, 0, .43 + dy, z, .1, .86, .1);
+      }
+      continue;
+    }
     // Alternating water-filled safety barriers; continuous width includes the footways.
     const count = Math.ceil(b.hl * 2 / 1.8), length = b.hl * 2 / count;
     for (let i = 0; i < count; i++) {
-      const z = -b.hl + (i + .5) * length, material = i % 2 ? white : orange;
-      mesh(root, box, material, 0, .24, z, 1.3, .48, length);
-      mesh(root, box, material, 0, .69, z, .65, .42, length * .97);
-      mesh(root, box, dark, 0, .04, z, 1.45, .08, length);
+      const z = -b.hl + (i + .5) * length, material = i % 2 ? white : orange, dy = rise(0, z), tilt = -Math.atan2(rise(0, z + length / 2) - rise(0, z - length / 2), length);
+      for (const m of [mesh(root, box, material, 0, .24 + dy, z, 1.3, .48, length), mesh(root, box, material, 0, .69 + dy, z, .65, .42, length * .97), mesh(root, box, dark, 0, .04 + dy, z, 1.45, .08, length)]) m.rotation.x = tilt;
     }
     // Striped barricade rail and road-closed sign face the race route.
     mesh(root, box, white, .05, 1.14, 0, .12, .25, Math.min(4, b.hl * 2));
     // A single orange inset keeps the rail assembly at 24 triangles.
     mesh(root, box, orange, .12, 1.14, 0, .015, .25, 1.2);
     for (const z of [-b.hl + .3, b.hl - .3]) {
-      mesh(root, box, dark, 1.6, .035, z, .5, .07, .5);
-      mesh(root, cone, orange, 1.6, .41, z);
-      mesh(root, box, white, 1.6, .46, z, .22, .10, .22);
+      const dy = rise(1.6, z);
+      mesh(root, box, dark, 1.6, .035 + dy, z, .5, .07, .5);
+      mesh(root, cone, orange, 1.6, .41 + dy, z);
+      mesh(root, box, white, 1.6, .46 + dy, z, .22, .10, .22);
     }
     mesh(root, box, dark, 0, 1.45, 0, .08, 2.9, .08);
     const label = assets.makeLabel?.('ΕΡΓΑ · ΚΛΕΙΣΤΟ', 2.6, .65, '#ffe157', '#151515');
     if (label) { label.position.set(.16, 2.35, 0); label.rotation.y = Math.PI / 2; root.add(label); }
+  }
+  if (map.id === 'psychiko') {
+    // Keep each exit's logical root/collider; merge the static barriers by spatial cell and material.
+    group.updateMatrixWorld(true);
+    const p = new THREE.Vector3(), footings = [];
+    group.traverse(o => { if (o.isMesh && o.geometry === box && o.scale.y < .09) { o.getWorldPosition(p); footings.push([p.x, p.y - o.scale.y / 2, p.z]); } });
+    group.userData.footings = footings;
+    group.userData.batches = batchStatic(group, 200);
+    group.traverse(o=>{if(!o.isMesh)return;o.geometry.computeBoundingSphere();o.boundingSphere=o.geometry.boundingSphere;o.userData={...o.userData,lod:true,far:300,impostor:false};});
   }
   const base = ground.parked || [];
   const colliders = blocks.map(b => ({ ...b, kind: 'roadworks', restitution: .05, damageScale: .65 }));

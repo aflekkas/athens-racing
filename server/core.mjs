@@ -11,6 +11,7 @@ import { MULTIPLAYER_PROTOCOL, UPDATE_CLOSE_CODE, protocolVersion } from '../src
 import { buildCourse, observeCourse, courseComplete } from '../src/course.js';
 import { defaultConfig, sanitizeConfig, effectiveEvent, configInvalidates, nextGeneration, cancelToWaiting, restartRace, startObjectiveRound, stepPlayerObjective, snapshotPlayerObjective, resultPlayerObjective, objectiveRoundDone, clearObjectiveHold, raceLimitFor, isObjectiveMode, assertModeAllowed, validateStateExtras } from './mp-lifecycle.mjs';
 import { isMapEnabled } from '../src/enabled-maps.js';
+import { canReverse } from '../src/map-catalog.js';
 import { carCategory, CAR_CLASSES } from '../src/car-catalog.js';
 import { canonicalCarId, DEFAULT_CAR_ID } from '../src/car-ids.js';
 import { classifyCar, PI_CLASSES } from '../src/car-performance.js';
@@ -314,6 +315,7 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
           // to Megara ("why is there traffic on Megara"). What the host sets in this same message still wins.
           const trackDefaults = mapChanged ? (({ traffic, time, weather, police, reverse }) => ({ traffic, time, weather, police, reverse }))(defaultConfig(defs.get(eventId))) : {};
           const nextConfig = { ...prevConfig, ...trackDefaults, ...cfg.config };
+          if (!canReverse(mapId)) nextConfig.reverse = false;
           const raceChanged = mapChanged || eventChanged || configInvalidates(prevConfig, nextConfig);
           if (mapChanged) for (const p of l.players.values()) p.loaded = false;
           l.mapId = mapId; l.eventId = eventId; l.config = nextConfig; l.traffic = nextConfig.traffic > 0; l.police = nextConfig.police === true;

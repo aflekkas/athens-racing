@@ -1,0 +1,780 @@
+{
+  "version": 1,
+  "source": "Hand-reduced survey observations: all impl-e sheets, station sources below. Dimensions are visual estimates, not surveyed measurements. No imagery is read by the builder. OSM explicit heights/levels and footprints retained except listed landmark height corrections.",
+  "sections": [
+    {
+      "s0": 0,
+      "s1": 150,
+      "name": "Faros / lower 25is Martiou",
+      "stations": [
+        "lap-0000",
+        "lap-0018",
+        "lap-0090"
+      ],
+      "left": "stone",
+      "right": "open",
+      "character": "open-junction",
+      "observation": "Wide four-lane mouth, traffic lights, cross wires, commercial strip opposite; palms on the planted median; stone villa boundary inside Psychiko.",
+      "storeys": 2,
+      "extraStoreyShare": 0.15,
+      "storeyHeight": 3.05,
+      "roof": "flat terrace dominant; occasional red-brown tile",
+      "tiledShare": 0.05,
+      "colors": [
+        "#eeeae0",
+        "#f0eee7",
+        "#e6e0cf",
+        "#e4dcc6",
+        "#dfd5b9"
+      ],
+      "balcony": 0.8,
+      "windowBay": 3.5,
+      "pergolaShare": 0.05,
+      "setback": "Retain exact OSM footprint setback; place garden boundary behind the footway. No footprint shifts.",
+      "reason": "Wide four-lane mouth, traffic lights, cross wires, commercial strip opposite; palms on the planted median; stone villa boundary inside Psychiko."
+    },
+    {
+      "s0": 150,
+      "s1": 302,
+      "name": "25is Martiou approach",
+      "stations": [
+        "lap-0225",
+        "lap-0270"
+      ],
+      "left": "plaster-railing",
+      "right": "plaster-railing",
+      "character": "pine-villas",
+      "observation": "Two-way double-white road, pale modern villas behind pine and cypress gardens; narrow marble kerbs.",
+      "storeys": 2,
+      "extraStoreyShare": 0.35,
+      "storeyHeight": 3.05,
+      "roof": "flat terrace dominant; occasional red-brown tile",
+      "tiledShare": 0.2,
+      "colors": [
+        "#eeeae0",
+        "#f0eee7",
+        "#e6e0cf",
+        "#e4dcc6",
+        "#dfd5b9"
+      ],
+      "balcony": 1.0,
+      "windowBay": 3.2,
+      "pergolaShare": 0.16,
+      "setback": "Retain exact OSM footprint setback; place garden boundary behind the footway. No footprint shifts.",
+      "reason": "Two-way double-white road, pale modern villas behind pine and cypress gardens; narrow marble kerbs."
+    },
+    {
+      "s0": 302,
+      "s1": 414,
+      "name": "A square",
+      "stations": [
+        "lap-0360",
+        "lap-0390",
+        "lap-0414"
+      ],
+      "left": "open",
+      "right": "open",
+      "character": "square",
+      "observation": "Open lawn, low shrubs, mature pines, yellow-edged approach splitter; white kiosk on the Diamantidou exit; long stacked-balcony block opposite.",
+      "storeys": 3,
+      "extraStoreyShare": 0.2,
+      "storeyHeight": 3.05,
+      "roof": "flat terrace dominant; occasional red-brown tile",
+      "tiledShare": 0.05,
+      "colors": [
+        "#eeeae0",
+        "#f0eee7",
+        "#e6e0cf",
+        "#e4dcc6",
+        "#dfd5b9"
+      ],
+      "balcony": 1.3,
+      "windowBay": 3.1,
+      "pergolaShare": 0.05,
+      "setback": "Retain exact OSM footprint setback; place garden boundary behind the footway. No footprint shifts.",
+      "reason": "Open lawn, low shrubs, mature pines, yellow-edged approach splitter; white kiosk on the Diamantidou exit; long stacked-balcony block opposite."
+    },
+    {
+      "s0": 414,
+      "s1": 934,
+      "name": "Diamantidou",
+      "stations": [
+        "lap-0540",
+        "lap-0675",
+        "lap-0855"
+      ],
+      "left": "plaster-railing",
+      "right": "hedge",
+      "character": "pine-villas",
+      "observation": "White flat-roof modernist villas and older tiled houses, continuous parked cars, pine canopy, palms in gardens and overhead utilities.",
+      "storeys": 2,
+      "extraStoreyShare": 0.4,
+      "storeyHeight": 3.05,
+      "roof": "flat terrace dominant; occasional red-brown tile",
+      "tiledShare": 0.16,
+      "colors": [
+        "#eeeae0",
+        "#f0eee7",
+        "#e6e0cf",
+        "#e4dcc6",
+        "#dfd5b9"
+      ],
+      "balcony": 1.2,
+      "windowBay": 3.0,
+      "pergolaShare": 0.16,
+      "setback": "Retain exact OSM footprint setback; place garden boundary behind the footway. No footprint shifts.",
+      "reason": "White flat-roof modernist villas and older tiled houses, continuous parked cars, pine canopy, palms in gardens and overhead utilities."
+    },
+    {
+      "s0": 934,
+      "s1": 1070,
+      "name": "B square",
+      "stations": [
+        "lap-0964",
+        "lap-0990",
+        "lap-1035"
+      ],
+      "left": "stone",
+      "right": "open",
+      "character": "square",
+      "observation": "Low pale-stone garden perimeter and clipped shrubs; broadleaf and pine crowns; dark green kiosk with cream canopy on the Diamantidou arm.",
+      "storeys": 2,
+      "extraStoreyShare": 0.25,
+      "storeyHeight": 3.05,
+      "roof": "flat terrace dominant; occasional red-brown tile",
+      "tiledShare": 0.12,
+      "colors": [
+        "#eeeae0",
+        "#f0eee7",
+        "#e6e0cf",
+        "#e4dcc6",
+        "#dfd5b9"
+      ],
+      "balcony": 1.1,
+      "windowBay": 3.1,
+      "pergolaShare": 0.05,
+      "setback": "Retain exact OSM footprint setback; place garden boundary behind the footway. No footprint shifts.",
+      "reason": "Low pale-stone garden perimeter and clipped shrubs; broadleaf and pine crowns; dark green kiosk with cream canopy on the Diamantidou arm."
+    },
+    {
+      "s0": 1070,
+      "s1": 1564,
+      "name": "Upper Diamantidou / Eleftherias",
+      "stations": [
+        "lap-1125",
+        "lap-1350",
+        "lap-1530"
+      ],
+      "left": "plaster-railing",
+      "right": "plaster-railing",
+      "character": "pine-villas",
+      "observation": "Long white balconies, pines with bare leaning trunks, zebra crossings; green fencing and paved island at Eleftherias.",
+      "storeys": 2,
+      "extraStoreyShare": 0.38,
+      "storeyHeight": 3.05,
+      "roof": "flat terrace dominant; occasional red-brown tile",
+      "tiledShare": 0.14,
+      "colors": [
+        "#eeeae0",
+        "#f0eee7",
+        "#e6e0cf",
+        "#e4dcc6",
+        "#dfd5b9"
+      ],
+      "balcony": 1.2,
+      "windowBay": 3.2,
+      "pergolaShare": 0.16,
+      "setback": "Retain exact OSM footprint setback; place garden boundary behind the footway. No footprint shifts.",
+      "reason": "Long white balconies, pines with bare leaning trunks, zebra crossings; green fencing and paved island at Eleftherias."
+    },
+    {
+      "s0": 1564,
+      "s1": 1696,
+      "name": "Nikiforou Lytra",
+      "stations": [
+        "lap-1620",
+        "lap-1665"
+      ],
+      "left": "stone",
+      "right": "stone",
+      "character": "cypress-lane",
+      "observation": "Narrow unmarked lane; rough pale stone walls, tall green metal fences, cypress spires and a few street trees.",
+      "storeys": 2,
+      "extraStoreyShare": 0.15,
+      "storeyHeight": 3.05,
+      "roof": "flat terrace dominant; occasional red-brown tile",
+      "tiledShare": 0.22,
+      "colors": [
+        "#eeeae0",
+        "#f0eee7",
+        "#e6e0cf",
+        "#e4dcc6",
+        "#dfd5b9"
+      ],
+      "balcony": 0.65,
+      "windowBay": 3.5,
+      "pergolaShare": 0.05,
+      "setback": "Retain exact OSM footprint setback; place garden boundary behind the footway. No footprint shifts.",
+      "reason": "Narrow unmarked lane; rough pale stone walls, tall green metal fences, cypress spires and a few street trees."
+    },
+    {
+      "s0": 1696,
+      "s1": 1890,
+      "name": "Paraschou descent",
+      "stations": [
+        "lap-1710",
+        "lap-1800",
+        "lap-1845"
+      ],
+      "left": "plaster-railing",
+      "right": "stone",
+      "character": "retaining",
+      "observation": "Steep narrow descent enclosed by low stone retaining walls with tall green/black railings; white balcony villas above the road.",
+      "storeys": 2,
+      "extraStoreyShare": 0.3,
+      "storeyHeight": 3.05,
+      "roof": "flat terrace dominant; occasional red-brown tile",
+      "tiledShare": 0.12,
+      "colors": [
+        "#eeeae0",
+        "#f0eee7",
+        "#e6e0cf",
+        "#e4dcc6",
+        "#dfd5b9"
+      ],
+      "balcony": 0.85,
+      "windowBay": 3.2,
+      "pergolaShare": 0.05,
+      "setback": "Retain exact OSM footprint setback; place garden boundary behind the footway. No footprint shifts.",
+      "reason": "Steep narrow descent enclosed by low stone retaining walls with tall green/black railings; white balcony villas above the road."
+    },
+    {
+      "s0": 1890,
+      "s1": 2010,
+      "name": "Dryadon / Pavlou Mela",
+      "stations": [
+        "lap-1935",
+        "lap-1980"
+      ],
+      "left": "hedge",
+      "right": "plaster-railing",
+      "character": "lane",
+      "observation": "Unmarked narrow residential links, trimmed hedges, white modern villas, blue directional signs and overhead cable.",
+      "storeys": 2,
+      "extraStoreyShare": 0.2,
+      "storeyHeight": 3.05,
+      "roof": "flat terrace dominant; occasional red-brown tile",
+      "tiledShare": 0.1,
+      "colors": [
+        "#eeeae0",
+        "#f0eee7",
+        "#e6e0cf",
+        "#e4dcc6",
+        "#dfd5b9"
+      ],
+      "balcony": 0.8,
+      "windowBay": 3.4,
+      "pergolaShare": 0.05,
+      "setback": "Retain exact OSM footprint setback; place garden boundary behind the footway. No footprint shifts.",
+      "reason": "Unmarked narrow residential links, trimmed hedges, white modern villas, blue directional signs and overhead cable."
+    },
+    {
+      "s0": 2010,
+      "s1": 2182,
+      "name": "Davaki",
+      "stations": [
+        "lap-2070",
+        "lap-2138"
+      ],
+      "left": "plaster-railing",
+      "right": "plaster-railing",
+      "character": "villas",
+      "observation": "Tall hedges, horizontal grey gates, white and cream flat-roof villas; distinct brown stacked balconies at the bend.",
+      "storeys": 2,
+      "extraStoreyShare": 0.4,
+      "storeyHeight": 3.05,
+      "roof": "flat terrace dominant; occasional red-brown tile",
+      "tiledShare": 0.1,
+      "colors": [
+        "#eeeae0",
+        "#f0eee7",
+        "#e6e0cf",
+        "#e4dcc6",
+        "#dfd5b9"
+      ],
+      "balcony": 1.1,
+      "windowBay": 3.3,
+      "pergolaShare": 0.16,
+      "setback": "Retain exact OSM footprint setback; place garden boundary behind the footway. No footprint shifts.",
+      "reason": "Tall hedges, horizontal grey gates, white and cream flat-roof villas; distinct brown stacked balconies at the bend."
+    },
+    {
+      "s0": 2182,
+      "s1": 2610,
+      "name": "Venizelou",
+      "stations": [
+        "lap-2250",
+        "lap-2385",
+        "lap-2565"
+      ],
+      "left": "open",
+      "right": "plaster-railing",
+      "character": "green-median",
+      "observation": "Wide rising then descending avenue beside an open green linear island, pines and clipped trees, generous double-white markings and crossings.",
+      "storeys": 2,
+      "extraStoreyShare": 0.4,
+      "storeyHeight": 3.05,
+      "roof": "flat terrace dominant; occasional red-brown tile",
+      "tiledShare": 0.12,
+      "colors": [
+        "#eeeae0",
+        "#f0eee7",
+        "#e6e0cf",
+        "#e4dcc6",
+        "#dfd5b9"
+      ],
+      "balcony": 1.2,
+      "windowBay": 3.2,
+      "pergolaShare": 0.05,
+      "setback": "Retain exact OSM footprint setback; place garden boundary behind the footway. No footprint shifts.",
+      "reason": "Wide rising then descending avenue beside an open green linear island, pines and clipped trees, generous double-white markings and crossings."
+    },
+    {
+      "s0": 2610,
+      "s1": 3195,
+      "name": "25is Martiou / Stavrou",
+      "stations": [
+        "lap-2655",
+        "lap-2925",
+        "lap-3000",
+        "lap-3150"
+      ],
+      "left": "stone",
+      "right": "stone",
+      "character": "stone-villas",
+      "observation": "Narrow unmarked villa road, pale stone retaining walls, modern white balcony blocks, overhead wires; small planted Stavrou circle; long rough-stone school boundary approaching Bizaniou.",
+      "storeys": 2,
+      "extraStoreyShare": 0.35,
+      "storeyHeight": 3.05,
+      "roof": "flat terrace dominant; occasional red-brown tile",
+      "tiledShare": 0.2,
+      "colors": [
+        "#eeeae0",
+        "#f0eee7",
+        "#e6e0cf",
+        "#e4dcc6",
+        "#dfd5b9"
+      ],
+      "balcony": 1.0,
+      "windowBay": 3.4,
+      "pergolaShare": 0.16,
+      "setback": "Retain exact OSM footprint setback; place garden boundary behind the footway. No footprint shifts.",
+      "reason": "Narrow unmarked villa road, pale stone retaining walls, modern white balcony blocks, overhead wires; small planted Stavrou circle; long rough-stone school boundary approaching Bizaniou."
+    },
+    {
+      "s0": 3195,
+      "s1": 3555,
+      "name": "Bizaniou / Athens College",
+      "stations": [
+        "lap-3240",
+        "lap-3375",
+        "lap-3465"
+      ],
+      "left": "school-stone",
+      "right": "hedge",
+      "character": "college",
+      "observation": "Continuous rough pale rubble-stone campus wall on the left, dark railing above, pines and pale/yellow school buildings behind; green gates, bollards and utility poles.",
+      "storeys": 2,
+      "extraStoreyShare": 0.3,
+      "storeyHeight": 3.05,
+      "roof": "flat terrace dominant; occasional red-brown tile",
+      "tiledShare": 0.15,
+      "colors": [
+        "#eeeae0",
+        "#f0eee7",
+        "#e6e0cf",
+        "#e4dcc6",
+        "#dfd5b9"
+      ],
+      "balcony": 0.9,
+      "windowBay": 3.3,
+      "pergolaShare": 0.05,
+      "setback": "Retain exact OSM footprint setback; place garden boundary behind the footway. No footprint shifts.",
+      "reason": "Continuous rough pale rubble-stone campus wall on the left, dark railing above, pines and pale/yellow school buildings behind; green gates, bollards and utility poles."
+    },
+    {
+      "s0": 3555,
+      "s1": 3645,
+      "name": "Korytsas",
+      "stations": [
+        "lap-3555",
+        "lap-3600"
+      ],
+      "left": "stone",
+      "right": "hedge",
+      "character": "lane",
+      "observation": "Parked cars tight against the kerbs, pines and climbing garden vegetation; short unmarked connection.",
+      "storeys": 2,
+      "extraStoreyShare": 0.3,
+      "storeyHeight": 3.05,
+      "roof": "flat terrace dominant; occasional red-brown tile",
+      "tiledShare": 0.12,
+      "colors": [
+        "#eeeae0",
+        "#f0eee7",
+        "#e6e0cf",
+        "#e4dcc6",
+        "#dfd5b9"
+      ],
+      "balcony": 0.85,
+      "windowBay": 3.4,
+      "pergolaShare": 0.05,
+      "setback": "Retain exact OSM footprint setback; place garden boundary behind the footway. No footprint shifts.",
+      "reason": "Parked cars tight against the kerbs, pines and climbing garden vegetation; short unmarked connection."
+    },
+    {
+      "s0": 3645,
+      "s1": 3870,
+      "name": "Benaki",
+      "stations": [
+        "lap-3645",
+        "lap-3780"
+      ],
+      "left": "stone",
+      "right": "school-stone",
+      "character": "college",
+      "observation": "Tall rough pale-stone walls, a school gate with pale piers, cypress and pine spires; narrow paved margins with metal bollards.",
+      "storeys": 2,
+      "extraStoreyShare": 0.25,
+      "storeyHeight": 3.05,
+      "roof": "flat terrace dominant; occasional red-brown tile",
+      "tiledShare": 0.18,
+      "colors": [
+        "#eeeae0",
+        "#f0eee7",
+        "#e6e0cf",
+        "#e4dcc6",
+        "#dfd5b9"
+      ],
+      "balcony": 0.85,
+      "windowBay": 3.4,
+      "pergolaShare": 0.05,
+      "setback": "Retain exact OSM footprint setback; place garden boundary behind the footway. No footprint shifts.",
+      "reason": "Tall rough pale-stone walls, a school gate with pale piers, cypress and pine spires; narrow paved margins with metal bollards."
+    },
+    {
+      "s0": 3870,
+      "s1": 4060,
+      "name": "Areaki",
+      "stations": [
+        "lap-3915",
+        "lap-4005"
+      ],
+      "left": "stone",
+      "right": "plaster",
+      "character": "stone-villas",
+      "observation": "High pale rendered/stone boundary to the right, bougainvillea spill, low villas behind pines, parked cars and cables.",
+      "storeys": 2,
+      "extraStoreyShare": 0.2,
+      "storeyHeight": 3.05,
+      "roof": "flat terrace dominant; occasional red-brown tile",
+      "tiledShare": 0.18,
+      "colors": [
+        "#eeeae0",
+        "#f0eee7",
+        "#e6e0cf",
+        "#e4dcc6",
+        "#dfd5b9"
+      ],
+      "balcony": 0.75,
+      "windowBay": 3.5,
+      "pergolaShare": 0.16,
+      "setback": "Retain exact OSM footprint setback; place garden boundary behind the footway. No footprint shifts.",
+      "reason": "High pale rendered/stone boundary to the right, bougainvillea spill, low villas behind pines, parked cars and cables."
+    },
+    {
+      "s0": 4060,
+      "s1": 4095,
+      "name": "Michalakopoulou square",
+      "stations": [
+        "lap-4060",
+        "lap-4074"
+      ],
+      "left": "open",
+      "right": "open",
+      "character": "square",
+      "observation": "Small planted island with tall palms/pines and shrubs, kiosk and cream canopy at the Malakasi corner; metal pedestrian guardrails.",
+      "storeys": 2,
+      "extraStoreyShare": 0.3,
+      "storeyHeight": 3.05,
+      "roof": "flat terrace dominant; occasional red-brown tile",
+      "tiledShare": 0.2,
+      "colors": [
+        "#eeeae0",
+        "#f0eee7",
+        "#e6e0cf",
+        "#e4dcc6",
+        "#dfd5b9"
+      ],
+      "balcony": 1.0,
+      "windowBay": 3.3,
+      "pergolaShare": 0.05,
+      "setback": "Retain exact OSM footprint setback; place garden boundary behind the footway. No footprint shifts.",
+      "reason": "Small planted island with tall palms/pines and shrubs, kiosk and cream canopy at the Malakasi corner; metal pedestrian guardrails."
+    },
+    {
+      "s0": 4095,
+      "s1": 4398,
+      "name": "Malakasi",
+      "stations": [
+        "lap-4140",
+        "lap-4230",
+        "lap-4320"
+      ],
+      "left": "metal-fence",
+      "right": "plaster",
+      "character": "park-lane",
+      "observation": "Narrow lane with wooded verge, iron fencing and a high cream rendered property wall on the right; white apartment block beyond.",
+      "storeys": 2,
+      "extraStoreyShare": 0.3,
+      "storeyHeight": 3.05,
+      "roof": "flat terrace dominant; occasional red-brown tile",
+      "tiledShare": 0.16,
+      "colors": [
+        "#eeeae0",
+        "#f0eee7",
+        "#e6e0cf",
+        "#e4dcc6",
+        "#dfd5b9"
+      ],
+      "balcony": 0.8,
+      "windowBay": 3.4,
+      "pergolaShare": 0.05,
+      "setback": "Retain exact OSM footprint setback; place garden boundary behind the footway. No footprint shifts.",
+      "reason": "Narrow lane with wooded verge, iron fencing and a high cream rendered property wall on the right; white apartment block beyond."
+    },
+    {
+      "s0": 4398,
+      "s1": 4692,
+      "name": "Kallari park edge",
+      "stations": [
+        "lap-4455",
+        "lap-4545",
+        "lap-4635"
+      ],
+      "left": "metal-fence",
+      "right": "plaster-railing",
+      "character": "park",
+      "observation": "Open pine-filled Alsos on the left behind a low fence/stone plinth; villas and garden walls to the right, parked cars and large kerbside pines.",
+      "storeys": 2,
+      "extraStoreyShare": 0.35,
+      "storeyHeight": 3.05,
+      "roof": "flat terrace dominant; occasional red-brown tile",
+      "tiledShare": 0.15,
+      "colors": [
+        "#eeeae0",
+        "#f0eee7",
+        "#e6e0cf",
+        "#e4dcc6",
+        "#dfd5b9"
+      ],
+      "balcony": 1.1,
+      "windowBay": 3.2,
+      "pergolaShare": 0.05,
+      "setback": "Retain exact OSM footprint setback; place garden boundary behind the footway. No footprint shifts.",
+      "reason": "Open pine-filled Alsos on the left behind a low fence/stone plinth; villas and garden walls to the right, parked cars and large kerbside pines."
+    },
+    {
+      "s0": 4692,
+      "s1": 4950,
+      "name": "Lower Kallari",
+      "stations": [
+        "lap-4725",
+        "lap-4860",
+        "lap-4905"
+      ],
+      "left": "plaster-railing",
+      "right": "plaster-railing",
+      "character": "pine-villas",
+      "observation": "White modern villas, garden pines and palms, dense parked cars; pale entrance and tall cypress at the Elikonos bend.",
+      "storeys": 2,
+      "extraStoreyShare": 0.4,
+      "storeyHeight": 3.05,
+      "roof": "flat terrace dominant; occasional red-brown tile",
+      "tiledShare": 0.13,
+      "colors": [
+        "#eeeae0",
+        "#f0eee7",
+        "#e6e0cf",
+        "#e4dcc6",
+        "#dfd5b9"
+      ],
+      "balcony": 1.1,
+      "windowBay": 3.2,
+      "pergolaShare": 0.16,
+      "setback": "Retain exact OSM footprint setback; place garden boundary behind the footway. No footprint shifts.",
+      "reason": "White modern villas, garden pines and palms, dense parked cars; pale entrance and tall cypress at the Elikonos bend."
+    },
+    {
+      "s0": 4950,
+      "s1": 5068,
+      "name": "Elikonos",
+      "stations": [
+        "lap-4995",
+        "lap-5040",
+        "lap-5058"
+      ],
+      "left": "plaster",
+      "right": "hedge",
+      "character": "signal",
+      "observation": "Narrow unmarked approach opening suddenly onto Kifisias signal; cream curved-corner office block with blue windows across the arterial.",
+      "storeys": 2,
+      "extraStoreyShare": 0.3,
+      "storeyHeight": 3.05,
+      "roof": "flat terrace dominant; occasional red-brown tile",
+      "tiledShare": 0.15,
+      "colors": [
+        "#eeeae0",
+        "#f0eee7",
+        "#e6e0cf",
+        "#e4dcc6",
+        "#dfd5b9"
+      ],
+      "balcony": 0.9,
+      "windowBay": 3.2,
+      "pergolaShare": 0.05,
+      "setback": "Retain exact OSM footprint setback; place garden boundary behind the footway. No footprint shifts.",
+      "reason": "Narrow unmarked approach opening suddenly onto Kifisias signal; cream curved-corner office block with blue windows across the arterial."
+    },
+    {
+      "s0": 5068,
+      "s1": 5388,
+      "name": "Kifisias carriageway",
+      "stations": [
+        "lap-5085",
+        "lap-5220",
+        "lap-5310"
+      ],
+      "left": "open",
+      "right": "open",
+      "character": "arterial",
+      "observation": "Three same-direction lanes, planted median and separator hedge, trolley wires, tall straight lamps, blue overhead road signs; glass-front offices and shop blocks opposite.",
+      "storeys": 3,
+      "extraStoreyShare": 0.4,
+      "storeyHeight": 3.05,
+      "roof": "flat terrace dominant; occasional red-brown tile",
+      "tiledShare": 0,
+      "colors": [
+        "#eeeae0",
+        "#f0eee7",
+        "#e6e0cf",
+        "#e4dcc6",
+        "#dfd5b9"
+      ],
+      "balcony": 0.4,
+      "windowBay": 3.2,
+      "pergolaShare": 0.05,
+      "setback": "Retain exact OSM footprint setback; place garden boundary behind the footway. No footprint shifts.",
+      "reason": "Three same-direction lanes, planted median and separator hedge, trolley wires, tall straight lamps, blue overhead road signs; glass-front offices and shop blocks opposite."
+    },
+    {
+      "s0": 5388,
+      "s1": 5733,
+      "name": "Kifisias surface frontage / Faros",
+      "stations": [
+        "lap-5445",
+        "lap-5580",
+        "lap-5715"
+      ],
+      "left": "open",
+      "right": "hedge",
+      "character": "frontage",
+      "observation": "Narrow single-lane frontage beside divided arterial, steel separator rail, planted pine/oleander verge, commercial block across Kifisias, signals and open junction at Faros.",
+      "storeys": 3,
+      "extraStoreyShare": 0.2,
+      "storeyHeight": 3.05,
+      "roof": "flat terrace dominant; occasional red-brown tile",
+      "tiledShare": 0,
+      "colors": [
+        "#eeeae0",
+        "#f0eee7",
+        "#e6e0cf",
+        "#e4dcc6",
+        "#dfd5b9"
+      ],
+      "balcony": 0.4,
+      "windowBay": 3.4,
+      "pergolaShare": 0.05,
+      "setback": "Retain exact OSM footprint setback; place garden boundary behind the footway. No footprint shifts.",
+      "reason": "Narrow single-lane frontage beside divided arterial, steel separator rail, planted pine/oleander verge, commercial block across Kifisias, signals and open junction at Faros."
+    }
+  ],
+  "buildings": [
+    {
+      "id": 425080433,
+      "station": "lap-0000",
+      "label": "Faros shopping block",
+      "h": 10.2,
+      "lv": 3,
+      "color": "#d9d3c4",
+      "facadeStyle": 5,
+      "accent": "#be5938",
+      "commercial": true
+    },
+    {
+      "id": 425080449,
+      "station": "lap-0018",
+      "label": "Faros two-level corner shops",
+      "h": 7.3,
+      "lv": 2,
+      "color": "#eee8d8",
+      "facadeStyle": 5,
+      "accent": "#47677d",
+      "commercial": true
+    },
+    {
+      "id": 425080469,
+      "station": "faros-across",
+      "label": "Faros three-level shop terrace",
+      "h": 10,
+      "lv": 3,
+      "color": "#e7e0ce",
+      "facadeStyle": 5,
+      "accent": "#cd6437",
+      "commercial": true
+    },
+    {
+      "id": 425080430,
+      "station": "lap-0028",
+      "label": "Faros glass corner and shop fascia",
+      "h": 9.5,
+      "lv": 3,
+      "color": "#e7dfcd",
+      "facadeStyle": 5,
+      "accent": "#3d606a",
+      "commercial": true
+    },
+    {
+      "id": 425080456,
+      "station": "faros-across",
+      "label": "Low commercial continuation",
+      "h": 7.2,
+      "lv": 2,
+      "color": "#e8e2d4",
+      "facadeStyle": 5,
+      "accent": "#3a6285",
+      "commercial": true
+    },
+    {
+      "id": 425080467,
+      "station": "faros-across",
+      "label": "Solomou shop row",
+      "h": 9.6,
+      "lv": 3,
+      "color": "#e8dfce",
+      "facadeStyle": 5,
+      "accent": "#aa553c",
+      "commercial": true
+    }
+  ]
+}

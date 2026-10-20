@@ -1,0 +1,39 @@
+psychiko: speeds=[50@0 50@20~ 60@310 20@400 50@940~ 30@1040 60@1570 50@1700~ 30@4080 50@4400~ 30@4700 50@4800~ 70@5060 50@5390]
+  signs: 2 (2 mapped nodes, 0 inferred) cameras: 0
+  network roads with limits: 139 tagged + 533 defaulted; side roads: 34 + 363
+  osm sign: s=1265 u=5.7 v=30 dir=1
+  osm sign: s=1435 u=5.7 v=30 dir=1
+{
+  "length": 5732.284334253607,
+  "stats": {
+    "startElevation": 179.27,
+    "finishElevation": 179.27,
+    "ascent": 110.95,
+    "descent": 110.95,
+    "maxGrade": 14,
+    "elevationSource": "Copernicus DEM GLO-30 (2021) AWS COG, EGM2008; sigma-20 m spatial Gaussian, roundabout planes"
+  },
+  "GX": 361,
+  "GZ": 381,
+  "buildings": 3647,
+  "sideRoads": 398,
+  "areas": {
+    "beach": 0,
+    "lake": 0,
+    "pool": 0,
+    "scrub": 23,
+    "rock": 4,
+    "cliff": 0,
+    "wood": 37,
+    "park": 111,
+    "marina": 0,
+    "pier": 0,
+    "breakwater": 0,
+    "parking": 47,
+    "golf": 0,
+    "pitch": 5,
+    "residential": 63,
+    "fuel": 0,
+    "quarry": 0
+  }
+}

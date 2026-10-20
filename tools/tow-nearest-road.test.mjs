@@ -171,7 +171,7 @@ function race(t) {
 }
 const driveRoute = (r, from, to) => { for (let s = from; s <= to; s += 6) { const p = route.point(s, 2), f = route.frame(s, {}); r.advance(300); r.state(p.x, p.z, headingOf(f.tx, f.tz)); } };
 test('server (b): 20 m into a side street in a race, a tow lands back on the route at the nearest point, not earlier', t => {
-  const r = race(t), street = streetPoint(P, 18, 26, { skip: 5, stations: [300, 3000] }), q = route.project(street.x, street.z, null);
+  const r = race(t), street = streetPoint(P, 18, 26, { stations: [300, 3000] }), q = route.project(street.x, street.z, null);
   r.advance(500); r.begin(0); driveRoute(r, 6, q.s);
   const left = r.course.lastRoad.s, start = route.point(q.s, 2);
   // Leave the route for the street through the off-route chord.
@@ -185,10 +185,12 @@ test('server (b): 20 m into a side street in a race, a tow lands back on the rou
   assert.ok(Math.abs(route.project(ack.x, ack.z, null).u) < route.edge(ack.s), 'on the carriageway');
 });
 test('server (c): 300 m down a non-route road, a tow lands on the nearest road there and progress is unchanged', t => {
-  const r = race(t), target = streetPoint(P, 250, 600, { stations: [300, 3000] }), q = route.project(target.x, target.z, null);
+  const r = race(t), target = streetPoint(P, 250, 600, { isolated: 18 }), q = route.project(target.x, target.z, null);
   r.advance(500); r.begin(0); driveRoute(r, 6, q.s);
-  const before = { progress: r.course.validProgress, reached: r.course.reached };
   r.runTo(target.x, target.z);
+  // Leaving the route can earn a fraction of a metre of genuine driving progress. Compare immediately
+  // before/after recovery so this assertion measures the tow, not the preceding drive to the street.
+  const before = { progress: r.course.validProgress, reached: r.course.reached };
   const ack = r.tow();
   assert.equal(ack.type, 'recovered'); assert.equal(ack.kind, 'road', 'the nearest road is the street, not a route 300 m away');
   assert.ok(Math.hypot(ack.x - target.x, ack.z - target.z) < target.g.hw + 3, 'where the car is');
@@ -203,7 +205,7 @@ test('server (c): 300 m down a non-route road, a tow lands on the nearest road t
   assert.equal(r.course.reached, before.reached, 'driving on from the side street still earns nothing');
 });
 test('server (d): a tow cannot advance race progress, whatever the client claims', t => {
-  const r = race(t), near = streetPoint(P, 18, 26, { skip: 8, stations: [300, 2000] }), q = route.project(near.x, near.z, null);
+  const r = race(t), near = streetPoint(P, 18, 26, { oneway: true, stations: [300, 2000] }), q = route.project(near.x, near.z, null);
   r.advance(500); r.begin(0); driveRoute(r, 6, q.s);
   const claim = route.point(2800, 2);
   r.runTo(near.x, near.z);

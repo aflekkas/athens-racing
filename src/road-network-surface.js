@@ -2,6 +2,7 @@ import {buildRoadGraph} from './road-graph.js';
 import {islandRing,insideIsland} from './roundabouts.js';
 // One spatial/height model shared by roads, terrain carving and wheel contacts. No rendering dependencies.
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const edgePoint={set(x,y,z){this.x=x;this.y=y;this.z=z;return this;}};
 const smooth=(a,b,x)=>{const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t);};
 export function triangleHeight(t,H,x,z){
  const fx=clamp((x-t.minX)/t.T,0,t.GX-1.00001),fz=clamp((z-t.minZ)/t.T,0,t.GZ-1.00001),i=Math.floor(fx),j=Math.floor(fz),a=fx-i,b=fz-j,k=j*t.GX+i;
@@ -16,7 +17,7 @@ export class RoadNetwork {
   for(let i=0;i<(this.route.N||0);i+=Math.max(1,Math.floor(8/this.route.step))){const k=`${Math.floor(this.route.X[i]/64)},${Math.floor(this.route.Z[i]/64)}`;if(!this.routeCells.has(k))this.routeCells.set(k,[]);this.routeCells.get(k).push(i);}
   this.routeNear=new Set();
   for(const key of this.routeCells.keys()){const [x,z]=key.split(',').map(Number);for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)this.routeNear.add(`${x+dx},${z+dz}`);}
-  for(const road of this.roads)for(let i=0;i+3<road.p.length;i+=2){const [ax,az,bx,bz]=road.p.slice(i,i+4),dx=bx-ax,dz=bz-az,L=Math.hypot(dx,dz);if(L<.01)continue;const seg={id:this.segments.length,road,ax,az,bx,bz,dx,dz,L,L2:L*L,hw:road.w/2,sw:road.urban&&road.sf==='asphalt'?1.3:0};
+  for(const road of this.roads)for(let i=0;i+3<road.p.length;i+=2){const [ax,az,bx,bz]=road.p.slice(i,i+4),dx=bx-ax,dz=bz-az,L=Math.hypot(dx,dz);if(L<.01)continue;const seg={id:this.segments.length,road,ax,az,bx,bz,dx,dz,L,L2:L*L,hw:road.w/2,sw:road.urban&&road.sf==='asphalt'?road.fw??1.3:0};
    const mx=(ax+bx)/2,mz=(az+bz)/2;
    if(this.route.frame&&this.nearMain(mx,mz)){const q=this.project(mx,mz),f=this.route.frame(q.s,{});if(Math.abs(q.u)<this.route.edge(q.s)+12&&Math.abs(dx/L*f.tx+dz/L*f.tz)<.8)seg.hw+=1.4;}
    this.segments.push(seg);const R=seg.hw+seg.sw+2;
@@ -57,7 +58,11 @@ export class RoadNetwork {
  mainInside(x,z){if(!this.nearMain(x,z))return false;const q=this.project(x,z);return (this.route.closed||q.s>=-60&&q.s<=this.route.length+60)&&Math.abs(q.u)<=this.route.edge(q.s)+this.mainMargin;}
  mouth(s,side,padding=0){const p=this.route.point(s,side*(this.route.edge(s)+this.mainMargin+.6));for(const seg of this.candidates(p.x,p.z))if(this.distance(seg,p.x,p.z)<seg.hw+padding)return true;return false;}
  height(x,z){const mesh=this.meshHeight(x,z);if(mesh!==null)return mesh;const terrain=this.terrain.refinedHeight?.(x,z);return terrain==null?this.baseHeight(x,z):terrain+.10;}
- baseHeight(x,z){const dem=triangleHeight(this.terrain,this.source||this.terrain.H,x,z)+.055;if(!this.nearMain(x,z))return dem;const q=this.project(x,z),edge=this.route.edge(q.s)+this.mainMargin,au=Math.abs(q.u),t=!this.route.closed&&(q.s< -60||q.s>this.route.length+60)?1:smooth(edge+12,edge+32,au);const y=this.route.surfaceY(q.s,clamp(q.u,-edge,edge));return y*(1-t)+dem*t;}
+ baseHeight(x,z){const dem=triangleHeight(this.terrain,this.source||this.terrain.H,x,z)+.055;if(!this.nearMain(x,z))return dem;const q=this.project(x,z),edge=this.route.edge(q.s)+this.mainMargin,au=Math.abs(q.u),t=!this.route.closed&&(q.s< -60||q.s>this.route.length+60)?1:smooth(edge+12,edge+32,au);const y=this.route.surfaceY(q.s,clamp(q.u,-edge,edge));
+  // Psychiko's terrain follows one measured height field with real cross-slopes. Meet the lap edge exactly,
+  // then decay only the edge offset, rather than holding the lap height 12 m out and ramping steeply after.
+  if(this.route.streetCircuit){if(au<=edge)return y;const p=this.route.point(q.s,Math.sign(q.u)*edge,edgePoint);return dem+(y-triangleHeight(this.terrain,this.source||this.terrain.H,p.x,p.z)-.055)*(1-smooth(edge,edge+10,au));}
+  return y*(1-t)+dem*t;}
  prepareTerrain(H,stamp,base=H){this.source=base.slice();const t=this.terrain;
   const carved=new Uint8Array(H.length);
   // A DEM cell ring around every strip protects interpolation from tall corners and disables invented rock relief.

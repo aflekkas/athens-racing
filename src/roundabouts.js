@@ -1,6 +1,11 @@
 // Pure, shared island geometry and circulating-priority policy. Coordinates use south-positive z.
 export function insideIsland(x,z,p){let inside=false;for(let i=0,j=p.length-1;i<p.length;j=i++){const a=p[i],b=p[j];if((a[1]>z)!==(b[1]>z)&&x<(b[0]-a[0])*(z-a[1])/(b[1]-a[1])+a[0])inside=!inside;}return inside;}
-export function islandRing(p,width){return p.map((b,i)=>{const a=p[(i+p.length-1)%p.length],c=p[(i+1)%p.length];const ax=b[0]-a[0],az=b[1]-a[1],bx=c[0]-b[0],bz=c[1]-b[1],al=Math.hypot(ax,az),bl=Math.hypot(bx,bz),nx=az/al+bz/bl,nz=-ax/al-bx/bl,den=1+(ax*bx+az*bz)/(al*bl);return[b[0]+nx*width/Math.max(.3,den),b[1]+nz*width/Math.max(.3,den)];});}
+export function islandRing(p,width){
+ // Merge near-duplicate OSM vertices first: a 0.3 m edge (border loop 31486890) gives meaningless miter normals and folds the inset.
+ const q=[];for(const v of p)if(!q.length||Math.hypot(v[0]-q.at(-1)[0],v[1]-q.at(-1)[1])>=1)q.push(v);
+ while(q.length>3&&Math.hypot(q[0][0]-q.at(-1)[0],q[0][1]-q.at(-1)[1])<1)q.pop();
+ if(q.length>=3)p=q;
+ return p.map((b,i)=>{const a=p[(i+p.length-1)%p.length],c=p[(i+1)%p.length];const ax=b[0]-a[0],az=b[1]-a[1],bx=c[0]-b[0],bz=c[1]-b[1],al=Math.hypot(ax,az),bl=Math.hypot(bx,bz),nx=az/al+bz/bl,nz=-ax/al-bx/bl,den=1+(ax*bx+az*bz)/(al*bl);return[b[0]+nx*width/Math.max(.3,den),b[1]+nz*width/Math.max(.3,den)];});}
 export function islandDistance(x,z,p){let d=Infinity;for(let i=0;i<p.length;i++){const a=p[i],b=p[(i+1)%p.length],dx=b[0]-a[0],dz=b[1]-a[1],t=Math.max(0,Math.min(1,((x-a[0])*dx+(z-a[1])*dz)/(dx*dx+dz*dz)));d=Math.min(d,Math.hypot(x-a[0]-t*dx,z-a[1]-t*dz));}return d;}
 export function roundaboutYield(entry,cars,{gap=18,time=3}={}){return cars.some(c=>c.circulating&&c.id!==entry.id&&c.distance>=-4&&c.distance<gap+Math.max(0,c.speed||0)*time);}
 export function ringStation(x,z,p){let best=Infinity,station=0,length=0;for(let i=0;i<p.length;i++){const a=p[i],b=p[(i+1)%p.length],dx=b[0]-a[0],dz=b[1]-a[1],L=Math.hypot(dx,dz),t=Math.max(0,Math.min(1,((x-a[0])*dx+(z-a[1])*dz)/(L*L))),d=Math.hypot(x-a[0]-t*dx,z-a[1]-t*dz);if(d<best){best=d;station=length+t*L;}length+=L;}return{s:station,length,d:best};}

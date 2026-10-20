@@ -1,4 +1,4 @@
-import { MAPS } from './map-catalog.js';
+import { MAPS, canReverse } from './map-catalog.js';
 import { upperName } from './greek-caps.js';
 import { buildCourse, observeCourse } from './course.js';
 // EVENTS: data-driven race events (sprints against a grid of 3 by default, time trials, police pursuits), their route segments /
@@ -158,6 +158,8 @@ function nearestName(s, ctx) { let n = upperName(ctx.route.from || ''); for (con
 
 export function resolve(def, ctx) {
   if (isDrivingMode(def)) return resolveDrivingMode(def, ctx);
+  if (def.reverse && !canReverse(def.mapId)) def = { ...def, reverse: false }; // one-way-only course
+
   const a = locate(def.from, ctx), b = locate(def.to, ctx);
   if (def.type === 'free') return { s0: a.s, s1: b.s, dir: def.reverse ? -1 : 1, len: ctx.route.length, fromName: a.name, toName: b.name, sectors: [], reverse: def.reverse === true, timeLimit: 0, targetTimes: null, free: true };
   if (ctx.route.closed) {
@@ -211,9 +213,9 @@ export function targetLabels(def, r, fmtTime) {
 }
 
 // ------------------------------------------------------------------ saved results
-// The 2026-10-18 Garden Circuit is a different route from every earlier Psychiko loop: its personal
+// The 2026-10-19 Faros Circuit is a different route from every earlier Psychiko loop: its personal
 // bests live in their own namespace so old times never rank against it.
-const KEY = (id) => 'paraliaki.events.' + id + (/^psychiko-(race|tt)(?:~|$)/.test(id) ? '.garden-v2' : '');
+const KEY = (id) => 'paraliaki.events.' + id + (/^psychiko-(race|tt)(?:~|$)/.test(id) ? '.faros-v3' : '');
 const store = () => (typeof localStorage !== 'undefined' ? localStorage : memStore);
 const memStore = { m: new Map(), getItem(k) { return this.m.has(k) ? this.m.get(k) : null; }, setItem(k, v) { this.m.set(k, String(v)); }, removeItem(k) { this.m.delete(k); } };
 export function loadRecord(id, st = store()) {

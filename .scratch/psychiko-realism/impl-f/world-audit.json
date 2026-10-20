@@ -1,0 +1,474 @@
+{
+  "baseline": "e99e37c1",
+  "footprintsIdentical": true,
+  "routeIdentical": true,
+  "buildings": 3647,
+  "sections": [
+    {
+      "name": "Faros / lower 25is Martiou",
+      "from": 0,
+      "to": 150,
+      "buildings": 22,
+      "storeys": [
+        2,
+        3,
+        4
+      ],
+      "colors": [
+        "#e6e0cf",
+        "#eeeae0",
+        "#f0eee7",
+        "#dfd5b9",
+        "#e4dcc6",
+        "#d9d3c4",
+        "#eee8d8",
+        "#e7e0ce"
+      ],
+      "pitched": 0,
+      "frontages": 7
+    },
+    {
+      "name": "25is Martiou approach",
+      "from": 150,
+      "to": 302,
+      "buildings": 25,
+      "storeys": [
+        2,
+        3
+      ],
+      "colors": [
+        "#f0eee7",
+        "#e6e0cf",
+        "#e4dcc6",
+        "#eeeae0",
+        "#dfd5b9"
+      ],
+      "pitched": 3,
+      "frontages": 9
+    },
+    {
+      "name": "A square",
+      "from": 302,
+      "to": 414,
+      "buildings": 13,
+      "storeys": [
+        3,
+        4
+      ],
+      "colors": [
+        "#e6e0cf",
+        "#e7dfcb",
+        "#dfd5b9",
+        "#eeeae0",
+        "#f0eee7",
+        "#e4dcc6"
+      ],
+      "pitched": 1,
+      "frontages": 5
+    },
+    {
+      "name": "Diamantidou",
+      "from": 414,
+      "to": 934,
+      "buildings": 89,
+      "storeys": [
+        2,
+        3
+      ],
+      "colors": [
+        "#dfd5b9",
+        "#e4dcc6",
+        "#eeeae0",
+        "#e6e0cf",
+        "#f0eee7"
+      ],
+      "pitched": 16,
+      "frontages": 40
+    },
+    {
+      "name": "B square",
+      "from": 934,
+      "to": 1070,
+      "buildings": 19,
+      "storeys": [
+        2,
+        3
+      ],
+      "colors": [
+        "#dfd5b9",
+        "#e4dcc6",
+        "#eeeae0",
+        "#f0eee7",
+        "#e6e0cf"
+      ],
+      "pitched": 8,
+      "frontages": 6
+    },
+    {
+      "name": "Upper Diamantidou / Eleftherias",
+      "from": 1070,
+      "to": 1564,
+      "buildings": 84,
+      "storeys": [
+        2,
+        3
+      ],
+      "colors": [
+        "#e6e0cf",
+        "#eeeae0",
+        "#e4dcc6",
+        "#dfd5b9",
+        "#f0eee7"
+      ],
+      "pitched": 9,
+      "frontages": 34
+    },
+    {
+      "name": "Nikiforou Lytra",
+      "from": 1564,
+      "to": 1696,
+      "buildings": 13,
+      "storeys": [
+        2,
+        3
+      ],
+      "colors": [
+        "#e4dcc6",
+        "#dfd5b9",
+        "#f0eee7",
+        "#e6e0cf"
+      ],
+      "pitched": 1,
+      "frontages": 6
+    },
+    {
+      "name": "Paraschou descent",
+      "from": 1696,
+      "to": 1890,
+      "buildings": 28,
+      "storeys": [
+        2,
+        3
+      ],
+      "colors": [
+        "#e6e0cf",
+        "#eeeae0",
+        "#dfd5b9",
+        "#e4dcc6",
+        "#f0eee7"
+      ],
+      "pitched": 0,
+      "frontages": 14
+    },
+    {
+      "name": "Dryadon / Pavlou Mela",
+      "from": 1890,
+      "to": 2010,
+      "buildings": 11,
+      "storeys": [
+        2,
+        3
+      ],
+      "colors": [
+        "#e4dcc6",
+        "#eeeae0",
+        "#e6e0cf",
+        "#f0eee7"
+      ],
+      "pitched": 0,
+      "frontages": 5
+    },
+    {
+      "name": "Davaki",
+      "from": 2010,
+      "to": 2182,
+      "buildings": 28,
+      "storeys": [
+        2,
+        3
+      ],
+      "colors": [
+        "#e4dcc6",
+        "#d2c3a9",
+        "#dfd5b9",
+        "#f0eee7",
+        "#eeeae0",
+        "#e6e0cf"
+      ],
+      "pitched": 4,
+      "frontages": 15
+    },
+    {
+      "name": "Venizelou",
+      "from": 2182,
+      "to": 2610,
+      "buildings": 42,
+      "storeys": [
+        2,
+        3
+      ],
+      "colors": [
+        "#eeeae0",
+        "#dfd5b9",
+        "#f0eee7",
+        "#e6e0cf",
+        "#e4dcc6"
+      ],
+      "pitched": 5,
+      "frontages": 12
+    },
+    {
+      "name": "25is Martiou / Stavrou",
+      "from": 2610,
+      "to": 3195,
+      "buildings": 74,
+      "storeys": [
+        2,
+        3
+      ],
+      "colors": [
+        "#d6b474",
+        "#eeeae0",
+        "#e4dcc6",
+        "#f0eee7",
+        "#e6e0cf",
+        "#dfd5b9"
+      ],
+      "pitched": 15,
+      "frontages": 38
+    },
+    {
+      "name": "Bizaniou / Athens College",
+      "from": 3195,
+      "to": 3555,
+      "buildings": 37,
+      "storeys": [
+        2,
+        3
+      ],
+      "colors": [
+        "#eeeae0",
+        "#e4dcc6",
+        "#dfd5b9",
+        "#e6e0cf",
+        "#f0eee7"
+      ],
+      "pitched": 4,
+      "frontages": 22
+    },
+    {
+      "name": "Korytsas",
+      "from": 3555,
+      "to": 3645,
+      "buildings": 1,
+      "storeys": [
+        2
+      ],
+      "colors": [
+        "#f0eee7"
+      ],
+      "pitched": 0,
+      "frontages": 0
+    },
+    {
+      "name": "Benaki",
+      "from": 3645,
+      "to": 3870,
+      "buildings": 9,
+      "storeys": [
+        2,
+        3
+      ],
+      "colors": [
+        "#f0eee7",
+        "#e6e0cf",
+        "#e4dcc6",
+        "#dfd5b9"
+      ],
+      "pitched": 1,
+      "frontages": 3
+    },
+    {
+      "name": "Areaki",
+      "from": 3870,
+      "to": 4060,
+      "buildings": 20,
+      "storeys": [
+        2,
+        3
+      ],
+      "colors": [
+        "#eeeae0",
+        "#dfd5b9",
+        "#f0eee7",
+        "#e4dcc6"
+      ],
+      "pitched": 3,
+      "frontages": 10
+    },
+    {
+      "name": "Michalakopoulou square",
+      "from": 4060,
+      "to": 4095,
+      "buildings": 8,
+      "storeys": [
+        2,
+        3
+      ],
+      "colors": [
+        "#eeeae0",
+        "#e6e0cf",
+        "#e4dcc6",
+        "#f0eee7",
+        "#dfd5b9"
+      ],
+      "pitched": 1,
+      "frontages": 1
+    },
+    {
+      "name": "Malakasi",
+      "from": 4095,
+      "to": 4398,
+      "buildings": 12,
+      "storeys": [
+        2,
+        3
+      ],
+      "colors": [
+        "#e4dcc6",
+        "#e6e0cf",
+        "#eeeae0",
+        "#dfd5b9",
+        "#f0eee7"
+      ],
+      "pitched": 2,
+      "frontages": 4
+    },
+    {
+      "name": "Kallari park edge",
+      "from": 4398,
+      "to": 4692,
+      "buildings": 21,
+      "storeys": [
+        2,
+        3
+      ],
+      "colors": [
+        "#e4dcc6",
+        "#eeeae0",
+        "#e6e0cf",
+        "#f0eee7",
+        "#dfd5b9"
+      ],
+      "pitched": 0,
+      "frontages": 9
+    },
+    {
+      "name": "Lower Kallari",
+      "from": 4692,
+      "to": 4950,
+      "buildings": 39,
+      "storeys": [
+        2,
+        3
+      ],
+      "colors": [
+        "#e4dcc6",
+        "#eeeae0",
+        "#f0eee7",
+        "#e6e0cf",
+        "#dfd5b9"
+      ],
+      "pitched": 3,
+      "frontages": 15
+    },
+    {
+      "name": "Elikonos",
+      "from": 4950,
+      "to": 5068,
+      "buildings": 13,
+      "storeys": [
+        2,
+        3
+      ],
+      "colors": [
+        "#e6e0cf",
+        "#eeeae0",
+        "#e4dcc6",
+        "#dfd5b9"
+      ],
+      "pitched": 2,
+      "frontages": 7
+    },
+    {
+      "name": "Kifisias carriageway",
+      "from": 5068,
+      "to": 5388,
+      "buildings": 55,
+      "storeys": [
+        3,
+        4,
+        5
+      ],
+      "colors": [
+        "#e4dcc6",
+        "#f0eee7",
+        "#dfd5b9",
+        "#eeeae0",
+        "#e6e0cf",
+        "#81999c",
+        "#d8cdb5"
+      ],
+      "pitched": 0,
+      "frontages": 19
+    },
+    {
+      "name": "Kifisias surface frontage / Faros",
+      "from": 5388,
+      "to": 5733,
+      "buildings": 60,
+      "storeys": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "colors": [
+        "#f0eee7",
+        "#e4dcc6",
+        "#e6e0cf",
+        "#dfd5b9",
+        "#eeeae0",
+        "#e7dfcd",
+        "#e8e2d4",
+        "#e8dfce"
+      ],
+      "pitched": 0,
+      "frontages": 19
+    }
+  ],
+  "parking": {
+    "total": 394,
+    "lap": 357,
+    "other": 37,
+    "instanceCount": 394,
+    "byColor": {
+      "0": 49,
+      "1": 39,
+      "2": 43,
+      "3": 38,
+      "4": 28,
+      "5": 38,
+      "6": 37,
+      "7": 54,
+      "8": 33,
+      "9": 34,
+      "10": 1
+    },
+    "violations": [],
+    "minLapBodyClearance": 0.6434166845336136,
+    "minZebraCentreDistance": 6.300000000000068,
+    "minRingArmCentreDistance": 25.022319008871364
+  },
+  "preservedExplicitHeights": true
+}

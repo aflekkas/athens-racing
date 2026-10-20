@@ -8,12 +8,13 @@ import { effectiveEvent } from './mp-lifecycle.mjs';
 import { roadFrame, courseProgress, courseComplete } from '../src/course.js';
 import { MULTIPLAYER_PROTOCOL } from '../src/multiplayer-protocol.js';
 const socket = () => ({ readyState: 1, messages: [], send(data) { this.messages.push(JSON.parse(data)); }, close() {} });
-for (const reverse of [false, true]) test(`three-client Psychiko trace: ${reverse ? 'reversed' : 'forward'}, overtakes, shortcuts, tow, restore, laps and results`, t => {
+for (const reverse of [false, true]) test(`three-client Psychiko trace: ${reverse ? 'reverse requested (one-way course runs forward)' : 'forward'}, overtakes, shortcuts, tow, restore, laps and results`, t => {
   let now = 100000; t.mock.method(Date, 'now', () => now);
   const map = resolveMap(getMap('psychiko'), JSON.parse(readFileSync(new URL('../data/maps/psychiko/map.json', import.meta.url))));
   const def = [...map.definitions.values()].find(e => e.type === 'sprint');
   const event = effectiveEvent(def, { reverse });
-  assert.equal(event.dir, reverse ? -1 : 1); assert.equal(event.s0, 0);
+  // Psychiko's roundabouts and one-way streets are legal only forwards, so a reverse lobby is ignored.
+  assert.equal(event.dir, 1); assert.equal(event.s0, 0);
   assert.ok(event.sectors.every(cp => Math.abs((cp.s - event.s0) * event.dir - cp.d) < 1e-6));
   const opts = { maps: new Map([['riviera', map], ['psychiko', map]]), defaultMap: 'psychiko', cars: new Set(['mini']), leaderboard: { submit: async () => {} }, countdownMs: 0, raceLimitMs: 2000000 };
   let core = createGameCore(opts);

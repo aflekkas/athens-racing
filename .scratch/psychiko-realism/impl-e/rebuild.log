@@ -1,0 +1,9 @@
+Second rebuild byte-identical {
+  'tools/maps/psychiko/raw/route.json': 'dd5c80b3d21b34d06d1003d617fd262c662610ddde354bed1f6897bdec6eb46a',
+  'tools/maps/psychiko/raw/route-points.json': '8faafb7b83bcfc14440a5a857dd10763e4443f0bef1f8440651c421ce0243b6b',
+  'tools/maps/psychiko/raw/profile.json': '97563ea8ce2b86889acabc2e9c5433aa4e5d1ede06ef4c878824e487746d89f6',
+  'data/maps/psychiko/map.json': '9fcc6708e383ce6d8eda80bec826580f25d13551db0d4ec97ad203564f84f649',
+  'data/maps/psychiko/terrain.bin': 'fa138d47b8a78db644618cb943c0529138fd9d1a9e3fa548742c391e18283aa8',
+  'assets/maps/psychiko.svg': 'a6fa5037006ce43ee35d3c2cf6bf9878251fbcd8b634992272c066c5d0558d4f'
+}
+assets/maps/spawn-roads.json 141475 bytes

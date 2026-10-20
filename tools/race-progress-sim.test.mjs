@@ -74,7 +74,8 @@ registerMapEvents('psychiko', data.events);
 for (const type of ['sprint', 'timetrial']) for (const toggle of [false, true]) test(`Psychiko ${type}: default/toggle=${toggle}, full laps, grid, AI direction and guidance`, () => {
   const route = new Route(data.route), base = getEvents('psychiko').find(e => e.type === type), def = applySetup(base, { reverse: toggle }, { closed: true });
   const run = new EventRun(def, { route, marks: data.marks }, { storage: { getItem() { return null; }, setItem() {} } }); run.start();
-  const dir = toggle ? -1 : 1; assert.equal(run.r.dir, dir); assert.equal(run.r.laps, type === 'sprint' ? 2 : 1);
+  // One-way streets and roundabouts: a reverse toggle (stale saved setup) still runs Psychiko forwards.
+  const dir = 1; assert.equal(run.r.dir, dir); assert.notEqual(def.reverse, true); assert.equal(run.r.laps, type === 'sprint' ? 2 : 1);
   const slots = [0, 1, 2].map(i => raceGridSlot(route, run.r.s0, dir, i, spec.length));
   assert.ok(slots.every(slot => (slot.s - run.r.s0) * dir <= 0));
   const vehicle = new Vehicle(spec, route); vehicle.reset(slots[0].s, slots[0].u); vehicle.yaw = slots[0].yaw;

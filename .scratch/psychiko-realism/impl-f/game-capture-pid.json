@@ -1,0 +1,11 @@
+{
+  "pid": 9809,
+  "command": [
+    "python3",
+    ".scratch/psychiko-realism/impl-f/browser-slot.py",
+    "node",
+    ".scratch/psychiko-realism/impl-f/game-capture.mjs"
+  ],
+  "closed": true,
+  "code": 0
+}

@@ -45,6 +45,7 @@ export class Route {
     this.closed = !!r.closed;
     this.streetCircuit = r.streetCircuit === true;
     this.roundabouts = r.roundabouts || [];
+    this.oneway = r.oneway || []; // [s0, s1] stretches legal only in the +s direction (source one-way streets)
     const N = this.N = r.x.length;
     this.X = Float32Array.from(r.x); this.Z = Float32Array.from(r.z); this.Y = Float32Array.from(r.y);
     this.LN = Float32Array.from(r.lanes); this.DV = Float32Array.from(r.div);
@@ -90,6 +91,13 @@ export class Route {
   }
   setLocalCorridors(metadata) { this.localLayout = metadata.length ? new LocalCarriageways(this, metadata) : null; this.localCorridors = this.localLayout?.bores || []; }
   contactFrame(s, u, out = {}) { if (this.localLayout?.contains(s)) return this.localLayout.frame(s,u,out); this.frame(s,out); out.mapped=false; return out; }
+  /** distance a car travelling in `dir` covers before it would enter a forward-only stretch (0 = already on one), else null */
+  oneWayAhead(s, dir) {
+    if (dir > 0 || !this.oneway.length) return null;
+    s = this.wrap(s); let best = null;
+    for (const [a, b] of this.oneway) { if (s >= a && s <= b) return 0; let d = s - b; if (this.closed) d = ((d % this.length) + this.length) % this.length; else if (d < 0) continue; if (best === null || d < best) best = d; }
+    return best;
+  }
   wrap(s) { return this.closed ? ((s % this.length) + this.length) % this.length : s; }
   // segment index of s; the fraction within it is left in this._t (no array per call: thousands of calls a frame, millions while building a world)
   _i(s) { const f = clamp(this.wrap(s) / this.step, 0, this.N - 1.0001); const i = Math.floor(f); this._t = f - i; return i; }

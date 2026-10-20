@@ -1,0 +1,21 @@
+{
+  "method": "Production RivalAI and Mini Vehicle, 120 Hz, physical Ground + RoadNetwork + race roadworks, no teleports or resets",
+  "length": 5732.284334253607,
+  "samples": 503,
+  "offRoadFrames": 0,
+  "clockwiseSteps": 0,
+  "islandFrames": 0,
+  "wallFrames": 0,
+  "visited": [
+    25053095,
+    25053533,
+    25053562,
+    31486843,
+    470144907,
+    634346640
+  ],
+  "finish": 502.6666666666667,
+  "finalS": 5732.3461642212615
+}
+(node:47636) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)

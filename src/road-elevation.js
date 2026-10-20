@@ -3,12 +3,17 @@
 // axes (including mapped tunnel bores), then ease cuts along the race profile.
 export function conformRoadElevations(route) {
  const {Y,N,step,B}=route,bins=new Map(),pairs=[],cell=16,original=Y.slice();
+ // Psychiko's lap and its ground come from one measured height field, so nearby legs (a junction corner)
+ // already share real ground: allow that hillside slope between them instead of a 2.5% DEM-mismatch bound.
+ const slope=route.streetCircuit?.15:.025;
  for(let i=0;i<N;i++)for(const u of [-route.edge(i*step),0,route.edge(i*step)]){
   const p=route.point(i*step,u),q={x:p.x,z:p.z,i,u},cx=Math.floor(p.x/cell),cz=Math.floor(p.z/cell);
   for(let x=cx-1;x<=cx+1;x++)for(let z=cz-1;z<=cz+1;z++)for(const a of bins.get(`${x},${z}`)||[]){
    if(a.i===i)continue;const d=Math.hypot(a.x-q.x,a.z-q.z);const along=route.closed?Math.min(Math.abs(a.i-i),N-1-Math.abs(a.i-i))*step:Math.abs(a.i-i)*step;
    const centre=Math.hypot(route.X[a.i]-route.X[i],route.Z[a.i]-route.Z[i]);
-   if(d<16&&(centre<along*.8||d<along*.4))pairs.push([a,q,d*.025]);
+   // Edges within two metres can overlap in a tight junction: keep their levels within 1 cm.
+   // Farther apart they retain the measured hillside slope.
+   if(d<16&&(centre<along*.8||d<along*.4))pairs.push([a,q,route.streetCircuit?Math.min(d*slope,.01+Math.max(0,d-2)*slope):d*slope]);
   }
   const key=`${cx},${cz}`;if(!bins.has(key))bins.set(key,[]);bins.get(key).push(q);
  }

@@ -1,0 +1,638 @@
+{
+  "junctions": 89,
+  "originalStations": 165,
+  "totalStations": 206,
+  "maxRegularGap": 45,
+  "junctionToleranceM": 6,
+  "checks": [
+    {
+      "node": 272499018,
+      "s": 677.1043375723484,
+      "distanceToSurvey": 2.11,
+      "coveredBy": "lap-0675",
+      "originalDistanceToSurvey": 2.1043375723484132
+    },
+    {
+      "node": 272499025,
+      "s": 1052.052184165177,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-272499025",
+      "originalDistanceToSurvey": 17.052184165177096
+    },
+    {
+      "node": 272499261,
+      "s": 302.01498062536484,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-272499261",
+      "originalDistanceToSurvey": 0.004980625364851221
+    },
+    {
+      "node": 272554946,
+      "s": 4797.978986026845,
+      "distanceToSurvey": 0.32,
+      "coveredBy": "lap-4798",
+      "originalDistanceToSurvey": 0.2610139731550589
+    },
+    {
+      "node": 2436338813,
+      "s": 302.01498062536484,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-2436338813",
+      "originalDistanceToSurvey": 0.004980625364851221
+    },
+    {
+      "node": 272501749,
+      "s": 1194.2523389448133,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-272501749",
+      "originalDistanceToSurvey": 20.747661055186654
+    },
+    {
+      "node": 272554571,
+      "s": 325.00889488998564,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-272554571",
+      "originalDistanceToSurvey": 10.00889488998564
+    },
+    {
+      "node": 2436338816,
+      "s": 350.4985706157677,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-2436338816",
+      "originalDistanceToSurvey": 9.501429384232324
+    },
+    {
+      "node": 272554958,
+      "s": 4542.114202114857,
+      "distanceToSurvey": 2.88,
+      "coveredBy": "lap-4545",
+      "originalDistanceToSurvey": 2.8857978851428925
+    },
+    {
+      "node": 272554942,
+      "s": 4908.243459964533,
+      "distanceToSurvey": 4.88,
+      "coveredBy": "lap-4905",
+      "originalDistanceToSurvey": 3.243459964533031
+    },
+    {
+      "node": 272560836,
+      "s": 4373.066026672437,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-272560836",
+      "originalDistanceToSurvey": 8.066026672437147
+    },
+    {
+      "node": 272560900,
+      "s": 1380.4787190120487,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-272560900",
+      "originalDistanceToSurvey": 14.521280987951286
+    },
+    {
+      "node": 272560244,
+      "s": 4062.652277160283,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-272560244",
+      "originalDistanceToSurvey": 2.452277160283302
+    },
+    {
+      "node": 272560242,
+      "s": 4058.2012959527456,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-272560242",
+      "originalDistanceToSurvey": 1.9987040472542503
+    },
+    {
+      "node": 272560346,
+      "s": 3643.226813251813,
+      "distanceToSurvey": 1.77,
+      "coveredBy": "lap-3645",
+      "originalDistanceToSurvey": 1.7731867481870722
+    },
+    {
+      "node": 351946928,
+      "s": 1886.4339444346933,
+      "distanceToSurvey": 3.59,
+      "coveredBy": "lap-1890",
+      "originalDistanceToSurvey": 3.5660555653066695
+    },
+    {
+      "node": 351949089,
+      "s": 2232.110717734482,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-351949089",
+      "originalDistanceToSurvey": 0.0007177344818956044
+    },
+    {
+      "node": 351947552,
+      "s": 1986.9444778676534,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-351947552",
+      "originalDistanceToSurvey": 6.944477867653404
+    },
+    {
+      "node": 351949088,
+      "s": 2252.983257520109,
+      "distanceToSurvey": 2.99,
+      "coveredBy": "lap-2250",
+      "originalDistanceToSurvey": 2.983257520108964
+    },
+    {
+      "node": 351949121,
+      "s": 2207.6054395151878,
+      "distanceToSurvey": 2.61,
+      "coveredBy": "lap-2205",
+      "originalDistanceToSurvey": 2.6054395151877543
+    },
+    {
+      "node": 351950217,
+      "s": 2139.083563716713,
+      "distanceToSurvey": 0.98,
+      "coveredBy": "lap-2138",
+      "originalDistanceToSurvey": 0.9735637167127607
+    },
+    {
+      "node": 347780182,
+      "s": 3540.7581942295074,
+      "distanceToSurvey": 1.4,
+      "coveredBy": "lap-3540",
+      "originalDistanceToSurvey": 0.5781942295075169
+    },
+    {
+      "node": 351951722,
+      "s": 2896.77479948007,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-351951722",
+      "originalDistanceToSurvey": 16.774799480070214
+    },
+    {
+      "node": 351952164,
+      "s": 2862.425593055119,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-351952164",
+      "originalDistanceToSurvey": 17.574406944881048
+    },
+    {
+      "node": 351951844,
+      "s": 2846.5241247416816,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-351951844",
+      "originalDistanceToSurvey": 11.52412474168159
+    },
+    {
+      "node": 351952417,
+      "s": 2696.6497830678327,
+      "distanceToSurvey": 3.35,
+      "coveredBy": "lap-2700",
+      "originalDistanceToSurvey": 3.3502169321673136
+    },
+    {
+      "node": 351952523,
+      "s": 2625.744795364668,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-351952523",
+      "originalDistanceToSurvey": 15.74479536466788
+    },
+    {
+      "node": 351949751,
+      "s": 2570.667833081079,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-351949751",
+      "originalDistanceToSurvey": 5.667833081079152
+    },
+    {
+      "node": 272561334,
+      "s": 1548.076788106173,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-272561334",
+      "originalDistanceToSurvey": 4.003211893827029
+    },
+    {
+      "node": 706836672,
+      "s": 4067.6337026700658,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-706836672",
+      "originalDistanceToSurvey": 6.566297329934059
+    },
+    {
+      "node": 347780192,
+      "s": 3152.156354076651,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-347780192",
+      "originalDistanceToSurvey": 2.1563540766510414
+    },
+    {
+      "node": 351946626,
+      "s": 1927.9387790777728,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-351946626",
+      "originalDistanceToSurvey": 7.061220922227221
+    },
+    {
+      "node": 272560246,
+      "s": 4074.202089628261,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-272560246",
+      "originalDistanceToSurvey": 0.0020896282612739014
+    },
+    {
+      "node": 272554420,
+      "s": 62.165166665186916,
+      "distanceToSurvey": 0.27,
+      "coveredBy": "lap-0062",
+      "originalDistanceToSurvey": 0.16516666518691636
+    },
+    {
+      "node": 6181881900,
+      "s": 5710.854454010558,
+      "distanceToSurvey": 4.16,
+      "coveredBy": "lap-5715",
+      "originalDistanceToSurvey": 4.145545989442326
+    },
+    {
+      "node": 1285491836,
+      "s": 5680.529951594854,
+      "distanceToSurvey": 0.29,
+      "coveredBy": "lap-5680",
+      "originalDistanceToSurvey": 0.24995159485388285
+    },
+    {
+      "node": 272554713,
+      "s": 4692.232745345067,
+      "distanceToSurvey": 0.21,
+      "coveredBy": "lap-4692",
+      "originalDistanceToSurvey": 0.0027453450675238855
+    },
+    {
+      "node": 272560247,
+      "s": 4074.202089628261,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-272560247",
+      "originalDistanceToSurvey": 0.0020896282612739014
+    },
+    {
+      "node": 1609261345,
+      "s": 4635.248911416635,
+      "distanceToSurvey": 0.25,
+      "coveredBy": "lap-4635",
+      "originalDistanceToSurvey": 0.24891141663465532
+    },
+    {
+      "node": 1609261375,
+      "s": 4674.334974295125,
+      "distanceToSurvey": 5.66,
+      "coveredBy": "lap-4680",
+      "originalDistanceToSurvey": 5.665025704875006
+    },
+    {
+      "node": 351953290,
+      "s": 2420.1181786345132,
+      "distanceToSurvey": 0.01,
+      "coveredBy": "lap-2420",
+      "originalDistanceToSurvey": 0.001821365486648574
+    },
+    {
+      "node": 2037010966,
+      "s": 2371.141292060458,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-2037010966",
+      "originalDistanceToSurvey": 13.858707939542
+    },
+    {
+      "node": 351947283,
+      "s": 2182.1082374984944,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-351947283",
+      "originalDistanceToSurvey": 0.0017625015057092241
+    },
+    {
+      "node": 272560345,
+      "s": 3614.6555030191084,
+      "distanceToSurvey": 0.93,
+      "coveredBy": "lap-3614",
+      "originalDistanceToSurvey": 0.4755030191086007
+    },
+    {
+      "node": 351946933,
+      "s": 1695.2960528982858,
+      "distanceToSurvey": 4.76,
+      "coveredBy": "lap-1696",
+      "originalDistanceToSurvey": 0.7839471017141477
+    },
+    {
+      "node": 272561320,
+      "s": 1467.356698223659,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-272561320",
+      "originalDistanceToSurvey": 17.643301776341104
+    },
+    {
+      "node": 1285491854,
+      "s": 5389.074012865809,
+      "distanceToSurvey": 0.84,
+      "coveredBy": "lap-5388",
+      "originalDistanceToSurvey": 0.804012865808545
+    },
+    {
+      "node": 272554678,
+      "s": 5057.52135403345,
+      "distanceToSurvey": 0.73,
+      "coveredBy": "lap-5058",
+      "originalDistanceToSurvey": 0.7286459665501752
+    },
+    {
+      "node": 272499530,
+      "s": 150.39597942399632,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-272499530",
+      "originalDistanceToSurvey": 15.395979423996323
+    },
+    {
+      "node": 7229011616,
+      "s": 5068.251396719694,
+      "distanceToSurvey": 2.91,
+      "coveredBy": "lap-5068",
+      "originalDistanceToSurvey": 0.0013967196937301196
+    },
+    {
+      "node": 1285491927,
+      "s": 18.000892884955647,
+      "distanceToSurvey": 5.91,
+      "coveredBy": "lap-0018",
+      "originalDistanceToSurvey": 0.0008928849556468776
+    },
+    {
+      "node": 272499027,
+      "s": 1025.3990300692649,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-272499027",
+      "originalDistanceToSurvey": 9.600969930735118
+    },
+    {
+      "node": 272560865,
+      "s": 1291.4642534566028,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-272560865",
+      "originalDistanceToSurvey": 13.535746543397181
+    },
+    {
+      "node": 272560545,
+      "s": 4982.973601235461,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-272560545",
+      "originalDistanceToSurvey": 12.026398764539408
+    },
+    {
+      "node": 272554949,
+      "s": 4398.218161557461,
+      "distanceToSurvey": 3.45,
+      "coveredBy": "lap-4398",
+      "originalDistanceToSurvey": 0.0018384425393378478
+    },
+    {
+      "node": 4697566198,
+      "s": 5239.776296565044,
+      "distanceToSurvey": 0.6,
+      "coveredBy": "lap-5240",
+      "originalDistanceToSurvey": 0.4837034349566238
+    },
+    {
+      "node": 6193531310,
+      "s": 3828.519528616065,
+      "distanceToSurvey": 4.1,
+      "coveredBy": "lap-3825",
+      "originalDistanceToSurvey": 3.519528616065145
+    },
+    {
+      "node": 272499074,
+      "s": 4288.256981682916,
+      "distanceToSurvey": 0.08,
+      "coveredBy": "lap-4288",
+      "originalDistanceToSurvey": 0.046981682916339196
+    },
+    {
+      "node": 6713021663,
+      "s": 995.7052369290832,
+      "distanceToSurvey": 5.73,
+      "coveredBy": "lap-0990",
+      "originalDistanceToSurvey": 5.705236929083185
+    },
+    {
+      "node": 2436338808,
+      "s": 958.0475213215204,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-2436338808",
+      "originalDistanceToSurvey": 6.00247867847952
+    },
+    {
+      "node": 351950028,
+      "s": 1974.4438411516749,
+      "distanceToSurvey": 5.57,
+      "coveredBy": "lap-1980",
+      "originalDistanceToSurvey": 5.55615884832514
+    },
+    {
+      "node": 347784877,
+      "s": 2980.1836333211504,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-347784877",
+      "originalDistanceToSurvey": 10.18363332115041
+    },
+    {
+      "node": 7226638625,
+      "s": 2606.1292698996695,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-7226638625",
+      "originalDistanceToSurvey": 3.8707301003305474
+    },
+    {
+      "node": 351949744,
+      "s": 2606.6996805499584,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-351949744",
+      "originalDistanceToSurvey": 3.3003194500415702
+    },
+    {
+      "node": 347784872,
+      "s": 3000.640387512238,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-347784872",
+      "originalDistanceToSurvey": 0.49038751223770305
+    },
+    {
+      "node": 6193531309,
+      "s": 3725.688417057965,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-6193531309",
+      "originalDistanceToSurvey": 9.311582942034875
+    },
+    {
+      "node": 6262082332,
+      "s": 4439.859533847892,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-6262082332",
+      "originalDistanceToSurvey": 15.140466152108274
+    },
+    {
+      "node": 351951291,
+      "s": 2784.926230887899,
+      "distanceToSurvey": 5.07,
+      "coveredBy": "lap-2790",
+      "originalDistanceToSurvey": 5.073769112101218
+    },
+    {
+      "node": 353239224,
+      "s": 2604.1291706902284,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-353239224",
+      "originalDistanceToSurvey": 5.87082930977158
+    },
+    {
+      "node": 8537691824,
+      "s": 3205.437932302615,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-8537691824",
+      "originalDistanceToSurvey": 10.437932302615081
+    },
+    {
+      "node": 8694787230,
+      "s": 2763.60432206083,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-8694787230",
+      "originalDistanceToSurvey": 18.604322060829872
+    },
+    {
+      "node": 6193531351,
+      "s": 935.0109977359334,
+      "distanceToSurvey": 0.99,
+      "coveredBy": "lap-0934",
+      "originalDistanceToSurvey": 0.9609977359334607
+    },
+    {
+      "node": 6193531358,
+      "s": 413.3121168857251,
+      "distanceToSurvey": 0.81,
+      "coveredBy": "lap-0414",
+      "originalDistanceToSurvey": 0.7078831142748641
+    },
+    {
+      "node": 272554977,
+      "s": 4074.202089628261,
+      "distanceToSurvey": 2.9,
+      "coveredBy": "lap-4074",
+      "originalDistanceToSurvey": 0.0020896282612739014
+    },
+    {
+      "node": 272554605,
+      "s": 390.71794880271227,
+      "distanceToSurvey": 0.8,
+      "coveredBy": "lap-0390",
+      "originalDistanceToSurvey": 0.6979488027122898
+    },
+    {
+      "node": 2436338815,
+      "s": 302.17486521470346,
+      "distanceToSurvey": 2.34,
+      "coveredBy": "lap-0302",
+      "originalDistanceToSurvey": 0.16486521470346815
+    },
+    {
+      "node": 272560240,
+      "s": 4060.201395162185,
+      "distanceToSurvey": 0.99,
+      "coveredBy": "lap-4060",
+      "originalDistanceToSurvey": 0.0013951621849628282
+    },
+    {
+      "node": 272560814,
+      "s": 964.1648660923129,
+      "distanceToSurvey": 0.39,
+      "coveredBy": "lap-0964",
+      "originalDistanceToSurvey": 0.11486609231292277
+    },
+    {
+      "node": 2410035768,
+      "s": 1034.0182875874143,
+      "distanceToSurvey": 0.98,
+      "coveredBy": "lap-1035",
+      "originalDistanceToSurvey": 0.9817124125856935
+    },
+    {
+      "node": 6193531325,
+      "s": 1563.2582783332164,
+      "distanceToSurvey": 0.82,
+      "coveredBy": "lap-1564",
+      "originalDistanceToSurvey": 0.8217216667835601
+    },
+    {
+      "node": 347784880,
+      "s": 3000.4290382071795,
+      "distanceToSurvey": 1.61,
+      "coveredBy": "lap-3000",
+      "originalDistanceToSurvey": 0.2790382071793829
+    },
+    {
+      "node": 6190423756,
+      "s": 3018.3002222744926,
+      "distanceToSurvey": 3.31,
+      "coveredBy": "lap-3015",
+      "originalDistanceToSurvey": 3.3002222744926257
+    },
+    {
+      "node": 351949741,
+      "s": 2572.7013268510436,
+      "distanceToSurvey": 0,
+      "coveredBy": "jct-351949741",
+      "originalDistanceToSurvey": 7.701326851043632
+    },
+    {
+      "node": 351949742,
+      "s": 2606.1292698996695,
+      "distanceToSurvey": 4.95,
+      "coveredBy": "lap-2610",
+      "originalDistanceToSurvey": 3.8707301003305474
+    },
+    {
+      "node": 272498881,
+      "s": 1552.0769865250522,
+      "distanceToSurvey": 3.19,
+      "coveredBy": "lap-1552",
+      "originalDistanceToSurvey": 0.0030134749476928846
+    },
+    {
+      "node": 347784876,
+      "s": 2972.863240331597,
+      "distanceToSurvey": 3.02,
+      "coveredBy": "lap-2970",
+      "originalDistanceToSurvey": 2.8632403315968986
+    },
+    {
+      "node": 6190392302,
+      "s": 2544.724260127259,
+      "distanceToSurvey": 0.78,
+      "coveredBy": "lap-2544",
+      "originalDistanceToSurvey": 0.5942601272590764
+    },
+    {
+      "node": 351951840,
+      "s": 2954.5922748581033,
+      "distanceToSurvey": 0.58,
+      "coveredBy": "lap-2954",
+      "originalDistanceToSurvey": 0.4422748581032465
+    },
+    {
+      "node": 6193170820,
+      "s": 1069.2814715417671,
+      "distanceToSurvey": 0.84,
+      "coveredBy": "lap-1070",
+      "originalDistanceToSurvey": 0.7685284582328222
+    }
+  ],
+  "distanceMethod": "World-space distance from each actual OSM public junction node to the requested panorama lookup position, not along-lap projection",
+  "maxSnappedPanoramaProgressGapM": 53.105359287768806,
+  "maxSnappedGapBetween": [
+    "lap-2655",
+    "lap-2700"
+  ]
+}

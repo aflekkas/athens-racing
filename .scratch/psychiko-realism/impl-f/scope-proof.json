@@ -1,0 +1,19 @@
+{
+  "baseline": "e99e37c1",
+  "routeFieldsIdentical": {
+    "x": true,
+    "z": true,
+    "y": true,
+    "width": true,
+    "lanes": true,
+    "div": true,
+    "roundabouts": true,
+    "oneway": true
+  },
+  "buildingFootprintsIdentical": true,
+  "buildingsBefore": 3647,
+  "buildingsAfter": 3647,
+  "otherMapBundlesUnchanged": true,
+  "sharedBuildingChange": "Only explicit color/windowBay/storeyHeight fields affect Psychiko; other-map inputs lack new windowBay/storeyHeight fields.",
+  "sharedFacadeChange": "Round interpolated atlas style before tile lookup; arithmetic-only shader correction, no new resources, geometry, culling or render passes."
+}

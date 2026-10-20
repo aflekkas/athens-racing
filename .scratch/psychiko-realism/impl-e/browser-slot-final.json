@@ -1,0 +1,11 @@
+{
+  "wrapper": 45452,
+  "command": [
+    "node",
+    ".scratch/psychiko-realism/impl-e/harness/perf-browser.mjs"
+  ],
+  "slot": 1,
+  "child": 45453,
+  "closed": true,
+  "code": 0
+}

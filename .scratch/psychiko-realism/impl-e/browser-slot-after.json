@@ -1,0 +1,11 @@
+{
+  "wrapper": 47107,
+  "command": [
+    "node",
+    ".scratch/psychiko-realism/impl-e/harness/evidence.mjs"
+  ],
+  "slot": 1,
+  "child": 47108,
+  "closed": true,
+  "code": 0
+}
