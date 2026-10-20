@@ -9,7 +9,8 @@ try{
     await page.evaluate(async([x,z])=>{const A=window.__athens;const near=()=>[...A.roads.anchors({validate:true})].sort((a,b)=>Math.hypot(a.x-x,a.z-z)-Math.hypot(b.x-x,b.z-z))[0];let a=near();
       for(let i=0;i<4&&(!a||Math.hypot(a.x-x,a.z-z)>60);i++){await A.stream.teleport({x,z},()=>{});await new Promise(r=>setTimeout(r,4000));a=near();}
       await A.goto(a.id,a.x,a.z);A.setPaused(true);},[x,z]);
-    await page.waitForTimeout(15000);
+    // wait until the stream has settled (the resident bytes unchanged for eight seconds), so every run sees the same cells
+    {let last=-1,stable=0;for(let i=0;i<60&&stable<4;i++){await page.waitForTimeout(2000);const v=await page.evaluate(()=>window.__athens.inventory().tileJS);stable=v===last?stable+1:0;last=v;}}
     for(const detail of [true,false]){
       result[`${name}-${detail?'on':'off'}`]=await page.evaluate(async detail=>{
         const {setSetting}=await import('/src/settings.js');setSetting('worldDetail',detail);await new Promise(r=>setTimeout(r,400));

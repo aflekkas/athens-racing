@@ -6,10 +6,10 @@ import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {signalState,STOP_OFF} from './signal-plan.js';
 
-export const KINDS=Object.freeze({lamp:0,bus_stop:1,bus_shelter:2,kiosk:3,bench:4,bollard:5,stop:6,give_way:7,oneway:8,fountain:9,monument:10,parked_car:11,crossing:12,signal:13,rooftop:14});
-export const PROP_LIMITS=Object.freeze({capacity:900,near:230,rebuildMetres:10});
+export const KINDS=Object.freeze({lamp:0,bus_stop:1,bus_shelter:2,kiosk:3,bench:4,bollard:5,stop:6,give_way:7,oneway:8,fountain:9,monument:10,parked_car:11,crossing:12,signal:13,rooftop:14,solar:15,antenna:16,pergola:17});
+export const PROP_LIMITS=Object.freeze({capacity:1500,near:230,rebuildMetres:10});
 /** How far each model is drawn (metres). Small or rare models stop earlier, so a street scene costs a handful of draw calls, not one per model type. */
-export const PROP_NEAR=Object.freeze({lamp:210,signal:230,bus_stop:140,bus_shelter:140,kiosk:140,stop:110,give_way:110,oneway:100,crossing:100,bench:80,bollard:80,fountain:160,monument:160,parked_car:120,rooftop:110});
+export const PROP_NEAR=Object.freeze({lamp:210,signal:230,bus_stop:140,bus_shelter:140,kiosk:140,stop:110,give_way:110,oneway:100,crossing:100,bench:80,bollard:80,fountain:160,monument:160,parked_car:120,rooftop:120,solar:100,antenna:120,pergola:100});
 const NEAR_BY_KIND=Object.fromEntries(Object.entries(PROP_NEAR).map(([n,d])=>[KINDS[n],d]));
 const CAR_PAINT=['#e9e9e6','#9ea4a8','#26292c','#2f4d78','#8c2f2b','#b9a98a'];
 const STATE_CODE={R:1,A:2,G:3};
@@ -50,10 +50,12 @@ export function propParts(){
   add(11,1.8,.7,4.2,0,.6,0,'#ffffff');add(11,1.55,.55,2.2,0,1.2,.2,'#9aa5ac');for(const x of [-.82,.82])for(const z of [-1.3,1.3])add(11,.22,.55,.55,x,.28,z,'#1a1c1e');
   // pedestrian-crossing sign: post, blue plate, white pedestrian block
   add(12,.06,2.3,.06,0,1.15,0,grey);add(12,.62,.62,.04,0,2.1,0,'#2a5a9c');add(12,.3,.34,.05,0,2.1,0,'#f4f2ec');add(12,.14,.14,.05,0,2.28,0,'#2a5a9c');
-  // rooftop kit of a polykatoikia: a solar water heater (tilted panel on a frame, white drum tank), a TV antenna on its mast, the stair head
-  add(14,1.5,.07,1.05,-1.4,.75,.2,'#243a62',{rotX:-.6});add(14,.08,.7,.08,-2.05,.35,.7,'#9a9fa2');add(14,.08,.7,.08,-.75,.35,.7,'#9a9fa2');add(14,1.2,.56,.56,-1.4,1.25,-.5,'#eeeeea',{segments:8,rotZ:Math.PI/2});
-  add(14,.05,3.3,.05,2.2,1.65,1.3,'#8c9094');add(14,1.1,.04,.04,2.2,3.0,1.3,'#8c9094');add(14,.8,.04,.04,2.2,2.6,1.3,'#8c9094');add(14,.5,.04,.04,2.2,2.2,1.3,'#8c9094');
-  add(14,2.6,2.4,2.6,.6,1.2,-2,'#b6b2a6');add(14,2.8,.15,2.8,.6,2.45,-2,'#9e9a8e');
+  // rooftop kit of a polykatoikia, four small models: the stair head with a white tank on a stand (14), a solar water heater (a tilted panel on its frame and a drum tank, 15),
+  // a TV antenna on a mast (16) and a pergola with a plant box (17)
+  add(14,2.6,2.4,2.6,.6,1.2,-1.2,'#b6b2a6');add(14,2.8,.15,2.8,.6,2.45,-1.2,'#9e9a8e');add(14,.9,1.1,.9,-1.2,1.65,1.4,'#eeeeea',{segments:8});add(14,.08,1,.08,-1.55,.5,1.1,'#7d8386');add(14,.08,1,.08,-.85,.5,1.7,'#7d8386');
+  add(15,1.5,.07,1.05,-.3,.75,.2,'#243a62',{rotX:-.6});add(15,.08,.7,.08,-.95,.35,.7,'#9a9fa2');add(15,.08,.7,.08,.35,.35,.7,'#9a9fa2');add(15,1.2,.56,.56,-.3,1.25,-.5,'#eeeeea',{segments:8,rotZ:Math.PI/2});
+  add(16,.05,3.3,.05,0,1.65,0,'#8c9094');add(16,1.1,.04,.04,0,3.0,0,'#8c9094');add(16,.8,.04,.04,0,2.6,0,'#8c9094');add(16,.5,.04,.04,0,2.2,0,'#8c9094');add(16,.9,.04,.04,0,.12,0,'#6d7377');
+  for(const x of [-1.4,1.4])for(const z of [-1,1])add(17,.1,2.2,.1,x,1.1,z,'#d8d3c4');for(const z of [-.8,-.27,.27,.8])add(17,3.2,.06,.12,0,2.25,z,'#9a7a56');add(17,2.6,.45,.5,0,.22,1.35,'#8d5a3d');add(17,2.4,.3,.4,0,.6,1.35,'#5f8c45');
   // signal: pole, short arm over the kerb, head housing with a backplate and its three lamps (red, amber, green) on the face toward oncoming traffic
   add(13,.12,4.6,.12,0,2.3,0,grey);add(13,.8,.09,.09,-.4,4.15,0,grey);add(13,.44,1.3,.34,-.8,3.7,0,'#16181a');add(13,.7,1.55,.04,-.8,3.7,.19,'#16181a');add(13,.76,.06,.05,-.8,4.52,.2,'#e8e6dc');
   [['#ff2a14',1,.4],['#ffa800',2,0],['#14ff6a',3,-.4]].forEach(([c,i,y])=>P.push(part(.27,.04,.27,-.8,3.7+y,-.18,c,{kind:13,lamp:i,segments:6,faceZ:true})));
@@ -79,7 +81,7 @@ export function signalMaterial(){
   };
   return m;
 }
-const KIND_CAPACITY={[KINDS.lamp]:400,[KINDS.signal]:240,[KINDS.parked_car]:160,[KINDS.rooftop]:200};
+const KIND_CAPACITY={[KINDS.lamp]:400,[KINDS.signal]:240,[KINDS.parked_car]:160,[KINDS.rooftop]:150,[KINDS.solar]:480,[KINDS.antenna]:260,[KINDS.pergola]:100};
 
 /** All instances: (kind, x, y, z, yaw, variant, state?) with absolute world x,z. */
 export class AthensProps{
@@ -101,7 +103,7 @@ export class AthensProps{
     this.removeTile(key);const m=packet.metadata,ext=m.extensions?.worldDetail,o=m.origin,records=[],edges=[];
     const sig=ext?.signals,props=ext?.props,roofs=ext?.rooftops;
     if(props){const r=packet.arrays[props.rows],k=packet.arrays[props.kind];for(let i=0;i<k.length;i++){const x=r[i*5]+o[0],z=r[i*5+2]+o[2];if(this.skip&&this.skip(k[i],x,z))continue;records.push({kind:k[i],x,y:r[i*5+1],z,yaw:r[i*5+3],variant:r[i*5+4]|0,state:0});}}
-    if(roofs!=null){const r=packet.arrays[roofs];for(let i=0;i<r.length;i+=5)records.push({kind:KINDS.rooftop,x:r[i]+o[0],y:r[i+1],z:r[i+2]+o[2],yaw:r[i+3],variant:r[i+4]|0,state:0});}
+    if(roofs!=null){const r=packet.arrays[roofs];for(let i=0;i<r.length;i+=5){const code=r[i+4]|0;records.push({kind:KINDS.rooftop+(code>>2),x:r[i]+o[0],y:r[i+1],z:r[i+2]+o[2],yaw:r[i+3],variant:code&3,state:0});}}
     if(sig){const r=packet.arrays[sig.rows],e=packet.arrays[sig.edge];
       for(let i=0;i<e.length;i++){const rec={kind:KINDS.signal,x:r[i*6]+o[0],y:r[i*6+1],z:r[i*6+2]+o[2],yaw:r[i*6+3],offset:r[i*6+4],group:r[i*6+5],variant:0,state:0,edge:m.ids[e[i]]};records.push(rec);edges.push(rec);this.byEdge.set(rec.edge,rec);}}
     this.tiles.set(key,{records,edges});this.last.x=Infinity;

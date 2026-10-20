@@ -109,7 +109,8 @@ test('World detail gates every addition and the layer is wired once in the Athen
   const world = src('src/athens-world.js');
   assert.match(world, /new AthensHorizon\(scene,scene\.fog,\{enabled:settings\.worldDetail!==false\}\)/);
   assert.match(world, /new AthensLandmarks\(detailRoot,scene\.fog,\{enabled:settings\.worldDetail!==false,groundAt:/);
-  assert.match(world, /horizon\.setEnabled\(s\.worldDetail!==false\);landmarks\.setEnabled\(s\.worldDetail!==false\);plazas\.setEnabled\(s\.worldDetail!==false\);syncBoxes\(\)/);
+  assert.match(world, /horizon\.setEnabled\(s\.worldDetail!==false\);landmarks\.setEnabled\(s\.worldDetail!==false\);plazas\.setEnabled\(s\.worldDetail!==false\);trees\.setEnabled\(s\.worldDetail!==false\);syncBoxes\(\)/);
+  assert.match(world, /new AthensTrees\(detailRoot,\{enabled:settings\.worldDetail!==false\}\)/);
   assert.match(world, /new AthensPlazas\(detailRoot,\{enabled:settings\.worldDetail!==false,/);
   assert.match(world, /c\.userData\.landmarkBox\)c\.visible=!hidden/);
   for (const f of ['src/athens-horizon.js', 'src/athens-landmarks.js', 'src/athens-landmark-models.js', 'src/athens-plazas.js']) assert.doesNotMatch(src(f), /castShadow|DirectionalLight|PointLight|SpotLight|MeshStandardMaterial|MeshPhysicalMaterial|MeshLambertMaterial/, 'unlit colour only');
@@ -120,7 +121,8 @@ test('the plaza outlines cover Syntagma Square and are small', () => {
   const file = new URL('../assets/athens/plazas.json', import.meta.url), json = JSON.parse(readFileSync(file, 'utf8')), plazas = parsePlazas(json);
   assert.ok(plazas.length > 400 && statSync(file).size < 100 * 1024 && gzipSync(readFileSync(file)).length < 50 * 1024);
   assert.ok(plazas.some(p => pointInPlaza(p.p, 470, 520)), 'the square in front of the Parliament is a plaza');
-  assert.ok(!plazas.some(p => pointInPlaza(p.p, 613, 527)), 'the Parliament itself is not');
+  assert.ok(plazas.some(p => pointInPlaza(p.p, 640, 570)), 'the pedestrian strip between the forecourt and the National Garden is a plaza (an OSM multipolygon without area=yes)');
+  assert.ok(!plazas.some(p => pointInPlaza(p.p, 800, 640)), 'the National Garden is not');
 });
 test('plaza paving follows the streamed ground, only where a cell is loaded, and is gone with World detail Off', () => {
   const square = { p: new Float32Array([0, 0, 40, 0, 40, 40, 0, 40]), x0: 0, z0: 0, x1: 40, z1: 40, area: 1600 };

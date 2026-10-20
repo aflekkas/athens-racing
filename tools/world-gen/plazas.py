@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Paved squares of Athens from OSM: `plazas.py CACHE OUT.json` writes `assets/athens/plazas.json`.
 
-Every polygon tagged place=square, or highway=pedestrian with area=yes (not a building, not tagged leisure, landuse, natural or amenity, 300 to 40,000 m2), inside the Attica extract, as an outline in world
+Every polygon tagged place=square, or highway=pedestrian (a closed way with area=yes, or a multipolygon relation; not a building, not tagged leisure, landuse, natural or amenity, 300 to 40,000 m2), inside the Attica extract, as an outline in world
 metres (x east, z south, the cells' projection) rounded to half a metre and simplified by 1 m. The ground bake has no class for these, so a
 square is baked as plain earth; src/athens-plazas.js lays paving over them at run time, on the streamed ground, with no change to any cell."""
 import json,sys
@@ -22,7 +22,7 @@ class Collect(osmium.SimpleHandler):
   t=a.tags
   if t.get('building') not in (None,'no'):return
   if any(t.get(k) for k in PARKLIKE):return
-  if not (t.get('place')=='square' or (t.get('highway')=='pedestrian' and t.get('area')=='yes')):return
+  if not (t.get('place')=='square' or (t.get('highway')=='pedestrian' and (t.get('area')=='yes' or not a.from_way()))):return
   parts=[]
   for ring in a.outer_rings():
    pts=[world(n.lat,n.lon) for n in ring]
