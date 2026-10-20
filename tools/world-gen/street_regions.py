@@ -19,6 +19,7 @@ from collections import defaultdict
 import shapely
 from shapely import set_precision, contains_xy, union_all
 from shapely.geometry import LineString, MultiPolygon, Point, Polygon
+from shapely.ops import substring
 from shapely.strtree import STRtree
 from shapely import prepare
 from border_nodes import canonical_polygon as _canonical_polygon
@@ -33,6 +34,7 @@ RAMP = 1.0              # metres from the sidewalk edge back to ground
 DROP_FLOOR = .12        # flush kerb height as a share of the full kerb
 DROP_BLEND = 1.2        # metres over which a flush zone blends back to a full kerb
 FILLET_MIN_AREA = .15
+SIDE_PIECE = 50.        # metres of a self-crossing street buffered at a time
 ZEBRA_ALONG = 3.6       # crossing width along the road
 BAR, PITCH = .45, .9
 
@@ -64,12 +66,32 @@ def unary_union(geoms):
     return result
 
 
+def _overlay(operation, a, b):
+    """A difference/intersection that survives invalid input ('Ring edge missing', 'side location conflict').
+
+    The plain overlay runs first, so every geometry that already worked is bit-for-bit unchanged. Only when GEOS
+    throws are both operands repaired (make_valid) and the overlay retried, then run on the snapping noder at the
+    mesh lattice, which cannot fail on near-coincident edges. Each step is a pure function of the operands, so two
+    cells that see the same junction still build the same geometry.
+    """
+    a, b = _polygonal(a), _polygonal(b)
+    try:
+        return _polygonal(operation(a, b))
+    except shapely.errors.GEOSException:
+        pass
+    a, b = _polygonal(shapely.make_valid(a)), _polygonal(shapely.make_valid(b))
+    try:
+        return _polygonal(operation(a, b))
+    except shapely.errors.GEOSException:
+        return _polygonal(operation(a, b, grid_size=GRID))
+
+
 def diff(a, b):
-    return _polygonal(shapely.difference(_polygonal(a), _polygonal(b)))
+    return _overlay(shapely.difference, a, b)
 
 
 def meet(a, b):
-    return _polygonal(shapely.intersection(_polygonal(a), _polygonal(b)))
+    return _overlay(shapely.intersection, a, b)
 
 
 def polygons_of(geometry):
@@ -176,6 +198,14 @@ def junction_fillets(roads, ribbons):
 def side_region(line, half_width, sidewalk, right):
     """Everything on one side of the street's line out to kerb+sidewalk distance (flat caps)."""
     distance = half_width + KERB_RUN + sidewalk
+    if not line.is_simple:
+        # A street that crosses itself (a loop mapped as one way) makes one single-sided buffer fill the loop and
+        # drop the strip. Buffer short overlapping pieces instead; simple lines keep the exact old path.
+        count = math.ceil(line.length / SIDE_PIECE)
+        pieces = [substring(line, i * SIDE_PIECE, min(line.length, (i + 1) * SIDE_PIECE + .1)) for i in range(count)]
+        shapes = [piece.buffer(distance if right else -distance, single_sided=True, cap_style=2, join_style=2, mitre_limit=2.)
+                  for piece in pieces if piece.length > 0]
+        return canonical_polygon(set_precision(union_all([s if s.is_valid else s.buffer(0) for s in shapes]), .02))
     shape = line.buffer(distance if right else -distance, single_sided=True, cap_style=2, join_style=2, mitre_limit=2.)
     return canonical_polygon(set_precision(shape if shape.is_valid else shape.buffer(0), .02))
 

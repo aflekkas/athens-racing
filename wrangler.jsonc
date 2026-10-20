@@ -56,7 +56,7 @@
     "staging": {
       "name": "athens-street-racers-staging",
       "vars": {
-        "ATHENS_WORLD_MANIFEST": "manifests/c5e02bd8c977e1f363eee4f79c206772002257eada63aa8a7c70355dce0c8e0a.json"
+        "ATHENS_WORLD_MANIFEST": "manifests/ea2c752e2dcef0db84abd7f2759586df87fce775c055395d1af557bc7557f58c.json"
       },
       "build": {
         "command": "ASR_BUILD_ENV=staging node tools/prepare-deploy.mjs"

@@ -15,12 +15,14 @@ export function auditWorldSurface(tile,{spacing=2,sweepStep=.25,sweepMetres=6,st
   }
   const p=t.contactPositions,ix=t.contactTriangles,edges=new Map();
   let maxProfileGrade=0;
-  const graph=t.edgePoints||[];
+  const graph=t.edgePoints||[],offenders=new Set(),surfaceRoad=id=>String(ids[id]||'').replace(/^surface:/,'');
   for(let i=0;i<(t.edges?.length||0);i+=10){
-    const start=t.edges[i+3],count=t.edges[i+4];
-    for(let j=start+1;j<start+count;j++){const a=(j-1)*3,b=j*3,d=Math.hypot(graph[b]-graph[a],graph[b+2]-graph[a+2]);if(d>1e-6)maxProfileGrade=Math.max(maxProfileGrade,Math.abs(graph[b+1]-graph[a+1])/d);}
+    const start=t.edges[i+3],count=t.edges[i+4];let edgeGrade=0;
+    for(let j=start+1;j<start+count;j++){const a=(j-1)*3,b=j*3,d=Math.hypot(graph[b]-graph[a],graph[b+2]-graph[a+2]);if(d>1e-6)edgeGrade=Math.max(edgeGrade,Math.abs(graph[b+1]-graph[a+1])/d);}
+    maxProfileGrade=Math.max(maxProfileGrade,edgeGrade);
+    // The road whose own profile is too steep is named too, so the steep-street planner can leave it out.
+    if(edgeGrade>MAX_PROFILE_GRADE+2e-6)offenders.add(surfaceRoad(t.edges[i+9]));
   }
-  const offenders=new Set(),surfaceRoad=id=>String(ids[id]||'').replace(/^surface:/,'');
   let asphaltTriangles=0,asphaltAbove30=0,maxAsphaltGrade=0,missingContacts=0,samples=0,outsideFixture=0,maxShoulderStep=0,maxShoulderGrade=0,worstShoulder=null,guardedShoulderSamples=0;
   const point=v=>[p[v*3],p[v*3+1],p[v*3+2]];
   for(let i=0;i<ix.length;i+=5){

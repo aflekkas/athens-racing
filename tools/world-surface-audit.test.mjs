@@ -28,6 +28,12 @@ test('AWT physical audit bounds emitted graph profile grade at forty-five percen
   const r=auditWorldSurface(t);assert.equal(r.asphaltAbove30,0);assert.ok(r.maxProfileGrade>.45);assert.equal(r.passed,false);
 });
 
+test('a graph edge past the profile grade names its road, so the steep-street planner can leave it out',()=>{
+  const t=fixture({roadGrade:.3});t.edgePoints=[0,0,10,256,128,10];t.edges=[1,1,2,0,2,0,1,50,0,1];
+  const r=auditWorldSurface(t,{ids:['','surface:w7:0']});assert.equal(r.passed,false);assert.deepEqual(r.offenders,['w7:0']);
+  t.edgePoints=[0,0,10,256,100,10];assert.deepEqual(auditWorldSurface(t,{ids:['','surface:w7:0']}).offenders,[],'45% or less names nobody');
+});
+
 // Owner exception (2026-10-18): literal OSM bridge=yes and connected
 // approaches may use a 0.25 m shoulder protected by solid visible guardrails.
 // Every ground road and every undeclared elevated road still sweeps six metres.
