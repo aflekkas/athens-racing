@@ -86,12 +86,12 @@ export function showroomCar(mp) { return mp?.lobby ? mp.me?.car : mp?.$?.('mp-ca
 // so in-place refreshes never touch the canvas; afterRender() mounts, keeps or swaps the studio.
 function carPlate(mp, car, extra = '') {
   const spec = car ? `${esc(classLabel(carCategory(car)))} · ${Math.round(car.power * 1.341)} HP · ${esc(String(car.drive || '').toUpperCase())}` : '';
-  // Changing car is its own obvious action, with the garage it opens named, and the reason when it is locked.
+  // Changing car is its own obvious action. The button says it all; only a locked button gets a line of why.
   const locked = !!mp && !mp.canChangeCar;
   const model = car && carModel(car);
   return `<span class="kick">YOUR CAR</span><b class="mp-plate__name">${esc((model?.name || car?.name) || '—')}</b><span class="mp-plate__spec">${spec}</span>
     <div class="mp-plate__car">${C.button({ label: 'CHANGE CAR', icon: 'car', variant: 'secondary', act: 'mpCar', disabled: locked, attrs: { 'data-fid': 'car' } })}</div>
-    <p class="mp-plate__hint">${locked ? 'Your car is locked while the race runs. Change it back in the lobby.' : 'Opens the garage: pick another car.'}</p>
+    ${locked ? '<p class="mp-plate__hint">Your car is locked while the race runs. Change it back in the lobby.</p>' : ''}
     <div class="mp-plate__acts">${extra}</div>`;
 }
 

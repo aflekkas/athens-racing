@@ -152,15 +152,18 @@ test('the host sets POLICE and CAN BE BUSTED for everyone; guests read them', ()
 });
 
 // Owner playtest 2026-10-18: "how do I change car?", "the garage is unclear". It is its own named action, with its reason when locked.
-test('the lobby names the change-car action, says what it opens, and explains when it is locked', () => {
+// UI taste pass 2026-10-20: the button is the whole message (no hint repeating it); top trim only (b179531f), so no trim wording.
+test('the lobby names the change-car action, adds no hint repeating it, and explains when it is locked', () => {
   for (const host of [true, false]) {
     const open = renderLobby(menu, fakeMp({ host }));
     assert.match(open, /data-act="mpCar"[^>]*>|data-act="mpCar"/); assert.match(open, /CHANGE CAR/);
-    assert.match(open, /Opens the garage: pick another car\./);
+    assert.doesNotMatch(open, /mp-plate__hint|Opens the garage/, 'no hint repeating the CHANGE CAR button');
+    assert.doesNotMatch(open, /\btrims?\b/i, 'one car per model: no trim wording in the lobby');
     assert.doesNotMatch(open, /class="mp-plate__acts">[^<]*<button[^>]*mpCar/, 'it no longer hides among the race buttons');
     const mp = fakeMp({ host, status: 'race' }); mp.canChangeCar = false;
     const locked = renderLobby(menu, mp);
     assert.match(locked, /Your car is locked while the race runs/);
+    assert.doesNotMatch(locked, /\btrims?\b/i);
     assert.match(locked, /mpCar[^]*?disabled|disabled[^]*?mpCar/);
   }
 });
