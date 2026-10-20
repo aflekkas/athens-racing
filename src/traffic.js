@@ -1302,17 +1302,27 @@ export class Traffic {
       this.carBody(c, B);
       const ct = obbContact(A, B); if (!ct) continue;
       const beforeOnline = this.online ? { ...B } : null;
-      const vs0 = A.vs, vu0 = A.vu;
-      const r = impulse(A, B, ct, c.crash && c.crash.onSide ? 0.05 : 0.15, 0.45);
+      const vs0 = A.vs, vu0 = A.vu, vbs0 = B.vs, vbu0 = B.vu;
+      const r = impulse(A, B, ct, c.crash && c.crash.onSide ? 0.05 : null, 0.45);
       const impactA = localImpact(A, ct, -1), impactB = localImpact(B, ct, 1);
       impactB.ebs = equivalentBarrierSpeed(r.vn, B.m, A.m); impactB.who = actor.kind;
-      // separate them (by inverse mass), then write the bodies back
-      const ia = 1 / A.m, ib = 1 / B.m, sh = (ct.ov + 0.01) / (ia + ib);
-      pushVeh(veh, rv.f, -ct.ns * sh * ia, -ct.nu * sh * ia);
+      // The cars met some time ago in this step (the closing speed times that time is the overlap): rewind to that moment, bounce,
+      // and let each car run the rest of the step on its new velocity. That moves them apart by exactly what the blow gave them
+      // (the lighter one further), instead of shoving them clear of each other in one frame. What still overlaps (a car resting
+      // in another, a fast hit on a slow frame) is eased apart over a few frames, never more than 12 cm at a time.
+      const ia = 1 / A.m, ib = 1 / B.m;
+      let aDs = 0, aDu = 0, bDs = 0, bDu = 0, gained = 0;
+      if (r.j > 0) {
+        const tr = Math.min(0.05, ct.ov / Math.max(r.vn, 1.5));
+        aDs = (A.vs - vs0) * tr; aDu = (A.vu - vu0) * tr; bDs = (B.vs - vbs0) * tr; bDu = (B.vu - vbu0) * tr;
+        gained = ((bDs - aDs) * ct.ns + (bDu - aDu) * ct.nu);
+      }
+      const left = Math.max(0, ct.ov + 0.01 - gained), ease = Math.min(0.12, left * 0.5) / (ia + ib);
+      pushVeh(veh, rv.f, aDs - ct.ns * ease * ia, aDu - ct.nu * ease * ia);
       rv.vs = A.vs; rv.vu = A.vu;
       setRouteVel(veh, rv.f, rv.vs, rv.vu);
       veh.w = A.w;
-      c.s += ct.ns * sh * ib; c.u += ct.nu * sh * ib;
+      c.s += bDs + ct.ns * ease * ib; c.u += bDu + ct.nu * ease * ib;
       if (r.j <= 0) continue; // touching or already separating: no impulse
       const dvA = Math.hypot(A.vs - vs0, A.vu - vu0), dvB = r.dvB;
       if (c.cop && c.cop.chase && !c.crash && dvB < 3) { c.v = Math.max(0, c.dir * B.vs); c.uv = B.vu; this.damageCar(c, zoneOf(B, ct.ps, ct.pu), dvB, impactB); } // a police driver rides out a PIT / ram contact
@@ -1350,7 +1360,7 @@ export class Traffic {
       this.carBody(q, B);
       const ct = obbContact(A, B); if (!ct) continue;
       const vA0s = A.vs, vA0u = A.vu;
-      const r = impulse(A, B, ct, 0.15, 0.45);
+      const r = impulse(A, B, ct, null, 0.45);
       const zoneA = zoneOf(A, ct.ps, ct.pu), zoneB = zoneOf(B, ct.ps, ct.pu);
       const impactA = localImpact(A, ct, -1), impactB = localImpact(B, ct, 1);
       impactA.ebs = equivalentBarrierSpeed(r.vn, A.m, B.m); impactB.ebs = equivalentBarrierSpeed(r.vn, B.m, A.m);
@@ -1376,7 +1386,7 @@ export class Traffic {
       this.carBody(q, B);
       const ct = obbContact(A, B); if (!ct) continue;
       const vA0s = A.vs, vA0u = A.vu;
-      const r = impulse(A, B, ct, 0.15, 0.45);
+      const r = impulse(A, B, ct, null, 0.45);
       const zoneA = zoneOf(A, ct.ps, ct.pu), zoneB = zoneOf(B, ct.ps, ct.pu);
       const impactA = localImpact(A, ct, -1), impactB = localImpact(B, ct, 1);
       impactA.ebs = equivalentBarrierSpeed(r.vn, A.m, B.m); impactB.ebs = equivalentBarrierSpeed(r.vn, B.m, A.m);
@@ -1700,6 +1710,13 @@ function obbContact(A, B) {
   return { ns, nu, ov: best, ps: ns * pn + ts * pt, pu: nu * pn + tu * pt };
 }
 /** impulse at the contact point with restitution e and friction mu; updates A and B; returns {j, vn (closing), dvB} */
+// Normal restitution by closing speed: a bump bounces (0.3), a crash crumples (0.1). Kept equal to src/crash-contact.js
+// (tools/crash-physics.test.mjs checks it); this file is also loaded stand-alone by the headless traffic harnesses.
+const smooth01 = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+function restitutionFor(vn) { return (0.3 - 0.2 * smooth01(3, 15, vn)) * smooth01(0.3, 1.5, vn); }
+// One blow adds at most this much yaw rate to a car (and no car turns faster than the second): a tap is not a spin-out.
+const YAW_KICK = 2.4, YAW_TOP = 3.6;
+function limitKick(w0, w1) { let w = w0 + YAW_KICK * Math.tanh((w1 - w0) / YAW_KICK); if (Math.abs(w) > YAW_TOP) w = Math.sign(w) * Math.max(YAW_TOP, Math.abs(w0)); return w; }
 function impulse(A, B, ct, e, mu) {
   const ras = ct.ps - A.s, rau = ct.pu - A.u, rbs = ct.ps - B.s, rbu = ct.pu - B.u;
   // point velocities (w x r = w (-r_u, r_s))
@@ -1708,8 +1725,9 @@ function impulse(A, B, ct, e, mu) {
   if (vn >= 0) return { j: 0, vn: 0, dvB: 0 };
   const ia = 1 / A.m, ib = 1 / B.m, Ia = 1 / A.I, Ib = 1 / B.I;
   const ran = ras * ct.nu - rau * ct.ns, rbn = rbs * ct.nu - rbu * ct.ns;
+  if (e == null) e = restitutionFor(-vn);
   const j = -(1 + e) * vn / (ia + ib + ran * ran * Ia + rbn * rbn * Ib);
-  const vbs = B.vs, vbu = B.vu;
+  const vbs = B.vs, vbu = B.vu, wA0 = A.w, wB0 = B.w;
   A.vs -= j * ct.ns * ia; A.vu -= j * ct.nu * ia; A.w -= ran * j * Ia;
   B.vs += j * ct.ns * ib; B.vu += j * ct.nu * ib; B.w += rbn * j * Ib;
   // friction along the contact face (bounded by mu * j)
@@ -1718,6 +1736,7 @@ function impulse(A, B, ct, e, mu) {
   const jt = clamp(-vt / (ia + ib + rat * rat * Ia + rbt * rbt * Ib), -mu * j, mu * j);
   A.vs -= jt * ts * ia; A.vu -= jt * tu * ia; A.w -= rat * jt * Ia;
   B.vs += jt * ts * ib; B.vu += jt * tu * ib; B.w += rbt * jt * Ib;
+  A.w = limitKick(wA0, A.w); B.w = limitKick(wB0, B.w);
   return { j, vn: -vn, dvB: Math.hypot(B.vs - vbs, B.vu - vbu) };
 }
 /** which side of a body a point is on */

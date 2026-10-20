@@ -70,7 +70,7 @@ Running (Sonnet; Enterprise unless noted):
 - [~] UI taste pass: Opus agent auditing and cleaning every screen (owner 2026-10-20 "un ai-slop")
 - [~] Free roam: click anywhere, arrows cycle areas, trackpad two-finger pan (owner `30f25cb4`; Opus UI agent, first item)
 - [~] Athens beauty pass: landmarks, polykatoikia facades, fake lighting, Athens vegetation, street life, within budgets (owner `41895c7d`; Sonnet)
-- [~] Crash physics: crash bench, contact-point impulses, friction, no tunnelling, traffic reacts (owner 2026-10-20; Sonnet)
+- [~] Crash physics: crash bench, contact-point impulses, friction, no tunnelling, traffic reacts (owner 2026-10-20; Sonnet). Physics landed (docs/crash-physics.md); damage punishment + persistence next. Not done: knockable bollards/signs/bins (props are baked into shared meshes with no per-object handle)
 - [~] Release cutover (lead): after the batch is checked on staging
 
 Waiting on the owner:

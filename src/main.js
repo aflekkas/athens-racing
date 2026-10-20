@@ -33,7 +33,7 @@ import { savedPaint } from './vehicle-paint.js';
 import { Vehicle } from './physics.js';
 import { RivalAI } from './rival-ai.js';
 import { input as controls } from './input.js';
-import { routeVel, setRouteVel, pushVeh, extents } from './traffic.js';
+import { routeVel } from './traffic.js';
 import { Police, pursuit } from './police.js';
 import { PoliceHud } from './police-hud.js';
 import { Cockpit, mirrorsInView } from './cockpit.js';
@@ -52,6 +52,7 @@ import { configureTextureCodecs } from './compressed-textures.js';
 import { createPost } from './post.js';
 import { loadTextures, uploadTextures, setAnisotropy } from './tex.js';
 import { clamp, lerp, damp, smoothstep, frameYield, RNG } from './util.js';
+import { resolveCarPair } from './crash-contact.js';
 import { ContactCoordinator, containOnlineVehicle } from './multiplayer-contact.js';
 import { applyBalance } from './mp-car-rules.js';
 import { SharedWorld } from './mp-shared-world.js';
@@ -1570,34 +1571,25 @@ function racerCollide(dt) {
   racerPair(player.veh, rival.veh, true);
 }
 function racerPair(a, b, mine) {
-  const ds = b.s - a.s; if (Math.abs(ds) > 8) return;
-  const ea = extents(a, route), eb = extents(b, route);
-  const du = b.u - a.u;
-  const ox = ea.hs + eb.hs - Math.abs(ds), oy = ea.hu + eb.hu - Math.abs(du);
-  if (ox <= 0 || oy <= 0) return;
-  const ra = routeVel(a, route), rb = routeVel(b, route);
-  let sev = 0;
-  if (ox < oy) {
-    const n = Math.sign(ds) || 1; pushVeh(a, ra.f, -n * ox / 2, 0); pushVeh(b, rb.f, n * ox / 2, 0);
-    const cl = (ra.vs - rb.vs) * n; if (cl > 0) { const j = cl * 0.6; ra.vs -= n * j; rb.vs += n * j; sev = cl; b.w += (Math.random() - 0.5) * 0.4; }
-  } else {
-    const n = Math.sign(du) || 1; pushVeh(a, ra.f, 0, -n * oy / 2); pushVeh(b, rb.f, 0, n * oy / 2);
-    const cl = (ra.vu - rb.vu) * n; if (cl > 0) { const j = cl * 0.6; ra.vu -= n * j; rb.vu += n * j; sev = cl; }
-  }
-  setRouteVel(a, ra.f, ra.vs, ra.vu); setRouteVel(b, rb.f, rb.vs, rb.vu);
+  if (Math.abs(b.s - a.s) > 8) return;
+  // a rigid-body contact between the two cars (src/crash-contact.js): at the contact point, with both masses and yaw inertias,
+  // restitution by closing speed and friction along the face, so an offset hit spins them and a glancing one scrubs speed
+  const r = resolveCarPair(a, b, { route });
+  if (!r) return;
+  const sev = r.vn;
   if (sev > 2.2) {
-    const sign = ox < oy ? Math.sign(ds) || 1 : Math.sign(du) || 1;
-    const nx = sign * (ox < oy ? ra.f.tx : ra.f.rx), nz = sign * (ox < oy ? ra.f.tz : ra.f.rz);
-    const px = (a.x + b.x) * .5, pz = (a.z + b.z) * .5;
-    for (const [v, other, inward] of [[a, b, -1], [b, a, 1]]) {
-      const c = Math.cos(v.yaw), s = Math.sin(v.yaw), dx = px - v.x, dz = pz - v.z;
-      const localPoint = { x: clamp(dx * c - dz * s, -v.halfW, v.halfW), y: .55, z: clamp(dx * s + dz * c, -v.halfL, v.halfL) };
-      const localNormal = { x: inward * (nx * c - nz * s), y: 0, z: inward * (nx * s + nz * c) };
+    const n = r.c;
+    for (const [v, other, hit, sign] of [[a, b, r.hitA, 1], [b, a, r.hitB, -1]]) {
+      if (!hit) continue;
+      const c = Math.cos(v.yaw), s = Math.sin(v.yaw), nx = n.nx * sign, nz = n.nz * sign;
+      const localPoint = { x: clamp(hit.py, -v.halfW, v.halfW), y: .55, z: clamp(-hit.px, -v.halfL, v.halfL) };
+      const localNormal = { x: nx * c - nz * s, y: 0, z: nx * s + nz * c };
       const zone = Math.abs(localNormal.x) > Math.abs(localNormal.z) ? (localNormal.x > 0 ? 'left' : 'right') : (localNormal.z > 0 ? 'front' : 'rear');
       v.addDamage?.(zone, sev * .6, { kind: 'crash', sev, car: { mass: other.m }, localPoint, localNormal });
     }
   }
-  if (sev > 1.5 && mine && G.t - (G.paintT || 0) > 1.2) { G.paintT = G.t; hud.pop('info cyan', 'TRADING PAINT!'); audio.crash('light', Math.min(1, sev / 8)); G.shake = Math.max(G.shake, 0.35); }
+  if (mine) { const dv = Math.max(r.hitA?.dv ?? 0, r.hitB?.dv ?? 0); G.shake = Math.max(G.shake, clamp(dv / 16, 0, 0.7)); }
+  if (sev > 1.5 && mine && G.t - (G.paintT || 0) > 1.2) { G.paintT = G.t; hud.pop('info cyan', 'TRADING PAINT!'); audio.crash(sev > 9 ? 'heavy' : 'light', Math.min(1, (sev / 12) ** 1.4)); }
 }
 
 /** pursuit transitions (src/police.js): call-outs, sounds. In a pursuit event BUSTED ends the run (events flow) */
@@ -2122,7 +2114,10 @@ function step(dt, draw = true, visual = true, frameDt = dt) {
           if (pose) Object.assign(proxy, { x: pose.x, y: pose.y, z: pose.z, yaw: pose.yaw, vLong: pose.vLong, vLat: pose.vLat, stale: pose.stale === true, halfW: car.veh.halfW, halfL: car.veh.halfL, m: car.veh.m, hcg: car.veh.hcg });
           return { id, vehicle: pose ? proxy : car.veh, age: pose?.parked ? 0 : peer ? now - peer.at : Infinity, ghost: !pose || !member?.loaded || member.connected === false || member.dnf || member.finish != null || peer.state.recoveryUntil > multiplayer.now() };
         }), dt, now, { rtt: multiplayer.latency }) : [];
-        for (const hit of multiplayer.lastContacts) playerImpactVoice({ kind: 'crash', dv: hit.impulse });
+        for (const hit of multiplayer.lastContacts) {
+          playerImpactVoice({ kind: 'crash', dv: hit.impulse });
+          if (hit.impulse > 1.5 && G.t - (G.mpHitT || 0) > 0.25) { G.mpHitT = G.t; G.shake = Math.max(G.shake, clamp(0.08 + hit.impulse / 16, 0, 0.8)); audio.crash(hit.impulse > 8 ? 'heavy' : 'light', Math.min(1, (hit.impulse / 14) ** 1.4)); controls.rumble(Math.min(1, hit.impulse / 12), 0.6, 220); }
+        }
         containOnlineVehicle(pv, route);
       }
       // Online the units are shared (src/mp-shared-world.js); this client judges only its own driver.
@@ -2138,12 +2133,12 @@ function step(dt, draw = true, visual = true, frameDt = dt) {
       if (pv.bumpHit > 0.1) G.shake = Math.max(G.shake, pv.bumpHit * 0.22);
       // a racing wheel's force feedback (when the browser lets the wheel rumble): grip limit and kerbs, ~8 times a second
       if (G.state === 'race' && controls.wheelActive) controls.wheelFeedback(() => ({ frontSlip: pv.tyreTelemetry?.front?.slipDemand ?? 0, kerb: Math.max(pv.curbHit || 0, pv.bumpHit || 0), speed: Math.abs(pv.vLong) }));
-      if (pv.wallHit > 2.5 && G.state === 'race') { playerImpactVoice({ kind: 'wall', dv: pv.wallHit }); audio.scrape(Math.min(1, pv.wallHit / 10)); G.shake = Math.max(G.shake, Math.min(0.6, pv.wallHit / 12)); }
+      if (pv.wallHit > 2.5 && G.state === 'race') { playerImpactVoice({ kind: 'wall', dv: pv.wallHit }); audio.scrape(Math.min(1, pv.wallHit / 10)); G.shake = Math.max(G.shake, Math.min(0.85, 0.06 + (pv.crashDv || pv.wallHit) / 16)); }
       if (pv.wallHit > 3) { fx.sparks(pv, pv.wallHit / 12); controls.rumble(Math.min(1, pv.wallHit / 10), 0.6, 220); }
       if (!multiplayer.active) for (const c of grid) if (c.veh.wallHit > 3) fx.sparks(c.veh, c.veh.wallHit / 12);
       // kerb strikes: a thump (scrape when the tyre rubs along the face), a jolt through the camera
       if (pv.curbHit > 0.12 && G.t - (G.curbT || 0) > 0.08) { G.curbT = G.t; audio.curb(Math.min(1, pv.curbHit * (pv.curbScrape ? 0.7 : 1.2))); if (pv.curbScrape) audio.scrape(0.25); G.shake = Math.max(G.shake, pv.curbHit * 0.3); controls.rumble(pv.curbScrape ? 0.15 : 0.5 * pv.curbHit, pv.curbScrape ? 0.5 : 0.8 * pv.curbHit, pv.curbScrape ? 140 : 110); }
-      pv.wallHit = 0; rv.wallHit = 0; for (const c of grid) c.veh.wallHit = 0;
+      pv.wallHit = 0; rv.wallHit = 0; pv.crashDv = 0; rv.crashDv = 0; pv.scrapeDv = 0; for (const c of grid) { c.veh.wallHit = 0; c.veh.crashDv = 0; }
       // ---- slipstream
       const dd = (rv.s - pv.s) * (G.dir || 1), du = Math.abs(rv.u - pv.u);
       const drafting = (!multiplayer.active || (remoteCars.size > 0 && rival.model.root.visible)) && dd > 4 && dd < 32 && du < 1.6 && pv.vLong > 22;
