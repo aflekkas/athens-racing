@@ -39,3 +39,4 @@ for i, frame in enumerate(frames):
 strip.save(root/'onboard-frame-strip.webp','WEBP',quality=83,method=6)
 (root/'comparisons.json').write_text(json.dumps(comparisons,indent=2)+'\n')
 print(f'{len(comparisons)} comparisons; {len(frames)} physical AI lap frames')
+(root/'captures-complete.json').write_text(json.dumps({'comparisons':len(comparisons),'frames':len(frames),'complete':True})+'\n')
