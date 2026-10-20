@@ -22,6 +22,7 @@ assert all(c['pass'] for c in checks)
 (p/'budget-results.json').write_text(json.dumps({'pass':True,'runtimeHashesMatch':True,'checks':checks},indent=2)+'\n')
 text=(p/'README.md').read_text();start=text.index('| Camera |');end=text.index('[Low/High measurements',start);text=text[:start]+'\n'.join(table)+'\n\n[Budget assertions](budget-results.json) pass for every supplied limit.\n\n'+text[end:]
 comparisons=load('comparisons.json');evidence=load('harness/evidence-after.json');assert len(comparisons)>=20 and len(evidence['rows'])==len(comparisons) and len(evidence['frames'])==11 and not evidence['errors']
+assert all((p/r['path']).is_file() for r in comparisons)
 for name in ['harness/perf-processes-final.json','harness/evidence-processes-after.json','detail-processes.json']:assert load(name)['closed'],name
 links=' · '.join(f"[{r['id']}]({r['path']})" for r in comparisons)
 if 'COMPARISON_LINKS_PENDING' in text:text=text.replace('COMPARISON_LINKS_PENDING',links)

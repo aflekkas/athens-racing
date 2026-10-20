@@ -1,0 +1,206 @@
+[
+  {
+    "id": "lap-0000",
+    "path": "sbs-lap-0000.webp",
+    "s": 0,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=quYpg2K4pEgZtoB7r8Z3Fg&heading=212&pitch=0&fov=90"
+  },
+  {
+    "id": "faros-across",
+    "path": "sbs-faros-across.webp",
+    "s": 0,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=ek7vnJdn6sAjKID7Odr28A&heading=305&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-0018",
+    "path": "sbs-lap-0018.webp",
+    "s": 18,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=YrKWesHNqxclK_V2Z0IUyA&heading=86&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-0090",
+    "path": "sbs-lap-0090.webp",
+    "s": 90,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=5gVhcH01KNBUQ_Vh_TdlkA&heading=342&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-0360",
+    "path": "sbs-lap-0360.webp",
+    "s": 360,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=nIGekG3_rjDucu8vY5yEMA&heading=327&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-0390",
+    "path": "sbs-lap-0390.webp",
+    "s": 390.02,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=MhxMv16Yhz6C7M1q6xR8LA&heading=287&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-0675",
+    "path": "sbs-lap-0675.webp",
+    "s": 675,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=tS5uwzqM1OIy6zp-oN75ww&heading=343&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-0990",
+    "path": "sbs-lap-0990.webp",
+    "s": 990,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=tgnHtO4t5z0TZER8KxT7Xw&heading=3&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-1035",
+    "path": "sbs-lap-1035.webp",
+    "s": 1035,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=NAVz6_BnD8BsgIDdPXAWNQ&heading=293&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-1350",
+    "path": "sbs-lap-1350.webp",
+    "s": 1350,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=XNDW_6jilM8QPWdLpNaudQ&heading=343&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-1552",
+    "path": "sbs-lap-1552.webp",
+    "s": 1552.08,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=9fONNET3xDKRn5nasVPLNg&heading=30&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-1710",
+    "path": "sbs-lap-1710.webp",
+    "s": 1710,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=yBvZQwgyet7KiYypE0qPZg&heading=354&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-1800",
+    "path": "sbs-lap-1800.webp",
+    "s": 1800,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=NbVNS622OgXsoEIML33zNA&heading=334&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-1980",
+    "path": "sbs-lap-1980.webp",
+    "s": 1980,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=2DcrpcwgtgWtfOh1MFjJBQ&heading=34&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-2138",
+    "path": "sbs-lap-2138.webp",
+    "s": 2138.11,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=_Tbp4uq3rt2BXc2eilEZSw&heading=64&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-2340",
+    "path": "sbs-lap-2340.webp",
+    "s": 2340,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=-Jj6fds4OBcfkwh3YHPpvw&heading=64&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-2565",
+    "path": "sbs-lap-2565.webp",
+    "s": 2565,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=vgpTYhph98XkBxIzD8BV-A&heading=72&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-2745",
+    "path": "sbs-lap-2745.webp",
+    "s": 2745,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=crY0PfSHuwOoL_cOwAWzNA&heading=135&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-2970",
+    "path": "sbs-lap-2970.webp",
+    "s": 2970,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=SvS9L4_xZGNW9ovmmdUosw&heading=144&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-3150",
+    "path": "sbs-lap-3150.webp",
+    "s": 3150,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=4lLEELHgj9CTmRJ2aY_dhA&heading=182&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-3240",
+    "path": "sbs-lap-3240.webp",
+    "s": 3240,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=FQu3sJ6kakQrVNUq6jnL-w&heading=261&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-3465",
+    "path": "sbs-lap-3465.webp",
+    "s": 3465,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=cjN1zMpgQJ4VRF1wIYbB4g&heading=231&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-3645",
+    "path": "sbs-lap-3645.webp",
+    "s": 3645,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=FRWBGhFzeyA4Yf-1ugrCIQ&heading=143&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-3780",
+    "path": "sbs-lap-3780.webp",
+    "s": 3780,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=P6c2eCI23q4LhGwo2p-k6w&heading=142&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-4005",
+    "path": "sbs-lap-4005.webp",
+    "s": 4005,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=GY1z0ENdD6MBPn6fbVeJrg&heading=188&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-4060",
+    "path": "sbs-lap-4060.webp",
+    "s": 4060.2,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=wweSs5kCTvkoNX-aOKj8Uw&heading=183&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-4140",
+    "path": "sbs-lap-4140.webp",
+    "s": 4140,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=66E4Wi07dZh_GYuVg8UDRQ&heading=297&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-4455",
+    "path": "sbs-lap-4455.webp",
+    "s": 4455,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=Z2R45FCqDUlU0wp852giHA&heading=120&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-4635",
+    "path": "sbs-lap-4635.webp",
+    "s": 4635,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=3j7F7i2N-6g5bZImxgNYsQ&heading=120&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-4905",
+    "path": "sbs-lap-4905.webp",
+    "s": 4905,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=f78YwYy8Xkru-I0HDhzBiw&heading=185&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-5040",
+    "path": "sbs-lap-5040.webp",
+    "s": 5040,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=Nr_xehwaNqohaElkGiF6rQ&heading=126&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-5085",
+    "path": "sbs-lap-5085.webp",
+    "s": 5085,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=JfT1pjmkZUbgRmhTi5fgnQ&heading=216&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-5310",
+    "path": "sbs-lap-5310.webp",
+    "s": 5310,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=cP-nhYzdwnhUsnemp4A5lA&heading=217&pitch=0&fov=90"
+  },
+  {
+    "id": "lap-5580",
+    "path": "sbs-lap-5580.webp",
+    "s": 5580,
+    "reference": "https://www.google.com/maps/@?api=1&map_action=pano&pano=CteuZR_XfpP_trmDWKu1OA&heading=213&pitch=0&fov=90"
+  }
+]

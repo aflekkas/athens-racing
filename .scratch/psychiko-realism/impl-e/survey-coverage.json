@@ -629,5 +629,10 @@
       "originalDistanceToSurvey": 0.7685284582328222
     }
   ],
-  "distanceMethod": "World-space distance from each actual OSM public junction node to the requested panorama lookup position, not along-lap projection"
+  "distanceMethod": "World-space distance from each actual OSM public junction node to the requested panorama lookup position, not along-lap projection",
+  "maxSnappedPanoramaProgressGapM": 53.105359287768806,
+  "maxSnappedGapBetween": [
+    "lap-2655",
+    "lap-2700"
+  ]
 }

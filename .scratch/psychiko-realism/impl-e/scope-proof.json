@@ -1,0 +1,24 @@
+{
+  "originalCourseRetained": {
+    "x": true,
+    "z": true,
+    "y": false,
+    "roundabouts": true,
+    "oneway": true
+  },
+  "otherMapsByteIdentical": {
+    "data/map.json": true,
+    "data/maps/penteli/map.json": true,
+    "data/maps/megara/map.json": true
+  },
+  "branch": "vas-per/psychiko-realism",
+  "heightDifferenceFromInheritedWidth": {
+    "changedSamples": 30,
+    "maxMetres": 0.18999999999999773,
+    "affectedS": [
+      0.0,
+      5732.284334253607
+    ],
+    "reason": "The inherited widened Faros mouth is fed through the existing deterministic width-aware surface conformance; source Copernicus field and horizontal course are unchanged."
+  }
+}

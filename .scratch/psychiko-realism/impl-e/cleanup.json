@@ -1,0 +1,30 @@
+{
+  "diskBefore": "/dev/disk3s1s1 460Gi total, 12Gi used, 87Gi available, 12% capacity (APFS shared-volume report)",
+  "diskAfter": "Filesystem        Size    Used   Avail Capacity iused ifree %iused  Mounted on\n/dev/disk3s1s1   460Gi    12Gi    86Gi    13%    459k  899M    0%   /",
+  "temporaryDirectory": "/tmp/athens-psychiko-e.k4ypyto5",
+  "temporaryDirectoryRemoved": true,
+  "ownedFinalProcessIds": [
+    45453,
+    45455,
+    47108,
+    47109,
+    44697,
+    44701,
+    45466,
+    45467,
+    46504,
+    47020,
+    47022,
+    47023,
+    47079,
+    47636,
+    47637,
+    47639
+  ],
+  "ownedFinalProcessesStillRunning": [],
+  "manualSignalsSent": [],
+  "rawAndDuplicateEvidenceBytesRemoved": 42266055,
+  "retainedEvidencePath": "/Users/vassilisperrotis/.t3/worktrees/athens-street-racers/psychiko-realism/.scratch/psychiko-realism/impl-e",
+  "retainedEvidenceBytes": 20393844,
+  "retainedPurpose": "412 labelled Street View reference panes, 34 triptychs, contact sheet, onboard strip, measured source/camera metadata and gate logs. No reference images in shipped assets."
+}

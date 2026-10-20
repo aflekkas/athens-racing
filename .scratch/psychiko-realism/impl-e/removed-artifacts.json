@@ -1,0 +1,413 @@
+{
+  "items": [
+    {
+      "path": ".scratch/psychiko-realism/impl-e/references/metadata",
+      "bytes": 108282
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/references/records",
+      "bytes": 350955
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/references/views",
+      "bytes": 36238366
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-1552.webp",
+      "bytes": 36650
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-0990.webp",
+      "bytes": 35510
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-4140.webp",
+      "bytes": 34860
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-4455.webp",
+      "bytes": 35916
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-4005.webp",
+      "bytes": 34528
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-4635.webp",
+      "bytes": 37654
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-low-mid.webp",
+      "bytes": 31114
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-3780.webp",
+      "bytes": 33378
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-3240.webp",
+      "bytes": 39986
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-1800.webp",
+      "bytes": 38734
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-2745.webp",
+      "bytes": 40366
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-0390.webp",
+      "bytes": 39390
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-2138.webp",
+      "bytes": 29422
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-1980.webp",
+      "bytes": 36192
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-5310.webp",
+      "bytes": 36314
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-0000.webp",
+      "bytes": 51004
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-2565.webp",
+      "bytes": 44438
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-2970.webp",
+      "bytes": 34152
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-4060.webp",
+      "bytes": 37704
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-2340.webp",
+      "bytes": 33710
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-1350.webp",
+      "bytes": 27934
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-5040.webp",
+      "bytes": 45090
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-5580.webp",
+      "bytes": 44132
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-1035.webp",
+      "bytes": 32112
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-0018.webp",
+      "bytes": 54952
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-1710.webp",
+      "bytes": 35402
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-3150.webp",
+      "bytes": 12818
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-3465.webp",
+      "bytes": 33306
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-0675.webp",
+      "bytes": 41212
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-0360.webp",
+      "bytes": 37520
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-high-mid.webp",
+      "bytes": 41686
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-faros-across.webp",
+      "bytes": 35558
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-3645.webp",
+      "bytes": 32552
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-0090.webp",
+      "bytes": 49960
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-5085.webp",
+      "bytes": 46862
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/before-lap-4905.webp",
+      "bytes": 53724
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-0000.webp",
+      "bytes": 51134
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-5310.webp",
+      "bytes": 38788
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-1980.webp",
+      "bytes": 36996
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-2565.webp",
+      "bytes": 44586
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-2138.webp",
+      "bytes": 36296
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-0390.webp",
+      "bytes": 41238
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-2745.webp",
+      "bytes": 42370
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-low-mid.webp",
+      "bytes": 31546
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-1800.webp",
+      "bytes": 42876
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-3240.webp",
+      "bytes": 43000
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-3780.webp",
+      "bytes": 39222
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-4455.webp",
+      "bytes": 41410
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-4005.webp",
+      "bytes": 39584
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-4140.webp",
+      "bytes": 37066
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-0990.webp",
+      "bytes": 36580
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-1552.webp",
+      "bytes": 37462
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-4635.webp",
+      "bytes": 43404
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-high-mid.webp",
+      "bytes": 42126
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-0360.webp",
+      "bytes": 41592
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-0675.webp",
+      "bytes": 40904
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-4905.webp",
+      "bytes": 56098
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-5085.webp",
+      "bytes": 49016
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-0090.webp",
+      "bytes": 50102
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-3645.webp",
+      "bytes": 38386
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-3150.webp",
+      "bytes": 19086
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-1710.webp",
+      "bytes": 37458
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-3465.webp",
+      "bytes": 33386
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-5580.webp",
+      "bytes": 46074
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-5040.webp",
+      "bytes": 43252
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-faros-across.webp",
+      "bytes": 56628
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-0018.webp",
+      "bytes": 58364
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-1035.webp",
+      "bytes": 37854
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-4060.webp",
+      "bytes": 37712
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-2970.webp",
+      "bytes": 39052
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-1350.webp",
+      "bytes": 30748
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/after-lap-2340.webp",
+      "bytes": 36222
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/lap-3.webp",
+      "bytes": 16194
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/lap-2.webp",
+      "bytes": 21574
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/lap-9.webp",
+      "bytes": 16758
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/lap-5.webp",
+      "bytes": 21032
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/lap-4.webp",
+      "bytes": 19786
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/lap-10.webp",
+      "bytes": 20726
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/lap-8.webp",
+      "bytes": 16272
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/lap-7.webp",
+      "bytes": 18094
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/lap-6.webp",
+      "bytes": 19954
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/lap-1.webp",
+      "bytes": 19102
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/lap-0.webp",
+      "bytes": 22858
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/final-low-mid.webp",
+      "bytes": 31546
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/harness/final-high-mid.webp",
+      "bytes": 42146
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/faros-game.png",
+      "bytes": 1653656
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/review.webp",
+      "bytes": 432966
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/final-junction-ids.json",
+      "bytes": 2
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/perf-after.log",
+      "bytes": 10476
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/focused-current.log",
+      "bytes": 5165
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/focused-initial.log",
+      "bytes": 5163
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/imports-current.log",
+      "bytes": 43
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/syntax-current.log",
+      "bytes": 39
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/terrain-initial.log",
+      "bytes": 323834
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/validator-current.log",
+      "bytes": 1114
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/validator-initial.log",
+      "bytes": 1114
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/preview-build.log",
+      "bytes": 0
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/rebuild-1.log",
+      "bytes": 2689
+    },
+    {
+      "path": ".scratch/psychiko-realism/impl-e/rebuild-2.log",
+      "bytes": 2689
+    }
+  ],
+  "bytesRemoved": 42266055
+}

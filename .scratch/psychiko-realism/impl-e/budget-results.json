@@ -1,0 +1,62 @@
+{
+  "pass": true,
+  "runtimeHashesMatch": true,
+  "checks": [
+    {
+      "name": "Low \u00b7 matched camera",
+      "triangles": 742178,
+      "limit": 909000,
+      "calls": 69,
+      "pass": true
+    },
+    {
+      "name": "Low \u00b7 Faros start",
+      "triangles": 1430751,
+      "limit": 1600000,
+      "calls": 166,
+      "pass": true
+    },
+    {
+      "name": "High \u00b7 matched camera",
+      "triangles": 846421,
+      "limit": 935000,
+      "calls": 81,
+      "pass": true
+    },
+    {
+      "name": "High \u00b7 Faros start",
+      "triangles": 1644785,
+      "limit": 1700000,
+      "calls": 192,
+      "pass": true
+    },
+    {
+      "name": "Full game \u00b7 day-chase",
+      "triangles": 738647,
+      "limit": 821000,
+      "calls": 79,
+      "pass": true
+    },
+    {
+      "name": "Full game \u00b7 day-cockpit",
+      "triangles": 734891,
+      "limit": 821000,
+      "calls": 78,
+      "pass": true
+    },
+    {
+      "name": "Full game \u00b7 night-chase",
+      "triangles": 739607,
+      "limit": 821000,
+      "calls": 81,
+      "pass": true
+    },
+    {
+      "name": "Full game \u00b7 night-cockpit",
+      "triangles": 735851,
+      "limit": 821000,
+      "calls": 80,
+      "pass": true
+    }
+  ]
+}
