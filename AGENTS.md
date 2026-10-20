@@ -14,6 +14,13 @@ Many agents work in this checkout at once, on a shared 145 GB VPS. Worktrees, te
 - **Others' work:** never delete another agent's or the user's worktree, `.scratch/<task>` or temp dir. Ask the lead instead.
 - **Final report:** list what you cleaned up, plus anything large you left on purpose (path and size), and `df -h /` before and after.
 
+## Third-party media (required)
+
+- Never commit third-party or copyrighted media: Street View, Google Maps or Google Earth captures, web images, photos, downloaded images, map-service tiles, or audio/video without a recorded licence.
+- Put such material in `.reference/` (git-ignored, local-only; only `.reference/README.md` is tracked). See `.reference/README.md`.
+- Committed audio or images need their source and licence recorded (`docs/audio-sources.md` already exists for audio).
+- Evidence screenshots of our own game are fine in `.scratch/`.
+
 ## Git
 
 - Never touch the shared index or working tree of the main checkout. The shared working tree is stale.

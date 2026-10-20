@@ -1,5 +1,7 @@
 # Psychiko recognition — implementation E
 
+> **Reference media note:** the image evidence that used to live in this folder (Street View survey sheets, comparisons, plans, game captures) now lives in `.reference/psychiko-realism/impl-e/` — a git-ignored local-only directory (see `.reference/README.md`). The image links below only resolve where that local copy exists; notes, JSON, scripts and logs stay committed here. Older history still contains the files; do not recommit them.
+
 Continues the inherited `72ac5c56` survey and unfinished implementation. Visual/performance baseline: `c4df524e`. Work stayed on `vas-per/psychiko-realism` in the requested worktree. No push, PR, staging change or deployment. All browsers were headless; Street View retrieval used HTTP only.
 
 ## Survey and coverage

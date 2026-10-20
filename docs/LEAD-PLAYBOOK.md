@@ -37,6 +37,7 @@ Read this if you are the lead (orchestrator) thread for Athens Racing. The owner
   - a request for a final report with SHAs, test summary and screenshot paths.
 - **One owner per task.** Never start a second agent on work that another agent may still be doing. Cancel the first one explicitly.
 - **Follow-ups** go to the same agent (thread send) with the specific defect and the evidence.
+- **Third-party media.** Brief every agent: never commit Street View / Google Maps / Earth captures, web images, photos, map tiles or unlicensed audio/video — that material goes in `.reference/` (git-ignored, local-only). Committed audio or images need source and licence recorded (`docs/audio-sources.md` covers audio). Our own game screenshots are fine in `.scratch/`.
 
 ## Owner rules you enforce on every UI change
 

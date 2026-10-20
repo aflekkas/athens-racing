@@ -1,5 +1,7 @@
 # Psychiko realism implementation C
 
+> **Reference media note:** the image evidence that used to live in this folder (Street View © Google panes, comparisons, contact sheets) now lives in `.reference/psychiko-realism/impl-c/` — a git-ignored local-only directory (see `.reference/README.md`). The image links below only resolve where that local copy exists; notes, JSON, scripts and logs stay committed here. Older history still contains the files; do not recommit them.
+
 Branch `vas-per/psychiko-realism`, base `1a5dfbd6`; implementation commit `bf48a56f`. Local commits only; no push, PR or deployment. All browser captures use headless Chromium/SwiftShader. Work and temporary archives remain inside this worktree.
 
 ## Changes

@@ -70,6 +70,7 @@ Some decisions are locked by the owner and listed in [`docs/OWNER-DECISIONS.md`]
 - New roads and maps are generated bare-simple from OpenStreetMap and elevation data (road shapes, terrain, building blocks). No street-level photo proof is required (owner decision, docs/OWNER-DECISIONS.md).
 - Free Cloudflare plan only: no paid services, no new paid APIs.
 - Assets must be ours or properly licensed (CC0 / CC-BY with credits added to the matching `CREDITS.txt`). No ripped models, textures, music or sounds.
+- Never commit third-party or copyrighted reference media (Street View, Google Maps/Earth captures, web images, photos, map tiles, unlicensed audio/video). Keep that material in `.reference/` (git-ignored, local-only; see `.reference/README.md`). Committed audio or images need their source and licence recorded (`docs/audio-sources.md` covers audio). Evidence screenshots of our own game are fine in `.scratch/`.
 
 ## Project layout
 

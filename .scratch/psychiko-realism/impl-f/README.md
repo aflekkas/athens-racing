@@ -1,5 +1,7 @@
 # Psychiko realism — implementation F
 
+> **Reference media note:** the image evidence that used to live in this folder (Street View comparisons, contact sheets, game captures) now lives in `.reference/psychiko-realism/impl-f/` — a git-ignored local-only directory (see `.reference/README.md`). The image links below only resolve where that local copy exists; notes, JSON, scripts and logs stay committed here. Older history still contains the files; do not recommit them.
+
 Worktree: `/Users/vassilisperrotis/.t3/worktrees/athens-street-racers/psychiko-realism`, branch `vas-per/psychiko-realism`. Baseline **e99e37c1**. No push, PR, deployment, staging or production changes. All browser jobs use Chromium headless shell through the repository-compatible advisory browser-slot wrapper. The wrangler command below is a dry run only.
 
 ## Changes and source evidence

@@ -1,5 +1,7 @@
 # Psychiko realism implementation D — Faros Circuit v3
 
+> **Reference media note:** the image evidence that used to live in this folder (Street View reference views, game/Street View comparisons) now lives in `.reference/psychiko-realism/impl-d/` — a git-ignored local-only directory (see `.reference/README.md`). The image links below only resolve where that local copy exists; notes, JSON, scripts and logs stay committed here. Older history still contains the files; do not recommit them.
+
 Work only in the requested `psychiko-realism` worktree on `vas-per/psychiko-realism`, clean-HEAD reference `c29be743`. Local commits only: no push, PR edit, merge or deployment. All captures use headless Chromium/SwiftShader. The inherited planner and uncommitted route were inspected first and reused after source/direction checks. Temporary regional query dumps and old annotated topology plots were discarded after review; the frozen OSM source remains unchanged.
 
 ## Final course and decisions
