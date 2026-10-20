@@ -10,3 +10,6 @@ Everything is derived at run time from the cells already published; a cell baked
 
 ## Step 3 (trees, denser rooftop kit, all of Syntagma paved): no rebake needed
 Street trees and the rooftop kit are derived from each cell's road graph and buildings when the cell is read, so published cells need nothing. `assets/athens/plazas.json` was extracted again (569 outlines); it ships with the app. If a bake ever stored per-cell tree rows, `worldDetail.vegetation` (positionHeight, kind, seed) is already drawn with the new species models. Note for later: with World detail Off the old box trees are gone for good (they never drew in Off anyway).
+
+## Step 4 (contact shadows under props, aerial perspective): no rebake needed
+Run-time only; nothing in the cells is read or written.

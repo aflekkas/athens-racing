@@ -233,7 +233,9 @@ export const FACADE_APPLY=`{
   float st=floor(vFac.z+.5);
   if(vFacB.y>.5)diffuseColor.rgb=mix(diffuseColor.rgb,tileColour(vFacP),uWorldDetail);
   else if(vFac.x<6553.&&st<4.5||st>7.5&&st<11.5&&vFac.x<6553.){float L=dot(diffuseColor.rgb,vec3(.3,.59,.11));diffuseColor.rgb=mix(diffuseColor.rgb,wallTint(vFacB.x,L),.78*uWorldDetail);}
-  diffuseColor.rgb*=facadeOrRoof()*wallShade();}`;
+  diffuseColor.rgb*=facadeOrRoof()*wallShade();
+  // aerial perspective before the fog: far walls and roofs take the sky's blue, a little brighter, so the city fades into the haze instead of greying out
+  diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(.86,.96,1.14)+vec3(.018,.03,.05),smoothstep(180.,720.,vFacDist)*.55*uWorldDetail);}`;
 
 /** Sea: colour only. Two scrolling ridge layers (different scales and directions) over slow deep/shallow patches. */
 export const SEA_GLSL=`${NOISE_GLSL}
