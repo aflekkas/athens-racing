@@ -61,3 +61,64 @@ test('real traffic fleet near/far graphs survive a crash, isolate geometry and r
     }
   }finally{globalThis.document=previous;}
 });
+
+// From the seat the exterior shell and the glass are hidden and the cockpit draws its own bonnet, pillars and mirror mounts
+// (owner 2026-10-20: "I can't see the damage from within my car"): the same lattice has to move those, and the windscreen cracks show as a decal.
+function cockpitModel({ glass = false } = {}) {
+  const root = new THREE.Group(), body = new THREE.Group(); root.add(body);
+  const paint = new THREE.MeshStandardMaterial(), panel = new THREE.Mesh(new THREE.BoxGeometry(1.8, .6, 4.4, 8, 4, 24), paint); panel.position.y = .55; body.add(panel);
+  for (const [id, x] of [['mirror_l', -.95], ['mirror_r', .95]]) { const g = new THREE.Group(); g.name = id; g.position.set(x, .95, -.6); g.add(new THREE.Mesh(new THREE.BoxGeometry(.2, .12, .1), paint)); body.add(g); }
+  if (glass) { const g = new THREE.Group(); g.name = 'glass_windscreen'; g.add(new THREE.Mesh(new THREE.PlaneGeometry(1.4, .6), paint)); g.position.set(0, 1.1, -.9); body.add(g); }
+  const car = installDamageSystem({ root, body, paint, dims: { L: 4.4, W: 1.84, H: 1.5 }, wheels: [] });
+  // the cockpit is built after the damage system, as in the game (cars.js), and hangs off the car as `cockpit.structure`
+  const structure = new THREE.Group(); structure.name = 'cockpit-structure'; body.add(structure); car.cockpit = { structure };
+  const part = (geo, role, x = 0, y = 0, z = 0) => { const m = new THREE.Mesh(geo, paint); m.userData.cockpitStructure = role; m.position.set(x, y, z); structure.add(m); return m; };
+  const corners = [[-.8, .9, -.9], [.8, .9, -.9], [.72, .66, -2.0], [-.72, .66, -2.0]];
+  const deckGeo = new THREE.BufferGeometry(); deckGeo.setAttribute('position', new THREE.Float32BufferAttribute(corners.flat(), 3)); deckGeo.setIndex([0, 1, 2, 0, 2, 3]);
+  const deck = part(deckGeo, 'deck'), pillar = part(new THREE.BoxGeometry(.04, .7, .03), 'pillar', -.8, 1.1, -.9), dash = part(new THREE.BoxGeometry(1.4, .2, .3), 'dashboard', 0, .8, -.5);
+  const mount = part(new THREE.BoxGeometry(.03, .3, .03), 'mirror-mount', -.9, .9, -.6);
+  return { car, deck, pillar, dash, mount, structure, body };
+}
+test('the cockpit bonnet, pillars and mirror mounts take the same dents; the mirror bends then goes, and clean cars pay nothing', () => {
+  const { car, deck, pillar, dash, mount } = cockpitModel(), n0 = car.damageMeshes.length, deckRest = deck.geometry.attributes.position.count;
+  assert.equal(deckRest, 4, 'untouched until the first impact');
+  car.setDamage('front', .7, { localPoint: { x: -.3, y: .55, z: -2.1 }, localNormal: { x: .1, y: 0, z: .99 }, ebs: 16 });
+  assert.ok(car.damageMeshes.length >= n0 + 3, 'deck, pillar and mount registered');
+  assert.ok(!car.damageMeshes.includes(dash), 'the dashboard keeps its authored shape');
+  assert.ok(deck.geometry.attributes.position.count > 100, 'the deck panel was cut finer so it can crumple');
+  const ys = Array.from(deck.geometry.attributes.position.array).filter((_, i) => i % 3 === 1);
+  assert.ok(Math.max(...ys) - Math.min(...ys) > .2, 'the bonnet buckles: its height now varies by more than the 0.24 m it had flat');
+  const z = Array.from(deck.geometry.attributes.position.array).filter((_, i) => i % 3 === 2);
+  const nose = z.filter(v => v < -1.7);assert.ok(nose.reduce((t, v) => t + v, 0) / nose.length > -1.95, 'and the nose is pushed back (its average was -2.0 flat)');
+  // a side hit bends the pillar on that side
+  const bent = pillar.geometry.attributes.position.array.slice();
+  car.setDamage('left', .8, { localPoint: { x: -.92, y: .9, z: -.9 }, localNormal: { x: 1, y: 0, z: 0 }, ebs: 14 });
+  assert.notDeepEqual(Array.from(pillar.geometry.attributes.position.array), Array.from(bent), 'the pillar moves with a door hit');
+  // mirror: bent below the tear-off point, gone (with its cockpit mount) above it
+  car.setDamage('left', 0);
+  const m = car.damageParts.find(p => p.id === 'mirror_l'), hitL = { localPoint: { x: -.95, y: .95, z: -.6 }, localNormal: { x: 1, y: 0, z: 0 }, ebs: 14 };
+  assert.equal(mount.visible, true); car.setDamage('left', .15, hitL);
+  assert.equal(m.state, 'bent'); assert.ok(Math.abs(m.node.rotation.y - m.rotation.y) > .1, 'a knocked mirror turns on its arm'); assert.equal(m.node.visible, true);
+  car.setDamage('left', .5, hitL);
+  assert.equal(m.state, 'detached'); assert.equal(m.node.visible, false); assert.equal(mount.visible, false, 'the mount goes with the mirror');
+  // repair brings it all back
+  car.setDamage('front', 0); car.setDamage('left', 0);
+  assert.equal(mount.visible, true);
+  const back = Array.from(deck.geometry.attributes.position.array);
+  assert.ok(Math.max(...back.filter((_, i) => i % 3 === 1)) <= .9 + 1e-6 && Math.min(...back.filter((_, i) => i % 3 === 2)) >= -2.0 - 1e-6, 'flat again after the repair');
+  car.disposeDamage();
+});
+test('a cracked windscreen also shows from the seat as a decal that appears in the cockpit view only', () => {
+  const had = globalThis.document, ctx = new Proxy({}, { get: () => () => {}, set: () => true });
+  globalThis.document = { createElement: () => ({ width: 0, height: 0, getContext: () => ctx }) };
+  try {
+    const { car: sys, body } = cockpitModel({ glass: true });
+    sys.setDamage('front', .7, { localPoint: { x: 0, y: .55, z: -2.1 }, ebs: 16 });
+    assert.ok(sys.crackedGlass && sys.crackedGlassPov, 'cracks on the glass and on the seat decal');
+    sys.cockpitView = false; sys.updateDamage(.016); assert.equal(sys.crackedGlassPov.visible, false);
+    sys.cockpitView = true; sys.updateDamage(.016); assert.equal(sys.crackedGlassPov.visible, true);
+    const mine = sys.crackedGlassPov.matrix.clone(); body.updateMatrixWorld(true); const world = new THREE.Vector3().setFromMatrixPosition(body.matrixWorld.clone().multiply(mine));
+    assert.ok(Math.abs(world.y - 1.1) < 1e-6 && Math.abs(world.z + .9) < 1e-6, 'the decal sits where the glass is');
+    sys.setDamage('front', 0); assert.equal(sys.crackedGlassPov, null);
+  } finally { if (had === undefined) delete globalThis.document; else globalThis.document = had; }
+});

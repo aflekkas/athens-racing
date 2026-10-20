@@ -86,3 +86,22 @@ never pulls the steering or bends a front wheel, and only a hit on the nose (tra
 `regress.mjs` used to assert that a rear hit on a rear-engine car cost nothing lasting; that is the behaviour the owner asked to remove,
 so it now asserts the engine loses power there and the frontal isolation (steering, front wheels, radiator) for every car.
 Not changed: swapping to another car in free roam builds a fresh car (a free-roam convenience, not a race).
+
+## Damage seen from the seat (owner 2026-10-20: "I can't see the damage from within my car")
+
+From the driver's seat the game hides the whole exterior shell and the glass (owner-locked clear view, `src/pov-visibility.js`,
+`src/glass-tint.js`) and draws the cockpit's own parts instead: the bonnet deck, pillars, door tops, window frame, header and mirror
+mounts (`src/cockpit-structure.js`). The dent lattice only moved the shell, so those parts never changed: the cockpit looked like a
+different, undamaged car. Now (all in `src/damage.js`, which the POV source-hash guard does not cover, so none of the locked cockpit
+files, masks or camera changed):
+
+* the same lattice moves the cockpit's bonnet, pillars, door tops, window frame, header and mirror mounts. They are registered on the
+  first impact and their boxes / deck panel are cut finer then, so a car that is never hit pays nothing and an undamaged cockpit is
+  pixel-identical;
+* the windscreen cracks show from the seat as a hairline decal on the glass plane, in the cockpit view only (the glass itself stays
+  invisible, as locked);
+* a knocked side mirror turns on its arm (0.1 to 0.28 damage), and a torn-off one takes its cockpit mount with it.
+
+Not done: wings (the exterior shell is not drawn from the seat, so there are none to see), the dashboard (authored, away from the
+crumple zone) and a bent mirror's reflection (the mirror cameras do not follow the housing).
+Shots: `.scratch/crash-physics-2026-10-20/cockpit-before-after.webp`, `cockpit-capture.mjs`.
