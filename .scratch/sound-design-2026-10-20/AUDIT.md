@@ -64,7 +64,7 @@ Ratings are engineering/design judgments from the rendered envelopes/spectra and
 | rain-cabin | good | -51.8 | -37.7 | Appropriate envelope and spectral role; restrained relative to engine. Retain existing character and independent bus controls. |
 | rain-heavy | good | -45 | -29.4 | Appropriate envelope and spectral role; restrained relative to engine. Retain existing character and independent bus controls. |
 | rain-light | good | -58.2 | -39.4 | Appropriate envelope and spectral role; restrained relative to engine. Retain existing character and independent bus controls. |
-| roll-asphalt | weak | -58.8 | -45.6 | Too far below engine at road speed; fixed sine gust repeats every 7.7 seconds. |
+| roll-asphalt | weak | -58.8 | -45.6 | Rolling body is too far below the engine at road speed. |
 | roll-cobbles | bad | -59.2 | -45.8 | No cobble-specific texture: same rolling parameters as asphalt. |
 | roll-grass | good | -49 | -38.0 | Appropriate envelope and spectral role; restrained relative to engine. Retain existing character and independent bus controls. |
 | roll-gravel | good | -47.2 | -36.1 | Appropriate envelope and spectral role; restrained relative to engine. Retain existing character and independent bus controls. |
@@ -207,3 +207,7 @@ Run the repository browser-slot wrapper with `node .scratch/sound-design-2026-10
 The first commit is 2e530290. Full npm test on its exact staged tree: 260 files, 2332 passes, 12 existing default-suite skips, 0 failures; standalone physics 1323 passes, browser imports and syntax passed. The second commit is validated by the full suite and release-fast gates before landing; see final validation report and thread summary for its SHA/results. Offline timing is not a certification of any particular laptop; structural low-cost budgets remain in place.
 
 Audio-module bundle measurement (esbuild bundled/minified ESM, gzip): baseline 75,291 / 26,087 bytes; final values in bundle-growth.json. Evidence is excluded from the game asset bundle. No new runtime audio assets.
+
+## Additional event coverage
+
+See [SUPPLEMENT.md](SUPPLEMENT.md) for 41 further event scenarios, including police radio/sirens, suspension/kerb sounds, pedestrian reactions, horns, rural details and remaining UI call sites. Combined coverage is 120 before/after scenarios. A third focused change removes the remaining police/near-miss/position plucked phrases; radio timing and passing-air cues remain. Final validation and commit IDs are recorded in the owner feed report.

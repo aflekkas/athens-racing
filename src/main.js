@@ -1294,7 +1294,7 @@ function raceTiming(dt) {
     const pos = racePosition();
     if (G.raceT > 2 && G.lastPos && pos !== G.lastPos && G.t - G.leadT > 1.2) {
       G.leadT = G.t;
-      if (pos < G.lastPos) { audio.pluck(587, 0, 0.14); audio.pluck(880, 0.08, 0.14); } // the position box shows it; no pop
+      if (pos < G.lastPos) audio.ui(true); // brief acknowledgement; the position box shows the change
     }
     G.lastPos = pos;
   }

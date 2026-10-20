@@ -1,0 +1,1 @@
+extra-before: distant-dog — -60.8 LUFS, -41.4 dBFS peak; spectrogram and waveform at default mix, no normalization.

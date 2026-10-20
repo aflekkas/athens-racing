@@ -1,0 +1,1 @@
+extra-before: voice-shout-1 — -30.9 LUFS, -17.1 dBFS peak; spectrogram and waveform at default mix, no normalization.

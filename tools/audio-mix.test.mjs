@@ -114,3 +114,15 @@ test('damaged exhaust follows the engine bus and cannot queue a burst after a sl
   for(const extra of [{muted:true},{rpm:0},{damage:{rear:.5}}])a.updateExhaustRattle({...p,...extra},60);
   assert.equal(hits.length,2);assert.ok(hits.every(h=>h.bus===a.eng&&h.gain<.4&&h.dur<.06));
 });
+
+test('police outcomes preserve radio timing without note sequences, and near misses are passing air', () => {
+  const a=Object.create(Audio.prototype),radio=[],results=[],air=[];
+  a.ctx={};a.radioBurst=(...args)=>{radio.push(args);return 3.3;};
+  a.result=value=>results.push(value);a.noise=params=>air.push(params);
+  a.tone=()=>assert.fail('incidental events must not add a pitched phrase');
+  assert.equal(a.copBusted(),3.3);a.copEvaded();
+  assert.deepEqual(results,[false,true]);assert.deepEqual(radio,[[2.2,.34,.6],[.8,.2]]);
+  a.nearMiss(5,-.4);
+  assert.equal(air.length,1);assert.equal(air[0].pan,-.4);assert.equal(air[0].type,'bandpass');
+  assert.equal(Audio.prototype.pluck,undefined);
+});

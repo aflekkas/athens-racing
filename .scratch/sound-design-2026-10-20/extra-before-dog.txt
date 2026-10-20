@@ -1,0 +1,1 @@
+extra-before: dog — -33.1 LUFS, -18.5 dBFS peak; spectrogram and waveform at default mix, no normalization.
