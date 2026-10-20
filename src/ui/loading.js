@@ -87,7 +87,7 @@ class LoadingScreen {
     const el = this.el; if (!el) return;
     clearTimeout(this.hideTimer);
     this.setMap(mapId);
-    const purpose = $('ldContext'); if (purpose) purpose.textContent = 'LOADING TRACK FOR ' + context;
+    const purpose = $('ldContext'); if (purpose) purpose.textContent = 'Loading ' + context;
     this.p = 0; this.reset(); this.applyRoute(); this.render(true);
     el.inert = false; el.style.pointerEvents = ''; el.removeAttribute('aria-hidden');
     el.classList.add('open'); this.renderIssue();
