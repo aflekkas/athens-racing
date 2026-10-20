@@ -13,6 +13,7 @@ import { driverName } from './driver-name.js';
 import { Cockpit } from './cockpit.js';
 import { PAINTS, savedPaint, savePaint } from './vehicle-paint.js';
 import { GARAGE_CLASSES, GARAGE_CARS, carCategory, classLabel, filterCars, carModel, trimName, migrateCarSelection, bodyTrim, trimChoices, stepTrim, readCarSelection } from './car-catalog.js';
+const sentence = t => String(t).charAt(0) + String(t).slice(1).toLowerCase();
 import { classifyCar } from './car-performance.js';
 import { carEligibility } from './mp-car-rules.js';
 // Why a trim is locked by lobby car rules (null without rules or when eligible).
@@ -45,26 +46,27 @@ export function renderCarSelect({ index = 0, def, garage = false, detail = false
       ${C.select({ key: 'drive', label: 'DRIVE', compact: true, value: filters.drive || 'all', options: [['all', 'ALL'], ['FWD', 'FWD'], ['RWD', 'RWD'], ['AWD', 'AWD']], attrs })}
       ${C.select({ key: 'power', label: 'POWER', compact: true, value: filters.power || 'all', options: [['all', 'ALL'], ['low', 'UNDER 150 HP'], ['mid', '150–300 HP'], ['high', 'OVER 300 HP']], attrs })}
       ${C.select({ key: 'sort', label: 'SORT', compact: true, value: filters.sort || 'lineup', options: [['lineup', 'LINEUP'], ['power', 'POWER', { icon: 'arrow-down' }], ['weight', 'WEIGHT', { icon: 'arrow-up' }]], attrs })}`;
-    const count = `${list.length} / ${GARAGE_CARS.length} CARS${def?.car ? ' · EVENT CAR LOCKED' : allowedCars ? ' · LOBBY CAR RULES APPLY' : ''}`;
-    return C.browseGrid({ variant: 'catalog', cls: 'scr--catalog', kick: `${garage ? 'GARAGE' : esc(def?.name || 'CHOOSE YOUR CAR')} · ${count}`, title: 'GARAGE', hints: [['select', 'BROWSE'], ['confirm', 'DETAILS'], ['back', 'BACK']],
+    // The breadcrumb is a real parent (the event or the lobby), never a count; the grid shows what matches.
+    const kick = def?.car ? `${esc(def.name || 'EVENT')} · EVENT CAR` : allowedCars ? 'MULTIPLAYER · LOBBY CAR RULES' : garage ? '' : esc(def?.name || '');
+    return C.browseGrid({ variant: 'catalog', cls: 'scr--catalog', kick, title: 'GARAGE', hints: [['select', 'BROWSE'], ['confirm', 'DETAILS'], ['back', 'BACK']],
       filters: toolbar, items: list.map(({ car, index: i }) => {
         const locked = !!(def?.car && def.car !== car.id) || !!(allowedCars && !allowedCars.includes(car.id));
         const reason = locked && !def?.car ? ruleReason(car, rules) : null, m = carModel(car), trims = m.bodies ? m.bodies[0][2].length : m.trims.length;
         return C.carCard({ id: car.id, brand: badgeBrand(car), name: esc(m?.name || car.name), hp: Math.round(car.power * 1.341), kg: car.mass, drive: car.drive.toUpperCase(), locked, selected: carModel(CARS[index])===m,
           lockLabel: def?.car ? 'EVENT CAR ONLY' : 'HOST RULES',
-          line: `${classLabel(carCategory(car))} · ${trims} TRIM${m.trims.length === 1 ? '' : 'S'}${m.bodies ? ' · 2 BODIES' : ''}${reason ? ` · ${esc(reason)}` : ''}`,
+          line: `${sentence(classLabel(carCategory(car)))} · ${trims} trim${m.trims.length === 1 ? '' : 's'}${m.bodies ? ' · 2 bodies' : ''}${reason ? ` · ${esc(reason)}` : ''}`,
           attrs: { 'data-car-index': i, 'aria-disabled': locked ? 'true' : 'false', title: locked ? def?.car ? 'THIS EVENT USES ITS FIXED CAR' : reason || 'THE HOST DOES NOT ALLOW THIS CAR' : 'VIEW CAR', ...(carModel(CARS[index])===m && !locked ? { 'data-default': '' } : {}) } });
-      }).join('') || '<div class="empty">NO CARS MATCH · CHANGE YOUR FILTERS</div>' });
+      }).join('') || C.emptyState({ icon: 'search', title: 'NO CARS MATCH', text: 'Try fewer filters.' }) });
   }
   const available=id=>(!allowedCars || allowedCars.includes(id)) && (!def?.car || def.car===id);
   const body=model?.bodies?.find(([, ,ids])=>ids.includes(c.id));
   const trims=trimChoices(c.id,{allowedCars,def,cars:CARS});
   const specs = [['POWER', `${Math.round(c.power * 1.341)} HP`, 'zap'], ['TORQUE', `${c.torque} NM`, 'gauge'], ['WEIGHT', `${c.mass} KG`, 'box'], ['DRIVE', c.drive.toUpperCase(), 'circle-dot'], ['0–100 KM/H', acc ? `${c.id === 'gtv' ? '≈ ' : ''}${acc.toFixed(1)} S` : '—', 'timer'], ['TOP SPEED', `${c.vmax} KM/H`, 'gauge']];
-  return C.stageInspector({ variant: 'vehicle', cls: 'scr--car', kick: classLabel(carCategory(c)), title: c.name,
+  return C.stageInspector({ variant: 'vehicle', cls: 'scr--car', kick: 'GARAGE', title: c.name,
     hints: [['leftright', 'TRIM · A/D · LB/RB'], ['confirm', garage ? 'SELECT' : 'RACE'], ['back', 'CATALOGUE']],
     stageAttrs: { id: 'carStage', 'data-trim-current': c.id, 'aria-label': `Rotating 3D view of ${c.name}` },
     stage: '<div class="car-preview-viewport" data-ui-keep="preview"></div>',
-    inspector: C.vehicleSpecs({ brand: badgeBrand(c), kick: 'CAR', name: model?.name || c.name, transmission: `${c.gears.length}-SPEED ${c.gearbox === 'MT' ? 'MANUAL' : c.gearbox || ''} · ${c.drive.toUpperCase()}`, specs,
+    inspector: C.vehicleSpecs({ brand: badgeBrand(c), name: model?.name || c.name, transmission: `${c.gears.length}-SPEED ${c.gearbox === 'MT' ? 'MANUAL' : c.gearbox || ''} · ${c.drive.toUpperCase()}`, specs,
       choices: `${body ? C.segmented({key:'carBody',label:'BODY',value:body[0],options:model.bodies.filter(([, ,ids])=>ids.some(available)).map(([id,label])=>[id,label]),attrs:{'data-scope':'car-body'}}) : ''}${trims.length > 1 ? C.trimPicker({key:'carTrim',value:c.id,options:trims.map(id=>{const car=CARS.find(c=>c.id===id),t=car.zeroTo100||ACCELERATION[car.id];return {id,label:displayTrim(car,model),hp:Math.round(car.power*1.341),acc:t?`${car.id==='gtv'?'≈ ':''}${t.toFixed(1)} S`:'—'};}),attrs:{'data-scope':'car-trim'}}) : ''}`,
       extra: c.exhaustPops ? C.toggle({key:'exhaustPops',label:'EXHAUST POPS',value:exhaustPopsEnabled(c),attrs:{'data-scope':'exhaust'}}) : '',
       paint: paints.length ? `<div class="car-paints"><span class="label">PAINT</span><div class="car-paints__row">${paints.map(([name, color]) => C.paintSwatch({ name, color, selected: savedPaint(c) === color })).join('')}</div><div class="car-paint-name">${esc(paints.find(p => p[1] === savedPaint(c))?.[0] || '')}</div></div>` : '',
