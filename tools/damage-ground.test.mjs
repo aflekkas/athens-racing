@@ -15,7 +15,8 @@ test('actual wall normals at 10/20/40/70 km/h distinguish head-on from glancing 
   const v=mk(),g=ground(),a=angle*Math.PI/180;v.vLong=kmh/3.6;
   g._hit(v,Math.sin(a),Math.cos(a),.01,undefined,{kind:'wall'});
   assert.equal(v.engineStalled,false);
-  if(kmh<=40 || angle>=60)assert.equal(v.impactMechanical,0);
+  // lasting damage (2026-10-20, punishing model): from 18 km/h of closing speed along the wall normal, any direction; never below it
+  if(kmh*Math.cos(a)<=18)assert.equal(v.impactMechanical,0);
   else assert.ok(v.impactMechanical>0);
   if(kmh===10)assert.deepEqual(v.damage,{front:0,rear:0,left:0,right:0});
  }
@@ -44,7 +45,7 @@ test('gentle landing loads suspension; a hard vertical landing damages suspensio
 
 test('small solid bollard hits are cosmetic; a nose-first large solid hit still matters',()=>{
  const g=ground(),v=mk();v.vLong=20/3.6;g._hit(v,0,1,.02,undefined,{kind:'bollard'});
- assert.ok(v.damage.front>0&&v.damage.front<.05);assert.equal(v.impactMechanical,0);assert.equal(v.engHealth,1);
+ assert.ok(v.damage.front>0&&v.damage.front<.1,'dents show sooner since 2026-10-20 (full crush at 60 km/h, was 80), but a 20 km/h bump stays a scuff');assert.ok(v.impactMechanical<.01,'a 20 km/h bollard bump leaves no lasting damage worth the name');assert.ok(v.engHealth>.99);
  v.reset(200,2,70/3.6);g._hit(v,0,1,.02,undefined,{kind:'bollard'});assert.ok(v.impactMechanical>.3);
 });
 

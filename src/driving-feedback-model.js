@@ -17,15 +17,16 @@ export function damageFeedback(vehicle, { spectating = false, towLabel = 'TOW', 
     : failure === 'drivetrain' || vehicle.drivetrainBroken ? 'Impact broke the drivetrain'
     : stopped ? 'Impact stopped the engine'
     : hot ? vehicle.radiatorDamage > .1 ? 'Impact damaged the radiator · overheating' : 'Engine overheating'
-    : impact > .01 ? 'Frontal impact damaged the powertrain'
+    : impact > .01 ? 'Crash damage: engine, steering and top speed'
     : damage > .01 ? 'Engine wear from over-rev or heat'
     : body && !bent ? 'Bodywork dented'
     : 'Impact damage';
   if (cause === 'Impact damage' && vehicle.lastDamage?.zone) cause = `${vehicle.lastDamage.zone} impact damage`;
-  const effect = stopped ? 'No engine power' : health < .99 ? `${Math.round(health * 100)}% engine power available`
+  const top = Math.round(100 * (1 - (1 / (1 + 0.6 * impact)) ** (1 / 3) * (health) ** (1 / 3)));
+  const effect = stopped ? 'No engine power' : health < .99 ? `${Math.round(health * 100)}% engine power available${top >= 3 ? ` · top speed −${top}%` : ''}${Math.abs(vehicle.steerPull || 0) > .002 ? ' · steering pulls' : ''}`
     : bent ? 'Wheel damage affects steering' : body ? 'Cosmetic damage · full engine power' : hot ? 'Engine is hot · full power available' : 'Full engine power available';
   const repairAction = spectating ? 'Watching this driver · recovery is their choice'
-    : repairAvailable ? 'Tow and repair' : 'Recovery unavailable right now';
-  return { visible: true, title: stopped ? 'ENGINE DISABLED' : hot ? 'ENGINE HOT' : health <= .7 ? 'LIMP MODE' : body && !bent && health >= .99 ? 'BODY DAMAGE' : 'CAR IMPAIRED', cause, effect, repairAction,
+    : repairAvailable ? 'Tow to the road · damage stays until restart' : 'Recovery unavailable right now';
+  return { visible: true, title: stopped ? 'ENGINE DISABLED' : hot ? 'ENGINE HOT' : health <= .55 ? 'LIMP MODE' : body && !bent && health >= .99 ? 'BODY DAMAGE' : 'CAR IMPAIRED', cause, effect, repairAction,
     health, tone: stopped || health < .3 ? 'bad' : 'warn' };
 }

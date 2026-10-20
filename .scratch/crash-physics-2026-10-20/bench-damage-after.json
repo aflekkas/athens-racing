@@ -1,0 +1,156 @@
+[
+ {
+  "group": "damage",
+  "scenario": "undamaged",
+  "mechanical": 0,
+  "powerPct": 100,
+  "topKmh": 247,
+  "wheelEffortPct": 0,
+  "worstOffsetM": 0,
+  "timeS": 28.25,
+  "lossS": 0
+ },
+ {
+  "group": "damage",
+  "scenario": "head-on wall 30 km/h",
+  "mechanical": 0.066,
+  "powerPct": 95,
+  "topKmh": 247,
+  "wheelEffortPct": 0.8,
+  "worstOffsetM": 0.2,
+  "timeS": 28.77,
+  "lossS": 0.52
+ },
+ {
+  "group": "damage",
+  "scenario": "head-on wall 60 km/h",
+  "mechanical": 0.516,
+  "powerPct": 69,
+  "topKmh": 212,
+  "wheelEffortPct": 5.9,
+  "worstOffsetM": 1.7,
+  "timeS": 32.2,
+  "lossS": 3.95
+ },
+ {
+  "group": "damage",
+  "scenario": "head-on wall 100 km/h",
+  "mechanical": 1,
+  "powerPct": 49,
+  "topKmh": 185,
+  "wheelEffortPct": 11.4,
+  "worstOffsetM": 3.1,
+  "timeS": 35.93,
+  "lossS": 7.68
+ },
+ {
+  "group": "damage",
+  "scenario": "head-on wall 160 km/h",
+  "mechanical": 1,
+  "powerPct": 49,
+  "topKmh": 185,
+  "wheelEffortPct": 11.4,
+  "worstOffsetM": 3.1,
+  "timeS": 35.93,
+  "lossS": 7.68
+ },
+ {
+  "group": "damage",
+  "scenario": "30 degree wall glance 100 km/h",
+  "mechanical": 0.23,
+  "powerPct": 84,
+  "topKmh": 234,
+  "wheelEffortPct": 4.2,
+  "worstOffsetM": 1.2,
+  "timeS": 30,
+  "lossS": 1.75
+ },
+ {
+  "group": "damage",
+  "scenario": "30 degree guard-rail glance 100 km/h",
+  "mechanical": 0.195,
+  "powerPct": 86,
+  "topKmh": 237,
+  "wheelEffortPct": 3.7,
+  "worstOffsetM": 1.1,
+  "timeS": 29.75,
+  "lossS": 1.5
+ },
+ {
+  "group": "damage",
+  "scenario": "sideways into a post 60 km/h",
+  "mechanical": 0.258,
+  "powerPct": 83,
+  "topKmh": 232,
+  "wheelEffortPct": 4.8,
+  "worstOffsetM": 1.4,
+  "timeS": 30.2,
+  "lossS": 1.95
+ },
+ {
+  "group": "damage",
+  "scenario": "rear-end a sedan at 60 km/h",
+  "mechanical": 0.012,
+  "powerPct": 99,
+  "topKmh": 247,
+  "wheelEffortPct": 0.1,
+  "worstOffsetM": 0,
+  "timeS": 28.35,
+  "lossS": 0.1
+ },
+ {
+  "group": "damage",
+  "scenario": "rear-end a sedan at 100 km/h",
+  "mechanical": 0.228,
+  "powerPct": 84,
+  "topKmh": 235,
+  "wheelEffortPct": 2.6,
+  "worstOffsetM": 0.7,
+  "timeS": 29.95,
+  "lossS": 1.7
+ },
+ {
+  "group": "damage",
+  "scenario": "T-bone a crossing car at 60 km/h",
+  "mechanical": 0.071,
+  "powerPct": 94,
+  "topKmh": 246,
+  "wheelEffortPct": 1.1,
+  "worstOffsetM": 0.3,
+  "timeS": 28.8,
+  "lossS": 0.55
+ },
+ {
+  "group": "damage",
+  "scenario": "ten 20 km/h taps (trading paint)",
+  "mechanical": 0.058,
+  "powerPct": 95,
+  "topKmh": 247,
+  "wheelEffortPct": 0.7,
+  "worstOffsetM": 0.2,
+  "timeS": 28.77,
+  "lossS": 0.52
+ },
+ {
+  "group": "damage",
+  "scenario": "four 40 km/h bumps",
+  "mechanical": 0.845,
+  "powerPct": 52,
+  "topKmh": 189,
+  "wheelEffortPct": 9.6,
+  "worstOffsetM": 2.6,
+  "timeS": 35.35,
+  "lossS": 7.1
+ },
+ {
+  "group": "damage",
+  "scenario": "one 50 km/h side hit",
+  "mechanical": 0.185,
+  "powerPct": 87,
+  "topKmh": 238,
+  "wheelEffortPct": 5.1,
+  "worstOffsetM": 1.5,
+  "timeS": 29.67,
+  "lossS": 1.42
+ }
+]

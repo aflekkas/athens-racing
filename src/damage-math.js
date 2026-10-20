@@ -1,16 +1,22 @@
 // Gameplay calibration, in m/s. Cosmetic crush is independent of the mechanical
-// budget: repeated small dents must never become a ruined engine.
+// budget: a light tap dents the paint and costs nothing; anything real costs power, top speed and a straight wheel, for good
+// (owner 2026-10-20: "we should arguably make the damage more punishing, rn it's not punishing").
 export const COSMETIC_EBS = 12 / 3.6;
-export const MECHANICAL_EBS = 40 / 3.6;
+export const MECHANICAL_EBS = 40 / 3.6; // a square frontal hit above this can also wreck the engine (terminal logic below)
 export const WRECK_EBS = 90 / 3.6;
 export const WRECK_MECHANICAL = 0.98;
+// Lasting mechanical damage, by the hit's equivalent barrier speed in any direction: none below TAP_EBS (trading paint), a
+// smooth rise to a ruined car at RUIN_EBS. A frontal hit weighs most; side and rear hits hurt the suspension, steering and exhaust.
+export const TAP_EBS = 18 / 3.6;
+export const RUIN_EBS = 80 / 3.6;
+export const ZONE_WEIGHT = { front: 1, rear: 0.4, left: 0.5, right: 0.5 };
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
 const groundKinds = new Set(['kerb', 'curb', 'ground', 'suspension', 'bump-road', 'landing']);
 export const isGroundContact = kind => groundKinds.has(kind);
 
 export function damageIncrement(ebs, zone) {
-  const full = { front: 80 / 3.6, rear: 80 / 3.6, left: 65 / 3.6, right: 65 / 3.6 }[zone];
+  const full = { front: 60 / 3.6, rear: 60 / 3.6, left: 50 / 3.6, right: 50 / 3.6 }[zone]; // (80 / 65 km/h before 2026-10-20: dents show sooner and deeper)
   if (!Number.isFinite(ebs) || ebs <= COSMETIC_EBS || !Number.isFinite(full)) return 0;
   return Math.min(1, (ebs * ebs - COSMETIC_EBS * COSMETIC_EBS) / (full * full - COSMETIC_EBS * COSMETIC_EBS));
 }
@@ -26,15 +32,22 @@ export function frontalBarrierSpeed(ebs, zone, { localNormal, kind } = {}) {
   return alignment >= Math.SQRT1_2 - 1e-9 ? ebs * alignment : 0;
 }
 
-export function mechanicalIncrement(frontalEbs) {
-  if (!Number.isFinite(frontalEbs) || frontalEbs <= MECHANICAL_EBS) return 0;
-  return Math.min(1, ((frontalEbs - MECHANICAL_EBS) / (WRECK_EBS - MECHANICAL_EBS)) ** 2);
+/** lasting mechanical damage one impact adds (0..1), from its equivalent barrier speed and the zone it landed on */
+export function mechanicalIncrement(ebs, zone = 'front') {
+  const w = ZONE_WEIGHT[zone];
+  if (!Number.isFinite(ebs) || ebs <= TAP_EBS || !(w > 0)) return 0;
+  return w * Math.min(1, (ebs - TAP_EBS) / (RUIN_EBS - TAP_EBS)) ** 1.5;
 }
 
+/** engine power left (1 = all of it) at a mechanical damage level; never below limp */
 export function impactPowerFactor(mechanical) {
   const damage = clamp(Number.isFinite(mechanical) ? mechanical : 0, 0, 1);
-  // At most 20% loss through 65% mechanical damage; limp follows several big hits.
-  return 1 - 0.2 * smooth(0, 0.65, damage) - 0.65 * smooth(0.65, 1, damage);
+  return 1 - 0.55 * damage ** 0.85;
+}
+/** extra drag on a damaged car (a worse top speed, on top of the lost power): 1 = none */
+export function impactDragFactor(mechanical) {
+  const damage = clamp(Number.isFinite(mechanical) ? mechanical : 0, 0, 1);
+  return 1 + 0.6 * damage;
 }
 
 export function isTerminalImpact(impactEbs, impactMechanical = 0) {

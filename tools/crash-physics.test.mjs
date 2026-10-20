@@ -5,7 +5,7 @@
 // node --import ./tools/physics-test/register.mjs --test tools/crash-physics.test.mjs
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { runBench, trafficRestitution } from './crash-bench.mjs';
+import { runBench, trafficRestitution, damageTrials } from './crash-bench.mjs';
 import { restitutionAt, CRASH, solveContact, solveCarHalf, carOverlap, resolveCarPair } from '../src/crash-contact.js';
 
 const rows = runBench({ speeds: [30, 60, 100, 160], cars: ['z4', 'panda'] });
@@ -129,4 +129,16 @@ test('random car pairs: both halves conserve momentum exactly and never add ener
     assert.ok(Math.hypot(p1[0] - p0[0], p1[1] - p0[1]) / scale < 1e-6, `case ${i}: momentum ${p0} -> ${p1}`);
     assert.ok(E() <= e0 * (1 + 1e-6) + 1, `case ${i}: energy ${e0} -> ${E()}`);
   }
+});
+
+test('lasting damage (owner 2026-10-20: "more punishing"): taps are forgiving, a head-on hit costs several seconds, damage stays through a tow', () => {
+  const d = Object.fromEntries(damageTrials({ car: 'z4' }).map(r => [r.scenario, r]));
+  assert.ok(d['ten 20 km/h taps (trading paint)'].lossS < 1, 'trading paint is not ruinous');
+  assert.ok(d['head-on wall 30 km/h'].lossS < 1 && d['head-on wall 30 km/h'].lossS > 0.1);
+  assert.ok(d['head-on wall 60 km/h'].lossS >= 3, 'a 60 km/h head-on hit is a real time loss, not a bounce');
+  assert.ok(d['head-on wall 100 km/h'].lossS >= 5 && d['head-on wall 100 km/h'].lossS < 12, 'costly but still drivable');
+  assert.ok(d['head-on wall 100 km/h'].powerPct >= 45 && d['head-on wall 100 km/h'].topKmh < d['undamaged'].topKmh - 40);
+  assert.ok(d['head-on wall 100 km/h'].wheelEffortPct > d['undamaged'].wheelEffortPct, 'the car pulls to one side');
+  assert.ok(d['30 degree wall glance 100 km/h'].lossS > 0.5 && d['one 50 km/h side hit'].lossS > 0.5, 'side and glancing hits cost something too');
+  assert.ok(Object.values(d).every(r => r.worstOffsetM < 4), 'a damaged car stays on the road with hands off, steering only for heading');
 });

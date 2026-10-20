@@ -164,6 +164,8 @@ export function stepFlight(v,dt,y,grade=0,bank=0,slope=0) {
     const kinetic=.5*v.m*dot(worldVelocity(v),worldVelocity(v))+.5*dot(B.L,angularVelocity(v));
     const budget=Math.max(0,energyBefore-v.m*G*B.cy);
     if(kinetic>budget){const scale=Math.sqrt(budget/kinetic);setVelocity(v,worldVelocity(v).map(x=>x*scale));B.L=B.L.map(x=>x*scale);}
+    // At rest there is no kinetic energy to pay with: a projection that rounding leaves a few nanometres high would still add energy.
+    const excess=mechanicalEnergy(v)-energyBefore;if(excess>0)B.cy-=excess/(v.m*G);
   }
   v.y=B.cy-v.hcg;v.yAir=v.y;v.air=B.contact?0:1;
   if(B.contact){v.bumpHit=Math.max(v.bumpHit,clamp(impact*.12,0,1));if(impact>v.landingSpeed+1||!v.landingSpeed){v.landingSpeed=impact;landingDamage(v,impact);} }

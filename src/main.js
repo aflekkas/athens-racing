@@ -641,7 +641,7 @@ function offerTow() {
   const el = document.createElement('aside'); el.className = 'tow-prompt ui-prompt'; el.id = 'tow-prompt';
   el.setAttribute('role', 'region'); el.setAttribute('aria-label', 'Tow assistance');
   const recoveryKey = kbd(esc(bindingLabel(controls.bindings, activeInputDevice() === 'gamepad' ? 'down' : 'tow', activeInputDevice()).split(' / ')[0]), activeInputDevice() === 'gamepad') + (activeInputDevice() === 'gamepad' ? icon('chevron-right') + kbd(esc(bindingLabel(controls.bindings,'confirm','gamepad').split(' / ')[0]),true) : '');
-  el.innerHTML = '<strong>NEED A TOW?</strong><p>' + 'Return to the road and repair your car.' + '</p><div class="tow-actions"><button type="button" data-tow="accept">' + recoveryKey + ' Tow and repair</button><button type="button" data-tow="dismiss">Keep driving</button></div>';
+  el.innerHTML = '<strong>NEED A TOW?</strong><p>' + 'Back on the road. Crash damage stays until you restart.' + '</p><div class="tow-actions"><button type="button" data-tow="accept">' + recoveryKey + ' Tow to the road</button><button type="button" data-tow="dismiss">Keep driving</button></div>';
   el.querySelector('[data-tow=accept]').onclick = () => { el.querySelector('button').blur(); tow(player.veh); };
   el.querySelector('[data-tow=dismiss]').onclick = () => { el.querySelector('[data-tow=dismiss]').blur(); closeTowOffer(TOW_PROMPT_COOLDOWN); };
   if (!inFreeRoam() && !multiplayer.active) {
@@ -649,7 +649,7 @@ function offerTow() {
     retire.onclick = () => { closeTowOffer(); if (multiplayer.active) multiplayer.retire(); else finishRace('retired'); };
     el.querySelector('.tow-actions').append(retire);
   }
-  const chip = document.createElement('button'); chip.type = 'button'; chip.className = 'tow-chip'; chip.innerHTML = recoveryKey + ' Tow and repair'; chip.setAttribute('aria-label', 'Tow to road'); chip.onclick = () => tow(player.veh); el.append(chip);
+  const chip = document.createElement('button'); chip.type = 'button'; chip.className = 'tow-chip'; chip.innerHTML = recoveryKey + ' Tow to the road'; chip.setAttribute('aria-label', 'Tow to road'); chip.onclick = () => tow(player.veh); el.append(chip);
   towOffer.element = el; towOffer.elapsed = 0; notifications.adopt('tow',el,{priority:60,persistent:true});
 }
 // Water still produces its splash, but recovery waits for the driver to accept the offer.
@@ -692,8 +692,9 @@ function backOnRoad(pv, recovery = null, { reset = false } = {}) {
     const d = f ? (-Math.sin(recovery.yaw) * f.tx - Math.cos(recovery.yaw) * f.tz >= 0 ? 1 : -1) : dir;
     plan = recovery.kind === 'road' && Number.isFinite(recovery.x) && Number.isFinite(recovery.z) ? { kind: 'road', ...recovery } : { kind: 'route', ...kit.adapter.pose(recovery.s, d, dir) };
   } else plan = planTow({ x: pv.x, z: pv.z, yaw: pv.yaw, route: kit.adapter, index: kit.index, dir, course: course ? courseTowLimits(course) : null, clear: towClearance(pv) });
-  const nitro = pv.nitro; beginCameraBlend();
+  const nitro = pv.nitro, kept = pv.damageSnapshot(); beginCameraBlend();
   pv.reset(plan.s, plan.kind === 'road' ? 0 : plan.u, 0); pv.yaw = plan.yaw;
+  pv.restoreDamageSnapshot(kept); // a tow or a reset puts you back on the road, not back in a new car: the damage stays until the run is restarted
   // A side street is not on the route: the car sits on that street's own surface.
   if (plan.kind === 'road') { pv.x = plan.x; pv.z = plan.z; pv.y = ground.network.height(plan.x, plan.z); pv.u = plan.u; pv._network = true; }
   if (online && !recovery) multiplayer.stateSender.discontinuity();
@@ -1135,7 +1136,8 @@ function setRoamConditions(conditions) {
 function teleportLandmark(id) {
   if (!inFreeRoam()) return false;
   const mark = map.data.marks.find(m => m.id === id); if (!mark) return false;
-  beginCameraBlend(0.8); placeVeh(player.veh, mark.s, route.closed ? 0 : route.laneU(mark.s, 0), 1);
+  const kept = player.veh.damageSnapshot();
+  beginCameraBlend(0.8); placeVeh(player.veh, mark.s, route.closed ? 0 : route.laneU(mark.s, 0), 1); player.veh.restoreDamageSnapshot(kept);
   resetTowOffer(); traffic.reset(mark.s); people.reset(mark.s); syncCar(player, 0); updateCamera(0, true);
   return true;
 }
