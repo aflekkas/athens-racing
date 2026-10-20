@@ -13,6 +13,8 @@ export const PROP_NEAR=Object.freeze({lamp:210,signal:230,bus_stop:140,bus_shelt
 const NEAR_BY_KIND=Object.fromEntries(Object.entries(PROP_NEAR).map(([n,d])=>[KINDS[n],d]));
 const CAR_PAINT=['#e9e9e6','#9ea4a8','#26292c','#2f4d78','#8c2f2b','#b9a98a'];
 const STATE_CODE={R:1,A:2,G:3};
+/** Contact shadow of each kind: half width and half length of the dark ellipse, in the model's frame (its long axis is z). */
+const SHADOW={[KINDS.parked_car]:[1.2,2.6],[KINDS.kiosk]:[1.3,1.1],[KINDS.bus_shelter]:[1.9,1.1],[KINDS.bench]:[.5,1],[KINDS.fountain]:[2.3,2.3],[KINDS.monument]:[1.1,1.1]};
 
 function part(w,h,d,x,y,z,colour,{kind,lamp=0,rotZ=0,rotX=0,segments=0,faceZ=false}={}){
   const g=segments?new THREE.CylinderGeometry(w/2,w/2,h,segments):new THREE.BoxGeometry(w,h,d);
@@ -96,6 +98,10 @@ export class AthensProps{
       const mesh=new THREE.InstancedMesh(geometry,material,cap);mesh.count=0;mesh.visible=false;mesh.frustumCulled=false;mesh.name='athens-props:'+kind;mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
       this.group.add(mesh);this.meshes.set(kind,{mesh,cap});
     }
+    // one soft contact shadow under every car, scooter, kiosk, shelter, bench, fountain and monument in range: an alpha-blended dark disc, one draw call
+    const disc=new THREE.CircleGeometry(1,10);disc.rotateX(-Math.PI/2);
+    this.shadow=new THREE.InstancedMesh(disc,new THREE.MeshBasicMaterial({color:0x0c0f10,transparent:true,opacity:.3,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}),PROP_LIMITS.capacity);
+    this.shadow.count=0;this.shadow.visible=false;this.shadow.frustumCulled=false;this.shadow.name='athens-props:shadows';this.shadow.renderOrder=2;this.shadow.instanceMatrix.setUsage(THREE.DynamicDrawUsage);this.group.add(this.shadow);
     this.stats={instances:0,signals:0,drawCalls:0,rebuilds:0};this._m=new THREE.Matrix4();this._q=new THREE.Quaternion();this._e=new THREE.Euler();this._p=new THREE.Vector3();this._s=new THREE.Vector3(1,1,1);this._c=new THREE.Color();
   }
   /** Read a decoded tile's rows. `ids`, `origin` and the `worldDetail` extension come from its metadata. */
@@ -126,7 +132,10 @@ export class AthensProps{
     for(const r of near){const slot=this.meshes.get(r.kind),n=used.get(r.kind)||0;if(n>=slot.cap)continue;used.set(r.kind,n+1);r.slot=n;this.near.push(r);
       M.compose(V.set(r.x,r.y,r.z),Q.setFromEuler(E.set(0,r.yaw,0)),S);slot.mesh.setMatrixAt(n,M);
       slot.mesh.setColorAt(n,r.kind===KINDS.parked_car?C.set(CAR_PAINT[r.variant%CAR_PAINT.length]):C.set('#ffffff'));}
-    let calls=0;
+    let sh=0;for(const r of this.near){const q=SHADOW[r.kind];if(!q)continue;const cs=Math.cos(r.yaw),sn=Math.sin(r.yaw);
+      M.compose(V.set(r.x+.28+q[1]*.05,r.y+.04,r.z+.2+q[1]*.04),Q.setFromEuler(E.set(0,r.yaw,0)),S.set(q[0],1,q[1]));this.shadow.setMatrixAt(sh++,M);void cs;void sn;}
+    this.shadow.count=sh;this.shadow.visible=sh>0;if(sh)this.shadow.instanceMatrix.needsUpdate=true;
+    let calls=sh>0?1:0;
     for(const [kind,{mesh}] of this.meshes){const n=used.get(kind)||0;mesh.count=n;mesh.visible=n>0;if(n){calls++;mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;}}
     this.last={x,z};this.stats={instances:this.near.length,signals:used.get(KINDS.signal)||0,drawCalls:calls,rebuilds:this.stats.rebuilds+1};this.refreshSignals(true);
   }

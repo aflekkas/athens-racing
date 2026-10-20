@@ -37,3 +37,13 @@ Run-time again: no cell changes, no rebake, nothing on the wire.
 - **Off:** trees, shadows, the kit and the paving are hidden; pitched roofs flatten as before.
 
 Measured on the 16-cell local bake, same camera, the stream settled (resident bytes unchanged for 8 s), `.scratch/athens-world-beauty-2026-10-20/step3/`. Draw calls and triangles, detail On / Off, before step 3 -> after: Syntagma 125 / 112 (84k / 45k) -> 130 / 112 (90k / 45k); Kypseli 137 / 122 (125k / 84k) -> 144 / 122 (147k / 84k); Peristeri 125 / 111 (114k / 78k) -> 131 / 111 (131k / 78k); Glyfada 149 / 142 (130k / 102k) -> 156 / 142 (145k / 102k). Off is identical to before, call for call and triangle for triangle. Resident bytes per cell +1.4 to 2.2 % (the tree and kit rows); compressed bytes per cell unchanged. The tree layer adds at most six draw calls (five species and the shadows) and 420 trees of 28 to 82 triangles.
+
+## Step 4: fake lighting, no light
+
+The look stays locked (no lights, no shadow maps, no post effects); this step only adds baked-looking cues.
+
+- **Contact shadows** (`src/athens-props.js`): under every kiosk, bus shelter, bench, fountain and monument in range, one soft dark ellipse (an alpha-blended disc, 30 % black, no depth write), all of them one draw call, in the props group so World detail Off hides them. Cars and scooters join them in step 5; the trees already have theirs (step 3). The wall foot of every building (a dark gradient over the lowest 2 m, step 2) is the matching cue for the facades.
+- **Aerial perspective** (`FACADE_APPLY` in `src/athens-detail.js`): beyond 180 m, walls and roofs take on the sky's blue and get a little brighter, fully by 720 m, ahead of the fog, so the far city fades into the haze rather than greying. Zero with World detail Off.
+- Not done: ground AO along the building bases (the ground shader has no knowledge of the footprints; a skirt strip per wall would add about a third to every cell's building vertices).
+
+Measured as in step 3, draw calls and triangles On / Off, before -> after: Syntagma 130 / 112 (90k / 45k) -> 131 / 112 (90k / 45k); Kypseli 144 / 122 -> 145 / 122; Peristeri 131 / 111 -> 132 / 111; Glyfada 156 / 142 -> 156 / 142. Off is unchanged. No cell bytes change.
