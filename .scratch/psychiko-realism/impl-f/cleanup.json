@@ -1,0 +1,108 @@
+{
+  "tempRemoved": "/tmp/athens-psychiko-f.8b8s_p0n",
+  "tempBytesRemoved": 1290528787,
+  "rawCaptureCleanup": {
+    "files": 131,
+    "bytes": 8664878,
+    "reason": "Raw reference downloads and duplicate before/after, diagnostic and matched-camera frames removed after the labelled comparisons were composed. Final screenshots, contacts and parking map retained."
+  },
+  "additionalRemoved": [
+    {
+      "path": "author-survey.py",
+      "bytes": 7731
+    },
+    {
+      "path": "contact.py",
+      "bytes": 1436
+    },
+    {
+      "path": "implement-faros.py",
+      "bytes": 5673
+    },
+    {
+      "path": "finish-captures.py",
+      "bytes": 972
+    },
+    {
+      "path": "commit.py",
+      "bytes": 1084
+    },
+    {
+      "path": "build.log",
+      "bytes": 995
+    },
+    {
+      "path": "detail-build.log",
+      "bytes": 167
+    },
+    {
+      "path": "evidence-before.log",
+      "bytes": 848
+    },
+    {
+      "path": "evidence-after.log",
+      "bytes": 848
+    },
+    {
+      "path": "finish-captures.log",
+      "bytes": 42
+    },
+    {
+      "path": "focused-development.log",
+      "bytes": 5378
+    },
+    {
+      "path": "lap-development.json",
+      "bytes": 63884
+    },
+    {
+      "path": "lap-development.log",
+      "bytes": 658
+    },
+    {
+      "path": "detail-budget-development.log",
+      "bytes": 217
+    },
+    {
+      "path": "road-network-development.log",
+      "bytes": 1314
+    },
+    {
+      "path": "rebuild-1.log",
+      "bytes": 2689
+    },
+    {
+      "path": "rebuild-2.log",
+      "bytes": 2689
+    },
+    {
+      "path": "perf-final.log",
+      "bytes": 10669
+    },
+    {
+      "path": "game-capture.log",
+      "bytes": 473
+    },
+    {
+      "path": "diagnostic.log",
+      "bytes": 21192
+    },
+    {
+      "path": "harness/diagnostic.mjs",
+      "bytes": 4450
+    },
+    {
+      "path": "harness/evidence-diagnostic.json",
+      "bytes": 48
+    }
+  ],
+  "duplicateComparisonRemoved": "sbs-lap-0018-extra.webp (126830 bytes)",
+  "ownedProcesses": "owned-processes.json",
+  "manualSignals": [],
+  "allOwnedCaptureHandlesClosed": true,
+  "allFinalGateChildrenExited": true,
+  "continuationDiskBefore": "89 GiB available / 12% capacity",
+  "diskBeforeCleanup": "Filesystem        Size    Used   Avail Capacity iused ifree %iused  Mounted on\n/dev/disk3s1s1   460Gi    12Gi    87Gi    12%    459k  912M    0%   /\n",
+  "diskAfterCleanup": "Filesystem        Size    Used   Avail Capacity iused ifree %iused  Mounted on\n/dev/disk3s1s1   460Gi    12Gi    88Gi    12%    459k  924M    0%   /\n",
+  "evidenceBytes": 9021401
+}

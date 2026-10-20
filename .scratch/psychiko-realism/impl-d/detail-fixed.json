@@ -1,0 +1,93 @@
+{
+  "method": "Same world-space cameras and orientations as impl-c; same canvas size, weather, terrain reset and detail On",
+  "rows": [
+    {
+      "name": "psychiko-mid-day-chase",
+      "before": {
+        "calls": 408,
+        "triangles": 798838
+      },
+      "after": {
+        "calls": 95,
+        "triangles": 820779,
+        "camera": [
+          -108.78222951930925,
+          213.21437931076613,
+          -1127.650052330762
+        ],
+        "quaternion": [
+          0.0057965578862904585,
+          0.6589205353013747,
+          -0.005077915076930943,
+          0.7521730803832932
+        ]
+      }
+    },
+    {
+      "name": "psychiko-mid-day-cockpit",
+      "before": {
+        "calls": 372,
+        "triangles": 800326
+      },
+      "after": {
+        "calls": 94,
+        "triangles": 817023,
+        "camera": [
+          -116.47143842243051,
+          211.53937931076612,
+          -1128.7597972776693
+        ],
+        "quaternion": [
+          -0.01735408448293786,
+          0.6362407242702797,
+          0.01431783251186613,
+          0.7711624836595407
+        ]
+      }
+    },
+    {
+      "name": "psychiko-mid-night-chase",
+      "before": {
+        "calls": 410,
+        "triangles": 799798
+      },
+      "after": {
+        "calls": 97,
+        "triangles": 821739,
+        "camera": [
+          -108.78222951930925,
+          213.21437931076613,
+          -1127.650052330762
+        ],
+        "quaternion": [
+          0.0057965578862904585,
+          0.6589205353013747,
+          -0.005077915076930943,
+          0.7521730803832932
+        ]
+      }
+    },
+    {
+      "name": "psychiko-mid-night-cockpit",
+      "before": {
+        "calls": 374,
+        "triangles": 801286
+      },
+      "after": {
+        "calls": 96,
+        "triangles": 817983,
+        "camera": [
+          -116.47143842243051,
+          211.53937931076612,
+          -1128.7597972776693
+        ],
+        "quaternion": [
+          -0.01735408448293786,
+          0.6362407242702797,
+          0.01431783251186613,
+          0.7711624836595407
+        ]
+      }
+    }
+  ]
+}

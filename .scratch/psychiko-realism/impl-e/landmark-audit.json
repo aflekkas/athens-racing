@@ -1,0 +1,25 @@
+{
+  "method": "Horizontal perspective projection onto the surveyed lap-0360 1024px, 90-degree reference camera, using source footprint vertices; visible balcony spans the right edge.",
+  "rejectedPostOffice": {
+    "id": 345403871,
+    "pixelSpan": [
+      -950.0312757514537,
+      -37.8272045282464
+    ],
+    "intersectsPanorama": false
+  },
+  "acceptedApartment": {
+    "id": 329309489,
+    "pixelSpan": [
+      820.9547411835415,
+      40836.48897125355
+    ],
+    "intersectsPanorama": true
+  },
+  "benakiGate": {
+    "id": 6193531311,
+    "s": 3645.0106787739655,
+    "u": -9.689995970144441,
+    "side": "left"
+  }
+}

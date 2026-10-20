@@ -1,17 +1,17 @@
 // Frozen OSM motor-road loop matched to the user drawing (Palaio Psychiko / Filothei).
 import fs from 'node:fs';
 import {roundaboutLoops,legalRoundaboutCourse,repairRoundaboutArms} from '../../roundabouts.mjs';
-import {gunzipSync} from 'node:zlib';
+import {loadPsychikoOsm,wayForEdge} from './corrections.mjs';
 import {fileURLToPath} from 'node:url';
 const dir=fileURLToPath(new URL('./',import.meta.url));
-const elements=JSON.parse(gunzipSync(fs.readFileSync(dir+'raw/osm.json.gz'))).elements;
+const elements=loadPsychikoOsm();
 const lat0=38.009,lon0=23.775,phi=lat0*Math.PI/180;
 const mlat=111132.92-559.82*Math.cos(2*phi)+1.175*Math.cos(4*phi),mlon=111412.84*Math.cos(phi)-93.5*Math.cos(3*phi);
 const nodes=new Map(elements.filter(e=>e.type==='node').map(e=>[e.id,e]));
 const ways=new Map(elements.filter(e=>e.type==='way').map(e=>[e.id,e]));
 const pos=id=>{const n=nodes.get(id);return[(n.lon-lon0)*mlon,-(n.lat-lat0)*mlat];},dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
 // Reviewed exact node/way list: no runtime shortest-path or georeference heuristics.
-const course=JSON.parse(fs.readFileSync(dir+'raw/drawn-course.json'));
+const course=JSON.parse(fs.readFileSync(dir+'raw/drawn-course.json'));course.edgeWays=course.edgeWays.map((id,i)=>wayForEdge(ways,id,course.nodes[i],course.nodes[i+1]));
 const P=n=>[(n.lon-lon0)*mlon,-(n.lat-lat0)*mlat],loops=roundaboutLoops(elements,P);
 const legal=repairRoundaboutArms(legalRoundaboutCourse(course.nodes,course.edgeWays,loops),loops,elements,P);
 const chain=legal.nodes,edgeWays=legal.edgeWays,vias=[...course.stations,course.stations[0]];
@@ -37,7 +37,10 @@ function fillet(points,radius){const n=points.length-1,out=[];// closed ring: po
   const steps=Math.max(2,Math.ceil(Math.abs(da)*r/1.5));for(let k=0;k<=steps;k++){const q=a0+da*k/steps;out.push([ic[0]+Math.cos(q)*r,ic[1]+Math.sin(q)*r]);}
  }
  out.push(out[0]);return out;}
-const ring=fillet(chain.map(pos),FILLET_RADIUS);
+// Survey nodes just before a junction must not artificially shrink its fillet to a 2 m radius.
+// Drop only redundant almost-collinear interior vertices (under 30 cm); source provenance stays unchanged.
+function simplify(points){const p=points.slice(0,-1);let changed=true;while(changed){changed=false;for(let i=0;i<p.length;i++){const a=p[(i+p.length-1)%p.length],b=p[i],c=p[(i+1)%p.length],dx=c[0]-a[0],dz=c[1]-a[1],t=((b[0]-a[0])*dx+(b[1]-a[1])*dz)/(dx*dx+dz*dz);if(t>0&&t<1&&Math.hypot(b[0]-a[0]-t*dx,b[1]-a[1]-t*dz)<.3){p.splice(i,1);changed=true;break;}}}return [...p,p[0]];}
+const ring=fillet(simplify(chain.map(pos)),FILLET_RADIUS);
 const dense=sample(ring,1),smooth=dense.map((_,i)=>{let x=0,z=0,sum=0;for(let k=-9;k<=9;k++){const w=Math.exp(-k*k/18),p=dense[(i+k+dense.length)%dense.length];x+=p[0]*w;z+=p[1]*w;sum+=w;}return[x/sum,z/sum];});
 smooth.push(smooth[0]);const total=smooth.slice(1).reduce((s,p,i)=>s+dist(p,smooth[i]),0),count=Math.round(total/2),step=total/count;
 const pts=sample(smooth,step).slice(0,count);
@@ -55,7 +58,7 @@ for(const loop of loops){if(!reversedCourse.edgeWays.some(id=>loop.ways.includes
  try{reverse.repairs.push(...repairRoundaboutArms(reversedCourse,[loop],elements,P,{allowClosedRoad:false}).repairs);}catch(error){if(!/No legal roundabout/.test(error.message))throw error;}}
 const trafficRoundabouts=reverse.repairs.map(q=>{let distance=0,entryDistance=null,exitDistance=null;const loop=loops.find(l=>l.id===q.id);for(let i=0;i<q.ways.length;i++){const a=q.p[i],b=q.p[i+1],length=dist(a,b);if(loop.ways.includes(q.ways[i])){entryDistance??=distance;exitDistance=distance+length;}distance+=length;}return{id:q.id,s0:locate(q.to),s1:locate(q.from),path:q.p,sourceNodeIds:q.nodes,sourceWayIds:q.ways,length:distance,entryDistance,exitDistance};});
 const names=ordered.map(w=>({s:locate(w.from),name:w.name})).sort((a,b)=>a.s-b.s);if(names[0].s>0)names.unshift({s:0,name:names.at(-1).name});// the street the timing line sits on
-const result={proj:{lat0,lon0,mlat,mlon},step,start:0,finish:count*step,length:count*step,x:pts.map(p=>+p[0].toFixed(2)),z:pts.map(p=>+p[1].toFixed(2)),names,sourceWayIds:[...new Set(edgeWays)],orderedWays:ordered,sourceNodeIds:chain,trafficRoundabouts,stations:vias.slice(0,-1).map(id=>({id,s:locate(id),lat:nodes.get(id).lat,lon:nodes.get(id).lon}))};
+const result={proj:{lat0,lon0,mlat,mlon},step,start:0,finish:count*step,length:count*step,x:pts.map(p=>+p[0].toFixed(2)),z:pts.map(p=>+p[1].toFixed(2)),names,sourceWayIds:[...new Set(edgeWays)],orderedWays:ordered,sourceNodeIds:chain,openJunctionWayIds:course.openJunctionWayIds||[],trafficRoundabouts,stations:vias.slice(0,-1).map(id=>({id,s:locate(id),lat:nodes.get(id).lat,lon:nodes.get(id).lon}))};
 fs.writeFileSync(dir+'raw/route.json',JSON.stringify(result));
 const elevationPoints=[];for(let i=0;i<pts.length;i+=12)elevationPoints.push({s:i*step,lat:lat0-result.z[i]/mlat,lon:lon0+result.x[i]/mlon});elevationPoints.push({s:total,lat:lat0-result.z[0]/mlat,lon:lon0+result.x[0]/mlon});
 fs.writeFileSync(dir+'raw/route-points.json',JSON.stringify(elevationPoints));

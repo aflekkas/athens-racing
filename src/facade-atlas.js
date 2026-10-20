@@ -35,7 +35,7 @@ export function attachFacadeAtlas(material, atlas) {
   // map is retained for texture accounting/disposal; shader sampling is distance
   // gated instead of applying the tile over every far-away flat block.
   material.map=atlas;material.userData.worldFacade=true;
-  material.customProgramCacheKey=()=> 'osm-facade-atlas-v1';
+  material.customProgramCacheKey=()=> 'osm-facade-atlas-v2';
   material.onBeforeCompile=sh=>{
     sh.uniforms.uWorldDetail=worldDetailEnabled;
     sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute vec4 aFacade; varying vec4 vFacade; varying float vFacadeDistance;')
@@ -44,7 +44,10 @@ export function attachFacadeAtlas(material, atlas) {
       .replace('#include <map_fragment>',`#ifdef USE_MAP
 float facadeMix=uWorldDetail*(1.-smoothstep(160.,240.,vFacadeDistance));
       if(facadeMix>0. && vFacade.w<.5){
-        vec2 tile=vec2(mod(vFacade.z,4.),1.-floor(vFacade.z/4.));
+        // A constant integer attribute can interpolate a few ULPs below its
+        // value. Round before selecting a tile, especially at the style-4 seam.
+        float style=floor(vFacade.z+.5);
+        vec2 tile=vec2(mod(style,4.),1.-floor(style/4.));
         vec2 uv=(tile+(fract(vFacade.xy)*.984+.008))/vec2(4.,2.);
         vec3 paint=texture2D(map,uv).rgb;
         // Reuse the tile's windows as ground-floor shopfronts; a narrow door

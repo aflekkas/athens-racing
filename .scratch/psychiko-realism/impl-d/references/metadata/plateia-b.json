@@ -1,0 +1,22 @@
+{
+  "panoId": "gAbUcedQwjDn7RwMq60fnw",
+  "lat": 38.013226695780226,
+  "lon": 23.771801742899914,
+  "captureDate": [
+    2024,
+    1
+  ],
+  "googleAddress": [
+    [
+      "Psychiko, Decentralized Administration of Attica",
+      "en"
+    ]
+  ],
+  "copyright": "© 2026 Google",
+  "orientation": [
+    198.94038,
+    88.45154,
+    358.82623
+  ],
+  "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch"
+}

@@ -1,0 +1,242 @@
+{
+  "method": "Production buildMapWorld, fixed RENDER look, actual Low/High performance ranges/chunks; race roadworks; inactive traffic; no player/rivals/HUD/post. Three fixed poses; no FPS claim.",
+  "errors": [],
+  "rows": [
+    {
+      "tier": "low",
+      "viewport": [
+        960,
+        600
+      ],
+      "pixelRatio": 0.8,
+      "drawDistance": 1000,
+      "detail": 0.7,
+      "chunk": 3,
+      "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+      "resident": {
+        "triangles": 2585864,
+        "meshes": 6723,
+        "geometryBytes": 194402936
+      },
+      "poses": [
+        {
+          "name": "start",
+          "eye": [
+            -193.1408075031157,
+            194.18997880510938,
+            -277.69258060394594
+          ],
+          "target": [
+            -178.91454354357265,
+            190.18997880510938,
+            -232.89734186417132
+          ],
+          "render": {
+            "frame": 1,
+            "calls": 231,
+            "triangles": 1520333,
+            "points": 3000,
+            "lines": 0,
+            "geometries": 109,
+            "textures": 22,
+            "detail": {
+              "updates": 1,
+              "updateMs": 0.20000000298023224,
+              "boxes": 168,
+              "impostors": 0
+            },
+            "streetscape": {
+              "cells": 12,
+              "builds": 12,
+              "roofs": 1006
+            }
+          }
+        },
+        {
+          "name": "mid",
+          "eye": [
+            -105.1685579627324,
+            215.21437931076613,
+            -1125.2701620221162
+          ],
+          "target": [
+            -151.3125422635443,
+            211.21437931076613,
+            -1134.1994796246222
+          ],
+          "render": {
+            "frame": 2,
+            "calls": 315,
+            "triangles": 855210,
+            "points": 3000,
+            "lines": 0,
+            "geometries": 158,
+            "textures": 23,
+            "detail": {
+              "updates": 2,
+              "updateMs": 0.19999998807907104,
+              "boxes": 128,
+              "impostors": 0
+            },
+            "streetscape": {
+              "cells": 14,
+              "builds": 26,
+              "roofs": 1006
+            }
+          }
+        },
+        {
+          "name": "overview",
+          "eye": [
+            783.0499992370603,
+            1710.2143793107662,
+            72.45001220703125
+          ],
+          "target": [
+            -116.95000076293968,
+            210.21437931076613,
+            -1127.5499877929688
+          ],
+          "render": {
+            "frame": 3,
+            "calls": 1812,
+            "triangles": 1650253,
+            "points": 3000,
+            "lines": 0,
+            "geometries": 245,
+            "textures": 23,
+            "detail": {
+              "updates": 3,
+              "updateMs": 0.09999999403953552,
+              "boxes": 0,
+              "impostors": 0
+            },
+            "streetscape": {
+              "cells": 3,
+              "builds": 29,
+              "roofs": 1006
+            }
+          }
+        }
+      ]
+    },
+    {
+      "tier": "high",
+      "viewport": [
+        960,
+        600
+      ],
+      "pixelRatio": 1,
+      "drawDistance": 2000,
+      "detail": 1,
+      "chunk": 1.5,
+      "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+      "resident": {
+        "triangles": 2585864,
+        "meshes": 6734,
+        "geometryBytes": 194402936
+      },
+      "poses": [
+        {
+          "name": "start",
+          "eye": [
+            -193.1408075031157,
+            194.18997880510938,
+            -277.69258060394594
+          ],
+          "target": [
+            -178.91454354357265,
+            190.18997880510938,
+            -232.89734186417132
+          ],
+          "render": {
+            "frame": 1,
+            "calls": 238,
+            "triangles": 1624735,
+            "points": 3000,
+            "lines": 0,
+            "geometries": 118,
+            "textures": 22,
+            "detail": {
+              "updates": 1,
+              "updateMs": 0.29999999701976776,
+              "boxes": 168,
+              "impostors": 0
+            },
+            "streetscape": {
+              "cells": 24,
+              "builds": 24,
+              "roofs": 1006
+            }
+          }
+        },
+        {
+          "name": "mid",
+          "eye": [
+            -105.1685579627324,
+            215.21437931076613,
+            -1125.2701620221162
+          ],
+          "target": [
+            -151.3125422635443,
+            211.21437931076613,
+            -1134.1994796246222
+          ],
+          "render": {
+            "frame": 2,
+            "calls": 323,
+            "triangles": 888368,
+            "points": 3000,
+            "lines": 0,
+            "geometries": 168,
+            "textures": 23,
+            "detail": {
+              "updates": 2,
+              "updateMs": 0.20000000298023224,
+              "boxes": 128,
+              "impostors": 0
+            },
+            "streetscape": {
+              "cells": 18,
+              "builds": 39,
+              "roofs": 1006
+            }
+          }
+        },
+        {
+          "name": "overview",
+          "eye": [
+            783.0499992370603,
+            1710.2143793107662,
+            72.45001220703125
+          ],
+          "target": [
+            -116.95000076293968,
+            210.21437931076613,
+            -1127.5499877929688
+          ],
+          "render": {
+            "frame": 3,
+            "calls": 1841,
+            "triangles": 2093547,
+            "points": 3000,
+            "lines": 0,
+            "geometries": 264,
+            "textures": 23,
+            "detail": {
+              "updates": 3,
+              "updateMs": 0,
+              "boxes": 0,
+              "impostors": 0
+            },
+            "streetscape": {
+              "cells": 6,
+              "builds": 45,
+              "roofs": 1006
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

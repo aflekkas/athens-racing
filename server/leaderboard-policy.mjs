@@ -1,10 +1,10 @@
 import { MAX_RIVALS } from '../src/events.js';
 import { matchesRecord } from '../src/leaderboard-records.js';
 import { canonicalCarId } from '../src/car-ids.js';
-// The Psychiko Garden Circuit was redesigned on 2026-10-18 (new streets, new start/finish). Its board
+// The Psychiko Faros Circuit was redesigned on 2026-10-19 (new streets, new start/finish). Its board
 // version always carries this suffix, so earlier Psychiko times stay stored under their old version and
 // never mix with the new route, on both native and Worker backends.
-export const leaderboardVersion = (mapId, version) => mapId === 'psychiko' ? `${version}:garden-v2` : version;
+export const leaderboardVersion = (mapId, version) => mapId === 'psychiko' ? `${version}:faros-v3` : version;
 export function resultContext(r, definitions, version, maps) {
   r = r && typeof r === 'object' ? r : {};
   if (!maps) return { event: definitions.get(r.eventId), version, mapId: 'riviera' };

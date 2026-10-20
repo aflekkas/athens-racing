@@ -1,0 +1,54 @@
+{
+  "id": "elikonos",
+  "lat": 38.01013033810724,
+  "lon": 23.779812539159014,
+  "heading": 121,
+  "fovH": 90,
+  "panoId": "DqQlT9s_dWxDr93EfyMNFg",
+  "captureDate": [
+    2026,
+    4
+  ],
+  "googleAddress": [
+    [
+      "1 Ελικώνος",
+      "el"
+    ],
+    [
+      "Psychiko, Decentralized Administration of Attica",
+      "en"
+    ]
+  ],
+  "copyright": "© 2026 Google",
+  "orientation": [
+    122.78295,
+    87.762314,
+    358.15195
+  ],
+  "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+  "requestedPosition": {
+    "lat": 38.01009,
+    "lon": 23.77978
+  },
+  "snapDistanceM": 5.3,
+  "status": "captured",
+  "views": [
+    {
+      "heading": 121,
+      "path": "views/elikonos-121.webp",
+      "width": 1024,
+      "height": 512,
+      "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=DqQlT9s_dWxDr93EfyMNFg&heading=121&pitch=0&fov=90",
+      "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=DqQlT9s_dWxDr93EfyMNFg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=121&pitch=0&thumbfov=90"
+    },
+    {
+      "heading": 301,
+      "path": "views/elikonos-301.webp",
+      "width": 1024,
+      "height": 512,
+      "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=DqQlT9s_dWxDr93EfyMNFg&heading=301&pitch=0&fov=90",
+      "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=DqQlT9s_dWxDr93EfyMNFg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=301&pitch=0&thumbfov=90"
+    }
+  ],
+  "observationStatus": "pending-visual-review"
+}

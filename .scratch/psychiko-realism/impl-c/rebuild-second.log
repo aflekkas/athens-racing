@@ -1,0 +1,60 @@
+{
+  length: 3753.4058641481156,
+  ways: [
+     32117635, 978004321,   668689061,
+    978004318,  25053106,   468238646,
+    147731530, 978004314,    31269674,
+    545646475, 203186014,    25053496,
+     31486514,  97723002,   714341023,
+    636807373,  42110999, 10042110999,
+    717372565, 661542256,    25053533,
+    661583998, 978004330,    25048553
+  ],
+  stations: [ { id: 272499018, s: 141.98, lat: 38.0104275, lon: 23.773231 } ]
+}
+psychiko: speeds=[20@0 50@150~ 30@310 50@500~ 30@2540 50@3540~ 20@3640]
+  signs: 4 (4 mapped nodes, 0 inferred) cameras: 0
+  network roads with limits: 100 tagged + 415 defaulted; side roads: 20 + 234
+  osm sign: s=2602 u=5.7 v=30 dir=1
+  osm sign: s=2874 u=10.4 v=30 dir=1
+  osm sign: s=3140 u=5.7 v=30 dir=1
+  osm sign: s=3310 u=5.7 v=30 dir=1
+{
+  "length": 3753.4058641481156,
+  "stats": {
+    "startElevation": 189.41,
+    "finishElevation": 189.41,
+    "ascent": 78.97,
+    "descent": 78.97,
+    "maxGrade": 14,
+    "elevationSource": "Copernicus DEM GLO-30 (2021) AWS COG, EGM2008; sigma-20 m spatial Gaussian, roundabout planes"
+  },
+  "GX": 361,
+  "GZ": 381,
+  "buildings": 2796,
+  "sideRoads": 254,
+  "areas": {
+    "beach": 0,
+    "lake": 0,
+    "pool": 0,
+    "scrub": 18,
+    "rock": 4,
+    "cliff": 0,
+    "wood": 32,
+    "park": 101,
+    "marina": 0,
+    "pier": 0,
+    "breakwater": 0,
+    "parking": 35,
+    "golf": 0,
+    "pitch": 5,
+    "residential": 49,
+    "fuel": 0,
+    "quarry": 0
+  }
+}
+riviera 1991 OSM-based vegetation records
+penteli 1574 OSM-based vegetation records
+megara 235 OSM-based vegetation records
+psychiko 1485 OSM-based vegetation records
+assets/maps/spawn-roads.json 124639 bytes

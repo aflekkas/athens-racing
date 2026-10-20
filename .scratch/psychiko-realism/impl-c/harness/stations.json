@@ -1,0 +1,121 @@
+[
+  {
+    "id": "S07",
+    "label": "Diamantidou 42 (A9)",
+    "lat": 38.0126551,
+    "lon": 23.772367,
+    "heading": 180,
+    "fovH": 85
+  },
+  {
+    "id": "S16",
+    "label": "Benaki school wall (I7)",
+    "lat": 38.0167515,
+    "lon": 23.7781452,
+    "heading": 323,
+    "fovH": 85
+  },
+  {
+    "id": "S03",
+    "label": "Pavlou Mela",
+    "lat": 38.0200704,
+    "lon": 23.7707861,
+    "heading": 196,
+    "fovH": 85
+  },
+  {
+    "id": "S21",
+    "label": "Vasileos Pavlou 71 (A8)",
+    "lat": 38.0011129,
+    "lon": 23.7694049,
+    "heading": 20,
+    "fovH": 85
+  },
+  {
+    "id": "S20",
+    "label": "Taygetou 9 (N5)",
+    "lat": 38.0081883,
+    "lon": 23.7761181,
+    "heading": 253,
+    "fovH": 85
+  },
+  {
+    "id": "S23",
+    "label": "A square west edge",
+    "lat": 38.0077403,
+    "lon": 23.77397,
+    "heading": 80,
+    "fovH": 85
+  },
+  {
+    "id": "S22",
+    "label": "Kyprou 3 (kerb parking)",
+    "lat": 38.0013024,
+    "lon": 23.7713488,
+    "heading": 330,
+    "fovH": 85
+  },
+  {
+    "id": "P0414",
+    "label": "Diamantidou at Samara (A9, lap)",
+    "lat": 38.01552889744543,
+    "lon": 23.771212891832647,
+    "heading": 343,
+    "fovH": 90,
+    "h": 512
+  },
+  {
+    "id": "P1025",
+    "label": "Taygetou (N5)",
+    "lat": 38.008643678598524,
+    "lon": 23.77791164643236,
+    "heading": 72,
+    "fovH": 90,
+    "h": 512
+  },
+  {
+    "id": "P0483",
+    "label": "Benaki school wall (I7)",
+    "lat": 38.015833137162645,
+    "lon": 23.77903513315552,
+    "heading": 142,
+    "fovH": 90,
+    "h": 512
+  },
+  {
+    "id": "R25053106-2",
+    "label": "Kamara island",
+    "lat": 38.01160849339077,
+    "lon": 23.77757092307207,
+    "heading": 313,
+    "fovH": 90,
+    "h": 512
+  },
+  {
+    "id": "RELEF-2",
+    "label": "Eleftherias island",
+    "lat": 38.01841389238774,
+    "lon": 23.770220668116117,
+    "heading": 270,
+    "fovH": 90,
+    "h": 512
+  },
+  {
+    "id": "R634346640-2",
+    "label": "Areaki island",
+    "lat": 38.01393383931669,
+    "lon": 23.778506391099047,
+    "heading": 180,
+    "fovH": 90,
+    "h": 512
+  },
+  {
+    "id": "R25053533-2",
+    "label": "B square",
+    "lat": 38.01336271660991,
+    "lon": 23.771940920830637,
+    "heading": 232,
+    "fovH": 90,
+    "h": 512
+  }
+]

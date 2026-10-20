@@ -1,0 +1,10 @@
+physics {"name":"physics","command":"/opt/homebrew/Cellar/node/25.9.0_2/bin/node --import ./tools/physics-test/register.mjs tools/physics-test/regress.mjs","code":0,"signal":null,"seconds":110.745,"status":"pass"}
+syntax {"name":"syntax","command":"/opt/homebrew/Cellar/node/25.9.0_2/bin/node tools/check-syntax.mjs","code":0,"signal":null,"seconds":41.438,"status":"pass"}
+browser-imports {"name":"browser-imports","command":"/opt/homebrew/Cellar/node/25.9.0_2/bin/node tools/check-browser-imports.mjs","code":0,"signal":null,"seconds":0.389,"status":"pass"}
+validator {"name":"validator","command":"/opt/homebrew/Cellar/node/25.9.0_2/bin/node tools/maps/psychiko/validate.mjs","code":0,"signal":null,"seconds":0.429,"status":"pass"}
+focused {"name":"focused","command":"/opt/homebrew/Cellar/node/25.9.0_2/bin/node --test tools/psychiko-world.test.mjs tools/roundabouts.test.mjs","code":0,"signal":null,"seconds":12.567,"status":"pass"}
+terrain {"name":"terrain","command":"/opt/homebrew/Cellar/node/25.9.0_2/bin/node --test tools/world-tests-psychiko.test.mjs","code":0,"signal":null,"seconds":148.393,"status":"pass"}
+wrangler-dry-run {"name":"wrangler-dry-run","command":"npx wrangler deploy --env staging --dry-run","code":0,"signal":null,"seconds":314.941,"status":"pass"}
+lap {"name":"lap","command":"/opt/homebrew/Cellar/node/25.9.0_2/bin/node tools/maps/psychiko/drive-lap.mjs /Users/vassilisperrotis/.t3/worktrees/athens-street-racers/psychiko-realism/.scratch/psychiko-realism/impl-e/lap.json","code":0,"signal":null,"seconds":2.93,"status":"pass"}
+detail-budget-clean {"name":"detail-budget-clean","command":"/opt/homebrew/Cellar/node/25.9.0_2/bin/node --test tools/detail-budgets.test.mjs","code":0,"signal":null,"seconds":0.232,"status":"pass"}
+npm-test {"name":"npm-test","command":"npm test","code":1,"signal":null,"seconds":175.554,"status":"fail"}

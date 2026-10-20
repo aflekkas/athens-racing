@@ -1,0 +1,6 @@
+{
+  "candidate": "a8fdfdb32f25363d1fba98ed3584f5d46b1a2e38",
+  "outsideScratchTreeSha256": "d2d6aef29f4093a95d426df16309a0f4e1bf2dcb43755ea3a6c9556b6cd8b8bd",
+  "entries": 1793,
+  "finalCommitRestriction": "Only .scratch/psychiko-realism/impl-f evidence and reports may change after validation."
+}

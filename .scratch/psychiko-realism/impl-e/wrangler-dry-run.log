@@ -1,0 +1,115 @@
+
+ ⛅️ wrangler 4.150.0 (update available 4.151.2)
+───────────────────────────────────────────────
+[custom build] Running: ASR_BUILD_ENV=staging node tools/prepare-deploy.mjs
+[custom build] (node:45488) Warning: `--localstorage-file` was provided without a valid path
+[custom build] (Use `node --trace-warnings ...` to show where the warning was created)
+[custom build] 
+[custom build] Browser import graph checked: 300 modules.
+[custom build] 
+[custom build] Bake cache miss riviera (bfa57445d81e): baking
+[custom build] 
+[custom build] Bake cache miss megara (aa3eebeeedc9): baking
+[custom build] 
+[custom build] [bake megara] (node:45491) Warning: `--localstorage-file` was provided without a valid path
+[custom build] [bake megara] (Use `node --trace-warnings ...` to show where the warning was created)
+[custom build] [bake megara] Baked megara terrain: 1074497 bytes
+[custom build] [bake megara] Meshopt megara terrain: 852399 bytes
+[custom build] [bake megara] Baked megara roads: 302946 bytes
+[custom build] [bake megara] Meshopt megara roads: 303324 bytes
+[custom build] [bake megara] Baked megara in 2861 ms
+[custom build] Bake cache miss penteli (9495fd9b381d): baking
+[custom build] 
+[custom build] [bake penteli] (node:45492) Warning: `--localstorage-file` was provided without a valid path
+[custom build] [bake penteli] (Use `node --trace-warnings ...` to show where the warning was created)
+[custom build] [bake penteli] Baked penteli terrain: 17346402 bytes
+[custom build] [bake penteli] Meshopt penteli terrain: 11543091 bytes
+[custom build] [bake penteli] Baked penteli roads: 5411120 bytes
+[custom build] [bake penteli] Meshopt penteli roads: 5411722 bytes
+[custom build] [bake penteli] Baked penteli in 85482 ms
+[custom build] Bake cache miss psychiko (d29bd6009d4a): baking
+[custom build] 
+[custom build] [bake riviera] (node:45490) Warning: `--localstorage-file` was provided without a valid path
+[custom build] [bake riviera] (Use `node --trace-warnings ...` to show where the warning was created)
+[custom build] [bake riviera] Baked riviera terrain: 16037720 bytes
+[custom build] [bake riviera] Meshopt riviera terrain: 13284020 bytes
+[custom build] [bake riviera] Baked riviera roads: 19662222 bytes
+[custom build] [bake riviera] Meshopt riviera roads: 19665081 bytes
+[custom build] [bake riviera] Baked riviera in 130095 ms
+[custom build] 
+[custom build] [bake psychiko] (node:46465) Warning: `--localstorage-file` was provided without a valid path
+[custom build] [bake psychiko] (Use `node --trace-warnings ...` to show where the warning was created)
+[custom build] [bake psychiko] Baked psychiko terrain: 7033063 bytes
+[custom build] [bake psychiko] Meshopt psychiko terrain: 5198190 bytes
+[custom build] [bake psychiko] Baked psychiko roads: 37086491 bytes
+[custom build] [bake psychiko] Meshopt psychiko roads: 37093453 bytes
+[custom build] [bake psychiko] Baked psychiko in 216450 ms
+[custom build] 
+[custom build] Worlds ready in 306768 ms (0 cached, 4 baked)
+[custom build] 
+[custom build] ▲ [WARNING] Duplicate key "menu" in object literal [duplicate-object-key]
+[custom build] 
+[custom build]     src/main.js:1238:373:
+[custom build]       1238 │ ...e() { return G.state; }, get menu() { return menu; }, openCar...
+[custom build]            ╵                                 ~~~~
+[custom build] 
+[custom build]   The original key "menu" is here:
+[custom build] 
+[custom build]     src/main.js:1235:6:
+[custom build]       1235 │   get menu() { return menu; }, shareResult,
+[custom build]            ╵       ~~~~
+[custom build] 
+[custom build] 
+[custom build] Bundled browser (bundled three.js): 315 inputs, 66 ESM chunks, 2626056 bytes
+[custom build] 
+[custom build] {
+[custom build]   "assets": 1814,
+[custom build]   "bytes": 473134872,
+[custom build]   "largest": {
+[custom build]     "path": "data/raw/roads.json",
+[custom build]     "size": 2148449
+[custom build]   },
+[custom build]   "release": {
+[custom build]     "version": "2026.10.15.3",
+[custom build]     "sha": null,
+[custom build]     "build": "110662691258",
+[custom build]     "files": 871,
+[custom build]     "copies": 871,
+[custom build]     "swBytes": 66975
+[custom build]   },
+[custom build]   "maps": [
+[custom build]     {
+[custom build]       "id": "riviera",
+[custom build]       "version": "4718fbec",
+[custom build]       "events": 2
+[custom build]     },
+[custom build]     {
+[custom build]       "id": "megara",
+[custom build]       "version": "1621ff83",
+[custom build]       "events": 2
+[custom build]     },
+[custom build]     {
+[custom build]       "id": "penteli",
+[custom build]       "version": "33ed3ce1",
+[custom build]       "events": 2
+[custom build]     },
+[custom build]     {
+[custom build]       "id": "psychiko",
+[custom build]       "version": "75a42bf0",
+[custom build]       "events": 2
+[custom build]     }
+[custom build]   ]
+[custom build] }
+[custom build] 
+✨ Read 1850 files from the assets directory /private/tmp/athens-psychiko-e.k4ypyto5/candidate/.deploy/assets
+Total Upload: 1033.92 KiB / gzip: 290.97 KiB
+Your Worker has access to the following bindings:
+Binding                                                                     Resource                  
+env.GAME (GameArena)                                                        Durable Object            
+env.PRESENCE (FriendsPresence)                                              Durable Object            
+env.ACCOUNTS (athens-racing-accounts-staging)                               D1 Database               
+env.ATHENS_WORLD (athens-racing-world-staging)                              R2 Bucket                 
+env.ASSETS                                                                  Assets                    
+env.ATHENS_WORLD_MANIFEST ("manifests/c5e02bd8c977e1f363eee4f79c2...")      Environment Variable      
+
+--dry-run: exiting now.

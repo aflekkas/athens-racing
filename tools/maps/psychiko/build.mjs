@@ -1,34 +1,51 @@
 #!/usr/bin/env node
+import { buildRecognition } from './recognition.mjs';
 // Deterministic inland bundle. No coastal flattening, invented switchbacks or grade cap.
 import fs from 'node:fs';
 import {gunzipSync} from 'node:zlib';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {boundaryRing,inside,publicRoad,sideStreetExits} from './neighbourhood.mjs';
+import {boundaryRing,inside,municipalLength,publicRoad,sideStreetExits} from './neighbourhood.mjs';
 import {psychikoSection} from '../../../src/maps/psychiko-streets.js';
 import {buildPsychikoScenery} from './scenery.mjs';
+import {psychikoWayClass} from './street-classes.mjs';
 import {inject} from '../../inject-speed-signs.mjs';
 import {routeRoundabouts,roundaboutLoops} from '../../roundabouts.mjs';
 import {extractRoadNetwork} from '../../build-road-network.mjs';
+import {arterialRecords} from './arterial.mjs';
+import {loadPsychikoOsm} from './corrections.mjs';
+import {multipolygons,footprintPieces} from './multipolygon.mjs';
+import {readCopernicus,copernicusField,roundaboutPlanes,plannedHeight,gridExtent} from './elevation.mjs';
 const dir=path.dirname(fileURLToPath(import.meta.url)),root=path.resolve(dir,'../../..'),out=path.join(root,'data/maps/psychiko');
 fs.mkdirSync(out,{recursive:true});
 const load=n=>{const p=path.join(dir,'raw',n+'.json');return JSON.parse(fs.existsSync(p)?fs.readFileSync(p):gunzipSync(fs.readFileSync(p+'.gz')));};
-const R=load('route'),dem=load('dem'),osm=load('osm').elements;
+const R=load('route'),osm=loadPsychikoOsm();
 const {proj,step,x:X,z:Z}=R,N=X.length;
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x)),r=v=>+v.toFixed(2);
 const P=n=>[(n.lon-proj.lon0)*proj.mlon,-(n.lat-proj.lat0)*proj.mlat];
-function demAt(x,z){const fx=clamp((x-dem.x0)/dem.step,0,dem.nx-1.0001),fz=clamp((z-dem.z0)/dem.step,0,dem.nz-1.0001),i=Math.floor(fx),j=Math.floor(fz),a=fx-i,b=fz-j;return (dem.h[j*dem.nx+i]*(1-a)+dem.h[j*dem.nx+i+1]*a)*(1-b)+(dem.h[(j+1)*dem.nx+i]*(1-a)+dem.h[(j+1)*dem.nx+i+1]*a)*b;}
-function smooth(A,sigma){const rad=Math.ceil(sigma*3);return A.map((_,i)=>{let sum=0,w=0;for(let k=-rad;k<=rad;k++){const q=Math.exp(-k*k/(2*sigma*sigma));sum+=A[clamp(i+k,0,A.length-1)]*q;w+=q;}return sum/w;});}
-// Road elevation comes from direct EU-DEM v1.1 samples at ~24 m road stations (raw/route-dem.json),
-// linearly interpolated along the lap, so the carved street bed follows the measured ground.
-const stationDem=load('route-dem');
-const Yraw=X.map((_,i)=>{const s=i*step;let k=1;while(k<stationDem.length-1&&stationDem[k].s<s)k++;const a=stationDem[k-1],b=stationDem[k],t=clamp((s-a.s)/((b.s-a.s)||1),0,1);return a.elevation+(b.elevation-a.elevation)*t;});
-const periodic=Yraw.slice(0,-1),Y=periodic.map((_,i)=>{let sum=0,w=0;for(let k=-36;k<=36;k++){const q=Math.exp(-k*k/288);sum+=periodic[(i+k+periodic.length)%periodic.length]*q;w+=q;}return r(sum/w);});Y.push(Y[0]);
+// One Copernicus GLO-30 height field (sigma-20 m Gaussian, roundabout planes) for the lap, every
+// side road, junction and roundabout, and the terrain grid. No along-route smoothing or grade cap.
+const field=copernicusField(readCopernicus(path.join(dir,'raw/copernicus.json.gz')),proj),dem=gridExtent(proj);
+const heightAt=plannedHeight(field,roundaboutPlanes(roundaboutLoops(osm,P),field));
+// A real street eases into a junction turn with a vertical curve: where the lap turns from a contour street
+// straight up a hill the field profile would otherwise kink within 2 m. Fair it with a sigma-12 m along-lap
+// Gaussian, held within 0.15 m of the field so side streets still meet the lap at their own height.
+const Yraw=X.map((x,i)=>field.raw(x,Z[i])),Yfield=X.map((x,i)=>heightAt(x,Z[i])).slice(0,-1),SV=12/step,KV=Math.ceil(3*SV);
+const Y=Yfield.map((h,i)=>{let sum=0,w=0;for(let k=-KV;k<=KV;k++){const q=Math.exp(-k*k/(2*SV*SV));sum+=Yfield[(i+k+Yfield.length)%Yfield.length]*q;w+=q;}return r(h+clamp(sum/w-h,-.15,.15));});Y.push(Y[0]);
 const buckets=new Map(),C=80;
 for(let i=0;i<N;i++){const key=`${Math.floor(X[i]/C)},${Math.floor(Z[i]/C)}`;if(!buckets.has(key))buckets.set(key,[]);buckets.get(key).push(i);}
 function nearest(x,z,max=600){const cx=Math.floor(x/C),cz=Math.floor(z/C);let bi=-1,bd=max*max;for(let k=0;k<=Math.ceil(max/C);k++){for(let a=-k;a<=k;a++)for(let b=-k;b<=k;b++){if(Math.max(Math.abs(a),Math.abs(b))!==k)continue;for(const i of buckets.get(`${cx+a},${cz+b}`)||[]){const d=(x-X[i])**2+(z-Z[i])**2;if(d<bd){bd=d;bi=i;}}}if(bi>=0&&Math.sqrt(bd)<(k-.5)*C)break;}if(bi<0)return null;const a=Math.max(0,bi-1),b=Math.min(N-1,bi+1),dx=X[b]-X[a],dz=Z[b]-Z[a],l=Math.hypot(dx,dz)||1;return{i:bi,s:bi*step,d:Math.sqrt(bd),u:(x-X[bi])*-dz/l+(z-Z[bi])*dx/l};}
 const nodes=new Map(osm.filter(e=>e.type==='node').map(e=>[e.id,e]));
 const geometry=w=>(w.geometry||w.nodes?.map(id=>nodes.get(id))||[]).filter(Boolean).map(P);
+// Each lap sample takes the surveyed class of its nearest raced OSM way (raw/street-classes.json). Route names gain that
+// class as `k` and split where a mixed way changes class; runs under 20 m (junction fillets) join the previous run.
+const routeNames=(()=>{const ways=[...new Set(R.orderedWays.map(w=>w.id))].map(id=>({id,p:geometry(osm.find(e=>e.type==='way'&&e.id===id))}));
+ const seg=(x,z,a,b)=>{const dx=b[0]-a[0],dz=b[1]-a[1],t=clamp(((x-a[0])*dx+(z-a[1])*dz)/(dx*dx+dz*dz||1),0,1);return Math.hypot(x-a[0]-t*dx,z-a[1]-t*dz);};
+ const cls=X.map((x,i)=>{let best=null,d=Infinity;for(const w of ways)for(let k=1;k<w.p.length;k++){const e=seg(x,Z[i],w.p[k-1],w.p[k]);if(e<d){d=e;best=w.id;}}return psychikoWayClass(best,x,Z[i],proj);});
+ for(let i=1,start=0;i<=N;i++)if(i===N||cls[i]!==cls[start]){if((i-start)*step<20&&start>0)cls.fill(cls[start-1],start,i);start=i;}
+ const out=[];R.names.forEach((n,j)=>{const end=R.names[j+1]?.s??R.length,first=Math.min(N-1,Math.round((n.s+Math.min(10,(end-n.s)/2))/step));let k=cls[first];out.push({...n,k});
+  for(let i=first+1;i*step<end-step&&i<N;i++)if(cls[i]!==k){k=cls[i];out.push({s:r(i*step),name:n.name,k});}});
+ return out;})(),classed={length:R.length,names:routeNames};
 const areas=Object.fromEntries(['beach','lake','pool','scrub','rock','cliff','wood','park','marina','pier','breakwater','parking','golf','pitch','residential','fuel','quarry'].map(k=>[k,[]]));
 const boundary=boundaryRing(load('boundaries'),P);
 const garden=load('garden-route');
@@ -39,65 +56,116 @@ for(const e of osm){const t=e.tags||{};if(e.type==='node')continue;if(e.type!=='
  const center=ps.reduce((s,p)=>[s[0]+p[0]/ps.length,s[1]+p[1]/ps.length],[0,0]);const q=nearest(...center,1800);if(!q)continue;
  if(t.building&&ps.length>3&&(q.d<400||inside(center,boundary)||inside(center,drawnRing))){// Preserve close OSM fronts. Only omit actual race-carriageway overlaps;
  // the former 8 m centreline exclusion erased legitimate front-garden plots.
- if(ps.some(p=>{const q=nearest(...p,8);return q&&q.d<psychikoSection(R,q.s).w/2+.05;}))continue;const k=t.building==='church'?'church':!['apartments','commercial','retail','school'].includes(t.building)?'villa':'apt';const pick=((Math.imul(e.id,2654435761)>>>0)%1000)/1000;const lv=+t['building:levels']||(pick<.67?2:3);buildings.push({p:flatten(ps.slice(0,-1)),h:+t.height||lv*3.1,lv,k:k==='villa'&&pick>.65?'apt':k,pitched:k!=='church'&&pick<.45,s:q.s,u:r(q.u),id:e.id,name:t['name:en']||t.name});if(k==='church')landmarks.push({id:e.id,kind:'church',p:flatten(ps),name:t.name});}
+ if(ps.some(p=>{const q=nearest(...p,8);return q&&q.d<psychikoSection(classed,q.s).w/2+.05;}))continue;const k=t.building==='church'?'church':!['apartments','commercial','retail','school'].includes(t.building)?'villa':'apt';const pick=((Math.imul(e.id,2654435761)>>>0)%1000)/1000;const lv=+t['building:levels']||(pick<.67?2:3);buildings.push({p:flatten(ps.slice(0,-1)),h:+t.height||lv*3.1,lv,k:k==='villa'&&pick>.65?'apt':k,pitched:k!=='church'&&(t['roof:shape']?t['roof:shape']!=='flat':pick<.45),...(t['roof:shape']==='gabled'?{roof:'gabled'}:{}),s:q.s,u:r(q.u),id:e.id,name:t['name:en']||t.name});if(k==='church')landmarks.push({id:e.id,kind:'church',p:flatten(ps),name:t.name});}
  let cls=t.landuse==='quarry'?'quarry':t.natural==='wood'||t.landuse==='forest'?'wood':t.natural==='scrub'||t.natural==='heath'?'scrub':t.natural==='bare_rock'||t.natural==='scree'?'rock':t.landuse==='residential'?'residential':t.amenity==='parking'?'parking':t.leisure==='park'||t.landuse==='village_green'?'park':null;
  if(cls&&ps.length>3){const a={p:flatten(ps),c:e.nodes?.[0]===e.nodes?.at(-1)?1:0,id:e.id};areas[cls].push(a);if(cls==='quarry')areas.rock.push(a);}
  if(t.highway&&!R.sourceWayIds.includes(e.id)&&q.d<380&&['secondary','tertiary','unclassified','residential','service'].includes(t.highway)&&!['dirt','gravel','unpaved','ground'].includes(t.surface)){sideRoads.push({id:e.id,p:flatten(ps),w:t.highway==='secondary'?6.6:4.5,f:0,n:t['int_name']||t['name:en']||t.name});}
 }
-// Rasterise source land cover and bilinearly upsample the actual DEM.10m grid improves road cutting,
-// not the original DEM's geographic resolution (25m source,100m cached terrain samples).
-const T=10,minX=Math.max(dem.x0,Math.floor((Math.min(...X)-1800)/T)*T),maxX=Math.min(dem.x0+(dem.nx-1)*dem.step,Math.ceil((Math.max(...X)+1800)/T)*T),minZ=Math.max(dem.z0,Math.floor((Math.min(...Z)-1800)/T)*T),maxZ=Math.min(dem.z0+(dem.nz-1)*dem.step,Math.ceil((Math.max(...Z)+2200)/T)*T);
-const GX=Math.floor((maxX-minX)/T)+1,GZ=Math.floor((maxZ-minZ)/T)+1,H=new Int16Array(GX*GZ),CL=new Uint8Array(GX*GZ).fill(3);
-function raster(p,value){let z0=Infinity,z1=-Infinity;for(let k=1;k<p.length;k+=2){z0=Math.min(z0,p[k]);z1=Math.max(z1,p[k]);}for(let j=clamp(Math.ceil((z0-minZ)/T),0,GZ-1);j<=clamp(Math.floor((z1-minZ)/T),0,GZ-1);j++){const z=minZ+j*T,xs=[];for(let a=0,b=p.length-2;a<p.length;b=a,a+=2){const za=p[a+1],zb=p[b+1];if((za>z)!==(zb>z))xs.push(p[a]+(z-za)*(p[b]-p[a])/(zb-za));}xs.sort((a,b)=>a-b);for(let k=0;k+1<xs.length;k+=2)for(let i=clamp(Math.ceil((xs[k]-minX)/T),0,GX-1);i<=clamp(Math.floor((xs[k+1]-minX)/T),0,GX-1);i++)CL[j*GX+i]=value;}}
-for(const[k,v]of[['scrub',3],['rock',2],['quarry',2],['residential',4],['wood',6],['park',5]])for(const a of areas[k])if(a.c)raster(a.p,v);
-for(let j=0;j<GZ;j++){for(let i=0;i<GX;i++){const x=minX+i*T,z=minZ+j*T,id=j*GX+i;let h=demAt(x,z);const q=nearest(x,z,55);if(q&&q.d<48){const f=clamp((q.d-7)/37,0,1),t=f*f*(3-2*f);h=(Y[q.i]-.25)*(1-t)+h*t;}H[id]=Math.round(h*10);}}
-const header=Buffer.alloc(32);header.writeInt32LE(GX,0);header.writeInt32LE(GZ,4);header.writeFloatLE(minX,8);header.writeFloatLE(minZ,12);header.writeFloatLE(T,16);fs.writeFileSync(path.join(out,'terrain.bin'),Buffer.concat([header,Buffer.from(H.buffer),Buffer.from(CL.buffer)]));
+// OSM multipolygon relations (raw/relations.json): courtyard and campus buildings, the Stefanou Delta stadium
+// and tracks, parks and woods. Courtyards stay open: a holed footprint becomes several <=10-vertex blocks.
+for(const mp of multipolygons(load('relations').elements,osm,P)){const t=mp.tags,ps=mp.outer,center=ps.reduce((s,p)=>[s[0]+p[0]/ps.length,s[1]+p[1]/ps.length],[0,0]),q=nearest(...center,1800);if(!q)continue;
+ if(t.building&&(q.d<400||inside(center,boundary)||inside(center,drawnRing))&&!ps.some(p=>{const q=nearest(...p,8);return q&&q.d<psychikoSection(R,q.s).w/2+.05;})){
+  const k=!['apartments','commercial','retail','school','office','hospital'].includes(t.building)?'villa':'apt',pick=((Math.imul(mp.id,2654435761)>>>0)%1000)/1000,lv=+t['building:levels']||(pick<.67?2:3),pieces=footprintPieces(ps,mp.holes);
+  pieces.forEach((piece,part)=>buildings.push({p:flatten(piece),h:+t.height||lv*3.1,lv,k:k==='villa'&&pick>.65?'apt':k,pitched:pieces.length===1&&pick<.45,s:q.s,u:r(q.u),id:mp.id,rel:1,...(pieces.length>1?{part}:{}),name:t['name:en']||t.name}));}
+ const cls=t.natural==='wood'||t.landuse==='forest'?'wood':t.landuse==='residential'?'residential':t.leisure==='park'||t.landuse==='village_green'?'park':['stadium','track','pitch'].includes(t.leisure)?'pitch':null;
+ if(cls)areas[cls].push({p:flatten(ps),c:1,id:mp.id,rel:1,...(mp.holes.length?{holes:mp.holes.map(flatten)}:{})});
+}
 // Marks name the streets along the lap (district-style splits and HUD ticks); the timing line is the first.
 const plain=name=>name.normalize('NFD').replace(/\p{M}/gu,'').toUpperCase();
-const marks=[{id:'start',name:plain(R.names[0]?.name||'DIAMANTIDOU'),sub:'Start / finish · Diamantidou',s:0}];
+const marks=[{id:'start',name:'FAROS',sub:'Start / finish · Faros traffic light',s:0}];
 R.names.forEach((n,i)=>{const run=(R.names[i+1]?.s??R.length)-n.s;if(/^Unnamed/.test(n.name)||n.s<150||run<120)return;const name=plain(n.name);if(marks.at(-1).name===name)return;marks.push({id:'street-'+marks.length,name,sub:'Palaio Psychiko streets',s:n.s});});
-const events=[{id:'psychiko-tt',mapId:'psychiko',name:'PSYCHIKO GARDEN LOOP TT',disabled:true,blurb:'One lap around the Palaio Psychiko fan. Tight roundabouts and neighbourhood avenues against the clock.',type:'timetrial',from:'start',to:'finish',laps:1,rivals:0,traffic:0,targets:{gold:75,silver:65,bronze:55}},{id:'psychiko-race',mapId:'psychiko',name:'PSYCHIKO STREET RACE',blurb:'Two laps against two locals around the Palaio Psychiko fan: radial avenues, ring streets and roundabouts.',type:'sprint',from:'start',to:'finish',laps:2,rivals:2,traffic:0,targets:{gold:1,silver:2,bronze:3}}];
-const a=0,b=N-1;let ascent=0,descent=0,maxGrade=0;for(let i=a+1;i<=b;i++){const d=Y[i]-Y[i-1];if(d>0)ascent+=d;else descent-=d;maxGrade=Math.max(maxGrade,Math.abs(d/step));}
-const stats={startElevation:Y[a],finishElevation:Y[b],ascent:r(ascent),descent:r(descent),maxGrade:r(maxGrade*100),elevationSource:dem.source};
-const data={schema:1,id:'psychiko',name:'PSYCHIKO GARDEN CIRCUIT',type:'circuit',coastal:false,length:R.length,attribution:'Map data © OpenStreetMap contributors (ODbL) · Elevation: EU-DEM v1.1 via OpenTopoData',proj,route:{step,x:X,z:Z,y:Y,width:new Array(N).fill(7),lanes:new Array(N).fill(1),div:new Array(N).fill(0),start:0,finish:R.length,length:R.length,closed:true,streetCircuit:true,from:'Diamantidou',to:'Diamantidou',names:R.names,speeds:[{s:0,v:30}]},marks,zones:[{s:0,urban:.85,zone:'town'}],parkSpots:[],humps:[],barriers:[],coast:[],buildings,areas,pois:[],furniture:[],places:[],sideRoads,events,psychiko:{stats,sourceWayIds:R.sourceWayIds,orderedWays:R.orderedWays,stations:R.stations,gardenLoop:{length:garden.length,sourceWayIds:garden.sourceWayIds,sourceNodeIds:garden.sourceNodeIds},boundary:boundary.flat()}};
+const events=[{id:'psychiko-tt',mapId:'psychiko',name:'PSYCHIKO FAROS TT',disabled:true,blurb:'One lap from Faros through the squares, the College and Kifisias against the clock.',type:'timetrial',from:'start',to:'finish',laps:1,rivals:0,traffic:0,targets:{gold:75,silver:65,bronze:55}},{id:'psychiko-race',mapId:'psychiko',name:'PSYCHIKO FAROS RACE',blurb:'Two laps from the Faros light, through Psychiko squares and hills, returning on Kifisias.',type:'sprint',from:'start',to:'finish',laps:2,rivals:2,traffic:0,targets:{gold:1,silver:2,bronze:3}}];
+const data={schema:1,id:'psychiko',name:'PSYCHIKO FAROS CIRCUIT',type:'circuit',coastal:false,length:R.length,attribution:'Map data © OpenStreetMap contributors (ODbL) · Elevation: Copernicus DEM GLO-30 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA (smoothed)',proj,route:{step,x:X,z:Z,y:Y,width:new Array(N).fill(7),lanes:new Array(N).fill(1),div:new Array(N).fill(0),start:0,finish:R.length,length:R.length,closed:true,streetCircuit:true,from:'Faros',to:'Faros',names:routeNames,speeds:[{s:0,v:30}]},marks,zones:[{s:0,urban:.85,zone:'town'}],parkSpots:[],humps:[],barriers:[],coast:[],buildings,areas,pois:[],furniture:[],places:[],sideRoads,events,psychiko:{sourceWayIds:R.sourceWayIds,orderedWays:R.orderedWays,stations:R.stations,gardenLoop:{length:garden.length,sourceWayIds:garden.sourceWayIds,sourceNodeIds:garden.sourceNodeIds},boundary:boundary.flat()}};
 // Real OSM stops; only route-side stops, not nearby stops on a different avenue.
 for(const e of osm)if(e.type==='node'&&(e.tags?.highway==='bus_stop'||e.tags?.public_transport==='platform')){const p=P(e),q=nearest(...p,20);if(q)data.furniture.push({t:'bus_stop',s:q.s,u:r(q.u),x:r(p[0]),z:r(p[1]),id:e.id});}
 
 // Cover the entire municipal unit, the drawn loop (including its Filothei extension),
 // and the retained original course. Keep private driveways and footpaths out.
 const gardenWays=new Set(garden.sourceWayIds);
-const publicWays=osm.filter(e=>publicRoad(e)&&geometry(e).some(p=>inside(p,boundary)||inside(p,drawnRing)||nearest(...p,280)||gardenWays.has(e.id)));
+// Municipal ways also count by clipped length, so streets running exactly along the edge are not missed.
+const publicWays=osm.filter(e=>{if(!publicRoad(e))return false;const ps=geometry(e);return R.sourceWayIds.includes(e.id)||gardenWays.has(e.id)||(/Kifisias|Paraplefri Odos/.test(e.tags.int_name||'')&&ps.some(p=>p[1]>-1400&&p[1]<1300))||ps.some(p=>inside(p,boundary)||inside(p,drawnRing)||nearest(...p,280))||municipalLength(ps,boundary)>2;});
 const selected=[...nodes.values(),...publicWays];
 // Kerb-to-kerb sections from station evidence, blended over 12m for smooth road edges.
 const sections=X.map((_,i)=>psychikoSection(data.route,i*step).w);
 data.route.width=sections.map((_,i)=>r(Array.from({length:13},(_,k)=>sections[(i+k-6+N-1)%(N-1)]).reduce((a,b)=>a+b,0)/13));
 data.route.width[N-1]=data.route.width[0];
-// The runtime levels folded carriageways (the hairpin near 4.2 km) with a 14% ramp cap.
-// Pre-resolve those conflicts here with gentler 9% easing so the runtime pass is a no-op.
-{const {Route}=await import('../../../src/map.js'),y=data.route.y,down=v=>Math.floor(v*100+1e-6)/100;
- for(let pass=0;pass<60;pass++){const conformed=new Route(data.route).Y;let moved=0;
-  for(let i=0;i<N;i++){const v=down(conformed[i]);if(v<y[i]){moved=Math.max(moved,y[i]-v);y[i]=v;}}
-  for(let i=1;i<N;i++)y[i]=Math.min(y[i],down(y[i-1]+.09*step));
-  for(let i=N-2;i>=0;i--)y[i]=Math.min(y[i],down(y[i+1]+.09*step));
-  y[0]=y[N-1]=Math.min(y[0],y[N-1]);
-  if(moved<.005)break;}}
+const T=10,minX=Math.max(dem.x0,Math.floor((Math.min(...X)-1800)/T)*T),maxX=Math.min(dem.x0+(dem.nx-1)*dem.step,Math.ceil((Math.max(...X)+1800)/T)*T),minZ=Math.max(dem.z0,Math.floor((Math.min(...Z)-1800)/T)*T),maxZ=Math.min(dem.z0+(dem.nz-1)*dem.step,Math.ceil((Math.max(...Z)+2200)/T)*T);
 // Clip 25 m inside the terrain grid so both six-metre shoulders always have ground under them.
 data.psychiko.networkBounds=[minX+25,minZ+25,maxX-25,maxZ-25].map(r);
-data.route.roundabouts=routeRoundabouts(data.route,roundaboutLoops(selected,P)).map(r=>{const plan=R.trafficRoundabouts.find(q=>q.id===r.id);
+// Oncoming civilians use a legal reverse plan only if it stays within 60 m of the lap: shared-world snapshots
+// carry road-space s/u, which cannot place a car on a long detour. Without a plan the ring is forward-only.
+data.route.roundabouts=routeRoundabouts(data.route,roundaboutLoops(selected,P)).map(r=>{const plan=R.trafficRoundabouts.find(q=>q.id===r.id&&q.path.every(p=>(nearest(...p,600)?.d??Infinity)<30));
  // The reverse arm of a roundabout beside the timing line straddles the lap seam: express it with s1 past the lap length.
  return {...r,reverse:plan&&{...plan,s1:plan.s0>plan.s1?plan.s1+R.length:plan.s1}};});
 for(const r of data.route.roundabouts)for(let i=Math.floor(r.s0/step);i<=Math.ceil(r.s1/step);i++)data.route.width[i]=Math.min(data.route.width[i],r.w);
+// Civilian traffic may only run with the lap on its one-way source streets. Rings whose oncoming arms have
+// a legal reverse plan are driven by that plan instead; Areaki has none, so its ring stays forward-only too.
+{const wayById=new Map(osm.filter(e=>e.type==='way').map(w=>[w.id,w])),planned=new Set(data.route.roundabouts.filter(q=>q.reverse).flatMap(q=>roundaboutLoops(selected,P).find(l=>l.id===q.id)?.ways||[]));
+ const forward=t=>t.junction==='roundabout'||['yes','1','true','-1'].includes(t.oneway),at=id=>nearest(...P(nodes.get(id)),30).s,spans=[];
+ for(const w of R.orderedWays){if(!forward(wayById.get(w.id).tags)||planned.has(w.id))continue;const a=at(w.from),b=at(w.to);if(b>=a)spans.push([a,b]);else spans.push([a,R.length],[0,b]);}
+ spans.sort((p,q)=>p[0]-q[0]);data.route.oneway=[];for(const[a,b]of spans){const last=data.route.oneway.at(-1);if(last&&a<=last[1]+1)last[1]=Math.max(last[1],b);else data.route.oneway.push([a,b]);}
+ data.route.oneway=data.route.oneway.map(p=>p.map(r));}
+// The runtime caps 2 m grades at 14% (and levels genuinely folded carriageway edges).
+// Own that pass here, before the terrain is cut, so the shipped profile and terrain already agree with it.
+{const {Route}=await import('../../../src/map.js'),original=data.route.y.slice();
+ // Symmetric feasible envelopes keep a steep junction close to the measured field: the former
+ // lower-only pass cut over 2 m from Dryadon. Both envelopes obey identical physical constraints;
+ // their average does too, sharing the adjustment between the uphill and downhill approaches.
+ const envelope=sign=>{let y=original.map(h=>sign*h);for(let pass=0;pass<60;pass++){const next=Array.from(new Route({...data.route,y}).Y);const moved=Math.max(...y.map((h,i)=>Math.abs(h-next[i])));y=next;if(moved<.0001)break;}return y.map(h=>sign*h);};
+ const low=envelope(1),high=envelope(-1);for(let i=0;i<N;i++)Y[i]=r((low[i]+high[i])/2);
+ // Centimetre quantisation must not leave a fresh runtime correction at a folded edge.
+ for(let pass=0;pass<8;pass++){const next=new Route(data.route).Y;let moved=0;for(let i=0;i<N;i++){const v=Math.floor((next[i]+.00002)*100)/100;moved=Math.max(moved,Math.abs(v-Y[i]));Y[i]=v;}
+  const limit=Math.floor(.14*step*100)/100;
+  for(let i=1;i<N;i++)Y[i]=r(Math.min(Y[i],Y[i-1]+limit));
+  for(let i=N-2;i>=0;i--)Y[i]=r(Math.min(Y[i],Y[i+1]+limit));
+  if(moved<.005)break;}
+ Y[0]=Y[N-1]=Math.min(Y[0],Y[N-1]);}
+// Rasterise source land cover and sample the shared height field. The 10 m grid
+// improves road cutting, not the ~30 m Copernicus source resolution.
+const GX=Math.floor((maxX-minX)/T)+1,GZ=Math.floor((maxZ-minZ)/T)+1,H=new Int16Array(GX*GZ),CL=new Uint8Array(GX*GZ).fill(3);
+function raster(outer,value,holes=[]){const p=outer;let z0=Infinity,z1=-Infinity;for(let k=1;k<p.length;k+=2){z0=Math.min(z0,p[k]);z1=Math.max(z1,p[k]);}for(let j=clamp(Math.ceil((z0-minZ)/T),0,GZ-1);j<=clamp(Math.floor((z1-minZ)/T),0,GZ-1);j++){const z=minZ+j*T,xs=[];for(const p of [outer,...holes])for(let a=0,b=p.length-2;a<p.length;b=a,a+=2){const za=p[a+1],zb=p[b+1];if((za>z)!==(zb>z))xs.push(p[a]+(z-za)*(p[b]-p[a])/(zb-za));}xs.sort((a,b)=>a-b);for(let k=0;k+1<xs.length;k+=2)for(let i=clamp(Math.ceil((xs[k]-minX)/T),0,GX-1);i<=clamp(Math.floor((xs[k+1]-minX)/T),0,GX-1);i++)CL[j*GX+i]=value;}}
+for(const[k,v]of[['scrub',3],['rock',2],['quarry',2],['residential',4],['wood',6],['park',5],['pitch',5]])for(const a of areas[k])if(a.c)raster(a.p,v,a.holes);
+// The street bed is level with the lap across its kerbs and footways. Beyond them the ground keeps the
+// field's own cross-slope; only the small offset at the footway edge decays over 35 m, so side streets
+// and verges do not get squeezed into a steep ramp beside the lap.
+for(let j=0;j<GZ;j++){for(let i=0;i<GX;i++){const x=minX+i*T,z=minZ+j*T,id=j*GX+i;let h=heightAt(x,z);const q=nearest(x,z,75);
+ if(q){const e=data.route.width[q.i]/2+3,bed=Y[q.i]-.25;if(q.d<=e)h=bed;else if(q.d<e+60){const a=Math.max(0,q.i-1),b=Math.min(N-1,q.i+1),l=Math.hypot(X[b]-X[a],Z[b]-Z[a])||1,side=Math.sign(q.u)||1;
+  // Blend offsets from all nearby arms. Choosing only the nearest arm made a ridge where the
+  // incoming and outgoing Faros legs meet at the same distance from a side street.
+  let offset=0,weight=0;const cx=Math.floor(x/C),cz=Math.floor(z/C);
+  for(let ax=-1;ax<=1;ax++)for(let az=-1;az<=1;az++)for(const j of buckets.get(`${cx+ax},${cz+az}`)||[]){
+   if(j%4)continue;const d=Math.hypot(x-X[j],z-Z[j]),e=data.route.width[j]/2+3,gap=Math.max(.5,d-e);if(gap>=60)continue;
+   const a=(j-2+N-1)%(N-1),b=(j+2)%(N-1),l=Math.hypot(X[b]-X[a],Z[b]-Z[a])||1,rx=-(Z[b]-Z[a])/l,rz=(X[b]-X[a])/l,side=Math.sign((x-X[j])*rx+(z-Z[j])*rz)||1,w=(1-gap/60)**2/gap**4;
+   offset+=(Y[j]-.25-heightAt(X[j]+rx*side*e,Z[j]+rz*side*e))*w;weight+=w;
+  }
+  const f=(q.d-e)/60,t=f*f*(3-2*f);if(weight)h+=offset/weight*(1-t);}}
+
+ H[id]=Math.round(h*10);}}
+const header=Buffer.alloc(32);header.writeInt32LE(GX,0);header.writeInt32LE(GZ,4);header.writeFloatLE(minX,8);header.writeFloatLE(minZ,12);header.writeFloatLE(T,16);fs.writeFileSync(path.join(out,'terrain.bin'),Buffer.concat([header,Buffer.from(H.buffer),Buffer.from(CL.buffer)]));
+const a=0,b=N-1;let ascent=0,descent=0,maxGrade=0;for(let i=a+1;i<=b;i++){const d=Y[i]-Y[i-1];if(d>0)ascent+=d;else descent-=d;maxGrade=Math.max(maxGrade,Math.abs(d/step));}
+const stats={startElevation:Y[a],finishElevation:Y[b],ascent:r(ascent),descent:r(descent),maxGrade:r(maxGrade*100),elevationSource:'Copernicus DEM GLO-30 (2021) AWS COG, EGM2008; sigma-20 m spatial Gaussian, roundabout planes'};
+data.psychiko.stats=stats;
 data.roadNetwork=extractRoadNetwork(data,selected,{excludeWays:R.sourceWayIds,radius:1600,bounds:data.psychiko.networkBounds});
 data.psychiko.networkWayIds=publicWays.map(w=>w.id);
+// One-way guidance: every legal entry arm of each ring (and of mini-roundabout 351945852) gets a P-1/P-40 sign
+// and a give-way line; the runtime paints CCW arrows on the ring. Gated Athens College drive 31270034 is left alone.
+{const GATED=new Set([31270034]),isRing=new Set(roundaboutLoops(selected,P).flatMap(l=>l.ways)),toward=(w,k,j)=>{const t=w.tags;if(t.oneway==='-1')return j>k;if(['yes','1','true'].includes(t.oneway))return j<k;return true;};
+ const arms=(nodeIds,skip)=>{const out=[];for(const w of publicWays){if(skip.has(w.id)||isRing.has(w.id))continue;w.nodes.forEach((n,k)=>{if(!nodeIds.has(n))return;for(const j of [k-1,k+1]){const m=w.nodes[j];if(m===undefined||!toward(w,k,j))continue;
+  const a=P(nodes.get(n)),b=P(nodes.get(m)),L=Math.hypot(b[0]-a[0],b[1]-a[1]);out.push({node:n,way:w.id,x:r(a[0]),z:r(a[1]),dx:r((b[0]-a[0])/L),dz:r((b[1]-a[1])/L),oneway:['yes','1','true','-1'].includes(w.tags.oneway)?1:0});}});}return out;};
+ data.psychiko.roundaboutGuidance=data.roadNetwork.roundabouts.filter(q=>!GATED.has(q.id)).map(q=>{const loop=roundaboutLoops(selected,P).find(l=>l.id===q.id);return{id:q.id,entries:arms(new Set(loop.nodes),new Set(loop.ways))};});
+ data.psychiko.miniRoundabouts=osm.filter(e=>e.type==='node'&&e.tags?.highway==='mini_roundabout'&&inside(P(e),boundary)).map(e=>{const p=P(e);return{id:e.id,x:r(p[0]),z:r(p[1]),r:2,entries:arms(new Set([e.id]),new Set())};});}
 data.psychiko.sideStreetExits=sideStreetExits(osm,R);
 // Closure placement follows each outgoing source arm, beyond the race carriageway.
 data.roadworks=data.psychiko.sideStreetExits.map(exit=>{
  const start=P(nodes.get(exit.node));let prev=start,travel=0,chosen=null,placed=false;
+ // The two signal junctions use quiet steel separator rails, like their arterial furniture.
+ // Very short slips cannot take an orange barricade farther back without blocking the raced road.
+ const signalMouth=[[38.005,23.7755],[38.01002,23.78001]].some(([lat,lon])=>Math.hypot(start[0]-(lon-proj.lon0)*proj.mlon,start[1]+(lat-proj.lat0)*proj.mlat)<135);
  for(const id of exit.path){const end=P(nodes.get(id));const L=Math.hypot(end[0]-prev[0],end[1]-prev[1]);
   for(let d=1;d<=Math.ceil(L);d++){const t=Math.min(1,d/L),x=prev[0]+(end[0]-prev[0])*t,z=prev[1]+(end[1]-prev[1])*t,q=nearest(x,z,100),dx=(end[0]-prev[0])/L,dz=(end[1]-prev[1])/L;
    const i=q?.i||0,a=(i-2+N-1)%(N-1),b=(i+2)%(N-1),tx=X[b]-X[a],tz=Z[b]-Z[a],alignment=Math.abs(dx*tx+dz*tz)/(Math.hypot(tx,tz)||1),hl=exit.width/2+3;
-   chosen={id:exit.id,node:exit.node,way:exit.way,x:r(x),z:r(z),dx:r(dx),dz:r(dz),yaw:Math.atan2(dz,-dx),hl,hw:.65};
-   if((q?.d??100)>6+hl*alignment&&travel+d>8){placed=true;break;}
+   chosen={id:exit.id,node:exit.node,way:exit.way,x:r(x),z:r(z),dx:r(dx),dz:r(dz),yaw:Math.atan2(dz,-dx),hl,hw:.65,...(signalMouth?{dressing:'guardrail'}:{})};
+   if((q?.d??100)>6+hl*alignment&&travel+d>(signalMouth?60:24)){placed=true;break;}
   }
   if(placed)break;travel+=L;prev=end;
   if(travel>70)break;
@@ -114,8 +182,9 @@ data.roadworks=data.psychiko.sideStreetExits.map(exit=>{
  }
  return chosen;
 });
-const scenery=buildPsychikoScenery(data,fs.readFileSync(path.join(out,'terrain.bin')));
-data.psychiko.scenery={furniture:scenery.furniture};
+data.psychiko.arterial=arterialRecords(selected,P);
+data.psychiko.recognition=buildRecognition(data,osm);
+data.psychiko.scenery=buildPsychikoScenery(data,fs.readFileSync(path.join(out,'terrain.bin')),osm);
 fs.writeFileSync(path.join(out,'map.json'),JSON.stringify(data));
 inject('psychiko');
 fs.writeFileSync(path.join(dir,'raw/profile.json'),JSON.stringify({step,start:R.start,finish:R.finish,raw:Yraw,smoothed:Y,stats}));

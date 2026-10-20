@@ -130,7 +130,12 @@ for (const def of getPlayableMaps(MAPS)) test(`${def.id}: the area start and eve
     if (plan.kind === 'road') {
       const sample = network.sample(v.x, v.z); assert.ok(sample && sample.step === 0, `${where}: on the tarmac of a street`);
       assert.ok(Math.abs(v.y - network.height(v.x, v.z)) < 1e-6, `${where}: at road level, not the DEM`);
-      const [fx, fz] = forward(v.yaw), seg = network.candidates(v.x, v.z).find(g => network.distance(g, v.x, v.z) <= g.hw + .3 && Math.abs(fx * g.dx / g.L + fz * g.dz / g.L) > .999);
+      // A junction can expose two almost-parallel polyline pieces. Match the legal lane on any actual
+      // candidate rather than choosing the first neighbour's extended axis before testing lane centring.
+      const [fx, fz] = forward(v.yaw), seg = network.candidates(v.x, v.z).find(g => {
+        const u=Math.abs((v.x-g.ax)*-g.dz/g.L+(v.z-g.az)*g.dx/g.L);
+        return network.distance(g,v.x,v.z)<=g.hw+.3&&Math.abs(fx*g.dx/g.L+fz*g.dz/g.L)>.999&&u<=g.hw-v.halfW+.05&&(u<.05||Math.abs(u-g.hw*.5)<.05);
+      });
       assert.ok(seg, `${where}: faces along the street`);
       const lateral = Math.abs((v.x - seg.ax) * -seg.dz / seg.L + (v.z - seg.az) * seg.dx / seg.L);
       assert.ok(lateral <= seg.hw - v.halfW + .05, `${where}: the whole car is on the street (${lateral.toFixed(2)} of ${seg.hw})`);

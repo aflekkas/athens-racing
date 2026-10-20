@@ -1,0 +1,93 @@
+
+ ⛅️ wrangler 4.150.0
+────────────────────
+[custom build] Running: ASR_BUILD_ENV=staging node tools/prepare-deploy.mjs
+[custom build] (node:97600) Warning: `--localstorage-file` was provided without a valid path
+[custom build] (Use `node --trace-warnings ...` to show where the warning was created)
+[custom build] 
+[custom build] Browser import graph checked: 299 modules.
+[custom build] 
+[custom build] Bake cache hit riviera (37deef0a76da)
+[custom build] 
+[custom build] Bake cache hit megara (5131205411c5)
+[custom build] Bake cache hit penteli (fcd5b701d32e)
+[custom build] Bake cache miss psychiko (f3518ab7a674): baking
+[custom build] 
+[custom build] [bake psychiko] (node:97602) Warning: `--localstorage-file` was provided without a valid path
+[custom build] [bake psychiko] (Use `node --trace-warnings ...` to show where the warning was created)
+[custom build] [bake psychiko] Baked psychiko terrain: 8070830 bytes
+[custom build] [bake psychiko] Meshopt psychiko terrain: 6105728 bytes
+[custom build] [bake psychiko] Baked psychiko roads: 28123575 bytes
+[custom build] [bake psychiko] Meshopt psychiko roads: 28126629 bytes
+[custom build] [bake psychiko] Baked psychiko in 93481 ms
+[custom build] 
+[custom build] Worlds ready in 94203 ms (3 cached, 1 baked)
+[custom build] 
+[custom build] ▲ [WARNING] Duplicate key "menu" in object literal [duplicate-object-key]
+[custom build] 
+[custom build]     src/main.js:1238:373:
+[custom build]       1238 │ ...e() { return G.state; }, get menu() { return menu; }, openCar...
+[custom build]            ╵                                 ~~~~
+[custom build] 
+[custom build]   The original key "menu" is here:
+[custom build] 
+[custom build]     src/main.js:1235:6:
+[custom build]       1235 │   get menu() { return menu; }, shareResult,
+[custom build]            ╵       ~~~~
+[custom build] 
+[custom build] 
+[custom build] Bundled browser (bundled three.js): 314 inputs, 66 ESM chunks, 2616681 bytes
+[custom build] 
+[custom build] Git authors missing from CREDITS.md: muse, Codex (listed as contributors for now).
+[custom build] 
+[custom build] {
+[custom build]   "assets": 1780,
+[custom build]   "bytes": 439915518,
+[custom build]   "largest": {
+[custom build]     "path": "data/raw/roads.json",
+[custom build]     "size": 2148449
+[custom build]   },
+[custom build]   "release": {
+[custom build]     "version": "2026.10.15.3",
+[custom build]     "sha": "bf48a56",
+[custom build]     "build": "2b8e2c28cbee",
+[custom build]     "files": 855,
+[custom build]     "copies": 855,
+[custom build]     "swBytes": 65665
+[custom build]   },
+[custom build]   "maps": [
+[custom build]     {
+[custom build]       "id": "riviera",
+[custom build]       "version": "4718fbec",
+[custom build]       "events": 2
+[custom build]     },
+[custom build]     {
+[custom build]       "id": "megara",
+[custom build]       "version": "1621ff83",
+[custom build]       "events": 2
+[custom build]     },
+[custom build]     {
+[custom build]       "id": "penteli",
+[custom build]       "version": "33ed3ce1",
+[custom build]       "events": 2
+[custom build]     },
+[custom build]     {
+[custom build]       "id": "psychiko",
+[custom build]       "version": "653bca47",
+[custom build]       "events": 2
+[custom build]     }
+[custom build]   ]
+[custom build] }
+[custom build] 
+✨ Read 1816 files from the assets directory /Users/vassilisperrotis/.t3/worktrees/athens-street-racers/psychiko-realism/.scratch/psychiko-realism/impl-c/candidate/.deploy/assets
+Total Upload: 963.93 KiB / gzip: 269.70 KiB
+Your Worker has access to the following bindings:
+Binding                                                                     Resource                  
+env.GAME (GameArena)                                                        Durable Object            
+env.PRESENCE (FriendsPresence)                                              Durable Object            
+env.ACCOUNTS (athens-racing-accounts-staging)                               D1 Database               
+env.ATHENS_WORLD (athens-racing-world-staging)                              R2 Bucket                 
+env.ASSETS                                                                  Assets                    
+env.ATHENS_WORLD_MANIFEST ("manifests/998c33ac58cb4061687c34b67a3...")      Environment Variable      
+
+--dry-run: exiting now.

@@ -15,6 +15,7 @@
 //               absent means NORMAL and can be busted.
 //   mode        derived from the event (its type string), never set directly.
 import { TIMES, WEATHERS, MAX_RIVALS, isPoliceLevel } from '../src/race-setup.js';
+import { canReverse } from '../src/map-catalog.js';
 import { isDrivingMode, createObjectiveState, stepObjectives, objectiveSnapshot, objectiveResult } from '../src/driving-objectives.js';
 
 export const MP_RIVALS_MIN = 0;
@@ -71,7 +72,7 @@ export function sanitizeConfig(input, def = {}) {
     if (!isWeather(input.weather)) return { error: 'Unknown weather.' };
     out.weather = input.weather;
   }
-  if (input.reverse !== undefined) out.reverse = input.reverse === true;
+  if (input.reverse !== undefined) out.reverse = input.reverse === true && canReverse(def?.mapId);
   if (input.police !== undefined) out.police = input.police === true;
   if (input.policeLevel !== undefined) {
     if (!isPoliceLevel(input.policeLevel)) return { error: 'Unknown police level.' };
@@ -129,7 +130,8 @@ export function sanitizeOpaque(value) {
 // The race-facing geometry: a reversed lobby runs the same route backwards.
 // Unreversed input returns the definition untouched.
 export function effectiveEvent(def, config) {
-  if (!def || !config?.reverse) return def;
+  // One-way-only courses (Psychiko) never run backwards, whatever a stale or hand-made config says.
+  if (!def || !config?.reverse || !canReverse(def.mapId)) return def;
   const dir = -def.dir, s0 = def.closed ? def.s0 : def.s1, s1 = def.closed ? s0 + dir * def.len : def.s0;
   const sectors = def.closed ? (def.sectors || []).map(cp => ({ ...cp, s: s0 + dir * cp.d })) :
     [...(def.sectors || []).filter(cp => cp.d < def.len).map(cp => ({ ...cp, d: def.len - cp.d }))

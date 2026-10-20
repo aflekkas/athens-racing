@@ -1,0 +1,348 @@
+{
+ "rows": [
+  {
+   "id": "S07",
+   "label": "Diamantidou 42 (A9)",
+   "lat": 38.0126551,
+   "lon": 23.772367,
+   "heading": 180,
+   "fovH": 85,
+   "x": -231.23482718043428,
+   "y": 193.73574688866293,
+   "z": -405.7037462365647,
+   "ground": 191.39991706247233,
+   "info": {
+    "frame": 1,
+    "calls": 268,
+    "triangles": 1704624,
+    "points": 3000,
+    "lines": 0
+   },
+   "streetscape": {
+    "cells": 26,
+    "builds": 26,
+    "roofs": 1006
+   }
+  },
+  {
+   "id": "S16",
+   "label": "Benaki school wall (I7)",
+   "lat": 38.0167515,
+   "lon": 23.7781452,
+   "heading": 323,
+   "fovH": 85,
+   "x": 276.2171585448484,
+   "y": 203.19839893249807,
+   "z": -860.3903009354328,
+   "ground": 200.7258161651511,
+   "info": {
+    "frame": 2,
+    "calls": 491,
+    "triangles": 1067930,
+    "points": 3000,
+    "lines": 0
+   },
+   "streetscape": {
+    "cells": 21,
+    "builds": 43,
+    "roofs": 1006
+   }
+  },
+  {
+   "id": "S03",
+   "label": "Pavlou Mela",
+   "lat": 38.0200704,
+   "lon": 23.7707861,
+   "heading": 196,
+   "fovH": 85,
+   "x": -370.0723274803689,
+   "y": 222.27610530208744,
+   "z": -1228.7769834844269,
+   "ground": 219.77610530208744,
+   "info": {
+    "frame": 3,
+    "calls": 1031,
+    "triangles": 1992729,
+    "points": 3000,
+    "lines": 0
+   },
+   "streetscape": {
+    "cells": 26,
+    "builds": 65,
+    "roofs": 1006
+   }
+  },
+  {
+   "id": "S21",
+   "label": "Vasileos Pavlou 71 (A8)",
+   "lat": 38.0011129,
+   "lon": 23.7694049,
+   "heading": 20,
+   "fovH": 85,
+   "x": -491.3718122130164,
+   "y": 198.15020119426833,
+   "z": 875.4414426250396,
+   "ground": 195.65020119426833,
+   "info": {
+    "frame": 4,
+    "calls": 1843,
+    "triangles": 2169648,
+    "points": 3000,
+    "lines": 0
+   },
+   "streetscape": {
+    "cells": 18,
+    "builds": 83,
+    "roofs": 1006
+   }
+  },
+  {
+   "id": "S20",
+   "label": "Taygetou 9 (N5)",
+   "lat": 38.0081883,
+   "lon": 23.7761181,
+   "heading": 253,
+   "fovH": 85,
+   "x": 98.1935663772003,
+   "y": 184.39198823736533,
+   "z": 90.09595655929539,
+   "ground": 181.89198823736533,
+   "info": {
+    "frame": 5,
+    "calls": 98,
+    "triangles": 1342285,
+    "points": 3000,
+    "lines": 0
+   },
+   "streetscape": {
+    "cells": 19,
+    "builds": 101,
+    "roofs": 1006
+   }
+  },
+  {
+   "id": "S23",
+   "label": "A square west edge",
+   "lat": 38.0077403,
+   "lon": 23.77397,
+   "heading": 80,
+   "fovH": 85,
+   "x": -90.45646486742037,
+   "y": 190.57703996592787,
+   "z": 139.82244237727204,
+   "ground": 188.07703996592787,
+   "info": {
+    "frame": 6,
+    "calls": 191,
+    "triangles": 1175074,
+    "points": 3000,
+    "lines": 0
+   },
+   "streetscape": {
+    "cells": 19,
+    "builds": 106,
+    "roofs": 1006
+   }
+  },
+  {
+   "id": "S22",
+   "label": "Kyprou 3 (kerb parking)",
+   "lat": 38.0013024,
+   "lon": 23.7713488,
+   "heading": 330,
+   "fovH": 85,
+   "x": -320.65499468341216,
+   "y": 186.42343627379086,
+   "z": 854.4075831107176,
+   "ground": 183.92343627379086,
+   "info": {
+    "frame": 7,
+    "calls": 1001,
+    "triangles": 1909414,
+    "points": 3000,
+    "lines": 0
+   },
+   "streetscape": {
+    "cells": 19,
+    "builds": 122,
+    "roofs": 1006
+   }
+  },
+  {
+   "id": "P0414",
+   "label": "Diamantidou at Samara (A9, lap)",
+   "lat": 38.01552889744543,
+   "lon": 23.771212891832647,
+   "heading": 343,
+   "fovH": 90,
+   "h": 512,
+   "x": -332.59069600885766,
+   "y": 207.18256877926925,
+   "z": -724.6855496161671,
+   "ground": 204.70713772165854,
+   "info": {
+    "frame": 8,
+    "calls": 444,
+    "triangles": 779874,
+    "points": 3000,
+    "lines": 0
+   },
+   "streetscape": {
+    "cells": 23,
+    "builds": 145,
+    "roofs": 1006
+   }
+  },
+  {
+   "id": "P1025",
+   "label": "Taygetou (N5)",
+   "lat": 38.008643678598524,
+   "lon": 23.77791164643236,
+   "heading": 72,
+   "fovH": 90,
+   "h": 512,
+   "x": 255.70606137413455,
+   "y": 182.51472665978218,
+   "z": 39.55047124374223,
+   "ground": 180.01472665978218,
+   "info": {
+    "frame": 9,
+    "calls": 49,
+    "triangles": 628486,
+    "points": 3000,
+    "lines": 0
+   },
+   "streetscape": {
+    "cells": 22,
+    "builds": 165,
+    "roofs": 1006
+   }
+  },
+  {
+   "id": "P0483",
+   "label": "Benaki school wall (I7)",
+   "lat": 38.015833137162645,
+   "lon": 23.77903513315552,
+   "heading": 142,
+   "fovH": 90,
+   "h": 512,
+   "x": 354.372699531868,
+   "y": 198.20695870258015,
+   "z": -758.4551299364384,
+   "ground": 195.73496248873613,
+   "info": {
+    "frame": 10,
+    "calls": 223,
+    "triangles": 1052430,
+    "points": 3000,
+    "lines": 0
+   },
+   "streetscape": {
+    "cells": 25,
+    "builds": 188,
+    "roofs": 1006
+   }
+  },
+  {
+   "id": "R25053106-2",
+   "label": "Kamara island",
+   "lat": 38.01160849339077,
+   "lon": 23.77757092307207,
+   "heading": 313,
+   "fovH": 90,
+   "h": 512,
+   "x": 225.78311897629894,
+   "y": 187.2752592968698,
+   "z": -289.53395000588904,
+   "ground": 184.7752592968698,
+   "info": {
+    "frame": 11,
+    "calls": 1027,
+    "triangles": 1341508,
+    "points": 3000,
+    "lines": 0
+   },
+   "streetscape": {
+    "cells": 26,
+    "builds": 204,
+    "roofs": 1006
+   }
+  },
+  {
+   "id": "RELEF-2",
+   "label": "Eleftherias island",
+   "lat": 38.01841389238774,
+   "lon": 23.770220668116117,
+   "heading": 270,
+   "fovH": 90,
+   "h": 512,
+   "x": -419.72957926603834,
+   "y": 236.6138776269113,
+   "z": -1044.9102373043427,
+   "ground": 234.1138776269113,
+   "info": {
+    "frame": 12,
+    "calls": 153,
+    "triangles": 714041,
+    "points": 3000,
+    "lines": 0
+   },
+   "streetscape": {
+    "cells": 25,
+    "builds": 227,
+    "roofs": 1006
+   }
+  },
+  {
+   "id": "R634346640-2",
+   "label": "Areaki island",
+   "lat": 38.01393383931669,
+   "lon": 23.778506391099047,
+   "heading": 180,
+   "fovH": 90,
+   "h": 512,
+   "x": 307.937614817911,
+   "y": 187.58202043612158,
+   "z": -547.6394884160442,
+   "ground": 185.08202043612158,
+   "info": {
+    "frame": 13,
+    "calls": 523,
+    "triangles": 1678032,
+    "points": 3000,
+    "lines": 0
+   },
+   "streetscape": {
+    "cells": 24,
+    "builds": 248,
+    "roofs": 1006
+   }
+  },
+  {
+   "id": "R25053533-2",
+   "label": "B square",
+   "lat": 38.01336271660991,
+   "lon": 23.771940920830637,
+   "heading": 232,
+   "fovH": 90,
+   "h": 512,
+   "x": -268.65387127180264,
+   "y": 196.52000427246094,
+   "z": -484.2467982840468,
+   "ground": 194.04323971368592,
+   "info": {
+    "frame": 14,
+    "calls": 161,
+    "triangles": 1527895,
+    "points": 3000,
+    "lines": 0
+   },
+   "streetscape": {
+    "cells": 21,
+    "builds": 263,
+    "roofs": 1006
+   }
+  }
+ ],
+ "errors": []
+}

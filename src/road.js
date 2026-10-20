@@ -44,7 +44,7 @@ export const ROAD = {
 function asphaltMaterial(psychiko = false) {
   const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, metalness: 0 });
   mat.userData.uniforms = { tAD: { value: TX.asphalt_diff }, tAN: { value: TX.asphalt_nor }, tAR: { value: TX.asphalt_arm }, uCross: { value: new Float32Array(16).fill(-9999) }, uStop: { value: new Float32Array(8).fill(-9999) }, uStopO: { value: new Float32Array(8).fill(-9999) } };
-  mat.customProgramCacheKey = () => psychiko ? 'asphalt6-psychiko' : 'asphalt6';
+  mat.customProgramCacheKey = () => psychiko ? 'asphalt7-psychiko' : 'asphalt6';
   mat.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, mat.userData.uniforms);
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute vec2 aSU; attribute vec4 aEM; varying vec2 vSU; varying vec4 vEM;')
@@ -90,7 +90,7 @@ function asphaltMaterial(psychiko = false) {
         float m = 0.0;
         ${psychiko ? '' : 'm += band(au, e - 0.22, 0.15);'}                       // edge lines
         if (dv > 0.5) m += band(au, mh + 0.22, 0.12);       // inner edge next to the median
-        else { m += band(u, 0.12, 0.1) + band(u, -0.12, 0.1); } // double solid centre line
+        else { m += ${psychiko ? 'band(au, .18, .12)' : 'band(u, 0.12, 0.1) + band(u, -0.12, 0.1)'}; } // double solid centre line
         float dash = band(fract(s / 9.0), 0.185, 0.37);
         for (int i = 1; i < 4; i++) { float fi = float(i); if (fi < nl - 0.3) m += band(au, mh + fi * ${LANE_W.toFixed(2)}, 0.12) * dash; }
         // zebra crossings and stop lines near the player
@@ -103,7 +103,11 @@ function asphaltMaterial(psychiko = false) {
         float wearN = vn2(vec2(u * 9.0, s * 2.3)) * 0.55 + vn2(vec2(u * 31.0, s * 13.0)) * 0.45;
         float wearK = 0.32 + polish * 0.25 * heavy + (1.0 - lumA) * 0.25;
         float chip = smoothstep(wearK - 0.05, wearK + 0.08, wearN);
-        ${psychiko ? `m *= max(0., min(1., nl)); if(nl<-.5){vec2 bq=vec2(u,s)/vec2(.14,.22);float seam=step(.07,fract(bq.x+floor(bq.y)*.5))*step(.08,fract(bq.y));base=mix(vec3(.17,.13,.11),vec3(.29,.23,.20),seam)*(.85+.3*macro);}` : ''}
+        ${psychiko ? `// Class paint: solid two-way avenues, dashed lane dividers on D8/T10, no paint on unmarked streets.
+        if(nl>.5&&nl<.75){m=band(u,e*.5,.14)+(band(u,0.,.12)+band(u,-e*.5,.12))*step(fract(s/12.),.25);}
+        else if(nl>.02&&nl<.75){float lanes=max(2.,floor(e/1.65+.5)),lw=2.*e/lanes,q=(fract((u+e)/lw+.5)-.5)*lw;m=band(q,0.,.12)*step(lw*.5,e-au)*step(fract(s/12.),.25);}
+        else {m*=step(.75,nl);chip=mix(.72,1.,chip);}
+        if(nl<-.5){vec2 bq=vec2(u,s)/vec2(.14,.22);float seam=step(.07,fract(bq.x+floor(bq.y)*.5))*step(.08,fract(bq.y));base=mix(vec3(.17,.13,.11),vec3(.29,.23,.20),seam)*(.85+.3*macro);}` : ''}
         paint = clamp(m, 0.0, 1.0) * (1.0 - gut) * chip;
         vec3 pcol = vec3(0.8, 0.8, 0.77) * (0.88 + 0.12 * alb.r / max(lumA, 0.05)) * (1.0 - polish * 0.15 * heavy);
         diffuseColor.rgb = mix(base, pcol, paint);
@@ -240,6 +244,7 @@ export function buildRoad(map, scene, heightC, assets) {
   const vergeMat = terrainMaterial();
   const P = () => new THREE.Vector3();
   const sMin = route.closed ? 0 : -60, sMax = route.length + (route.closed ? 0 : 60);
+  const cPink = new THREE.Color('#d6a49a'), cSlab = new THREE.Color('#c9c9c6');
   const cConc = new THREE.Color('#bdb8ad'), cSoil = new THREE.Color('#6b5a40'), cGravel = new THREE.Color('#9c917c'), cDirt = new THREE.Color('#8f8064');
 
   const chunkMeshes = []; let chunkIndex = 0;
@@ -273,7 +278,8 @@ export function buildRoad(map, scene, heightC, assets) {
         curb.row(pts.map(([u, y], i) => { const p = route.point(s, side * u, P()); p.y = y + (i === 3 ? -0.0 : 0); return { p, s, u: side * u }; }));
         const walk = side > 0 ? walkR : walkL;
         const urb = route.urban(s);
-        const wc = urb > 0.5 ? cConc : cGravel;
+        // Psychiko footways: pink tiles on the Diamantidou avenue and around the squares, pale slabs elsewhere (Street View survey).
+        const wc = section ? section.k === 'A9' || roundaboutRange(route, s) ? cPink : cSlab : urb > 0.5 ? cConc : cGravel;
         const wp = [[eA + 0.18, yTop], [eA + 0.18 + sw * 0.5, yTop + 0.01], [eA + 0.18 + sw, yTop + 0.02]];
         walk.row(wp.map(([u, y]) => { const p = route.point(s, side * u, P()); p.y = y; return { p, s, u: side * u, c: wc }; }));
         // skirt down to the terrain
@@ -348,7 +354,10 @@ export function signTexture(route) {
     });
     panel('start', 1024, 256, (w, h) => {
       g.fillStyle = '#0b0d10'; g.fillRect(0, 0, w, h); g.fillStyle = '#ff3d2e'; g.fillRect(0, 0, 40, h); g.fillRect(w - 40, 0, 40, h);
-      g.fillStyle = '#fff'; g.font = `italic 900 110px "Barlow Condensed", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(route.closed ? 'START / FINISH · ' + (route.from || 'CIRCUIT').toUpperCase() : 'RIVIERA RUN · START', w / 2, h / 2 + 6, w - 128);
+      g.fillStyle = '#fff'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      if(route.streetCircuit&&route.from==='Faros'){
+        g.save();g.translate(w/2,h/2);g.scale(.3,1);g.font='700 190px sans-serif';g.fillText('FAROS · START / FINISH',0,8,2400);g.restore();
+      }else{g.font = `italic 900 110px "Barlow Condensed", sans-serif`; g.fillText(route.closed ? 'START / FINISH · ' + (route.from || 'CIRCUIT').toUpperCase() : 'RIVIERA RUN · START', w / 2, h / 2 + 6, w - 128);}
     });
   });
   return { tex, regions };
@@ -375,6 +384,9 @@ export function buildFurniture(map, group, heightC, assets) {
   const lampPole = new CellInstances(poleGeo, metal, { far: 1600 }), lampArm = new CellInstances(armGeo, metal, { far: 900, shadow: false }), lampHeadI = new CellInstances(headGeo, lampHead, { shadow: false, far: 900 });
   for (let s = 10; s < route.length; s += 36) {
     const urb = route.urban(s); if (urb < 0.4) continue;
+    // The square gardens have outer-kerb goosenecks in the streetscape records. The lap's right side points
+    // into the island on CCW arcs, so generic right-side poles must not be placed there.
+    if (map.id === 'psychiko' && roundaboutRange(route, s, 8)) continue;
     const dv = route.div(s), f = route.frame(s, {});
     const yaw = Math.atan2(f.tx, f.tz);
     if (dv > 0.6 && route.medHalf(s) > 1.2) {
@@ -467,7 +479,8 @@ export function buildFurniture(map, group, heightC, assets) {
   const gantry = (s, key, tint) => {
     const wHalf = route.edge(s) + 1.2;
     const g = gantryLegFrame(route, s, new THREE.MeshStandardMaterial({ color: tint, roughness: 0.5, metalness: 0.3 })); timing.add(g);
-    const banner = new THREE.Mesh(uvRect(new THREE.PlaneGeometry(wHalf * 2, wHalf * 0.5), regions[key]), signMat); banner.position.set(0, 6.4, -signFaceOffset(.5)); banner.rotation.y = Math.PI; banner.castShadow = true; g.add(banner);
+    const bannerHeight=route.streetCircuit&&route.from==='Faros'?.65:wHalf*.5;
+    const banner = new THREE.Mesh(uvRect(new THREE.PlaneGeometry(wHalf * 2, bannerHeight), regions[key]), signMat); banner.position.set(0, 6.4, -signFaceOffset(.5)); banner.rotation.y = Math.PI; banner.castShadow = true; g.add(banner);
     const banner2 = banner.clone(); banner2.rotation.set(0, 0, 0); banner2.position.z = signFaceOffset(.5); g.add(banner2);
   };
   gantry(route.start, 'start', '#ff3d2e');

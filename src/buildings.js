@@ -142,12 +142,12 @@ export function buildBuildings(map,scene,heightC,labels,infill=[]) {
     const g=buildingBlockGeometry(p,top-base);g.translate(0,base,0);
     const key=Math.floor(cx/500)+','+Math.floor(cz/500);if(!chunks.has(key))chunks.set(key,new GeoBatch());
     const batch=chunks.get(key),start=batch.count;
-    batch.add(g,M(0,0,0),palette[Math.abs(Number(b.id)||0)%palette.length]);
+    batch.add(g,M(0,0,0),b.color || palette[Math.abs(Number(b.id)||0)%palette.length]);
     bakeBlockShade(batch,start,base,top);
     batch.facade ||= [];const style=buildingStyle(b);
     for(let i=start;i<batch.count;i++){
       const j=i*3,nx=batch.nor[j],ny=batch.nor[j+1],nz=batch.nor[j+2];
-      batch.facade.push(((batch.pos[j]-cx)*nz-(batch.pos[j+2]-cz)*nx)/5.5,(batch.pos[j+1]-base)/3.1,style,Math.abs(ny)>.5?1:0);
+      batch.facade.push(((batch.pos[j]-cx)*nz-(batch.pos[j+2]-cz)*nx)/(b.windowBay||5.5),(batch.pos[j+1]-base)/(b.storeyHeight?(top-base)/(b.lv||2):3.1),style,Math.abs(ny)>.5?1:0);
     }
     g.dispose();
     footprints.push({p,bb});roofs.push({...b,p,bb,cx,cz,gmin:lo,top,area:Math.abs(polyArea(p)),roofOccupied:[]});

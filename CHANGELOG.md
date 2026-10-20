@@ -14,6 +14,21 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 - Simpler cars: no spoilers, wings, diffusers, splitters, side vents, stripes or two-tone roofs. One clean body in its paint.
 - Handbrake: the lever in the cabin swings up while you hold it. Cars with an electric parking brake light their button.
 - Aventador SVJ: the exhaust pops, flames and the EXHAUST POPS switch are gone. The V12 sounds the same otherwise.
+- Race the new 5.73 km Psychiko Faros Circuit, from the Faros light through both squares and the hills, returning along Kifisias.
+  ![The Faros start and finish on the surface Kifisias approach](assets/changelog/2026.10.16.1/psychiko-faros.webp "Psychiko's new Faros circuit.")
+
+- Free Roam now includes both surface directions of Kifisias, with lane markings, medians and traffic lights.
+
+- Psychiko's new course has its own best times and ghosts.
+
+- Psychiko looks like the real place: shady tree-lined avenues, cars parked at the kerb, double centre lines and planted squares.
+  ![Diamantidou in Psychiko with a closed tree canopy, kerb parking and double centre lines](assets/changelog/2026.10.16.1/psychiko-street-view.webp "Diamantidou, matched to street photos.")
+
+- Psychiko's hills now follow real height data, so the climbs are steeper and the roads sit at their true level.
+
+- Psychiko now covers all of Palaio Psychiko, including the streets along its edges.
+
+- Psychiko's roundabouts are one-way, counter-clockwise, with arrows, signs and give-way lines like the real ones. Psychiko races no longer run in reverse.
 
 - Free Roam: pick where to start. Choose a place such as Vouliagmeni or Varkiza, or click any road, then drive. No more tracks to pick.
   ![The Free Roam map with Vouliagmeni chosen, the Riviera roads lit and your car beside the DRIVE button](assets/changelog/2026.10.16.1/free-roam-spawn.webp "Pick a place or click any road, then drive.")

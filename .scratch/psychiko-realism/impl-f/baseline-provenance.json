@@ -1,0 +1,14 @@
+{
+  "commit": "e99e37c1",
+  "matchedCameraMeasurements": "../impl-e/harness/perf-final.json",
+  "sourceHashMatches": {
+    "data/maps/psychiko/map.json": true,
+    "data/maps/psychiko/terrain.bin": true,
+    "src/terrain.js": true,
+    "src/road-network.js": true,
+    "src/roadworks.js": true,
+    "src/maps/psychiko-recognition.js": true,
+    "src/maps/psychiko-streetscape.js": true
+  },
+  "comparisons": "New baseline captures from e99e37c1 before runtime edits; evidence-processes-before.json records owned headless PIDs."
+}

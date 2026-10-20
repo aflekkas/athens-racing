@@ -5,16 +5,9 @@ import * as THREE from './vehicle-primitives.js';
 import { tintGlass } from './glass-tint.js';
 import { seatMirrors } from './vehicle-mirrors.js';
 import { nextRegistration, makePlateMaterial } from './vehicle-models.js';
-export const PASSENGER_MODELS = {
- city:{name:'Toyota Aygo II (2014)',windowRise:.10,roofDrop:.025,L:3.455,W:1.615,H:1.460,wb:2.34,r:.285,track:1.425,ax:-.03,belt:.93,cowl:-.89,header:-.39,roofBack:1.16,back:1.60,rw:.585,b:.25,sections:[[-1.7275,.70,.805],[-1.40,.77,.83],[-.94,.80,.92],[-.4,.795,.93],[.55,.80,.97],[1.16,.80,1.01],[1.7275,.70,.96]]},
- hatch:{name:'Volkswagen Golf VII',windowRise:.045,roofDrop:.050,L:4.255,W:1.799,H:1.452,wb:2.637,r:.315,track:1.549,ax:-.055,belt:.97,cowl:-.89,header:-.37,roofBack:1.60,back:1.99,rw:.66,b:.30,sections:[[-2.1275,.795,.89],[-1.75,.875,.89],[-1.23,.8995,.95],[-.65,.88,.97],[.5,.88,.99],[1.34,.8995,1.02],[2.1275,.80,1.01]]},
- sedan:{name:'Toyota Corolla E210 sedan',windowRise:.045,roofDrop:.075,L:4.630,W:1.780,H:1.435,wb:2.70,r:.318,track:1.53,ax:-.10,belt:.96,cowl:-.93,header:-.36,roofBack:.78,back:1.63,rw:.635,b:.25,sections:[[-2.315,.765,.79],[-1.93,.85,.82],[-1.4,.89,.90],[-.85,.87,.96],[.4,.855,.98],[1.32,.885,1.00],[1.88,.855,.92],[2.315,.785,.95]]},
- suv:{name:'Nissan Qashqai J11',windowRise:.105,roofDrop:.095,L:4.377,W:1.806,H:1.590,wb:2.646,r:.345,track:1.565,ax:-.075,belt:1.07,cowl:-.92,header:-.40,roofBack:1.49,back:1.94,rw:.66,b:.32,cladding:true,sections:[[-2.1885,.795,.98],[-1.8,.865,.98],[-1.38,.903,1.04],[-.75,.87,1.07],[.4,.88,1.10],[1.34,.903,1.15],[2.1885,.79,1.17]]},
- taxi:{name:'Skoda Octavia IV liftback',windowRise:.045,roofDrop:.075,L:4.689,W:1.829,H:1.470,wb:2.686,r:.323,track:1.543,ax:-.092,belt:.985,cowl:-.99,header:-.39,roofBack:.88,back:1.87,rw:.66,b:.26,sections:[[-2.3445,.81,.90],[-1.94,.88,.88],[-1.44,.9145,.96],[-.92,.885,.985],[.5,.882,1.01],[1.38,.909,1.05],[2.05,.865,.95],[2.3445,.81,1.01]]},
- taxi_superb:{name:'Skoda Superb III liftback',windowRise:.035,roofDrop:.060,L:4.861,W:1.864,H:1.468,wb:2.841,r:.33,track:1.584,ax:-.085,belt:.98,cowl:-1.07,header:-.47,roofBack:.96,back:1.93,rw:.685,b:.27,sections:[[-2.4305,.82,.92],[-2.02,.90,.86],[-1.48,.932,.95],[-.97,.905,.98],[.5,.90,1.01],[1.48,.928,1.03],[2.05,.885,.96],[2.4305,.83,1.02]]},
- byd_dolphin:{name:'BYD Dolphin European specification',windowRise:.14,roofDrop:.085,L:4.290,W:1.770,H:1.570,wb:2.70,r:.326,track:1.53,ax:-.045,belt:1.04,cowl:-1.09,header:-.61,roofBack:1.49,back:1.93,rw:.645,b:.23,sections:[[-2.145,.74,.89],[-1.80,.815,.91],[-1.37,.885,1.01],[-.9,.86,1.04],[.25,.855,1.07],[1.26,.885,1.15],[1.85,.82,1.08],[2.145,.75,1.05]]},
- byd_atto3:{name:'BYD Atto 3',windowRise:.10,roofDrop:.075,L:4.455,W:1.875,H:1.615,wb:2.720,r:.347,track:1.575,ax:-.05,belt:1.10,cowl:-1.00,header:-.43,roofBack:1.53,back:2.00,rw:.69,b:.28,cladding:true,sections:[[-2.2275,.81,.97],[-1.87,.88,.99],[-1.4,.9375,1.07],[-.8,.902,1.10],[.35,.905,1.12],[1.34,.9375,1.18],[1.96,.875,1.10],[2.2275,.82,1.10]]}
-};
+import { PASSENGER_MODELS } from './traffic-passenger-shapes.js';
+export { PASSENGER_MODELS } from './traffic-passenger-shapes.js';
+
 const mix=(a,b,t)=>a+(b-a)*t;
 const beltY=(d,z)=>d.belt+(d.windowRise||0)*Math.max(0,Math.min(1,(z-d.cowl)/(d.back-d.cowl)))**1.6;
 // Corner retreat ends at least 15mm before either arch. Max derivative reduction is 2*.38.

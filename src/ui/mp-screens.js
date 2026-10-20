@@ -17,7 +17,7 @@ import { carCategory, classLabel, inGarage, GARAGE_CLASSES, sortCars, carModel }
 import { classifyCar, PI_CLASSES } from '../car-performance.js';
 import { defaultCarRules, describeRules, carEligibility } from '../mp-car-rules.js';
 import { driverName } from '../driver-name.js';
-import { MAPS } from '../map-catalog.js';
+import { MAPS, canReverse } from '../map-catalog.js';
 import { fmtDist } from '../settings.js';
 
 const { esc, icon } = C;
@@ -181,7 +181,7 @@ export function renderLobby(menu, mp) {
       C.select({ key: 'time', label: 'TIME OF DAY', icon: timeIcon(time), value: time, options: TIMES, attrs: A }),
       C.segmented({ key: 'weather', label: 'WEATHER', icon: weatherIcon(weather), value: weather, options: WEATHERS.map(([v, t]) => [v, t, weatherIcon(v)]), attrs: A }),
       C.segmented({ key: 'traffic', label: 'TRAFFIC', icon: 'traffic-cone', value: traffic, type: 'num', options: TRAFFIC, attrs: A }),
-      ...(modeV === 'sprint' ? [C.segmented({ key: 'reverse', label: 'DIRECTION', icon: 'arrow-left-right', value: reverse, type: 'bool', options: [['false', 'FORWARD'], ['true', 'REVERSE']], attrs: A })] : []),
+      ...(modeV === 'sprint' && canReverse(mapV) ? [C.segmented({ key: 'reverse', label: 'DIRECTION', icon: 'arrow-left-right', value: reverse, type: 'bool', options: [['false', 'FORWARD'], ['true', 'REVERSE']], attrs: A })] : []),
       C.segmented({ key: 'policeMode', label: 'POLICE & LAWS', icon: 'siren', value: police ? policeLevel : 'off', options: [['off', 'OFF'], ...POLICE_LEVELS], attrs: A }),
       ...(police ? [C.segmented({ key: 'busted', label: 'CAN BE BUSTED', icon: 'siren', value: busted, type: 'bool', options: [['true', 'ON'], ['false', 'OFF']], attrs: A })] : []),
       C.listRow({ icon: 'car', title: 'CAR RULES', desc: `${esc(typeof mp?.rulesSummary === 'function' ? mp.rulesSummary() : describeRules(mp?.carRules, specNames(mp)))} · ${allowed} OF ${garage} CARS`, act: 'mpCars', fid: 'cars' }),

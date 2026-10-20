@@ -9,6 +9,7 @@
 // Saved in localStorage['paraliaki.raceSetup'] = { [eventId]: setup }.
 import { rivalCount, MAX_RIVALS, SP_RIVALS } from './events.js';
 import { isDrivingMode } from './driving-objectives.js';
+import { canReverse } from './map-catalog.js';
 
 export { MAX_RIVALS };
 export const TRAFFIC_LEVELS = Object.freeze([['off', 0, 'OFF'], ['light', 0.5, 'LIGHT'], ['normal', 1, 'NORMAL'], ['heavy', 1.5, 'HEAVY'], ['extreme', 2, 'EXTREME']]);
@@ -41,7 +42,7 @@ export function setupFields(def, { closed = false } = {}) {
     { key: 'policeLevel', dflt: isPoliceLevel(def.rules?.policeLevel) ? def.rules.policeLevel : 'normal' }, { key: 'busted', dflt: def.rules?.busted !== false });
   if (!closed || def.type === 'sprint' || def.type === 'free' || isDrivingMode(def)) out.push({ key: 'traffic', dflt: def.traffic ?? 1, levels: trafficLevels(def.traffic ?? 1) });
   if (closed && def.type !== 'free' && !isDrivingMode(def)) out.push({ key: 'laps', dflt: baseLaps(def), min: 1, max: MAX_LAPS });
-  if (!['pursuit', 'free'].includes(def.type) && !isDrivingMode(def)) out.push({ key: 'reverse', dflt: false });
+  if (!['pursuit', 'free'].includes(def.type) && !isDrivingMode(def) && canReverse(def.mapId)) out.push({ key: 'reverse', dflt: false });
   out.push({ key: 'time', dflt: def.conditions?.time || 'afternoon' }, { key: 'weather', dflt: def.conditions?.weather || 'clear' });
   return out;
 }
@@ -112,7 +113,7 @@ export function applySetup(def, setup = {}, ctx = {}) {
       if (def.targetTimes) out.targetTimes = Object.fromEntries(Object.entries(def.targetTimes).map(([m, t]) => [m, t * cur.laps / baseLaps(def)]));
     }
   }
-  if (cur.reverse) {
+  if (cur.reverse && canReverse(def.mapId)) {
     key.push('rev');
     if (ctx.closed) out.reverse = !def.reverse;
     else { out.from = def.to; out.to = def.from; }

@@ -1,0 +1,21 @@
+// Record ownership while running the requested, unchanged impl-a capture, then add matched fixed-world poses.
+import fs from 'node:fs/promises';import {chromium} from 'playwright';
+const out=import.meta.dirname,original=chromium.launch.bind(chromium),record={node:process.pid};
+chromium.launch=async options=>{const server=await chromium.launchServer(options),browser=await chromium.connect(server.wsEndpoint());record.browser=server.process().pid;await fs.writeFile(out+'/detail-processes.json',JSON.stringify(record));const close=browser.close.bind(browser);
+ browser.close=async()=>{try{const page=browser.contexts()[0].pages()[0];
+  const baseline=JSON.parse(await fs.readFile(out+'/../impl-d/detail-fixed.json','utf8')),rows=[];
+  for(const row of baseline.rows){const key=row.name.split('-'),time=key[2],cam=key[3],old={...row.before,...row.after};const result=await page.evaluate(async({old,time,cam})=>{
+   const sim=__sim,{camera,G,player,route:r}=sim,{setSetting}=await import('/src/settings.js');setSetting('worldDetail',true);G.state='race';G.cam=G.userCam=cam;G.lastDt=0;
+   window.__setConditions({time,weather:'clear'});const ENV=await import('/src/env.js');ENV.updateWorldBlend(100);ENV.updateWorldBlend(100);sim.post.snapGrade?.();
+   const oldS=1876.7029320740578;const p={x:-116.62861934914149,z:-1133.6784946945528};const q=r.project(p.x,p.z);player.veh.reset(q.s,q.u,0);player.veh.place(player.model.root);player.model.body.visible=true;player.cockpit.setVisible(cam==='cockpit');if(player.driver?.head)player.driver.head.visible=false;
+   camera.position.fromArray(old.camera);camera.quaternion.fromArray(old.quaternion);camera.fov=cam==='cockpit'?66:58;camera.near=cam==='cockpit'?.05:.25;camera.updateProjectionMatrix();camera.updateMatrixWorld(true);
+   const cold=camera.clone();cold.updateMatrixWorld(true);const prior=sim.renderer.terrainLodCamera;sim.renderer.terrainLodCamera=cold;sim.scene.traverse(o=>{if(o.terrainLodState)o.onBeforeRender(sim.renderer,sim.scene,cold);});sim.renderer.terrainLodCamera=prior;
+   const {updateSceneryLod}=await import('/src/scenery.js');if(sim.lod)updateSceneryLod(sim.lod,camera);for(let k=0;k<4;k++)sim.render();sim.renderer.getContext().finish();return {calls:sim.renderer.info.render.calls,triangles:sim.renderer.info.render.triangles,camera:camera.position.toArray(),quaternion:camera.quaternion.toArray()};
+  },{old,time,cam});rows.push({name:row.name,before:{calls:row.after.calls,triangles:row.after.triangles},after:result});}
+  await fs.writeFile(out+'/detail-fixed.json',JSON.stringify({method:'Same world-space cameras and orientations as impl-d/impl-c; same canvas size, weather, terrain reset and detail On',rows},null,2));
+  await page.setViewportSize({width:1280,height:800});const png=await page.evaluate(async()=>{const sim=__sim,{route:r,player,camera,G}=sim;window.__setConditions({time:'day',weather:'clear'});const ENV=await import('/src/env.js');ENV.updateWorldBlend(100);ENV.updateWorldBlend(100);G.state='race';G.cam=G.userCam='chase';
+   player.cockpit.setVisible(false);player.model.body.visible=true;player.veh.reset(-12,0,0);player.veh.place(player.model.root);player.model.root.updateMatrixWorld(true);const p=r.point(-12,0),f=r.frame(-12,{});camera.position.set(p.x-f.tx*10,p.y+4,p.z-f.tz*10);const at=r.point(18,0);camera.lookAt(at.x,at.y+1,at.z);camera.aspect=1.6;camera.fov=58;camera.near=.25;camera.updateProjectionMatrix();camera.updateMatrixWorld(true);sim.renderer.setSize(1280,800,false);const {updateSceneryLod}=await import('/src/scenery.js');if(sim.lod)updateSceneryLod(sim.lod,camera);for(let k=0;k<4;k++)sim.render();return sim.canvas.toDataURL('image/png').split(',')[1];});await fs.writeFile(out+'/faros-game.png',Buffer.from(png,'base64'));
+ }finally{await close();await server.close();record.closed=true;await fs.writeFile(out+'/detail-processes.json',JSON.stringify(record));}};return browser;};
+await import('../impl-a/detail-budget.mjs');
+
+const {createHash}=await import('node:crypto');const budgetPath=out+'/../../detail-pass/budgets.json',budget=JSON.parse(await fs.readFile(budgetPath));for(const path of ['src/terrain.js','src/buildings.js'])budget.sourceHashes[path]=createHash('sha256').update(await fs.readFile(path)).digest('hex');await fs.writeFile(budgetPath,JSON.stringify(budget,null,2)+'\n');
