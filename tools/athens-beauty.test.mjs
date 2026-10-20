@@ -7,11 +7,12 @@ import { gzipSync } from 'node:zlib';
 import { LANDMARKS, ModelBuilder } from '../src/athens-landmark-models.js';
 import { LANDMARK_SITES } from '../src/athens-landmark-data.js';
 import { LANDMARK_HIDDEN, osmBuildingId } from '../src/athens-landmark-hide.js';
-import { landmarkHaze, landmarkPlacement, FAR_FRACTION, HAZE } from '../src/athens-landmarks.js';
+import { landmarkHaze, landmarkPlacement, FAR_FRACTION, HAZE, forecourtPlazas } from '../src/athens-landmarks.js';
 import { parseHorizon, horizonHeight, bandSlopes, HORIZON_BANDS, HORIZON_AZIMUTHS, AthensHorizon } from '../src/athens-horizon.js';
 import { deriveBuildingMeshes } from '../src/world-tile-buildings.js';
 import { fixture } from './world-tile-format.test.mjs';
 import { tileTables } from '../src/world-tile-format.js';
+import { parsePlazas, pointInPlaza, AthensPlazas, PLAZA_MAX_TRIANGLES } from '../src/athens-plazas.js';
 import * as THREE from 'three';
 
 const bin = readFileSync(new URL('../assets/athens/horizon.bin', import.meta.url));
@@ -108,13 +109,30 @@ test('World detail gates every addition and the layer is wired once in the Athen
   const world = src('src/athens-world.js');
   assert.match(world, /new AthensHorizon\(scene,scene\.fog,\{enabled:settings\.worldDetail!==false\}\)/);
   assert.match(world, /new AthensLandmarks\(detailRoot,scene\.fog,\{enabled:settings\.worldDetail!==false,groundAt:/);
-  assert.match(world, /horizon\.setEnabled\(s\.worldDetail!==false\);landmarks\.setEnabled\(s\.worldDetail!==false\);syncBoxes\(\)/);
+  assert.match(world, /horizon\.setEnabled\(s\.worldDetail!==false\);landmarks\.setEnabled\(s\.worldDetail!==false\);plazas\.setEnabled\(s\.worldDetail!==false\);syncBoxes\(\)/);
+  assert.match(world, /new AthensPlazas\(detailRoot,\{enabled:settings\.worldDetail!==false,/);
   assert.match(world, /c\.userData\.landmarkBox\)c\.visible=!hidden/);
-  for (const f of ['src/athens-horizon.js', 'src/athens-landmarks.js', 'src/athens-landmark-models.js']) assert.doesNotMatch(src(f), /castShadow|DirectionalLight|PointLight|SpotLight|MeshStandardMaterial|MeshPhysicalMaterial|MeshLambertMaterial/, 'unlit colour only');
+  for (const f of ['src/athens-horizon.js', 'src/athens-landmarks.js', 'src/athens-landmark-models.js', 'src/athens-plazas.js']) assert.doesNotMatch(src(f), /castShadow|DirectionalLight|PointLight|SpotLight|MeshStandardMaterial|MeshPhysicalMaterial|MeshLambertMaterial/, 'unlit colour only');
   assert.ok(statSync(new URL('../assets/athens/horizon.bin', import.meta.url)).size < 100 * 1024);
 });
 
-test('houses with pitched roofs derive without overflowing their index, and the extra bytes are counted', () => {
+test('the plaza outlines cover Syntagma Square and are small', () => {
+  const file = new URL('../assets/athens/plazas.json', import.meta.url), json = JSON.parse(readFileSync(file, 'utf8')), plazas = parsePlazas(json);
+  assert.ok(plazas.length > 400 && statSync(file).size < 100 * 1024 && gzipSync(readFileSync(file)).length < 50 * 1024);
+  assert.ok(plazas.some(p => pointInPlaza(p.p, 470, 520)), 'the square in front of the Parliament is a plaza');
+  assert.ok(!plazas.some(p => pointInPlaza(p.p, 613, 527)), 'the Parliament itself is not');
+});
+test('plaza paving follows the streamed ground, only where a cell is loaded, and is gone with World detail Off', () => {
+  const square = { p: new Float32Array([0, 0, 40, 0, 40, 40, 0, 40]), x0: 0, z0: 0, x1: 40, z1: 40, area: 1600 };
+  const group = new THREE.Group(), plazas = new AthensPlazas(group, { groundAt: (x, z) => 10 + x * .1, material: new THREE.MeshBasicMaterial() });
+  plazas.setPlazas([square]); plazas.update(20, 12, 20); assert.equal(plazas.stats.triangles, 0, 'no cell is streamed in yet');
+  plazas.addTile('0,0'); plazas.update(20, 12, 20); assert.equal(plazas.stats.triangles, 20 * 20 * 2, "2 m cells within 130 m");
+  const P = plazas.position.array; for (let i = 0; i < 60; i++) assert.ok(Math.abs(P[i * 3 + 1] - (10 + P[i * 3] * .1) - .05) < 1e-4, 'a vertex lies 5 cm over the ground');
+  assert.equal(plazas.mesh.visible, true); plazas.setEnabled(false); assert.equal(plazas.mesh.visible, false);
+  plazas.update(20, 12, 20); plazas.setEnabled(true); plazas.update(20, 12, 20); assert.equal(plazas.mesh.visible, true);
+  assert.ok(PLAZA_MAX_TRIANGLES <= 30000);
+});
+test('houses with pitched roofs derive without overflowing their index, and the extra bytes and rooftop rows are counted', () => {
   const N = 300, corners = [], buildings = [], heights = [], ids = [];
   for (let i = 0; i < N; i++) {
     const x = (i % 20) * 20, z = Math.floor(i / 20) * 20, h = i % 3 === 0 ? 6 : 9 + (i % 4) * 3;
@@ -128,4 +146,14 @@ test('houses with pitched roofs derive without overflowing their index, and the 
   assert.equal(vertices, N * 20 + out.extra.vertices, 'the counted extra vertices are the ones added');
   const indices = out.meshes.reduce((n, m) => n + out.arrays[m.index].length, 0);
   assert.equal(indices, N * 30 + out.extra.indices, 'the counted extra indices are the ones added');
+  const flat = deriveBuildingMeshes(t, { origin: [30000, 0, 30000], ids }, null, null);  // far outside any old quarter: mostly flat roofs, rooftop kits
+  assert.ok(flat.extra.rooftops.length > 0 && flat.extra.rooftops.length % 5 === 0 && flat.extra.rooftops.length <= 600 * 5);
+});
+test('the Parliament and the Zappeion get a paved forecourt in front of their entrance, as a plaza outline', () => {
+  const f = forecourtPlazas(); assert.equal(f.length, 2);
+  const par = LANDMARK_SITES.parliament, inFront = f.find(p => pointInPlaza(p.p, par.x + (421 - par.x) * .25, par.z + (501 - par.z) * .25 + 0));
+  const toward = [421 - par.x, 501 - par.z], c = [(f[0].x0 + f[0].x1) / 2 - par.x, (f[0].z0 + f[0].z1) / 2 - par.z];
+  assert.ok(toward[0] * c[0] + toward[1] * c[1] > 0, 'the forecourt lies on the Syntagma side of the Parliament');
+  for (const p of f) assert.ok(p.area > 1000 && !pointInPlaza(p.p, par.x, par.z), 'it does not cover the building');
+  void inFront;
 });

@@ -194,7 +194,7 @@ export function buildParliament() {
   const b = new ModelBuilder(), P = S.parliament, L = P.length, W = P.width * .78, H = 17;
   b.at(0, 0, 0, faceToward(P, FACING.parliament), () => {
     // terrace on the ground it stands on, a paved forecourt level with the street (thick, so a falling street never shows its underside) and the steps up to the portico
-    b.box(0, -14, 0, L + 10, 14.2, W + 8, '#b3aa91'); b.box(0, -4, W / 2 + 15, 64, 4.2, 22, '#cfc6ad'); b.box(0, 0, 0, L - 1, 2.2, W - 1, '#b9ab87');
+    b.box(0, -14, 0, L + 10, 14.2, W + 8, '#b3aa91'); b.box(0, -4, W / 2 + 15, 64, 4.2, 22, '#bdbbb4'); b.box(0, 0, 0, L - 1, 2.2, W - 1, '#b9ab87');
     for (let k = 0; k < 4; k++) b.box(0, -3, W / 2 + 7.5 + k * .9, 44 - k * 2, 3 + 1.65 - k * .55, .9, k % 2 ? '#d8cfb6' : '#cfc6ad');
     b.box(0, 2.2, 0, L - 1, H, W - 1, '#d9c690'); b.box(0, H + 2.2, 0, L, .9, W, '#e2d6b0');
     b.hip(0, H + 3.1, 0, L - 4, W - 4, 3.2, '#77716a', (W - 4) / 2);
@@ -277,8 +277,8 @@ export const LANDMARKS = Object.freeze([
   { id: 'acropolis', site: S.parthenon, build: buildAcropolis, hide: [...S.parthenon.hide, ...S.erechtheion.hide, ...(S.propylaia.hide || [])] },
   { id: 'olympieion', site: S.olympieion, build: buildOlympieion, hide: S.olympieion.hide, fit: 'max' },
   { id: 'hadrian', site: S.hadrian, build: buildHadrian, hide: S.hadrian.hide, fit: 'max', margin: 6 },
-  { id: 'parliament', site: S.parliament, build: buildParliament, hide: S.parliament.hide || [], fit: 'front', depth: .78, clear: 90 },
-  { id: 'zappeion', site: S.zappeion, build: buildZappeion, hide: S.zappeion.hide || [], fit: 'front', depth: .8, clear: 36 },
+  { id: 'parliament', site: S.parliament, build: buildParliament, hide: S.parliament.hide || [], fit: 'front', depth: .78, clear: 90, forecourt: { half: 44, from: 4, to: 58 } },
+  { id: 'zappeion', site: S.zappeion, build: buildZappeion, hide: S.zappeion.hide || [], fit: 'front', depth: .8, clear: 36, forecourt: { half: 26, from: 4, to: 34 } },
   { id: 'stadium', site: S.stadium, build: buildStadium, hide: S.stadium.hide, fit: 'median' },
   { id: 'lycabettus', site: S.lycabettus, build: buildLycabettus, hide: [], fit: 'max' },
 ]);
