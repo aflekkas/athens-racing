@@ -28,3 +28,6 @@ Everything is derived in the tile worker from the cells already published (road 
 - **Shop names:** the OSM extract in the cache is filtered (24 shop nodes in the whole of Attica, 951 named shops and amenities with the building areas), so nearly every shop sign is a generic Greek one. Run `tools/world-gen/pois.py` against a fuller Attica extract (Geofabrik's Greece file, or an Overpass query for `shop`, `amenity` and `name` in the region) and replace `assets/athens/pois.json`; nothing else changes. The same extract would give `emergency=fire_hydrant` nodes (none today), which could feed the red and white kerb paint in `src/world-tile-street-art.js`.
 - **Street names:** the edges' `name` strings are already in the cells (Greek); nothing to do. A later bake could store the OSM `name:en` too if the owner wants bilingual plates.
 - A later bake that stores a per-edge parking rule or kerb colour (`parking:lane:*`, `parking:condition:*`) would let the yellow runs follow the map instead of the junction-and-window rule.
+
+### Step 6b (road marks): nothing to rebake
+Rows come from the road graph and the asphalt of each cell. A fuller OSM extract with `emergency=fire_hydrant` nodes would let `deriveStreetArt` paint a red and white kerb block beside each hydrant (not implemented: none in the cache's extract).

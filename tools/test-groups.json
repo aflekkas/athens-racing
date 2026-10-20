@@ -207,6 +207,7 @@
     "tools/athens-lighting.test.mjs",
     "tools/athens-street-life.test.mjs",
     "tools/athens-signs.test.mjs",
+    "tools/athens-marks.test.mjs",
     "tools/athens-materials.test.mjs",
     "tools/athens-world-hud.test.mjs",
     "tools/world-gen/road-model.test.mjs",
