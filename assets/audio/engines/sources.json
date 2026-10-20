@@ -122,6 +122,39 @@
       "licenseUrl": "https://sonniss.com/gdc-bundle-license/",
       "formatNote": "Original WAV from Sonniss GameAudioGDC 2020",
       "sha256": "c0e47462cc47d97fb73adb921ef0a02a9bea71d9ebf35a78d4c55e6debff733f"
+    },
+    "realism-ferrari": {
+      "title": "Pole Position - Ferrari 308 GTB 1985",
+      "author": "Pole Position Production",
+      "downloadUrl": "https://ftpmirror.your.org/pub/misc/sonniss2020/individual/Pole%20Position%20-%20Ferrari%20308%20GTB%201985/Ferrari%2C%20308GTB%2C%20t4%2C%20Onbrd%2C%20Drive%2C%20Gearshifts%2C%20Engine%2C%20Right%2C%20DPA4062.wav",
+      "url": "https://sonniss.com/gameaudiogdc/",
+      "license": "Sonniss GameAudioGDC Bundle License v2.0 (2026-08-27)",
+      "licenseUrl": "https://sonniss.com/gdc-bundle-license/",
+      "acquired": "2026-10-20",
+      "cacheFile": "ferrari.wav",
+      "notes": "Licensed substitute, not a recording of the selected model. Edited for this game; no AI training."
+    },
+    "realism-cross": {
+      "title": "Pole Position - Mercedes AMG C63 2009",
+      "author": "Pole Position Production",
+      "downloadUrl": "https://ftpmirror.your.org/pub/misc/sonniss2020/individual/Pole%20Position%20-%20Mercedes%20AMG%20C63%202009/Mercedes_C63_t1_Onbrd_Start_Slow_Drive_Stop_Reverse_Stop_Drive_Stop_Off_Engine_B.wav",
+      "url": "https://sonniss.com/gameaudiogdc/",
+      "license": "Sonniss GameAudioGDC Bundle License v2.0 (2026-08-27)",
+      "licenseUrl": "https://sonniss.com/gdc-bundle-license/",
+      "acquired": "2026-10-20",
+      "cacheFile": "cross.wav",
+      "notes": "Licensed substitute, not a recording of the selected model. Edited for this game; no AI training."
+    },
+    "realism-v8": {
+      "title": "Soundholder - Porsche Cayenne - 4.8 V8",
+      "author": "Soundholder",
+      "downloadUrl": "https://ftpmirror.your.org/pub/misc/sonniss2020/individual/Soundholder%20-%20Porsche%20Cayenne%20-%204.8%20V8/Porsche%20Cayenne%20I%204.8%20V8%20engine%205k%20rpm%20loop%20mono.wav",
+      "url": "https://sonniss.com/gameaudiogdc/",
+      "license": "Sonniss GameAudioGDC Bundle License v2.0 (2026-08-27)",
+      "licenseUrl": "https://sonniss.com/gdc-bundle-license/",
+      "acquired": "2026-10-20",
+      "cacheFile": "v8.wav",
+      "notes": "Licensed substitute, not a recording of the selected model. Edited for this game; no AI training."
     }
   },
   "assets": [
@@ -561,6 +594,123 @@
       "cylinders": 4,
       "duration": 1.12989,
       "sha256": "7222da25a224dfb84973c84da63cf516c9e5ad32a20c7cbaa8450f5962d2656c"
+    },
+    {
+      "file": "ferrari-idle.wav",
+      "source": "realism-ferrari",
+      "trim": [
+        0.05,
+        1.55
+      ],
+      "kind": "loop",
+      "rpm": 963,
+      "cylinders": 8,
+      "sampleRate": 16000,
+      "duration": 1.13031,
+      "sha256": "a4503da9b855ca40ded4f6c3fe03c22df07147242b38f96710001bc298efaee0",
+      "processing": "16 kHz mono; constrained firing-band phase resampling; crank-aligned overlap; RMS 0.16 / peak <=0.78; 35 Hz HP / 7.2 kHz LP."
+    },
+    {
+      "file": "ferrari-low.wav",
+      "source": "realism-ferrari",
+      "trim": [
+        41.7,
+        43.2
+      ],
+      "kind": "loop",
+      "rpm": 2208,
+      "cylinders": 8,
+      "sampleRate": 16000,
+      "duration": 1.326,
+      "sha256": "0f9725a000dfff1792d052d3df290ba73690356c69d798cbfe338b664ee4314f",
+      "processing": "16 kHz mono; constrained firing-band phase resampling; crank-aligned overlap; RMS 0.16 / peak <=0.78; 35 Hz HP / 7.2 kHz LP."
+    },
+    {
+      "file": "ferrari-mid.wav",
+      "source": "realism-ferrari",
+      "trim": [
+        36,
+        37.4
+      ],
+      "kind": "loop",
+      "rpm": 2745,
+      "cylinders": 8,
+      "sampleRate": 16000,
+      "duration": 1.274,
+      "sha256": "cf2aa3a379b53eb741f6718e6fd77dc762003ea0d24dc16c2fcc47ddf9da903b",
+      "processing": "16 kHz mono; constrained firing-band phase resampling; crank-aligned overlap; RMS 0.16 / peak <=0.78; 35 Hz HP / 7.2 kHz LP."
+    },
+    {
+      "file": "ferrari-high.wav",
+      "source": "realism-ferrari",
+      "trim": [
+        100.5,
+        101.65
+      ],
+      "kind": "loop",
+      "rpm": 4800,
+      "cylinders": 8,
+      "sampleRate": 16000,
+      "duration": 1.05662,
+      "sha256": "cd3cac1f2ddb7862cf2f260e56a56446c1f74cd7f9a5ba7b4ad008753f937f6b",
+      "processing": "16 kHz mono; constrained firing-band phase resampling; crank-aligned overlap; RMS 0.16 / peak <=0.78; 35 Hz HP / 7.2 kHz LP."
+    },
+    {
+      "file": "cross-idle.wav",
+      "source": "realism-cross",
+      "trim": [
+        173.5,
+        175.5
+      ],
+      "kind": "loop",
+      "rpm": 735,
+      "cylinders": 8,
+      "sampleRate": 16000,
+      "duration": 1.49325,
+      "sha256": "3a8ce9c8f782814ed1c68c685c5a444866ec0abe0a37000de56d3174314938a7",
+      "processing": "16 kHz mono; constrained firing-band phase resampling; crank-aligned overlap; RMS 0.16 / peak <=0.78; 35 Hz HP / 7.2 kHz LP."
+    },
+    {
+      "file": "cross-low.wav",
+      "source": "realism-cross",
+      "trim": [
+        126.5,
+        129.5
+      ],
+      "kind": "loop",
+      "rpm": 2140,
+      "cylinders": 8,
+      "sampleRate": 16000,
+      "duration": 2.83125,
+      "sha256": "8301db9299b5e360547aa8e2dee69f01a3071179b6d2c8d4f818eb7d6772d86b",
+      "processing": "16 kHz mono; constrained firing-band phase resampling; crank-aligned overlap; RMS 0.16 / peak <=0.78; 35 Hz HP / 7.2 kHz LP."
+    },
+    {
+      "file": "cross-high.wav",
+      "source": "realism-v8",
+      "trim": [
+        0.5,
+        3.5
+      ],
+      "kind": "loop",
+      "rpm": 4844,
+      "cylinders": 8,
+      "sampleRate": 16000,
+      "duration": 2.92581,
+      "sha256": "720e01baa3347d7d7b34bc676a2b3f93a479666f14e4c2a20c9eb3b6dad68ada",
+      "processing": "16 kHz mono; constrained firing-band phase resampling; crank-aligned overlap; RMS 0.16 / peak <=0.78; 35 Hz HP / 7.2 kHz LP."
+    },
+    {
+      "file": "cross-start.wav",
+      "source": "realism-cross",
+      "trim": [
+        2.8,
+        4.8
+      ],
+      "kind": "start",
+      "duration": 2,
+      "sampleRate": 16000,
+      "sha256": "beee699cbb5b494aa22bf5c8895f8815f2ee8204b04dbec5f4bff486d2f850ca"
     }
   ],
   "notes": [

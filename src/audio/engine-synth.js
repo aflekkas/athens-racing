@@ -9,7 +9,8 @@ export const ENGINE_SOUND = {
   v8na: { cyl: 8, f1: 115, f2: 1050, t1: .0072, t2: .0016, b: .34, thump: 1.12, pat: [1,.68,.91,.72,.98,.70,.88,.76], jit: .025, knock: 0, rasp: .16, lp: [620,6200], whine: .06, pops: .26, idleWobble: .035, gain: 1 },
   // Catalogue additions: synthesized firing pulses, not recordings of these models.
   na6: { cyl: 6, f1: 185, f2: 1600, t1: .0053, t2: .0012, b: .40, thump: .82, pat: [1,.98,.96,1,.97,.99], jit: .018, knock: 0, rasp: .19, lp: [850,7200], whine: .06, pops: .18, idleWobble: .02, gain: 1 },
-  v10: { cyl: 10, f1: 290, f2: 2300, t1: .0035, t2: .001, b: .52, thump: .68, pat: [1,.92,.98,.94,1,.91,.97,.95,.99,.93], jit: .018, knock: 0, rasp: .26, lp: [1100,8500], whine: .10, pops: .70, idleWobble: .016, gain: 1 },
+  // Huracán 5.2 common-pin crank: alternating 54°/90°, not the older 5.0's even 72°.
+  v10: { cyl: 10, angles:[0,54,144,198,288,342,432,486,576,630], f1: 290, f2: 2300, t1: .0035, t2: .001, b: .52, thump: .68, pat: [1,.92,.98,.94,1,.91,.97,.95,.99,.93], jit: .018, knock: 0, rasp: .26, lp: [1100,8500], whine: .10, pops: .70, idleWobble: .016, gain: 1 },
   // GR Yaris G16E: three evenly spaced firings per 720°, low exhaust body and a muted turbo rasp.
   turbo3: { cyl: 3, f1: 145, f2: 1050, t1: 0.007, t2: 0.0015, b: 0.32, thump: 1.05, pat: [1, 0.96, 0.93], jit: 0.028, knock: 0, rasp: 0.14, lp: [650, 5400], whine: 0.05, pops: 0.35, idleWobble: 0.035, gain: 1 },
   // Alfa 2000 twin-cam: open, metallic exhaust/intake character with restrained overrun.
@@ -28,8 +29,9 @@ ENGINE_SOUND.city4 = { ...ENGINE_SOUND.na4, pops: 0, gain: .8, thump: .65, lp: [
 ENGINE_SOUND.v6 = { ...ENGINE_SOUND.turbo6, f1: 130, f2: 1100, pat: [1,.72,.94,.78,1,.70], jit: .03, pops: .5 };
 ENGINE_SOUND.v8 = { ...ENGINE_SOUND.turbo6, cyl: 8, f1: 105, f2: 950, t1: .008, pat: [1,.65,.85,.72,.95,.70,1,.68], thump: 1.15, pops: .6 };
 ENGINE_SOUND.bus = { ...ENGINE_SOUND.diesel, cyl: 6, f1: 70, f2: 450, pat: [1,.97,.94,1,.96,.98], lp: [400,2200], pops: 0 };
+ENGINE_SOUND.truck = { ...ENGINE_SOUND.diesel, f1: 85, f2: 950, thump: 1.25, knock: .9, lp: [600,3300], pops: 0 };
 ENGINE_SOUND.bike = { ...ENGINE_SOUND.na4, cyl: 2, f1: 260, pat: [1,.8], pops: 0, gain: .65 };
-ENGINE_SOUND.electric = { ...ENGINE_SOUND.na4, cyl: 1, f1: 600, b: 0, rasp: 0, thump: 0, pat: [1], pops: 0, gain: .2 };
+ENGINE_SOUND.electric = { cyl: 0, whine: 0, knock: 0, pops: 0 };
 
 export function rng32(a) { return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 
@@ -40,30 +42,44 @@ function renderEngineCycle(ctx, E, refRpm, onLoad, cycles, seed) {
   const out = new Float32Array(N);
   const rnd = rng32(seed);
   const ti = nc / E.cyl;
-  const L1 = Math.min(N, Math.ceil(E.t1 * 7 * sr) + Math.ceil(ti));
-  const w1 = 2 * Math.PI * E.f1 / sr, w2 = 2 * Math.PI * E.f2 / sr;
-  const thumpW = Math.max(8, Math.min(ti * .70, sr * (onLoad ? .0028 : .0042)));
-  let hp = 0;
+  // Exhaust valve opening: a broad pressure wave followed by a negative reflection,
+  // not a ringing sine at each firing. Kernels are calculated once, outside pulse loops.
+  const L1 = Math.ceil(sr * .028), kernel = new Float32Array(L1);
+  const exotic=E.cyl>=10, smoothSix=E.cyl===6&&!E.knock;
+  const width = onLoad ? (exotic?.00042:smoothSix?.0008:.00115) : .0018;
+  for(let n=0;n<L1;n++){
+    const t=n/sr;
+    const pressure=(Math.exp(-t/width)-Math.exp(-t/.00016))*E.thump;
+    const reflection=t>.0021?-(exotic?.15:.38)*Math.exp(-(t-.0021)/.0023):0;
+    kernel[n]=pressure+reflection
+      +.32*Math.exp(-t/E.t1)*Math.sin(2*Math.PI*E.f1*t)
+      +E.b*(onLoad?(exotic?1.2:smoothSix?.75:.34):.09)*Math.exp(-t/E.t2)*Math.sin(2*Math.PI*E.f2*t);
+  }
+  // Bank arrival offsets/attenuation produce different engine orders. Cross-plane
+  // V8 headers have adjacent firings on a bank; a flat-plane V8 alternates banks.
+  const bankOrder=E.cyl===8&&E.f1<150?[0,1,1,0,1,0,0,1]:null;
+  let smoothNoise=0;
   for (let c = 0; c < cycles; c++) {
     for (let k = 0; k < E.cyl; k++) {
-      const t0 = Math.round(c * nc + k * ti + (rnd() - 0.5) * ti * 0.03);
+      const bank=bankOrder?bankOrder[k]:k%2;
+      const phase=E.angles ? E.angles[k]/720 : k/E.cyl;
+      const t0 = Math.round(c * nc + phase * nc + (rnd() - 0.5) * ti * E.jit*.22 + bank*sr*.00035);
       let amp = E.pat[k % E.pat.length] * (1 + (rnd() - 0.5) * 2 * E.jit);
-      if (!onLoad) amp *= 0.42 * (rnd() < 0.18 * E.pops ? 1.9 + rnd() : 0.55 + rnd() * 0.6); // burble on the overrun
-      const bAmp = E.b * (onLoad ? 1 : 0.35), th = E.thump * (onLoad ? 1 : 0.6);
+      // No randomly embedded pops in loops (especially the SVJ). Overrun combustion
+      // is a bounded, non-looping event selected by the trim in audio.js.
+      if (!onLoad) amp *= .62 + rnd()*.15;
+      amp*=bank?.84:1;
       for (let n = 0; n < L1; n++) {
-        let v = 0;
-        if (n < thumpW) { const t=n/thumpW; v += th * (Math.exp(-t*6)-Math.exp(-t*24)) * 2.6; }
-        v += Math.exp(-n / (E.t1 * sr)) * Math.sin(w1 * n);
-        v += bAmp * Math.exp(-n / (E.t2 * sr)) * Math.sin(w2 * n + 0.6);
-        // Header reflection is a quieter delayed pressure wave; bank lengths differ slightly.
-        const reflected=n-Math.round(sr*(.0011+(k%2)*.00017));
-        if(reflected>0)v+=.22*Math.exp(-reflected/(E.t1*sr*.65))*Math.sin(w1*reflected*1.37);
-        out[(t0 + n) % N] += v * amp;
+        out[(t0+n)%N]+=kernel[n]*amp;
       }
-      // exhaust rasp: a burst of noise riding each pulse (high-passed)
-      const Lr = Math.min(N, Math.ceil(ti * 0.8));
-      const rasp = E.rasp * (onLoad ? 1 : 0.5) * amp;
-      for (let n = 0; n < Lr; n++) { const w = rnd() * 2 - 1; hp = w - hp * 0.6; out[(t0 + n) % N] += hp * rasp * Math.exp(-n / (ti * 0.25)); }
+      // Stochastic turbulent flow is strongest while the valve is open. Longer
+      // cycle banks and independent noise remove the old six-cycle buzz pattern.
+      const Lr=Math.ceil(ti*.85),rasp=E.rasp*(onLoad?1.1:.2)*amp;
+      for(let n=0;n<Lr;n++){
+        const w=rnd()*2-1;smoothNoise+=(w-smoothNoise)*.22;
+        const envelope=(1-n/Lr)**2;
+        out[(t0+n)%N]+=(w*.2+smoothNoise)*rasp*envelope;
+      }
       // diesel injection knock: a hard, bright click just after each firing
       if (E.knock) {
         const tk = t0 + Math.round(ti * 0.08), Lk = Math.ceil(0.0016 * sr);
@@ -74,23 +90,29 @@ function renderEngineCycle(ctx, E, refRpm, onLoad, cycles, seed) {
   // remove DC, normalise
   let m = 0; for (let i = 0; i < N; i++) m += out[i]; m /= N;
   let pk = 1e-6; for (let i = 0; i < N; i++) { out[i] -= m; pk = Math.max(pk, Math.abs(out[i])); }
-  const k = 0.85 / pk; for (let i = 0; i < N; i++) out[i] *= k;
+  // Match useful RMS rather than making a tiny off-load click as loud as combustion.
+  let energy=0;for(const x of out)energy+=x*x;
+  const k=Math.min(.82/pk,(onLoad?.20:.105)/Math.sqrt(energy/N+1e-12));
+  for (let i = 0; i < N; i++) out[i] *= k;
   const buf = ctx.createBuffer(1, N, sr); buf.getChannelData(0).set(out);
   return { buf, ref: 120 * sr / nc };
 }
 
 /** multi-sample bank for an engine type: four RPM points, on and off load */
-export function buildEngineBank(ctx, type, idle, red) {
-  const E = ENGINE_SOUND[type] || ENGINE_SOUND.turbo4;
-  const pts = [idle * 1.05, red * 0.34, red * 0.6, red * 0.88];
+export function buildEngineBank(ctx, type, idle, red, profile = {}) {
+  const base = ENGINE_SOUND[type] || ENGINE_SOUND.turbo4;
+  if(type==='electric')return {E:base,type,electric:true,profile};
+  const E={...base,jit:profile.rough??base.jit};
+  const pts = [Math.max(400,idle) * 1.05, red * 0.34, red * 0.6, red * 0.88];
   const on = [], off = [];
-  pts.forEach((r, i) => { on.push(renderEngineCycle(ctx, E, r, true, 6, 11 + i * 7)); off.push(renderEngineCycle(ctx, E, r, false, 14, 101 + i * 13)); });
-  return { E, type, pts: pts.map((_, i) => on[i].ref), on, off };
+  pts.forEach((r, i) => { on.push(renderEngineCycle(ctx, E, r, true, Math.ceil(r*1.7/120), 11 + i * 7)); off.push(renderEngineCycle(ctx, E, r, false, Math.ceil(r*2.3/120), 101 + i * 13)); });
+  return { E, type, profile, pts: pts.map((_, i) => on[i].ref), on, off };
 }
 
 /** a playing engine built from a bank: 4 x 2 looping sources, crossfaded by RPM (equal power, log scale) and load */
 export class EngineVoice {
   constructor(ctx, bank, dest, gain = 1) {
+    if(bank.electric)return new ElectricMotorVoice(ctx,dest,gain,bank.profile);
     this.ctx = ctx; this.bank = bank;
     const E = bank.E;
     this.sum = ctx.createGain();
@@ -111,13 +133,13 @@ export class EngineVoice {
     this.shaper.curve = curve; this.shaper.oversample = '2x';
     this.pre = ctx.createGain(); this.pre.gain.value = 0.8;
     this.lp = ctx.createBiquadFilter(); this.lp.type = 'lowpass'; this.lp.Q.value = 0.7; this.lp.frequency.value = E.lp[0];
-    this.body = ctx.createBiquadFilter(); this.body.type = 'peaking'; this.body.frequency.value = E.f1 * 0.9; this.body.Q.value = 0.9; this.body.gain.value = 4;
+    this.body = ctx.createBiquadFilter(); this.body.type = 'peaking'; this.body.frequency.value = bank.profile?.body || E.f1; this.body.Q.value = 0.65; this.body.gain.value = 0;
     this.out = ctx.createGain(); this.out.gain.value = 0;
     this.lim = ctx.createGain(); this.lim.gain.value = 1;
     this.sum.connect(this.pre); this.pre.connect(this.shaper); this.shaper.connect(this.lp); this.lp.connect(this.body); this.body.connect(this.lim); this.lim.connect(this.out);
     this.out.connect(dest);
     // limiter stutter LFO
-    this.lfo = ctx.createOscillator(); this.lfo.type = 'square'; this.lfo.frequency.value = 17;
+    this.lfo = ctx.createOscillator(); this.lfo.type = 'square'; this.lfo.frequency.value = E.knock?9:13;
     this.lfoG = ctx.createGain(); this.lfoG.gain.value = 0; this.lfo.connect(this.lfoG); this.lfoG.connect(this.lim.gain); this.lfo.start();
     this.level = gain;
   }
@@ -138,14 +160,16 @@ export class EngineVoice {
       this.src[k * 2].playbackRate.setTargetAtTime(rate, now, tc);
       this.src[k * 2 + 1].playbackRate.setTargetAtTime(rate, now, tc);
       this.gOn[k].gain.setTargetAtTime(w * gOn, now, 0.03);
-      this.gOff[k].gain.setTargetAtTime(w * gOff * 0.60, now, 0.03);
-      this.branches[k * 2].use(w * gOn, now); this.branches[k * 2 + 1].use(w * gOff * 0.60, now);
+      this.gOff[k].gain.setTargetAtTime(w * gOff * .85, now, 0.03);
+      this.branches[k * 2].use(w * gOn, now); this.branches[k * 2 + 1].use(w * gOff * .85, now);
     }
     const rn = Math.min(1.1, rpm / (P[3] / 0.88));
-    this.lp.frequency.setTargetAtTime(E.lp[0] + (E.lp[1] - E.lp[0]) * Math.min(1, rn * (0.5 + 0.5 * on)), now, 0.04);
-    this.pre.gain.setTargetAtTime(0.78 + on * 0.50, now, 0.05);
-    this.out.gain.setTargetAtTime(level * this.level * 0.3 * (0.4 + 0.6 * rn) * (0.62 + 0.38 * on), now, 0.03);
-    this.lfoG.gain.setTargetAtTime(limiter ? -0.55 : 0, now, 0.01);
+    this.lp.frequency.setTargetAtTime((E.lp[0] + (E.lp[1] - E.lp[0]) * Math.min(1, rn * (0.35 + 0.65 * on)))*(b.profile?.tone??1), now, 0.04);
+    this.body.gain.setTargetAtTime(on*(b.profile?.growl??3),now,.045);
+    this.pre.gain.setTargetAtTime(1 + on * .5, now, .045);
+    this.out.gain.setTargetAtTime(level * this.level * .44 * (.62 + .38 * rn) * (.68 + .32 * on), now, .025);
+    this.lim.gain.setTargetAtTime(limiter?.57:1,now,.008);
+    this.lfoG.gain.setTargetAtTime(limiter ? -.43 : 0, now, .008);
   }
   stop() {
     if (this.stopped) return; this.stopped = true;
@@ -159,6 +183,33 @@ export class EngineVoice {
       for (const g of this.gOff) g.disconnect();
       for (const n of [this.sum, this.pre, this.shaper, this.lp, this.body, this.lim, this.out, this.lfo, this.lfoG]) n.disconnect();
     };
+  }
+}
+
+/** Rotor orders only: no combustion, starter, idle, gear blips or exhaust at zero speed. */
+export class ElectricMotorVoice {
+  constructor(ctx,dest,gain=1,profile={}) {
+    this.ctx=ctx;this.level=gain;this.order=profile.motorOrder??8;
+    this.out=ctx.createGain();this.out.gain.value=0;this.out.connect(dest);
+    this.rotor=ctx.createOscillator();this.rotor.type='sine';
+    this.rotor.connect(this.out);this.rotor.start();
+    if(!profile.distant){
+      this.mesh=ctx.createOscillator();this.mesh.type='sine';
+      this.meshGain=ctx.createGain();this.meshGain.gain.value=.18;
+      this.mesh.connect(this.meshGain);this.meshGain.connect(this.out);this.mesh.start();
+    }
+  }
+  set(rpm,load,level,now,dop=1) {
+    if(this.stopped)return;
+    const speed=Math.max(0,rpm),moving=Math.min(1,speed/900);
+    this.rotor.frequency.setTargetAtTime(Math.max(20,speed/60*this.order)*dop,now,.05);
+    this.mesh?.frequency.setTargetAtTime(Math.max(30,speed/60*this.order*2.05)*dop,now,.05);
+    this.out.gain.setTargetAtTime(level*this.level*moving*(.009+.027*Math.sqrt(Math.abs(load))),now,.07);
+  }
+  stop(){
+    if(this.stopped)return;this.stopped=true;const t=this.ctx.currentTime;
+    this.out.gain.setTargetAtTime(0,t,.03);this.rotor.stop(t+.2);this.mesh?.stop(t+.2);
+    this.rotor.onended=()=>{for(const n of [this.rotor,this.mesh,this.meshGain,this.out])n?.disconnect();};
   }
 }
 

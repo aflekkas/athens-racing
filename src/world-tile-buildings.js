@@ -7,6 +7,7 @@ import { LANDMARK_HIDDEN, osmBuildingId } from './athens-landmark-hide.js';
 import { inOldQuarter } from './athens-quarters.js';
 import { deriveStreetTrees } from './world-tile-trees.js';
 import { deriveParking } from './world-tile-parking.js';
+import { deriveStreetArt } from './world-tile-street-art.js';
 export const BUILDING_MESH_TRIANGLES = 16384;
 export const ROOFTOP_LIMIT = 1400;
 /** A hipped house: four walls (8 triangles) and six roof triangles. */
@@ -118,7 +119,7 @@ const pieceVertices = piece => piece.roof ? 22 : 5 * piece.ring.length, pieceTri
  * marks a pitched roof and bits 0..9 are the ridge's rise in decimetres, which World detail Off takes out in the vertex shader (the roof is flat
  * again). It is all derived here, so nothing extra travels on the wire. Pitched roofs add two vertices and two triangles per house; `extra` counts them. */
 export function deriveBuildingMeshes(t, m, styles = null, roofs = null) {
-  const groups = new Map(), landmarkGroups = new Map(), rooftops = [], extra = { vertices: 0, indices: 0, rings: [] }, ox = m.origin?.[0] ?? 0, oz = m.origin?.[2] ?? 0;
+  const groups = new Map(), landmarkGroups = new Map(), rooftops = [], extra = { vertices: 0, indices: 0, rings: [], infos: [] }, ox = m.origin?.[0] ?? 0, oz = m.origin?.[2] ?? 0;
   for (let row = 0; row < t.buildings.length / 4; row++) {
     const first = t.buildings[row * 4 + 1], n = t.buildings[row * 4 + 2], material = t.buildings[row * 4 + 3];
     const base = t.buildingHeights[row * 2], top = base + t.buildingHeights[row * 2 + 1];
@@ -131,9 +132,10 @@ export function deriveBuildingMeshes(t, m, styles = null, roofs = null) {
     const height = top - base, centre = ring.reduce((c, p) => [c[0] + p[0] / n, c[1] + p[1] / n], [0, 0]), quarter = inOldQuarter(ox + centre[0], oz + centre[1]), stored = roofs ? roofs[row] : 0;
     const roof = target === groups ? roofFor(ring, height, hash, quarter, stored) : null;
     if (roof) { extra.vertices += 22 - 5 * n; extra.indices += 3 * (PITCHED_TRIANGLES - buildingTriangleCount(n)); }
-    if (target === groups) extra.rings.push(ring);
     if (target === groups && !roof && rooftops.length < ROOFTOP_LIMIT * 5) for (const r of rooftopKit(ring, height, hash, Math.abs(area) / 2)) rooftops.push(r.x, top, r.z, r.yaw, r.code);
-    target.get(material).push({ ring, base, top, roof, pal: paletteFor(hash, quarter), style: richStyleFor(facadeStyleFor(styles ? styles[row] : 0, height, hash), height, hash, quarter, stored === ROOF.historic) });
+    const style = richStyleFor(facadeStyleFor(styles ? styles[row] : 0, height, hash), height, hash, quarter, stored === ROOF.historic);
+    if (target === groups) { extra.rings.push(ring); extra.infos.push({ ring, base, top, style, hash, quarter }); }
+    target.get(material).push({ ring, base, top, roof, pal: paletteFor(hash, quarter), style });
   }
   const arrays = [], meshes = [];
   const batches = [...[...groups.keys()].sort((a, b) => a - b).map(material => [material, groups.get(material), false]), ...[...landmarkGroups.keys()].sort((a, b) => a - b).map(material => [material, landmarkGroups.get(material), true])];
@@ -191,12 +193,16 @@ export function addDerivedBuildings(pack, tables) {
   const inQuarter = (x, z) => inOldQuarter(ox + x, oz + z), propsExt = pack.metadata.extensions?.worldDetail?.props, occupied = [];
   if (propsExt) { const rows = pack.arrays[propsExt.rows]; for (let i = 0; i < rows.length; i += 5) occupied.push(rows[i], rows[i + 2]); } // the bake's own props (parked cars, kiosks, benches...) keep their places
   const parking = deriveParking(tables, extra.rings, inQuarter, occupied, trees);
-  pack.derivedExtraBytes = extra.vertices * 16 * 2 + extra.indices * 2 * 2 + (extra.rooftops.byteLength + trees.byteLength + parking.byteLength) * 6 + parking.length / 5 * 4 * 40; // + four collision walls per car or scooter // pitched roofs: CPU copy and GPU copy of the added vertices and indices; the rooftop rows and the prop records made from them
+  const propsKinds = propsExt ? pack.arrays[propsExt.kind] : null, art = deriveStreetArt(tables, pack.metadata, extra.infos, { ox, oz, propsRows: propsExt ? pack.arrays[propsExt.rows] : null, propsKinds });
+  extra.infos.length = 0;
+  pack.derivedExtraBytes = extra.vertices * 16 * 2 + extra.indices * 2 * 2 + (extra.rooftops.byteLength + trees.byteLength + parking.byteLength + art.plates.byteLength + art.shops.byteLength + art.walls.byteLength + art.marks.byteLength) * 6 + art.plateNames.reduce((n, x) => n + x.length * 2 + 40, 0) + parking.length / 5 * 4 * 40; // + four collision walls per car or scooter // pitched roofs: CPU copy and GPU copy of the added vertices and indices; the rooftop rows and the prop records made from them
   for (const a of arrays) pack.arrays.push(a);
   const wdExt = {};
   if (extra.rooftops.length) { pack.arrays.push(extra.rooftops); wdExt.rooftops = pack.arrays.length - 1; }
   if (trees.length) { pack.arrays.push(trees); wdExt.streetTrees = pack.arrays.length - 1; }
   if (parking.length) { pack.arrays.push(parking); wdExt.parking = pack.arrays.length - 1; }
+  for (const [key, rows] of [['streetPlates', art.plates], ['shopSites', art.shops], ['wallSites', art.walls], ['roadMarks', art.marks]]) if (rows.length) { pack.arrays.push(rows); wdExt[key] = pack.arrays.length - 1; }
+  if (art.plateNames.length) wdExt.plateNames = art.plateNames;
   if (Object.keys(wdExt).length) pack.metadata.extensions = { ...pack.metadata.extensions, worldDetail: { ...pack.metadata.extensions?.worldDetail, ...wdExt } };
   for (const mesh of meshes) {
     for (const a of Object.values(mesh.attributes)) a.array += offset;

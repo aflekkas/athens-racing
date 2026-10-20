@@ -1,0 +1,1096 @@
+[
+  {
+    "id": "sl65",
+    "name": "MERCEDES-AMG SL 65",
+    "engine": "turbov12",
+    "engineLayout": "v12",
+    "idle": 700,
+    "redline": 6000,
+    "powertrain": {
+      "idleRpm": 700,
+      "redlineRpm": 6000,
+      "limiterRpm": 6100,
+      "inertia": 0.42,
+      "maxFreeRevRate": 4200,
+      "spoolTime": 0.42,
+      "engineBraking": 0.15,
+      "gearboxType": "automatic",
+      "shiftTime": 0.28,
+      "revMatch": true,
+      "torqueConverter": true,
+      "limiterDrop": 220,
+      "torquePlateau": [
+        2300,
+        4300
+      ]
+    },
+    "gears": [
+      4.38,
+      2.86,
+      1.92,
+      1.37,
+      1,
+      0.82,
+      0.73
+    ],
+    "final": 2.65,
+    "wheelR": 0.33,
+    "gearbox": "AT",
+    "shiftT": 0.28
+  },
+  {
+    "id": "a190",
+    "name": "MERCEDES-BENZ A 190",
+    "engine": "na4",
+    "engineLayout": "inline4",
+    "idle": 800,
+    "redline": 6200,
+    "powertrain": {
+      "idleRpm": 800,
+      "redlineRpm": 6200,
+      "limiterRpm": 6300,
+      "inertia": 0.24,
+      "maxFreeRevRate": 5000,
+      "spoolTime": 0,
+      "engineBraking": 0.15,
+      "gearboxType": "manual",
+      "shiftTime": 0.35,
+      "revMatch": false,
+      "torqueConverter": false,
+      "limiterDrop": 220
+    },
+    "gears": [
+      3.27,
+      1.92,
+      1.34,
+      1.03,
+      0.83
+    ],
+    "final": 3.72,
+    "wheelR": 0.3007,
+    "gearbox": "MT",
+    "shiftT": 0.35
+  },
+  {
+    "id": "p928",
+    "name": "PORSCHE 928 GTS",
+    "engine": "v8na",
+    "engineLayout": "cross-plane-v8",
+    "idle": 750,
+    "redline": 6600,
+    "powertrain": {
+      "idleRpm": 750,
+      "redlineRpm": 6600,
+      "limiterRpm": 6700,
+      "inertia": 0.32,
+      "maxFreeRevRate": 4500,
+      "spoolTime": 0,
+      "engineBraking": 0.15,
+      "gearboxType": "manual",
+      "shiftTime": 0.34,
+      "revMatch": false,
+      "torqueConverter": false,
+      "limiterDrop": 220
+    },
+    "gears": [
+      3.775,
+      2.519,
+      1.795,
+      1.358,
+      1
+    ],
+    "final": 2.727,
+    "wheelR": 0.318,
+    "gearbox": "MT",
+    "shiftT": 0.34
+  },
+  {
+    "id": "f348_spider",
+    "name": "FERRARI 348 SPIDER",
+    "engine": "v8flat",
+    "engineLayout": "flat-plane-v8",
+    "idle": 1000,
+    "redline": 7800,
+    "powertrain": {
+      "idleRpm": 1000,
+      "redlineRpm": 7800,
+      "limiterRpm": 7900,
+      "inertia": 0.2,
+      "maxFreeRevRate": 7500,
+      "spoolTime": 0,
+      "engineBraking": 0.15,
+      "gearboxType": "manual",
+      "shiftTime": 0.32,
+      "revMatch": false,
+      "torqueConverter": false,
+      "limiterDrop": 220
+    },
+    "gears": [
+      3.214,
+      2.105,
+      1.458,
+      1.094,
+      0.861
+    ],
+    "final": 3.563,
+    "wheelR": 0.331,
+    "gearbox": "MT",
+    "shiftT": 0.32
+  },
+  {
+    "id": "aygo",
+    "name": "TOYOTA AYGO II 1.0 VVT-i",
+    "engine": "na3",
+    "nativeFleet": "city",
+    "idle": 800,
+    "redline": 6500,
+    "powertrain": {
+      "idleRpm": 800,
+      "redlineRpm": 6500,
+      "limiterRpm": 6600,
+      "inertia": 0.2,
+      "maxFreeRevRate": 4500,
+      "spoolTime": 0,
+      "engineBraking": 0.15,
+      "gearboxType": "manual",
+      "shiftTime": 0.36,
+      "revMatch": false,
+      "torqueConverter": false,
+      "limiterDrop": 220
+    },
+    "gears": [
+      3.545,
+      1.913,
+      1.31,
+      1.027,
+      0.85
+    ],
+    "final": 3.55,
+    "wheelR": 0.285,
+    "gearbox": "MT",
+    "shiftT": 0.36
+  },
+  {
+    "id": "qashqai",
+    "name": "NISSAN QASHQAI J11 1.2 DIG-T",
+    "engine": "turbo4",
+    "nativeFleet": "suv",
+    "idle": 800,
+    "redline": 6500,
+    "powertrain": {
+      "idleRpm": 800,
+      "redlineRpm": 6500,
+      "limiterRpm": 6600,
+      "inertia": 0.2,
+      "maxFreeRevRate": 4500,
+      "spoolTime": 0.4,
+      "engineBraking": 0.15,
+      "gearboxType": "manual",
+      "shiftTime": 0.36,
+      "revMatch": false,
+      "torqueConverter": false,
+      "limiterDrop": 220,
+      "torquePlateau": [
+        2000,
+        2600
+      ]
+    },
+    "gears": [
+      3.727,
+      2.048,
+      1.393,
+      1.029,
+      0.821,
+      0.638
+    ],
+    "final": 4.214,
+    "wheelR": 0.345,
+    "gearbox": "MT",
+    "shiftT": 0.36
+  },
+  {
+    "id": "dolphin",
+    "name": "BYD DOLPHIN COMFORT",
+    "engine": "electric",
+    "electric": true,
+    "nativeFleet": "byd_dolphin",
+    "idle": 0,
+    "redline": 10000,
+    "powertrain": {
+      "idleRpm": 0,
+      "redlineRpm": 10000,
+      "limiterRpm": 10100,
+      "inertia": 0.12,
+      "maxFreeRevRate": 9000,
+      "spoolTime": 0,
+      "engineBraking": 0.08,
+      "gearboxType": "automatic",
+      "shiftTime": 0.25,
+      "revMatch": true,
+      "torqueConverter": false,
+      "limiterDrop": 220
+    },
+    "gears": [
+      7.4
+    ],
+    "final": 1,
+    "wheelR": 0.326,
+    "gearbox": "SINGLE SPEED",
+    "shiftT": 0.25
+  },
+  {
+    "id": "atto3",
+    "name": "BYD ATTO 3 DESIGN",
+    "engine": "electric",
+    "electric": true,
+    "nativeFleet": "byd_atto3",
+    "idle": 0,
+    "redline": 10000,
+    "powertrain": {
+      "idleRpm": 0,
+      "redlineRpm": 10000,
+      "limiterRpm": 10100,
+      "inertia": 0.12,
+      "maxFreeRevRate": 9000,
+      "spoolTime": 0,
+      "engineBraking": 0.08,
+      "gearboxType": "automatic",
+      "shiftTime": 0.25,
+      "revMatch": true,
+      "torqueConverter": false,
+      "limiterDrop": 220
+    },
+    "gears": [
+      7.8
+    ],
+    "final": 1,
+    "wheelR": 0.347,
+    "gearbox": "SINGLE SPEED",
+    "shiftT": 0.25
+  },
+  {
+    "id": "van_150",
+    "name": "FIAT DUCATO L2H2 2.3 MULTIJET 150",
+    "engine": "diesel",
+    "nativeFleet": "van",
+    "idle": 800,
+    "redline": 4000,
+    "powertrain": {
+      "idleRpm": 800,
+      "redlineRpm": 4000,
+      "limiterRpm": 4100,
+      "inertia": 0.45,
+      "maxFreeRevRate": 2800,
+      "spoolTime": 0.6,
+      "engineBraking": 0.12,
+      "gearboxType": "manual",
+      "shiftTime": 0.36,
+      "revMatch": false,
+      "torqueConverter": false,
+      "limiterDrop": 100,
+      "torquePlateau": [
+        1500,
+        2100
+      ]
+    },
+    "gears": [
+      3.727,
+      1.952,
+      1.29,
+      0.875,
+      0.673,
+      0.585
+    ],
+    "final": 4.933,
+    "wheelR": 0.355,
+    "gearbox": "MT",
+    "shiftT": 0.36
+  },
+  {
+    "id": "truck",
+    "name": "ISUZU NPR 75-190 BOX TRUCK",
+    "engine": "diesel",
+    "nativeFleet": "truck",
+    "idle": 700,
+    "redline": 3000,
+    "powertrain": {
+      "idleRpm": 700,
+      "redlineRpm": 3000,
+      "limiterRpm": 3100,
+      "inertia": 0.45,
+      "maxFreeRevRate": 2800,
+      "spoolTime": 0.6,
+      "engineBraking": 0.12,
+      "gearboxType": "manual",
+      "shiftTime": 0.36,
+      "revMatch": false,
+      "torqueConverter": false,
+      "limiterDrop": 100,
+      "torquePlateau": [
+        1600,
+        2200
+      ]
+    },
+    "gears": [
+      5.979,
+      3.434,
+      1.862,
+      1.297,
+      1,
+      0.759
+    ],
+    "final": 4.1,
+    "wheelR": 0.405,
+    "gearbox": "MT",
+    "shiftT": 0.36
+  },
+  {
+    "id": "bus",
+    "name": "MERCEDES-BENZ CITARO O530 \u00b7 \u039f\u03a3\u03a5",
+    "engine": "diesel",
+    "nativeFleet": "bus",
+    "idle": 600,
+    "redline": 2300,
+    "powertrain": {
+      "idleRpm": 600,
+      "redlineRpm": 2300,
+      "limiterRpm": 2400,
+      "inertia": 1,
+      "maxFreeRevRate": 1400,
+      "spoolTime": 0.6,
+      "engineBraking": 0.12,
+      "gearboxType": "automatic",
+      "shiftTime": 0.35,
+      "revMatch": true,
+      "torqueConverter": true,
+      "limiterDrop": 100,
+      "torquePlateau": [
+        1100,
+        1700
+      ]
+    },
+    "gears": [
+      4.9,
+      1.36,
+      1,
+      0.73
+    ],
+    "final": 5.771,
+    "wheelR": 0.485,
+    "gearbox": "AT",
+    "shiftT": 0.35
+  },
+  {
+    "id": "police_octavia",
+    "name": "\u0160KODA OCTAVIA POLICE",
+    "engine": "turbo4",
+    "idle": 800,
+    "redline": 6500,
+    "powertrain": {
+      "idleRpm": 800,
+      "redlineRpm": 6500,
+      "limiterRpm": 6600,
+      "inertia": 0.24,
+      "maxFreeRevRate": 4500,
+      "spoolTime": 0.35,
+      "engineBraking": 0.16,
+      "gearboxType": "manual",
+      "shiftTime": 0.38,
+      "revMatch": false,
+      "torqueConverter": false,
+      "torquePlateau": [
+        1500,
+        4117.66
+      ],
+      "limiterDrop": 220
+    },
+    "gears": [
+      3.615,
+      1.955,
+      1.281,
+      0.973,
+      0.778,
+      0.646
+    ],
+    "final": 3.647,
+    "wheelR": 0.323,
+    "gearbox": "MT",
+    "shiftT": 0.38
+  },
+  {
+    "id": "panda_100hp",
+    "name": "FIAT PANDA \u00b7 100HP",
+    "engine": "na4",
+    "idle": 850,
+    "redline": 6800,
+    "powertrain": {
+      "idleRpm": 850,
+      "redlineRpm": 6800,
+      "limiterRpm": 6900,
+      "inertia": 0.18,
+      "maxFreeRevRate": 5000,
+      "spoolTime": 0,
+      "engineBraking": 0.16,
+      "gearboxType": "manual",
+      "shiftTime": 0.36,
+      "revMatch": false,
+      "torqueConverter": false,
+      "limiterDrop": 220
+    },
+    "gears": [
+      3.545,
+      2.158,
+      1.48,
+      1.121,
+      0.921,
+      0.766
+    ],
+    "final": 4.071,
+    "wheelR": 0.292,
+    "gearbox": "MT",
+    "shiftT": 0.36
+  },
+  {
+    "id": "jazz_dynamic",
+    "name": "HONDA JAZZ 1.5 i-VTEC DYNAMIC",
+    "engine": "na4",
+    "idle": 750,
+    "redline": 6800,
+    "powertrain": {
+      "idleRpm": 750,
+      "redlineRpm": 6800,
+      "limiterRpm": 6900,
+      "inertia": 0.19,
+      "maxFreeRevRate": 4500,
+      "spoolTime": 0,
+      "engineBraking": 0.15,
+      "gearboxType": "manual",
+      "shiftTime": 0.36,
+      "revMatch": false,
+      "torqueConverter": false,
+      "limiterDrop": 220
+    },
+    "gears": [
+      3.461,
+      1.869,
+      1.303,
+      1.054,
+      0.853,
+      0.727
+    ],
+    "final": 4.625,
+    "wheelR": 0.305,
+    "gearbox": "MT",
+    "shiftT": 0.36
+  },
+  {
+    "id": "yaris_ts",
+    "name": "TOYOTA YARIS \u00b7 1.5 T SPORT",
+    "engine": "na4",
+    "idle": 850,
+    "redline": 6800,
+    "powertrain": {
+      "idleRpm": 850,
+      "redlineRpm": 6800,
+      "limiterRpm": 6900,
+      "inertia": 0.18,
+      "maxFreeRevRate": 5200,
+      "spoolTime": 0,
+      "engineBraking": 0.16,
+      "gearboxType": "manual",
+      "shiftTime": 0.36,
+      "revMatch": false,
+      "torqueConverter": false,
+      "limiterDrop": 220
+    },
+    "gears": [
+      3.166,
+      1.904,
+      1.392,
+      1.031,
+      0.815
+    ],
+    "final": 4.312,
+    "wheelR": 0.294,
+    "gearbox": "MT",
+    "shiftT": 0.36
+  },
+  {
+    "id": "ibiza_cupra",
+    "name": "SEAT IBIZA \u00b7 1.8 20VT CUPRA",
+    "engine": "turbo4",
+    "idle": 850,
+    "redline": 6800,
+    "powertrain": {
+      "idleRpm": 850,
+      "redlineRpm": 6800,
+      "limiterRpm": 6900,
+      "inertia": 0.24,
+      "maxFreeRevRate": 4800,
+      "spoolTime": 0.65,
+      "engineBraking": 0.16,
+      "gearboxType": "manual",
+      "shiftTime": 0.38,
+      "revMatch": false,
+      "torqueConverter": false,
+      "torquePlateau": [
+        1950,
+        4500
+      ],
+      "limiterDrop": 220
+    },
+    "gears": [
+      3.3,
+      1.944,
+      1.308,
+      1.034,
+      0.838
+    ],
+    "final": 3.684,
+    "wheelR": 0.296,
+    "gearbox": "MT",
+    "shiftT": 0.38
+  },
+  {
+    "id": "golf_r",
+    "name": "VOLKSWAGEN GOLF \u00b7 R 4MOTION",
+    "engine": "turbo4",
+    "idle": 800,
+    "redline": 6800,
+    "powertrain": {
+      "idleRpm": 800,
+      "redlineRpm": 6800,
+      "limiterRpm": 6900,
+      "inertia": 0.25,
+      "maxFreeRevRate": 5800,
+      "spoolTime": 0.4,
+      "engineBraking": 0.16,
+      "gearboxType": "dct",
+      "shiftTime": 0.11,
+      "revMatch": true,
+      "torqueConverter": false,
+      "torquePlateau": [
+        1500,
+        4500
+      ],
+      "limiterDrop": 220
+    },
+    "gears": [
+      13.8,
+      8.2,
+      5.79,
+      4.28,
+      3.27,
+      2.65
+    ],
+    "final": 1,
+    "wheelR": 0.318,
+    "gearbox": "DCT",
+    "shiftT": 0.11
+  },
+  {
+    "id": "mini_jcw",
+    "name": "MINI JOHN COOPER WORKS",
+    "engine": "turbo4",
+    "idle": 850,
+    "redline": 6800,
+    "powertrain": {
+      "idleRpm": 850,
+      "redlineRpm": 6800,
+      "limiterRpm": 6900,
+      "inertia": 0.22,
+      "maxFreeRevRate": 5500,
+      "spoolTime": 0.38,
+      "engineBraking": 0.16,
+      "gearboxType": "manual",
+      "shiftTime": 0.32,
+      "revMatch": false,
+      "torqueConverter": false,
+      "torquePlateau": [
+        1250,
+        4500
+      ],
+      "limiterDrop": 220
+    },
+    "gears": [
+      3.923,
+      2.136,
+      1.276,
+      0.921,
+      0.756,
+      0.628
+    ],
+    "final": 3.824,
+    "wheelR": 0.316,
+    "gearbox": "MT",
+    "shiftT": 0.32
+  },
+  {
+    "id": "gr_yaris",
+    "name": "TOYOTA GR YARIS",
+    "engine": "turbo3",
+    "idle": 850,
+    "redline": 7200,
+    "powertrain": {
+      "idleRpm": 850,
+      "redlineRpm": 7200,
+      "limiterRpm": 7300,
+      "inertia": 0.2,
+      "maxFreeRevRate": 6500,
+      "spoolTime": 0.42,
+      "engineBraking": 0.16,
+      "gearboxType": "manual",
+      "shiftTime": 0.32,
+      "revMatch": false,
+      "torqueConverter": false,
+      "torquePlateau": [
+        3250,
+        4500
+      ],
+      "limiterDrop": 220
+    },
+    "gears": [
+      13.943258,
+      8.820958,
+      6.050435,
+      4.580642,
+      3.62135,
+      3.0217
+    ],
+    "final": 1,
+    "wheelR": 0.319,
+    "gearbox": "MT",
+    "shiftT": 0.32
+  },
+  {
+    "id": "gla45",
+    "name": "MERCEDES-AMG GLA 45 S",
+    "engine": "turbo4",
+    "idle": 850,
+    "redline": 7200,
+    "powertrain": {
+      "idleRpm": 850,
+      "redlineRpm": 7200,
+      "limiterRpm": 7300,
+      "inertia": 0.25,
+      "maxFreeRevRate": 6500,
+      "spoolTime": 0.48,
+      "engineBraking": 0.16,
+      "gearboxType": "dct",
+      "shiftTime": 0.1,
+      "revMatch": true,
+      "torqueConverter": false,
+      "torquePlateau": [
+        5000,
+        5250
+      ],
+      "limiterDrop": 220
+    },
+    "gears": [
+      15.94,
+      11.18,
+      7.34,
+      5.15,
+      3.74,
+      2.93,
+      2.29,
+      1.81
+    ],
+    "final": 1,
+    "wheelR": 0.346,
+    "gearbox": "DCT",
+    "shiftT": 0.1
+  },
+  {
+    "id": "corolla",
+    "name": "TOYOTA COROLLA 1.6",
+    "engine": "na4",
+    "idle": 800,
+    "redline": 6800,
+    "powertrain": {
+      "idleRpm": 800,
+      "redlineRpm": 6800,
+      "limiterRpm": 6900,
+      "inertia": 0.2,
+      "maxFreeRevRate": 4800,
+      "spoolTime": 0,
+      "engineBraking": 0.16,
+      "gearboxType": "manual",
+      "shiftTime": 0.38,
+      "revMatch": false,
+      "torqueConverter": false,
+      "limiterDrop": 220
+    },
+    "gears": [
+      3.538,
+      1.913,
+      1.31,
+      0.971,
+      0.818,
+      0.7
+    ],
+    "final": 4.214,
+    "wheelR": 0.318,
+    "gearbox": "MT",
+    "shiftT": 0.38
+  },
+  {
+    "id": "octavia_rs",
+    "name": "\u0160KODA OCTAVIA \u00b7 2.0 TSI RS",
+    "engine": "turbo4",
+    "idle": 800,
+    "redline": 6800,
+    "powertrain": {
+      "idleRpm": 800,
+      "redlineRpm": 6800,
+      "limiterRpm": 6900,
+      "inertia": 0.25,
+      "maxFreeRevRate": 5200,
+      "spoolTime": 0.4,
+      "engineBraking": 0.16,
+      "gearboxType": "manual",
+      "shiftTime": 0.34,
+      "revMatch": false,
+      "torqueConverter": false,
+      "torquePlateau": [
+        1500,
+        4331.56
+      ],
+      "limiterDrop": 220
+    },
+    "gears": [
+      3.615,
+      1.955,
+      1.281,
+      0.973,
+      0.778,
+      0.646
+    ],
+    "final": 3.45,
+    "wheelR": 0.318,
+    "gearbox": "MT",
+    "shiftT": 0.34
+  },
+  {
+    "id": "superb_4x4",
+    "name": "\u0160KODA SUPERB \u00b7 2.0 TSI 4x4",
+    "engine": "turbo4",
+    "idle": 800,
+    "redline": 6800,
+    "powertrain": {
+      "idleRpm": 800,
+      "redlineRpm": 6800,
+      "limiterRpm": 6900,
+      "inertia": 0.27,
+      "maxFreeRevRate": 5500,
+      "spoolTime": 0.42,
+      "engineBraking": 0.16,
+      "gearboxType": "dct",
+      "shiftTime": 0.12,
+      "revMatch": true,
+      "torqueConverter": false,
+      "torquePlateau": [
+        1500,
+        4500
+      ],
+      "limiterDrop": 220
+    },
+    "gears": [
+      13.8,
+      8.2,
+      5.79,
+      4.28,
+      3.27,
+      2.65
+    ],
+    "final": 1,
+    "wheelR": 0.33,
+    "gearbox": "DCT",
+    "shiftT": 0.12
+  },
+  {
+    "id": "cla45s",
+    "name": "MERCEDES-AMG CLA \u00b7 45 S 4MATIC+",
+    "engine": "turbo4",
+    "idle": 750,
+    "redline": 7200,
+    "powertrain": {
+      "idleRpm": 750,
+      "redlineRpm": 7200,
+      "limiterRpm": 7300,
+      "inertia": 0.25,
+      "maxFreeRevRate": 6500,
+      "spoolTime": 0.48,
+      "engineBraking": 0.16,
+      "gearboxType": "dct",
+      "shiftTime": 0.1,
+      "revMatch": true,
+      "torqueConverter": false,
+      "torquePlateau": [
+        5000,
+        5250
+      ],
+      "limiterDrop": 220
+    },
+    "gears": [
+      15,
+      9.4,
+      6.5,
+      4.85,
+      3.8,
+      3,
+      2.4,
+      1.9
+    ],
+    "final": 1,
+    "wheelR": 0.334,
+    "gearbox": "DCT",
+    "shiftT": 0.1
+  },
+  {
+    "id": "cle53",
+    "name": "MERCEDES-AMG CLE 53 4MATIC+",
+    "engine": "turbo6",
+    "idle": 750,
+    "redline": 6500,
+    "powertrain": {
+      "idleRpm": 750,
+      "redlineRpm": 6500,
+      "limiterRpm": 6600,
+      "inertia": 0.35,
+      "maxFreeRevRate": 5500,
+      "spoolTime": 0.42,
+      "engineBraking": 0.16,
+      "gearboxType": "automatic",
+      "shiftTime": 0.25,
+      "revMatch": true,
+      "torqueConverter": true,
+      "torquePlateau": [
+        1600,
+        4500
+      ],
+      "limiterDrop": 220
+    },
+    "gears": [
+      5.354,
+      3.243,
+      2.252,
+      1.636,
+      1.211,
+      1,
+      0.865,
+      0.717,
+      0.601
+    ],
+    "final": 3.07,
+    "wheelR": 0.337,
+    "gearbox": "AT",
+    "shiftT": 0.25
+  },
+  {
+    "id": "z4",
+    "name": "BMW Z4 M40i",
+    "engine": "turbo6",
+    "idle": 750,
+    "redline": 7000,
+    "powertrain": {
+      "idleRpm": 750,
+      "redlineRpm": 7000,
+      "limiterRpm": 7100,
+      "inertia": 0.32,
+      "maxFreeRevRate": 5500,
+      "spoolTime": 0.36,
+      "engineBraking": 0.14,
+      "gearboxType": "automatic",
+      "shiftTime": 0.28,
+      "revMatch": true,
+      "torqueConverter": true,
+      "torquePlateau": [
+        1600,
+        4500
+      ],
+      "limiterDrop": 220
+    },
+    "gears": [
+      5.25,
+      3.36,
+      2.17,
+      1.72,
+      1.32,
+      1,
+      0.82,
+      0.64
+    ],
+    "final": 3.154,
+    "wheelR": 0.335,
+    "gearbox": "AT",
+    "shiftT": 0.28
+  },
+  {
+    "id": "carrera_gts",
+    "name": "PORSCHE 911 \u00b7 CARRERA GTS",
+    "engine": "flat6",
+    "idle": 800,
+    "redline": 7900,
+    "powertrain": {
+      "idleRpm": 800,
+      "redlineRpm": 7900,
+      "limiterRpm": 8000,
+      "inertia": 0.21,
+      "maxFreeRevRate": 8000,
+      "spoolTime": 0,
+      "engineBraking": 0.15,
+      "gearboxType": "manual",
+      "shiftTime": 0.32,
+      "revMatch": false,
+      "torqueConverter": false,
+      "limiterDrop": 220
+    },
+    "gears": [
+      3.91,
+      2.29,
+      1.55,
+      1.3,
+      1.08,
+      0.88,
+      0.71
+    ],
+    "final": 3.44,
+    "wheelR": 0.331,
+    "gearbox": "MT",
+    "shiftT": 0.32
+  },
+  {
+    "id": "aventador_svj",
+    "name": "LAMBORGHINI AVENTADOR SVJ",
+    "engine": "v12",
+    "idle": 900,
+    "redline": 8500,
+    "powertrain": {
+      "idleRpm": 900,
+      "redlineRpm": 8500,
+      "limiterRpm": 8600,
+      "inertia": 0.27,
+      "maxFreeRevRate": 8500,
+      "spoolTime": 0,
+      "engineBraking": 0.15,
+      "gearboxType": "amt",
+      "shiftTime": 0.18,
+      "revMatch": true,
+      "torqueConverter": false,
+      "limiterDrop": 220
+    },
+    "gears": [
+      3.909,
+      2.438,
+      1.81,
+      1.458,
+      1.185,
+      0.967,
+      0.844
+    ],
+    "final": 2.867,
+    "wheelR": 0.355,
+    "gearbox": "AMT",
+    "shiftT": 0.18
+  },
+  {
+    "id": "huracan",
+    "name": "LAMBORGHINI HURAC\u00c1N EVO",
+    "engine": "v10",
+    "idle": 900,
+    "redline": 8500,
+    "powertrain": {
+      "idleRpm": 900,
+      "redlineRpm": 8500,
+      "limiterRpm": 8600,
+      "inertia": 0.27,
+      "maxFreeRevRate": 8500,
+      "spoolTime": 0,
+      "engineBraking": 0.15,
+      "gearboxType": "dct",
+      "shiftTime": 0.09,
+      "revMatch": true,
+      "torqueConverter": false,
+      "limiterDrop": 220
+    },
+    "gears": [
+      15.325,
+      10.193,
+      7.712,
+      6.085,
+      4.789,
+      3.844,
+      3.312
+    ],
+    "final": 1,
+    "wheelR": 0.338,
+    "gearbox": "DCT",
+    "shiftT": 0.09
+  },
+  {
+    "id": "gtv",
+    "name": "ALFA ROMEO 2000 GTV",
+    "engine": "na4",
+    "idle": 850,
+    "redline": 6500,
+    "powertrain": {
+      "idleRpm": 850,
+      "redlineRpm": 6500,
+      "limiterRpm": 6600,
+      "inertia": 0.2,
+      "maxFreeRevRate": 4200,
+      "spoolTime": 0,
+      "engineBraking": 0.14,
+      "gearboxType": "manual",
+      "shiftTime": 0.44,
+      "revMatch": false,
+      "torqueConverter": false,
+      "limiterDrop": 220
+    },
+    "gears": [
+      3.304,
+      1.988,
+      1.355,
+      1,
+      0.791
+    ],
+    "final": 4.1,
+    "wheelR": 0.313,
+    "gearbox": "MT",
+    "shiftT": 0.44
+  },
+  {
+    "id": "e36_m3",
+    "name": "BMW M3 3.2 E36",
+    "engine": "na6",
+    "idle": 750,
+    "redline": 7600,
+    "powertrain": {
+      "idleRpm": 750,
+      "redlineRpm": 7600,
+      "limiterRpm": 7700,
+      "inertia": 0.24,
+      "maxFreeRevRate": 6800,
+      "spoolTime": 0,
+      "engineBraking": 0.16,
+      "gearboxType": "manual",
+      "shiftTime": 0.34,
+      "revMatch": false,
+      "torqueConverter": false,
+      "limiterDrop": 220
+    },
+    "gears": [
+      4.23,
+      2.51,
+      1.67,
+      1.23,
+      1,
+      0.83
+    ],
+    "final": 3.23,
+    "wheelR": 0.317,
+    "gearbox": "MT",
+    "shiftT": 0.34
+  }
+]

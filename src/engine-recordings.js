@@ -5,6 +5,10 @@ import { BranchGate } from './audio/robust.js';
 const base = new URL('../assets/audio/engines/', import.meta.url);
 const loop = (file, rpm, revision = '') => ({ url: new URL(file + '.wav' + (revision ? '?v=' + encodeURIComponent(revision) : ''), base).href, rpm });
 export const ENGINE_RECORDINGS = {
+  // Small, licensed layout substitutes; see docs/audio-sources.md. Only selected
+  // families are fetched. No media is downloaded for procedural voices or EVs.
+  ferrari: {cylinders:8,engine:'v8flat',start:'cross-start',catchAt:.3,loops:[loop('ferrari-idle',963),loop('ferrari-low',2208),loop('ferrari-mid',2745),loop('ferrari-high',4800)]},
+  cross: {cylinders:8,engine:'v8na',start:'cross-start',catchAt:.3,loops:[loop('cross-idle',735),loop('cross-low',2140),loop('cross-high',4844)]},
   // Version only the re-cut layer so existing browser asset caches fetch its replacement.
   mini: { engine: 'turbo4', start: 'mini-start', catchAt: .7, loops: [loop('mini-idle', 900), loop('mini-low', 1800), loop('mini-mid', 4300, 'c58f458b'), loop('mini-high', 6100)] },
   z4: { engine: 'turbo6', start: 'z4-start', catchAt: .45, loops: [loop('z4-idle', 745), loop('z4-low', 1545), loop('z4-mid', 3000), loop('z4-high', 5050)] },
@@ -55,6 +59,7 @@ export function loadRecordedEngine(ctx, spec) {
     })
       .catch(error => { cache.delete(recording); throw error; });
     cache.set(recording, promise);
+    if(cache.size>4)cache.delete(cache.keys().next().value);
   }
   return cache.get(recording);
 }
@@ -185,7 +190,7 @@ export function engineGrainBedAsync(ctx, buffer, rpm, cylinders, budgetMs = 4) {
   return pendingBeds.get(buffer);
 }
 /** which loops of a recorded engine are played as granular beds (short takes, and every Mini loop) */
-export const usesGranularBed = (spec, sample) => spec.id === 'mini' || sample.buffer.duration < 1.25;
+export const usesGranularBed = (spec, sample) => spec.id === 'mini' || sample.buffer.duration < 3;
 export const grainCylinders = (spec, bank) => bank?.cylinders || (spec.engine === 'turbo6' ? 6 : 4);
 
 export class GranularEngineLoop {
@@ -204,10 +209,19 @@ export class RecordedEngineVoice {
     this.sources = []; this.gains = [];
     this.points = bank.loops.map(s => s.rpm); this.weights = new Float32Array(this.points.length);
     this.filter = ctx.createBiquadFilter(); this.filter.type = 'lowpass'; this.filter.Q.value = .55;
+    const profile=engineProfile(spec);
+    this.body=ctx.createBiquadFilter();this.body.type='peaking';this.body.Q.value=.65;
+    this.body.frequency.value=profile.body??240;this.body.gain.value=0;this.growl=profile.growl??2.5;
+    // A second acoustic path reveals induction harmonics under load without
+    // raising the exhaust's entire spectrum or adding another looping source.
+    this.intake=ctx.createBiquadFilter();this.intake.type='bandpass';this.intake.Q.value=.7;
+    this.intakeGain=ctx.createGain();this.intakeGain.gain.value=0;this.induction=profile.intake??.7;
     this.out = ctx.createGain(); this.out.gain.value = 0;
-    this.filter.connect(this.out); this.out.connect(dest);
+    this.sum=ctx.createGain();this.sum.connect(this.filter);this.sum.connect(this.intake);
+    this.filter.connect(this.body);this.body.connect(this.out);
+    this.intake.connect(this.intakeGain);this.intakeGain.connect(this.out);this.out.connect(dest);
     for (const sample of bank.loops) {
-      const g = ctx.createGain(); g.gain.value = 0; g.connect(this.filter);
+      const g = ctx.createGain(); g.gain.value = 0; g.connect(this.sum);
       const source = usesGranularBed(spec, sample)
         ? new GranularEngineLoop(ctx, sample.buffer, g, sample.rpm, grainCylinders(spec, bank))
         : ctx.createBufferSource();
@@ -217,9 +231,9 @@ export class RecordedEngineVoice {
       this.sources.push(source); this.gains.push(g);
     }
     // only the two loops either side of the current RPM are blended in: the others are cut from the graph (BranchGate)
-    this.branches = this.gains.map(g => new BranchGate(g, this.filter, .6, 1e-4));
+    this.branches = this.gains.map(g => new BranchGate(g, this.sum, .6, 1e-4));
     // Preserve limiter feedback without distorting the recorded engine timbre.
-    this.limiter = ctx.createOscillator(); this.limiter.type = 'square'; this.limiter.frequency.value = 17;
+    this.limiter = ctx.createOscillator(); this.limiter.type = 'square'; this.limiter.frequency.value = 13;
     this.limiterGain = ctx.createGain(); this.limiterGain.gain.value = 0;
     this.limiter.connect(this.limiterGain); this.limiterGain.connect(this.out.gain); this.limiter.start();
   }
@@ -236,10 +250,13 @@ export class RecordedEngineVoice {
       this.branches[i].use(weights[i], now);
     }
     const rn = Math.min(1, r / this.spec.redline);
-    this.filter.frequency.setTargetAtTime(((this.spec.engine === 'diesel' ? 1700 : 2200) + on * 8300 + rn * (700 + on * 1100)) * this.tone, now, .07);
-    const amplitude = level * this.level * (.37 + .46 * on + .17 * rn);
-    this.out.gain.setTargetAtTime(amplitude, now, .055);
-    this.limiterGain.gain.setTargetAtTime(limiter ? -amplitude * .35 : 0, now, .015);
+    this.filter.frequency.setTargetAtTime(((this.spec.engine === 'diesel' ? 1200 : 1600) + on * 5100 + rn * (700 + on * 1400)) * this.tone, now, .045);
+    this.body.gain.setTargetAtTime(on*this.growl,now,.045);
+    this.intake.frequency.setTargetAtTime(420+rn*2200,now,.04);
+    this.intakeGain.gain.setTargetAtTime(on*on*this.induction*.3,now,.025);
+    const amplitude = level * this.level * (.27 + .43 * on + .15 * rn);
+    this.out.gain.setTargetAtTime(amplitude*(limiter?.57:1), now, limiter?.008:.025);
+    this.limiterGain.gain.setTargetAtTime(limiter ? -amplitude * .43 : 0, now, .008);
   }
   stop() {
     if (this.stopped) return;
@@ -250,7 +267,7 @@ export class RecordedEngineVoice {
     this.limiter.stop(now + .3);
     // onended follows audio time even when the tab/context is suspended.
     this.limiter.onended = () => {
-      for (const node of [...this.sources, ...this.gains, this.filter, this.out, this.limiter, this.limiterGain]) node.disconnect();
+      for (const node of [...this.sources, ...this.gains, this.sum,this.filter, this.body, this.intake,this.intakeGain,this.out, this.limiter, this.limiterGain]) node.disconnect();
     };
   }
 }

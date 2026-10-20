@@ -22,3 +22,9 @@ Nothing in the published cells has to change for any of the five steps. Static f
 
 ## Step 5b (Syntagma strip, lawns): no rebake needed, one thing for a later bake
 `assets/athens/plazas.json` and the new `assets/athens/lawns.json` ship with the app. For a later bake: leisure=garden, flower beds and landscape=lawn are not read as grass by the ground class, and the edge of a park blends over large ground triangles; classing them in `tools/world-gen/appearance.py` (and passing the polygons through ingest) would make the lawn layer unnecessary.
+
+## Step 6 (signs, road marks, murals): no rebake needed; two optional data improvements
+Everything is derived in the tile worker from the cells already published (road graph, buildings, drivable asphalt) and drawn at run time; the only app files are `assets/athens/pois.json` (named shops and amenities, 29 KB) plus the earlier `plazas.json`, `lawns.json` and `horizon.bin`. Text is baked into canvas atlases in the browser (11 MB + 5.6 MB of GPU memory, none shipped).
+- **Shop names:** the OSM extract in the cache is filtered (24 shop nodes in the whole of Attica, 951 named shops and amenities with the building areas), so nearly every shop sign is a generic Greek one. Run `tools/world-gen/pois.py` against a fuller Attica extract (Geofabrik's Greece file, or an Overpass query for `shop`, `amenity` and `name` in the region) and replace `assets/athens/pois.json`; nothing else changes. The same extract would give `emergency=fire_hydrant` nodes (none today), which could feed the red and white kerb paint in `src/world-tile-street-art.js`.
+- **Street names:** the edges' `name` strings are already in the cells (Greek); nothing to do. A later bake could store the OSM `name:en` too if the owner wants bilingual plates.
+- A later bake that stores a per-edge parking rule or kerb colour (`parking:lane:*`, `parking:condition:*`) would let the yellow runs follow the map instead of the junction-and-window rule.

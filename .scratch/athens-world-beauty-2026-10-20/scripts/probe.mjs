@@ -1,0 +1,11 @@
+// node probe.mjs APP CELLS x z : teleport to the nearest anchor of (x, z), wait, print the street-art layers' stats
+import {startServer,launch,counters} from './lib.mjs';
+const [app,r2,xs,zs]=process.argv.slice(2),x=+xs,z=+zs,c=counters(),{server,port}=await startServer({app,r2,c});const {browser,page}=await launch();
+page.on('console',m=>{if(/error|warn/i.test(m.type()))console.log('console',m.type(),m.text().slice(0,300));});page.on('pageerror',e=>console.log('pageerror',e.message.slice(0,300)));
+try{
+ await page.goto(`http://127.0.0.1:${port}/?map=athens`,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>window.__athens,null,{timeout:600000});
+ await page.evaluate(async([x,z])=>{const A=window.__athens;const near=()=>[...A.roads.anchors({validate:true})].sort((a,b)=>Math.hypot(a.x-x,a.z-z)-Math.hypot(b.x-x,b.z-z))[0];let a=near();for(let i=0;i<4&&(!a||Math.hypot(a.x-x,a.z-z)>60);i++){await A.stream.teleport({x,z},()=>{});await new Promise(r=>setTimeout(r,4000));a=near();}await A.goto(a.id,a.x,a.z);A.setPaused(true);},[x,z]);
+ await page.waitForTimeout(16000);
+ console.log(JSON.stringify(await page.evaluate(()=>{const A=window.__athens,s=A.signs;s.rebuild(...(()=>{const v=A.player.veh;return [v.x,v.z]})());let tiles=[...s.tiles.values()].map(t=>({plates:t.plates?.length/7|0,shops:t.shops?.length/7|0,walls:t.walls?.length/7|0,signs:t.signs?.length,murals:t.murals?.length}));
+  return {veh:[A.player.veh.x|0,A.player.veh.z|0],stats:s.stats,marks:A.marks.stats,tiles,sampleSigns:[...s.tiles.values()].flatMap(t=>t.signs||[]).sort((a,b)=>Math.hypot(a.x-A.player.veh.x,a.z-A.player.veh.z)-Math.hypot(b.x-A.player.veh.x,b.z-A.player.veh.z)).slice(0,4).map(r=>[r.key,+r.x.toFixed(1),+r.y.toFixed(1),+r.z.toFixed(1),+r.yaw.toFixed(2),+r.w.toFixed(2)]),sampleMurals:[...s.tiles.values()].flatMap(t=>t.murals||[]).sort((a,b)=>Math.hypot(a.x-A.player.veh.x,a.z-A.player.veh.z)-Math.hypot(b.x-A.player.veh.x,b.z-A.player.veh.z)).slice(0,3).map(r=>[r.key,+r.x.toFixed(1),+r.y.toFixed(1),+r.z.toFixed(1),+r.yaw.toFixed(2),+r.w.toFixed(2),+r.h.toFixed(2)]),meshes:[s.signMesh.mesh.count,s.muralMesh.mesh.count],visible:[s.signMesh.mesh.visible,s.muralMesh.mesh.visible,s.group.visible]}})));
+}catch(e){console.log('FAIL',e.message)}finally{await browser.close();server.close();}

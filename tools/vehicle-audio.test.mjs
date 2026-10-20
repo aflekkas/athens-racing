@@ -102,7 +102,8 @@ test('engine families have their own voice: the 911 is a flat-six and no recordi
   for(const id of ['aventador_svj','sl65'])assert.equal(recordingFor(car(id)).cylinders,12,id);
   assert.notEqual(recordingFor(car('golf')),recordingFor(car('panda')));assert.notEqual(engineProfile(car('golf_gti')).id,engineProfile(car('golf')).id,'sport and mainstream turbo fours are calibrated differently');
   assert.ok(engineProfile(car('golf')).tone<engineProfile(car('golf_gti')).tone,'mainstream calibration is darker than the sport one');
-  assert.equal(engineProfile(car('bus')).synth,'bus');assert.equal(engineProfile(car('truck')).synth,'bus');
+  assert.equal(engineProfile(car('bus')).cylinders,6);
+  assert.equal(engineProfile(car('truck')).cylinders,4,'NPR 4HK1 is not the six-cylinder Citaro');
   // Every recording is licensed and listed: each loop file exists, rises in rpm and matches sources.json.
   const manifest=JSON.parse(readFileSync(new URL('../assets/audio/engines/sources.json',import.meta.url),'utf8'));
   for(const spec of CARS){const r=recordingFor(spec);if(!r)continue;

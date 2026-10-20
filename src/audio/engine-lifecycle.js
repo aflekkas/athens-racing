@@ -6,6 +6,7 @@ import { gearboxSound } from './engine-profiles.js';
 export class EngineLifecycle {
   constructor(host) { this.host = host; this.state = 'running'; this.level = 1; this.rpm = 800; this.lastShiftStart = 0; this.lastShiftEnd = 0; }
   start(now, recorded = false) {
+    if(this.host.profile?.synth==='electric'){this.state='running';this.level=1;return;}
     this.state = 'starting'; this.at = now; this.recorded = recorded;
     if (!recorded) {
       const a = this.host;
@@ -19,11 +20,13 @@ export class EngineLifecycle {
   stop(now, stall = false) {
     if (this.state === 'off') return;
     this.state = 'off'; this.at = now;
+    if(this.host.profile?.synth==='electric')return;
     const a = this.host;
     a.tone({f:stall ? 65 : 95, slide:28, dur:stall ? .3 : .45, gain:.055, type:'triangle', bus:a.eng});
     a.noise({dur:.16, f:350, type:'lowpass', gain:.025, bus:a.eng});
   }
   shift(p, now, start, end) {
+    if(this.host.profile?.synth==='electric')return 'auto';
     const a = this.host, selected = gearboxSound(a.engineSpec, p.gearboxType);
     const kind = selected === 'manual' && p.manual === false ? 'auto' : selected;
     const cabin = p.cockpit ?? !p.open, cabinGain = cabin ? 1 : .045;

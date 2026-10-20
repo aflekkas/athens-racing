@@ -1,0 +1,1583 @@
+[
+  {
+    "car": "a190",
+    "phases": {
+      "idle": {
+        "lufs": -33.7,
+        "truePeakDb": -20.9,
+        "peakDb": -20.92,
+        "centroid": 190,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 86.61,
+        "maxStep": 0.00443
+      },
+      "pull": {
+        "lufs": -20.0,
+        "truePeakDb": -14.5,
+        "peakDb": -14.49,
+        "centroid": 235,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 94.15,
+        "maxStep": 0.05068
+      },
+      "overrun": {
+        "lufs": -33.4,
+        "truePeakDb": -15.2,
+        "peakDb": -15.25,
+        "centroid": 264,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 95.79,
+        "maxStep": 0.02711
+      },
+      "cruise": {
+        "lufs": -30.9,
+        "truePeakDb": -24.4,
+        "peakDb": -24.39,
+        "centroid": 338,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 89.57,
+        "maxStep": 0.00816
+      },
+      "blip": {
+        "lufs": -27.7,
+        "truePeakDb": -17.3,
+        "peakDb": -17.26,
+        "centroid": 267,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 91.9,
+        "maxStep": 0.02323
+      }
+    },
+    "firstAboveMinus60Sec": 0.03383219954648526
+  },
+  {
+    "car": "aventador_svj",
+    "phases": {
+      "idle": {
+        "lufs": -28.8,
+        "truePeakDb": -21.2,
+        "peakDb": -21.22,
+        "centroid": 115,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 92.35,
+        "maxStep": 0.00225
+      },
+      "pull": {
+        "lufs": -16.1,
+        "truePeakDb": -9.6,
+        "peakDb": -9.63,
+        "centroid": 980,
+        "above6kPercent": 0.18,
+        "lowMidPercent": 43.71,
+        "maxStep": 0.13897
+      },
+      "overrun": {
+        "lufs": -22.6,
+        "truePeakDb": -13.8,
+        "peakDb": -13.82,
+        "centroid": 1356,
+        "above6kPercent": 0.1,
+        "lowMidPercent": 7.05,
+        "maxStep": 0.06835
+      },
+      "cruise": {
+        "lufs": -22.1,
+        "truePeakDb": -16.2,
+        "peakDb": -16.2,
+        "centroid": 689,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 90.97,
+        "maxStep": 0.02344
+      },
+      "blip": {
+        "lufs": -21.1,
+        "truePeakDb": -13.2,
+        "peakDb": -13.17,
+        "centroid": 1030,
+        "above6kPercent": 0.01,
+        "lowMidPercent": 20.84,
+        "maxStep": 0.04866
+      }
+    },
+    "firstAboveMinus60Sec": 0.01997732426303855
+  },
+  {
+    "car": "aygo",
+    "phases": {
+      "idle": {
+        "lufs": -35.6,
+        "truePeakDb": -21.2,
+        "peakDb": -21.18,
+        "centroid": 157,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 75.3,
+        "maxStep": 0.00625
+      },
+      "pull": {
+        "lufs": -21.8,
+        "truePeakDb": -15.3,
+        "peakDb": -15.34,
+        "centroid": 201,
+        "above6kPercent": 0.01,
+        "lowMidPercent": 87.78,
+        "maxStep": 0.04723
+      },
+      "overrun": {
+        "lufs": -32.2,
+        "truePeakDb": -16.5,
+        "peakDb": -16.48,
+        "centroid": 196,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 97.35,
+        "maxStep": 0.0343
+      },
+      "cruise": {
+        "lufs": -28.9,
+        "truePeakDb": -19.7,
+        "peakDb": -19.71,
+        "centroid": 191,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 70.02,
+        "maxStep": 0.0108
+      },
+      "blip": {
+        "lufs": -28.7,
+        "truePeakDb": -17.1,
+        "peakDb": -17.11,
+        "centroid": 283,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 90.79,
+        "maxStep": 0.02624
+      }
+    },
+    "firstAboveMinus60Sec": 0.049954648526077096
+  },
+  {
+    "car": "bus",
+    "phases": {
+      "idle": {
+        "lufs": -30.0,
+        "truePeakDb": -16.5,
+        "peakDb": -16.5,
+        "centroid": 125,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 48.39,
+        "maxStep": 0.00454
+      },
+      "pull": {
+        "lufs": -16.9,
+        "truePeakDb": -8.8,
+        "peakDb": -8.85,
+        "centroid": 162,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 69.52,
+        "maxStep": 0.10126
+      },
+      "overrun": {
+        "lufs": -29.6,
+        "truePeakDb": -11.1,
+        "peakDb": -11.12,
+        "centroid": 211,
+        "above6kPercent": 0.02,
+        "lowMidPercent": 84.09,
+        "maxStep": 0.05317
+      },
+      "cruise": {
+        "lufs": -26.8,
+        "truePeakDb": -16.2,
+        "peakDb": -16.21,
+        "centroid": 110,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 44.33,
+        "maxStep": 0.0053
+      },
+      "blip": {
+        "lufs": -22.7,
+        "truePeakDb": -10.6,
+        "peakDb": -10.56,
+        "centroid": 111,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 27.57,
+        "maxStep": 0.01454
+      }
+    },
+    "firstAboveMinus60Sec": 0.019727891156462583
+  },
+  {
+    "car": "carrera_gts",
+    "phases": {
+      "idle": {
+        "lufs": -28.8,
+        "truePeakDb": -18.3,
+        "peakDb": -18.28,
+        "centroid": 143,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 42.12,
+        "maxStep": 0.00803
+      },
+      "pull": {
+        "lufs": -15.2,
+        "truePeakDb": -6.2,
+        "peakDb": -6.21,
+        "centroid": 782,
+        "above6kPercent": 0.83,
+        "lowMidPercent": 72.84,
+        "maxStep": 0.15095
+      },
+      "overrun": {
+        "lufs": -23.9,
+        "truePeakDb": -12.0,
+        "peakDb": -11.97,
+        "centroid": 811,
+        "above6kPercent": 0.08,
+        "lowMidPercent": 66.34,
+        "maxStep": 0.09705
+      },
+      "cruise": {
+        "lufs": -22.2,
+        "truePeakDb": -13.9,
+        "peakDb": -13.94,
+        "centroid": 618,
+        "above6kPercent": 0.03,
+        "lowMidPercent": 76.77,
+        "maxStep": 0.0354
+      },
+      "blip": {
+        "lufs": -20.5,
+        "truePeakDb": -12.1,
+        "peakDb": -12.07,
+        "centroid": 809,
+        "above6kPercent": 0.15,
+        "lowMidPercent": 67.35,
+        "maxStep": 0.0867
+      }
+    },
+    "firstAboveMinus60Sec": 0.017777777777777778
+  },
+  {
+    "car": "cla45s",
+    "phases": {
+      "idle": {
+        "lufs": -34.1,
+        "truePeakDb": -21.5,
+        "peakDb": -21.55,
+        "centroid": 48,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 4.92,
+        "maxStep": 0.00327
+      },
+      "pull": {
+        "lufs": -16.6,
+        "truePeakDb": -6.0,
+        "peakDb": -6.02,
+        "centroid": 237,
+        "above6kPercent": 0.02,
+        "lowMidPercent": 84.77,
+        "maxStep": 0.11483
+      },
+      "overrun": {
+        "lufs": -24.9,
+        "truePeakDb": -10.8,
+        "peakDb": -10.77,
+        "centroid": 319,
+        "above6kPercent": 0.02,
+        "lowMidPercent": 84.88,
+        "maxStep": 0.02744
+      },
+      "cruise": {
+        "lufs": -25.5,
+        "truePeakDb": -17.5,
+        "peakDb": -17.54,
+        "centroid": 161,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 95.52,
+        "maxStep": 0.00868
+      },
+      "blip": {
+        "lufs": -24.0,
+        "truePeakDb": -14.2,
+        "peakDb": -14.22,
+        "centroid": 288,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 85.96,
+        "maxStep": 0.01858
+      }
+    },
+    "firstAboveMinus60Sec": 0.019160997732426303
+  },
+  {
+    "car": "cle53",
+    "phases": {
+      "idle": {
+        "lufs": -28.1,
+        "truePeakDb": -19.4,
+        "peakDb": -19.37,
+        "centroid": 106,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 55.7,
+        "maxStep": 0.0022
+      },
+      "pull": {
+        "lufs": -15.4,
+        "truePeakDb": -8.3,
+        "peakDb": -8.32,
+        "centroid": 186,
+        "above6kPercent": 0.01,
+        "lowMidPercent": 95.41,
+        "maxStep": 0.09926
+      },
+      "overrun": {
+        "lufs": -24.6,
+        "truePeakDb": -11.1,
+        "peakDb": -11.08,
+        "centroid": 212,
+        "above6kPercent": 0.02,
+        "lowMidPercent": 99.31,
+        "maxStep": 0.01688
+      },
+      "cruise": {
+        "lufs": -25.1,
+        "truePeakDb": -18.0,
+        "peakDb": -17.97,
+        "centroid": 161,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 86.92,
+        "maxStep": 0.00393
+      },
+      "blip": {
+        "lufs": -22.3,
+        "truePeakDb": -12.5,
+        "peakDb": -12.46,
+        "centroid": 184,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 99.6,
+        "maxStep": 0.00635
+      }
+    },
+    "firstAboveMinus60Sec": 0.01764172335600907
+  },
+  {
+    "car": "corolla",
+    "phases": {
+      "idle": {
+        "lufs": -32.8,
+        "truePeakDb": -20.5,
+        "peakDb": -20.54,
+        "centroid": 189,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 88.41,
+        "maxStep": 0.00477
+      },
+      "pull": {
+        "lufs": -20.4,
+        "truePeakDb": -14.0,
+        "peakDb": -14.03,
+        "centroid": 280,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 92.25,
+        "maxStep": 0.05894
+      },
+      "overrun": {
+        "lufs": -31.3,
+        "truePeakDb": -15.7,
+        "peakDb": -15.65,
+        "centroid": 228,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 97.58,
+        "maxStep": 0.04102
+      },
+      "cruise": {
+        "lufs": -27.3,
+        "truePeakDb": -21.6,
+        "peakDb": -21.62,
+        "centroid": 188,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 95.97,
+        "maxStep": 0.00963
+      },
+      "blip": {
+        "lufs": -23.2,
+        "truePeakDb": -15.9,
+        "peakDb": -15.89,
+        "centroid": 200,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 97.94,
+        "maxStep": 0.02369
+      }
+    },
+    "firstAboveMinus60Sec": 0.03383219954648526
+  },
+  {
+    "car": "e36_m3",
+    "phases": {
+      "idle": {
+        "lufs": -29.8,
+        "truePeakDb": -18.8,
+        "peakDb": -18.78,
+        "centroid": 197,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 82.27,
+        "maxStep": 0.0089
+      },
+      "pull": {
+        "lufs": -14.9,
+        "truePeakDb": -10.1,
+        "peakDb": -10.09,
+        "centroid": 407,
+        "above6kPercent": 0.06,
+        "lowMidPercent": 89.16,
+        "maxStep": 0.11115
+      },
+      "overrun": {
+        "lufs": -28.0,
+        "truePeakDb": -11.4,
+        "peakDb": -11.45,
+        "centroid": 394,
+        "above6kPercent": 0.02,
+        "lowMidPercent": 91.87,
+        "maxStep": 0.10645
+      },
+      "cruise": {
+        "lufs": -26.1,
+        "truePeakDb": -19.9,
+        "peakDb": -19.87,
+        "centroid": 332,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 89.04,
+        "maxStep": 0.01502
+      },
+      "blip": {
+        "lufs": -22.9,
+        "truePeakDb": -13.6,
+        "peakDb": -13.62,
+        "centroid": 482,
+        "above6kPercent": 0.01,
+        "lowMidPercent": 83.32,
+        "maxStep": 0.05569
+      }
+    },
+    "firstAboveMinus60Sec": 0.035895691609977326
+  },
+  {
+    "car": "f348_spider",
+    "phases": {
+      "idle": {
+        "lufs": -31.7,
+        "truePeakDb": -23.5,
+        "peakDb": -23.49,
+        "centroid": 95,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 8.01,
+        "maxStep": 0.00487
+      },
+      "pull": {
+        "lufs": -17.8,
+        "truePeakDb": -8.5,
+        "peakDb": -8.54,
+        "centroid": 737,
+        "above6kPercent": 0.13,
+        "lowMidPercent": 73.34,
+        "maxStep": 0.0825
+      },
+      "overrun": {
+        "lufs": -26.1,
+        "truePeakDb": -14.3,
+        "peakDb": -14.27,
+        "centroid": 763,
+        "above6kPercent": 0.03,
+        "lowMidPercent": 68.71,
+        "maxStep": 0.05515
+      },
+      "cruise": {
+        "lufs": -23.6,
+        "truePeakDb": -14.8,
+        "peakDb": -14.77,
+        "centroid": 861,
+        "above6kPercent": 0.01,
+        "lowMidPercent": 65.43,
+        "maxStep": 0.0365
+      },
+      "blip": {
+        "lufs": -22.9,
+        "truePeakDb": -12.4,
+        "peakDb": -12.4,
+        "centroid": 694,
+        "above6kPercent": 0.02,
+        "lowMidPercent": 78.93,
+        "maxStep": 0.04017
+      }
+    },
+    "firstAboveMinus60Sec": 0.02090702947845805
+  },
+  {
+    "car": "gla45",
+    "phases": {
+      "idle": {
+        "lufs": -33.2,
+        "truePeakDb": -21.6,
+        "peakDb": -21.62,
+        "centroid": 52,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 11.53,
+        "maxStep": 0.00313
+      },
+      "pull": {
+        "lufs": -16.0,
+        "truePeakDb": -6.2,
+        "peakDb": -6.21,
+        "centroid": 228,
+        "above6kPercent": 0.01,
+        "lowMidPercent": 85.92,
+        "maxStep": 0.13144
+      },
+      "overrun": {
+        "lufs": -24.3,
+        "truePeakDb": -11.9,
+        "peakDb": -11.92,
+        "centroid": 292,
+        "above6kPercent": 0.02,
+        "lowMidPercent": 87.45,
+        "maxStep": 0.08254
+      },
+      "cruise": {
+        "lufs": -28.3,
+        "truePeakDb": -19.2,
+        "peakDb": -19.21,
+        "centroid": 222,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 91.66,
+        "maxStep": 0.00855
+      },
+      "blip": {
+        "lufs": -21.3,
+        "truePeakDb": -9.6,
+        "peakDb": -9.6,
+        "centroid": 234,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 93.61,
+        "maxStep": 0.01807
+      }
+    },
+    "firstAboveMinus60Sec": 0.01904761904761905
+  },
+  {
+    "car": "golf_r",
+    "phases": {
+      "idle": {
+        "lufs": -33.6,
+        "truePeakDb": -21.7,
+        "peakDb": -21.7,
+        "centroid": 49,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 8.56,
+        "maxStep": 0.00285
+      },
+      "pull": {
+        "lufs": -17.0,
+        "truePeakDb": -7.2,
+        "peakDb": -7.21,
+        "centroid": 226,
+        "above6kPercent": 0.02,
+        "lowMidPercent": 85.13,
+        "maxStep": 0.09899
+      },
+      "overrun": {
+        "lufs": -24.3,
+        "truePeakDb": -13.4,
+        "peakDb": -13.37,
+        "centroid": 266,
+        "above6kPercent": 0.02,
+        "lowMidPercent": 88.51,
+        "maxStep": 0.08195
+      },
+      "cruise": {
+        "lufs": -26.4,
+        "truePeakDb": -18.0,
+        "peakDb": -17.97,
+        "centroid": 167,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 92.63,
+        "maxStep": 0.00806
+      },
+      "blip": {
+        "lufs": -22.4,
+        "truePeakDb": -12.4,
+        "peakDb": -12.41,
+        "centroid": 232,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 92.6,
+        "maxStep": 0.01743
+      }
+    },
+    "firstAboveMinus60Sec": 0.019115646258503403
+  },
+  {
+    "car": "gr_yaris",
+    "phases": {
+      "idle": {
+        "lufs": -31.4,
+        "truePeakDb": -17.5,
+        "peakDb": -17.53,
+        "centroid": 145,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 79.07,
+        "maxStep": 0.00627
+      },
+      "pull": {
+        "lufs": -15.2,
+        "truePeakDb": -9.7,
+        "peakDb": -9.68,
+        "centroid": 200,
+        "above6kPercent": 0.01,
+        "lowMidPercent": 95.26,
+        "maxStep": 0.10372
+      },
+      "overrun": {
+        "lufs": -28.4,
+        "truePeakDb": -11.5,
+        "peakDb": -11.56,
+        "centroid": 212,
+        "above6kPercent": 0.04,
+        "lowMidPercent": 96.68,
+        "maxStep": 0.06977
+      },
+      "cruise": {
+        "lufs": -25.3,
+        "truePeakDb": -16.6,
+        "peakDb": -16.59,
+        "centroid": 168,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 58.19,
+        "maxStep": 0.00876
+      },
+      "blip": {
+        "lufs": -24.6,
+        "truePeakDb": -13.5,
+        "peakDb": -13.49,
+        "centroid": 263,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 90.78,
+        "maxStep": 0.02871
+      }
+    },
+    "firstAboveMinus60Sec": 0.03580498866213152
+  },
+  {
+    "car": "gtv",
+    "phases": {
+      "idle": {
+        "lufs": -30.5,
+        "truePeakDb": -18.4,
+        "peakDb": -18.36,
+        "centroid": 199,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 86.17,
+        "maxStep": 0.01059
+      },
+      "pull": {
+        "lufs": -15.7,
+        "truePeakDb": -9.5,
+        "peakDb": -9.51,
+        "centroid": 252,
+        "above6kPercent": 0.03,
+        "lowMidPercent": 94.94,
+        "maxStep": 0.09653
+      },
+      "overrun": {
+        "lufs": -29.7,
+        "truePeakDb": -10.5,
+        "peakDb": -10.51,
+        "centroid": 251,
+        "above6kPercent": 0.01,
+        "lowMidPercent": 96.62,
+        "maxStep": 0.0664
+      },
+      "cruise": {
+        "lufs": -24.2,
+        "truePeakDb": -16.8,
+        "peakDb": -16.82,
+        "centroid": 186,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 90.11,
+        "maxStep": 0.01937
+      },
+      "blip": {
+        "lufs": -20.0,
+        "truePeakDb": -12.4,
+        "peakDb": -12.37,
+        "centroid": 228,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 96.16,
+        "maxStep": 0.05736
+      }
+    },
+    "firstAboveMinus60Sec": 0.03238095238095238
+  },
+  {
+    "car": "ibiza_cupra",
+    "phases": {
+      "idle": {
+        "lufs": -33.9,
+        "truePeakDb": -22.2,
+        "peakDb": -22.22,
+        "centroid": 41,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 7.61,
+        "maxStep": 0.00131
+      },
+      "pull": {
+        "lufs": -16.7,
+        "truePeakDb": -9.1,
+        "peakDb": -9.09,
+        "centroid": 188,
+        "above6kPercent": 0.01,
+        "lowMidPercent": 84.15,
+        "maxStep": 0.10247
+      },
+      "overrun": {
+        "lufs": -25.1,
+        "truePeakDb": -11.2,
+        "peakDb": -11.19,
+        "centroid": 263,
+        "above6kPercent": 0.02,
+        "lowMidPercent": 92.33,
+        "maxStep": 0.03486
+      },
+      "cruise": {
+        "lufs": -27.2,
+        "truePeakDb": -17.6,
+        "peakDb": -17.56,
+        "centroid": 137,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 95.17,
+        "maxStep": 0.00534
+      },
+      "blip": {
+        "lufs": -22.1,
+        "truePeakDb": -12.5,
+        "peakDb": -12.51,
+        "centroid": 192,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 95.92,
+        "maxStep": 0.01168
+      }
+    },
+    "firstAboveMinus60Sec": 0.01981859410430839
+  },
+  {
+    "car": "jazz_dynamic",
+    "phases": {
+      "idle": {
+        "lufs": -32.7,
+        "truePeakDb": -19.8,
+        "peakDb": -19.83,
+        "centroid": 198,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 83.96,
+        "maxStep": 0.00856
+      },
+      "pull": {
+        "lufs": -18.8,
+        "truePeakDb": -12.9,
+        "peakDb": -12.95,
+        "centroid": 262,
+        "above6kPercent": 0.03,
+        "lowMidPercent": 92.94,
+        "maxStep": 0.06624
+      },
+      "overrun": {
+        "lufs": -30.6,
+        "truePeakDb": -14.2,
+        "peakDb": -14.2,
+        "centroid": 240,
+        "above6kPercent": 0.01,
+        "lowMidPercent": 96.95,
+        "maxStep": 0.0823
+      },
+      "cruise": {
+        "lufs": -27.4,
+        "truePeakDb": -21.3,
+        "peakDb": -21.34,
+        "centroid": 232,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 92.66,
+        "maxStep": 0.01372
+      },
+      "blip": {
+        "lufs": -25.1,
+        "truePeakDb": -15.6,
+        "peakDb": -15.55,
+        "centroid": 253,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 94.23,
+        "maxStep": 0.03818
+      }
+    },
+    "firstAboveMinus60Sec": 0.03541950113378685
+  },
+  {
+    "car": "mini_jcw",
+    "phases": {
+      "idle": {
+        "lufs": -28.8,
+        "truePeakDb": -15.6,
+        "peakDb": -15.6,
+        "centroid": 459,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 53.81,
+        "maxStep": 0.01779
+      },
+      "pull": {
+        "lufs": -15.8,
+        "truePeakDb": -5.4,
+        "peakDb": -5.39,
+        "centroid": 742,
+        "above6kPercent": 0.07,
+        "lowMidPercent": 54.72,
+        "maxStep": 0.08374
+      },
+      "overrun": {
+        "lufs": -23.4,
+        "truePeakDb": -13.7,
+        "peakDb": -13.78,
+        "centroid": 915,
+        "above6kPercent": 0.02,
+        "lowMidPercent": 30.37,
+        "maxStep": 0.04799
+      },
+      "cruise": {
+        "lufs": -22.3,
+        "truePeakDb": -12.8,
+        "peakDb": -12.78,
+        "centroid": 803,
+        "above6kPercent": 0.01,
+        "lowMidPercent": 60.85,
+        "maxStep": 0.03768
+      },
+      "blip": {
+        "lufs": -21.1,
+        "truePeakDb": -9.4,
+        "peakDb": -9.45,
+        "centroid": 602,
+        "above6kPercent": 0.01,
+        "lowMidPercent": 68.82,
+        "maxStep": 0.04796
+      }
+    },
+    "firstAboveMinus60Sec": 0.019886621315192744
+  },
+  {
+    "car": "octavia_rs",
+    "phases": {
+      "idle": {
+        "lufs": -34.4,
+        "truePeakDb": -22.5,
+        "peakDb": -22.51,
+        "centroid": 48,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 8.57,
+        "maxStep": 0.00254
+      },
+      "pull": {
+        "lufs": -18.2,
+        "truePeakDb": -8.4,
+        "peakDb": -8.39,
+        "centroid": 227,
+        "above6kPercent": 0.02,
+        "lowMidPercent": 83.82,
+        "maxStep": 0.08908
+      },
+      "overrun": {
+        "lufs": -25.1,
+        "truePeakDb": -14.7,
+        "peakDb": -14.71,
+        "centroid": 264,
+        "above6kPercent": 0.02,
+        "lowMidPercent": 88.5,
+        "maxStep": 0.07454
+      },
+      "cruise": {
+        "lufs": -27.2,
+        "truePeakDb": -18.7,
+        "peakDb": -18.71,
+        "centroid": 166,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 92.55,
+        "maxStep": 0.00709
+      },
+      "blip": {
+        "lufs": -23.4,
+        "truePeakDb": -13.5,
+        "peakDb": -13.46,
+        "centroid": 236,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 92.27,
+        "maxStep": 0.01568
+      }
+    },
+    "firstAboveMinus60Sec": 0.01925170068027211
+  },
+  {
+    "car": "p928",
+    "phases": {
+      "idle": {
+        "lufs": -31.4,
+        "truePeakDb": -19.1,
+        "peakDb": -19.12,
+        "centroid": 227,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 55.55,
+        "maxStep": 0.00602
+      },
+      "pull": {
+        "lufs": -17.7,
+        "truePeakDb": -9.0,
+        "peakDb": -9.05,
+        "centroid": 593,
+        "above6kPercent": 0.03,
+        "lowMidPercent": 74.58,
+        "maxStep": 0.08897
+      },
+      "overrun": {
+        "lufs": -25.4,
+        "truePeakDb": -14.1,
+        "peakDb": -14.08,
+        "centroid": 728,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 68.33,
+        "maxStep": 0.05207
+      },
+      "cruise": {
+        "lufs": -25.0,
+        "truePeakDb": -16.1,
+        "peakDb": -16.14,
+        "centroid": 308,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 81.8,
+        "maxStep": 0.01565
+      },
+      "blip": {
+        "lufs": -21.6,
+        "truePeakDb": -11.2,
+        "peakDb": -11.25,
+        "centroid": 573,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 74.84,
+        "maxStep": 0.03986
+      }
+    },
+    "firstAboveMinus60Sec": 0.023378684807256234
+  },
+  {
+    "car": "panda_100hp",
+    "phases": {
+      "idle": {
+        "lufs": -30.9,
+        "truePeakDb": -19.1,
+        "peakDb": -19.07,
+        "centroid": 193,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 88.62,
+        "maxStep": 0.00728
+      },
+      "pull": {
+        "lufs": -17.5,
+        "truePeakDb": -11.6,
+        "peakDb": -11.62,
+        "centroid": 265,
+        "above6kPercent": 0.01,
+        "lowMidPercent": 93.28,
+        "maxStep": 0.08717
+      },
+      "overrun": {
+        "lufs": -29.5,
+        "truePeakDb": -13.0,
+        "peakDb": -12.98,
+        "centroid": 232,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 97.47,
+        "maxStep": 0.049
+      },
+      "cruise": {
+        "lufs": -26.5,
+        "truePeakDb": -21.0,
+        "peakDb": -20.97,
+        "centroid": 237,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 94.42,
+        "maxStep": 0.0112
+      },
+      "blip": {
+        "lufs": -21.3,
+        "truePeakDb": -13.8,
+        "peakDb": -13.76,
+        "centroid": 212,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 97.69,
+        "maxStep": 0.03475
+      }
+    },
+    "firstAboveMinus60Sec": 0.032403628117913835
+  },
+  {
+    "car": "police_octavia",
+    "phases": {
+      "idle": {
+        "lufs": -36.1,
+        "truePeakDb": -24.4,
+        "peakDb": -24.4,
+        "centroid": 44,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 8.67,
+        "maxStep": 0.00163
+      },
+      "pull": {
+        "lufs": -20.4,
+        "truePeakDb": -11.1,
+        "peakDb": -11.11,
+        "centroid": 209,
+        "above6kPercent": 0.02,
+        "lowMidPercent": 81.08,
+        "maxStep": 0.0787
+      },
+      "overrun": {
+        "lufs": -27.1,
+        "truePeakDb": -14.7,
+        "peakDb": -14.67,
+        "centroid": 257,
+        "above6kPercent": 0.03,
+        "lowMidPercent": 87.81,
+        "maxStep": 0.07043
+      },
+      "cruise": {
+        "lufs": -28.6,
+        "truePeakDb": -20.5,
+        "peakDb": -20.52,
+        "centroid": 152,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 84.9,
+        "maxStep": 0.005
+      },
+      "blip": {
+        "lufs": -23.3,
+        "truePeakDb": -14.0,
+        "peakDb": -13.97,
+        "centroid": 188,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 94.66,
+        "maxStep": 0.01173
+      }
+    },
+    "firstAboveMinus60Sec": 0.019591836734693877
+  },
+  {
+    "car": "qashqai",
+    "phases": {
+      "idle": {
+        "lufs": -36.5,
+        "truePeakDb": -24.8,
+        "peakDb": -24.81,
+        "centroid": 43,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 8.75,
+        "maxStep": 0.00131
+      },
+      "pull": {
+        "lufs": -21.1,
+        "truePeakDb": -11.8,
+        "peakDb": -11.81,
+        "centroid": 205,
+        "above6kPercent": 0.03,
+        "lowMidPercent": 79.97,
+        "maxStep": 0.0718
+      },
+      "overrun": {
+        "lufs": -27.4,
+        "truePeakDb": -15.6,
+        "peakDb": -15.57,
+        "centroid": 248,
+        "above6kPercent": 0.03,
+        "lowMidPercent": 88.65,
+        "maxStep": 0.0637
+      },
+      "cruise": {
+        "lufs": -29.0,
+        "truePeakDb": -20.9,
+        "peakDb": -20.94,
+        "centroid": 149,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 84.97,
+        "maxStep": 0.00464
+      },
+      "blip": {
+        "lufs": -23.7,
+        "truePeakDb": -14.6,
+        "peakDb": -14.61,
+        "centroid": 186,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 94.65,
+        "maxStep": 0.01047
+      }
+    },
+    "firstAboveMinus60Sec": 0.019705215419501133
+  },
+  {
+    "car": "sl65",
+    "phases": {
+      "idle": {
+        "lufs": -29.7,
+        "truePeakDb": -21.4,
+        "peakDb": -21.42,
+        "centroid": 90,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 30.35,
+        "maxStep": 0.0015
+      },
+      "pull": {
+        "lufs": -17.6,
+        "truePeakDb": -10.0,
+        "peakDb": -9.97,
+        "centroid": 654,
+        "above6kPercent": 0.02,
+        "lowMidPercent": 63.46,
+        "maxStep": 0.07201
+      },
+      "overrun": {
+        "lufs": -24.0,
+        "truePeakDb": -14.7,
+        "peakDb": -14.75,
+        "centroid": 928,
+        "above6kPercent": 0.02,
+        "lowMidPercent": 26.36,
+        "maxStep": 0.04058
+      },
+      "cruise": {
+        "lufs": -22.2,
+        "truePeakDb": -14.9,
+        "peakDb": -14.86,
+        "centroid": 519,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 87.9,
+        "maxStep": 0.01707
+      },
+      "blip": {
+        "lufs": -22.2,
+        "truePeakDb": -13.0,
+        "peakDb": -12.99,
+        "centroid": 713,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 93.22,
+        "maxStep": 0.02655
+      }
+    },
+    "firstAboveMinus60Sec": 0.02038548752834467
+  },
+  {
+    "car": "superb_4x4",
+    "phases": {
+      "idle": {
+        "lufs": -36.6,
+        "truePeakDb": -24.9,
+        "peakDb": -24.95,
+        "centroid": 43,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 8.78,
+        "maxStep": 0.00129
+      },
+      "pull": {
+        "lufs": -20.8,
+        "truePeakDb": -11.2,
+        "peakDb": -11.21,
+        "centroid": 222,
+        "above6kPercent": 0.03,
+        "lowMidPercent": 82.15,
+        "maxStep": 0.06561
+      },
+      "overrun": {
+        "lufs": -27.2,
+        "truePeakDb": -17.1,
+        "peakDb": -17.14,
+        "centroid": 246,
+        "above6kPercent": 0.03,
+        "lowMidPercent": 90.02,
+        "maxStep": 0.05849
+      },
+      "cruise": {
+        "lufs": -29.4,
+        "truePeakDb": -20.6,
+        "peakDb": -20.63,
+        "centroid": 160,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 92.73,
+        "maxStep": 0.0051
+      },
+      "blip": {
+        "lufs": -25.6,
+        "truePeakDb": -16.0,
+        "peakDb": -16.03,
+        "centroid": 227,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 92.26,
+        "maxStep": 0.0109
+      }
+    },
+    "firstAboveMinus60Sec": 0.019750566893424037
+  },
+  {
+    "car": "truck",
+    "phases": {
+      "idle": {
+        "lufs": -31.3,
+        "truePeakDb": -16.7,
+        "peakDb": -16.73,
+        "centroid": 126,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 49.12,
+        "maxStep": 0.00612
+      },
+      "pull": {
+        "lufs": -18.3,
+        "truePeakDb": -9.7,
+        "peakDb": -9.67,
+        "centroid": 160,
+        "above6kPercent": 0.01,
+        "lowMidPercent": 72.13,
+        "maxStep": 0.1104
+      },
+      "overrun": {
+        "lufs": -29.8,
+        "truePeakDb": -11.1,
+        "peakDb": -11.14,
+        "centroid": 159,
+        "above6kPercent": 0.01,
+        "lowMidPercent": 67.35,
+        "maxStep": 0.09644
+      },
+      "cruise": {
+        "lufs": -28.3,
+        "truePeakDb": -17.5,
+        "peakDb": -17.54,
+        "centroid": 166,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 61.45,
+        "maxStep": 0.00752
+      },
+      "blip": {
+        "lufs": -25.8,
+        "truePeakDb": -12.5,
+        "peakDb": -12.51,
+        "centroid": 225,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 76.29,
+        "maxStep": 0.02128
+      }
+    },
+    "firstAboveMinus60Sec": 0.03306122448979592
+  },
+  {
+    "car": "van_150",
+    "phases": {
+      "idle": {
+        "lufs": -33.5,
+        "truePeakDb": -21.2,
+        "peakDb": -21.17,
+        "centroid": 49,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 7.25,
+        "maxStep": 0.00204
+      },
+      "pull": {
+        "lufs": -21.7,
+        "truePeakDb": -9.6,
+        "peakDb": -9.58,
+        "centroid": 74,
+        "above6kPercent": 0.01,
+        "lowMidPercent": 32.46,
+        "maxStep": 0.04875
+      },
+      "overrun": {
+        "lufs": -30.1,
+        "truePeakDb": -17.4,
+        "peakDb": -17.44,
+        "centroid": 78,
+        "above6kPercent": 0.01,
+        "lowMidPercent": 38.18,
+        "maxStep": 0.00691
+      },
+      "cruise": {
+        "lufs": -28.2,
+        "truePeakDb": -18.7,
+        "peakDb": -18.7,
+        "centroid": 61,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 8.63,
+        "maxStep": 0.00236
+      },
+      "blip": {
+        "lufs": -25.4,
+        "truePeakDb": -14.8,
+        "peakDb": -14.76,
+        "centroid": 72,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 37.32,
+        "maxStep": 0.00405
+      }
+    },
+    "firstAboveMinus60Sec": 0.025918367346938774
+  },
+  {
+    "car": "yaris_ts",
+    "phases": {
+      "idle": {
+        "lufs": -31.7,
+        "truePeakDb": -19.8,
+        "peakDb": -19.85,
+        "centroid": 194,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 88.42,
+        "maxStep": 0.00718
+      },
+      "pull": {
+        "lufs": -18.1,
+        "truePeakDb": -12.2,
+        "peakDb": -12.24,
+        "centroid": 264,
+        "above6kPercent": 0.01,
+        "lowMidPercent": 93.46,
+        "maxStep": 0.08128
+      },
+      "overrun": {
+        "lufs": -30.2,
+        "truePeakDb": -13.6,
+        "peakDb": -13.62,
+        "centroid": 233,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 97.46,
+        "maxStep": 0.04508
+      },
+      "cruise": {
+        "lufs": -27.1,
+        "truePeakDb": -21.6,
+        "peakDb": -21.66,
+        "centroid": 242,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 94.19,
+        "maxStep": 0.01101
+      },
+      "blip": {
+        "lufs": -22.0,
+        "truePeakDb": -14.5,
+        "peakDb": -14.48,
+        "centroid": 213,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 97.67,
+        "maxStep": 0.03443
+      }
+    },
+    "firstAboveMinus60Sec": 0.032403628117913835
+  },
+  {
+    "car": "z4",
+    "phases": {
+      "idle": {
+        "lufs": -28.2,
+        "truePeakDb": -19.4,
+        "peakDb": -19.44,
+        "centroid": 106,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 55.63,
+        "maxStep": 0.00219
+      },
+      "pull": {
+        "lufs": -16.4,
+        "truePeakDb": -8.5,
+        "peakDb": -8.49,
+        "centroid": 199,
+        "above6kPercent": 0.01,
+        "lowMidPercent": 96.04,
+        "maxStep": 0.10504
+      },
+      "overrun": {
+        "lufs": -24.5,
+        "truePeakDb": -11.7,
+        "peakDb": -11.69,
+        "centroid": 225,
+        "above6kPercent": 0.02,
+        "lowMidPercent": 99.18,
+        "maxStep": 0.03061
+      },
+      "cruise": {
+        "lufs": -22.9,
+        "truePeakDb": -17.3,
+        "peakDb": -17.3,
+        "centroid": 149,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 89.15,
+        "maxStep": 0.00431
+      },
+      "blip": {
+        "lufs": -20.0,
+        "truePeakDb": -11.2,
+        "peakDb": -11.18,
+        "centroid": 194,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 98.66,
+        "maxStep": 0.00919
+      }
+    },
+    "firstAboveMinus60Sec": 0.01764172335600907
+  },
+  {
+    "car": "atto3",
+    "phases": {
+      "idle": {
+        "lufs": -70.0,
+        "truePeakDb": null,
+        "peakDb": -180.0,
+        "centroid": 0,
+        "above6kPercent": 0,
+        "lowMidPercent": 0,
+        "maxStep": 0.0
+      },
+      "pull": {
+        "lufs": -39.0,
+        "truePeakDb": -36.9,
+        "peakDb": -36.93,
+        "centroid": 540,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 79.88,
+        "maxStep": 0.00228
+      },
+      "overrun": {
+        "lufs": -42.4,
+        "truePeakDb": -36.9,
+        "peakDb": -36.95,
+        "centroid": 925,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 0.0,
+        "maxStep": 0.00228
+      },
+      "cruise": {
+        "lufs": -43.0,
+        "truePeakDb": -41.0,
+        "peakDb": -41.04,
+        "centroid": 580,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 96.84,
+        "maxStep": 0.00131
+      },
+      "blip": {
+        "lufs": -43.0,
+        "truePeakDb": -41.1,
+        "peakDb": -41.12,
+        "centroid": 576,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 96.86,
+        "maxStep": 0.00081
+      }
+    },
+    "firstAboveMinus60Sec": 3.183968253968254
+  },
+  {
+    "car": "dolphin",
+    "phases": {
+      "idle": {
+        "lufs": -70.0,
+        "truePeakDb": null,
+        "peakDb": -180.0,
+        "centroid": 0,
+        "above6kPercent": 0,
+        "lowMidPercent": 0,
+        "maxStep": 0.0
+      },
+      "pull": {
+        "lufs": -38.0,
+        "truePeakDb": -35.9,
+        "peakDb": -35.93,
+        "centroid": 559,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 76.73,
+        "maxStep": 0.00264
+      },
+      "overrun": {
+        "lufs": -41.3,
+        "truePeakDb": -35.9,
+        "peakDb": -35.95,
+        "centroid": 958,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 0.0,
+        "maxStep": 0.00264
+      },
+      "cruise": {
+        "lufs": -42.0,
+        "truePeakDb": -40.0,
+        "peakDb": -40.02,
+        "centroid": 600,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 96.82,
+        "maxStep": 0.00152
+      },
+      "blip": {
+        "lufs": -42.0,
+        "truePeakDb": -40.1,
+        "peakDb": -40.11,
+        "centroid": 597,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 96.86,
+        "maxStep": 0.00094
+      }
+    },
+    "firstAboveMinus60Sec": 3.182675736961451
+  },
+  {
+    "car": "huracan",
+    "firstAboveMinus60Sec": 0.0181859410430839,
+    "phases": {
+      "idle": {
+        "lufs": -29.8,
+        "truePeakDb": -19.9,
+        "peakDb": -19.95,
+        "centroid": 255,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 84.94,
+        "maxStep": 0.01137
+      },
+      "pull": {
+        "lufs": -14.5,
+        "truePeakDb": -10.9,
+        "peakDb": -10.92,
+        "centroid": 1361,
+        "above6kPercent": 0.31,
+        "lowMidPercent": 49.01,
+        "maxStep": 0.18196
+      },
+      "overrun": {
+        "lufs": -29.0,
+        "truePeakDb": -12.1,
+        "peakDb": -12.2,
+        "centroid": 864,
+        "above6kPercent": 0.09,
+        "lowMidPercent": 73.23,
+        "maxStep": 0.13614
+      },
+      "cruise": {
+        "lufs": -23.3,
+        "truePeakDb": -17.6,
+        "peakDb": -17.66,
+        "centroid": 799,
+        "above6kPercent": 0.0,
+        "lowMidPercent": 74.39,
+        "maxStep": 0.02846
+      },
+      "blip": {
+        "lufs": -19.7,
+        "truePeakDb": -12.7,
+        "peakDb": -12.74,
+        "centroid": 1467,
+        "above6kPercent": 0.04,
+        "lowMidPercent": 45.53,
+        "maxStep": 0.09807
+      }
+    }
+  }
+]
