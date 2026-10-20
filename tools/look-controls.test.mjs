@@ -8,7 +8,7 @@ const text = html => html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
 test('the race-start key hints list LOOK BACK with its binding, for keyboard and controller', () => {
   const keyboard = text(controlsStrip({ device: 'keyboard' })), pad = text(controlsStrip({ device: 'gamepad' }));
   assert.match(keyboard, /V\s*LOOK BACK/); assert.match(pad, /RS\s*LOOK BACK/);
-  assert.match(keyboard, /HOLD TO LOOK/, 'the mouse hint says the right button is held; it does not claim the mouse looks by itself');
+  assert.match(keyboard, /HOLD TO LOOK/, 'the mouse hint says a button is held; it does not claim the mouse looks by itself');
   assert.doesNotMatch(keyboard, /CLICK ROAD TO CAPTURE/);
   const was = input.bindings.keyboard.lookBack; input.bindings.keyboard.lookBack = ['KeyN'];
   try { assert.match(text(controlsStrip({ device: 'keyboard' })), /N\s*LOOK BACK/, 'follows rebinding'); } finally { input.bindings.keyboard.lookBack = was; }

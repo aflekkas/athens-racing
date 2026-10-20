@@ -2,6 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Input } from '../src/input.js';
 import { settings, setSetting } from '../src/settings.js';
+// Deliberate orbit only: dragging with the left or right button held looks around (the press-time
+// context menu on Linux never cancels the hold), and the opt-in free look covers raw movement under
+// pointer lock. Plain mouse movement with no button held never moves the camera.
 function mouseRig({ lockWorks = true, free = false } = {}) {
   const target = new EventTarget(); target.innerWidth = 800; target.innerHeight = 600;
   const document = { pointerLockElement: null, exitPointerLock() { this.pointerLockElement = null; } };
@@ -14,20 +17,31 @@ function mouseRig({ lockWorks = true, free = false } = {}) {
   const pointer = props => fire('mousemove', props);
   return { input, document, canvas, movements, drags, pointer, fire, setEnabled: x => { enabled = x; }, setFree: x => { freeLook = x; }, requests: () => requests };
 }
+
 // Owner playtest 2026-10-18 (friend): "the camera is really weird, it pans around with the mouse". Mouse look is opt-in now.
 test('by default the mouse never pans the view, however it moves, and no pointer lock is requested', () => {
   const r = mouseRig();
   for (let i = 0; i < 20; i++) r.pointer({ clientX: 100 + i * 30, clientY: 50 + i * 10, movementX: 30, movementY: 10 });
   assert.deepEqual(r.movements, []); r.input.requestMouseLock(); assert.equal(r.requests(), 0); assert.equal(r.document.pointerLockElement, null);
-  r.pointer({ movementX: 12, movementY: 3, buttons: 1 }); assert.deepEqual(r.movements, [], 'a left button drag is not a look gesture either');
+  r.pointer({ movementX: 12, movementY: 3, buttons: 1 }); assert.deepEqual(r.movements, [], 'a button held without an on-canvas press is not a look gesture either');
   r.input.destroy();
 });
-test('holding the right button and dragging looks around, and releasing it reports the end of the hold', () => {
+test('holding the left or right button and dragging looks around, and releasing reports the end of the hold', () => {
+  for (const [button, buttons] of [[0, 1], [2, 2]]) {
+    const r = mouseRig(); r.fire('mousedown', { button, buttons });
+    r.pointer({ movementX: 35, movementY: -12, buttons }); assert.deepEqual(r.movements, [[35, -12]]); assert.deepEqual(r.drags, [true]);
+    r.fire('mouseup', { button, buttons: 0 }); assert.deepEqual(r.drags, [true, false]);
+    r.pointer({ movementX: 50, movementY: 5 }); assert.deepEqual(r.movements, [[35, -12]], 'after the release the mouse is ignored again');
+    r.setEnabled(false); r.fire('mousedown', { button, buttons }); assert.deepEqual(r.drags, [true, false], 'menus never start a look'); r.input.destroy();
+  }
+});
+test('the press-time context menu never cancels a held drag', () => {
   const r = mouseRig(); r.fire('mousedown', { button: 2, buttons: 2 });
-  r.pointer({ movementX: 35, movementY: -12, buttons: 2 }); assert.deepEqual(r.movements, [[35, -12]]); assert.deepEqual(r.drags, [true]);
-  r.fire('mouseup', { button: 2, buttons: 0 }); assert.deepEqual(r.drags, [true, false]);
-  r.pointer({ movementX: 50, movementY: 5 }); assert.deepEqual(r.movements, [[35, -12]], 'after the release the mouse is ignored again');
-  r.setEnabled(false); r.fire('mousedown', { button: 2, buttons: 2 }); assert.deepEqual(r.drags, [true, false], 'menus never start a look'); r.input.destroy();
+  r.fire('contextmenu', { button: 2, buttons: 2 });
+  r.pointer({ movementX: 35, movementY: -12, buttons: 2 }); assert.deepEqual(r.movements, [[35, -12]], 'the drag survives its own context menu (Linux/GTK, Mac, Windows)');
+  r.fire('mouseup', { button: 2, buttons: 0 });
+  r.fire('contextmenu', { button: 2, buttons: 0 }); assert.deepEqual(r.drags, [true, false], 'a released menu still reports the end of the hold');
+  r.input.destroy();
 });
 test('a clear (pause, menu, blur) ends a hold', () => {
   const r = mouseRig(); r.fire('mousedown', { button: 2, buttons: 2 }); r.input.clear(); assert.deepEqual(r.drags, [true, false]);
