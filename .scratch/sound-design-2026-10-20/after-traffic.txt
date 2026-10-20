@@ -1,0 +1,1 @@
+after: traffic — -43.1 LUFS, -29.0 dBFS peak; spectrogram and waveform at default mix, no normalization.

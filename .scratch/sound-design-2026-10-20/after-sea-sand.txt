@@ -1,0 +1,1 @@
+after: sea-sand — -45.5 LUFS, -25.5 dBFS peak; spectrogram and waveform at default mix, no normalization.

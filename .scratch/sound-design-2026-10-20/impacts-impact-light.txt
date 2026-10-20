@@ -1,0 +1,1 @@
+impacts: impact-light — -46.6 LUFS, -30.6 dBFS peak; spectrogram and waveform at default mix, no normalization.

@@ -1,0 +1,1 @@
+after: stress — -11.4 LUFS, -1.7 dBFS peak; spectrogram and waveform at default mix, no normalization.

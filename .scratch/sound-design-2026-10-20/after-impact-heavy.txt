@@ -1,0 +1,1 @@
+after: impact-heavy — -28 LUFS, -9.4 dBFS peak; spectrogram and waveform at default mix, no normalization.

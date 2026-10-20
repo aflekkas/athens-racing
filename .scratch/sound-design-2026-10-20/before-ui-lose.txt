@@ -1,0 +1,1 @@
+before: ui-lose — -39.4 LUFS, -25.9 dBFS peak; spectrogram and waveform at default mix, no normalization.

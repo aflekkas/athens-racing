@@ -4,7 +4,8 @@ import {tyreParameters,tyreSquealActive} from '../src/audio.js';
 const wheel={Fz:3500,sx:0,sy:.9,vgx:27.78,vw:27.78};
 const params=(slip,extra={},speed=27.78,surface='asphalt')=>tyreParameters({...wheel,sy:slip,...extra},speed,surface);
 test('ordinary steering has no scrub or howl; road roll stays a subtle bed',()=>{
- for(const slip of [0,.4,.7,.82]){const p=params(slip);assert.equal(p.scrub,0);assert.equal(p.howl,0);assert.ok(p.roll<.008);}
+ // Rebalanced road body is still below near-limit scrub and ~30 dB below the engine in the rendered mix.
+ for(const slip of [0,.4,.7,.82]){const p=params(slip);assert.equal(p.scrub,0);assert.equal(p.howl,0);assert.ok(p.roll>0&&p.roll<.021);assert.ok(p.roll<params(.9).scrub);}
 });
 test('90% grip has soft scrub and exactly zero squeal, including combined slip',()=>{
  for(const Fz of [700,2200,3500,4800,7000]){const p=params(.9,{Fz});assert.equal(p.squeal,0);assert.ok(p.scrub>0&&p.scrub<.1);assert.ok(p.howl<.04);}

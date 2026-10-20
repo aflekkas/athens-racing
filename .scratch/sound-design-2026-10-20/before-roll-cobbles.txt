@@ -1,0 +1,1 @@
+before: roll-cobbles — -59.2 LUFS, -45.8 dBFS peak; spectrogram and waveform at default mix, no normalization.

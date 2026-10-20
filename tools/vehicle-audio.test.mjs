@@ -55,7 +55,10 @@ test('manual cabin lever and clutch are quiet outside; grind requires explicit s
   life.update({...p,shift:0},.032); calls.length=0;
   life.update({...p,open:true},.05); assert.ok(calls.reduce((s,c)=>s+c.gain,0)<interior*.1);
   calls.length=0; life.update({...p,shift:0},.1); life.update({...p,shiftGrind:true},.2); assert.equal(calls.length,4);
-  calls.length=0; life.update({...p,shift:0},.3); life.update({...p,gearboxType:'DCT'},.4); assert.equal(calls.length,1);
+  calls.length=0; life.update({...p,shift:0},.3); life.update({...p,gearboxType:'DCT'},.4);
+  assert.equal(calls.length,2, 'actuator texture and low engagement body');
+  assert.equal(calls[0].type,'bandpass', 'no bright highpass spit');
+  assert.ok(calls[1].f<200, 'body stays beneath the engine');
 });
 test('starter flare settles, explicit stall shuts off, restart recovers',()=>{
   const host={noise(){},tone(){},engineSpec:{},eng:{}}; const life=new EngineLifecycle(host);

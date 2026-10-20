@@ -76,3 +76,41 @@ test('ambient scheduling is bounded at 30 Hz, preserves elapsed dt and reacts im
  assert.equal(cadence.sample(1.001,.001,true),true);assert.equal(cadence.dt,.001);
  assert.equal(cadence.sample(0,.01),true,'audio context clock restart');
 });
+
+import { tyreParameters } from '../src/audio.js';
+import { EngineVoice, buildEngineBank } from '../src/audio/engine-synth.js';
+test('procedural engines keep responding between half and full load at fixed rpm', () => {
+  const ctx=createMockContext(), voice=new EngineVoice(ctx,buildEngineBank(ctx,'na6',800,7000),ctx.destination);
+  voice.set(4000,.5,1,0);const half={drive:voice.pre.gain.value,level:voice.out.gain.value,tone:voice.lp.frequency.value};
+  voice.set(4000,1,1,1);
+  assert.ok(voice.pre.gain.value>half.drive*1.1);
+  assert.ok(voice.out.gain.value>half.level*1.15);
+  assert.ok(voice.lp.frequency.value>half.tone*1.15);
+});
+test('cobbles add body rumble without turning soft ground into tyre squeal', () => {
+  const wheel={Fz:3500,sx:0,sy:0,vgx:25,vw:25};
+  const smooth=tyreParameters(wheel,25,'asphalt'),stone=tyreParameters(wheel,25,'cobbles');
+  assert.ok(stone.roll>smooth.roll);assert.ok(stone.rumble>0);assert.equal(smooth.rumble,0);
+  for(const surface of ['grass','gravel']) assert.equal(tyreParameters({...wheel,sy:3},25,surface).squeal,0);
+});
+test('recovery and result acknowledgements use the UI bus and no scheduled music phrases', () => {
+  const calls=[],a=Object.create(Audio.prototype);a.ctx={};a.uiBus={};a.noise=a.tone=p=>calls.push(p);
+  for(const method of ['win','lose','finish','gameOver','recovery']){
+    calls.length=0;a[method]();assert.equal(calls.length,2);
+    assert.ok(calls.every(p=>p.bus===a.uiBus&&p.dur<=.18&&!p.at));
+  }
+});
+test('holding the handbrake never repeats its cabin control sound', () => {
+  const ctx=createMockContext(),a=new Audio();a.start({context:ctx,recordings:false});let events=[];a.handbrake=p=>events.push(p);
+  const p={dt:1/30,speed:0,rpm:800,load:0,open:false,cockpit:true,handbrake:false,rivals:[],traffic:[],wheels:[]};
+  a.update(p);for(let i=0;i<10;i++){ctx.currentTime+=1/30;a.update({...p,handbrake:true});}
+  assert.deepEqual(events,[true]);ctx.currentTime+=1/30;a.update(p);assert.deepEqual(events,[true,false]);
+});
+test('damaged exhaust follows the engine bus and cannot queue a burst after a slow frame', () => {
+  const a=Object.create(Audio.prototype),hits=[];a.eng={};a.noise=p=>hits.push(p);
+  const p={rpm:4200,redline:7000,load:.6,damage:{rear:1}};
+  a.updateExhaustRattle(p,1);a.updateExhaustRattle(p,1.01);assert.equal(hits.length,1);
+  a.updateExhaustRattle(p,50);assert.equal(hits.length,2);
+  for(const extra of [{muted:true},{rpm:0},{damage:{rear:.5}}])a.updateExhaustRattle({...p,...extra},60);
+  assert.equal(hits.length,2);assert.ok(hits.every(h=>h.bus===a.eng&&h.gain<.4&&h.dur<.06));
+});

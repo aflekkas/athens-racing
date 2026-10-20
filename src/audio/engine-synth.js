@@ -130,7 +130,7 @@ export class EngineVoice {
     let i = 0; while (i < P.length - 2 && r > P[i + 1]) i++;
     let x = Math.log(r / P[i]) / Math.log(P[i + 1] / P[i]); x = Math.max(0, Math.min(1, x));
     const wA = Math.cos(x * Math.PI / 2), wB = Math.sin(x * Math.PI / 2);
-    const on = Math.max(0, Math.min(1, (load + 0.08) / 0.5));
+    const on = Math.max(0, Math.min(1, (load + 0.08) / 1.08));
     const gOn = Math.sqrt(on), gOff = Math.sqrt(1 - on);
     for (let k = 0; k < P.length; k++) {
       const w = k === i ? wA : k === i + 1 ? wB : 0;

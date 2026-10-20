@@ -21,9 +21,9 @@ function recoveryHarness(route, v, options={}) {
   const safe={s:options.safe??v.s,u:0},towOffer={safe},player={veh:v};
   const multiplayer={active:!!options.online,connected:true,retired:false,lobby:{raceId:'test',event:{dir}},recover:async()=>options.served??{s:options.serverS??safe.s,u:0,until:250},now:()=>0,stateSender:{discontinuity(){}}};
   const ground=options.ground||{network:null,walls:()=>null},traffic=options.traffic||{cars:[],point(){}},grid=options.grid||[];
-  const api=Function('G','multiplayer','towOffer','route','ground','traffic','grid','planTow','RoadIndex','routeTowAdapter','courseTowLimits','towCourseTo','clamp','beginCameraBlend','syncCar','updateCamera','player','look','closeTowOffer','TOW_PROMPT_COOLDOWN','controls','document','sessionTransitions','inFreeRoam','hud','notifications','blackout',
+  const api=Function('G','multiplayer','towOffer','route','ground','traffic','grid','planTow','RoadIndex','routeTowAdapter','courseTowLimits','towCourseTo','clamp','beginCameraBlend','syncCar','updateCamera','player','look','closeTowOffer','TOW_PROMPT_COOLDOWN','controls','document','sessionTransitions','inFreeRoam','hud','notifications','blackout','audio',
     section('// Tow, reset and automatic recovery put', 'function stuckCheck(')+section('function tow(', 'function resetCar(')+'return {tow,backOnRoad};')(
-    G,multiplayer,towOffer,route,ground,traffic,grid,planTow,RoadIndex,routeTowAdapter,courseTowLimits,towCourseTo,clamp,()=>{},()=>{},()=>{},player,{},()=>{},20,{releaseMouseLook(){}},{body:{classList:{add(){},remove(){}}}},{after(ms,fn){callbacks.push(fn);}},()=>!!options.free,{message(){}},{dismiss(){}},()=>{});
+    G,multiplayer,towOffer,route,ground,traffic,grid,planTow,RoadIndex,routeTowAdapter,courseTowLimits,towCourseTo,clamp,()=>{},()=>{},()=>{},player,{},()=>{},20,{releaseMouseLook(){}},{body:{classList:{add(){},remove(){}}}},{after(ms,fn){callbacks.push(fn);}},()=>!!options.free,{message(){}},{dismiss(){}},()=>{},{recovery(){G.recoverySounds=(G.recoverySounds||0)+1;}});
   return {G,towOffer,...api,async flush(){while(callbacks.length)await callbacks.shift()(()=>true);}};
 }
 for(const def of MAPS)test(`${def.id}: real T/R paths put off-road cars on the nearest road, in free roam and in a race`,async t=>{
@@ -68,6 +68,7 @@ for(const def of MAPS)test(`${def.id}: real T/R paths put off-road cars on the n
   v.reset(200,r.edge(200)+15);h=recoveryHarness(r,v,{safe:180,lastRoad:230,ground});h.tow(v);await h.flush();assert.ok((v.s-230)>=-.01||v._network,`never back along the course, before the latest valid pose (${v.s})`);
   assert.equal(h.G.run.course.validProgress,230,'the tow grants no progress');assert.equal(h.G.run.course.lastRoad.s,230);
   v.reset(200,20);h=recoveryHarness(r,v,{online:true,safe:180,serverS:120,ground});h.tow(v);await h.flush();assert.ok(Math.abs(v.s-120)<=1,'online keeps the server pose');assert.equal(h.towOffer.hold,.25);
+  assert.equal(h.G.recoverySounds,1,'successful road placement confirms once without restarting the engine');
   v.reset(200,20);h=recoveryHarness(r,v,{ground});h.backOnRoad(v,{s:NaN});assert.ok([v.x,v.y,v.z,v.s].every(Number.isFinite),'invalid anchor is repaired before reset');
   if(r.closed)for(const dir of [-1,1]){
     const earned=r.length+1000,anchor=dir*earned;

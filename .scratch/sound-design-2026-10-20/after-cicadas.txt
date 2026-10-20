@@ -1,0 +1,1 @@
+after: cicadas — -48.6 LUFS, -37.6 dBFS peak; spectrogram and waveform at default mix, no normalization.

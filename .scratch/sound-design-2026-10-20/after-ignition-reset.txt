@@ -1,0 +1,1 @@
+after: ignition-reset — -21 LUFS, -6.1 dBFS peak; spectrogram and waveform at default mix, no normalization.
