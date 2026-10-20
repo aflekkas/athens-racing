@@ -1,0 +1,12 @@
+3,21 cars+scooters 625 min gap to a player box at any anchor in the cell 0.66 m obstacle walls 4083
+2,21 cars+scooters 561 min gap to a player box at any anchor in the cell 0.64 m obstacle walls 3139
+4,21 cars+scooters 583 min gap to a player box at any anchor in the cell 0.64 m obstacle walls 3729
+3,20 cars+scooters 436 min gap to a player box at any anchor in the cell 0.69 m obstacle walls 3371
+3,22 cars+scooters 626 min gap to a player box at any anchor in the cell 0.64 m obstacle walls 3435
+4,25 cars+scooters 513 min gap to a player box at any anchor in the cell 0.66 m obstacle walls 3218
+3,25 cars+scooters 401 min gap to a player box at any anchor in the cell 0.66 m obstacle walls 2750
+2,22 cars+scooters 262 min gap to a player box at any anchor in the cell 0.70 m obstacle walls 1105
+{"anchors":798,"minGap":0.64,"below":0,"cars":2657,"scooters":1350}
+3<=w<4                 n 2023 inner flank from axis: min 3.17 median 3.28 -> lane left between two rows >= 6.3 m; cars with the flank still over the asphalt 0
+w<3 (road under 6 m)   n 1981 inner flank from axis: min 1.18 median 3.03 -> lane left between two rows >= 2.4 m; cars with the flank still over the asphalt 7
+4<=w<5                 n 3 inner flank from axis: min 4.27 median 4.27 -> lane left between two rows >= 8.5 m; cars with the flank still over the asphalt 0
