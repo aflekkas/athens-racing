@@ -106,7 +106,7 @@ export function buildPsychikoScenery(data, bytes, osm = []) {
         if (seen && clear(x, z, .1, own) && !inBuilding(x - p.tz * side * 1.2, z + p.tx * side * 1.2)) {
           type = seen[side < 0 ? 'left' : 'right']; if (type === 'open') type = null;
           // Keep the mapped College gates open in the continuous wall, plus ordinary villa drives.
-          if ((s > 3201 && s < 3210 && side < 0) || (s > 3640 && s < 3651 && side > 0)) type = null;
+          if ((s > 3201 && s < 3210 && side < 0) || (s > 3640 && s < 3651 && side < 0)) type = null;
           else if (type && !['school-stone','metal-fence'].includes(type) && (s % 28) > 22 && (s % 28) < 26) type = 'gate';
         }
         if (!type) { flush(); continue; }

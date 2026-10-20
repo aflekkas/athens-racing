@@ -328,6 +328,8 @@ test('lap survey landmarks retain OSM anchors, safe kiosks and the asymmetric Fa
   const r=landmarks.find(r=>r.id===id),n=nodes.get(id);assert(r&&n);assert(Math.hypot(r.x-(n.lon-data.proj.lon0)*data.proj.mlon,r.z+(n.lat-data.proj.lat0)*data.proj.mlat)<.015);
  }
  assert(landmarks.some(r=>r.label==='Faros shopping block'));assert(landmarks.some(r=>r.label==='Elikonos cream corner office'));
+ const balcony=landmarks.find(r=>r.label==='A square balcony block');
+ assert.equal(osm.find(e=>e.type==='way'&&e.id===balcony.id)?.tags?.building,'apartments','the visible A-square balcony landmark is the northeast apartment footprint, not the west post office');
  assert(route.edge(40)>6.3,'four lanes fit the checked signal mouth');assert(route.edge(100)<4.5,'the wide signal mouth tapers onto the real residential avenue');
  const THREE=await import('three'),{PsychikoStreetscape}=await import('../src/maps/psychiko-streetscape.js'),street=new PsychikoStreetscape(map,new THREE.Group(),(x,z)=>terrain.height(x,z));
  try{const items=[...street.props.values()].flat();for(const kiosk of items.filter(r=>r.asset==='kiosk')){const q=route.project(kiosk.x,kiosk.z);assert(Math.abs(q.u)>=route.edge(q.s)+2.1,'kiosk body clears raced carriageway');assert((kiosk.setback||0)<4.5,'source kiosk node needs only a pavement setback');}

@@ -9,7 +9,7 @@ const frontages=[
  {id:425080433,station:'lap-0000',label:'Faros shopping block',h:14,lv:4,color:'#d3cbb9',facadeStyle:4,accent:'#d56539',commercial:true},
  {id:425080449,station:'lap-0018',label:'Faros corner shops',h:9.5,lv:3,color:'#ded9c7',facadeStyle:4,accent:'#3a627b',commercial:true},
  {id:425080469,station:'lap-0018',label:'Faros retail frontage',h:10,lv:3,color:'#e3dccc',facadeStyle:4,accent:'#cf6237',commercial:true},
- {id:345403871,station:'lap-0360',label:'A square balcony block',h:11.6,lv:3,color:'#e7dfcb',facadeStyle:1,accent:'#92754f'},
+ {id:329309489,station:'lap-0360',label:'A square balcony block',h:12.5,lv:4,color:'#e7dfcb',facadeStyle:1,accent:'#92754f'},
  {id:308022552,station:'lap-2138',label:'Davaki stacked brown balconies',h:11.3,lv:3,color:'#d2c3a9',facadeStyle:1,accent:'#665149'},
  {id:425320935,station:'lap-5310',label:'Kifisias glass office frontage',h:16,lv:5,color:'#81999c',facadeStyle:5,accent:'#355b6c',commercial:true},
 ];
