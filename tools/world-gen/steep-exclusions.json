@@ -1,50 +1,58 @@
 [
- {
-  "id": "w116650376:0",
-  "reason": "steep street, cell -27,2: a 45.2% street grade, past the 45% profile limit; the street is left out and reported. Gates are not relaxed."
- },
- {
-  "id": "w1250220482:0",
-  "reason": "steep street, cell -16,8: 3 asphalt triangles over 30 degrees or a shoulder sweep past 15 cm / 30 degrees; no surface on the shared 8 m lattice keeps both 6 m shoulders inside the gates. Gates are not relaxed; the street is left out and reported."
- },
- {
-  "id": "w1250220483:0",
-  "reason": "steep street, cell -16,8: asphalt up to 36 degrees and shoulder step 20.5 cm on a 44% street grade (Kastella slope); no surface on the shared 8 m lattice keeps both 6 m shoulders inside 30 degrees and 15 cm steps. Gates are not relaxed; the street is left out and reported."
- },
- {
-  "id": "w146047777:0",
-  "reason": "steep street, cell -15,7: shoulder slope 30.6 degrees on a 31% street grade; no surface on the shared 8 m lattice keeps both 6 m shoulders inside 30 degrees and 15 cm steps. Gates are not relaxed; the street is left out and reported."
- },
- {
-  "id": "w156417289:0",
-  "reason": "steep street, cell -16,8: 3 asphalt triangles over 30 degrees or a shoulder sweep past 15 cm / 30 degrees; no surface on the shared 8 m lattice keeps both 6 m shoulders inside the gates. Gates are not relaxed; the street is left out and reported."
- },
- {
-  "id": "w203529576:0",
-  "reason": "steep street, cell -16,8: asphalt up to 36 degrees and shoulder step 20.5 cm on a 44% street grade (Kastella slope); no surface on the shared 8 m lattice keeps both 6 m shoulders inside 30 degrees and 15 cm steps. Gates are not relaxed; the street is left out and reported."
- },
- {
-  "id": "w203532215:0",
-  "reason": "steep street, cell -16,8: asphalt up to 36 degrees and shoulder step 20.5 cm on a 44% street grade (Kastella slope); no surface on the shared 8 m lattice keeps both 6 m shoulders inside 30 degrees and 15 cm steps. Gates are not relaxed; the street is left out and reported."
- },
- {
-  "id": "w346063306:2",
-  "reason": "steep street, cell -15,7: shoulder slope 30.6 degrees on a 31% street grade; no surface on the shared 8 m lattice keeps both 6 m shoulders inside 30 degrees and 15 cm steps. Gates are not relaxed; the street is left out and reported."
- },
- {
-  "id": "w917627799:0",
-  "reason": "steep street, cell -16,8: asphalt up to 36 degrees and shoulder step 20.5 cm on a 44% street grade (Kastella slope); no surface on the shared 8 m lattice keeps both 6 m shoulders inside 30 degrees and 15 cm steps. Gates are not relaxed; the street is left out and reported."
- },
- {
-  "id": "w917627801:0",
-  "reason": "steep street, cell -16,8: asphalt up to 36 degrees and shoulder step 20.5 cm on a 44% street grade (Kastella slope); no surface on the shared 8 m lattice keeps both 6 m shoulders inside 30 degrees and 15 cm steps. Gates are not relaxed; the street is left out and reported."
- },
- {
-  "id": "w948871940:15",
-  "reason": "steep street, cell -16,8: asphalt up to 36 degrees and shoulder step 20.5 cm on a 44% street grade (Kastella slope); no surface on the shared 8 m lattice keeps both 6 m shoulders inside 30 degrees and 15 cm steps. Gates are not relaxed; the street is left out and reported."
- },
- {
-  "id": "w976901163:0",
-  "reason": "steep street, cell -24,3: a 45.3% street grade, past the 45% profile limit; the street is left out and reported. Gates are not relaxed."
- }
+  {
+    "id": "w116650376:0",
+    "reason": "steep street, cell -27,2: a 45.2% street grade, past the 45% profile limit; the street is left out and reported. Gates are not relaxed."
+  },
+  {
+    "id": "w1250220482:0",
+    "reason": "steep street, cell -16,8: 3 asphalt triangles over 30 degrees or a shoulder sweep past 15 cm / 30 degrees; no surface on the shared 8 m lattice keeps both 6 m shoulders inside the gates. Gates are not relaxed; the street is left out and reported."
+  },
+  {
+    "id": "w1250220483:0",
+    "reason": "steep street, cell -16,8: asphalt up to 36 degrees and shoulder step 20.5 cm on a 44% street grade (Kastella slope); no surface on the shared 8 m lattice keeps both 6 m shoulders inside 30 degrees and 15 cm steps. Gates are not relaxed; the street is left out and reported."
+  },
+  {
+    "id": "w146047777:0",
+    "reason": "steep street, cell -15,7: shoulder slope 30.6 degrees on a 31% street grade; no surface on the shared 8 m lattice keeps both 6 m shoulders inside 30 degrees and 15 cm steps. Gates are not relaxed; the street is left out and reported."
+  },
+  {
+    "id": "w156417289:0",
+    "reason": "steep street, cell -16,8: 3 asphalt triangles over 30 degrees or a shoulder sweep past 15 cm / 30 degrees; no surface on the shared 8 m lattice keeps both 6 m shoulders inside the gates. Gates are not relaxed; the street is left out and reported."
+  },
+  {
+    "id": "w203529576:0",
+    "reason": "steep street, cell -16,8: asphalt up to 36 degrees and shoulder step 20.5 cm on a 44% street grade (Kastella slope); no surface on the shared 8 m lattice keeps both 6 m shoulders inside 30 degrees and 15 cm steps. Gates are not relaxed; the street is left out and reported."
+  },
+  {
+    "id": "w203532215:0",
+    "reason": "steep street, cell -16,8: asphalt up to 36 degrees and shoulder step 20.5 cm on a 44% street grade (Kastella slope); no surface on the shared 8 m lattice keeps both 6 m shoulders inside 30 degrees and 15 cm steps. Gates are not relaxed; the street is left out and reported."
+  },
+  {
+    "id": "w346063306:2",
+    "reason": "steep street, cell -15,7: shoulder slope 30.6 degrees on a 31% street grade; no surface on the shared 8 m lattice keeps both 6 m shoulders inside 30 degrees and 15 cm steps. Gates are not relaxed; the street is left out and reported."
+  },
+  {
+    "id": "w917627799:0",
+    "reason": "steep street, cell -16,8: asphalt up to 36 degrees and shoulder step 20.5 cm on a 44% street grade (Kastella slope); no surface on the shared 8 m lattice keeps both 6 m shoulders inside 30 degrees and 15 cm steps. Gates are not relaxed; the street is left out and reported."
+  },
+  {
+    "id": "w917627801:0",
+    "reason": "steep street, cell -16,8: asphalt up to 36 degrees and shoulder step 20.5 cm on a 44% street grade (Kastella slope); no surface on the shared 8 m lattice keeps both 6 m shoulders inside 30 degrees and 15 cm steps. Gates are not relaxed; the street is left out and reported."
+  },
+  {
+    "id": "w948871940:15",
+    "reason": "steep street, cell -16,8: asphalt up to 36 degrees and shoulder step 20.5 cm on a 44% street grade (Kastella slope); no surface on the shared 8 m lattice keeps both 6 m shoulders inside 30 degrees and 15 cm steps. Gates are not relaxed; the street is left out and reported."
+  },
+  {
+    "id": "w976901163:0",
+    "reason": "steep street, cell -24,3: a 45.3% street grade, past the 45% profile limit; the street is left out and reported. Gates are not relaxed."
+  },
+  {
+    "id": "w225922250:0",
+    "reason": "steep street, cell 4,6: 7 asphalt triangles over 30 degrees or a shoulder sweep past 15 cm / 30 degrees; no surface on the shared 8 m lattice keeps both 6 m shoulders inside the gates. Gates are not relaxed; the street is left out and reported."
+  },
+  {
+    "id": "w552896140:0",
+    "reason": "steep street, cell 4,6: 7 asphalt triangles over 30 degrees or a shoulder sweep past 15 cm / 30 degrees; no surface on the shared 8 m lattice keeps both 6 m shoulders inside the gates. Gates are not relaxed; the street is left out and reported."
+  }
 ]

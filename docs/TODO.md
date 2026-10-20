@@ -66,7 +66,7 @@ Running (Sonnet; Enterprise unless noted):
 - [x] Multiplayer: restart and tow land where the car is (0 m off the grid after a host restart, guards in `server/mp-restart-tow.test.mjs`); lobby double-JOIN error and a lobby keeping the old track's traffic fixed; traffic seed equal on every client (`tools/traffic-seed.test.mjs`); owner to retest with a friend
 - [x] Badges one per end, catalogue guard (`5a9dccf9`); car vs trim chips (`50dc18db`); sharper car on weak classes (`bfdb468d`); Riviera draw calls ~540→~340 on Low (`c5025607`)
 - [x] Riviera draw calls round 2: ~290–300 on Potato/Low (`508f0fcd`)
-- [~] Athens east/south-east (last basin area), Haiku agent per owner 2026-10-20; north (`f220bd03`) and west (`1925f9d3`) done
+- [x] Athens east: 1,369-cell world, 357.5 MiB, worst 2×2 26 MiB, every gate green, staging pointer moved to it (north `f220bd03`, west `1925f9d3`). Open: the drive stalled at 300 s (pilot/physics, not a graph pocket), Zografou/Kaisariani pockets, infill waits for owner go
 - [~] UI taste pass: Opus agent auditing and cleaning every screen (owner 2026-10-20 "un ai-slop")
 - [~] Free roam: click anywhere, arrows cycle areas, trackpad two-finger pan (owner `30f25cb4`; Opus UI agent, first item)
 - [~] Athens beauty pass: landmarks, polykatoikia facades, fake lighting, Athens vegetation, street life, within budgets (owner `41895c7d`; Sonnet)
