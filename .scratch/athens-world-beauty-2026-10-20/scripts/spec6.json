@@ -1,0 +1,5 @@
+[
+{"name":"parliament-street","car":[450,520],"eye":[470,560,2.6],"look":[614,527,125],"far":850,"wait":6000},
+{"name":"stadium-above","car":[760,1180],"eye":[760,1180,90],"look":[976,1312,95],"far":900,"wait":6000},
+{"name":"zappeion-front","car":[606,860],"eye":[606,800,2.6],"look":[594,936,105],"far":850,"wait":6000}
+]

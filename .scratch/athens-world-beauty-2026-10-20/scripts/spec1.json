@@ -1,0 +1,12 @@
+[
+{"name":"parliament-street","eye":[430,500,2.6],"look":[613,527,118],"far":850,"wait":8000},
+{"name":"acropolis-from-plaka","eye":[-48,946,2.6],"look":[-297,946,165],"far":850,"wait":8000},
+{"name":"acropolis-above","eye":[-130,1330,95],"look":[-300,940,150],"far":900,"wait":8000},
+{"name":"zappeion-street","eye":[560,1090,2.6],"look":[594,936,100],"far":850,"wait":8000},
+{"name":"stadium-above","eye":[760,1180,90],"look":[976,1312,80],"far":900,"wait":8000},
+{"name":"olympieion-street","eye":[260,1290,2.6],"look":[271,1183,95],"far":850,"wait":8000},
+{"name":"lycabettus-street","eye":[1020,-60,2.6],"look":[1162,-208,268],"far":850,"wait":8000},
+{"name":"horizon-east","eye":[421,501,40],"look":[8000,1500,420],"far":850,"wait":8000},
+{"name":"horizon-north","eye":[1000,-300,60],"look":[1500,-9000,320],"far":850,"wait":8000},
+{"name":"syntagma-above-city","eye":[421,501,260],"look":[-100,1050,100],"far":900,"wait":8000}
+]

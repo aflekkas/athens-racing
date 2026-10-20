@@ -79,8 +79,8 @@ const KIND_CAPACITY={[KINDS.lamp]:400,[KINDS.signal]:240,[KINDS.parked_car]:160}
 
 /** All instances: (kind, x, y, z, yaw, variant, state?) with absolute world x,z. */
 export class AthensProps{
-  constructor(parent,{enabled=true}={}){
-    this.capacity=PROP_LIMITS.capacity;this.timeOverride=null; // set only by tests and evidence scripts to freeze the signal clock
+  constructor(parent,{enabled=true,skip=null}={}){
+    this.skip=skip;this.capacity=PROP_LIMITS.capacity;this.timeOverride=null; // set only by tests and evidence scripts to freeze the signal clock
     this.tiles=new Map();this.byEdge=new Map();this.near=[];this.last={x:Infinity,z:Infinity};this.enabled=enabled;this.time=0;
     this.group=new THREE.Group();this.group.name='athens-props-layer';parent.add(this.group);this.group.visible=enabled;
     this.meshes=new Map();this.signalState=null;
@@ -96,7 +96,7 @@ export class AthensProps{
   addTile(key,packet){
     this.removeTile(key);const m=packet.metadata,ext=m.extensions?.worldDetail,o=m.origin,records=[],edges=[];
     const sig=ext?.signals,props=ext?.props;
-    if(props){const r=packet.arrays[props.rows],k=packet.arrays[props.kind];for(let i=0;i<k.length;i++)records.push({kind:k[i],x:r[i*5]+o[0],y:r[i*5+1],z:r[i*5+2]+o[2],yaw:r[i*5+3],variant:r[i*5+4]|0,state:0});}
+    if(props){const r=packet.arrays[props.rows],k=packet.arrays[props.kind];for(let i=0;i<k.length;i++){const x=r[i*5]+o[0],z=r[i*5+2]+o[2];if(this.skip&&this.skip(k[i],x,z))continue;records.push({kind:k[i],x,y:r[i*5+1],z,yaw:r[i*5+3],variant:r[i*5+4]|0,state:0});}}
     if(sig){const r=packet.arrays[sig.rows],e=packet.arrays[sig.edge];
       for(let i=0;i<e.length;i++){const rec={kind:KINDS.signal,x:r[i*6]+o[0],y:r[i*6+1],z:r[i*6+2]+o[2],yaw:r[i*6+3],offset:r[i*6+4],group:r[i*6+5],variant:0,state:0,edge:m.ids[e[i]]};records.push(rec);edges.push(rec);this.byEdge.set(rec.edge,rec);}}
     this.tiles.set(key,{records,edges});this.last.x=Infinity;
