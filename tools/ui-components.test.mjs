@@ -169,7 +169,7 @@ test('OWNER LOCK 2026-10-17: title taglines and environment identity leave the h
   try {
     let environment = 'staging';
     globalThis.document = {
-      querySelector: selector => ({ content: selector.includes('asr-environment') ? environment : '2026.10.15.3' }),
+      querySelector: selector => ({ content: selector.includes('asr-environment') ? environment : selector.includes('asr-sha') ? 'acce710' : '2026.10.15.3' }),
       createElement: () => ({ className: '', textContent: '' }),
     };
     const makeFooter = withVersion => {
@@ -181,8 +181,9 @@ test('OWNER LOCK 2026-10-17: title taglines and environment identity leave the h
     const title = makeFooter(true), settings = makeFooter(false);
     const root = { querySelectorAll: () => [title, settings] };
     syncFooterBadge(root);
-    assert.equal(title.badge.textContent, 'STAGING · ');
-    assert.equal(settings.badge.textContent, 'STAGING · 2026.10.15.3');
+    // A staging build is named by its commit; on the title it sits before the release version link.
+    assert.equal(title.badge.textContent, 'STAGING · acce710 · ');
+    assert.equal(settings.badge.textContent, 'STAGING · acce710');
     const original = title.badge;
     syncFooterBadge(root);
     assert.equal(title.badge, original, 'repeated renders must not duplicate badges');

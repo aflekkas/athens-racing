@@ -10,8 +10,8 @@ export const TRACK_FRAME = { pad: .14, minSpan: 34, maxScale: MAX_SCALE };
 export function routeBounds(routes) {
   return [Math.min(...routes.map(r => r.bounds[0])), Math.min(...routes.map(r => r.bounds[1])), Math.max(...routes.map(r => r.bounds[2])), Math.max(...routes.map(r => r.bounds[3]))];
 }
-export function clampCamera(camera, view, asset) {
-  const scale = clamp(camera.scale, coverScale(view, asset), Math.max(coverScale(view, asset), MAX_SCALE));
+export function clampCamera(camera, view, asset, maxScale = MAX_SCALE) {
+  const scale = clamp(camera.scale, coverScale(view, asset), Math.max(coverScale(view, asset), maxScale));
   const maxX = Math.max(0, (asset.width * scale - view.width) / 2);
   const maxY = Math.max(0, (asset.height * scale - view.height) / 2);
   return { scale, x: clamp(camera.x, -maxX, maxX), y: clamp(camera.y, -maxY, maxY) };

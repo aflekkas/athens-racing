@@ -199,6 +199,12 @@ The owner refined the 2026-10-19 spawn picker. The owner's words: "clicking into
 
 Guard: `tools/owner-locked-free-roam-spawn.test.mjs`, updated by the change. Ask the owner before changing it.
 
+**Addendum, same day (lead, relaying the owner's bug report on the Athens world: "I can't click on the map anywhere, and it does not have proper UI in the Athens thing", "I could not scroll wheel to zoom out"):**
+- **Athens world (`?map=athens` only):** the picker shows the open world itself. Its areas are the world's hosted districts (Syntagma, Plaka, Kypseli, Piraeus, Glyfada, Kifisia, Marousi, Peristeri and more), not the four maps. Every drivable street of the published world is drawn lit, built from that world's cells (`tools/build-athens-streets.mjs`), and a click snaps to the nearest one.
+- **Mouse wheel:** a wheel on macOS (Chrome and Arc report its notches as multiples of 4.000244 px) is recognised as a wheel, and every wheel zooms one fixed step per notch, centred on the pointer. A trackpad's two-finger scroll still pans.
+- **Zoom:** the picker zooms from the whole map down to street level, and + / − zoom too. There is still no reset control: the area arrows reframe the view.
+- Still hidden from players until the owner activates the world.
+
 ## 2026-10-20 — The open world must feel like Athens: detail and beauty within the performance budgets
 
 Owner decision: the Athens open world should look and feel like the real city. Detail and beauty are added without giving up performance. Owner: "is there any way we can add detail and beauty without sacrificing performance, the map and stuff is still kind of bland, that's something we need to make sure we do, what's the point of an open world if it feels nothing like the real world".

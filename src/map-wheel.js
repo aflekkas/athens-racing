@@ -7,11 +7,15 @@
 //   deltaMode line / page        a mouse wheel (Firefox, most Linux / Windows mice): zoom
 //   any deltaX                   a two-finger trackpad scroll: pan
 //   a large whole-number deltaY  a notched mouse wheel in pixel mode (Chrome, Safari: 100 / 120 per notch): zoom
+//   a multiple of 4.000244       a mouse wheel in Chrome / Arc / Edge on macOS, whose notches come in that odd step: zoom
+//                                (owner 2026-10-20: "I could not scroll wheel to zoom out"; the same test web maps use)
 //   anything else                small or fractional pixel deltas, a trackpad: pan
 // A gesture keeps the kind it started with until the wheel rests (GESTURE_MS), so a trackpad scroll that slows to one
 // large-looking event, or a fast flick, never flips into a zoom halfway through.
 export const GESTURE_MS = 220;
 export const MOUSE_NOTCH = 50;
+export const MAC_WHEEL_STEP = 4.000244140625;
+const macWheel = dy => dy !== 0 && Math.abs(dy / MAC_WHEEL_STEP - Math.round(dy / MAC_WHEEL_STEP)) < 1e-6;
 const LINE = 16, PAGE = 400;
 
 /** pixels for a wheel delta in any deltaMode */
@@ -23,6 +27,7 @@ export function wheelKind(e) {
   if (e.deltaMode === 1 || e.deltaMode === 2) return 'zoom';
   if (e.deltaX) return 'pan';
   const dy = Math.abs(e.deltaY);
+  if (macWheel(e.deltaY)) return 'zoom';
   return dy >= MOUSE_NOTCH && Number.isInteger(e.deltaY) ? 'zoom' : 'pan';
 }
 
@@ -38,10 +43,15 @@ export function createWheelClassifier() {
   };
 }
 
-/** The zoom factor (> 1 zooms in) for a zoom-kind event. A pinch sends small deltas, so it is scaled up. */
+/** A mouse wheel zooms a fixed step per notch, as a web map does, whatever size the browser reports a notch as. */
+export const NOTCH_ZOOM = 1.28;
+/** notches in one wheel event: line mode 3 lines, page mode 1 page, Chrome on macOS 4.000244 px, other pixel wheels 100 px */
+export const wheelNotches = e => e.deltaMode === 1 ? e.deltaY / 3 : e.deltaMode === 2 ? e.deltaY : macWheel(e.deltaY) ? e.deltaY / MAC_WHEEL_STEP : e.deltaY / 100;
+/** The zoom factor (> 1 zooms in) for a zoom-kind event. A pinch is continuous (its small deltas scaled up); a wheel moves
+ * NOTCH_ZOOM per notch, at most two notches per event so one burst of a free-spinning wheel cannot leap across the map. */
 export function wheelZoomFactor(e) {
-  const dy = Math.max(-300, Math.min(300, wheelPixels(e.deltaY, e.deltaMode)));
-  return Math.exp(-dy * (e.ctrlKey ? .01 : .0016));
+  if (e.ctrlKey) return Math.exp(-Math.max(-300, Math.min(300, wheelPixels(e.deltaY, e.deltaMode))) * .01);
+  return NOTCH_ZOOM ** -Math.max(-2, Math.min(2, wheelNotches(e)));
 }
 
 /** The camera offset in screen pixels for a pan-kind event: the map follows the fingers, like a scrolled page. */

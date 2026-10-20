@@ -6,13 +6,13 @@
 // The panel shows the place, the car (with the garage path to change it) and DRIVE; the game then puts the car on the
 // nearest road to that point with the tow placement (src/tow-placement.js), see spawnOnRoad in src/main.js.
 import { upperName } from './greek-caps.js';
-import { MAP_VIEW, MAP_LABELS, MAP_ASSETS } from './attica-map-data.js';
-import { coverScale, frameBounds, fitTracks, clampCamera, flight, MAX_SCALE } from './map-select-camera.js';
+import { MAP_VIEW, MAP_LABELS } from './attica-map-data.js';
+import { coverScale, frameBounds, fitTracks, clampCamera, flight } from './map-select-camera.js';
 import { createMapRenderer, smooth } from './map-select-render.js';
 import { createWheelClassifier, wheelZoomFactor, wheelPan, createGlide } from './map-wheel.js';
 import { loadAssets } from './map-select.js';
 import { freeRoam } from './events.js';
-import { AREA_NAMES, athensCell, athensEnabled, athensFromAttica, decodeSpawnRoads, snapToRoad, spawnAreas } from './spawn-spots.js';
+import { AREA_NAMES, athensCell, athensEnabled, decodeSpawnRoads, nearestDistrict, snapToRoad, spawnAreas } from './spawn-spots.js';
 import * as C from './ui/components.js';
 
 const { esc, icon } = C;
@@ -24,21 +24,28 @@ function style() {
   const link = document.createElement('link'); link.id = 'map-select-style'; link.rel = 'stylesheet'; link.href = new URL('./map-select.css', import.meta.url).href; document.head.append(link);
 }
 const FOCUS_SCALE = 14, ROAD_RADIUS_PX = 60;
+// Zoom runs from the whole map (cover) down to street level, about 1.4 m per pixel; a district frames about 4 km.
+const MAX_ZOOM = 64, DISTRICT_SCALE = 26, ZOOM_STEP = 1.6;
 const easeInOut = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 const hit = (a, b) => a[0] < b[2] && a[2] > b[0] && a[1] < b[3] && a[3] > b[1];
 const PIXEL_BUDGET = 5.5e6;
 const PLACES = { c: [-.5, -.5, 0, 0], r: [0, -.5, 8, 0], l: [-1, -.5, -8, 0], t: [-.5, -1, 0, -6], b: [-.5, 0, 0, 6] };
 
 /** What the panel and the game need to know about a choice: a point on a drivable road, named after its street or area. */
-const areaChoice = a => ({ id: a.id, mapId: a.mapId, name: a.name, at: a.at, local: a.local, start: true });
-const roadChoice = snap => ({ id: 'road', mapId: snap.mapId, name: upperName(snap.street) || areaName(snap.mapId), at: snap.at, local: snap.local });
+const areaChoice = a => ({ id: a.id, mapId: a.mapId, name: a.name, at: a.at, local: a.local, start: true, areaId: a.id, areaName: a.name });
+// A road point belongs to its map's area, or in the Athens world to the nearest district (an unnamed road is named after it).
+const roadChoice = (snap, areas) => {
+  const d = snap.mapId === 'athens' ? nearestDistrict(areas, snap.at) : null;
+  return { id: 'road', mapId: snap.mapId, name: upperName(snap.street) || (d ? 'NEAR ' + d.name : areaName(snap.mapId)), at: snap.at, local: snap.local,
+    areaId: d ? d.id : snap.mapId, areaName: d ? d.name : areaName(snap.mapId) };
+};
 function card(choice, menu) {
   const car = menu.h.carSpec?.();
   return `<div class="map-preview__info"><h3>${esc(choice.name)}</h3>
     ${C.listRow({ icon: 'car', title: esc(car?.name || 'YOUR CAR'), desc: 'Change car', act: 'spawnCar', cls: 'spawn-car' })}
     ${C.button({ label: 'DRIVE', icon: 'car', iconRight: 'chevron-right', variant: 'primary', block: true, act: 'spawnDrive', attrs: { 'data-default': '' } })}</div>`;
 }
-const areaLabel = choice => esc(areaName(choice.mapId));
+const areaLabel = choice => esc(choice.areaName || areaName(choice.mapId));
 
 export function renderSpawnSelect(menu) {
   style();
@@ -46,7 +53,7 @@ export function renderSpawnSelect(menu) {
   const choice = menu.data.spawn?.choice || areaChoice(areas[0]);
   const labels = MAP_LABELS.map((l, i) => `<span class="map-label map-label--${l.k}" data-label="${i}"><i></i><b>${esc(l.t)}${l.s ? `<small>${esc(l.s)}</small>` : ''}</b></span>`).join('');
   return C.mapStage({ variant: 'floating', cls: 'scr--maps scr--spawn', kick: 'FREE ROAM', title: 'CHOOSE WHERE TO START',
-    hints: [['leftright', 'AREA'], ['confirm', 'DRIVE'], ['back', 'BACK']],
+    hints: [['leftright', 'AREA'], ['+ / −', 'ZOOM'], ['confirm', 'DRIVE'], ['back', 'BACK']],
     stageAttrs: { role: 'img', 'aria-label': `Map of Attica. Click anywhere to start on the nearest road. Areas: ${areas.map(a => a.name).join(', ')}.` },
     stage: `<canvas class="attica-canvas" aria-hidden="true"></canvas>
       <div class="attica-overlay"><div class="attica-labels" aria-hidden="true">${labels}</div>
@@ -58,26 +65,28 @@ export function renderSpawnSelect(menu) {
 
 // ---------------------------------------------------------------- roads (fetched once per page)
 let roadsAsset;
-const loadRoads = () => roadsAsset ||= fetch('assets/maps/spawn-roads.json').then(r => { if (!r.ok) throw new Error('spawn roads ' + r.status); return r.json(); }).then(decodeSpawnRoads).catch(error => { roadsAsset = null; throw error; });
-// The dev-flagged Athens world: its hosted 512 m cells, and the Attica road hierarchy to snap a click to inside them.
-function decodeLines(buffer) {
-  const view = new DataView(buffer), q = 1 / MAP_ASSETS.quantize, lines = []; let at = 6;
-  for (let n = 0, count = view.getUint16(4, true); n < count; n++) {
-    const id = MAP_ASSETS.layers[view.getUint8(at)], total = view.getUint32(at + 1, true); at += 5;
-    for (let l = 0; l < total; l++) {
-      const pts = view.getUint16(at, true); at += 2;
-      const xy = new Float32Array(pts * 2); for (let p = 0; p < pts; p++, at += 4) { xy[p * 2] = view.getUint16(at, true) * q; xy[p * 2 + 1] = view.getUint16(at + 2, true) * q; }
-      if (id !== 'land' && id !== 'coast') lines.push({ name: '', major: id !== 'street' && id !== 'tertiary', pts: xy });
-    }
+// The Athens world (dev flag) has its own street file, built from the published cells by tools/build-athens-streets.mjs.
+const loadRoads = (athens = false) => roadsAsset ||= fetch(athens ? 'assets/athens/streets.json' : 'assets/maps/spawn-roads.json').then(r => { if (!r.ok) throw new Error('spawn roads ' + r.status); return r.json(); }).then(decodeSpawnRoads).catch(error => { roadsAsset = null; throw error; });
+// The dev-flagged Athens world: the 512 m cells the published manifest hosts (a click only snaps to a street in one).
+/** The Athens streets bucketed into ~350 m squares (each a Path2D per class), the renderer's drivable overlay. */
+function overlayCells(list, size = 4) {
+  const buckets = new Map(), cell = (x, y) => `${Math.floor(x / size)},${Math.floor(y / size)}`;
+  for (const r of list) {
+    const p = r.pts, k = cell(p[0], p[1]);
+    let b = buckets.get(k); if (!b) buckets.set(k, b = { major: { box: [Infinity, Infinity, -Infinity, -Infinity], path: new Path2D() }, minor: { box: [Infinity, Infinity, -Infinity, -Infinity], path: new Path2D() } });
+    const c = r.major ? b.major : b.minor; c.path.moveTo(p[0], p[1]);
+    for (let i = 0; i < p.length; i += 2) { if (i) c.path.lineTo(p[i], p[i + 1]); c.box[0] = Math.min(c.box[0], p[i]); c.box[1] = Math.min(c.box[1], p[i + 1]); c.box[2] = Math.max(c.box[2], p[i]); c.box[3] = Math.max(c.box[3], p[i + 1]); }
   }
-  return lines;
+  const of = cls => [...buckets.values()].map(b => b[cls]).filter(c => c.box[0] <= c.box[2]);
+  // Every street shows at every zoom (the whole basin reads as drivable), so tiles of neighbouring zoom levels match.
+  return { major: of('major'), minor: of('minor'), colour: COLORS.athens, streetsFrom: 0, streetsFull: 0 };
 }
 let athensAsset;
 const loadAthens = () => athensAsset ||= fetch(new URL('./data/athens/manifest.json', document.baseURI)).then(async r => {
   if (!r.ok) throw new Error('Athens cells are not hosted on this server');
-  const manifest = await r.json(), vectors = await (await fetch(MAP_ASSETS.vectors)).arrayBuffer();
-  return { cells: new Set(Object.keys(manifest.tiles || {})), roads: { athens: { roads: decodeLines(vectors) } } };
-}).catch(error => { console.info('[spawn] Athens world unavailable:', error.message); return { cells: new Set(), roads: {} }; });
+  const manifest = await r.json();
+  return { cells: new Set(Object.keys(manifest.tiles || {})) };
+}).catch(error => { console.info('[spawn] Athens world unavailable:', error.message); return { cells: new Set() }; });
 
 export function mountSpawnSelect(root, menu) {
   const map = root.querySelector('.attica-map'), canvas = map?.querySelector('.attica-canvas'), cardEl = root.querySelector('.map-preview'), overlay = root.querySelector('.attica-overlay');
@@ -85,7 +94,8 @@ export function mountSpawnSelect(root, menu) {
   const ctx = canvas.getContext('2d', { alpha: false }), credit = map.querySelector('.attica-credit'), marker = overlay.querySelector('.spawn-marker'), markerName = marker.querySelector('.spawn-marker__name'), nohere = overlay.querySelector('.spawn-nohere');
   const events = new AbortController(), { signal } = events, reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
   const { width: W, height: H } = MAP_VIEW, session = menu.data.spawn ||= {};
-  let areas = spawnAreas({ athens: athensEnabled() }), choice = session.choice || areaChoice(areas[0]);
+  const athensMode = athensEnabled(), maxZoom = MAX_ZOOM;
+  let areas = spawnAreas({ athens: athensMode }), choice = session.choice || areaChoice(areas[0]), layers = null, streetLayer = null;
   let camera, view, safe, dpr = 1, art = null, base = null, roads = null, athens = null, drag = null, pinch = null, tap = null, frame = 0, resizeFrame = 0, motion = null, last = 0, dirty = false, settling = false, onScreen = true, panning = false, moving = false, shown = null, placed = 0, intro = !session.arrived, hideTimer = 0;
   const pointers = new Map(), roadPaths = {}, areaBounds = {}, wheelKind = createWheelClassifier(), glide = createGlide();
   const labels = [...overlay.querySelectorAll('.map-label')].map(el => ({ el, ...MAP_LABELS[+el.dataset.label], box: null, place: null, shown: false }));
@@ -105,13 +115,16 @@ export function mountSpawnSelect(root, menu) {
   const worldAt = (cam, px, py) => [W / 2 + (px - cam.x) / cam.scale, H / 2 + (py - cam.y) / cam.scale];
   const cameraFor = (scale, [wx, wy], px = 0, py = 0) => ({ scale, x: px - (wx - W / 2) * scale, y: py - (wy - H / 2) * scale });
   const minScale = () => coverScale(view, MAP_VIEW);
-  const focusOn = (at, scale = FOCUS_SCALE) => frameBounds(view, MAP_VIEW, [at[0] - .5, at[1] - .5, at[0] + .5, at[1] + .5], safe, { pad: 0, minSpan: 0, maxScale: Math.min(MAX_SCALE, scale) });
+  const clamped = c => clampCamera(c, view, MAP_VIEW, maxZoom);
+  const focusOn = (at, scale = FOCUS_SCALE) => frameBounds(view, MAP_VIEW, [at[0] - .5, at[1] - .5, at[0] + .5, at[1] + .5], safe, { pad: 0, minSpan: 0, maxScale: Math.min(maxZoom, scale) });
   const region = () => fitTracks(view, MAP_VIEW, [Math.min(...areas.map(a => a.at[0])), Math.min(...areas.map(a => a.at[1])), Math.max(...areas.map(a => a.at[0])), Math.max(...areas.map(a => a.at[1]))], safe);
   // An area is framed by its map's drivable roads once they have loaded, around its start point before that.
-  const areaCamera = a => areaBounds[a.mapId] ? fitTracks(view, MAP_VIEW, areaBounds[a.mapId], safe) : focusOn(a.at, 6);
+  const areaCamera = a => a.mapId === 'athens' ? focusOn(a.at, DISTRICT_SCALE) : areaBounds[a.mapId] ? fitTracks(view, MAP_VIEW, areaBounds[a.mapId], safe) : focusOn(a.at, 6);
+  const areaOf = c => areas.find(a => a.id === c.areaId) || areas.find(a => a.mapId === c.mapId) || c;
 
   // ---------------------------------------------------------------- canvas: the cached base map under the drivable roads
   const pathsFor = data => { for (const [id, { roads: list }] of Object.entries(data)) {
+    if (id === 'athens') { streetLayer = overlayCells(list); if (layers) { layers.overlay = streetLayer; base?.refresh(); } continue; }
     const major = new Path2D(), minor = new Path2D(), b = [Infinity, Infinity, -Infinity, -Infinity];
     for (const r of list) { const path = r.major ? major : minor, p = r.pts; path.moveTo(p[0], p[1]); for (let i = 2; i < p.length; i += 2) path.lineTo(p[i], p[i + 1]); for (let i = 0; i < p.length; i += 2) { b[0] = Math.min(b[0], p[i]); b[1] = Math.min(b[1], p[i + 1]); b[2] = Math.max(b[2], p[i]); b[3] = Math.max(b[3], p[i + 1]); } }
     roadPaths[id] = { major, minor }; if (id !== 'athens') areaBounds[id] = b; } };
@@ -152,7 +165,7 @@ export function mountSpawnSelect(root, menu) {
   };
   const sync = (now = performance.now(), settle = false) => {
     if (!camera || !view) return;
-    camera = clampCamera(camera, view, MAP_VIEW);
+    camera = clamped(camera);
     draw(now);
     const still = shown && shown.scale === camera.scale && shown.x === camera.x && shown.y === camera.y; shown = { ...camera };
     if (still && !settle) return;
@@ -185,7 +198,7 @@ export function mountSpawnSelect(root, menu) {
   const stop = () => { motion = null; glide.halt(); base?.cancelPrepare(); cancelAnimationFrame(frame); frame = 0; };
   const flyTo = target => {
     if (!camera || !view) return;
-    const to = clampCamera(target, view, MAP_VIEW), from = { ...camera }, path = flight(from, to, view, MAP_VIEW);
+    const to = clamped(target), from = { ...camera }, path = flight(from, to, view, MAP_VIEW);
     motion = { type: 'fly', to, path, start: performance.now(), duration: path.duration };
     if (base) { if (reduced.matches) base.prime(to); else base.prepare([.2, .4, .6, .8].map(e => path.at(e)).concat(to), to); }
     start();
@@ -194,7 +207,7 @@ export function mountSpawnSelect(root, menu) {
     if (!camera || !view) return;
     const anchor = [px - view.width / 2, py - view.height / 2];
     const keep = motion?.type === 'zoom' && Math.hypot(anchor[0] - motion.anchor[0], anchor[1] - motion.anchor[1]) < 3;
-    const log = Math.log(Math.max(minScale(), Math.min(MAX_SCALE, Math.exp((keep ? motion.log : Math.log(camera.scale))) * factor)));
+    const log = Math.log(Math.max(minScale(), Math.min(maxZoom, Math.exp((keep ? motion.log : Math.log(camera.scale))) * factor)));
     motion = { type: 'zoom', log, anchor, world: keep ? motion.world : worldAt(camera, ...anchor) }; start();
   };
   const local = e => { const r = map.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
@@ -214,34 +227,44 @@ export function mountSpawnSelect(root, menu) {
     markerName.textContent = choice.name; marker.classList.remove('on'); void marker.offsetWidth; marker.classList.add('on');
     clearTimeout(hideTimer); nohere.classList.remove('on');
     if (hadFocus) cardEl.querySelector('[data-act=spawnDrive]').focus({ preventScroll: true });
-    if (view && camera && move === 'area') flyTo(areaCamera(areas.find(a => a.mapId === choice.mapId) || choice));
+    if (view && camera && move === 'area') flyTo(areaCamera(areaOf(choice)));
     else if (view && camera && move === 'point') flyTo(focusOn(choice.at));
     else want(true);
     if (view && camera) { const [sx, sy] = toScreen(...choice.at); marker.style.transform = `translate(${sx.toFixed(1)}px,${sy.toFixed(1)}px)`; }
   };
   // An area's start, named after the street it is on once the roads have loaded.
-  const startOf = area => { const snap = roads && area.mapId !== 'athens' && snapToRoad({ [area.mapId]: roads[area.mapId] }, ...area.at, .5); return snap ? { ...roadChoice(snap), id: area.id, start: true } : areaChoice(area); };
+  const startOf = area => {
+    const snap = roads?.[area.mapId] && snapToRoad({ [area.mapId]: roads[area.mapId] }, ...area.at, area.mapId === 'athens' ? 2 : .5);
+    return snap && hosted(snap) ? { ...roadChoice(snap, areas), id: area.id, start: true, areaId: area.id, areaName: area.name } : areaChoice(area);
+  };
   const chooseArea = id => { const area = areas.find(a => a.id === id || a.mapId === id); if (area) render(startOf(area), { camera: 'area' }); };
-  const cycle = delta => { const i = Math.max(0, areas.findIndex(a => a.mapId === choice.mapId)); chooseArea(areas[(i + delta + areas.length) % areas.length].id); cardEl.querySelector('[data-act=spawnDrive]').focus({ preventScroll: true }); };
+  const cycle = delta => { const i = Math.max(0, areas.findIndex(a => a.id === areaOf(choice).id)); chooseArea(areas[(i + delta + areas.length) % areas.length].id); cardEl.querySelector('[data-act=spawnDrive]').focus({ preventScroll: true }); };
+  // The Athens street file and the served world can differ (a newer bake): a street only counts in a cell the world hosts.
+  const hosted = snap => snap.mapId !== 'athens' || !athens?.cells.size || athens.cells.has(athensCell(...snap.local));
   const say = (x, y) => {
     nohere.style.transform = `translate(${Math.round(x)}px,${Math.round(y)}px)`; nohere.classList.add('on');
     clearTimeout(hideTimer); hideTimer = setTimeout(() => nohere.classList.remove('on'), 1700);
   };
   const click = ([sx, sy]) => {
     if (!camera || !view) return;
-    const [wx, wy] = worldAt(camera, sx - view.width / 2, sy - view.height / 2), radius = Math.max(.25, Math.min(3, ROAD_RADIUS_PX / camera.scale));
-    let snap = roads && snapToRoad(roads, wx, wy, radius);
-    // The open world (dev flag only): any road of its hosted cells that no playable map owns.
-    if (!snap && athens?.cells.size) {
-      const found = snapToRoad(athens.roads, wx, wy, radius);
-      if (found && athens.cells.has(athensCell(...athensFromAttica(...found.at)))) { const [x, z] = athensFromAttica(...found.at); snap = { ...found, local: [x, z] }; }
-    }
-    if (!snap) { say(sx + 12, sy - 6); return; }
-    render(roadChoice(snap)); // the camera stays where the player put it
+    // A click reaches 60 px, at most about 260 m (Athens: 350 m), so "no road" means open country, sea or outside the world.
+    const [wx, wy] = worldAt(camera, sx - view.width / 2, sy - view.height / 2), radius = Math.max(.25, Math.min(athensMode ? 4 : 3, ROAD_RADIUS_PX / camera.scale));
+    const snap = roads && snapToRoad(roads, wx, wy, radius);
+    if (!snap || !hosted(snap)) { say(sx + 12, sy - 6); return; }
+    render(roadChoice(snap, areas)); // the camera stays where the player put it
   };
 
   // ---------------------------------------------------------------- input
-  root.addEventListener('keydown', e => { if (e.target.closest('input,textarea,select,[contenteditable]')) return; if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); e.stopPropagation(); if (!e.repeat) cycle(e.key === 'ArrowRight' ? 1 : -1); } }, { capture: true, signal });
+  root.addEventListener('keydown', e => {
+    if (e.target.closest('input,textarea,select,[contenteditable]')) return;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); e.stopPropagation(); if (!e.repeat) cycle(e.key === 'ArrowRight' ? 1 : -1); }
+  }, { capture: true, signal });
+  // + and − (main row or keypad) zoom about the middle of the free map, as a web map does, wherever the focus is.
+  document.addEventListener('keydown', e => {
+    if (e.target.closest?.('input,textarea,select,[contenteditable]') || e.metaKey || e.ctrlKey || e.altKey) return;
+    const zoom = ['+', '='].includes(e.key) || e.code === 'NumpadAdd' ? ZOOM_STEP : ['-', '_'].includes(e.key) || e.code === 'NumpadSubtract' ? 1 / ZOOM_STEP : 0;
+    if (zoom && view) { e.preventDefault(); zoomAt(zoom, (safe.left + safe.right) / 2, (safe.top + safe.bottom) / 2); }
+  }, { signal });
   map.addEventListener('scroll', () => { map.scrollLeft = 0; map.scrollTop = 0; }, { signal });
   // Two-finger trackpad scroll pans, a pinch (ctrl+wheel) or a mouse wheel zooms (src/map-wheel.js, owner 2026-10-20).
   map.addEventListener('wheel', e => {
@@ -262,7 +285,7 @@ export function mountSpawnSelect(root, menu) {
     if (pointers.size > 1) {
       tap = null;
       const [a, b] = [...pointers.values()], mid = [(a[0] + b[0]) / 2 - view.width / 2, (a[1] + b[1]) / 2 - view.height / 2], d = Math.hypot(a[0] - b[0], a[1] - b[1]);
-      if (pinch) { const scale = Math.max(minScale(), Math.min(MAX_SCALE, camera.scale * d / pinch.d)); camera = cameraFor(scale, worldAt(camera, ...pinch.mid), ...mid); panning = true; want(); }
+      if (pinch) { const scale = Math.max(minScale(), Math.min(maxZoom, camera.scale * d / pinch.d)); camera = cameraFor(scale, worldAt(camera, ...pinch.mid), ...mid); panning = true; want(); }
       pinch = { d, mid }; drag = null; return;
     }
     if (drag && !pinch && !tap) { const [x, y] = local(e); camera.x += x - drag[0]; camera.y += y - drag[1]; glide.track(x - drag[0], y - drag[1], e.timeStamp); panning = true; want(); drag = [x, y]; }
@@ -287,23 +310,30 @@ export function mountSpawnSelect(root, menu) {
     sync(performance.now(), true); maybeIntro(); start();
   };
   // Arrive on the region with every area in view, then fly to the chosen area once the art is ready.
-  const maybeIntro = () => { if (intro && art && view) { intro = false; session.arrived = true; flyTo(areaCamera(areas.find(a => a.mapId === choice.mapId) || choice)); } };
+  const maybeIntro = () => { if (intro && art && view) { intro = false; session.arrived = true; flyTo(areaCamera(areaOf(choice))); } };
   const resize = new ResizeObserver(() => { cancelAnimationFrame(resizeFrame); resizeFrame = requestAnimationFrame(relayout); }); resize.observe(map);
-  loadAssets().then(a => {
+  // In the Athens world the base map waits for the street file (or its failure), so no tile is ever painted without the
+  // streets and later swapped: the map fills in once, without patches.
+  const roadsLoad = loadRoads(athensMode);
+  Promise.all([loadAssets(), athensMode ? roadsLoad.catch(() => null) : null]).then(([a]) => {
     if (signal.aborted) return; art = a; map.classList.add('ready');
-    base = createMapRenderer({ ctx, data: { art, layers: a.layers, size: MAP_VIEW }, makeCanvas: (w, h) => Object.assign(document.createElement('canvas'), { width: w, height: h }) }); if (view) { base.resize(view, dpr); if (camera) base.prime(camera); }
+    // The picker's own copy of the layer list, so its street overlay never reaches the Track select map (same cached assets).
+    layers = { ...a.layers, ...(streetLayer ? { overlay: streetLayer } : {}) };
+    base = createMapRenderer({ ctx, data: { art, layers, size: MAP_VIEW }, makeCanvas: (w, h) => Object.assign(document.createElement('canvas'), { width: w, height: h }) }); if (view) { base.resize(view, dpr); if (camera) base.prime(camera); }
     Promise.all(a.detail.map(d => d.ready)).then(() => { if (!signal.aborted) want(true); });
     sync(performance.now(), true); maybeIntro(); start();
   }, error => { if (!signal.aborted) { map.classList.add('ready', 'failed'); console.error(error); } });
-  loadRoads().then(data => {
+  roadsLoad.then(data => {
     if (signal.aborted) return; roads = data; pathsFor(data);
     // The pre-selected start takes its street's name; an area still flying in reframes to its roads.
-    if (choice.start) { const area = areas.find(a => a.id === choice.id); if (area) render(startOf(area), { camera: !intro && motion?.type === 'fly' ? 'area' : 'stay' }); }
+    if (choice.start) { const area = areas.find(a => a.id === choice.areaId || a.id === choice.id); if (area) render(startOf(area), { camera: !intro && motion?.type === 'fly' ? 'area' : 'stay' }); }
     want(true);
   }, error => console.error(error));
-  // Under ?map=athens only: the open world joins as an area (its start moves to a hosted cell) and roads snap inside its cells.
-  if (athensEnabled()) loadAthens().then(a => {
-    if (signal.aborted) return; athens = a; areas = spawnAreas({ athens: true, athensCells: a.cells }); want(true);
+  // Under ?map=athens only: the districts the published world hosts become the areas, and clicks snap only inside its cells.
+  if (athensMode) loadAthens().then(a => {
+    if (signal.aborted) return; athens = a; if (a.cells.size) areas = spawnAreas({ athens: true, athensCells: a.cells });
+    if (choice.start && !areas.some(d => d.id === choice.areaId) && areas.length) render(startOf(areas[0]), { camera: intro ? 'stay' : 'area' });
+    want(true);
   });
   const away = () => { cancelAnimationFrame(frame); frame = 0; };
   const back = () => { if (view && onScreen && !document.hidden) want(true); };
@@ -315,6 +345,8 @@ export function mountSpawnSelect(root, menu) {
     /** where a point of the map (Attica units) is on screen (client px); used by the browser proofs to click a road */
     screenOf(at) { const r = map.getBoundingClientRect(), [x, y] = toScreen(...at); return [r.left + x, r.top + y]; },
     get choice() { return choice; },
+    /** the base map renderer's counters (tiles painted, paint ms, cache), for the browser perf proofs */
+    stats: () => base?.stats() || null,
     action(name) {
     if (['left', 'shiftDown', 'mapPrev'].includes(name)) { cycle(-1); return true; }
     if (['right', 'shiftUp', 'mapNext'].includes(name)) { cycle(1); return true; }

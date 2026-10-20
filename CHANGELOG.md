@@ -8,6 +8,7 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Maps: the mouse wheel zooms on a Mac too, one step per notch, centred on the pointer. On the Free Roam map, + and − zoom, and you can zoom right in to street level.
 - One car per model: the garage keeps each car's top trim, with no trim or body choice. Saved cars, paints and times move to it.
 - Honda Jazz: the drift spec is gone. The Jazz is the Dynamic road car.
 - Simpler cars: no spoilers, wings, diffusers, splitters, side vents, stripes or two-tone roofs. One clean body in its paint.
