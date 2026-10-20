@@ -9,7 +9,7 @@ A new `CREDITS*` / `LICENSE*` file anywhere in the repo is picked up automatical
 
 <!-- Name | GitHub handle | role | other names used in git commits (optional, separated by ;) -->
 - Alexandros Lekkas | aflekkas | Creator and maintainer | Alex Flekkas
-- Vassilis Perrotis | Vas-Per | Contributor
+- Vassilis Perrotis | Vas-Per | Contributor | Vas-Per
 
 ## AI
 
