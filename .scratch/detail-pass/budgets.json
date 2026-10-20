@@ -26,7 +26,9 @@
     "src/traffic-passenger-shapes.js": "2a8f199519cee184f9bc6e05e579267cacb5af08d397371933557f1b1e98968b",
     "src/traffic-passenger-models.js": "7d10c7595114bf448dc2a04fef6fd28735e4cc580db74e47f3381f9ff039e10d",
     "src/road.js": "758c008f3f4a02efe94edd75b5aabcb568dcb477327e21b181cfea0cab052503",
-    "src/gantry-legs.js": "45657a40df79c75ac4a43e2bfc13fe97bc18ce84f79ae95f845aa3a13ca09626"
+    "src/gantry-legs.js": "6087989ede49581b23984b7dabe70a01fdfdaf668bbd63ef941aad7de6142f4c",
+    "src/maps/psychiko-streetscape.js": "a9fd982adeb839d4207edeb1295a0e3892c5143837f153b411bf124b5cae3c73",
+    "src/maps/psychiko-recognition.js": "53e9dc2bac773b763f6ecf64208e6397df7e744b6bacc4bf5b2f9b41a1fe366d"
   },
   "rows": [
     {
@@ -1168,7 +1170,7 @@
         ],
         "calls": 159,
         "triangles": 629167,
-        "geometryBytes": 253183638,
+        "geometryBytes": 253199890,
         "textureBytes": 92168192.00000003,
         "shadows": false
       },
@@ -1188,7 +1190,7 @@
         ],
         "calls": 159,
         "triangles": 629167,
-        "geometryBytes": 253183638,
+        "geometryBytes": 253199890,
         "textureBytes": 92168192.00000003,
         "shadows": false
       },
@@ -1208,7 +1210,7 @@
         ],
         "calls": 169,
         "triangles": 700316,
-        "geometryBytes": 258034737,
+        "geometryBytes": 258050989,
         "textureBytes": 95051776.00000004,
         "shadows": false
       }
@@ -1232,7 +1234,7 @@
         ],
         "calls": 139,
         "triangles": 694284,
-        "geometryBytes": 253342190,
+        "geometryBytes": 253358442,
         "textureBytes": 95838212,
         "shadows": false
       },
@@ -1252,7 +1254,7 @@
         ],
         "calls": 139,
         "triangles": 694284,
-        "geometryBytes": 253342190,
+        "geometryBytes": 253358442,
         "textureBytes": 95838212,
         "shadows": false
       },
@@ -1272,7 +1274,7 @@
         ],
         "calls": 149,
         "triangles": 765445,
-        "geometryBytes": 258193289,
+        "geometryBytes": 258209541,
         "textureBytes": 98721796.00000001,
         "shadows": false
       }
@@ -1296,7 +1298,7 @@
         ],
         "calls": 161,
         "triangles": 630127,
-        "geometryBytes": 253183638,
+        "geometryBytes": 253199890,
         "textureBytes": 91774980.00000003,
         "shadows": false
       },
@@ -1316,7 +1318,7 @@
         ],
         "calls": 161,
         "triangles": 630127,
-        "geometryBytes": 253183638,
+        "geometryBytes": 253199890,
         "textureBytes": 91774980.00000003,
         "shadows": false
       },
@@ -1336,7 +1338,7 @@
         ],
         "calls": 171,
         "triangles": 701276,
-        "geometryBytes": 258034737,
+        "geometryBytes": 258050989,
         "textureBytes": 94658564.00000004,
         "shadows": false
       }
@@ -1360,7 +1362,7 @@
         ],
         "calls": 141,
         "triangles": 695244,
-        "geometryBytes": 253342190,
+        "geometryBytes": 253358442,
         "textureBytes": 95838212,
         "shadows": false
       },
@@ -1380,7 +1382,7 @@
         ],
         "calls": 141,
         "triangles": 695244,
-        "geometryBytes": 253342190,
+        "geometryBytes": 253358442,
         "textureBytes": 95838212,
         "shadows": false
       },
@@ -1400,7 +1402,7 @@
         ],
         "calls": 151,
         "triangles": 766405,
-        "geometryBytes": 258193289,
+        "geometryBytes": 258209541,
         "textureBytes": 98721796.00000001,
         "shadows": false
       }

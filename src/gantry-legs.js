@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { signFaceOffset } from './sign-mount.js';
 import { squarePost } from './world-prop-geometries.js';
 // Shared by the rendered arches and the cockpit-clearance raycast guard.
@@ -8,7 +9,12 @@ export function gantryLegFrame(route, s, material, kind = 'road', dir = 1) {
   group.position.copy(route.point(s, 0));
   group.rotation.y = Math.atan2(f.tx, f.tz) + (dir > 0 ? Math.PI : 0);
   const leg = squarePost(width, height, width, 'gantry'); leg.translate(0, height / 2, 0);
-  for (const side of [-1, 1]) {
+  if(kind==='road'&&route.streetCircuit&&route.from==='Faros'){
+    // Both static supports share one draw, preserving the exact same world-space vertices and raycast guard.
+    const parts=[-1,1].map(side=>leg.clone().translate(side*(route.edge(s)+1.2),0,0));
+    const mesh=new THREE.Mesh(mergeGeometries(parts),material);mesh.name='gantry-leg';mesh.castShadow=true;group.add(mesh);
+    for(const p of parts)p.dispose();leg.dispose();
+  }else for (const side of [-1, 1]) {
     const mesh = new THREE.Mesh(leg, material); mesh.name = 'gantry-leg';
     mesh.position.x = side * (route.edge(s) + 1.2); mesh.castShadow = true; group.add(mesh);
   }

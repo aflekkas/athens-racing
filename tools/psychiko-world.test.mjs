@@ -348,12 +348,14 @@ test('station-backed parking records cover both panes, preserve empty kerbs and 
  }
  assert(!survey.runs.some(r=>r.s0>5068&&r.s0<5630),'Kifisias through lanes/frontage slip contain traffic, not kerb parking');
  const THREE=await import('three'),{PsychikoStreetscape}=await import('../src/maps/psychiko-streetscape.js'),street=new PsychikoStreetscape(map,new THREE.Group(),(x,z)=>terrain.height(x,z));
- try{assert.equal(street.parking.length,3);assert(street.parking.every(m=>m.isInstancedMesh));
+ try{assert.equal(street.parking.length,2);assert(street.parking.every(m=>m.isInstancedMesh));
   assert.equal(street.parking.reduce((n,m)=>n+m.count,0),street.obstacles.length);
   assert(street.obstacles.length<700);
   for(const mesh of street.parking){const g=mesh.geometry;g.computeBoundingBox();
    assert(g.boundingBox.max.x<=.87&&g.boundingBox.min.x>=-.87,'rendered car stays within unchanged collider width');
    assert(g.boundingBox.max.z<=2.08&&g.boundingBox.min.z>=-2.08,'rendered car stays within unchanged collider length');
+   const alternate=g.attributes.aSedanPosition;
+   for(let i=0;i<alternate.count;i++){assert(Math.abs(alternate.getX(i))<=.87,'alternate body stays within collider width');assert(Math.abs(alternate.getZ(i))<=2.08,'alternate body stays within collider length');}
    assert(g.attributes.position.count/3<450,'bounded template geometry');
    assert(g.attributes.aPaint.array.some(v=>v===255)&&g.attributes.aPaint.array.some(v=>v===0),'paint mask preserves glass and wheel colours');
   }

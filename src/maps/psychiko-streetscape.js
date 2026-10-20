@@ -232,27 +232,46 @@ export class PsychikoStreetscape {
     const set = this.trees[r.sp], t = set[r.seed % set.length], y = r.pavement ? this.network.height(r.x,r.z)+.13 : this.network.islandAt(r.x, r.z) ? this.network.height(r.x, r.z) - .04 : this.height(r.x, r.z) - .25, s = r.h, wide = r.sp === 0 ? 1 + hash(r.seed) * .25 : r.sp === 1 ? .85 + hash(r.seed) * .4 : 1;
     m.add(t, r.x, y, r.z, hash(r.seed, 1) * 6.283, s * wide, s, s * wide, .86 + hash(r.seed, 2) * .3);
   }
-  /** Three shared pools; paint alone receives instance colour, glass/tyres/lamps keep their authored colour. */
+  /** Two shared pools for three shapes; paint alone receives instance colour, glass/tyres/lamps keep their authored colour. */
   buildParking() {
     const cars=[...this.props.values()].flat().filter(r=>r.kind==='car');
     const material=this.fadeMaterial(260),fade=material.onBeforeCompile;
-    material.roughness=.62;material.customProgramCacheKey=()=> 'psychiko-parked-paint-v1';
+    material.roughness=.62;material.customProgramCacheKey=()=> 'psychiko-parked-paint-v2';
     material.onBeforeCompile=sh=>{fade(sh);
-      sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute float aPaint;')
-        .replace('#include <color_vertex>',THREE.ShaderChunk.color_vertex.replace('vColor.xyz *= instanceColor.xyz;', 'vColor.xyz *= mix(vec3(1.),instanceColor.xyz,aPaint);'));
+      sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute float aPaint;attribute float aCarShape;attribute vec3 aSedanPosition;attribute vec3 aSedanNormal;attribute vec3 aSedanColor;attribute float aSedanPaint;')
+        .replace('#include <begin_vertex>','vec3 transformed=mix(position,aSedanPosition,aCarShape);')
+        .replace('#include <beginnormal_vertex>','vec3 objectNormal=mix(normal,aSedanNormal,aCarShape);')
+        .replace('#include <color_vertex>',THREE.ShaderChunk.color_vertex.replace('vColor *= color;','vColor *= mix(color,aSedanColor,aCarShape);').replace('vColor.xyz *= instanceColor.xyz;', 'vColor.xyz *= mix(vec3(1.),instanceColor.xyz,mix(aPaint,aSedanPaint,aCarShape));'));
     };
     this.materials.parking=material;
     const matrix=new THREE.Matrix4(),rotation=new THREE.Quaternion(),axis=new THREE.Vector3(0,1,0),scale=new THREE.Vector3(1,1,1);
-    this.parking=this.cars.map((t,variant)=>{
-      const m=new Mesher(1024);m.add(t,0,0,0);const geometry=m.geometry();
-      geometry.setAttribute('aPaint',new THREE.BufferAttribute(t.paint,1,true));
-      const records=cars.filter(r=>Math.floor(hash(Math.round(r.x*10),Math.round(r.z*10),71)*3)===variant).map(r=>{
+    // City hatch and sedan share one pool with discrete per-instance vertex attributes. This preserves
+    // all three authored silhouettes/colours while using only two draws, including on narrow Low views.
+    const geometry=(a,b=a)=>{
+      const count=Math.max(a.p.length,b.p.length)/3,g=new THREE.BufferGeometry();
+      const attribute=(array,size,Type,normalised=false)=>{
+        const values=new Type(count*size);values.set(array);
+        // Pad the shorter soup with degenerate triangles, never visible geometry.
+        for(let i=array.length;i<values.length;i++)values[i]=array[array.length-size+i%size];
+        return new THREE.BufferAttribute(values,size,normalised);
+      };
+      for(const [name,t] of [['',a],['aSedan',b]]){
+        const key=n=>name?name+n:n.toLowerCase();
+        g.setAttribute(key('Position'),attribute(t.p,3,Float32Array));g.setAttribute(key('Normal'),attribute(t.n,3,Int8Array,true));
+        g.setAttribute(key('Color'),attribute(t.c,3,Uint8Array,true));g.setAttribute(name?'aSedanPaint':'aPaint',attribute(t.paint,1,Uint8Array,true));
+      }
+      g.setAttribute('aStone',new THREE.BufferAttribute(new Uint8Array(count),1,true));g.computeBoundingSphere();return g;
+    };
+    this.parking=[[0,1],[2]].map(variants=>{
+      const g=geometry(this.cars[variants[0]],this.cars[variants.at(-1)]);
+      const records=cars.map(r=>({...r,variant:Math.floor(hash(Math.round(r.x*10),Math.round(r.z*10),71)*3)})).filter(r=>variants.includes(r.variant)).map(r=>{
         rotation.setFromAxisAngle(axis,r.yaw);const y=r.lap?this.route.point(r.lap.d,r.lap.u).y+.08:this.network.height(r.x,r.z)-.02;
-        return {x:r.x,z:r.z,color:r.color,matrix:matrix.compose(new THREE.Vector3(r.x,y,r.z),rotation,scale).clone()};
+        return {x:r.x,z:r.z,color:r.color,shape:r.variant===1?1:0,matrix:matrix.compose(new THREE.Vector3(r.x,y,r.z),rotation,scale).clone()};
       });
-      const mesh=new THREE.InstancedMesh(geometry,material,records.length);mesh.name='psychiko-surveyed-parking:'+variant;mesh.frustumCulled=false;
+      const mesh=new THREE.InstancedMesh(g,material,records.length);mesh.name='psychiko-surveyed-parking:'+variants.join('-');mesh.frustumCulled=false;
       mesh.userData.parkingRecords=records;mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-      records.forEach((r,i)=>{mesh.setMatrixAt(i,r.matrix);mesh.setColorAt(i,C.set(CAR_COLORS[r.color]));});
+      const shapes=new THREE.InstancedBufferAttribute(new Float32Array(records.length),1).setUsage(THREE.DynamicDrawUsage);g.setAttribute('aCarShape',shapes);
+      records.forEach((r,i)=>{mesh.setMatrixAt(i,r.matrix);mesh.setColorAt(i,C.set(CAR_COLORS[r.color]));shapes.setX(i,r.shape);});
       this.group.add(mesh);return mesh;
     });
     this.stats.parked=cars.length;
@@ -261,8 +280,8 @@ export class PsychikoStreetscape {
     this.materials.parking.userData.far.value=far;
     let visible=0;
     for(const mesh of this.parking){let n=0;
-      for(const r of mesh.userData.parkingRecords)if(Math.hypot(r.x-p.x,r.z-p.z)<far+4){mesh.setMatrixAt(n,r.matrix);mesh.setColorAt(n++,C.set(CAR_COLORS[r.color]));}
-      mesh.count=n;mesh.visible=n>0;mesh.instanceMatrix.needsUpdate=true;mesh.instanceColor.needsUpdate=true;visible+=n;
+      for(const r of mesh.userData.parkingRecords)if(Math.hypot(r.x-p.x,r.z-p.z)<far+4){mesh.setMatrixAt(n,r.matrix);mesh.setColorAt(n,C.set(CAR_COLORS[r.color]));mesh.geometry.attributes.aCarShape.setX(n++,r.shape);}
+      mesh.count=n;mesh.visible=n>0;mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;mesh.geometry.attributes.aCarShape.needsUpdate=true;visible+=n;
     }
     this.stats.parkingActive=visible;
   }
