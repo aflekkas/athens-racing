@@ -1,0 +1,11 @@
+{
+  "wrapper": 9809,
+  "command": [
+    "node",
+    ".scratch/psychiko-realism/impl-f/game-capture.mjs"
+  ],
+  "slot": 1,
+  "child": 9810,
+  "closed": true,
+  "code": 0
+}

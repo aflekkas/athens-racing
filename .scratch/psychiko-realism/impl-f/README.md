@@ -57,6 +57,27 @@ The fixed Low/High poses, production render settings and Mini day/night chase/co
 
 The matched High triangle increase remains below the supplied ceiling, and all matched draw counts are within the approximately 10% allowance. Earlier counters for other maps are retained because their map inputs and geometry are unchanged; the shared atlas rounding changes no topology, culling, resources or passes.
 
+## Clean-archive gates
+
+All required gates ran serially on a clean `git archive` of **a8fdfdb3**, with existing dependencies symlinked. [Exact candidate](archive-head.txt), [results and owned PIDs](gate-results.json), [runner](clean-gates.mjs). The final documentation commit changes only implementation-F evidence and reports; the source tree proof below checks that distinction. No candidate source edits followed validation.
+
+| Gate | Result |
+| --- | --- |
+| [Wrangler staging dry run](wrangler-dry-run.log) | Exit 0; no deployment. |
+| [Physics](physics.log) | 1261 passed, 0 failed |
+| [Syntax](syntax.log) | Syntax checked 381 JavaScript modules. |
+| [Browser imports](browser-imports.log) | Browser import graph checked: 300 modules. |
+| [Map validator](validator.log) | Pass; 3,647 buildings and 672 network road parts. |
+| [Psychiko / rings / network tests](focused.log) | 57 pass / 0 fail. |
+| [Uploaded terrain](terrain.log) | 3,074,440 samples; above-road 0.002509492 m; step 0.148080138 m; slope 0.504752714. |
+| [Strict physical AI lap](lap.log) | 502.667 s, six rings; 0 off-road, island, clockwise and wall-hit frames; max wall-hit impulse 0. |
+| [Detail budget](detail-budget-clean.log) | 1 pass / 0 fail; final source hashes match. |
+| [npm test](npm-test.log) | 252/252 files, 2308 tests, 2293 pass, 3 fail in first attempts, 12 skipped; 0 flaky (passed on isolated retry), 2 failed |
+
+Only the explicitly accepted garage drive-pill test and two Riviera traffic cases remain failing. The release-data tests pass; its git-author check is skipped in the archive. Failure names are recorded in `gate-results.json`; there are no additional final failures.
+
+[Terrain summary](terrain-summary.json) · [AI lap samples](lap.json) · [strict lap log](lap.log). The initial superseded archive exposed the missing standalone Faros pavement correction and an old budget source hash. Both were fixed before this final full run: [superseded attempt](initial-gate-attempt.json).
+
 ## Remaining differences
 
 - Houses are still simplified OSM blocks. Section colours, heights and roof types are closer, but window rhythm and balcony details repeat; distinctive villa ornament, individual driveways, exact garden setbacks and roof equipment are not all reproduced. Ground-floor exposure still follows the existing terrain support on sloped parcels.
@@ -65,8 +86,32 @@ The matched High triangle increase remains below the supplied ceiling, and all m
 - Trees and hedges use the existing stylised meshes and approximate density, not individual photo-matched trees. Some reference views have much denser vegetation and more visual enclosure.
 - Panorama snapping, OSM alignment, different source seasons/dates, the smoothed Copernicus terrain and omitted Kifisias tunnel context remain the limitations described in [implementation E](../impl-e/README.md) and [D](../impl-d/README.md).
 
+The full-suite reproducibility gate found that the inherited Faros pavement override only ran in the full map builder. It now runs in the shared network extractor, so standalone rebuilds preserve the same three 3.4 m pavement strips. All 11 network tests pass, and the twice-rebuilt map/terrain bytes remain identical to the measured/captured bundle.
+
 ## Reproduction and evidence
 
 The two builder runs are byte-identical across route/profile, `map.json`, `terrain.bin` and the preview SVG: [hashes](rebuild-hashes.json), [rebuild script](rebuild.mjs), [log](rebuild.log). No other map bundle changed. The atlas fix changes sampling arithmetic only, with no additional shader passes, textures or draw calls.
 
 Headless captures: [station harness](harness/evidence.mjs), [Low/High harness](harness/perf-browser.mjs), [game harness](game-capture.mjs), [composition](compose.py), [gallery](gallery.py), [browser-slot fallback](browser-slot.py). Re-running station composition requires refetching the source reference URLs in `capture-stations.json` and recapturing the e99e37c1 baseline; the original raw files were intentionally removed after composition. Use a fresh task temporary directory in `session.json` for any new run. [Gallery preview check](inline-preview-check.json), [removed duplicate/raw evidence](removed-capture-files.json).
+
+## Commits and cleanup
+
+- `2f64c644` — Record station-backed Psychiko parking and house styles
+- `f844e1bb` — Model surveyed low Faros shops and pale villa terraces
+- `e66af16d` — Open Faros pavements and replace random parking with surveyed instanced runs
+- `8b3838ac` — Verify the physical AI lap against surveyed parked-car colliders
+- `40dac16f` — Stabilize facade atlas sampling and give Faros shops clean render
+- `ba69b742` — Require zero contact impulse throughout the surveyed AI lap
+- `f954bd06` — Refresh Psychiko detail counters after facade and parking verification
+- `3eed1020` — Record final atlas hashes and measured detail budgets
+- `5baed7fe` — Add Psychiko station comparisons and eleven full-game previews
+- `84e78471` — Curate unique Psychiko comparisons and document visual limits
+- `a8fdfdb3` — Make standalone networks reproduce the surveyed Faros footways
+
+Every implementation commit ends with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`. The final report commit records these gates and cleanup only. [Validated source tree](validated-source-tree.json).
+
+Removed the one task temporary directory `/tmp/athens-psychiko-f.8b8s_p0n`, including 1,290,528,787 bytes of clean archives, build outputs and bakes; also removed raw reference downloads and duplicate/intermediate frames. No manual signals were sent. All owned capture handles and final gate children closed naturally. [Cleanup record](cleanup.json), [owned process records](owned-processes.json).
+
+Intentional retained evidence: approximately **9 MiB** under `impl-f/`, including the 39 comparisons, 11 screenshots, two contact sheets, parking map, compact numeric audits and final gate logs. No additional worktree or large bake is left. Continuation disk before: **89 GiB available / 12% capacity**. After cleanup: **88 GiB available / 12% capacity** (the shared host can also change disk use). No other task, cache or worktree was removed.
+
+Additional reproducibility helpers: [world audit](audit-world.mjs), [parking map](parking-map.py), [budget assertions](budget-report.py), [inline gallery](make-inline.py), [report generator](finalize-report.py), [cleanup script](cleanup-final.py).

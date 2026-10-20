@@ -1,0 +1,157 @@
+{
+  "head": "ba69b742698be7bb1578c0cd056b35308fe5c572",
+  "archiveClean": true,
+  "nodeModules": "symlink to existing dependencies",
+  "started": "2026-10-20T09:22:12.333Z",
+  "pids": [
+    {
+      "gate": "physics",
+      "pid": 10344,
+      "started": "2026-10-20T09:22:12.347Z"
+    },
+    {
+      "gate": "wrangler-dry-run",
+      "pid": 10345,
+      "started": "2026-10-20T09:22:12.349Z"
+    },
+    {
+      "gate": "syntax",
+      "pid": 12562,
+      "started": "2026-10-20T09:29:23.536Z"
+    },
+    {
+      "gate": "browser-imports",
+      "pid": 13024,
+      "started": "2026-10-20T09:30:12.493Z"
+    },
+    {
+      "gate": "validator",
+      "pid": 13027,
+      "started": "2026-10-20T09:30:13.833Z"
+    },
+    {
+      "gate": "focused",
+      "pid": 13050,
+      "started": "2026-10-20T09:30:16.202Z"
+    },
+    {
+      "gate": "terrain",
+      "pid": 13111,
+      "started": "2026-10-20T09:30:46.976Z"
+    },
+    {
+      "gate": "lap",
+      "pid": 14096,
+      "started": "2026-10-20T09:35:03.681Z"
+    },
+    {
+      "gate": "detail-budget-clean",
+      "pid": 14116,
+      "started": "2026-10-20T09:35:10.576Z"
+    },
+    {
+      "gate": "npm-test",
+      "pid": 14118,
+      "started": "2026-10-20T09:35:10.979Z"
+    }
+  ],
+  "gates": [
+    {
+      "name": "physics",
+      "command": "/opt/homebrew/Cellar/node/25.9.0_2/bin/node --import ./tools/physics-test/register.mjs tools/physics-test/regress.mjs",
+      "code": 0,
+      "signal": null,
+      "seconds": 431.185,
+      "status": "pass"
+    },
+    {
+      "name": "syntax",
+      "command": "/opt/homebrew/Cellar/node/25.9.0_2/bin/node tools/check-syntax.mjs",
+      "code": 0,
+      "signal": null,
+      "seconds": 48.956,
+      "status": "pass"
+    },
+    {
+      "name": "browser-imports",
+      "command": "/opt/homebrew/Cellar/node/25.9.0_2/bin/node tools/check-browser-imports.mjs",
+      "code": 0,
+      "signal": null,
+      "seconds": 1.338,
+      "status": "pass"
+    },
+    {
+      "name": "validator",
+      "command": "/opt/homebrew/Cellar/node/25.9.0_2/bin/node tools/maps/psychiko/validate.mjs",
+      "code": 0,
+      "signal": null,
+      "seconds": 2.364,
+      "status": "pass"
+    },
+    {
+      "name": "focused",
+      "command": "/opt/homebrew/Cellar/node/25.9.0_2/bin/node --test tools/psychiko-world.test.mjs tools/roundabouts.test.mjs",
+      "code": 0,
+      "signal": null,
+      "seconds": 30.776,
+      "status": "pass"
+    },
+    {
+      "name": "wrangler-dry-run",
+      "command": "npx wrangler deploy --env staging --dry-run",
+      "code": 0,
+      "signal": null,
+      "seconds": 770.114,
+      "status": "pass"
+    },
+    {
+      "name": "terrain",
+      "command": "/opt/homebrew/Cellar/node/25.9.0_2/bin/node --test tools/world-tests-psychiko.test.mjs",
+      "code": 0,
+      "signal": null,
+      "seconds": 256.704,
+      "status": "pass"
+    },
+    {
+      "name": "lap",
+      "command": "/opt/homebrew/Cellar/node/25.9.0_2/bin/node tools/maps/psychiko/drive-lap.mjs /Users/vassilisperrotis/.t3/worktrees/athens-street-racers/psychiko-realism/.scratch/psychiko-realism/impl-f/lap.json",
+      "code": 0,
+      "signal": null,
+      "seconds": 6.893,
+      "status": "pass"
+    },
+    {
+      "name": "detail-budget-clean",
+      "command": "/opt/homebrew/Cellar/node/25.9.0_2/bin/node --test tools/detail-budgets.test.mjs",
+      "code": 1,
+      "signal": null,
+      "seconds": 0.4,
+      "status": "fail"
+    },
+    {
+      "name": "npm-test",
+      "command": "npm test",
+      "code": 1,
+      "signal": null,
+      "seconds": 353.38,
+      "status": "fail"
+    }
+  ],
+  "npmFailures": {
+    "files": [
+      "tools/garage-cards.test.mjs",
+      "tools/traffic-race.test.mjs",
+      "tools/road-network.test.mjs",
+      "tools/detail-budgets.test.mjs"
+    ],
+    "names": [
+      "browser measures drive-pill containment, manufacturer options and brand selection at desktop and narrow-window sizes",
+      "Riviera, afternoon, player at matched pace: civilians keep moving and the field never stalls",
+      "Riviera, rush hour, slow player: civilians keep moving and the field never stalls",
+      "psychiko complete surrounding roads reproduce from frozen saved OSM, with unchanged race-route arrays",
+      "fixed all-map day/night poses enforce the owner world-detail budgets in both states"
+    ]
+  },
+  "finished": "2026-10-20T09:41:04.392Z",
+  "pass": false
+}

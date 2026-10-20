@@ -1,0 +1,412 @@
+
+> test
+> node tools/run-tests.mjs
+
+[runner] 252 test files, 2 at a time, heaviest first, failed files retried once alone
+[world] tools/world-tests.test.mjs: ok, 24 tests, 54.0 s
+[unit] (node:19514) Warning: `--localstorage-file` was provided without a valid path
+[unit] (Use `node --trace-warnings ...` to show where the warning was created)
+[unit] ✔ every garage trim has the manufacturer artwork and drive pill inside its card media (5.862417ms)
+[unit] ✔ brand filter covers every manufacturer and combines with the other filters (11.105ms)
+[unit] ✔ showroom has a transparent soft shadow receiver and no turntable disc (0.752708ms)
+[unit] ✔ actual city, sports, van and bus vertices stay centred within half a pixel through full revolutions (431.042583ms)
+[unit] ✔ static thumbnails fill their image bounds with consistent margins (156.781583ms)
+[unit] ✔ spec panel has shared tiles, segmented trims and no unavailable paint or internal copy (4.817666ms)
+[unit] ✖ browser measures drive-pill containment, manufacturer options and brand selection at desktop and narrow-window sizes (23.4065ms)
+[unit] ℹ tests 7
+[unit] ℹ suites 0
+[unit] ℹ pass 6
+[unit] ℹ fail 1
+[unit] ℹ cancelled 0
+[unit] ℹ skipped 0
+[unit] ℹ todo 0
+[unit] ℹ duration_ms 791.074458
+[unit] ✖ failing tests:
+[unit] test at tools/garage-cards.test.mjs:58:1
+[unit] ✖ browser measures drive-pill containment, manufacturer options and brand selection at desktop and narrow-window sizes (23.4065ms)
+[unit]   AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Garage browser bounds, logos and brand filter PASS 1280/. Input:
+[unit]   
+[unit]   ''
+[unit]   
+[unit]       at TestContext.<anonymous> (file:///private/tmp/athens-psychiko-f.8b8s_p0n/candidate/tools/garage-cards.test.mjs:61:9)
+[unit]       at async Test.run (node:internal/test_runner/test:1208:7)
+[unit]       at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+[unit]     generatedMessage: true,
+[unit]     code: 'ERR_ASSERTION',
+[unit]     actual: '',
+[unit]     expected: /Garage browser bounds, logos and brand filter PASS 1280/,
+[unit]     operator: 'match',
+[unit]     diff: 'simple'
+[unit]   }
+[unit] tools/garage-cards.test.mjs: FAILED (exit 1) after 0.9 s
+[progress] 2/252 files done after 60.0 s; running: world-tests-psychiko.test.mjs, rivals-test.mjs
+[physics] tools/rivals-test.mjs: ok, 1 tests, 32.6 s
+[physics] ✖ Riviera, afternoon, player at matched pace: civilians keep moving and the field never stalls (8470.977125ms)
+[physics] ✖ Riviera, rush hour, slow player: civilians keep moving and the field never stalls (0.479833ms)
+[physics] ℹ tests 2
+[physics] ℹ suites 0
+[physics] ℹ pass 0
+[physics] ℹ fail 2
+[physics] ℹ cancelled 0
+[physics] ℹ skipped 0
+[physics] ℹ todo 0
+[physics] ℹ duration_ms 8593.97275
+[physics] ✖ failing tests:
+[physics] test at tools/traffic-race.test.mjs:34:36
+[physics] ✖ Riviera, afternoon, player at matched pace: civilians keep moving and the field never stalls (8470.977125ms)
+[physics]   AssertionError [ERR_ASSERTION]: civilian #52 (truck) stood in a lane for 15.7 s: {"behind-parked":662,"behind-moving-car":236,"behind-stopped-car":45}
+[physics]       at TestContext.<anonymous> (file:///private/tmp/athens-psychiko-f.8b8s_p0n/candidate/tools/traffic-race.test.mjs:48:10)
+[physics]       at async Test.run (node:internal/test_runner/test:1208:7)
+[physics]       at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+[physics]     generatedMessage: false,
+[physics]     code: 'ERR_ASSERTION',
+[physics]     actual: false,
+[physics]     expected: true,
+[physics]     operator: '==',
+[physics]     diff: 'simple'
+[physics]   }
+[physics] test at tools/traffic-race.test.mjs:34:36
+[physics] ✖ Riviera, rush hour, slow player: civilians keep moving and the field never stalls (0.479833ms)
+[physics]   AssertionError [ERR_ASSERTION]: field-wide stall 11 s
+[physics]       at TestContext.<anonymous> (file:///private/tmp/athens-psychiko-f.8b8s_p0n/candidate/tools/traffic-race.test.mjs:41:10)
+[physics]       at async Test.run (node:internal/test_runner/test:1208:7)
+[physics]       at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+[physics]     generatedMessage: false,
+[physics]     code: 'ERR_ASSERTION',
+[physics]     actual: false,
+[physics]     expected: true,
+[physics]     operator: '==',
+[physics]     diff: 'simple'
+[physics]   }
+[physics] tools/traffic-race.test.mjs: FAILED (exit 1) after 8.7 s
+[world] tools/world-tests-psychiko.test.mjs: ok, 1 tests, 101.0 s
+[unit] tools/pov-owner-lock.test.mjs: ok, 1 tests, 10.3 s
+[unit] tools/cockpit-structure.test.mjs: ok, 5 tests, 8.0 s
+[physics] tools/physics-test/driver-feel.test.mjs: ok, 15 tests, 4.7 s
+[physics] tools/physics-test/wet.test.mjs: ok, 3 tests, 6.0 s
+[unit] tools/ai-driving.test.mjs: ok, 26 tests, 4.1 s
+[unit] tools/exterior-cabin.test.mjs: ok, 158 tests, 4.0 s
+[unit] tools/camera-visibility.test.mjs: ok, 80 tests, 3.6 s
+[progress] 12/252 files done after 120.0 s; running: course-routes.test.mjs, cabin-floor.test.mjs
+[unit] tools/cabin-floor.test.mjs: ok, 82 tests, 3.8 s
+[unit] tools/course-routes.test.mjs: ok, 30 tests, 5.8 s
+[unit] tools/vehicle-budgets.test.mjs: ok, 80 tests, 3.8 s
+[physics] tools/physics-test/rest-pose.test.mjs: ok, 2 tests, 3.9 s
+[unit] tools/car-shadow.test.mjs: ok, 2 tests, 3.0 s
+[unit] tools/gantry-clearance.test.mjs: ok, 2 tests, 3.0 s
+[unit] tools/cockpit-frame.test.mjs: ok, 3 tests, 4.2 s
+[physics] tools/physics-test/playtest-handling.test.mjs: ok, 11 tests, 2.6 s
+[damage] tools/physics-test/recovery.test.mjs: ok, 46 tests, 2.5 s
+[unit] tools/car-rest-pose.test.mjs: ok, 1 tests, 1.8 s
+[unit] tools/psychiko-world.test.mjs: ok, 29 tests, 7.5 s
+[physics] tools/physics-test/airborne.test.mjs: ok, 12 tests, 1.5 s
+[physics] tools/physics-test/maneuvers.test.mjs: ok, 29 tests, 1.3 s
+[physics] tools/physics-test/mapped-line.test.mjs: ok, 4 tests, 1.8 s
+[physics] tools/race-progress-sim.test.mjs: ok, 7 tests, 1.5 s
+[unit] tools/road-network.test.mjs: ok, 11 tests, 2.9 s
+[physics] tools/physics-test/corner-entry.test.mjs: ok, 40 tests, 0.8 s
+[unit] tools/asset-codecs.test.mjs: ok, 14 tests, 1.8 s
+[physics] tools/physics-test/manual.test.mjs: ok, 22 tests, 0.8 s
+[unit] tools/owner-locked-free-roam-spawn.test.mjs: ok, 12 tests, 0.8 s
+[unit] tools/police-tuning.test.mjs: ok, 41 tests, 0.7 s
+[unit] tools/tow-nearest-road.test.mjs: ok, 9 tests, 0.6 s
+[unit] tools/sign-mount.test.mjs: ok, 3 tests, 0.9 s
+[unit] tools/world-detail.test.mjs: ok, 5 tests, 0.9 s
+[unit] tools/penteli-world.test.mjs: ok, 10 tests, 0.8 s
+[unit] tools/tow-road-placement.test.mjs: ok, 4 tests, 2.8 s
+[unit] server/accounts.test.mjs: ok, 15 tests, 0.5 s
+[unit] tools/roundabouts.test.mjs: ok, 17 tests, 1.4 s
+[unit] server/car-capabilities.test.mjs: ok, 1 tests, 0.2 s
+[unit] server/canonical-host.test.mjs: ok, 3 tests, 0.2 s
+[unit] server/cloudflare-core.test.mjs: ok, 7 tests, 0.2 s
+[unit] server/course-validation.test.mjs: ok, 2 tests, 0.4 s
+[unit] server/customization-multiplayer.test.mjs: ok, 1 tests, 0.2 s
+[unit] server/driving-modes.test.mjs: ok, 6 tests, 0.2 s
+[unit] server/finish-timing.test.mjs: ok, 2 tests, 0.2 s
+[unit] server/leaderboard-setups.test.mjs: ok, 6 tests, 0.3 s
+[unit] server/leaderboard.test.mjs: ok, 3 tests, 0.2 s
+[unit] server/mp-accounts-e2e.test.mjs: ok, 2 tests, 0.7 s
+[physics] server/finish-all-maps.test.mjs: ok, 18 tests, 1.8 s
+[unit] server/mp-black-screen.test.mjs: ok, 2 tests, 0.2 s
+[unit] server/mp-contact.test.mjs: ok, 5 tests, 0.2 s
+[unit] server/mp-car-rules.test.mjs: ok, 10 tests, 0.2 s
+[unit] server/mp-loaded.test.mjs: ok, 2 tests, 0.2 s
+[unit] server/mp-lifecycle.test.mjs: ok, 15 tests, 0.3 s
+[unit] server/mp-lobby-config.test.mjs: ok, 2 tests, 0.2 s
+[unit] server/mp-lobby-join.test.mjs: ok, 5 tests, 0.2 s
+[unit] server/mp-playtest.test.mjs: ok, 5 tests, 0.2 s
+[unit] server/mp-restart-tow.test.mjs: ok, 4 tests, 0.2 s
+[unit] server/mp-shared-world.test.mjs: ok, 6 tests, 0.2 s
+[unit] server/multiplayer-protocol.test.mjs: ok, 9 tests, 0.2 s
+[unit] server/multiplayer.test.mjs: ok, 14 tests, 2.0 s
+[unit] server/nitrous.test.mjs: ok, 5 tests, 0.2 s
+[unit] server/privacy.test.mjs: ok, 4 tests, 0.3 s
+[unit] server/race-progress-trace.test.mjs: ok, 2 tests, 0.3 s
+[unit] server/race-recovery.test.mjs: ok, 5 tests, 0.2 s
+[unit] server/session-controls.test.mjs: ok, 6 tests, 0.3 s
+[unit] server/mp-reconnect.test.mjs: ok, 2 tests, 4.5 s
+[unit] server/smoke-session.test.mjs: ok, 9 tests, 1.0 s
+[unit] server/socket-attachment.test.mjs: ok, 1 tests, 0.2 s
+[unit] server/world-life.test.mjs: ok, 1 tests, 0.2 s
+[unit] tools/account-screen.test.mjs: ok, 4 tests, 0.2 s
+[unit] server/session-transport.test.mjs: ok, 1 tests, 2.1 s
+[unit] tools/airborne-network.test.mjs: ok, 5 tests, 0.2 s
+[unit] tools/article-scroll.test.mjs: ok, 4 tests, 0.2 s
+[unit] tools/athens-detail.test.mjs: ok, 7 tests, 0.2 s
+[unit] tools/athens-materials.test.mjs: ok, 4 tests, 0.2 s
+[unit] tools/athens-world-hud.test.mjs: ok, 1 tests, 0.2 s
+[unit] tools/athens-props.test.mjs: ok, 9 tests, 0.2 s
+[unit] tools/audio-listener.test.mjs: ok, 4 tests, 0.2 s
+[unit] tools/audio-mix.test.mjs: ok, 4 tests, 0.2 s
+[unit] tools/badge-set.test.mjs: ok, 78 tests, 1.9 s
+[unit] tools/audio-robust.test.mjs: ok, 10 tests, 2.1 s
+[unit] tools/bake-cache.test.mjs: ok, 4 tests, 0.4 s
+[unit] tools/baked-realism.test.mjs: ok, 3 tests, 0.2 s
+[unit] tools/baked-world-loading.test.mjs: ok, 4 tests, 0.2 s
+[unit] tools/black-screen-guard.test.mjs: ok, 4 tests, 0.2 s
+[unit] tools/brand-badges.test.mjs: ok, 4 tests, 0.2 s
+[unit] tools/car-catalog.test.mjs: ok, 17 tests, 0.6 s
+[unit] tools/bundle-browser.test.mjs: ok, 10 tests, 0.8 s
+[unit] tools/catalogue.test.mjs: ok, 2 tests, 0.3 s
+[unit] tools/character-presets.test.mjs: ok, 4 tests, 0.2 s
+[unit] tools/cockpit-controls.test.mjs: ok, 4 tests, 0.2 s
+[unit] tools/classic-port.test.mjs: ok, 6 tests, 0.4 s
+[unit] tools/cockpit-telltales.test.mjs: ok, 3 tests, 0.2 s
+[unit] tools/course-progress.test.mjs: ok, 9 tests, 0.2 s
+[damage] tools/damage-geometry.test.mjs: ok, 4 tests, 0.4 s
+[physics] tools/damage-mechanics.test.mjs: ok, 26 tests, 0.3 s
+[damage] tools/damage-ground.test.mjs: ok, 6 tests, 0.2 s
+[unit] tools/deploy-smoke-assets.test.mjs: ok, 2 tests, 0.2 s
+[unit] tools/deploy-smoke-catalogue.test.mjs: ok, 16 tests, 0.2 s
+[unit] tools/deploy-smoke-route.test.mjs: ok, 4 tests, 0.2 s
+[unit] tools/detail-budgets.test.mjs: ok, 1 tests, 0.2 s
+[unit] tools/driver-name.test.mjs: ok, 2 tests, 0.1 s
+[unit] tools/driving-aids.test.mjs: ok, 4 tests, 0.2 s
+[unit] tools/driving-feedback.test.mjs: ok, 9 tests, 0.2 s
+[unit] tools/driving-objectives.test.mjs: ok, 10 tests, 0.2 s
+[unit] tools/dynamic-floor.test.mjs: ok, 6 tests, 0.2 s
+[unit] tools/exhaust-pops-hitch.test.mjs: ok, 10 tests, 0.5 s
+[unit] tools/far-cull-budget.test.mjs: ok, 2 tests, 0.2 s
+[progress] 111/252 files done after 180.0 s; running: draw-call-budget.test.mjs, far-cull.test.mjs
+[unit] tools/draw-call-budget.test.mjs: ok, 5 tests, 46.3 s
+[physics] tools/finish-flow.test.mjs: ok, 26 tests, 0.5 s
+[unit] tools/frame-cap.test.mjs: ok, 9 tests, 0.2 s
+[unit] tools/gameplay-camera.test.mjs: ok, 9 tests, 0.2 s
+[unit] tools/gameplay-recovery.test.mjs: ok, 7 tests, 0.2 s
+[unit] tools/gameplay-toast.test.mjs: ok, 3 tests, 0.2 s
+[unit] tools/generated-world-cache.test.mjs: ok, 6 tests, 0.2 s
+[unit] tools/ghost-lap.test.mjs: ok, 10 tests, 0.3 s
+[unit] tools/graphics-menu.test.mjs: ok, 4 tests, 0.3 s
+[unit] tools/graphics-onboarding.test.mjs: ok, 1 tests, 0.2 s
+[unit] tools/greek-caps.test.mjs: ok, 2 tests, 0.2 s
+[unit] tools/hillside-cover.test.mjs: ok, 1 tests, 0.2 s
+[unit] tools/far-cull.test.mjs: ok, 7 tests, 47.2 s
+[unit] tools/hud-limit.test.mjs: ok, 2 tests, 0.2 s
+[unit] tools/hud-sway.test.mjs: ok, 6 tests, 0.2 s
+[unit] tools/infill-streets.test.mjs: ok, 4 tests, 0.2 s
+[unit] tools/input-modes.test.mjs: ok, 4 tests, 0.2 s
+[unit] tools/input.test.mjs: ok, 18 tests, 0.2 s
+[unit] tools/lazy-boot.test.mjs: ok, 6 tests, 0.2 s
+[unit] tools/leaderboard-records.test.mjs: ok, 4 tests, 0.3 s
+[unit] tools/live-board.test.mjs: ok, 2 tests, 0.2 s
+[unit] tools/loading-lifecycle.test.mjs: ok, 8 tests, 0.2 s
+[unit] tools/lobby-ui.test.mjs: ok, 10 tests, 0.2 s
+[unit] tools/look-controls.test.mjs: ok, 2 tests, 0.2 s
+[unit] tools/local-carriageways.test.mjs: ok, 5 tests, 0.4 s
+[unit] tools/low-end-budget.test.mjs: ok, 8 tests, 0.3 s
+[unit] tools/lucide-icons.test.mjs: ok, 5 tests, 0.3 s
+[unit] tools/map-select-camera.test.mjs: ok, 10 tests, 0.2 s
+[unit] tools/memory-bounds.test.mjs: ok, 5 tests, 0.2 s
+[unit] tools/map-select-perf.test.mjs: ok, 8 tests, 0.5 s
+[unit] tools/menu-copy.test.mjs: ok, 2 tests, 0.2 s
+[unit] tools/minimap-route.test.mjs: ok, 4 tests, 0.2 s
+[unit] tools/menu-redesign.test.mjs: ok, 9 tests, 0.3 s
+[unit] tools/mirror-cadence.test.mjs: ok, 4 tests, 0.2 s
+[unit] tools/modes.test.mjs: ok, 2 tests, 0.2 s
+[unit] tools/municipal-bins.test.mjs: ok, 1 tests, 0.2 s
+[unit] tools/multiplayer-client.test.mjs: ok, 51 tests, 0.3 s
+[unit] tools/notice-placement.test.mjs: ok, 5 tests, 0.2 s
+[unit] tools/nitrous-input.test.mjs: ok, 4 tests, 0.3 s
+[unit] tools/notice-style.test.mjs: ok, 3 tests, 0.2 s
+[unit] tools/notifications.test.mjs: ok, 23 tests, 0.2 s
+[unit] tools/offtrack-corridor.test.mjs: ok, 3 tests, 0.2 s
+[unit] tools/owner-locked-free-roam-clean.test.mjs: ok, 2 tests, 0.2 s
+[unit] tools/owner-locked-desktop-only.test.mjs: ok, 29 tests, 0.3 s
+[unit] tools/owner-locked-multiplayer-ui.test.mjs: ok, 4 tests, 0.3 s
+[unit] tools/owner-locked-graphics.test.mjs: ok, 4 tests, 0.3 s
+[unit] tools/owner-locked-no-checkpoints.test.mjs: ok, 2 tests, 0.2 s
+[unit] tools/owner-locked-no-music.test.mjs: ok, 2 tests, 0.2 s
+[unit] tools/owner-locked-track-map.test.mjs: ok, 3 tests, 0.2 s
+[unit] tools/owner-locked-no-phone-wheel.test.mjs: ok, 1 tests, 0.2 s
+[unit] tools/people-policy.test.mjs: ok, 3 tests, 0.5 s
+[unit] tools/perf-overlay.test.mjs: ok, 9 tests, 0.5 s
+[unit] tools/personal-bests.test.mjs: ok, 6 tests, 0.2 s
+[physics] tools/physics-test/engine-abuse.test.mjs: ok, 11 tests, 0.4 s
+[physics] tools/physics-test/tyre-impact.test.mjs: ok, 2 tests, 0.2 s
+[physics] tools/physics-test/auto-gearbox-slide.test.mjs: ok, 4 tests, 2.0 s
+[unit] tools/player-car-lineup.test.mjs: ok, 5 tests, 0.3 s
+[unit] tools/pointer-hover.test.mjs: ok, 8 tests, 0.2 s
+[unit] tools/police-online.test.mjs: ok, 7 tests, 0.2 s
+[unit] tools/police-test.mjs: ok, 33 tests, 0.3 s
+[unit] tools/pov-camera.test.mjs: ok, 5 tests, 0.2 s
+[unit] tools/race-lifecycle.test.mjs: ok, 9 tests, 0.2 s
+[unit] tools/rain-overlays.test.mjs: ok, 3 tests, 0.2 s
+[unit] tools/release-data.test.mjs: ok, 14 tests, 0.3 s
+[unit] tools/release-fast.test.mjs: ok, 6 tests, 0.9 s
+[unit] tools/release-notes.test.mjs: ok, 12 tests, 0.2 s
+[physics] tools/physics-test/understeer-balance.test.mjs: ok, 13 tests, 4.2 s
+[unit] tools/remote-motion.test.mjs: ok, 13 tests, 0.3 s
+[unit] tools/remote-tow-sim.test.mjs: ok, 6 tests, 0.7 s
+[unit] tools/remote-tyre-fx.test.mjs: ok, 4 tests, 0.2 s
+[unit] tools/render-scale.test.mjs: ok, 5 tests, 0.2 s
+[unit] tools/render-surface.test.mjs: ok, 3 tests, 0.2 s
+[unit] tools/remote-sync-sim.test.mjs: ok, 10 tests, 1.7 s
+[unit] tools/rival-racecraft.test.mjs: ok, 11 tests, 0.2 s
+[unit] tools/riviera-landmarks.test.mjs: ok, 1 tests, 0.2 s
+[unit] tools/road-asphalt.test.mjs: ok, 1 tests, 0.2 s
+[unit] tools/road-network-overlay.test.mjs: ok, 2 tests, 0.2 s
+[unit] tools/screen-layouts.test.mjs: ok, 7 tests, 0.2 s
+[unit] tools/service-worker.test.mjs: ok, 15 tests, 1.1 s
+[unit] tools/session-transitions.test.mjs: ok, 1 tests, 0.2 s
+[unit] tools/settings-nav.test.mjs: ok, 3 tests, 0.3 s
+[unit] tools/settings.test.mjs: ok, 13 tests, 0.2 s
+[unit] tools/run-tests.test.mjs: ok, 6 tests, 2.2 s
+[unit] tools/shared-world-client.test.mjs: ok, 7 tests, 0.2 s
+[unit] tools/simple-header.test.mjs: ok, 4 tests, 0.3 s
+[unit] tools/smoke-token.test.mjs: ok, 2 tests, 0.2 s
+[unit] tools/solo-hud.test.mjs: ok, 3 tests, 0.2 s
+[unit] tools/speed-signs.test.mjs: ok, 10 tests, 0.2 s
+[unit] tools/steering-wheel.test.mjs: ok, 13 tests, 0.2 s
+[unit] tools/svj.test.mjs: ok, 4 tests, 0.2 s
+[unit] tools/test-runner-coverage.test.mjs: ok, 2 tests, 0.2 s
+[unit] tools/tip-schedule.test.mjs: ok, 4 tests, 0.2 s
+[unit] tools/terrain-contact.test.mjs: ok, 13 tests, 0.8 s
+[physics] tools/traffic-test.mjs: ok, 28 tests, 0.3 s
+[physics] tools/traffic-seed.test.mjs: ok, 3 tests, 0.9 s
+[unit] tools/trim-order.test.mjs: ok, 5 tests, 0.3 s
+[unit] tools/turntable-control.test.mjs: ok, 4 tests, 0.2 s
+[unit] tools/tyre-squeal.test.mjs: ok, 4 tests, 0.2 s
+[unit] tools/tyre-walls.test.mjs: ok, 2 tests, 0.2 s
+[unit] tools/ui-layouts.test.mjs: ok, 20 tests, 0.2 s
+[unit] tools/ui-components.test.mjs: ok, 11 tests, 0.4 s
+[unit] tools/ui-rules.test.mjs: ok, 2 tests, 0.2 s
+[unit] tools/vehicle-audio.test.mjs: ok, 9 tests, 0.3 s
+[unit] tools/vehicle-restore.test.mjs: ok, 2 tests, 0.2 s
+[unit] tools/voice.test.mjs: ok, 21 tests, 0.2 s
+[unit] tools/weather-life.test.mjs: ok, 7 tests, 0.2 s
+[unit] tools/world-artifacts.test.mjs: ok, 4 tests, 0.2 s
+[unit] tools/world-art-direction.test.mjs: ok, 7 tests, 0.4 s
+[unit] tools/world-bridge-audit.test.mjs: ok, 3 tests, 0.2 s
+[unit] tools/world-connectivity-audit.test.mjs: ok, 2 tests, 0.2 s
+[unit] tools/world-development.test.mjs: ok, 1 tests, 0.2 s
+[unit] tools/world-download.test.mjs: ok, 15 tests, 0.2 s
+[unit] tools/world-gen/area.test.mjs: ok, 1 tests, 0.2 s
+[unit] tools/world-gen/bridge-policy.test.mjs: ok, 2 tests, 0.3 s
+[world] tools/world-gen/conformance.test.mjs: ok, 1 tests, 0.2 s
+[unit] tools/world-gen/dressing.test.mjs: ok, 1 tests, 0.2 s
+[unit] tools/world-gen/influence.test.mjs: ok, 1 tests, 0.2 s
+[world] tools/world-gen/pack.test.mjs: ok, 6 tests, 0.2 s
+[unit] tools/world-gen/props.test.mjs: ok, 1 tests, 0.2 s
+[unit] tools/world-gen/world-gen.test.mjs: ok, 1 tests, 0.2 s
+[unit] tools/world-gen/road-model.test.mjs: ok, 2 tests, 0.4 s
+[unit] tools/world-r2.test.mjs: ok, 4 tests, 0.2 s
+[unit] tools/world-roads-audit.test.mjs: ok, 4 tests, 0.2 s
+[unit] tools/world-surface-audit.test.mjs: ok, 7 tests, 0.2 s
+[unit] tools/world-tile-compact.test.mjs: ok, 16 tests, 0.2 s
+[physics] tools/world-tile-barriers.test.mjs: ok, 6 tests, 0.3 s
+[unit] tools/world-tile-contact-seams.test.mjs: ok, 13 tests, 0.2 s
+[unit] tools/world-tile-conversion.test.mjs: ok, 4 tests, 0.2 s
+[unit] tools/world-tile-flag.test.mjs: ok, 1 tests, 0.2 s
+[unit] tools/world-tile-format.test.mjs: ok, 9 tests, 0.2 s
+[unit] tools/world-tile-obstacles.test.mjs: ok, 1 tests, 0.2 s
+[unit] tools/world-tile-roads.test.mjs: ok, 14 tests, 0.2 s
+[unit] tools/world-tile-scene.test.mjs: ok, 11 tests, 0.3 s
+[unit] tools/world-tile-storage.test.mjs: ok, 2 tests, 0.2 s
+[unit] tools/world-tile-stream.test.mjs: ok, 29 tests, 0.4 s
+[unit] worker/arena-diagnostics.test.mjs: ok, 3 tests, 0.2 s
+[unit] worker/accounts-arena.test.mjs: ok, 3 tests, 0.5 s
+[unit] worker/damage.test.mjs: ok, 1 tests, 0.2 s
+[unit] worker/local-driver.test.mjs: ok, 2 tests, 0.2 s
+[unit] worker/world-assets.test.mjs: ok, 3 tests, 0.2 s
+[unit] worker/smoke-session.test.mjs: ok, 3 tests, 0.3 s
+[retry] tools/garage-cards.test.mjs: failed (exit 1, 0.9 s); rerunning once, alone
+[retry] tools/garage-cards.test.mjs: failed again (exit 1, 0.8 s): a real failure
+[unit] (node:20847) Warning: `--localstorage-file` was provided without a valid path
+[unit] (Use `node --trace-warnings ...` to show where the warning was created)
+[unit] ✔ every garage trim has the manufacturer artwork and drive pill inside its card media (4.136291ms)
+[unit] ✔ brand filter covers every manufacturer and combines with the other filters (10.205917ms)
+[unit] ✔ showroom has a transparent soft shadow receiver and no turntable disc (0.705291ms)
+[unit] ✔ actual city, sports, van and bus vertices stay centred within half a pixel through full revolutions (355.550791ms)
+[unit] ✔ static thumbnails fill their image bounds with consistent margins (146.437875ms)
+[unit] ✔ spec panel has shared tiles, segmented trims and no unavailable paint or internal copy (3.588708ms)
+[unit] ✖ browser measures drive-pill containment, manufacturer options and brand selection at desktop and narrow-window sizes (20.421959ms)
+[unit] ℹ tests 7
+[unit] ℹ suites 0
+[unit] ℹ pass 6
+[unit] ℹ fail 1
+[unit] ℹ cancelled 0
+[unit] ℹ skipped 0
+[unit] ℹ todo 0
+[unit] ℹ duration_ms 685.221708
+[unit] ✖ failing tests:
+[unit] test at tools/garage-cards.test.mjs:58:1
+[unit] ✖ browser measures drive-pill containment, manufacturer options and brand selection at desktop and narrow-window sizes (20.421959ms)
+[unit]   AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Garage browser bounds, logos and brand filter PASS 1280/. Input:
+[unit]   
+[unit]   ''
+[unit]   
+[unit]       at TestContext.<anonymous> (file:///private/tmp/athens-psychiko-f.8b8s_p0n/candidate/tools/garage-cards.test.mjs:61:9)
+[unit]       at async Test.run (node:internal/test_runner/test:1208:7)
+[unit]       at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+[unit]     generatedMessage: true,
+[unit]     code: 'ERR_ASSERTION',
+[unit]     actual: '',
+[unit]     expected: /Garage browser bounds, logos and brand filter PASS 1280/,
+[unit]     operator: 'match',
+[unit]     diff: 'simple'
+[unit]   }
+[unit] tools/garage-cards.test.mjs: FAILED twice (exit 1, then exit 1)
+[retry] tools/traffic-race.test.mjs: failed (exit 1, 8.7 s); rerunning once, alone
+[retry] tools/traffic-race.test.mjs: failed again (exit 1, 8.2 s): a real failure
+[physics] ✖ Riviera, afternoon, player at matched pace: civilians keep moving and the field never stalls (8052.80525ms)
+[physics] ✖ Riviera, rush hour, slow player: civilians keep moving and the field never stalls (0.476792ms)
+[physics] ℹ tests 2
+[physics] ℹ suites 0
+[physics] ℹ pass 0
+[physics] ℹ fail 2
+[physics] ℹ cancelled 0
+[physics] ℹ skipped 0
+[physics] ℹ todo 0
+[physics] ℹ duration_ms 8162.138291
+[physics] ✖ failing tests:
+[physics] test at tools/traffic-race.test.mjs:34:36
+[physics] ✖ Riviera, afternoon, player at matched pace: civilians keep moving and the field never stalls (8052.80525ms)
+[physics]   AssertionError [ERR_ASSERTION]: civilian #52 (truck) stood in a lane for 15.7 s: {"behind-parked":662,"behind-moving-car":236,"behind-stopped-car":45}
+[physics]       at TestContext.<anonymous> (file:///private/tmp/athens-psychiko-f.8b8s_p0n/candidate/tools/traffic-race.test.mjs:48:10)
+[physics]       at async Test.run (node:internal/test_runner/test:1208:7)
+[physics]       at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+[physics]     generatedMessage: false,
+[physics]     code: 'ERR_ASSERTION',
+[physics]     actual: false,
+[physics]     expected: true,
+[physics]     operator: '==',
+[physics]     diff: 'simple'
+[physics]   }
+[physics] test at tools/traffic-race.test.mjs:34:36
+[physics] ✖ Riviera, rush hour, slow player: civilians keep moving and the field never stalls (0.476792ms)
+[physics]   AssertionError [ERR_ASSERTION]: field-wide stall 11 s
+[physics]       at TestContext.<anonymous> (file:///private/tmp/athens-psychiko-f.8b8s_p0n/candidate/tools/traffic-race.test.mjs:41:10)
+[physics]       at async Test.run (node:internal/test_runner/test:1208:7)
+[physics]       at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+[physics]     generatedMessage: false,
+[physics]     code: 'ERR_ASSERTION',
+[physics]     actual: false,
+[physics]     expected: true,
+[physics]     operator: '==',
+[physics]     diff: 'simple'
+[physics]   }
+[physics] tools/traffic-race.test.mjs: FAILED twice (exit 1, then exit 1)
+[summary] 252/252 files, 2308 tests, 2293 pass, 3 fail in first attempts, 12 skipped; 0 flaky (passed on isolated retry), 2 failed
+[summary] FAILED: tools/garage-cards.test.mjs (exit 1)
+[summary] FAILED: tools/traffic-race.test.mjs (exit 1)
+[total] 244.5 s; FAIL

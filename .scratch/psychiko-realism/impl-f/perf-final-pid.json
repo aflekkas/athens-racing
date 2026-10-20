@@ -1,0 +1,11 @@
+{
+  "pid": 8894,
+  "command": [
+    "python3",
+    ".scratch/psychiko-realism/impl-f/browser-slot.py",
+    "node",
+    ".scratch/psychiko-realism/impl-f/harness/perf-browser.mjs"
+  ],
+  "closed": true,
+  "code": 0
+}
