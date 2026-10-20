@@ -1326,3 +1326,9 @@ html[data-device="blocked"] #device-gate { display: block; position: fixed; inse
 /* idle status: a grey dot (full lobby, connecting) */
 .chip--idle { background: none; box-shadow: none; padding-inline: 0; color: var(--c-text-3); }
 .chip--idle::before { content: ""; width: .5em; height: .5em; border-radius: 50%; flex: none; background: var(--c-text-4); }
+/* the gate: one quiet message under the wordmark. No card around one sentence, no icon plate, the address as plain text. */
+#device-gate .empty-state { background: none; border: 0; box-shadow: none; padding: 0; gap: var(--s-3); }
+#device-gate .empty-state__ico { width: auto; height: auto; margin: 0; background: none; color: var(--c-text-3); }
+#device-gate .empty-state__title { font-weight: 300; font-size: var(--t-xl); letter-spacing: .1em; }
+#device-gate .empty-state__text { font-size: var(--t-md); }
+#device-gate .empty-state__act .chip { height: auto; padding: 0; background: none; box-shadow: none; font: 500 var(--t-sm) var(--f-sans); letter-spacing: .02em; text-transform: none; color: var(--c-text-2); }
