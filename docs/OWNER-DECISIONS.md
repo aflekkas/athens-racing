@@ -215,3 +215,13 @@ Owner decision: the Athens open world should look and feel like the real city. D
 - tone mapping and colour grading only, with no shadow maps or post effects.
 
 **Landmarks:** a small set of recognisable landmarks (Acropolis/Parthenon, Lycabettus, Parliament/Syntagma, Panathenaic Stadium, Zappeion, Temple of Olympian Zeus, Hymettus and Parnitha on the horizon) may be modelled once, low-poly, and placed at their OSM positions.
+
+## 2026-10-20: One car per model (top trim only), no SVJ exhaust pops, simpler car styling, punishing damage
+
+Owner decisions:
+- **No trims.** "remove the trims feature, it's stupid and overcomplicated", "just keep one type of car", "id keep just the top trim of every car that we have". The catalogue keeps one entry per model: its top trim. The trim picker, trim chips, trim-switch keys and trim names in the lobby, leaderboards and results all go. This supersedes the 2026-10-19 car-versus-trim chips decision.
+  - Saved selections, leaderboard entries and multiplayer car ids that point at a removed trim map to that model's kept top trim.
+  - Body variants (for example hardtop/convertible) collapse to the top trim's body.
+- **No SVJ exhaust pops.** "remove the exhaust pops from the svj". The flame and pop effect and its toggle are removed.
+- **Simpler car styling.** "simplify the styling of the cars, we have these weird body panels and stuff". Decorative add-on panels, two-tone kit pieces, stripes and similar clutter are removed. Each car keeps one clean body in its paint, with normal glass, lights, wheels and badges.
+- **More punishing damage.** "we should arguably make the damage more punishing, rn it's not punishing". Crashes cost real time and performance, with the same rules for every driver in multiplayer and on the leaderboards.
