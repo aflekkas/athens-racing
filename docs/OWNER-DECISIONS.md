@@ -177,3 +177,24 @@ Owner feedback on the Athens screenshots: "the roads look good (even something s
 * Budgets: all new textures under 3 MB (one 256 px noise texture, 0.33 MB), instanced props, **World detail Off removes the layers** (plain colour, no props, no foam draw call), every addition reports its bytes per cell. Details, costs and the data caches: [docs/world-dressing.md](world-dressing.md).
 * Guards: `tools/athens-detail.test.mjs`, `tools/world-gen/dressing.test.mjs`.
 
+
+## 2026-10-20 — Free roam: click anywhere on the map, no POI list; trackpad pans
+
+The owner refined the 2026-10-19 spawn picker. The owner's words: "clicking into specific POIs ... is weird", "on trackpad it does not pan well (it is very hard to do so)", "clicking through the arrows of free roam has me cycling through 40 POIs rather than general areas", and "would it not make sense for free roam to just be click anywhere on the map".
+
+**How it works now:**
+- **Click to spawn:** free roam is click anywhere on the Attica map. The click snaps to the nearest drivable road, shows a marker with the street or area name, and you press DRIVE.
+- **No pins:** there are no named POI pins, and no list of POIs to cycle through.
+- **Arrows:** the keys (A/D, ←/→, LB/RB) step through general areas only, one per playable map (Riviera, Penteli, Psychiko, Megara, and Athens when it is enabled). Each step flies the camera to that area and pre-selects a sensible road point there.
+- **Trackpad and mouse:**
+  - A two-finger trackpad scroll pans the map (wheel deltaX/deltaY).
+  - A pinch (ctrl+wheel) zooms.
+  - A mouse wheel without ctrl keeps zooming when the input is clearly a mouse wheel (line-mode or large discrete deltas).
+  - Click-drag pans with either.
+  - This applies to the Track select map as well.
+
+**Unchanged:**
+- Free roam still has no route, no start/finish and no track UI.
+- Placement still uses the tow placement (on a road, lane-centred, at road level).
+
+Guard: `tools/owner-locked-free-roam-spawn.test.mjs`, updated by the change. Ask the owner before changing it.
