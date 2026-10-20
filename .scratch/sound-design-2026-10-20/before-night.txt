@@ -1,0 +1,1 @@
+before: night — -48.6 LUFS, -40.0 dBFS peak; spectrogram and waveform at default mix, no normalization.

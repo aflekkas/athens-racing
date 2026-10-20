@@ -1,0 +1,1 @@
+before: rain-cabin — -51.8 LUFS, -37.7 dBFS peak; spectrogram and waveform at default mix, no normalization.

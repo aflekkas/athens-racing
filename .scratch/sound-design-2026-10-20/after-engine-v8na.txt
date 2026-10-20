@@ -1,0 +1,1 @@
+after: engine-v8na — -22.5 LUFS, -12.8 dBFS peak; spectrogram and waveform at default mix, no normalization.

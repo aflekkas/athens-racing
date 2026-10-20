@@ -37,7 +37,9 @@ export class EngineLifecycle {
         a.tone({f:(up ? 165 : 125)*variation, slide:75, dur:.055, gain:cabinGain*(.028+.024*fast), type:'triangle', bus:a.eng});
         a.noise({dur:.14, f:420*variation, type:'bandpass', q:1.3, gain:.012*cabinGain, attack:.025, bus:a.eng});
       } else {
-        a.noise({dur:.014, f:2100*variation, type:'highpass', gain:.018*cabinGain, bus:a.eng});
+        // Muted actuator/engagement click with a little body, not a broadband spit.
+        a.noise({dur:.035, f:1050*variation, type:'bandpass', q:.8, gain:.028*cabinGain, bus:a.eng});
+        a.tone({f:145*variation, slide:85, dur:.055, gain:.022*cabinGain, bus:a.eng});
       }
       // Only an explicit powertrain diagnostic authorizes grinding.
       if (kind === 'manual' && (p.gearGrind || p.shiftGrind))

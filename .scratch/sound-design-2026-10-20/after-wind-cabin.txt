@@ -1,0 +1,1 @@
+after: wind-cabin — -44.1 LUFS, -32.3 dBFS peak; spectrogram and waveform at default mix, no normalization.

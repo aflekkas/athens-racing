@@ -1,0 +1,1 @@
+before: wind-long — -48.4 LUFS, -32.8 dBFS peak; spectrogram and waveform at default mix, no normalization.

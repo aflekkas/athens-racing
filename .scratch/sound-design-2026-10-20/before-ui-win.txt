@@ -1,0 +1,1 @@
+before: ui-win — -32.3 LUFS, -20.4 dBFS peak; spectrogram and waveform at default mix, no normalization.

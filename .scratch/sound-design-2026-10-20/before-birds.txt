@@ -1,0 +1,1 @@
+before: birds — -52.9 LUFS, -40.3 dBFS peak; spectrogram and waveform at default mix, no normalization.

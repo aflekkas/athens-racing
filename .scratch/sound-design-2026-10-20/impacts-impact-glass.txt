@@ -1,0 +1,1 @@
+impacts: impact-glass — -28.3 LUFS, -13.6 dBFS peak; spectrogram and waveform at default mix, no normalization.

@@ -1,0 +1,1 @@
+impacts: scrape-rail — -27.5 LUFS, -15.2 dBFS peak; spectrogram and waveform at default mix, no normalization.

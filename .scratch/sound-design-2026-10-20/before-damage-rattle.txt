@@ -1,0 +1,1 @@
+before: damage-rattle — -67.2 LUFS, -54.6 dBFS peak; spectrogram and waveform at default mix, no normalization.

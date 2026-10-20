@@ -6,7 +6,7 @@
 const profile = (id, synth, sample, cylinders, turbo = false, pops = .12, gain = 1, tone = 1) =>
   Object.freeze({ id, synth, sample, cylinders, turbo, pops, gain, tone, diesel: synth === 'diesel' || synth === 'bus' });
 export const ENGINE_PROFILES = Object.freeze({
-  v8flat: profile('na-flat-plane-v8','v8flat',null,8,false,.28),
+  v8flat: profile('na-flat-plane-v8','v8flat',null,8,false,.28,.65),
   v8na: profile('na-cross-plane-v8','v8na',null,8,false,.26),
   turbov6: profile('sl-biturbo-v6','v6',null,6,true,.24),
   turbov8: profile('sl-biturbo-v8','v8',null,8,true,.35),
@@ -14,7 +14,7 @@ export const ENGINE_PROFILES = Object.freeze({
   turbo3: profile('turbo-i3', 'turbo3', null, 3, true, .35),
   na3: profile('city-i3', 'na3', null, 3, false, 0, .85),
   city4: profile('city-i4', 'city4', null, 4, false, 0, .8),
-  na4: profile('na-i4', 'na4', null, 4),
+  na4: profile('na-i4', 'na4', null, 4, false, .12, .72),
   turbo4: profile('turbo-i4', 'turbo4', 'mini', 4, true, .18),
   // Hot, mainstream and small turbo fours each take their own recording (Focus RS, Abarth 595) rather than the MINI's.
   hot4: profile('hot-turbo-i4', 'turbo4', 'focus', 4, true, .65),
@@ -24,7 +24,7 @@ export const ENGINE_PROFILES = Object.freeze({
   diesel: profile('diesel-i4', 'diesel', 'taxi', 4, true, 0, .9),
   van: profile('van-diesel-i4', 'diesel', 'taxi', 4, true, 0, .85),
   bus: profile('bus-diesel-i6', 'bus', null, 6, true, 0, .9),
-  na6: profile('na-i6', 'na6', null, 6, false, .18),
+  na6: profile('na-i6', 'na6', null, 6, false, .18, .58),
   turbo6: profile('turbo-i6', 'turbo6', 'z4', 6, true, .4),
   v6: profile('biturbo-v6', 'v6', null, 6, true, .5),
   v8: profile('biturbo-v8', 'v8', null, 8, true, .6),

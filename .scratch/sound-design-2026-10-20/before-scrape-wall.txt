@@ -1,0 +1,1 @@
+before: scrape-wall — -45.1 LUFS, -30.5 dBFS peak; spectrogram and waveform at default mix, no normalization.

@@ -1,0 +1,1 @@
+before: ui-countdown — -30.5 LUFS, -21.5 dBFS peak; spectrogram and waveform at default mix, no normalization.

@@ -755,6 +755,7 @@ function tow(pv, { reset = false, automatic = false, capture = false } = {}) {
       if (G.state !== 'race' || player.veh !== pv || multiplayer.retired || multiplayer.lobby?.raceId !== raceId) { blackout(false); return; }
       // Both controls put the car on the nearest road; online keeps the server's pose.
       backOnRoad(pv, recovery, { reset });
+      audio.recovery();
       towOffer.hold = multiplayer.active && recovery ? Math.max(0, (recovery.until - multiplayer.now()) / 1000) : 0;
       towOffer.recovering = towOffer.hold > 0; towOffer.rearm = .8;
       towOffer.offT = towOffer.stuckT = towOffer.severeT = 0;
@@ -1733,6 +1734,7 @@ function updateAudio(dt) {
   _audioParam.dt = dt; _audioParam.damage = pv.damage; _audioParam.rpm = pv.rpm; _audioParam.redline = pv.spec.redline;
   _audioParam.load = counting ? input.throttle * 0.9 - 0.1 : racing ? pv.load : Math.min(pv.load, 0.3);
   _audioParam.throttle = input.throttle;
+  _audioParam.handbrake = input.handbrake;
   _audioParam.cockpit = G.cam === 'cockpit'; _audioParam.manual = pv.manual;
   _audioParam.gearboxType = pv.powertrain?.gearboxType || pv.spec.gearboxType || pv.spec.gearbox;
   _audioParam.overrun = pv.overrun; _audioParam.shifting = pv.shiftT > 0; _audioParam.stalled = pv.engineStalled;

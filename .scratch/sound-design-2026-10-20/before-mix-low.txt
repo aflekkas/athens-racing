@@ -1,0 +1,1 @@
+before: mix-low — -19 LUFS, -6.8 dBFS peak; spectrogram and waveform at default mix, no normalization.

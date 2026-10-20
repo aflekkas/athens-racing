@@ -5,7 +5,7 @@ import { seamlessBuffer } from './audio/robust.js';
 const WORLD = new URL('../assets/audio/world/', import.meta.url);
 const ENGINES = new URL('../assets/audio/engines/', import.meta.url);
 const AMBIENCE = new URL('../assets/audio/world/ambience/', import.meta.url);
-const TEXTURES = new Set(['sea-sand', 'sea-rocks', 'city', 'cafe', 'beach', 'cicadas', 'crickets', 'rain-light', 'rain-heavy', 'rain-cabin']);
+const TEXTURES = new Set(['wind', 'sea-sand', 'sea-rocks', 'city', 'cafe', 'beach', 'cicadas', 'crickets', 'rain-light', 'rain-heavy', 'rain-cabin']);
 const textures = new WeakMap();
 
 // Engine loops reused for traffic, with the RPM each was recorded at (see engine-recordings.js). Petrol traffic
@@ -26,7 +26,7 @@ export async function loadWorldSounds(ctx, onLoad) {
   jobs.sort((a, b) => (FIRST.includes(b[0]) ? 1 : 0) - (FIRST.includes(a[0]) ? 1 : 0));
   const one = async ([name, url, m]) => {
     const buffer = await ctx.decodeAudioData(await (await fetch(url)).arrayBuffer());
-    const sound = { buffer, rpm: m.rpm, texture: TEXTURES.has(name) || m.kind === 'texture', textureWindow: m.textureWindow };
+    const sound = { buffer, rpm: m.rpm, texture: TEXTURES.has(name) || m.kind === 'texture', textureWindow: name === 'wind' ? [5, 9] : m.textureWindow };
     if (m.kind === 'loop' && m.frames) {
       const len = m.frames * ctx.sampleRate / m.sampleRate, guard = 0.3 * ctx.sampleRate;
       let off = 0;
@@ -68,6 +68,8 @@ export function loopSource(ctx, sound, dest, rate = 1) {
 class TextureLoop {
   constructor(ctx, sound, dest, rate) {
     Object.assign(this, { ctx, sound, dest, rate, next: ctx.currentTime, active: new Set() });
+    // Wind speed changes the next overlapping excerpt, without repitching an active gust.
+    this.playbackRate = { setTargetAtTime: value => { this.rate = Math.max(.5, Math.min(2, value)); } };
     if (!textures.has(ctx)) textures.set(ctx, new Set());
     textures.get(ctx).add(this);
     this.update(ctx.currentTime);
