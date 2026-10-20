@@ -1,0 +1,18 @@
+{
+  "baseline": "a80d34bdd6fd59c7ba353e218914f7f209674932",
+  "ratings": {
+    "bad": 14,
+    "weak": 17
+  },
+  "cars": 31,
+  "clips": 62,
+  "addedRuntimeAudioBytes": 449816,
+  "changedJsRawGrowthBytes": 9205,
+  "changedJsGzipGrowthBytes": 3473,
+  "maxAfterTruePeakDb": -5.4,
+  "maxAfterHigh6kPercent": 0.83,
+  "noMusic": true,
+  "svjPops": 0,
+  "phaseComparisons": 155,
+  "baselineVoiceConstructionFailures": 2
+}

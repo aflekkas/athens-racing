@@ -1,0 +1,13 @@
+# Engine realism evidence
+
+`AUDIT.md` rates all 31 baseline voices. `changes.json` records the car-by-car implementation; `docs/audio-sources.md` explains sources, licences, substitutes and remaining fidelity limits. Baseline source: `a80d34bdd6fd59c7ba353e218914f7f209674932`.
+
+The 62 small clips and 31 combined WebP spectrograms/captions are published directly to `/home/dev/data/agent-feed/sound-design/engines/`. Filenames are `before-{car-id}.ogg`, `after-{car-id}.ogg`, `{car-id}.webp`, `{car-id}.txt`. The feed's final `REPORT.md` and `VALIDATION.txt` record the landed SHA and checks. No full source masters or raw float captures are retained.
+
+The 21-second timeline is idle 0–3 s, slow full-throttle pull and limiter 3–11 s, lift 11–14 s, part-throttle cruise 14–18 s, and downshift blip 18–21 s. EVs keep a steady motor in the last phase because they have no gear change. Their baseline clips are silent because the old voice threw at zero idle RPM; see the error in `before-renders.json`. Captures use the same mix level and no normalization.
+
+Metrics use per-phase EBU R128, true/sample peak, spectral centroid and band energy, plus a −60 dBFS onset threshold. The 42-second steady checks cover several synthesized loop wraps and the 911/MINI granular beds. They show 0.2–1.1 dB of 100 ms RMS variation after startup, rather than a strong repetitive swell.
+
+`performance.json` compares normal and low-cost graphs with eight nearby cars. Normal keeps six detailed peers / 32 shots; low-cost keeps three detailed peers / 20 shots, tested at approximately 5 Hz updates. Figures are shared-VPS observations, not a physical laptop certification. Additional recorded-voice filtering costs some normal-path CPU; no new continuously running sample layers or larger shot caps were added. Granular preparation yields between short tasks; steady-state updates do not generate audio buffers.
+
+Reproduce in an isolated checkout, using `tools/browser-slot.sh node .scratch/engine-realism-2026-10-20/render.mjs after <task-temp>/raw`. Set `SOUND_BASE_REF` to the baseline above and use prefix `before` for comparison. `bench-before-normal`, `bench-after-normal`, `bench-before-low-slow`, and `bench-after-low-slow` prefixes add eight nearby peers; `steady-after` captures 42 seconds. An optional third argument filters car IDs. `measure.py <prefix> <task-temp>/raw [car-regex]` requires Python with NumPy and ffmpeg. `publish.py <task-temp>/raw` creates the owner's combined images/captions and Vorbis clips. Run measurement and publication sequentially. `build-v8.py` can rebuild only the new game assets from the licensed source cuts.

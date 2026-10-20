@@ -23,7 +23,7 @@ import { ContactSound, outputCeiling } from './audio/contact-sound.js';
 
 import { ENGINE_SOUND, buildEngineBank, EngineVoice, rng32 } from './audio/engine-synth.js';
 export { ENGINE_SOUND, buildEngineBank, EngineVoice } from './audio/engine-synth.js';
-import { engineProfile } from './audio/engine-profiles.js';
+import { engineProfile, electricMotorRpm } from './audio/engine-profiles.js';
 import { ExternalEngines } from './audio/engine-spatial.js';
 import { EngineLifecycle } from './audio/engine-lifecycle.js';
 
@@ -346,8 +346,10 @@ export class Audio {
     const revision = ++this.engineRevision;
     this.cancelIgnition(); this.recordedBank = null;
     this.profile = engineProfile(spec);
-    const key = this.profile.synth + '@' + spec.idle + '@' + spec.redline;
-    const bank = this.banks[key] || (this.banks[key] = buildEngineBank(this.ctx, this.profile.synth, spec.idle, spec.redline));
+    const key = spec.id + '@' + this.profile.synth + '@' + spec.idle + '@' + spec.redline;
+    const bank = this.banks[key] || (this.banks[key] = buildEngineBank(this.ctx, this.profile.synth, spec.idle, spec.redline, this.profile));
+    // Bound the longer stochastic banks on small laptops.
+    const keys=Object.keys(this.banks);if(keys.length>4)delete this.banks[keys[0]];
     this.installEngineVoices(bank, spec);
     this.recordingState = recordingFor(spec) ? 'loading' : 'procedural';
     this.requestIgnition();
@@ -386,6 +388,7 @@ export class Audio {
 
   requestIgnition() {
     if (!this.ctx) return;
+    if(this.profile?.synth==='electric'){this.lifecycle.state='running';this.lifecycle.level=1;return;}
     if (!recordingFor(this.engineSpec) || this.recordingState === 'fallback') {
       if (this.lastIgnitionRequest != null && this.ctx.currentTime - this.lastIgnitionRequest < .1) return;
       this.lastIgnitionRequest = this.ctx.currentTime;
@@ -487,14 +490,24 @@ export class Audio {
       if (this.lastHandbrake != null && pulled !== this.lastHandbrake && !p.muted && p.cockpit) this.handbrake(pulled);
       this.lastHandbrake = pulled;
     }
-    if (this.lifecycle.shiftStarted) this.shiftCutUntil = now + (this.lifecycle.shiftKind === 'auto' ? .035 : this.lifecycle.shiftKind === 'dct' ? .065 : (p.shiftDuration ?? p.shiftStart?.duration ?? .12));
+    const electric=this.profile?.synth==='electric';
+    const down=(p.shiftDirection??p.shiftStart?.direction??p.shift??1)<0;
+    if (this.lifecycle.shiftStarted) this.shiftCutUntil = down ? now : now + (this.lifecycle.shiftKind === 'auto' ? .035 : this.lifecycle.shiftKind === 'dct' ? .065 : (p.shiftDuration ?? p.shiftStart?.duration ?? .12));
     if (this.lifecycle.shiftEnded) this.shiftCutUntil = now;
     const startLevel = this.lifecycle.level * this.engineStartLevel(now) * (now < (this.shiftCutUntil || 0) ? (this.lifecycle.shiftKind === 'auto' ? .75 : .18) : 1);
     this.updateExhaustRattle(p, now, startLevel);
-    if (this.engineVoice) this.engineVoice.set(this.lifecycle.rpm, load, mute * startLevel, now, 1, p.limiter);
-    const on = Math.max(0, load) * startLevel;
-    x.intakeBP.frequency.setTargetAtTime(260 + rn * 2600, now, 0.05);
-    const intakeLevel = mute * on * (p.open ? 0.02 + 0.045 * rn : 0.025 + 0.085 * rn);
+    // Physics supplies matched RPM. Reveal the intake opening, without inventing
+    // a pitch jump or auto-blipping a manual with rev-match disabled.
+    if(this.lifecycle.shiftStarted&&down&&!electric&&(this.engineSpec?.powertrain?.revMatch||this.lifecycle.shiftKind!=='manual'))
+      this.blipUntil=now+Math.min(.3,p.shiftDuration??.2);
+    const voiceLoad=now<(this.blipUntil||0)?Math.max(load,.65):load;
+    const motorSpeed=electric?Math.max(v,Math.abs(p.wheels?.[0]?.vw||0),Math.abs(p.wheels?.[1]?.vw||0)):0;
+    const voiceRpm=electric?electricMotorRpm(this.engineSpec,motorSpeed):this.lifecycle.rpm;
+    if (this.engineVoice) this.engineVoice.set(voiceRpm, voiceLoad, mute * startLevel, now, 1, !electric&&p.limiter);
+    const on = electric?0:Math.max(0, voiceLoad) * startLevel;
+    const intake=this.profile?.intake??.7;
+    x.intakeBP.frequency.setTargetAtTime(180+rn*(this.profile?.diesel?900:1800), now, .04);
+    const intakeLevel = mute * on * on * intake * (p.open ? .012 + .045 * rn : .02 + .065 * rn);
     x.intakeG.gain.setTargetAtTime(intakeLevel, now, 0.05); this.gx.intake.use(intakeLevel, now);
     const boost = p.boost || 0, tb = this.profile?.turbo ? (E.knock ? .6 : 1) : 0;
     x.turbo.frequency.setTargetAtTime(1800 + boost * 5200 * (0.6 + 0.4 * rn), now, 0.06);
@@ -506,22 +519,21 @@ export class Audio {
     x.compressorG.gain.setTargetAtTime(compressorLevel, now, .08); this.gx.compressor.use(compressorLevel, now);
     // blow-off valve / wastegate flutter when the throttle snaps shut on boost
     const lift = (this.lastLoad ?? 0) > 0.3 && load < 0.05;
-    if (lift && tb && boost > 0.35) {
-      if (E === ENGINE_SOUND.turbo5) this.flutter(boost); else this.noise({ dur: 0.45, f: 2400, sweep: 900, type: 'bandpass', q: 0.7, gain: 0.06 * boost * tb, attack: 0.01, bus: this.eng });
+    const liftBoost=Math.max(boost,this.lastBoost||0);
+    if (lift && tb && !this.profile?.diesel && liftBoost > .35) {
+      if (E === ENGINE_SOUND.turbo5) this.flutter(liftBoost); else this.noise({ dur: .23, f: 2100, sweep: 950, type: 'bandpass', q: .65, gain: .038 * liftBoost * tb, attack: .012, bus: this.eng });
     }
     // overrun: burble and pops from hot exhausts after a lift at high rpm, and on the upshift ignition cut
 
     const crackle = this.profile?.pops ?? 0;
-    if ((lift || p.overrun && !this.lastOverrun) && rn > .42) this.overrunUntil = now + .7 + crackle * .9;
-    if ((p.overrun ?? load < -0.05) && rn > 0.42 && !p.muted && now < (this.overrunUntil || 0)) {
-      this.popAcc = (this.popAcc || 0) + Math.min(.1,p.dt || 0) * crackle * (rn - 0.35) * 9 * (this.lastLift < 2 ? 1 : 0.25);
-      while (this.popAcc > 1) { this.popAcc -= 1 + Math.random(); this.pop(0.35 + Math.random() * 0.5 * rn, Math.random() * 0.05); }
+    if ((lift || p.overrun && !this.lastOverrun) && rn > .42 && crackle>0 && !p.muted && startLevel>0 && now>(this.overrunUntil||0)) {
+      this.overrunUntil=now+1.1;
+      this.burble(crackle,rn);
     }
-    else this.popAcc = 0;
-    this.lastLift = load < -0.05 ? (this.lastLift || 0) + p.dt : 0;
-    if (this.lifecycle.shiftStarted && this.lifecycle.shiftKind === 'dct' && (this.lastLoad ?? 0) > .6 && rn > .55 && crackle > .3) this.pop(.45, .015);
+    if (this.lifecycle.shiftStarted && !down && this.lifecycle.shiftKind === 'dct' && (this.lastLoad ?? 0) > .6 && rn > .55 && crackle > .3) this.pop(.22, .015);
     this.lastOverrun = !!p.overrun;
     this.lastLoad = load;
+    this.lastBoost=boost;
     x.whine.frequency.setTargetAtTime(p.rpm / 60 * 7.3 / Math.max(0.6, (p.gearRatio || 1) * 0.35), now, 0.05);
     const whineLevel = mute * E.whine * 0.012 * (0.3 + Math.abs(load)) * Math.min(1, v / 8);
     x.whineG.gain.setTargetAtTime(whineLevel, now, 0.08); this.gx.whine.use(whineLevel, now);
@@ -620,6 +632,17 @@ export class Audio {
   }
 
   // ------------------------------------------------------------------ new one-shots
+  /** Finite, irregular pressure releases: scheduled on the audio clock, not frames. */
+  burble(amount,rn) {
+    const count=Math.min(5,Math.max(1,Math.ceil(amount*8)));let at=.025;
+    for(let i=0;i<count;i++){
+      const fade=1-i/(count+1),strength=amount*fade*(.65+.35*rn);
+      this.noise({dur:.08+Math.random()*.06,f:180+Math.random()*330,sweep:120,type:'bandpass',q:.8,gain:.12*strength,attack:.003,at,bus:this.eng});
+      this.tone({f:85+Math.random()*55,slide:55,dur:.085,gain:.09*strength,type:'triangle',at,bus:this.eng});
+      at+=.065+Math.random()*.12;
+    }
+  }
+
   /** an exhaust pop / crackle on the overrun */
   pop(level = 0.6, at = 0) {
     if (!this.ctx) return;

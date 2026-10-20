@@ -1716,7 +1716,7 @@ function updateAudio(dt) {
     const r = _rivN < _rivals.length ? _rivals[_rivN] : (_rivals[_rivN] = {});
     _rivN++;
     r.id = id; r.spec = c.spec; r.rpm = v.rpm; r.limiter = v.limiter; r.load = load;
-    r.d = rel.d; r.pan = rel.pan; r.vr = rel.vr;
+    r.d = rel.d; r.pan = rel.pan; r.vr = rel.vr; r.v = Math.hypot(v.vLong, v.vLat);
   };
   if (multiplayer.active) {
     for (const [id, c] of remoteCars) if (c.model.root.visible) _pushRival(id, c, 0.4);

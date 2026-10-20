@@ -1,5 +1,5 @@
-import { engineProfile, TRAFFIC_PROFILES, ENGINE_PROFILES } from './engine-profiles.js';
-import { buildEngineBank, EngineVoice } from './engine-synth.js';
+import { engineProfile, electricMotorRpm, TRAFFIC_PROFILES, ENGINE_PROFILES } from './engine-profiles.js';
+import { buildEngineBank, EngineVoice, ElectricMotorVoice } from './engine-synth.js';
 import { loadRecordedEngine, RecordedEngineVoice } from '../engine-recordings.js';
 const clamp = (x, a, b) => Math.max(a, Math.min(b, Number.isFinite(x) ? x : 0));
 /** Radial relative velocity in m/s, positive closing. Guard network teleports. */
@@ -50,6 +50,7 @@ export class NearestEngines {
 /** One loop + low-pass for distant LOD; no waveshaper or eight silent layers. */
 export class DistantEngineVoice {
   constructor(ctx, bank, dest, spec) {
+    if(bank.electric)return new ElectricMotorVoice(ctx,dest,.4,{...bank.profile,distant:true});
     this.ctx = ctx; this.spec = spec;
     this.out = ctx.createGain(); this.out.gain.value = 0;
     this.source = ctx.createBufferSource(); this.source.loop = true;
@@ -132,7 +133,7 @@ export class ExternalEngines {
       let bank = this.recorded.get(profile);
       if (!bank) {
         bank = this.banks.get(profile);
-        if (!bank) { bank = buildEngineBank(this.ctx, profile.synth, spec.idle || 800, spec.redline || 6500); this.banks.set(profile, bank); }
+        if (!bank) { bank = buildEngineBank(this.ctx, profile.synth, spec.idle ?? 800, spec.redline || 6500,profile); this.banks.set(profile, bank); }
         if (profile.sample && !this.pending.has(profile)) {
           this.pending.add(profile);
           loadRecordedEngine(this.ctx, spec).then(b => { if (b) this.recorded.set(profile, b); }).catch(() => {});
@@ -145,7 +146,7 @@ export class ExternalEngines {
       }
       spatialEngine(slot, source, now, spec.kind === 'bus' ? 20 : 14);
       const speed = Math.max(0, source.v || 0), diesel = profile.diesel;
-      const rpm = source.rpm || (spec.idle + Math.min(1, speed / 7) * (diesel ? 1000 : 1800) + speed % (diesel ? 7 : 11) * 65);
+      const rpm = profile.cylinders===0 ? electricMotorRpm(spec,speed) : source.rpm ?? (spec.idle + Math.min(1, speed / 7) * (diesel ? 1000 : 1800) + speed % (diesel ? 7 : 11) * 65);
       const load = source.load ?? clamp(.3 + (source.acc || 0) * .4, 0, 1);
       slot.voice.set(rpm, load, 1, now, slot.doppler, !!source.limiter);
       slot.gate.gain.setTargetAtTime(slot.gain * (detail ? .65 : .22), now, .08);
