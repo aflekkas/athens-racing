@@ -18,8 +18,9 @@ const hairpin = (grade = 0) => ({ ...straight(grade), edge: () => 3.5, lanes: ()
 test('damage explains actual power loss, cause and remapped recovery action', () => {
   const impaired = { engineDamage: .65, engHealth: .35, coolantTemp: 100 };
   const m = damageFeedback(impaired, { towLabel: 'RB', repairAvailable: true, towCost: 'free in roam' });
-  assert.match(m.cause, /wear/); assert.equal(m.effect, '35% engine power available · top speed −30%');
-  assert.equal(m.repairAction, 'Tow to the road · damage stays until restart');
+  assert.match(m.cause, /wear/); assert.equal(m.effect, '35% power · top speed −30%');
+  assert.equal(m.repairAction, 'Tow to the road');
+  assert.equal(m.quiet, false, 'engine wear still opens the lane card');
   assert.match(damageFeedback({ ...impaired, engineFailureReason: 'mechanical_overrev' }).cause, /Unsafe downshift/);
   assert.equal(damageFeedback({ ...impaired, engineStalled: true }).effect, 'No engine power');
   assert.match(damageFeedback(impaired, { spectating: true, repairAvailable: true }).repairAction, /their choice/);
@@ -99,4 +100,13 @@ test('owner-locked: tyre-grip HUD cannot be restored; world braking line and phy
     feedback.update({vehicle,route:straight()});assert.equal(scene.children.length,1);assert.ok(feedback.line.geometry.drawRange.count>0);
     feedback.dispose();assert.equal(scene.children.length,0);
   }finally{globalThis.localStorage=previous;}
+});
+
+test('crash damage that leaves the engine running is quiet: no lane card, the dial label tells it (owner 2026-10-20)', () => {
+  const limp = { engHealth: .5, impactMechanical: .9, steerPull: .01, damage: { front: 1 }, coolantTemp: 90 };
+  const m = damageFeedback(limp, { repairAvailable: true });
+  assert.equal(m.title, 'LIMP MODE'); assert.equal(m.quiet, true); assert.ok(m.repairAction.length <= 20, m.repairAction);
+  assert.equal(damageFeedback({ engHealth: 1, damage: { left: .3 }, coolantTemp: 90 }).quiet, true);
+  for (const loud of [{ engineStalled: true, engHealth: 0 }, { coolantTemp: 130, engHealth: 1 }, { engineDamage: .2, engHealth: .8, coolantTemp: 90 }, { drivetrainBroken: true, engHealth: 0 }])
+    assert.equal(damageFeedback({ coolantTemp: 90, ...loud }).quiet, false, JSON.stringify(loud));
 });

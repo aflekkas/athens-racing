@@ -103,7 +103,7 @@ test('reset/tow repairs cosmetics and all mechanical consequences; restored tele
 test('damage feedback distinguishes cosmetic dents, powertrain loss and limp',()=>{
   const light=mk(),a60=Math.PI/3;wall(light,40*Math.cos(a60),'left',{localNormal:{x:Math.sin(a60),y:0,z:Math.cos(a60)}});// a glancing 40 km/h scrape: dented, nothing lasting
   assert.equal(damageFeedback(light).title,'BODY DAMAGE');assert.match(damageFeedback(light).effect,/Cosmetic.*full engine power/);assert.doesNotMatch(damageFeedback(light).effect,/steering|reducing/);
-  const big=mk();wall(big,60);assert.match(damageFeedback(big).cause,/Crash damage/);advance(big,1);assert.match(damageFeedback(big).effect,/7[12]% engine power available · top speed −\d+%/);assert.equal(damageFeedback(big).title,'CAR IMPAIRED');
+  const big=mk();wall(big,60);assert.match(damageFeedback(big).cause,/Crash damage/);advance(big,1);assert.match(damageFeedback(big).effect,/7[12]% power · top speed −\d+%/);assert.equal(damageFeedback(big).title,'CAR IMPAIRED');
   wall(big,60);advance(big,1);assert.equal(damageFeedback(big).title,'LIMP MODE');
 });
 
