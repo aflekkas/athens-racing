@@ -1,5 +1,5 @@
 import { BRAND_BADGES, MANUFACTURER_NAMES } from '../manufacturers.js';
-import { buildBadge } from '../build-environment.js';
+import { buildBadge, buildSha } from '../build-environment.js';
 import { notifications, raceNotificationsActive } from './notifications.js';
 // UI COMPONENTS: the ATHENS RACING kit. Plain JS, no dependencies; styles in src/ui/ui.css (design tokens at the top).
 //
@@ -527,7 +527,8 @@ export function syncFooterBadge(root) {
     const version = footer.querySelector('.title-meta [data-act="whatsNew"]');
     const badge = document.createElement('span');
     badge.className = 'build-badge';
-    badge.textContent = version ? identity.split(' · ')[0] + ' · ' : identity;
+    // Beside the title's version link the badge keeps the build's commit: "STAGING · acce710 · 2026.10.15.3".
+    badge.textContent = version ? (buildSha() ? identity : identity.split(' · ')[0]) + ' · ' : identity;
     if (version) version.prepend(badge);
     else footer.prepend(badge);
   }

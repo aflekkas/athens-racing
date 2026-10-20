@@ -1,0 +1,262 @@
+{
+ "report": [
+  {
+   "w": 1280,
+   "h": 800,
+   "view": "chase",
+   "state": "60 km/h hit",
+   "text": "",
+   "visible": [],
+   "rect": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "overlaps": 0,
+   "health": 0.716325295573726
+  },
+  {
+   "w": 1280,
+   "h": 800,
+   "view": "cockpit",
+   "state": "60 km/h hit",
+   "text": "",
+   "visible": [],
+   "rect": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "overlaps": 0,
+   "health": 0.716325295573726
+  },
+  {
+   "w": 1280,
+   "h": 800,
+   "view": "chase",
+   "state": "engine stopped",
+   "text": "ENGINE DISABLED Impact stopped the engine R TOW TO THE ROAD",
+   "visible": [
+    "engine-condition"
+   ],
+   "rect": [
+    28,
+    28,
+    248,
+    117
+   ],
+   "overlaps": 0
+  },
+  {
+   "w": 1280,
+   "h": 800,
+   "view": "chase",
+   "state": "engine stopped + tow prompt",
+   "text": "ENGINE DISABLED Impact stopped the engine R TOW TO THE ROAD",
+   "visible": [
+    "engine-condition"
+   ],
+   "rect": [
+    28,
+    28,
+    248,
+    117
+   ],
+   "overlaps": 0
+  },
+  {
+   "w": 1280,
+   "h": 800,
+   "view": "chase",
+   "state": "engine wear",
+   "text": "ENGINE DISABLED Impact stopped the engine R TOW TO THE ROAD",
+   "visible": [
+    "engine-condition"
+   ],
+   "rect": [
+    28,
+    28,
+    248,
+    117
+   ],
+   "overlaps": 0
+  },
+  {
+   "w": 1440,
+   "h": 900,
+   "view": "chase",
+   "state": "60 km/h hit",
+   "text": "CAR IMPAIREDCrash damage: engine, steering and top speed · 72% power · top speed −17% · steering pullsTow to the road",
+   "visible": [
+    "engine-condition"
+   ],
+   "rect": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "overlaps": 0,
+   "health": 0.716325295573726
+  },
+  {
+   "w": 1440,
+   "h": 900,
+   "view": "cockpit",
+   "state": "60 km/h hit",
+   "text": "CAR IMPAIREDCrash damage: engine, steering and top speed · 72% power · top speed −17% · steering pullsTow to the road",
+   "visible": [
+    "engine-condition"
+   ],
+   "rect": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "overlaps": 0,
+   "health": 0.716325295573726
+  },
+  {
+   "w": 1440,
+   "h": 900,
+   "view": "chase",
+   "state": "engine stopped",
+   "text": "ENGINE DISABLED Impact stopped the engine R TOW TO THE ROAD",
+   "visible": [
+    "engine-condition"
+   ],
+   "rect": [
+    28,
+    28,
+    280,
+    117
+   ],
+   "overlaps": 0
+  },
+  {
+   "w": 1440,
+   "h": 900,
+   "view": "chase",
+   "state": "engine stopped + tow prompt",
+   "text": "ENGINE DISABLED Impact stopped the engine R TOW TO THE ROAD",
+   "visible": [
+    "engine-condition"
+   ],
+   "rect": [
+    28,
+    28,
+    280,
+    117
+   ],
+   "overlaps": 0
+  },
+  {
+   "w": 1440,
+   "h": 900,
+   "view": "chase",
+   "state": "engine wear",
+   "text": "ENGINE DISABLED Impact stopped the engine R TOW TO THE ROAD",
+   "visible": [
+    "engine-condition"
+   ],
+   "rect": [
+    28,
+    28,
+    280,
+    117
+   ],
+   "overlaps": 0
+  },
+  {
+   "w": 1920,
+   "h": 1080,
+   "view": "chase",
+   "state": "60 km/h hit",
+   "text": "CAR IMPAIREDCrash damage: engine, steering and top speed · 72% power · top speed −17% · steering pullsTow to the road",
+   "visible": [
+    "engine-condition"
+   ],
+   "rect": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "overlaps": 0,
+   "health": 0.716325295573726
+  },
+  {
+   "w": 1920,
+   "h": 1080,
+   "view": "cockpit",
+   "state": "60 km/h hit",
+   "text": "CAR IMPAIREDCrash damage: engine, steering and top speed · 72% power · top speed −17% · steering pullsTow to the road",
+   "visible": [
+    "engine-condition"
+   ],
+   "rect": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "overlaps": 0,
+   "health": 0.716325295573726
+  },
+  {
+   "w": 1920,
+   "h": 1080,
+   "view": "chase",
+   "state": "engine stopped",
+   "text": "ENGINE DISABLED Impact stopped the engine R TOW TO THE ROAD",
+   "visible": [
+    "engine-condition"
+   ],
+   "rect": [
+    28,
+    28,
+    328,
+    117
+   ],
+   "overlaps": 0
+  },
+  {
+   "w": 1920,
+   "h": 1080,
+   "view": "chase",
+   "state": "engine stopped + tow prompt",
+   "text": "ENGINE DISABLED Impact stopped the engine R TOW TO THE ROAD",
+   "visible": [
+    "engine-condition"
+   ],
+   "rect": [
+    28,
+    28,
+    328,
+    117
+   ],
+   "overlaps": 0
+  },
+  {
+   "w": 1920,
+   "h": 1080,
+   "view": "chase",
+   "state": "engine wear",
+   "text": "ENGINE DISABLED Impact stopped the engine R TOW TO THE ROAD",
+   "visible": [
+    "engine-condition"
+   ],
+   "rect": [
+    28,
+    28,
+    328,
+    117
+   ],
+   "overlaps": 0
+  }
+ ],
+ "errors": []
+}

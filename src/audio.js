@@ -577,18 +577,18 @@ export class Audio {
   }
   /** dispatcher squelch when the heat goes up */
   copRadio() { if (!this.ctx) return; this.radioBurst(0.9 + Math.random() * 0.8, 0.26); }
-  /** caught: radio chatter and a falling stinger */
+  /** Caught: dispatcher chatter and a short result acknowledgement. */
   copBusted() {
     if (!this.ctx) return;
     const end = this.radioBurst(2.2, 0.34, 0.6);
-    [[311, 0.22], [277, 0.22], [233, 0.7]].forEach(([f, d], i) => this.tone({ f, dur: d, gain: 0.1, type: 'sawtooth', at: i * 0.2, lp: 1500, attack: 0.02 }));
+    this.result(false);
     return end;
   }
-  /** got away: a last crackle of radio and a rising pluck */
+  /** Got away: a last crackle of radio and a short confirmation. */
   copEvaded() {
     if (!this.ctx) return;
     this.radioBurst(0.8, 0.2);
-    [62, 66, 69, 74, 78].forEach((n, i) => this.pluck(MIDI(n), 1.1 + i * 0.07, 0.14));
+    this.result(true);
   }
   /** weather.js: kind 'clear' | 'overcast' | 'rain', intensity 0..1 */
   setWeather(kind, intensity = 1) { this.weather.setWeather(kind, intensity); }
@@ -676,11 +676,6 @@ export class Audio {
     const pn = ctx.createStereoPanner(); pn.pan.value = pan;
     node.connect(g); g.connect(pn); pn.connect(bus || this.sfx);
     o.start(t); o.stop(t + dur + 0.05);
-  }
-  pluck(f, at = 0, gain = 0.2) {
-    // quick synthesized bouzouki-ish pluck for UI events
-    this.tone({ f, dur: 0.5, gain, type: 'sawtooth', at, lp: 3200, attack: 0.002 });
-    this.tone({ f: f * 2.003, dur: 0.35, gain: gain * 0.4, type: 'triangle', at: at + 0.002 });
   }
   crackle(rpm, red = 6500, max = 7) {
     const n = 2 + Math.floor(Math.random() * max * (rpm / red));
@@ -773,8 +768,6 @@ export class Audio {
   nearMiss(combo = 1, pan = 0) {
     if (!this.ctx) return;
     this.noise({ dur: 0.45, f: 500, sweep: 2600, type: 'bandpass', q: 1.2, gain: 0.22, attack: 0.12, pan });
-    const scale = [62, 63, 66, 67, 69, 70, 72, 74, 75, 78, 79, 81];
-    this.pluck(MIDI(scale[Math.min(scale.length - 1, combo - 1)] + 12), 0.05, 0.12);
   }
   passBy(level = 0.5, pan = -0.4) { this.noise({ dur: 0.6, f: 300, sweep: 1500, type: 'bandpass', q: 0.8, gain: 0.12 * level, attack: 0.25, pan }); }
   moped(pan = 0.4, level = 1) {

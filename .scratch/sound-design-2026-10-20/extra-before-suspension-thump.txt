@@ -1,0 +1,1 @@
+extra-before: suspension-thump — -48.3 LUFS, -30.1 dBFS peak; spectrogram and waveform at default mix, no normalization.

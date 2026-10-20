@@ -1,0 +1,1 @@
+extra-before: object-pickup — -51.3 LUFS, -33.6 dBFS peak; spectrogram and waveform at default mix, no normalization.

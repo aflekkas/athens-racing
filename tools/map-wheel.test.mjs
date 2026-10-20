@@ -44,6 +44,13 @@ test('zoom direction and pinch sensitivity, pan follows the fingers', () => {
   const pinch = wheelZoomFactor(wheel({ deltaY: -5, ctrlKey: true })), notch = wheelZoomFactor(wheel({ deltaY: -5 }));
   assert.ok(pinch > notch && pinch < 1.2, 'a pinch, which sends small deltas, zooms at a usable rate');
   assert.ok(wheelZoomFactor(wheel({ deltaY: -5000 })) < 1.7, 'one huge event is clamped');
+  // Owner 2026-10-20 "I could not scroll wheel to zoom out": one notch is one zoom step, however the browser sizes it.
+  const step = f => Math.log(f) / Math.log(1.28);
+  for (const [o, name] of [[{ deltaY: 100 }, 'a 100 px notch'], [{ deltaY: 3, deltaMode: 1 }, 'a 3-line notch'], [{ deltaY: 4.000244140625 }, 'a Chrome-on-macOS notch']])
+    assert.ok(Math.abs(step(wheelZoomFactor(wheel(o))) + 1) < 1e-9, `${name} zooms out one step`);
+  assert.equal(wheelKind(wheel({ deltaY: -4.000244140625 })), 'zoom', 'Chrome on macOS: a mouse wheel notch zooms');
+  assert.equal(wheelKind(wheel({ deltaY: -8.00048828125 })), 'zoom');
+  for (const dy of [1, 2, 4, 7.5, 16, 33]) assert.equal(wheelKind(wheel({ deltaY: dy })), 'pan', `a ${dy} px trackpad scroll still pans`);
   assert.deepEqual(wheelPan(wheel({ deltaX: 10, deltaY: -4 })), [-10, 4], 'scrolling right moves the map left, like a page');
   assert.deepEqual(wheelPan(wheel({ deltaX: 1, deltaY: 2, deltaMode: 1 })), [-16, -32], 'line deltas pan in pixels');
 });

@@ -1,0 +1,1 @@
+extra-before: position-gain — -36.8 LUFS, -23.3 dBFS peak; spectrogram and waveform at default mix, no normalization.

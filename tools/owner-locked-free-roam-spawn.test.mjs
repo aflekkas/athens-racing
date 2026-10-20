@@ -19,7 +19,7 @@ import { CARS } from '../src/cars.js';
 import { freeRoam } from '../src/events.js';
 import { TRACK_ROUTES } from '../src/attica-map-data.js';
 import { initialMapId } from '../src/menu-map.js';
-import { AREA_STARTS, ATHENS_STARTS, spawnAreas, athensEnabled, decodeSpawnRoads, snapToRoad, atticaFromLocal, localFromAttica, atticaFromLonLat, lonLatFromAttica, athensFromAttica, athensFromLonLat, athensCell } from '../src/spawn-spots.js';
+import { AREA_STARTS, ATHENS_DISTRICTS, spawnAreas, athensEnabled, decodeSpawnRoads, snapToRoad, atticaFromLocal, localFromAttica, atticaFromLonLat, lonLatFromAttica, athensFromAttica, athensFromLonLat, athensCell } from '../src/spawn-spots.js';
 import { buildSpawnRoads, UNIT } from './build-spawn-roads.mjs';
 
 const OWNER = 'Owner-locked decision (2026-10-19 free roam picks a spawn point, no tracks; 2026-10-20 click anywhere, areas not POIs), see docs/OWNER-DECISIONS.md. Ask the owner before changing.';
@@ -66,7 +66,7 @@ test('the picker snaps a click anywhere to a road, steps through areas with the 
   const code = strip(pickerSource);
   assert.match(code, /snapToRoad\(roads, wx, wy, radius\)/, `a click snaps to the nearest drivable road. ${OWNER}`);
   assert.match(code, /NO ROAD HERE/, `and says so when there is none. ${OWNER}`);
-  assert.match(code, /render\(roadChoice\(snap\)\);/, `a click places the start where you clicked. ${OWNER}`);
+  assert.match(code, /render\(roadChoice\(snap(?:, areas)?\)\);/, `a click places the start where you clicked. ${OWNER}`);
   assert.match(code, /flyTo\(areaCamera\(/, `stepping to an area flies the camera there. ${OWNER}`);
   assert.match(code, /const cycle = delta => \{ const i = Math\.max\(0, areas\.findIndex/, `the arrows cycle areas, not POIs. ${OWNER}`);
   assert.doesNotMatch(code, /spawnSpots|SPAWN_SPOTS|spawn-pin/, `no POI list. ${OWNER}`);
@@ -185,14 +185,20 @@ test('free roam carries a spawn and nothing of a track: no route, start/finish, 
 // ---------------------------------------------------------------- the open world stays hidden
 test('the whole-Athens open world is hidden without ?map=athens', async () => {
   assert.equal(athensEnabled(''), false); assert.equal(athensEnabled('?menu=1'), false); assert.equal(athensEnabled('?map=riviera'), false); assert.equal(athensEnabled('?map=athens'), true);
-  assert.ok(!spawnAreas().some(s => s.mapId === 'athens'), `no Athens area without the flag. ${OWNER}`); assert.equal(spawnAreas({ athens: true }).filter(s => s.mapId === 'athens').length, 1, 'with the flag it joins as one area');
-  assert.equal(spawnAreas({ athens: true, athensCells: new Set() }).filter(s => s.mapId === 'athens').length, 0, 'not when none of its starts is hosted');
-  assert.ok(ATHENS_STARTS.every(s => s.mapId === 'athens'));
-  const plain = await renderPicker('?menu=1'); assert.doesNotMatch(plain, /ATHENS OPEN WORLD/, `players never see the open world. ${OWNER}`);
-  const flagged = await renderPicker('?map=athens&menu=1'); assert.match(flagged, /ATHENS OPEN WORLD/, 'the dev flag shows it');
+  assert.ok(!spawnAreas().some(s => s.mapId === 'athens'), `no Athens area without the flag. ${OWNER}`);
+  // With the flag the picker is the open world, one connected city: its areas are its districts (lead 2026-10-20), centre first.
+  const districts = spawnAreas({ athens: true });
+  assert.ok(districts.length >= 10 && districts.every(s => s.mapId === 'athens'), 'with the flag the areas are the Athens districts');
+  assert.equal(districts[0].name, 'SYNTAGMA');
+  assert.equal(spawnAreas({ athens: true, athensCells: new Set() }).length, 0, 'none that the world does not host');
+  assert.ok(ATHENS_DISTRICTS.every(s => s.mapId === 'athens' && s.id.startsWith('athens:')));
+  const plain = await renderPicker('?menu=1'); assert.doesNotMatch(plain, /SYNTAGMA|KYPSELI|athens:/, `players never see the open world. ${OWNER}`);
+  const flagged = await renderPicker('?map=athens&menu=1'); assert.match(flagged, /map-track-count">SYNTAGMA</, 'the dev flag shows it');
   assert.ok(!PLAYABLE_MAPS.includes('athens') && !MAPS.some(m => m.id === 'athens'), 'it is not a catalogue map');
   assert.ok(!JSON.stringify(roadsJson).includes('athens'), 'the road data is only the playable maps\'');
-  const code = strip(pickerSource); assert.match(code, /if \(athensEnabled\(\)\) loadAthens\(\)/, 'its cells and roads load only behind the flag'); assert.match(code, /athensEnabled\(\)/, OWNER);
+  const code = strip(pickerSource); assert.match(code, /const athensMode = athensEnabled\(\)/, OWNER);
+  assert.match(code, /if \(athensMode\) loadAthens\(\)/, 'its cells load only behind the flag'); assert.match(code, /loadRoads\(athensMode\)/, 'and so does its street file');
+  assert.match(code, /athens \? 'assets\/athens\/streets\.json' : 'assets\/maps\/spawn-roads\.json'/, OWNER);
   // The flag still boots the world directly (dev tooling); the menu route needs ?menu=1.
   assert.match(boot, /\(query\.get\('map'\)==='athens' && !query\.has\('menu'\)\) \|\| direct/, OWNER);
   assert.doesNotThrow(() => initialMapId(new URLSearchParams('map=athens&menu=1')), 'the catalogue lookup ignores the open world');

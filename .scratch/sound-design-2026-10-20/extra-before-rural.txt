@@ -1,0 +1,1 @@
+extra-before: rural — -56 LUFS, -43.7 dBFS peak; spectrogram and waveform at default mix, no normalization.
