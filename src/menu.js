@@ -154,7 +154,7 @@ export class Menu {
     for (const [k, el] of it.entries()) el.classList.toggle('focus', k === this.focus);
     const el = it[this.focus];
     if (scroll) el.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
-    if (this.screen === 'maps' && (el.dataset.mapId || el.dataset.spot)) this.mapView?.preview(el.dataset.mapId || el.dataset.spot);
+    if (this.screen === 'maps' && el.dataset.mapId) this.mapView?.preview(el.dataset.mapId);
   }
   /** spatial focus movement: the nearest item in that direction; up / down wrap at the ends of a column */
   move(dir) {
@@ -232,7 +232,6 @@ export class Menu {
     if (el.classList.contains('off') || el.getAttribute('aria-disabled') === 'true') return;
     if (el.dataset.kind && C.activate(el)) { this.h.ui?.(true); return; }
     if (el.dataset.mapId) { this.h.ui?.(true); selectMap(this, el.dataset.mapId); return; }
-    if (el.dataset.spot) { this.h.ui?.(true); driveFromSpawn(this); return; } // confirm on a spawn pin: DRIVE from the chosen place
     if (el.dataset.landmark) { window.__flow.teleportLandmark(el.dataset.landmark); this.back(); return; }
     const a = el.dataset.act;
     this.h.ui?.(true);
