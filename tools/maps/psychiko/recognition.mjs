@@ -20,7 +20,7 @@ export function buildRecognition(data,osm){
  addNode(3445319234,'kiosk','lap-4060','Michalakopoulou periptero',{color:'#3d5549',canopy:'#c5bd9b',yaw:1.6});
  addNode(8694632735,'schoolGate','lap-3195','Bizaniou College side gate',{yaw:1.35});
  addNode(6193531311,'schoolGate','lap-3645','Benaki College entrance',{yaw:-.6});
- for(const f of frontages){const b=data.buildings.find(b=>b.id===f.id);if(!b)throw Error('Missing frontage '+f.id);Object.assign(b,{h:f.h,lv:f.lv,color:f.color,pitched:false,facadeStyle:f.facadeStyle});
+ for(const f of frontages){const b=data.buildings.find(b=>b.id===f.id);if(!b)throw Error('Missing frontage '+f.id);Object.assign(b,{h:f.h,lv:f.lv,color:f.color,pitched:false,facadeStyle:f.facadeStyle,storeyHeight:f.h/f.lv});
   landmarks.push({...f,kind:'frontage',x:b.p.filter((_,i)=>i%2===0).reduce((a,b)=>a+b,0)/(b.p.length/2),z:b.p.filter((_,i)=>i%2).reduce((a,b)=>a+b,0)/(b.p.length/2)});}
  // Preserve OSM footprint/setback and explicit source storeys; infer only untagged heights.
  const ways=new Map(osm.filter(e=>e.type==='way').map(e=>[e.id,e]));

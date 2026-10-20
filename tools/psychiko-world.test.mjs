@@ -148,9 +148,9 @@ test('Psychiko uses shared footprint boxes and budgeted streetscape props',async
  const {buildingBlockGeometry}=await import('../src/buildings.js');
  const {triangleCount}=await import('../src/world-art-direction.js');
  assert.ok(data.vegetation?.length>0,'OSM vegetation records feed the budgeted detail layer');
- const sc=data.psychiko.scenery;assert.deepEqual(Object.keys(sc),['version','source','roads','walls','trees','parking','poles','zebras']);assert.equal(sc.roads,data.roadNetwork.roads.length);
+ const sc=data.psychiko.scenery;assert.deepEqual(Object.keys(sc),['version','parkingStride','source','roads','walls','trees','parking','poles','zebras']);assert.equal(sc.roads,data.roadNetwork.roads.length);
  const street=new PsychikoStreetscape(map,new THREE.Group(),(x,z)=>terrain.height(x,z));
- assert(street.canopy.size>20&&street.props.size>50&&street.obstacles.length>1000);
+ assert(street.canopy.size>20&&street.props.size>50&&street.obstacles.length>200&&street.obstacles.length<700);
  // Kerb parking never narrows the raced width: lap cars sit astride the kerb, side-street rows stay off the lap.
  for(const o of street.obstacles){const q=route.project(o.x,o.z,null);if(Math.abs(q.u)<route.edge(q.s)+4)assert(Math.abs(q.u)-o.hw>=route.edge(q.s)-.05,`parked car intrudes at s=${q.s.toFixed(1)}`);}
  let tris=0;for(const key of street.props.keys()){const m=street.buildCell('props',key);if(m){tris+=m.geometry.attributes.position.count/3;m.geometry.dispose();}}
@@ -337,5 +337,19 @@ test('lap survey landmarks retain OSM anchors, safe kiosks and the asymmetric Fa
  assert(walls.every(r=>r.h>=3.2),'College retaining stone and railing rise above parked cars');
  const signalExits=data.roadworks.filter(b=>{const q=route.project(b.x,b.z);return q.s<120||q.s>4950&&q.s<5130;});
  assert(signalExits.length>5);assert(signalExits.every(b=>b.dressing==='guardrail'),'signal sightlines use steel separators without orange works furniture');
+ }finally{street.dispose();}
+});
+
+test('station-backed parking records cover both panes, preserve empty kerbs and share an instanced fleet',async()=>{
+ const survey=JSON.parse(readFileSync(new URL('./maps/psychiko/raw/parked-cars.json',import.meta.url))),ids=new Map(survey.observations.map(r=>[r.station,r]));
+ assert.equal(ids.size,206);assert.equal(survey.observations.reduce((n,r)=>n+r.views.length,0),412);
+ for(const run of survey.runs){assert(run.s1>run.s0&&run.s0>=0&&run.s1<=route.length+.01);assert(run.density>0&&run.density<=1);assert(['left','right'].includes(run.side));
+  for(const id of run.stations){const r=ids.get(id);assert(r,`missing parking evidence ${id}`);assert(r.views.every(v=>v[run.side+'RelativeToLap'].density>0),`empty kerb filled from ${id}`);}
+ }
+ assert(!survey.runs.some(r=>r.s0>5068&&r.s0<5630),'Kifisias through lanes/frontage slip contain traffic, not kerb parking');
+ const THREE=await import('three'),{PsychikoStreetscape}=await import('../src/maps/psychiko-streetscape.js'),street=new PsychikoStreetscape(map,new THREE.Group(),(x,z)=>terrain.height(x,z));
+ try{assert(street.parking.isInstancedMesh);assert.equal(street.parking.count,street.obstacles.length);assert(street.parking.count<700);
+  const F=data.psychiko.arterial.faros.openApron,cx=(F.lon-data.proj.lon0)*data.proj.mlon,cz=-(F.lat-data.proj.lat0)*data.proj.mlat;
+  const trees=[...street.canopy.values(),...street.props.values()].flat().filter(r=>r.kind==='tree');assert(!trees.some(t=>Math.hypot(t.x-cx,t.z-cz)<F.radius-.4),'commercial junction apron remains open');
  }finally{street.dispose();}
 });

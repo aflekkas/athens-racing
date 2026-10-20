@@ -45,6 +45,14 @@ export function indexRecognition(street,put) {
   if(r.kind==='frontage'){const b=street.map.data.buildings.find(b=>b.id===r.id);if(!b)continue;p.building=b;}
   put(street.props,200,p.x,p.z,{...p,kind:'recognition',asset:r.kind});
  }
+ const queue=street.map.data.psychiko.arterial?.faros?.queue;
+ if(queue){const road=street.network.roads.find(r=>r.id===queue.way);if(road){
+  const segs=[];let length=0;for(let i=0;i+3<road.p.length;i+=2){const [x,z,bx,bz]=road.p.slice(i,i+4),L=Math.hypot(bx-x,bz-z);segs.push({x,z,tx:(bx-x)/L,tz:(bz-z)/L,L,s:length});length+=L;}
+  queue.fromEnd.forEach((back,i)=>{const d=length-back,g=segs.findLast(g=>g.s<=d);if(!g)return;const t=d-g.s,x=g.x+g.tx*t-g.tz*queue.lateral,z=g.z+g.tz*t+g.tx*queue.lateral,yaw=Math.atan2(g.tx,g.tz);
+   if(street.network.mainInside(x,z)||street.network.islandAt(x,z))return;
+   put(street.props,200,x,z,{kind:'car',x,z,yaw,color:i===1?10:i%8});street.obstacles.push({x,z,yaw,hl:2.08,hw:.87});
+  });
+ }}
  const add=(s,u,asset,extra={})=>{const p=route.point(s,u),f=route.frame(s,{});put(street.props,200,p.x,p.z,{kind:'recognition',asset,x:p.x,z:p.z,yaw:Math.atan2(f.tx,f.tz),s,...extra});};
  // Kerb poles/bollards and climbing flowers are individual observations, not a new random Mediterranean filler layer.
  for(const [s,side] of [[2745,1],[3240,-1],[3285,-1],[3330,-1],[3375,-1],[3645,1],[3780,1],[4074,1]])

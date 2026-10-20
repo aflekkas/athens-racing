@@ -11,6 +11,9 @@
 //   parking [ref, side, s0, s1]                    kerb rows (lap bays sit outside the raced width)
 //   poles   [ref, side, s, type]                   0 green gooseneck + cream bell (avenues), 1 utility pole + side arm
 //   zebras  [ref, s]                               marked crossings across the whole carriageway
+import fs from 'node:fs';
+import { FAROS } from './arterial.mjs';
+const PARKING_SURVEY=JSON.parse(fs.readFileSync(new URL('./raw/parked-cars.json',import.meta.url)));
 import { lapCharacter } from './recognition.mjs';
 import { Route, Terrain } from '../../../src/map.js';
 import { RoadNetwork } from '../../../src/road-network-surface.js';
@@ -74,8 +77,10 @@ export function buildPsychikoScenery(data, bytes, osm = []) {
     strips.push({ ref, length, road, at, section: () => section, hw: () => road.w / 2, fw: () => fw });
   });
 
+  const faros={x:(FAROS.openApron.lon-proj.lon0)*proj.mlon,z:-(FAROS.openApron.lat-proj.lat0)*proj.mlat};
+  const openFaros=(x,z)=>Math.hypot(x-faros.x,z-faros.z)<FAROS.openApron.radius;
   const walls = [], trees = [], parking = [], poles = [], zebras = [], treeCells = new Set();
-  const tree = (x, z, species, h) => { const key = Math.round(x / 3.5) + ',' + Math.round(z / 3.5); if (treeCells.has(key)) return; treeCells.add(key); trees.push(dm(x), dm(z), species * 1000 + Math.min(999, dm(h))); };
+  const tree = (x, z, species, h) => { if(openFaros(x,z))return; const key = Math.round(x / 3.5) + ',' + Math.round(z / 3.5); if (treeCells.has(key)) return; treeCells.add(key); trees.push(dm(x), dm(z), species * 1000 + Math.min(999, dm(h))); };
   const treeHeight = (species, r) => HEIGHT[species][0] + (HEIGHT[species][1] - HEIGHT[species][0]) * r;
   const observedNear = (x, z) => { let best = null, d = 35 * 35; for (const o of observed) { const e = (o.x - x) ** 2 + (o.z - z) ** 2; if (e < d) { d = e; best = o; } } return best; };
   const observed = PSYCHIKO_SURVEY.observed.map(o => { const [x, z] = P(o); return { ...o, x, z, hx: Math.sin(o.heading * Math.PI / 180), hz: -Math.cos(o.heading * Math.PI / 180) }; });
@@ -109,6 +114,7 @@ export function buildPsychikoScenery(data, bytes, osm = []) {
           if ((s > 3201 && s < 3210 && side < 0) || (s > 3640 && s < 3651 && side < 0)) type = null;
           else if (type && !['school-stone','metal-fence'].includes(type) && (s % 28) > 22 && (s % 28) < 26) type = 'gate';
         }
+        if(openFaros(x,z))type=null;
         if (!type) { flush(); continue; }
         const h = type === 'school-stone' ? 3.25 + hash(ref, side) * .35 : type === 'hedge' ? 1.7 + r * .9 : type === 'gate' ? 1.8 : type === 'stone' ? 1.1 + r * .8 : type === 'plaster' ? 1.7 + r * .5 : type === 'metal-fence' ? 1.6 + r * .3 : 1.7 + r * .4;
         if (!run || run.type !== type || Math.abs(run.h - h) > .01) { flush(); run = { type, h, s0: s - 1, s1: s + 1 }; } else run.s1 = s + 1;
@@ -135,37 +141,28 @@ export function buildPsychikoScenery(data, bytes, osm = []) {
           if (clear(x, z, .8, null)) tree(x, z, 5, treeHeight(5, hash(ref, side, s, 18))); }
       }
     }
-    if (ref < 0) {
-      // The lap stays a clear race carriageway: on its surveyed avenues (A9/A8) cars sit astride the kerb, inner wheels in
-      // the gutter, outside the raced width, including beside the grid. Keep the gantry, rings and mouths clear.
-      for (const side of [-1, 1]) {
-        let s0 = null;
-        const end = s => { if (s0 !== null && s - s0 >= 5) parking.push(ref, side, dm(s0), dm(s)); s0 = null; };
-        for (let s = 8; s <= length - 8; s += 1) {
-          const sec = strip.section(s), block = Math.floor(s / 60), e = route.edge(s), u = e + 1.15, p = at(s), x = p.x - p.tz * u * side, z = p.z + p.tx * u * side;
-          const ok = ['A9','A8','R6','N5','H6','P7','I7'].includes(sec.k) && e >= 2.6 && s > 90 && hash(side, block, 31) < (sec.parking ?? .5) * 1.3 && !route.roundabouts.some(r => s > r.s0 - 18 && s < r.s1 + 18)
-            && !network.mouth(s, side, 6) && !network.candidates(x, z).some(seg => network.distance(seg, x, z) < seg.hw + 6) && !((s % 26) / 26 > .6 && (s % 26) / 26 < .6 + 4 / 26 && hash(side, Math.floor(s / 26), 32) < .5);
-          if (ok && s0 === null) s0 = s; else if (!ok) end(s);
-        }
-        end(length - 8);
+    if(ref<0){
+      // Positive station-backed runs only. Empty/occluded kerbs have no fallback fill.
+      for(const run of PARKING_SURVEY.runs){
+        const side=run.side==='left'?-1:1;let s0=null;
+        const end=s=>{if(s0!==null&&s-s0>=5)parking.push(-1,side,dm(s0),dm(s),Math.round(run.density*100),run.placement==='partly-pavement'?1:0);s0=null;};
+        for(let s=run.s0;s<=run.s1;s+=1){const e=route.edge(s),p=at(s),u=e+1.55,x=p.x-p.tz*u*side,z=p.z+p.tx*u*side;
+          const ok=e>=2.6&&s>85&&s<length-40&&!route.roundabouts.some(r=>s>r.s0-14&&s<r.s1+14)&&!network.mouth(s,side,7)&&!network.candidates(x,z).some(seg=>network.distance(seg,x,z)<seg.hw+6);
+          if(ok&&s0===null)s0=s;else if(!ok)end(s);
+        }end(run.s1);
       }
-      continue;
     }
-    // Kerb parking on the asphalt. Both sides only where at least 3.6 m of carriageway stays usable; never on the lap.
-    const road = strip.road, sec = strip.section(0), counts = psychikoWayParking(road.id), w = road.w;
-    const sides = w < 4.6 ? 0 : w >= 7.5 ? 2 : 1;
-    const share = counts ? (2 * counts[0] + counts[1]) / (2 * (counts[0] + counts[1] + counts[2])) : sec.parking ?? .4;
-    for (const side of [-1, 1]) {
-      if (!sides || (sides === 1 && (hash(road.id, 3) < .5 ? -1 : 1) !== side) || hash(road.id, side, 5) > share * (sides === 1 ? 1.6 : 1)) continue;
-      let s0 = null;
-      const end = s => { if (s0 !== null && s - s0 >= 5) parking.push(ref, side, dm(s0), dm(s)); s0 = null; };
-      for (let s = 6; s <= length - 6; s += 1) {
-        const p = at(s), u = w / 2 - 1, x = p.x - p.tz * u * side, z = p.z + p.tx * u * side, gap = Math.floor(s / 30);
-        const ok = lapClear(x, z, 9) && !network.islandAt(x, z) && !network.candidates(x, z).some(seg => seg.road !== road && network.distance(seg, x, z) < seg.hw + 5) && !((s % 30) / 30 > .55 && (s % 30) / 30 < .55 + 4 / 30 && hash(ref, side, gap, 9) < .6);
-        if (ok && s0 === null) s0 = s; else if (!ok) end(s);
+    if(ref>=0)for(const run of PARKING_SURVEY.sideRoads||[]){
+      if(strip.road.id!==run.way)continue;
+      for(const side of [-1,1]){let s0=null;
+        const end=s=>{if(s0!==null&&s-s0>=5)parking.push(ref,side,dm(s0),dm(s),Math.round(run.density*100),0);s0=null;};
+        for(let s=run.s0;s<=Math.min(length-6,run.s1);s+=1){const p=at(s),u=strip.hw(s)-1,x=p.x-p.tz*u*side,z=p.z+p.tx*u*side;
+          const ok=lapClear(x,z,9)&&!network.islandAt(x,z)&&!network.candidates(x,z).some(seg=>seg.road!==own&&network.distance(seg,x,z)<seg.hw+6);
+          if(ok&&s0===null)s0=s;else if(!ok)end(s);
+        }end(Math.min(length-6,run.s1));
       }
-      end(length - 6);
     }
+
   }
 
   for(const s of [52,70,88]) {const p=route.frame(s,{}),u=route.edge(s)+5.5,x=p.x-p.tz*u,z=p.z+p.tx*u;
@@ -271,7 +268,7 @@ export function buildPsychikoScenery(data, bytes, osm = []) {
     if (e.type === 'node' && t.natural === 'tree') { const [x, z] = P(e); if (clear(x, z, .2, null) && (network.candidates(x, z).length || network.nearMain(x, z))) tree(x, z, sp, parseFloat(t.height) || treeHeight(sp, hash(e.id))); }
     if (e.type === 'way' && t.natural === 'tree_row') { const ps = (e.nodes || []).map(id => nodes.get(id)).filter(Boolean).map(P); for (let i = 1; i < ps.length; i++) { const [ax, az] = ps[i - 1], [bx, bz] = ps[i], L = Math.hypot(bx - ax, bz - az); for (let d = 0; d < L; d += 8) { const x = ax + (bx - ax) * d / L, z = az + (bz - az) * d / L; if (clear(x, z, .2, null) && (network.candidates(x, z).length || network.nearMain(x, z))) tree(x, z, sp, treeHeight(sp, hash(e.id, i, d))); } } }
   }
-  return { version: 3, source: 'Municipal Street View survey 2026-10-19 (classes, boundaries, parking, lamps); frozen OSM 2026-10-14', roads: data.roadNetwork.roads.length, ...encode(walls, trees), parking, poles, zebras };
+  return { version: 4, parkingStride:6, source: 'Municipal Street View survey 2026-10-19 (classes, boundaries, parking, lamps); frozen OSM 2026-10-14', roads: data.roadNetwork.roads.length, ...encode(walls, trees), parking, poles, zebras };
 }
 // Walls: [ref delta, side, s0 (from the previous run's s1 on the same ref/side, else absolute), length, type, height].
 // Trees: sorted into 50 m bands, then [x, z] half-metre deltas and species*100 + half-metre height.

@@ -10895,5 +10895,20 @@
         "lap-5670"
       ]
     }
+  ],
+  "sideRoads": [
+    {
+      "way": 660348956,
+      "side": "both",
+      "s0": 15,
+      "s1": 142,
+      "density": 0.88,
+      "placement": "kerb",
+      "orientation": "parallel",
+      "stations": [
+        "faros-across"
+      ],
+      "note": "Solomou shop street, both kerbs. Strip coordinate follows source OSM node order, not lap."
+    }
   ]
 }

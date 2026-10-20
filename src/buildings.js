@@ -147,7 +147,7 @@ export function buildBuildings(map,scene,heightC,labels,infill=[]) {
     batch.facade ||= [];const style=buildingStyle(b);
     for(let i=start;i<batch.count;i++){
       const j=i*3,nx=batch.nor[j],ny=batch.nor[j+1],nz=batch.nor[j+2];
-      batch.facade.push(((batch.pos[j]-cx)*nz-(batch.pos[j+2]-cz)*nx)/(b.windowBay||5.5),(batch.pos[j+1]-base)/(b.storeyHeight||3.1),style,Math.abs(ny)>.5?1:0);
+      batch.facade.push(((batch.pos[j]-cx)*nz-(batch.pos[j+2]-cz)*nx)/(b.windowBay||5.5),(batch.pos[j+1]-base)/(b.storeyHeight?(top-base)/(b.lv||2):3.1),style,Math.abs(ny)>.5?1:0);
     }
     g.dispose();
     footprints.push({p,bb});roofs.push({...b,p,bb,cx,cz,gmin:lo,top,area:Math.abs(polyArea(p)),roofOccupied:[]});
