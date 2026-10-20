@@ -89,7 +89,7 @@ export async function packTiles(path, output,{onTile=null,maxBytes=Infinity}={})
     await rename(join(output,name+'.partial'),join(output,name));
     await onTile?.({key,entry:entries[key],physical,bridges,roads,decoded,packet,seams:seams.get(key)});
   }
-  if(!seams.size) throw new Error('No tiles');
+  if(!seams.size){if(failures.length)throw Object.assign(new Error('Gate failures in '+failures.length+' cells: '+JSON.stringify(failures)),{failures});throw new Error('No tiles');}  // every cell failed: still report which, so plan-steep can read them
   for (const [key,a] of seams) {
     const [x,z]=key.split(',').map(Number);
     for (const [other,side,opposite] of [[`${x+1},${z}`,1,0],[`${x},${z+1}`,3,2]]) {

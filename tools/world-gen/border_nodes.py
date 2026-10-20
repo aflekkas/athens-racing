@@ -50,5 +50,10 @@ def canonical_polygon(geometry):
  g=set_precision(geometry,1/SCALE)
  if g.geom_type=='Polygon':g=set_precision(lift_border_runs(g),1/SCALE)
  if g.geom_type=='Polygon':return set_precision(Polygon(split_borders(list(g.exterior.coords)),[split_borders(list(r.coords)) for r in g.interiors]),1/SCALE)
- if g.geom_type=='MultiPolygon':return MultiPolygon([canonical_polygon(p) for p in g.geoms])
+ if g.geom_type=='MultiPolygon':
+  # Snapping can split a part in two, so a part may come back as a MultiPolygon: flatten, never nest.
+  parts=[]
+  for p in g.geoms:
+   c=canonical_polygon(p);parts.extend(c.geoms if c.geom_type=='MultiPolygon' else [c])
+  return MultiPolygon(parts)
  return g
