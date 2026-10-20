@@ -215,7 +215,7 @@ function driverVoice(c, category = 'driver', options = {}) {
 
 // ------------------------------------------------------------------ game state
 const G = {
-  state: 'loading', t: 0, raceT: 0, countT: 0, cam: Q.get('cam') === 'chase' ? 'chase' : 'cockpit', userCam: Q.get('cam') === 'chase' ? 'chase' : 'cockpit', carIdx: 0, selIdx: 0, menuFrom: null,
+  state: 'loading', t: 0, raceT: 0, countT: 0, cam: ['chase', 'front'].includes(Q.get('cam')) ? Q.get('cam') : 'cockpit', userCam: ['chase', 'front'].includes(Q.get('cam')) ? Q.get('cam') : 'cockpit', carIdx: 0, selIdx: 0, menuFrom: null,
   crashes: 0, topSpeed: 0, pFinish: null, rFinish: null, lastLead: 0, leadT: 0,
   shake: 0, flash: 0, driftAcc: 0, driftT: 0, markIdx: 0, finishedT: 0, orbitA: 0, autodrive: Q.has('autodrive'),
 };
@@ -1211,7 +1211,7 @@ function flowAction(name) {
   if (MENU_STATES.includes(G.state)) return true;
   if (notifications.action(name, {gamepad: activeInputDevice() === 'gamepad'})) return true;
   switch (name) {
-    case 'camera': G.cam = G.cam === 'cockpit' ? 'chase' : 'cockpit'; G.userCam = G.cam; applyCamMode(); hud.message(G.cam === 'cockpit' ? '<i>COCKPIT</i> CAM' : '<i>CHASE</i> CAM', 1.2); return true;
+    case 'camera': G.cam = G.cam === 'cockpit' ? 'chase' : G.cam === 'chase' ? 'front' : 'cockpit'; G.userCam = G.cam; applyCamMode(); hud.message(G.cam === 'cockpit' ? '<i>COCKPIT</i> CAM' : G.cam === 'chase' ? '<i>CHASE</i> CAM' : '<i>FRONT</i> CAM', 1.2); return true;
     case 'tow': tow(player.veh); return true;
     case 'map': hud?.toggleBigMap(); return true;
     case 'tractionControl':
@@ -1778,7 +1778,7 @@ controls.mountMouseLook(canvas, { enabled: canLook, free: () => settings.mouseLo
   unlock() { if (G.state === 'race' && !towOffer.element) pauseGame(); },
 });
 canvas.addEventListener('contextmenu', e => { if (canLook()) e.preventDefault(); });
-canvas.addEventListener('wheel', e => { if (!canLook() || G.cam !== 'chase') return; e.preventDefault(); look.zoom = clamp(look.zoom * Math.exp(e.deltaY * 0.0012), 0.55, 3); }, { passive: false });
+canvas.addEventListener('wheel', e => { if (!canLook() || (G.cam !== 'chase' && G.cam !== 'front')) return; e.preventDefault(); look.zoom = clamp(look.zoom * Math.exp(e.deltaY * 0.0012), 0.55, 3); }, { passive: false });
 // Exact critically damped spring update: stable across frame rates and shortest-path yaw wrapping.
 function spring(state, key, velocity, target, omega, dt) {
   const delta = state[key] - target, c = (state[velocity] + omega * delta) * dt, decay = Math.exp(-omega * dt);
@@ -1914,6 +1914,23 @@ function updateCamera(dt, snap = false) {
     const ahead = 5 * Math.max(0, Math.cos(look.yaw + look.back)) * clamp(1 - look.pitch, 0, 1);
     const lk = _v2.set(veh.x, veh.y + targetY, veh.z).addScaledVector(_qForward.set(-Math.sin(camState.followYaw), 0, -Math.cos(camState.followYaw)), ahead);
     camera.lookAt(lk);
+    const fov = settings.chaseFov + (settings.speedFov ? Math.min(3, sk * 2 + (veh.nitroOn ? 1 : 0)) : 0);
+    camState.fov = snap ? fov : damp(camState.fov, fov, 3, dt);
+  } else if (G.cam === 'front') {
+    // ahead of the car looking back at it, swung round by the same free look: yaw about the car, pitch, wheel zoom
+    const {back,up,targetY}=chaseRig(player.spec,sk);
+    const dist = Math.hypot(back, up) * look.zoom, el = clamp(Math.atan2(up, back) + look.pitch, -0.08, 1.35);
+    if (snap || camState.followYaw === undefined) { camState.followYaw = veh.yaw; camState.followYawV = 0; }
+    const yawTarget = camState.followYaw + Math.atan2(Math.sin(veh.yaw - camState.followYaw), Math.cos(veh.yaw - camState.followYaw));
+    spring(camState, 'followYaw', 'followYawV', yawTarget, 12, dt);
+    const hd = camState.followYaw + Math.PI + look.yaw + look.back, hx = Math.sin(hd), hz = Math.cos(hd);
+    const target = _v1.set(veh.x + hx * Math.cos(el) * dist, veh.y + Math.sin(el) * dist, veh.z + hz * Math.cos(el) * dist);
+    // Follow translation directly; the spring damps the camera offset, keeping its distance natural at speed.
+    if (!snap && camState.carX !== undefined) { camState.pos.x += veh.x - camState.carX; camState.pos.z += veh.z - camState.carZ; }
+    target.y = Math.max(target.y, route.surfaceY(veh.s, veh.u) + 0.6);
+    springPosition(target, dt, snap, look.idleT < 1.5 || look.back > 0.01 ? 16 : 10);
+    camera.position.copy(camState.pos);
+    camera.lookAt(veh.x, veh.y + targetY, veh.z);
     const fov = settings.chaseFov + (settings.speedFov ? Math.min(3, sk * 2 + (veh.nitroOn ? 1 : 0)) : 0);
     camState.fov = snap ? fov : damp(camState.fov, fov, 3, dt);
   } else { // orbit
