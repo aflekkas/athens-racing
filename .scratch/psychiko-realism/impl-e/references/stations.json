@@ -54,7 +54,63 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=quYpg2K4pEgZtoB7r8Z3Fg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=32&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "faros-across",
+    "s": 0,
+    "lat": 38.00475438730675,
+    "lon": 23.77600284829711,
+    "heading": 305,
+    "reason": "Faros opposite carriageway",
+    "fovH": 90,
+    "panoId": "ek7vnJdn6sAjKID7Odr28A",
+    "captureDate": [
+      2022,
+      8
+    ],
+    "googleAddress": [
+      [
+        "1 Σολωμού",
+        "el"
+      ],
+      [
+        "Neo Psychiko, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      299.06985,
+      89.66921,
+      0.89270943
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.00477,
+      "lon": 23.77605
+    },
+    "snapDistanceM": 4.5,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 305,
+        "path": "views/faros-across-305.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=ek7vnJdn6sAjKID7Odr28A&heading=305&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=ek7vnJdn6sAjKID7Odr28A&cb_client=maps_sv.tactile&w=1024&h=512&yaw=305&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 125,
+        "path": "views/faros-across-125.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=ek7vnJdn6sAjKID7Odr28A&heading=125&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=ek7vnJdn6sAjKID7Odr28A&cb_client=maps_sv.tactile&w=1024&h=512&yaw=125&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-0018",
@@ -111,7 +167,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=YrKWesHNqxclK_V2Z0IUyA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=86&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-0028",
@@ -168,7 +224,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=0l0ZnMT8nJlR9WQNuORGPA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=161&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-0045",
@@ -225,7 +281,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=tAN8qNpCIzoXy2zjPWyHGA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=162&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-0062",
@@ -282,7 +338,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=I44OdGgm0AmMG9ZDIm3R2Q&cb_client=maps_sv.tactile&w=1024&h=512&yaw=162&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-0090",
@@ -339,7 +395,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=5gVhcH01KNBUQ_Vh_TdlkA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=162&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-0135",
@@ -396,7 +452,64 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=XhB-5CYsAbTMdRQ6wdOL3A&cb_client=maps_sv.tactile&w=1024&h=512&yaw=162&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-272499530",
+    "s": 150.4,
+    "street": "25is Martiou",
+    "lat": 38.006134627689846,
+    "lon": 23.774928924988007,
+    "heading": 342,
+    "reason": "public lap junction 272499530",
+    "fovH": 90,
+    "panoId": "DWGaWwL-XUduvqxAptFImg",
+    "captureDate": [
+      2026,
+      4
+    ],
+    "googleAddress": [
+      [
+        "4 25is Martiou",
+        "el-Latn"
+      ],
+      [
+        "Psychiko, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      114.31673,
+      86.9752,
+      359.63208
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0061501,
+      "lon": 23.774971
+    },
+    "snapDistanceM": 4.1,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 342,
+        "path": "views/jct-272499530-342.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=DWGaWwL-XUduvqxAptFImg&heading=342&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=DWGaWwL-XUduvqxAptFImg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=342&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 162,
+        "path": "views/jct-272499530-162.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=DWGaWwL-XUduvqxAptFImg&heading=162&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=DWGaWwL-XUduvqxAptFImg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=162&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-0180",
@@ -453,7 +566,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=jYRUqlx-AFoxlAm3a0XCgw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=162&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-0225",
@@ -510,7 +623,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=z0mI-Z5VZhUC7BkWxZ84zA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=162&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-0270",
@@ -567,7 +680,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=O-JwOES4UiZ6WWZii-W4SA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=162&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-0302",
@@ -624,7 +737,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=kfx3fODSMLFcXMPqGLSRBg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=199&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-0315",
@@ -681,7 +794,121 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=4zauE4AetTMNb6bzQRs-dw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=228&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-272554571",
+    "s": 325.01,
+    "street": "Unnamed paved junction",
+    "lat": 38.007549121758956,
+    "lon": 23.77461588986409,
+    "heading": 28,
+    "reason": "public lap junction 272554571",
+    "fovH": 90,
+    "panoId": "7MllY8IJTHwh04GmRMHiKg",
+    "captureDate": [
+      2024,
+      9
+    ],
+    "googleAddress": [
+      [
+        "Πλ. Βασιλέως Γεωργίου Β",
+        "el"
+      ],
+      [
+        "Psychiko, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      47.842358,
+      87.58259,
+      0.41398242
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0075938,
+      "lon": 23.7746308
+    },
+    "snapDistanceM": 5.1,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 28,
+        "path": "views/jct-272554571-028.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=7MllY8IJTHwh04GmRMHiKg&heading=28&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=7MllY8IJTHwh04GmRMHiKg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=28&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 208,
+        "path": "views/jct-272554571-208.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=7MllY8IJTHwh04GmRMHiKg&heading=208&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=7MllY8IJTHwh04GmRMHiKg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=208&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-2436338816",
+    "s": 350.5,
+    "street": "Unnamed paved junction",
+    "lat": 38.00779664649448,
+    "lon": 23.774724199311866,
+    "heading": 343,
+    "reason": "public lap junction 2436338816",
+    "fovH": 90,
+    "panoId": "qAlAVDbRZbwhhC3dlx1slg",
+    "captureDate": [
+      2024,
+      9
+    ],
+    "googleAddress": [
+      [
+        "Πλ. Βασιλέως Γεωργίου Β",
+        "el"
+      ],
+      [
+        "Psychiko, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      354.7821,
+      88.67574,
+      1.4140913
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0078189,
+      "lon": 23.7746636
+    },
+    "snapDistanceM": 5.9,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 343,
+        "path": "views/jct-2436338816-343.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=qAlAVDbRZbwhhC3dlx1slg&heading=343&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=qAlAVDbRZbwhhC3dlx1slg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=343&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 163,
+        "path": "views/jct-2436338816-163.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=qAlAVDbRZbwhhC3dlx1slg&heading=163&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=qAlAVDbRZbwhhC3dlx1slg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=163&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-0360",
@@ -738,7 +965,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=nIGekG3_rjDucu8vY5yEMA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=147&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-0390",
@@ -795,7 +1022,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=MhxMv16Yhz6C7M1q6xR8LA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=107&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-0405",
@@ -852,7 +1079,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=Ab-oBDRGwZ_ZM5S7DHLtMw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=137&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-0414",
@@ -909,7 +1136,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=3OhvPBYiIy-ChpFllRZnzw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=155&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-0450",
@@ -966,7 +1193,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=HXMhUF20PJgBmX6pdpbg2w&cb_client=maps_sv.tactile&w=1024&h=512&yaw=163&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-0495",
@@ -1023,7 +1250,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=jMLqmMxaUQE7YSgXMh_U4A&cb_client=maps_sv.tactile&w=1024&h=512&yaw=163&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-0540",
@@ -1080,7 +1307,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=Lj3yCW6hU0u4nGP6KlWKKQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=163&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-0585",
@@ -1137,7 +1364,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=qbyjLTY-hvubjjvRMRgmiA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=163&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-0630",
@@ -1194,7 +1421,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=kAyMP5FRZD7atqWfng5N0g&cb_client=maps_sv.tactile&w=1024&h=512&yaw=163&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-0675",
@@ -1251,7 +1478,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=tS5uwzqM1OIy6zp-oN75ww&cb_client=maps_sv.tactile&w=1024&h=512&yaw=163&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-0720",
@@ -1308,7 +1535,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=XL_kJSUwRJs6WXBgn0awEw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=162&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-0765",
@@ -1365,7 +1592,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=Zqna_1bwNgozVSgzzPSlpg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=162&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-0810",
@@ -1422,7 +1649,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=sUlDdrzYGvJQ3A4gcDGDsg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=162&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-0855",
@@ -1479,7 +1706,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=me4jJBbocTzBEYeoEp8B0g&cb_client=maps_sv.tactile&w=1024&h=512&yaw=162&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-0900",
@@ -1536,7 +1763,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=RPFk2NjqxTSFlxbFp5eyVA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=162&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-0934",
@@ -1593,7 +1820,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=9Q4JR2V_ywleu6_RNyrl8Q&cb_client=maps_sv.tactile&w=1024&h=512&yaw=167&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-0945",
@@ -1650,7 +1877,60 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=xAwq4O2nb0sMvWbHr8dqcA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=183&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-2436338808",
+    "s": 958.05,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.01300695820755,
+    "lon": 23.771744455691323,
+    "heading": 22,
+    "reason": "public lap junction 2436338808",
+    "fovH": 90,
+    "panoId": "Y9NUaRiaBvaEQqbebjXWyg",
+    "captureDate": [
+      2024,
+      9
+    ],
+    "googleAddress": [
+      [
+        "Psychiko, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      104.879616,
+      88.56749,
+      1.903717
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0130206,
+      "lon": 23.7717984
+    },
+    "snapDistanceM": 5.0,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 22,
+        "path": "views/jct-2436338808-022.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=Y9NUaRiaBvaEQqbebjXWyg&heading=22&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=Y9NUaRiaBvaEQqbebjXWyg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=22&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 202,
+        "path": "views/jct-2436338808-202.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=Y9NUaRiaBvaEQqbebjXWyg&heading=202&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=Y9NUaRiaBvaEQqbebjXWyg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=202&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-0964",
@@ -1703,7 +1983,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=2s7YoLo4111dd7rdTBsEJQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=213&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-0990",
@@ -1756,7 +2036,60 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=tgnHtO4t5z0TZER8KxT7Xw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=183&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-272499027",
+    "s": 1025.4,
+    "street": "Odos Eleftheriou Venizelou",
+    "lat": 38.013454565863924,
+    "lon": 23.77236744239971,
+    "heading": 300,
+    "reason": "public lap junction 272499027",
+    "fovH": 90,
+    "panoId": "P0IfgZSNgW1WcZ-vZeBGkQ",
+    "captureDate": [
+      2024,
+      9
+    ],
+    "googleAddress": [
+      [
+        "Psychiko, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      309.58612,
+      90.8142,
+      0.029146288
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.013372,
+      "lon": 23.7723386
+    },
+    "snapDistanceM": 9.5,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 300,
+        "path": "views/jct-272499027-300.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=P0IfgZSNgW1WcZ-vZeBGkQ&heading=300&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=P0IfgZSNgW1WcZ-vZeBGkQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=300&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 120,
+        "path": "views/jct-272499027-120.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=P0IfgZSNgW1WcZ-vZeBGkQ&heading=120&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=P0IfgZSNgW1WcZ-vZeBGkQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=120&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-1035",
@@ -1809,7 +2142,60 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=NAVz6_BnD8BsgIDdPXAWNQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=113&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-272499025",
+    "s": 1052.05,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.013226695780226,
+    "lon": 23.771801742899914,
+    "heading": 310,
+    "reason": "public lap junction 272499025",
+    "fovH": 90,
+    "panoId": "gAbUcedQwjDn7RwMq60fnw",
+    "captureDate": [
+      2024,
+      1
+    ],
+    "googleAddress": [
+      [
+        "Psychiko, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      198.94038,
+      88.45154,
+      358.82623
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0132319,
+      "lon": 23.7718045
+    },
+    "snapDistanceM": 0.6,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 310,
+        "path": "views/jct-272499025-310.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=gAbUcedQwjDn7RwMq60fnw&heading=310&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=gAbUcedQwjDn7RwMq60fnw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=310&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 130,
+        "path": "views/jct-272499025-130.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=gAbUcedQwjDn7RwMq60fnw&heading=130&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=gAbUcedQwjDn7RwMq60fnw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=130&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-1070",
@@ -1866,7 +2252,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=UFz6ZztuMUogYcFMfwp0mg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=157&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-1080",
@@ -1923,7 +2309,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=tbjJpm-M2CsLFVqHjxqvGw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=163&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-1125",
@@ -1980,7 +2366,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=yrqfMlJB_-kxQmb3aE7z5w&cb_client=maps_sv.tactile&w=1024&h=512&yaw=163&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-1170",
@@ -2037,7 +2423,64 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=JHw8tNpwCMl3-XdcdFPPHw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=163&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-272501749",
+    "s": 1194.25,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.01472503480431,
+    "lon": 23.771567328323705,
+    "heading": 343,
+    "reason": "public lap junction 272501749",
+    "fovH": 90,
+    "panoId": "CGlCz8GEDQKI6DiUeCpZaw",
+    "captureDate": [
+      2026,
+      2
+    ],
+    "googleAddress": [
+      [
+        "54 Λεωφ. Διαμαντίδου",
+        "el"
+      ],
+      [
+        "Psychiko, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      343.0795,
+      91.721115,
+      1.4241419
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0146766,
+      "lon": 23.7715266
+    },
+    "snapDistanceM": 6.5,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 343,
+        "path": "views/jct-272501749-343.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=CGlCz8GEDQKI6DiUeCpZaw&heading=343&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=CGlCz8GEDQKI6DiUeCpZaw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=343&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 163,
+        "path": "views/jct-272501749-163.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=CGlCz8GEDQKI6DiUeCpZaw&heading=163&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=CGlCz8GEDQKI6DiUeCpZaw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=163&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-1215",
@@ -2094,7 +2537,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=_MVCeOUeDXsizmvekOVueQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=163&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-1260",
@@ -2151,7 +2594,64 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=3q8cOZyGmQNltTrjdL55Tg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=163&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-272560865",
+    "s": 1291.46,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.01552889744543,
+    "lon": 23.771212891832647,
+    "heading": 343,
+    "reason": "public lap junction 272560865",
+    "fovH": 90,
+    "panoId": "ZK_n8l3XKS2ZjU31Va2CBA",
+    "captureDate": [
+      2022,
+      7
+    ],
+    "googleAddress": [
+      [
+        "12 Σαμαρά",
+        "el"
+      ],
+      [
+        "Psychiko, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      23.397163,
+      91.252075,
+      2.8464096
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0155135,
+      "lon": 23.7712002
+    },
+    "snapDistanceM": 2.0,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 343,
+        "path": "views/jct-272560865-343.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=ZK_n8l3XKS2ZjU31Va2CBA&heading=343&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=ZK_n8l3XKS2ZjU31Va2CBA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=343&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 163,
+        "path": "views/jct-272560865-163.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=ZK_n8l3XKS2ZjU31Va2CBA&heading=163&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=ZK_n8l3XKS2ZjU31Va2CBA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=163&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-1305",
@@ -2208,7 +2708,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=miGIHeI0E7ri9XZDc4UaNg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=163&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-1350",
@@ -2265,7 +2765,64 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=XNDW_6jilM8QPWdLpNaudQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=163&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-272560900",
+    "s": 1380.48,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.01623778405838,
+    "lon": 23.770904847833005,
+    "heading": 343,
+    "reason": "public lap junction 272560900",
+    "fovH": 90,
+    "panoId": "6-PUaNpmU_M0mUZSA_wv0Q",
+    "captureDate": [
+      2022,
+      7
+    ],
+    "googleAddress": [
+      [
+        "33 Kalvou",
+        "el-Latn"
+      ],
+      [
+        "Psychiko, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      277.1328,
+      92.12479,
+      358.16632
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0162798,
+      "lon": 23.7709014
+    },
+    "snapDistanceM": 4.7,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 343,
+        "path": "views/jct-272560900-343.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=6-PUaNpmU_M0mUZSA_wv0Q&heading=343&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=6-PUaNpmU_M0mUZSA_wv0Q&cb_client=maps_sv.tactile&w=1024&h=512&yaw=343&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 163,
+        "path": "views/jct-272560900-163.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=6-PUaNpmU_M0mUZSA_wv0Q&heading=163&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=6-PUaNpmU_M0mUZSA_wv0Q&cb_client=maps_sv.tactile&w=1024&h=512&yaw=163&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-1395",
@@ -2322,7 +2879,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=AhT_AwQoSbwJWS8dUOB7AA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=163&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-1440",
@@ -2379,7 +2936,64 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=TwGoVAule7Ar8APArkGbBA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=163&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-272561320",
+    "s": 1467.36,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.01699069043594,
+    "lon": 23.770593535278,
+    "heading": 343,
+    "reason": "public lap junction 272561320",
+    "fovH": 90,
+    "panoId": "k75m7RlpXvC3RaM6DKByEw",
+    "captureDate": [
+      2014,
+      9
+    ],
+    "googleAddress": [
+      [
+        "32 Νικ. Γύζη",
+        "el"
+      ],
+      [
+        "Psychiko, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      248.12286,
+      90.92337,
+      352.90475
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0170277,
+      "lon": 23.7706097
+    },
+    "snapDistanceM": 4.4,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 343,
+        "path": "views/jct-272561320-343.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=k75m7RlpXvC3RaM6DKByEw&heading=343&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=k75m7RlpXvC3RaM6DKByEw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=343&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 163,
+        "path": "views/jct-272561320-163.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=k75m7RlpXvC3RaM6DKByEw&heading=163&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=k75m7RlpXvC3RaM6DKByEw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=163&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-1485",
@@ -2436,7 +3050,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=6iYyPQg4vduE3WrkZ86pNg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=163&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-1530",
@@ -2493,7 +3107,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=wEh2J46Gv23FuoeqNEapsw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=163&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-1552",
@@ -2550,7 +3164,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=9fONNET3xDKRn5nasVPLNg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=210&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-1564",
@@ -2607,7 +3221,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=F2JrPFZMMeez_kTdn_WI1A&cb_client=maps_sv.tactile&w=1024&h=512&yaw=254&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-1575",
@@ -2664,7 +3278,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=jy3n1wXviRF5TrY8einUVg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=255&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-1602",
@@ -2721,7 +3335,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=c2XkmwXPWZN-7maq3Kv9mA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=257&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-1620",
@@ -2778,7 +3392,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=sLnxOPIBbQyv1lkfQre8Iw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=259&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-1665",
@@ -2835,7 +3449,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=75Omr-kEQboOoTPNIXwwRg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=265&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-1674",
@@ -2892,7 +3506,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=j5K2Gr9YY4XpBWrpmsKhag&cb_client=maps_sv.tactile&w=1024&h=512&yaw=264&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-1696",
@@ -2949,7 +3563,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=K2MDE0ZmYuBPsG3w_Do-vg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=214&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-1710",
@@ -3006,7 +3620,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=yBvZQwgyet7KiYypE0qPZg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=174&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-1755",
@@ -3063,7 +3677,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=WcpH_YD1J5872ZbqxdXTjA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=169&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-1800",
@@ -3120,7 +3734,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=NbVNS622OgXsoEIML33zNA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=154&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-1845",
@@ -3177,7 +3791,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=VwOo7gDg9tclu0Ot0tdhjA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=134&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-1890",
@@ -3234,7 +3848,64 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=2pwZAS50qWCQTFzS-PbfzQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=120&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-351946626",
+    "s": 1927.94,
+    "street": "Δρυάδων",
+    "lat": 38.01979946669595,
+    "lon": 23.77075650002438,
+    "heading": 345,
+    "reason": "public lap junction 351946626",
+    "fovH": 90,
+    "panoId": "-B6w3wTtT-ocKXocmC4XwQ",
+    "captureDate": [
+      2026,
+      4
+    ],
+    "googleAddress": [
+      [
+        "34 Διαδόχου Παύλου",
+        "el"
+      ],
+      [
+        "Filothei, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      301.18094,
+      83.94809,
+      7.8253045
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0198107,
+      "lon": 23.7708121
+    },
+    "snapDistanceM": 5.0,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 345,
+        "path": "views/jct-351946626-345.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=-B6w3wTtT-ocKXocmC4XwQ&heading=345&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=-B6w3wTtT-ocKXocmC4XwQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=345&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 165,
+        "path": "views/jct-351946626-165.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=-B6w3wTtT-ocKXocmC4XwQ&heading=165&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=-B6w3wTtT-ocKXocmC4XwQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=165&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-1935",
@@ -3291,7 +3962,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=Qv5yV3K6BFbZLv36kS8rdQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=174&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-1980",
@@ -3348,7 +4019,64 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=2DcrpcwgtgWtfOh1MFjJBQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=214&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-351947552",
+    "s": 1986.94,
+    "street": "Συνταγματάρχου Δαβάκη",
+    "lat": 38.02033538913612,
+    "lon": 23.770969216605927,
+    "heading": 48,
+    "reason": "public lap junction 351947552",
+    "fovH": 90,
+    "panoId": "LPah1S5VbkiaDDtlE3k40Q",
+    "captureDate": [
+      2026,
+      4
+    ],
+    "googleAddress": [
+      [
+        "10 Συνταγματάρχου Δαβάκη",
+        "el"
+      ],
+      [
+        "Filothei, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      338.31866,
+      86.105896,
+      7.257188
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0203021,
+      "lon": 23.7710104
+    },
+    "snapDistanceM": 5.2,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 48,
+        "path": "views/jct-351947552-048.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=LPah1S5VbkiaDDtlE3k40Q&heading=48&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=LPah1S5VbkiaDDtlE3k40Q&cb_client=maps_sv.tactile&w=1024&h=512&yaw=48&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 228,
+        "path": "views/jct-351947552-228.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=LPah1S5VbkiaDDtlE3k40Q&heading=228&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=LPah1S5VbkiaDDtlE3k40Q&cb_client=maps_sv.tactile&w=1024&h=512&yaw=228&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-2025",
@@ -3405,7 +4133,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=tJ_Vt4Lxabq2KIFiE6r6xQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=242&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-2070",
@@ -3462,7 +4190,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=UlSkkmtRu8ZKt_H3CbjgmA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=242&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-2115",
@@ -3519,7 +4247,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=9p7mBlj2cK3JO9YvFiKjnw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=242&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-2138",
@@ -3576,7 +4304,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=_Tbp4uq3rt2BXc2eilEZSw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=244&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-2160",
@@ -3633,7 +4361,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=NUeYyu4A-Wlio0_QSQ8Ktw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=246&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-2182",
@@ -3690,7 +4418,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=NGlX_OdyQqVPmdnc_DOCNQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=186&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-2205",
@@ -3747,7 +4475,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=QHIoxp7-_bwNIU5efD3XCQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=122&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-2232",
@@ -3804,7 +4532,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=2FX4FNITSP7-RhA9APFfhw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=197&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-2250",
@@ -3861,7 +4589,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=hMjBljzrxf1gKnjeq9kKOA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=272&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-2295",
@@ -3918,7 +4646,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=9djuUVGXXhUcm4nuJAWHZg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=263&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-2340",
@@ -3975,7 +4703,64 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=-Jj6fds4OBcfkwh3YHPpvw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=244&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-2037010966",
+    "s": 2371.14,
+    "street": "Λεωφ. Ελευθερίου Βενιζέλου",
+    "lat": 38.02169416084752,
+    "lon": 23.774107842901106,
+    "heading": 62,
+    "reason": "public lap junction 2037010966",
+    "fovH": 90,
+    "panoId": "NQzH6LhBx_mF5wKuIakH4g",
+    "captureDate": [
+      2026,
+      2
+    ],
+    "googleAddress": [
+      [
+        "38 Leof. El. Venizelou",
+        "el-Latn"
+      ],
+      [
+        "Filothei, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      62.341305,
+      85.487946,
+      359.9943
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0216826,
+      "lon": 23.7740667
+    },
+    "snapDistanceM": 3.8,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 62,
+        "path": "views/jct-2037010966-062.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=NQzH6LhBx_mF5wKuIakH4g&heading=62&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=NQzH6LhBx_mF5wKuIakH4g&cb_client=maps_sv.tactile&w=1024&h=512&yaw=62&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 242,
+        "path": "views/jct-2037010966-242.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=NQzH6LhBx_mF5wKuIakH4g&heading=242&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=NQzH6LhBx_mF5wKuIakH4g&cb_client=maps_sv.tactile&w=1024&h=512&yaw=242&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-2385",
@@ -4032,7 +4817,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=8R0CDOfKho3gnaUgLjERVg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=242&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-2420",
@@ -4089,7 +4874,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=T2ABZTp-yUpFHzXeRK06AQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=242&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-2430",
@@ -4146,7 +4931,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=bdOllDLawGP-oSSdd6cScg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=242&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-2475",
@@ -4203,7 +4988,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=fuOOBE6WXwj030qSLrBE-A&cb_client=maps_sv.tactile&w=1024&h=512&yaw=242&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-2520",
@@ -4260,7 +5045,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=Zti2iCgNB4AATz_Z2q4TIg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=242&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-2544",
@@ -4317,7 +5102,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=y25B3oU_f7WPJZ4Xm6rVFQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=251&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-2565",
@@ -4374,7 +5159,64 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=vgpTYhph98XkBxIzD8BV-A&cb_client=maps_sv.tactile&w=1024&h=512&yaw=252&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-351949741",
+    "s": 2572.7,
+    "street": "Unnamed paved junction",
+    "lat": 38.02243426371605,
+    "lon": 23.776048423487236,
+    "heading": 97,
+    "reason": "public lap junction 351949741",
+    "fovH": 90,
+    "panoId": "vgpTYhph98XkBxIzD8BV-A",
+    "captureDate": [
+      2026,
+      2
+    ],
+    "googleAddress": [
+      [
+        "Leof. El. Venizelou",
+        "el-Latn"
+      ],
+      [
+        "Filothei, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      88.88957,
+      88.84634,
+      1.1928424
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.022479,
+      "lon": 23.7761258
+    },
+    "snapDistanceM": 8.4,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 97,
+        "path": "views/jct-351949741-097.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=vgpTYhph98XkBxIzD8BV-A&heading=97&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=vgpTYhph98XkBxIzD8BV-A&cb_client=maps_sv.tactile&w=1024&h=512&yaw=97&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 277,
+        "path": "views/jct-351949741-277.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=vgpTYhph98XkBxIzD8BV-A&heading=277&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=vgpTYhph98XkBxIzD8BV-A&cb_client=maps_sv.tactile&w=1024&h=512&yaw=277&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-2610",
@@ -4427,7 +5269,64 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=D1Auo-_c-b7-Bq3QUh9rag&cb_client=maps_sv.tactile&w=1024&h=512&yaw=313&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-351952523",
+    "s": 2625.74,
+    "street": "25is Martiou",
+    "lat": 38.022268742601895,
+    "lon": 23.7766464386117,
+    "heading": 139,
+    "reason": "public lap junction 351952523",
+    "fovH": 90,
+    "panoId": "2fegBUyqC0Wo1e88vzsvcg",
+    "captureDate": [
+      2024,
+      1
+    ],
+    "googleAddress": [
+      [
+        "31 25is Martiou",
+        "el-Latn"
+      ],
+      [
+        "Filothei, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      135.16501,
+      92.0667,
+      0.39859465
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.022309,
+      "lon": 23.7766299
+    },
+    "snapDistanceM": 4.7,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 139,
+        "path": "views/jct-351952523-139.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=2fegBUyqC0Wo1e88vzsvcg&heading=139&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=2fegBUyqC0Wo1e88vzsvcg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=139&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 319,
+        "path": "views/jct-351952523-319.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=2fegBUyqC0Wo1e88vzsvcg&heading=319&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=2fegBUyqC0Wo1e88vzsvcg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=319&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-2655",
@@ -4484,7 +5383,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=j_Wrk3tMU2VvQwFO_2a-bQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=312&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-2700",
@@ -4541,7 +5440,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=kLG75MM8QfZ1pdH8_To8Pw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=314&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-2745",
@@ -4598,7 +5497,64 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=crY0PfSHuwOoL_cOwAWzNA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=315&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-8694787230",
+    "s": 2763.6,
+    "street": "25is Martiou",
+    "lat": 38.02143772362133,
+    "lon": 23.777781457996397,
+    "heading": 135,
+    "reason": "public lap junction 8694787230",
+    "fovH": 90,
+    "panoId": "ubhAiweL3W7nxn9nHTSogg",
+    "captureDate": [
+      2024,
+      1
+    ],
+    "googleAddress": [
+      [
+        "6 25is Martiou",
+        "el-Latn"
+      ],
+      [
+        "Filothei, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      311.99762,
+      91.076294,
+      2.7576275
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.021446,
+      "lon": 23.7777582
+    },
+    "snapDistanceM": 2.2,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 135,
+        "path": "views/jct-8694787230-135.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=ubhAiweL3W7nxn9nHTSogg&heading=135&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=ubhAiweL3W7nxn9nHTSogg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=135&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 315,
+        "path": "views/jct-8694787230-315.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=ubhAiweL3W7nxn9nHTSogg&heading=315&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=ubhAiweL3W7nxn9nHTSogg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=315&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-2790",
@@ -4651,7 +5607,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=fJfX4kKg341mJBFpviBa5A&cb_client=maps_sv.tactile&w=1024&h=512&yaw=311&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-2835",
@@ -4708,7 +5664,121 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=1tSB30JOBjW46TClDbvNYg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=311&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-351951844",
+    "s": 2846.52,
+    "street": "25is Martiou",
+    "lat": 38.02093972501103,
+    "lon": 23.778489323180334,
+    "heading": 130,
+    "reason": "public lap junction 351951844",
+    "fovH": 90,
+    "panoId": "pTjQgteL4TTbOpEFOBXMKA",
+    "captureDate": [
+      2026,
+      4
+    ],
+    "googleAddress": [
+      [
+        "5 Ίριδος",
+        "el"
+      ],
+      [
+        "Filothei, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      285.60184,
+      90.88013,
+      359.042
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.020949,
+      "lon": 23.7784625
+    },
+    "snapDistanceM": 2.6,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 130,
+        "path": "views/jct-351951844-130.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=pTjQgteL4TTbOpEFOBXMKA&heading=130&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=pTjQgteL4TTbOpEFOBXMKA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=130&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 310,
+        "path": "views/jct-351951844-310.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=pTjQgteL4TTbOpEFOBXMKA&heading=310&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=pTjQgteL4TTbOpEFOBXMKA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=310&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-351952164",
+    "s": 2862.43,
+    "street": "25is Martiou",
+    "lat": 38.020840843181425,
+    "lon": 23.77859400035387,
+    "heading": 127,
+    "reason": "public lap junction 351952164",
+    "fovH": 90,
+    "panoId": "1SGiqd2YHfE9pO3_2UsOyg",
+    "captureDate": [
+      2024,
+      1
+    ],
+    "googleAddress": [
+      [
+        "7 Κόδρου",
+        "el"
+      ],
+      [
+        "Filothei, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      155.0446,
+      87.798546,
+      358.25253
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0208588,
+      "lon": 23.7786032
+    },
+    "snapDistanceM": 2.2,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 127,
+        "path": "views/jct-351952164-127.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=1SGiqd2YHfE9pO3_2UsOyg&heading=127&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=1SGiqd2YHfE9pO3_2UsOyg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=127&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 307,
+        "path": "views/jct-351952164-307.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=1SGiqd2YHfE9pO3_2UsOyg&heading=307&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=1SGiqd2YHfE9pO3_2UsOyg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=307&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-2880",
@@ -4765,7 +5835,64 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=8J2zFsMHjyyAUHpDk0WdRw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=305&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-351951722",
+    "s": 2896.77,
+    "street": "25is Martiou",
+    "lat": 38.02069243957577,
+    "lon": 23.778891417776617,
+    "heading": 123,
+    "reason": "public lap junction 351951722",
+    "fovH": 90,
+    "panoId": "UFIln138e8YPHUz4YKvJ_w",
+    "captureDate": [
+      2024,
+      9
+    ],
+    "googleAddress": [
+      [
+        "13 25is Martiou",
+        "el-Latn"
+      ],
+      [
+        "Filothei, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      123.25801,
+      86.1972,
+      358.1776
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0206792,
+      "lon": 23.7789218
+    },
+    "snapDistanceM": 3.0,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 123,
+        "path": "views/jct-351951722-123.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=UFIln138e8YPHUz4YKvJ_w&heading=123&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=UFIln138e8YPHUz4YKvJ_w&cb_client=maps_sv.tactile&w=1024&h=512&yaw=123&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 303,
+        "path": "views/jct-351951722-303.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=UFIln138e8YPHUz4YKvJ_w&heading=303&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=UFIln138e8YPHUz4YKvJ_w&cb_client=maps_sv.tactile&w=1024&h=512&yaw=303&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-2925",
@@ -4822,7 +5949,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=xOe4YheROpe0ulXd3etKmw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=300&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-2954",
@@ -4879,7 +6006,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=PSzxQIBxF0rh8SiFK8ycCw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=308&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-2970",
@@ -4936,7 +6063,64 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=SvS9L4_xZGNW9ovmmdUosw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=324&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-347784877",
+    "s": 2980.18,
+    "street": "Unnamed paved junction",
+    "lat": 38.0202325170796,
+    "lon": 23.779638410482985,
+    "heading": 144,
+    "reason": "public lap junction 347784877",
+    "fovH": 90,
+    "panoId": "SvS9L4_xZGNW9ovmmdUosw",
+    "captureDate": [
+      2014,
+      9
+    ],
+    "googleAddress": [
+      [
+        "45 Leof. Geor. Stavrou",
+        "el-Latn"
+      ],
+      [
+        "Filothei, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      82.83058,
+      88.11159,
+      356.44247
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0202329,
+      "lon": 23.779662
+    },
+    "snapDistanceM": 2.1,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 144,
+        "path": "views/jct-347784877-144.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=SvS9L4_xZGNW9ovmmdUosw&heading=144&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=SvS9L4_xZGNW9ovmmdUosw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=144&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 324,
+        "path": "views/jct-347784877-324.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=SvS9L4_xZGNW9ovmmdUosw&heading=324&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=SvS9L4_xZGNW9ovmmdUosw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=324&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-3000",
@@ -4993,7 +6177,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=YKNzGSp6SB0XIWOLHvs1Bg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=275&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-3015",
@@ -5050,7 +6234,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=cquwWhqpGWgSKYQWTv-hag&cb_client=maps_sv.tactile&w=1024&h=512&yaw=307&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-3060",
@@ -5107,7 +6291,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=3w0_EynenQfRE6YmXWblNg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=303&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-3105",
@@ -5164,7 +6348,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=1NKlo-CVZahTR7JuAAHHug&cb_client=maps_sv.tactile&w=1024&h=512&yaw=304&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-3150",
@@ -5221,7 +6405,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=4lLEELHgj9CTmRJ2aY_dhA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=2&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-3195",
@@ -5278,7 +6462,64 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=_-__Unp2JP-IZMV2QPy7LQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=80&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-8537691824",
+    "s": 3205.44,
+    "street": "Μπιζανίου",
+    "lat": 38.019346709579935,
+    "lon": 23.780658850905894,
+    "heading": 261,
+    "reason": "public lap junction 8537691824",
+    "fovH": 90,
+    "panoId": "6aL2PcIEeok29bFR_Tq2SQ",
+    "captureDate": [
+      2026,
+      4
+    ],
+    "googleAddress": [
+      [
+        "2 Bizaniou",
+        "en"
+      ],
+      [
+        "Filothei, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      258.43863,
+      89.67067,
+      359.97623
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0193569,
+      "lon": 23.7806708
+    },
+    "snapDistanceM": 1.5,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 261,
+        "path": "views/jct-8537691824-261.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=6aL2PcIEeok29bFR_Tq2SQ&heading=261&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=6aL2PcIEeok29bFR_Tq2SQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=261&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 81,
+        "path": "views/jct-8537691824-081.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=6aL2PcIEeok29bFR_Tq2SQ&heading=81&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=6aL2PcIEeok29bFR_Tq2SQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=81&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-3240",
@@ -5335,7 +6576,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=FQu3sJ6kakQrVNUq6jnL-w&cb_client=maps_sv.tactile&w=1024&h=512&yaw=81&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-3285",
@@ -5392,7 +6633,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=pdOev654g8d8kqWObwP77g&cb_client=maps_sv.tactile&w=1024&h=512&yaw=81&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-3330",
@@ -5449,7 +6690,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=tEglZspJ6Mkfqj3noC8EsA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=81&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-3375",
@@ -5506,7 +6747,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=S-EGxhq1JA15f7vnCBfFQQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=75&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-3420",
@@ -5563,7 +6804,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=YiLGhkOhvLA3hH1u-5T2RQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=66&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-3465",
@@ -5620,7 +6861,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=cjN1zMpgQJ4VRF1wIYbB4g&cb_client=maps_sv.tactile&w=1024&h=512&yaw=51&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-3510",
@@ -5677,7 +6918,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=sAs2ZJGytRPTfgD9uhf2-g&cb_client=maps_sv.tactile&w=1024&h=512&yaw=40&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-3540",
@@ -5734,7 +6975,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=lsnZ7exoKskcsqjJKPU8hQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=20&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-3555",
@@ -5791,7 +7032,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=mv9r5-fcRj9yTbQoP1MuyA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=355&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-3600",
@@ -5848,7 +7089,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=wTPP_DwUUSDVYZtZG6KcJQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=355&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-3614",
@@ -5905,7 +7146,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=L_YLDiaFdAnYShAz25BVnA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=341&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-3645",
@@ -5962,7 +7203,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=FRWBGhFzeyA4Yf-1ugrCIQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=323&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-3690",
@@ -6019,7 +7260,64 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=B65Pji6c0QIc_OiT4bJhCg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=323&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-6193531309",
+    "s": 3725.69,
+    "street": "Εμμανουήλ Μπενάκη",
+    "lat": 38.01675153942883,
+    "lon": 23.778145241083035,
+    "heading": 143,
+    "reason": "public lap junction 6193531309",
+    "fovH": 90,
+    "panoId": "W6uEOXch-BLfxDEr77V6FA",
+    "captureDate": [
+      2026,
+      4
+    ],
+    "googleAddress": [
+      [
+        "11 Emmanouil Mpenaki",
+        "el-Latn"
+      ],
+      [
+        "Psychiko, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      323.39,
+      91.252335,
+      1.0068573
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0167495,
+      "lon": 23.7781182
+    },
+    "snapDistanceM": 2.4,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 143,
+        "path": "views/jct-6193531309-143.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=W6uEOXch-BLfxDEr77V6FA&heading=143&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=W6uEOXch-BLfxDEr77V6FA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=143&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 323,
+        "path": "views/jct-6193531309-323.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=W6uEOXch-BLfxDEr77V6FA&heading=323&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=W6uEOXch-BLfxDEr77V6FA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=323&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-3735",
@@ -6076,7 +7374,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=_MiHe88d6FD0clpdHp94QQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=322&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-3780",
@@ -6133,7 +7431,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=P6c2eCI23q4LhGwo2p-k6w&cb_client=maps_sv.tactile&w=1024&h=512&yaw=322&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-3825",
@@ -6190,7 +7488,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=QrgxowkX5mD5Oj0gtdEs9Q&cb_client=maps_sv.tactile&w=1024&h=512&yaw=336&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-3870",
@@ -6247,7 +7545,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=6fePVV-LufLyajKz9Zs1Eg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=12&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-3915",
@@ -6304,7 +7602,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=aURQBMNnTPLcnXXM4yslog&cb_client=maps_sv.tactile&w=1024&h=512&yaw=12&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-3960",
@@ -6361,7 +7659,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=i_vYFgMMAxg665iA3SK0vw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=12&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-4005",
@@ -6418,7 +7716,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=GY1z0ENdD6MBPn6fbVeJrg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=8&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-4050",
@@ -6475,7 +7773,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=3Gv6TRor650d9hkWtFSB4g&cb_client=maps_sv.tactile&w=1024&h=512&yaw=343&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-4060",
@@ -6528,7 +7826,60 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=wweSs5kCTvkoNX-aOKj8Uw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=3&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-706836672",
+    "s": 4067.63,
+    "street": "Unnamed paved junction",
+    "lat": 38.01393383931669,
+    "lon": 23.778506391099047,
+    "heading": 188,
+    "reason": "public lap junction 706836672",
+    "fovH": 90,
+    "panoId": "wweSs5kCTvkoNX-aOKj8Uw",
+    "captureDate": [
+      2022,
+      7
+    ],
+    "googleAddress": [
+      [
+        "Psychiko, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      188.52031,
+      88.672066,
+      0.31446505
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0139006,
+      "lon": 23.7784703
+    },
+    "snapDistanceM": 4.9,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 188,
+        "path": "views/jct-706836672-188.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=wweSs5kCTvkoNX-aOKj8Uw&heading=188&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=wweSs5kCTvkoNX-aOKj8Uw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=188&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 8,
+        "path": "views/jct-706836672-008.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=wweSs5kCTvkoNX-aOKj8Uw&heading=8&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=wweSs5kCTvkoNX-aOKj8Uw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=8&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-4074",
@@ -6581,7 +7932,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=D_Uefk3aT0uEHg_E8hFoLw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=45&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-4095",
@@ -6638,7 +7989,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=vgwYXC69Gn_bdoX2cW-0ZQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=101&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-4140",
@@ -6695,7 +8046,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=66E4Wi07dZh_GYuVg8UDRQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=117&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-4185",
@@ -6752,7 +8103,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=SmSSneht8Y4VGgXaCkTV9w&cb_client=maps_sv.tactile&w=1024&h=512&yaw=112&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-4230",
@@ -6809,7 +8160,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=cVZNJtDKWFTpAJ8cGRar2w&cb_client=maps_sv.tactile&w=1024&h=512&yaw=90&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-4275",
@@ -6866,7 +8217,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=Rmmmw42dYpbKdM5ShBKYow&cb_client=maps_sv.tactile&w=1024&h=512&yaw=74&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-4288",
@@ -6923,7 +8274,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=voFcAc7yyFylfZ52GLUvaQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=73&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-4320",
@@ -6980,7 +8331,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=gSN2CGvmDeTLvZKYgIbu1g&cb_client=maps_sv.tactile&w=1024&h=512&yaw=71&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-4365",
@@ -7037,7 +8388,64 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=Pn31rOLHe5jpIZ54vx5zdQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=71&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-272560836",
+    "s": 4373.07,
+    "street": "Μαλακάση",
+    "lat": 38.013932670969325,
+    "lon": 23.775152171210454,
+    "heading": 251,
+    "reason": "public lap junction 272560836",
+    "fovH": 90,
+    "panoId": "zEpYxP1XHNaRxExqijM1Kw",
+    "captureDate": [
+      2009,
+      5
+    ],
+    "googleAddress": [
+      [
+        "57 Σαμαρά",
+        "el"
+      ],
+      [
+        "Psychiko, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      311.42322,
+      91.832695,
+      357.71497
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0138912,
+      "lon": 23.7752363
+    },
+    "snapDistanceM": 8.7,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 251,
+        "path": "views/jct-272560836-251.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=zEpYxP1XHNaRxExqijM1Kw&heading=251&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=zEpYxP1XHNaRxExqijM1Kw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=251&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 71,
+        "path": "views/jct-272560836-071.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=zEpYxP1XHNaRxExqijM1Kw&heading=71&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=zEpYxP1XHNaRxExqijM1Kw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=71&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-4398",
@@ -7094,7 +8502,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=cLofbxQmKf-dZML_8EzAzA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=359&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-4410",
@@ -7151,7 +8559,64 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=oTxjsNAnXSBh5QLK5ntmng&cb_client=maps_sv.tactile&w=1024&h=512&yaw=301&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-6262082332",
+    "s": 4439.86,
+    "street": "Stratigou Kallari",
+    "lat": 38.01365431578153,
+    "lon": 23.775364159706786,
+    "heading": 121,
+    "reason": "public lap junction 6262082332",
+    "fovH": 90,
+    "panoId": "bCboHqSI8654U3tQMGQHsA",
+    "captureDate": [
+      2024,
+      8
+    ],
+    "googleAddress": [
+      [
+        "41 Στρ. Καλλάρη",
+        "el"
+      ],
+      [
+        "Psychiko, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      126.0782,
+      88.47821,
+      358.02094
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0136099,
+      "lon": 23.7753795
+    },
+    "snapDistanceM": 5.1,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 121,
+        "path": "views/jct-6262082332-121.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=bCboHqSI8654U3tQMGQHsA&heading=121&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=bCboHqSI8654U3tQMGQHsA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=121&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 301,
+        "path": "views/jct-6262082332-301.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=bCboHqSI8654U3tQMGQHsA&heading=301&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=bCboHqSI8654U3tQMGQHsA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=301&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-4455",
@@ -7208,7 +8673,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=Z2R45FCqDUlU0wp852giHA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=300&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-4500",
@@ -7265,7 +8730,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=c0hVnnYS5_ZTtaMllVcV9w&cb_client=maps_sv.tactile&w=1024&h=512&yaw=300&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-4545",
@@ -7322,7 +8787,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=uC-cMcSTTH0qRaVR7wKDbQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=301&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-4590",
@@ -7379,7 +8844,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=WUUVZRZjme440UfXjZmXKA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=301&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-4635",
@@ -7436,7 +8901,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=3j7F7i2N-6g5bZImxgNYsQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=300&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-4680",
@@ -7493,7 +8958,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=hnIj1EhL9GNUfrD5gjicAA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=300&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-4692",
@@ -7550,7 +9015,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=ml2Vmw0p03MT-nvZ1ZBqXQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=295&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-4725",
@@ -7607,7 +9072,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=Fp7VedP_jWAidDckLMkPuw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=297&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-4770",
@@ -7664,7 +9129,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=X0j41aX9iRd0HoUL6keNjw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=330&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-4798",
@@ -7721,7 +9186,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=OM1Pkpuc2Z4EJ7VKZpgIow&cb_client=maps_sv.tactile&w=1024&h=512&yaw=343&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-4815",
@@ -7778,7 +9243,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=X9vpuKJ62erbfMkeQoHHdQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=352&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-4860",
@@ -7835,7 +9300,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=Fz4rS5Vctet9LWj5g8neng&cb_client=maps_sv.tactile&w=1024&h=512&yaw=9&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-4905",
@@ -7892,7 +9357,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=f78YwYy8Xkru-I0HDhzBiw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=5&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-4950",
@@ -7949,7 +9414,64 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=da4Zu6kskXRziG44wH8WjQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=305&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
+  },
+  {
+    "id": "jct-272560545",
+    "s": 4982.97,
+    "street": "Elikonos",
+    "lat": 38.01044630522268,
+    "lon": 23.77923450072869,
+    "heading": 125,
+    "reason": "public lap junction 272560545",
+    "fovH": 90,
+    "panoId": "X8IiO1cf15ryP9ge0R8ofw",
+    "captureDate": [
+      2026,
+      4
+    ],
+    "googleAddress": [
+      [
+        "5 Ελικώνος",
+        "el"
+      ],
+      [
+        "Psychiko, Decentralized Administration of Attica",
+        "en"
+      ]
+    ],
+    "copyright": "© 2026 Google",
+    "orientation": [
+      124.602036,
+      87.22747,
+      358.33423
+    ],
+    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
+    "requestedPosition": {
+      "lat": 38.0104792,
+      "lon": 23.7792156
+    },
+    "snapDistanceM": 4.0,
+    "status": "captured",
+    "views": [
+      {
+        "heading": 125,
+        "path": "views/jct-272560545-125.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=X8IiO1cf15ryP9ge0R8ofw&heading=125&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=X8IiO1cf15ryP9ge0R8ofw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=125&pitch=0&thumbfov=90"
+      },
+      {
+        "heading": 305,
+        "path": "views/jct-272560545-305.webp",
+        "width": 1024,
+        "height": 512,
+        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=X8IiO1cf15ryP9ge0R8ofw&heading=305&pitch=0&fov=90",
+        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=X8IiO1cf15ryP9ge0R8ofw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=305&pitch=0&thumbfov=90"
+      }
+    ],
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-4995",
@@ -8006,7 +9528,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=L5Y_kUBYT-IkiqHYIkI-iA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=306&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-5022",
@@ -8063,7 +9585,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=uWxYM8hW2QetH93VBiBwxg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=306&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-5040",
@@ -8120,7 +9642,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=Nr_xehwaNqohaElkGiF6rQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=306&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-5058",
@@ -8177,7 +9699,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=2_Kj_8HlRYD7mnhIdy22tQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=307&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-5068",
@@ -8234,7 +9756,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=fEgXbwqo86OhUKELhhqzcQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=353&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-5085",
@@ -8291,7 +9813,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=JfT1pjmkZUbgRmhTi5fgnQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=36&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-5130",
@@ -8348,7 +9870,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=BzZQ-WY6t835UHlnHTzHCg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=37&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-5175",
@@ -8405,7 +9927,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=yCjwT7jvgU45Re5k1a0WJw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=37&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-5220",
@@ -8462,7 +9984,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=brON5XRBD2DetUK89D3a8w&cb_client=maps_sv.tactile&w=1024&h=512&yaw=37&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-5240",
@@ -8519,7 +10041,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=A677LIdARwNDSywCo3-7mg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=37&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-5265",
@@ -8576,7 +10098,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=fI7IPcuWucn71cs7ObxjvQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=37&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-5310",
@@ -8633,7 +10155,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=cP-nhYzdwnhUsnemp4A5lA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=37&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-5332",
@@ -8690,7 +10212,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=IX5aEZ14TSNMUitVR7C3cA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=36&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-5355",
@@ -8747,7 +10269,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=-z2HGIgHjhf_UbAkR1s_TA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=35&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-5388",
@@ -8804,7 +10326,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=fBhC3MArNjryf_MS29HDVA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=40&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-5400",
@@ -8861,7 +10383,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=RWf4khwgML0kgNWc1N4WDA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=46&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-5445",
@@ -8914,7 +10436,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=O-q05Ter81P_xZ-8uQqpGA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=40&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-5490",
@@ -8967,7 +10489,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=6oGd8GlCM0A_yaIWmwKOFw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=35&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-5535",
@@ -9024,7 +10546,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=F-cnNwTUJMYd0DHAsP6aDg&cb_client=maps_sv.tactile&w=1024&h=512&yaw=34&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-5580",
@@ -9081,7 +10603,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=CteuZR_XfpP_trmDWKu1OA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=33&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-5625",
@@ -9138,7 +10660,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=3GWVi1dzP5Ne2-7Tjp2sMw&cb_client=maps_sv.tactile&w=1024&h=512&yaw=33&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-5670",
@@ -9195,7 +10717,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=vx8m5ZPBCO3NGmIQTXtIeQ&cb_client=maps_sv.tactile&w=1024&h=512&yaw=32&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-5680",
@@ -9252,7 +10774,7 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=HdRyehmgBKeTYxk-6OOONA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=32&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   },
   {
     "id": "lap-5715",
@@ -9309,62 +10831,6 @@
         "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=NYsPg4o9axCDbKHxISFQmA&cb_client=maps_sv.tactile&w=1024&h=512&yaw=32&pitch=0&thumbfov=90"
       }
     ],
-    "observationStatus": "pending-visual-review"
-  },
-  {
-    "id": "faros-across",
-    "s": 0,
-    "lat": 38.00475438730675,
-    "lon": 23.77600284829711,
-    "heading": 305,
-    "reason": "Faros opposite carriageway",
-    "fovH": 90,
-    "panoId": "ek7vnJdn6sAjKID7Odr28A",
-    "captureDate": [
-      2022,
-      8
-    ],
-    "googleAddress": [
-      [
-        "1 Σολωμού",
-        "el"
-      ],
-      [
-        "Neo Psychiko, Decentralized Administration of Attica",
-        "en"
-      ]
-    ],
-    "copyright": "© 2026 Google",
-    "orientation": [
-      299.06985,
-      89.66921,
-      0.89270943
-    ],
-    "lookupEndpoint": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/SingleImageSearch",
-    "requestedPosition": {
-      "lat": 38.00477,
-      "lon": 23.77605
-    },
-    "snapDistanceM": 4.5,
-    "status": "captured",
-    "views": [
-      {
-        "heading": 305,
-        "path": "views/faros-across-305.webp",
-        "width": 1024,
-        "height": 512,
-        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=ek7vnJdn6sAjKID7Odr28A&heading=305&pitch=0&fov=90",
-        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=ek7vnJdn6sAjKID7Odr28A&cb_client=maps_sv.tactile&w=1024&h=512&yaw=305&pitch=0&thumbfov=90"
-      },
-      {
-        "heading": 125,
-        "path": "views/faros-across-125.webp",
-        "width": 1024,
-        "height": 512,
-        "mapsUrl": "https://www.google.com/maps/@?api=1&map_action=pano&pano=ek7vnJdn6sAjKID7Odr28A&heading=125&pitch=0&fov=90",
-        "sourceUrl": "https://streetviewpixels-pa.googleapis.com/v1/thumbnail?panoid=ek7vnJdn6sAjKID7Odr28A&cb_client=maps_sv.tactile&w=1024&h=512&yaw=125&pitch=0&thumbfov=90"
-      }
-    ],
-    "observationStatus": "pending-visual-review"
+    "observationStatus": "visually-reviewed-2026-10-19"
   }
 ]

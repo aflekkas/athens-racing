@@ -10,6 +10,15 @@
     "fovH": 90
   },
   {
+    "id": "faros-across",
+    "s": 0,
+    "lat": 38.00477,
+    "lon": 23.77605,
+    "heading": 305,
+    "reason": "Faros opposite carriageway",
+    "fovH": 90
+  },
+  {
     "id": "lap-0018",
     "s": 18,
     "street": "25is Martiou",
@@ -70,6 +79,16 @@
     "fovH": 90
   },
   {
+    "id": "jct-272499530",
+    "s": 150.4,
+    "street": "25is Martiou",
+    "lat": 38.0061501,
+    "lon": 23.774971,
+    "heading": 342,
+    "reason": "public lap junction 272499530",
+    "fovH": 90
+  },
+  {
     "id": "lap-0180",
     "s": 180,
     "street": "25is Martiou",
@@ -117,6 +136,26 @@
     "lon": 23.774556584401566,
     "heading": 48,
     "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "jct-272554571",
+    "s": 325.01,
+    "street": "Unnamed paved junction",
+    "lat": 38.0075938,
+    "lon": 23.7746308,
+    "heading": 28,
+    "reason": "public lap junction 272554571",
+    "fovH": 90
+  },
+  {
+    "id": "jct-2436338816",
+    "s": 350.5,
+    "street": "Unnamed paved junction",
+    "lat": 38.0078189,
+    "lon": 23.7746636,
+    "heading": 343,
+    "reason": "public lap junction 2436338816",
     "fovH": 90
   },
   {
@@ -290,6 +329,16 @@
     "fovH": 90
   },
   {
+    "id": "jct-2436338808",
+    "s": 958.05,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.0130206,
+    "lon": 23.7717984,
+    "heading": 22,
+    "reason": "public lap junction 2436338808",
+    "fovH": 90
+  },
+  {
     "id": "lap-0964",
     "s": 964.05,
     "street": "Odos Eleftheriou Venizelou",
@@ -310,6 +359,16 @@
     "fovH": 90
   },
   {
+    "id": "jct-272499027",
+    "s": 1025.4,
+    "street": "Odos Eleftheriou Venizelou",
+    "lat": 38.013372,
+    "lon": 23.7723386,
+    "heading": 300,
+    "reason": "public lap junction 272499027",
+    "fovH": 90
+  },
+  {
     "id": "lap-1035",
     "s": 1035,
     "street": "Diamantidi Dimitriou",
@@ -317,6 +376,16 @@
     "lon": 23.772237274961537,
     "heading": 293,
     "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "jct-272499025",
+    "s": 1052.05,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.0132319,
+    "lon": 23.7718045,
+    "heading": 310,
+    "reason": "public lap junction 272499025",
     "fovH": 90
   },
   {
@@ -360,6 +429,16 @@
     "fovH": 90
   },
   {
+    "id": "jct-272501749",
+    "s": 1194.25,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.0146766,
+    "lon": 23.7715266,
+    "heading": 343,
+    "reason": "public lap junction 272501749",
+    "fovH": 90
+  },
+  {
     "id": "lap-1215",
     "s": 1215,
     "street": "Diamantidi Dimitriou",
@@ -377,6 +456,16 @@
     "lon": 23.771305911215435,
     "heading": 343,
     "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "jct-272560865",
+    "s": 1291.46,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.0155135,
+    "lon": 23.7712002,
+    "heading": 343,
+    "reason": "public lap junction 272560865",
     "fovH": 90
   },
   {
@@ -400,6 +489,16 @@
     "fovH": 90
   },
   {
+    "id": "jct-272560900",
+    "s": 1380.48,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.0162798,
+    "lon": 23.7709014,
+    "heading": 343,
+    "reason": "public lap junction 272560900",
+    "fovH": 90
+  },
+  {
     "id": "lap-1395",
     "s": 1395,
     "street": "Diamantidi Dimitriou",
@@ -417,6 +516,16 @@
     "lon": 23.770701535692137,
     "heading": 343,
     "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "jct-272561320",
+    "s": 1467.36,
+    "street": "Diamantidi Dimitriou",
+    "lat": 38.0170277,
+    "lon": 23.7706097,
+    "heading": 343,
+    "reason": "public lap junction 272561320",
     "fovH": 90
   },
   {
@@ -570,6 +679,16 @@
     "fovH": 90
   },
   {
+    "id": "jct-351946626",
+    "s": 1927.94,
+    "street": "Δρυάδων",
+    "lat": 38.0198107,
+    "lon": 23.7708121,
+    "heading": 345,
+    "reason": "public lap junction 351946626",
+    "fovH": 90
+  },
+  {
     "id": "lap-1935",
     "s": 1935,
     "street": "Παύλου Μελά",
@@ -587,6 +706,16 @@
     "lon": 23.770966337680385,
     "heading": 34,
     "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "jct-351947552",
+    "s": 1986.94,
+    "street": "Συνταγματάρχου Δαβάκη",
+    "lat": 38.0203021,
+    "lon": 23.7710104,
+    "heading": 48,
+    "reason": "public lap junction 351947552",
     "fovH": 90
   },
   {
@@ -700,6 +829,16 @@
     "fovH": 90
   },
   {
+    "id": "jct-2037010966",
+    "s": 2371.14,
+    "street": "Λεωφ. Ελευθερίου Βενιζέλου",
+    "lat": 38.0216826,
+    "lon": 23.7740667,
+    "heading": 62,
+    "reason": "public lap junction 2037010966",
+    "fovH": 90
+  },
+  {
     "id": "lap-2385",
     "s": 2385,
     "street": "Λεωφ. Ελευθερίου Βενιζέλου",
@@ -770,6 +909,16 @@
     "fovH": 90
   },
   {
+    "id": "jct-351949741",
+    "s": 2572.7,
+    "street": "Unnamed paved junction",
+    "lat": 38.022479,
+    "lon": 23.7761258,
+    "heading": 97,
+    "reason": "public lap junction 351949741",
+    "fovH": 90
+  },
+  {
     "id": "lap-2610",
     "s": 2610,
     "street": "25is Martiou",
@@ -777,6 +926,16 @@
     "lon": 23.77652121827056,
     "heading": 133,
     "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "jct-351952523",
+    "s": 2625.74,
+    "street": "25is Martiou",
+    "lat": 38.022309,
+    "lon": 23.7766299,
+    "heading": 139,
+    "reason": "public lap junction 351952523",
     "fovH": 90
   },
   {
@@ -810,6 +969,16 @@
     "fovH": 90
   },
   {
+    "id": "jct-8694787230",
+    "s": 2763.6,
+    "street": "25is Martiou",
+    "lat": 38.021446,
+    "lon": 23.7777582,
+    "heading": 135,
+    "reason": "public lap junction 8694787230",
+    "fovH": 90
+  },
+  {
     "id": "lap-2790",
     "s": 2790,
     "street": "25is Martiou",
@@ -830,6 +999,26 @@
     "fovH": 90
   },
   {
+    "id": "jct-351951844",
+    "s": 2846.52,
+    "street": "25is Martiou",
+    "lat": 38.020949,
+    "lon": 23.7784625,
+    "heading": 130,
+    "reason": "public lap junction 351951844",
+    "fovH": 90
+  },
+  {
+    "id": "jct-351952164",
+    "s": 2862.43,
+    "street": "25is Martiou",
+    "lat": 38.0208588,
+    "lon": 23.7786032,
+    "heading": 127,
+    "reason": "public lap junction 351952164",
+    "fovH": 90
+  },
+  {
     "id": "lap-2880",
     "s": 2880,
     "street": "25is Martiou",
@@ -837,6 +1026,16 @@
     "lon": 23.77876618935855,
     "heading": 125,
     "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "jct-351951722",
+    "s": 2896.77,
+    "street": "25is Martiou",
+    "lat": 38.0206792,
+    "lon": 23.7789218,
+    "heading": 123,
+    "reason": "public lap junction 351951722",
     "fovH": 90
   },
   {
@@ -867,6 +1066,16 @@
     "lon": 23.779611684213105,
     "heading": 144,
     "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "jct-347784877",
+    "s": 2980.18,
+    "street": "Unnamed paved junction",
+    "lat": 38.0202329,
+    "lon": 23.779662,
+    "heading": 144,
+    "reason": "public lap junction 347784877",
     "fovH": 90
   },
   {
@@ -927,6 +1136,16 @@
     "lon": 23.78078798265461,
     "heading": 260,
     "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "jct-8537691824",
+    "s": 3205.44,
+    "street": "Μπιζανίου",
+    "lat": 38.0193569,
+    "lon": 23.7806708,
+    "heading": 261,
+    "reason": "public lap junction 8537691824",
     "fovH": 90
   },
   {
@@ -1060,6 +1279,16 @@
     "fovH": 90
   },
   {
+    "id": "jct-6193531309",
+    "s": 3725.69,
+    "street": "Εμμανουήλ Μπενάκη",
+    "lat": 38.0167495,
+    "lon": 23.7781182,
+    "heading": 143,
+    "reason": "public lap junction 6193531309",
+    "fovH": 90
+  },
+  {
     "id": "lap-3735",
     "s": 3735,
     "street": "Εμμανουήλ Μπενάκη",
@@ -1147,6 +1376,16 @@
     "lon": 23.778491387529684,
     "heading": 183,
     "reason": "named way junction",
+    "fovH": 90
+  },
+  {
+    "id": "jct-706836672",
+    "s": 4067.63,
+    "street": "Unnamed paved junction",
+    "lat": 38.0139006,
+    "lon": 23.7784703,
+    "heading": 188,
+    "reason": "public lap junction 706836672",
     "fovH": 90
   },
   {
@@ -1240,6 +1479,16 @@
     "fovH": 90
   },
   {
+    "id": "jct-272560836",
+    "s": 4373.07,
+    "street": "Μαλακάση",
+    "lat": 38.0138912,
+    "lon": 23.7752363,
+    "heading": 251,
+    "reason": "public lap junction 272560836",
+    "fovH": 90
+  },
+  {
     "id": "lap-4398",
     "s": 4398.22,
     "street": "Stratigou Kallari",
@@ -1257,6 +1506,16 @@
     "lon": 23.775086218658252,
     "heading": 121,
     "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "jct-6262082332",
+    "s": 4439.86,
+    "street": "Stratigou Kallari",
+    "lat": 38.0136099,
+    "lon": 23.7753795,
+    "heading": 121,
+    "reason": "public lap junction 6262082332",
     "fovH": 90
   },
   {
@@ -1397,6 +1656,16 @@
     "lon": 23.778906973025208,
     "heading": 125,
     "reason": "45 m lap sampling",
+    "fovH": 90
+  },
+  {
+    "id": "jct-272560545",
+    "s": 4982.97,
+    "street": "Elikonos",
+    "lat": 38.0104792,
+    "lon": 23.7792156,
+    "heading": 125,
+    "reason": "public lap junction 272560545",
     "fovH": 90
   },
   {
@@ -1637,15 +1906,6 @@
     "lon": 23.77568761287174,
     "heading": 212,
     "reason": "45 m lap sampling",
-    "fovH": 90
-  },
-  {
-    "id": "faros-across",
-    "s": 0,
-    "lat": 38.00477,
-    "lon": 23.77605,
-    "heading": 305,
-    "reason": "Faros opposite carriageway",
     "fovH": 90
   }
 ]
