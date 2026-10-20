@@ -91,6 +91,10 @@ function crackGlass(car){
   for(let ring=1;ring<5;ring++){c.beginPath();for(let i=0;i<=15;i++){const a=i*Math.PI*2/15,r=ring*25*(1+.1*Math.sin(i*2));const x=196+Math.cos(a)*r,y=153+Math.sin(a)*r*.65;if(i)c.lineTo(x,y);else c.moveTo(x,y);}c.stroke();}
   const map=new THREE.CanvasTexture(canvas),material=new THREE.MeshBasicMaterial({map,transparent:true,opacity:.7,depthWrite:false,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
   const overlay=new THREE.Mesh(source.geometry,material);overlay.name='damage-cracks';source.add(overlay);car.crackedGlass=overlay;
+  // From the seat the glass itself is hidden (owner-locked clear view), so the cracks are a hairline decal on the same screen, drawn in
+  // the cockpit view only and only once the windscreen has cracked; it covers nothing else.
+  const pov=new THREE.Mesh(source.geometry,material);pov.name='damage-cracks-pov';pov.matrixAutoUpdate=false;pov.visible=false;pov.renderOrder=3;
+  car.body.updateMatrixWorld(true);source.updateWorldMatrix(true,false);pov.matrix.copy(car.body.matrixWorld).invert().multiply(source.matrixWorld);car.body.add(pov);car.crackedGlassPov=pov;
 }
 
 function crashInternals(car){
@@ -125,7 +129,32 @@ export function installDamageSystem(car){
     if(o.userData.mirrorArm||glassAncestor||o.userData.damageInterior||!o.isMesh||!o.geometry?.attributes.position||/glass|windscreen/.test(id)||o===car.windscreen)return;
     const toBody=inverse.clone().multiply(o.matrixWorld);o.geometry.computeBoundingBox();const bounds=o.geometry.boundingBox.clone().applyMatrix4(toBody);records.push({o,toBody,toLocal:toBody.clone().invert(),bounds,rest:null});car.damageMeshes.push(o);
   });
+  // The cockpit draws its own bonnet, pillars, frame and mirror mounts (the exterior shell is hidden from the seat), so a dent in the
+  // shell would never show there. The same lattice moves those parts too. They are registered when the first impact arrives, so an
+  // undamaged car pays nothing, and their boxes / deck panel are cut finer first so they can bend instead of only shifting.
+  const COCKPIT_PARTS=/^(deck|pillar|door-top|window-frame|header|visor-edge|mirror-mount)$/;let cockpitRegistered=false;const cockpitMounts=[];
+  function cockpitFiner(o){
+    const g=o.geometry;
+    if(g.type==='BoxGeometry'&&g.parameters){const q=g.parameters;o.geometry=new THREE.BoxGeometry(q.width,q.height,q.depth,1,12,1);g.dispose();}
+    else if(o.userData.cockpitStructure==='deck'&&g.attributes.position.count===4){
+      const a=g.attributes.position,c=[0,1,2,3].map(i=>new THREE.Vector3().fromBufferAttribute(a,i)),N=14,M=10,pos=[],idx=[];
+      for(let j=0;j<=M;j++)for(let i=0;i<=N;i++){const u=i/N,v=j/M,x=c[0].clone().lerp(c[1],u),y=c[3].clone().lerp(c[2],u);pos.push(...x.lerp(y,v).toArray());}
+      for(let j=0;j<M;j++)for(let i=0;i<N;i++){const k=j*(N+1)+i;idx.push(k,k+1,k+N+2,k,k+N+2,k+N+1);}
+      const f=new THREE.BufferGeometry();f.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));f.setIndex(idx);f.computeVertexNormals();o.geometry=f;g.dispose();
+    }
+  }
+  function registerCockpit(){
+    const structure=car.cockpit?.structure;if(cockpitRegistered||!structure)return;cockpitRegistered=true;
+    car.root.updateMatrixWorld(true);const inv=car.body.matrixWorld.clone().invert();
+    for(const o of structure.children){
+      if(!o.isMesh||!COCKPIT_PARTS.test(o.userData.cockpitStructure||''))continue;
+      cockpitFiner(o);if(o.userData.cockpitStructure==='mirror-mount'&&Math.abs(o.position.x)>.3)cockpitMounts.push({node:o,side:Math.sign(o.position.x)});
+      const toBody=inv.clone().multiply(o.matrixWorld);o.geometry.computeBoundingBox();const bounds=o.geometry.boundingBox.clone().applyMatrix4(toBody);
+      records.push({o,toBody,toLocal:toBody.clone().invert(),bounds,rest:null});car.damageMeshes.push(o);
+    }
+  }
   function deform(hitZone,hit){
+    registerCockpit();
     const d=car.dims,p=hit?.localPoint||{x:hitZone==='left'?-d.W/2:hitZone==='right'?d.W/2:0,y:.55,z:hitZone==='front'?-d.L/2:hitZone==='rear'?d.L/2:0};
     const area=new THREE.Box3(new THREE.Vector3(p.x-1.3,p.y-1.1,p.z-1.25),new THREE.Vector3(p.x+1.3,p.y+1.1,p.z+1.25));
     for(const r of records){
@@ -144,6 +173,8 @@ export function installDamageSystem(car){
     for(const [node,visible]of hiddenInterior)node.visible=visible;hiddenInterior.clear();
     for(const group of Object.values(internal.ends))group.visible=false;
     for(const p of car.damageParts){p.node.visible=p.visible;p.node.position.copy(p.position);p.node.rotation.copy(p.rotation);p.damage=0;p.state='intact';for(const [mesh,original,broken]of p.materials){mesh.material=original;broken.dispose();}p.materials=[];}
+    for(const m of cockpitMounts)m.node.visible=true;
+    if(car.crackedGlassPov){car.crackedGlassPov.removeFromParent();car.crackedGlassPov=null;}
     if(car.crackedGlass){car.crackedGlass.material.map.dispose();car.crackedGlass.material.dispose();car.crackedGlass.removeFromParent();car.crackedGlass=null;}
     for(const item of car.damageDebris)discard(item);car.damageDebris=[];
   }
@@ -165,7 +196,12 @@ export function installDamageSystem(car){
       const bumper=/^bumper/.test(part.id),mirror=/^mirror/.test(part.id);
       if((bumper&&part.detachable&&part.damage>.57||mirror&&part.damage>.28)&&part.state!=='detached'){
         if(!silent&&visibleInTree(part.node))spawnDebris(car,part.node,n);part.state='detached';part.node.visible=false;
+        if(mirror){registerCockpit();for(const m of cockpitMounts)if(m.side===Math.sign(part.center.x||1))m.node.visible=false;}
       }else if(bumper&&part.detachable&&part.damage>.15&&part.state==='intact')part.state='hanging';
+      else if(mirror&&part.damage>.1&&part.state!=='detached'){
+        // a knocked mirror turns on its arm (and stays turned) before it is torn off at .28; the same node shows from the seat
+        part.state='bent';const turn=Math.min(.42,part.damage*1.5)*(Math.sign(part.center.x)||1);part.node.rotation.y=part.rotation.y+turn;part.node.rotation.z=part.rotation.z-turn*.35;
+      }
     }
     if((zone==='front'&&(impact.ebs||0)>12)||impact.roll)crackGlass(car);
   }
@@ -201,6 +237,7 @@ export function installDamageSystem(car){
     dt=clamp(finite(dt),0,.1);
     for(const part of car.damageParts){for(const [, ,material]of part.materials){material.emissiveIntensity=0;material.emissive?.setHex(0);}if(part.state==='hanging'){part.node.position.y=part.position.y-.025-.035*part.damage;part.node.rotation.z=part.rotation.z+(car.sharedDamage?0:.018*Math.sin((car.damageTime||0)*7));}}
     car.damageTime=(car.damageTime||0)+dt;
+    if(car.crackedGlassPov)car.crackedGlassPov.visible=!!car.cockpitView;
     if(!car.sharedDamage&&Math.abs(car.root.rotation.z)+Math.abs(car.body.rotation.z)>1.15&&Math.max(...Object.values(car.damage))>.2)crackGlass(car);
     for(let i=0;i<(car.wheels||[]).length;i++){const w=car.wheels[i],index=(w.front?0:2)+(w.side>0?1:0),bend=car.sharedDamage?0:car.wheelCamber?.[index]??((index%2?-1:1)*car.visualCornerDamage[index]);if(w.pivot)w.pivot.rotation.z=bend+Math.sin((w.angle||0)*2)*Math.abs(bend)*.12;}
     for(let i=car.damageDebris.length-1;i>=0;i--){
