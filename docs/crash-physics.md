@@ -56,7 +56,7 @@ car) clears it. The acute failures that stopped the car (a stalled engine, a bro
 a tow: it comes back running, in whatever state the damage left it.
 
 * `mechanicalIncrement(ebs, zone)` (src/damage-math.js): the hit's equivalent barrier speed in any direction, none below
-  `TAP_EBS` = 18 km/h, rising smoothly (power 1.5) to a ruined car at `RUIN_EBS` = 80 km/h, times a zone weight (front 1, rear .4,
+  `TAP_EBS` = 18 km/h, rising smoothly (power 2) to a ruined car at `RUIN_EBS` = 80 km/h, times a zone weight (front 1, rear .4,
   sides .5). Hits pile up to 0.9 and stop there (crippled but running); only a terminal blow (a 90 km/h frontal) goes to 1 and a wreck.
 * Power: `impactPowerFactor` = 1 - .55 d^.85 (floor 45 % at 0.9). Top speed: `impactDragFactor` = 1 + .6 d on top of the lost power
   (a ruined car tops out near 185 km/h instead of 247). Steering: `steerPull` knocks the rack towards the side that was hit (up to
@@ -70,9 +70,13 @@ a tow: it comes back running, in whatever state the damage left it.
   trading paint) costs nothing; ten 20 km/h taps cost 5 % power.
 
 Seconds lost over the next 1.5 km, flat out, Z4 (`node tools/crash-bench.mjs --damage --car=z4`; before = the same state under
-the old numbers, where a tow wiped it): 30 km/h head-on 0.5 s, 60 km/h 4.0 s, 100 km/h 7.7 s, 30 degree wall glance at 100 km/h 1.8 s,
-guard rail glance 1.5 s, side hit on a post at 60 km/h 1.9 s, rear-ending a sedan at 60 / 100 km/h 0.1 / 1.7 s, T-bone at 60 km/h 0.6 s,
-ten 20 km/h taps 0.5 s, four 40 km/h bumps 7.1 s. Tables and chart: `.scratch/crash-physics-2026-10-20/bench-damage-*.md`.
+the old numbers, where a tow wiped it): 30 km/h head-on 0.2 s, 60 km/h 3.1 s, 100 km/h 7.7 s, 30 degree wall glance at 100 km/h 1.1 s,
+guard rail glance 1.1 s, side hit on a post at 60 km/h 1.6 s, rear-ending a sedan at 60 / 100 km/h 0.0 / 1.1 s, T-bone at 60 km/h 0.2 s,
+ten 20 km/h taps 0.1 s, four 40 km/h bumps 3.9 s. Tables and chart: `.scratch/crash-physics-2026-10-20/bench-damage-*.md`.
+Why the exponent is 2: damage adds up linearly from hit to hit, but the per-hit curve decides the ratios. With power 1.5 a 40 km/h hit cost
+38 % of a 60 km/h hit, so four of them (7.1 s) came close to a 100 km/h crash (7.7 s) while a 20 km/h tap cost 1 %: a cliff between 20 and
+40 km/h. With power 2 a 40 km/h hit is 27 % of a 60 km/h hit, four of them cost about one 60 km/h hit (3.9 s vs 3.1 s), and
+`tools/crash-physics.test.mjs` pins that ratio. A glance or side hit costs a little less than before (about 1 s).
 Pinned tests re-pinned, not loosened (`tools/damage-mechanics.test.mjs`, `tools/damage-ground.test.mjs`,
 `tools/driving-feedback.test.mjs`): they asserted that anything below 40 km/h, glancing or side-on cost nothing lasting and that
 a tow repaired everything, which is the behaviour the owner asked to remove.

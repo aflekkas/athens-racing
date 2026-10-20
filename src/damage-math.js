@@ -36,7 +36,7 @@ export function frontalBarrierSpeed(ebs, zone, { localNormal, kind } = {}) {
 export function mechanicalIncrement(ebs, zone = 'front') {
   const w = ZONE_WEIGHT[zone];
   if (!Number.isFinite(ebs) || ebs <= TAP_EBS || !(w > 0)) return 0;
-  return w * Math.min(1, (ebs - TAP_EBS) / (RUIN_EBS - TAP_EBS)) ** 1.5;
+  return w * Math.min(1, (ebs - TAP_EBS) / (RUIN_EBS - TAP_EBS)) ** 2;
 }
 
 /** engine power left (1 = all of it) at a mechanical damage level; never below limp */

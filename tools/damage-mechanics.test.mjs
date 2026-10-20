@@ -14,13 +14,13 @@ const close = (actual,expected) => assert.ok(Math.abs(actual-expected)<1e-9,`${a
 
 // Explicit expected crush/mechanical percentages, not a second implementation of the curve. Re-pinned 2026-10-20 for the punishing
 // damage model (owner: "we should arguably make the damage more punishing, rn it's not punishing"): lasting damage now starts at 18 km/h
-// equivalent barrier speed in any direction and reaches a ruined car at 80 km/h, e.g. 70 km/h head-on = ((19.44 - 5) / (22.22 - 5)) ^ 1.5 = .768.
+// equivalent barrier speed in any direction and reaches a ruined car at 80 km/h, e.g. 70 km/h head-on = ((19.44 - 5) / (22.22 - 5)) ^ 2 = .703.
 // Angles are degrees away from head-on; input speed is road speed, EBS uses its normal component.
 const impacts = [
   [10,0,0,0], [10,30,0,0], [10,60,0,0], [10,80,0,0],
-  [20,0,0.07407407407407406,0.005793719420218543], [20,30,0.0451388888888889,0], [20,60,0,0], [20,80,0,0],
-  [40,0,0.42129629629629617,0.21137152803206377], [40,30,0.3055555555555555,0.13905359743851384], [40,60,0.1086587436332768,0.002896859710109278], [40,80,0,0],
-  [70,0,1,0.7680994978793717], [70,30,1,0.5699802583147813], [70,60,0.4588285229202038,0.07178866086699139], [70,80,0.0015929877226335178,0],
+  [20,0,0.07407407407407406,0.0010405827263267424], [20,30,0.0451388888888889,0], [20,60,0,0], [20,80,0,0],
+  [40,0,0.42129629629629617,0.12591050988553593], [40,30,0.3055555555555555,0.07204043146472645], [40,60,0.1086587436332768,0.0005202913631633728], [40,80,0,0],
+  [70,0,1,0.7034339229968781], [70,30,1,0.4725848029300767], [70,60,0.4588285229202038,0.037591050988553615], [70,80,0.0015929877226335178,0],
 ];
 for(const [kmh,angle,body,mechanical] of impacts)test(`wall ${kmh} km/h at ${angle} degrees: cosmetic and lasting mechanical budgets`,()=>{
   const v=mk(),a=angle*Math.PI/180,zone=angle>=60?'left':'front';
@@ -32,25 +32,25 @@ for(const [kmh,angle,body,mechanical] of impacts)test(`wall ${kmh} km/h at ${ang
 });
 
 test('moderate hits still dent the body; lasting damage starts softly above 18 km/h and a 60 km/h hit is costly',()=>{
-  const v=mk();wall(v,30);assert.ok(v.damage.front>.1);close(v.impactMechanical,0.0851499377543342);assert.ok(v.engHealth>.9);
+  const v=mk();wall(v,30);assert.ok(v.damage.front>.1);close(v.impactMechanical,0.037460978147762766);assert.ok(v.engHealth>.9);
   assert.equal(mechanicalIncrement(18/3.6),0);assert.ok(mechanicalIncrement(18.5/3.6)>0 && mechanicalIncrement(18.5/3.6)<.001);
   assert.equal(mechanicalIncrement(60/3.6,'rear')/mechanicalIncrement(60/3.6,'front'),.4);
-  const high=mk();wall(high,60);close(high.impactMechanical,0.5575533137682301);advance(high,1);assert.ok(high.engHealth<.7&&high.engHealth>.6);
+  const high=mk();wall(high,60);close(high.impactMechanical,0.45889698231009374);advance(high,1);assert.ok(high.engHealth<.75&&high.engHealth>.7);
   advance(high,600);assert.equal(high.coolantTemp,90);assert.equal(high.engineStalled,false);
 });
 
-test('trading paint stays forgiving: 500 taps under 18 km/h and glancing scrapes cost nothing, ten 20 km/h taps cost under 6 % power',()=>{
+test('trading paint stays forgiving: 500 taps under 18 km/h and glancing scrapes cost nothing, ten 20 km/h taps cost about 1 % power',()=>{
   for(const [kmh,zone]of [[10,'front'],[15,'front'],[17,'rear'],[17,'left']]){
     const v=mk({engineZone:'rear'});for(let i=0;i<500;i++)wall(v,kmh,zone);
     advance(v,120);assert.equal(v.engHealth,1);assert.equal(v.impactMechanical,0);assert.equal(v.engineStalled,false);assert.ok(v.cornerDamage.every(d=>d===0));assert.equal(v.steerPull||0,0);
   }
   const scrape=mk();for(let i=0;i<500;i++)wall(scrape,90*Math.cos(80*Math.PI/180),'left');
   assert.ok(scrape.damage.left>0);assert.equal(scrape.engHealth,1);assert.equal(scrape.maxImpactEbs,0);
-  const taps=mk();for(let i=0;i<10;i++)wall(taps,20);advance(taps,5);assert.ok(taps.engHealth>.94&&taps.engineStalled===false);
+  const taps=mk();for(let i=0;i<10;i++)wall(taps,20);advance(taps,5);assert.ok(taps.engHealth>.98&&taps.engineStalled===false);
 });
 
 test('hits pile up to a crippled car, never a wreck on their own; only a 90 km/h frontal ruins it',()=>{
-  const v=mk();wall(v,60);advance(v,1);assert.ok(v.engHealth>.6&&v.engHealth<.7);
+  const v=mk();wall(v,60);advance(v,1);assert.ok(v.engHealth>.7&&v.engHealth<.75);
   wall(v,60);advance(v,1);close(v.impactMechanical,.9);assert.ok(v.engHealth<.5&&v.engHealth>.45);
   for(let i=0;i<20;i++)wall(v,70);advance(v,1);close(v.impactMechanical,.9);assert.equal(v.engineStalled,false);assert.ok(v.engHealth>.45);
   const single=mk();wall(single,90);assert.equal(single.engHealth,0);assert.equal(isTerminalImpact(single.maxImpactEbs),true);
@@ -62,7 +62,7 @@ test('traffic contacts: a gentle side-swipe stays cosmetic, a hard shunt costs p
   const side=mk();side.addDamage('left',5,{sev:20/3.6,kind:'bump',car:{mass:1500},localNormal:{x:1,y:0,z:0}});
   assert.equal(side.damage.left,0);assert.equal(side.impactMechanical,0);
   const normal=mk();normal.addDamage('front',15,{sev:90/3.6,kind:'crash',car:{mass:1500}});
-  close(normal.impactMechanical,.2873810399208778);advance(normal,1);assert.ok(normal.engHealth<.9&&normal.engHealth>.8);assert.equal(normal.engineStalled,false);
+  close(normal.impactMechanical,0.1896462018730489);advance(normal,1);assert.ok(normal.engHealth<.9&&normal.engHealth>.8);assert.equal(normal.engineStalled,false);
   for(let i=0;i<100;i++)normal.addDamage('right',20,{sev:90/3.6,kind:'crash',car:{mass:12000}});
   close(normal.impactMechanical,.9);assert.equal(normal.engineStalled,false);
   assert.equal(equivalentBarrierSpeed(20,1500,1500),10);
@@ -93,7 +93,7 @@ test('only heavily damaged cooling systems heat up; hits up to 60 km/h never lea
 test('reset/tow repairs cosmetics and all mechanical consequences; restored telemetry survives damageFx',()=>{
   const source=mk();wall(source,60);source.engineDamage=.2;
   const snapshot={damage:{...source.damage},...spectatorState(source)},restored=mk();
-  restoreVehicleState(restored,snapshot);restored.damageFx();close(restored.impactMechanical,.5575533137682301);close(restored.engineDamage,.2);assert.equal(restored.maxImpactEbs,source.maxImpactEbs);
+  restoreVehicleState(restored,snapshot);restored.damageFx();close(restored.impactMechanical,0.45889698231009374);close(restored.engineDamage,.2);assert.equal(restored.maxImpactEbs,source.maxImpactEbs);
   const v=mk();for(let i=0;i<250;i++)wall(v,70);v.damageFx(NaN);v.damageFx(Infinity);
   assert.ok(Object.values(v.damage).every(n=>Number.isFinite(n)&&n>=0&&n<=1));assert.ok(v.cornerDamage.every(n=>Number.isFinite(n)&&n>=0&&n<=1));assert.ok(v.dmgDrag<=(1+.04+.03+.06)*impactDragFactor(.9)+1e-9,'body, corner and lasting drag stay bounded');
   const serial=v.lastDamage.serial;v.reset(0,0);assert.equal(v.impactMechanical,0);assert.equal(v.engHealth,1);assert.equal(v.engineDamage,0);assert.equal(v.radiatorDamage,0);assert.equal(v.coolantTemp,90);assert.equal(v.engineStalled,false);assert.equal(v.drivetrainBroken,false);assert.ok(v.cornerDamage.every(d=>d===0));assert.equal(v.lastDamage,null);
@@ -103,7 +103,7 @@ test('reset/tow repairs cosmetics and all mechanical consequences; restored tele
 test('damage feedback distinguishes cosmetic dents, powertrain loss and limp',()=>{
   const light=mk(),a60=Math.PI/3;wall(light,40*Math.cos(a60),'left',{localNormal:{x:Math.sin(a60),y:0,z:Math.cos(a60)}});// a glancing 40 km/h scrape: dented, nothing lasting
   assert.equal(damageFeedback(light).title,'BODY DAMAGE');assert.match(damageFeedback(light).effect,/Cosmetic.*full engine power/);assert.doesNotMatch(damageFeedback(light).effect,/steering|reducing/);
-  const big=mk();wall(big,60);assert.match(damageFeedback(big).cause,/Crash damage/);advance(big,1);assert.match(damageFeedback(big).effect,/6[67]% engine power available · top speed −\d+%/);assert.equal(damageFeedback(big).title,'CAR IMPAIRED');
+  const big=mk();wall(big,60);assert.match(damageFeedback(big).cause,/Crash damage/);advance(big,1);assert.match(damageFeedback(big).effect,/7[12]% engine power available · top speed −\d+%/);assert.equal(damageFeedback(big).title,'CAR IMPAIRED');
   wall(big,60);advance(big,1);assert.equal(damageFeedback(big).title,'LIMP MODE');
 });
 
@@ -122,7 +122,7 @@ test('a tow or a reset keeps the damage: the snapshot restores body, bent corner
   assert.equal(v.impactMechanical,0);assert.equal(v.engHealth,1);assert.equal(v.steerPull,0);
   v.restoreDamageSnapshot(kept);advance(v,1);
   assert.deepEqual(v.damage,before.damage);close(v.impactMechanical,before.mech);close(v.steerPull,before.pull);assert.deepEqual(v.cornerDamage,before.corners);
-  assert.equal(v.engineStalled,false);assert.equal(v.drivetrainBroken,false);assert.ok(v.engHealth<.7);
+  assert.equal(v.engineStalled,false);assert.equal(v.drivetrainBroken,false);assert.ok(v.engHealth<.75);
   assert.ok(v.dmgDrag>1.3,'a damaged car has a worse top speed');
   const wreck=mk();wreck.impactMechanical=1;wreck.restoreDamageSnapshot(wreck.damageSnapshot());close(wreck.impactMechanical,.9);
 });

@@ -136,6 +136,8 @@ test('lasting damage (owner 2026-10-20: "more punishing"): taps are forgiving, a
   assert.ok(d['ten 20 km/h taps (trading paint)'].lossS < 1, 'trading paint is not ruinous');
   assert.ok(d['head-on wall 30 km/h'].lossS < 1 && d['head-on wall 30 km/h'].lossS > 0.1);
   assert.ok(d['head-on wall 60 km/h'].lossS >= 3, 'a 60 km/h head-on hit is a real time loss, not a bounce');
+  const one60 = d['head-on wall 60 km/h'].lossS, four40 = d['four 40 km/h bumps'].lossS;
+  assert.ok(four40 >= 0.75 * one60 && four40 <= 1.5 * one60 && four40 < 0.6 * d['head-on wall 100 km/h'].lossS, `no cliff between 20 and 40 km/h: four 40 km/h bumps ${four40} s vs one 60 km/h hit ${one60} s`);
   assert.ok(d['head-on wall 100 km/h'].lossS >= 5 && d['head-on wall 100 km/h'].lossS < 12, 'costly but still drivable');
   assert.ok(d['head-on wall 100 km/h'].powerPct >= 45 && d['head-on wall 100 km/h'].topKmh < d['undamaged'].topKmh - 40);
   assert.ok(d['head-on wall 100 km/h'].wheelEffortPct > d['undamaged'].wheelEffortPct, 'the car pulls to one side');
