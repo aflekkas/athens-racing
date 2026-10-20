@@ -23,14 +23,14 @@ export function renderBestRecord(r, { rank, global = false, title, compact = fal
 // The track preview shares the full board's record presentation and filter semantics.
 export function renderTrackTimes(menu, d, filters) {
   const best = listPersonalBests(filters)[0], state = d.trackTimes ||= { loading: true };
-  const personal = best ? renderBestRecord(best, { title: `YOUR PERSONAL BEST · ${formatRecordTime(best.time)}` }) :
-    C.panel('YOUR PERSONAL BEST', '<p>Complete a clean race on this track to set a time.</p>', { icon: 'timer' });
+  const personal = best ? renderBestRecord(best, { title: `PERSONAL BEST · ${formatRecordTime(best.time)}` }) :
+    C.panel('PERSONAL BEST', '<p class="muted">No time yet. Finish a clean race to set one.</p>');
   let global;
   if (state.loading) global = C.spinner();
   else if (state.error) global = `<p>${esc(state.error)}</p>${C.button({ label: 'TRY AGAIN', act: 'trackTimesRetry', size: 'sm' })}`;
-  else global = state.entries.length ? state.entries.map((r, i) => renderBestRecord(r, { rank: i + 1, global: true, compact: true })).join('') : '<p>No global times yet. Set the first clean time.</p>';
+  else global = state.entries.length ? state.entries.map((r, i) => renderBestRecord(r, { rank: i + 1, global: true, compact: true })).join('') : '<p class="muted">No times yet. Be the first.</p>';
   queueMicrotask(() => loadTrackTimes(menu, d, state, filters));
-  return `${personal}${C.panel('GLOBAL / TOP 3', global, { icon: 'globe', attrs: { 'aria-live': 'polite', 'aria-busy': !!state.loading } })}<p class="muted">Fastest times for this track and event, across routes and setups.</p>`;
+  return `${personal}${C.panel('TOP 3', global, { attrs: { 'aria-live': 'polite', 'aria-busy': !!state.loading } })}`;
 }
 async function loadTrackTimes(menu, d, state, filters) {
   if (menu.screen !== 'mapConfirm' || menu.data !== d || d.trackTimes !== state || state.requested) return;

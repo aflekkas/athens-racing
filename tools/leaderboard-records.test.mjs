@@ -27,7 +27,7 @@ test('Quick Race track times filter PB and globals by the actual event, rank thr
     const data = {}, menu = { screen: 'mapConfirm', data, refresh() { refreshes++; } }, filters = { mapId: 'megara', eventId: 'megara-race' };
     const render = () => renderTrackTimes(menu, data, filters);
     let html = render(); render(); await tick();
-    assert.match(html, /YOUR PERSONAL BEST · 1:05.25/);
+    assert.match(html, /PERSONAL BEST · 1:05.25/);
     assert.match(html, /RAIN/); assert.match(html, /Gearbox MANUAL/);
     assert.doesNotMatch(html, /0:20.00/);
     assert.equal(requests.length, 1);
@@ -50,6 +50,6 @@ test('track global errors settle and offer retry without discarding the PB', asy
     const data = {}, menu = { screen: 'mapConfirm', data, refresh() {} }, filters = { mapId: 'penteli', eventId: 'penteli-race' };
     renderTrackTimes(menu, data, filters); await tick();
     const html = renderTrackTimes(menu, data, filters);
-    assert.match(html, /Leaderboard unavailable/); assert.match(html, /data-act="trackTimesRetry"/); assert.match(html, /YOUR PERSONAL BEST/);
+    assert.match(html, /Leaderboard unavailable/); assert.match(html, /data-act="trackTimesRetry"/); assert.match(html, /PERSONAL BEST/);
   } finally { globalThis.fetch = previous; }
 });

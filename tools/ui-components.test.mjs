@@ -144,8 +144,8 @@ test('OWNER LOCK 2026-10-17: leaderboards belong to the Quick Race track, never 
     const menu = { screen: 'setup', setupDef: () => ({ id: 'megara-race' }) };
     const track = Menu.prototype.r_mapConfirm.call(menu, { mapId: 'megara', mode: 'quick' });
     assert.match(track, /data-act="leaderboards"/);
-    assert.match(track, /YOUR PERSONAL BEST/);
-    assert.match(track, /GLOBAL \/ TOP 3/);
+    assert.match(track, /PERSONAL BEST/);
+    assert.match(track, /TOP 3/);
     assert.match(track, /data-act="mapContinue"/);
     const { renderLeaderboards } = await import('../src/leaderboards-screen.js');
     const emptyBoard = renderLeaderboards({ screen: 'setup' }, { tab: 'personal', filters: { mapId: 'penteli', eventId: 'penteli-race' } });

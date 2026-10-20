@@ -10,22 +10,23 @@ import { fmtDist } from './settings.js';
 import * as C from './ui/components.js';
 import { getMapPersonalBest } from './personal-bests.js';
 
-const { esc, icon } = C;
+const { esc } = C;
 const playable = () => getPlayableMaps(MAPS).filter(m => TRACK_ROUTES[m.id]);
 const color = id => id === 'penteli' ? '#71d5c1' : id === 'megara' ? '#e4bf70' : id === 'psychiko' ? '#d7cf83' : '#ff7868';
 function style() {
   if (document.getElementById('map-select-style')) return;
   const link = document.createElement('link'); link.id = 'map-select-style'; link.rel = 'stylesheet'; link.href = new URL('./map-select.css', import.meta.url).href; document.head.append(link);
 }
-const KIND = m => m.type === 'circuit' ? ['CIRCUIT', 'refresh-cw'] : m.id === 'penteli' ? ['HILL CLIMB', 'mountain'] : ['POINT TO POINT', 'route'];
+const KIND = m => m.type === 'circuit' ? 'Circuit' : m.id === 'penteli' ? 'Hill climb' : 'Point to point';
 const lapTime = t => `${Math.floor(t / 60)}:${(t % 60).toFixed(2).padStart(5, '0')}`;
 // The big map frames the selected route, so the card carries only what the map cannot say.
 function preview(map) {
-  const [kind, ic] = KIND(map), pb = getMapPersonalBest(map.id);
+  const pb = getMapPersonalBest(map.id);
   // A best only appears once one exists; an empty record box is noise.
-  const best = pb ? `<div class="map-spec map-spec--best"><small>${icon('timer')}BEST</small><b>${lapTime(pb.time)}</b><span>${esc(pb.setup.car)} · ${pb.setup.laps} LAP${pb.setup.laps === 1 ? '' : 'S'}${pb.setup.direction < 0 ? ' · REV' : ''}</span></div>` : '';
-  return `<div class="map-preview__info"><div class="map-kind">${icon(ic)}${kind}</div><h3>${esc(map.name)}</h3><p>${esc(map.subtitle)}</p>
-    <div class="map-specs"><div class="map-spec"><small>LENGTH</small><b>${fmtDist(map.length)}${map.type === 'circuit' ? '<span> / LAP</span>' : ''}</b></div>${best}</div>
+  const best = pb ? `<div class="map-specs"><div class="map-spec map-spec--best"><small>YOUR BEST</small><b>${lapTime(pb.time)}</b><span>${esc(pb.setup.car)} · ${pb.setup.laps} LAP${pb.setup.laps === 1 ? '' : 'S'}${pb.setup.direction < 0 ? ' · REV' : ''}</span></div></div>` : '';
+  // One heading, one line of what the map cannot show (route ends), one quiet line of facts; no coloured kicker.
+  return `<div class="map-preview__info"><h3>${esc(map.name)}</h3><p>${esc(map.subtitle)}</p>
+    <p class="map-meta">${KIND(map)} · ${fmtDist(map.length).toLowerCase()}${map.type === 'circuit' ? ' a lap' : ''}</p>${best}
     ${C.button({ label: 'SELECT TRACK', icon: 'flag', iconRight: 'chevron-right', variant: 'primary', block: true, attrs: { 'data-confirm-track': '', 'data-map-id': map.id } })}</div>`;
 }
 const count = (selectable, m) => `${selectable.indexOf(m) + 1} <span>/ ${selectable.length}</span>`;
@@ -35,14 +36,14 @@ export function renderMapSelect(selectedId = 'riviera') {
   style(); const selectable = playable(), selected = selectable.find(m => m.id === selectedId) || selectable[0];
   const labels = MAP_LABELS.map((l, i) => `<span class="map-label map-label--${l.k}" data-label="${i}"><i></i><b>${esc(l.t)}${l.s ? `<small>${esc(l.s)}</small>` : ''}</b></span>`).join('');
   const pins = selectable.map((m, i) => `<span role="button" tabindex="-1" class="mi track-pin ${m.id === selected.id ? 'selected active' : ''}" aria-label="Preview ${esc(m.name)}" aria-pressed="${m.id === selected.id}" data-map-id="${m.id}" data-side="${side(TRACK_ROUTES[m.id])}" style="--pin:${color(m.id)}" ${m.id === selected.id ? 'data-default' : ''}><i class="track-pin__dot">${i + 1}</i><span>${esc(m.name)}</span></span>`).join('');
-  return C.mapStage({ variant: 'floating', cls: 'scr--maps', kick: 'QUICK RACE', title: 'ATTICA / CHOOSE YOUR TRACK',
+  return C.mapStage({ variant: 'floating', cls: 'scr--maps', kick: 'QUICK RACE', title: 'CHOOSE A TRACK',
     hints: [['leftright', 'TRACK'], ['confirm', 'SELECT'], ['back', 'BACK']],
     stageAttrs: { role: 'img', 'aria-label': `Map of Attica with ${selectable.length} tracks: ${selectable.map(m => m.name).join(', ')}` },
     stage: `<canvas class="attica-canvas" aria-hidden="true"></canvas>
       <div class="attica-overlay"><div class="attica-labels" aria-hidden="true">${labels}</div>${pins}</div>
       <p class="attica-credit"><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a> · <a href="https://github.com/tilezen/joerd/blob/master/docs/attribution.md" target="_blank" rel="noopener">EU-DEM, Copernicus</a></p>`,
     cardAttrs: { 'data-map': selected.id, style: `--track:${color(selected.id)}` },
-    nav: `${C.button({ icon: 'chevron-left', variant: 'ghost', act: 'mapPrev', title: 'Previous track' })}<div><small>TRACK</small><b class="map-track-count">${count(selectable, selected)}</b></div>${C.button({ icon: 'chevron-right', variant: 'ghost', act: 'mapNext', title: 'Next track' })}`, card: preview(selected) });
+    nav: `${C.button({ icon: 'chevron-left', variant: 'ghost', act: 'mapPrev', title: 'Previous track' })}<div><b class="map-track-count">${count(selectable, selected)}</b></div>${C.button({ icon: 'chevron-right', variant: 'ghost', act: 'mapNext', title: 'Next track' })}`, card: preview(selected) });
 }
 
 // ---------------------------------------------------------------- map assets (fetched once per page, shared by every visit)

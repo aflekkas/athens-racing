@@ -39,7 +39,7 @@ const arrow = (rev) => icon(rev ? 'arrow-left' : 'arrow-right', 'ico--route');
 const NUM = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'];
 const count = (n) => NUM[n] || String(n);
 /** the Quick Race card line, from the real default and cap */
-const quickBlurb = () => SP_RIVALS >= MAX_RIVALS ? `Pick a map and go against ${count(SP_RIVALS)} locals, or fewer if you like.` : `Pick a map and go. ${count(SP_RIVALS)[0].toUpperCase() + count(SP_RIVALS).slice(1)} locals by default, up to ${count(MAX_RIVALS)}.`;
+const quickBlurb = () => `Pick a track and race ${count(SP_RIVALS)} locals against the clock.`;
 const routeLine = (r) => r.closed ? `${r.laps} ${r.laps === 1 ? 'LAP' : 'LAPS'}` : `${esc(r.fromName)} ${arrow(false)} ${esc(r.toName)}`;
 C.registerFormat('seatCm',v=>(v>0?'+':'')+Math.round(v*100)+' cm');
 C.registerFormat('rivals', (v) => (+v === 0 ? 'NONE · SOLO' : `${v} ${+v === 1 ? 'RIVAL' : 'RIVALS'}`));
@@ -336,8 +336,8 @@ export class Menu {
   r_mode() {
     const art = (src) => `<img src="${esc(src)}" alt="" decoding="async">`;
     const tile = (act, ic, title, desc, src, cta) => C.option({ icon: ic, title, desc, act, cls: 'option--tile option--feature', media: art(src), cta });
-    return C.heroTiles({ variant: 'choices', cls: 'scr--mode', kick: 'CHOOSE YOUR MODE', title: 'RACE', hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'BACK']],
-      tiles: `${tile('quick', 'flag', 'QUICK RACE', quickBlurb(), MAPS.find((m) => m.id === 'penteli')?.preview || MAPS[0].preview, 'CHOOSE TRACK')}${tile('free', 'car', 'FREE ROAM', 'Pick where to start on the map and explore the roads in traffic. Change car, weather and time anytime.', './assets/maps/attica.svg', 'CHOOSE SPAWN')}` });
+    return C.heroTiles({ variant: 'choices', cls: 'scr--mode', title: 'RACE', hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'BACK']],
+      tiles: `${tile('quick', 'flag', 'QUICK RACE', quickBlurb(), MAPS.find((m) => m.id === 'penteli')?.preview || MAPS[0].preview, 'CHOOSE TRACK')}${tile('free', 'car', 'FREE ROAM', 'Pick where to start on the map and just drive.', './assets/maps/attica.svg', 'CHOOSE SPAWN')}` });
   }
 
   // ---------------------------------------------------------------- multiplayer (src/ui/mp-screens.js)
@@ -356,11 +356,10 @@ export class Menu {
   r_mapConfirm(d) {
     const map = MAPS.find(m => m.id === d.mapId) || MAPS[0], def = this.setupDef();
     d.eventId = (def.baseId || def.id).split('~')[0];
-    return C.stageInspector({ variant: 'overview', cls: 'scr--track', kick: 'QUICK RACE / YOUR TRACK', title: esc(map.name),
+    return C.stageInspector({ variant: 'overview', cls: 'scr--track', kick: 'QUICK RACE', title: esc(map.name),
       hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'BACK']],
-      stage: C.panel('YOUR TRACK',
-        `${map.preview ? `<img class="setup__map" src="${esc(map.preview)}" alt="Route preview: ${esc(map.name)}">` : ''}<p>${esc(map.subtitle)}</p>${C.stats([['LENGTH', fmtDist(map.length)], ['EVENT', 'QUICK RACE']])}`,
-        { icon: 'map' }), inspector: renderTrackTimes(this, d, { mapId: map.id, eventId: d.eventId }),
+      stage: C.panel('',
+        `${map.preview ? `<img class="setup__map" src="${esc(map.preview)}" alt="Route preview: ${esc(map.name)}">` : ''}<p>${esc(map.subtitle)}</p>${C.stats([['LENGTH', fmtDist(map.length)], ['ROUTE', map.type === 'circuit' ? 'CIRCUIT' : 'POINT TO POINT']])}`), inspector: renderTrackTimes(this, d, { mapId: map.id, eventId: d.eventId }),
       actions: `${C.button({ label: 'LEADERBOARD', icon: 'timer', act: 'leaderboards' })}${C.button({ label: 'RACE SETUP', icon: 'sliders-horizontal', iconRight: 'chevron-right', variant: 'primary', act: 'mapContinue', attrs: { 'data-default': '' } })}` });
   }
 
@@ -387,8 +386,8 @@ export class Menu {
     const pb = free ? null : this.h.personalBests?.(e, r), T = (x) => this.h.fmtTime(x.time);
     const best = [pb?.exact && `<span>BEST <b>${T(pb.exact)}</b></span>`,
       pb?.route && (!pb.exact || pb.route.time < pb.exact.time) && `<span>ROUTE BEST <b>${T(pb.route)}</b> · ANY CAR</span>`].filter(Boolean);
-    return `<div class="evs__top"><span class="evs__kick">${free ? 'FREE ROAM' : 'QUICK RACE'}</span>${r.reverse ? C.badge('REVERSE', 'cyan', 'arrow-left-right') : ''}</div>
-      <h3 class="evs__name">${esc(free ? 'Explore the map' : 'Your race')}</h3>${free ? '' : `<p class="evs__route">${icon(r.closed ? 'refresh-cw' : 'map-pin')}<span>${routeLine(r)}</span></p>`}
+    // The track's name is the heading (the screen title already says what this is); the route is one quiet line.
+    return `<h3 class="evs__name">${esc(mapName)}</h3>${free ? '' : `<p class="evs__route"><span>${routeLine(r)}${r.reverse ? ' · REVERSE' : ''}</span></p>`}
       ${C.stats(facts.map(([k, v, ic]) => [k, v, { icon: ic }]), 'evs__facts')}${best.length ? `<p class="evs__best">${icon('timer')}${best.join('')}</p>` : ''}`;
   }
 
@@ -403,13 +402,13 @@ export class Menu {
     const A = { 'data-scope': 'setup' }, rows = [];
     for (const f of setupFields(def, { closed })) {
       if (f.key === 'rivals') rows.push(C.stepper({ key: 'rivals', label: 'AI RIVALS', icon: 'users', value: cur.rivals, min: f.min, max: f.max, format: 'rivals', attrs: A,
-        note: f.dflt === cur.rivals ? 'DEFAULT' : `DEFAULT: ${f.dflt}`, noteCls: '' }));
+        note: f.dflt === cur.rivals ? '' : `Default: ${f.dflt}`, noteCls: '' }));
       if (f.key === 'police') rows.push(C.segmented({ key: 'police', label: 'POLICE & LAWS', icon: 'siren', value: cur.police ? cur.policeLevel : 'off', attrs: A, options: [['off', 'OFF'], ...POLICE_LEVELS],
-        note: !cur.police ? '' : cur.policeLevel === 'relaxed' ? 'LATE TO NOTICE, SLOW TO ESCALATE, FEW UNITS' : cur.policeLevel === 'tough' ? 'SHARP-EYED, LITTLE TOLERANCE, MORE UNITS' : 'A WARNING FROM +25 KM/H IN VIEW, A CHASE IF YOU KEEP GOING' }));
+        note: !cur.police ? '' : cur.policeLevel === 'relaxed' ? 'Slow to notice, few units.' : cur.policeLevel === 'tough' ? 'Sharp-eyed, more units.' : 'A warning at +25 km/h in view, a chase if you keep going.' }));
       if (f.key === 'busted' && cur.police) rows.push(C.segmented({ key: 'busted', label: 'CAN BE BUSTED', icon: 'siren', value: String(cur.busted), type: 'bool', dflt: String(f.dflt), attrs: A, options: [['true', 'ON'], ['false', 'OFF']],
-        note: cur.busted ? 'STOP NEXT TO A UNIT IN A CHASE AND YOU ARE PULLED OVER' : 'THEY CHASE YOU, THEY NEVER ARREST YOU' }));
+        note: cur.busted ? 'Stop next to a unit in a chase and you are pulled over.' : 'They chase you but never arrest you.' }));
       if (f.key === 'traffic') rows.push(C.segmented({ key: 'traffic', label: 'TRAFFIC', icon: 'traffic-cone', value: cur.traffic, type: 'num', dflt: f.dflt, attrs: A, options: f.levels.map(([, v, l]) => [v, l]) }));
-      if (f.key === 'laps') rows.push(C.stepper({ key: 'laps', label: 'LAPS', icon: 'refresh-cw', value: cur.laps, min: f.min, max: f.max, format: 'laps', attrs: A, note: `${fmtDist(r.len)} IN TOTAL` }));
+      if (f.key === 'laps') rows.push(C.stepper({ key: 'laps', label: 'LAPS', icon: 'refresh-cw', value: cur.laps, min: f.min, max: f.max, format: 'laps', attrs: A, note: `${fmtDist(r.len).toLowerCase()} in total` }));
       if (f.key === 'reverse') rows.push(C.segmented({ key: 'reverse', label: 'DIRECTION', icon: 'arrow-left-right', value: String(cur.reverse), type: 'bool', dflt: 'false', attrs: A, options: [['false', closed ? 'CLOCKWISE' : 'FORWARD'], ['true', closed ? 'ANTI-CLOCKWISE' : 'REVERSE']] }));
       if (f.key === 'time') rows.push(C.select({ key: 'time', label: 'TIME OF DAY', icon: cur.time === 'night' ? 'moon' : cur.time === 'sunset' || cur.time === 'dawn' ? 'sunrise' : 'sun', value: cur.time, attrs: A, options: TIMES.map(([v, l]) => [v, v === f.dflt ? `${l} · DEFAULT` : l]) }));
       if (f.key === 'weather') rows.push(C.segmented({ key: 'weather', label: 'WEATHER', icon: cur.weather === 'rain' ? 'cloud-rain' : cur.weather === 'overcast' ? 'cloud' : 'sun', value: cur.weather, dflt: f.dflt, attrs: A, options: WEATHERS.map(([v, l]) => [v, l, v === 'rain' ? 'cloud-rain' : v === 'overcast' ? 'cloud' : 'sun']) }));
@@ -419,7 +418,7 @@ export class Menu {
     const map = MAPS.find((m) => m.id === ctx.mapId) || MAPS[0];
     return C.stageInspector({ variant: 'setup', cls: 'scr--setup', kick: def.quick ? 'QUICK RACE' : `${TYPES[def.type].label} · ${esc((MAPS.find((m) => m.id === ctx.mapId) || MAPS[0]).name)}`, title: def.objectiveMode || def.type === 'free' ? 'SESSION SETUP' : 'RACE SETUP',
       hints: [['updown', 'SELECT'], ['leftright', 'CHANGE'], ['confirm', 'OK'], ['back', 'BACK']],
-      stage: `${map.preview ? `<img class="setup__map" src="${esc(map.preview)}" alt="Route preview: ${esc(map.name)}">` : ''}${this.eventSummary(runDef, r, runDef.id)}`, inspectorTitle: def.type === 'free' ? 'YOUR SESSION' : 'YOUR RACE', inspector: `${rows.filter(row => /data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('')}${C.button({ label: this.data.advanced ? 'HIDE ADVANCED OPTIONS' : 'ADVANCED OPTIONS', icon: 'sliders-horizontal', act: 'setupAdvanced', variant: 'ghost', size: 'sm' })}${this.data.advanced ? rows.filter(row => !/data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('') : ''}`, note, actions: C.button({ label: 'CHOOSE CAR', icon: 'car', iconRight: 'chevron-right', variant: 'primary', act: 'setupGo' }), inspectorHead: C.button({ label: 'DEFAULTS', icon: 'rotate-ccw', variant: 'ghost', size: 'sm', act: 'setupReset', disabled: !custom }) });
+      stage: `${map.preview ? `<img class="setup__map" src="${esc(map.preview)}" alt="Route preview: ${esc(map.name)}">` : ''}${this.eventSummary(runDef, r, runDef.id)}`, inspectorTitle: '', inspector: `${rows.filter(row => /data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('')}${C.button({ label: this.data.advanced ? 'HIDE ADVANCED OPTIONS' : 'ADVANCED OPTIONS', icon: 'sliders-horizontal', act: 'setupAdvanced', variant: 'ghost', size: 'sm' })}${this.data.advanced ? rows.filter(row => !/data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('') : ''}`, note, actions: C.button({ label: 'CHOOSE CAR', icon: 'car', iconRight: 'chevron-right', variant: 'primary', act: 'setupGo' }), inspectorHead: C.button({ label: 'DEFAULTS', icon: 'rotate-ccw', variant: 'ghost', size: 'sm', act: 'setupReset', disabled: !custom }) });
   }
   startSetup() {
     const def = this.setupDef(), runDef = applySetup(def, loadSetup(this.setupKey()), { closed: this.isClosed() });
