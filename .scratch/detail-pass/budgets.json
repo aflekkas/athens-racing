@@ -12,7 +12,7 @@
     "src/world-detail-policy.js": "bc06c4202a8dbe2aac086d4ab3d606aa64f2b0f3fc719bf6fb57772f0235f65e",
     "src/world-detail-state.js": "68b0bd6e470e6d0dc2da5d5468c34000bec0514c4b376ba66409c55a112d9416",
     "src/facade-atlas.js": "65e1f1aa6d48890a92bedcd262f5b0ac07429ea8967f60d7368e39cb87c22f1b",
-    "src/buildings.js": "0859c64974f26ead750f19eb5a4de0eb520a066b9892154de73fdbcee8f0910c",
+    "src/buildings.js": "c518abd13eed9de886bc521e143ed327ea0ada915f8b534758144a9419d82fe3",
     "src/terrain.js": "e7472515b0d8f36b7ded1764b6560a1522c2eff08cd1cada006b17d595f46440",
     "src/terrain-lod.js": "7273d46dc2bb0d3e2df0a91c9b370a9a389721010c217259ef96aae4cffe9561",
     "src/scenery.js": "38b96d0dc796f6cabb8a6dbf6989c57427e2b0e74674f66ea002ee84a525af98",
@@ -20,7 +20,7 @@
     "data/map.json": "702e5f0940896675ef9d7806f8d7bb8799f8599692178f0c5d7b7e041ef15447",
     "data/maps/penteli/map.json": "6df1ac6460958a0a9841c7b03df255931a7a27ccdcba457745bfdb390b62bb07",
     "data/maps/megara/map.json": "b1d6873460ce7676f6a22f7804f22453e7aad2c9d41642f869d9b39b031e37c7",
-    "data/maps/psychiko/map.json": "9fcc6708e383ce6d8eda80bec826580f25d13551db0d4ec97ad203564f84f649"
+    "data/maps/psychiko/map.json": "25fe31b2b434b0fe1b8d9fe95298080edb2888d91a65ed38a177893d5b6cb28b"
   },
   "rows": [
     {
@@ -1162,7 +1162,7 @@
         ],
         "calls": 159,
         "triangles": 629167,
-        "geometryBytes": 253087170,
+        "geometryBytes": 253140318,
         "textureBytes": 92168192.00000003,
         "shadows": false
       },
@@ -1182,7 +1182,7 @@
         ],
         "calls": 159,
         "triangles": 629167,
-        "geometryBytes": 253087170,
+        "geometryBytes": 253140318,
         "textureBytes": 92168192.00000003,
         "shadows": false
       },
@@ -1200,9 +1200,9 @@
           0.04230307744253829,
           -0.48195706386840204
         ],
-        "calls": 169,
-        "triangles": 713659,
-        "geometryBytes": 259072626,
+        "calls": 168,
+        "triangles": 713258,
+        "geometryBytes": 257938407,
         "textureBytes": 95051776.00000004,
         "shadows": false
       }
@@ -1226,7 +1226,7 @@
         ],
         "calls": 139,
         "triangles": 694284,
-        "geometryBytes": 253245722,
+        "geometryBytes": 253298870,
         "textureBytes": 95838212,
         "shadows": false
       },
@@ -1246,7 +1246,7 @@
         ],
         "calls": 139,
         "triangles": 694284,
-        "geometryBytes": 253245722,
+        "geometryBytes": 253298870,
         "textureBytes": 95838212,
         "shadows": false
       },
@@ -1264,9 +1264,9 @@
           0.02005071810149271,
           -0.45345997466552923
         ],
-        "calls": 149,
-        "triangles": 778764,
-        "geometryBytes": 259231178,
+        "calls": 148,
+        "triangles": 778387,
+        "geometryBytes": 258096959,
         "textureBytes": 98721796.00000001,
         "shadows": false
       }
@@ -1290,7 +1290,7 @@
         ],
         "calls": 161,
         "triangles": 630127,
-        "geometryBytes": 253087170,
+        "geometryBytes": 253140318,
         "textureBytes": 91774980.00000003,
         "shadows": false
       },
@@ -1310,7 +1310,7 @@
         ],
         "calls": 161,
         "triangles": 630127,
-        "geometryBytes": 253087170,
+        "geometryBytes": 253140318,
         "textureBytes": 91774980.00000003,
         "shadows": false
       },
@@ -1328,9 +1328,9 @@
           0.04230307744253829,
           -0.48195706386840204
         ],
-        "calls": 171,
-        "triangles": 714619,
-        "geometryBytes": 259072626,
+        "calls": 170,
+        "triangles": 714218,
+        "geometryBytes": 257938407,
         "textureBytes": 94658564.00000004,
         "shadows": false
       }
@@ -1354,7 +1354,7 @@
         ],
         "calls": 141,
         "triangles": 695244,
-        "geometryBytes": 253245722,
+        "geometryBytes": 253298870,
         "textureBytes": 95838212,
         "shadows": false
       },
@@ -1374,7 +1374,7 @@
         ],
         "calls": 141,
         "triangles": 695244,
-        "geometryBytes": 253245722,
+        "geometryBytes": 253298870,
         "textureBytes": 95838212,
         "shadows": false
       },
@@ -1392,9 +1392,9 @@
           0.02005071810149271,
           -0.45345997466552923
         ],
-        "calls": 151,
-        "triangles": 779724,
-        "geometryBytes": 259231178,
+        "calls": 150,
+        "triangles": 779347,
+        "geometryBytes": 258096959,
         "textureBytes": 98721796.00000001,
         "shadows": false
       }
