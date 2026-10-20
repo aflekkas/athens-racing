@@ -68,6 +68,9 @@ Running (Sonnet; Enterprise unless noted):
 - [x] Riviera draw calls round 2: ~290–300 on Potato/Low (`508f0fcd`)
 - [~] Athens east/south-east (last basin area), Haiku agent per owner 2026-10-20; north (`f220bd03`) and west (`1925f9d3`) done
 - [~] UI taste pass: Opus agent auditing and cleaning every screen (owner 2026-10-20 "un ai-slop")
+- [~] Free roam: click anywhere, arrows cycle areas, trackpad two-finger pan (owner `30f25cb4`; Opus UI agent, first item)
+- [~] Athens beauty pass: landmarks, polykatoikia facades, fake lighting, Athens vegetation, street life, within budgets (owner `41895c7d`; Sonnet)
+- [~] Crash physics: crash bench, contact-point impulses, friction, no tunnelling, traffic reacts (owner 2026-10-20; Sonnet)
 - [~] Release cutover (lead): after the batch is checked on staging
 
 Waiting on the owner:
