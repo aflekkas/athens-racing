@@ -9,7 +9,9 @@ export const WRECK_MECHANICAL = 0.98;
 // smooth rise to a ruined car at RUIN_EBS. A frontal hit weighs most; side and rear hits hurt the suspension, steering and exhaust.
 export const TAP_EBS = 18 / 3.6;
 export const RUIN_EBS = 80 / 3.6;
+// The end that carries the engine weighs most (power, drivetrain); the far end only gets suspension and alignment wear.
 export const ZONE_WEIGHT = { front: 1, rear: 0.4, left: 0.5, right: 0.5 };
+export const ZONE_WEIGHT_REAR_ENGINE = { front: 0.5, rear: 1, left: 0.5, right: 0.5 };
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
 const groundKinds = new Set(['kerb', 'curb', 'ground', 'suspension', 'bump-road', 'landing']);
@@ -33,8 +35,8 @@ export function frontalBarrierSpeed(ebs, zone, { localNormal, kind } = {}) {
 }
 
 /** lasting mechanical damage one impact adds (0..1), from its equivalent barrier speed and the zone it landed on */
-export function mechanicalIncrement(ebs, zone = 'front') {
-  const w = ZONE_WEIGHT[zone];
+export function mechanicalIncrement(ebs, zone = 'front', engineZone = 'front') {
+  const w = (engineZone === 'rear' ? ZONE_WEIGHT_REAR_ENGINE : ZONE_WEIGHT)[zone];
   if (!Number.isFinite(ebs) || ebs <= TAP_EBS || !(w > 0)) return 0;
   return w * Math.min(1, (ebs - TAP_EBS) / (RUIN_EBS - TAP_EBS)) ** 2;
 }

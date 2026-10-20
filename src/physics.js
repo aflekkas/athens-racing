@@ -315,13 +315,17 @@ export class Vehicle {
     const frontalEbs = frontalBarrierSpeed(ebs, zone, e);
     // lasting damage from a hit in any direction (tyre walls give: their kind is excluded by crush energy already, and a tyre
     // strike never counts as frontal). It costs power, top speed and a straight wheel until the run is restarted.
-    const mechanical = e.kind === 'landing-impact' ? 0 : mechanicalIncrement(e.kind === 'tyre' ? ebs * 0.4 : ebs, zone); // (a hard landing hurts the suspension, not the engine)
+    const mechanical = e.kind === 'landing-impact' ? 0 : mechanicalIncrement(e.kind === 'tyre' ? ebs * 0.4 : ebs, zone, this.spec.engineZone); // (a hard landing hurts the suspension, not the engine)
     // Hits pile up to a crippled-but-running car (90 %: about half power, a much lower top speed); only one terminal blow (a
     // 90 km/h frontal) takes it to a wreck, so a run of 60 km/h hits is costly but never ends it on its own.
-    this.impactMechanical = Math.min(this.impactMechanical + mechanical, Math.max(this.impactMechanical, isTerminalImpact(frontalEbs) ? 1 : 0.9));
+    const cap = isTerminalImpact(frontalEbs) ? 1 : 0.9;
+    this.impactMechanical = Math.min(this.impactMechanical + mechanical, Math.max(this.impactMechanical, cap));
+    // Only a hit on the nose can burst the radiator, and only a hit on the nose or a front wheel can knock the steering rack out of
+    // line: a rear hit hurts the engine (power, drag) but is never "frontal" damage, in a rear-engine car or any other.
+    if (zone === 'front') this.frontMechanical = Math.min((this.frontMechanical || 0) + mechanical, Math.max(this.frontMechanical || 0, cap));
     // the steering rack is knocked out of line towards the side that was hit (a centred hit: either way, but always the same way)
     const side = point && Math.abs(point.x) > 0.05 ? Math.sign(point.x) : hash(Math.round(ebs * 10) + 7) < 0.5 ? -1 : 1;
-    this.steerPull = clamp((this.steerPull || 0) + side * mechanical * 0.012, -0.012, 0.012);
+    if (zone !== 'rear') this.steerPull = clamp((this.steerPull || 0) + side * mechanical * 0.012, -0.012, 0.012);
     const bend = mechanical * 0.4;
     for (let i = 0; i < 4; i++) {
       let exposure;
@@ -332,6 +336,7 @@ export class Vehicle {
         exposure = zone === 'front' ? (i < 2 ? 0.75 : 0.03) : zone === 'rear' ? (i > 1 ? 0.75 : 0.03)
           : (i % 2 === (zone === 'right' ? 1 : 0) ? (i < 2 ? 0.9 : 0.5) : 0.015);
       }
+      if (zone === 'rear' && i < 2) exposure = 0; // a rear hit never bends a front wheel
       this.cornerDamage[i] = Math.min(1, this.cornerDamage[i] + bend * exposure);
     }
     this.maxImpactEbs = Math.max(this.maxImpactEbs, frontalEbs);
@@ -353,7 +358,7 @@ export class Vehicle {
    */
   damageSnapshot() {
     this.damageFx();
-    return { damage: { ...this.damage }, cornerDamage: this.cornerDamage.slice(), impactMechanical: this.impactMechanical, radiatorDamage: this.radiatorDamage,
+    return { damage: { ...this.damage }, cornerDamage: this.cornerDamage.slice(), impactMechanical: this.impactMechanical, frontMechanical: this.frontMechanical || 0, radiatorDamage: this.radiatorDamage,
       steerPull: this.steerPull || 0, serial: this._damageSerial || 0 };
   }
   restoreDamageSnapshot(s) {
@@ -363,6 +368,7 @@ export class Vehicle {
     this.damageFx(); // new damage object: caches re-initialised, then the history goes back in
     this.cornerDamage = [0, 1, 2, 3].map(i => clamp(Number.isFinite(s.cornerDamage?.[i]) ? s.cornerDamage[i] : 0, 0, 1));
     this.impactMechanical = clamp(Number.isFinite(s.impactMechanical) ? s.impactMechanical : 0, 0, 0.9);
+    this.frontMechanical = clamp(Number.isFinite(s.frontMechanical) ? s.frontMechanical : 0, 0, 0.9);
     this.radiatorDamage = Math.min(0.3, clamp(Number.isFinite(s.radiatorDamage) ? s.radiatorDamage : 0, 0, 1));
     this.steerPull = clamp(Number.isFinite(s.steerPull) ? s.steerPull : 0, -0.012, 0.012);
     this._damageSerial = s.serial || 0;
@@ -376,7 +382,7 @@ export class Vehicle {
     if (this._damageState !== this.damage || !this.cornerDamage) {
       this._damageState = this.damage;
       // Cosmetic replay totals cannot reconstruct mechanical impact history.
-      this.cornerDamage = [0, 0, 0, 0]; this.impactMechanical = 0; this.steerPull = 0;
+      this.cornerDamage = [0, 0, 0, 0]; this.impactMechanical = 0; this.frontMechanical = 0; this.steerPull = 0;
       this.coolantTemp = 90; this.radiatorDamage = 0; this.maxImpactEbs = 0;
       this.engineStalled = false; this.drivetrainBroken = false;
       resetEngineAbuse(this); // Vehicle.reset/tow replaces damage and fully repairs engine abuse too.
@@ -386,7 +392,7 @@ export class Vehicle {
     const av = Number.isFinite(this.vLong) ? Math.abs(this.vLong) : 0;
     this._damageClock += h;
     this._damageWheelPhase = (this._damageWheelPhase + h * av / Math.max(0.2, this.spec.wheelR || 0.33)) % (Math.PI * 2);
-    this.radiatorDamage = Math.max(this.radiatorDamage, 0.8 * smoothstep(0.65, 1, this.impactMechanical));
+    this.radiatorDamage = Math.max(this.radiatorDamage, 0.8 * smoothstep(0.65, 1, this.frontMechanical || 0));
     const heatRate = this.engineStalled ? -0.6 : this.radiatorDamage * (1.2 + 0.9 * clamp(this.load || 0, 0, 1));
     this.coolantTemp = clamp(this.coolantTemp + h * (heatRate - (1 - this.radiatorDamage) *
       Math.max(0, this.coolantTemp - 90) * (0.025 + av * 0.001)), 90, 145);

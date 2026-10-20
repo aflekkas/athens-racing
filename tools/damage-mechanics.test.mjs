@@ -126,3 +126,17 @@ test('a tow or a reset keeps the damage: the snapshot restores body, bent corner
   assert.ok(v.dmgDrag>1.3,'a damaged car has a worse top speed');
   const wreck=mk();wreck.impactMechanical=1;wreck.restoreDamageSnapshot(wreck.damageSnapshot());close(wreck.impactMechanical,.9);
 });
+
+test('a rear hit costs the engine where it is but is never frontal damage; the engine end weighs most',()=>{
+  for(const engineZone of ['front','rear']){
+    const v=mk({engineZone});for(let i=0;i<20;i++)wall(v,70,'rear');advance(v,60);
+    assert.ok(v.impactMechanical>.3&&v.engHealth<.85,'a rear hit still costs power and top speed');
+    assert.equal(v.steerPull||0,0);assert.equal(v.cornerDamage[0],0);assert.equal(v.cornerDamage[1],0);assert.equal(v.frontMechanical,0);assert.equal(v.radiatorDamage,0);assert.equal(v.coolantTemp,90);
+    const side=mk({engineZone});for(let i=0;i<20;i++)wall(side,70,'left');advance(side,60);assert.equal(side.radiatorDamage,0,'a door hit cannot burst the radiator');assert.ok(side.steerPull!==0,'a front wheel knocked from the side can pull the rack');
+  }
+  assert.equal(mechanicalIncrement(60/3.6,'rear','rear'),mechanicalIncrement(60/3.6,'front','front'));
+  close(mechanicalIncrement(60/3.6,'front','rear'),mechanicalIncrement(60/3.6,'rear','front')*(.5/.4));
+  const rearEngine=mk({engineZone:'rear'}),frontEngine=mk();wall(rearEngine,60,'rear');wall(frontEngine,60,'rear');
+  assert.ok(rearEngine.impactMechanical>2*frontEngine.impactMechanical);
+  const snap=mk();wall(snap,70);assert.ok(snap.frontMechanical>.6);const kept=snap.damageSnapshot(),fresh=mk();fresh.restoreDamageSnapshot(kept);close(fresh.frontMechanical,snap.frontMechanical);
+});

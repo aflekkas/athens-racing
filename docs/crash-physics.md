@@ -80,4 +80,9 @@ Why the exponent is 2: damage adds up linearly from hit to hit, but the per-hit 
 Pinned tests re-pinned, not loosened (`tools/damage-mechanics.test.mjs`, `tools/damage-ground.test.mjs`,
 `tools/driving-feedback.test.mjs`): they asserted that anything below 40 km/h, glancing or side-on cost nothing lasting and that
 a tow repaired everything, which is the behaviour the owner asked to remove.
+Rear hits (release gate `regress-rest`, 2026-10-20): a rear hit costs the engine where it is, but is never frontal damage in any car. The end
+that carries the engine weighs most (front 1 / rear .4 in a front-engine car, rear 1 / front .5 in a rear- or mid-engine one), a rear hit
+never pulls the steering or bends a front wheel, and only a hit on the nose (tracked as `frontMechanical`) can burst the radiator.
+`regress.mjs` used to assert that a rear hit on a rear-engine car cost nothing lasting; that is the behaviour the owner asked to remove,
+so it now asserts the engine loses power there and the frontal isolation (steering, front wheels, radiator) for every car.
 Not changed: swapping to another car in free roam builds a fresh car (a free-roam convenience, not a race).
