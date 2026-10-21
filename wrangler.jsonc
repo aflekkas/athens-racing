@@ -57,7 +57,7 @@
       "name": "athens-street-racers-staging",
       "vars": {
         "ASR_UNIFIED_ROUTES": "syntagma-pilot",
-        "ATHENS_WORLD_MANIFEST": "manifests/fc9995d6150f1b98ec4732353ef2a0b4b11d864677c73130d27407aad3dab46b.json"
+        "ATHENS_WORLD_MANIFEST": "manifests/b95388f8e64974305999d065a72fe8963d55f559a1bdf326ed10252b85ce28a5.json"
       },
       "build": {
         "command": "ASR_BUILD_ENV=staging ASR_UNIFIED_ROUTES=syntagma-pilot node tools/prepare-deploy.mjs"

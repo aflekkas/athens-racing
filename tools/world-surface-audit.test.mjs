@@ -58,3 +58,15 @@ test('an approach-only structure record guards the loaded approach roads but nev
   const r=auditWorldSurface(t,{ids,structures:[{...record,approachOnly:true}]});assert.equal(r.passed,true);assert.ok(r.guardedShoulderSamples>0);
   assert.throws(()=>auditWorldSurface(t,{ids,structures:[{...record,approachOnly:true,roads:[]}]}),/Invalid guarded/);
 });
+
+test('six-metre shoulder sweep crosses only an explicitly supported bore floor layer',()=>{
+ const p=[],tri=[],layers=[];for(const x of[0,256,258,260,512])p.push(x,0,0,x,0,512);
+ for(let k=0;k<4;k++){const a=k*2,b=a+1,c=a+2,d=a+3,surface=k===2?3:k===0?1:2,flags=k===0||k===2?1:2;tri.push(a,b,c,surface,flags,b,d,c,surface,flags);layers.push(k===2?-1:0,k===2?-1:0);}
+ const t={finePositions:[],fineTriangles:[],contactPositions:p,contactTriangles:tri,contactLayers:layers};
+ const options={ids:['','surface:approach','ground','surface:w172988026:0'],tunnelBores:[{id:'w172988026:0',layer:-1}]};
+ assert.equal(auditWorldSurface(t).passed,false);
+ const r=auditWorldSurface(t,options);assert.equal(r.passed,true);assert.ok(r.shoulderSamples>1000);assert.equal(r.missingContacts,0);
+ assert.equal(auditWorldSurface(t,{...options,ids:['','surface:approach','ground','surface:unrelated']}).passed,false);
+ for(let i=0;i<p.length;i+=3)if(p[i]>=258)p[i+1]=(p[i]-258)*.7;
+ assert.equal(auditWorldSurface(t,options).passed,false,'the same step/grade limit still applies at a portal');
+});

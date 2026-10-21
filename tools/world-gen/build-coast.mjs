@@ -12,7 +12,9 @@ const cache=resolve(process.argv[2]),output=resolve(process.argv[3]),areaName=pr
 const graph=new WorldRoadGraph(),variants=new Map(),audits=[],seams={},anchorCandidates=[];
 const {execFileSync:run}=await import('node:child_process');
 const python=join(cache,'venv/bin/python'),area=JSON.parse(run(python,[new URL('./areas.py',import.meta.url).pathname,areaName],{encoding:'utf8',cwd:new URL('.',import.meta.url).pathname}));
-const generator=spawn(python,[new URL('./build-coast.py',import.meta.url).pathname,'--cache',cache,'--area',areaName],{stdio:['ignore','pipe','pipe']});
+const reuse=process.env.ATHENS_REUSE_MANIFEST;
+if(reuse&&(!process.env.ATHENS_REBUILT_MANIFEST||subset))throw Error('Incremental union requires a rebuilt manifest and the complete area extent');
+const generator=spawn(reuse?process.execPath:python,reuse?[new URL('./merge-cells.mjs',import.meta.url).pathname,resolve(reuse),resolve(process.env.ATHENS_REBUILT_MANIFEST),JSON.stringify(area.cells)]:[new URL('./build-coast.py',import.meta.url).pathname,'--cache',cache,'--area',areaName],{stdio:['ignore','pipe','pipe']});
 // Generator audit lines (one JSON object per cell) are kept for the bake report; everything else is forwarded.
 const pythonAudits=[];let pending='';generator.stderr.on('data',chunk=>{process.stderr.write(chunk);pending+=chunk;const lines=pending.split('\n');pending=lines.pop();for(const line of lines)if(line.startsWith('{"area"'))try{pythonAudits.push(JSON.parse(line));}catch{}});
 // The packer reads a stream path; a FIFO is unnecessary with /proc's descriptor.
@@ -23,7 +25,7 @@ const {execFileSync}=await import('node:child_process');const {rm}=await import(
 execFileSync('mkfifo',[fifo]);const writer=createWriteStream(fifo);writer.on('error',()=>{if(generator.exitCode===null)generator.kill('SIGTERM');});generator.stdout.pipe(writer);
 let entries;
 try{
- entries=await packTiles(fifo,join(output,'cells'),{maxBytes:WORLD_CEILING_BYTES,onTile:async({key,entry,physical,bridges,roads,decoded,packet,seams:edgeHashes})=>{
+ entries=await packTiles(fifo,join(output,'cells'),{maxBytes:WORLD_CEILING_BYTES,onTile:async({key,entry,physical,bridges,roads,bores,decoded,packet,seams:edgeHashes})=>{
   if(!roads)throw Error('Coastal cell '+key+' has no road cross-sections');
   const m=decoded.metadata,t=tileTables(decoded),playable=true;
   // Every cell of the area is a contact cell, and buildings are clipped to cells: no ownership dependencies.
@@ -31,7 +33,9 @@ try{
   if(playable)graph.install(key,decoded);
   for(const v of tileRenderVariants(decoded))variants.set(v.key,v);
   if(key===area.spawn.cell.join(','))for(let i=0;i<t.anchors.length;i+=5)anchorCandidates.push(m.ids[t.anchors[i]]);
-  const row={cell:m.cell,bytes:entry.bytes,residentBytes:entry.residentBytes,transientBytes:entry.transientBytes,jsBytes:packet.jsBytes,gpuBytes:packet.gpuBytes,physical,bridges,roads:{roads:roads.roads,sidewalkRoads:roads.sidewalkRoads,byClass:roads.byClass},edges:t.edges.length/10,anchors:t.anchors.length/5};audits.push(row);seams[key]=edgeHashes;
+  const safety=m.safetyRails||[],coastSafety=safety.filter(r=>r[6]===.86),boreWalls=safety.filter(r=>r[6]===3.6);
+  const addedSafety={coastSegments:coastSafety.length,coastMetres:coastSafety.reduce((n,r)=>n+Math.hypot(r[3]-r[0],r[5]-r[2]),0),boreWallSegments:boreWalls.length};
+  const row={cell:m.cell,addedSafety,bytes:entry.bytes,residentBytes:entry.residentBytes,transientBytes:entry.transientBytes,jsBytes:packet.jsBytes,gpuBytes:packet.gpuBytes,physical,bridges,bores,roads:{roads:roads.roads,sidewalkRoads:roads.sidewalkRoads,byClass:roads.byClass},edges:t.edges.length/10,anchors:t.anchors.length/5};audits.push(row);seams[key]=edgeHashes;
   await appendFile(join(output,'audit.ndjson'),JSON.stringify(row)+'\n');console.error(JSON.stringify({packed:key,bytes:entry.bytes,residentBytes:entry.residentBytes,triangles:entry.triangles}));
  }});
  if(generator.exitCode===null)await new Promise((res,rej)=>{generator.once('exit',code=>code?rej(Error('Generator failed '+code)):res());});else if(generator.exitCode)throw Error('Generator failed '+generator.exitCode);
@@ -56,7 +60,7 @@ try{
  for(const a of pythonAudits){for(const [id,reason] of Object.entries(a.excludedRoads||{}))excluded.set(id,reason);for(const id of a.unresolvedBridges||[])unresolved.add(id);clippedPieces+=a.clippedBuildings?.pieces||0;clippedDropped+=a.clippedBuildings?.dropped||0;}
  const excludedByReason={};for(const reason of excluded.values())excludedByReason[reason]=(excludedByReason[reason]||0)+1;
  await writeFile(join(output,'python-audit.ndjson'),pythonAudits.map(a=>JSON.stringify(a)).join('\n')+'\n');
- await writeFile(join(output,'summary.json'),JSON.stringify({area:areaName,world:area.world,atGradeUnderpasses:JSON.parse(await readFile(new URL('./tunnels.json',import.meta.url),'utf8')),excludedRoads:excluded.size,excludedByReason,excludedRoadIds:[...excluded.keys()].sort(),unresolvedBridges:[...unresolved].sort(),clippedBuildingPieces:clippedPieces,clippedBuildingPiecesDropped:clippedDropped,cells:audits.length,bytes:audits.reduce((n,r)=>n+r.bytes,0),maxSafetyBytes,worstSafetyCell,maxNeighbourhoodBytes,maxTransientBytes,graphEdges:graph.edges.size,graphNodes:graph.nodes.size,turnRules:graph.turns.size},null,2));
+ await writeFile(join(output,'summary.json'),JSON.stringify({area:areaName,world:area.world,...(reuse?{baselineRevision:JSON.parse(await readFile(reuse,'utf8')).revision,rebuiltCells:Object.keys(JSON.parse(await readFile(process.env.ATHENS_REBUILT_MANIFEST,'utf8')).tiles).length,excludedRoadsScope:'rebuilt cells; baseline exclusions retained'}:{}),atGradeUnderpasses:JSON.parse(await readFile(new URL('./tunnels.json',import.meta.url),'utf8')),excludedRoads:excluded.size,excludedByReason,excludedRoadIds:[...excluded.keys()].sort(),unresolvedBridges:[...unresolved].sort(),clippedBuildingPieces:clippedPieces,clippedBuildingPiecesDropped:clippedDropped,cells:audits.length,bytes:audits.reduce((n,r)=>n+r.bytes,0),maxSafetyBytes,worstSafetyCell,maxNeighbourhoodBytes,maxTransientBytes,graphEdges:graph.edges.size,graphNodes:graph.nodes.size,turnRules:graph.turns.size},null,2));
  if(maxSafetyBytes>64*1024*1024||maxTransientBytes>64*1024*1024)throw Error('Desktop low-end safety set/reservation exceeds the unchanged 64 MiB budget');
  console.error('Coastal bake complete; assets remain uncommitted pending hosting agreement.');
 }catch(e){if(e.failures)await writeFile(join(output,'failures.json'),JSON.stringify(e.failures,null,1));throw e;}finally{if(generator.exitCode===null)generator.kill('SIGTERM');writer.destroy();await rm(fifo,{force:true});}

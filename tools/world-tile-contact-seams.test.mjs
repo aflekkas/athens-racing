@@ -16,3 +16,17 @@ test('lower overlapping road fans cannot steal contact from the shared top road 
  b.arrays[b.metadata.tables.contactPositions]=new Float32Array([...b.arrays[b.metadata.tables.contactPositions],0,.96,256,1,.96,255,1,.96,257]);b.arrays[b.metadata.tables.contactTriangles]=new Uint32Array([...b.arrays[b.metadata.tables.contactTriangles],4,5,6,0,1]);b.arrays[b.metadata.tables.contactLayers]=new Int8Array(3);
  const result=sampleContactSeam(a,b);assert.equal(result.missing,0);assert.ok(result.maxDelta<.00001);assert.deepEqual(result.failures,[]);
 });
+
+test('a diagonal bridge corner compares each physical layer at the boundary and rejects missing or shifted floors',()=>{
+ const a=ground([0,0]),b=ground([1,0]);
+ for(const [p,positions]of [[a,[512,6,256,510,6,255,510,6,257]],[b,[0,6,256,1,6,257,2,6,259]]]){
+  p.arrays[p.metadata.tables.contactPositions]=new Float32Array(positions);
+  p.arrays[p.metadata.tables.contactTriangles]=new Uint32Array([0,1,2,0,2]);
+  p.arrays[p.metadata.tables.contactLayers]=new Int8Array([1]);
+ }
+ const result=sampleContactSeam(a,b);assert.ok(result.layerTransitions>0);assert.ok(result.maxLayerTransitionDelta>5.9);assert.equal(result.maxLayerBoundaryDelta,0);assert.deepEqual(result.failures,[]);
+ b.arrays[b.metadata.tables.contactLayers][0]=2;
+ assert.ok(sampleContactSeam(a,b).failures.some(f=>f.missingLayerBoundary),'a different layer cannot stand in for the bridge floor');
+ b.arrays[b.metadata.tables.contactLayers][0]=1;b.arrays[b.metadata.tables.contactPositions][1]=6.1;
+ assert.ok(sampleContactSeam(a,b).failures.some(f=>f.layerBoundary),'the same 2 cm height gate applies at the corner');
+});

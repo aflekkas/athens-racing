@@ -1,0 +1,4 @@
+{
+  "w25371523:0": {"name": "loumbarda-east", "sourceWay": "w25371523", "minimumClearance": 5.0},
+  "w172988026:0": {"name": "loumbarda-west", "sourceWay": "w172988026", "minimumClearance": 5.0}
+}

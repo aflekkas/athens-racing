@@ -5,6 +5,7 @@ form the approach deck; the crossing ground corridor has a smooth underpass.
 All functions are global-coordinate fields, evaluated before tile clipping.
 """
 import json,math
+import rock_bores
 from shapely.geometry import shape,Point,Polygon,LineString,box
 from shapely.ops import unary_union
 from shapely import prepare
@@ -77,7 +78,7 @@ class Structures:
   if plan is not None:return self._from_plan(roads,plan)
   bridges=[r for r in roads if r['bridge'] and r['polygon'].intersects(extent)]
   require_bridge_yes(bridges,bridge_tags)
-  if any(r['tunnel'] or r['layer'] and not r['bridge'] for r in roads if r['polygon'].intersects(extent)):raise ValueError('Unresolved tunnel/non-bridge structure')
+  if any((r['tunnel'] or r['layer'] and not r['bridge']) and not rock_bores.supported(r) for r in roads if r['polygon'].intersects(extent)):raise ValueError('Unresolved tunnel/non-bridge structure')
   groups=[];self.unresolved=[];self.failed=[];remaining=set(r['id'] for r in bridges)
   while remaining:
    first=next(r for r in bridges if r['id']==min(remaining));group=[first];remaining.remove(first['id'])

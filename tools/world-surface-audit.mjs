@@ -6,7 +6,7 @@ export const MAX_GRADE=Math.tan(Math.PI/6),MAX_STEP=.15,MAX_PROFILE_GRADE=.45;
 // Coastal OSM hillsides and service-road switchbacks reach 42% over a few metres
 // (survey of the 127-cell coast). The owner gate is asphalt <=30 degrees (57%),
 // checked per triangle; this is only a sanity bound on emitted graph samples.
-export function auditWorldSurface(tile,{spacing=2,sweepStep=.25,sweepMetres=6,structures=[],ids=[]}={}) {
+export function auditWorldSurface(tile,{spacing=2,sweepStep=.25,sweepMetres=6,structures=[],ids=[],tunnelBores=[]}={}) {
   const t=legacyTables(tile);
   const guarded=new Set();
   for(const s of structures){
@@ -40,6 +40,18 @@ export function auditWorldSurface(tile,{spacing=2,sweepStep=.25,sweepMetres=6,st
   // Disable coarse/fine fallback: those can conceal a missing emitted face.
   const contacts={...t,finePositions:[],fineTriangles:[],coarseHeights:Array(1089).fill(NaN)};
   const index=buildTileContactIndex(contacts);
+  // A rock bore floor and its approach are one continuous emitted ground
+  // partition, with an OSM layer transition at the portal. A six-metre shoulder
+  // sweep may cross that boundary or the adjacent bore. Sample the same floor
+  // on its explicit source layer, still enforcing every original step/grade
+  // limit. Unrelated grade-separated surfaces never receive this alias.
+  const boreFloors=new Set(tunnelBores.filter(b=>b.layer===-1&&['w25371523:0','w172988026:0'].includes(b.id)).map(b=>'surface:'+b.id));
+  const shoulderContact=(x,z,layer)=>{
+    const hit=sampleTileContact(contacts,index,x,z,{layer});if(hit&&Number.isFinite(hit.y))return hit;
+    if(layer!==0||!boreFloors.size)return null;
+    const floor=sampleTileContact(contacts,index,x,z,{layer:-1,requiredFlags:1});
+    return floor&&boreFloors.has(ids[floor.surface])?floor:null;
+  };
   for(const faces of edges.values()){
     if(faces.length!==2||faces[0].road===faces[1].road)continue;
     const ground=faces.find(f=>!f.road),a=point(ground.u),b=point(ground.v),dx=b[0]-a[0],dz=b[2]-a[2],length=Math.hypot(dx,dz);
@@ -55,7 +67,7 @@ export function auditWorldSurface(tile,{spacing=2,sweepStep=.25,sweepMetres=6,st
       for(let k=0;k<=Math.ceil(sweep/sweepStep);k++){
         const d=Math.min(sweep,k*sweepStep),x=a[0]+dx*j/steps+nx*d,z=a[2]+dz*j/steps+nz*d;
         if(x<0||z<0||x>=512||z>=512){outsideFixture++;previous=null;continue;}
-        const hit=sampleTileContact(contacts,index,x,z,{layer:ground.layer});samples++;if(narrow)guardedShoulderSamples++;
+        const hit=shoulderContact(x,z,ground.layer);samples++;if(narrow)guardedShoulderSamples++;
         if(!hit||!Number.isFinite(hit.y)){missingContacts++;previous=null;continue;}
         if(previous!==null){const step=Math.abs(hit.y-previous),grade=step/sweepStep;
           maxShoulderStep=Math.max(maxShoulderStep,step);

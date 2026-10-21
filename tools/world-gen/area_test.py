@@ -69,6 +69,17 @@ class CentreFull(unittest.TestCase):
                 if n in cells and n not in seen: seen.add(n); stack.append(n)
         self.assertEqual(seen, cells)
 
+class Riviera(unittest.TestCase):
+ def test_riviera_extends_same_world_and_full_route_safety_envelope(self):
+  from pathlib import Path
+  import json
+  from shapely.geometry import LineString
+  a=areas.load('riviera');base=areas.load('east');self.assertEqual(a['world'],base['world']);self.assertEqual(a['parents'],['east'])
+  self.assertTrue(set(base['cells'])<set(a['cells']));self.assertEqual(len(a['cells']),len(set(a['cells'])))
+  data=json.loads((Path(__file__).resolve().parents[2]/'data/map.json').read_text());p=data['proj'];r=data['route']
+  line=LineString([((p['lon0']+x/p['mlon']-23.73)*87745.27512677578,(37.98-p['lat0']+z/p['mlat'])*111320) for x,z in zip(r['x'],r['z'])])
+  self.assertTrue(areas.extent(a['cells']).covers(line.buffer(768)), 'the full reference and safety/scenery envelope, not just racing endpoints')
+
 class Clipping(unittest.TestCase):
  part=dict(height=12.0,heightSource='levels',landuse='residential',palette=3,id='w1:0')
  def test_building_across_a_border_is_two_flush_pieces(self):

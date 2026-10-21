@@ -1,5 +1,6 @@
 """Owner-authorized narrow shoulders: literal bridge=yes and connected approaches only."""
 import math
+from rock_bores import supported
 
 def require_bridge_yes(bridges,tags):
  if any(tags.get(r['way'])!='yes' for r in bridges):
@@ -8,11 +9,12 @@ def require_bridge_yes(bridges,tags):
 def exclusion_reason(road,bridge_tag):
  """Why the streamed world leaves a road out, or None. Decided from the road's own tags only, so every cell agrees.
 
- One deck over ground is the only structure modelled: literal bridge=yes on layer 1. Tunnels, bridges stacked on
+ Decks require literal bridge=yes on layer 1. Source-verified Loumbarda rock bores retain layer -1 and their
+ complete shell/wall/clearance gate; every other tunnel remains excluded. Bridges stacked on
  layer 2 or more, other bridge types and layered non-bridges are not drawn; they are left out of ground, graph,
  anchors and turns in every cell and counted in the bake report (a gap, never an invented surface).
  """
- if road['tunnel']:return 'tunnel'
+ if road['tunnel']:return None if supported(road) else 'tunnel'
  if road['bridge']:
   if bridge_tag!='yes':return 'bridge='+str(bridge_tag)
   if road['layer']!=1:return 'bridge on layer '+str(road['layer'])

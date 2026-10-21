@@ -12,6 +12,8 @@ from elevation import Elevation
 from coastal import Coast, Structures
 from bridge_policy import exclusion_reason
 import tunnels
+import rock_bores
+import riviera_safety
 from tile_detail import water_mesh,vegetation_rows,bridge_edges,foam_mesh,park_areas,facade_styles
 from details import fnv1a
 from props import build as build_props,load_nodes,road_extras
@@ -74,6 +76,7 @@ class Field:
    if not coastal and (r['bridge'] or r['tunnel'] or r['layer']) and r['polygon'].intersects(box(ox,oz,ox+512,oz+512)):
     raise ValueError('Ground probe refuses unsolved layered road '+r['id'])
    if coastal or not(r['bridge'] or r['tunnel'] or r['layer']):self.roads.append(r);self.byid[r['id']]=r
+  rock_bores.validate(self.roads)
   self.structures=Structures(self.roads,bridge_tags or {},extent,strict,plan) if coastal else None
   if self.structures:
    for rid,reason in self.structures.dropped.items():
@@ -419,6 +422,19 @@ def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=F
   palette.append(linear('#426b80'));mesh(ps,ix,len(palette)-1,user_data=dict(water=True))
   fp,fi,fv=foam_mesh(water,ox,oz)
   if fi:mesh(fp,fi,len(palette)-1,user_data=dict(tileSurface='foam'),extra=('aFoam',fv))
+ # Rock bores retain their OSM layer and share the solved road floor. Classic
+ # contact rows on these few cells can name layer -1 without a duplicate floor.
+ bp,bi,bore_walls,bore_records=rock_bores.build(field.roads,cell,lambda x,z:field.surface_height(x,z)+regions.lift(x,z,field.slope))
+ sp,si,cp,ci,coast_rails=riviera_safety.build(field,cell,lambda x,z:field.surface_height(x,z)+regions.lift(x,z,field.slope))
+ mesh(sp,si,GUARDRAIL_MATERIAL,user_data=dict(coastGuard=True));mesh(cp,ci,12,user_data=dict(coastGuard=True))
+ if bore_records:
+  palette.append(linear('#b7ab95'));bp,bi,bc=face_shaded(bp,bi);mesh(bp,bi,len(palette)-1,bc,user_data=dict(rockBore=True,tileSurface='ground'))
+  rows=[];layers=[]
+  for i,owner in enumerate(surface['owners']):
+   rows.extend([*surface['triangles'][i*3:i*3+3],t['fineSurface'][i],t['fineFlags'][i]])
+   layers.append(-1 if owner and rock_bores.supported(field.byid[owner]) else 0)
+  t['contactTriangles']=rows+t['contactTriangles'];t['contactLayers']=layers+t['contactLayers']
+  t['fineSurface']=[];t['fineFlags']=[]
  triangles=derived_triangles+sum((m['drawRange']['count'] if m.get('drawRange') else len(arrays[m['index']]['data']))//3 for m in meshes)
  road_sections=dict(schema=['class','width','lanes','sidewalkLeft','sidewalkRight','surface','oneway'],roads={owner:[(sec:=field.byid[owner]['section'])['class'],sec['width'],sec['lanes'],sec['sidewalk']['left'],sec['sidewalk']['right'],sec['surface'],sec['oneway']] for owner in sorted(roadtri)})
  extensions=dict(derivedBuildings=dict(version=1))
@@ -434,14 +450,14 @@ def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=F
   wd['signals']=dict(rows=array('Float32Array',sig['rows']),edge=array('Uint32Array',[identifier(e) for e in sig['edges']]))
   wd['props']=dict(rows=array('Float32Array',pr['rows']),kind=array('Uint8Array',pr['kind']))
   validation['signals']=len(sig['edges']);validation['props']=len(pr['kind'])
- validation['streets']=streets;validation['clippedBuildings']=clipped;validation['excludedRoads']=dict(sorted(field.excluded_here.items()));validation['unresolvedBridges']=list(field.structures.unresolved) if field.structures else [];validation['renderContactTopIdentity']=True;validation['structures']=structure_records
+ validation['streets']=streets;validation['clippedBuildings']=clipped;validation['excludedRoads']=dict(sorted(field.excluded_here.items()));validation['unresolvedBridges']=list(field.structures.unresolved) if field.structures else [];validation['renderContactTopIdentity']=True;validation['structures']=structure_records;validation['coastSafetyRails']=len(coast_rails);validation['boreWalls']=len(bore_walls)
  validation['graphEdges']=len(emitted_graph);validation['graphContactPoints']=len(t['edgePoints'])//3
  validation['turnRestrictions']=len(t['turns'])//4;validation['safeAnchors']=len(t['anchors'])//5;validation['releaseReady']=False
  # One position array serves the fine triangles, the contact rows (which append any deck vertices to it) and the unlowered
  # render meshes: the render and road meshes drew from copies of it, and on a decked cell the contact table from a third.
  arrays[road_position if render_p is not p else render_position]['data']=t['contactPositions'];t['finePositions']=t['contactPositions']
  if render_p is p:arrays[shared_colour]['data']=arrays[shared_colour]['data']+[0]*(len(t['contactPositions'])-len(p))
- metadata=dict(tileVersion=1,world=world,revision=revision,cell=list(cell),origin=[ox,0,oz],ids=ids,strings=strings,palette=palette,meshes=meshes,terrain=dict(coarseSize=33,spacing=16),budgets=dict(triangles=triangles,buildingTriangles=maxbuilding),developmentOnly=True,releaseReady=False,structures=structure_records,rails=rails,roadSections=road_sections,extensions=extensions)
+ metadata=dict(tileVersion=1,world=world,revision=revision,cell=list(cell),origin=[ox,0,oz],ids=ids,strings=strings,palette=palette,meshes=meshes,terrain=dict(coarseSize=33,spacing=16),budgets=dict(triangles=triangles,buildingTriangles=maxbuilding),developmentOnly=True,releaseReady=False,structures=structure_records,rails=rails,safetyRails=bore_walls+coast_rails,tunnelBores=bore_records,roadSections=road_sections,extensions=extensions)
  field.dem.close();db.close();source.close()
  return dict(metadata=metadata,tables=t,arrays=arrays,dependencies=sorted(dependencies)),validation
 
