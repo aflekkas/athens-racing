@@ -340,7 +340,11 @@ async function loadUnifiedWorld(compiled,{eventId=Q.get('routeEvent')}={}) {
     // An async compile may still be polling these materials on the next frame.
     // Dispose the previous fleet before collecting programs for the new entry.
     traffic?.dispose?.();traffic=null;
-    if(!player){route=new RouteRuntime(compiled);setCar(G.carIdx,false);rival.model.root.visible=false;}post ||= createPost(renderer,scene,camera);const carPrograms=worldSession?Promise.resolve():compileScene();
+    if(!player){route=new RouteRuntime(compiled);setCar(G.carIdx,false);rival.model.root.visible=false;}post ||= createPost(renderer,scene,camera);
+    // Weather owns a permanent headlight. Establish its light layout before
+    // warming programs; the later world binding retains the same light count.
+    if(!worldSession)bindMapWeather();
+    const carPrograms=worldSession?Promise.resolve():compileScene();
     worldSession=await sessionReady;stamp('sessionReady');worldSession.metrics.entryPhases=entryPhases;if(Q.has('simhook'))window.__worldSession=worldSession;
     const pendingRoute=route?.compiled===compiled?route:new RouteRuntime(compiled);
     const routeReady=worldSession.prepareRoute(compiled,{cars:[CARS[G.carIdx]],runtime:pendingRoute});await Promise.resolve();
