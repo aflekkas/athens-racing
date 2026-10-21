@@ -43,7 +43,7 @@ import { inGarage, canonicalCarId, DEFAULT_CAR_ID } from './car-catalog.js';
 import { shiftTransmission } from './transmission.js';
 import { savedPaint } from './vehicle-paint.js';
 import { Vehicle } from './physics.js';
-import { RivalAI } from './rival-ai.js';
+import { RivalAI, prepareRacingLine } from './rival-ai.js';
 import { input as controls } from './input.js';
 import { routeVel } from './traffic.js';
 import { Police, pursuit } from './police.js';
@@ -340,11 +340,27 @@ async function loadUnifiedWorld(compiled,{eventId=Q.get('routeEvent')}={}) {
     // Dispose the previous fleet before collecting programs for the new entry.
     traffic?.dispose?.();traffic=null;
     if(!player){route=new RouteRuntime(compiled);setCar(G.carIdx,false);rival.model.root.visible=false;}post ||= createPost(renderer,scene,camera);const carPrograms=worldSession?Promise.resolve():compileScene();
-    worldSession=await sessionReady;await carPrograms;stamp('sessionReady');worldSession.metrics.entryPhases=entryPhases;if(Q.has('simhook'))window.__worldSession=worldSession;
-    const routeReady=worldSession.prepareRoute(compiled,{cars:[CARS[G.carIdx]]});await Promise.resolve();
+    worldSession=await sessionReady;stamp('sessionReady');worldSession.metrics.entryPhases=entryPhases;if(Q.has('simhook'))window.__worldSession=worldSession;
+    const pendingRoute=route?.compiled===compiled?route:new RouteRuntime(compiled),entryEvent=routeEvent(compiled,compiled.definition.events.find(e=>e.enabled&&e.id===eventId)?.id);
+    const routeReady=worldSession.prepareRoute(compiled,{cars:[CARS[G.carIdx]],runtime:pendingRoute});await Promise.resolve();
     // Native fleet construction overlaps independent cell fetch/decode.
     traffic=new WorldTraffic(worldSession,scene,route);traffic.configure(routeEvent(compiled));stamp('fleetReady');
-    route=await routeReady;stamp('roadsReady');ground=worldSession.ground;
+    const linesReady=(async()=>{
+      await carPrograms;
+      // Racing-line geometry needs only immutable route widths, not contacts or
+      // actor placement. Yield between rivals so decoded cells can be admitted.
+      const drivers=entryEvent.type==='sprint'?EV.gridFor(entryEvent):[];
+      for(const spec of gridCarSpecs(entryEvent,drivers)){
+        prepareRacingLine(pendingRoute,spec.width==null?new Vehicle(spec,pendingRoute).halfW:spec.width/2,{dir:1,closedRoad:entryEvent.traffic===0});
+        await new Promise(resolve=>requestAnimationFrame(resolve));
+      }
+      stamp('linesReady');
+    })();
+    // Fetch/decode the start while initial car programs are pending. Join both
+    // before buildGrid can dispose the boot-time rival's compiled materials.
+    const prepared=await Promise.allSettled([routeReady,linesReady]);
+    for(const result of prepared)if(result.status==='rejected')throw result.reason;
+    route=prepared[0].value;stamp('roadsReady');ground=worldSession.ground;
     map={id:'athens',definition:{name:compiled.definition.name},route,marks:[],data:{marks:[],route:{}},events:compiled.definition.events.filter(e=>e.enabled).map(e=>routeEvent(compiled,e.id))};
     world={session:worldSession,map,group:scene,dispose:()=>worldSession.dispose()}; selectedMapId='athens';G.mapId='athens';
     hud?.paintPanel?.remove();$('rticks').replaceChildren();hud=new Hud(map);applyCpuBudget();hud.worldRoads=worldSession.roads;document.querySelector('#posBox .of').textContent='/1';$('rivalName').textContent='BEST';
@@ -1155,9 +1171,9 @@ function buildGrid() {
   G.gridKey = key;
   for (const c of grid) if (c !== rival) disposeCar(c);
   grid = [];
-  const raceCars=CARS.filter(c=>isRivalCar(c)&&inGarage(c)),ids=raceCars.map(c=>c.id);
+  const specs=gridCarSpecs(def,drivers);
   for (const [i, d] of drivers.entries()) {
-    const spec = raceCars.find((c) => c.id === (def.car && ids.includes(def.car) ? def.car : EV.driverCar(d, ids, player.spec.id))) || raceCars[0];
+    const spec = specs[i];
     let c;
     if (i === 0) { // the first one is `rival`, the car the audio, the post blur mask and the online code know about
       disposeCar(rival); const built = makeCar(spec, false);
@@ -1169,6 +1185,10 @@ function buildGrid() {
   }
   if (!grid.length) { rival.name = ''; rival.drv = null; }
   rival.model.root.visible = grid.length > 0;
+}
+function gridCarSpecs(def,drivers){
+  const cars=CARS.filter(c=>isRivalCar(c)&&inGarage(c)),ids=cars.map(c=>c.id);
+  return drivers.map(d=>cars.find(c=>c.id===(def.car&&ids.includes(def.car)?def.car:EV.driverCar(d,ids,player.spec.id)))||cars[0]);
 }
 /** drop the offline AI field (going online): extras are disposed, `rival` is left to the online code */
 function hideGrid() {

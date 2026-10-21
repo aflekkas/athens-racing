@@ -227,6 +227,13 @@ export class RacingLine {
   }
   speedProfile(veh) {
     const caps = vehicleCapabilities(veh), v = new Float64Array(this.n);
+    // These steady-state solves repeat at exactly the same speeds across
+    // stations and forward/backward passes. Reuse exact values for this build
+    // only; a later weather/damage refresh always gets fresh capabilities.
+    if (veh.planningStateKey?.()!=null) for (const name of ['lat','brake','drive','lock']) {
+      const solve=caps[name],values=new Map();
+      caps[name]=speed=>{if(!values.has(speed))values.set(speed,solve(speed));return values.get(speed);};
+    }
     const load = (i, speed) => clamp(1 + speed * speed * this.vertical[i] / G, 0.15, 2.2);
     for (let i = 0; i < this.n; i++) {
       let limit = caps.vmax;
@@ -288,6 +295,11 @@ function getLine(route, veh, options) {
   const key = `${options.dir || 1}:${veh.halfW}:${!!options.closedRoad}`;
   if (!cache.has(key)) cache.set(key, new RacingLine(route, { ...options, halfWidth: veh.halfW }));
   return cache.get(key);
+}
+
+/** Geometry only: prepare the same cached line while contact cells download. */
+export function prepareRacingLine(route,halfWidth,options={}) {
+  return getLine(route,{halfW:halfWidth},options);
 }
 
 // A restart restores the same capability state. Keep one bounded profile per

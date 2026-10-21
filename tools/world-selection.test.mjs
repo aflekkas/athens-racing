@@ -1,4 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {createWorldSelection} from '../src/world-selection.js';import {fixture} from './fixtures/routes/fixture.mjs';import {compileRoute} from '../src/route-compile.js';
+import {RouteRuntime} from '../src/route-runtime.js';
 async function fixtureSession(){const f=fixture(),compiled=await compileRoute(f.definition,f.graph,f.contacts),cells=Object.fromEntries(Array.from({length:16},(_,i)=>`${Math.floor(i/4)-1},${i%4-1}`).map(k=>[k,{bytes:100,residentBytes:1000,transientBytes:1000,decodedBytes:100,contactEligible:true,dependencies:[]}])),manifest={revision:compiled.worldSetRevision,tiles:cells},pins=new Set(),tiles=new Map(Object.keys(cells).map(k=>[k,{state:'active',packet:{}}]));let commits=0,block=null,waitResolve;
  const stream={tiles,activationMs:.75,capBytes:64*1024*1024,transientCap:64*1024*1024,metrics:{loadedBytes:100},entry:k=>cells[k],pin:()=>{const key=Symbol();pins.add(key);return()=>pins.delete(key);},update(){},activateFrame(){},async spawnAtRoute(){},async teleport(){if(block)await block;},roads:{*anchors(){yield{x:100,y:0,z:400};},safe:()=>true}};
  const signal=new AbortController(),originalAdd=signal.signal.addEventListener.bind(signal.signal),originalRemove=signal.signal.removeEventListener.bind(signal.signal);let signalListeners=0;signal.signal.addEventListener=(...args)=>{signalListeners++;return originalAdd(...args);};signal.signal.removeEventListener=(...args)=>{signalListeners--;return originalRemove(...args);};
@@ -19,4 +20,12 @@ test('a stale prepareSpawn cannot replace the route after a newer selection comm
 test('a resident restart keeps the compiled route and its mandatory pins',async()=>{
  const f=await fixtureSession(),first=await f.session.prepareRoute(f.compiled),count=f.pins.size;assert.ok(count>0);
  const again=await f.session.prepareRoute(f.compiled,{cars:[{width:2.2,length:5.6}]});assert.equal(again,first);assert.equal(f.pins.size,count);assert.equal(f.session.route,first);f.session.dispose();assert.equal(f.pins.size,0);
+});
+
+test('contact preparation retains the exact runtime used for racing-line prefetch and rejects mismatched geometry',async()=>{
+ const f=await fixtureSession(),runtime=new RouteRuntime(f.compiled);
+ assert.equal(await f.session.prepareRoute(f.compiled,{runtime}),runtime);
+ assert.equal(f.session.route,runtime);
+ await assert.rejects(f.session.prepareRoute(f.compiled,{runtime:new RouteRuntime({...f.compiled})}),/geometry release mismatch/);
+ assert.equal(f.session.route,runtime);assert.equal(f.pins.size,0);f.session.dispose();
 });

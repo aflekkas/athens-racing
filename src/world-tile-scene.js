@@ -4,10 +4,11 @@ import { TileResources } from './world-tile-stream.js';
 import { GL_ARRAY_TYPES, tileGPUPlan, tileRenderVariants } from './world-tile-gpu.js';
 /** Each iterator step creates one pre-bounded mesh; worker supplies all bounds. */
 export class WorldTileScene {
-  constructor(scene,{resources=new TileResources(),renderer=null,uploadChunkBytes=32768,materialFactory=null}={}){
+  constructor(scene,{resources=new TileResources(),renderer=null,uploadChunkBytes=32768,materialFactory=null,warmCanvas=true}={}){
     if(!Number.isSafeInteger(uploadChunkBytes)||uploadChunkBytes<1||uploadChunkBytes>65536)throw new Error('Invalid tile upload chunk budget');
     this.scene=scene;this.resources=resources;this.groups=new Set();this.origin={x:0,z:0};this.renderer=renderer;this.materialFactory=materialFactory;this.uploadChunkBytes=uploadChunkBytes;this.uploadMetrics={calls:0,maxBytes:0,maxCallMs:0,liveBuffers:0};this.disposed=false;this.warmupQueue=Promise.resolve();this.warmups=new Map();this.warmMaterials=new Set();this.warmupMetrics={maxCompileCallMs:0,maxWaitMs:0};
     if(renderer){this.uploadScene=new THREE.Scene();this.uploadCamera=new THREE.PerspectiveCamera(60,1,.1,10);this.uploadTarget=new THREE.WebGLRenderTarget(1,1,{depthBuffer:false,stencilBuffer:false});}
+    this.warmCanvas=warmCanvas;
   }
   prewarm(variants){return this.warmVariants(variants).then(()=>{this.startupComplete=true;});}
   warmup(packet){
@@ -31,7 +32,7 @@ export class WorldTileScene {
     try{
       // Compile/draw only this start area's common variants, in one batch per framebuffer.
       // Two bounded frame yields per batch replace four yields per material variant.
-      for(const useTarget of [true,false]){
+      for(const useTarget of (this.warmCanvas?[true,false]:[true])){
         await new Promise(resolve=>requestAnimationFrame(resolve));if(this.disposed)throw new Error('Tile scene disposed during shader preparation');
         const scene=new THREE.Scene();scene.fog=source.fog||null;scene.environment=source.environment||null;scene.environmentIntensity=source.environmentIntensity;source.traverse(o=>{if(o.isLight)scene.add(o.clone());});
         for(const variant of variants){

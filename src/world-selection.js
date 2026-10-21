@@ -9,18 +9,19 @@ export function createWorldSelection({stream,manifest,makeGround,safePose,prepar
  const emit=(phase,text)=>{const required=plan?.requiredCells||[],active=required.filter(k=>stream.tiles.get(k)?.state==='active'),loaded=required.reduce((n,k)=>n+(stream.tiles.get(k)?.packet?manifest.tiles[k].bytes:0),0);progress(text,0,{worldId:'athens',routeId:pendingRouteId||route?.compiled.id,selectionToken:token,requiredCells:required,activeCells:active,loadedBytes:loaded,totalBytes:plan?.totalBytes||0,phase});};
  const selection={get route(){return route;},get ground(){return ground;},get token(){return token;},get listenerCount(){return listeners.size;},releasePins,
   subscribeTiles(listener){assertAlive();listeners.add(listener);for(const [k,t]of stream.tiles)if(t.state==='active')listener.activated?.(k);return()=>listeners.delete(listener);},
-  async prepareRoute(compiled,{cars=[],signal:external}={}){
+  async prepareRoute(compiled,{cars=[],runtime,signal:external}={}){
    const job=begin(external);pendingRouteId=compiled.id;
    // Leave headroom for the final indivisible step within the 3 ms frame target.
    // The driving slice is restored on success, abort and supersession.
    if(Number.isFinite(drivingActivationMs))stream.activationMs=Math.max(drivingActivationMs,1);
    try{
     if(compiled.worldSetRevision!==manifest.revision)throw Error('Route and world release differ');
+    if(runtime&&(!(runtime instanceof RouteRuntime)||runtime.compiled!==compiled))throw Error('Route geometry release mismatch');
     const footprint={halfWidth:Math.max(1.1,...cars.map(c=>(c.width||2.2)/2)),halfLength:Math.max(2.8,...cars.map(c=>(c.length||5.6)/2)),connected:true};
     if(route?.compiled.routeHash===compiled.routeHash&&plan?.requiredCells?.every(k=>stream.tiles.get(k)?.state==='active')&&compiled.grid.every(p=>safePose({...p,edge:p.edgeId},footprint))){
      for(const key of plan.requiredCells)releases.push(stream.pin('route-start',key));job.check();pendingRouteId=null;onCommit(route,ground);emit('warm','Preparing roads');Object.assign(metrics,{entryMs:0,initialWorldBytes:stream.pool?.downloadedBytes??stream.metrics.loadedBytes,mandatoryBytes:plan.totalBytes});return route;
     }
-    const prepared=new RouteRuntime(compiled),preparedGround=makeGround(prepared);plan=planRouteInterest({route:prepared,manifest,phase:'prepare',capBytes:stream.capBytes,transientBytes:stream.transientCap,sharedBytes:512*1024,generation:job.generation});onPlan(plan);
+    const prepared=runtime||new RouteRuntime(compiled),preparedGround=makeGround(prepared);plan=planRouteInterest({route:prepared,manifest,phase:'prepare',capBytes:stream.capBytes,transientBytes:stream.transientCap,sharedBytes:512*1024,generation:job.generation});onPlan(plan);
     for(const key of plan.requiredCells)releases.push(stream.pin('route-start',key));const previous=stream.position;
     if(previous&&stream.entry(`${Math.floor(previous.x/512)},${Math.floor(previous.z/512)}`))releases.push(stream.pin('previous-safe',`${Math.floor(previous.x/512)},${Math.floor(previous.z/512)}`));
     const start=now();emit('route','Preparing race');

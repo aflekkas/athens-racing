@@ -28,9 +28,14 @@ function naturalCandidates(recipe,cell){
 /** Ground clearance is shared by all natural placements, including future southern cells. */
 export function coastalRows(t,rings,recipe,existingTrees=new Float32Array(),bakeTrees=null,cell=[0,0],lakes=[]){
   if(!recipe)return {trees:new Float32Array(),boats:new Float32Array(),surfaces:[]};
-  const ground=groundIndex(t),asphalt=asphaltIndex(t),trees=[],boats=[],occupied=[],surfaces=coastalBoreSurfaces(t,cell),naturalGround=coastalHillGround(surfaces,ground);
-  for(let i=0;i<existingTrees.length;i+=5)occupied.push([existingTrees[i],existingTrees[i+2]]);
-  if(bakeTrees)for(let i=0;i<bakeTrees.length;i+=4)occupied.push([bakeTrees[i],bakeTrees[i+2]]);
+  const ground=groundIndex(t),asphalt=asphaltIndex(t),trees=[],boats=[],occupied=new Map(),surfaces=coastalBoreSurfaces(t,cell),naturalGround=coastalHillGround(surfaces,ground);
+  // Seven metres is the largest exclusion radius. Query its 3x3 neighbourhood
+  // instead of rescanning every earlier tree for each candidate. Keep candidate
+  // order and the exact distance predicate so placement stays byte-identical.
+  const occupy=(x,z)=>{const key=Math.floor(x/7)+','+Math.floor(z/7);let rows=occupied.get(key);if(!rows)occupied.set(key,rows=[]);rows.push([x,z]);};
+  const crowded=(x,z,radius)=>{const cx=Math.floor(x/7),cz=Math.floor(z/7);for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++){const rows=occupied.get((cx+dx)+','+(cz+dz));if(rows)for(const [a,b]of rows)if(Math.hypot(x-a,z-b)<radius)return true;}return false;};
+  for(let i=0;i<existingTrees.length;i+=5)occupy(existingTrees[i],existingTrees[i+2]);
+  if(bakeTrees)for(let i=0;i<bakeTrees.length;i+=4)occupy(bakeTrees[i],bakeTrees[i+2]);
   const candidates=naturalCandidates(recipe,cell);
   if(surfaces.length)for(let z=6;z<508;z+=12)for(let x=6;x<508;x+=12)if(naturalGround.heightAt(x,z)>ground.heightAt(x,z)+8&&['rock','scrub','wood'].includes(coverAt(recipe,x,z)))candidates.unshift([x,z,1,hashN((x+cell[0]*512)*73856093^(z+cell[1]*512)*19349663)]);
   for(const [x,z,species,seed] of candidates){
@@ -42,8 +47,8 @@ export function coastalRows(t,rings,recipe,existingTrees=new Float32Array(),bake
     if(offsets.some(([dx,dz])=>(asphalt.inside(x+dx,z+dz)&&naturalGround.heightAt(x+dx,z+dz)<ground.heightAt(x+dx,z+dz)+8)||rings.some(r=>inRing(r,x+dx,z+dz))))continue;
     const ys=offsets.map(([dx,dz])=>naturalGround.heightAt(x+dx,z+dz));
     if(ys.some(v=>!Number.isFinite(v))||Math.max(...ys)-Math.min(...ys)>(species===1?4.5:y>ground.heightAt(x,z)+2?12:7))continue;
-    if(occupied.some(([a,b])=>Math.hypot(x-a,z-b)<(species===1?7:4)))continue;
-    occupied.push([x,z]);trees.push(x,y,z,(seed%628)/100,species*8+((seed>>>16)%8));
+    if(crowded(x,z,species===1?7:4))continue;
+    occupy(x,z);trees.push(x,y,z,(seed%628)/100,species*8+((seed>>>16)%8));
   }
   for(const [x,z,yaw,kind] of recipe.boats){
     if(boats.length>=COAST_LIMITS.boats*5)break;

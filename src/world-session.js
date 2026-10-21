@@ -29,6 +29,9 @@ import {RouteRuntime} from './route-runtime.js';
 import {planRouteInterest} from './route-stream-policy.js';
 import {validateWorldDefinition,loadWorldDefinition} from './world-manifest.js';
 export async function createWorldSession({renderer,scene,resources,progress=()=>{},worldDefinition={},signal}){
+ // Base scans and manifests are independent. Keep their I/O parallel, then
+ // gate shader preparation on uploads rather than delaying contact admission.
+ const texturesReady=loadAthensTextures(renderer);texturesReady.catch(()=>{});
  const manifestURL=new URL(worldDefinition.manifestURL||'/data/athens/manifest.json',globalThis.location?.href||'http://localhost/');
  const manifest=worldDefinition.manifest||(await loadWorldDefinition(manifestURL,{signal})).manifest;validateWorldDefinition({...worldDefinition,manifest});
  let stream,roads,route=null,ground=null,interest=null,plan=null,selection=null,disposed=false,inventoryFrames=0,plannedRoute=null,plannedS=-Infinity,planAge=0;const tileListeners=new Set(),enrichments=new Map();
@@ -41,10 +44,16 @@ export async function createWorldSession({renderer,scene,resources,progress=()=>
  const obstacles=new WorldTileObstacles({detailEnabled:settings.worldDetail!==false});
  const unsubscribeProps=onSettings((s,key)=>{if(!key||key==='worldDetail'){obstacles.setDetailEnabled(s.worldDetail!==false);props.setEnabled(s.worldDetail!==false);horizon.setEnabled(s.worldDetail!==false);landmarks.setEnabled(s.worldDetail!==false);plazas.setEnabled(s.worldDetail!==false);lawns.setEnabled(s.worldDetail!==false);signs.setEnabled(s.worldDetail!==false);marks.setEnabled(s.worldDetail!==false);trees.setEnabled(s.worldDetail!==false);houses.setEnabled(s.worldDetail!==false);syncBoxes();}});
  horizon.load(new URL('./assets/athens/horizon.bin',document.baseURI)).catch(e=>console.warn(e.message));plazas.load(new URL('./assets/athens/plazas.json',document.baseURI)).catch(e=>console.warn(e.message));lawns.load(new URL('./assets/athens/lawns.json',document.baseURI)).catch(e=>console.warn(e.message));signs.load(new URL('./assets/athens/pois.json',document.baseURI)).catch(e=>console.warn(e.message));
- await loadAthensTextures(renderer,{penteli:['penteli','megara'].includes(manifest.regionId)||manifest.regions?.some(r=>['penteli','megara'].includes(r.id))});const sceneTiles=new WorldTileScene(scene,{renderer,materialFactory:athensMaterial}),barriers=new WorldTileBarriers();
+ // A composed world can contain distant regions. Load their texture library
+ // only when a cell from that region is admitted, before its shader warmup.
+ // The unified game (including mirrors) draws world meshes into linear render
+ // targets. Only the final post quad draws to the canvas; its world variants
+ // would double startup compilation without being used by a race frame.
+ const sceneTiles=new WorldTileScene(scene,{renderer,materialFactory:athensMaterial,warmCanvas:false}),barriers=new WorldTileBarriers();
+ let regionalTextures=null;
  const regionalScenery=new WorldRegionalScenerySet(scene,{trees});const activationSteps=[];
  const adapter={
-  warmup:p=>Promise.all([sceneTiles.warmup(p),regionalScenery.prepare(p.metadata.regionalScenery)]),
+  warmup:async p=>{await texturesReady;if([p.metadata.regionalScenery?.surface,...p.metadata.meshes.map(m=>m.userData?.tileSurface)].some(surface=>/^(penteli|megara)/.test(surface||'')))await(regionalTextures??=loadAthensTextures(renderer,{penteli:true}));await Promise.all([sceneTiles.warmup(p),regionalScenery.prepare(p.metadata.regionalScenery)]);},
   rebase(origin,previous){sceneTiles.rebase(origin,previous);regionalScenery.rebase(origin);detailRoot.position.set(-origin.x,0,-origin.z);},
   prepare(key,packet,origin){const build=sceneTiles.prepare(key,packet,origin);let installed=false,committed=false,disposed=false;
    const measured=(name,fn)=>{const at=performance.now();fn();const ms=performance.now()-at;if(ms>1){activationSteps.push({name,ms});if(activationSteps.length>64)activationSteps.shift();}};

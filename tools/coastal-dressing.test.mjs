@@ -1,8 +1,33 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {coastalRows,appendCoastalSurfaces,COAST_LIMITS}from'../src/world-tile-coast.js';
 import {COASTAL_DRESSING}from'../src/coastal-dressing-data.js';
+import {withTileSurfaceIndexes}from'../src/world-tile-surface-cache.js';
+import {groundIndex}from'../src/world-tile-ground.js';
+import {asphaltIndex}from'../src/world-tile-asphalt.js';
 const terrain=(height=5)=>({finePositions:Float32Array.of(0,height,0,512,height,0,512,height,512,0,height,512),fineTriangles:Uint32Array.of(0,2,1,0,3,2),fineFlags:Uint8Array.of(2,2),contactTriangles:new Uint32Array()});
 const recipe=(trees=[],boats=[],surfaces=[])=>({trees,boats,surfaces});
+test('immutable terrain query indexes are shared across wrappers only within one packet build',()=>{
+ const t=terrain();let ground,asphalt;
+ withTileSurfaceIndexes(()=>{
+  ground=groundIndex(t);asphalt=asphaltIndex(t);
+  assert.equal(groundIndex({...t}),ground);assert.equal(asphaltIndex({...t}),asphalt);
+  const road={...t,fineFlags:Uint8Array.of(1,1)};assert.notEqual(asphaltIndex(road),asphalt);assert.equal(asphaltIndex(road).inside(50,50),true);assert.equal(asphalt.inside(50,50),false);
+  withTileSurfaceIndexes(()=>assert.notEqual(groundIndex(t),ground));assert.equal(groundIndex(t),ground);
+ });
+ for(let i=1;i<t.finePositions.length;i+=3)t.finePositions[i]=8;
+ assert.equal(groundIndex(t).heightAt(50,50),8);assert.equal(ground.heightAt(50,50),5);
+ assert.notEqual(asphaltIndex(t),asphalt);
+});
+test('coastal spacing matches a full ordered distance scan at bucket and radius boundaries',()=>{
+ const candidates=[[14,14,1,0],[13.999999,14,1,1],[15,14,4,2],[70,70,4,3]];
+ for(let i=0;i<1500;i++)candidates.push([4+(i*31.73)%500,4+(i*97.11)%500,i%3?4:1,i*997]);
+ const existing=Float32Array.of(7,5,14,0,8,504,5,504,0,8),baked=Float32Array.of(70,5,66,6),occupied=[[7,14],[504,504],[70,66]],expected=[];
+ for(const [x,z,species,seed]of candidates){
+  if(occupied.some(([a,b])=>Math.hypot(x-a,z-b)<(species===1?7:4)))continue;
+  occupied.push([x,z]);expected.push(x,5,z,(seed%628)/100,species*8+((seed>>>16)%8));
+ }
+ assert.deepEqual(coastalRows(terrain(),[],recipe(candidates),existing,baked).trees,Float32Array.from(expected));
+});
 test('coastal vegetation is deterministic, grounded, cell-owned and excludes buildings, road, sea and existing trees',()=>{
  const t=terrain(),r=recipe([[80,80,1,19],[100,100,4,26],[140,140,1,29],[2,40,1,33]]),ring=[[70,70],[90,70],[90,90],[70,90]];
  const result=coastalRows(t,[ring],r,Float32Array.of(140,5,140,0,8));assert.deepEqual([...result.trees],[100,5,100,.25999999046325684,32]);

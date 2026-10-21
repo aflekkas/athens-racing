@@ -160,6 +160,21 @@ test('failed shader preparation releases residency and retry can complete activa
  fail=false;s.retry('0,0');await settle(s);assert.equal(s.readyAt(1,1),true);s.dispose();assert.equal(s.residentBytes,0);assert.equal(a.disposed,a.committed);
 });
 
+test('one decoder admits the next cell while shaders warm, retaining byte admission and readiness gates',async()=>{
+ const m=manifest(3),loaded=[],warm=[];let releaseLoad;
+ const s=new WorldTileStream(m,{nearRing:0,concurrency:1,capBytes:200,transientBytes:210,
+  load:async j=>{loaded.push(j.cell[0]);if(j.cell[0]===1)await new Promise(r=>releaseLoad=r);return packet(j.cell);},
+  adapter:{...adapter(),warmup:()=>new Promise(r=>warm.push(r))}});
+ const releases=[s.pin('start','1,0'),s.pin('start','2,0')];s.update({x:1,z:1});await tick();
+ assert.deepEqual(loaded,[0,1],'GPU preparation must not monopolise the decoder');
+ assert.equal(s.tiles.get('0,0').state,'preparing');assert.equal(s.readyAt(1,1),false);
+ assert.equal(s.inflight,1);assert.equal(s.transientBytes,210);assert.ok(s.residentBytes+s.reservedBytes<=200);
+ releaseLoad();await tick();assert.deepEqual(loaded,[0,1],'both resident packets still count against admission');
+ assert.equal(s.inflight,0);assert.equal(s.transientBytes,0);warm.forEach(r=>r());await settle(s);
+ assert.equal(s.readyAt(1,1),true);releases.forEach(r=>r());s.dispose();
+ assert.equal(s.residentBytes,0);assert.equal(s.reservedBytes,0);
+});
+
 
 test('a city-scale owner chain stays one hop for loading, readiness, pins and teleport',async()=>{
  const m=manifest(218),jobs=[];

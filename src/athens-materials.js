@@ -14,14 +14,14 @@ import {createFacadeAtlas} from './facade-atlas.js';
 import * as THREE from 'three';
 import {TX,GLSL_HELPERS,loadTextureSubset} from './tex.js';
 import {settings,onSettings} from './settings.js';
-import {detailNoise,SEA_TIME,patchMaterial,GROUND_GLSL,GROUND_VERTEX_VARYINGS,GROUND_VERTEX_BODY,GROUND_APPLY,FACADE_GLSL,FACADE_VERTEX_VARYINGS,FACADE_VERTEX_BODY,FACADE_APPLY,SEA_GLSL,SEA_VERTEX_VARYINGS,SEA_VERTEX_BODY,SEA_APPLY,FOAM_GLSL,FOAM_VERTEX_VARYINGS,FOAM_VERTEX_BODY,FOAM_APPLY} from './athens-detail.js';
+import {detailNoise,SEA_TIME,patchMaterial,GROUND_GLSL,GROUND_VERTEX_VARYINGS,GROUND_VERTEX_BODY,GROUND_APPLY,FACADE_GLSL,FACADE_VERTEX_VARYINGS,FACADE_VERTEX_BODY,FACADE_APPLY,FACADE_PLAIN,SEA_GLSL,SEA_VERTEX_VARYINGS,SEA_VERTEX_BODY,SEA_APPLY,FOAM_GLSL,FOAM_VERTEX_VARYINGS,FOAM_VERTEX_BODY,FOAM_APPLY} from './athens-detail.js';
 export const ASPHALT_PERIOD=512/122,PAVING_PERIOD=512/160,URBAN_PERIOD=512/80;
 // Mean grey of each scan, so palette colour keeps the street's overall tone and the scan only adds grain.
 const MEAN={asphalt:.096,paving:.198};
 export const ATHENS_TEXTURES=['asphalt_diff','paver_diff'];
 export const PENTELI_TEXTURES=['asphalt_nor','ground_diff','ground_nor','grass_diff','grass_nor','sand_diff','sand_nor','rock_diff','rock_nor','concrete_diff'];
 export function loadAthensTextures(renderer,{penteli=false}={}){
-  return loadTextureSubset(penteli?[...ATHENS_TEXTURES,...PENTELI_TEXTURES]:ATHENS_TEXTURES).then(textures=>{if(renderer){for(const t of textures)if(t.image)renderer.initTexture(t);renderer.initTexture(detailNoise());}return textures;});
+  return loadTextureSubset(penteli?[...ATHENS_TEXTURES,...PENTELI_TEXTURES]:ATHENS_TEXTURES).then(textures=>{if(renderer){for(const t of textures)if(t.image)renderer.initTexture(t);if(settings.worldDetail!==false)renderer.initTexture(detailNoise());}return textures;});
 }
 function scanned(color,key,period,mean,contrast,{vertexColors=false,strength=1,drift=[61,80]}={}){
   const m=new THREE.MeshBasicMaterial({color:new THREE.Color(...color),vertexColors,side:THREE.FrontSide});
@@ -96,12 +96,12 @@ function dressedMaterial(surface,rgb,vertexColors){
     patchMaterial(m,{key:'athens-'+surface+'-v1',vertexVaryings:GROUND_VERTEX_VARYINGS+'attribute vec4 aCoastColor;varying vec4 vCoastColor;varying vec3 vCoastP;',vertexBody:GROUND_VERTEX_BODY+'vCoastColor=aCoastColor;vCoastP=position;',fragmentGlsl:GROUND_GLSL+LIMESTONE_GLSL+'varying vec4 vCoastColor;varying vec3 vCoastP;',apply:`diffuseColor.rgb=mix(diffuseColor.rgb,vCoastColor.rgb,uWorldDetail);${GROUND_APPLY}
       vec3 limestone=coastLimestone(vCoastColor.rgb,vCoastP);
       diffuseColor.rgb=mix(diffuseColor.rgb,limestone,uWorldDetail*vCoastColor.a);`});
-    const patch=m.onBeforeCompile;m.onBeforeCompile=shader=>{patch(shader);if(surface==='coastalUrban'){// Insert the old scan before the coastal mix, so Off is byte-for-byte the original courtyard recipe.
+    const patch=m.onBeforeCompile;m.onBeforeCompile=function(shader){patch.call(this,shader);if(surface==='coastalUrban'){// Insert the old scan before the coastal mix, so Off is byte-for-byte the original courtyard recipe.
       const marker='#include <color_fragment>';shader.fragmentShader=shader.fragmentShader.replace(marker,marker+'\n//COAST_SCAN_END');scan(shader);}
     };return m;
   }
   if(surface==='ground')return patchMaterial(base(),{key:'athens-ground-v1',vertexVaryings:GROUND_VERTEX_VARYINGS,vertexBody:GROUND_VERTEX_BODY,fragmentGlsl:GROUND_GLSL,apply:GROUND_APPLY});
-  if(surface==='building')return patchMaterial(base(),{key:'athens-building-v1',vertexVaryings:FACADE_VERTEX_VARYINGS,vertexBody:FACADE_VERTEX_BODY,fragmentGlsl:FACADE_GLSL,apply:FACADE_APPLY});
+  if(surface==='building')return patchMaterial(base(),{key:'athens-building-v1',vertexVaryings:FACADE_VERTEX_VARYINGS,vertexBody:FACADE_VERTEX_BODY,fragmentGlsl:FACADE_GLSL,apply:FACADE_APPLY,plain:FACADE_PLAIN});
   if(surface==='sea')return patchMaterial(base(),{key:'athens-sea-v1',vertexVaryings:SEA_VERTEX_VARYINGS,vertexBody:SEA_VERTEX_BODY,fragmentGlsl:SEA_GLSL,apply:SEA_APPLY,uniforms:{uSeaTime:SEA_TIME}});
   if(surface==='coastalDetail'||surface==='coastalBuilding'){
     const m=surface==='coastalBuilding'?dressedMaterial('building',rgb,vertexColors):base(),off=onSettings((s,key)=>{if(!key||key==='worldDetail')m.visible=s.worldDetail!==false;});

@@ -25,7 +25,7 @@ export function restoreTerrainLayout(mesh) {
 }
 export function terrainChunkMaterial(source, decode) {
   if (!decode) return source;
-  const mat = source.clone(), compile = source.onBeforeCompile, key = source.customProgramCacheKey();
+  const mat = source.clone(), compile = source.onBeforeCompile;
   mat.onBeforeCompile = function(shader, renderer) {
     compile.call(this, shader, renderer);
     shader.uniforms.terrainOffset = { value: new THREE.Vector3(...decode.offset) };
@@ -33,7 +33,7 @@ export function terrainChunkMaterial(source, decode) {
     shader.vertexShader = shader.vertexShader.replace('#include <common>', '#include <common>\nuniform vec3 terrainOffset; uniform vec3 terrainScale; attribute float aHeightResidual;')
       .replace('#include <begin_vertex>', 'vec3 transformed = terrainOffset + position * terrainScale; transformed.y += aHeightResidual;');
   };
-  mat.customProgramCacheKey = () => key + ':terrain-u16-v1';
+  mat.customProgramCacheKey = () => source.customProgramCacheKey() + ':terrain-u16-v1';
   return mat;
 }
 export function compactTerrainGeometry(g, step) {

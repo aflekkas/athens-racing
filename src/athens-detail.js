@@ -5,6 +5,13 @@
 // Locked look: unlit colour only. No lights, shadow maps, reflection or refraction pass.
 import * as THREE from 'three';
 import {worldDetailEnabled} from './world-detail-state.js';
+import {onSettings} from './settings.js';
+
+// Include terrain clones as they compile, and drop disposed materials. Off
+// must remove the detail shader's cost as well as its visible contribution.
+const detailMaterials=new Set();
+function trackDetailMaterial(material){if(detailMaterials.has(material))return;detailMaterials.add(material);material.addEventListener('dispose',()=>detailMaterials.delete(material));}
+onSettings((s,key)=>{if(!key||key==='worldDetail')for(const material of detailMaterials)material.needsUpdate=true;});
 
 // ---- ground classes ---------------------------------------------------------------------------------------------
 // The bake colours every ground vertex by its OSM land class (tools/world-gen/appearance.py TERRAIN, kept equal by
@@ -104,12 +111,7 @@ export const GROUND_VERTEX_BODY='vGroundP=position.xz;vGroundDist=length((modelV
 export const GROUND_APPLY=`{float k=uWorldDetail*(1.-smoothstep(160.,360.,vGroundDist));diffuseColor.rgb*=mix(vec3(1.),groundMul(vGroundP,diffuseColor.rgb),k);}`;
 
 /** Facade: tiled window / balcony / shopfront rhythm per 3.05 m floor, chosen by facade style 0..7 (FACADE_STYLES). */
-export const FACADE_GLSL=`${NOISE_GLSL}
-varying vec3 vFac;varying vec2 vFacP;varying float vFacDist;varying vec3 vFacW;varying vec3 vFacCam;varying vec2 vFacB;
-// Derived buildings carry no vertex colour: each flat face is shaded here from its own normal (screen-space derivatives of the
-// local position), the bake's old face_shaded() values: roofs 1, walls .75+.10*(n.x*-.6+n.z*-.8) in display space, as linear.
-// A mesh that still has vertex colours (an older bake) is shaded by them, through color_fragment, and gets 1 here.
-float wallShade(){
+export const FACADE_SHADE_GLSL=`float wallShade(){
 #ifdef USE_COLOR
   return 1.;
 #else
@@ -119,7 +121,13 @@ float wallShade(){
   if(abs(n.y)>.2&&abs(n.y)<=.9)level=min(1.,.88+.16*(n.x*-.6+n.z*-.8)); // a pitched roof slope: a little darker away from the sun, not a wall
   return level<=.04045?level/12.92:pow((level+.055)/1.055,2.4);
 #endif
-}
+}`;
+export const FACADE_GLSL=`${NOISE_GLSL}
+varying vec3 vFac;varying vec2 vFacP;varying float vFacDist;varying vec3 vFacW;varying vec3 vFacCam;varying vec2 vFacB;
+// Derived buildings carry no vertex colour: each flat face is shaded here from its own normal (screen-space derivatives of the
+// local position), the bake's old face_shaded() values: roofs 1, walls .75+.10*(n.x*-.6+n.z*-.8) in display space, as linear.
+// A mesh that still has vertex colours (an older bake) is shaded by them, through color_fragment, and gets 1 here.
+${FACADE_SHADE_GLSL}
 float rect(vec2 q,vec2 lo,vec2 hi,vec2 aa){vec2 s=smoothstep(lo-aa,lo+aa,q)-smoothstep(hi-aa,hi+aa,q);return s.x*s.y;}
 vec3 signColour(float r){return r<.25?vec3(.62,.36,.3):r<.5?vec3(.3,.42,.5):r<.75?vec3(.82,.76,.58):vec3(.42,.52,.42);}
 vec3 facadeBase(float u,float v,float st){
@@ -229,6 +237,14 @@ export const FACADE_VERTEX_BODY=`float yy=mod(aFacade.y,4096.),band=floor(yy/102
 // walls: height in decimetres (10 bits) and the colour family (2 bits); roofs: bit 10 marks a pitched roof, bits 0..9 its ridge's rise (World detail Off pulls the ridge down: a flat roof again)
 if(roofV&&mod(band,2.)>.5&&uWorldDetail<.5)transformed.y-=mod(yy,1024.)*.1;
 vFac=vec3(aFacade.x*.1,roofV?0.:mod(yy,1024.)*.1,floor(aFacade.y/4096.));vFacB=vec2(roofV?0.:band,roofV&&mod(band,2.)>.5?1.:0.);vFacP=position.xz;vFacW=position;vFacW.y=transformed.y;vFacCam=cameraPosition-modelMatrix[3].xyz;vFacDist=length((modelViewMatrix*vec4(transformed,1.)).xyz);`;
+// Plain OSM boxes retain baked face shading and flatten authored roof ridges.
+// These are base geometry/colour, so World detail Off must keep them.
+export const FACADE_PLAIN=Object.freeze({
+ vertexVaryings:'attribute vec2 aFacade;varying vec3 vFacW;varying vec3 vFacCam;',
+ vertexBody:'float yy=mod(aFacade.y,4096.);bool roofV=aFacade.x>65530.;if(roofV&&mod(floor(yy/1024.),2.)>.5)transformed.y-=mod(yy,1024.)*.1;vFacW=position;vFacW.y=transformed.y;vFacCam=cameraPosition-modelMatrix[3].xyz;',
+ fragmentGlsl:'varying vec3 vFacW;varying vec3 vFacCam;'+FACADE_SHADE_GLSL,
+ apply:'diffuseColor.rgb*=wallShade();'
+});
 export const FACADE_APPLY=`{
   float st=floor(vFac.z+.5);
   if(vFacB.y>.5)diffuseColor.rgb=mix(diffuseColor.rgb,tileColour(vFacP),uWorldDetail);
@@ -260,12 +276,16 @@ export const FOAM_APPLY=`{float t=uSeaTime;float n=texture2D(detailMap,vSeaP/8.+
   diffuseColor.rgb=mix(vec3(.78,.88,.9),vec3(.97,.99,.99),smoothstep(0.,.35,edge));}`;
 
 /** Wire a MeshBasicMaterial to one of the snippets above. `uniforms` are shared objects. */
-export function patchMaterial(material,{key,vertexVaryings,vertexBody,fragmentGlsl,apply,uniforms={}}){
-  material.customProgramCacheKey=()=>key;
-  material.onBeforeCompile=shader=>{
-    shader.uniforms.detailMap={value:detailNoise()};shader.uniforms.uWorldDetail=worldDetailEnabled;for(const [k,v] of Object.entries(uniforms))shader.uniforms[k]=v;
-    shader.vertexShader=shader.vertexShader.replace('#include <common>',`#include <common>\n${vertexVaryings}`).replace('#include <begin_vertex>',`#include <begin_vertex>\n${vertexBody}`);
-    shader.fragmentShader=shader.fragmentShader.replace('#include <common>',`#include <common>\n${fragmentGlsl}`).replace('#include <color_fragment>',`#include <color_fragment>\n${apply}`);
+export function patchMaterial(material,{key,vertexVaryings,vertexBody,fragmentGlsl,apply,uniforms={},plain}){
+  trackDetailMaterial(material);
+  material.customProgramCacheKey=()=>key+(worldDetailEnabled.value?':detail':':plain');
+  material.onBeforeCompile=function(shader){
+    trackDetailMaterial(this);
+    const recipe=worldDetailEnabled.value?{vertexVaryings,vertexBody,fragmentGlsl,apply}:plain;
+    if(!recipe)return;
+    if(worldDetailEnabled.value){shader.uniforms.detailMap={value:detailNoise()};shader.uniforms.uWorldDetail=worldDetailEnabled;for(const [k,v] of Object.entries(uniforms))shader.uniforms[k]=v;}
+    shader.vertexShader=shader.vertexShader.replace('#include <common>',`#include <common>\n${recipe.vertexVaryings}`).replace('#include <begin_vertex>',`#include <begin_vertex>\n${recipe.vertexBody}`);
+    shader.fragmentShader=shader.fragmentShader.replace('#include <common>',`#include <common>\n${recipe.fragmentGlsl}`).replace('#include <color_fragment>',`#include <color_fragment>\n${recipe.apply}`);
   };
   return material;
 }
