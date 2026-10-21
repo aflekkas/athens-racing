@@ -77,7 +77,7 @@ try {
     await page.waitForFunction(() => window.__flow?.menu.screen === 'setup' || document.querySelector('#loading')?.dataset.state === 'failed', null, { polling: 200, timeout: 360000 });
     assert.equal(await page.evaluate(() => __flow.menu.screen), 'setup', await page.locator('#loading').innerText());
     console.log('SETUP', method, id);
-    const setup = await page.evaluate(() => { const m = __flow.menu, d = m.setupDef(); return { routeId: d.routeId, eventId: d.id, summary: m.root.querySelector('.evs__name')?.textContent, worldRouteId: m.h.ctx().route.compiled.id }; });
+    const setup = await page.evaluate(() => { const m = __flow.menu, d = m.setupDef(); return { routeId: d.routeId, eventId: d.id, summary: m.root.querySelector('.setup-head__name, .evs__name')?.textContent, worldRouteId: m.h.ctx().route.compiled.id }; });
     assert.equal(setup.routeId, id); assert.equal(setup.worldRouteId, id);
     const entry=catalogue.find(r=>r.id===id);assert.equal(setup.eventId,(entry.events.find(e=>e.type==='sprint')||entry.events[0]).id);assert.equal(setup.summary,entry.name);
     if (method === 'mouse' && !uiOnly) {
