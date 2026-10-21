@@ -68,11 +68,11 @@ export function prebuiltConfig(jsonc) {
   return JSON.stringify(config, null, 2) + '\n';
 }
 
-// Prebuilt releases bypass Wrangler's build command. Read the staging flag from
+// Prebuilt releases bypass Wrangler's build command. Read each environment's route flag from
 // the same deployment config so its worker catalogue and browser artifacts agree.
 export function unifiedRouteBuildVars(jsonc, environment) {
   const config = JSON.parse(prebuiltConfig(jsonc));
-  return { ASR_UNIFIED_ROUTES: environment === 'staging' ? String(config.env?.staging?.vars?.ASR_UNIFIED_ROUTES || '') : '' };
+  return { ASR_UNIFIED_ROUTES: ['staging', 'production'].includes(environment) ? String(config.env?.[environment]?.vars?.ASR_UNIFIED_ROUTES || '') : '' };
 }
 
 function arg(args, name) { const hit = args.find(a => a.startsWith(`--${name}=`)); if (hit) return hit.slice(name.length + 3); const i = args.indexOf(`--${name}`); return i >= 0 && args[i + 1] && !args[i + 1].startsWith('--') ? args[i + 1] : undefined; }

@@ -22,11 +22,12 @@ test('the prebuilt config reader accepts comments and trailing commas but never 
   const config = JSON.parse(prebuiltConfig('{ // note\n "name": "a//b", /* x */ "build": {"command": "c"}, "env": {"s": {"build": {}, "routes": ["x/*y*/",],},},\n}'));
   assert.deepEqual(config, { name: 'a//b', env: { s: { routes: ['x/*y*/'] } } });
 });
-test('prebuilt staging builds inherit the route flag; production and unconfigured builds stay off', () => {
+test('prebuilt staging and production builds inherit only their own explicit route flag', () => {
   const source = readFileSync(resolve(root, 'wrangler.jsonc'), 'utf8');
   assert.deepEqual(unifiedRouteBuildVars(source, 'staging'), { ASR_UNIFIED_ROUTES: 'syntagma-pilot,psychiko-faros,riviera-coast,penteli-hill,penteli-descent,megara-club' });
-  assert.deepEqual(unifiedRouteBuildVars(source, 'production'), { ASR_UNIFIED_ROUTES: '' });
-  assert.deepEqual(unifiedRouteBuildVars('{"env":{"production":{"vars":{"ASR_UNIFIED_ROUTES":"syntagma-pilot"}}}}', 'production'), { ASR_UNIFIED_ROUTES: '' });
+  assert.deepEqual(unifiedRouteBuildVars(source, 'production'), unifiedRouteBuildVars(source, 'staging'));
+  assert.deepEqual(unifiedRouteBuildVars('{"env":{"production":{"vars":{"ASR_UNIFIED_ROUTES":"syntagma-pilot"}}}}', 'production'), { ASR_UNIFIED_ROUTES: 'syntagma-pilot' });
+  assert.deepEqual(unifiedRouteBuildVars('{"env":{"staging":{"vars":{"ASR_UNIFIED_ROUTES":"syntagma-pilot"}}}}', 'production'), { ASR_UNIFIED_ROUTES: '' });
   assert.deepEqual(unifiedRouteBuildVars('{}', 'staging'), { ASR_UNIFIED_ROUTES: '' });
 });
 test('gate records are keyed by node major, tree and the exact command', () => {
