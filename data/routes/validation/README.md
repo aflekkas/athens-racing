@@ -66,3 +66,22 @@ queries enter this file. It contains no render meshes, cell bodies or secrets.
 See `docs/reports/riviera-route.md` and the Phase 3 feed for the full equivalence,
 physical safety, drive and resource evidence. New physical carriageways are a
 separate competitive edition from the old `4718fbec` Riviera reference.
+
+Phase 4a adds `penteli.inputs.json`, a bounded sibling shard for the independently
+flagged `penteli-hill` and `penteli-descent` destinations. The root binds the
+union of source hashes and cells; each file remains below 8 MiB. The reader
+merges at most three sibling shards, rejects changed queries/edges, and still
+checks every cell hash against the active world set. No render/contact triangle
+arrays are committed. Both 265-edge sequences use the source timing endpoints
+292 and 10,188, transformed to Athens coordinates, and compile to 9,920.159 m.
+The downhill uses legal reverse directed edges as a separate forward runtime.
+
+Reproduce offline with `node tools/author-penteli-routes.mjs WORLD CELLS OUT`.
+The cell directory contains only hash-verified emitted cells from staging; it is
+temporary and must not enter Git. `captureRouteInputs({keys})` accepts the
+bounded explicit envelope for imported edges whose IDs do not encode a cell.
+The decoder binds the older Penteli graph's generic bridge surface only after
+checking each segment midpoint against its authenticated OSM bridge structure,
+layer-1 asphalt surface and matching height. It never relaxes approach/stacked
+road connection rules. Future imports must refresh their own source lock and
+rebake; this is a reader compatibility fix for existing immutable packets.

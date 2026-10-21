@@ -1,0 +1,46 @@
+// Release-bundle browser acceptance; run through tools/browser-slot.sh.
+import {createServer} from 'node:http';import {readFile,writeFile,mkdir} from 'node:fs/promises';import {resolve,extname} from 'node:path';import {gzipSync} from 'node:zlib';import {execFileSync} from 'node:child_process';
+const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
+const [task,out,mode='smoke']=process.argv.slice(2),root=resolve(import.meta.dirname,'..'),assets=resolve(root,'.deploy/assets'),feed=resolve(out),errors=[],cache=new Map();await mkdir(feed,{recursive:true});
+const config=JSON.parse(await readFile(assets+'/route-config.json')),world=JSON.parse(await readFile(resolve(task,'world.json')));
+const manifest=structuredClone(world);for(const e of Object.values(manifest.tiles))e.url='/world/cells/'+e.sha256+'.bin.gz';for(const a of manifest.regionalAssets||[])a.url='https://staging.athensracing.com'+a.url;
+const mime={'.js':'text/javascript','.html':'text/html','.json':'application/json','.css':'text/css','.webp':'image/webp','.png':'image/png','.svg':'image/svg+xml','.jpg':'image/jpeg'};
+let browser;
+const server=createServer(async(req,res)=>{try{
+ const path=new URL(req.url,'http://local').pathname;res.setHeader('Cache-Control','public,max-age=31536000');
+ const json=o=>{res.setHeader('Content-Type','application/json');res.end(JSON.stringify(o));};
+ if(path==='/api/routes')return json(config);if(path==='/data/athens/manifest.json')return json(manifest);
+ if(path==='/api/auth/config')return json({providers:[],required:false});if(path==='/api/auth/session')return json({user:null});if(path.startsWith('/api/'))return json({entries:[],friends:[],invites:[],online:[],config:{configured:false}});
+ if(path.startsWith('/world/cells/')){const hash=path.split('/').at(-1);let bytes;try{bytes=await readFile(resolve(task,'cells',hash));}catch{const r=await fetch('https://staging.athensracing.com'+path);if(!r.ok)throw Error('world '+r.status);bytes=Buffer.from(await r.arrayBuffer());}res.end(bytes);return;}
+ let item=cache.get(path);if(!item){const file=resolve(assets,'.'+(path==='/'?'/index.html':path)),bytes=await readFile(file),type=mime[extname(file)]||'application/octet-stream',compress=/javascript|json|css|html|svg/.test(type);item={bytes:compress?gzipSync(bytes):bytes,type,compress};cache.set(path,item);}res.setHeader('Content-Type',item.type);if(item.compress)res.setHeader('Content-Encoding','gzip');res.end(item.bytes);
+ }catch(e){res.statusCode=404;res.end(String(e));}});await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
+const p95=a=>a.toSorted((a,b)=>a-b)[Math.ceil(a.length*.95)-1];
+async function context(){const ctx=await browser.newContext({viewport:{width:1280,height:800},serviceWorkers:'block'});await ctx.addInitScript(()=>{const raf=requestAnimationFrame;window.requestAnimationFrame=fn=>raf(t=>{if(!window.__manualDrive)fn(t);});localStorage.setItem('paraliaki.settings',JSON.stringify({perfClass:'low',renderScale:.65,frameCap:30,worldDetail:true}));});return ctx;}
+async function enter(ctx,id,event){const page=await ctx.newPage();page.on('pageerror',e=>{errors.push(String(e));console.log('PAGEERROR',String(e));});page.on('console',m=>{if(m.type()==='error')console.log('CONSOLE',m.text().slice(0,300));});const cdp=await ctx.newCDPSession(page);await cdp.send('Network.enable');await cdp.send('Network.emulateNetworkConditions',{offline:false,latency:50,downloadThroughput:50e6/8,uploadThroughput:50e6/8});const start=Date.now();await page.goto(base+'/?routes=1&route='+id+'&simhook=1&car=corolla&routeEvent='+(event||''),{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>window.__routePilot&&!window.__routePilot.G.routePreparing&&!window.__flow.menu.accounts.blocked,null,{timeout:120000});return {page,ms:Date.now()-start};}
+async function snap(page,name,caption){await page.evaluate(()=>{const p=window.__routePilot;p.step(1/60,true,true);});const temporary=resolve(task,'capture.jpg');await page.screenshot({path:temporary,type:'jpeg',quality:85});execFileSync('ffmpeg',['-v','error','-y','-i',temporary,'-vf','scale=1280:800','-c:v','libwebp','-quality','75',feed+'/'+name+'.webp']);const bytes=await readFile(feed+'/'+name+'.webp');if(bytes.length>=150000)throw Error('Image budget');await writeFile(feed+'/'+name+'.txt',caption+' 1280×800; our game, Lighting Off + Effects Off.\n');}
+
+try{
+ browser=await chromium.launch({executablePath:'/home/dev/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome',headless:true,args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader','--js-flags=--max-old-space-size=192']});
+ if(mode==='perf'){
+  const runs=[];for(const id of ['penteli-hill','penteli-descent'])for(let i=0;i<10;i++){const ctx=await context();try{const {page,ms}=await enter(ctx,id);const cold=await page.evaluate(()=>{const p=window.__routePilot;window.__manualDrive=true;return {prepareMs:p.session.metrics.selectionToCountdownMs,metrics:p.session.metrics,stream:p.session.stream.metrics,resources:p.session.inventory()};});const warm=await page.evaluate(async id=>{const p=window.__routePilot;window.__manualDrive=false;window.__flow.quit();await new Promise(r=>setTimeout(r,300));const t=performance.now();await window.__flow.menu.h.selectUnifiedRoute(id,id==='penteli-hill'?'penteli-race':'penteli-descent-tt');await window.__flow.startEvent(window.__flow.menu.setupDef());await new Promise(r=>setTimeout(r,800));return {ms:performance.now()-t,state:p.G.state};},id);runs.push({id,i,coldMs:ms,cold,warm});console.log(id,i,ms,warm.ms);}finally{await ctx.close();}}
+  await writeFile(feed+'/phase4a-entry-perf.json',JSON.stringify({device:'Shared VPS Chromium SwiftShader, release bundle, 50 Mbit/s + 50 ms RTT, gzip static assets',runs,summary:['penteli-hill','penteli-descent'].map(id=>{const r=runs.filter(r=>r.id===id);return{id,coldP95:p95(r.map(x=>x.coldMs)),warmSelectionP95:p95(r.map(x=>x.warm.ms))};}),errors},null,2));
+ }else{
+  const ctx=await context();try{const {page,ms}=await enter(ctx,'penteli-hill');console.log('entry',ms);await snap(page,'phase4a-penteli-start','Penteli hill-climb start on the single streamed Athens world; two rivals, civilian traffic and police off.');
+  console.log(JSON.stringify(await page.evaluate(()=>{const p=window.__routePilot;window.__manualDrive=true;return {state:p.G.state,metrics:p.session.metrics,stream:p.session.stream.metrics,resources:p.session.inventory(),actors:p.traffic.actors.length,rivals:p.rivals.length};})));
+  if(mode==='drive'){
+   await page.evaluate(()=>{const p=window.__routePilot;window.__driverClass=p.rivals[0].ai.controller.constructor;const ai=new window.__driverClass(p.route,p.player.veh,{perfect:true,closedRoad:true});p.setDriver((v,dt)=>ai.update(dt));});
+   const trace=[];let middle=false;for(let sim=0;sim<900;sim++){
+    const row=await page.evaluate(()=>{const p=window.__routePilot;for(let i=0;i<60;i++)p.step(1/60,false,i%4===0,4/60);const v=p.player.veh;return {s:v.s,u:v.u,kmh:v.kmh,y:v.y,vy:v.vy,state:p.G.state,raceT:p.G.raceT,earned:p.run?.course.validProgress,finish:p.G.pFinish,result:p.G.result,holds:p.session.metrics.holds,missing:p.session.metrics.missingContacts,resources:p.session.inventory(),activation:p.session.stream.metrics.p95ActivationMs};});
+    trace.push({sim:sim+1,...row});if(sim%30===0){console.log('drive',sim+1,row.s,row.kmh,row.state,row.holds);await writeFile(resolve(task,'drive-progress.json'),JSON.stringify(trace));}
+    if(!middle&&row.s>4500){await snap(page,'phase4a-penteli-climb','Native Penteli hill-climb mid-race on streamed asphalt, with continuous ordinary Vehicle inputs.');middle=true;}
+    if(sim>=610&&row.finish!=null)break;
+    await new Promise(r=>setTimeout(r,20));
+   }
+   await snap(page,'phase4a-penteli-finish-records','Penteli hill-climb after the native drive. The acceptance JSON records completion validity and elapsed time.');
+   await writeFile(feed+'/phase4a-drive.json',JSON.stringify({entryMs:ms,trace,errors,final:await page.evaluate(()=>{const p=window.__routePilot;return {metrics:p.session.metrics,stream:p.session.stream.metrics,result:p.G.result,course:p.run?.course,resources:p.session.inventory()};})},null,2));
+  }
+  await writeFile(feed+'/phase4a-browser-smoke.json',JSON.stringify({entryMs:ms,errors,details:await page.evaluate(()=>{const p=window.__routePilot;return {metrics:p.session.metrics,stream:p.session.stream.metrics,resources:p.session.inventory(),event:p.G.ev.def};})},null,2));
+  }finally{await ctx.close();}
+ }
+}finally{await browser?.close();await new Promise(r=>server.close(r));}
+if(errors.length)throw Error(errors.join('\n'));

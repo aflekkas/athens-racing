@@ -247,7 +247,7 @@ export class Menu {
     if (Release.act(this, el)) return;
     if (a?.startsWith('mp') && MP.act(this, el)) return;
     switch (a) {
-      case 'unifiedRoute': this.h.selectUnifiedRoute?.(el.dataset.route); break;
+      case 'unifiedRoute': this.h.selectUnifiedRoute?.(el.dataset.route,el.dataset.event); break;
       case 'seatReset': { resetSeatPosition(this.h.carSpec?.()?.id); for(const key of ['height','position']){const el=this.root.querySelector('[data-key=seat-'+key+']');if(el)C.setValue(el,0,false);} break; }
       case 'mapPrev': case 'mapNext': case 'mapZoomIn': case 'mapZoomOut': this.mapView?.action(a); break;
       case 'spawnDrive': driveFromSpawn(this); break;
@@ -342,7 +342,7 @@ export class Menu {
         ${C.option({ icon: 'car', title: 'GARAGE', desc: `${GARAGE_CARS.length} cars · city to super`, act: 'garage', cls: 'option--tile' })}
         ${C.option({ icon: 'settings', title: 'SETTINGS', desc: 'Sound, graphics, driving and controls', act: 'settings', cls: 'option--tile' })}`, foot: Release.titleExtras(this), hints: [['select', 'SELECT'], ['confirm', 'OK'], ['garage', 'GARAGE']] });
   }
-  r_routes(d){return C.sheetList({variant:'flow',kick:'ATHENS',title:'SELECT ROUTE',rows:d.catalogue.map(r=>C.option({icon:'flag',title:esc(r.name),desc:`${fmtDist(r.lengthM)} · ${r.events[0]?.laps||1} LAP${(r.events[0]?.laps||1)>1?'S':''} · ${r.events[0]?.rivals||0} RIVALS`,act:'unifiedRoute',attrs:{'data-route':r.id}})).join(''),hints:[['select','SELECT'],['confirm','RACE'],['back','BACK']]});}
+  r_routes(d){return C.sheetList({variant:'flow',kick:'ATHENS',title:'SELECT ROUTE',rows:d.catalogue.flatMap(r=>r.events.map(e=>C.option({icon:'flag',title:esc(r.name+(r.events.length>1&&e.type==='timetrial'?' · TIME TRIAL':'')),desc:`${fmtDist(r.lengthM)} · ${e.laps||1} LAP${(e.laps||1)>1?'S':''} · ${e.rivals||0} RIVALS${r.regionId==='penteli'?' · ATTACHED DESTINATION':''}`,act:'unifiedRoute',attrs:{'data-route':r.id,'data-event':e.id}}))).join(''),hints:[['select','SELECT'],['confirm','RACE'],['back','BACK']]});}
   r_leaderboards(d) { return renderLeaderboards(this, d); }
   // RACE is solo (owner 2026-10-18): two artwork-led cards fill the screen; multiplayer lives behind the title's MULTIPLAYER tile.
   r_mode() {
@@ -388,6 +388,7 @@ export class Menu {
   // ---------------------------------------------------------------- events
   eventsHere() {
     const ctx = this.h.ctx();
+    if(ctx.route?.isWorldRoute)return (ctx.events||[]).filter(e=>e.id===(this.data.eventId||ctx.eventId||ctx.events?.[0]?.id));
     return this.data.mode === 'quick' ? [ctx.mapId === 'riviera' ? QUICK_RACE : (ctx.events || getEvents(ctx.mapId)).find((e) => e.type === 'sprint')].filter(Boolean) : getEvents(ctx.mapId || 'riviera');
   }
   /** Session facts; Quick Race has no event medals or event records. Best times show as one line, only once set. */
@@ -407,7 +408,7 @@ export class Menu {
 
   // ---------------------------------------------------------------- race setup (event detail)
   setupDef() { if (this.data.mode === 'free') return window.__flow.freeRoamDef(); return { ...(this.eventsHere()[0] || QUICK_RACE), mapId: this.h.ctx().mapId, quick: true, name: 'QUICK RACE' }; }
-  setupKey() { const d = this.setupDef(); return d.quick ? 'quick:' + (this.h.ctx().mapId || 'riviera') : d.id; }
+  setupKey() { const d = this.setupDef(); if(d.routeId)return d.id;return d.quick ? 'quick:' + (this.h.ctx().mapId || 'riviera') : d.id; }
   isClosed() { return !!this.h.ctx().route?.closed; }
   r_setup() {
     const def = this.setupDef(), closed = this.isClosed(), ctx = this.h.ctx(), saved = loadSetup(this.setupKey());
