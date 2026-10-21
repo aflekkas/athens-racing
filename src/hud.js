@@ -1,3 +1,4 @@
+import {buildRouteGuidanceData} from './route-guidance-data.js';
 import { icon } from './ui/components.js';
 import { upperName } from './greek-caps.js';
 import { notifications } from './ui/notifications.js';
@@ -97,6 +98,7 @@ export class Hud {
     this.mini = $('minimap'); this.mctx = this.mini.getContext('2d');
     this.tacho = $('tacho'); this.tctx = this.tacho.getContext('2d');
     this.raceLen = route.finish - route.start;
+    if(route.isWorldRoute){this.setRoute(route.compiled);this.frame=0;this.lastZone=null;this.lastPos=0;this.rates={tacho:30,map:15,mapBig:30};this._tachoAt=this._mapAt=-1e9;return;}
     // ---- land/sea raster from the terrain grid (10 m per pixel)
     const { GX, GZ, H, C } = terrain;
     const land = this.land = document.createElement('canvas'); land.width = GX; land.height = GZ;
@@ -124,7 +126,7 @@ export class Hud {
     this.rpts = []; for (let s = 0; s <= route.length; s += 10) { const i = Math.round(s / route.step); this.rpts.push(route.X[Math.min(route.N - 1, i)], route.Z[Math.min(route.N - 1, i)]); }
     // ---- route bar ticks
     const ticks = this.el.rticks; let alt = 0;
-    for (const m of data.marks) {
+    for (const m of this.map.marks||data?.marks||[]) {
       const f = (m.s - route.start) / this.raceLen; if (f < 0 || f > 1) continue;
       const t = document.createElement('div'); t.className = 't'; t.style.left = (f * 100) + '%'; ticks.appendChild(t);
       if (['lake', 'limanakia', 'varkiza', 'lomvarda'].includes(m.id)) { const l = document.createElement('div'); l.className = 'l'; l.style.left = (f * 100) + '%'; l.textContent = m.name; if (alt++ % 2 && false) l.style.top = '28px'; ticks.appendChild(l); }
@@ -133,8 +135,18 @@ export class Hud {
     this.rates = { tacho: 30, map: 15, mapBig: 30 }; this._tachoAt = this._mapAt = -1e9; // Hz; setRates() follows the performance class
   }
 
+  setRoute(compiled){this.routeData=compiled?buildRouteGuidanceData(compiled):null;this.worldStreetCache=new Map();}
+  drawWorldMinimap(g,W,H,st,zoom=2.2){
+    const sc=zoom*W/600,cx=W/2,cy=H*.62;g.setTransform(1,0,0,1,0,0);g.fillStyle='#101b21';g.fillRect(0,0,W,H);g.save();g.translate(cx,cy);g.rotate(st.yaw);g.scale(sc,sc);g.translate(-st.x,-st.z);
+    const graph=this.worldRoads?.graph;for(const k of this.worldStreetCache.keys())if(!graph?.owners.has(k))this.worldStreetCache.delete(k);
+    for(const [k,owner]of graph?.owners||[]){let paths=this.worldStreetCache.get(k);if(!paths){paths=owner.edges.map(id=>graph.edges.get(id)?.value).filter(e=>e&&!(e.flags&8)).map(e=>e.points);this.worldStreetCache.set(k,paths);}g.strokeStyle='#697477';g.lineWidth=2/sc;for(const p of paths){if(!p.some(q=>Math.hypot(q[0]-st.x,q[2]-st.z)<500))continue;g.beginPath();p.forEach((q,i)=>i?g.lineTo(q[0],q[2]):g.moveTo(q[0],q[2]));g.stroke();}}
+    if(!st.free&&this.routeData){const points=this.routeData.polyline;for(const ahead of [false,true]){g.strokeStyle=ahead?'#e7e9df':'#7b8583';g.lineWidth=3/sc;g.beginPath();let first=true;for(const p of points){if((p.s>=st.s)!==ahead||Math.hypot(p.x-st.x,p.z-st.z)>600){first=true;continue;}if(first){g.moveTo(p.x,p.z);first=false;}else g.lineTo(p.x,p.z);}g.stroke();}const p=this.routeData.finish;g.fillStyle='#e7e9df';g.fillRect(p.x-3/sc,p.z-3/sc,6/sc,6/sc);}
+    g.restore();g.save();g.translate(cx,cy);g.fillStyle='#f5f2e8';g.beginPath();g.moveTo(0,-8);g.lineTo(5,6);g.lineTo(0,3);g.lineTo(-5,6);g.closePath();g.fill();g.restore();
+  }
+
   // ------------------------------------------------------------------ overview (title screen)
   drawOverview(canvas) {
+    if(this.map.route.isWorldRoute){this.drawWorldMinimap(canvas.getContext('2d'),canvas.width,canvas.height,{...this.map.route.compiled.startPose,s:0,free:false},.3);return;}
     const g = canvas.getContext('2d'), W = canvas.width, H = canvas.height, { route, data, terrain } = this.map;
     let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9;
     for (let i = 0; i < this.rpts.length; i += 2) { x0 = Math.min(x0, this.rpts[i]); x1 = Math.max(x1, this.rpts[i]); z0 = Math.min(z0, this.rpts[i + 1]); z1 = Math.max(z1, this.rpts[i + 1]); }
@@ -178,7 +190,7 @@ export class Hud {
     const { route, data } = this.map;
     this.r0 = s0; this.r1 = s1; this.raceLen = (s1 - s0) || 1;
     const ticks = this.el.rticks; ticks.innerHTML = '';
-    for (const m of data.marks) {
+    for (const m of this.map.marks||data?.marks||[]) {
       const f = (m.s - s0) / this.raceLen; if (f < -1e-3 || f > 1 + 1e-3) continue;
       const t = document.createElement('div'); t.className = 't'; t.style.left = (f * 100) + '%'; ticks.appendChild(t);
       if (f > 0.02 && f < 0.98 || m.id === 'lomvarda' && s1 > s0) { const l = document.createElement('div'); l.className = 'l'; l.style.left = (f * 100) + '%'; l.textContent = m.name; ticks.appendChild(l); }
@@ -234,6 +246,7 @@ export class Hud {
   }
 
   drawMinimap(g, W, H, st, zoom = 2.2, nav = false) {
+    if(this.map.route.isWorldRoute)return this.drawWorldMinimap(g,W,H,st,zoom);
     const { route, data } = this.map;
     const cx = W / 2, cy = H * (nav ? 0.62 : 0.6);
     g.setTransform(1, 0, 0, 1, 0, 0);

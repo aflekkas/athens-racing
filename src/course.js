@@ -1,3 +1,4 @@
+import {crossTimingLine} from './route-timing.js';
 import { LocalCarriageways } from './local-carriageways.js';
 // Shared course rule (owner decision 2026-10-18: no checkpoints). Progress along the route is tracked
 // invisibly: only continuous, on-road movement advances it, a shortcut off the route buys nothing, and a
@@ -106,6 +107,7 @@ function laneContains(lane, pose, margin = 0) {
     Math.abs(-dx * lane.tz + dz * lane.tx) <= lane.halfWidth + margin && Math.abs((pose.y || 0) - lane.y) <= 8 + margin;
 }
 export function coursePoseValid(course, pose, route, margin = 0) {
+  if (route?.isWorldRoute) return route.validatePose(pose,{margin});
   if (!finite(pose.s)) return false;
   if (!route || !finite(pose.x) || !finite(pose.z)) return Math.abs(pose.u || 0) <= 8;
   const length = route.length ?? (route.x?.length - 1) * route.step;
@@ -129,6 +131,7 @@ function chordOnRoute(course, a, b, route) {
   return true;
 }
 export function observeCourse(course, pose, now, { initialTime = 0, recovery = false, route = courseRoutes.get(course) || null } = {}) {
+  if(route?.isWorldRoute)return observeRouteCourse(course,pose,now,{initialTime,recovery,route});
   const prev = course.previous, dt = Math.max(0, Math.min(5, now - (course.previousTime ?? initialTime)));
   const d0 = progress(course, prev.s), d1 = progress(course, pose.s);
   const continuous = Math.abs(pose.s - prev.s) <= 30 + 150 * dt && (!finite(pose.x) || Math.hypot(pose.x - prev.x, pose.z - prev.z) <= 15 + 150 * dt);
@@ -169,4 +172,17 @@ export function observeCourse(course, pose, now, { initialTime = 0, recovery = f
 export function towCourseTo(course, pose, now) {
   course.previous = { s: pose.s, u: pose.u, x: pose.x, y: pose.y, z: pose.z }; course.previousTime = now;
   course.onRoute = pose.kind !== 'road';
+}
+
+// Route progress is recomputed from accepted world poses. Off-route travel earns no rejoin allowance.
+function observeRouteCourse(course,received,now,{initialTime,recovery,route}){
+ const prev=course.previous,dt=Math.max(0,Math.min(5,now-(course.previousTime??initialTime))),q=route.project(received.x,received.z,{hint:prev.s,referenceY:received.y,layer:received.layer,heading:received.yaw,maxTravel:30+150*dt}),pose={...received,...q,layer:received.layer,surfaceId:received.surfaceId},d0=progress(course,prev.s),d1=progress(course,pose.s),continuous=Number.isFinite(q.distance)&&Math.abs(pose.s-prev.s)<=30+150*dt&&Math.hypot(pose.x-prev.x,pose.z-prev.z)<=15+150*dt;
+ const onRoute=coursePoseValid(course,pose,route),n=Math.ceil(Math.hypot(pose.x-prev.x,pose.z-prev.z)/PATH_SAMPLE);let chord=true;
+ for(let i=1;i<n&&chord;i++){const t=i/n,x=prev.x+(pose.x-prev.x)*t,z=prev.z+(pose.z-prev.z)*t,y=prev.y+(pose.y-prev.y)*t,s=prev.s+(pose.s-prev.s)*t,contact=route.contactAt?.(x,z,{referenceY:y,layer:pose.layer});chord=coursePoseValid(course,{x,y,z,s,layer:contact?.layer??pose.layer,surfaceId:contact?.surfaceId??(route.contactAt?null:pose.surfaceId)},route,Math.min(CHORD_MARGIN,1));}
+ const followed=onRoute&&continuous&&chord&&!recovery;
+ if(!followed)course.rejoinLimit??=course.validProgress+2;
+ const rejoined=course.rejoinLimit==null||d1<=course.rejoinLimit;
+ const valid=followed&&rejoined&&d0<=course.reached+2;
+ if(valid){delete course.rejoinLimit;course.validProgress=d1;course.lastRoad={...pose};if(d1>course.reached){const before=course.reached;course.reached=d1;for(let i=0;i<course.marks.length;i++){const d=course.marks[i];if(course.markTimes[i]!=null||d1<d||before>=d)continue;const f=route.frame(course.s0+course.dir*d),line={...f,leftM:f.leftM,rightM:f.rightM};const cross=crossTimingLine({...prev,time:course.previousTime??initialTime}, {...pose,time:now},line);if(cross)course.markTimes[i]=cross.time;}if(course.finishedAt==null&&d1>=course.len&&course.markTimes.at(-1)!=null)course.finishedAt=course.markTimes.at(-1);}}
+ course.onRoute=valid;course.previous={...pose};course.previousTime=now;return course;
 }

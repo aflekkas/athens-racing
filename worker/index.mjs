@@ -42,6 +42,7 @@ export default {
     const world = await worldAssets(request, env, ctx);
     if (world) return world;
     const url = new URL(request.url);
+    if(url.pathname==='/api/routes')return json(catalogue.routeConfig||{environment:'production',routes:[]});
     if (protectedPath(url.pathname)) { const auth = await authorizeGame(request, env); if (auth.response) return auth.response; }
     if (url.pathname === '/api/account/presence') return env.PRESENCE.get(env.PRESENCE.idFromName('friends-v1')).fetch(request);
     if (url.pathname.startsWith('/api/auth/') || url.pathname.startsWith('/api/account/')) return accounts(request, env);

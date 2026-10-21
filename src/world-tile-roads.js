@@ -23,13 +23,13 @@ export class WorldTileRoads {
    */
   connected(edge){
     const result=new Map([[edge.surface,edge.layer]]);
-    for(const {value:e} of this.graph.edges.values())if((e.from===edge.to&&this.graph.legal(edge.id,e)||e.to===edge.from&&this.graph.legal(e.id,edge))&&Math.abs((e.from===edge.to?e.points[0][1]-edge.points.at(-1)[1]:e.points.at(-1)[1]-edge.points[0][1]))<.025)result.set(e.surface,e.layer);
+    for(const {value:e} of this.graph.edges.values()){if(e.flags&8)continue;if((e.from===edge.to&&this.graph.legal(edge.id,e)||e.to===edge.from&&this.graph.legal(e.id,edge))&&Math.abs((e.from===edge.to?e.points[0][1]-edge.points.at(-1)[1]:e.points.at(-1)[1]-edge.points[0][1]))<.025)result.set(e.surface,e.layer);if(e.layer!==edge.layer)continue;for(const [node,y]of [[edge.from,edge.points[0][1]],[edge.to,edge.points.at(-1)[1]]])if(e.from===node&&Math.abs(e.points[0][1]-y)<.025||e.to===node&&Math.abs(e.points.at(-1)[1]-y)<.025)result.set(e.surface,e.layer);}
     return result;
   }
-  width(point,{radius=16,heightTolerance=1,connected=false}={}) {
+  width(point,{radius=16,heightTolerance=1,connected=false,bounded=false}={}) {
     if(!(radius>0&&radius<=32))throw new Error('Invalid road width search radius');
     const edge=this.graph.edges.get(point.edge)?.value;if(!edge)return null;
-    const surfaces=connected?this.connected(edge):new Map([[edge.surface,edge.layer]]);
+    const surfaces=connected?this.connected(edge):new Map([[edge.surface,edge.layer]]);if(point.surfaceId)surfaces.set(point.surfaceId,edge.layer);
     const rx=Math.cos(point.yaw),rz=-Math.sin(point.yaw),intervals=[],visited=new Set();
     for(let d=-radius;d<=radius;d+=4){
       const x=point.x+rx*d,z=point.z+rz*d,key=tileKey(x,z),tile=this.stream.tiles.get(key);
@@ -47,18 +47,18 @@ export class WorldTileRoads {
         for(let j=0;j<3;j++){const p=triangles[i+j]*3,dx=positions[p]+m.origin[0]-point.x,dz=positions[p+2]+m.origin[2]-point.z;vertices.push({d:dx*rx+dz*rz,f:dx*(-rz)+dz*rx,y:positions[p+1]});}
         const hits=[];
         for(let j=0;j<3;j++){const a=vertices[j],b=vertices[(j+1)%3];if(Math.abs(a.f)<1e-7)hits.push(a);if(a.f*b.f<0){const f=a.f/(a.f-b.f);hits.push({d:a.d+(b.d-a.d)*f,y:a.y+(b.y-a.y)*f});}}
-        if(hits.length>=2&&hits.every(h=>Math.abs(h.y-point.y)<=heightTolerance))intervals.push([Math.min(...hits.map(h=>h.d)),Math.max(...hits.map(h=>h.d))]);
+        if(hits.length>=2&&hits.every(h=>Math.abs(h.y-point.y)<=heightTolerance+Math.abs(h.d)*Math.tan(Math.PI/6)))intervals.push([Math.min(...hits.map(h=>h.d)),Math.max(...hits.map(h=>h.d))]);
       }
     }
     intervals.sort((a,b)=>a[0]-b[0]);const merged=[];
     for(const a of intervals){const p=merged.at(-1);if(p&&a[0]<=p[1]+.002)p[1]=Math.max(p[1],a[1]);else merged.push(a.slice());}
-    const span=merged.find(a=>a[0]<=.002&&a[1]>=-.002);if(!span||span[0]<=-radius||span[1]>=radius)return null;
-    return {left:-span[0],right:span[1],width:span[1]-span[0]};
+    const span=merged.find(a=>a[0]<=.002&&a[1]>=-.002);if(!span||!bounded&&(span[0]<=-radius||span[1]>=radius))return null;
+    const left=Math.min(radius,-span[0]),right=Math.min(radius,span[1]);return {left,right,width:left+right};
   }
   /** Full footprint stays on the same public physical road and outside buildings. */
   safe(point,{halfWidth=1,halfLength=2.5,clearance=.15,connected=false}={}) {
     const edge=this.graph.edges.get(point.edge)?.value;if(!edge||edge.flags&8)return false;
-    const surfaces=connected?this.connected(edge):new Map([[edge.surface,edge.layer]]);
+    const surfaces=connected?this.connected(edge):new Map([[edge.surface,edge.layer]]);if(point.surfaceId)surfaces.set(point.surfaceId,edge.layer);
     const sin=Math.sin(point.yaw),cos=Math.cos(point.yaw),corners=[];
     for(const along of [-halfLength,0,halfLength])for(const across of [-halfWidth,0,halfWidth]){
       const x=point.x-sin*along+cos*across,z=point.z-cos*along-sin*across,c=this.stream.contact(x,z,{referenceY:point.y,layer:connected?null:edge.layer,requiredFlags:1});

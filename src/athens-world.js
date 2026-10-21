@@ -1,26 +1,12 @@
+import {createGuidanceDemo,DEMO_ROUTE} from './route-guidance/demo.js';
+import {createWorldSession} from './world-session.js';
 // Development-only connected world. This entry owns its scene and never calls
 // loadMap/buildMapWorld: no monolithic legacy geometry or contact pack coexists.
 import * as THREE from 'three';
 import {settings,onSettings} from './settings.js';
 import {resolveGraphics} from './graphics.js';
-import {WorldTileStream} from './world-tile-stream.js';
-import {WorldTileScene} from './world-tile-scene.js';
-import {WorldTileRoads} from './world-tile-roads.js';
-import {createGuidanceDemo,DEMO_ROUTE} from './route-guidance/demo.js';
-import {WorldTileBarriers} from './world-tile-barriers.js';
-import {WorldTileObstacles} from './world-tile-obstacles.js';
 import {AthensRoute,AthensGround} from './athens-ground.js';
-import {WorldDetail} from './world-detail.js';
-import {athensMaterial,loadAthensTextures} from './athens-materials.js';
 import {SEA_TIME} from './athens-detail.js';
-import {AthensProps,KINDS as PROP_KINDS} from './athens-props.js';
-import {AthensHorizon} from './athens-horizon.js';
-import {AthensLandmarks,insideLandmark,forecourtPlazas} from './athens-landmarks.js';
-import {AthensPlazas,plazaMaterial,lawnMaterial} from './athens-plazas.js';
-import {AthensTrees} from './athens-trees.js';
-import {AthensSigns} from './athens-signs.js';
-import {AthensMarks} from './athens-marks.js';
-import {DRESSING_VARIANTS} from './world-tile-dressing.js';
 import {Vehicle} from './physics.js';
 import {CARS,CarModel,setCarEnv,catalogueTrafficTypes} from './cars.js';
 import {fleetModel} from './traffic-fleet.js';
@@ -50,38 +36,13 @@ export async function bootAthens(){
  renderer.setPixelRatio(gfx.pixelRatio);renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=false;
  const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(62,innerWidth/innerHeight,.15,Math.min(gfx.drawDistance,850));
  scene.fog=new THREE.Fog('#9caeae',camera.far*.65,camera.far);const sky=ENV.createSky();scene.add(sky);const baked=ENV.bakeSky(renderer,sky);scene.environment=baked.env;setCarEnv(baked.env);const {sun}=ENV.createLights(scene);sun.castShadow=false;
- const post=createPost(renderer,scene,camera),detailRoot=new THREE.Group();scene.add(detailRoot);
- const detail=new WorldDetail({id:'athens',terrain:{},data:{buildings:[],vegetation:[]},route:{length:0}},detailRoot,()=>0);
- const props=new AthensProps(detailRoot,{enabled:settings.worldDetail!==false,skip:(kind,x,z)=>settings.worldDetail!==false&&(kind===PROP_KINDS.monument||kind===PROP_KINDS.fountain)&&insideLandmark(x,z)}),horizon=new AthensHorizon(scene,scene.fog,{enabled:settings.worldDetail!==false}),landmarks=new AthensLandmarks(detailRoot,scene.fog,{enabled:settings.worldDetail!==false,groundAt:(x,z,y)=>{const c=stream?.contact(x,z,{referenceY:y,layer:0});return c?c.y:null;}}),boxRoots=new Set(),trees=new AthensTrees(detailRoot,{enabled:settings.worldDetail!==false}),signs=new AthensSigns(detailRoot,{enabled:settings.worldDetail!==false}),marks=new AthensMarks(detailRoot,{enabled:settings.worldDetail!==false}),lawns=new AthensPlazas(detailRoot,{enabled:settings.worldDetail!==false,material:lawnMaterial(),isRoad:(x,z,y)=>{const c=stream?.contact(x,z,{referenceY:y,layer:0});return !!c&&(c.flags&1)===1;},groundAt:(x,z,y)=>{const c=stream?.contact(x,z,{referenceY:y,layer:0});return c?c.y:null;}}),plazas=new AthensPlazas(detailRoot,{enabled:settings.worldDetail!==false,material:plazaMaterial(),extra:forecourtPlazas(),isRoad:(x,z,y)=>{const c=stream?.contact(x,z,{referenceY:y,layer:0});return !!c&&(c.flags&1)===1;},groundAt:(x,z,y)=>{const c=stream?.contact(x,z,{referenceY:y,layer:0});return c?c.y:null;}});
- // Buildings a landmark model replaces stay in their tile as hidden meshes; World detail Off shows the old boxes again.
- const syncBoxes=()=>{const hidden=settings.worldDetail!==false;for(const root of boxRoots)for(const c of root.children)if(c.userData.landmarkBox)c.visible=!hidden;};
- const unsubscribeProps=onSettings((s,key)=>{if(!key||key==='worldDetail'){props.setEnabled(s.worldDetail!==false);horizon.setEnabled(s.worldDetail!==false);landmarks.setEnabled(s.worldDetail!==false);plazas.setEnabled(s.worldDetail!==false);lawns.setEnabled(s.worldDetail!==false);signs.setEnabled(s.worldDetail!==false);marks.setEnabled(s.worldDetail!==false);trees.setEnabled(s.worldDetail!==false);syncBoxes();}});
- horizon.load(new URL('./assets/athens/horizon.bin',document.baseURI)).catch(e=>console.warn(e.message));plazas.load(new URL('./assets/athens/plazas.json',document.baseURI)).catch(e=>console.warn(e.message));lawns.load(new URL('./assets/athens/lawns.json',document.baseURI)).catch(e=>console.warn(e.message));signs.load(new URL('./assets/athens/pois.json',document.baseURI)).catch(e=>console.warn(e.message));
- await loadAthensTextures(renderer);const sceneTiles=new WorldTileScene(scene,{renderer,materialFactory:athensMaterial}),barriers=new WorldTileBarriers(),obstacles=new WorldTileObstacles();
+ const post=createPost(renderer,scene,camera);
  loading.show('athens','FREE ROAM');document.getElementById('ldName').textContent='ATHENS';
- const manifestURL=new URL('./data/athens/manifest.json',document.baseURI),response=await fetch(manifestURL);
- if(!response.ok)throw Error('Athens development cells are not hosted on this server');
- const manifest=await response.json();if(!manifest.developmentOnly||manifest.releaseReady!==false)throw Error('Unexpected Athens activation policy');
- let guidance=null;
- let scripted=false,driver=null,cameraHook=null,stream,roads,player=null,stopped=false,paused=false,towing=false,frameId,elapsed=0,accumulator=0,last=performance.now(),lastTraffic=-10,trafficDt=0;
+ let scripted=false,driver=null,cameraHook=null,player=null,stopped=false,paused=false,towing=false,frameId,elapsed=0,accumulator=0,last=performance.now(),lastTraffic=-10,trafficDt=0;
  const traffic=[],contacts=new Map(),stats={frames:0,simulationSeconds:0,metres:0,holds:0,missingContacts:0,carHits:0,frameMs:[],cpuMs:[],initialDownloadBytes:0,initialDriveMs:0,maxEstimatedJSBytes:0,maxEstimatedGPUBytes:0},rng=new RNG(71018);
- const adapter={
-  warmup:p=>sceneTiles.warmup(p),
-  rebase(origin,previous){sceneTiles.rebase(origin,previous);detailRoot.position.set(-origin.x,0,-origin.z);},
-  prepare(key,packet,origin){const build=sceneTiles.prepare(key,packet,origin);let installed=false;
-   return {steps:build.steps,commit(){
-    try{
-     if(manifest.tiles[key].contactEligible!==false)roads.graph.install(key,packet);
-     barriers.install(key,packet);obstacles.install(key,packet);guidance?.addCell(key);
-     // the bake's tree rows are drawn by the Athens tree layer (species models, shadows); the box trees of the shared detail layer are not used
-     detail.addRecords(key,[]);props.addTile(key,packet);trees.addTile(key,packet);signs.addTile(key,packet);marks.addTile(key,packet);landmarks.addTile(key);plazas.addTile(key);lawns.addTile(key);installed=true;const handle=build.commit();boxRoots.add(handle.root);syncBoxes();return handle;
-    }catch(e){roads.graph.remove(key);guidance?.removeCell(key);barriers.remove(key);obstacles.remove(key);detail.removeTile(key);props.removeTile(key);trees.removeTile(key);signs.removeTile(key);marks.removeTile(key);landmarks.removeTile(key);plazas.removeTile(key);lawns.removeTile(key);build.dispose();throw e;}
-   },dispose(){if(installed){roads.graph.remove(key);guidance?.removeCell(key);barriers.remove(key);obstacles.remove(key);detail.removeTile(key);props.removeTile(key);trees.removeTile(key);signs.removeTile(key);marks.removeTile(key);landmarks.removeTile(key);plazas.removeTile(key);lawns.removeTile(key);installed=false;}for(const r of [...boxRoots])if(r.name==='tile:'+key)boxRoots.delete(r);build.dispose();}};
-  }
- };
- stream=new WorldTileStream(manifest,{...resources.stream,adapter,baseURL:manifestURL,activationMs:3});roads=new WorldTileRoads(stream);
- if(query.get('guidance')==='1')guidance=createGuidanceDemo(scene,stream,roads);
- if(manifest.renderVariants){const declared=new Set(manifest.renderVariants.map(v=>v.key));await sceneTiles.prewarm([...manifest.renderVariants,...DRESSING_VARIANTS.filter(v=>!declared.has(v.key))]);}
+ const session=await createWorldSession({renderer,scene,resources,progress:(...args)=>loading.progress(...args)});
+ const {stream,roads,barriers,obstacles,detail,props,trees,signs,marks,horizon,landmarks,plazas,lawns,sceneTiles,manifest}=session;
+ let guidance=query.get('guidance')==='1'?createGuidanceDemo(scene,stream,roads):null;const offGuidance=session.subscribeTiles({activated:k=>guidance?.addCell(k),removed:k=>guidance?.removeCell(k)});
  const spec=CARS.find(c=>c.id===query.get('car'))||CARS.find(c=>c.id==='carrera_gts')||CARS[0];
  function place(v,p){v.reset(0,0,0);Object.assign(v,{x:p.x,y:p.y,z:p.z,yaw:p.yaw,vLong:0,vLat:0,w:0,_network:true});Object.assign(v,v.route.project(v.x,v.z));v.ground.referenceY=p.y;v.ground.begin(v);v.ground.resolve(v,1/240);v.syncWheels();}
  await stream.spawn(p=>{const route=new AthensRoute(p),veh=new Vehicle(spec,route),model=new CarModel(spec);veh.ground=new AthensGround(stream,route,barriers,obstacles);place(veh,p);scene.add(model.root);player={veh,model,spec};},{halfWidth:(spec.width||2)/2,halfLength:(spec.length||5)/2,timeoutMs:180000});
@@ -152,7 +113,7 @@ export async function bootAthens(){
   }catch(e){paused=true;document.getElementById('err').style.display='block';document.getElementById('err').textContent=e.message;console.error(e);}
   stats.cpuMs.push(performance.now()-cpu);if(stats.cpuMs.length>900)stats.cpuMs.shift();frameId=requestAnimationFrame(tick);
  }
- function dispose(){if(stopped)return;stopped=true;cancelAnimationFrame(frameId);guidance?.dispose();stream.dispose();roads.dispose();barriers.dispose();obstacles.dispose();detail.dispose();unsubscribeProps();props.dispose();trees.dispose();signs.dispose();marks.dispose();horizon.dispose();landmarks.dispose();plazas.dispose();lawns.dispose();sceneTiles.dispose();renderer.dispose();}
+ function dispose(){if(stopped)return;stopped=true;cancelAnimationFrame(frameId);offGuidance();guidance?.dispose();session.dispose();renderer.dispose();}
  addEventListener('pagehide',dispose,{once:true});addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();post.setSize(innerWidth,innerHeight,gfx.pixelRatio);});
  document.addEventListener('visibilitychange',()=>{last=performance.now();accumulator=0;if(!document.hidden)void account.revalidate();});
  // Scripted measurement drive: wall-clock paced like a 30 fps game, optional sparse rendering.

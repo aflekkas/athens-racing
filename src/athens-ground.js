@@ -13,7 +13,7 @@ export class AthensRoute{
 }
 export class AthensGround{
  constructor(stream,route,barriers,obstacles){Object.assign(this,{stream,route,barriers,obstacles});this.referenceY=route.height;this.previous=null;this.holds=0;this.barrierHits=0;this.buildingHits=0;}
- begin(v){this.referenceY=v.y;this.previous={x:v.x,y:v.y,z:v.z,yaw:v.yaw};const c=this.stream.contact(v.x,v.z,{referenceY:v.y});if(c){this.route.height=c.y;this.route.nx=c.nx;this.route.nz=c.nz;}v._network=true;}
+ begin(v){this.referenceY=v.y;this.previous={x:v.x,y:v.y,z:v.z,yaw:v.yaw};const c=this.stream.contact(v.x,v.z,{referenceY:v.y});if(c){if(!this.route.isWorldRoute){this.route.height=c.y;this.route.nx=c.nx;this.route.nz=c.nz;}}v._network=true;}
  footprint(v,extra=0){const points=[],fx=-Math.sin(v.yaw),fz=-Math.cos(v.yaw),rx=Math.cos(v.yaw),rz=-Math.sin(v.yaw),l=Math.max(v.halfL,3)+extra,w=v.halfW+extra;
   for(const along of [-l,0,l])for(const across of [-w,0,w])points.push({x:v.x+fx*along+rx*across,z:v.z+fz*along+rz*across});return points;
  }
@@ -48,6 +48,6 @@ export class AthensGround{
   v.bank=clamp(((ys[1]+ys[3])-(ys[0]+ys[2]))/(2*v.track),-.6,.6);
   v.resolveBodyContact(dt,Math.max(c.y,ys.reduce((a,b)=>a+b,0)/4),v.gradeG,v.bank);
   v.wheelSurf=surfaces;v.surf=c.surf;v.surfMu=v.bodyDynamic?0:mu;v.surfDrag=v.bodyDynamic?0:drag;v.surfRes=v.air?0:res;v.surfSoft=v.air?0:soft;v.surfBow=0;v.water=c.water;v._network=true;
-  Object.assign(v,this.route.project(v.x,v.z));this.referenceY=v.y;
+  const q=this.route.project(v.x,v.z,{hint:v.s,referenceY:v.y,heading:v.yaw});v.s=q.s;v.u=q.u;v.routeContact={layer:c.layer,surfaceId:c.surfaceId};this.referenceY=v.y;
  }
 }

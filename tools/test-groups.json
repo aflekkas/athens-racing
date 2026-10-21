@@ -239,7 +239,13 @@
     "tools/far-cull.test.mjs",
     "tools/far-cull-budget.test.mjs",
     "tools/no-third-party-media.test.mjs",
-    "tools/route-guidance.test.mjs"
+    "tools/route-guidance.test.mjs",
+    "tools/route-definition.test.mjs",
+    "tools/route-compile.test.mjs",
+    "tools/route-runtime.test.mjs",
+    "tools/route-stream-policy.test.mjs",
+    "tools/route-guidance-data.test.mjs",
+    "tools/route-race.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",

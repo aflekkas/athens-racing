@@ -158,6 +158,9 @@ function nearestName(s, ctx) { let n = upperName(ctx.route.from || ''); for (con
 
 export function resolve(def, ctx) {
   if (isDrivingMode(def)) return resolveDrivingMode(def, ctx);
+  if (ctx.route?.isWorldRoute) {
+    if(def.reverse)throw Error('Use the compiled reverse route');const route=ctx.route,len=route.length*(def.laps||1),laps=def.laps||1,sectors=[];for(let lap=0;lap<laps;lap++)for(const d of [...route.compiled.sectorsM,route.length]){const last=lap===laps-1&&d===route.length;sectors.push({id:last?'finish':`lap${lap+1}-s${d}`,name:d===route.length?'FINISH':'SECTOR',s:lap*route.length+d,d:lap*route.length+d,lap:lap+1,lapEnd:route.closed&&d===route.length});}return{s0:0,s1:len,dir:1,len,laps,lapLength:route.length,closed:route.closed,fromName:route.from,toName:route.to,sectors,reverse:false,timeLimit:0,targetTimes:null};
+  }
   if (def.reverse && !canReverse(def.mapId)) def = { ...def, reverse: false }; // one-way-only course
 
   const a = locate(def.from, ctx), b = locate(def.to, ctx);
@@ -227,7 +230,7 @@ export function loadRecord(id, st = store()) {
 export function saveRecord(id, rec, st = store()) { try { st.setItem(KEY(id), JSON.stringify(rec)); } catch {} }
 /** fold a result into the saved record; returns { record, newBest, prevMedal } */
 export function recordResult(def, res, st = store()) {
-  const prev = loadRecord(def.id, st), rec = { ...prev };
+  const prev = loadRecord(def.recordId||def.id, st), rec = { ...prev };
   rec.runs = (prev.runs || 0) + 1;
   rec.medal = betterMedal(prev.medal || null, res.medal) || null;
   let newBest = false;
@@ -235,7 +238,7 @@ export function recordResult(def, res, st = store()) {
   if (timed && !(res.time >= (prev.bestTime ?? Infinity))) { rec.bestTime = res.time; rec.bestSplits = res.splits.slice(); rec.bestCar = res.car; newBest = true; }
   if (def.type === 'sprint' && res.time != null && !res.wrecked && !res.busted) rec.bestPos = Math.min(prev.bestPos ?? 99, res.position);
   rec.last = { time: res.time, position: res.position, medal: res.medal, car: res.car, at: Date.now() };
-  saveRecord(def.id, rec, st);
+  saveRecord(def.recordId||def.id, rec, st);
   return { record: rec, newBest, prevMedal: prev.medal || null };
 }
 export function medalCount(st = store()) {
@@ -275,7 +278,7 @@ export class EventRun {
   /** def: an event definition; ctx: see resolve(); opts: { car, storage } */
   constructor(def, ctx, opts = {}) {
     this.def = def; this.r = resolve(def, ctx); this.courseRoute = ctx.route; this.car = opts.car || null; this.st = opts.storage || store();
-    this.best = loadRecord(def.id, this.st);
+    this.best = loadRecord(def.recordId||def.id, this.st);
     this.reset();
   }
   reset() {
@@ -309,7 +312,7 @@ export class EventRun {
     observeCourse(this.course, p, this.courseClock, { route: this.courseRoute });
     this.maxProg = Math.max(this.maxProg, this.course.reached);
     // Timing sectors (only when reached forwards: driving back and forth across a line doesn't count twice).
-    while (this.sectorIdx < this.r.sectors.length && this.course.reached >= this.r.sectors[this.sectorIdx].d) {
+    while (this.sectorIdx < this.r.sectors.length && this.course.reached >= this.r.sectors[this.sectorIdx].d && (!this.courseRoute?.isWorldRoute || this.course.markTimes[this.course.marks.indexOf(this.r.sectors[this.sectorIdx].d)]!=null)) {
       const cp = this.r.sectors[this.sectorIdx], i = this.sectorIdx++;
       const crossedAt = this.course.markTimes[this.course.marks.findIndex(d => d >= cp.d - 1e-7)];
       const timeAtLine = Number.isFinite(crossedAt) ? p.t - (this.courseClock - crossedAt) : p.t;
@@ -335,7 +338,7 @@ export class EventRun {
     if (this.done) return this.result;
     this.done = true;
     const res = {
-      eventId: this.id, mapId: this.def.mapId || 'riviera', type: this.type, car: this.car, time: extra.time ?? null, splits: this.splits.slice(),
+      eventId: this.id, mapId: this.def.mapId || 'riviera', ...(this.def.routeId?{worldId:this.def.worldId,routeId:this.def.routeId,routeHash:this.def.routeHash,geometryHash:this.def.geometryHash,edition:this.def.edition,worldSetRevision:this.def.worldSetRevision}:{}), type: this.type, car: this.car, time: extra.time ?? null, splits: this.splits.slice(),
       laps: this.r.laps || 1, lapTimes: this.lapTimes.slice(), bestLap: this.lapTimes.length ? Math.min(...this.lapTimes) : null,
       position: extra.position ?? 1, field: extra.field ?? 1, medal: null, penalties: extra.penalties || 0,
       distance: this.r.len, reverse: this.r.reverse, routeKey: `${Math.round(this.r.s0)}>${Math.round(this.r.s1)}`, valid: true, ...extra,
@@ -344,7 +347,7 @@ export class EventRun {
     if (res.time == null) res.valid = false;
     if (this.def.custom) res.valid = false; // a changed race setup: kept apart from the official boards
     res.medal = medalFor(this.def, res, this.r);
-    if (!this.def.quick || this.def.save) Object.assign(res, recordResult(this.def, res, this.st));
+    if ((!this.def.quick || this.def.save) && (!this.def.pilot || res.valid)) Object.assign(res, recordResult(this.def, res, this.st));
     else res.record = null;
     this.result = res;
     events.emit('finish', res);
