@@ -50,10 +50,15 @@ export async function createWorldSession({renderer,scene,resources,progress=()=>
  // targets. Only the final post quad draws to the canvas; its world variants
  // would double startup compilation without being used by a race frame.
  const sceneTiles=new WorldTileScene(scene,{renderer,materialFactory:athensMaterial,warmCanvas:false}),barriers=new WorldTileBarriers();
+ // These shared basin programs are start readiness, independent of which
+ // neighbouring cell first supplies a facade, coastal rock or water mesh.
+ // Warm them before countdown so optional admission cannot trigger first-use
+ // driver work during the countdown or the first seconds of driving.
+ const commonPrograms=startsRegional?Promise.resolve():texturesReady.then(()=>sceneTiles.warmVariants(DRESSING_VARIANTS));commonPrograms.catch(()=>{});
  let regionalTextures=startsRegional?texturesReady:null;
  const regionalScenery=new WorldRegionalScenerySet(scene,{trees});const activationSteps=[];
  const adapter={
-  warmup:async p=>{await texturesReady;if([p.metadata.regionalScenery?.surface,...p.metadata.meshes.map(m=>m.userData?.tileSurface)].some(surface=>/^(penteli|megara)/.test(surface||'')))await(regionalTextures??=loadAthensTextures(renderer,{penteli:true}));await Promise.all([sceneTiles.warmup(p),regionalScenery.prepare(p.metadata.regionalScenery)]);},
+  warmup:async p=>{await commonPrograms;await texturesReady;if([p.metadata.regionalScenery?.surface,...p.metadata.meshes.map(m=>m.userData?.tileSurface)].some(surface=>/^(penteli|megara)/.test(surface||'')))await(regionalTextures??=loadAthensTextures(renderer,{penteli:true}));await Promise.all([sceneTiles.warmup(p),regionalScenery.prepare(p.metadata.regionalScenery)]);},
   rebase(origin,previous){sceneTiles.rebase(origin,previous);regionalScenery.rebase(origin);detailRoot.position.set(-origin.x,0,-origin.z);},
   prepare(key,packet,origin){const build=sceneTiles.prepare(key,packet,origin);let installed=false,committed=false,disposed=false;
    const measured=(name,fn)=>{const at=performance.now();fn();const ms=performance.now()-at;if(ms>1){activationSteps.push({name,ms});if(activationSteps.length>64)activationSteps.shift();}};
