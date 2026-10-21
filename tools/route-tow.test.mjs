@@ -12,7 +12,8 @@ test('departure heading survives a spin, rest and reverse body yaw; velocity inc
 });
 test('two-way directed edges choose pre-departure direction even when the reverse lane is nearer',()=>{
  for(const yaw of [0,Math.PI]){const pose={x:0,z:10,yaw:yaw+Math.PI,towHeading:yaw},forward={x:3,z:0,yaw,edgeId:'forward',roadId:'pair'},back={x:0,z:0,yaw:yaw+Math.PI,edgeId:'back',roadId:'pair'};
-  assert.equal(planWorldTow({pose,roadCandidates:[back,forward]}).edgeId,'forward');}
+  assert.equal(planWorldTow({pose,roadCandidates:[back,forward]}).edgeId,'forward');
+  assert.equal(planWorldTow({pose,roadCandidates:[back]}),null,'a blocked correct lane cannot reverse a two-way-road tow');}
 });
 test('one-way and divided carriageways keep legal direction even against departure heading',()=>{
  const pose={x:0,z:10,yaw:0,towHeading:Math.PI},legal={x:0,z:0,yaw:0,edgeId:'oneway'},opposite={x:20,z:0,yaw:Math.PI,edgeId:'separate-carriageway'};
@@ -22,6 +23,7 @@ test('one-way and divided carriageways keep legal direction even against departu
 test('route recovery faces race direction after a spin in both world and legacy planners',async()=>{
  const f=fixture(),r=new RouteRuntime(await compileRoute(f.definition,f.graph,f.contacts)),s=500,frame=r.frame(s),own={...r.point(s),yaw:frame.yaw,edgeId:frame.edgeId,layer:0,surfaceId:frame.surfaceId},reverse={...own,yaw:frame.yaw+Math.PI,edgeId:'reverse'};
  assert.equal(planWorldTow({pose:{...own,yaw:reverse.yaw,towHeading:reverse.yaw},course:{validProgress:490,lastRoad:{s:490}},route:r,roadCandidates:[reverse,own]}).edgeId,own.edgeId);
+ assert.equal(planWorldTow({pose:{...own,yaw:reverse.yaw,towHeading:reverse.yaw},course:{validProgress:490,lastRoad:{s:490}},route:r,roadCandidates:[reverse]}),null,'blocked forward lanes must never fall back to a backwards route placement');
  const route={closed:false,length:1000,project:()=>({s:500,u:10}),centre:s=>({x:s,z:0,tx:1,tz:0}),edge:()=>5,pose:(s,d)=>({x:s,z:0,s,u:0,yaw:d>0?-Math.PI/2:Math.PI/2})};
  for(const dir of [1,-1])assert.equal(planTow({x:500,z:10,yaw:dir*Math.PI/2,route,course:{s0:dir>0?0:1000,dir,floor:100,ref:500}}).d,dir);
 });
