@@ -1,3 +1,4 @@
+import {vegetationContactIndex,filterStreetVegetation} from '../../src/vegetation-clearance.js';
 // Mediterranean landcover from the already attributed Penteli OSM extraction.
 // Planting and residential infill are deterministic interpretations, not surveyed objects.
 import {inRing,hashN,TREE} from '../../src/world-tile-trees.js';
@@ -60,7 +61,10 @@ export function populatePenteliScenery(bake,tiles,transform,cover){
    if(houses.some((_,i)=>i%7===0&&Math.hypot(x-ox-houses[i],z-oz-houses[i+2])<Math.max(houses[i+4],houses[i+6])/2+2))continue;
    trees.push(x-ox,c.y-.12,z-oz,station%6.28,TREE.oleander*8+(station+clump)%8);counts.maquis++;
   }
-  tile.penteliTrees=trees;tile.penteliHouses=houses;tile.penteliPaint=paintPenteli(tile.t.finePositions,[ox,0,oz],cover);
+  const safeTrees=filterStreetVegetation(trees,vegetationContactIndex(tile.t),{mountain:true}).rows;
+  for(let i=0;i<trees.length;i+=5)counts[(trees[i+4]>>3)===TREE.pine?'pine':'maquis']--;
+  for(let i=0;i<safeTrees.length;i+=5)counts[(safeTrees[i+4]>>3)===TREE.pine?'pine':'maquis']++;
+  tile.penteliTrees=Array.from(safeTrees);tile.penteliHouses=houses;tile.penteliPaint=paintPenteli(tile.t.finePositions,[ox,0,oz],cover);
  }
  return counts;
 }

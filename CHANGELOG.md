@@ -8,6 +8,8 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Shrubs and tree crowns stay clear of the roads, and roadside greenery fades in smoothly as you drive.
+
 - On staging, choose the Penteli hill climb, uphill time trial or legal descent from the Athens route picker. Earlier times stay under Original Penteli road.
   ![Penteli village start on the Athens world](assets/changelog/2026.10.21.1/penteli-route.webp "The Penteli hill-climb start.")
 

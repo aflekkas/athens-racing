@@ -197,7 +197,7 @@ export function addDerivedBuildings(pack, tables) {
   const houses=deriveBuildingMeshes(infill,{...pack.metadata,ids:infill.ids,inferredCoastal:true},new Uint8Array(infill.ids.length).fill(2),new Uint8Array(infill.ids.map((_,i)=>i%2?1:3)));
   extra.rings.push(...houses.extra.rings);
   const ox = pack.metadata.origin?.[0] ?? 0, oz = pack.metadata.origin?.[2] ?? 0, trees = clearCoastalStreetTrees(tables,deriveStreetTrees(tables, extra.rings, (x, z) => inOldQuarter(ox + x, oz + z)),recipe);
-  const coast=coastalRows(tables,extra.rings,coastalRecipe(pack.metadata.cell),trees,pack.arrays[pack.metadata.extensions?.worldDetail?.vegetation?.positionHeight],pack.metadata.cell,pack.metadata.coastalLakes);
+  const coast=coastalRows(tables,extra.rings,coastalRecipe(pack.metadata.cell),trees,pack.arrays[pack.metadata.extensions?.worldDetail?.coastalTreeOccupancy??pack.metadata.extensions?.worldDetail?.vegetation?.positionHeight],pack.metadata.cell,pack.metadata.coastalLakes);
   const allTrees=new Float32Array(trees.length+coast.trees.length);allTrees.set(trees);allTrees.set(coast.trees,trees.length);
   const inQuarter = (x, z) => inOldQuarter(ox + x, oz + z), propsExt = pack.metadata.extensions?.worldDetail?.props, occupied = [];
   if (propsExt) { const rows = pack.arrays[propsExt.rows]; for (let i = 0; i < rows.length; i += 5) occupied.push(rows[i], rows[i + 2]); } // the bake's own props (parked cars, kiosks, benches...) keep their places

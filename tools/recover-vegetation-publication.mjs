@@ -1,0 +1,40 @@
+// Reconstruct a completed scenery bake after a manifest-only finalization error.
+// Independently checks every authenticated input/output; never trusts missing receipts.
+import {readFile,writeFile,readdir,unlink,statfs} from 'node:fs/promises';
+import {resolve} from 'node:path';
+import {createHash} from 'node:crypto';
+import {gunzipSync} from 'node:zlib';
+import {decodeGeometryPack} from '../src/baked-geometry.js';
+import {tileTables,validateWorldTile} from '../src/world-tile-format.js';
+import {prepareTilePacket} from '../src/world-tile-worker.js';
+import {vegetationContactIndex,psychikoVegetationRadius} from '../src/vegetation-clearance.js';
+import {forestCandidates,forestRadius} from '../src/vegetation-forest.js';
+import {assertVegetationClearance} from './audit-world-vegetation.mjs';
+import {canonicalWorldJSON,composeWorldManifest} from '../src/world-manifest.js';
+const [sourceURL,directory]=process.argv.slice(2),dir=resolve(directory),root=resolve(import.meta.dirname,'..'),hash=b=>createHash('sha256').update(b).digest('hex');
+const decode=b=>{const r=gunzipSync(b);return decodeGeometryPack(r.buffer.slice(r.byteOffset,r.byteOffset+r.length));};
+const physical=p=>hash(Buffer.concat([Buffer.from(JSON.stringify({ids:p.metadata.ids,strings:p.metadata.strings,obstacles:p.metadata.authoredObstacles})),...Object.values(tileTables(p)).map(a=>Buffer.from(a.buffer,a.byteOffset,a.byteLength))]));
+const get=async(url,sha)=>{for(let i=0;;i++){try{const r=await fetch(url,{signal:AbortSignal.timeout(60000)});if(!r.ok)throw Error('HTTP '+r.status);const b=Buffer.from(await r.arrayBuffer());if(sha&&hash(b)!==sha)throw Error('Source hash mismatch');return b;}catch(e){if(i===2)throw e;}}};
+const disk=async()=>{for(;;){const s=await statfs('/');if(Math.ceil(100*(s.blocks-s.bfree)/(s.blocks-s.bfree+s.bavail))<83)return;console.log('Waiting for disk below 83%');await new Promise(r=>setTimeout(r,30000));}};
+const old=JSON.parse(await get(sourceURL)),{revision,...oldContent}=old;if(hash(canonicalWorldJSON(oldContent))!==revision)throw Error('World source hash');
+const definition=structuredClone(old),objects=new Map(),sources={},proof={sourceRevision:revision,regions:{},physical:[],passed:false,sourceHashes:{},recoveredFinalization:true};
+const local=async entry=>{const key=entry.url.slice('/world/'.length),file=resolve(dir,key);try{const b=await readFile(file);if(b.length!==entry.bytes||hash(b)!==entry.sha256)throw Error('Local integrity');objects.set(key,{key,file,size:b.length});return b;}catch(e){if(e.code!=='ENOENT')throw e;return null;}};
+const store=async value=>{const b=Buffer.from(JSON.stringify(value)),key='manifests/'+hash(b)+'.json',file=resolve(dir,key);await disk();await writeFile(file,b);objects.set(key,{key,file,size:b.length});return key;};
+for(const region of definition.regions){
+ const url=new URL(region.manifestUrl,sourceURL).href,original=JSON.parse(await get(url,region.manifestSha256)),m=JSON.parse(await readFile(resolve(dir,region.id+'-manifest.json'))),report={cells:0,changedCells:0,vegetation:0,forest:0,physicalUnchanged:0};proof.regions[region.id]=report;
+ for(const [f,sha] of Object.entries(m.vegetationClearance.sourceHashes)){const actual=hash(await readFile(resolve(root,f)));if(f!=='tools/rebake-world-vegetation.mjs'&&sha!==actual)throw Error('Stale source '+f);proof.sourceHashes[f]=actual;}
+ const trees=new Map(),add=(key,row)=>{if(!trees.has(key))trees.set(key,[]);trees.get(key).push(row);};
+ for(const asset of m.regionalAssets||[]){const b=await local(asset);if(region.id==='penteli'){if(!b)throw Error('Missing completed forest');const f=decode(b),mask=f.arrays[f.metadata.forest.clearanceArray];for(const r of forestCandidates(f))if(mask[r.i]&(1<<r.j)){const cx=Math.floor(r.x/512),cz=Math.floor(r.z/512);add(cx+','+cz,{x:r.x-cx*512,z:r.z-cz*512,radius:forestRadius(r.scale),kind:'forest'});}}}
+ for(const e of m.enrichments||[]){const key=e.url.slice('/world/'.length),b=await readFile(resolve(dir,key));if(!key.includes(hash(b)))throw Error('Enrichment hash');objects.set(key,{key,file:resolve(dir,key),size:b.length});const d=JSON.parse(b),allowed=new Set(d.vegetationClearance.allowedTreeSeeds),q=d.proj,P=m.projection,sx=P.mlon/q.mlon,sz=P.mlat/q.mlat,ox=(q.lon0-P.lon0)*P.mlon,oz=-(q.lat0-P.lat0)*P.mlat,T=d.psychiko.scenery.trees;report.psychikoTrees=allowed.size;for(let i=0,hx=0,hz=0;i<T.length;i+=3){hx+=T[i];hz+=T[i+1];if(!allowed.has(i))continue;const x=ox+hx/2*sx,z=oz+hz/2*sz,cx=Math.floor(x/512),cz=Math.floor(z/512);add(cx+','+cz,{x:x-cx*512,z:z-cz*512,radius:psychikoVegetationRadius(Math.floor(T[i+2]/100),T[i+2]%100/2,Math.max(sx,sz)),kind:'psychiko'});}}
+ const entries=Object.entries(m.tiles);let cursor=0;await Promise.all(Array.from({length:4},async()=>{for(;;){const task=entries[cursor++];if(!task)return;const [key,e]=task,prior=original.tiles[key];if(!prior)throw Error('Unexpected cell');const oldBody=await get(new URL(prior.url,url),prior.sha256),newBody=await local(e)||oldBody;if(hash(newBody)!==e.sha256)throw Error('Missing changed output');const before=decode(oldBody),after=decode(newBody),sha=physical(before);if(sha!==physical(after))throw Error('Physical mismatch '+key);validateWorldTile(after);assertVegetationClearance(after,tileTables(after));const job={world:after.metadata.world,revision:after.metadata.revision,cell:after.metadata.cell,entry:{decodedBytes:Number.MAX_SAFE_INTEGER,triangles:e.triangles}},packet=prepareTilePacket(after,job);report.vegetation+=assertVegetationClearance(packet,tileTables(packet)).checked;
+ if(e.sha256!==prior.sha256){report.changedCells++;const oldPacket=prepareTilePacket(before,job),colliders=p=>hash(JSON.stringify([p.obstacleIndex,p.detailObstacleIndex]));if(colliders(oldPacket)!==colliders(packet))throw Error('Collider mismatch '+key);}
+ const index=vegetationContactIndex(tileTables(packet));for(const r of trees.get(key)||[]){if(!index.clear(r.x,r.z,r.radius))throw Error('Regional vegetation contact '+key);if(r.kind==='forest')report.forest++;}trees.delete(key);
+ e.transientBytes=Math.max(e.transientBytes||0,2*e.decodedBytes+e.bytes);proof.physical.push({cell:key,region:region.id,beforeSHA:prior.sha256,afterSHA:e.sha256,physicalSHA:sha});report.cells++;report.physicalUnchanged++;if(report.cells%100===0)console.log(region.id,report.cells+'/'+entries.length);
+ }}));if(trees.size)throw Error('Regional vegetation has no audited owning cell');
+ let worst=0;for(const k of Object.keys(m.tiles)){const[x,z]=k.split(',').map(Number);for(const dx of[-1,0])for(const dz of[-1,0]){let n=m.regionResidentBytes||300000;for(let a=0;a<2;a++)for(let b=0;b<2;b++){const e=m.tiles[[x+dx+a,z+dz+b].join(',')];n+=e?.residentBytes??e?.decodedBytes??0;}worst=Math.max(worst,n);}}Object.assign(report,{worst2x2Bytes:worst,headroomBytes:64*1024**2-worst});
+ m.vegetationClearance.sourceHashes=proof.sourceHashes;const key=await store(m);region.manifestUrl='/world/'+key;region.manifestSha256=key.split('/')[1].slice(0,-5);sources[region.id]={manifest:m,url:new URL(region.manifestUrl,sourceURL).href};await writeFile(resolve(dir,region.id+'-manifest.json'),JSON.stringify(m));
+}
+proof.sourceHashes['tools/recover-vegetation-publication.mjs']=hash(await readFile(import.meta.filename));const{revision:unused,...content}=definition;definition.revision=hash(canonicalWorldJSON(content));const m=composeWorldManifest(definition,sources),key=await store(definition);proof.worldBytes=Object.values(m.tiles).reduce((n,e)=>n+e.bytes,0)+(m.regionalAssets||[]).reduce((n,a)=>n+a.bytes,0);if(proof.worldBytes>2*1024**3)throw Error('World ceiling');Object.assign(proof,{passed:true,revision:m.revision,manifest:key});
+for(const[n,v]of Object.entries({'vegetation-audit.json':proof,'world.json':m,'publication.json':{objects:[...objects.values()],key,definition}}))await writeFile(resolve(dir,n),JSON.stringify(v,null,2));
+for(const name of await readdir(resolve(dir,'manifests')))if(!objects.has('manifests/'+name))await unlink(resolve(dir,'manifests',name));
+console.log(JSON.stringify({...proof,physical:undefined,sourceHashes:undefined},null,2));

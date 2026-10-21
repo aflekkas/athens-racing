@@ -4,6 +4,7 @@ import {PsychikoStreetscape} from './maps/psychiko-streetscape.js';
 import {Ground} from './ground.js';
 import {carOverlap} from './crash-contact.js';
 import {settings} from './settings.js';
+import {fadeMergedVegetation} from './vegetation-fade.js';
 const P={lat0:37.98,lon0:23.73,mlat:111320,mlon:111320*Math.cos(37.98*Math.PI/180)};
 /** Retains Vas-Per's actual streetscape recipes, with tile-lifetime geometry and shared world contact. */
 export class WorldPsychikoDetail {
@@ -11,6 +12,9 @@ export class WorldPsychikoDetail {
   const route=new Route(data.route),height=(x,z)=>session.stream.contact(this.ox+x*this.sx,this.oz+z*this.sz,{layer:0})?.y??0,map={id:'psychiko',route,data,terrain:{sceneryHeight:height}};
   map.roadNetwork=new RoadNetwork(map);map.roadNetwork.height=height;const originalPoint=route.point.bind(route);route.point=(s,u,out)=>{const p=originalPoint(s,u,out);p.y=height(p.x,p.z);return p;};
   this.street=new PsychikoStreetscape(map,parent,height);for(const mesh of this.street.parking){mesh.count=0;mesh.visible=false;}this.street.streamed=true;this.street.activeAt=(x,z)=>this.active(x,z);this.street.groundY=height;
+  // The immutable scenery rebake certifies complete crown footprints against emitted contacts.
+  const safeTrees=new Set(data.vegetationClearance?.version===1?data.vegetationClearance.allowedTreeSeeds:[]),drawTree=this.street.tree.bind(this.street);this.street.tree=(m,r)=>{if(safeTrees.has(r.seed))drawTree(m,r);};
+  const buildCell=this.street.buildCell.bind(this.street);this.street.buildCell=(kind,key)=>{const mesh=buildCell(kind,key);return mesh?fadeMergedVegetation(mesh):mesh;};
   this.street.network.height=height;this.height=height;this.obstacleBuckets=new Map();for(const b of this.street.obstacles){const p={...b,...this.world(b.x,b.z),yaw:Math.atan2(Math.sin(b.yaw)*this.sx,Math.cos(b.yaw)*this.sz),hl:b.hl*Math.max(this.sx,this.sz),hw:b.hw*Math.max(this.sx,this.sz),kind:'parked'};const k=`${Math.floor(p.x/64)},${Math.floor(p.z/64)}`;if(!this.obstacleBuckets.has(k))this.obstacleBuckets.set(k,[]);this.obstacleBuckets.get(k).push(p);}this.off=session.subscribeTiles({activated:k=>this.changed(k,true),removed:k=>this.changed(k,false)});
  }
  world(x,z){return{x:this.ox+x*this.sx,z:this.oz+z*this.sz};}

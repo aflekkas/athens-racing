@@ -1,3 +1,6 @@
+import {assertVegetationClearance} from './audit-world-vegetation.mjs';
+import {tileTables} from '../src/world-tile-format.js';
+import {clearPacketVegetation} from '../src/vegetation-clearance.js';
 // Migration tool only: reuses the existing bake and shared codec, never a second ASR implementation.
 import { writeFile, mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -235,7 +238,7 @@ export async function bakeExistingTiles(bake,out,options={}){
     }
     const metadata={tileVersion:1,world:map.id,revision,cell,origin:[x*512,0,z*512],tables,ids:tile.ids,strings:tile.strings,palette:[[1,1,1]],terrain:{coarseSize:33,spacing:16},meshes,budgets:{triangles:meshes.reduce((n,m)=>n+(m.index==null?arrays[m.attributes.position.array].length/9:(m.drawRange?.count??arrays[m.index].length)/3),0),buildingTriangles:0},migration:manifest.migration};
     options.decorate?.({tile,metadata,arrays,add});
-    const pack={metadata,arrays};validateWorldTile(pack);
+    const pack={metadata,arrays};clearPacketVegetation(pack,tileTables(pack));assertVegetationClearance(pack,tileTables(pack));validateWorldTile(pack);
     signatures.set(key,tileEdgeSignatures(pack).map(hash));
     for(const variant of tileRenderVariants({metadata,arrays}))renderVariants.set(variant.key,variant);
     const raw=encodeGeometryPack(metadata,arrays),plain=gzipSync(new Uint8Array(raw),{level:9}),planeRaw=encodeGeometryPack(metadata,arrays,arrays.map(()=>true)),planes=gzipSync(new Uint8Array(planeRaw),{level:9}),body=plain.length<=planes.length?plain:planes,sha=hash(body),name=`${x}-${z}-${sha.slice(0,16)}.bin.gz`;
@@ -244,6 +247,7 @@ export async function bakeExistingTiles(bake,out,options={}){
     await writeFile(resolve(dir,name),body);
     // Conservative upper bound includes CSR references, decoder buffers, CPU+GPU data.
     const measured=prepareTilePacket(decodeGeometryPack(plain.length<=planes.length?raw:planeRaw),{world:map.id,revision,cell,entry:{decodedBytes:Number.MAX_SAFE_INTEGER,triangles:metadata.budgets.triangles}});
+    assertVegetationClearance(measured,tileTables(measured));
     const resident=Math.max(raw.byteLength,Math.ceil(measured.bytes*1.02)+65536);
     manifest.tiles[key]={url:`./${name}`,sha256:sha,bytes:body.length,decodedBytes:resident,dependencies:[],triangles:metadata.budgets.triangles};
     totalBytes+=body.length;decodedBytes+=resident;triangles+=metadata.budgets.triangles;

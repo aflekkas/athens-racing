@@ -31,7 +31,7 @@ test('mountain detail retains the old Off colour, disables inferred sand and exp
 test('distant mountain canopy uses one bounded batch, follows its terrain, and clears on eviction',async()=>{
  const {AthensTrees,TREE}=await import('../src/athens-trees.js'),root=new THREE.Group(),layer=new AthensTrees(root),nx=24,nz=24,p=new Float32Array(nx*nz*3),mask=new Uint8Array(nx*nz).fill(1);
  for(let z=0;z<nz;z++)for(let x=0;x<nx;x++)p.set([x*32,100+x*6.4,z*32],(z*nx+x)*3);
- layer.setMountainForest({metadata:{spacing:32,forest:{array:1,nx,nz}},arrays:[p,mask]});layer.rebuild(0,0);const mesh=layer.coastFar.get(TREE.pine).mesh,m=new THREE.Matrix4();assert.ok(mesh.count>1000);assert.ok(mesh.count<=6000);
+ layer.setMountainForest({metadata:{spacing:32,forest:{array:1,nx,nz,clearanceArray:2}},arrays:[p,mask,new Uint8Array(nx*nz).fill(15)]});layer.rebuild(0,0);const mesh=layer.coastFar.get(TREE.pine).mesh,m=new THREE.Matrix4();assert.ok(mesh.count>1000);assert.ok(mesh.count<=6000);
  for(let i=0;i<mesh.count;i++){mesh.getMatrixAt(i,m);assert.ok(Math.abs(m.elements[13]-(100+m.elements[12]*.2-.7))<.001);}
  layer.setEnabled(false);assert.equal(layer.group.visible,false);layer.setEnabled(true);layer.setMountainForest(null);layer.rebuild(0,0);assert.equal(mesh.count,0);layer.dispose();assert.equal(root.children.length,0);
 });
