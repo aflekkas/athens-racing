@@ -10,7 +10,7 @@ const same = (a, b) => canonicalWorldJSON(a??null) === canonicalWorldJSON(b??nul
 export async function routeReleaseConfig(root, environment = 'staging') {
   const config = JSON.parse(await readFile(resolve(root, 'wrangler.jsonc'), 'utf8'));
   const key = config.env?.[environment]?.vars?.ATHENS_WORLD_MANIFEST;
-  if (environment !== 'staging' || !/^manifests\/[a-f0-9]{64}\.json$/.test(key || '')) throw Error('Staging world manifest binding unavailable');
+  if (!['staging', 'production'].includes(environment) || !/^manifests\/[a-f0-9]{64}\.json$/.test(key || '')) throw Error('World manifest binding unavailable');
   const streets = JSON.parse(await readFile(resolve(root, 'assets/athens/streets.json'), 'utf8'));
   if (streets.manifest !== key || !hex64.test(streets.revision || '')) throw Error('Picker streets and deployed world manifest differ');
   return {key, revision: streets.revision};
@@ -18,6 +18,7 @@ export async function routeReleaseConfig(root, environment = 'staging') {
 
 export async function activeRouteWorld(root, environment = 'staging', options = {}) {
   const binding = await routeReleaseConfig(root, environment);
+  // Promotion builds read the already tested immutable source; R2 is copied before activation.
   const url = `https://staging.athensracing.com/world/${binding.key}`;
   const {manifest} = await loadWorldDefinition(url, options);
   if (manifest.revision !== binding.revision) throw Error('Picker streets and authenticated world release differ');
@@ -40,7 +41,7 @@ export function rebindRouteShard(shard, manifest) {
 }
 
 export async function checkBuiltRouteRelease(root, environment = 'staging') {
-  if (environment !== 'staging') return {checked: 0};
+  if (!['staging', 'production'].includes(environment)) return {checked: 0};
   const {revision} = await routeReleaseConfig(root, environment);
   const out = resolve(root, '.deploy/assets');
   const index = JSON.parse(await readFile(resolve(out, 'data/routes/index.json'), 'utf8'));

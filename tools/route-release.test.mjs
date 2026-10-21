@@ -30,15 +30,17 @@ test('the release gate rejects a stale compiled route or a changed Wrangler poin
     await symlink(new URL('../src',import.meta.url).pathname,join(root,'src'));await symlink(new URL('.',import.meta.url).pathname,join(root,'tools'));
     for(const path of ['assets/athens','.deploy/assets/data/routes','.deploy/assets'])await mkdir(join(root,path),{recursive:true});
     const put=(path,value)=>writeFile(join(root,path),JSON.stringify(value));
-    await put('wrangler.jsonc',{env:{staging:{vars:{ATHENS_WORLD_MANIFEST:key}}}});
+    await put('wrangler.jsonc',{env:{staging:{vars:{ATHENS_WORLD_MANIFEST:key}},production:{vars:{ATHENS_WORLD_MANIFEST:key}} }});
     await put('assets/athens/streets.json',{manifest:key,revision:next});
     await put('.deploy/assets/data/routes/index.json',{routes:[entry]});
     await put('.deploy/assets/route-config.json',{routes:[entry]});
     await put('.deploy/catalogue.json',{routes:[entry]});
     await put(`.deploy/assets/data/routes/${entry.id}.${entry.routeHash}.json`,artifact);
     assert.deepEqual(await checkBuiltRouteRelease(root),{checked:1,revision:next});
+    assert.deepEqual(await checkBuiltRouteRelease(root,'production'),{checked:1,revision:next});
     await put(`.deploy/assets/data/routes/${entry.id}.${entry.routeHash}.json`,{...artifact,worldSetRevision:old});
     await assert.rejects(checkBuiltRouteRelease(root),/artifact\/world release mismatch/);
+    await assert.rejects(checkBuiltRouteRelease(root,'production'),/artifact\/world release mismatch/);
     await put(`.deploy/assets/data/routes/${entry.id}.${entry.routeHash}.json`,{...artifact,rivalPlan:{...artifact.rivalPlan,geometryHash:old}});
     await assert.rejects(checkBuiltRouteRelease(root),/Stale rival/);
     await put('wrangler.jsonc',{env:{staging:{vars:{ATHENS_WORLD_MANIFEST:`manifests/${next}.json`}}}});

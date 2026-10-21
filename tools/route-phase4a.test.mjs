@@ -48,7 +48,7 @@ test('imported bridge compatibility requires the actual authenticated deck, cont
 });
 
 test('Penteli rollout independently gates each direction and stays off production',()=>{
- const routes=[{id:'penteli-hill'},{id:'penteli-descent'}];assert.deepEqual(unifiedRouteConfig({environment:'staging',enabled:'penteli-hill',routes}).routes.map(r=>r.id),['penteli-hill']);assert.deepEqual(unifiedRouteConfig({environment:'production',enabled:'penteli-hill,penteli-descent',routes}).routes,[]);
+ const routes=[{id:'penteli-hill'},{id:'penteli-descent'}];assert.deepEqual(unifiedRouteConfig({environment:'staging',enabled:'penteli-hill',routes}).routes.map(r=>r.id),['penteli-hill']);assert.deepEqual(unifiedRouteConfig({environment:'production',enabled:'penteli-hill,penteli-descent',routes}).routes.map(r=>r.id),['penteli-hill','penteli-descent']);
 });
 
 test('Penteli picker retains selected TT, independent setup keys, and marks the disconnected destination',async()=>{
