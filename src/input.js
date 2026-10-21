@@ -7,18 +7,18 @@ const copy = x => JSON.parse(JSON.stringify(x));
 export const DEFAULT_BINDINGS = {
   keyboard: {
     throttle: ['KeyW', 'ArrowUp'], brake: ['KeyS', 'ArrowDown'], left: ['KeyA', 'ArrowLeft'], right: ['KeyD', 'ArrowRight'],
-    handbrake: ['Space'], nitro: ['ShiftLeft', 'ShiftRight'], camera: ['KeyC'], restart: ['Enter'], pause: ['Escape'],
+    handbrake: ['Space'], nitro: ['ShiftLeft', 'ShiftRight'], camera: ['KeyC'], cameraPosition: ['KeyB'], restart: ['Enter'], pause: ['Escape'],
     garage: ['KeyG'], shiftUp: ['KeyE'], shiftDown: ['KeyQ'], lookBack: ['KeyV'], tow: ['KeyR', 'KeyT'], reset: ['Backspace', 'KeyR'], transmission: ['KeyL'], tractionControl: ['KeyX'], map: ['KeyM'],
     up: ['ArrowUp', 'KeyW'], down: ['ArrowDown', 'KeyS'], confirm: ['Enter', 'Space'], back: ['Escape', 'Backspace'],
   },
   gamepad: {
-    throttle: ['b7'], brake: ['b6'], left: ['a0-'], right: ['a0+'], handbrake: ['b0'], nitro: ['b1', 'b2'], camera: ['b3'],
-    restart: ['b8'], pause: ['b9'], garage: [], shiftUp: ['b5'], shiftDown: ['b4'], lookBack: ['b11'], tow: [], reset: [], tractionControl: ['b14'], transmission: ['b10'], map: [],
+    throttle: ['b7'], brake: ['b6'], left: ['a0-'], right: ['a0+'], handbrake: ['b0'], nitro: ['b1', 'b2'], camera: ['b3'], cameraPosition: ['b8'],
+    restart: [], pause: ['b9'], garage: [], shiftUp: ['b5'], shiftDown: ['b4'], lookBack: ['b11'], tow: [], reset: [], tractionControl: ['b14'], transmission: ['b10'], map: [],
     up: ['b12', 'a1-'], down: ['b13', 'a1+'], confirm: ['b0'], back: ['b1'],
     menuLeft: ['b14', 'a0-'], menuRight: ['b15', 'a0+'], lookLeft: ['a2-'], lookRight: ['a2+'], lookUp: ['a3-'], lookDown: ['a3+'],
   },
 };
-export const EDGE_ACTIONS = ['camera', 'restart', 'pause', 'garage', 'shiftUp', 'shiftDown', 'lookBack', 'tow', 'reset', 'transmission', 'tractionControl', 'map',
+export const EDGE_ACTIONS = ['camera', 'cameraPosition', 'restart', 'pause', 'garage', 'shiftUp', 'shiftDown', 'lookBack', 'tow', 'reset', 'transmission', 'tractionControl', 'map',
   'up', 'down', 'left', 'right', 'confirm', 'back'];
 // Racing wheel choices live beside the stick ones (wheelMode, wheelRange, wheelDeadzone, wheelLinearity, wheelPedalDeadzone, wheelForce);
 // each wheel's calibrated axes are saved apart, per device.
@@ -83,6 +83,10 @@ export class Input {
         if (kind === 'keyboard' && saved?.transmission?.join(',') === 'KeyM') saved.transmission = [...DEFAULT_BINDINGS.keyboard.transmission];
         // V looks back and X toggles TC / ESC now; a saved set that still has the old V (TC) and B (look back) follows.
         if (kind === 'keyboard' && saved?.tractionControl?.join(',') === 'KeyV' && saved?.lookBack?.join(',') === 'KeyB') { saved.tractionControl = [...DEFAULT_BINDINGS.keyboard.tractionControl]; saved.lookBack = [...DEFAULT_BINDINGS.keyboard.lookBack]; }
+        if (kind === 'keyboard' && saved && !saved.cameraPosition && Object.values(saved).some(keys => Array.isArray(keys) && keys.includes('KeyB')))
+          saved.cameraPosition = [['KeyP', 'KeyN', 'KeyH'].find(key => !Object.values(saved).some(keys => Array.isArray(keys) && keys.includes(key))) || 'KeyP'];
+        if (kind === 'gamepad' && saved?.restart?.join(',') === 'b8' && !saved.cameraPosition) saved.restart = [];
+        if (kind === 'gamepad' && saved && !saved.cameraPosition && Object.entries(saved).some(([action, keys]) => action !== 'restart' && Array.isArray(keys) && keys.includes('b8'))) saved.cameraPosition = ['b16'];
         for (const [a, bs] of Object.entries(saved || {})) if (a in this.bindings[kind] && Array.isArray(bs) && bs.every(b => typeof b === 'string' && (kind === 'keyboard' ? /^[A-Za-z0-9]+$/.test(b) : /^(b\d+|a\d+[+-])$/.test(b)))) this.bindings[kind][a] = bs;
       } catch {}
     }
@@ -98,10 +102,10 @@ export class Input {
   }
   bind(kind, action, bindings) {
     if (!(action in this.bindings[kind]) || !bindings.every(b => kind === 'keyboard' ? /^[A-Za-z0-9]+$/.test(b) : /^(b\d+|a\d+[+-])$/.test(b))) return false;
-    // Single-key toggles that must never share a key: gearbox mode and the big map.
-    const TOGGLES = ['transmission', 'map'];
-    if (TOGGLES.includes(action)) {
-      const others = TOGGLES.filter(other => other !== action);
+    // These pairs must remain distinct even after rebinding.
+    const group = [['transmission', 'map'], ['camera', 'cameraPosition']].find(pair => pair.includes(action));
+    if (group) {
+      const others = group.filter(other => other !== action);
       if (others.some(other => bindings.some(key => this.bindings[kind][other].includes(key)))) return false;
     }
     this.bindings[kind][action] = [...bindings]; this.save(kind, this.bindings[kind]); this.clear(); return true;
@@ -150,6 +154,7 @@ export class Input {
     const setDrag = on => { if (this.lookDragging === on) return; this.lookDragging = on; drag?.(on); };
     this.listen('mousedown', e => { if ((e.button === 0 || e.button === 2) && enabled() && e.target === canvas && !e.sourceCapabilities?.firesTouchEvents) setDrag(true); });
     for (const name of ['mouseup', 'blur']) this.listen(name, e => { if (name === 'blur' || e.button === 0 || e.button === 2) setDrag(false); });
+    this.listen('pointercancel', () => setDrag(false));
     // The press-time context menu (Linux/GTK) must not cancel the drag it belongs to; a menu with no
     // button held still ends the hold. This keeps drag working on Mac (Arc/Chrome), Linux and Windows.
     this.listen('contextmenu', e => { if (!(e.buttons & 3)) setDrag(false); });

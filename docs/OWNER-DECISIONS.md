@@ -244,3 +244,7 @@ Owner decisions:
 ## 2026-10-21 — Tow repairs the car and preserves travel direction
 
 Owner correction: “towing no longer repairs the car??” Towing and reset fully repair bodywork and mechanical damage in every mode, including multiplayer. Crashes retain their punishing damage until recovery; the October 20 damage-preservation implementation across tows is superseded. Free-roam recovery uses the last stable on-road velocity heading before departure or a spin, respecting the legal direction of one-way and divided carriageways. Route-race recovery faces the route's direction of travel. Nearest-road placement, route preference within 40 m, and unchanged earned progress remain locked.
+
+## 2026-10-21: Camera modes and view positions
+
+Owner decision: "one key toggles POV/outside; a separate key cycles view position". C toggles between the saved POV and outside views; B cycles positions in the current mode. Outside has near chase, far chase, and bumper; POV has driver and hood. The defaults are a normal near chase camera and a seated driver POV. Both actions are rebindable for keyboard and gamepad. Mouse orbit returns to the chase view when released and cannot pitch the chase camera into a top-down angle. Guard: `tools/camera-views.test.mjs`.

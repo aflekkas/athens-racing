@@ -99,6 +99,7 @@
     "tools/driving-aids.test.mjs",
     "tools/driving-objectives.test.mjs",
     "tools/gameplay-camera.test.mjs",
+    "tools/camera-views.test.mjs",
     "tools/chase-orbit.test.mjs",
     "tools/gameplay-recovery.test.mjs",
     "tools/gameplay-toast.test.mjs",

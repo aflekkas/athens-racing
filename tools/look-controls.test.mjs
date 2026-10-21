@@ -18,5 +18,7 @@ test('Settings > Controls lists LOOK BACK with both columns, and Settings > Came
   assert.match(panel, /lookBack: 'LOOK BACK'/);
   assert.ok('lookBack' in input.bindings.keyboard && 'lookBack' in input.bindings.gamepad);
   assert.match(menu, /key: 'mouseLook', label: 'MOUSE FREE LOOK'/);
-  assert.match(menu, /keyHints\(\[\['lookBack', 'LOOK BACK \(HOLD\)'\]\]\)/);
+  assert.match(menu, /\['camera', 'POV \/ OUTSIDE'\]/);
+  assert.match(menu, /\['cameraPosition', 'VIEW POSITION'\]/);
+  assert.match(menu, /\['lookBack', 'LOOK BACK \(HOLD\)'\]/);
 });

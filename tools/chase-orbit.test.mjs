@@ -2,7 +2,7 @@
 // car anymore"). The passive cursor-position look stays removed per the 2026-10-18 playtest
 // complaint it caused; the deliberate orbit is click-drag with the left or right button, and the
 // view eases back after release. The opt-in pointer-lock free look setting stays as it is.
-// C cycles cockpit -> chase -> front -> cockpit.
+// C toggles cockpit/outside; B cycles the current mode's position.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -50,6 +50,13 @@ test('the press-time context menu never cancels a held drag', () => {
   r.input.destroy();
 });
 
+test('a cancelled pointer releases mouse orbit', () => {
+  const r = mouseRig(); r.fire('mousedown', { button: 2, buttons: 2 });
+  r.fire('pointercancel', { button: 2, buttons: 0 });
+  assert.deepEqual(r.drags, [true, false]);
+  r.input.destroy();
+});
+
 test('menus never start a look', () => {
   const r = mouseRig(); r.setEnabled(false);
   r.fire('mousedown', { button: 0, buttons: 1 }); r.fire('mousedown', { button: 2, buttons: 2 });
@@ -71,14 +78,10 @@ test('the pointer-lock free look setting still exists and stays off by default',
   assert.match(menu, /key: 'mouseLook', label: 'MOUSE FREE LOOK'/);
 });
 
-test('C cycles cockpit -> chase -> front -> cockpit with a front view ahead looking back', () => {
+test('C toggles POV/outside and B cycles positions, with no front-facing drive camera', () => {
   const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
-  assert.match(main, /G\.cam === 'cockpit' \? 'chase' : G\.cam === 'chase' \? 'front' : 'cockpit'/, 'C must step through the new front view after chase');
-  assert.match(main, /FRONT<\/i> CAM/, 'the front view announces itself like the other views');
-  assert.match(main, /else if \(G\.cam === 'front'\)/, 'a front camera branch renders the view');
-  const branch = main.slice(main.indexOf("else if (G.cam === 'front')"), main.indexOf('} else { // orbit'));
-  assert.match(branch, /followYaw \+ Math\.PI/, 'the front camera sits ahead of the car, not behind it');
+  assert.match(main, /cameraViews\.toggle\(\).*cameraViews\.cycle\(\)/);
+  assert.doesNotMatch(main, /else if \(G\.cam === 'front'\)/);
   assert.match(main, /viewX=veh\.x-\(worldSession\?\.stream\.origin\.x\|\|0\),viewZ=veh\.z-\(worldSession\?\.stream\.origin\.z\|\|0\)/, 'the camera uses the streamed world origin');
-  assert.match(branch, /camera\.lookAt\(viewX, veh\.y \+ targetY, viewZ\)/, 'the front camera looks back at the rebased car');
-  assert.match(branch, /chaseFov/, 'the front view keeps the chase field of view, never the cockpit framing');
+  assert.match(main, /chaseElevation\(up, back, look\.pitch\)/);
 });
