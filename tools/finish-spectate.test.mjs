@@ -61,7 +61,13 @@ test('spectate HUD stays on the watched driver: lap hidden, gap trails the leade
   assert.match(main, /if \(name === 'restart' && !multiplayer\.active\) \{ openEvent\(G\.ev\.def\); return true; \}/, owner);
   assert.match(main, /updateFinishSpectateHud\(\{[^}]*canRestart: !multiplayer\.active \}/, owner);
   assert.match(card, /canRestart/, owner);
-  assert.match(card, /RESTART · R/, owner);
+  // Each chip names its actual key: the R chip restarts, Esc/Enter open results, and the
+  // labels carry no duplicated key text (the binding-derived keyHints would show Enter).
+  assert.match(card, /C\.kbd\('R'\)\}<\/span>[\s\S]*?RESTART<\/span>/, owner);
+  assert.match(card, /C\.kbd\('ESC'\)\}\$\{C\.kbd\('ENTER'\)\}.*RESULTS<\/span>/s, owner);
+  assert.doesNotMatch(card, /keyHints/, owner);
+  assert.doesNotMatch(card, /RESTART · R/, owner);
+  assert.doesNotMatch(card, /RESULTS · ENTER/, owner);
   assert.match(decisions, /non-colliding ghost/, owner);
 });
 test('owner-locked spectate on finish is connected to both production finish paths and interpolated camera', () => {
