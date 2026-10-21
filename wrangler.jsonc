@@ -56,11 +56,11 @@
     "staging": {
       "name": "athens-street-racers-staging",
       "vars": {
-        "ASR_UNIFIED_ROUTES": "syntagma-pilot,psychiko-faros,riviera-coast",
+        "ASR_UNIFIED_ROUTES": "syntagma-pilot,psychiko-faros,riviera-coast,penteli-hill,penteli-descent",
         "ATHENS_WORLD_MANIFEST": "manifests/5b7c87c65d6ce353fc3e7ede46d54e91aa79c5303407c58d1d42cca9c921190d.json"
       },
       "build": {
-        "command": "ASR_BUILD_ENV=staging ASR_UNIFIED_ROUTES=syntagma-pilot,psychiko-faros,riviera-coast node tools/prepare-deploy.mjs"
+        "command": "ASR_BUILD_ENV=staging ASR_UNIFIED_ROUTES=syntagma-pilot,psychiko-faros,riviera-coast,penteli-hill,penteli-descent node tools/prepare-deploy.mjs"
       },
       "routes": [
         {

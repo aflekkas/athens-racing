@@ -1,4 +1,5 @@
 // Immutable emitted-graph/contact-proof index. Raw pre-exclusion generator graphs fail closed.
+import {dirname,resolve} from 'node:path';import {fileURLToPath} from 'node:url';
 import {readFile} from 'node:fs/promises';
 import {execFile} from 'node:child_process';import {promisify} from 'node:util';
 import {WorldRoadGraph} from '../src/world-tile-graph.js';import {RouteError} from '../src/route-definition.js';
@@ -10,6 +11,9 @@ export async function readRouteInputs({world,graph}){
   shard=JSON.parse((await promisify(execFile)('python3',['-c',script,graph],{maxBuffer:8*1024*1024})).stdout);
  }else{const b=await readFile(graph);if(b.length>8*1024*1024)throw Error('Route index too large');shard=JSON.parse(b);}}
  catch(e){throw new RouteError('input-unavailable',{reason:e.message});}
+ // Each region keeps its own bounded proof file. The root binds all source hashes;
+ // siblings cannot change a previously reviewed edge, query, cell or restriction.
+ if(shard.shards){if(!Array.isArray(shard.shards)||shard.shards.length>3)throw new RouteError('emitted-input-mismatch');const directory=dirname(graph instanceof URL?fileURLToPath(graph):graph);for(const name of shard.shards){if(!/^[a-z][a-z0-9-]*\.inputs\.json$/.test(name))throw new RouteError('emitted-input-mismatch');const bytes=await readFile(resolve(directory,name));if(bytes.length>8*1024*1024)throw new RouteError('input-unavailable');const extra=JSON.parse(bytes);if(extra.schemaVersion!==1||extra.worldSetRevision!==shard.worldSetRevision||extra.shards)throw new RouteError('emitted-input-mismatch');for(const field of ['cells'])for(const[k,v]of Object.entries(extra[field])){if(shard[field][k]&&JSON.stringify(shard[field][k])!==JSON.stringify(v))throw new RouteError('emitted-input-mismatch');shard[field][k]=v;}for(const kind of ['contact','width','safe'])for(const[k,v]of Object.entries(extra.proofs[kind])){if(Object.hasOwn(shard.proofs[kind],k)&&JSON.stringify(shard.proofs[kind][k])!==JSON.stringify(v))throw new RouteError('emitted-input-mismatch');shard.proofs[kind][k]=v;}for(const field of ['edges','turns','sourceHashes']){const seen=new Set(shard[field].map(v=>JSON.stringify(v)));for(const v of extra[field])if(!seen.has(JSON.stringify(v)))shard[field].push(v);}}}
  manifest=manifest.manifest||manifest;if(shard.schemaVersion!==1||shard.worldSetRevision!==manifest.revision||!Array.isArray(shard.edges)||!shard.proofs)throw new RouteError('emitted-input-mismatch');
  for(const [cell,hash]of shard.sourceHashes){if(manifest.tiles[cell]?.sha256!==hash||manifest.tiles[cell]?.contactEligible===false)throw new RouteError('emitted-input-mismatch',{cell});}
  const g=new WorldRoadGraph();for(const e of shard.edges){if(g.edges.has(e.id))throw new RouteError('duplicate-graph-id',{edgeId:e.id});g.edges.set(e.id,{value:e});if(!g.outgoing.has(e.from))g.outgoing.set(e.from,new Set());g.outgoing.get(e.from).add(e.id);}

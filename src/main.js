@@ -321,7 +321,7 @@ async function boot() {
     if(Q.get('routes')==='1')G.unifiedCompiled=await loadUnifiedRoute(Q);
     if(G.unifiedCompiled&&Q.has('car')){const i=CARS.findIndex(c=>c.id===canonicalCarId(Q.get('car')));if(i>=0)G.carIdx=i;}
     await switchMap(G.unifiedCompiled?'athens':initialMapId(Q), Q.get('event') === 'free' ? 'FREE ROAM' : 'QUICK RACE');
-    prepareEvent(Q.get('event') || 'quick'); resetRace();
+    prepareEvent(Q.get('routeEvent') || Q.get('event') || 'quick'); resetRace();
     G.cam = G.userCam; applyCamMode(); updateCamera(0, true);if(G.unifiedCompiled&&Q.has('setup')){G.state='menu';menu.show('setup',{mode:'quick'});}else startCountdown();
   }
   document.body.classList.add('loaded');
@@ -329,8 +329,8 @@ async function boot() {
 }
 
 // The pilot binds capabilities to the existing renderer, input, camera, clock and results.
-async function loadUnifiedWorld(compiled) {
-  if(worldSession&&map?.route?.compiled.routeHash===compiled.routeHash&&worldSession.manifest.revision===compiled.worldSetRevision)return map;
+async function loadUnifiedWorld(compiled,{eventId=Q.get('routeEvent')}={}) {
+  if(worldSession&&map?.route?.compiled.routeHash===compiled.routeHash&&worldSession.manifest.revision===compiled.worldSetRevision){if(eventId&&map.events.some(e=>e.id===eventId)&&G.ev?.def.id!==eventId){prepareEvent(map.events.find(e=>e.id===eventId));resetUnifiedRace();}return map;}
   loading.show('athens', compiled.definition.name); loading.setRoute?.(compiled); G.state='loading';G.routePreparing=true;
   const started=performance.now(),entryPhases={},stamp=name=>{entryPhases[name]=performance.now()-started;};
   try {
@@ -354,7 +354,7 @@ async function loadUnifiedWorld(compiled) {
     traffic.route=route;traffic.closures=routeClosures;traffic.onVoice=(state,transitions)=>policeVoice.observe(state,transitions);signals=new WorldSignals(worldSession,route);traffic.signals=signals;people={onRoad:[],peds:[],events:[]};routeRivals=new RouteRivals(route);policeHud ||= new PoliceHud();
     if(!window.__ghostLap)initGhostLap({G,scene,route,hud,input,player:()=>player,online:()=>false,trackVersion:()=>G.unifiedCompiled.geometryHash,origin:()=>worldSession.stream.origin,routeIdentity:()=>({...G.ev.def,projectionId:'athens-v1',direction:1,laps:G.ev.r.laps,setupKey:exactBestKey(G.bestSetup||bestSetup())})});
     if(player){player.veh.route=route;player.veh.ground=ground;}if(rival)rival.veh.route=route;if(player.spec.id!==CARS[G.carIdx].id)setCar(G.carIdx,false);rival.model.root.visible=false;if(window.__ghostLap)Object.assign(window.__ghostLap.ctx,{route,hud});
-    prepareEvent(map.events[0]);resetUnifiedRace();stamp('raceReady');bindMapWeather();G.cam=G.userCam;applyCamMode();updateCamera(0,true);
+    prepareEvent(map.events.find(e=>e.id===eventId)||map.events[0]);resetUnifiedRace();stamp('raceReady');bindMapWeather();G.cam=G.userCam;applyCamMode();updateCamera(0,true);
     guidanceTilesOff?.();routeGuidance?.dispose();routeGuidance=new RouteGuidance(scene,{contact:(x,z,referenceY,layer)=>worldSession.stream.contact(x,z,{referenceY,layer,requiredFlags:1})});routeGuidance.setRoute(guidanceData);guidanceTilesOff=worldSession.subscribeTiles({activated:k=>routeGuidance.onTileActivated(k),removed:k=>routeGuidance.onTileRemoved(k)});hud.routeGuidance=routeGuidance;
     lstat('Preparing roads',0,{worldId:'athens',routeId:compiled.id,selectionToken:worldSession.selectionToken,phase:'warm'});await compileScene();stamp('shadersReady');worldSession.inventory();lstat('Ready',0,{worldId:'athens',routeId:compiled.id,selectionToken:worldSession.selectionToken,phase:'ready'});
     worldSession.metrics.selectionToCountdownMs=performance.now()-started;worldSession.metrics.initialWorldBytes=worldSession.stream.pool?.downloadedBytes??worldSession.stream.metrics.loadedBytes;window.__worldSession=worldSession;
@@ -1034,7 +1034,7 @@ async function shareResult() {
 }
 const MENU_STATES = ['menu', 'paused', 'results', 'garage'];
 let selectedMapId = initialMapId(Q);
-const evCtx = () => ({ map, mapId: map.id, route, marks: map.marks||map.data.marks, events: map.events });
+const evCtx = () => ({ map, mapId: map.id, route, marks: map.marks||map.data.marks, events: map.events,eventId:G.ev?.def.baseId||G.ev?.def.id });
 const menuCtx = () => map?.id === selectedMapId ? evCtx() : menuMapContext(selectedMapId);
 function selectMenuMap(id) { getMap(id); selectedMapId = id; setAssetCodecMap(id); }
 const activeInputDevice = () => controls.drivingSource;
@@ -1059,7 +1059,7 @@ function initFlow() {
   let plate = driverName.plate();
   driverName.onChange(() => { const next = driverName.plate(); if (next !== plate) { plate = next; player?.model.setPlate(next); } });
   const handlers = {
-    selectUnifiedRoute:async id=>{const url=new URL(location.href);url.searchParams.set('routes','1');url.searchParams.set('route',id);url.searchParams.delete('menu');url.searchParams.set('setup','1');const compiled=await loadUnifiedRoute(url.searchParams);G.unifiedCompiled=compiled;await loadUnifiedWorld(compiled);history.replaceState(null,'',url);G.state='menu';menu.show('setup',{mode:'quick'});},
+    selectUnifiedRoute:async (id,eventId)=>{const url=new URL(location.href);url.searchParams.set('routes','1');url.searchParams.set('route',id);if(eventId)url.searchParams.set('routeEvent',eventId);else url.searchParams.delete('routeEvent');url.searchParams.delete('menu');url.searchParams.set('setup','1');const compiled=await loadUnifiedRoute(url.searchParams);G.unifiedCompiled=compiled;await loadUnifiedWorld(compiled,{eventId});history.replaceState(null,'',url);G.state='menu';menu.show('setup',{mode:'quick'});},
     quickRace: () => openEvent('quick'), openEvent, startFree: def => startEvent(def, { car: G.carIdx }), multiplayer: () => multiplayer.open(), garage: openGarage, selectMap: selectMenuMap, switchMap,
     chooseCar: (index, def, garage) => {
       try { localStorage.setItem('paraliaki.car', CARS[index].id); } catch {}

@@ -41,3 +41,22 @@ test('the release gate rejects a stale compiled route or a changed Wrangler poin
     await assert.rejects(checkBuiltRouteRelease(root),/Picker streets and deployed world manifest differ/);
   } finally {await rm(root,{recursive:true,force:true});}
 });
+
+test('source object field order does not change a reviewed emitted cell identity',()=>{
+ const prior={sha256:cellHash,bytes:10,decodedBytes:20,source:{revision:old,world:'source',regionId:'basin'}},active={...prior,source:{regionId:'basin',world:'source',revision:old}},shard={schemaVersion:1,worldSetRevision:old,cells:{'0,0':prior},sourceHashes:[['0,0',cellHash]],edges:[],proofs:{}};
+ assert.equal(rebindRouteShard(shard,{revision:next,tiles:{'0,0':active}}).shard.worldSetRevision,next);assert.throws(()=>rebindRouteShard(shard,{revision:next,tiles:{'0,0':{...active,source:{...active.source,world:'changed'}}}}),/cell changed/);
+});
+
+test('a route-specific rollout emits only the enabled picker/server entries',async()=>{
+ const {selectRouteRelease}=await import('./route-release.mjs'),routes=[{id:'penteli-hill'},{id:'penteli-descent'}],build={index:{schemaVersion:1,routes},server:{schemaVersion:1,routes}};
+ assert.deepEqual(selectRouteRelease(build,['penteli-hill']).index.routes,[routes[0]]);assert.deepEqual(selectRouteRelease(build,['penteli-descent']).server.routes,[routes[1]]);assert.deepEqual(build.index.routes,routes);assert.throws(()=>selectRouteRelease(build,['unknown']),/Unknown enabled route/);
+});
+
+test('regional sibling proofs are rebound and available beside the temporary build input',async()=>{
+ const {writeRouteProofs}=await import('./route-release.mjs'),{readRouteInputs}=await import('./route-input.mjs'),{readFile}=await import('node:fs/promises'),root=await mkdtemp(join(tmpdir(),'athens-bound-regional-proof-'));try{
+  await mkdir(join(root,'data/routes/validation'),{recursive:true});await mkdir(join(root,'.deploy'));
+  const cell={sha256:cellHash,bytes:10,decodedBytes:20,source:{revision:old,world:'source',regionId:'penteli'}},shard={schemaVersion:1,worldSetRevision:old,cells:{'0,0':cell},sourceHashes:[['0,0',cellHash]],edges:[],turns:[],proofs:{contact:{},width:{},safe:{}}},manifest={revision:next,tiles:{'0,0':cell}};
+  await writeFile(join(root,'data/routes/validation/penteli.inputs.json'),JSON.stringify(shard));const prepared=await writeRouteProofs(root,{...shard,shards:['penteli.inputs.json']},manifest,join(root,'.deploy'));
+  const world=join(root,'.deploy/world.json'),graph=join(root,'.deploy/input.json');await writeFile(world,JSON.stringify(prepared.bound.world));await writeFile(graph,JSON.stringify(prepared.bound.shard));assert.equal((await readRouteInputs({world,graph})).shard.worldSetRevision,next);assert.equal(JSON.parse(await readFile(join(root,'.deploy/penteli.inputs.json'))).worldSetRevision,next);await prepared.cleanup();await assert.rejects(readFile(join(root,'.deploy/penteli.inputs.json')),/ENOENT/);
+ }finally{await rm(root,{recursive:true,force:true});}
+});
