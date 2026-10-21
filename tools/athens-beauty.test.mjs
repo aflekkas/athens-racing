@@ -106,7 +106,7 @@ test('a building a landmark replaces is kept as a separate hidden-while-detail-i
 });
 
 test('World detail gates every addition and the layer is wired once in the Athens entry', () => {
-  const world = src('src/athens-world.js');
+  const world = src('src/world-session.js');assert.match(src('src/athens-world.js'),/await createWorldSession\(/);
   assert.match(world, /new AthensHorizon\(scene,scene\.fog,\{enabled:settings\.worldDetail!==false\}\)/);
   assert.match(world, /new AthensLandmarks\(detailRoot,scene\.fog,\{enabled:settings\.worldDetail!==false,groundAt:/);
   assert.match(world, /horizon\.setEnabled\(s\.worldDetail!==false\);landmarks\.setEnabled\(s\.worldDetail!==false\);plazas\.setEnabled\(s\.worldDetail!==false\);lawns\.setEnabled\(s\.worldDetail!==false\);(signs\.setEnabled\(s\.worldDetail!==false\);)?(marks\.setEnabled\(s\.worldDetail!==false\);)?trees\.setEnabled\(s\.worldDetail!==false\);syncBoxes\(\)/);
@@ -170,7 +170,7 @@ test('garden and lawn outlines are shipped small, cover the garden in the Syntag
   const m = lawnMaterial(); assert.ok(m.color.g > m.color.b && !m.transparent, 'grass green, opaque');
   const group = new THREE.Group(), layer = new AthensPlazas(group, { groundAt: () => 10, material: m }); layer.setPlazas([{ p: new Float32Array([0, 0, 20, 0, 20, 20, 0, 20]), x0: 0, z0: 0, x1: 20, z1: 20, area: 400 }]); layer.addTile('0,0'); layer.update(10, 12, 10);
   assert.equal(layer.stats.triangles, 10 * 10 * 2); layer.setEnabled(false); assert.equal(layer.mesh.visible, false);
-  const world = src('src/athens-world.js'); assert.match(world, /lawns=new AthensPlazas\(detailRoot,\{enabled:settings\.worldDetail!==false,material:lawnMaterial\(\)/);
+  const world = src('src/world-session.js');assert.match(src('src/athens-world.js'),/await createWorldSession\(/); assert.match(world, /lawns=new AthensPlazas\(detailRoot,\{enabled:settings\.worldDetail!==false,material:lawnMaterial\(\)/);
 });
 test('the plaza and lawn shaders use no reserved GLSL word as an identifier (the lawn failed to compile once on `patch`)', () => {
   const code = readFileSync(new URL('../src/athens-plazas.js', import.meta.url), 'utf8'), shaders = [...code.matchAll(/`([^`]*)`/g)].map(m => m[1]).join('\n');

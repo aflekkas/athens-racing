@@ -1,4 +1,5 @@
 import {clamp,cellKey} from './route-geometry.js';
+const freezeGeometry=o=>{if(o&&typeof o==='object'&&!Object.isFrozen(o)){for(const v of Object.values(o))freezeGeometry(v);Object.freeze(o);}return o;};
 /** Immutable route geometry; this never supplies wheel contact. Stations are 3D metres. */
 export class RouteRuntime {
  constructor(compiled){if(compiled.schemaVersion!==1||!compiled.points?.length)throw Error('Invalid compiled route');this.compiled=compiled;this.isWorldRoute=true;this.length=compiled.lengthM;this.closed=compiled.definition.kind==='circuit';this.start=0;this.finish=this.length;this.from=compiled.definition.name;this.to='FINISH';this.height=compiled.startPose.y;this.GR=null;this.names=[{s:0,name:compiled.definition.name}];this.timingMarks=[];this.index=new Map();this.segments=[];
@@ -6,7 +7,7 @@ export class RouteRuntime {
   const runIn=extension(compiled.runIn||[],0,true),runOut=extension(compiled.runOut||[],this.length,false);const shift=runIn.at(-1)?.[3]||0;for(const p of runIn)p[3]-=shift;
   this.points=[...runIn.filter(p=>p[3]<-1e-5),...core,...runOut.filter(p=>p[3]>this.length+1e-5)];
   for(let i=1;i<this.points.length;i++){const a=this.points[i-1],b=this.points[i];if(b[3]-a[3]<1e-8)continue;const segment={a,b,i:i-1};this.segments.push(segment);for(let x=Math.floor(Math.min(a[0],b[0])/64);x<=Math.floor(Math.max(a[0],b[0])/64);x++)for(let z=Math.floor(Math.min(a[2],b[2])/64);z<=Math.floor(Math.max(a[2],b[2])/64);z++){const k=x+','+z;if(!this.index.has(k))this.index.set(k,[]);this.index.get(k).push(segment);}}
-  Object.freeze(this.compiled);for(const p of this.points)Object.freeze(p);Object.freeze(this.points);
+  freezeGeometry(this.compiled);for(const p of this.points)Object.freeze(p);Object.freeze(this.points);
  }
  wrap(s){return ((s%this.length)+this.length)%this.length;}
  station(s){return this.closed&&s!==this.length?this.wrap(s):clamp(s,this.points[0][3],this.points.at(-1)[3]);}
@@ -18,7 +19,7 @@ export class RouteRuntime {
   let best=null;for(const {a,b}of candidates){const dx=b[0]-a[0],dz=b[2]-a[2],h=Math.hypot(dx,dz)||1,f=clamp(((x-a[0])*dx+(z-a[2])*dz)/(h*h),0,1),px=a[0]+dx*f,pz=a[2]+dz*f,y=a[1]+(b[1]-a[1])*f;let s=a[3]+(b[3]-a[3])*f;if(this.closed&&Number.isFinite(hint))s+=Math.round((hint-s)/this.length)*this.length;if(Number.isFinite(hint)&&Math.abs(s-hint)>maxTravel)continue;const e=this.edgeAt(s);if(layer!=null&&layer!==e.layer)continue;const distance=Math.hypot(x-px,z-pz),u=((x-px)*-dz+(z-pz)*dx)/h,headingDot=heading==null?1:dx/h*-Math.sin(heading)+dz/h*-Math.cos(heading),score=distance+(Number.isFinite(referenceY)?Math.abs(y-referenceY)*4:0)+(Number.isFinite(hint)?Math.abs(s-hint)*.002:0);if(!best||score<best.score-1e-7||Math.abs(score-best.score)<1e-7&&Math.abs(s-(hint??0))<Math.abs(best.s-(hint??0)))best={s,u,y,distance,headingDot,...e,leftM:a[4]+(b[4]-a[4])*f,rightM:a[5]+(b[5]-a[5])*f,score};}
   return best||{s:Number.isFinite(hint)?hint:0,u:Infinity,distance:Infinity,headingDot:0,occurrence:-1,edgeId:null,layer:null,surfaceId:null};
  }
- edgeAt(s){const q=this.station(s);let i=this.compiled.occurrences.findIndex(o=>q<o.s1-1e-7);if(i<0)i=this.compiled.occurrences.length-1;return {...this.compiled.occurrences[i],occurrence:i};}
+ edgeAt(s){const q=this.station(s);const list=this.compiled.occurrences;let lo=0,hi=list.length;while(lo<hi){const mid=(lo+hi)>>1;if(q<list[mid].s1-1e-7)hi=mid;else lo=mid+1;}const i=Math.min(lo,list.length-1);return {...this.compiled.occurrences[i],occurrence:i};}
  nextEdge(cursor){const i=typeof cursor==='number'?cursor:cursor.occurrence;return this.compiled.occurrences[i+1]|| (this.closed?this.compiled.occurrences[0]:null);}
  cellsBetween(a,b,widthM=0){const set=new Set();if(this.closed&&b-a>=this.length){a=0;b=this.length;}for(let s=a;s<=b+4;s+=4){const p=this.point(Math.min(s,b));for(const x of [p.x-widthM,p.x,p.x+widthM])for(const z of [p.z-widthM,p.z,p.z+widthM])set.add(cellKey(x,z));}return [...set].sort();}
  validatePose(p,{hint=p.s,margin=0}={}){const q=this.project(p.x,p.z,{hint,referenceY:p.y,layer:p.layer,heading:p.yaw,maxTravel:30}),f=this.frame(q.s);return q.occurrence>=0&&Math.abs(q.s-p.s)<8&&q.u>=-f.leftM-margin&&q.u<=f.rightM+margin&&Number.isFinite(p.y)&&Math.abs(p.y-q.y)<.75&&p.layer===q.layer&&p.surfaceId!=null&&(!this.contactAllowed? p.surfaceId===q.surfaceId:this.contactAllowed(q,p));}

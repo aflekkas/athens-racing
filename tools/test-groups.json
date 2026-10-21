@@ -245,7 +245,10 @@
     "tools/route-runtime.test.mjs",
     "tools/route-stream-policy.test.mjs",
     "tools/route-guidance-data.test.mjs",
-    "tools/route-race.test.mjs"
+    "tools/route-race.test.mjs",
+    "tools/unified-routes.test.mjs",
+    "tools/route-catalogue.test.mjs",
+    "tools/route-tow.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",

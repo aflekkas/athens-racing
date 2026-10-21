@@ -15,6 +15,8 @@ export async function getLeaderboard(filters = {}) {
   return response.json();
 }
 export async function submitResult(result) {
+  // Phase 1 route PBs stay local until the route-board migration is enabled.
+  if(result?.routeId)return {saved:false,localOnly:true};
   if (!(result?.leaderboardValid ?? result?.valid) || !Number.isFinite(result.time)) return { saved: false };
   try {
     const response = await fetch('/api/leaderboard', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mapId: result.mapId || globalThis.window?.__flow?.mapId || 'riviera', eventId: result.setup?.event || result.eventId, car: result.car, setup: result.setup, carName: result.carName, time: result.time, valid: true, driverId: driverId(), name: localStorage.getItem('paraliaki.driver') || 'DRIVER' }) });

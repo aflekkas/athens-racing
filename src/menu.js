@@ -247,6 +247,7 @@ export class Menu {
     if (Release.act(this, el)) return;
     if (a?.startsWith('mp') && MP.act(this, el)) return;
     switch (a) {
+      case 'unifiedRoute': this.h.selectUnifiedRoute?.(el.dataset.route); break;
       case 'seatReset': { resetSeatPosition(this.h.carSpec?.()?.id); for(const key of ['height','position']){const el=this.root.querySelector('[data-key=seat-'+key+']');if(el)C.setValue(el,0,false);} break; }
       case 'mapPrev': case 'mapNext': case 'mapZoomIn': case 'mapZoomOut': this.mapView?.action(a); break;
       case 'spawnDrive': driveFromSpawn(this); break;
@@ -341,6 +342,7 @@ export class Menu {
         ${C.option({ icon: 'car', title: 'GARAGE', desc: `${GARAGE_CARS.length} cars · city to super`, act: 'garage', cls: 'option--tile' })}
         ${C.option({ icon: 'settings', title: 'SETTINGS', desc: 'Sound, graphics, driving and controls', act: 'settings', cls: 'option--tile' })}`, foot: Release.titleExtras(this), hints: [['select', 'SELECT'], ['confirm', 'OK'], ['garage', 'GARAGE']] });
   }
+  r_routes(d){return C.sheetList({variant:'flow',kick:'ATHENS',title:'SELECT ROUTE',rows:d.catalogue.map(r=>C.option({icon:'flag',title:esc(r.name),desc:`${fmtDist(r.lengthM)} · SOLO · TRAFFIC OFF`,act:'unifiedRoute',attrs:{'data-route':r.id}})).join(''),hints:[['select','SELECT'],['confirm','RACE'],['back','BACK']]});}
   r_leaderboards(d) { return renderLeaderboards(this, d); }
   // RACE is solo (owner 2026-10-18): two artwork-led cards fill the screen; multiplayer lives behind the title's MULTIPLAYER tile.
   r_mode() {

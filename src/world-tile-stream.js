@@ -37,7 +37,7 @@ export class WorldTileStream {
     this.nearRing=nearRing;this.safetyRing=safetyRing;this.lookaheadSeconds=lookaheadSeconds;this.activationMs=activationMs;this.now=now;this.retryMs=retryMs;
     this.tiles=new Map();this.pins=new Map();this.wanted=new Map();this.origin={x:0,z:0};this.generation=0;this.disposed=false;
     this.residentBytes=0;this.reservedBytes=0;this.transientBytes=0;this.inflight=0;
-    this.metrics={loadedBytes:0,evictions:0,failures:0,peakResidentBytes:0,peakReservedBytes:0,peakTransientBytes:0,peakJSBytes:0,peakGPUBytes:0,maxActivationMs:0,activationLongTasks:0};
+    this.metrics={loadedBytes:0,evictions:0,failures:0,peakResidentBytes:0,peakReservedBytes:0,peakTransientBytes:0,peakJSBytes:0,peakGPUBytes:0,maxActivationMs:0,activationLongTasks:0,p95ActivationMs:0,p95FetchDecodeSeconds:0,activationFrameMs:[],fetchDecodeMs:[]};
     this.spawnRelease=pinSpawn?this.pin('spawn',manifest.spawn.cell.join(',')):null;
   }
   entry(key){return this.manifest.tiles[key];}
@@ -97,12 +97,14 @@ export class WorldTileStream {
       this.tiles.set(key,tile);this.inflight++;this.reservedBytes+=reserved;this.transientBytes+=transient;
       this.metrics.peakTransientBytes=Math.max(this.metrics.peakTransientBytes,this.transientBytes);
       this.metrics.peakReservedBytes=Math.max(this.metrics.peakReservedBytes,this.residentBytes+this.reservedBytes);
+      tile.started=this.now();
       const job={url:new URL(entry.url,this.baseURL).href,entry,world:this.manifest.world,revision:this.manifest.revision,cell:key.split(',').map(Number)};
       Promise.resolve().then(()=>this.load(job,controller.signal)).then(packet=>{
         if(this.disposed||this.tiles.get(key)!==tile)return;
         if(!Number.isSafeInteger(packet.bytes)||packet.bytes<0||packet.bytes>reserved)throw new Error('Tile exceeded reservation');
         packet.tables=tileTables(packet);
         this.reservedBytes-=tile.reserved;tile.reserved=0;
+        this.metrics.fetchDecodeMs.push(this.now()-tile.started);if(this.metrics.fetchDecodeMs.length>128)this.metrics.fetchDecodeMs.shift();{const values=[...this.metrics.fetchDecodeMs].sort((a,b)=>a-b);this.metrics.p95FetchDecodeSeconds=values[Math.ceil(values.length*.95)-1]/1000;}
         tile.packet=packet;tile.state='preparing';tile.used=this.now();tile.bytes=entry.residentBytes??packet.bytes;this.residentBytes+=tile.bytes;
         let jsBytes=0,gpuBytes=0;
         for(const value of this.tiles.values())if(value.packet){jsBytes+=value.packet.jsBytes??value.packet.bytes-(value.packet.gpuBytes||0);gpuBytes+=value.packet.gpuBytes||0;}
@@ -124,9 +126,9 @@ export class WorldTileStream {
   /** Call once per render frame; no await, decode or bounds scans on this path. */
   activateFrame(){
     if(this.disposed)return;
-    const start=this.now();
+    const start=this.now();let worked=false;
     for(const [key] of [...this.wanted].sort((a,b)=>a[1]-b[1])){
-      const tile=this.tiles.get(key);if(!tile||tile.state!=='ready')continue;
+      const tile=this.tiles.get(key);if(!tile||tile.state!=='ready')continue;worked=true;
       try{
         let at=this.now();
         tile.build??=this.adapter?.prepare?.(key,tile.packet,this.origin)||{steps:[][Symbol.iterator](),commit:()=>null,dispose:()=>{}};
@@ -141,6 +143,7 @@ export class WorldTileStream {
       }catch(error){tile.build?.dispose();this.residentBytes-=tile.bytes||0;tile.bytes=0;tile.packet=null;tile.build=null;tile.state='failed';tile.error=error;tile.retryAt=this.now()+this.retryMs;this.metrics.failures++;}
       if(this.now()-start>=this.activationMs)break;
     }
+    if(worked){this.metrics.activationFrameMs.push(this.now()-start);if(this.metrics.activationFrameMs.length>512)this.metrics.activationFrameMs.shift();const values=[...this.metrics.activationFrameMs].sort((a,b)=>a-b);this.metrics.p95ActivationMs=values[Math.ceil(values.length*.95)-1];}
     this.pump();
   }
   readyAt(x,z){const key=tileKey(x,z),tile=this.tiles.get(key);if(this.entry(key)?.contactEligible===false||tile?.state!=='active'||![...this.dependencies(key)].every(k=>this.tiles.get(k)?.state==='active'))return false;tile.used=this.now();return true;}
@@ -203,17 +206,17 @@ export class WorldTileStream {
   async spawnAtRoute(startPose,vehicleFootprints=[],move=()=>{},options={}){
     const poses=[startPose,...vehicleFootprints.map(p=>p.pose||startPose)],releases=[],requiredCells=new Set();
     try{
-      for(let i=0;i<poses.length;i++){const p=poses[i],f=vehicleFootprints[i]||{},sin=Math.sin(p.yaw),cos=Math.cos(p.yaw);
+      for(let i=0;i<poses.length;i++){const p=poses[i],f=vehicleFootprints[Math.max(0,i-1)]||{},sin=Math.sin(p.yaw),cos=Math.cos(p.yaw);
         for(const along of [-(f.halfLength||2.8),0,f.halfLength||2.8])for(const across of [-(f.halfWidth||1.1),0,f.halfWidth||1.1]){
           const x=p.x-sin*along+cos*across,z=p.z-cos*along-sin*across,key=tileKey(x,z);if(!this.entry(key))throw Error('Route footprint outside world');releases.push(this.pin('route-footprint',key));requiredCells.add(key);
         }
       }
       return await this.teleport(startPose,async()=>{
-        for(let i=0;i<poses.length;i++){const p=poses[i],f=vehicleFootprints[i]||{},sin=Math.sin(p.yaw),cos=Math.cos(p.yaw);let road;
+        for(let i=0;i<poses.length;i++){const p=poses[i],f=vehicleFootprints[Math.max(0,i-1)]||{},sin=Math.sin(p.yaw),cos=Math.cos(p.yaw);let road;
           for(const tile of this.tiles.values())if(tile.state==='active'){const {metadata:m,tables:t}=tile.packet;for(let j=0;j<t.edges.length;j+=10)if(m.ids[t.edges[j]]===p.edgeId)road={surface:m.ids[t.edges[j+9]],layer:t.edgeLayers[j/10],flags:t.edges[j+8]};}
-          if(!road||road.flags&8||road.layer!==p.layer)throw Error('Route start edge unavailable');
+          if(!road||road.flags&8||road.layer!==p.layer)throw Error('Route start edge unavailable');if(options.validatePose&&!options.validatePose(p,f))throw Error('Route start footprint unavailable');
           for(const along of [-(f.halfLength||2.8),0,f.halfLength||2.8])for(const across of [-(f.halfWidth||1.1),0,f.halfWidth||1.1]){
-            const c=this.contact(p.x-sin*along+cos*across,p.z-cos*along-sin*across,{referenceY:p.y,layer:p.layer,requiredFlags:1});if(!c||c.surfaceId!==road.surface||Math.abs(c.y-p.y)>1)throw Error('Route start footprint unavailable');
+            const c=this.contact(p.x-sin*along+cos*across,p.z-cos*along-sin*across,{referenceY:p.y,layer:p.layer,requiredFlags:1});if(!c||!options.validatePose&&c.surfaceId!==road.surface||c&&Math.abs(c.y-p.y)>1)throw Error('Route start footprint unavailable');
           }
         }await move(startPose);
       },{...options,requiredCells:[...requiredCells]});

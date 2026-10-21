@@ -195,6 +195,7 @@ const rank = (m) => (m ? MEDALS.indexOf(m) + 1 : 0);
 export const betterMedal = (a, b) => (rank(a) >= rank(b) ? a : b);
 /** medal earned by a result for this definition (r = resolve(def)) */
 export function medalFor(def, res, r) {
+  if(def.routeId)return null;
   if (res.wrecked) return null;
   const t = def.targets || {};
   if (def.type === 'sprint') { if (res.time == null) return null; for (const m of ['gold', 'silver', 'bronze']) if (res.position <= t[m]) return m; return null; }
@@ -208,7 +209,7 @@ export function medalFor(def, res, r) {
 }
 /** human-readable targets: [['gold', 'WIN'], ...] (all times, or positions for sprints) */
 export function targetLabels(def, r, fmtTime) {
-  if (def.type === 'free' || isDrivingMode(def)) return [];
+  if (def.routeId || def.type === 'free' || isDrivingMode(def)) return [];
   const t = def.targets || {};
   if (def.type === 'pursuit' && def.rules?.goal === 'survive') return [['gold', 'SURVIVE ' + fmtTime(def.rules.timeLimit)]];
   return ['gold', 'silver', 'bronze'].map((m) => [m,

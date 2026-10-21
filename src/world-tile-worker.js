@@ -1,3 +1,4 @@
+import {readGraphShard} from './world-tile-graph.js';
 import { decodeTilePack } from './world-tile-codec.js';
 import { validateWorldTile, residentArrayBytes } from './world-tile-format.js';
 import { buildTileContactIndex } from './world-tile-contact.js';
@@ -55,10 +56,11 @@ export function prepareTilePacket(pack,{entry,world,revision,cell}){
   }
   for(const bytes of gpuViews.values())gpuBytes+=bytes;
   const gpuPlan=tileGPUPlan(pack),renderVariants=tileRenderVariants(pack),obstacleIndex=buildTileObstacleIndex(checked.tables,parkedBoxesOf(pack));
-  const bytes=obstacleBytes(obstacleIndex)+residentArrayBytes(pack.arrays)+contactIndex.offsets.byteLength+contactIndex.refs.byteLength+gpuBytes+new TextEncoder().encode(JSON.stringify({metadata:pack.metadata,gpuPlan,renderVariants})).byteLength;
+  const roadGraph=readGraphShard({...pack,tables:checked.tables}),graphBytes=new TextEncoder().encode(JSON.stringify(roadGraph)).byteLength*2;
+  const bytes=graphBytes+obstacleBytes(obstacleIndex)+residentArrayBytes(pack.arrays)+contactIndex.offsets.byteLength+contactIndex.refs.byteLength+gpuBytes+new TextEncoder().encode(JSON.stringify({metadata:pack.metadata,gpuPlan,renderVariants})).byteLength;
   if(bytes-dressingBytes(pack)>(entry.residentBytes??entry.decodedBytes))throw new Error('Tile resident budget understated: '+(bytes-dressingBytes(pack))+' > '+(entry.residentBytes??entry.decodedBytes));
   if(checked.triangles!==entry.triangles)throw new Error('Tile triangles mismatch');
-  return {...pack,contactIndex,obstacleIndex,bytes,jsBytes:bytes-gpuBytes,gpuBytes,gpuPlan,renderVariants};
+  return {...pack,roadGraph,contactIndex,obstacleIndex,bytes,jsBytes:bytes-gpuBytes,gpuBytes,gpuPlan,renderVariants};
 }
 if(typeof self!=='undefined'&&typeof document==='undefined')self.onmessage=async({data})=>{
   if(data.cancel){controllers.get(data.id)?.abort();return;}

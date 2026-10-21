@@ -8,3 +8,6 @@ export async function loadUnifiedRoute(query,{fetcher=fetch}={}){
  for(const k of ['id','routeHash','geometryHash','worldSetRevision'])if(entry[k]!==compiled[k])throw Error('Route release mismatch');
  return compiled;
 }
+
+export function enabledRouteCatalogue(config,index){if(config.environment!=='staging'||index.schemaVersion!==1)throw Error('Route catalogue unavailable');return config.routes.map(enabled=>{const item=index.routes.find(r=>r.id===enabled.id);if(!item||['routeHash','geometryHash','worldSetRevision','url'].some(k=>item[k]!==enabled[k]))throw Error('Route catalogue release mismatch');return item;});}
+export async function loadUnifiedRouteCatalogue({fetcher=fetch}={}){const response=await fetcher('/api/routes',{cache:'no-store'});if(!response.ok)throw Error('Route catalogue unavailable');const config=await response.json();if(config.environment!=='staging'||!config.routes?.length)throw Error('Route catalogue unavailable');const index=await fetcher('/data/routes/index.json');if(!index.ok)throw Error('Route catalogue unavailable');return enabledRouteCatalogue(config,await index.json());}

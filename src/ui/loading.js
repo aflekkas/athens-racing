@@ -82,7 +82,7 @@ class LoadingScreen {
   get el() { return $('loading'); }
   reset() {
     this.step = 0; this.kind = 'map'; this.label = 'LOADING MAP DATA'; this.bytes = null; this.parts = null; this.source = null;
-    this.failure = null; this.downloadTried = false; this.chosenBuild = false; this.note = ''; this.changed = this.started = performance.now();
+    this.readiness=null;this.routeSelectionToken=null;this.failure = null; this.downloadTried = false; this.chosenBuild = false; this.note = ''; this.changed = this.started = performance.now();
   }
   show(mapId = 'riviera', context = 'QUICK RACE') {
     const el = this.el; if (!el) return;
@@ -105,7 +105,7 @@ class LoadingScreen {
     const url = new URL(location.href); url.searchParams.set('menu', '1'); url.searchParams.delete('lobby');
     location.assign(url.href);
   }
-  setRoute(compiled){this.mapId='athens';this.routeSelectionToken=null;for(const [id,value]of Object.entries({ldName:compiled.definition.name,ldSub:'ATHENS',ldKind:'SPRINT',ldLen:fmtKm(compiled.lengthM)})){const e=$(id);if(e)e.textContent=value;}const host=$('ldArt');if(host)host.replaceChildren();}
+  setRoute(compiled){this.mapId='athens';this.routeSelectionToken=null;for(const [id,value]of Object.entries({ldName:compiled.definition.name,ldSub:'ATHENS',ldKind:'SPRINT',ldLen:fmtKm(compiled.lengthM)})){const e=$(id);if(e)e.textContent=value;}const host=$('ldArt');if(host){host.replaceChildren();const points=compiled.points,x=points.map(p=>p[0]),z=points.map(p=>p[2]),x0=Math.min(...x),z0=Math.min(...z),w=Math.max(1,Math.max(...x)-x0),h=Math.max(1,Math.max(...z)-z0),pad=Math.max(w,h)*.08,svg=document.createElementNS('http://www.w3.org/2000/svg','svg'),line=document.createElementNS(svg.namespaceURI,'polyline');svg.setAttribute('viewBox',`${x0-pad} ${z0-pad} ${w+pad*2} ${h+pad*2}`);svg.setAttribute('aria-hidden','true');line.setAttribute('points',points.map(p=>`${p[0]},${p[2]}`).join(' '));line.setAttribute('fill','none');line.setAttribute('stroke','#d9e5e3');line.setAttribute('stroke-width','3');line.setAttribute('vector-effect','non-scaling-stroke');svg.append(line);host.append(svg);}this.route=[];}
   setMap(mapId) {
     if (this.mapId === mapId) return;
     const map = MAPS.find((m) => m.id === mapId) || MAPS[0]; this.mapId = map.id;
@@ -229,7 +229,7 @@ class LoadingScreen {
     const stat = $('lstat'); if (stat) stat.textContent = this.failure ? PAUSED[this.step] : this.label;
     const share = this.measured(), b = this.step === 1 ? this.bytes : null;
     const parts = this.kind === 'generate' && this.parts;
-    const pct = $('lpct'); if (pct) pct.textContent = parts ? `PART ${parts.step + 1} OF ${parts.steps}` : !b || !b.loaded && !b.total ? '' : b.total ? `${mb(b.loaded)} / ${mb(b.total)} MB` : `${mb(b.loaded)} MB`;
+    const pct = $('lpct'); if (pct) pct.textContent = this.readiness&&this.step===2 ? `START AREA · ${this.readiness.active} / ${this.readiness.required} READY` : parts ? `PART ${parts.step + 1} OF ${parts.steps}` : !b || !b.loaded && !b.total ? '' : b.total ? `${mb(b.loaded)} / ${mb(b.total)} MB` : `${mb(b.loaded)} MB`;
     const bar = $('lbar');
     if (bar) {
       const spoken = `Step ${this.step + 1} of ${STEPS.length}: ${this.failure ? 'paused' : STEP_SPOKEN[this.step]}` + (b?.total ? `, ${mb(b.loaded)} of ${mb(b.total)} megabytes` : '');
