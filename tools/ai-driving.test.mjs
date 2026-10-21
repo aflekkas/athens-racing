@@ -17,7 +17,7 @@ const root = new URL('../', import.meta.url), artifacts = new URL('.scratch/ai-o
 mkdirSync(artifacts, { recursive: true });
 const baseline = process.env.AI_BASELINE === '1';
 const aiSource = readFileSync(new URL(baseline ? '.scratch/ai-overtake/before-rival-ai.js' : 'src/rival-ai.js', root), 'utf8');
-const { RivalAI } = await import('data:text/javascript,' + encodeURIComponent(aiSource.replace("'./roundabouts.js'",JSON.stringify(new URL('src/roundabouts.js',root).href))));
+const { RivalAI } = await import('data:text/javascript,' + encodeURIComponent(aiSource.replace(/from (['"])(\.\/[^'"]+)\1/g,(_,quote,path)=>'from '+JSON.stringify(new URL(path,new URL('src/rival-ai.js',root)).href))));
 const trafficSource = readFileSync(new URL(baseline ? '.scratch/ai-overtake/before-traffic.js' : 'src/traffic.js', root), 'utf8');
 const { Traffic } = new Function('THREE', 'RNG', 'clamp', 'lerp', 'smoothstep', 'ROAD', 'LANE_W', 'damageIncrement', 'equivalentBarrierSpeed', 'impactTarget', 'LIFE', 'STEP', 'roundaboutHelpers',
   'const {circulatingPoint,roundaboutRange,entryYieldDistance,ringStation,ringPoint,polylinePoint,polylineStation,trafficRoundaboutRange,roundaboutYield}=roundaboutHelpers;\n'+trafficSource.replace(/^import .*;$/gm, '').replace(/^export /gm, '') + '\nreturn { Traffic };')(

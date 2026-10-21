@@ -1,10 +1,9 @@
-import {worldDetailEnabled} from './world-detail-state.js';
 import {terrainMaterial} from './terrain.js';
 // Region-specific cover; the legacy Off rendering and other maps are untouched.
 export function penteliTerrainMaterial(){
  const material=terrainMaterial(),before=material.onBeforeCompile;
- material.customProgramCacheKey=()=> 'penteli-mountain-v2'+(worldDetailEnabled.value?':detail':':plain');
- material.onBeforeCompile=function(sh){before.call(this,sh);if(!worldDetailEnabled.value)return;
+ material.customProgramCacheKey=()=> 'penteli-mountain-v2';
+ material.onBeforeCompile=sh=>{before(sh);
  sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute float aPCover;varying vec4 vPColor;').replace('#include <begin_vertex>','#include <begin_vertex>\nvec3 c=vec3(34.,51.,27.);float rock=0.;if(aPCover>.5&&aPCover<1.5)c=vec3(27.,43.,25.);if(aPCover>1.5&&aPCover<2.5)c=vec3(49.,61.,32.);if(aPCover>2.5&&aPCover<3.5)c=vec3(95.,99.,71.);if(aPCover>3.5&&aPCover<5.5){c=aPCover<4.5?vec3(142.,145.,141.):vec3(116.,122.,117.);rock=aPCover<4.5?2.:1.;}if(aPCover>5.5)c=vec3(111.,111.,105.);vPColor=vec4(c/255.,rock);');
  sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying vec4 vPColor;')
  .replace('float steep =','vc=vPColor.rgb;float steep =')

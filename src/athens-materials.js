@@ -3,6 +3,7 @@ import {roadSignAtlas} from './road-signs.js';
 import {municipalBinLabelTexture} from './street-life.js';
 import {roadNetworkMaterial} from './road-network.js';
 import {penteliRoadMaterial} from './maps/penteli-surface.js';
+import {worldDetailEnabled} from './world-detail-state.js';
 import {terrainMaterial} from './terrain.js';
 import {penteliTerrainMaterial} from './penteli-terrain.js';
 import {facadeMaterial} from './buildings.js';
@@ -14,7 +15,7 @@ import {createFacadeAtlas} from './facade-atlas.js';
 import * as THREE from 'three';
 import {TX,GLSL_HELPERS,loadTextureSubset} from './tex.js';
 import {settings,onSettings} from './settings.js';
-import {detailNoise,SEA_TIME,patchMaterial,GROUND_GLSL,GROUND_VERTEX_VARYINGS,GROUND_VERTEX_BODY,GROUND_APPLY,FACADE_GLSL,FACADE_VERTEX_VARYINGS,FACADE_VERTEX_BODY,FACADE_APPLY,FACADE_PLAIN,SEA_GLSL,SEA_VERTEX_VARYINGS,SEA_VERTEX_BODY,SEA_APPLY,FOAM_GLSL,FOAM_VERTEX_VARYINGS,FOAM_VERTEX_BODY,FOAM_APPLY} from './athens-detail.js';
+import {trackDetailMaterial,detailNoise,SEA_TIME,patchMaterial,GROUND_GLSL,GROUND_VERTEX_VARYINGS,GROUND_VERTEX_BODY,GROUND_APPLY,FACADE_GLSL,FACADE_VERTEX_VARYINGS,FACADE_VERTEX_BODY,FACADE_APPLY,FACADE_PLAIN,SEA_GLSL,SEA_VERTEX_VARYINGS,SEA_VERTEX_BODY,SEA_APPLY,FOAM_GLSL,FOAM_VERTEX_VARYINGS,FOAM_VERTEX_BODY,FOAM_APPLY} from './athens-detail.js';
 export const ASPHALT_PERIOD=512/122,PAVING_PERIOD=512/160,URBAN_PERIOD=512/80;
 // Mean grey of each scan, so palette colour keeps the street's overall tone and the scan only adds grain.
 const MEAN={asphalt:.096,paving:.198};
@@ -37,9 +38,17 @@ function scanned(color,key,period,mean,contrast,{vertexColors=false,strength=1,d
   };
   return m;
 }
+// Only streamed terrain specializes Off. Authored map materials keep their
+// measured programs and budgets. Track decoder clones for live detail toggles.
+function streamedTerrainMaterial(factory){
+ const material=factory(),before=material.onBeforeCompile,key=material.customProgramCacheKey;
+ trackDetailMaterial(material);material.customProgramCacheKey=()=>key.call(material)+(worldDetailEnabled.value?':detail':':plain');
+ material.onBeforeCompile=function(shader,renderer){trackDetailMaterial(this);if(worldDetailEnabled.value)return before.call(this,shader,renderer);shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nroughnessFactor = 0.95;');};
+ return material;
+}
 /** materialFactory for WorldTileScene: (tileSurface, linear rgb, hasVertexColors) -> material. */
 export function athensMaterial(surface,rgb,vertexColors){
-  if(surface==='megaraTerrain')return terrainMaterial();
+  if(surface==='megaraTerrain')return streamedTerrainMaterial(terrainMaterial);
   if(surface==='megaraNetwork')return roadNetworkMaterial();
   if(surface.startsWith('megaraSolid:')){const o=JSON.parse(surface.slice(12));return new THREE.MeshStandardMaterial({...o,color:new THREE.Color(...rgb),vertexColors});}
   if(surface==='megaraTyre'){
@@ -57,8 +66,8 @@ export function athensMaterial(surface,rgb,vertexColors){
   if(surface.startsWith('penteliProp:')){const {texture,...options}=JSON.parse(surface.slice(12)),map=!texture?null:texture.kind==='speed'?faceTexture(texture.value):texture.kind==='road-sign'?roadSignAtlas(texture.keys):municipalBinLabelTexture();const m=new THREE.MeshStandardMaterial({...options,color:new THREE.Color(...rgb),vertexColors,map});const off=onSettings((s,k)=>{if(!k||k==='worldDetail')m.visible=s.worldDetail!==false;});m.visible=settings.worldDetail!==false;m.addEventListener('dispose',()=>{off();map?.dispose();});return m;}
   if(surface==='penteliNetwork')return roadNetworkMaterial();
   if(surface==='penteliRoad')return penteliRoadMaterial();
-  if(surface==='penteliMountain')return penteliTerrainMaterial();
-  if(surface==='penteliTerrain')return terrainMaterial();
+  if(surface==='penteliMountain')return streamedTerrainMaterial(penteliTerrainMaterial);
+  if(surface==='penteliTerrain')return streamedTerrainMaterial(terrainMaterial);
   if(surface==='penteliBuilding')return facadeMaterial(typeof document==='undefined'?null:createFacadeAtlas());
   if(surface==='penteliScenery'||surface==='penteliRail'||surface==='penteliConcrete'){
     const m=new THREE.MeshStandardMaterial({color:new THREE.Color(...rgb),vertexColors,map:surface==='penteliConcrete'?TX.concrete_diff:null,roughness:surface==='penteliRail'?.42:.92,metalness:surface==='penteliRail'?.68:0,side:THREE.DoubleSide});
