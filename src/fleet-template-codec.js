@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {brandBadgeTexture} from './brand-badges.js';
 
 // Structured clone carries typed buffers directly: no JSON/stringification or
 // procedural geometry building on the render thread. Shared template buffers
@@ -16,7 +17,7 @@ export function packFleetTemplate({key,car,cabin}){
 
 export function* unpackFleetTemplate(packet){
  const textures=[],materials=[],geometries=[],nodes=[];
- for(const d of packet.textures){let t;if(!d.pixels)t=new T.Texture();else if(d.dataTexture)t=new T.DataTexture(d.pixels.data,d.pixels.width,d.pixels.height,d.format,d.type);else{const canvas=document.createElement('canvas');canvas.width=d.pixels.width;canvas.height=d.pixels.height;canvas.getContext('2d').putImageData(d.pixels,0,0);t=new T.CanvasTexture(canvas);}for(const k of ['colorSpace','flipY','wrapS','wrapT','magFilter','minFilter','name','anisotropy','generateMipmaps','premultiplyAlpha','unpackAlignment','rotation','channel'])t[k]=d[k];for(const k of ['offset','repeat','center'])t[k].fromArray(d[k]);t.userData.shared=true;if(d.pixels)t.needsUpdate=true;textures.push(t);yield;}
+ for(const d of packet.textures){if(d.name==='shared-brand-badges'){textures.push(brandBadgeTexture());yield;continue;}let t;if(!d.pixels)t=new T.Texture();else if(d.dataTexture)t=new T.DataTexture(d.pixels.data,d.pixels.width,d.pixels.height,d.format,d.type);else{const canvas=document.createElement('canvas');canvas.width=d.pixels.width;canvas.height=d.pixels.height;canvas.getContext('2d').putImageData(d.pixels,0,0);t=new T.CanvasTexture(canvas);}for(const k of ['colorSpace','flipY','wrapS','wrapT','magFilter','minFilter','name','anisotropy','generateMipmaps','premultiplyAlpha','unpackAlignment','rotation','channel'])t[k]=d[k];for(const k of ['offset','repeat','center'])t[k].fromArray(d[k]);t.userData.shared=true;if(d.pixels)t.needsUpdate=true;textures.push(t);yield;}
  const loader=new T.MaterialLoader();
  for(const d of packet.materials){const m=loader.parse(d.json);for(const[k,id]of Object.entries(d.maps))m[k]=textures[id];materials.push(m);yield;}
  for(const d of packet.geometries){const g=new T.BufferGeometry();for(const[k,a]of Object.entries(d.attributes))g.setAttribute(k,new T.BufferAttribute(a.array,a.itemSize,a.normalized));if(d.index)g.setIndex(new T.BufferAttribute(d.index.array,d.index.itemSize,d.index.normalized));g.groups=d.groups;g.drawRange=d.drawRange;g.userData.shared=true;if(d.boundingBox)g.boundingBox=new T.Box3(new T.Vector3(...d.boundingBox.slice(0,3)),new T.Vector3(...d.boundingBox.slice(3)));if(d.boundingSphere)g.boundingSphere=new T.Sphere(new T.Vector3(...d.boundingSphere.slice(0,3)),d.boundingSphere[3]);geometries.push(g);yield;}
