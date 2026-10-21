@@ -6,7 +6,7 @@ export function travelHeading(p) {
     Math.cos(p.yaw) * along + Math.sin(p.yaw) * across);
 }
 export function rememberTowHeading(p, onRoad) {
-  if (onRoad && !p.air && !p.bodyDynamic && !p.crashRecover && !p.wallHit &&
+  if (onRoad && !p.air && !p.bodyDynamic && !p.crashRecover &&
       Math.abs(p.w || p.angularY || 0) < .8 && Math.hypot(p.vLong, p.vLat) >= 2) {
     p.towHeading = travelHeading(p);
   }

@@ -9,6 +9,7 @@ test('departure heading survives a spin, rest and reverse body yaw; velocity inc
  p.vLong=15;p.w=2;rememberTowHeading(p,true);assert.equal(towHeading(p),0,'a spin on the tarmac cannot overwrite departure direction');
  p.w=0;p.vLong=-20;rememberTowHeading(p,true);assert.ok(Math.cos(towHeading(p))>.999,'reverse velocity, not body direction');
  const sliding={yaw:0,vLong:0,vLat:20};rememberTowHeading(sliding,true);assert.ok(Math.abs(towHeading(sliding)+Math.PI/2)<1e-9);
+ const continued={yaw:1,vLong:20,vLat:0,w:0,wallHit:5,towHeading:0};rememberTowHeading(continued,true);assert.equal(towHeading(continued),1,'a historical wall marker must not freeze later on-road travel');continued.yaw=2;continued.crashRecover=.2;rememberTowHeading(continued,true);assert.equal(towHeading(continued),1,'acute collision recovery cannot overwrite travel direction');
 });
 test('two-way directed edges choose pre-departure direction even when the reverse lane is nearer',()=>{
  for(const yaw of [0,Math.PI]){const pose={x:0,z:10,yaw:yaw+Math.PI,towHeading:yaw},forward={x:3,z:0,yaw,edgeId:'forward',roadId:'pair'},back={x:0,z:0,yaw:yaw+Math.PI,edgeId:'back',roadId:'pair'};
