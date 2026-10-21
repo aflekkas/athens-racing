@@ -78,6 +78,7 @@ test('C cycles cockpit -> chase -> front -> cockpit with a front view ahead look
   assert.match(main, /else if \(G\.cam === 'front'\)/, 'a front camera branch renders the view');
   const branch = main.slice(main.indexOf("else if (G.cam === 'front')"), main.indexOf('} else { // orbit'));
   assert.match(branch, /followYaw \+ Math\.PI/, 'the front camera sits ahead of the car, not behind it');
-  assert.match(branch, /camera\.lookAt\(veh\.x, veh\.y \+ targetY, veh\.z\)/, 'the front camera looks back at the car');
+  assert.match(main, /viewX=veh\.x-\(worldSession\?\.stream\.origin\.x\|\|0\),viewZ=veh\.z-\(worldSession\?\.stream\.origin\.z\|\|0\)/, 'the camera uses the streamed world origin');
+  assert.match(branch, /camera\.lookAt\(viewX, veh\.y \+ targetY, viewZ\)/, 'the front camera looks back at the rebased car');
   assert.match(branch, /chaseFov/, 'the front view keeps the chase field of view, never the cockpit framing');
 });
