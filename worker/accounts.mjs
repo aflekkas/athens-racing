@@ -108,6 +108,7 @@ async function identity(db, provider, subject) {
     await run(db, "DELETE FROM users WHERE id=?", id).run();
   return existing.user_id;
 }
+export const SESSION_MS = 2592000000; // 30 days
 async function login(db, user, secret) {
   const token = random(),
     xsrf = random();
@@ -117,9 +118,9 @@ async function login(db, user, secret) {
     await keyedHash(secret, "session:" + token),
     user,
     xsrf,
-    Date.now() + 2592000000,
+    Date.now() + SESSION_MS,
   ).run();
-  return cookie("ar_session", token, 2592000);
+  return cookie("ar_session", token, SESSION_MS / 1000);
 }
 async function body(request) {
   const reader = request.body?.getReader();
@@ -166,6 +167,14 @@ export async function accounts(request, env, fetcher = fetch) {
     )
       fail("Origin mismatch", 403);
     const s = await session(request, env);
+    // The launch check refreshes a session in its second half (owner 2026-10-20: the central loading screen checks the
+    // session and refreshes it if needed): the same token, another 30 days, so a regular driver never meets the sign-in.
+    let refreshed = {};
+    if (p === "/api/auth/session" && s && s.expires - Date.now() < SESSION_MS / 2) {
+      s.expires = Date.now() + SESSION_MS;
+      await run(env.ACCOUNTS, "UPDATE sessions SET expires=? WHERE token=?", s.expires, s.token).run();
+      refreshed = { "Set-Cookie": cookie("ar_session", cookies(request).ar_session, SESSION_MS / 1000) };
+    }
     if (p === "/api/auth/session")
       return json(
         s
@@ -182,6 +191,8 @@ export async function accounts(request, env, fetcher = fetch) {
               migrated: !!s.migrated,
             }
           : { user: null },
+        200,
+        refreshed,
       );
     const match = p.match(/^\/api\/auth\/(google)\/(start|callback)$/);
     if (match && request.method === "GET") {

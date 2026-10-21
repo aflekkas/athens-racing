@@ -151,6 +151,7 @@
     "tools/owner-locked-free-roam-spawn.test.mjs",
     "tools/map-wheel.test.mjs",
     "tools/fewer-steps.test.mjs",
+    "tools/launch-gate.test.mjs",
     "tools/athens-streets.test.mjs",
     "tools/greek-caps.test.mjs",
     "tools/tow-nearest-road.test.mjs",

@@ -1256,6 +1256,18 @@ body:has(#loading.open) :is(#hud,#mp-board,#racer-markers,#drivingHints,#driving
 /* ---------------------------------------------------------------- desktop gate (owner 2026-10-19: computer only)
    index.html's #device-gate is the one screen a phone or tablet gets; src/entry.js sets html[data-device=blocked] before anything
    else loads. It is a full screen on the shared narrow sheet layout, never a dialog. */
+/* The launch screen (src/ui/boot-screen.js): over everything from the first paint until the session is known, then a short
+   fade. The brand, one condensed status line and one thin ice bar; no panel, no glow. A blocked device never shows it. */
+#boot { position: fixed; inset: 0; z-index: 390; background: #050608; color: var(--hu-text); font-family: var(--f-sans); transition: opacity .3s var(--ease); }
+html.booted #boot { opacity: 0; pointer-events: none; }
+#boot .scr { position: relative; min-height: 100%; box-sizing: border-box; }
+#boot .layout-sheet-narrow { display: grid; align-content: center; justify-items: center; gap: var(--s-6); min-height: 100%; }
+#boot .scr__foot, #boot .scr__head { display: none; }
+#boot .boot__brand { display: flex; align-items: center; gap: var(--s-3); }
+#boot .boot__brand .brand-mark { width: 3rem; height: 3rem; }
+#boot .boot__status { display: grid; justify-items: center; gap: var(--s-3); width: min(16rem, 60vw); }
+#boot .boot__step { font: 600 var(--t-xs) var(--f-cond); letter-spacing: var(--track-caps); color: var(--c-text-3); text-transform: uppercase; }
+#boot .boot__bar { width: 100%; height: 2px; }
 #device-gate { display: none; }
 html[data-device="blocked"] body > :not(#device-gate) { display: none !important; }
 html[data-device="blocked"] #device-gate { display: block; position: fixed; inset: 0; z-index: 400; overflow-y: auto; background: #050608; color: var(--hu-text); font-family: var(--f-sans); }

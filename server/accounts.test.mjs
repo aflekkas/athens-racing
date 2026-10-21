@@ -797,3 +797,20 @@ test('the client closes the gate at the session expiry deadline', async () => {
   await new Promise(resolve => setTimeout(resolve, 30));
   assert.equal(client.blocked, true); assert.match(client.error, /expired/);
 });
+
+// Owner 2026-10-20: the launch screen checks the session and refreshes it if needed.
+test("the launch check extends a session in its second half, and leaves a fresh one alone", async () => {
+  const f = fixture(), a = await f.login("refresh-google-subject");
+  const fresh = await f.call("/api/auth/session", undefined, a);
+  assert.equal(fresh.headers.get("set-cookie"), null, "a new session is not reissued");
+  const soon = Date.now() + 86400000;
+  f.sqlite.prepare("UPDATE sessions SET expires=? WHERE user_id=?").run(soon, a.id);
+  const r = await f.call("/api/auth/session", undefined, a), s = await r.json();
+  assert.equal(s.user.id, a.id);
+  assert.ok(s.expires > Date.now() + 29 * 86400000, "another 30 days");
+  assert.match(r.headers.get("set-cookie"), new RegExp("^" + a.cookie + "; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=2592000$"), "the same token, a fresh cookie");
+  assert.ok(f.sqlite.prepare("SELECT expires FROM sessions WHERE user_id=?").get(a.id).expires > soon, "stored");
+  f.sqlite.prepare("UPDATE sessions SET expires=0 WHERE user_id=?").run(a.id);
+  const gone = await (await f.call("/api/auth/session", undefined, a)).json();
+  assert.equal(gone.user, null, "an expired session is never revived");
+});
