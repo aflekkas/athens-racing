@@ -38,6 +38,9 @@ const arrow = (rev) => icon(rev ? 'arrow-left' : 'arrow-right', 'ico--route');
 const NUM = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'];
 const count = (n) => NUM[n] || String(n);
 /** the Quick Race card line, from the real default and cap */
+/** the RACE card played last (Quick Race or Free Roam), remembered on this device */
+const lastMode = () => { try { return localStorage.getItem('paraliaki.lastMode') === 'free' ? 'free' : 'quick'; } catch { return 'quick'; } };
+const rememberMode = mode => { try { localStorage.setItem('paraliaki.lastMode', mode); } catch {} };
 const quickBlurb = () => `Pick a track and race ${count(SP_RIVALS)} locals against the clock.`;
 const routeLine = (r) => r.closed ? `${r.laps} ${r.laps === 1 ? 'LAP' : 'LAPS'}` : `${esc(r.fromName)} ${arrow(false)} ${esc(r.toName)}`;
 C.registerFormat('seatCm',v=>(v>0?'+':'')+Math.round(v*100)+' cm');
@@ -68,6 +71,13 @@ export class Menu {
   get open() { return !!this.screen; }
 
   // ---------------------------------------------------------------- show / hide
+  /** A race's car picker, open on that car with the garage grid under it for Back (owner 2026-10-20: fewer steps). Both
+   * screens go on once the garage module is in, so a cold start cannot drop the second. */
+  pickCar(data) {
+    const from = this.screen;
+    void loadGarage().then(() => { if (this.screen !== from) return; this.show('car', data, true); this.show('car', { ...data, detail: true }, true); })
+      .catch(error => C.ui.toast(error.message, { tone: 'bad' }));
+  }
   show(screen, data = {}, push = false) {
     if (screen === 'car' && !garage) {
       const from = this.screen;
@@ -251,8 +261,10 @@ export class Menu {
       case 'leaderboardReset': this.data.filters = { mapId: this.data.filters.mapId }; this.refresh(); break;
       case 'leaderboardRetry': this.data.requestKey = null; this.refresh(); break;
       case 'play': this.show('mode', {}, true); break;
-      case 'quick': this.filter = 'sprint'; this.show('maps', { filter: 'sprint', mode: 'quick' }, true); break;
-      case 'free': this.filter = 'free'; this.show('maps', { filter: 'free', mode: 'free' }, true); break;
+      case 'quick': this.filter = 'sprint'; this.show('maps', { filter: 'sprint', mode: 'quick' }, true); rememberMode('quick'); break;
+      case 'free': this.filter = 'free'; this.show('maps', { filter: 'free', mode: 'free' }, true); rememberMode('free'); break;
+      case 'raceAgain': (this.h.raceAgain || this.h.restart)(); break;
+      case 'changeCar': (this.h.changeCar || this.h.restart)(); break;
       case 'roamCar': this.h.freeRoamCar?.(); break;
       case 'roamConditions': this.h.roamConditions?.(); break;
       case 'roamLandmarks': this.h.roamLandmarks?.(); break;
@@ -333,7 +345,8 @@ export class Menu {
   // RACE is solo (owner 2026-10-18): two artwork-led cards fill the screen; multiplayer lives behind the title's MULTIPLAYER tile.
   r_mode() {
     const art = (src) => `<img src="${esc(src)}" alt="" decoding="async">`;
-    const tile = (act, ic, title, desc, src, cta) => C.option({ icon: ic, title, desc, act, cls: 'option--tile option--feature', media: art(src), cta });
+    // The card you played last is focused, so Enter repeats it (owner 2026-10-20: fewer steps to get anywhere).
+    const last = lastMode(), tile = (act, ic, title, desc, src, cta) => C.option({ icon: ic, title, desc, act, cls: 'option--tile option--feature', media: art(src), cta, attrs: act === last ? { 'data-default': '' } : undefined });
     return C.heroTiles({ variant: 'choices', cls: 'scr--mode', title: 'RACE', hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'BACK']],
       tiles: `${tile('quick', 'flag', 'QUICK RACE', quickBlurb(), MAPS.find((m) => m.id === 'penteli')?.preview || MAPS[0].preview, 'CHOOSE TRACK')}${tile('free', 'car', 'FREE ROAM', 'Pick where to start on the map and just drive.', './assets/maps/attica.svg', 'CHOOSE SPAWN')}` });
   }
@@ -411,12 +424,12 @@ export class Menu {
       if (f.key === 'time') rows.push(C.select({ key: 'time', label: 'TIME OF DAY', icon: cur.time === 'night' ? 'moon' : cur.time === 'sunset' || cur.time === 'dawn' ? 'sunrise' : 'sun', value: cur.time, attrs: A, options: TIMES.map(([v, l]) => [v, v === f.dflt ? `${l} · DEFAULT` : l]) }));
       if (f.key === 'weather') rows.push(C.segmented({ key: 'weather', label: 'WEATHER', icon: cur.weather === 'rain' ? 'cloud-rain' : cur.weather === 'overcast' ? 'cloud' : 'sun', value: cur.weather, dflt: f.dflt, attrs: A, options: WEATHERS.map(([v, l]) => [v, l, v === 'rain' ? 'cloud-rain' : v === 'overcast' ? 'cloud' : 'sun']) }));
     }
-    if (rows[0]) rows[0] = rows[0].replace('<div class="mi field', '<div data-default="" class="mi field'); // open on the first choice
+    // Fewer steps (owner 2026-10-20): the screen opens on CHOOSE CAR, so Enter goes straight on; the options are one press up.
     const note = '';
     const map = MAPS.find((m) => m.id === ctx.mapId) || MAPS[0];
     return C.stageInspector({ variant: 'setup', cls: 'scr--setup', kick: def.quick ? 'QUICK RACE' : `${TYPES[def.type].label} · ${esc((MAPS.find((m) => m.id === ctx.mapId) || MAPS[0]).name)}`, title: def.objectiveMode || def.type === 'free' ? 'SESSION SETUP' : 'RACE SETUP',
       hints: [['updown', 'SELECT'], ['leftright', 'CHANGE'], ['confirm', 'OK'], ['back', 'BACK']],
-      stage: `${map.preview ? `<img class="setup__map" src="${esc(map.preview)}" alt="Route preview: ${esc(map.name)}">` : ''}${this.eventSummary(runDef, r, runDef.id)}`, inspectorTitle: '', inspector: `${rows.filter(row => /data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('')}${C.button({ label: this.data.advanced ? 'HIDE ADVANCED OPTIONS' : 'ADVANCED OPTIONS', icon: 'sliders-horizontal', act: 'setupAdvanced', variant: 'ghost', size: 'sm' })}${this.data.advanced ? rows.filter(row => !/data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('') : ''}`, note, actions: C.button({ label: 'CHOOSE CAR', icon: 'car', iconRight: 'chevron-right', variant: 'primary', act: 'setupGo' }), inspectorHead: C.button({ label: 'DEFAULTS', icon: 'rotate-ccw', variant: 'ghost', size: 'sm', act: 'setupReset', disabled: !custom }) });
+      stage: `${map.preview ? `<img class="setup__map" src="${esc(map.preview)}" alt="Route preview: ${esc(map.name)}">` : ''}${this.eventSummary(runDef, r, runDef.id)}`, inspectorTitle: '', inspector: `${rows.filter(row => /data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('')}${C.button({ label: this.data.advanced ? 'HIDE ADVANCED OPTIONS' : 'ADVANCED OPTIONS', icon: 'sliders-horizontal', act: 'setupAdvanced', variant: 'ghost', size: 'sm' })}${this.data.advanced ? rows.filter(row => !/data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('') : ''}`, note, actions: C.button({ label: 'CHOOSE CAR', icon: 'car', iconRight: 'chevron-right', variant: 'primary', act: 'setupGo', attrs: { 'data-default': '' } }), inspectorHead: C.button({ label: 'DEFAULTS', icon: 'rotate-ccw', variant: 'ghost', size: 'sm', act: 'setupReset', disabled: !custom }) });
   }
   startSetup() {
     const def = this.setupDef(), runDef = applySetup(def, loadSetup(this.setupKey()), { closed: this.isClosed() });
@@ -500,13 +513,13 @@ export class Menu {
     const splits = d.splits?.length ? C.panel('SPLITS', `<table class="r-table">${d.splits.map((s) => `<tr><td>${esc(s.name)}</td><td class="tnum">${s.time}</td><td class="tnum ${s.cls || ''}">${s.delta || ''}</td></tr>`).join('')}</table>`, { icon: 'timer' }) : '';
     const field = d.field?.length ? C.panel('CLASSIFICATION', `<table class="r-table">${d.field.map((f) => `<tr class="${f.me ? 'me' : ''}"><td class="r-pos">P${f.pos}</td><td>${esc(f.name)}<small>${esc(f.car || '')}</small></td><td class="tnum ${f.running ? 'run' : ''}">${f.time}</td></tr>`).join('')}</table>`, { icon: 'flag' }) : '';
     const tiles = (d.rows || []).filter(([k]) => !/EVENT BEST|MEDAL|RECORD/i.test(k)).map(([k, v, hi]) => C.stat(esc(k), v, { tone: hi ? 'hi' : '' }));
-    const act = (a, ic, label, v = 'secondary') => C.button({ label, icon: ic, act: a, variant: v, attrs: a === 'retry' ? { 'data-default': '' } : null });
+    const act = (a, ic, label, v = 'secondary') => C.button({ label, icon: ic, act: a, variant: v, attrs: a === 'raceAgain' ? { 'data-default': '' } : null });
     return C.sheetList({ variant: 'split', cls: `scr--results ${d.win ? 'is-win' : 'is-lose'}`, back: false, kick, title: esc(d.title || ''), hints: [['select', 'SELECT'], ['confirm', 'OK'], ['back', 'MAIN MENU']],
       rows: `
         ${d.sub ? `<p class="res-sub">${d.sub}</p>` : ''}
         ${personalBestLabel(d.result?.personalBest) ? C.badge(esc(personalBestLabel(d.result.personalBest)), 'good', 'timer') : ''}
         <div class="stats res-stats">${tiles.join('')}</div>
-      `, actions: `${act('retry', 'rotate-ccw', 'RETRY', 'primary')}${d.result?.time != null ? act('shareResult', 'share', 'SHARE') : ''}${act('list', 'menu', 'MAIN MENU')}`,
+      `, actions: `${act('raceAgain', 'rotate-ccw', 'RACE AGAIN', 'primary')}${act('changeCar', 'car', 'CHANGE CAR')}${d.result?.time != null ? act('shareResult', 'share', 'SHARE') : ''}${act('list', 'menu', 'MAIN MENU')}`,
       aside: `${d.result?.personalBest?.exact ? renderBestRecord(d.result.personalBest.exact, { title: `${d.result.personalBest.newBest ? 'NEW ' : ''}PERSONAL BEST · ${this.h.fmtTime(d.result.personalBest.exact.time)}` }) : ''}${field}${splits}` });
   }
 }

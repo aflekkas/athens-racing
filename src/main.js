@@ -941,7 +941,8 @@ function initFlow() {
       startEvent(def, { car: index });
     },
     openCarPicker, freeRoamCar: () => openCarPicker({ inFreeRoam: true, onPick: switchRoamCar }), roamConditions: openRoamConditions, roamLandmarks: openRoamLandmarks, roamTow: () => { resume(); tow(player.veh); },
-    resume, restart: () => openEvent(G.ev.def), quit: quitToMenu, next: (id) => openEvent(id),
+    // RACE AGAIN on the results: the same event with the same car, at once. CHANGE CAR (restart) opens the car picker first.
+    resume, restart: () => openEvent(G.ev.def), raceAgain: () => startEvent(G.ev.def, { car: G.carIdx }), changeCar: () => openEvent(G.ev.def, G.carIdx, true), quit: quitToMenu, next: (id) => openEvent(id),
     ctx: menuCtx, inputDevice: activeInputDevice, carName: () => CARS[G.carIdx].name, carSpec: () => CARS[G.carIdx], manual: () => player?.veh.manual ?? settings.transmission === 'manual', fmtTime, ui: (fwd) => audio.ui?.(fwd),
     personalBests: (def, r, car) => getPersonalBests(bestSetup(def, r, car)), shareResult,
     bindings: (el) => controls.openBindings?.(el), cancelBindings: () => controls.cancelCapture?.(),
@@ -1087,13 +1088,15 @@ async function startEvent(id, opts = {}) {
     else ui.toast('COULD NOT LOAD THIS TRACK · PLEASE TRY AGAIN', { icon: 'triangle-alert', tone: 'bad' });
   }
 }
-function openEvent(id, index = G.carIdx) {
+function openEvent(id, index = G.carIdx, browse = false) {
   if (multiplayer.active) { multiplayer.open(); return; }
   const def = mapEvent(id); if (!def) return;
   const idx = def.car ? Math.max(0, CARS.findIndex(c => c.id === canonicalCarId(def.car))) : index;
   // Keep the paused/result state so BACK from the picker restores a working menu.
   if (!['paused', 'results'].includes(G.state)) G.state = 'menu'; controls.clear();
-  menu.show('car', { def, index: idx }, true);
+  // It opens on that car, ready to go: Enter races it, Back shows the whole garage (owner 2026-10-20: fewer steps).
+  // CHANGE CAR on the results means another car, so it opens on the garage grid.
+  if (browse) menu.show('car', { def, index: idx }, true); else menu.pickCar({ def, index: idx });
 }
 
 // UI owner (opus-ui-overhaul-2055): window.__flow.openCarPicker({ inFreeRoam: true, onPick(carId) })
