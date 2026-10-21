@@ -725,6 +725,7 @@ export class Vehicle {
     // Same-sign sideslip during a slow understeering turn is not a rear
     // slide to catch. Only opposite-yaw countersteer needs the raw guard exit.
     const catchingSlide = counter > 0 && sliding && sIn * this.w < 0;
+    this.understeerGuardCut = 0;
     if (guard > 0 && vx > 0 && !catchingSlide && target * sIn > 0) {
       const side = Math.sign(sIn);
       // The outside front contact travels faster than the axle centre in a
@@ -734,9 +735,12 @@ export class Vehicle {
       const frontTravel = Math.min(
         Math.atan2(frontLat, Math.max(2, vx - this.w * this.cy[0])) * side,
         Math.atan2(frontLat, Math.max(2, vx - this.w * this.cy[1])) * side);
-      const useful = Math.max(0, frontTravel + aOpt * (sp.steerSlipGuard ?? 1.02) + comp * side - yawOver);
+      // Allow a little more slip before trimming. Keep each car's existing
+      // tuning offset, and let the correction vanish as soon as excess does.
+      const useful = Math.max(0, frontTravel + aOpt * ((sp.steerSlipGuard ?? 1.02) + 0.06) + comp * side - yawOver);
       const excess = Math.max(0, Math.abs(target) - useful);
-      target -= Math.sign(target) * excess * Math.min(1, guard / 0.35);
+      this.understeerGuardCut = excess * Math.min(1, guard / 0.35) * 0.85 * smoothstep(0.001, 0.012, excess);
+      target -= Math.sign(target) * this.understeerGuardCut;
     }
     const rate = (sp.steerRate ?? 1) * (2.4 + 1.5 / (1 + vt / 10));
     this.steer += clamp(target - this.steer, -rate * dt, rate * dt);

@@ -26,6 +26,7 @@ export function driveCorner(spec, p, { R = 25, dev = 6, assist = 1, keys = false
   v.reset(0, 0, p.v0 / 3.6); v.x = 0; v.z = LEAD; // (the stub route measures s as -z)
   const ctl = keys ? new Input({ target: null, navigator: null, document: null, storage: null }) : null;
   let idx = 0, t = 0, ok = true, maxDev = 0, handbrakeUntil = -1;
+  let apexT = null, peakYaw = 0, turnInYaw = null, guardIntegral = 0, peakGuard = 0, tcIntegral = 0, peakTc = 0;
   for (; t < 14; t += dt) {
     const [n, d] = nearest(path, v.x, v.z, idx); idx = n; maxDev = Math.max(maxDev, d); if (d > dev) { ok = false; break; }
     const look = Math.max(7, v.speed * 0.45); let j = idx; while (j < path.length - 1 && cum[j] - cum[idx] < look) j++;
@@ -47,10 +48,17 @@ export function driveCorner(spec, p, { R = 25, dev = 6, assist = 1, keys = false
       ctl.update(dt, { speed: v.speed }); steer = ctl.state.steer;
     }
     inp.steer = steer; v.update(dt, inp);
+    if (Math.abs(steer) > 0.2 && turnInYaw === null) turnInYaw = Math.abs(v.w);
+    peakYaw = Math.max(peakYaw, Math.abs(v.w));
+    const guard = Math.abs(v.understeerGuardCut || 0);
+    guardIntegral += guard * dt; peakGuard = Math.max(peakGuard, guard);
+    tcIntegral += v.tcCut * dt; peakTc = Math.max(peakTc, v.tcCut);
+    if (apexT === null && idx >= 210) apexT = t;
     if (idx > path.length - 6 || v.x > R + 40) break;
   }
   ctl?.destroy();
-  return { ok: ok && v.x > R + 35, t, vOut: v.speed * 3.6, dev: maxDev };
+  return { ok: ok && v.x > R + 35, t, vOut: v.speed * 3.6, dev: maxDev,
+    apexT, peakYaw, turnInYaw, guardIntegral, peakGuard, tcIntegral, peakTc };
 }
 export const GRID = {
   full: () => {
