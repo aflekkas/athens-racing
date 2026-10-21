@@ -1,0 +1,5 @@
+import {RouteRuntime} from '../src/route-runtime.js';
+export function unifiedRouteConfig({environment='production',enabled='',routes=[]}={}){const ids=new Set(String(enabled).split(',').filter(Boolean));return{environment,world:false,online:false,routes:environment==='staging'?routes.filter(r=>ids.has(r.id)).map(r=>({id:r.id,routeHash:r.routeHash,geometryHash:r.geometryHash,worldSetRevision:r.worldSetRevision})):[]};}
+export {routeEvent as resolveRouteEvent} from '../src/route-events.js';
+import {routeEvent as resolveRouteEvent} from '../src/route-events.js';
+export function buildRouteCatalogue(compiled){return compiled.map(c=>({id:c.id,name:c.definition.name,lengthM:c.lengthM,worldId:c.worldId,regionId:c.regionId,routeHash:c.routeHash,geometryHash:c.geometryHash,graphDigest:c.graphDigest,worldSetRevision:c.worldSetRevision,url:`/data/routes/${c.id}.${c.routeHash}.json`,preview:c.points.map(p=>[p[0],p[2]]),events:c.definition.events.filter(e=>e.enabled).map(e=>resolveRouteEvent(c,e.id)),runtime:new RouteRuntime(c)}));}

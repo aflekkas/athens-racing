@@ -1,0 +1,80 @@
+{
+  "$schema": "../../schemas/route.v1.schema.json",
+  "schemaVersion": 1,
+  "id": "syntagma-pilot",
+  "revision": 1,
+  "worldId": "athens",
+  "regionId": "basin",
+  "name": "SYNTAGMA SPRINT",
+  "description": "From Amalias beside Syntagma, along Panepistimiou toward Omonia.",
+  "kind": "sprint",
+  "lengthM": 1456.3712595531226,
+  "laps": 1,
+  "allowReverse": false,
+  "timeOfDay": "afternoon",
+  "weather": "clear",
+  "trafficLevel": 0,
+  "rivals": 0,
+  "path": {
+    "edges": [
+      "osm:way:327261700:0-0:f:0:1",
+      "osm:way:221139568:0-0:f:0:1",
+      "osm:way:221139568:0-1:f:0:0",
+      "osm:way:789796813:0-0:f:0:0",
+      "osm:way:624053070:0-0:f:0:0",
+      "osm:way:87082469:0-0:f:0:0",
+      "osm:way:687831199:0-0:f:0:0",
+      "osm:way:687831199:0-1:f:1:0",
+      "osm:way:1445301370:0-0:f:1:0",
+      "osm:way:167920360:0-0:f:1:0",
+      "osm:way:167920360:0-1:f:0:0",
+      "osm:way:23182965:0-0:f:0:0",
+      "osm:way:1445301371:0-0:f:0:0",
+      "osm:way:207979569:0-0:f:0:0",
+      "osm:way:168914464:0-0:f:0:0",
+      "osm:way:168914464:0-1:f:0:-1",
+      "osm:way:167907746:0-0:f:0:-1",
+      "osm:way:704293238:0-0:f:0:-1",
+      "osm:way:207891571:0-0:f:0:-1",
+      "osm:way:168904430:0-0:f:0:-1",
+      "osm:way:1469492526:0-0:f:0:-1",
+      "osm:way:284241337:0-0:f:0:-1",
+      "osm:way:1101347640:0-0:f:0:-1",
+      "osm:way:310790356:0-0:f:0:-1",
+      "osm:way:310790356:0-1:f:-1:-1",
+      "osm:way:601303884:0-0:f:-1:-1",
+      "osm:way:702080078:0-0:f:-1:-1",
+      "osm:way:189063911:0-0:f:-1:-1",
+      "osm:way:24218743:0-0:f:-1:-1",
+      "osm:way:168725549:0-0:f:-1:-1"
+    ]
+  },
+  "start": {
+    "edgeId": "osm:way:327261700:0-0:f:0:1",
+    "offsetM": 25,
+    "lateralM": 0,
+    "yawRad": -0.15968256913134
+  },
+  "finish": {
+    "edgeId": "osm:way:168725549:0-0:f:-1:-1",
+    "offsetM": 69.46966787057485,
+    "lateralM": 0,
+    "yawRad": 1.5982610708716294
+  },
+  "turns": {
+    "allowed": [],
+    "disallowed": []
+  },
+  "sectorsM": [
+    500,
+    1000
+  ],
+  "events": [
+    {
+      "id": "syntagma-pilot-race",
+      "type": "sprint",
+      "rivals": 0,
+      "trafficLevel": 0
+    }
+  ]
+}
