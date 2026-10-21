@@ -121,6 +121,7 @@
     "tools/notice-style.test.mjs",
     "tools/notifications.test.mjs",
     "tools/penteli-world.test.mjs",
+    "tools/penteli-scenery.test.mjs",
     "tools/race-lifecycle.test.mjs",
     "tools/remote-motion.test.mjs",
     "tools/remote-sync-sim.test.mjs",

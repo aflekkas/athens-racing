@@ -58,7 +58,7 @@ export function prepareTilePacket(pack,{entry,world,revision,cell}){
   for(const bytes of gpuViews.values())gpuBytes+=bytes;
   const gpuPlan=tileGPUPlan(pack),renderVariants=tileRenderVariants(pack),obstacleIndex=buildTileObstacleIndex(pack.coastalObstacleTables||checked.tables,parkedBoxesOf(pack));delete pack.coastalObstacleTables;
   const roadGraph=readGraphShard({...pack,tables:checked.tables}),graphBytes=new TextEncoder().encode(JSON.stringify(roadGraph)).byteLength*2;
-  const bytes=(pack.detailObstacleIndex?obstacleBytes(pack.detailObstacleIndex):0)+graphBytes+obstacleBytes(obstacleIndex)+residentArrayBytes(pack.arrays)+contactIndex.offsets.byteLength+contactIndex.refs.byteLength+gpuBytes+new TextEncoder().encode(JSON.stringify({metadata:pack.metadata,gpuPlan,renderVariants})).byteLength;
+  const bytes=(pack.metadata.penteliSceneryBytes||0)+(pack.detailObstacleIndex?obstacleBytes(pack.detailObstacleIndex):0)+graphBytes+obstacleBytes(obstacleIndex)+residentArrayBytes(pack.arrays)+contactIndex.offsets.byteLength+contactIndex.refs.byteLength+gpuBytes+new TextEncoder().encode(JSON.stringify({metadata:pack.metadata,gpuPlan,renderVariants})).byteLength;
   if(bytes-dressingBytes(pack)>(entry.residentBytes??entry.decodedBytes))throw new Error('Tile resident budget understated: '+(bytes-dressingBytes(pack))+' > '+(entry.residentBytes??entry.decodedBytes));
   if(checked.triangles!==entry.triangles)throw new Error('Tile triangles mismatch');
   return {...pack,roadGraph,contactIndex,obstacleIndex,bytes,jsBytes:bytes-gpuBytes,gpuBytes,gpuPlan,renderVariants};

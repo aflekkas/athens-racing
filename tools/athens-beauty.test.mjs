@@ -109,8 +109,9 @@ test('World detail gates every addition and the layer is wired once in the Athen
   const world = src('src/world-session.js');assert.match(src('src/athens-world.js'),/await createWorldSession\(/);
   assert.match(world, /new AthensHorizon\(scene,scene\.fog,\{enabled:settings\.worldDetail!==false\}\)/);
   assert.match(world, /new AthensLandmarks\(detailRoot,scene\.fog,\{enabled:settings\.worldDetail!==false,groundAt:/);
-  assert.match(world, /horizon\.setEnabled\(s\.worldDetail!==false\);landmarks\.setEnabled\(s\.worldDetail!==false\);plazas\.setEnabled\(s\.worldDetail!==false\);lawns\.setEnabled\(s\.worldDetail!==false\);(signs\.setEnabled\(s\.worldDetail!==false\);)?(marks\.setEnabled\(s\.worldDetail!==false\);)?trees\.setEnabled\(s\.worldDetail!==false\);syncBoxes\(\)/);
+  assert.match(world, /horizon\.setEnabled\(s\.worldDetail!==false\);landmarks\.setEnabled\(s\.worldDetail!==false\);plazas\.setEnabled\(s\.worldDetail!==false\);lawns\.setEnabled\(s\.worldDetail!==false\);(signs\.setEnabled\(s\.worldDetail!==false\);)?(marks\.setEnabled\(s\.worldDetail!==false\);)?trees\.setEnabled\(s\.worldDetail!==false\);houses\.setEnabled\(s\.worldDetail!==false\);syncBoxes\(\)/);
   assert.match(world, /new AthensTrees\(detailRoot,\{enabled:settings\.worldDetail!==false\}\)/);
+  assert.match(world, /new PenteliHouses\(detailRoot,\{enabled:settings\.worldDetail!==false\}\)/);
   assert.match(world, /new AthensPlazas\(detailRoot,\{enabled:settings\.worldDetail!==false,/);
   assert.match(world, /c\.userData\.landmarkBox\)c\.visible=!hidden/);
   for (const f of ['src/athens-horizon.js', 'src/athens-landmarks.js', 'src/athens-landmark-models.js', 'src/athens-plazas.js']) assert.doesNotMatch(src(f), /castShadow|DirectionalLight|PointLight|SpotLight|MeshStandardMaterial|MeshPhysicalMaterial|MeshLambertMaterial/, 'unlit colour only');

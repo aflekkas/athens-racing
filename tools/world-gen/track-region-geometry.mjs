@@ -59,6 +59,8 @@ export function decorateAuthored({tile,metadata,add}){
   let material=metadata.palette.findIndex(c=>c.every((v,i)=>v===rgb[i]));if(material<0){material=metadata.palette.length;metadata.palette.push(rgb);}
   metadata.meshes.push({name:'imported-'+surface,material,attributes,index:add(new Uint16Array(indices)),userData:{tileSurface:surface,...(surface==='penteliConcrete'?{bridgeGuard:true}:{})},layers:1,renderOrder:surface==='penteliRoad'?1:0});metadata.budgets.triangles+=indices.length/3;
  }
+ if(tile.penteliPaint){const a=add(tile.penteliPaint);for(const mesh of metadata.meshes)if(mesh.userData?.tileSurface==='penteliMountain')mesh.attributes.aPCover={array:a,itemSize:1,normalized:false};}
+ if(tile.penteliTrees){metadata.extensions={...metadata.extensions,worldDetail:{version:1,buildings:{facadeStyle:add(new Uint8Array(tile.t.buildings.length/4)),detailSeed:add(new Uint32Array(tile.t.buildings.length/4))},vegetation:{positionHeight:add(new Float32Array(0)),kind:add(new Uint8Array(0)),seed:add(new Uint32Array(0))},...metadata.extensions?.worldDetail,penteli:true,streetTrees:add(new Float32Array(tile.penteliTrees)),coastalTreeCount:tile.penteliTrees.length/5,penteliHouses:add(new Float32Array(tile.penteliHouses))}};metadata.penteliSceneryBytes=tile.penteliTrees.length/5*160+tile.penteliHouses.length/7*128+16384;}
  if(tile.safetyRails)metadata.safetyRails=tile.safetyRails;
  if(tile.authoredDetail)metadata.authoredDetail=tile.authoredDetail;
  if(tile.structures)metadata.structures=[...tile.structures.values()];if(tile.structures)metadata.rails=tile.safetyRails||[];
