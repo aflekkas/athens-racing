@@ -3,8 +3,8 @@
 **Status: production cutover complete.** Production and staging serve the
 approved `62dbe66` game batch with the production manifest and six-route
 activation. Google OAuth is configured on both Workers. Signed-in production
-home, normal menu racing, Faros and Riviera passed acceptance. Athens remains
-opt-in; normal menu defaults are unchanged. Read `/release.json` and
+home, normal menu racing, Faros and Riviera passed acceptance. All six Athens routes are available from PLAY → QUICK RACE.
+The route picker also links to the original track selection. Read `/release.json` and
 `~/.local/state/athens-release/train.log` for the actual live SHA.
 
 ## Live services and assets
@@ -22,9 +22,9 @@ opt-in; normal menu defaults are unchanged. Read `/release.json` and
   sizes match. Historical staging objects were retained. Audit:
   `/home/dev/data/agent-feed/release/world-copy-2026-10-21.json`.
 - The six route IDs are `psychiko-faros`, `riviera-coast`, `penteli-hill`,
-  `penteli-descent`, `megara-club`, and `syntagma-pilot`. Use
-  `/?routes=1&route=<id>`; the world remains behind `?map=athens`. Normal menu
-  defaults are unchanged. Route JSON is generated into Worker static assets,
+  `penteli-descent`, `megara-club`, and `syntagma-pilot`. Choose PLAY → QUICK RACE from the normal home page.
+  Direct `/?routes=1&route=<id>` links still work; no special link is needed
+  to find or select a race. The world also supports `?map=athens`. Route JSON is generated into Worker static assets,
   not stored in R2. Its hashes bind to browser source as well as geometry.
 
 ## Deploy

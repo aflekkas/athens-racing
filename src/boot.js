@@ -44,6 +44,12 @@ if (query.get('routes')==='1' || (query.get('map')==='athens' && !query.has('men
     startFree: async def => { const flow = await ensureRuntime(); if (menu.screen !== 'maps') return; await flow.startEvent(def, { car }); },
     openEvent: id => pickCarFor(typeof id === 'object' ? id : quickMapEvent(mapId)),
     quickRace: () => pickCarFor(quickMapEvent(mapId)),
+    selectUnifiedRoute: async (id, eventId) => {
+      const screen = menu.screen, data = menu.data;
+      await ensureRuntime();
+      if (menu.screen !== screen || menu.data !== data) return;
+      await menu.h.selectUnifiedRoute(id, eventId);
+    },
   });
   // A race opens on your current car, ready to go: Enter races it, Back shows the whole garage (owner 2026-10-20: fewer steps).
   const pickCarFor = def => menu.pickCar({ def, index: car });

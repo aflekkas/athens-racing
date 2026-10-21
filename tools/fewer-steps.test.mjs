@@ -27,7 +27,7 @@ test('Enter goes straight through: race setup opens on CHOOSE CAR, RACE on the c
   assert.match(menu, /label: 'CHOOSE CAR'[^)]*act: 'setupGo', attrs: \{ 'data-default': '' \}/);
   assert.doesNotMatch(menu, /rows\[0\] = rows\[0\]\.replace\('<div class="mi field', '<div data-default=""/, 'the first option is no longer the default');
   assert.match(menu, /attrs: act === last \? \{ 'data-default': '' \} : undefined/);
-  assert.match(menu, /this\.show\('maps', \{ filter: 'sprint', mode: 'quick' \}, true\); rememberMode\('quick'\)/);
+  assert.match(menu, /this\.openQuickRace\(\); rememberMode\('quick'\)/);
   assert.match(menu, /this\.show\('maps', \{ filter: 'free', mode: 'free' \}, true\); rememberMode\('free'\)/);
 });
 

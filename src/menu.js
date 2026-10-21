@@ -1,5 +1,6 @@
 import { renderLeaderboards, renderBestRecord, renderTrackTimes, leaderboardChange } from './leaderboards-screen.js';
 import { seatPosition, setSeatPosition, resetSeatPosition } from './seat-position.js';
+import { loadUnifiedRouteCatalogue } from './unified-routes.js';
 import { importWithUpdate } from './client-release.js';
 import { install as installAccounts } from './ui/account-loader.js';
 // MENUS: title, mode select, map select, race setup, car select, settings, pause and results.
@@ -247,7 +248,8 @@ export class Menu {
     if (Release.act(this, el)) return;
     if (a?.startsWith('mp') && MP.act(this, el)) return;
     switch (a) {
-      case 'unifiedRoute': this.h.selectUnifiedRoute?.(el.dataset.route,el.dataset.event); break;
+      case 'unifiedRoute': void Promise.resolve().then(() => this.h.selectUnifiedRoute(el.dataset.route,el.dataset.event)).catch(error => C.ui.toast(error.message, { tone: 'bad' })); break;
+      case 'classicTracks': this.filter = 'sprint'; this.show('maps', { filter: 'sprint', mode: 'quick' }, true); break;
       case 'seatReset': { resetSeatPosition(this.h.carSpec?.()?.id); for(const key of ['height','position']){const el=this.root.querySelector('[data-key=seat-'+key+']');if(el)C.setValue(el,0,false);} break; }
       case 'mapPrev': case 'mapNext': case 'mapZoomIn': case 'mapZoomOut': this.mapView?.action(a); break;
       case 'spawnDrive': driveFromSpawn(this); break;
@@ -262,7 +264,7 @@ export class Menu {
       case 'leaderboardReset': this.data.filters = { mapId: this.data.filters.mapId }; this.refresh(); break;
       case 'leaderboardRetry': this.data.requestKey = null; this.refresh(); break;
       case 'play': this.show('mode', {}, true); break;
-      case 'quick': this.filter = 'sprint'; this.show('maps', { filter: 'sprint', mode: 'quick' }, true); rememberMode('quick'); break;
+      case 'quick': void this.openQuickRace(); rememberMode('quick'); break;
       case 'free': this.filter = 'free'; this.show('maps', { filter: 'free', mode: 'free' }, true); rememberMode('free'); break;
       case 'raceAgain': (this.h.raceAgain || this.h.restart)(); break;
       case 'changeCar': (this.h.changeCar || this.h.restart)(); break;
@@ -342,7 +344,20 @@ export class Menu {
         ${C.option({ icon: 'car', title: 'GARAGE', desc: `${GARAGE_CARS.length} cars · city to super`, act: 'garage', cls: 'option--tile' })}
         ${C.option({ icon: 'settings', title: 'SETTINGS', desc: 'Sound, graphics, driving and controls', act: 'settings', cls: 'option--tile' })}`, foot: Release.titleExtras(this), hints: [['select', 'SELECT'], ['confirm', 'OK'], ['garage', 'GARAGE']] });
   }
-  r_routes(d){return C.sheetList({variant:'flow',kick:'ATHENS',title:'SELECT ROUTE',rows:d.catalogue.flatMap(r=>r.events.map(e=>C.option({icon:'flag',title:esc(r.name+(r.events.length>1&&e.type==='timetrial'?' · TIME TRIAL':'')),desc:`${fmtDist(r.lengthM)} · ${e.laps||1} LAP${(e.laps||1)>1?'S':''} · ${e.rivals||0} RIVALS${['penteli','megara'].includes(r.regionId)?' · ATTACHED DESTINATION':''}`,act:'unifiedRoute',attrs:{'data-route':r.id,'data-event':e.id}}))).join(''),hints:[['select','SELECT'],['confirm','RACE'],['back','BACK']]});}
+  async openQuickRace() {
+    if (this.loadingRoutes) return;
+    const screen = this.screen, data = this.data;
+    this.loadingRoutes = true;
+    try {
+      const catalogue = await loadUnifiedRouteCatalogue({ allowEmpty: true });
+      if (this.screen !== screen || this.data !== data) return;
+      if (catalogue.length) this.show('routes', { catalogue }, true);
+      else { this.filter = 'sprint'; this.show('maps', { filter: 'sprint', mode: 'quick' }, true); }
+    } catch (error) {
+      if (this.screen === screen && this.data === data) C.ui.toast(error.message, { tone: 'bad' });
+    } finally { this.loadingRoutes = false; }
+  }
+  r_routes(d){return C.sheetList({variant:'flow',kick:'ATHENS',title:'SELECT ROUTE',rows:d.catalogue.flatMap(r=>r.events.map(e=>C.option({icon:'flag',title:esc(r.name+(r.events.length>1&&e.type==='timetrial'?' · TIME TRIAL':'')),desc:`${fmtDist(r.lengthM)} · ${e.laps||1} LAP${(e.laps||1)>1?'S':''} · ${e.rivals||0} RIVALS${['penteli','megara'].includes(r.regionId)?' · ATTACHED DESTINATION':''}`,act:'unifiedRoute',attrs:{'data-route':r.id,'data-event':e.id}}))).join('')+C.option({icon:'flag',title:'ORIGINAL TRACKS',desc:'Choose from the original track selection',act:'classicTracks'}),hints:[['select','SELECT'],['confirm','RACE'],['back','BACK']]});}
   r_leaderboards(d) { return renderLeaderboards(this, d); }
   // RACE is solo (owner 2026-10-18): two artwork-led cards fill the screen; multiplayer lives behind the title's MULTIPLAYER tile.
   r_mode() {
