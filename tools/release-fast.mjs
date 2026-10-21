@@ -68,6 +68,13 @@ export function prebuiltConfig(jsonc) {
   return JSON.stringify(config, null, 2) + '\n';
 }
 
+// Prebuilt releases bypass Wrangler's build command. Read the staging flag from
+// the same deployment config so its worker catalogue and browser artifacts agree.
+export function unifiedRouteBuildVars(jsonc, environment) {
+  const config = JSON.parse(prebuiltConfig(jsonc));
+  return { ASR_UNIFIED_ROUTES: environment === 'staging' ? String(config.env?.staging?.vars?.ASR_UNIFIED_ROUTES || '') : '' };
+}
+
 function arg(args, name) { const hit = args.find(a => a.startsWith(`--${name}=`)); if (hit) return hit.slice(name.length + 3); const i = args.indexOf(`--${name}`); return i >= 0 && args[i + 1] && !args[i + 1].startsWith('--') ? args[i + 1] : undefined; }
 const secs = ms => (ms / 1000).toFixed(1);
 const say = text => console.log(`[release-fast] ${text}`);
@@ -113,7 +120,7 @@ async function buildEnvironment({ dir, env, sha, log }) {
   await rm(copy, { recursive: true, force: true });
   await copyTree(dir, copy);
   await writePrebuiltConfig(copy);
-  const common = { ASR_GIT_SHA: sha, ASR_BUILD_ENV: env, CLOUDFLARE_ACCOUNT_ID: ACCOUNT_ID };
+  const common = { ...unifiedRouteBuildVars(await readFile(resolve(copy, 'wrangler.jsonc'), 'utf8'), env), ASR_GIT_SHA: sha, ASR_BUILD_ENV: env, CLOUDFLARE_ACCOUNT_ID: ACCOUNT_ID };
   // Low priority: this must not slow the tests, and it is a cache hit unless map code or data changed.
   const built = await run('node tools/prepare-deploy.mjs', { cwd: copy, env: common, log, nice: 5 });
   if (!built.ok) return built;
