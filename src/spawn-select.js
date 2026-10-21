@@ -45,12 +45,23 @@ function card(choice, menu) {
     ${C.listRow({ icon: 'car', title: esc(car?.name || 'YOUR CAR'), desc: 'Change car', act: 'spawnCar', cls: 'spawn-car' })}
     ${C.button({ label: 'DRIVE', icon: 'car', iconRight: 'chevron-right', variant: 'primary', block: true, act: 'spawnDrive', attrs: { 'data-default': '' } })}</div>`;
 }
+// The last place you started from is remembered on this device (one per world), so DRIVE goes straight back there
+// (owner 2026-10-20: fewer steps to get anywhere). Only a place in an area this picker offers is restored.
+const SAVED = athens => athens ? 'paraliaki.spawn.athens' : 'paraliaki.spawn';
+function savedChoice(areas, athens) {
+  try {
+    const c = JSON.parse(localStorage.getItem(SAVED(athens)) || 'null');
+    const ok = c && typeof c.name === 'string' && [c.at, c.local].every(p => Array.isArray(p) && p.length === 2 && p.every(Number.isFinite)) && areas.some(a => a.mapId === c.mapId);
+    return ok ? c : null;
+  } catch { return null; }
+}
+const saveChoice = (c, athens) => { try { const { id, mapId, name, at, local, areaId, areaName, start } = c; localStorage.setItem(SAVED(athens), JSON.stringify({ id, mapId, name, at, local, areaId, areaName, start })); } catch {} };
 const areaLabel = choice => esc(choice.areaName || areaName(choice.mapId));
 
 export function renderSpawnSelect(menu) {
   style();
   const areas = spawnAreas({ athens: athensEnabled() });
-  const choice = menu.data.spawn?.choice || areaChoice(areas[0]);
+  const choice = menu.data.spawn?.choice || savedChoice(areas, athensEnabled()) || areaChoice(areas[0]);
   const labels = MAP_LABELS.map((l, i) => `<span class="map-label map-label--${l.k}" data-label="${i}"><i></i><b>${esc(l.t)}${l.s ? `<small>${esc(l.s)}</small>` : ''}</b></span>`).join('');
   return C.mapStage({ variant: 'floating', cls: 'scr--maps scr--spawn', kick: 'FREE ROAM', title: 'CHOOSE WHERE TO START',
     hints: [['leftright', 'AREA'], ['+ / −', 'ZOOM'], ['confirm', 'DRIVE'], ['back', 'BACK']],
@@ -95,7 +106,7 @@ export function mountSpawnSelect(root, menu) {
   const events = new AbortController(), { signal } = events, reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
   const { width: W, height: H } = MAP_VIEW, session = menu.data.spawn ||= {};
   const athensMode = athensEnabled(), maxZoom = MAX_ZOOM;
-  let areas = spawnAreas({ athens: athensMode }), choice = session.choice || areaChoice(areas[0]), layers = null, streetLayer = null;
+  let areas = spawnAreas({ athens: athensMode }), choice = session.choice ||= savedChoice(areas, athensMode) || areaChoice(areas[0]), layers = null, streetLayer = null;
   let camera, view, safe, dpr = 1, art = null, base = null, roads = null, athens = null, drag = null, pinch = null, tap = null, frame = 0, resizeFrame = 0, motion = null, last = 0, dirty = false, settling = false, onScreen = true, panning = false, moving = false, shown = null, placed = 0, intro = !session.arrived, hideTimer = 0;
   const pointers = new Map(), roadPaths = {}, areaBounds = {}, wheelKind = createWheelClassifier(), glide = createGlide();
   const labels = [...overlay.querySelectorAll('.map-label')].map(el => ({ el, ...MAP_LABELS[+el.dataset.label], box: null, place: null, shown: false }));
@@ -216,7 +227,7 @@ export function mountSpawnSelect(root, menu) {
   // camera: 'area' flies to frame the area, 'point' flies in to the point, 'stay' leaves the camera where the player put it.
   const render = (next, { camera: move = 'stay' } = {}) => {
     const changed = next.id !== choice.id || next.mapId !== choice.mapId || next.at !== choice.at;
-    choice = session.choice = next; session.arrived = true;
+    choice = session.choice = next; session.arrived = true; saveChoice(choice, athensMode);
     cardEl.dataset.map = choice.mapId; cardEl.style.setProperty('--track', color(choice.mapId)); marker.style.setProperty('--pin', color(choice.mapId));
     const hadFocus = cardEl.querySelector('[data-act=spawnDrive]') === document.activeElement;
     const focused = menu.items()[menu.focus], inCard = !!focused && cardEl.contains(focused), at = menu.focus;

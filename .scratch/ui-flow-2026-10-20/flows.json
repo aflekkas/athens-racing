@@ -1,0 +1,129 @@
+[
+ {
+  "name": "quick",
+  "goal": "Quick Race on the last track",
+  "keys": [
+   "Enter",
+   "Enter",
+   "Enter",
+   "Enter",
+   "Enter",
+   "Enter",
+   "Enter",
+   "Enter",
+   "Enter",
+   "Enter",
+   "Enter",
+   "Enter"
+  ]
+ },
+ {
+  "name": "quick-last-track",
+  "goal": "Quick Race on the track raced last (Penteli)",
+  "setup": {
+   "paraliaki.lastPlayedMap": "penteli"
+  },
+  "keys": [
+   "Enter",
+   "Enter",
+   "Enter",
+   "Enter",
+   "Enter",
+   "Enter",
+   "Enter",
+   "Enter"
+  ]
+ },
+ {
+  "name": "free",
+  "goal": "Free Roam, first time",
+  "keys": [
+   "Enter",
+   "ArrowRight",
+   "Enter",
+   "Enter"
+  ],
+  "wait": 3500
+ },
+ {
+  "name": "free-again",
+  "goal": "Free Roam again (remembered)",
+  "setup": {
+   "paraliaki.lastMode": "free"
+  },
+  "keys": [
+   "Enter",
+   "Enter",
+   "Enter"
+  ],
+  "wait": 3500
+ },
+ {
+  "name": "free-athens",
+  "goal": "Free Roam on the Athens map (?map=athens)",
+  "query": "?map=athens&menu",
+  "setup": {
+   "paraliaki.lastMode": "free"
+  },
+  "keys": [
+   "Enter",
+   "Enter",
+   "Enter"
+  ]
+ },
+ {
+  "name": "mp-host",
+  "goal": "Host a lobby",
+  "keys": [
+   "ArrowRight",
+   "ArrowUp",
+   "Enter",
+   "Enter",
+   "Enter"
+  ]
+ },
+ {
+  "name": "garage",
+  "goal": "Garage: change car",
+  "keys": [
+   "g",
+   "ArrowDown",
+   "Enter",
+   "Enter"
+  ]
+ },
+ {
+  "name": "settings",
+  "goal": "Settings",
+  "keys": [
+   "ArrowRight",
+   "ArrowRight",
+   "Enter"
+  ]
+ },
+ {
+  "name": "leaderboards",
+  "goal": "Leaderboards (inside Quick Race)",
+  "keys": [
+   "Enter",
+   "Enter",
+   "Enter",
+   "ArrowLeft",
+   "Enter"
+  ]
+ },
+ {
+  "name": "race-again",
+  "goal": "Results: race again",
+  "keys": [
+   "Enter",
+   "Enter",
+   "Enter",
+   "Enter",
+   "Enter",
+   "Enter",
+   "Enter"
+  ],
+  "results": true
+ }
+]

@@ -163,3 +163,4 @@ Waiting on the owner:
 ## Contributors
 - [?] Vas-Per PR #2 (classic cars): the review says port onto the trim schema with 3 fixes. Feedback text is ready; owner to approve posting it or have an agent do the port.
 - [?] Vas-Per PR #1 (Psychiko): still unresolved.
+- [x] Athens infill and courtyard paving: 43,012 generated lots in empty block interiors (never on OSM features), residual block ground paved, gardens and lawns as grass; 1,369 cells, 361.3 MiB, worst 2×2 26.8 MiB, every gate green; staging pointer moved to `fc9995d6` (evidence `.scratch/athens-world-infill-2026-10-20`). Open: Kaisariani has 3 lots; 2,215 traffic-contact hits on the drive (pilot, not the bake)

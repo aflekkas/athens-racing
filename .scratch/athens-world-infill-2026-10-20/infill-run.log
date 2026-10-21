@@ -1,0 +1,6 @@
+{"blocks": 2490, "candidatesKept": 43012, "interiorM2": 50304816.06571404, "interiors": 38408, "lotM2": 7324752.7858937215, "lots": 43012, "openLand": 78, "skippedMesh": 0, "sparseRing": 11017}
+{"gardens": 3977}
+
+real	23m52.556s
+user	23m48.402s
+sys	0m5.384s

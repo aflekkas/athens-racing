@@ -42,9 +42,11 @@ if ((query.get('map')==='athens' && !query.has('menu')) || direct || query.has('
       await flow.startEvent(def, { car: index });
     },
     startFree: async def => { const flow = await ensureRuntime(); if (menu.screen !== 'maps') return; await flow.startEvent(def, { car }); },
-    openEvent: id => menu.show('car', { def: typeof id === 'object' ? id : quickMapEvent(mapId), index: car }, true),
-    quickRace: () => menu.show('car', { def: quickMapEvent(mapId), index: car }, true),
+    openEvent: id => pickCarFor(typeof id === 'object' ? id : quickMapEvent(mapId)),
+    quickRace: () => pickCarFor(quickMapEvent(mapId)),
   });
+  // A race opens on your current car, ready to go: Enter races it, Back shows the whole garage (owner 2026-10-20: fewer steps).
+  const pickCarFor = def => menu.pickCar({ def, index: car });
   window.__bootMenu = menu;
   window.__flow = { menu, inMenu: () => true, freeRoamDef: () => freeRoam(mapId) };
   const pollMenu = () => {

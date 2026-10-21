@@ -34,3 +34,6 @@ Rows come from the road graph and the asphalt of each cell. A fuller OSM extract
 
 ### Step 6c (murals): nothing to rebake
 Mural sites come from the long road-facing walls of each cell's buildings; 24 designs are drawn in the browser. If a later bake stores a per-building facade or wall type, blank party walls could replace the long-wall guess.
+
+### Step 5d (cars on the ground): nothing to rebake
+Heights come from each cell's own ground triangles at run time. A bake that stored a per-edge kerb line or parking rule would replace the kerb fit.

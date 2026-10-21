@@ -10,7 +10,7 @@ class GroundClasses(unittest.TestCase):
  def test_each_osm_class_lands_in_its_own_ground_class(self):
   g=lambda landuse='',natural='',leisure='',h=30,slope=.1,coast=1e9:ground_category(h,slope,landuse,natural,coast,leisure)
   self.assertEqual(g('commercial'),'urban');self.assertEqual(g('industrial'),'urban')
-  self.assertEqual(g('residential'),'earth');self.assertEqual(g(),'earth')
+  self.assertEqual(g('residential'),'urban');self.assertEqual(g(),'earth')  # residual block ground is courtyard paving; open land stays earth
   self.assertEqual(g(leisure='park'),'grass');self.assertEqual(g('grass'),'grass');self.assertEqual(g(natural='grassland'),'grass')
   self.assertEqual(g(natural='scrub'),'scrub');self.assertEqual(g(natural='heath'),'scrub')
   self.assertEqual(g('forest'),'forest');self.assertEqual(g(natural='wood'),'forest')
@@ -55,3 +55,15 @@ class Foam(unittest.TestCase):
    a,b,c=(ps[ix[i+k]*3:ix[i+k]*3+3] for k in range(3));cross=(b[2]-a[2])*(c[0]-a[0])-(b[0]-a[0])*(c[2]-a[2])
    self.assertLess(cross*-1,0.0001) if False else self.assertNotEqual(cross,0)
 if __name__=='__main__':unittest.main()
+
+
+class CourtyardGround(unittest.TestCase):
+    def test_yards_are_grass_and_most_block_ground_is_paving(self):
+        from appearance import ground_colour, yard
+        cells=[(i*24.0+12,j*24.0+12) for i in range(80) for j in range(80)]
+        share=sum(yard(x,z) for x,z in cells)/len(cells)
+        self.assertTrue(0.05<share<0.15, share)
+        classes=[ground_colour(x,z,20,.05,landuse='residential')[0] for x,z in cells]
+        self.assertEqual(set(classes),{'urban','grass'})
+        self.assertEqual(ground_colour(0,0,20,.05,landuse='residential',leisure='garden')[0],'grass')
+        self.assertEqual(ground_colour(0,0,20,.05)[0],'earth')
