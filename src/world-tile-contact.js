@@ -41,10 +41,12 @@ export function sampleTileContact(t,index,x,z,{referenceY=0,layer=null,requiredF
   const keep=(sample,flags,surfaceLayer,surface,fine)=>{
     // Contact is the top road (or terrain) face within a physical layer.
     // Choosing the face nearest referenceY let a lower overlapping road fan
-    // steal contact on only one side of a tile border. Height selects BETWEEN
+    // steal contact on only one side of a tile border. The fine terrain beneath
+    // asphalt belongs to that same layer too: it must never steal road contact
+    // because it happens to be nearer the car or route centreline height. Height selects BETWEEN
     // layers, preserving bridge/tunnel selection, never beneath the top face.
-    const key=surfaceLayer*2+(fine?1:0),previous=groups.get(key);
-    if(!previous||sample.y>previous.y)groups.set(key,{...sample,flags,layer:surfaceLayer,surface,fine});
+    const key=surfaceLayer,previous=groups.get(key);
+    if(!previous||sample.y>previous.y||Math.abs(sample.y-previous.y)<1e-6&&previous.fine&&!fine)groups.set(key,{...sample,flags,layer:surfaceLayer,surface,fine});
   };
   const allowed=(flags,surfaceLayer)=>!(flags&8 || requiredFlags && !(flags&requiredFlags) || layer!==null&&surfaceLayer!==layer);
   for(let k=index.offsets[cell];k<index.offsets[cell+1];k++) {
@@ -63,8 +65,10 @@ export function sampleTileContact(t,index,x,z,{referenceY=0,layer=null,requiredF
     if(!sample)continue;
     keep(sample,flags,surfaceLayer,fine?0:t.contactTriangles[i+3],fine);
   }
+  // A deck meeting its approach can be only a few centimetres above the terrain.
+  // Prefer road contact within the allowed 15 cm step; distant bridge layers still use height.
   for(const sample of groups.values()){
-    const d=Math.abs(sample.y-referenceY)+(sample.fine?.001:0);if(d<score){score=d;best=sample;}
+    const d=Math.abs(sample.y-referenceY)+(sample.flags&1?0:.15);if(d<score){score=d;best=sample;}
   }
   if(best){delete best.fine;return best;}
   // Canonical coarse triangles, matching the existing shortest-height-diagonal rule.

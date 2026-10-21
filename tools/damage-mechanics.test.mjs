@@ -114,7 +114,7 @@ test('malformed and separating inputs cannot cause damage or a wreck',()=>{
   assert.equal(isTerminalImpact(0,2),false);assert.equal(isTerminalImpact(0,.98),true);
 });
 
-test('a tow or a reset keeps the damage: the snapshot restores body, bent corners, steering pull and lasting damage, not the acute failures',()=>{
+test('landmark snapshots preserve damage; tow reset fully repairs body, corners and mechanics',()=>{
   const v=mk();wall(v,60,'front',{localPoint:{x:-v.track/2,y:.4,z:-v.a},localNormal:{x:0,y:0,z:1}});v.engineDamage=.3;advance(v,1);
   assert.ok(v.steerPull!==0&&v.toePull!==0);
   const kept=v.damageSnapshot(),before={damage:{...v.damage},mech:v.impactMechanical,pull:v.steerPull,corners:v.cornerDamage.slice()};
@@ -124,6 +124,10 @@ test('a tow or a reset keeps the damage: the snapshot restores body, bent corner
   assert.deepEqual(v.damage,before.damage);close(v.impactMechanical,before.mech);close(v.steerPull,before.pull);assert.deepEqual(v.cornerDamage,before.corners);
   assert.equal(v.engineStalled,false);assert.equal(v.drivetrainBroken,false);assert.ok(v.engHealth<.75);
   assert.ok(v.dmgDrag>1.3,'a damaged car has a worse top speed');
+  v.reset(0,0);advance(v,1);
+  assert.ok(Object.values(v.damage).every(d=>d===0));assert.ok(v.cornerDamage.every(d=>d===0));
+  for(const key of ['impactMechanical','frontMechanical','steerPull','toePull','radiatorDamage','engineDamage'])assert.equal(v[key]||0,0,key);
+  assert.equal(v.engHealth,1);assert.equal(v.dmgDrag,1);assert.equal(v.coolantTemp,90);
   const wreck=mk();wreck.impactMechanical=1;wreck.restoreDamageSnapshot(wreck.damageSnapshot());close(wreck.impactMechanical,.9);
 });
 

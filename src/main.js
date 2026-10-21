@@ -12,6 +12,7 @@ import {RouteNavigation,returnRoutePoints} from './route-navigation.js';
 import {buildRouteGuidanceData} from './route-guidance-data.js';
 import {projectEdge} from './route-geometry.js';
 import {planWorldTow} from './tow-placement.js';
+import {towHeading} from './tow-heading.js';
 import { audioLatencyHint, audioLowCost } from './audio/robust.js';
 import { PerfGovernor } from './perf-governor.js';
 import { syncCameraVehicleView } from './camera-visibility.js';
@@ -388,7 +389,7 @@ async function towUnified(){
   if(G.towing||!worldSession)return;G.towing=true;
   try{const v=player.veh,roads=worldSession.roads,candidates=[];
     const target=worldRecoveryTarget(worldSession,v,{course:G.run?.course,route,halfWidth:v.halfW,halfLength:v.halfL,actors:[...grid.filter(c=>!c.distant).map(c=>c.veh),...traffic.actors]});if(!target)throw Error('No safe loaded road');
-    await worldSession.stream.teleport(target,()=>{const kept=v.damageSnapshot();v.reset(target.s,target.u,0);Object.assign(v,{x:target.x,y:target.y,z:target.z,yaw:target.yaw,s:target.s,u:target.u,vLong:0,vLat:0,w:0});v.restoreDamageSnapshot(kept);ground.begin(v);ground.resolve(v,1/240);v.syncWheels();if(G.run?.course)towCourseTo(G.run.course,{...v,...v.routeContact,kind:target.kind},G.run.courseClock);G.streamInterrupted=true;G.bestSetupChanged=true;updateCamera(0,true);});
+    await worldSession.stream.teleport(target,()=>{const nitro=v.nitro;v.reset(target.s,target.u,0);v.nitro=nitro;Object.assign(v,{x:target.x,y:target.y,z:target.z,yaw:target.yaw,s:target.s,u:target.u,vLong:0,vLat:0,w:0});ground.begin(v);ground.resolve(v,1/240);v.syncWheels();if(G.run?.course)towCourseTo(G.run.course,{...v,...v.routeContact,kind:target.kind},G.run.courseClock);G.streamInterrupted=true;G.bestSetupChanged=true;updateCamera(0,true);});
   }catch(error){hud.message('ROAD NOT READY · TRY AGAIN',2);console.warn(error);}finally{G.towing=false;}
 }
 function stepUnified(dt,visual,frameDt){
@@ -800,10 +801,9 @@ function backOnRoad(pv, recovery = null, { reset = false } = {}) {
     const f = Number.isFinite(recovery.yaw) ? kit.adapter.centre(route.closed ? route.wrap(recovery.s) : clamp(recovery.s, 0, route.length)) : null;
     const d = f ? (-Math.sin(recovery.yaw) * f.tx - Math.cos(recovery.yaw) * f.tz >= 0 ? 1 : -1) : dir;
     plan = recovery.kind === 'road' && Number.isFinite(recovery.x) && Number.isFinite(recovery.z) ? { kind: 'road', ...recovery } : { kind: 'route', ...kit.adapter.pose(recovery.s, d, dir) };
-  } else plan = planTow({ x: pv.x, z: pv.z, yaw: pv.yaw, route: kit.adapter, index: kit.index, dir, course: course ? courseTowLimits(course) : null, clear: towClearance(pv) });
-  const nitro = pv.nitro, kept = pv.damageSnapshot(); beginCameraBlend();
+  } else plan = planTow({ x: pv.x, z: pv.z, yaw: towHeading(pv), route: kit.adapter, index: kit.index, dir, course: course ? courseTowLimits(course) : null, clear: towClearance(pv) });
+  const nitro = pv.nitro; beginCameraBlend();
   pv.reset(plan.s, plan.kind === 'road' ? 0 : plan.u, 0); pv.yaw = plan.yaw;
-  pv.restoreDamageSnapshot(kept); // a tow or a reset puts you back on the road, not back in a new car: the damage stays until the run is restarted
   // A side street is not on the route: the car sits on that street's own surface.
   if (plan.kind === 'road') { pv.x = plan.x; pv.z = plan.z; pv.y = ground.network.height(plan.x, plan.z); pv.u = plan.u; pv._network = true; }
   if (online && !recovery) multiplayer.stateSender.discontinuity();

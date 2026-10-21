@@ -111,7 +111,7 @@ export async function bootAthens(){
  }
  function render(dt){
   const v=player.veh,o=stream.origin;v.place(player.model.root);player.model.root.position.x-=o.x;player.model.root.position.z-=o.z;player.model.update(dt,v.vLong,v.steer,input.state.brake>.2,v.pose,v.corners,v.w);
-  worldTraffic.sync();
+  player.model.setDamageSnapshot?.(v.damage);worldTraffic.sync();
   const fx=-Math.sin(v.yaw),fz=-Math.cos(v.yaw),cock=cam==='cockpit';
   player.cockpit.setVisible(cock);player.cockpit.update(dt,{vehicle:v,ignition:true,manual:v.manual,rpm:v.rpm,redline:spec.redline,gear:v.gear,gearLabel:String(v.gear),kmh:v.kmh,steerInput:input.state.steer,handbrake:input.state.handbrake});
   if(cock){const seat=seatPosition(spec.id);camera.position.copy(player.cockpit.eye);camera.position.y+=seat.height;camera.position.z-=seat.position;player.model.body.updateWorldMatrix(true,false);player.model.body.localToWorld(camera.position);player.model.body.getWorldQuaternion(camera.quaternion);camera.rotateX(player.cockpit.eyePitch??-.045);}

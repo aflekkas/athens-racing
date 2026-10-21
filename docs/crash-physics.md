@@ -1,3 +1,5 @@
+> 2026-10-21 owner correction: towing and reset fully repair cosmetic and mechanical damage in every mode. The crash penalties below remain; the historical damage-preservation behaviour across tows is superseded. Recovery uses the pre-departure on-road travel direction, or the race route direction.
+
 # Crash physics (2026-10-20)
 
 Owner, 2026-10-20: "the physics of car crashes is pretty poor right now". Make crashes feel convincing and fun, arcade-sim, not floaty,

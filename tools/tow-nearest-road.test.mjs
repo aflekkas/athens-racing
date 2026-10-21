@@ -232,7 +232,8 @@ test('server free roam: no course, nearest road, facing the heading', t => {
   const lobby = [...core.lobbies.values()][0]; core.message(other, JSON.stringify({ type: 'join', code: lobby.code }));
   send({ type: 'start', force: true }); now += 100; core.tick();
   const { g, x, z } = streetPoint(P, 120, 600, { isolated: 18 }), car = { x: x - g.dz / g.L * 16, z: z + g.dx / g.L * 16 }, yaw = headingOf(g.dx / g.L, g.dz / g.L) + .1;
-  now += 300; send({ type: 'state', raceId: lobby.raceId, generation: lobby.generation, state: { ...car, y: 0, yaw, s: 0, u: 16, vLong: 1, vLat: 0, steer: 0, rpm: 900, gear: 1, motionEpoch: 1 } });
+  now += 300; send({type:'state',raceId:lobby.raceId,generation:lobby.generation,state:{x,y:0,z,yaw,s:0,u:0,vLong:20,vLat:0,steer:0,rpm:3000,gear:2,motionEpoch:1}});
+  now += 1000; send({ type: 'state', raceId: lobby.raceId, generation: lobby.generation, state: { ...car, y: 0, yaw:yaw+Math.PI, s: 0, u: 16, vLong: 0, vLat: 0, steer: 0, rpm: 900, gear: 1, motionEpoch: 1 } });
   send({ type: 'recover', raceId: lobby.raceId, generation: lobby.generation, motionEpoch: 2 });
   const ack = ws.messages.at(-1); assert.equal(ack.type, 'recovered'); assert.equal(ack.kind, 'road');
   assert.ok(Math.hypot(ack.x - x, ack.z - z) < 20); const [fx, fz] = forward(ack.yaw); assert.ok(fx * g.dx / g.L + fz * g.dz / g.L > .99);

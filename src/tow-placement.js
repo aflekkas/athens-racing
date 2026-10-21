@@ -1,4 +1,5 @@
 import { roadFrame, courseFrame } from './course.js';
+import {towHeading} from './tow-heading.js';
 // Where a tow, reset or server recovery puts a car (owner decision 2026-10-18: "we just want to tow back onto the
 // road"). Free roam: the nearest drivable surface. Race: the nearest road too, but the race route wins when it is
 // within ROUTE_PREFERENCE metres, and it is never placed behind the latest valid on-road pose. Progress is not
@@ -120,7 +121,7 @@ export function planTow({ x, z, yaw, route, index = null, course = null, dir = 1
     let s = unwrap(route, station, ref);
     if (course) s = s0 + dir * Math.max(course.floor, (s - s0) * dir);
     const tangent = route.centre(route.closed ? ((s % route.length) + route.length) % route.length : s);
-    const d = faces(yaw, tangent.tx, tangent.tz);
+    const d = course ? dir : faces(yaw, tangent.tx, tangent.tz);
     let first = null;
     for (let k = 0; k <= SLIDE_MAX / SLIDE_STEP * 2; k++) {
       // 0, +4, -4, +8 ... along the road; in a race never before the floor.
@@ -157,6 +158,14 @@ export function planWorldTow({pose,course,route,roadCandidates,footprint,obstacl
  const ref=course?.lastRoad?.s??pose.s??0,floor=course?Math.max((course.s0||0)+(course.validProgress||0),course.lastRoad?.s??-Infinity):-Infinity;const here=route?.project(pose.x,pose.z,{hint:ref,referenceY:pose.y,maxTravel:OWN_LEG_RANGE}),routeDistance=here?Math.max(0,-(here.leftM||0)-here.u,here.u-(here.rightM||0)):Infinity;
  const candidates=roadCandidates.filter(p=>p.safe!==false&&(!obstacles||!obstacles(p,footprint))).map(p=>{const q=route?.project(p.x,p.z,{hint:ref,referenceY:p.y,layer:p.layer,maxTravel:OWN_LEG_RANGE}),onRoute=!!q&&q.distance<=Math.max(q.leftM||0,q.rightM||0)+1&&p.layer===q.layer&&(route.contactAllowed?route.contactAllowed(q,p):p.surfaceId===q.surfaceId);const f=q&&route.frame(q.s),aligned=f&&(-Math.sin(p.yaw)*f.tx-Math.cos(p.yaw)*f.tz)>=.5,preferred=onRoute&&q.edgeId===p.edgeId&&aligned;return{...p,kind:preferred?'route':'road',s:q?.s??pose.s,u:q?.u??0,distance:Math.hypot(p.x-pose.x,p.z-pose.z),onRoute:preferred,onRouteGeometry:onRoute};}).filter(p=>!p.onRouteGeometry||p.s>=floor-.01);
  const preferred=course?candidates.filter(p=>p.onRoute&&routeDistance<=ROUTE_PREFERENCE&&Math.abs(p.s-ref)<=OWN_LEG_RANGE):[];
- const pool=preferred.length?preferred:candidates;pool.sort((a,b)=>a.distance-b.distance||Math.cos(b.yaw-pose.yaw)-Math.cos(a.yaw-pose.yaw)||String(a.edgeId).localeCompare(String(b.edgeId)));
+ // On two-way streets the graph contains both directed edges. Choose the travel direction
+ // within that same carriageway before comparing lane-centre distances. Separate one-way
+ // carriageways have no twin, so their legal direction is never reversed.
+ const heading=towHeading(pose),alignment=p=>Math.cos(p.yaw-heading);
+ const directions=new Map();
+ const seenEdges=new Set();
+ for(const p of candidates)if(p.roadId&&!seenEdges.has(p.edgeId)){seenEdges.add(p.edgeId);const best=directions.get(p.roadId);if(!best||alignment(p)>alignment(best))directions.set(p.roadId,p);}
+ const legal=candidates.filter(p=>!p.roadId||p.edgeId===directions.get(p.roadId).edgeId);
+ const pool=preferred.length?preferred:legal;pool.sort((a,b)=>a.distance-b.distance||alignment(b)-alignment(a)||String(a.edgeId).localeCompare(String(b.edgeId)));
  return pool[0]||null;
 }

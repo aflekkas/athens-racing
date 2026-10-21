@@ -7,6 +7,7 @@ import { Ground } from '../src/ground.js';
 import { RoadNetwork } from '../src/road-network-surface.js';
 import { routeTowAdapter } from '../src/road-recovery.js';
 import { courseTowLimits, towCourseTo } from '../src/course.js';
+import {towHeading} from '../src/tow-heading.js';
 import { planTow, RoadIndex } from '../src/tow-placement.js';
 import { CARS } from '../src/cars.js';
 const source=readFileSync(new URL('../src/main.js',import.meta.url),'utf8');
@@ -21,9 +22,9 @@ function recoveryHarness(route, v, options={}) {
   const safe={s:options.safe??v.s,u:0},towOffer={safe},player={veh:v};
   const multiplayer={active:!!options.online,connected:true,retired:false,lobby:{raceId:'test',event:{dir}},recover:async()=>options.served??{s:options.serverS??safe.s,u:0,until:250},now:()=>0,stateSender:{discontinuity(){}}};
   const ground=options.ground||{network:null,walls:()=>null},traffic=options.traffic||{cars:[],point(){}},grid=options.grid||[];
-  const api=Function('G','multiplayer','towOffer','route','ground','traffic','grid','planTow','RoadIndex','routeTowAdapter','courseTowLimits','towCourseTo','clamp','beginCameraBlend','syncCar','updateCamera','player','look','closeTowOffer','TOW_PROMPT_COOLDOWN','controls','document','sessionTransitions','inFreeRoam','hud','notifications','blackout','audio',
+  const api=Function('G','multiplayer','towOffer','route','ground','traffic','grid','planTow','towHeading','RoadIndex','routeTowAdapter','courseTowLimits','towCourseTo','clamp','beginCameraBlend','syncCar','updateCamera','player','look','closeTowOffer','TOW_PROMPT_COOLDOWN','controls','document','sessionTransitions','inFreeRoam','hud','notifications','blackout','audio',
     section('// Tow, reset and automatic recovery put', 'function stuckCheck(')+section('function tow(', 'function resetCar(')+'return {tow,backOnRoad};')(
-    G,multiplayer,towOffer,route,ground,traffic,grid,planTow,RoadIndex,routeTowAdapter,courseTowLimits,towCourseTo,clamp,()=>{},()=>{},()=>{},player,{},()=>{},20,{releaseMouseLook(){}},{body:{classList:{add(){},remove(){}}}},{after(ms,fn){callbacks.push(fn);}},()=>!!options.free,{message(){}},{dismiss(){}},()=>{},{recovery(){G.recoverySounds=(G.recoverySounds||0)+1;}});
+    G,multiplayer,towOffer,route,ground,traffic,grid,planTow,towHeading,RoadIndex,routeTowAdapter,courseTowLimits,towCourseTo,clamp,()=>{},()=>{},()=>{},player,{},()=>{},20,{releaseMouseLook(){}},{body:{classList:{add(){},remove(){}}}},{after(ms,fn){callbacks.push(fn);}},()=>!!options.free,{message(){}},{dismiss(){}},()=>{},{recovery(){G.recoverySounds=(G.recoverySounds||0)+1;}});
   return {G,towOffer,...api,async flush(){while(callbacks.length)await callbacks.shift()(()=>true);}};
 }
 for(const def of MAPS)test(`${def.id}: real T/R paths put off-road cars on the nearest road, in free roam and in a race`,async t=>{
@@ -46,7 +47,7 @@ for(const def of MAPS)test(`${def.id}: real T/R paths put off-road cars on the n
       const f=r.contactFrame(v.s,v.u,{}),facing=Math.sign(fx*f.tx+fz*f.tz)||1,along=-Math.sin(v.yaw)*f.tx-Math.cos(v.yaw)*f.tz;
       assert.ok(Math.abs(along)>.999,'faces along the road');
       // Only a folded hairpin can shift the station (to keep the leg), and with it the meaning of 'closest to the heading'.
-      if(Math.abs(v.s-nominal)<1)assert.ok(along*facing>.999,'faces the direction closest to its heading');
+      if(Math.abs(v.s-nominal)<1)assert.ok(along*(free?facing:1)>.999,free?'faces the direction closest to departure':'faces race direction after a spin');
       if(!free)assert.ok(v.s>=s-30-.01,'a race tow never lands before the latest valid pose');
       const placedS=v.s;ground.resolve(v,1/60);
       assert.ok(Math.abs(v.s-placedS)<.35,'first live step retains the recovery leg');
@@ -61,6 +62,10 @@ for(const def of MAPS)test(`${def.id}: real T/R paths put off-road cars on the n
       ground.resolve(v,1/60);assert.equal(v._network,true,'the first live step keeps the street surface');assert.ok(network.sample(v.x,v.z)?.step===0,'and stays on its tarmac');samples++;
     }
   }
+  // Run the production tow callback after real damage, not just Vehicle.reset in isolation.
+  v.reset(200,r.edge(200)+15);v.addDamage('front',60/3.6,{kind:'wall'});assert.ok(v.impactMechanical>0);
+  const repair=recoveryHarness(r,v,{ground});repair.tow(v);await repair.flush();
+  assert.ok(Object.values(v.damage).every(d=>d===0));assert.ok(v.cornerDamage.every(d=>d===0));assert.equal(v.impactMechanical,0);assert.equal(v.engHealth,1);assert.equal(v.engineDamage,0);assert.equal(v.steerPull,0);
   // These exercise the main-game path absent from the helper-only tests.
   // Owner decision 2026-10-18: a tow puts the car on the nearest road, never before its latest valid pose.
   v.reset(200,r.edge(200)+15);const x0=v.x,z0=v.z;let h=recoveryHarness(r,v,{safe:180,lastRoad:150,ground});h.tow(v);await h.flush();assert.ok(Math.hypot(v.x-x0,v.z-z0)<=r.edge(200)+25,'towed to the nearest road, where the car is');
