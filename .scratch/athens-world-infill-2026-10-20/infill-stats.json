@@ -1,0 +1,37 @@
+{
+ "bounds": [
+  -15872.0,
+  -13312.0,
+  9728.0,
+  18944.0
+ ],
+ "codeSha256": {
+  "buildings.py": "8545ba7f3fb88e28b717fbf204370ef6a2ece0443237168c763e5d06a0b62e63",
+  "infill.py": "cf590ac2b3ac2f4b7be7641d92dafb7120eef5a239bb73ee7f047be2bc13b96e",
+  "model.py": "0460e6b4d68bae37d13e78cd7efc21e97ad34e0b5a3b85e5e2e79ed58c1450bd"
+ },
+ "generator": "infill.py",
+ "params": {
+  "floor": 3.2,
+  "footway": 2.5,
+  "gap": 1.5,
+  "maxCover": 0.6,
+  "minInterior": 150.0,
+  "sidewalk": 2.0,
+  "storeys": [
+   4,
+   7
+  ]
+ },
+ "stats": {
+  "blocks": 2490,
+  "candidatesKept": 43012,
+  "interiorM2": 50304816.06571404,
+  "interiors": 38408,
+  "lotM2": 7324752.7858937215,
+  "lots": 43012,
+  "openLand": 78,
+  "skippedMesh": 0,
+  "sparseRing": 11017
+ }
+}

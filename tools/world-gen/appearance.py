@@ -1,5 +1,5 @@
 """Offline flat-colour inputs; no lights, textures, vegetation or props required."""
-import math
+import hashlib,math
 
 # sRGB source colours; packing converts these to linear vertex/material colours.
 BUILDINGS=['#f4f5f3','#e6e9ea','#d4d9de','#c5d2dc','#c7d5cf','#d8cbd1']
@@ -7,6 +7,10 @@ BUILDINGS=['#f4f5f3','#e6e9ea','#d4d9de','#c5d2dc','#c7d5cf','#d8cbd1']
 # each class gets its own procedural texture and a boundary between two classes blends softly through interpolated colour.
 TERRAIN=dict(earth='#958669',rock='#868e96',scrub='#6f7b55',sand='#d8c78e',urban='#86837a',grass='#8ba352',forest='#3d5638')
 URBAN_LANDUSE=('commercial','retail','industrial','garages','railway')
+# Residual ground inside a residential block is courtyard paving (the urban class), with a few small green yards (grass).
+RESIDENTIAL_LANDUSE=('residential',)
+YARD_CELL_M=24.0
+YARD_SHARE=0.10
 GRASS_LANDUSE=('grass','meadow','recreation_ground','village_green','cemetery','allotments')
 GRASS_LEISURE=('park','garden','pitch','playground','golf_course','nature_reserve')
 SCRUB_LANDUSE=('orchard','olive_grove','farmland','vineyard')
@@ -25,13 +29,21 @@ def ground_category(height,slope,landuse='',natural='',coast_distance=math.inf,l
     if natural in ('bare_rock','scree','shingle') or slope>.42 or height>900:return 'rock'
     if landuse=='forest' or natural=='wood':return 'forest'
     if leisure in GRASS_LEISURE or landuse in GRASS_LANDUSE or natural=='grassland':return 'grass'
+    if landuse in RESIDENTIAL_LANDUSE:return 'urban'
     if natural in ('scrub','heath') or landuse in SCRUB_LANDUSE:return 'scrub'
     return 'earth'
+
+
+def yard(x,z):
+    """A small green yard: a deterministic share of the 24 m cells of the world grid (the same in every bake and tile)."""
+    h=int.from_bytes(hashlib.sha256(f'{math.floor(x/YARD_CELL_M)},{math.floor(z/YARD_CELL_M)}'.encode()).digest()[:4],'big')/0xFFFFFFFF
+    return h<YARD_SHARE
 
 
 def ground_colour(x,z,height,slope,landuse='',natural='',coast_distance=math.inf,leisure=''):
     """Slope is rise/run, height and coast distance metres; deterministic world-space variation."""
     category=ground_category(height,slope,landuse,natural,coast_distance,leisure)
+    if category=='urban' and landuse in RESIDENTIAL_LANDUSE and yard(x,z):category='grass'
     # Continuous globally positioned colour field: independent tile baking has no colour seam.
     variation=1+.035*math.sin(x/43+math.sin(z/71))+.025*math.sin(z/29+x/113)
     return category,[min(1,max(0,c*variation)) for c in linear(TERRAIN[category])]

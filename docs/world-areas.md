@@ -173,3 +173,13 @@ Gates over all 1,369 cells, unchanged: 6,212,204 asphalt triangles, none above 3
 **Caveat on reproduction.** The bake ran on an older snapshot of the tree (copied at 04:26). `prod` has since changed the client (`src/world-tile-worker.js`, `src/world-tile-buildings.js`) and added `tools/world-gen/{horizon,landmarks,plazas}.py` for the beauty pass. The cell path does not import those generator files, so the cells match, but a fresh bake from today's `prod` is not byte-identical until it is re-run.
 
 **Open.** Infill (cells inside the current basin but not yet in any area) waits for the owner's go. Tunnels are still left out except the Tavros link. Papagou and Cholargos need a check against the north world before any infill.
+
+## Infill, courtyard paving and gardens (`east`, the full bake of 2026-10-20)
+
+The same 1,369 cells, rebaked with three changes. Tools: `tools/world-gen/infill.py`, `gardens.py`, and the bake reads both through `infill.sqlite` beside `clean.sqlite` (`tiles.py`, `cell_rows`). Run `infill.py` (about 25 minutes) and `gardens.py` (seconds) before the bake.
+
+* **Infill.** Empty block interiors of residential landuse get 4 to 7 storey lots (150 m² minimum, edge first), never on a road, footway, plaza, park, water or OSM building (1 m clearance). Open land (over 3 ha) and free ground with under 15% built in the 60 m ring stay empty. 43,012 lots, 7.32 km² of footprint. Generated records carry `generated: true`.
+* **Courtyard paving.** Residential ground is the urban (paving) class, with a deterministic 10% of 24 m cells as small grass yards. Gardens, parks and lawns still win as grass.
+* **Gardens and lawns.** `leisure=garden|park`, `landscape=lawn` and `landuse=flowerbed` closed ways are read as `landcover`, which the ground lookup gives the grass class.
+
+Gates, numbers and per-district counts: `.scratch/athens-world-infill-2026-10-20/README.md`. Kaisariani has 3 generated lots.

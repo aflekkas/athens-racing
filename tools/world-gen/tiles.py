@@ -103,7 +103,7 @@ class Field:
   self.polygons=np.array([r['polygon'] for r in self.roads],dtype=object)
   self.lines=np.array([r['line'] for r in self.roads],dtype=object)
   self.tree=STRtree(self.polygons)
-  for data, in source.execute("SELECT o.data FROM spatial s CROSS JOIN objects o ON o.rowid=s.rowid WHERE o.kind IN ('landuse','landcover') AND s.minx<=? AND s.maxx>=? AND s.minz<=? AND s.maxz>=? ORDER BY o.id",(ox+512,ox,oz+512,oz)):
+  for _,data in cell_rows(source,"o.kind IN ('landuse','landcover')",(ox+512,ox,oz+512,oz)):
    value=json.loads(data);g=shape(value['geometry']);self.land.append((g,value['tags']))
   self.landtree=STRtree([p for p,t in self.land])
  @lru_cache(maxsize=65536)
@@ -168,8 +168,23 @@ class Field:
 SURFACES={'asphalt':(1,'asphalt'),'concrete':(12,'asphalt'),'paving':(13,'paving'),'unpaved':(14,None)}
 TABLES={'nodes':[],'nodePositions':[],'edges':[],'edgePoints':[],'edgeLayers':[],'turns':[],'ribbons':[],'ribbonVertices':[],'junctions':[],'junctionVertices':[],'markings':[],'contactPositions':[],'contactTriangles':[],'contactLayers':[],'fineSurface':[],'fineFlags':[],'coarseHeights':[],'finePositions':[],'fineTriangles':[],'buildings':[],'buildingCorners':[],'buildingHeights':[],'signs':[],'signTransforms':[],'anchors':[],'anchorTransforms':[]}
 
+
+def attach_generated(source,sourcepath):
+ """Generated lots (infill.py) and gardens, lawns and flower beds (gardens.py) sit beside the clean database as infill.sqlite;
+ their rows are read with the clean ones. A bake without the file is the same bake as before."""
+ path=Path(sourcepath).with_name('infill.sqlite')
+ if path.exists():source.execute('ATTACH DATABASE ? AS gen',(f'file:{path}?mode=ro',))
+
+def cell_rows(source,kinds,bounds):
+ """Data rows of one kind filter inside the cell bounds, over the clean database and the generated one, in id order."""
+ minx,maxx,minz,maxz=bounds
+ schemas=['main','gen'] if any(row[1]=='gen' for row in source.execute('PRAGMA database_list')) else ['main']
+ sql=' UNION ALL '.join(f"SELECT o.id AS id,o.data AS data FROM {s}.spatial s CROSS JOIN {s}.objects o ON o.rowid=s.rowid WHERE {kinds} AND s.minx<=? AND s.maxx>=? AND s.minz<=? AND s.maxz>=?" for s in schemas)
+ return source.execute(f'SELECT id,data FROM ({sql}) ORDER BY id',tuple(v for _ in schemas for v in (minx,maxx,minz,maxz))).fetchall()
+
 def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=False,vegetation=None,osm=None,sections=None,extent=None,plan=None,details=None,street_nodes=None):
  db=sqlite3.connect(f'file:{dbpath}?mode=ro',uri=True);source=sqlite3.connect(f'file:{sourcepath}?mode=ro',uri=True)
+ attach_generated(source,sourcepath)
  sectiondb=sqlite3.connect(f'file:{sections}?mode=ro',uri=True) if sections else None
  bridge_tags={};lit_parking={}
  if coastal:
@@ -349,7 +364,7 @@ def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=F
  # Buildings are clipped to the cell: a footprint crossing a border becomes two flush pieces that share the
  # whole building's base, height and palette, so no cell needs a neighbour (dependencies stay empty) to be safe.
  dependencies=set();maxbuilding=0;derived_triangles=0;all_building_footprints=[];clipped=dict(pieces=0,dropped=0);cellbox=box(ox,oz,ox+512,oz+512)
- for data, in source.execute("SELECT o.data FROM spatial s CROSS JOIN objects o ON o.rowid=s.rowid WHERE o.kind='building' AND s.minx<=? AND s.maxx>=? AND s.minz<=? AND s.maxz>=? ORDER BY o.id",(ox+512,ox,oz+512,oz)):
+ for _,data in cell_rows(source,"o.kind='building'",(ox+512,ox,oz+512,oz)):
   building=json.loads(data);footprints=[Polygon(part['footprint']) for part in building['parts']];all_building_footprints.extend(footprints)
   for part,footprint in zip(building['parts'],footprints):
    if not footprint.intersects(cellbox) or footprint.intersection(cellbox).area<1e-6:continue
