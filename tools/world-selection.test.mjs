@@ -15,3 +15,8 @@ test('dispose is idempotent, rejects stale work and releases the parent listener
 test('a stale prepareSpawn cannot replace the route after a newer selection commits',async()=>{
  const f=await fixtureSession();await f.session.prepareRoute(f.compiled);let resolve;f.blockSpawn(new Promise(r=>resolve=r));const old=f.session.prepareSpawn({x:100,z:400});await Promise.resolve();await f.session.prepareRoute(f.compiled);const current=f.session.route;resolve();await assert.rejects(old,/cancelled/);assert.equal(f.session.route,current);assert.equal(f.commits,2);f.session.dispose();
 });
+
+test('a resident restart keeps the compiled route and its mandatory pins',async()=>{
+ const f=await fixtureSession(),first=await f.session.prepareRoute(f.compiled),count=f.pins.size;assert.ok(count>0);
+ const again=await f.session.prepareRoute(f.compiled,{cars:[{width:2.2,length:5.6}]});assert.equal(again,first);assert.equal(f.pins.size,count);assert.equal(f.session.route,first);f.session.dispose();assert.equal(f.pins.size,0);
+});
