@@ -371,6 +371,7 @@ export function driveFromSpawn(menu) {
     const params = new URLSearchParams(location.search);
     for (const key of ['menu', 'routes', 'route', 'routeEvent', 'setup', 'event', 'quick']) params.delete(key);
     params.set('map', 'athens'); params.set('spawn', `${x},${z}`);
+    params.set('spawnArea', choice.areaName || choice.name || '');
     const car = menu.h.carSpec?.(); if (car?.id) params.set('car', car.id);
     location.assign('?' + params); return;
   }

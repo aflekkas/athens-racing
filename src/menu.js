@@ -503,7 +503,7 @@ export class Menu {
     const kick = def ? `${esc(def.name)} · ${r?.closed ? `${esc(d.mapName || '')} · ${r.laps} ${r.laps === 1 ? 'LAP' : 'LAPS'}` : r ? routeLine(r) : ''}` : esc(d.kick || '');
     // THE REFERENCE STYLE (owner, 2026-10-16, docs/OWNER-DECISIONS.md): every other screen is derived from this sheet.
     const rows = [C.option({ icon: 'play', title: 'RESUME', act: 'resume', attrs: { 'data-default': '' } }),
-      ...(d.inFreeRoam ? [C.option({ icon: 'car', title: 'CHANGE CAR', act: 'roamCar' }), C.option({ icon: 'cloud-rain', title: 'TIME & WEATHER', act: 'roamConditions' }), C.option({ icon: 'map-pin', title: 'TELEPORT TO LANDMARK', act: 'roamLandmarks' }), C.option({ icon: 'truck', title: 'TOW TO ROAD', act: 'roamTow' })] : []),
+      ...(d.inFreeRoam && d.roamActions !== false ? [C.option({ icon: 'car', title: 'CHANGE CAR', act: 'roamCar' }), C.option({ icon: 'cloud-rain', title: 'TIME & WEATHER', act: 'roamConditions' }), C.option({ icon: 'map-pin', title: 'TELEPORT TO LANDMARK', act: 'roamLandmarks' }), C.option({ icon: 'truck', title: 'TOW TO ROAD', act: 'roamTow' })] : []),
       d.online || d.inFreeRoam ? '' : C.option({ icon: 'rotate-ccw', title: 'RESTART', act: 'restart' }),
       window.__flow?.resetCar ? C.option({ icon: 'truck', title: 'RESET TO ROAD', act: 'reset' }) : '',
       d.online ? C.option({ icon: 'users', title: 'LOBBY & HOST CONTROLS', act: 'onlineLobby' }) : '',
