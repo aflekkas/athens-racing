@@ -74,13 +74,13 @@ try {
     const best = blocks[0], median = blocks[3];
     const systems = best.systems, total = best.stepMs, ms = [best.p95], frames2 = 1;
     // render phase: submit cost + draw calls / triangles of the last frame
-    // the in-car mirror pass runs every 3rd render only while frames are quick (cockpit.js: it is skipped when < 150 ms passed); a throttled software-GL run is
-    // slower than that, which would put a mirror pass in EVERY frame and make counts depend on machine load. Pin the cadence: exactly every 3rd render.
-    const ck = s.player?.cockpit; if (ck) { ck.mirrorCalls = 0; ck.rearLast = performance.now(); }
-    const rms = [], jsMs = [], callsEach = []; for (let i = 0; i < 24; i++) { if (ck) ck.rearLast = performance.now(); const t = performance.now(); s.render(); const t1 = performance.now(); s.renderer.getContext().finish(); rms.push(performance.now() - t); jsMs.push(t1 - t); callsEach.push(s.renderer.info.render.calls); }
+    // the in-car mirror pass redraws the scene every frame on High and every other frame on Low
+    // (cockpit.js renderMirrors; Off skips it). Counts below mix both frame kinds by design.
+    const ck = s.player?.cockpit; if (ck) { ck.mirrorCalls = 0; }
+    const rms = [], jsMs = [], callsEach = []; for (let i = 0; i < 24; i++) { const t = performance.now(); s.render(); const t1 = performance.now(); s.renderer.getContext().finish(); rms.push(performance.now() - t); jsMs.push(t1 - t); callsEach.push(s.renderer.info.render.calls); }
     // renderSubmitMs: the main-thread JS cost of drawing a frame (scene traversal, state changes, draw calls issued), before the GPU is waited on
     jsMs.sort((a, b) => a - b);
-    // the in-car mirror pass redraws the scene every 3rd frame: calls = the mean over 24 frames, callsMain = a frame without the mirror, callsMax = a mirror frame
+    // calls = the mean over 24 frames, callsMain = a frame without the mirror, callsMax = a mirror frame (equal on High)
     const callsMean = callsEach.reduce((a, b) => a + b, 0) / callsEach.length, callsMain = Math.min(...callsEach), callsMax = Math.max(...callsEach);
     rms.sort((a, b) => a - b);
     const r = window.__renderInfo();
@@ -130,15 +130,15 @@ try {
     });
   }
   if (arg('calls', false)) {
-    // who the draw calls are: record every renderBufferDirect of 3 consecutive frames (one of them has the mirror pass), grouped by owner path
+    // who the draw calls are: record every renderBufferDirect of 3 consecutive frames (Low alternates mirror frames;
+    // High renders the mirror every frame), grouped by owner path
     // (the first --depth named ancestors, with the material name from depth 4 on); reported for the lightest frame and the heaviest one
     report.calls = await page.evaluate((depth) => {
       const s = window.__sim, r = s.renderer, orig = r.renderBufferDirect, frames = [];
       const mine = s.player?.model?.root;
       const path = (o) => { const p = []; let own = false; for (let c = o; c && c !== s.scene; c = c.parent) { if (c === mine) own = true; p.unshift(c.name || c.type); } return (own ? 'PLAYER ' : '') + p.slice(0, depth).join(' > '); };
-      const ck = s.player?.cockpit; if (ck) { ck.mirrorCalls = 0; ck.rearLast = performance.now(); }
+      const ck = s.player?.cockpit; if (ck) { ck.mirrorCalls = 0; }
       for (let f = 0; f < 3; f++) {
-        if (ck) ck.rearLast = performance.now();
         const rows = new Map(), mats = new Set(); let total = 0;
         r.renderBufferDirect = function (camera, scene, geometry, material, object, group) {
           const kind = (object.isInstancedMesh ? 'instanced' : object.isSkinnedMesh ? 'skinned' : object.isSprite ? 'sprite' : object.isPoints ? 'points' : object.isLine ? 'line' : 'mesh') + (material.transparent ? '/transparent' : '');

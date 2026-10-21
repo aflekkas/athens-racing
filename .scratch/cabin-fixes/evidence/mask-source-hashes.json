@@ -7,7 +7,7 @@
   "src/cockpit-seating.js": "23d65abda77669a57df1662218050db3deeab37c20d3229475684c99e16c41f2",
   "src/cockpit-structure.js": "e71e2842a6ac5b692e0d92681c42cc32f1476aaa8101a014ab26deb19c667f40",
   "src/cockpit-telltales.js": "fe653d167559222c232b5d25ac059c95e5d792b3dc193af1b79af96ba01dd2dc",
-  "src/cockpit.js": "a2bb601d5870dfc1dbae307418c4714a989cbf233601c09c76c3e1ea9241b231",
+  "src/cockpit.js": "368cd3ea542c69bbad5a0288cd42d7b4b6b0fcae8f37958ed29779c5e80c3733",
   "src/fleet-cockpit.js": "3bd161715e346fef646f1d49f62f7d93e4d74af6331a3c5ee1545bbc5d3983a3",
   "src/fleet-instruments.js": "204d4371da9ec3333de3e5472ea085e1a49839a2543ad6e536dea860d3a12928",
   "src/fleet-interiors.js": "bc7666ecce3b65f748efcfbaf3491fa642509efaa0c2aa04b2933d53af85eb1c",

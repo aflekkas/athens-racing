@@ -19,7 +19,7 @@ test('one graphics look: no shadow, post, AO, bloom or reflection pass is enable
   assert.ok(Object.isFrozen(R) && Object.isFrozen(R.mirror), `RENDER must stay frozen. ${LOCK}`);
   const expected = { shadow: null, shadowEvery: 1, probeEvery: 0, msaa: 0, fxaa: false, ao: 0, bloomMips: 0, blurTaps: 0, dofTaps: 8, sharpen: 0, heat: false, grade: false, simple: true, waterEvery: 0, particles: 'low' };
   for (const [key, value] of Object.entries(expected)) assert.deepEqual(R[key], value, `RENDER.${key} must stay ${JSON.stringify(value)} (the old Lighting/Effects OFF). ${LOCK}`);
-  assert.deepEqual({ ...R.mirror }, { every: 3, far: 150, width: 384 }, `in-car mirror sharpness is the old Effects OFF tier. ${LOCK}`);
+  assert.deepEqual({ ...R.mirror }, { every: 2, far: 150, width: 768 }, 'in-car mirror Off / Low / High (owner request 2026-10-21, docs/OWNER-DECISIONS.md): Low refreshes every other frame, the far plane is unchanged, width caps the High target.');
   for (const s of [{ perfClass: 'potato' }, { perfClass: 'high', renderScale: 1, drawDistance: 4000 }, {}])
     assert.equal(graphics.resolveGraphics(s, { deviceRatio: 2 }).R, R, `performance settings must never change the look. ${LOCK}`);
 });

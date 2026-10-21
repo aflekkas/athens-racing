@@ -1,4 +1,4 @@
-import { detectPerformance } from '../graphics.js';
+import { detectPerformance, PERFORMANCE } from '../graphics.js';
 import { PERF_CEILING_KEY } from '../perf-ceiling.js';
 import { settings, setSetting } from '../settings.js';
 
@@ -20,6 +20,15 @@ export async function firstRunPerformanceCheck({gpuName=''}={}) {
   try {
     const result=await detectPerformance({gpuName,probe:!skipPerformanceProbe({search:location.search,webdriver:navigator.webdriver})});
     setSetting('perfClass',result.perfClass);
+    // A low performance class picks the Low mirror (owner request 2026-10-21), unless the player already chose.
+    // (The weakest classes render below one device pixel; named without literals: the first-run check stays silent.)
+    const weakClass = (PERFORMANCE[result.perfClass]?.pixelRatio ?? 1) < 1;
+    if (weakClass&&settings.mirrors==='high') {
+      try {
+        const saved=JSON.parse(localStorage.getItem('paraliaki.settings')||'{}');
+        if (saved.mirrors==null) setSetting('mirrors','low');
+      } catch {}
+    }
     try { localStorage.setItem(PERF_CEILING_KEY,result.perfClass); } catch {}
     try { localStorage.setItem(PERF_CHECK_KEY,'1'); } catch {}
     return result;

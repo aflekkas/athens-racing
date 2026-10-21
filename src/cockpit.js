@@ -25,12 +25,28 @@ import { shiftGateOffset, selectShiftKind, shiftAnimDuration, shiftEnvelope, smo
 // and door / rear-view glass that darkens with the scene. Both are display-referred, so they divide out the
 // exposure the night brings up everything else by (env.js COND_STATE).
 const CABIN_GLOW = { value: 0 };
-// Rear view: ONE low-res render from a rearward camera at the interior mirror, cropped per mirror (the interior glass
-// takes the centre, each door mirror looks back along its own flank into the next lane). One fixed resolution,
-// refresh rate and draw distance; Settings > Mirrors switches it off. The mirror pass has no shadows map
-// update and no post (the main view's exposure and grade apply to the glass like everything else).
+// Rear view: ONE render from a rearward camera at the interior mirror, cropped per mirror (the interior glass
+// takes the centre, each door mirror looks back along its own flank into the next lane). Settings > Graphics >
+// Mirrors picks Off (hidden, no pass), Low (half resolution, every other frame) or High (full resolution every
+// frame). The mirror pass has no shadows map update and no post (the main view's exposure and grade apply to the
+// glass like everything else).
 const REAR_H = 84, REAR_V = 26, REAR_PITCH = -2.5; // shared view: horizontal / vertical field (deg), aim below level
-// The mirror view is fixed with the one graphics look (graphics.js RENDER.mirror: every n-th frame, far plane m, width px).
+// The interior glass covers about three tenths of the screen: the High target is that share of the drawing buffer
+// (device pixels), so the mirror resolves 1:1 with the glass; RENDER.mirror.width caps it, MIRROR_MIN_WIDTH floors
+// it. (graphics.js RENDER.mirror: Low cadence divisor, far plane m, High width cap px).
+export const MIRROR_SCREEN_SHARE = 0.3, MIRROR_MIN_WIDTH = 256;
+/** the rear-view render target width for a drawing buffer `devicePx` device pixels wide at a quality level */
+export function mirrorTargetWidth(devicePx, quality = 'high') {
+  const high = Math.max(MIRROR_MIN_WIDTH, Math.min(RENDER.mirror.width, Math.round((+devicePx || 0) * MIRROR_SCREEN_SHARE)));
+  return quality === 'low' ? Math.max(128, Math.round(high / 2)) : high;
+}
+/** the drawing buffer width in device pixels behind a renderer (0 when it cannot be read, e.g. a test double) */
+function rendererDeviceWidth(renderer) {
+  try {
+    const size = renderer.getSize(new THREE.Vector2());
+    return Math.round(size.x * (renderer.getPixelRatio?.() || 1));
+  } catch { return 0; }
+}
 /** Owner-locked (docs/OWNER-DECISIONS.md): mirrors render only from inside the car. The chase / third-person camera
  * shows no mirror and no rear-view strip, and skips the mirror pass entirely. */
 export const mirrorsInView = (cam) => cam === 'cockpit';
@@ -632,20 +648,30 @@ export class Cockpit {
     }
     return Math.min(71,THREE.MathUtils.radToDeg(2*Math.atan(tangent*1.035/aspect)));
   }
-  renderMirrors(renderer,scene,{enabled=true,now=performance.now(),far}={}){
-    if(!enabled){
-      this.rearLast=undefined;
-      // Mirrors off: dark glass that follows the scene's light (unlit, so never a daylight grey under night exposure)
+  renderMirrors(renderer,scene,{enabled=true,now=performance.now(),far,quality,width}={}){
+    quality=quality??this.mirrorQuality??'high';
+    this.mirrorQuality=quality;
+    const off=!enabled||quality==='off';
+    for(const m of this.mirrors)m.mesh.visible=!off;
+    if(off){
+      this.rearLast=undefined;this.mirrorCalls=0;
+      // Mirrors off: hidden glass that follows the scene's light (unlit, so never a daylight grey under night exposure)
       // (a map stays bound either way: switching mirrors on / off never recompiles the glass)
       const k=sceneLight(),glass=darkGlass();for(const m of this.mirrors){m.material.map=glass;m.material.color.set('#485158').multiplyScalar(k);}
       return;
     }
-    const T=RENDER.mirror;
+    const T=RENDER.mirror,every=quality==='low'?T.every:1;
     this.mirrorCalls=(this.mirrorCalls||0)+1;
-    if(this.rearLast!==undefined&&now>=this.rearLast&&now-this.rearLast<150&&this.mirrorCalls<T.every)return;
-    const height=Math.round(T.width*Math.tan(THREE.MathUtils.degToRad(REAR_V/2))/Math.tan(THREE.MathUtils.degToRad(REAR_H/2)));
-    if(this.rearTarget&&this.rearTarget.width!==T.width){this.rearTarget.dispose();this.rearTarget=null;}
-    if(!this.rearTarget){this.rearTarget=new THREE.WebGLRenderTarget(T.width,height,{depthBuffer:true});this.rearTarget.texture.name='mirror-rear-view';this.rearTarget.texture.colorSpace=THREE.SRGBColorSpace;}
+    if(this.rearLast!==undefined&&this.mirrorCalls<every)return;
+    const w=mirrorTargetWidth(width||rendererDeviceWidth(renderer)||T.width,quality);
+    const height=Math.round(w*Math.tan(THREE.MathUtils.degToRad(REAR_V/2))/Math.tan(THREE.MathUtils.degToRad(REAR_H/2)));
+    if(this.rearTarget&&(this.rearTarget.width!==w||this.rearTarget.height!==height)){this.rearTarget.dispose();this.rearTarget=null;}
+    if(!this.rearTarget){
+      this.rearTarget=new THREE.WebGLRenderTarget(w,height,{depthBuffer:true});
+      const tex=this.rearTarget.texture;
+      tex.name='mirror-rear-view';tex.colorSpace=THREE.SRGBColorSpace;
+      tex.magFilter=THREE.LinearFilter;tex.minFilter=THREE.LinearFilter;tex.generateMipmaps=false;
+    }
     const cam=this.rearCamera,f=far??T.far;if(cam.far!==f){cam.far=f;cam.updateProjectionMatrix();}
     const body=this.model.body,root=this.model.root,visible=root.visible,target=renderer.getRenderTarget(),shadow=renderer.shadowMap.autoUpdate;
     root.updateMatrixWorld(true);

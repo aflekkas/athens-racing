@@ -118,6 +118,7 @@
     "tools/map-select-camera.test.mjs",
     "tools/map-select-perf.test.mjs",
     "tools/mirror-cadence.test.mjs",
+    "tools/mirror-settings.test.mjs",
     "tools/modes.test.mjs",
     "tools/nitrous-input.test.mjs",
     "tools/notice-style.test.mjs",
