@@ -46,6 +46,24 @@ test('multiplayer finish uses existing standings and peers; disconnect, finish a
   assert.equal(mp.spectating().id, 'near'); mp.selection.skip(); assert.equal(mp.spectating(), null);
   mp.lobby.status = 'results'; assert.equal(mp.spectating(), null);
 });
+test('spectate HUD stays on the watched driver: lap hidden, gap trails the leader, solo R restarts', () => {
+  const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
+  const card = readFileSync(new URL('../src/ui/finish-spectate.js', import.meta.url), 'utf8');
+  const decisions = readFileSync(new URL('../docs/OWNER-DECISIONS.md', import.meta.url), 'utf8');
+  const owner = 'Owner-locked decision, see docs/OWNER-DECISIONS.md. Ask the owner before changing.';
+  // The lap widget is bound to the player's own run, so it must hide while spectating (multiplayer
+  // never shows it either: G.run is not the active race's run there).
+  assert.match(main, /updateLapHud\(G\.run, !finishWatched &&/, owner);
+  // The frozen player progress must not leak into the gap: the watched driver trails the race leader.
+  assert.match(main, /leaderProg - earnedProgress\(finishWatched\.car\)/, owner);
+  assert.match(main, /gap: leaderProg - earnedProgress\(finishWatched\.car\), gapUnit: 'm'/, owner);
+  // Solo R restarts like R after a race normally does; multiplayer R still opens results.
+  assert.match(main, /if \(name === 'restart' && !multiplayer\.active\) \{ openEvent\(G\.ev\.def\); return true; \}/, owner);
+  assert.match(main, /updateFinishSpectateHud\(\{[^}]*canRestart: !multiplayer\.active \}/, owner);
+  assert.match(card, /canRestart/, owner);
+  assert.match(card, /RESTART · R/, owner);
+  assert.match(decisions, /non-colliding ghost/, owner);
+});
 test('owner-locked spectate on finish is connected to both production finish paths and interpolated camera', () => {
   const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
   const decisions = readFileSync(new URL('../docs/OWNER-DECISIONS.md', import.meta.url), 'utf8');
