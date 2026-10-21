@@ -31,17 +31,17 @@ test('civilian graph turns can branch away from the race and respect closures/re
 });
 
 test('a newly spawned graph traffic actor has finite route coordinates before rival AI sees it',async()=>{
- const {WorldTraffic}=await import('../src/world-traffic.js'),edge={id:'branch',from:'n0',to:'n1',points:[[0,0,200],[0,0,220]],layer:0,flags:0},car={type:{},wid:2,len:4,mass:1200,m:{root:{visible:false}}},route={project:()=>({s:210,u:12})};
+ const {WorldTraffic}=await import('../src/world-traffic.js'),edge={id:'branch',from:'n0',to:'n1',points:[[0,0,200],[0,0,220]],layer:0,flags:0},car={type:{},crashed:true,wid:2,len:4,mass:1200,m:{root:{visible:false}}},route={project:()=>({s:210,u:12})};
  const session={roads:{graph:{edges:new Map([[edge.id,{value:edge}]]),outgoing:new Map(),legal:()=>true}}},traffic=new WorldTraffic(session,{},route);
  traffic.pool={rng:{next:()=>0},pickFree:()=>car,initDrive:c=>{c.drv={vf:1};}};traffic.cars=[car];traffic.level=1;traffic.candidate=()=>({x:0,y:0,z:210,yaw:Math.PI,edge:edge.id,edgeId:edge.id,layer:0});
- traffic.spawn({x:0,z:0},[]);assert.equal(car.active,true);assert.deepEqual([car.veh.s,car.veh.u,car.s,car.u],[210,12,210,12]);assert.equal(car.veh.halfL,2);assert.equal(car.veh.halfW,1);
+ traffic.spawn({x:0,z:0},[]);assert.equal(car.active,true);assert.equal(car.crashed,false,'a reused graph pool slot must drive after its earlier wreck');assert.deepEqual([car.veh.s,car.veh.u,car.s,car.u],[210,12,210,12]);assert.equal(car.veh.halfL,2);assert.equal(car.veh.halfW,1);
 });
 
 test('off-route notices debounce for .75 s, wrong direction for 1 s, and share a five-second limit',async()=>{
  const f=fixture(),r=new RouteRuntime(await compileRoute(f.definition,f.graph,f.contacts)),nav=new RouteNavigation(r),base={position:r.point(100),heading:r.frame(100).yaw,speed:10,earnedS:100,contact:{y:0,layer:0,surfaceId:'road-a'}};
  let state;for(let i=1;i<=7;i++)state=nav.update({...base,position:r.point(100,20),dt:.1,time:i*.1});assert.equal(state.notice,null);state=nav.update({...base,position:r.point(100,20),dt:.1,time:.8});assert.equal(state.notice,'RETURN TO ROUTE');assert.equal(state.rejoinS,100);
  for(let i=0;i<20;i++){state=nav.update({...base,heading:base.heading+Math.PI,dt:.1,time:1+i*.1});assert.equal(state.notice,null);}state=nav.update({...base,heading:base.heading+Math.PI,dt:.1,time:6});assert.equal(state.notice,'WRONG WAY');
- nav.reset();for(let i=0;i<11;i++)state=nav.update({...base,speed:-10,dt:.1,time:i*.1});assert.equal(state.wrongWay,true,'backing along a forward-facing car is wrong-way motion');
+ nav.reset();for(let i=0;i<11;i++)state=nav.update({...base,speed:-10,dt:.1,time:i*.1});assert.equal(state.wrongWay,false,'aligned reversing earns no progress and is exempt from WRONG WAY');
 });
 
 test('native route setup offers 0–2 rivals, traffic, police, conditions and laps, with reverse withheld',async()=>{

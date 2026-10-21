@@ -339,14 +339,14 @@ export class EventRun {
     if (this.done) return this.result;
     this.done = true;
     const res = {
-      eventId: this.id, mapId: this.def.mapId || 'riviera', ...(this.def.routeId?{worldId:this.def.worldId,regionId:this.def.regionId,routeId:this.def.routeId,routeHash:this.def.routeHash,geometryHash:this.def.geometryHash,edition:this.def.edition,worldSetRevision:this.def.worldSetRevision}:{}), type: this.type, car: this.car, time: extra.time ?? null, splits: this.splits.slice(),
+      eventId: this.def.routeId ? this.def.baseId || this.id : this.id, mapId: this.def.mapId || 'riviera', ...(this.def.routeId?{worldId:this.def.worldId,regionId:this.def.regionId,routeId:this.def.routeId,routeHash:this.def.routeHash,geometryHash:this.def.geometryHash,edition:this.def.edition,worldSetRevision:this.def.worldSetRevision}:{}), type: this.type, car: this.car, time: extra.time ?? null, splits: this.splits.slice(),
       laps: this.r.laps || 1, lapTimes: this.lapTimes.slice(), bestLap: this.lapTimes.length ? Math.min(...this.lapTimes) : null,
       position: extra.position ?? 1, field: extra.field ?? 1, medal: null, penalties: extra.penalties || 0,
       distance: this.r.len, reverse: this.r.reverse, routeKey: `${Math.round(this.r.s0)}>${Math.round(this.r.s1)}`, valid: true, ...extra,
     };
     if (res.wrecked) { res.time = null; res.position = null; res.valid = false; res.won = false; res.busted = false; }
     if (res.time == null) res.valid = false;
-    if (this.def.custom) res.valid = false; // a changed race setup: kept apart from the official boards
+    if (this.def.custom && !this.def.routeId) res.valid = false; // a changed race setup: kept apart from the official boards
     res.medal = medalFor(this.def, res, this.r);
     if ((!this.def.quick || this.def.save) && (!this.def.pilot || res.valid)) Object.assign(res, recordResult(this.def, res, this.st));
     else res.record = null;

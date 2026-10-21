@@ -8,6 +8,11 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- On staging, race the Riviera coast through the Loumbarda tunnel on the shared Athens world, with two rivals, road traffic and police.
+  ![Rivals on the Riviera coast](assets/changelog/2026.10.21.1/riviera-coast-rivals.webp "Riviera coast on the shared Athens world.")
+  ![The Loumbarda tunnel on the Riviera route](assets/changelog/2026.10.21.1/riviera-tunnel.webp "The forward Loumbarda tunnel.")
+- Earlier Riviera and Faros times stay visible under their original course names. Reversing with the car facing forward no longer raises WRONG WAY.
+
 - Launch: one loading screen while the game loads and checks your sign-in, then straight to the title or to sign-in. No blank screen, no sign-in box flashing up.
 - Fewer steps to a race: setup opens on CHOOSE CAR, the car picker on your own car, and Track select on the track you raced last.
 - Free Roam opens on the place you last started. The results lead with RACE AGAIN (one press, same car) and CHANGE CAR.

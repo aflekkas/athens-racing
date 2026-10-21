@@ -13,7 +13,7 @@ import {parkedBoxes} from '../src/world-tile-parking.js';
 import {cellKey} from '../src/route-geometry.js';
 
 export async function readEmittedRouteWorld({world,cells,keys}) {
-  if(keys.size>64)throw Error('Route audit exceeds 64 cells');
+  if(keys.size>128)throw Error('Route audit exceeds 128 cells');
   const manifest=JSON.parse(await readFile(world,'utf8')),tiles=new Map(),barriers=new WorldTileBarriers(),obstacles=new WorldTileObstacles();
   const stream={tiles,readyAt:(x,z)=>tiles.has(cellKey(x,z)),contact(x,z,options){const key=cellKey(x,z),p=tiles.get(key)?.packet;if(!p)return null;const c=sampleTileContact(p.tables,p.contactIndex,x-p.metadata.origin[0],z-p.metadata.origin[2],options);return c?{...c,surfaceId:p.metadata.ids[c.surface],tile:key}:null;}};
   const roads=new WorldTileRoads(stream);

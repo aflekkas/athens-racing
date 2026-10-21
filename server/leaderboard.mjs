@@ -16,13 +16,13 @@ export async function createLeaderboard(file, definitions, cars, version, maps) 
     try { await writeFile(temp, JSON.stringify({ schema: routeMode?2:1, entries: next,...(routeMode?{history}:{} ) }) + '\n', { mode: 0o600 }); await rename(temp, storageFile); }
     catch (e) { await unlink(temp).catch(() => {}); throw e; }
   };
-  if(routeMode&&!history.length){history=migrateRouteRecords(entries,{source:'server-json'}).filter(e=>e.identity?.compatibility==='historical');await write(entries);}
+  if(routeMode){history=[...new Map(migrateRouteRecords([...history,...entries],{source:'server-json'}).filter(e=>e.identity?.compatibility==='historical').map(e=>[e.migration.id,e])).values()];await write(entries);}
   // Owner decision 2026-10-20: entries stored under a removed trim move to that model's top trim (docs/OWNER-DECISIONS.md).
   const migrated = canonicalEntries(entries, cars);
   if (migrated.changed) { entries = migrated.entries; await write(entries); }
   const validate = r => validResult(canonicalResult(r, cars), resultContext(r, definitions, version, maps).event, cars);
   const list = (filters = {}) => {
-    if(filters.routeId){if(String(filters.history)==='true')return filterEntries(routeHistory(history,filters.routeId),{...filters,mapId:undefined});const c=maps?.routes?.get(filters.routeId);return c?filterEntries(entries.filter(e=>e.routeId===c.id&&e.edition===routeEdition(c)),filters):[];}
+    if(filters.routeId){if(String(filters.history)==='true')return filterEntries(routeHistory(history,filters.routeId,{edition:filters.edition}),{...filters,mapId:undefined,edition:undefined});const c=maps?.routes?.get(filters.routeId);return c?filterEntries(entries.filter(e=>e.routeId===c.id&&e.edition===routeEdition(c)),filters):[];}
     const mapId = filters.mapId || 'riviera';
     return filterEntries(entries.filter(e => (e.mapId || 'riviera') === mapId && e.version === leaderboardVersion(mapId, maps ? maps.get(mapId)?.track.version : version)), { ...filters, mapId });
   };
@@ -43,7 +43,8 @@ export async function createLeaderboard(file, definitions, cars, version, maps) 
         const count = (buckets.get(key) || 0) + 1; buckets.set(key, count); return count <= 200;
       });
       if (!next.includes(entry)) return { saved: false, best: old?.time ?? null, reason: 'This board retains its fastest 200 drivers.' };
-      await write(next);
+      const previousHistory=history;if(routeMode){const record=migrateRouteRecords([entry],{source:'server-json'})[0];if(record.identity?.compatibility==='historical')history=[...new Map([...history,record].map(e=>[e.migration.id,e])).values()];}
+      try{await write(next);}catch(error){history=previousHistory;throw error;}
       entries = next;
       return { saved: true, best: entry.time };
     });

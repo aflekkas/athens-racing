@@ -8,6 +8,14 @@ import { WEATHER, advanceRoadWetness, wetGripAt, wetPeakScale } from '../../src/
 const dry = () => Object.assign(WEATHER, { wet: 0, rain: 0, gripScale: 1 });
 const wet = () => { dry(); advanceRoadWetness(240, 1); };
 const report=[];
+test('reset profile reuse is exact, isolated from consumers and invalidated by wetness, damage, mass and spec', () => {
+  const route={length:120,closed:false,frame(s,o={}){const a=s/100;return Object.assign(o,{x:100*(Math.cos(a)-1),y:0,z:-100*Math.sin(a),tx:-Math.sin(a),tz:-Math.cos(a),rx:Math.cos(a),rz:-Math.sin(a),grade:0,bank:0});},point(s,u=0){const f=this.frame(s);return{x:f.x+u*f.rx,y:0,z:f.z+u*f.rz};},edge:()=>6,medHalf:()=>0,laneU:()=>0,y:()=>0,surfaceY:()=>0,urban:()=>1,lin:()=>0};
+  try {
+    dry();const vehicle=new Vehicle(CARS[0],route);vehicle.reset(0,0,0);const first=new RivalAI(route,vehicle),expected=first.profile.slice(),line=first.line,calculate=line.speedProfile;let builds=0;line.speedProfile=function(...args){builds++;return calculate.apply(this,args);};
+    vehicle.reset(0,0,0);const second=new RivalAI(route,vehicle);assert.equal(builds,0);assert.deepEqual(second.profile,expected);second.profile.fill(0);assert.deepEqual(new RivalAI(route,vehicle).profile,expected);
+    wet();new RivalAI(route,vehicle);assert.equal(builds,1,'live wet grip invalidates');vehicle.engHealth=.5;new RivalAI(route,vehicle);assert.equal(builds,2,'engine damage invalidates');vehicle.m+=100;new RivalAI(route,vehicle);assert.equal(builds,3,'mass invalidates');vehicle.spec={...vehicle.spec,brake:vehicle.spec.brake*.8};new RivalAI(route,vehicle);assert.equal(builds,4,'spec inputs invalidate');const lat=vehicle.maxLatAccel;vehicle.maxLatAccel=function(v){return lat.call(this,v)*.8;};new RivalAI(route,vehicle);assert.equal(builds,5,'capability replacement invalidates');assert.notEqual(new RivalAI({...route},vehicle).line,line,'a different route owns a separate cache');
+  } finally {dry();}
+});
 test('wetness builds with rain intensity, dries slowly, and puddles/paint/kerbs are slipperier', () => {
   try {
     dry(); advanceRoadWetness(10, .5); assert.ok(WEATHER.wet > .1 && WEATHER.wet < .5);

@@ -1,4 +1,13 @@
 import { tileTables } from './world-tile-format.js';
+// A mapped structure may join its approach only at the same surveyed 3D node.
+// XY crossings and neighbouring carriageways never create a layer connection.
+export function roadLayersConnect(from,to){
+ if(from.to!==to.from)return false;
+ if(from.layer===to.layer)return true;
+ if(Math.abs(from.layer-to.layer)!==1||!((from.flags|to.flags)&6))return false;
+ const a=from.points.at(-1),b=to.points[0];
+ return Math.hypot(...a.map((v,i)=>v-b[i]))<=.025;
+}
 // Decode the graph in the tile worker; the activation transaction only interns ready records.
 export function readGraphShard(pack){const m=pack.metadata,t=pack.tables||tileTables(pack),nodes=[],edges=[],turns=[];
  for(let i=0;i<t.nodes.length;i+=2){const p=t.nodes[i+1]*3,id=m.ids[t.nodes[i]];nodes.push({id,x:t.nodePositions[p]+m.origin[0],y:t.nodePositions[p+1],z:t.nodePositions[p+2]+m.origin[2]});}
@@ -7,21 +16,21 @@ export function readGraphShard(pack){const m=pack.metadata,t=pack.tables||tileTa
 }
 // Tile graph ownership is independent of scene objects. World IDs survive portal crossings and eviction.
 export class WorldRoadGraph {
-  constructor(){this.nodes=new Map();this.edges=new Map();this.outgoing=new Map();this.turns=new Map();this.owners=new Map();}
+  constructor(){this.revision=0;this.nodes=new Map();this.edges=new Map();this.outgoing=new Map();this.turns=new Map();this.owners=new Map();}
   install(key,pack){for(const _ of this.installSteps(key,pack))void _;}
   *installSteps(key,pack,{batchSize=32}={}){
     if(this.owners.has(key))throw new Error('Graph tile already installed');
     const shard=pack.roadGraph||readGraphShard(pack),owned={nodes:[],edges:[],turns:[]};
     const intern=(registry,id,value)=>{const old=registry.get(id);if(old){if(JSON.stringify(old.value)!==JSON.stringify(value))throw new Error(`Conflicting graph portal ${id}`);old.refs++;}else registry.set(id,{value,refs:1});};
-    this.owners.set(key,owned);let count=0;
+    this.revision++;this.owners.set(key,owned);let count=0;
     try{
       for(const node of shard.nodes){intern(this.nodes,node.id,node);owned.nodes.push(node.id);if(++count%batchSize===0)yield {stage:'graph'};}
-      for(const edge of shard.edges){intern(this.edges,edge.id,edge);owned.edges.push(edge.id);let out=this.outgoing.get(edge.from);if(!out)this.outgoing.set(edge.from,out=new Set());out.add(edge.id);if(++count%batchSize===0)yield {stage:'graph'};}
+      for(const edge of shard.edges){this.revision++;intern(this.edges,edge.id,edge);owned.edges.push(edge.id);let out=this.outgoing.get(edge.from);if(!out)this.outgoing.set(edge.from,out=new Set());out.add(edge.id);if(++count%batchSize===0)yield {stage:'graph'};}
       for(const rule of shard.turns){const id=JSON.stringify(rule);intern(this.turns,id,rule);owned.turns.push(id);if(++count%batchSize===0)yield {stage:'graph'};}
       this.owners.set(key,owned);
     }catch(error){this.owners.set(key,owned);this.remove(key);throw error;}
   }
-  remove(key){const owned=this.owners.get(key);if(!owned)return;this.owners.delete(key);
+  remove(key){const owned=this.owners.get(key);if(!owned)return;this.revision++;this.owners.delete(key);
     for(const id of owned.edges){const e=this.edges.get(id);if(--e.refs===0){this.outgoing.get(e.value.from)?.delete(id);if(!this.outgoing.get(e.value.from)?.size)this.outgoing.delete(e.value.from);this.edges.delete(id);}}
     for(const [kind,ids]of[[this.nodes,owned.nodes],[this.turns,owned.turns]])for(const id of ids){const value=kind.get(id);if(--value.refs===0)kind.delete(id);}
   }

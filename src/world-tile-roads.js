@@ -4,6 +4,11 @@ import { tileKey } from './world-tile-format.js';
 /** Graph and contact queries share the scene's activation/eviction transaction. */
 export class WorldTileRoads {
   constructor(stream) { this.stream=stream;this.graph=new WorldRoadGraph(); }
+  publicSurfaces(layer){
+    // Contact ownership can change inside overlapping OSM junction polygons.
+    // Width is the contiguous physical asphalt interval, not one polygon label.
+    if(this.surfaceRevision!==this.graph.revision){this.surfaceRevision=this.graph.revision;this.surfaceLayers=new Map();for(const {value:e}of this.graph.edges.values())if(!(e.flags&8)){if(!this.surfaceLayers.has(e.layer))this.surfaceLayers.set(e.layer,new Map());this.surfaceLayers.get(e.layer).set(e.surface,e.layer);}}return this.surfaceLayers.get(layer)||new Map();
+  }
   adapter(scene) {
     const roads=this;
     return {
@@ -29,7 +34,7 @@ export class WorldTileRoads {
   width(point,{radius=16,heightTolerance=1,connected=false,bounded=false}={}) {
     if(!(radius>0&&radius<=32))throw new Error('Invalid road width search radius');
     const edge=this.graph.edges.get(point.edge)?.value;if(!edge)return null;
-    const surfaces=connected?this.connected(edge):new Map([[edge.surface,edge.layer]]);if(point.surfaceId)surfaces.set(point.surfaceId,edge.layer);
+    const surfaces=connected?new Map([...this.publicSurfaces(edge.layer),...this.connected(edge)]):new Map([[edge.surface,edge.layer]]);if(point.surfaceId)surfaces.set(point.surfaceId,edge.layer);
     const rx=Math.cos(point.yaw),rz=-Math.sin(point.yaw),intervals=[],visited=new Set();
     for(let d=-radius;d<=radius;d+=4){
       const x=point.x+rx*d,z=point.z+rz*d,key=tileKey(x,z),tile=this.stream.tiles.get(key);

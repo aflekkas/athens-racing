@@ -6,7 +6,7 @@ export function canonicalJSON(value){if(typeof value==='number'){if(!Number.isFi
 export async function sha256(value){const data=typeof value==='string'?value:canonicalJSON(value);return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(data))),v=>v.toString(16).padStart(2,'0')).join('');}
 export function validateRouteDefinition(def,{filename,routeIds=new Set(),eventIds=new Set()}={}){
  const errors=[],err=(code,path)=>errors.push({code,path,routeId:def?.id});
- const root=['$schema','schemaVersion','id','revision','worldId','regionId','name','description','kind','lengthM','laps','allowReverse','timeOfDay','weather','trafficLevel','rivals','path','start','finish','turns','closureIds','sectorsM','events'];
+ const root=['$schema','schemaVersion','id','revision','worldId','regionId','name','description','kind','lengthM','laps','allowReverse','timeOfDay','weather','trafficLevel','rivals','police','signals','path','start','finish','turns','closureIds','sectorsM','events'];
  if(!keys(def,root,['$schema','schemaVersion','id','revision','worldId','regionId','name','kind','lengthM','path','start','finish','turns','timeOfDay','trafficLevel'],'$',errors))return {valid:false,errors};
  const num=(v,min,max,path,integer=false)=>{if(!Number.isFinite(v)||v<min||v>max||integer&&!Number.isInteger(v))err('range',path);};
  const text=(v,min,max,path,re)=>{if(typeof v!=='string'||v.length<min||v.length>max||re&&!re.test(v))err('string',path);};
@@ -17,6 +17,7 @@ export function validateRouteDefinition(def,{filename,routeIds=new Set(),eventId
  for(const [k,allowed]of Object.entries({kind:['sprint','circuit'],timeOfDay:['dawn','day','afternoon','sunset','night','dynamic'],weather:['clear','overcast','rain','dynamic']}))if((k!=='weather'||def[k]!==undefined)&&!allowed.includes(def[k]))err('enum',k);
  for(const k of ['laps','rivals','trafficLevel'])if(k==='trafficLevel'||def[k]!==undefined)num(def[k],k==='laps'?1:0,k==='laps'?20:2,k,k!=='trafficLevel');
  if(def.allowReverse!==undefined&&typeof def.allowReverse!=='boolean')err('type','allowReverse');if(def.kind==='sprint'&&(def.laps??1)!==1)err('sprint-laps','laps');
+ for(const k of ['police','signals'])if(def[k]!==undefined&&typeof def[k]!=='boolean')err('type',k);
  for(const k of ['start','finish']){const p=def[k];if(keys(p,['edgeId','offsetM','lateralM','yawRad'],['edgeId','offsetM','lateralM','yawRad'],k,errors)){graphId(p.edgeId,k+'.edgeId');num(p.offsetM,0,200000,k+'.offsetM');num(p.lateralM,-20,20,k+'.lateralM');yaw(p.yawRad,k+'.yawRad');}}
  if(keys(def.path,['edges','waypoints'],[], 'path',errors)){if(('edges'in def.path)===('waypoints'in def.path))err('path-choice','path');if(def.path.edges!==undefined)list(def.path.edges,1,20000,'path.edges',graphId);if(def.path.waypoints!==undefined)list(def.path.waypoints,2,256,'path.waypoints',(p,path)=>{if(keys(p,['x','z','layer','headingRad','snapM'],['x','z','layer','headingRad'],path,errors)){num(p.x,-Infinity,Infinity,path+'.x');num(p.z,-Infinity,Infinity,path+'.z');num(p.layer,-16,16,path+'.layer',true);yaw(p.headingRad,path+'.headingRad');if(p.snapM!==undefined)num(p.snapM,0,20,path+'.snapM');}});}
  const turn=(t,p)=>{if(keys(t,['fromEdge','viaNode','toEdge'],['fromEdge','viaNode','toEdge'],p,errors))for(const k of ['fromEdge','viaNode','toEdge'])graphId(t[k],p+'.'+k);};
