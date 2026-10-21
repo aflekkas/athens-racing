@@ -293,7 +293,7 @@ const GRAPHICS_KEYS = new Set(['perfClass', 'renderScale', 'dynamicResolution', 
 /** re-resolve resolution / draw distance and apply them live (no reload, the world is kept); the look never changes */
 function applyGraphics() {
   GFX = resolveGraphics(settings, { deviceRatio: window.devicePixelRatio, gpuName });
-  for (const c of [...grid, ...remoteCars.values()]) if (c.model) scaleVehicleLod(c.model, GFX.vehicleLod);
+  for (const c of [...grid, ...remoteCars.values()]) if (c.model) scaleVehicleLod(c.model, GFX.vehicleLod, 40);
   dynamicScale = makeDynamicScale();
   if (GFX.pixelRatio !== pixelRatio) { pixelRatio = GFX.pixelRatio; onResize(); post?.resetHistory(); }
   setDrawDistance(+Q.get('draw') || GFX.drawDistance, R.horizon, GFX.detail); applyDrawDistance(); applyCpuBudget(); setFarFog(farCullDistance()); updateLod();
@@ -576,7 +576,7 @@ function makeCar(spec, isPlayer, plate) {
   // lobby plate, or undefined for a random registration. Single player shows
   // the driver name; multiplayer shows every driver's name.
   const model = new CarModel(spec, { plate });
-  if (!isPlayer) scaleVehicleLod(model, GFX.vehicleLod); // other drivers' cars drop to the road-distance model sooner on weaker classes
+  if (!isPlayer) scaleVehicleLod(model, GFX.vehicleLod, 40); // rivals and online drivers stay detailed at close chase distance
   scene.add(model.root);
   trimShadowCasters(model.root);
   return { model };
