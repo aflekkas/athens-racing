@@ -258,7 +258,8 @@
     "tools/route-migrations.test.mjs",
     "tools/world-selection.test.mjs",
     "tools/import-track-region.test.mjs",
-    "tools/route-phase4a.test.mjs"
+    "tools/route-phase4a.test.mjs",
+    "tools/route-phase4b.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",

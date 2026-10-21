@@ -18,7 +18,7 @@ function extend(def,g,e,offset,distance,backward,routeIds=null){const result=[],
  while(remaining>1e-6){if(seen.size>1000)fail(def,'runout-disconnected',{edgeId:e.id});seen.add(e.id);const len=edgeLength(e),take=Math.min(remaining,backward?at:len-at),begin=backward?at-take:at,end=backward?at:at+take,pts=[];for(let s=begin;s<end;s+=4)pts.push(edgePoint(e,s));pts.push(edgePoint(e,end));if(backward)result.unshift(...pts);else result.push(...pts);remaining-=take;if(remaining<=1e-6)break;
  const previous=e,candidates=backward?[...g.edges.keys()].map(id=>edgeValue(g,id)).filter(p=>p.to===e.from&&allowedTurn(def,g,p,e,[])):outgoing(g,e.to).filter(n=>allowedTurn(def,g,e,n,[]));
  const tangent=edgePoint(e,backward?0:len);candidates.sort((a,b)=>{const aa=edgePoint(a,backward?edgeLength(a):0),bb=edgePoint(b,backward?edgeLength(b):0);return (bb.tx*tangent.tx+bb.tz*tangent.tz)-(aa.tx*tangent.tx+aa.tz*tangent.tz)||a.id.localeCompare(b.id);});
- if(routeIds){index+=backward?-1:1;if(index<0)index=routeIds.length-2;if(index>=routeIds.length)index=1;e=candidates.find(n=>n.id===routeIds[index]);}
+ if(routeIds){const period=routeIds[0]===routeIds.at(-1)?routeIds.length-1:routeIds.length;index=(index+(backward?-1:1)+period)%period;e=candidates.find(n=>n.id===routeIds[index]);}
  else e=candidates.find(n=>!seen.has(n.id));
  if(!e)fail(def,backward?'runin-disconnected':'runout-disconnected',{edgeId:previous.id});const a=backward?e.points.at(-1):previous.points.at(-1),b=backward?previous.points[0]:e.points[0];if(Math.hypot(...a.map((v,i)=>v-b[i]))>.025)fail(def,'runout-contact-seam',{edgeId:e.id});at=backward?edgeLength(e):0;
  }return result;

@@ -11,6 +11,7 @@ import {WorldTileBarriers} from '../src/world-tile-barriers.js';
 import {WorldTileObstacles,buildTileObstacleIndex} from '../src/world-tile-obstacles.js';
 import {parkedBoxes} from '../src/world-tile-parking.js';
 import {cellKey} from '../src/route-geometry.js';
+import {routeSurfaceAllowed} from '../src/route-surface.js';
 
 export async function readEmittedRouteWorld({world,cells,keys}) {
   if(keys.size>128)throw Error('Route audit exceeds 128 cells');
@@ -28,6 +29,6 @@ export async function readEmittedRouteWorld({world,cells,keys}) {
     tiles.set(key,{state:'active',packet});roads.graph.install(key,packet);barriers.install(key,packet);obstacles.install(key,packet);
   }
   const safe=(p,o)=>roads.safe(p,o)&&barriers.safe(p,o)&&![-o.halfLength+o.halfWidth,0,o.halfLength-o.halfWidth].some(a=>obstacles.contact(p.x-Math.sin(p.yaw)*a,p.y,p.z-Math.cos(p.yaw)*a,o.halfWidth+.1));
-  const contacts={worldSetRevision:manifest.revision,eligible:k=>manifest.tiles[k]?.contactEligible!==false&&tiles.has(k),surfaceAllowed:(e,c)=>c.layer===e.layer&&[...roads.graph.edges.values()].some(v=>v.value.surface===c.surfaceId&&v.value.layer===c.layer),contact:stream.contact.bind(stream),width:(p,o)=>roads.width(p,{radius:32,bounded:true,...o}),safe,sourceHashes:keys=>keys.map(k=>[k,manifest.tiles[k].sha256])};
+  const contacts={worldSetRevision:manifest.revision,eligible:k=>manifest.tiles[k]?.contactEligible!==false&&tiles.has(k),surfaceAllowed:(e,c)=>routeSurfaceAllowed(e,c,roads.graph),contact:stream.contact.bind(stream),width:(p,o)=>roads.width(p,{radius:32,bounded:true,...o}),safe,sourceHashes:keys=>keys.map(k=>[k,manifest.tiles[k].sha256])};
   return {manifest,tiles,stream,roads,barriers,obstacles,contacts};
 }
