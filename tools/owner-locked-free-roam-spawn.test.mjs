@@ -58,7 +58,9 @@ test('FREE ROAM opens the spawn picker on the full-page Attica map, not the trac
   assert.match(menu, /case 'free': this\.filter = 'free'; this\.show\('maps', \{ filter: 'free', mode: 'free' \}, true\)/, OWNER);
   assert.match(menu, /r_maps\(\) \{ return this\.data\.mode === 'free' \? renderSpawnSelect\(this\) : renderMapSelect\(/, OWNER);
   assert.match(menu, /this\.data\.mode === 'free' \? mountSpawnSelect\(this\.root, this\) : mountMapSelect\(this\.root\)/, OWNER);
-  assert.match(menu, /case 'quick': this\.filter = 'sprint'; this\.show\('maps', \{ filter: 'sprint', mode: 'quick' \}, true\)/, `Quick Race keeps the track picker. ${OWNER}`);
+  // Owner 2026-10-21: expose the Athens races in the normal production menu.
+  assert.match(menu, /case 'quick': void this\.openQuickRace\(\)/, 'Quick Race opens the enabled Athens routes');
+  assert.match(menu, /case 'classicTracks': this\.filter = 'sprint'; this\.show\('maps', \{ filter: 'sprint', mode: 'quick' \}, true\)/, 'Original tracks remain available from the route picker');
   assert.doesNotMatch(read('src/map-select.js'), /mode === 'free'|'free:' \+ id/, `the track picker no longer has a free roam branch. ${OWNER}`);
   assert.match(menu, /'FREE ROAM', 'Pick where to start on the map[^']*', '[^']*', 'CHOOSE SPAWN'/, OWNER);
 });

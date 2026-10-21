@@ -19,3 +19,27 @@ for(const environment of ['staging','production'])test(`explicitly enabled ${env
  assert.equal((await loadUnifiedRoute(new URLSearchParams('routes=1&route=syntagma-pilot'),{fetcher})).routeHash,entry.routeHash);
  await assert.rejects(loadUnifiedRoute(new URLSearchParams('routes=1&route=disabled'),{fetcher}),/not enabled/);
 });
+
+test('normal Quick Race opens enabled routes without URL parameters and keeps original tracks available',async()=>{
+ const {Menu}=await import('../src/menu.js');
+ const priorDocument=globalThis.document,priorWindow=globalThis.window,priorFetch=globalThis.fetch;
+ globalThis.document={baseURI:'http://localhost/',querySelector:()=>null,querySelectorAll:()=>[],addEventListener(){},body:{classList:{contains:()=>false}}};globalThis.window={addEventListener(){}};
+ try {
+  const entry={id:'psychiko-faros',name:'FAROS',lengthM:1200,events:[{id:'faros-race',laps:3,rivals:5}],routeHash:'a',geometryHash:'b',worldSetRevision:'c',url:'/faros.json'};
+  const reads=[];
+  globalThis.fetch=async url=>{reads.push(url);return{ok:true,json:async()=>url==='/api/routes'?{environment:'production',routes:[entry]}:{schemaVersion:1,routes:[entry]}};};
+  const menu={screen:'mode',data:{},show(screen,data,push){Object.assign(this,{screen,data,push});}};
+  await Menu.prototype.openQuickRace.call(menu);
+  assert.equal(menu.screen,'routes');assert.equal(menu.push,true);assert.deepEqual(menu.data.catalogue,[entry]);
+  assert.deepEqual(reads,['/api/routes','/data/routes/index.json']);
+  const html=Menu.prototype.r_routes.call(menu,menu.data);
+  assert.match(html,/data-route="psychiko-faros"/);assert.match(html,/data-act="classicTracks"/);
+  // Navigating away while the catalogue loads must not reopen the picker.
+  let finish;globalThis.fetch=()=>new Promise(resolve=>{finish=resolve;});
+  menu.screen='mode';menu.data={};const pending=Menu.prototype.openQuickRace.call(menu);menu.screen='title';
+  finish({ok:true,json:async()=>({environment:'production',routes:[]})});await pending;assert.equal(menu.screen,'title');
+  // A development release with no enabled routes keeps its original picker.
+  globalThis.fetch=async()=>({ok:true,json:async()=>({environment:'production',routes:[]})});menu.screen='mode';
+  await Menu.prototype.openQuickRace.call(menu);assert.equal(menu.screen,'maps');assert.equal(menu.data.mode,'quick');
+ } finally {globalThis.document=priorDocument;globalThis.window=priorWindow;globalThis.fetch=priorFetch;}
+});
