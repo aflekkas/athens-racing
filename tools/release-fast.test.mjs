@@ -4,7 +4,7 @@ import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, existsSync
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { prebuiltConfig, staticChecks, checkRecord, workDir, gates, STAB_SHARDS } from './release-fast.mjs';
+import { prebuiltConfig, unifiedRouteBuildVars, staticChecks, checkRecord, workDir, gates, STAB_SHARDS } from './release-fast.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 
@@ -21,6 +21,13 @@ test('the prebuilt config drops every build step and keeps everything else', () 
 test('the prebuilt config reader accepts comments and trailing commas but never touches strings', () => {
   const config = JSON.parse(prebuiltConfig('{ // note\n "name": "a//b", /* x */ "build": {"command": "c"}, "env": {"s": {"build": {}, "routes": ["x/*y*/",],},},\n}'));
   assert.deepEqual(config, { name: 'a//b', env: { s: { routes: ['x/*y*/'] } } });
+});
+test('prebuilt staging builds inherit the route flag; production and unconfigured builds stay off', () => {
+  const source = readFileSync(resolve(root, 'wrangler.jsonc'), 'utf8');
+  assert.deepEqual(unifiedRouteBuildVars(source, 'staging'), { ASR_UNIFIED_ROUTES: 'syntagma-pilot' });
+  assert.deepEqual(unifiedRouteBuildVars(source, 'production'), { ASR_UNIFIED_ROUTES: '' });
+  assert.deepEqual(unifiedRouteBuildVars('{"env":{"production":{"vars":{"ASR_UNIFIED_ROUTES":"syntagma-pilot"}}}}', 'production'), { ASR_UNIFIED_ROUTES: '' });
+  assert.deepEqual(unifiedRouteBuildVars('{}', 'staging'), { ASR_UNIFIED_ROUTES: '' });
 });
 test('gate records are keyed by node major, tree and the exact command', () => {
   const [tests] = staticChecks();
