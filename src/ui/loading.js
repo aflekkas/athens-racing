@@ -24,6 +24,22 @@ const TIPS = [
   'Steering assist adapts to your device. Set it to OFF for full control.',
   'Choose JOIN GAME on the main menu to enter a code or browse open lobbies.',
 ];
+const CIRCUIT_TIPS = [
+  'Brake before the turn and use the kerbs to hold a clean racing line.',
+  'A smooth exit onto the straight is often faster than a late entry.',
+  'Your lap time counts only when you follow the full circuit.',
+];
+const TRACK_CIRCUIT_TIPS = [
+  ...CIRCUIT_TIPS,
+  'Runoff gives you room to recover; keep clear of the tyre walls.',
+];
+export function routeLoadingCopy(compiled) {
+  const definition = compiled.definition;
+  const circuit = definition.kind === 'circuit';
+  const laps = circuit ? Math.max(1, Number(definition.laps) || 1) : 1;
+  const region = definition.regionId === 'basin' ? 'ATHENS' : String(definition.regionId || 'ATHENS').replace(/[-_]/g, ' ').toUpperCase();
+  return { name: definition.name, region, kind: circuit ? `CIRCUIT · ${laps} ${laps === 1 ? 'LAP' : 'LAPS'}` : 'SPRINT', distance: fmtKm(compiled.lengthM * laps), tips: circuit ? definition.regionId === 'megara' ? TRACK_CIRCUIT_TIPS : CIRCUIT_TIPS : TIPS };
+}
 export const STEPS = ['data', 'fetch', 'build', 'prep'];
 const PAUSED = ['LOADING PAUSED', 'DOWNLOAD PAUSED', 'BUILD PAUSED', 'LOADING PAUSED'];
 const STEP_SPOKEN = ['loading map data', 'downloading the track', 'building the track', 'finishing up'];
@@ -78,7 +94,7 @@ function wireButton(host, opts, onPress) {
 }
 
 class LoadingScreen {
-  constructor() { this.tipIdx = Math.floor(Math.random() * TIPS.length); this.p = 0; this.mapId = null; this.reset(); }
+  constructor() { this.tips = TIPS; this.tipIdx = Math.floor(Math.random() * TIPS.length); this.p = 0; this.mapId = null; this.reset(); }
   get el() { return $('loading'); }
   reset() {
     this.step = 0; this.kind = 'map'; this.label = 'LOADING MAP DATA'; this.bytes = null; this.parts = null; this.source = null;
@@ -105,9 +121,10 @@ class LoadingScreen {
     const url = new URL(location.href); url.searchParams.set('menu', '1'); url.searchParams.delete('lobby');
     location.assign(url.href);
   }
-  setRoute(compiled){this.mapId='athens';this.routeSelectionToken=null;for(const [id,value]of Object.entries({ldName:compiled.definition.name,ldSub:'ATHENS',ldKind:'SPRINT',ldLen:fmtKm(compiled.lengthM)})){const e=$(id);if(e)e.textContent=value;}const host=$('ldArt');if(host){host.replaceChildren();const points=compiled.points,x=points.map(p=>p[0]),z=points.map(p=>p[2]),x0=Math.min(...x),z0=Math.min(...z),w=Math.max(1,Math.max(...x)-x0),h=Math.max(1,Math.max(...z)-z0),pad=Math.max(w,h)*.08,svg=document.createElementNS('http://www.w3.org/2000/svg','svg'),line=document.createElementNS(svg.namespaceURI,'polyline');svg.setAttribute('viewBox',`${x0-pad} ${z0-pad} ${w+pad*2} ${h+pad*2}`);svg.setAttribute('aria-hidden','true');line.setAttribute('points',points.map(p=>`${p[0]},${p[2]}`).join(' '));line.setAttribute('fill','none');line.setAttribute('stroke','#d9e5e3');line.setAttribute('stroke-width','3');line.setAttribute('vector-effect','non-scaling-stroke');svg.append(line);host.append(svg);}this.route=[];}
+  setRoute(compiled){this.mapId='athens';this.routeSelectionToken=null;const copy=routeLoadingCopy(compiled);this.tips=copy.tips;this.tipIdx=-1;for(const [id,value]of Object.entries({ldName:copy.name,ldSub:copy.region,ldKind:copy.kind,ldLen:copy.distance})){const e=$(id);if(e)e.textContent=value;}this.nextTip();const host=$('ldArt');if(host){host.replaceChildren();const points=compiled.points,x=points.map(p=>p[0]),z=points.map(p=>p[2]),x0=Math.min(...x),z0=Math.min(...z),w=Math.max(1,Math.max(...x)-x0),h=Math.max(1,Math.max(...z)-z0),pad=Math.max(w,h)*.08,svg=document.createElementNS('http://www.w3.org/2000/svg','svg'),line=document.createElementNS(svg.namespaceURI,'polyline');svg.setAttribute('viewBox',`${x0-pad} ${z0-pad} ${w+pad*2} ${h+pad*2}`);svg.setAttribute('aria-hidden','true');line.setAttribute('points',points.map(p=>`${p[0]},${p[2]}`).join(' '));line.setAttribute('fill','none');line.setAttribute('stroke','#d9e5e3');line.setAttribute('stroke-width','3');line.setAttribute('vector-effect','non-scaling-stroke');svg.append(line);host.append(svg);}this.route=[];}
   setMap(mapId) {
     if (this.mapId === mapId) return;
+    this.tips = TIPS;
     const map = MAPS.find((m) => m.id === mapId) || MAPS[0]; this.mapId = map.id;
     const set = (id, v) => { const e = $(id); if (e) e.textContent = v; };
     set('ldName', map.name); set('ldSub', map.subtitle);
@@ -262,8 +279,8 @@ class LoadingScreen {
   }
   nextTip() {
     const t = $('ldTip'); if (!t) return;
-    this.tipIdx = (this.tipIdx + 1) % TIPS.length;
-    t.classList.remove('in'); void t.offsetWidth; const tip = TIPS[this.tipIdx]; t.innerHTML = esc(typeof tip === 'function' ? tip() : tip); t.classList.add('in');
+    this.tipIdx = (this.tipIdx + 1) % this.tips.length;
+    t.classList.remove('in'); void t.offsetWidth; const tip = this.tips[this.tipIdx]; t.innerHTML = esc(typeof tip === 'function' ? tip() : tip); t.classList.add('in');
   }
   hide() {
     const el = this.el; if (!el) return;

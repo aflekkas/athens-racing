@@ -927,7 +927,7 @@ function startCountdown() {
       document.body.classList.remove('counting'); document.body.classList.add('racing', 'started');
       hud.banner('FREE ROAM', map.definition?.name || map.id); return;
     }
-    const r = G.ev.r; hud.banner(G.ev.def.name, map.id === 'psychiko' && r.closed ? `CIRCUIT · ${r.laps} LAPS · ${fmtDist(r.len)}` : `${r.fromName} TO ${r.toName} · ${EV.TYPES[G.ev.def.type].label}`);
+    const r = G.ev.r; hud.banner(G.ev.def.name, r.closed ? `CIRCUIT · ${r.laps} ${r.laps === 1 ? 'LAP' : 'LAPS'} · ${fmtDist(r.len)}` : `${r.fromName} TO ${r.toName} · ${EV.TYPES[G.ev.def.type].label}`);
   }
 }
 
