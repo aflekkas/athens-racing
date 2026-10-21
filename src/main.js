@@ -383,6 +383,7 @@ function stepUnified(dt,visual,frameDt){
  hud.update({s:v.s,rs:0,x:v.x,z:v.z,yaw:v.yaw,pos:1,time:G.pFinish??G.raceT,gap:NaN,pen:0,rpm:v.rpm,redline:v.spec.redline,kmh:speedIn(v.kmh),unit:speedUnit(),gearLabel:G.state==='countdown'?'N':v.reverse?'R':String(v.gear),tc:v.tcOn,abs:v.absOn,esc:v.escOn,aidsOff:!settings.aids,shiftFlash:0,draft:0,nitrous:v.spec.nitrous===true,nitro:v.nitro,nitroOn:v.nitroOn,free:false,limit:null,traffic:[],manual:v.manual,canUpshift:true,offRoute:nav.offRoute,routeCursor:nav});
  if(drawUnifiedAudio())updateAudio(frameDt);if(G.state==='race'&&G.raceT>5)document.body.classList.add('started');
 }
+function drawUnifiedFrame(dt,draw,visual,frameDt){stepUnified(dt,visual,frameDt);if(draw&&visual)render();}
 function drawUnifiedAudio(){return !!audio.ctx&&!!player;}
 
 async function loadFirstMap(id) {
@@ -819,7 +820,7 @@ function stuckCheck(pv, dt) {
   if (needed && towOffer.hold <= 0) offerTow();
 }
 function tow(pv, { reset = false, automatic = false, capture = false } = {}) {
-  if(worldSession)return towUnified();
+  if(pv.route?.isWorldRoute)return towUnified();
   if (G.state !== 'race' || G.towing || multiplayer.retired || !capture && (towOffer.hold > 0 || towOffer.rearm > 0)) return;
   // Without a connection there is nobody to answer: say so instead of fading to black for nothing.
   if (multiplayer.active && !multiplayer.connected) { hud.message('Reconnecting… recovery needs the connection back.', 3); return; }
@@ -2141,7 +2142,7 @@ function step(dt, draw = true, visual = true, frameDt = dt) {
   G.t += dt; frameN++;
   bootFrameLog('first-frame');
   readInput(dt);
-  if(worldSession){try{stepUnified(dt,visual,frameDt);if(draw)render();}catch(error){G.state='loading';G.routePreparing=true;loading.show('athens','SYNTAGMA SPRINT');loading.setRoute(G.unifiedCompiled);loading.fail({code:errorCode(error),retry:()=>location.reload(),fallback:()=>quitToMenu()});console.error(error);}return;}
+  if(worldSession){try{drawUnifiedFrame(dt,draw,visual,frameDt);}catch(error){G.state='loading';G.routePreparing=true;loading.show('athens','SYNTAGMA SPRINT');loading.setRoute(G.unifiedCompiled);loading.fail({code:errorCode(error),retry:()=>location.reload(),fallback:()=>quitToMenu()});console.error(error);}return;}
   if (multiplayer.active && inMenu() && G.pFinish == null) { player.veh.vLong = player.veh.vLat = player.veh.w = 0; player.veh.syncWheels(); }
   if (multiplayer.active) multiplayer.update(dt, networkState(player.veh), G.simNow);
   if (G.state === 'onlineFinished') updateFinishView();

@@ -166,14 +166,6 @@ export function observeCourse(course, pose, now, { initialTime = 0, recovery = f
   course.previousTime = now;
   return course;
 }
-// A tow places the car on the nearest road: history restarts at the placement, so neither the placement nor the
-// drive to it is a discontinuity. Earned progress (`validProgress`, `reached`, the rejoin limit and the latest valid
-// on-road pose) is untouched: only driving moves it, and a tow never grants any.
-export function towCourseTo(course, pose, now) {
-  course.previous = { s: pose.s, u: pose.u, x: pose.x, y: pose.y, z: pose.z }; course.previousTime = now;
-  course.onRoute = pose.kind !== 'road';
-}
-
 // Route progress is recomputed from accepted world poses. Off-route travel earns no rejoin allowance.
 function observeRouteCourse(course,received,now,{initialTime,recovery,route}){
  const prev=course.previous,dt=Math.max(0,Math.min(5,now-(course.previousTime??initialTime))),q=route.project(received.x,received.z,{hint:prev.s,referenceY:received.y,layer:received.layer,heading:received.yaw,maxTravel:30+150*dt}),pose={...received,...q,layer:received.layer,surfaceId:received.surfaceId},d0=progress(course,prev.s),d1=progress(course,pose.s),continuous=Number.isFinite(q.distance)&&Math.abs(pose.s-prev.s)<=30+150*dt&&Math.hypot(pose.x-prev.x,pose.z-prev.z)<=15+150*dt;
@@ -186,4 +178,12 @@ function observeRouteCourse(course,received,now,{initialTime,recovery,route}){
  if(valid){delete course.rejoinLimit;course.validProgress=d1;course.lastRoad={...pose};if(d1>course.reached){const before=course.reached;course.reached=d1;for(let i=0;i<course.marks.length;i++){const d=course.marks[i];if(course.markTimes[i]!=null||d1<d||before>=d)continue;const f=route.frame(course.s0+course.dir*d),line={...f,surfaceId:undefined,leftM:f.leftM,rightM:f.rightM};const cross=coursePoseValid(course,prev,route)?crossTimingLine({...prev,time:course.previousTime??initialTime}, {...pose,time:now},line):null;if(cross)course.markTimes[i]=cross.time;}if(course.finishedAt==null&&d1>=course.len&&course.markTimes.at(-1)!=null)course.finishedAt=course.markTimes.at(-1);}}
  if(!valid&&d1>0&&course.reached>0&&!course.firstInvalid)course.firstInvalid={onRoute,continuous,chord,rejoined,d0,d1,dt,pose:{...pose},previous:{...prev}};
  course.onRoute=valid;course.previous={...pose};course.previousTime=now;return course;
+}
+
+// A tow places the car on the nearest road: history restarts at the placement, so neither the placement nor the
+// drive to it is a discontinuity. Earned progress (`validProgress`, `reached`, the rejoin limit and the latest valid
+// on-road pose) is untouched: only driving moves it, and a tow never grants any.
+export function towCourseTo(course, pose, now) {
+  course.previous = { s: pose.s, u: pose.u, x: pose.x, y: pose.y, z: pose.z }; course.previousTime = now;
+  course.onRoute = pose.kind !== 'road';
 }
