@@ -249,7 +249,8 @@
     "tools/unified-routes.test.mjs",
     "tools/route-catalogue.test.mjs",
     "tools/route-tow.test.mjs",
-    "tools/world-bore-audit.test.mjs"
+    "tools/world-bore-audit.test.mjs",
+    "tools/coastal-dressing.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",

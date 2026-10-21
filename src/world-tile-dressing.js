@@ -15,8 +15,12 @@ const POSITION = { type: 'Float32Array', itemSize: 3, normalized: false }, COLOU
 const variant = (surface, attributes, index = 'Uint16Array') => { const v = { surface, attributes, index, terrain: false }; return { key: JSON.stringify(v), ...v }; };
 /** Render layouts the dressing can produce. A manifest baked earlier does not list them, and an undeclared layout is refused after start-up. */
 export const DRESSING_VARIANTS = Object.freeze([
+  variant('coastalUrban', { aCoastColor: {...COLOUR,itemSize:4}, color: COLOUR, position: POSITION }, 'Uint32Array'),
+  variant('coastalGround', { aCoastColor: {...COLOUR,itemSize:4}, color: COLOUR, position: POSITION }, 'Uint32Array'),
+  variant('coastalDetail', { aRock: {type:'Uint8Array',itemSize:1,normalized:true}, color: COLOUR, position: POSITION }),
   variant('ground', { color: COLOUR, position: POSITION }),
   // Derived buildings carry no colour attribute (the facade material shades each face from its normal).
+  variant('coastalBuilding', { aFacade: { type: 'Uint16Array', itemSize: 2, normalized: false }, position: POSITION }),
   variant('building', { aFacade: { type: 'Uint16Array', itemSize: 2, normalized: false }, position: POSITION }),
   variant('sea', { position: POSITION }),
   variant('foam', { aFoam: { type: 'Uint8Array', itemSize: 1, normalized: true }, position: POSITION }),

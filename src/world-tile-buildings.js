@@ -1,3 +1,5 @@
+import {buildTileObstacleIndex,obstacleBytes} from './world-tile-obstacles.js';
+import {coastalMappedBuildings,coastalInfillTables,clearCoastalStreetTrees,coastalRecipe,coastalRows,appendCoastalSurfaces,dressCoastalGround} from './world-tile-coast.js';
 // Building meshes are DERIVED from the `buildings`, `buildingCorners` and `buildingHeights` tables when a tile declares
 // `extensions.derivedBuildings`: the wire format stores each footprint once instead of a second time as flat-shaded
 // triangles. Walls are one quad per footprint edge (4 vertices), the roof one fan of ear-clipped triangles sharing the
@@ -135,7 +137,7 @@ export function deriveBuildingMeshes(t, m, styles = null, roofs = null) {
     if (target === groups && !roof && rooftops.length < ROOFTOP_LIMIT * 5) for (const r of rooftopKit(ring, height, hash, Math.abs(area) / 2)) rooftops.push(r.x, top, r.z, r.yaw, r.code);
     const style = richStyleFor(facadeStyleFor(styles ? styles[row] : 0, height, hash), height, hash, quarter, stored === ROOF.historic);
     if (target === groups) { extra.rings.push(ring); extra.infos.push({ ring, base, top, style, hash, quarter }); }
-    target.get(material).push({ ring, base, top, roof, pal: paletteFor(hash, quarter), style });
+    target.get(material).push({ ring, base, top, roof, pal: m.inferredCoastal ? (hash%4===0?2:0) : paletteFor(hash, quarter), style });
   }
   const arrays = [], meshes = [];
   const batches = [...[...groups.keys()].sort((a, b) => a - b).map(material => [material, groups.get(material), false]), ...[...landmarkGroups.keys()].sort((a, b) => a - b).map(material => [material, landmarkGroups.get(material), true])];
@@ -188,18 +190,26 @@ export function addDerivedBuildings(pack, tables) {
   const flag = pack.metadata.extensions?.derivedBuildings;
   if (!flag || flag.derived) return pack;
   const wd = pack.metadata.extensions?.worldDetail?.buildings, styleIndex = wd?.facadeStyle, roofIndex = wd?.roofShape;
-  const { arrays, meshes, extra } = deriveBuildingMeshes(tables, pack.metadata, styleIndex == null ? null : pack.arrays[styleIndex], roofIndex == null ? null : pack.arrays[roofIndex]), offset = pack.arrays.length;
-  const ox = pack.metadata.origin?.[0] ?? 0, oz = pack.metadata.origin?.[2] ?? 0, trees = deriveStreetTrees(tables, extra.rings, (x, z) => inOldQuarter(ox + x, oz + z));
+  const recipe=coastalRecipe(pack.metadata.cell),mapped=coastalMappedBuildings(tables,pack.metadata,recipe),styles=styleIndex==null?null:Uint8Array.from(mapped.rows.map(i=>pack.arrays[styleIndex][i])),roofs=roofIndex==null?null:Uint8Array.from(mapped.rows.map(i=>pack.arrays[roofIndex][i]));
+  const { arrays, meshes, extra } = deriveBuildingMeshes(mapped.tables,pack.metadata,styles,roofs),offset=pack.arrays.length;
+  if(mapped.removed)pack.coastalObstacleTables=mapped.tables;
+  const infill=coastalInfillTables(mapped.tables,recipe);
+  const houses=deriveBuildingMeshes(infill,{...pack.metadata,ids:infill.ids,inferredCoastal:true},new Uint8Array(infill.ids.length).fill(2),new Uint8Array(infill.ids.map((_,i)=>i%2?1:3)));
+  extra.rings.push(...houses.extra.rings);
+  const ox = pack.metadata.origin?.[0] ?? 0, oz = pack.metadata.origin?.[2] ?? 0, trees = clearCoastalStreetTrees(tables,deriveStreetTrees(tables, extra.rings, (x, z) => inOldQuarter(ox + x, oz + z)),recipe);
+  const coast=coastalRows(tables,extra.rings,coastalRecipe(pack.metadata.cell),trees,pack.arrays[pack.metadata.extensions?.worldDetail?.vegetation?.positionHeight],pack.metadata.cell,pack.metadata.coastalLakes);
+  const allTrees=new Float32Array(trees.length+coast.trees.length);allTrees.set(trees);allTrees.set(coast.trees,trees.length);
   const inQuarter = (x, z) => inOldQuarter(ox + x, oz + z), propsExt = pack.metadata.extensions?.worldDetail?.props, occupied = [];
   if (propsExt) { const rows = pack.arrays[propsExt.rows]; for (let i = 0; i < rows.length; i += 5) occupied.push(rows[i], rows[i + 2]); } // the bake's own props (parked cars, kiosks, benches...) keep their places
-  const parking = deriveParking(tables, extra.rings, inQuarter, occupied, trees);
+  const parking = deriveParking(tables, extra.rings, inQuarter, occupied, allTrees);
   const propsKinds = propsExt ? pack.arrays[propsExt.kind] : null, art = deriveStreetArt(tables, pack.metadata, extra.infos, { ox, oz, propsRows: propsExt ? pack.arrays[propsExt.rows] : null, propsKinds });
   extra.infos.length = 0;
-  pack.derivedExtraBytes = extra.vertices * 16 * 2 + extra.indices * 2 * 2 + (extra.rooftops.byteLength + trees.byteLength + parking.byteLength + art.plates.byteLength + art.shops.byteLength + art.walls.byteLength + art.marks.byteLength) * 6 + art.plateNames.reduce((n, x) => n + x.length * 2 + 40, 0) + parking.length / 5 * 4 * 40; // + four collision walls per car or scooter // pitched roofs: CPU copy and GPU copy of the added vertices and indices; the rooftop rows and the prop records made from them
+  pack.derivedExtraBytes = extra.vertices * 16 * 2 + extra.indices * 2 * 2 + (extra.rooftops.byteLength + allTrees.byteLength + coast.boats.byteLength + parking.byteLength + art.plates.byteLength + art.shops.byteLength + art.walls.byteLength + art.marks.byteLength) * 6 + art.plateNames.reduce((n, x) => n + x.length * 2 + 40, 0) + parking.length / 5 * 4 * 40; // + four collision walls per car or scooter // pitched roofs: CPU copy and GPU copy of the added vertices and indices; the rooftop rows and the prop records made from them
   for (const a of arrays) pack.arrays.push(a);
-  const wdExt = {};
+  const wdExt = recipe?{coastalTreeCount:coast.trees.length/5,replacedBasinInfill:mapped.removed}:{};
   if (extra.rooftops.length) { pack.arrays.push(extra.rooftops); wdExt.rooftops = pack.arrays.length - 1; }
-  if (trees.length) { pack.arrays.push(trees); wdExt.streetTrees = pack.arrays.length - 1; }
+  if (allTrees.length) { pack.arrays.push(allTrees); wdExt.streetTrees = pack.arrays.length - 1; }
+  if(coast.boats.length){pack.arrays.push(coast.boats);wdExt.coastalBoats=pack.arrays.length-1;}
   if (parking.length) { pack.arrays.push(parking); wdExt.parking = pack.arrays.length - 1; }
   for (const [key, rows] of [['streetPlates', art.plates], ['shopSites', art.shops], ['wallSites', art.walls], ['roadMarks', art.marks]]) if (rows.length) { pack.arrays.push(rows); wdExt[key] = pack.arrays.length - 1; }
   if (art.plateNames.length) wdExt.plateNames = art.plateNames;
@@ -208,6 +218,15 @@ export function addDerivedBuildings(pack, tables) {
     for (const a of Object.values(mesh.attributes)) a.array += offset;
     mesh.index += offset; pack.metadata.meshes.push(mesh);
   }
+  if(infill.ids.length){
+    const at=pack.arrays.length;pack.arrays.push(...houses.arrays);
+    for(const mesh of houses.meshes){for(const a of Object.values(mesh.attributes))a.array+=at;mesh.index+=at;mesh.userData.tileSurface='coastalBuilding';pack.metadata.meshes.push(mesh);}
+    pack.derivedExtraBytes+=houses.arrays.reduce((n,a)=>n+2*a.byteLength,0);
+    pack.metadata.extensions.worldDetail.inferredHouses=infill.ids.length;
+  }
+  const coastalWalls=coast.surfaces.flatMap(s=>s.boxes||[]);
+  if(infill.ids.length||coastalWalls.length){pack.detailObstacleIndex=buildTileObstacleIndex(infill,coastalWalls);pack.derivedExtraBytes+=obstacleBytes(pack.detailObstacleIndex);}
+  pack.derivedExtraBytes+=appendCoastalSurfaces(pack,coast.surfaces)+dressCoastalGround(pack,tables,coastalRecipe(pack.metadata.cell));
   pack.metadata.extensions = { ...pack.metadata.extensions, derivedBuildings: { ...flag, derived: true } };
   return pack;
 }

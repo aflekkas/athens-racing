@@ -57,5 +57,5 @@ test('facade style: stored style wins; otherwise height and the whole building\'
 test('run-time tagging gives older bakes their ground and sea layers, and declares the layouts they need',()=>{
   const pack={metadata:{meshes:[{material:0,attributes:{position:{},color:{}},userData:{worldSurface:true}},{material:0,attributes:{position:{},color:{}},userData:{worldSurface:true,tileSurface:'urban'}},{material:20,attributes:{position:{}},userData:{water:true}},{material:8,attributes:{position:{}},userData:{worldSurface:true,tileSurface:'paving'}},{material:0,attributes:{position:{},color:{}},userData:{worldSurface:true,terrainDecode:{}}}]}};
   tagDressedSurfaces(pack);assert.deepEqual(pack.metadata.meshes.map(m=>m.userData.tileSurface),['ground','urban','sea','paving',undefined]);
-  assert.deepEqual(DRESSING_VARIANTS.map(v=>v.surface),['ground','building','sea','foam']);for(const v of DRESSING_VARIANTS)assert.equal(v.key,JSON.stringify({surface:v.surface,attributes:v.attributes,index:v.index,terrain:v.terrain}));
+  assert.deepEqual(DRESSING_VARIANTS.map(v=>v.surface),['coastalUrban','coastalGround','coastalDetail','ground','coastalBuilding','building','sea','foam']);for(const v of DRESSING_VARIANTS)assert.equal(v.key,JSON.stringify({surface:v.surface,attributes:v.attributes,index:v.index,terrain:v.terrain}));
 });

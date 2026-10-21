@@ -23,13 +23,14 @@ export function buildTileObstacleIndex(t,boxes=null){
 }
 export function obstacleBytes(index){return Object.values(index).reduce((n,a)=>n+a.byteLength,0);}
 export class WorldTileObstacles{
- constructor(){this.tiles=new Map();}
- install(key,packet){this.tiles.set(key,{index:packet.obstacleIndex,origin:packet.metadata.origin});}
+ constructor({detailEnabled=true}={}){this.tiles=new Map();this.detailEnabled=detailEnabled;}
+ setDetailEnabled(on){this.detailEnabled=on;}
+ install(key,packet){this.tiles.set(key,{index:packet.obstacleIndex,detailIndex:packet.detailObstacleIndex,origin:packet.metadata.origin});}
  remove(key){this.tiles.delete(key);}
  dispose(){this.tiles.clear();}
  contact(x,y,z,r){
   let best=null;
-  for(const {index,origin:o} of this.tiles.values()){
+  for(const {index:base,detailIndex,origin:o} of this.tiles.values())for(const index of this.detailEnabled?[base,detailIndex]:[base]){
    if(!index)continue;const lx=x-o[0],lz=z-o[2],b=index.bounds;if(lx+r<b[0]||lz+r<b[1]||lx-r>b[4]||lz-r>b[5])continue;
    const {segments:s,offsets,refs}=index;
    for(let cz=Math.max(0,Math.floor((lz-r-b[1])/b[3]));cz<=Math.min(31,Math.floor((lz+r-b[1])/b[3]));cz++)for(let cx=Math.max(0,Math.floor((lx-r-b[0])/b[2]));cx<=Math.min(31,Math.floor((lx+r-b[0])/b[2]));cx++){

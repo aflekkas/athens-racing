@@ -55,9 +55,9 @@ export function prepareTilePacket(pack,{entry,world,revision,cell}){
     if(mesh.index!=null)gpuViews.set(`index:${mesh.index}`,pack.arrays[mesh.index].byteLength);
   }
   for(const bytes of gpuViews.values())gpuBytes+=bytes;
-  const gpuPlan=tileGPUPlan(pack),renderVariants=tileRenderVariants(pack),obstacleIndex=buildTileObstacleIndex(checked.tables,parkedBoxesOf(pack));
+  const gpuPlan=tileGPUPlan(pack),renderVariants=tileRenderVariants(pack),obstacleIndex=buildTileObstacleIndex(pack.coastalObstacleTables||checked.tables,parkedBoxesOf(pack));delete pack.coastalObstacleTables;
   const roadGraph=readGraphShard({...pack,tables:checked.tables}),graphBytes=new TextEncoder().encode(JSON.stringify(roadGraph)).byteLength*2;
-  const bytes=graphBytes+obstacleBytes(obstacleIndex)+residentArrayBytes(pack.arrays)+contactIndex.offsets.byteLength+contactIndex.refs.byteLength+gpuBytes+new TextEncoder().encode(JSON.stringify({metadata:pack.metadata,gpuPlan,renderVariants})).byteLength;
+  const bytes=(pack.detailObstacleIndex?obstacleBytes(pack.detailObstacleIndex):0)+graphBytes+obstacleBytes(obstacleIndex)+residentArrayBytes(pack.arrays)+contactIndex.offsets.byteLength+contactIndex.refs.byteLength+gpuBytes+new TextEncoder().encode(JSON.stringify({metadata:pack.metadata,gpuPlan,renderVariants})).byteLength;
   if(bytes-dressingBytes(pack)>(entry.residentBytes??entry.decodedBytes))throw new Error('Tile resident budget understated: '+(bytes-dressingBytes(pack))+' > '+(entry.residentBytes??entry.decodedBytes));
   if(checked.triangles!==entry.triangles)throw new Error('Tile triangles mismatch');
   return {...pack,roadGraph,contactIndex,obstacleIndex,bytes,jsBytes:bytes-gpuBytes,gpuBytes,gpuPlan,renderVariants};
@@ -68,7 +68,7 @@ if(typeof self!=='undefined'&&typeof document==='undefined')self.onmessage=async
   try{
     const packet=await fetchTilePacket(data.job,controller.signal,bytes=>self.postMessage({id:data.id,downloadBytes:bytes}));
     if(controller.signal.aborted)return;
-    const transfer=[...new Set([...packet.arrays.map(a=>a.buffer),packet.contactIndex.offsets.buffer,packet.contactIndex.refs.buffer,...Object.values(packet.obstacleIndex).map(a=>a.buffer)])];
+    const transfer=[...new Set([...packet.arrays.map(a=>a.buffer),packet.contactIndex.offsets.buffer,packet.contactIndex.refs.buffer,...Object.values(packet.obstacleIndex).map(a=>a.buffer),...Object.values(packet.detailObstacleIndex||{}).map(a=>a.buffer)])];
     self.postMessage({id:data.id,packet},transfer);
   }catch(e){self.postMessage({id:data.id,error:e.message});}finally{controllers.delete(data.id);}
 };
