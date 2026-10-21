@@ -127,7 +127,7 @@ export function installDamageSystem(car){
     const id=partId(o);let namedAncestor=false,glassAncestor=false;for(let p=o.parent;p&&p!==car.body;p=p.parent){if(partId(p))namedAncestor=true;if(/^glass/.test(partId(p)||p.name))glassAncestor=true;}
     if(id&&!namedAncestor){const bounds=new THREE.Box3().setFromObject(o);if(bounds.isEmpty())return;const center=bounds.getCenter(new THREE.Vector3()).applyMatrix4(inverse);car.damageParts.push({node:o,id,center,detachable:!/^bumper/.test(id)||bounds.getSize(new THREE.Vector3()).y<.46,damage:0,state:'intact',position:o.position.clone(),rotation:o.rotation.clone(),visible:o.visible,materials:[]});}
     if(o.userData.mirrorArm||glassAncestor||o.userData.damageInterior||!o.isMesh||!o.geometry?.attributes.position||/glass|windscreen/.test(id)||o===car.windscreen)return;
-    const toBody=inverse.clone().multiply(o.matrixWorld);o.geometry.computeBoundingBox();const bounds=o.geometry.boundingBox.clone().applyMatrix4(toBody);records.push({o,toBody,toLocal:toBody.clone().invert(),bounds,rest:null});car.damageMeshes.push(o);
+    const toBody=inverse.clone().multiply(o.matrixWorld);if(!o.geometry.userData.shared||!o.geometry.boundingBox)o.geometry.computeBoundingBox();const bounds=o.geometry.boundingBox.clone().applyMatrix4(toBody);records.push({o,toBody,toLocal:toBody.clone().invert(),bounds,rest:null});car.damageMeshes.push(o);
   });
   // The cockpit draws its own bonnet, pillars, frame and mirror mounts (the exterior shell is hidden from the seat), so a dent in the
   // shell would never show there. The same lattice moves those parts too. They are registered when the first impact arrives, so an
@@ -149,7 +149,7 @@ export function installDamageSystem(car){
     for(const o of structure.children){
       if(!o.isMesh||!COCKPIT_PARTS.test(o.userData.cockpitStructure||''))continue;
       cockpitFiner(o);if(o.userData.cockpitStructure==='mirror-mount'&&Math.abs(o.position.x)>.3)cockpitMounts.push({node:o,side:Math.sign(o.position.x)});
-      const toBody=inv.clone().multiply(o.matrixWorld);o.geometry.computeBoundingBox();const bounds=o.geometry.boundingBox.clone().applyMatrix4(toBody);
+      const toBody=inv.clone().multiply(o.matrixWorld);if(!o.geometry.userData.shared||!o.geometry.boundingBox)o.geometry.computeBoundingBox();const bounds=o.geometry.boundingBox.clone().applyMatrix4(toBody);
       records.push({o,toBody,toLocal:toBody.clone().invert(),bounds,rest:null});car.damageMeshes.push(o);
     }
   }
