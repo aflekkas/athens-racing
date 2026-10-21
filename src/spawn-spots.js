@@ -22,7 +22,7 @@ export const atticaFromLocal = (mapId, x, z) => { const p = MAP_PROJECTIONS[mapI
 export const localFromAttica = (mapId, ax, ay) => { const p = MAP_PROJECTIONS[mapId], [lon, lat] = lonLatFromAttica(ax, ay); return [(lon - p.lon0) * p.mlon, (p.lat0 - lat) * p.mlat]; };
 export const localFromLonLat = (mapId, lon, lat) => { const p = MAP_PROJECTIONS[mapId]; return [(lon - p.lon0) * p.mlon, (p.lat0 - lat) * p.mlat]; };
 
-// The whole-Athens open world (tools/world-gen/model.py PROJECTION, 512 m cells). Dev-flagged: see athensEnabled.
+// The whole-Athens open world (tools/world-gen/model.py PROJECTION, 512 m cells).
 export const ATHENS_PROJECTION = Object.freeze({ lat0: 37.98, lon0: 23.73, mlat: 111320, mlon: 111320 * Math.cos(37.98 * Math.PI / 180) });
 export const ATHENS_CELL = 512;
 export const athensFromLonLat = (lon, lat) => [(lon - ATHENS_PROJECTION.lon0) * ATHENS_PROJECTION.mlon, -(lat - ATHENS_PROJECTION.lat0) * ATHENS_PROJECTION.mlat];
@@ -30,8 +30,8 @@ export const athensFromAttica = (ax, ay) => athensFromLonLat(...lonLatFromAttica
 export const lonLatFromAthens = (x, z) => [ATHENS_PROJECTION.lon0 + x / ATHENS_PROJECTION.mlon, ATHENS_PROJECTION.lat0 - z / ATHENS_PROJECTION.mlat];
 export const atticaFromAthens = (x, z) => atticaFromLonLat(...lonLatFromAthens(x, z));
 export const athensCell = (x, z) => `${Math.floor(x / ATHENS_CELL)},${Math.floor(z / ATHENS_CELL)}`;
-/** The open world joins the picker only under ?map=athens (owner: players do not see it until the owner activates it). */
-export const athensEnabled = (search = typeof location === 'undefined' ? '' : location.search) => new URLSearchParams(search).get('map') === 'athens';
+/** Owner 2026-10-21: Free Roam offers the whole published Athens world from the normal menu. */
+export const athensEnabled = () => true;
 
 // What the panel calls the place a spot is in: an area, never a track.
 export const AREA_NAMES = Object.freeze({ riviera: 'ATHENS RIVIERA', penteli: 'PENTELI', psychiko: 'PSYCHIKO', megara: 'MEGARA', athens: 'ATHENS' });
@@ -48,7 +48,7 @@ export const AREA_STARTS = Object.freeze([
   start('psychiko', 38.01166, 23.77274), // Diamantidou, where the garden streets begin
   start('megara', 37.98707, 23.36316), // the start straight
 ]);
-// The dev-flagged open world is one connected city, so its areas are its districts (owner 2026-10-20 on the Athens world:
+// The open world is one connected city, so its areas are its districts (owner 2026-10-20 on the Athens world:
 // "it does not have proper UI in the Athens thing"). The arrows step through the ones whose 512 m cell the published world
 // hosts, centre first; each start is a point in the district that the picker snaps to its nearest street.
 const district = (id, name, lat, lon) => Object.freeze({ id: 'athens:' + id, mapId: 'athens', name, lat, lon });
@@ -77,7 +77,7 @@ export function nearestDistrict(districts, [ax, ay]) {
 }
 
 const playableIds = () => new Set(getPlayableMaps(MAPS).map(m => m.id));
-/** The areas the arrows step through: every playable map's, in menu order (the map catalogue). Under the dev flag the picker
+/** The areas the arrows step through: every playable map's, in menu order (the map catalogue). The normal Free Roam picker
  * is the Athens open world instead, and its areas are the hosted districts (the world already contains the Riviera roads). */
 export function spawnAreas({ athens = false, athensCells = null } = {}) {
   if (athens) return athensDistricts(athensCells);

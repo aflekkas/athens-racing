@@ -3,7 +3,7 @@
 // anywhere on the map". FREE ROAM opens a spawn picker on the Attica map: a click anywhere snaps to the nearest drivable
 // road, the arrows step through general areas (one per playable map), there are no POI pins, and the car is placed on
 // the nearest road with the tow placement. Do not bring the track list, a track name, length, laps or a leaderboard back to
-// free roam, and do not show the open world to players before the owner activates it, without a new owner decision.
+// free roam. Owner 2026-10-21 activated the full Athens world for normal Free Roam placement.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -50,8 +50,8 @@ test('FREE ROAM opens the spawn picker on the full-page Attica map, not the trac
   assert.doesNotMatch(html, /RESET|mapReset/, `no reset button. ${OWNER}`);
   // No POI pins or list: one marker names the chosen road point, and the panel's arrows step through areas.
   assert.doesNotMatch(html, /spawn-pin|data-spot=|track-pin/, `no POI pins. ${OWNER}`);
-  assert.match(html, /class="spawn-marker on"[^]*?class="spawn-marker__name">ATHENS RIVIERA</, `the marker names the place. ${OWNER}`);
-  assert.match(html, /map-track-count">ATHENS RIVIERA</, `the arrows show the area. ${OWNER}`);
+  assert.match(html, /class="spawn-marker on"[^]*?class="spawn-marker__name">SYNTAGMA</, `the marker names the place. ${OWNER}`);
+  assert.match(html, /map-track-count">SYNTAGMA</, `the arrows show the area. ${OWNER}`);
   assert.match(html, /Click anywhere/, OWNER);
   assert.doesNotMatch(html, /data-map-id|track-pin__dot">\d|data-confirm-track|SELECT TRACK/, `no track pins or SELECT TRACK. ${OWNER}`);
   // The menu routes FREE ROAM to it and keeps the track picker for Quick Race.
@@ -189,22 +189,22 @@ test('free roam carries a spawn and nothing of a track: no route, start/finish, 
   assert.match(menu, /case 'spawnDrive': driveFromSpawn\(this\); break;/, OWNER); assert.match(menu, /case 'spawnCar': this\.h\.garage\?\.\(\); break;/, OWNER);
 });
 
-// ---------------------------------------------------------------- the open world stays hidden
-test('the whole-Athens open world is hidden without ?map=athens', async () => {
-  assert.equal(athensEnabled(''), false); assert.equal(athensEnabled('?menu=1'), false); assert.equal(athensEnabled('?map=riviera'), false); assert.equal(athensEnabled('?map=athens'), true);
-  assert.ok(!spawnAreas().some(s => s.mapId === 'athens'), `no Athens area without the flag. ${OWNER}`);
-  // With the flag the picker is the open world, one connected city: its areas are its districts (lead 2026-10-20), centre first.
+// ---------------------------------------------------------------- normal Free Roam uses the whole world
+test('normal Free Roam exposes the whole-Athens world without special URL flags', async () => {
+  for (const search of ['', '?menu=1', '?map=riviera', '?routes=1&route=riviera-coast', '?map=athens']) assert.equal(athensEnabled(search), true);
+  assert.ok(!spawnAreas().some(s => s.mapId === 'athens'), 'legacy area helpers remain available for original tracks');
+  // The picker is the open world, one connected city: its areas are its districts, centre first.
   const districts = spawnAreas({ athens: true });
-  assert.ok(districts.length >= 10 && districts.every(s => s.mapId === 'athens'), 'with the flag the areas are the Athens districts');
+  assert.ok(districts.length >= 10 && districts.every(s => s.mapId === 'athens'), 'the areas are the Athens districts');
   assert.equal(districts[0].name, 'SYNTAGMA');
   assert.equal(spawnAreas({ athens: true, athensCells: new Set() }).length, 0, 'none that the world does not host');
   assert.ok(ATHENS_DISTRICTS.every(s => s.mapId === 'athens' && s.id.startsWith('athens:')));
-  const plain = await renderPicker('?menu=1'); assert.doesNotMatch(plain, /SYNTAGMA|KYPSELI|athens:/, `players never see the open world. ${OWNER}`);
-  const flagged = await renderPicker('?map=athens&menu=1'); assert.match(flagged, /map-track-count">SYNTAGMA</, 'the dev flag shows it');
+  const plain = await renderPicker(); assert.match(plain, /map-track-count">SYNTAGMA</, 'the normal menu starts in central Athens'); assert.match(plain, /KYPSELI/, 'districts outside the original tracks are selectable');
+  const flagged = await renderPicker('?map=athens&menu=1'); assert.match(flagged, /map-track-count">SYNTAGMA</, 'existing direct links still show it');
   assert.ok(!PLAYABLE_MAPS.includes('athens') && !MAPS.some(m => m.id === 'athens'), 'it is not a catalogue map');
   assert.ok(!JSON.stringify(roadsJson).includes('athens'), 'the road data is only the playable maps\'');
   const code = strip(pickerSource); assert.match(code, /const athensMode = athensEnabled\(\)/, OWNER);
-  assert.match(code, /if \(athensMode\) loadAthens\(\)/, 'its cells load only behind the flag'); assert.match(code, /loadRoads\(athensMode\)/, 'and so does its street file');
+  assert.match(code, /if \(athensMode\) loadAthens\(\)/, 'published cells define the selectable world'); assert.match(code, /loadRoads\(athensMode\)/, 'the picker loads its full street file');
   assert.match(code, /athens \? 'assets\/athens\/streets\.json' : 'assets\/maps\/spawn-roads\.json'/, OWNER);
   // The flag still boots the world directly (dev tooling); the menu route needs ?menu=1.
   assert.match(boot, /\(query\.get\('map'\)==='athens' && !query\.has\('menu'\)\) \|\| direct/, OWNER);
@@ -212,4 +212,21 @@ test('the whole-Athens open world is hidden without ?map=athens', async () => {
   // A spot's cell is a hosted 512 m cell of the Athens world projection.
   const [x, z] = athensFromAttica(...atticaFromLonLat(23.754, 37.866)); assert.equal(athensCell(x, z), `${Math.floor(x / 512)},${Math.floor(z / 512)}`);
   const athensWorld = strip(read('src/athens-world.js')); assert.match(athensWorld, /query\.get\('spawn'\)/, 'the open world takes the chosen point'); assert.match(athensWorld, /async function spawnAt\(x,z\)/);
+});
+
+
+test('DRIVE enters the Athens world at the chosen point and clears stale race parameters', async () => {
+  const { driveFromSpawn } = await import('../src/spawn-select.js');
+  const prior = globalThis.location;
+  try {
+    for (const search of ['', '?routes=1&route=riviera-coast&routeEvent=quick&setup=1&menu=1&event=quick&quick=1']) {
+      let destination;
+      globalThis.location = { search, assign: url => { destination = new URL(url, 'https://athensracing.com/'); } };
+      driveFromSpawn({ data: { spawn: { choice: { mapId: 'athens', local: [1234.56, -987.65] } } }, h: { carSpec: () => ({ id: 'mini' }) } });
+      assert.equal(destination.searchParams.get('map'), 'athens');
+      assert.equal(destination.searchParams.get('spawn'), '1234.6,-987.6');
+      assert.equal(destination.searchParams.get('car'), 'mini');
+      for (const key of ['menu', 'routes', 'route', 'routeEvent', 'setup', 'event', 'quick']) assert.equal(destination.searchParams.has(key), false, key);
+    }
+  } finally { if (prior === undefined) delete globalThis.location; else globalThis.location = prior; }
 });
