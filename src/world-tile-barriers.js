@@ -36,6 +36,18 @@ export class WorldTileBarriers{
   install(key,packet){this.tiles.set(key,{rails:[...(packet.metadata.rails||[]),...(packet.metadata.safetyRails||[])],origin:packet.metadata.origin});}
   remove(key){this.tiles.delete(key);}
   dispose(){this.tiles.clear();}
+  lineBlocked(a,b){
+    const dx=b.x-a.x,dz=b.z-a.z;
+    for(const {rails,origin}of this.tiles.values())for(const r of rails){
+      const x=r[0]+origin[0],z=r[2]+origin[2],ex=r[3]-r[0],ez=r[5]-r[2],cross=dx*ez-dz*ex;
+      if(Math.abs(cross)<1e-9)continue;
+      const px=x-a.x,pz=z-a.z,t=(px*ez-pz*ex)/cross,u=(px*dz-pz*dx)/cross;
+      if(t<0||t>1||u<0||u>1)continue;
+      const eye=a.y+(b.y-a.y)*t,floor=r[1]+(r[4]-r[1])*u;
+      if(eye>=floor-.05&&eye<=floor+r[6]+.05)return true;
+    }
+    return false;
+  }
   safe(point,{halfWidth=1.1,halfLength=2.8}={}){for(const {rails,origin}of this.tiles.values())for(const rail of rails)if(sweep(point,point,halfLength,halfWidth,rail,origin))return false;return true;}
   resolve(vehicle,previous){
     let first=null;

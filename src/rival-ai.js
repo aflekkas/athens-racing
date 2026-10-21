@@ -290,6 +290,20 @@ function getLine(route, veh, options) {
   return cache.get(key);
 }
 
+// A restart restores the same capability state. Keep one bounded profile per
+// vehicle/line; weather, damage, mass, engine and spec changes invalidate it.
+// Vehicles without an exact state contract continue to calculate every time.
+const profileCache = new WeakMap();
+function preparedProfile(line, veh) {
+  const key = veh.planningStateKey?.();
+  if (key == null) return line.speedProfile(veh);
+  let cache = profileCache.get(line); if (!cache) profileCache.set(line, cache = new WeakMap());
+  const methods = [veh.maxLatAccel,veh.maxBrakeDecel,veh.maxDriveAccel,veh.steerLockAt],old = cache.get(veh);
+  if (old?.key === key && methods.every((method,i)=>method===old.methods[i])) return old.profile.slice();
+  const profile = line.speedProfile(veh); cache.set(veh, { key, methods, profile: profile.slice() });
+  return profile;
+}
+
 const obstacleKey = (record) => record.veh || record.a?.veh || record.a || record;
 // Route-space snapshot of a racer or civilian, written into a pooled record.
 function fillObstacle(o, route, record, dir, frame) {
@@ -383,7 +397,7 @@ export class RivalAI {
   constructor(route, veh, options = {}) {
     this.route = route; this.veh = veh; this.spec = veh.spec; this.dir = options.dir || 1;
     this.perfect = !!options.perfect; this.personality = driverPersonality(options.driver);
-    this.line = getLine(route, veh, options); this.profile = this.line.speedProfile(veh);
+    this.line = getLine(route, veh, options); this.profile = preparedProfile(this.line, veh);
     this.caps = vehicleCapabilities(veh);
     this.offset = veh.u - this.line.sample(this.line.u, veh.s);
     this.elapsed = 0; this.slow = 0; this.recovery = 'drive';

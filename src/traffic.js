@@ -95,20 +95,21 @@ function lightBar(m, type) {
 function indicatorMat() { return new THREE.MeshStandardMaterial({ color: '#4a2a00', emissive: '#ff9a00', emissiveIntensity: 0, roughness: 0.4 }); }
 
 export class Traffic {
-  constructor(scene, route, data) {
+  constructor(scene, route, data, { poolSize = POOL, policePoolSize = 8, roadVehiclesOnly = false } = {}) {
     this.scene = scene; this.route = route; this.data = data;
+    const poolCount=Math.max(1,Math.min(POOL,Math.floor(poolSize)||POOL));
     this.rng = new RNG(4242);
     this.cars = [];
-    const spawnTypes = TRAFFIC_TYPES.filter(t => t.w > 0);
+    const spawnTypes = TRAFFIC_TYPES.filter(t => t.w > 0 && (!roadVehiclesOnly || !t.bus && !t.scooter));
     const totalW = spawnTypes.reduce((a, t) => a + t.w, 0);
     const indGeo = new THREE.BoxGeometry(0.12, 0.07, 0.05);
     const byId = Object.fromEntries(TRAFFIC_TYPES.map((t) => [t.id, t]));
-    for (let i = 0; i < POOL; i++) {
+    for (let i = 0; i < poolCount; i++) {
       let r = this.rng.next() * totalW, type = spawnTypes[0];
       for (const t of spawnTypes) { r -= t.w; if (r <= 0) { type = t; break; } }
       // a guaranteed share of the special vehicles (types the model library may or may not provide)
       const fixed = ['bus', 'bus', 'bus', 'taxi', 'taxi', 'taxi', 'taxi', 'golf', 'corolla', 'golf', 'corolla', 'delivery', 'delivery', 'delivery', 'delivery'][i];
-      if (fixed && byId[fixed]) type = byId[fixed];
+      if (fixed && byId[fixed] && (!roadVehiclesOnly || spawnTypes.includes(byId[fixed]))) type = byId[fixed];
       const m = trafficModel(type, this.rng.pick(type.colors), this.rng);
       const indL = indicatorMat(), indR = indicatorMat();
       // headlight flash (a driver warning you off): its own material per car, dark until used
@@ -130,7 +131,7 @@ export class Traffic {
     }
     // the police (src/police.js): a reserved pool the ordinary spawner never uses. Until the model library has the
     // ΕΛ.ΑΣ. types, a white sedan / motorbike stands in with a light bar of our own
-    for (let k = 0; k < 8; k++) {
+    for (let k = 0; k < Math.max(0,Math.min(8,policePoolSize)); k++) {
       const moto = k >= 6, type = byId[moto ? 'police_moto' : 'police'] || { ...(moto ? byId.moto : byId.taxi_superb || byId.sedan), id: moto ? 'police_moto' : 'police', police: true, taxi: false, colors: ['#f4f5f6'], w: 0 };
       const m = trafficModel(type, this.rng.pick(type.colors), this.rng);
       if (!m.setStrobe) lightBar(m, type);
@@ -138,7 +139,7 @@ export class Traffic {
       if (!type.scooter) for (const [mat, sx] of [[indL, -1], [indR, 1]]) for (const z of [-1, 1]) { const b = new THREE.Mesh(indGeo, mat); b.position.set(sx * type.wid * 0.47, 0.72, z * type.len * 0.5); m.body.add(b); }
       m.root.visible = false; skipHiddenMatrices(m.root); scene.add(m.root);
       const mass = moto ? 320 : 1550;
-      this.cars.push({ id: POOL + k, type, kind: type.id, police: true, m, indL, indR, flash, len: type.len, wid: type.wid, mass, I: mass * (type.len * type.len + type.wid * type.wid) / 12, active: false, crash: null, beh: BEHAV.sedan, dmg: 0 });
+      this.cars.push({ id: poolCount + k, type, kind: type.id, police: true, m, indL, indR, flash, len: type.len, wid: type.wid, mass, I: mass * (type.len * type.len + type.wid * type.wid) / 12, active: false, crash: null, beh: BEHAV.sedan, dmg: 0 });
     }
     // distant intact cars draw through shared instanced batches (src/traffic-proxies.js)
     this.proxies = new TrafficProxies(scene, this.cars);

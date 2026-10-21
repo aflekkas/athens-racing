@@ -73,7 +73,7 @@ export function resolveSetup(def, setup = {}, ctx = {}) {
     let v = setup[f.key];
     if (f.key === 'rivals' || f.key === 'laps') v = Number.isFinite(+v) && v !== null && v !== '' ? clamp(Math.round(+v), f.min, f.max) : f.dflt;
     else if (f.key === 'traffic') v = Number.isFinite(+v) && v !== null && v !== '' ? clamp(+v, 0, 2) : f.dflt;
-    else if (f.key === 'police') v = v === true;
+    else if (f.key === 'police') v = v === true || v === false ? v : f.dflt;
     else if (f.key === 'policeLevel') v = isPoliceLevel(v) ? v : f.dflt;
     else if (f.key === 'busted') v = v === true || v === false ? v : f.dflt;
     else if (f.key === 'reverse') v = v === true;

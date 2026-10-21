@@ -7,13 +7,15 @@ The source is the existing staging AWT manifest
 `6d57b168364cd168f8beb419f864edff1a8d94729e4119745a84597c4ce3ab4a`.
 World cells remain exclusively in `athens-racing-world-staging`.
 
-`athens.inputs.json` extends this proof to both enabled compiled routes. It was
+`athens.inputs.json` extends this proof to all three enabled compiled routes. It was
 captured against the basin plus disconnected Penteli world set revision
 `4e4c4622b97d2bea7056ad1d52bf48afb942db8e6b29bc124ebade7619b7b726`
 at manifest `803754cf8aa7c04ceb9161d29061436292f6fe3f42fe13bf0d468de5f7e2d6a2`.
-The 2026-10-21 capture replays both existing routes against 53 hash-verified
-basin halo cells. Their geometry hashes are unchanged; Penteli contributes no
-race definition. Basin packet identities remain intact.
+The pilot and Faros capture replays against 53 hash-verified basin halo cells.
+Their geometry hashes are unchanged; Penteli contributes no race definition.
+The separately captured Riviera queries are merged by exact edge/query identity;
+all 43 referenced cell hashes match the composed release. Basin packet identities
+remain intact.
 
 Psychiko overrides in `tools/world-gen/overrides/psychiko.json` rebuild the
 Faros route cells and their seam halo; unchanged cells retain their immutable
@@ -51,3 +53,14 @@ The validator also accepts a SQLite emitted index with one bounded row in
 Deployment replays these exact compiler queries and checks every referenced
 source hash. A changed route or world needs a fresh capture; missing proof does
 not trigger a road snap or a fallback bake.
+
+`athens.inputs.json` also contains the independent Riviera coast proof at the
+same active staging revision: 126 directed edges, including the forward
+Loumbarda bore (`w25371523`, layer −1). The 10,337.229709 m route uses 24 cells
+including its contact envelope. Existing pilot and Faros geometry/route hashes
+are unchanged. Riviera's capture reads at most 128 immutable source cells (the
+coast and immediate halo need 74); only emitted graph records and exact bounded
+queries enter this file. It contains no render meshes, cell bodies or secrets.
+See `docs/reports/riviera-route.md` and the Phase 3 feed for the full equivalence,
+physical safety, drive and resource evidence. New physical carriageways are a
+separate competitive edition from the old `4718fbec` Riviera reference.

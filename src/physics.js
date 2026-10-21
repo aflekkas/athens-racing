@@ -199,6 +199,8 @@ export class Vehicle {
   }
   // ---------------- capability API (for the AI planner): what this car can do on a flat, dry road, from the same tyre,
   // load-transfer, brake and engine model the sim runs. m/s^2; the planner adds grade itself. Stable signatures.
+  /** Exact inputs to the steady-state planning capabilities; transient pose/slip is irrelevant. */
+  planningStateKey() { return JSON.stringify([this.spec,this.eng,this.m,this.wb,this.hcg,this.track,this.gripR,this.rearLat,this.muX,this.shareR0,this.engHealth,wetBaseGrip('asphalt')]); }
   /** steady-state tyre capacity of one axle (N) with lateral transfer dLat across it and an axle load Fz */
   _axleCap(Fz, dLat, front) {
     const sp = this.spec, ls = sp.loadSens ?? 0.15, Fz0 = this.m * G * 0.25, mu0 = sp.grip * (front ? 1 : this.gripR) * wetBaseGrip('asphalt'); // live wet grip: rivals plan earlier braking / slower bends

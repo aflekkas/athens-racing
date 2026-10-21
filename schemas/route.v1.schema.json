@@ -21,6 +21,8 @@
     "weather": {"enum": ["clear", "overcast", "rain", "dynamic"], "default": "clear"},
     "trafficLevel": {"type": "number", "minimum": 0, "maximum": 2},
     "rivals": {"type": "integer", "minimum": 0, "maximum": 2, "default": 2},
+    "police": {"type": "boolean", "default": false},
+    "signals": {"type": "boolean", "default": false},
     "path": {
       "oneOf": [
         {"type": "object", "additionalProperties": false, "required": ["edges"], "properties": {

@@ -1,6 +1,6 @@
 import { matchesRecord } from './leaderboard-records.js';
 import { canonicalCarId } from './car-ids.js';
-import {migrateRouteRecord,competitiveRecordKey} from './route-migrations.js';
+import {migrateRouteRecord,competitiveRecordKey,routeHistory,historicalEdition} from './route-migrations.js';
 // Personal records are versioned separately from the event medal/leaderboard store.
 // Only a completed, normally driven run can enter this local board.
 const STORAGE_KEY = 'paraliaki.personalBests.v1';
@@ -63,14 +63,14 @@ const ROUTE_STORAGE_KEY='paraliaki.personalBests.v2';
 function readRoutes(st){let d;try{d=JSON.parse(st.getItem(ROUTE_STORAGE_KEY)||'{}');}catch{}if(d?.version!==2||!d.exact||!d.routes||!d.history)d={version:2,exact:{},routes:{},history:{}};
   const legacy=read(st);for(const [key,record]of Object.entries(legacy.exact)){const r=migrateRouteRecord(record,{source:'personal-bests-v1',key});if(r.identity)d.history[r.migration.id]=r;}
   // Event counters are independent from the personal-best index. Keep their original storage keys and all fields.
-  if(typeof st.key==='function')for(let i=0;i<st.length;i++){const key=st.key(i);if(!/^paraliaki\.events\.psychiko-(race|tt)(?:\.|$)/.test(key||'')||/\.[a-f0-9]{64}$/.test(key))continue;try{const record=JSON.parse(st.getItem(key));if(!record||typeof record!=='object')continue;const r=migrateRouteRecord({...record,eventId:key.match(/psychiko-(?:race|tt)/)[0],mapId:'psychiko'},{source:'event-store',key});if(r.identity)d.history[r.migration.id]=r;}catch{}}
+  if(typeof st.key==='function')for(let i=0;i<st.length;i++){const key=st.key(i);if(!/^paraliaki\.events\.(?:psychiko-(?:race|tt)|quick|riviera-sprint|tt-riviera)(?:\.|$)/.test(key||'')||/\.[a-f0-9]{64}$/.test(key))continue;try{const record=JSON.parse(st.getItem(key));if(!record||typeof record!=='object')continue;const r=migrateRouteRecord({...record,eventId:key.match(/psychiko-(?:race|tt)|riviera-sprint|tt-riviera|quick/)[0],mapId:key.includes('psychiko-')?'psychiko':'riviera'},{source:'event-store',key});if(r.identity)d.history[r.migration.id]=r;}catch{}}
   try{st.setItem(ROUTE_STORAGE_KEY,JSON.stringify(d));}catch{}return d;
 }
-export function getRouteHistoricalTimes(routeId,st=storage()){return Object.values(readRoutes(st).history).filter(r=>r.identity?.routeId===routeId).sort((a,b)=>(a.time??a.bestTime??Infinity)-(b.time??b.bestTime??Infinity));}
+export function getRouteHistoricalTimes(routeId,st=storage(),{edition=historicalEdition(routeId)}={}){return routeHistory(Object.values(readRoutes(st).history),routeId,{edition});}
 const valid = record => record && Number.isFinite(record.time) && record.time > 0;
 export function getPersonalBests(setup, st = storage()) {
   const d = setup.routeId?readRoutes(st):read(st), exact = d.exact[exactBestKey(setup)], route = d.routes[routeBestKey(setup)];
-  return { exact: valid(exact) ? exact : null, route: valid(route) ? route : null,...(setup.routeId?{history:Object.values(d.history).filter(r=>r.identity?.routeId===setup.routeId)}:{}) };
+  return { exact: valid(exact) ? exact : null, route: valid(route) ? route : null,...(setup.routeId?{history:routeHistory(Object.values(d.history),setup.routeId),historyEdition:historicalEdition(setup.routeId)}:{}) };
 }
 export function recordPersonalBest(setup, result, st = storage()) {
   const before = getPersonalBests(setup, st);

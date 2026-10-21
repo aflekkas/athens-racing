@@ -1,5 +1,6 @@
 import {normalizeRouteDefinition,RouteError,sha256,canonicalJSON} from './route-definition.js';
 import {edgeValue,edgeLength,edgePoint,projectEdge,allowedTurn,cellKey} from './route-geometry.js';
+import {roadLayersConnect} from './world-tile-graph.js';
 const fail=(def,code,detail={})=>{throw new RouteError(code,{routeId:def.id,...detail});};
 const outgoing=(g,node)=>[...(g.outgoing.get(node)||[])].sort().map(id=>edgeValue(g,id));
 function snapped(def,g,p){const choices=[];for(const id of g.edges.keys()){const e=edgeValue(g,id);if(e.layer!==p.layer||e.flags&8)continue;const q=projectEdge(e,p.x,p.z);if(q.distance<=p.snapM&&q.tx*-Math.sin(p.headingRad)+q.tz*-Math.cos(p.headingRad)>=.5)choices.push(q);}choices.sort((a,b)=>a.distance-b.distance||a.edge.localeCompare(b.edge));if(!choices.length)fail(def,'waypoint-unsnapped',{point:p});if(choices[1]&&choices[1].distance<=choices[0].distance+Math.max(.05,choices[0].distance*.01))fail(def,'waypoint-ambiguous',{candidates:choices.slice(0,4)});return choices[0];}
@@ -23,16 +24,29 @@ function extend(def,g,e,offset,distance,backward,routeIds=null){const result=[],
  }return result;
 }
 export async function routeGeometryHash(c){return sha256({ruleVersion:'route-progress-width-v1',occurrences:c.occurrences,points:c.points,startPose:c.startPose,finishPose:c.finishPose,grid:c.grid,runIn:c.runIn,runOut:c.runOut,decisions:c.decisions,sectorsM:c.sectorsM,...(c.closures?.length?{closures:c.closures}:{}),direction:c.definition.events.some(e=>e.reverse)?'with-reverse':'forward'});}
+// A quantized portal boundary may be owned by its adjoining approach. Only
+// that exact continuous structure node (2.5 cm) may supply the boundary height;
+// every interior sample must still prove the selected edge's physical layer.
+function routeSurfaceContact(p,e,graph,contacts){
+ const direct=contacts.contact(p.x,p.z,{referenceY:p.y,layer:e.layer,requiredFlags:1});if(direct)return direct;
+ if(![e.points[0],e.points.at(-1)].some(a=>Math.hypot(a[0]-p.x,a[2]-p.z)<=.025))return null;
+ for(const id of graph.edges.keys()){
+  const n=edgeValue(graph,id);if(n.layer===e.layer||!(roadLayersConnect(n,e)||roadLayersConnect(e,n)))continue;
+  const boundary=contacts.contact(p.x,p.z,{referenceY:p.y,layer:n.layer,requiredFlags:1});
+  if(boundary&&Math.abs(boundary.y-p.y)<=.025&&contacts.surfaceAllowed(n,boundary))return {...boundary,layer:e.layer,surfaceId:e.surface};
+ }
+ return null;
+}
 export async function compileRoute(input,graph,contacts,{worldSetRevision=contacts?.worldSetRevision,closures=new Set(),halfWidth=1.1,halfLength=2.8,compileReverse=true}={}){
  const def=normalizeRouteDefinition(input),ids=resolveRoutePath(def,graph),occurrences=[],points=[],decisions=[],towAnchors=[],referenced=new Map(),cells=new Set();let s=0;
  if(!/^[a-f0-9]{64}$/.test(worldSetRevision||''))fail(def,'world-revision-unavailable');if(!contacts?.contact||!contacts?.width||!contacts?.safe)fail(def,'contacts-unavailable');
  for(const id of def.closureIds)if(!closures.has(id))fail(def,'unknown-closure',{closureId:id});
  if(ids[0]!==def.start.edgeId||ids.at(-1)!==def.finish.edgeId)fail(def,'endpoint-edge');
- const sample=(p,e,i,footprint=false)=>{const cell=cellKey(p.x,p.z),detail={occurrence:i,edgeId:e.id,cell};if(!contacts.eligible?.(cell))fail(def,'missing-contact-cell',detail);cells.add(cell);const c=contacts.contact(p.x,p.z,{referenceY:p.y,layer:e.layer,requiredFlags:1});if(!c||!(c.flags&1)||c.layer!==e.layer||!contacts.surfaceAllowed(e,c))fail(def,'contact-mismatch',{...detail,actualSurface:c?.surfaceId,expectedSurface:e.surface});const width=contacts.width({...p,y:c.y,edge:e.id,surfaceId:c.surfaceId},{connected:true});if(!width||width.left+width.right<2*(halfWidth+.15))fail(def,'unsafe-corridor',detail);const q={...p,y:c.y,leftM:width.left,rightM:width.right,surfaceId:c.surfaceId};if(footprint&&!contacts.safe(q,{halfWidth,halfLength,connected:true}))fail(def,'unsafe-grid-footprint',detail);return q;};
+ const sample=(p,e,i,footprint=false)=>{const cell=cellKey(p.x,p.z),detail={occurrence:i,edgeId:e.id,cell};if(!contacts.eligible?.(cell))fail(def,'missing-contact-cell',detail);cells.add(cell);const c=routeSurfaceContact(p,e,graph,contacts);if(!c||!(c.flags&1)||c.layer!==e.layer||!contacts.surfaceAllowed(e,c))fail(def,'contact-mismatch',{...detail,actualSurface:c?.surfaceId,expectedSurface:e.surface});const width=contacts.width({...p,y:c.y,edge:e.id,surfaceId:c.surfaceId},{connected:true});if(!width||width.left+width.right<2*(halfWidth+.15))fail(def,'unsafe-corridor',detail);const q={...p,y:c.y,leftM:width.left,rightM:width.right,surfaceId:c.surfaceId};if(footprint&&!contacts.safe(q,{halfWidth,halfLength,connected:true}))fail(def,'unsafe-grid-footprint',detail);return q;};
  for(let i=0;i<ids.length;i++){
   const e=edgeValue(graph,ids[i]);if(!e)fail(def,'missing-edge',{occurrence:i,edgeId:ids[i]});referenced.set(e.id,e);if(e.flags&8)fail(def,'access-forbidden',{occurrence:i,edgeId:e.id});const len=edgeLength(e),fromM=i===0?def.start.offsetM:0,toM=i===ids.length-1?def.finish.offsetM:len;
   if(fromM>len||toM>len||toM<=fromM)fail(def,'edge-offset',{occurrence:i,edgeId:e.id});
-  const prev=i?edgeValue(graph,ids[i-1]):null;if(prev){if(prev.to!==e.from)fail(def,'disconnected-portal',{occurrence:i,edgeId:e.id});if(prev.layer!==e.layer)fail(def,'wrong-layer',{occurrence:i,edgeId:e.id});if(!allowedTurn(def,graph,prev,e,ids.slice(0,i)))fail(def,'illegal-successor',{occurrence:i,edgeId:e.id});if(Math.hypot(...prev.points.at(-1).map((v,k)=>v-e.points[0][k]))>.025)fail(def,'contact-seam',{occurrence:i,edgeId:e.id});}
+  const prev=i?edgeValue(graph,ids[i-1]):null;if(prev){if(prev.to!==e.from)fail(def,'disconnected-portal',{occurrence:i,edgeId:e.id});if(!roadLayersConnect(prev,e))fail(def,'wrong-layer',{occurrence:i,edgeId:e.id});if(!allowedTurn(def,graph,prev,e,ids.slice(0,i)))fail(def,'illegal-successor',{occurrence:i,edgeId:e.id});if(Math.hypot(...prev.points.at(-1).map((v,k)=>v-e.points[0][k]))>.025)fail(def,'contact-seam',{occurrence:i,edgeId:e.id});}
   const offsets=[fromM,toM];let at=0;for(let j=1;j<e.points.length;j++){at+=Math.hypot(...e.points[j].map((v,k)=>v-e.points[j-1][k]));if(at>fromM&&at<toM)offsets.push(at);}offsets.sort((a,b)=>a-b);const samples=[];for(let j=1;j<offsets.length;j++){const a=offsets[j-1],b=offsets[j],n=Math.ceil((b-a)/4);for(let k=0;k<n;k++)samples.push(a+(b-a)*k/n);}samples.push(toM);
   const owned=new Set(),surfaceRuns=[];for(const station of samples){const p=sample(edgePoint(e,station),e,i),distance=s+station-fromM;owned.add(cellKey(p.x,p.z));if(surfaceRuns.at(-1)?.surfaceId!==p.surfaceId)surfaceRuns.push({fromM:station,s0:distance,surfaceId:p.surfaceId});const point=[p.x,p.y,p.z,distance,p.leftM,p.rightM];if(points.length&&Math.abs(points.at(-1)[3]-distance)<1e-7)points[points.length-1]=point;else points.push(point);if(station>fromM+3&&station<toM-3&&(!towAnchors.length||distance-(towAnchors.at(-1).s??0)>=40)&&contacts.safe(p,{halfWidth,halfLength,connected:true}))towAnchors.push({id:`${def.id}:tow:${i}:${Math.round(station)}`,x:p.x,y:p.y,z:p.z,yaw:p.yaw,edgeId:e.id,layer:e.layer,s:distance});}
   for(let j=0;j<surfaceRuns.length;j++){const r=surfaceRuns[j],end=surfaceRuns[j+1]?.fromM??toM;if(end<=r.fromM+1e-6)continue;occurrences.push({edgeId:e.id,fromM:r.fromM,toM:end,s0:r.s0,s1:s+end-fromM,surfaceId:r.surfaceId,layer:e.layer,cells:[...owned].sort()});}

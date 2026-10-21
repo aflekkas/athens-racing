@@ -20,3 +20,5 @@ Real in-game screenshots, inspected before inclusion, converted to 1280 px wide 
 | 2026.10.16.1/psychiko-faros.webp | .reference/psychiko-realism/impl-d/faros-game.png (local-only, git-ignored), native game canvas, headless Chromium/SwiftShader, 1280 × 800, WebP q75 | Faros surface approach, player car and the new Psychiko start/finish |
 
 Keep filenames stable: a later release may reuse an earlier screenshot. See deploy/README.md and CONTRIBUTING.md for the Unreleased workflow and automated limits.
+| 2026.10.21.1/riviera-coast-rivals.webp | /home/dev/data/agent-feed/unified-world/phase3-riviera-coast-rivals.webp, own game at 1280 × 800, WebP q75; cars arranged on validated route poses | Riviera coast and both native rivals on the streamed Athens world |
+| 2026.10.21.1/riviera-tunnel.webp | /home/dev/data/agent-feed/unified-world/phase3-riviera-tunnel.webp, own game during the continuous native drive at 1280 × 800, WebP q75 | The legal forward Loumbarda bore on layer −1 |
