@@ -1134,23 +1134,56 @@ body[data-ui] #mp-toggle { display: none !important; }
 /* The race shortcut belongs only to an existing multiplayer session. */
 body #mp-toggle[hidden] { display: none !important; }
 
-/* Session summary and independently scrolling setup controls. */
-.evs__name { margin: var(--s-4) 0 0; font-family: var(--f-sans); font-weight: 400; font-size: var(--t-2xl); line-height: 1.1; letter-spacing: .08em; text-transform: uppercase; }
-.evs__route { display: flex; align-items: flex-start; gap: var(--s-2); margin: var(--s-2) 0 0; font: 500 var(--t-md) / 1.35 var(--f-sans); letter-spacing: .04em; color: var(--c-text-2); text-transform: uppercase; }
-.evs__route > .ico { flex: none; width: 1.05em; height: 1.05em; margin-top: .15em; color: var(--c-text-3); }
-.evs__route .ico--route { vertical-align: -.15em; color: var(--c-text-3); }
-.evs__facts { margin-top: var(--s-4); grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.evs__facts .stat-tile:nth-child(odd):last-child { grid-column: 1 / -1; }
-.evs__best { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-1) var(--s-4); margin: var(--s-4) 0 0; padding-top: var(--s-3); border-top: 1px solid var(--hu-hair);
-  font: 600 var(--t-xs) var(--f-cond); letter-spacing: var(--track-caps); color: var(--c-text-3); text-transform: uppercase; }
-.evs__best > .ico { width: 1rem; height: 1rem; color: var(--c-text-3); }
-.evs__best b { margin-left: .3em; font: 500 var(--t-md) var(--f-sans); letter-spacing: .02em; color: #fff; font-variant-numeric: tabular-nums; }
-.setup-layout { flex: 1; display: grid; grid-template-columns: minmax(16rem, .8fr) minmax(0, 1.3fr); gap: var(--s-5); min-height: 0; }
-.setup__event { min-height: 0; align-self: start; max-height: 100%; }
-.setup__form { display: flex; flex-direction: column; min-height: 0; max-height: 100%; align-self: start; padding: var(--s-4) var(--s-4) var(--s-5); }
-.setup__fields { min-height: 0; flex: 0 1 auto; margin: 0 calc(var(--s-2) * -1); padding: 2px var(--s-2); }
+/* Race Setup (owner 2026-10-21, "this is the ui that is chopped"). Two panels of equal height: the track (header, facts, one
+   compact records block) and the settings with CHOOSE CAR pinned to the foot. Every state fits at 1280 x 800 and 960 x 700 without
+   an inner scrollbar; scroll-y stays only as a safety net for tiny windows. */
+.setup-layout { flex: 1; display: grid; grid-template-columns: minmax(16rem, .9fr) minmax(0, 1.3fr); align-content: start; gap: var(--s-5); min-height: 0; }
+@media (max-width: 1100px) { .setup-layout { grid-template-columns: minmax(15rem, .82fr) minmax(0, 1.3fr); gap: var(--s-4); } .setup__fields .seg__opt { padding: 0 var(--s-3); letter-spacing: .1em; } }
+.setup__event { display: flex; flex-direction: column; min-height: 0; max-height: 100%; padding: var(--s-5) var(--s-5) var(--s-4); scrollbar-width: none; }
+.setup__event::-webkit-scrollbar { display: none; }
+.setup__form { display: flex; flex-direction: column; min-height: 0; max-height: 100%; padding: var(--s-4) var(--s-4) var(--s-4); }
+.setup__form > .panel__head { margin-bottom: var(--s-1); }
+.setup__fields { min-height: 0; flex: 1 1 auto; margin: 0 calc(var(--s-2) * -1); padding: 2px var(--s-2); scrollbar-width: none; }
+.setup__fields::-webkit-scrollbar { display: none; }
 .setup__fields > .btn--ghost { margin: var(--s-2) var(--s-2); }
-.setup__go { margin-top: var(--s-4); padding: 0 var(--s-2); }
+/* full row width like the fields, so up / down between the settings and CHOOSE CAR never detours into the records column */
+.setup__fields > .setup__more { width: auto; justify-content: flex-start; }
+.setup__go { display: flex; justify-content: flex-end; margin-top: var(--s-3); padding: var(--s-3) var(--s-2) 0; border-top: 1px solid var(--hu-hair); }
+
+.setup-head { display: flex; flex-direction: column; }
+.setup-head__map { height: 7.5rem; margin: calc(var(--s-1) * -1) 0 var(--s-4); padding: var(--s-3); border-radius: var(--r-3); background: rgba(0, 0, 0, .22); box-shadow: inset 0 0 0 1px var(--hu-hair); }
+.setup-head__map > svg, .setup-head__art { display: block; width: 100%; height: 100%; object-fit: contain; }
+.setup-head__name { margin: 0; font-family: var(--f-sans); font-weight: 400; font-size: var(--t-2xl); line-height: 1.1; letter-spacing: .08em; text-transform: uppercase; overflow-wrap: anywhere; }
+.setup-head__where { margin: var(--s-2) 0 0; font: 500 var(--t-sm) / 1.35 var(--f-sans); letter-spacing: .02em; color: var(--c-text-3); }
+.route-outline__line { fill: none; stroke: var(--c-text-2); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.route-outline__start { fill: var(--hu-ice); }
+.setup-head__facts { display: flex; flex-wrap: wrap; margin-top: var(--s-4); gap: var(--s-3) var(--s-6); }
+.setup-head__facts .stat-tile__v { overflow: visible; }
+.setup-head__facts .stat-tile { border-top: 0; padding: 0; }
+.setup-head__facts .stat-tile__v { font-size: var(--t-lg); }
+
+/* the records block: rows, not cards. An empty personal best or board is one line. */
+.recs { display: flex; flex-direction: column; gap: var(--s-3); margin-top: var(--s-4); padding-top: var(--s-4); border-top: 1px solid var(--hu-hair); min-height: 0; }
+.recs__group { display: flex; flex-direction: column; gap: 2px; min-height: 0; }
+.recs__k { margin: 0 0 var(--s-1); font: 600 var(--t-2xs) var(--f-cond); letter-spacing: var(--track-caps); color: var(--c-text-3); text-transform: uppercase; }
+.recs .list-row.recs__row { min-height: 2.6rem; padding: var(--s-1) var(--s-3); border-radius: var(--r-2); background: rgba(255, 255, 255, .025); }
+.recs .list-row.recs__row + .list-row.recs__row { margin-top: 0; }
+.recs__row .list-row__main { display: flex; align-items: baseline; gap: var(--s-3); min-width: 0; }
+.recs__row .list-row__main b { flex: none; font: 500 var(--t-md) var(--f-sans); letter-spacing: .06em; }
+.recs__row .list-row__main span { min-width: 0; font-size: var(--t-sm); }
+.recs__row .list-row__meta { font: 500 var(--t-md) var(--f-sans); letter-spacing: .02em; font-variant-numeric: tabular-nums; color: var(--c-text); }
+.recs__row--pb .list-row__main b { font: 600 var(--t-2xs) var(--f-cond); letter-spacing: var(--track-caps); color: var(--c-text-3); }
+.recs__row--pb .list-row__meta { font-size: var(--t-lg); }
+.recs__row--empty .list-row__main b { font: 600 var(--t-2xs) var(--f-cond); letter-spacing: var(--track-caps); color: var(--c-text-3); }
+.recs__row--empty .list-row__main span { white-space: normal; }
+.recs__rank { display: inline-block; min-width: 1.4em; margin-right: var(--s-2); color: var(--c-text-3); font-variant-numeric: tabular-nums; }
+.recs__line { display: flex; align-items: center; gap: var(--s-3); min-height: 2.6rem; margin: 0; padding: 0 var(--s-3); font: 500 var(--t-sm) var(--f-sans); color: var(--c-text-3); }
+.recs__line .spinner { width: 1rem; height: 1rem; }
+.recs__line .btn { margin-left: auto; }
+.recs__toggle { align-self: flex-start; margin-left: calc(var(--s-2) * -1); }
+.recs__list { display: flex; flex-direction: column; gap: 2px; margin-top: var(--s-1); }
+@media (max-height: 760px) { .setup-head__map { height: 5.25rem; margin-bottom: var(--s-3); } .setup__event { padding-top: var(--s-4); } .setup-head__facts { margin-top: var(--s-3); } .recs { margin-top: var(--s-3); padding-top: var(--s-3); gap: var(--s-2); } }
+
 @media (max-width: 860px) { .setup-layout { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 860px) { .scr--setup .scr__body { overflow-y: auto; margin: -6px; } }
 @media (max-width: 860px) { .setup-layout { display: flex; flex-direction: column; flex: none; } }
@@ -1158,7 +1191,6 @@ body #mp-toggle[hidden] { display: none !important; }
 @media (max-width: 860px) { .setup__event { box-sizing: border-box; width: 100%; } }
 
 .setup__map { display: block; width: 100%; max-height: 11rem; margin-bottom: var(--s-4); }
-.setup__go { display: flex; justify-content: flex-end; margin-top: var(--s-4); }
 .setup__fields > .btn { margin: var(--s-2) 0; }
 
 /* Loading MapStage: style.css */

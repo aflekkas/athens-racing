@@ -46,7 +46,15 @@ export const historicalEdition=routeId=>ROUTE_MIGRATIONS.find(m=>m.routeId===rou
 // Edition keys belong to storage and compatibility checks, never player-facing copy.
 const HISTORICAL_EDITION_LABELS=Object.freeze({'legacy-faros-v3':'Original Faros circuit','legacy-riviera-4718fbec':'Original Riviera track','legacy-penteli-33ed3ce1':'Original Penteli road','legacy-megara-1621ff83':'Original Megara circuit'});
 export const historicalEditionLabel=edition=>Object.hasOwn(HISTORICAL_EDITION_LABELS,edition)?HISTORICAL_EDITION_LABELS[edition]:'Earlier course';
-export function routeHistory(entries,routeId,{edition=historicalEdition(routeId)}={}){return migrateRouteRecords(entries).filter(r=>r.identity?.routeId===routeId&&r.identity.compatibility==='historical'&&r.identity.edition===edition).sort((a,b)=>(a.time??a.bestTime??Infinity)-(b.time??b.bestTime??Infinity));}
+// One original run can live in several stores (personal-bests v1, the event counter, the server's copy of a submitted run), each with
+// its own migration id. A run is its edition, its event, its millisecond time and its driver: records without a driver id, or with this
+// device's, are the player's own. The fullest copy (setup, then date) is kept.
+export function dedupeHistory(entries,{me}={}){
+ const runs=new Map(),score=r=>(r.setup?2:0)+(r.date||r.at?1:0);
+ for(const r of entries){const time=r.time??r.bestTime;if(!Number.isFinite(time))continue;const key=[r.identity?.edition,r.identity?.eventId,Math.round(time*1000),r.driverId&&r.driverId!==me?r.driverId:'me'].join('|'),had=runs.get(key);if(!had||score(r)>score(had))runs.set(key,r);}
+ return [...runs.values()].sort((a,b)=>(a.time??a.bestTime)-(b.time??b.bestTime));
+}
+export function routeHistory(entries,routeId,{edition=historicalEdition(routeId)}={}){return dedupeHistory(migrateRouteRecords(entries).filter(r=>r.identity?.routeId===routeId&&r.identity.compatibility==='historical'&&r.identity.edition===edition));}
 export const effectiveSetupKey=setup=>stable(Object.fromEntries(['map','event','from','to','direction','laps','car','time','weather','traffic','rivals','police','policeLevel','busted','signals','tc','abs','steering','gearbox'].filter(k=>setup?.[k]!==undefined).map(k=>[k,k==='car'?canonicalCarId(setup[k]):setup[k]])));
 export const competitiveRecordKey=record=>stable([record.routeId||record.setup?.routeId,record.edition||record.setup?.edition,record.eventId||record.setup?.event,record.setup?.direction,record.setup?.laps,canonicalCarId(record.car||record.setup?.car),effectiveSetupKey(record.setup)]);
 

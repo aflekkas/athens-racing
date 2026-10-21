@@ -60,7 +60,7 @@ test('every Menu r_* screen returns a kit template or delegates to a screen modu
 test('every exported screen renderer in the screen modules builds its page with a kit template', () => {
   const modules = ['src/car-select.js', 'src/map-select.js', 'src/leaderboards-screen.js', 'src/ui/mp-screens.js', 'src/ui/account-screen.js', 'src/ui/release-screens.js'];
   // Fragments (rows, records, panels) are not pages; these helpers are the only exports named render* that return one.
-  const FRAGMENTS = new Set(['renderBestRecord', 'renderTrackTimes', 'renderControls', 'renderLiveBoard', 'renderAbout']);
+  const FRAGMENTS = new Set(['renderBestRecord', 'renderTrackTimes', 'renderSetupRecords', 'renderControls', 'renderLiveBoard', 'renderAbout']);
   const hits = [];
   for (const file of modules) for (const [name, body] of members(read(file), '^export function (render[A-Z]\\w*)\\(', '\\n\\}')) {
     if (FRAGMENTS.has(name)) continue;
