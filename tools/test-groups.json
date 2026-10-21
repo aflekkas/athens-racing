@@ -253,7 +253,8 @@
     "tools/coastal-dressing.test.mjs",
     "tools/route-phase2.test.mjs",
     "tools/route-migrations.test.mjs",
-    "tools/world-selection.test.mjs"
+    "tools/world-selection.test.mjs",
+    "tools/import-track-region.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",

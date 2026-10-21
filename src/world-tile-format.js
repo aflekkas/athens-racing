@@ -162,6 +162,7 @@ export function validateWorldManifest(m) {
     if(entry.source){const s=entry.source;if(Object.keys(s).some(k=>!['regionId','world','revision'].includes(k))||!['regionId','world','revision'].every(k=>typeof s[k]==='string'&&s[k])||s.regionId!=='basin'&&!m.regions?.some(r=>r.id===s.regionId))fail(`entry ${key} source`);}
     if(entry.transientBytes!==undefined&&entry.transientBytes<2*entry.decodedBytes+entry.bytes)fail(`entry ${key} transient allowance`);
     if (!Array.isArray(entry.dependencies) || new Set(entry.dependencies).size !== entry.dependencies.length || entry.dependencies.some(d => typeof d !== 'string' || d === key || !Object.hasOwn(m.tiles,d))) fail(`dependencies ${key}`);
+    if(entry.source&&m.regions){const s=entry.source,r=m.regions.find(r=>r.id===s.regionId);if(!r||!(s.world===r.sourceWorld&&s.revision===r.sourceRevision)&&!m.sourceIdentities?.some(p=>p.regionId===s.regionId&&p.world===s.world&&p.revision===s.revision))fail('entry source provenance');}
     if (entry.range && (!integer(entry.range.offset) || !integer(entry.range.length,1) || entry.range.length !== entry.bytes || entry.range.offset + entry.range.length > 25*1024*1024)) fail('range');
   }
   if (!Array.isArray(m.spawn.cell) || m.spawn.cell.length !== 2 || !m.spawn.cell.every(Number.isSafeInteger) || !m.tiles[m.spawn.cell.join(',')] || typeof m.spawn.anchor !== 'string') fail('spawn');

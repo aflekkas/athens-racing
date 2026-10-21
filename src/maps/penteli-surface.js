@@ -10,7 +10,7 @@ float pf(vec2 p){return .53*pn(p)+.28*pn(p*2.03)+.13*pn(p*4.07)+.06*pn(p*8.11);}
 `;
 const rgb = hex => `vec3(${new THREE.Color(hex).toArray().map(v=>v.toFixed(5)).join(',')})`;
 
-function roadMaterial() {
+export function penteliRoadMaterial() {
   const mat=new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.94});
   mat.userData.uniforms={uCross:{value:new Float32Array(16).fill(-9999)},uStop:{value:new Float32Array(8).fill(-9999)},uStopO:{value:new Float32Array(8).fill(-9999)}};
   mat.customProgramCacheKey=()=> 'penteli-double-solid-v1';
@@ -38,7 +38,7 @@ function roadMaterial() {
 export function buildPenteliSurface(scene,map,heightC) {
   // Common terrain owns its material and quantized-position decoder.
   const group=new THREE.Group();group.name='penteli-road';scene.add(group);
-  const asphalt=roadMaterial(), route=map.route;
+  const asphalt=penteliRoadMaterial(), route=map.route;
   for(let start=-60;start<route.length+60;start+=400){
     const end=Math.min(start+400,route.length+60),positions=[],su=[],edges=[],mouths=[],indices=[];
     let row=0;
