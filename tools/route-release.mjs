@@ -1,10 +1,10 @@
-import {readFile} from 'node:fs/promises';
+import {readFile,writeFile,rm} from 'node:fs/promises';
 import {resolve} from 'node:path';
-import {loadWorldDefinition} from '../src/world-manifest.js';
+import {loadWorldDefinition,canonicalWorldJSON} from '../src/world-manifest.js';
 
 const hex64 = /^[a-f0-9]{64}$/;
 const entryFields = ['sha256', 'bytes', 'decodedBytes', 'residentBytes', 'transientBytes', 'triangles', 'contactEligible'];
-const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+const same = (a, b) => canonicalWorldJSON(a??null) === canonicalWorldJSON(b??null);
 
 export async function routeReleaseConfig(root, environment = 'staging') {
   const config = JSON.parse(await readFile(resolve(root, 'wrangler.jsonc'), 'utf8'));
@@ -54,4 +54,18 @@ export async function checkBuiltRouteRelease(root, environment = 'staging') {
     if (artifact.worldSetRevision !== revision || artifact.routeHash !== entry.routeHash || artifact.geometryHash !== entry.geometryHash) throw Error(`Compiled route artifact/world release mismatch: ${entry.id}`);
   }
   return {checked: entries.length, revision};
+}
+
+// Keep regional proofs bounded while rebinding every sibling to the same release.
+export async function writeRouteProofs(root, source, manifest, directory) {
+  const names=source.shards||[];if(!Array.isArray(names)||names.length>3||names.some(name=>!(/^[a-z][a-z0-9-]*\.inputs\.json$/).test(name)))throw Error('Invalid regional route proof siblings');
+  const bound=rebindRouteShard(source,manifest),files=[];
+  try {
+    for(const name of names){const extra=JSON.parse(await readFile(resolve(root,'data/routes/validation',name),'utf8'));if(extra.shards)throw Error('Nested route proof siblings');const regional=rebindRouteShard(extra,manifest);const file=resolve(directory,name);await writeFile(file,JSON.stringify(regional.shard));files.push(file);}
+    return {bound,cleanup:()=>Promise.all(files.map(file=>rm(file,{force:true})))};
+  } catch(error){await Promise.all(files.map(file=>rm(file,{force:true})));throw error;}
+}
+export function selectRouteRelease(build, ids) {
+  const enabled=new Set(ids);for(const id of enabled)if(!build.index.routes.some(route=>route.id===id))throw Error('Unknown enabled route: '+id);
+  return {...build,index:{...build.index,routes:build.index.routes.filter(route=>enabled.has(route.id))},server:{...build.server,routes:build.server.routes.filter(route=>enabled.has(route.id))}};
 }
