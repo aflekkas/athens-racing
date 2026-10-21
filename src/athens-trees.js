@@ -1,5 +1,5 @@
 // The trees of the streamed Athens world: bitter oranges along the quiet streets (src/world-tile-trees.js), palms and cypresses among them, and the
-// bake's own tree rows and park candidates drawn as Aleppo pines (flat umbrella crowns), cypresses, oleander bushes and orange-style broadleaves.
+// bake's own tree rows and park candidates drawn as Aleppo pines (irregular clustered crowns), cypresses, oleander bushes and orange-style broadleaves.
 // One low-poly vertex-colour model per species, drawn instanced near the camera (one draw call per species in view) with a soft contact shadow under
 // each tree (one more, alpha-blended): the crowns are lit from the top and darker underneath in their vertex colours (the locked unlit look),
 // and the instance tint varies the green. Replaces the box and billboard trees of src/world-detail.js, which only drew with World detail On anyway.
@@ -15,7 +15,7 @@ const BASE = { [TREE.orange]: 4.3, [TREE.pine]: 8, [TREE.cypress]: 9, [TREE.palm
 
 class Geo {
   constructor() { this.p = []; this.c = []; }
-  tri(a, b, c, ca, cb, cc) { for (const [v, col] of [[a, ca], [b, cb], [c, cc]]) { this.p.push(...v); this.c.push(col.r, col.g, col.b); } }
+  tri(a, b, c, ca, cb, cc) { const u=b.map((v,i)=>v-a[i]),v=c.map((v,i)=>v-a[i]);if(Math.hypot(u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0])<1e-10)return;for (const [v, col] of [[a, ca], [b, cb], [c, cc]]) { this.p.push(...v); this.c.push(col.r, col.g, col.b); } }
   quad(a, b, c, d, ca, cb, cc, cd) { this.tri(a, b, c, ca, cb, cc); this.tri(a, c, d, ca, cc, cd); }
   geometry() { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(this.p), 3)); g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(this.c), 3)); g.computeBoundingSphere(); return g; }
   get triangles() { return this.p.length / 9; }
@@ -38,10 +38,13 @@ function orangeTree() { // a bitter orange: 3 to 5 m, a short trunk and a round 
   g.blob(0, 2.7, 0, 1.75, 1.55, 1.75, 10, 4, C('#0d2415'), C('#74a64a'));
   return g;
 }
-function pineTree() { // Aleppo pine: a long bare trunk, a flat umbrella of two layers
-  const g = new Geo(); g.trunk(0, 0, 0, 6.6, .3, .19, 6, C('#7a553b'), C('#8d6a49'));
-  g.blob(.3, 7.0, 0, 3.7, .9, 3.5, 9, 2, C('#1f3a22'), C('#62854a'), { speckle: .12, tint: C('#97ab5d') });
-  g.blob(-.5, 8.0, .4, 2.3, .8, 2.2, 7, 2, C('#375b30'), C('#6f9a49'));
+function pineTree() { // Aleppo/stone pine mix: a bent bole and three overlapping, rounded needle masses.
+  const g = new Geo(); g.trunk(0, 0, 0, 5.9, .32, .16, 4, C('#61574b'), C('#817364'));
+  // Bend the bole before adding the crowns; instance lean and unequal horizontal scale vary the silhouette.
+  for(let i=0;i<g.p.length;i+=3)g.p[i]+=.8*(g.p[i+1]/5.9)**2;
+  g.blob(-.9, 5.6, .2, 2.5, 2.0, 2.2, 6, 4, C('#162f2c'), C('#4c6b5b'));
+  g.blob(1.0, 7.0, -.4, 2.4, 2.1, 2.1, 5, 4, C('#203b34'), C('#587564'));
+  g.blob(2.2, 5.3, .8, 1.9, 1.8, 1.9, 6, 3, C('#1a352f'), C('#496955'));
   return g;
 }
 function cypressTree() { // narrow flame
@@ -72,6 +75,7 @@ export function speciesOfBakeRow(kind, seed) {
   if (kind === 2) return r < 4 ? TREE.pine : r < 6 ? TREE.cypress : r < 8 ? TREE.orange : TREE.oleander;
   return r < 5 ? TREE.orange : r < 7 ? TREE.pine : r === 7 ? TREE.cypress : r === 8 ? TREE.palm : TREE.orange;
 }
+export const COAST_FAR_LIMITS=Object.freeze({pine:1400,scrub:1400,range:750});
 const GREENS = ['#ffffff', '#f2fbe8', '#e3f0d4', '#fbf6e2', '#d8e8c8'];
 
 export class AthensTrees {
@@ -84,6 +88,31 @@ export class AthensTrees {
     for (const species of Object.values(TREE)) {
       const model = BUILD[species](), cap = CAPACITY[species], mesh = new THREE.InstancedMesh(model.geometry(), material, cap);
       mesh.count = 0; mesh.visible = false; mesh.frustumCulled = false; mesh.name = 'athens-trees:' + species; mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage); this.group.add(mesh); this.meshes.set(species, { mesh, cap }); this.tris[species] = model.triangles;
+    }
+    // Two camera-facing silhouette batches keep woodland dense beyond the detailed tree range.
+    this.coastFar=new Map();
+    for(const [species,cap]of [[TREE.pine,COAST_FAR_LIMITS.pine],[TREE.oleander,COAST_FAR_LIMITS.scrub]]){
+      const pine=species===TREE.pine,g=new Geo(),dark=C(pine?'#203b34':'#4e5d49'),light=C(pine?'#587564':'#74806a');
+      // A rounded cluster silhouette in one quad, with analytic needle/maquis colour variation.
+      // No texture allocation, no lighting pass and no flat umbrella polygon at distance.
+      g.quad([-4.7,0,0],[4.7,0,0],[4.7,pine?9.2:2.5,0],[-4.7,pine?9.2:2.5,0],dark,dark,light,light);
+      const farMaterial=material.clone();farMaterial.customProgramCacheKey=()=> 'coast-clusters-'+species;
+      farMaterial.onBeforeCompile=shader=>{
+        shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nvarying vec2 vCluster;varying float vTreeSeed;').replace('#include <begin_vertex>','#include <begin_vertex>\nvCluster=position.xy;vTreeSeed=fract(sin(dot(instanceMatrix[3].xz,vec2(12.9898,78.233)))*43758.5453);');
+        shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying vec2 vCluster;varying float vTreeSeed;').replace('#include <color_fragment>',`#include <color_fragment>
+          vec2 p=vCluster;float seed=vTreeSeed;
+          ${pine?`float lean=(seed-.5)*.18;p.x-=p.y*lean;
+          float stone=step(.73,seed);p.y=mix(p.y,(p.y-6.)*1.35+6.,stone);
+          float a=length((p-vec2(-1.25,5.4))/vec2(2.45,2.0));
+          float b=length((p-vec2(.5,7.0))/vec2(2.55,2.05));
+          float c=length((p-vec2(2.0,5.4))/vec2(2.1,1.9));
+          float crown=min(a,min(b,c));bool trunk=abs(p.x-.12*p.y)<.23-.012*p.y && p.y<6.;
+          if(crown>1. && !trunk)discard;
+          if(crown>1.)diffuseColor.rgb=vec3(.115,.09,.065);else diffuseColor.rgb*=.8+.22*(1.-crown)+.04*sin(p.x*2.3)*sin(p.y*3.1);`:
+          `float a=length((p-vec2(-2.0,.55))/vec2(2.1,1.2));float b=length((p-vec2(.25,.8))/vec2(2.4,1.65));float c=length((p-vec2(2.4,.4))/vec2(1.85,1.05));float crown=min(a,min(b,c));if(crown>1.)discard;diffuseColor.rgb*=.85+.05*sin(p.x*2.1)*sin(p.y*2.7)+.15*(1.-crown);`}
+        `);
+      };
+      const mesh=new THREE.InstancedMesh(g.geometry(),farMaterial,cap);mesh.count=0;mesh.visible=false;mesh.frustumCulled=false;mesh.name='athens-coast-far:'+species;mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);this.group.add(mesh);this.coastFar.set(species,{mesh,cap,triangles:g.triangles});
     }
     const disc = new THREE.CircleGeometry(1, 9); disc.rotateX(-Math.PI / 2);
     const shadowMaterial = new THREE.MeshBasicMaterial({ color: 0x0c0f08, transparent: true, opacity: .3, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
@@ -98,7 +127,7 @@ export class AthensTrees {
     if (veg) { const p = packet.arrays[veg.positionHeight], k = packet.arrays[veg.kind], seed = packet.arrays[veg.seed];
       for (let i = 0; i < k.length; i++) records.push({ species: speciesOfBakeRow(k[i], seed[i]), x: p[i * 4] + o[0], y: p[i * 4 + 1], z: p[i * 4 + 2] + o[2], height: Math.min(10, Math.max(3, p[i * 4 + 3])), yaw: (seed[i] % 628) / 100, variant: seed[i] % 8 }); }
     if (ext?.streetTrees != null) { const r = packet.arrays[ext.streetTrees];
-      for (let i = 0; i < r.length; i += 5) { const code = r[i + 4] | 0, species = code >> 3, v = code & 7; records.push({ species, x: r[i] + o[0], y: r[i + 1], z: r[i + 2] + o[2], height: BASE[species] * (species === TREE.orange ? .72 + v * .06 : .85 + v * .04), yaw: r[i + 3], variant: v }); } }
+      for (let i = 0; i < r.length; i += 5) { const code = r[i + 4] | 0, species = code >> 3, v = code & 7; records.push({ species, coastal:i/5>=r.length/5-(ext.coastalTreeCount||0), x: r[i] + o[0], y: r[i + 1], z: r[i + 2] + o[2], height: BASE[species] * (species === TREE.orange ? .72 + v * .06 : .85 + v * .04), yaw: r[i + 3], variant: v }); } }
     this.tiles.set(key, records); this.last.x = Infinity;
   }
   removeTile(key) { if (this.tiles.delete(key)) this.last.x = Infinity; }
@@ -108,20 +137,24 @@ export class AthensTrees {
     if (Math.hypot(p.x - this.last.x, p.z - this.last.z) >= TREE_LIMITS.rebuildMetres) this.rebuild(p.x, p.z);
   }
   rebuild(x, z) {
-    const out = []; for (const records of this.tiles.values()) for (const r of records) { const d = Math.hypot(r.x - x, r.z - z); if (d < NEAR[r.species]) out.push({ r, d }); }
+    const out = []; for (const records of this.tiles.values()) for (const r of records) { const d = Math.hypot(r.x - x, r.z - z); if (d < (r.coastal?(r.species===TREE.pine?65:32):NEAR[r.species])) out.push({ r, d }); }
     out.sort((a, b) => a.d - b.d); if (out.length > TREE_LIMITS.capacity) out.length = TREE_LIMITS.capacity;
-    const M = this._m, Q = this._q, E = this._e, V = this._p, S = this._s, Cc = this._c, used = new Map(); let n = 0, tris = 0;
+    const M = this._m, Q = this._q, E = this._e, V = this._p, S = this._s, Cc = this._c, used = new Map(),nearRecords=new Set(); let n = 0, tris = 0;
     for (const { r } of out) {
-      const slot = this.meshes.get(r.species), k = used.get(r.species) || 0; if (k >= slot.cap) continue; used.set(r.species, k + 1);
-      const s = r.height / BASE[r.species], w = s * (r.species === TREE.cypress ? .9 + (r.variant & 3) * .05 : 1);
-      M.compose(V.set(r.x, r.y, r.z), Q.setFromEuler(E.set(0, r.yaw, 0)), S.set(w, s, w)); slot.mesh.setMatrixAt(k, M); slot.mesh.setColorAt(k, Cc.set(GREENS[r.variant % GREENS.length]));
+      const slot = this.meshes.get(r.species), k = used.get(r.species) || 0; if (k >= slot.cap) continue; used.set(r.species, k + 1);nearRecords.add(r);
+      const s = r.height / BASE[r.species], w = s * (r.species === TREE.cypress ? .9 + (r.variant & 3) * .05 : r.coastal&&r.species===TREE.pine?1.3:1);
+      M.compose(V.set(r.x, r.y, r.z), Q.setFromEuler(E.set(r.species===TREE.pine?(r.variant-3)*.018:0, r.yaw, r.species===TREE.pine?(r.variant%3-1)*.065:0)), S.set(w*(r.species===TREE.pine?.84+r.variant*.035:1), s, w)); slot.mesh.setMatrixAt(k, M); slot.mesh.setColorAt(k, Cc.set(GREENS[r.variant % GREENS.length]));
       const radius = (r.species === TREE.cypress ? 1.2 : r.species === TREE.oleander ? 1.5 : r.species === TREE.pine ? 3.4 : r.species === TREE.palm ? 2.2 : 1.9) * w;
       M.compose(V.set(r.x + radius * .15, r.y + .05, r.z + radius * .1), Q.identity(), S.set(radius, 1, radius)); this.shadow.setMatrixAt(n++, M); tris += this.tris[r.species];
     }
-    let calls = 0;
+    let calls = 0,farCount=0;
+    const far=[];for(const records of this.tiles.values())for(const r of records){if(!r.coastal||!this.coastFar.has(r.species))continue;const d=Math.hypot(r.x-x,r.z-z);if(!nearRecords.has(r)&&d<COAST_FAR_LIMITS.range)far.push({r,d});}far.sort((a,b)=>a.d-b.d);
+    const farUsed=new Map();for(const {r}of far){const slot=this.coastFar.get(r.species),k=farUsed.get(r.species)||0;if(k>=slot.cap)continue;farUsed.set(r.species,k+1);const scale=r.height/BASE[r.species];M.compose(V.set(r.x,r.y,r.z),Q.setFromEuler(E.set(0,Math.atan2(x-r.x,z-r.z),0)),S.set(scale*(.8+r.variant*.05),scale*(r.species===TREE.oleander?.62:1),scale));slot.mesh.setMatrixAt(k,M);farCount++;tris+=slot.triangles;}
+    for(const [species,{mesh}]of this.coastFar){const count=farUsed.get(species)||0;mesh.count=count;mesh.visible=count>0;if(count){calls++;mesh.instanceMatrix.needsUpdate=true;}}
+
     for (const [species, { mesh }] of this.meshes) { const c = used.get(species) || 0; mesh.count = c; mesh.visible = c > 0; if (c) { calls++; mesh.instanceMatrix.needsUpdate = true; if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true; } }
     this.shadow.count = n; this.shadow.visible = n > 0; if (n) { calls++; this.shadow.instanceMatrix.needsUpdate = true; }
-    this.last = { x, z }; this.stats = { instances: n, drawCalls: calls, triangles: tris, rebuilds: this.stats.rebuilds + 1 };
+    this.last = { x, z }; this.stats = { instances: n, distant:farCount, drawCalls: calls, triangles: tris, rebuilds: this.stats.rebuilds + 1 };
   }
-  dispose() { this.group.removeFromParent(); const material = [...this.meshes.values()][0].mesh.material; for (const { mesh } of this.meshes.values()) { mesh.geometry.dispose(); mesh.dispose(); } material.dispose(); this.shadow.geometry.dispose(); this.shadow.material.dispose(); this.shadow.dispose(); this.tiles.clear(); }
+  dispose() { this.group.removeFromParent(); const material = [...this.meshes.values()][0].mesh.material; for (const { mesh } of this.meshes.values()) { mesh.geometry.dispose(); mesh.dispose(); } for(const {mesh}of this.coastFar.values()){mesh.geometry.dispose();mesh.material.dispose();mesh.dispose();}material.dispose(); this.shadow.geometry.dispose(); this.shadow.material.dispose(); this.shadow.dispose(); this.tiles.clear(); }
 }

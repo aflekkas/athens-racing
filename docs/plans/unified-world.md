@@ -453,6 +453,8 @@ Files: area JSON, `tools/world-gen/{areas,profiles,graph,turns,surfaces,tiles}.p
 
 Tests/exit: full length/direction/start/finish equivalence report, legal tunnel/bridge layer and fork cases, coast water/contact + safety impact tests, all chosen setups/traffic/police, 10-minute high-speed drive and reverse/teleport, `tools/{world-surface-audit,world-bridge-audit,world-connectivity-audit,world-roads-audit}.test.mjs`, current tunnel/physics regression suite and resource budgets. Old Riviera times visible via aliases; new board edition if physical/timing equivalence fails. Flags: enable Riviera only after this independent proof.
 
+**3D/scenery implementation:** the existing 1,451-cell coast through Loumbarda is dressed through the normal tile pipeline; no southern extension is included. OSM land cover, coastal residential infill, pine/maquis instances, lake shoreline correction, marina props and joined cell-owned tunnel slopes/portals are covered in [the scenery report](../reports/riviera-scenery.md). Physical gates, budgets and World detail Off remain mandatory. This completes the scenery half only; Riviera race migration and its independent race/lifecycle proof remain separate.
+
 ### Phase 4a — Attach Penteli on the same streamer
 
 **Owner types:** **BACKEND/systems (Codex)** region import and route; **3D/visual (Astra)** mountain surface/rails/terrain parity; **small/mechanical or review (Muse)** descent and seam review.

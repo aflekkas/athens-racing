@@ -6,10 +6,10 @@ import * as THREE from 'three';
 import {mergeGeometries,mergeVertices} from 'three/addons/utils/BufferGeometryUtils.js';
 import {signalState,STOP_OFF} from './signal-plan.js';
 
-export const KINDS=Object.freeze({lamp:0,bus_stop:1,bus_shelter:2,kiosk:3,bench:4,bollard:5,stop:6,give_way:7,oneway:8,fountain:9,monument:10,parked_car:11,crossing:12,signal:13,rooftop:14,solar:15,antenna:16,pergola:17,scooter:18});
+export const KINDS=Object.freeze({lamp:0,bus_stop:1,bus_shelter:2,kiosk:3,bench:4,bollard:5,stop:6,give_way:7,oneway:8,fountain:9,monument:10,parked_car:11,crossing:12,signal:13,rooftop:14,solar:15,antenna:16,pergola:17,scooter:18,sailboat:19,motorboat:20});
 export const PROP_LIMITS=Object.freeze({capacity:2600,near:230,rebuildMetres:10});
 /** How far each model is drawn (metres). Small or rare models stop earlier, so a street scene costs a handful of draw calls, not one per model type. */
-export const PROP_NEAR=Object.freeze({lamp:210,signal:230,bus_stop:140,bus_shelter:140,kiosk:140,stop:110,give_way:110,oneway:100,crossing:100,bench:80,bollard:80,fountain:160,monument:160,parked_car:100,rooftop:120,solar:100,antenna:120,pergola:100,scooter:80});
+export const PROP_NEAR=Object.freeze({lamp:210,signal:230,bus_stop:140,bus_shelter:140,kiosk:140,stop:110,give_way:110,oneway:100,crossing:100,bench:80,bollard:80,fountain:160,monument:160,parked_car:100,rooftop:120,solar:100,antenna:120,pergola:100,scooter:80,sailboat:230,motorboat:230});
 const NEAR_BY_KIND=Object.fromEntries(Object.entries(PROP_NEAR).map(([n,d])=>[KINDS[n],d]));
 /** Car paints, mostly what Athens drives: white, silver, graphite and black, with some blue, red, beige and a dark green (the row picks them by src/world-tile-parking.js PAINT). */
 const CAR_PAINT=['#ecebe6','#b4b9bc','#4e5459','#1e2124','#2b4f86','#a8302b','#c4b595','#35574a'];
@@ -86,6 +86,11 @@ export function propParts(){
   // signal: pole, short arm over the kerb, head housing with a backplate and its three lamps (red, amber, green) on the face toward oncoming traffic
   add(13,.12,4.6,.12,0,2.3,0,grey);add(13,.8,.09,.09,-.4,4.15,0,grey);add(13,.44,1.3,.34,-.8,3.7,0,'#16181a');add(13,.7,1.55,.04,-.8,3.7,.19,'#16181a');add(13,.76,.06,.05,-.8,4.52,.2,'#e8e6dc');
   [['#ff2a14',1,.4],['#ffa800',2,0],['#14ff6a',3,-.4]].forEach(([c,i,y])=>P.push(part(.27,.04,.27,-.8,3.7+y,-.18,c,{kind:13,lamp:i,segments:6,faceZ:true})));
+  // Riviera marina recipe from nature.js: hull, cabin and optional mast, pooled by cell.
+  for(const kind of [19,20]){const L=kind===20?10:8,B=kind===20?3.4:2.7;
+    add(kind,B,.9,L,0,.15,0,'#e9e8df',{shade:true});add(kind,B*.65,1.1,L*.35,0,1.1,0,'#f5f3e8',{shade:true});
+    add(kind,B*.67,.32,L*.30,0,1.3,0,'#53757f',{shade:true});
+    if(kind===19)add(kind,.10,L,.10,0,L/2+.6,0,'#b8bdbe',{shade:true});}
   return P;
 }
 /** One merged geometry per model, so each draw call carries only that model's triangles. */
@@ -143,6 +148,7 @@ export class AthensProps{
     const sig=ext?.signals,props=ext?.props,roofs=ext?.rooftops;
     if(props){const r=packet.arrays[props.rows],k=packet.arrays[props.kind];for(let i=0;i<k.length;i++){const x=r[i*5]+o[0],z=r[i*5+2]+o[2];if(this.skip&&this.skip(k[i],x,z))continue;records.push({kind:k[i],x,y:r[i*5+1],z,yaw:r[i*5+3],variant:r[i*5+4]|0,state:0});}}
     if(ext?.parking!=null){const r=packet.arrays[ext.parking];for(let i=0;i<r.length;i+=5){const code=r[i+4]|0;records.push({kind:(code>>3)?KINDS.scooter:KINDS.parked_car,x:r[i]+o[0],y:r[i+1],z:r[i+2]+o[2],yaw:r[i+3],variant:code&7,state:0});}}
+    if(ext?.coastalBoats!=null){const r=packet.arrays[ext.coastalBoats];for(let i=0;i<r.length;i+=5)records.push({kind:r[i+4]?KINDS.motorboat:KINDS.sailboat,x:r[i]+o[0],y:r[i+1],z:r[i+2]+o[2],yaw:r[i+3],variant:0,state:0});}
     if(roofs!=null){const r=packet.arrays[roofs];for(let i=0;i<r.length;i+=5){const code=r[i+4]|0;records.push({kind:KINDS.rooftop+(code>>2),x:r[i]+o[0],y:r[i+1],z:r[i+2]+o[2],yaw:r[i+3],variant:code&3,state:0});}}
     if(sig){const r=packet.arrays[sig.rows],e=packet.arrays[sig.edge];
       for(let i=0;i<e.length;i++){const rec={kind:KINDS.signal,x:r[i*6]+o[0],y:r[i*6+1],z:r[i*6+2]+o[2],yaw:r[i*6+3],offset:r[i*6+4],group:r[i*6+5],variant:0,state:0,edge:m.ids[e[i]]};records.push(rec);edges.push(rec);this.byEdge.set(rec.edge,rec);}}

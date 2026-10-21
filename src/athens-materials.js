@@ -39,12 +39,38 @@ export function athensMaterial(surface,rgb,vertexColors){
   return m;
 }
 
+// Dry limestone: broken strata, small fissures and grey-green scrub pockets.
+// Reuses the existing noise atlas; coordinates repeat exactly at cell borders.
+const LIMESTONE_GLSL=`vec3 coastLimestone(vec3 colour,vec3 pos){
+ vec3 n=abs(normalize(cross(dFdx(pos),dFdy(pos))));
+ vec2 p=n.y>.65?pos.xz:n.x>n.z?pos.zy:pos.xy;
+ vec4 coarse=texture2D(detailMap,p/128.),mid=texture2D(detailMap,p/16.),fine=texture2D(detailMap,p/2.);
+ float strata=sin(p.y*2.1+mid.b*9.);float fissure=smoothstep(.86,.98,abs(strata))*(.3+.7*mid.r);
+ vec3 stone=colour*(.62+.65*coarse.b)*(.82+.28*fine.g)*(1.-.24*fissure);
+ float pocket=smoothstep(.42,.66,texture2D(detailMap,pos.xz/64.).b+.13*mid.b)*smoothstep(.35,.82,n.y);
+ return mix(stone,vec3(.115,.145,.075)*(.75+.5*fine.g),pocket*.78);
+}`;
+
 // World detail layers (src/athens-detail.js). Every one reads the shared `uWorldDetail` uniform, so Off draws the plain colour.
 function dressedMaterial(surface,rgb,vertexColors){
   const base=()=>new THREE.MeshBasicMaterial({color:new THREE.Color(...rgb),vertexColors,side:THREE.FrontSide});
+  if(surface==='coastalGround'||surface==='coastalUrban'){
+    const m=surface==='coastalUrban'?scanned(rgb,'paver_diff',URBAN_PERIOD,MEAN.paving,1,{vertexColors,strength:.7,drift:[40,80]}):base(),scan=m.onBeforeCompile;
+    patchMaterial(m,{key:'athens-'+surface+'-v1',vertexVaryings:GROUND_VERTEX_VARYINGS+'attribute vec4 aCoastColor;varying vec4 vCoastColor;varying vec3 vCoastP;',vertexBody:GROUND_VERTEX_BODY+'vCoastColor=aCoastColor;vCoastP=position;',fragmentGlsl:GROUND_GLSL+LIMESTONE_GLSL+'varying vec4 vCoastColor;varying vec3 vCoastP;',apply:`diffuseColor.rgb=mix(diffuseColor.rgb,vCoastColor.rgb,uWorldDetail);${GROUND_APPLY}
+      vec3 limestone=coastLimestone(vCoastColor.rgb,vCoastP);
+      diffuseColor.rgb=mix(diffuseColor.rgb,limestone,uWorldDetail*vCoastColor.a);`});
+    const patch=m.onBeforeCompile;m.onBeforeCompile=shader=>{patch(shader);if(surface==='coastalUrban'){// Insert the old scan before the coastal mix, so Off is byte-for-byte the original courtyard recipe.
+      const marker='#include <color_fragment>';shader.fragmentShader=shader.fragmentShader.replace(marker,marker+'\n//COAST_SCAN_END');scan(shader);}
+    };return m;
+  }
   if(surface==='ground')return patchMaterial(base(),{key:'athens-ground-v1',vertexVaryings:GROUND_VERTEX_VARYINGS,vertexBody:GROUND_VERTEX_BODY,fragmentGlsl:GROUND_GLSL,apply:GROUND_APPLY});
   if(surface==='building')return patchMaterial(base(),{key:'athens-building-v1',vertexVaryings:FACADE_VERTEX_VARYINGS,vertexBody:FACADE_VERTEX_BODY,fragmentGlsl:FACADE_GLSL,apply:FACADE_APPLY});
   if(surface==='sea')return patchMaterial(base(),{key:'athens-sea-v1',vertexVaryings:SEA_VERTEX_VARYINGS,vertexBody:SEA_VERTEX_BODY,fragmentGlsl:SEA_GLSL,apply:SEA_APPLY,uniforms:{uSeaTime:SEA_TIME}});
+  if(surface==='coastalDetail'||surface==='coastalBuilding'){
+    const m=surface==='coastalBuilding'?dressedMaterial('building',rgb,vertexColors):base(),off=onSettings((s,key)=>{if(!key||key==='worldDetail')m.visible=s.worldDetail!==false;});
+    if(surface==='coastalDetail')patchMaterial(m,{key:'coastal-limestone',vertexVaryings:GROUND_VERTEX_VARYINGS+'attribute float aRock;varying float vRock;varying vec3 vRockP;',vertexBody:GROUND_VERTEX_BODY+'vRock=aRock;vRockP=position;',fragmentGlsl:GROUND_GLSL+LIMESTONE_GLSL+'varying float vRock;varying vec3 vRockP;',apply:`diffuseColor.rgb=mix(diffuseColor.rgb,coastLimestone(diffuseColor.rgb,vRockP),vRock*uWorldDetail);`});
+    m.visible=settings.worldDetail!==false;m.addEventListener('dispose',off);return m;
+  }
   if(surface==='foam'){
     const m=patchMaterial(base(),{key:'athens-foam-v1',vertexVaryings:FOAM_VERTEX_VARYINGS,vertexBody:FOAM_VERTEX_BODY,fragmentGlsl:FOAM_GLSL,apply:FOAM_APPLY,uniforms:{uSeaTime:SEA_TIME}});
     m.polygonOffset=true;m.polygonOffsetFactor=-1;m.polygonOffsetUnits=-1;

@@ -55,7 +55,7 @@ export function encodeTile(input) {
 export async function packTiles(path, output,{onTile=null,maxBytes=Infinity}={}) {
   await mkdir(output,{recursive:true});
   const entries={}, seams=new Map(),failures=[],keepGoing=!!process.env.ATHENS_KEEP_GOING;let identity,totalBytes=0;
-  for await (const line of createInterface({input:createReadStream(path),crlfDelay:Infinity})) {
+  for await (const line of createInterface({input:typeof path==='string'?createReadStream(path):path,crlfDelay:Infinity})) {
     if (!line.trim()) continue;
     const input=JSON.parse(line);let encoded;
     try{encoded=encodeTile(input);}catch(e){if(!keepGoing)throw e;failures.push({cell:input.metadata?.cell,error:e.message.slice(0,300)});continue;}

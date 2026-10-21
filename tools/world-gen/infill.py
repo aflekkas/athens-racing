@@ -180,7 +180,7 @@ def interior_components(block, excluded):
     return [g for g in geoms if g.geom_type == 'Polygon' and g.area >= MIN_INTERIOR_M2]
 
 
-def lots_in(interior):
+def lots_in(interior, storeys_range=STOREYS):
     """Lots packed edge first: candidates on a 3 m grid in the interior's frame, nearest the block edge first,
     each kept only if it lies wholly inside, clears the lots already placed by GAP_M and stays under the cover cap."""
     rect = interior.minimum_rotated_rectangle
@@ -216,7 +216,7 @@ def lots_in(interior):
             continue
         placed.append(lot)
         built += lot.area
-        storeys = round(seeded(key + ':s', *STOREYS))
+        storeys = round(seeded(key + ':s', *storeys_range))
         lots.append((key, affinity.rotate(lot, angle, origin=centre), storeys))
     return lots
 
@@ -233,7 +233,7 @@ def generated_record(identifier, footprint, storeys):
             'generated': True, 'storeys': storeys, 'landuse': 'residential'}
 
 
-def build(cache, assets, out, bounds=WORLD_BOUNDS):
+def build(cache, assets, out, bounds=WORLD_BOUNDS, storeys_range=STOREYS):
     clean = sqlite3.connect(f'file:{Path(cache) / "clean.sqlite"}?mode=ro', uri=True)
     plazas = assets_polygons(Path(assets) / 'plazas.json') + assets_polygons(Path(assets) / 'lawns.json')
     out = Path(out)
@@ -266,7 +266,7 @@ def build(cache, assets, out, bounds=WORLD_BOUNDS):
                     stats['sparseRing'] = stats.get('sparseRing', 0) + 1
                     continue
                 stats['interiorM2'] += interior.area
-                for key, footprint, storeys in lots_in(interior):
+                for key, footprint, storeys in lots_in(interior, storeys_range):
                     if not footprint.within(interior):
                         continue
                     stats['candidatesKept'] = stats.get('candidatesKept', 0) + 1
@@ -289,7 +289,7 @@ def build(cache, assets, out, bounds=WORLD_BOUNDS):
     meta = {'generator': 'infill.py', 'bounds': list(bounds), 'stats': stats,
             'codeSha256': {name: file_sha(here / name) for name in REVISION_FILES},
             'params': dict(sidewalk=SIDEWALK_M, footway=FOOTWAY_BUFFER_M, minInterior=MIN_INTERIOR_M2,
-                           maxCover=MAX_COVER, gap=GAP_M, storeys=list(STOREYS), floor=FLOOR_M)}
+                           maxCover=MAX_COVER, gap=GAP_M, storeys=list(storeys_range), floor=FLOOR_M)}
     db.execute('INSERT INTO metadata(key, value) VALUES(?, ?)', ('infill', json.dumps(meta, sort_keys=True)))
     db.commit()
     db.close()
