@@ -8,14 +8,16 @@ export function readGraphShard(pack){const m=pack.metadata,t=pack.tables||tileTa
 // Tile graph ownership is independent of scene objects. World IDs survive portal crossings and eviction.
 export class WorldRoadGraph {
   constructor(){this.nodes=new Map();this.edges=new Map();this.outgoing=new Map();this.turns=new Map();this.owners=new Map();}
-  install(key,pack){
+  install(key,pack){for(const _ of this.installSteps(key,pack))void _;}
+  *installSteps(key,pack,{batchSize=32}={}){
     if(this.owners.has(key))throw new Error('Graph tile already installed');
     const shard=pack.roadGraph||readGraphShard(pack),owned={nodes:[],edges:[],turns:[]};
     const intern=(registry,id,value)=>{const old=registry.get(id);if(old){if(JSON.stringify(old.value)!==JSON.stringify(value))throw new Error(`Conflicting graph portal ${id}`);old.refs++;}else registry.set(id,{value,refs:1});};
+    this.owners.set(key,owned);let count=0;
     try{
-      for(const node of shard.nodes){intern(this.nodes,node.id,node);owned.nodes.push(node.id);}
-      for(const edge of shard.edges){intern(this.edges,edge.id,edge);owned.edges.push(edge.id);let out=this.outgoing.get(edge.from);if(!out)this.outgoing.set(edge.from,out=new Set());out.add(edge.id);}
-      for(const rule of shard.turns){const id=JSON.stringify(rule);intern(this.turns,id,rule);owned.turns.push(id);}
+      for(const node of shard.nodes){intern(this.nodes,node.id,node);owned.nodes.push(node.id);if(++count%batchSize===0)yield {stage:'graph'};}
+      for(const edge of shard.edges){intern(this.edges,edge.id,edge);owned.edges.push(edge.id);let out=this.outgoing.get(edge.from);if(!out)this.outgoing.set(edge.from,out=new Set());out.add(edge.id);if(++count%batchSize===0)yield {stage:'graph'};}
+      for(const rule of shard.turns){const id=JSON.stringify(rule);intern(this.turns,id,rule);owned.turns.push(id);if(++count%batchSize===0)yield {stage:'graph'};}
       this.owners.set(key,owned);
     }catch(error){this.owners.set(key,owned);this.remove(key);throw error;}
   }

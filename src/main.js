@@ -1,8 +1,13 @@
+import {RouteRuntime} from './route-runtime.js';
+import {worldRecoveryTarget} from './world-recovery.js';
+import {RouteRivals} from './route-rivals.js';
+import {RouteClosures} from './route-closures.js';
+import {WorldTraffic} from './world-traffic.js';
 import {RouteGuidance} from './route-guidance.js';
 import {createWorldSession} from './world-session.js';
 import {loadUnifiedRoute,loadUnifiedRouteCatalogue} from './unified-routes.js';
 import {routeEvent} from './route-events.js';
-import {RouteNavigation} from './route-navigation.js';
+import {RouteNavigation,returnRoutePoints} from './route-navigation.js';
 import {buildRouteGuidanceData} from './route-guidance-data.js';
 import {projectEdge} from './route-geometry.js';
 import {planWorldTow} from './tow-placement.js';
@@ -207,7 +212,7 @@ function playerImpactVoice(event) {
 }
 const voicePoint = new THREE.Vector3(), voiceRotation = new THREE.Quaternion();
 function voiceRelative(p) {
-  return voicePoint.set(p.x, p.y, p.z).sub(camera.position).applyQuaternion(voiceRotation.copy(camera.quaternion).invert()).clone();
+  const o=worldSession?.stream.origin;return voicePoint.set(p.x-(o?.x||0), p.y, p.z-(o?.z||0)).sub(camera.position).applyQuaternion(voiceRotation.copy(camera.quaternion).invert()).clone();
 }
 function pedestrianVoice(p, category) {
   if (multiplayer.active) return;
@@ -263,7 +268,7 @@ if (Q.has('simhook')) window.__renderTest = {
 
 let ground = null, splash = null, fx = null, police = null, policeHud = null;
 let drivingModeView = null;
-let worldSession=null,routeNavigation=null,routeGuidance=null,guidanceData=null,pilotDriver=null,guidanceTilesOff=null;
+let worldSession=null,routeNavigation=null,routeGuidance=null,guidanceData=null,pilotDriver=null,guidanceTilesOff=null,routeRivals=null,routeClosures=null;
 let world = null, mapSwitch = null, lastMapDisposal = null;
 const sessionTransitions = new SessionTransitions();
 const blackout = createBlackout(() => { G.towing = false; });
@@ -316,7 +321,7 @@ async function boot() {
     if(G.unifiedCompiled&&Q.has('car')){const i=CARS.findIndex(c=>c.id===canonicalCarId(Q.get('car')));if(i>=0)G.carIdx=i;}
     await switchMap(G.unifiedCompiled?'athens':initialMapId(Q), Q.get('event') === 'free' ? 'FREE ROAM' : 'QUICK RACE');
     prepareEvent(Q.get('event') || 'quick'); resetRace();
-    G.cam = G.userCam; applyCamMode(); updateCamera(0, true); startCountdown();
+    G.cam = G.userCam; applyCamMode(); updateCamera(0, true);if(G.unifiedCompiled&&Q.has('setup')){G.state='menu';menu.show('setup',{mode:'quick'});}else startCountdown();
   }
   document.body.classList.add('loaded');
   performance.mark('menu-ready'); tlog('ready');
@@ -324,64 +329,74 @@ async function boot() {
 
 // The pilot binds capabilities to the existing renderer, input, camera, clock and results.
 async function loadUnifiedWorld(compiled) {
-  loading.show('athens', 'SYNTAGMA SPRINT'); loading.setRoute?.(compiled); G.state='loading';
+  loading.show('athens', compiled.definition.name); loading.setRoute?.(compiled); G.state='loading';G.routePreparing=true;
   const started=performance.now();
   try {
     if(!sky){sky=ENV.createSky();scene.add(sky);const baked=ENV.bakeSky(renderer,sky);probeSeed=baked.cube;scene.environment=baked.env;setCarEnv(baked.env);({sun}=ENV.createLights(scene));}
-    worldSession ||= await createWorldSession({renderer,scene,resources:GFX.resources,progress:lstat,worldDefinition:{manifestURL:'/data/athens/manifest.json'}});
+    const sessionReady=worldSession?Promise.resolve(worldSession):createWorldSession({renderer,scene,resources:GFX.resources,progress:lstat,worldDefinition:{manifestURL:'/data/athens/manifest.json'}});
+    if(!player){route=new RouteRuntime(compiled);setCar(G.carIdx,false);rival.model.root.visible=false;}post ||= createPost(renderer,scene,camera);const carPrograms=compileScene();
+    worldSession=await sessionReady;if(Q.has('simhook'))window.__worldSession=worldSession;
     route=await worldSession.prepareRoute(compiled,{cars:[CARS[G.carIdx]]});ground=worldSession.ground;
-    map={id:'athens',definition:{name:compiled.definition.name},route,marks:[],events:compiled.definition.events.filter(e=>e.enabled).map(e=>routeEvent(compiled,e.id))};
+    map={id:'athens',definition:{name:compiled.definition.name},route,marks:[],data:{marks:[],route:{}},events:compiled.definition.events.filter(e=>e.enabled).map(e=>routeEvent(compiled,e.id))};
     world={session:worldSession,map,group:scene,dispose:()=>worldSession.dispose()}; selectedMapId='athens';G.mapId='athens';
     hud?.paintPanel?.remove();$('rticks').replaceChildren();hud=new Hud(map);applyCpuBudget();hud.worldRoads=worldSession.roads;document.querySelector('#posBox .of').textContent='/1';$('rivalName').textContent='BEST';
     post ||= createPost(renderer,scene,camera);window.__post=post;post.setSize(innerWidth,innerHeight,pixelRatio,outputRatio(pixelRatio,window.devicePixelRatio));
     G.unifiedCompiled=compiled;routeNavigation=new RouteNavigation(route);guidanceData=buildRouteGuidanceData(compiled);
-    setCar(G.carIdx,false);rival.model.root.visible=false;
-    prepareEvent(map.events[0]);resetUnifiedRace();G.cam=G.userCam;applyCamMode();updateCamera(0,true);
+    routeClosures?.dispose();routeClosures=new RouteClosures(worldSession,scene,compiled.closures||[]);worldSession.closures=routeClosures;ground.closures=routeClosures;
+    traffic?.dispose?.();traffic=new WorldTraffic(worldSession,scene,route,{closures:routeClosures});people={onRoad:[],peds:[],events:[]};routeRivals=new RouteRivals(route);policeHud ||= new PoliceHud();
+    if(!window.__ghostLap)initGhostLap({G,scene,route,hud,input,player:()=>player,online:()=>false,trackVersion:()=>G.unifiedCompiled.geometryHash,origin:()=>worldSession.stream.origin,routeIdentity:()=>({...G.ev.def,projectionId:'athens-v1',direction:1,laps:G.ev.r.laps,setupKey:exactBestKey(G.bestSetup||bestSetup())})});
+    if(player){player.veh.route=route;player.veh.ground=ground;}if(rival)rival.veh.route=route;if(player.spec.id!==CARS[G.carIdx].id)setCar(G.carIdx,false);rival.model.root.visible=false;if(window.__ghostLap)Object.assign(window.__ghostLap.ctx,{route,hud});
+    prepareEvent(map.events[0]);resetUnifiedRace();bindMapWeather();G.cam=G.userCam;applyCamMode();updateCamera(0,true);
     guidanceTilesOff?.();routeGuidance?.dispose();routeGuidance=new RouteGuidance(scene,{contact:(x,z,referenceY,layer)=>worldSession.stream.contact(x,z,{referenceY,layer,requiredFlags:1})});routeGuidance.setRoute(guidanceData);guidanceTilesOff=worldSession.subscribeTiles({activated:k=>routeGuidance.onTileActivated(k),removed:k=>routeGuidance.onTileRemoved(k)});hud.routeGuidance=routeGuidance;
-    lstat('Preparing roads',0,{worldId:'athens',routeId:compiled.id,selectionToken:worldSession.selectionToken,phase:'warm'});await compileScene();worldSession.inventory();lstat('Ready',0,{worldId:'athens',routeId:compiled.id,selectionToken:worldSession.selectionToken,phase:'ready'});
+    lstat('Preparing roads',0,{worldId:'athens',routeId:compiled.id,selectionToken:worldSession.selectionToken,phase:'warm'});await carPrograms;await compileScene();worldSession.inventory();lstat('Ready',0,{worldId:'athens',routeId:compiled.id,selectionToken:worldSession.selectionToken,phase:'ready'});
     worldSession.metrics.selectionToCountdownMs=performance.now()-started;worldSession.metrics.initialWorldBytes=worldSession.stream.pool?.downloadedBytes??worldSession.stream.metrics.loadedBytes;window.__worldSession=worldSession;
-    if(Q.has('simhook'))window.__routePilot={get player(){return player;},get route(){return route;},get run(){return G.run;},get guidance(){return guidanceData;},get visuals(){return routeGuidance?.stats;},session:worldSession,G,scene,renderer,camera,input,step:(dt=1/60)=>step(dt),restart:()=>startEvent(G.ev.def),tow:()=>towUnified(),setDriver:fn=>{pilotDriver=fn;}};
-    addEventListener('pagehide',()=>{guidanceTilesOff?.();routeGuidance?.dispose();worldSession?.dispose();},{once:true});loading.hide();return map;
+    if(Q.has('simhook'))window.__routePilot={get player(){return player;},get route(){return route;},get run(){return G.run;},get rivals(){return grid;},get traffic(){return traffic;},get closures(){return routeClosures;},get guidance(){return guidanceData;},get visuals(){return routeGuidance?.stats;},session:worldSession,G,scene,renderer,camera,input,step:(dt=1/60,draw=false,visual=true)=>step(dt,draw,visual,dt),restart:()=>startEvent(G.ev.def),start:def=>startEvent(def),tow:()=>towUnified(),setDriver:fn=>{pilotDriver=fn;}};
+    addEventListener('pagehide',()=>{guidanceTilesOff?.();routeGuidance?.dispose();worldSession?.dispose();},{once:true});G.routePreparing=false;loading.hide();return map;
   } catch(error){loading.fail({code:errorCode(error),retry:()=>loadUnifiedWorld(compiled)});throw error;}
 }
 function resetUnifiedRace(){
-  G.run?.abort('restart');routeNavigation.reset();const pv=player.veh,p=G.unifiedCompiled.grid[0];
+  G.run?.abort('restart');notifications.clear();routeNavigation.reset();buildGrid();const pv=player.veh,p=G.unifiedCompiled.grid[0];
+  traffic.configure(G.ev.def);routeClosures.setEvent(G.ev.def);resetTowOffer();
   pv.reset(0,0,0);Object.assign(pv,{x:p.x,y:p.y,z:p.z,yaw:p.yaw,vLong:0,vLat:0,w:0,s:-8,u:0,_network:true});pv.ground=ground;ground.begin(pv);ground.resolve(pv,1/240);pv.syncWheels();applyDriving();$('rivalName').textContent='BEST';
   Object.assign(G,{raceT:0,pen:0,crashes:0,topSpeed:0,pFinish:null,rFinish:null,finishedT:0,postT:0,result:null,routeHint:false,streamInterrupted:false,towing:false,bestSetupChanged:false,marksDir:[],markIdx:0});
-  G.tP=new Float32Array(Math.ceil(route.length/10)+4).fill(NaN);G.tR=new Float32Array(G.tP.length).fill(NaN);syncCar(player,0);
+  G.tP=new Float32Array(Math.ceil(G.ev.r.len/10)+4).fill(NaN);G.tR=new Float32Array(G.tP.length).fill(NaN);
+  for(const [i,c]of grid.entries()){const p=G.unifiedCompiled.grid[i+1];c.veh.route=route;c.veh.ground=ground;c.veh.reset(-8*(i+2),0,0);Object.assign(c.veh,{...p,s:-8*(i+2),u:0,vLong:0,vLat:0,w:0,_network:true});ground.begin(c.veh);ground.resolve(c.veh,1/240);c.veh.syncWheels();c.ai={lane:0,u:0,cool:0};c.dir=1;c.finish=null;c.pen=0;c.front=null;c.ghost=false;c.distant=false;c.course=buildCourse(G.ev.r,route);c.ai.controller=new RivalAI(route,c.veh,{driver:c.drv,dir:1,closedRoad:G.ev.def.traffic===0});c.tR=new Float32Array(G.tP.length).fill(NaN);syncCar(c,0);}
+  document.querySelector('#posBox .of').textContent='/'+(grid.length+1);syncCar(player,0);
 }
 async function towUnified(){
   if(G.towing||!worldSession)return;G.towing=true;
   try{const v=player.veh,roads=worldSession.roads,candidates=[];
-    for(const {value:e}of roads.graph.edges.values()){
-      const p=projectEdge(e,v.x,v.z);if(!p||p.distance>160||e.flags&8)continue;const centre=worldSession.stream.contact(p.x,p.z,{referenceY:p.y,layer:e.layer,requiredFlags:1});if(!centre)continue;Object.assign(p,{y:centre.y,surfaceId:centre.surfaceId});const width=roads.width(p,{connected:true,radius:32,bounded:true});if(!width)continue;
-      const u=(width.right-width.left)/2;p.x+=p.rx*u;p.z+=p.rz*u;const c=worldSession.stream.contact(p.x,p.z,{referenceY:p.y,layer:e.layer,requiredFlags:1});if(!c)continue;Object.assign(p,{y:c.y,edgeId:e.id,surfaceId:c.surfaceId});if(worldSession.safePose(p,{halfWidth:v.halfW,halfLength:v.halfL}))candidates.push(p);
-    }
-    const target=planWorldTow({pose:v,course:G.run?.course,route,roadCandidates:candidates});if(!target)throw Error('No safe loaded road');
+    const target=worldRecoveryTarget(worldSession,v,{course:G.run?.course,route,halfWidth:v.halfW,halfLength:v.halfL,actors:[...grid.filter(c=>!c.distant).map(c=>c.veh),...traffic.actors]});if(!target)throw Error('No safe loaded road');
     await worldSession.stream.teleport(target,()=>{const kept=v.damageSnapshot();v.reset(target.s,target.u,0);Object.assign(v,{x:target.x,y:target.y,z:target.z,yaw:target.yaw,s:target.s,u:target.u,vLong:0,vLat:0,w:0});v.restoreDamageSnapshot(kept);ground.begin(v);ground.resolve(v,1/240);v.syncWheels();if(G.run?.course)towCourseTo(G.run.course,{...v,...v.routeContact,kind:target.kind},G.run.courseClock);G.streamInterrupted=true;G.bestSetupChanged=true;updateCamera(0,true);});
   }catch(error){hud.message('ROAD NOT READY · TRY AGAIN',2);console.warn(error);}finally{G.towing=false;}
 }
 function stepUnified(dt,visual,frameDt){
  const v=player.veh,simulate=!inMenu()&&!G.towing;
- if(visual){worldSession.setInterest({player:v,actors:[],routeCursor:{s:v.s}});worldSession.update(frameDt);worldSession.activateFrame();}
+ if(G.towing&&G.state==='race'){G.raceT+=dt;window.__ghostLap?.tick(dt);}const captured=towOffer.recovering&&towOffer.hold>0;if(captured){towOffer.hold=Math.max(0,towOffer.hold-dt);v.vLong=v.vLat=v.w=0;if(!towOffer.hold)towOffer.recovering=false;}
+ if(visual){worldSession.setInterest({player:v,actors:[...routeRivals.interests(grid,v),...traffic.actors],routeCursor:{s:v.s}});worldSession.update(frameDt);worldSession.activateFrame();}
+ if(simulate){tickWorldLife(dt,{running:true});updateRoadWeather(dt);}
  if(simulate&&G.state==='countdown'){
-  G.countT+=dt;const n=Math.min(3,Math.floor(G.countT/.4));if(n!==G.countShown){G.countShown=n;hud.count(n<3?String(3-n):'GO!',n===3);audio.beep(n===3);if(n===3){G.state='race';G.raceT=0;G.run.start({field:1,grid:[]});document.body.classList.remove('counting');document.body.classList.add('racing');}}
+  G.countT+=dt;const n=Math.min(3,Math.floor(G.countT/.4));if(n!==G.countShown){G.countShown=n;hud.count(n<3?String(3-n):'GO!',n===3);audio.beep(n===3);if(n===3){G.state='race';G.raceT=0;G.run.start({field:grid.length+1,grid:grid.map(c=>({id:c.drv.id,name:c.name,car:c.spec.id}))});document.body.classList.remove('counting');document.body.classList.add('racing');}}
   v.rpm=damp(v.rpm,v.spec.idle+input.throttle*v.spec.redline*.7,6,dt);
  }
  if(simulate&&['race','finished'].includes(G.state)){
   if(!ground.ready(v,dt)){if(G.state==='race'){worldSession.metrics.holds++;G.streamInterrupted=true;G.bestSetupChanged=true;if(!G.roadLoading){hud.message('ROAD STILL LOADING',2);G.roadLoading=true;}}}
   else {G.roadLoading=false;const previous={x:v.x,y:v.y,z:v.z,yaw:v.yaw};ground.begin(v);
-   try{v.update(dt,G.state==='race'?(pilotDriver?.(v,dt)||input):{throttle:0,brake:.5,steer:0,handbrake:false});if(v.wallHit>2.5&&G.t-(G.lastWorldCrash||-10)>.5){G.crashes++;G.lastWorldCrash=G.t;}v.wallHit=0;v.crashDv=0;}catch(error){Object.assign(v,previous,{vLong:0,vLat:0,w:0});worldSession.metrics.missingContacts++;throw error;}
-   if(G.state==='race'){G.raceT+=dt;G.topSpeed=Math.max(G.topSpeed,v.kmh);raceTiming(dt);}
+   try{v.update(dt,G.state==='race'&&!captured?(pilotDriver?.(v,dt)||input):{throttle:0,brake:.5,steer:0,handbrake:false});if(v.wallHit>2.5&&G.t-(G.lastWorldCrash||-10)>.5){G.crashes++;G.lastWorldCrash=G.t;}v.wallHit=0;v.crashDv=0;}catch(error){Object.assign(v,previous,{vLong:0,vLat:0,w:0});worldSession.metrics.missingContacts++;throw error;}
+   routeRivals.update(dt,grid,v,{ready:p=>ground.ready(p,dt),safe:(p,o)=>worldSession.safePose(p,o),step:(c,h)=>updateGrid(h,[c]),now:G.raceT+G.postT+dt});
+   traffic.update(dt,v,[v,...grid.filter(c=>!c.distant).map(c=>c.veh)]);const contacts=[];traffic.collide({veh:v,kind:'player'},contacts,G.t);for(const c of grid.filter(c=>!c.distant)){traffic.collide(c.actor,contacts,G.t);racerPair(v,c.veh,true);}for(let i=0;i<grid.length;i++)for(let j=i+1;j<grid.length;j++)if(!grid[i].distant&&!grid[j].distant)racerPair(grid[i].veh,grid[j].veh,false);
+   if(G.state==='race'){G.raceT+=dt;G.topSpeed=Math.max(G.topSpeed,v.kmh);window.__ghostLap?.tick(dt);raceTiming(dt);}else if(G.state==='finished'){G.postT+=dt;G.finishedT+=dt;advanceRivalCourses(dt);updateFinishView();}
   }
  }
  if(!visual)return;
- syncCar(player,simulate?frameDt:0);player.cockpit.setDetail(G.cam==='cockpit');player.cockpit.setVisible(G.cam==='cockpit');player.cockpit.update(frameDt,{vehicle:v,ignition:['race','countdown'].includes(G.state),manual:v.manual,rpm:v.rpm,redline:v.spec.redline,gear:v.gear,gearLabel:String(v.gear),kmh:v.kmh,steerInput:input.steer,handbrake:input.handbrake});
+ traffic.sync();routeClosures.update();for(const c of grid)if(!c.distant)syncCar(c,frameDt);syncCar(player,simulate?frameDt:0);window.__ghostLap?.visual(frameDt);policeHud?.update(frameDt);player.cockpit.setDetail(G.cam==='cockpit');player.cockpit.setVisible(G.cam==='cockpit');player.cockpit.update(frameDt,{vehicle:v,ignition:['race','countdown'].includes(G.state),manual:v.manual,rpm:v.rpm,redline:v.spec.redline,gear:v.gear,gearLabel:String(v.gear),kmh:v.kmh,steerInput:input.steer,handbrake:input.handbrake});
+ const finishWatched=watchingDriver();updateFinishSpectateHud({visible:!!finishWatched&&!inMenu(),name:finishWatched?.name,position:finishWatched?.position,time:fmtTime(G.pFinish),ownPosition:G.result?.position??racePosition()});
  updateCamera(frameDt);worldSession.updateView(camera);ENV.U.time.value=G.t;
- const contact=worldSession.stream.contact(v.x,v.z,{referenceY:v.y}),nav=routeNavigation.update({dt:frameDt,position:v,heading:v.yaw,speed:v.vLong,earnedS:G.run?.course.validProgress||0,time:G.t,contact});if(nav.notice&&G.state==='race')hud.message(nav.notice,2);
+ const contact=worldSession.stream.contact(v.x,v.z,{referenceY:v.y}),nav=routeNavigation.update({dt:frameDt,position:v,heading:v.yaw,speed:v.vLong,earnedS:G.run?.course.rejoinLimit??G.run?.course.reached??0,time:G.t,contact});hud.routeNotice(nav,G.state==='race');if(simulate&&G.state==='race'){towOffer.cooldown=Math.max(0,towOffer.cooldown-frameDt);if(towCondition({offroad:nav.offRoute,beyond:Math.max(0,Math.abs(nav.u)-route.edge(nav.s)),water:v.water,inverted:Math.abs(v.pose.roll)>1.4,disabled:v.engineStalled||v.drivetrainBroken,speed:Math.hypot(v.vLong,v.vLat)},frameDt,towOffer))offerTow();}
+ if(nav.offRoute&&G.t-(G.returnPathAt||-10)>.5){G.returnPathAt=G.t;const rejoin=route.point(nav.rejoinS),path=worldSession.roads.gps(v,{...rejoin,layer:route.edgeAt(nav.rejoinS).layer});G.returnPath=path&&!path.edges.some(id=>routeClosures.blocksEdge(worldSession.roads.graph.edges.get(id).value))?returnRoutePoints(path,worldSession.roads.graph):null;}if(!nav.offRoute)G.returnPath=null;nav.returnPath=G.returnPath;
  const activeCells=new Set([...worldSession.stream.tiles].filter(([,t])=>t.state==='active').map(([k])=>k));routeGuidance?.update({cursorS:nav.s,occurrence:nav.occurrence,lap:G.run?.lap||1,position:v,heading:v.yaw,origin:worldSession.stream.origin,activeCells,isRace:true});
- hud.update({s:v.s,rs:0,x:v.x,z:v.z,yaw:v.yaw,pos:1,time:G.pFinish??G.raceT,gap:NaN,pen:0,rpm:v.rpm,redline:v.spec.redline,kmh:speedIn(v.kmh),unit:speedUnit(),gearLabel:G.state==='countdown'?'N':v.reverse?'R':String(v.gear),tc:v.tcOn,abs:v.absOn,esc:v.escOn,aidsOff:!settings.aids,shiftFlash:0,draft:0,nitrous:v.spec.nitrous===true,nitro:v.nitro,nitroOn:v.nitroOn,free:false,limit:null,traffic:[],manual:v.manual,canUpshift:true,offRoute:nav.offRoute,routeCursor:nav});
- if(drawUnifiedAudio())updateAudio(frameDt);if(G.state==='race'&&G.raceT>5)document.body.classList.add('started');
+ hud.update({s:v.s,rs:0,x:v.x,z:v.z,yaw:v.yaw,pos:racePosition(),time:G.pFinish??G.raceT,gap:raceGap(),pen:0,rpm:v.rpm,redline:v.spec.redline,kmh:speedIn(v.kmh),unit:speedUnit(),gearLabel:G.state==='countdown'?'N':v.reverse?'R':String(v.gear),tc:v.tcOn,abs:v.absOn,esc:v.escOn,aidsOff:!settings.aids,shiftFlash:0,draft:0,nitrous:v.spec.nitrous===true,nitro:v.nitro,nitroOn:v.nitroOn,free:false,limit:null,traffic:traffic.cars.filter(c=>c.active),manual:v.manual,canUpshift:true,offRoute:nav.offRoute,routeCursor:nav});
+ updateWeather(frameDt);if(drawUnifiedAudio())updateAudio(frameDt);if(G.state==='race'&&G.raceT>5)document.body.classList.add('started');
 }
 function drawUnifiedFrame(dt,draw,visual,frameDt){stepUnified(dt,visual,frameDt);if(draw&&visual)render();}
 function drawUnifiedAudio(){return !!audio.ctx&&!!player;}
@@ -462,14 +477,14 @@ function bindMapWorld(next) {
   G.mapId = map.id || 'riviera';
 }
 function bindMapWeather() {
-  initWeather({ renderer, scene, camera, sky, water, sun, post, probe, traffic, assets, audio, quality: R.particles, cars: () => [player, rival], cam: () => G.cam });
+  initWeather({ renderer, scene, camera, sky, water, sun, post, probe, traffic, assets, audio, quality: R.particles, cars: () => worldSession ? [player,...grid] : [player, rival], cam: () => G.cam });
 }
 /** Menu/lobby contract: await switchMap(id), then prepare/start the selected event. */
 async function switchMap(id = 'riviera', context = 'QUICK RACE') {
   if (mapSwitch) { await mapSwitch; return switchMap(id, context); }
   if (world && map?.id === id) return map;
   if(worldSession&&id!=='athens'){guidanceTilesOff?.();routeGuidance?.dispose();worldSession.dispose();const url=new URL(location.href);url.search='?menu=1&map='+encodeURIComponent(id);location.assign(url);throw Error('Leaving route pilot');}
-  if(id==='athens'&&G.unifiedCompiled)return loadUnifiedWorld(G.unifiedCompiled);
+  if(id==='athens'&&G.unifiedCompiled){if(worldSession&&map?.route?.compiled.routeHash===G.unifiedCompiled.routeHash)return map;return loadUnifiedWorld(G.unifiedCompiled);}
   getMap(id); selectedMapId = id; setAssetCodecMap(id);
   loading.show(id, context);
   mapSwitch = (async () => {
@@ -861,7 +876,7 @@ function recoverFromCapture() {
   if (multiplayer.active) { tow(player.veh, { capture: true }); hud.message('<i>PULLED OVER</i> · RECOVERY HOLD', 4); return; }
   if (G.ev?.def.type === 'pursuit') { finishRace('busted'); return; }
   // Pulled over: held at the roadside while the clock runs (no fine, no added seconds), then you drive on.
-  police?.reset(police.enabled);
+  if(worldSession)traffic.configure(G.ev.def);else police?.reset(police.enabled);
   towOffer.recovering = true; towOffer.hold = inFreeRoam() ? 3 : CAPTURE_HOLD;
   hud.message(`<i>PULLED OVER</i> · HELD ${towOffer.hold} s`, 4);
 }
@@ -982,7 +997,7 @@ function updateFinishView() {
 }
 
 function bestSetup(def = G.ev?.def, r = G.ev?.r, car = player?.spec.id) {
-  return personalBestSetup({ mapId: def?.routeId?`athens:${def.routeId}:${def.geometryHash}`:map?.id, def, route: r, car: car || CARS[G.carIdx]?.id, carSpec: CARS.find(c => c.id === (car || player?.spec.id)), conditions: window.__conditions?.(),
+  return personalBestSetup({ mapId: map?.id, def, route: r, car: car || CARS[G.carIdx]?.id, carSpec: CARS.find(c => c.id === (car || player?.spec.id)), conditions: window.__conditions?.(),
     assists: { tc: settings.aids, abs: settings.abs, steering: settings.steeringAssist ?? (['gamepad', 'wheel'].includes(activeInputDevice()) ? 'light' : 'full'), gearbox: settings.transmission } });
 }
 function rememberResult(res) {
@@ -1035,7 +1050,7 @@ function initFlow() {
   let plate = driverName.plate();
   driverName.onChange(() => { const next = driverName.plate(); if (next !== plate) { plate = next; player?.model.setPlate(next); } });
   const handlers = {
-    selectUnifiedRoute:id=>{const url=new URL(location.href);url.searchParams.set('routes','1');url.searchParams.set('route',id);url.searchParams.delete('menu');location.assign(url);},
+    selectUnifiedRoute:async id=>{const url=new URL(location.href);url.searchParams.set('routes','1');url.searchParams.set('route',id);url.searchParams.delete('menu');url.searchParams.set('setup','1');const compiled=await loadUnifiedRoute(url.searchParams);G.unifiedCompiled=compiled;await loadUnifiedWorld(compiled);history.replaceState(null,'',url);G.state='menu';menu.show('setup',{mode:'quick'});},
     quickRace: () => openEvent('quick'), openEvent, startFree: def => startEvent(def, { car: G.carIdx }), multiplayer: () => multiplayer.open(), garage: openGarage, selectMap: selectMenuMap, switchMap,
     chooseCar: (index, def, garage) => {
       try { localStorage.setItem('paraliaki.car', CARS[index].id); } catch {}
@@ -1068,7 +1083,7 @@ function initFlow() {
 }
 
 function mapEvent(id) {
-  if(worldSession){const def=typeof id==='object'?id:map.events.find(e=>e.id===id)||(id==='quick'?map.events[0]:null);return def?.routeId===G.unifiedCompiled.id&&['sprint','timetrial'].includes(def.type)&&!(def.rivalCount??def.rivals)&&!def.traffic&&!def.rules?.police&&def.conditions?.time==='afternoon'&&def.conditions?.weather==='clear'?def:null;}
+  if(worldSession){const def=typeof id==='object'?id:map.events.find(e=>e.id===id)||(id==='quick'?map.events[0]:null);if(def?.routeId!==G.unifiedCompiled.id||!['sprint','timetrial'].includes(def.type)||def.reverse||def.from!==0||def.to!==route.length)return null;if(!def.pilot)return def;return !(def.rivalCount??def.rivals)&&!def.traffic&&!def.rules?.police&&def.conditions?.time==='afternoon'&&def.conditions?.weather==='clear'?def:null;}
   if (id && typeof id === 'object') return ['sprint', 'free'].includes(id.type) ? id : null;
   const mapId = selectedMapId;
   if (id === 'free') return EV.freeRoam(mapId);
@@ -1083,7 +1098,7 @@ function prepareEvent(e) {
   const def = mapEvent(e) || mapEvent('quick');
   const r = EV.resolve(def, evCtx());
   G.ev = { def, r }; G.dir = r.dir; startS = r.s0;
-  if(worldSession){ENV.setConditions(def.conditions);post?.setConditions(ENV.COND_STATE);hud.setRange(r.s0,r.s1);document.body.dataset.mode=def.type;return r;}
+  if(worldSession){configureWorldLife(def,G.baseCond||window.__conditions());ENV.setConditions(def.conditions);post?.setConditions(ENV.COND_STATE);hud.setRange(r.s0,r.s1);document.body.dataset.mode=def.type;return r;}
   traffic.dir = r.dir;
   hud.setRange(r.s0, r.s1);
   world?.roadworks?.setEvent(def);
@@ -1114,7 +1129,7 @@ function advanceRivalCourses(dt, now = G.raceT + G.postT) {
   for (const c of grid) {
     c.course ||= buildCourse(G.ev.r, route);
     if (c.finish !== null) continue;
-    observeCourse(c.course, c.veh, now, { route });
+    if(c.distant)continue;observeCourse(c.course, {...c.veh,...c.veh.routeContact}, now, { route });
     if (!EV.isWrecked(c.veh.maxImpactEbs) && courseComplete(c.course)) {
       c.finish = (c.course.finishedAt ?? now) + c.pen;
       if (G.state === 'race' && G.pFinish === null && !G.rivalBanner) { G.rivalBanner = true; hud.pop('info cyan', c.name + ' FINISHED'); }
@@ -1187,7 +1202,7 @@ async function startEvent(id, opts = {}) {
   try {
     await switchMap(mapId, def.type === 'free' ? 'FREE ROAM' : def.quick || def.id === 'quick' ? 'QUICK RACE' : def.name);
     if (token !== soloStart || multiplayer.active) return;
-    if(worldSession){G.routePreparing=true;G.state='loading';loading.show('athens','SYNTAGMA SPRINT');loading.setRoute(G.unifiedCompiled);route=await worldSession.prepareRoute(G.unifiedCompiled,{cars:[CARS[idx]]});ground=worldSession.ground;map.route=route;player.veh.route=route;player.veh.ground=ground;routeNavigation=new RouteNavigation(route);hud.setRoute(G.unifiedCompiled);loading.hide();}
+    if(worldSession){G.routePreparing=true;G.state='loading';loading.show('athens',G.unifiedCompiled.definition.name);loading.setRoute(G.unifiedCompiled);route=await worldSession.prepareRoute(G.unifiedCompiled,{cars:[CARS[idx]]});ground=worldSession.ground;ground.closures=routeClosures;traffic.route=route;routeRivals=new RouteRivals(route);map.route=route;player.veh.route=route;player.veh.ground=ground;routeNavigation=new RouteNavigation(route);hud.setRoute(G.unifiedCompiled);loading.hide();}
     G.pendingEvent = def; restart(idx);
   } catch (error) {
     G.routePreparing=false;console.error('[map] start failed', error); showTitle();
@@ -1364,25 +1379,27 @@ function crossedDir(prev, now, dir) {
 
 // ---- the AI field, every step (offline only): equal physics, personalities, red lights, finishing
 const aiField = []; // every racer, reused each step; each RivalAI skips its own car
-function updateGrid(dt) {
+function updateGrid(dt, selection = grid) {
   const len = G.ev.r.len;
   aiField.length = 0; if (G.pFinish === null) aiField.push(player); for (const c of grid) aiField.push(c);
-  for (const c of grid) {
+  for (const c of selection) {
     const v = c.veh;
     let pace = 1; // RivalAI applies each driver's pace and a mild gap-to-player band.
     if (c.finish !== null) pace = prog(v.s) > len + 120 ? 0 : 0.3;
     const rin = aiInput(c, dt, pace, aiField);
     if (pace === 0) { rin.throttle = 0; rin.brake = v.vLong > 1 ? 0.7 : 0; rin.handbrake = v.vLong <= 1; }
+    if(worldSession&&(G.ev.def.traffic||0)>0){const e=worldSession.roads.graph.edges.get(route.edgeAt(v.s).edgeId)?.value;if(e&&worldSession.props.hold({...v,edge:e.id},e.points)){rin.throttle=0;rin.brake=Math.max(rin.brake,.7);}}
     c.lastBrake = rin.brake > 0.2;
     v.dragMul = 1 - 0.32 * (c.ai.controller?.draft || 0); // the same slipstream tow the player gets
     // Well away from the player (out of any close view) a rival integrates at 120 Hz instead of 240: half the cost,
     // within 0.3% on lap time (tools/ai-driving.test.mjs far-rival-substep).
     v.subH = Math.hypot(v.x - player.veh.x, v.z - player.veh.z) > 150 ? 1 / 120 : 0;
+    if(worldSession){if(!ground.ready(v,dt))continue;ground.begin(v);}
     v.update(dt, rin);
     if (v.spec.nitrous === true && !v.nitroOn) v.nitro = Math.min(1, v.nitro + dt * 0.012);
     // stop lines
     const f = v.s + G.dir * v.halfL;
-    if (G.state === 'race' && c.front !== null && v.vLong > 0 && c.finish === null) { const j = crossedDir(c.front, f, G.dir); if (j) onStopLine(j, 'rival'); }
+    if (!worldSession && G.state === 'race' && c.front !== null && v.vLong > 0 && c.finish === null) { const j = crossedDir(c.front, f, G.dir); if (j) onStopLine(j, 'rival'); }
     c.front = c.front === null ? f : G.dir > 0 ? Math.max(c.front, f) : Math.min(c.front, f);
     c.ghost = false; // Traffic and collision rules apply throughout the race.
   }
@@ -1521,25 +1538,25 @@ function showResults() {
   let title, sub, rows, field = null;
   if (res.retired) {
     title = 'RETIRED'; sub = 'Did not finish.';
-    rows = [['RESULT', 'DNF'], ['TIME', T(G.raceT + G.pen)], [worldSession?'PILOT BEST':'EVENT BEST', T(best)], ...info];
+    rows = [['RESULT', 'DNF'], ['TIME', T(G.raceT + G.pen)], [G.ev.def.pilot?'PILOT BEST':'EVENT BEST', T(best)], ...info];
   } else if (res.wrecked) {
     title = 'WRECKED'; sub = 'Did not finish.';
-    rows = [['RESULT', 'DNF'], ['TIME', T(G.raceT + G.pen)], [worldSession?'PILOT BEST':'EVENT BEST', T(best)], ...info];
+    rows = [['RESULT', 'DNF'], ['TIME', T(G.raceT + G.pen)], [G.ev.def.pilot?'PILOT BEST':'EVENT BEST', T(best)], ...info];
   } else if (res.busted) {
     title = 'BUSTED'; sub = 'The ΕΛ.ΑΣ. got you. Did not finish.';
-    rows = [['RESULT', 'DNF'], ['TIME', T(G.raceT + G.pen)], [worldSession?'PILOT BEST':'EVENT BEST', T(best)], ...info];
+    rows = [['RESULT', 'DNF'], ['TIME', T(G.raceT + G.pen)], [G.ev.def.pilot?'PILOT BEST':'EVENT BEST', T(best)], ...info];
   } else if (def.type === 'sprint') {
     const pos = res.position;
     const winner = grid.filter((c) => c.finish !== null).sort((a, b) => a.finish - b.finish)[0];
     title = pos === 1 ? 'VICTORY' : `P${pos} OF ${res.field}`;
     const gap = pos === 1 ? (winner ? winner.finish - res.time : null) : winner ? res.time - winner.finish : null;
     sub = pos === 1 ? (gap != null ? `Won by <b>${gap.toFixed(2)} s</b>.` : '') : `<b>${gap != null ? gap.toFixed(2) : '?'} s</b> behind <b>${esc(winner?.name || '')}</b>.`;
-    rows = [['POSITION', `P${pos} / ${res.field}`], ['YOUR TIME', T(res.time)], [pos === 1 ? 'MARGIN' : 'GAP TO WINNER', gap != null ? (pos === 1 ? '−' : '+') + gap.toFixed(2) + ' S' : '—'], [worldSession?'PILOT BEST':'EVENT BEST', T(best), res.newBest], ...info];
+    rows = [['POSITION', `P${pos} / ${res.field}`], ['YOUR TIME', T(res.time)], [pos === 1 ? 'MARGIN' : 'GAP TO WINNER', gap != null ? (pos === 1 ? '−' : '+') + gap.toFixed(2) + ' S' : '—'], [G.ev.def.pilot?'PILOT BEST':'EVENT BEST', T(best), res.newBest], ...info];
   } else {
     const d = prev.bestTime != null && res.time != null ? res.time - prev.bestTime : null;
     title = T(res.time);
     sub = def.type === 'pursuit' ? (res.how === 'timeup' ? 'Survived with the police on your tail.' : 'Lost the police.') : d === null ? 'First run on the board.' : d < 0 ? `New best by <b>${Math.abs(d).toFixed(2)} s</b>.` : `<b>${d.toFixed(2)} s</b> off your best.`;
-    rows = [['YOUR TIME', T(res.time)], [worldSession?'PILOT BEST':'EVENT BEST', T(best), res.newBest], ...info];
+    rows = [['YOUR TIME', T(res.time)], [G.ev.def.pilot?'PILOT BEST':'EVENT BEST', T(best), res.newBest], ...info];
   }
   if (def.type === 'sprint') {
     const all = [{ name: 'YOU', car: player.spec.short, finish: res.time, prog: earnedProgress(), me: true, dnf: !!(res.busted || res.wrecked || res.retired) }, ...grid.map(c => ({ name: c.name, car: c.spec.short, finish: c.finish, prog: earnedProgress(c), dnf: rivalDnf(c) }))];
@@ -1592,7 +1609,7 @@ function aiObstacles() {
   let n = 0;
   const rec = (s, u, hs, hu, a) => { const o = aiObsPool[n] || (aiObsPool[n] = {}); n++; o.s = s; o.u = u; o.hs = hs; o.hu = hu; o.vs = 0; o.a = a; aiObs.push(o); };
   for (const c of traffic.cars) aiObs.push(c);
-  for (const p of people.onRoad) rec(p.s, p.u, 0.6, 0.5, p);
+  for (const p of people?.onRoad||[]) rec(p.s, p.u, 0.6, 0.5, p);
   for (const s of traffic.sites) rec(s.s, s.u, s.len / 2, s.wid / 2, s);
   return aiObs;
 }
@@ -1690,7 +1707,7 @@ function racerCollide(dt) {
   if (G.pFinish === null) racerPair(player.veh, rival.veh, true);
 }
 function racerPair(a, b, mine) {
-  if (Math.abs(b.s - a.s) > 8) return;
+  if(worldSession?Math.hypot(b.x-a.x,b.z-a.z)>12:Math.abs(b.s-a.s)>8)return;
   // a rigid-body contact between the two cars (src/crash-contact.js): at the contact point, with both masses and yaw inertias,
   // restitution by closing speed and friction along the face, so an offset hit spins them and a glancing one scrubs speed
   const r = resolveCarPair(a, b, { route });
@@ -1781,7 +1798,7 @@ let _tlN = 0, _rivN = 0;
 const _audioRival = {}, _audioParam = { rival: _audioRival, wheels: _wheelArgs };
 const audioListener = { x: 0, z: 0, vx: 0, vz: 0, ready: false, camera: null };
 function listenerRel(x, y, z, vx, vz) {
-  return cameraRelativeSource(camera, audioListener, x, y, z, vx, vz);
+  const o=worldSession?.stream.origin;return cameraRelativeSource(camera, audioListener, x-(o?.x||0), y, z-(o?.z||0), vx, vz);
 }
 function handleTrafficSounds() {
   if (multiplayer.active) { traffic.sounds.length = 0; return; }
@@ -1820,10 +1837,10 @@ function updateAudio(dt) {
   // nearby traffic, relative to the listener (camera): distance, pan, closing speed for doppler
   _tlN = 0;
   for (const c of traffic?.cars||[]) {
-    const siren = !!(c.cop && c.cop.siren && !c.crash);
+    const siren = !!(c.cop && (worldSession?traffic.hm.active:c.cop.siren) && !c.crash);
     if (!c.active || (c.mode === 'parked' && !siren) || Math.abs(c.s - pv.s) > (siren ? 420 : 150) || (c.crash && c.crash.y > 1)) continue;
-    const p = route.point(c.s, c.u, _ap), f = route.frame(c.s, _fr);
-    const vs = c.crash ? c.crash.vs : c.cross ? c.xvs : c.dir * c.v, vu = c.crash ? c.crash.vu : c.cross ? c.xvu : (c.uv || 0);
+    const p = worldSession?c.vehicle:route.point(c.s, c.u, _ap), f = worldSession?{tx:-Math.sin(p.yaw),tz:-Math.cos(p.yaw),rx:Math.cos(p.yaw),rz:-Math.sin(p.yaw)}:route.frame(c.s, _fr);
+    const vs = worldSession?c.v:c.crash ? c.crash.vs : c.cross ? c.xvs : c.dir * c.v, vu = c.crash ? c.crash.vu : c.cross ? c.xvu : (c.uv || 0);
     const L = listenerRel(p.x, p.y, p.z, f.tx * vs + f.rx * vu, f.tz * vs + f.rz * vu);
     if (L.d > (siren ? 400 : 130)) continue;
     const t = _tlN < _tl.length ? _tl[_tlN] : (_tl[_tlN] = {});
@@ -2003,7 +2020,7 @@ function updateCamera(dt, snap = false) {
   }
   G.spectateId = null;
   if (G.cam === 'spectate') { G.cam = G.userCam; applyCamMode(); }
-  const veh = player.veh, body = player.model.body, root = player.model.root;
+  const veh = player.veh, body = player.model.body, root = player.model.root, viewX=veh.x-(worldSession?.stream.origin.x||0),viewZ=veh.z-(worldSession?.stream.origin.z||0);
   root.updateMatrixWorld(true);
   const kmh = veh.kmh, sk = clamp(kmh / 260, 0, 1.2);
   G.shake = Math.max(0, G.shake - dt * 1.8);
@@ -2031,15 +2048,15 @@ function updateCamera(dt, snap = false) {
     const yawTarget = camState.followYaw + Math.atan2(Math.sin(veh.yaw - camState.followYaw), Math.cos(veh.yaw - camState.followYaw));
     spring(camState, 'followYaw', 'followYawV', yawTarget, 12, dt);
     const hd = camState.followYaw + look.yaw + look.back, hx = Math.sin(hd), hz = Math.cos(hd); // forward is (-sin yaw, -cos yaw): behind is +
-    const target = _v1.set(veh.x + hx * Math.cos(el) * dist, veh.y + Math.sin(el) * dist, veh.z + hz * Math.cos(el) * dist);
+    const target = _v1.set(viewX + hx * Math.cos(el) * dist, veh.y + Math.sin(el) * dist, viewZ + hz * Math.cos(el) * dist);
     // Follow translation directly; the spring damps the camera offset, keeping its distance natural at speed.
-    if (!snap && camState.carX !== undefined) { camState.pos.x += veh.x - camState.carX; camState.pos.z += veh.z - camState.carZ; }
+    if (!snap && camState.carX !== undefined) { camState.pos.x += viewX - camState.carX; camState.pos.z += viewZ - camState.carZ; }
     target.y = Math.max(target.y, route.surfaceY(veh.s, veh.u) + 0.6);
     springPosition(target, dt, snap, look.idleT < 1.5 || look.back > 0.01 ? 16 : 10);
     camera.position.copy(camState.pos);
     // look ahead of the car when behind it; at the car itself once swung round to the side / front
     const ahead = 5 * Math.max(0, Math.cos(look.yaw + look.back)) * clamp(1 - look.pitch, 0, 1);
-    const lk = _v2.set(veh.x, veh.y + targetY, veh.z).addScaledVector(_qForward.set(-Math.sin(camState.followYaw), 0, -Math.cos(camState.followYaw)), ahead);
+    const lk = _v2.set(viewX, veh.y + targetY, viewZ).addScaledVector(_qForward.set(-Math.sin(camState.followYaw), 0, -Math.cos(camState.followYaw)), ahead);
     camera.lookAt(lk);
     const fov = settings.chaseFov + (settings.speedFov ? Math.min(3, sk * 2 + (veh.nitroOn ? 1 : 0)) : 0);
     camState.fov = snap ? fov : damp(camState.fov, fov, 3, dt);
@@ -2051,31 +2068,31 @@ function updateCamera(dt, snap = false) {
     const yawTarget = camState.followYaw + Math.atan2(Math.sin(veh.yaw - camState.followYaw), Math.cos(veh.yaw - camState.followYaw));
     spring(camState, 'followYaw', 'followYawV', yawTarget, 12, dt);
     const hd = camState.followYaw + Math.PI + look.yaw + look.back, hx = Math.sin(hd), hz = Math.cos(hd);
-    const target = _v1.set(veh.x + hx * Math.cos(el) * dist, veh.y + Math.sin(el) * dist, veh.z + hz * Math.cos(el) * dist);
+    const target = _v1.set(viewX + hx * Math.cos(el) * dist, veh.y + Math.sin(el) * dist, viewZ + hz * Math.cos(el) * dist);
     // Follow translation directly; the spring damps the camera offset, keeping its distance natural at speed.
-    if (!snap && camState.carX !== undefined) { camState.pos.x += veh.x - camState.carX; camState.pos.z += veh.z - camState.carZ; }
+    if (!snap && camState.carX !== undefined) { camState.pos.x += viewX - camState.carX; camState.pos.z += viewZ - camState.carZ; }
     target.y = Math.max(target.y, route.surfaceY(veh.s, veh.u) + 0.6);
     springPosition(target, dt, snap, look.idleT < 1.5 || look.back > 0.01 ? 16 : 10);
     camera.position.copy(camState.pos);
-    camera.lookAt(veh.x, veh.y + targetY, veh.z);
+    camera.lookAt(viewX, veh.y + targetY, viewZ);
     const fov = settings.chaseFov + (settings.speedFov ? Math.min(3, sk * 2 + (veh.nitroOn ? 1 : 0)) : 0);
     camState.fov = snap ? fov : damp(camState.fov, fov, 3, dt);
   } else { // orbit
     G.orbitA += dt * 0.25;
     const r = 6.8, a = G.orbitA + veh.yaw;
-    const target = _v1.set(veh.x + Math.sin(a) * r, veh.y + 1.7, veh.z + Math.cos(a) * r);
+    const target = _v1.set(viewX + Math.sin(a) * r, veh.y + 1.7, viewZ + Math.cos(a) * r);
     target.y = Math.max(target.y, route.surfaceY(veh.s, veh.u) + 0.6); springPosition(target, dt, snap, 8);
     camera.position.copy(camState.pos);
-    camera.lookAt(veh.x, veh.y + 0.7, veh.z);
+    camera.lookAt(viewX, veh.y + 0.7, viewZ);
     camState.fov = damp(camState.fov, 50, 3, dt);
   }
-  camState.carX = veh.x; camState.carZ = veh.z;
+  camState.carX = viewX; camState.carZ = viewZ;
   camera.fov = camState.fov; finishCamera(dt);
   // debug view relative to the player car: ?view=right,up,back,lookAhead
   if (DBG_VIEW) {
     const f = veh.forward(_v2), rx = Math.cos(veh.yaw), rz = -Math.sin(veh.yaw);
-    camera.position.set(veh.x + rx * DBG_VIEW[0] - f.x * DBG_VIEW[2], veh.y + DBG_VIEW[1], veh.z + rz * DBG_VIEW[0] - f.z * DBG_VIEW[2]);
-    camera.lookAt(veh.x + f.x * DBG_VIEW[3] + rx * (DBG_VIEW[4] || 0), veh.y + (DBG_VIEW[5] ?? 1), veh.z + f.z * DBG_VIEW[3] + rz * (DBG_VIEW[4] || 0));
+    camera.position.set(viewX + rx * DBG_VIEW[0] - f.x * DBG_VIEW[2], veh.y + DBG_VIEW[1], viewZ + rz * DBG_VIEW[0] - f.z * DBG_VIEW[2]);
+    camera.lookAt(viewX + f.x * DBG_VIEW[3] + rx * (DBG_VIEW[4] || 0), veh.y + (DBG_VIEW[5] ?? 1), viewZ + f.z * DBG_VIEW[3] + rz * (DBG_VIEW[4] || 0));
   }
 }
 const DBG_VIEW = Q.has('view') ? Q.get('view').split(',').map(Number) : null;
@@ -2143,7 +2160,7 @@ function step(dt, draw = true, visual = true, frameDt = dt) {
   G.t += dt; frameN++;
   bootFrameLog('first-frame');
   readInput(dt);
-  if(worldSession){try{drawUnifiedFrame(dt,draw,visual,frameDt);}catch(error){G.state='loading';G.routePreparing=true;loading.show('athens','SYNTAGMA SPRINT');loading.setRoute(G.unifiedCompiled);loading.fail({code:errorCode(error),retry:()=>location.reload(),fallback:()=>quitToMenu()});console.error(error);}return;}
+  if(worldSession){try{drawUnifiedFrame(dt,draw,visual,frameDt);}catch(error){G.state='loading';G.routePreparing=true;loading.show('athens',G.unifiedCompiled.definition.name);loading.setRoute(G.unifiedCompiled);loading.fail({code:errorCode(error),retry:()=>location.reload(),fallback:()=>quitToMenu()});console.error(error);}return;}
   if (multiplayer.active && inMenu() && G.pFinish == null) { player.veh.vLong = player.veh.vLat = player.veh.w = 0; player.veh.syncWheels(); }
   if (multiplayer.active) multiplayer.update(dt, networkState(player.veh), G.simNow);
   if (G.state === 'onlineFinished') updateFinishView();

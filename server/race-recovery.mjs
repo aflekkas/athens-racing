@@ -1,5 +1,5 @@
 import { courseTowLimits, towCourseTo, coursePoseValid } from '../src/course.js';
-import { planTow, rawRoute, RoadIndex, roadSegments } from '../src/tow-placement.js';
+import { planWorldTow, planTow, rawRoute, RoadIndex, roadSegments } from '../src/tow-placement.js';
 import { impactPowerFactor } from '../src/damage-math.js';
 export const RECOVERY_MS = 250;
 export const CAPTURE_RECOVERY_MS = 5000;
@@ -23,6 +23,7 @@ function towMap(geometry) {
 // within 40 m and never places the car before its latest valid on-road pose; the course tracker still counts only
 // continuous on-route movement, so a tow cannot advance progress. The client's claimed position is never used.
 function towPose(driver, event, route) {
+  if(route?.isWorldRoute){const candidates=route.recoveryCandidates?.(driver.state,driver)||[];return planWorldTow({pose:driver.state,course:driver.course,route,roadCandidates:candidates,footprint:route.recoveryFootprint?.(driver)});}
   const state = driver.state, course = driver.course;
   if (route?.x?.length && [state.x, state.z, state.yaw].every(finite)) {
     const map = towMap(route);
@@ -45,11 +46,11 @@ export function requestRecovery(driver, event, raceId, epoch, now, { route = nul
     }
     return driver.recovery;
   }
-  const pose = towPose(driver, event, route), { kind, s, u } = pose;
+  const pose = towPose(driver, event, route);if(!pose)return null;const {kind,s,u}=pose;
   const recovery = { raceId, kind, s, u, ...(finite(pose.x) && finite(pose.z) ? { x: pose.x, z: pose.z, yaw: pose.yaw } : {}), ...(finite(pose.y) ? { y: pose.y } : {}),
     startedAt: now, until: now + (capture ? CAPTURE_RECOVERY_MS : RECOVERY_MS), motionEpoch: epoch };
   driver.recovery = recovery;
-  const position = finite(pose.x) && finite(pose.z) ? { x: pose.x, z: pose.z, ...(finite(pose.y) ? { y: pose.y } : {}) } : {};
+  const position = finite(pose.x) && finite(pose.z) ? { x: pose.x, z: pose.z,...(route?.isWorldRoute?{layer:pose.layer,surfaceId:pose.surfaceId,edgeId:pose.edgeId}:{}), ...(finite(pose.y) ? { y: pose.y } : {}) } : {};
   // Receipt clock and course history reset at the placement; neither the fade nor
   // waiting for an acknowledgement can buy forward progress.
   driver.state = { ...driver.state, ...position, s, u,

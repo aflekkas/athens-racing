@@ -1,6 +1,7 @@
 // Per-cell gate for the generated road cross-sections (docs/world-roads.md). Reads the cell's roadSections
 // metadata, written by tools/world-gen/tiles.py from the same table as tools/world-gen/road_section.py.
 import {readFileSync} from 'node:fs';
+import {PSYCHIKO_CLASSES} from '../src/maps/psychiko-streets.js';
 const table=JSON.parse(readFileSync(new URL('./world-gen/fixtures/road-classes.json',import.meta.url),'utf8'));
 export const ROAD_CLASSES=table.classes;
 const SURFACES=new Set(['asphalt','concrete','paving','unpaved']);
@@ -17,10 +18,12 @@ export function auditRoadSections(m){
     const width=row[col.width],lanes=row[col.lanes],left=row[col.sidewalkLeft],right=row[col.sidewalkRight];
     byClass[row[col.class]]=(byClass[row[col.class]]||0)+1;
     if(!ids.has('surface:'+id))problems.push(`${id}: no surface in the cell`);
-    if(!(width>=klass.minWidth-1e-6&&width<=klass.maxWidth+1e-6)){outsideBand++;problems.push(`${id}: width ${width} outside ${row[col.class]} band ${klass.minWidth}-${klass.maxWidth}`);}
+    const survey=row[col.surveyClass],reviewed=survey?PSYCHIKO_CLASSES[survey]:null;
+    if(survey&&(!reviewed||width!==reviewed.w||left!==reviewed.footway||right!==reviewed.footway))problems.push(`${id}: invalid Psychiko surveyed section`);
+    if(!reviewed&&!(width>=klass.minWidth-1e-6&&width<=klass.maxWidth+1e-6)){outsideBand++;problems.push(`${id}: width ${width} outside ${row[col.class]} band ${klass.minWidth}-${klass.maxWidth}`);}
     if(!Number.isInteger(lanes)||lanes<1||lanes>16)problems.push(`${id}: lanes ${lanes}`);
     if(!SURFACES.has(row[col.surface]))problems.push(`${id}: surface ${row[col.surface]}`);
-    for(const w of [left,right])if(w!==0&&!(w>=table.sidewalkRange[0]&&w<=table.sidewalkRange[1]))problems.push(`${id}: sidewalk ${w}`);
+    for(const w of [left,right])if(w!==0&&!reviewed&&!(w>=table.sidewalkRange[0]&&w<=table.sidewalkRange[1]))problems.push(`${id}: sidewalk ${w}`);
     if(left>0||right>0)sidewalkRoads++;
     // Same class + lane count + direction => one width (a tagged `width` is the only allowed exception: it lies on a lane multiple).
     const key=`${row[col.class]}/${lanes}/${row[col.oneway]!==0}`,set=widths.get(key)||new Set();set.add(width);widths.set(key,set);

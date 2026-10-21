@@ -143,15 +143,16 @@ export class AthensProps{
     this.stats={instances:0,signals:0,drawCalls:0,rebuilds:0};this._m=new THREE.Matrix4();this._q=new THREE.Quaternion();this._e=new THREE.Euler();this._p=new THREE.Vector3();this._s=new THREE.Vector3(1,1,1);this._c=new THREE.Color();
   }
   /** Read a decoded tile's rows. `ids`, `origin` and the `worldDetail` extension come from its metadata. */
-  addTile(key,packet){
+  addTile(key,packet){for(const _ of this.addTileSteps(key,packet))void _;}
+  *addTileSteps(key,packet){
     this.removeTile(key);const m=packet.metadata,ext=m.extensions?.worldDetail,o=m.origin,records=[],edges=[];
     const sig=ext?.signals,props=ext?.props,roofs=ext?.rooftops;
-    if(props){const r=packet.arrays[props.rows],k=packet.arrays[props.kind];for(let i=0;i<k.length;i++){const x=r[i*5]+o[0],z=r[i*5+2]+o[2];if(this.skip&&this.skip(k[i],x,z))continue;records.push({kind:k[i],x,y:r[i*5+1],z,yaw:r[i*5+3],variant:r[i*5+4]|0,state:0});}}
-    if(ext?.parking!=null){const r=packet.arrays[ext.parking];for(let i=0;i<r.length;i+=5){const code=r[i+4]|0;records.push({kind:(code>>3)?KINDS.scooter:KINDS.parked_car,x:r[i]+o[0],y:r[i+1],z:r[i+2]+o[2],yaw:r[i+3],variant:code&7,state:0});}}
-    if(ext?.coastalBoats!=null){const r=packet.arrays[ext.coastalBoats];for(let i=0;i<r.length;i+=5)records.push({kind:r[i+4]?KINDS.motorboat:KINDS.sailboat,x:r[i]+o[0],y:r[i+1],z:r[i+2]+o[2],yaw:r[i+3],variant:0,state:0});}
-    if(roofs!=null){const r=packet.arrays[roofs];for(let i=0;i<r.length;i+=5){const code=r[i+4]|0;records.push({kind:KINDS.rooftop+(code>>2),x:r[i]+o[0],y:r[i+1],z:r[i+2]+o[2],yaw:r[i+3],variant:code&3,state:0});}}
+    if(props){const r=packet.arrays[props.rows],k=packet.arrays[props.kind];for(let i=0;i<k.length;i++){const x=r[i*5]+o[0],z=r[i*5+2]+o[2];if(this.skip&&this.skip(k[i],x,z))continue;records.push({kind:k[i],x,y:r[i*5+1],z,yaw:r[i*5+3],variant:r[i*5+4]|0,state:0});if(i%32===31)yield {stage:'props'};}}
+    if(ext?.parking!=null){const r=packet.arrays[ext.parking];for(let i=0;i<r.length;i+=5){const code=r[i+4]|0;records.push({kind:(code>>3)?KINDS.scooter:KINDS.parked_car,x:r[i]+o[0],y:r[i+1],z:r[i+2]+o[2],yaw:r[i+3],variant:code&7,state:0});if(i%160===155)yield {stage:'props'};}}
+    if(ext?.coastalBoats!=null){const r=packet.arrays[ext.coastalBoats];for(let i=0;i<r.length;i+=5){records.push({kind:r[i+4]?KINDS.motorboat:KINDS.sailboat,x:r[i]+o[0],y:r[i+1],z:r[i+2]+o[2],yaw:r[i+3],variant:0,state:0});if(i%160===155)yield {stage:'props'};}}
+    if(roofs!=null){const r=packet.arrays[roofs];for(let i=0;i<r.length;i+=5){const code=r[i+4]|0;records.push({kind:KINDS.rooftop+(code>>2),x:r[i]+o[0],y:r[i+1],z:r[i+2]+o[2],yaw:r[i+3],variant:code&3,state:0});if(i%160===155)yield {stage:'props'};}}
     if(sig){const r=packet.arrays[sig.rows],e=packet.arrays[sig.edge];
-      for(let i=0;i<e.length;i++){const rec={kind:KINDS.signal,x:r[i*6]+o[0],y:r[i*6+1],z:r[i*6+2]+o[2],yaw:r[i*6+3],offset:r[i*6+4],group:r[i*6+5],variant:0,state:0,edge:m.ids[e[i]]};records.push(rec);edges.push(rec);this.byEdge.set(rec.edge,rec);}}
+      for(let i=0;i<e.length;i++){const rec={kind:KINDS.signal,x:r[i*6]+o[0],y:r[i*6+1],z:r[i*6+2]+o[2],yaw:r[i*6+3],offset:r[i*6+4],group:r[i*6+5],variant:0,state:0,edge:m.ids[e[i]]};records.push(rec);edges.push(rec);this.byEdge.set(rec.edge,rec);if(i%32===31)yield {stage:'props'};}}
     this.tiles.set(key,{records,edges});this.last.x=Infinity;
   }
   removeTile(key){const t=this.tiles.get(key);if(!t)return;for(const rec of t.edges)if(this.byEdge.get(rec.edge)===rec)this.byEdge.delete(rec.edge);this.tiles.delete(key);this.last.x=Infinity;}
@@ -187,7 +188,7 @@ export class AthensProps{
   }
   /** Is a car on `point.edge` held by a signal that is not green? Cars already past the stop line (the last 3.5 m) carry on. */
   hold(point,edgePoints){
-    if(!this.enabled)return false;const rec=this.byEdge.get(point.edge);if(!rec)return false;
+    const rec=this.byEdge.get(point.edge);if(!rec)return false;
     if(signalState(rec.group,rec.offset,this.time)==='G')return false;
     const end=edgePoints[edgePoints.length-1],d=Math.hypot(end[0]-point.x,end[2]-point.z);
     return d<=STOP_OFF+.9&&d>STOP_OFF-3.5;

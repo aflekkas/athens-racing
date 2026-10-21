@@ -18,34 +18,38 @@ export class WorldTileScene {
   warmVariants(variants){
     if(!this.renderer)return Promise.resolve();
     let source=this.scene;while(source.parent)source=source.parent;
-    return Promise.all(variants.map(variant=>{
-      if(this.warmups.has(variant.key))return this.warmups.get(variant.key);
-      const promise=this.warmupQueue.then(()=>this.warmVariant(variant,source));this.warmupQueue=promise.catch(()=>{});this.warmups.set(variant.key,promise);
-      promise.catch(()=>{if(this.warmups.get(variant.key)===promise)this.warmups.delete(variant.key);});return promise;
-    }));
+    const fresh=variants.filter(v=>!this.warmups.has(v.key));
+    if(fresh.length){
+      const promise=this.warmupQueue.then(()=>this.warmVariantBatch(fresh,source));this.warmupQueue=promise.catch(()=>{});
+      for(const variant of fresh)this.warmups.set(variant.key,promise);
+      promise.catch(()=>{for(const variant of fresh)if(this.warmups.get(variant.key)===promise)this.warmups.delete(variant.key);});
+    }
+    return Promise.all(variants.map(v=>this.warmups.get(v.key)));
   }
-  async warmVariant(variant,source){
+  async warmVariantBatch(variants,source){
     const renderer=this.renderer,owned=[],start=performance.now();
     try{
-      // Both framebuffer/program variants are drawn before the car is controllable.
-      // compileAsync alone does not warm a software driver's first draw pipeline.
+      // Compile/draw only this start area's common variants, in one batch per framebuffer.
+      // Two bounded frame yields per batch replace four yields per material variant.
       for(const useTarget of [true,false]){
         await new Promise(resolve=>requestAnimationFrame(resolve));if(this.disposed)throw new Error('Tile scene disposed during shader preparation');
         const scene=new THREE.Scene();scene.fog=source.fog||null;scene.environment=source.environment||null;scene.environmentIntensity=source.environmentIntensity;source.traverse(o=>{if(o.isLight)scene.add(o.clone());});
-        const geometry=new THREE.BufferGeometry();
-        for(const[name,a]of Object.entries(variant.attributes)){
-          const array=new globalThis[a.type](a.itemSize*3);if(name==='color')array.fill(a.normalized?255:1);
-          if(name==='position')array.set(variant.terrain?[0,0,0,1,0,0,0,1,0]:[0,0,-1,1,0,-1,0,1,-1]);
-          geometry.setAttribute(name,new THREE.BufferAttribute(array,a.itemSize,a.normalized));
+        for(const variant of variants){
+          const geometry=new THREE.BufferGeometry();
+          for(const[name,a]of Object.entries(variant.attributes)){
+            const array=new globalThis[a.type](a.itemSize*3);if(name==='color')array.fill(a.normalized?255:1);
+            if(name==='position')array.set(variant.terrain?[0,0,0,1,0,0,0,1,0]:[0,0,-1,1,0,-1,0,1,-1]);
+            geometry.setAttribute(name,new THREE.BufferAttribute(array,a.itemSize,a.normalized));
+          }
+          if(variant.index)geometry.setIndex(new THREE.BufferAttribute(new globalThis[variant.index]([0,1,2]),1));
+          const initial=this.materialFactory?.(variant.surface,[1,1,1],!!variant.attributes.color)||new THREE.MeshBasicMaterial({vertexColors:!!variant.attributes.color,side:THREE.FrontSide}),mesh=new THREE.Mesh(geometry,initial);mesh.frustumCulled=false;
+          if(variant.terrain){mesh.userData.terrainDecode={version:1,offset:[0,0,-1],scale:[1,1,1]};restoreTerrainLayout(mesh);initial.dispose();}
+          mesh.position.z=-1;scene.add(mesh);this.warmMaterials.add(mesh.material);owned.push({scene,geometry,material:mesh.material});
         }
-        if(variant.index)geometry.setIndex(new THREE.BufferAttribute(new globalThis[variant.index]([0,1,2]),1));
-        const initial=this.materialFactory?.(variant.surface,[1,1,1],!!variant.attributes.color)||new THREE.MeshBasicMaterial({vertexColors:!!variant.attributes.color,side:THREE.FrontSide}),mesh=new THREE.Mesh(geometry,initial);mesh.frustumCulled=false;
-        if(variant.terrain){mesh.userData.terrainDecode={version:1,offset:[0,0,-1],scale:[1,1,1]};restoreTerrainLayout(mesh);initial.dispose();}
-        mesh.position.z=-1;scene.add(mesh);this.warmMaterials.add(mesh.material);owned.push({scene,geometry,material:mesh.material});
         const target=renderer.getRenderTarget(),face=renderer.getActiveCubeFace(),mip=renderer.getActiveMipmapLevel();
         const at=performance.now();let compilation;try{renderer.setRenderTarget(useTarget?this.uploadTarget:null);compilation=renderer.compileAsync(scene,this.uploadCamera,source);}finally{renderer.setRenderTarget(target,face,mip);}
         this.warmupMetrics.maxCompileCallMs=Math.max(this.warmupMetrics.maxCompileCallMs,performance.now()-at);await compilation;
-        await new Promise(resolve=>requestAnimationFrame(resolve));
+        await new Promise(resolve=>requestAnimationFrame(resolve));if(this.disposed)throw new Error('Tile scene disposed during shader preparation');
         this.drawWarmScene(scene,useTarget?this.uploadTarget:null);
       }
       this.warmupMetrics.maxWaitMs=Math.max(this.warmupMetrics.maxWaitMs,performance.now()-start);
@@ -78,11 +82,11 @@ export class WorldTileScene {
           }
           const binding=gl.getParameter(gl.COPY_WRITE_BUFFER_BINDING);let at=performance.now();
           try{gl.bindBuffer(gl.COPY_WRITE_BUFFER,buffer);gl.bufferData(gl.COPY_WRITE_BUFFER,array.byteLength,gl.STATIC_DRAW);}finally{gl.bindBuffer(gl.COPY_WRITE_BUFFER,binding);}
-          self.uploadMetrics.maxCallMs=Math.max(self.uploadMetrics.maxCallMs,performance.now()-at);yield;
+          self.uploadMetrics.maxCallMs=Math.max(self.uploadMetrics.maxCallMs,performance.now()-at);yield {stage:'gpu-allocation',bytes:array.byteLength};
           for(let offset=0;offset<array.byteLength;offset+=self.uploadChunkBytes){
             const bytes=Math.min(self.uploadChunkBytes,array.byteLength-offset),previous=gl.getParameter(gl.COPY_WRITE_BUFFER_BINDING);at=performance.now();
             try{gl.bindBuffer(gl.COPY_WRITE_BUFFER,buffer);gl.bufferSubData(gl.COPY_WRITE_BUFFER,offset,new Uint8Array(array.buffer,array.byteOffset+offset,bytes));}finally{gl.bindBuffer(gl.COPY_WRITE_BUFFER,previous);}
-            self.uploadMetrics.calls++;self.uploadMetrics.maxBytes=Math.max(self.uploadMetrics.maxBytes,bytes);self.uploadMetrics.maxCallMs=Math.max(self.uploadMetrics.maxCallMs,performance.now()-at);yield;
+            self.uploadMetrics.calls++;self.uploadMetrics.maxBytes=Math.max(self.uploadMetrics.maxBytes,bytes);self.uploadMetrics.maxCallMs=Math.max(self.uploadMetrics.maxCallMs,performance.now()-at);yield {stage:'gpu-upload',bytes};
           }
           const type=gl[GL_ARRAY_TYPES[descriptor.type]];if(type==null)throw new Error('Unsupported tile GPU array type');
           const attribute=new THREE.GLBufferAttribute(buffer,type,descriptor.itemSize,array.BYTES_PER_ELEMENT,descriptor.count);attribute.normalized=descriptor.normalized;gpuAttributes.set(descriptor.key,attribute);
@@ -107,7 +111,7 @@ export class WorldTileScene {
           if(attributes.has(key))g.setAttribute('position',attributes.get(key));else attributes.set(key,g.attributes.position);
         }
         if(gl){const bindings=(packet.gpuPlan||tileGPUPlan(packet)).meshes[meshIndex];for(const[name,key]of Object.entries(bindings.attributes))g.setAttribute(name,gpuAttributes.get(key));if(bindings.index)g.setIndex(gpuAttributes.get(bindings.index));}
-        meshIndex++;root.add(mesh);yield;
+        meshIndex++;root.add(mesh);yield {stage:'mesh'};
       }
     }
     return {steps:steps(),commit(){if(disposed)throw new Error('Disposed tile activation');root.visible=true;self.scene.add(root);root.updateMatrixWorld(true);return {root,dispose};},dispose};

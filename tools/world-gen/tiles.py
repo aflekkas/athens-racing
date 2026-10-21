@@ -49,7 +49,8 @@ EXCLUDED={e['id'] for e in [*COAST_EXCLUSIONS,*STRUCTURE_EXCLUSIONS,*STEEP_EXCLU
 EXCLUSION_REASONS={e['id']:e['reason'] for e in [*COAST_EXCLUSIONS,*STRUCTURE_EXCLUSIONS,*STEEP_EXCLUSIONS]}
 
 class Field:
- def __init__(self,db,source,cell,dems,coastal=False,bridge_tags=None,sections=None,extent=None,strict=True,plan=None,bounds=None):
+ def __init__(self,db,source,cell,dems,coastal=False,bridge_tags=None,sections=None,extent=None,strict=True,plan=None,bounds=None,overrides=None):
+  self.overrides=overrides
   self.excluded={};self.excluded_here={}
   self.cell=cell;self.dem=Elevation(dems);ox,oz=cell[0]*512,cell[1]*512;self.ox=ox;self.oz=oz;halo=512 if coastal else ROAD_QUERY_HALO
   self.roads=[];self.byid={};self.land=[];self.coast=Coast(source,cell,bounds) if coastal else None
@@ -66,6 +67,7 @@ class Field:
     if found is None:raise ValueError('Missing road cross-section '+r['id'])
     r['section']=json.loads(found[0]);r['width']=r['section']['width'];r['widthSource']=r['section']['widthSource']
    else:r['section']=cross_section({'highway':r['highway']})  # unit-test fixtures without a section cache
+   if overrides:overrides.section(r)
    line=LineString(r['points']);r['line']=line;r['polygon']=ribbon_polygon(line,r['width'])
    samples=list(db.execute('SELECT s.station,p.y FROM samples s JOIN points p ON p.rowid=s.point WHERE s.road=? ORDER BY s.station',(row,)))
    r['stations']=[s[0] for s in samples];r['ys']=[s[1] for s in samples]
@@ -113,7 +115,7 @@ class Field:
  def height(self,x,z):
   point=Point(x,z);baseline=self.dem.height(x,z)
   if self.coast:baseline=self.coast.baseline(x,z,baseline)
-  if not self.roads:return baseline
+  if not self.roads:return self.overrides.blend(x,z,baseline) if self.overrides else baseline
   # Query every influence, never choose a containing or nearest profile.
   candidates=[]
   ids=self.tree.query(box(x-SUPPORT,z-SUPPORT,x+SUPPORT,z+SUPPORT))
@@ -124,7 +126,8 @@ class Field:
    road=self.roads[int(i)]
    y=profile_height(x,z,road['segments'],road['width']/2+8)
    candidates.append((road['id'],y,float(d),float(centre),road['width']))
-  return blended_height(baseline,candidates)
+  h=blended_height(baseline,candidates)
+  return self.overrides.blend(x,z,h) if self.overrides else h
  @lru_cache(maxsize=65536)
  def _surface_sample(self,x,z):
   # The kerb/sidewalk rise is added per emitted vertex (StreetRegions.lift), never through the 8 m lattice.
@@ -185,7 +188,7 @@ def cell_rows(source,kinds,bounds):
  sql=' UNION ALL '.join(f"SELECT o.id AS id,o.data AS data FROM {s}.spatial s CROSS JOIN {s}.objects o ON o.rowid=s.rowid WHERE {kinds} AND s.minx<=? AND s.maxx>=? AND s.minz<=? AND s.maxz>=?" for s in schemas)
  return source.execute(f'SELECT id,data FROM ({sql}) ORDER BY id',tuple(v for _ in schemas for v in (minx,maxx,minz,maxz))).fetchall()
 
-def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=False,vegetation=None,osm=None,sections=None,extent=None,plan=None,details=None,street_nodes=None):
+def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=False,vegetation=None,osm=None,sections=None,extent=None,plan=None,details=None,street_nodes=None,overrides=None):
  db=sqlite3.connect(f'file:{dbpath}?mode=ro',uri=True);source=sqlite3.connect(f'file:{sourcepath}?mode=ro',uri=True)
  attach_generated(source,sourcepath)
  sectiondb=sqlite3.connect(f'file:{sections}?mode=ro',uri=True) if sections else None
@@ -199,7 +202,7 @@ def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=F
    extra=road_extras(parsed)
    if extra:lit_parking[identifier]=extra
   raw.close()
- field=Field(db,source,cell,dems,coastal,bridge_tags,sectiondb,extent,plan=plan)
+ field=Field(db,source,cell,dems,coastal,bridge_tags,sectiondb,extent,plan=plan,overrides=overrides)
  # Parks (OSM leisure=park) are not in the landuse table; the vegetation cache holds their polygons.
  field.land.extend(park_areas(vegetation,field.ox,field.oz));field.landtree=STRtree([p for p,t in field.land])
  # Surfaces within 96 m of the cell decide everything inside it (reach, fillets and ramps are all < 40 m): a
@@ -334,7 +337,7 @@ def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=F
  blocked={row[0] for row in turndb.execute('SELECT edge FROM blocked')}
  for edge in graphrows:
   if edge['id'] in blocked:edge['flags']|=8
- graphrows=[e for e in graphrows if not(coastal and (e['source'] in EXCLUDED or e['source'] in field.excluded))]
+ graphrows=[e for e in graphrows if not(coastal and (e['source'] in EXCLUDED or e['source'] in field.excluded)) and (not overrides or overrides.legal(e))]
  for edge in graphrows:byroad[edge['source']].append(edge)
  for edge in graphrows:
   if tuple(edge['cell'])!=tuple(cell):continue
@@ -436,7 +439,7 @@ def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=F
   t['contactTriangles']=rows+t['contactTriangles'];t['contactLayers']=layers+t['contactLayers']
   t['fineSurface']=[];t['fineFlags']=[]
  triangles=derived_triangles+sum((m['drawRange']['count'] if m.get('drawRange') else len(arrays[m['index']]['data']))//3 for m in meshes)
- road_sections=dict(schema=['class','width','lanes','sidewalkLeft','sidewalkRight','surface','oneway'],roads={owner:[(sec:=field.byid[owner]['section'])['class'],sec['width'],sec['lanes'],sec['sidewalk']['left'],sec['sidewalk']['right'],sec['surface'],sec['oneway']] for owner in sorted(roadtri)})
+ road_sections=dict(schema=['class','width','lanes','sidewalkLeft','sidewalkRight','surface','oneway','surveyClass'],roads={owner:[(sec:=field.byid[owner]['section'])['class'],sec['width'],sec['lanes'],sec['sidewalk']['left'],sec['sidewalk']['right'],sec['surface'],sec['oneway'],sec.get('surveyClass','')] for owner in sorted(roadtri)})
  extensions=dict(derivedBuildings=dict(version=1))
  if vegetation:
   vp,vk,vs=vegetation_rows(vegetation,field,all_building_footprints,rendered_height,int(triangles*.25))

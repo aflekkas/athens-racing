@@ -1,3 +1,5 @@
+import {WorldTraffic} from './world-traffic.js';
+import {worldRecoveryTarget} from './world-recovery.js';
 import {createGuidanceDemo,DEMO_ROUTE} from './route-guidance/demo.js';
 import {createWorldSession} from './world-session.js';
 // Development-only connected world. This entry owns its scene and never calls
@@ -8,17 +10,14 @@ import {resolveGraphics} from './graphics.js';
 import {AthensRoute,AthensGround} from './athens-ground.js';
 import {SEA_TIME} from './athens-detail.js';
 import {Vehicle} from './physics.js';
-import {CARS,CarModel,setCarEnv,catalogueTrafficTypes} from './cars.js';
-import {fleetModel} from './traffic-fleet.js';
+import {CARS,CarModel,setCarEnv} from './cars.js';
 import {input} from './input.js';
-import {resolvePlayerContacts} from './multiplayer-contact.js';
 import {AccountsClient} from './accounts-client.js';
 import {bootScreen} from './ui/boot-screen.js';
 import {loading} from './ui/loading.js';
 import {ui} from './ui/components.js';
 import {Hud,fmtTime} from './hud.js';
 import {estimateSceneMemory} from './asset-metrics.js';
-import {RNG} from './util.js';
 import {createPost} from './post.js';
 import * as ENV from './env.js';
 const MiB=1024*1024,clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -38,8 +37,8 @@ export async function bootAthens(){
  scene.fog=new THREE.Fog('#9caeae',camera.far*.65,camera.far);const sky=ENV.createSky();scene.add(sky);const baked=ENV.bakeSky(renderer,sky);scene.environment=baked.env;setCarEnv(baked.env);const {sun}=ENV.createLights(scene);sun.castShadow=false;
  const post=createPost(renderer,scene,camera);
  loading.show('athens','FREE ROAM');document.getElementById('ldName').textContent='ATHENS';
- let scripted=false,driver=null,cameraHook=null,player=null,stopped=false,paused=false,towing=false,frameId,elapsed=0,accumulator=0,last=performance.now(),lastTraffic=-10,trafficDt=0;
- const traffic=[],contacts=new Map(),stats={frames:0,simulationSeconds:0,metres:0,holds:0,missingContacts:0,carHits:0,frameMs:[],cpuMs:[],initialDownloadBytes:0,initialDriveMs:0,maxEstimatedJSBytes:0,maxEstimatedGPUBytes:0},rng=new RNG(71018);
+ let scripted=false,driver=null,cameraHook=null,player=null,stopped=false,paused=false,towing=false,frameId,elapsed=0,accumulator=0,last=performance.now(),lastTraffic=-10;
+ let worldTraffic;const stats={frames:0,simulationSeconds:0,metres:0,holds:0,missingContacts:0,carHits:0,frameMs:[],cpuMs:[],initialDownloadBytes:0,initialDriveMs:0,maxEstimatedJSBytes:0,maxEstimatedGPUBytes:0};
  const session=await createWorldSession({renderer,scene,resources,progress:(...args)=>loading.progress(...args)});
  const {stream,roads,barriers,obstacles,detail,props,trees,signs,marks,horizon,landmarks,plazas,lawns,sceneTiles,manifest}=session;
  let guidance=query.get('guidance')==='1'?createGuidanceDemo(scene,stream,roads):null;const offGuidance=session.subscribeTiles({activated:k=>guidance?.addCell(k),removed:k=>guidance?.removeCell(k)});
@@ -47,7 +46,8 @@ export async function bootAthens(){
  function place(v,p){v.reset(0,0,0);Object.assign(v,{x:p.x,y:p.y,z:p.z,yaw:p.yaw,vLong:0,vLat:0,w:0,_network:true});Object.assign(v,v.route.project(v.x,v.z));v.ground.referenceY=p.y;v.ground.begin(v);v.ground.resolve(v,1/240);v.syncWheels();}
  await stream.spawn(p=>{const route=new AthensRoute(p),veh=new Vehicle(spec,route),model=new CarModel(spec);veh.ground=new AthensGround(stream,route,barriers,obstacles);place(veh,p);scene.add(model.root);player={veh,model,spec};},{halfWidth:(spec.width||2)/2,halfLength:(spec.length||5)/2,timeoutMs:180000});
  // The free roam spawn picker (?map=athens&menu=1) sends the chosen point as ?spawn=x,z (Athens world metres): the car goes on the nearest safe road anchor there.
- async function spawnAt(x,z){towing=true;try{await stream.teleport({x,z},()=>{const p=[...roads.anchors({validate:false})].filter(p=>roads.safe(p)).sort((a,b)=>Math.hypot(a.x-x,a.z-z)-Math.hypot(b.x-x,b.z-z))[0];if(!p)throw Error('No safe road near the chosen point');place(player.veh,p);});}finally{towing=false;}}
+ async function spawnAt(x,z){towing=true;try{const p=await session.prepareSpawn({x,z},{car:spec});player.veh.route=session.route;player.veh.ground=session.ground;place(player.veh,p);}finally{towing=false;}}
+ await spawnAt(player.veh.x,player.veh.z);
  stream.releaseSpawn();input.setCarSpec(spec);
  {const chosen=(query.get('spawn')||(guidance?`${DEMO_ROUTE[0][0]},${DEMO_ROUTE[0][2]}`:'')).split(',').map(Number);if(chosen.length===2&&chosen.every(Number.isFinite))await spawnAt(chosen[0],chosen[1]);}
  if(guidance&&!query.has('spawn')){const p=guidance.spawnPose();if(p)place(player.veh,p);}
@@ -64,41 +64,24 @@ export async function bootAthens(){
   stats.maxEstimatedJSBytes=Math.max(stats.maxEstimatedJSBytes,js);stats.maxEstimatedGPUBytes=Math.max(stats.maxEstimatedGPUBytes,gpu);
   return {js,gpu,heap,sharedJS,tileJS,tileGPU,renderTargetsAndSkyAllowance:targets,resources,streamReserved:stream.residentBytes+stream.reservedBytes,transient:stream.transientBytes};
  }
- async function tow(){if(towing)return;towing=true;try{const v=player.veh,p=[...roads.anchors({validate:false})].sort((a,b)=>Math.hypot(a.x-v.x,a.z-v.z)-Math.hypot(b.x-v.x,b.z-v.z)).find(p=>roads.safe(p));if(!p)throw Error('No safe loaded tow anchor');await roads.tow(p.id,target=>place(v,target));}finally{towing=false;}}
- function maintainTraffic(){
-  const v=player.veh,count=resources.stream.concurrency===1?3:5;
-  for(const c of traffic)if(c.active&&Math.hypot(c.veh.x-v.x,c.veh.z-v.z)>300){c.active=false;c.model.root.visible=false;}
-  const available=[...roads.anchors({validate:false})].filter(a=>{const d=Math.hypot(a.x-v.x,a.z-v.z);return d>40&&d<180&&!traffic.some(c=>c.active&&Math.hypot(c.veh.x-a.x,c.veh.z-a.z)<20);});
-  while(traffic.filter(c=>c.active).length<count&&available.length){const p=available.shift();if(!roads.safe(p))continue;let c=traffic.find(c=>!c.active);
-   if(!c){const type=catalogueTrafficTypes(CARS)[0],trafficSpec=CARS.find(c=>c.id===type.catalogueCar?.id)||CARS.find(c=>c.id==='mini_jcw')||spec,route=new AthensRoute(p),veh=new Vehicle(trafficSpec,route),model=fleetModel(type,'#869da2',rng,{low:true});veh.ground=new AthensGround(stream,route,barriers,obstacles);c={id:'traffic:'+traffic.length,veh,model,spec:trafficSpec,active:false};traffic.push(c);scene.add(model.root);}
-   place(c.veh,p);c.point={...p,layer:0};c.active=true;c.model.root.visible=true;
-  }
- }
+ async function tow(){if(towing)return;towing=true;try{const v=player.veh,p=worldRecoveryTarget(session,v,{route:null,halfWidth:v.halfW,halfLength:v.halfL,actors:worldTraffic?.actors||[]});if(!p)throw Error('No safe loaded road');await stream.teleport(p,()=>place(v,p),{validatePose:session.safePose});}finally{towing=false;}}
+ worldTraffic=new WorldTraffic(session,scene,player.veh.route);worldTraffic.configure({type:'free',traffic:1,rules:{police:false}});
  function step(dt,drive){
   if(paused||towing||account.blocked)return;const v=player.veh;
   const points=v.ground.footprint(v,Math.hypot(v.vLong,v.vLat)*dt+.5),fx=-Math.sin(v.yaw),fz=-Math.cos(v.yaw),rx=Math.cos(v.yaw),rz=-Math.sin(v.yaw);
-  stream.update({x:v.x,z:v.z,vx:fx*v.vLong+rx*v.vLat,vz:fz*v.vLong+rz*v.vLat,contacts:points,interest:traffic.filter(c=>c.active).map(c=>c.veh)});
+  stream.update({x:v.x,z:v.z,vx:fx*v.vLong+rx*v.vLat,vz:fz*v.vLong+rz*v.vLat,contacts:points,interest:worldTraffic.actors});
   if(!v.ground.ready(v,dt)){stats.holds++;return;}
   const old={x:v.x,y:v.y,z:v.z,yaw:v.yaw};v.ground.begin(v);
   try{v.update(dt,drive||(driver?driver(v,dt):input.state));}catch(e){Object.assign(v,old,{vLong:0,vLat:0,w:0});stats.missingContacts++;throw e;}
-  trafficDt+=dt;
-  if(trafficDt>=.1){for(const c of traffic)if(c.active){
-   // AI stops for a red or amber signal at its stop line; the player is never forced to.
-   if(props.hold(c.point,roads.graph.edges.get(c.point.edge)?.value.points||[[0,0,0]])){c.veh.vLong=0;continue;}
-   const p=roads.advance(c.point,trafficDt*8,{halfWidth:c.veh.halfW,halfLength:c.veh.halfL});c.veh.vLong=p?8:0;
-   if(p){c.point=p;Object.assign(c.veh,p);Object.assign(c.veh,c.veh.route.project(p.x,p.z));}
-  }
-  trafficDt=0;}
-  stats.carHits+=resolvePlayerContacts(v,traffic.filter(c=>c.active).map(c=>({id:c.id,vehicle:c.veh})),dt,elapsed*1000,contacts).length;
+  worldTraffic.update(dt,v,[v]);const collisions=[];worldTraffic.collide({veh:v,kind:'player'},collisions,elapsed);stats.carHits+=collisions.length;
   barriers.resolve(v,old);stats.metres+=Math.hypot(v.x-old.x,v.z-old.z);elapsed+=dt;stats.simulationSeconds=elapsed;
  }
  function render(dt){
   const v=player.veh,o=stream.origin;v.place(player.model.root);player.model.root.position.x-=o.x;player.model.root.position.z-=o.z;player.model.update(dt,v.vLong,v.steer,input.state.brake>.2,v.pose,v.corners,v.w);
-  for(const c of traffic)if(c.active){c.veh.place(c.model.root);c.model.root.position.x-=o.x;c.model.root.position.z-=o.z;}
+  worldTraffic.sync();
   const fx=-Math.sin(v.yaw),fz=-Math.cos(v.yaw),target=new THREE.Vector3(v.x-o.x-fx*8,v.y+3.8,v.z-o.z-fz*8);
   camera.position.copy(target);camera.lookAt(v.x-o.x+fx*8,v.y+1,v.z-o.z+fz*8);if(cameraHook)cameraHook(camera,v,o);sky.position.copy(camera.position);ENV.updateSun(sun,player.model.root.position);ENV.U.time.value=elapsed;SEA_TIME.value=elapsed;
-  detail.update({position:{x:v.x,z:v.z}});props.update({position:{x:v.x,z:v.z}},elapsed);trees.update({position:{x:v.x,z:v.z}});signs.update({position:{x:v.x,z:v.z}});marks.update({position:{x:v.x,z:v.z}});
-  {const ax=camera.position.x+o.x,az=camera.position.z+o.z;horizon.update(camera,ax,camera.position.y,az);landmarks.update(ax,camera.position.y,az,camera.far);plazas.update(ax,camera.position.y,az);lawns.update(ax,camera.position.y,az);}
+  session.setInterest({player:v,actors:worldTraffic.actors});session.update(dt);session.updateView(camera);
   guidance?.update(v,o,performance.now());
   post.render(dt);
   dial.drawTacho({...v,redline:spec.redline,kmh:Math.abs(v.vLong)*3.6,gearLabel:v.reverse?'R':String(v.gear),aidsOff:!settings.aids});document.getElementById('tRace').textContent=fmtTime(elapsed);
@@ -107,20 +90,20 @@ export async function bootAthens(){
   try{
    input.update(delta,{speed:player.veh.vLong,inMenu:false,blocked:paused||towing});
    for(const action of input.actions){if(action==='tow'||action==='reset')void tow();if(action==='pause')paused=!paused;if(action==='garage')location.assign('/?menu=1');}
-   stream.activateFrame();if(elapsed-lastTraffic>2){maintainTraffic();lastTraffic=elapsed;}
+   stream.activateFrame();
    accumulator=Math.min(accumulator+delta,.1);while(accumulator>=1/240){step(1/240);accumulator-=1/240;}
    render(delta);stats.frames++;if(stats.frames%30===0){const m=inventory();if(m.gpu>resources.gpuBytes||m.js>resources.jsBytes)throw Error('Athens resource admission exceeded');}
   }catch(e){paused=true;document.getElementById('err').style.display='block';document.getElementById('err').textContent=e.message;console.error(e);}
   stats.cpuMs.push(performance.now()-cpu);if(stats.cpuMs.length>900)stats.cpuMs.shift();frameId=requestAnimationFrame(tick);
  }
- function dispose(){if(stopped)return;stopped=true;cancelAnimationFrame(frameId);offGuidance();guidance?.dispose();session.dispose();renderer.dispose();}
+ function dispose(){if(stopped)return;stopped=true;cancelAnimationFrame(frameId);offGuidance();guidance?.dispose();worldTraffic?.dispose();session.dispose();renderer.dispose();}
  addEventListener('pagehide',dispose,{once:true});addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();post.setSize(innerWidth,innerHeight,gfx.pixelRatio);});
  document.addEventListener('visibilitychange',()=>{last=performance.now();accumulator=0;if(!document.hidden)void account.revalidate();});
  // Scripted measurement drive: wall-clock paced like a 30 fps game, optional sparse rendering.
  async function advance(seconds,{renderEvery=0,paceMs=1000/30}={}){
   const frames=Math.round(seconds*30);scripted=true;
   try{for(let f=0;f<frames&&!stopped;f++){
-   const begin=performance.now();stream.activateFrame();if(elapsed-lastTraffic>2){maintainTraffic();lastTraffic=elapsed;}
+   const begin=performance.now();stream.activateFrame();
    for(let i=0;i<8;i++)step(1/240);
    if(renderEvery&&f%renderEvery===0){render(renderEvery/30);stats.frames++;}
    if(f%30===0)inventory();
@@ -128,6 +111,6 @@ export async function bootAthens(){
   }}finally{scripted=false;last=performance.now();}
  }
  async function goto(id,x,z){towing=true;try{await stream.teleport({x,z},()=>{const p=stream.anchor(id);if(!p)throw Error('Unknown anchor '+id);place(player.veh,p);});}finally{towing=false;}}
- window.__athens={guidance,props,trees,signs,marks,horizon,landmarks,plazas,lawns,place:p=>place(player.veh,p),advance,goto,setDriver:fn=>{driver=fn;},setCameraHook:fn=>{cameraHook=fn;},stream,roads,barriers,obstacles,player,traffic,scene,renderer,camera,stats,inventory,tow,dispose,step,render,setPaused:value=>{paused=!!value;},get paused(){return paused;}};
+ window.__athens={guidance,props,trees,signs,marks,horizon,landmarks,plazas,lawns,place:p=>place(player.veh,p),advance,goto,setDriver:fn=>{driver=fn;},setCameraHook:fn=>{cameraHook=fn;},stream,roads,barriers,obstacles,player,get traffic(){return worldTraffic.cars;},scene,renderer,camera,stats,inventory,tow,dispose,step,render,setPaused:value=>{paused=!!value;},get paused(){return paused;}};
  last=performance.now();frameId=requestAnimationFrame(tick);return window.__athens;
 }

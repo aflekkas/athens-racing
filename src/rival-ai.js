@@ -91,6 +91,7 @@ export function driverPersonality(driver = {}) {
 export function racingBounds(route, s, dir = 1, halfWidth = 0.95, roadEdges, oncoming = false, margin = 0.95, out = {}) {
   let lo, hi;
   if (roadEdges) { const b = roadEdges(s, dir); lo = b.min; hi = b.max; }
+  else if(route.isWorldRoute){const f=route.frame(s);lo=-f.leftM;hi=f.rightM;}
   else if (route.closed) { hi = route.edge(s); lo = -hi; }
   else {
     const median = route.medHalf?.(s) ?? 0;

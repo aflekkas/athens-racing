@@ -18,6 +18,7 @@ import { createGameCore } from '../server/core.mjs';
 import { createSqlLeaderboard } from './leaderboard.mjs';
 
 const maps = new Map(catalogue.maps.map(m => [m.id, { ...m, definitions: new Map(m.definitions) }]));
+maps.routes=new Map((catalogue.routes||[]).filter(c=>catalogue.routeConfig?.environment==='staging'&&catalogue.routeConfig.routes.some(r=>r.id===c.id)).map(c=>[c.id,c]));
 const cars = new Set(catalogue.cars);
 const nitrousCars = new Set(catalogue.nitrousCars || []);
 const carSpecs = catalogue.carSpecs || {};
@@ -65,7 +66,7 @@ export class GameArena extends DurableObject {
     this.instanceId = crypto.randomUUID();
     this.startedAt = Date.now();
     this.timer = null;
-    this.leaderboard = createSqlLeaderboard(ctx.storage.sql, maps, cars);
+    this.leaderboard = createSqlLeaderboard(ctx.storage.sql, maps, cars,{transactionSync:fn=>ctx.storage.transactionSync(fn)});
     ctx.storage.sql.exec('CREATE TABLE IF NOT EXISTS post_limits (ip TEXT PRIMARY KEY, at INTEGER NOT NULL, count INTEGER NOT NULL)');
     this.core = createGameCore({ maps, cars, carSpecs, nitrousCars, leaderboard: this.leaderboard });
     // Auto-response avoids waking the object for optional idle keepalives.

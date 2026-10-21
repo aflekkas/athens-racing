@@ -1,24 +1,28 @@
+import {migrateRouteRecords,routeHistory,routeEdition} from '../src/route-migrations.js';
 import { mkdir, readFile, writeFile, rename, unlink } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { resultContext, validResult, resultEntry, leaderboardVersion, boardKey, filterEntries, canonicalResult, canonicalEntries } from './leaderboard-policy.mjs';
 
 export async function createLeaderboard(file, definitions, cars, version, maps) {
+  const routeMode=!!maps?.routes?.size,storageFile=routeMode?file+'.routes-v2.json':file;let history=[];
   let entries;
-  try { entries = JSON.parse(await readFile(file, 'utf8')).entries; if (!Array.isArray(entries)) throw new Error('Invalid leaderboard file'); }
+  try { let data;try{data=JSON.parse(await readFile(storageFile,'utf8'));}catch(e){if(!routeMode||e.code!=='ENOENT')throw e;data=JSON.parse(await readFile(file,'utf8'));}entries=data.entries;history=data.history||[]; if (!Array.isArray(entries)) throw new Error('Invalid leaderboard file'); }
   catch (e) { if (e.code !== 'ENOENT') throw e; entries = []; }
   let pending = Promise.resolve();
   const write = async next => {
     await mkdir(dirname(file), { recursive: true });
-    const temp = file + '.' + randomUUID() + '.tmp';
-    try { await writeFile(temp, JSON.stringify({ schema: 1, entries: next }) + '\n', { mode: 0o600 }); await rename(temp, file); }
+    const temp = storageFile + '.' + randomUUID() + '.tmp';
+    try { await writeFile(temp, JSON.stringify({ schema: routeMode?2:1, entries: next,...(routeMode?{history}:{} ) }) + '\n', { mode: 0o600 }); await rename(temp, storageFile); }
     catch (e) { await unlink(temp).catch(() => {}); throw e; }
   };
+  if(routeMode&&!history.length){history=migrateRouteRecords(entries,{source:'server-json'}).filter(e=>e.identity?.compatibility==='historical');await write(entries);}
   // Owner decision 2026-10-20: entries stored under a removed trim move to that model's top trim (docs/OWNER-DECISIONS.md).
   const migrated = canonicalEntries(entries, cars);
   if (migrated.changed) { entries = migrated.entries; await write(entries); }
   const validate = r => validResult(canonicalResult(r, cars), resultContext(r, definitions, version, maps).event, cars);
   const list = (filters = {}) => {
+    if(filters.routeId){if(String(filters.history)==='true')return filterEntries(routeHistory(history,filters.routeId),{...filters,mapId:undefined});const c=maps?.routes?.get(filters.routeId);return c?filterEntries(entries.filter(e=>e.routeId===c.id&&e.edition===routeEdition(c)),filters):[];}
     const mapId = filters.mapId || 'riviera';
     return filterEntries(entries.filter(e => (e.mapId || 'riviera') === mapId && e.version === leaderboardVersion(mapId, maps ? maps.get(mapId)?.track.version : version)), { ...filters, mapId });
   };

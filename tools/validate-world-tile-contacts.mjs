@@ -2,9 +2,9 @@
 import{readFile}from'node:fs/promises';import{resolve}from'node:path';import{gunzipSync}from'node:zlib';
 import{readTileBytes}from'./pack-world-tiles.mjs';import{decodeTilePack}from'../src/world-tile-codec.js';
 import{validateWorldManifest,validateTileSeam,tileTables}from'../src/world-tile-format.js';import{buildTileContactIndex,sampleTileContact}from'../src/world-tile-contact.js';
-export function sampleContactSeam(a,b,{tolerance=.02,spacing=1,epsilon=.00001}={}){
+export function sampleContactSeam(a,b,{tolerance=.02,spacing=1,epsilon=.00001,crossSource=false}={}){
  if(!(tolerance>=0&&spacing>0&&epsilon>0&&epsilon<.01))throw new Error('Invalid seam sampling limits');
- validateTileSeam(a,b);
+ validateTileSeam(a,b,{crossSource});
  const dx=b.metadata.cell[0]-a.metadata.cell[0],dz=b.metadata.cell[1]-a.metadata.cell[1];if(Math.abs(dx)+Math.abs(dz)!==1)throw new Error('Contact seam neighbours required');
  const axis=dx?0:2,other=dx?2:0,aside=dx+dz>0?512:0,bside=512-aside;
  const packs=[a,b].map(p=>({t:tileTables(p),index:null}));for(const p of packs)p.index=buildTileContactIndex(p.t);

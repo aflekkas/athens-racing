@@ -19,3 +19,10 @@ export async function readRouteInputs({world,graph}){
  return{manifest,graph:g,contacts,shard};
 }
 export function argumentsOf(args){const out={};for(let i=0;i<args.length;i++){if(!args[i].startsWith('--'))throw Error('Unexpected argument '+args[i]);const key=args[i].slice(2);if(!['world','graph','routes','report','out','legacy','manifest-url','cell-only'].includes(key))throw Error('Unknown flag --'+key);out[key]=key==='cell-only'?true:args[++i];}return out;}
+export async function readRouteClosures(directory,def){
+ if(!def.closureIds?.length)return new Map();
+ const {resolve}=await import('node:path');const data=JSON.parse(await readFile(resolve(directory,def.id+'.closures.json'),'utf8'));
+ if(data.schemaVersion!==1||data.routeId!==def.id||!Array.isArray(data.blocks)||data.blocks.length>256)throw Error('Invalid route closures');
+ const map=new Map();for(const b of data.blocks){if(typeof b.id!=='string'||map.has(b.id)||!['x','z','yaw','hl','hw'].every(k=>Number.isFinite(b[k]))||b.hl<=0||b.hl>40||b.hw<=0||b.hw>20||Math.abs(b.x)>1e7||Math.abs(b.z)>1e7||Object.hasOwn(b,'y'))throw Error('Invalid closure footprint');map.set(b.id,b);}
+ return map;
+}

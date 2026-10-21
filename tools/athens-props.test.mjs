@@ -64,7 +64,7 @@ test('AI holds at the stop line on red or amber, goes on green, and never holds 
   assert.equal(p.hold(car(STOP_OFF+30),edge),false,'far from the line the car is still rolling up');assert.equal(p.hold(car(STOP_OFF-5),edge),false,'already through the line');
   p.time=GREEN+1;assert.equal(p.hold(car(STOP_OFF),edge),true,'amber stops cars that can');
   assert.equal(p.hold({edge:'osm:edge:zzz',x:0,z:-STOP_OFF},edge),false,'an edge without a signal is never held');
-  p.setEnabled(false);p.time=RED0+2;assert.equal(p.hold(car(STOP_OFF),edge),false,'World detail Off: traffic ignores the (hidden) signals');
+  p.setEnabled(false);p.time=RED0+2;assert.equal(p.hold(car(STOP_OFF),edge),true,'World detail Off keeps the same legal signal physics');
 });
 test('World detail Off hides the layer; On brings it back',()=>{
   const p=new AthensProps(parent(),{enabled:false});assert.equal(p.group.visible,false);p.setEnabled(true);assert.equal(p.group.visible,true);p.setEnabled(false);assert.equal(p.group.visible,false);

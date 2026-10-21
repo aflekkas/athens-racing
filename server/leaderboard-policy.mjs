@@ -1,3 +1,7 @@
+import {routeEdition,competitiveRecordKey} from '../src/route-migrations.js';
+import {RouteRuntime} from '../src/route-runtime.js';
+import {routeEvent} from '../src/route-events.js';
+import {resolve as resolveEvent} from '../src/events.js';
 import { MAX_RIVALS } from '../src/events.js';
 import { matchesRecord } from '../src/leaderboard-records.js';
 import { canonicalCarId } from '../src/car-ids.js';
@@ -7,13 +11,14 @@ import { canonicalCarId } from '../src/car-ids.js';
 export const leaderboardVersion = (mapId, version) => mapId === 'psychiko' ? `${version}:faros-v3` : version;
 export function resultContext(r, definitions, version, maps) {
   r = r && typeof r === 'object' ? r : {};
+  if(r.routeId){const c=maps?.routes?.get(r.routeId),def=c&&!c.id.endsWith('-pilot')&&c.definition.events.some(e=>e.id===r.eventId&&e.enabled)?routeEvent(c,r.eventId):null;const tuple=def&&['worldId','regionId','routeId','routeHash','geometryHash','edition','worldSetRevision'].every(k=>r[k]===def[k]);return {event:tuple?{...def,...resolveEvent(def,{route:new RouteRuntime(c),marks:[]})}:null,version:def?.edition,mapId:'athens'};}
   if (!maps) return { event: definitions.get(r.eventId), version, mapId: 'riviera' };
   const mapId = r.mapId || 'riviera', map = maps.get(mapId);
   return { event: map?.definitions.get(r.eventId), version: leaderboardVersion(mapId, map?.track.version), mapId };
 }
 const text = (v, max) => v === undefined || (typeof v === 'string' && v.length > 0 && v.length <= max && !/[\x00-\x1f<>]/.test(v));
 export function validSetup(s, r, event) {
-  if (s === undefined) return true; // Older clients/online runs remain readable; missing aids are never invented.
+  if (s === undefined) return !event.routeId; // Older clients/online runs remain readable; missing aids are never invented.
   if (!s || typeof s !== 'object' || Array.isArray(s)) return false;
   if (s.type !== undefined && !['sprint', 'timetrial', 'pursuit'].includes(s.type)) return false;
   if (s.map !== (r.mapId || 'riviera') || s.event !== r.eventId || s.car !== r.car) return false;
@@ -29,20 +34,22 @@ export function validSetup(s, r, event) {
     } else if (!(near(s.from, event.s0) && near(s.to, event.s1) && s.direction === event.dir || near(s.from, event.s1) && near(s.to, event.s0) && s.direction === -event.dir)) return false;
     if (!event.closed && s.laps !== (event.laps || 1)) return false;
   }
+  if(event.routeId&&(!['relaxed','normal','tough'].includes(s.policeLevel)||typeof s.busted!=='boolean'||typeof s.signals!=='boolean'))return false;
+  if(event.routeId&&(s.routeId!==event.routeId||s.edition!==event.edition||s.geometryHash!==event.geometryHash||s.direction!==1))return false;
   return text(s.carName, 100);
 }
 export function validResult(r, event, cars) {
   if (!r || typeof r !== 'object' || Array.isArray(r)) return false;
-  const distance = event?.len * (r.setup && event.closed ? r.setup.laps / (event.laps || 1) : 1);
+  const distance = event?.len * (r.setup && event?.closed ? r.setup.laps / (event.laps || 1) : 1);
   return !!event && event.type !== 'free' && cars.has(r.car) && /^[a-zA-Z0-9_-]{8,64}$/.test(r.driverId || '') && Number.isFinite(r.time) && r.time >= Math.max(0.05, distance / 150) && r.time <= 7200 &&
     (r.traffic === undefined || typeof r.traffic === 'boolean') && text(r.carName, 100) && validSetup(r.setup, r, event);
 }
 export function resultEntry(r, event, version, mapId) {
-  return { driverId: r.driverId, name: String(r.name || 'DRIVER').replace(/[\x00-\x1f<>]/g, '').trim().slice(0, 28) || 'DRIVER', eventId: r.eventId, mapId, car: r.car, time: r.time,
+  return { ...(event.routeId?Object.fromEntries(['worldId','regionId','routeId','routeHash','geometryHash','edition','worldSetRevision'].map(k=>[k,r[k]])):{}),driverId: r.driverId, name: String(r.name || 'DRIVER').replace(/[\x00-\x1f<>]/g, '').trim().slice(0, 28) || 'DRIVER', eventId: r.eventId, mapId, car: r.car, time: r.time,
     traffic: r.setup ? r.setup.traffic > 0 : r.traffic === undefined ? event.traffic : r.traffic,
-    ...(r.setup ? { setup: Object.fromEntries(['map', 'event', 'type', 'from', 'to', 'direction', 'laps', 'car', 'time', 'weather', 'traffic', 'rivals', 'police', 'tc', 'abs', 'steering', 'gearbox'].filter(k => r.setup[k] !== undefined).map(k => [k, r.setup[k]])) } : {}),
+    ...(r.setup ? { setup: Object.fromEntries(['worldId','routeId','geometryHash','edition','policeLevel','busted','signals','map', 'event', 'type', 'from', 'to', 'direction', 'laps', 'car', 'time', 'weather', 'traffic', 'rivals', 'police', 'tc', 'abs', 'steering', 'gearbox'].filter(k => r.setup[k] !== undefined).map(k => [k, r.setup[k]])) } : {}),
     ...(r.carName || r.setup?.carName ? { carName: r.carName || r.setup.carName } : {}),
-    routeKey: r.setup ? `${r.setup.from}>${r.setup.to}` : event.routeKey, distance: r.setup && event.closed ? event.len * r.setup.laps / (event.laps || 1) : event.len, version, source: r.source === 'online' ? 'online' : 'solo', at: Date.now() };
+    routeKey: r.setup ? `${r.setup.from}>${r.setup.to}` : event.routeKey, distance: r.setup && event?.closed ? event.len * r.setup.laps / (event.laps || 1) : event.len, version, source: r.source === 'online' ? 'online' : 'solo', at: Date.now() };
 }
 // Owner decision 2026-10-20 (docs/OWNER-DECISIONS.md): trims are gone, so a result or stored entry that points at a removed trim
 // belongs to that model's top trim and carries no trim fields. Idempotent; returns the same object when nothing changes.
@@ -76,10 +83,10 @@ export function canonicalEntries(entries, known) {
   return { entries: bounded, changed };
 }
 // Settings form independent boards: a clear/day run must not erase a rain/night PB.
-export const boardKey = e => JSON.stringify([e.mapId || 'riviera', e.version, e.eventId, e.car, e.traffic, ...(e.setup ? [null, null, e.setup] : [])]);
+export const boardKey = e => e.routeId?competitiveRecordKey(e):JSON.stringify([e.mapId || 'riviera', e.version, e.eventId, e.car, e.traffic, ...(e.setup ? [null, null, e.setup] : [])]);
 export const filterEntries = (entries, filters = {}) => entries.filter(e => matchesRecord(e, filters)).sort((a, b) => a.time - b.time || a.at - b.at).slice(0, Math.max(1, Math.min(100, Number(filters.limit) || 50))).map(({ driverId, ...e }) => e);
 export function leaderboardFilters(params, known) {
-  const out = Object.fromEntries(['mapId', 'eventId', 'route', 'car', 'weather', 'tc', 'abs', 'steering', 'gearbox', 'limit'].filter(k => params.has(k)).map(k => [k, params.get(k)]));
+  const out = Object.fromEntries(['routeId','edition','history','mapId', 'eventId', 'route', 'car', 'time','weather', 'tc', 'abs', 'steering', 'gearbox', 'limit'].filter(k => params.has(k)).map(k => [k, params.get(k)]));
   if (out.car) out.car = canonicalCarId(out.car, known);
   if (params.has('traffic')) out.traffic = params.get('traffic') === 'true';
   if (params.has('reverse')) out.reverse = params.get('reverse') === 'true';
