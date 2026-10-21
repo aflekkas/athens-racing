@@ -421,6 +421,7 @@ function stepUnified(dt,visual,frameDt){
  const activeCells=new Set([...worldSession.stream.tiles].filter(([,t])=>t.state==='active').map(([k])=>k));routeGuidance?.update({cursorS:nav.s,occurrence:nav.occurrence,lap:G.run?.lap||1,position:v,heading:v.yaw,origin:worldSession.stream.origin,activeCells,isRace:true});
  const nextSignal=G.ev.def.rules?.signals?signals.next(v.s+v.halfL):null;hud.signal(nextSignal&&nextSignal.sF-v.s<230?{main:nextSignal.main,d:nextSignal.sF-v.s-v.halfL,wait:nextSignal.main!=='G'&&v.kmh<3,close:nextSignal.main==='R'&&nextSignal.sF-v.s<80&&v.kmh>25}:null);
  hud.update({s:v.s,rs:0,x:v.x,z:v.z,yaw:v.yaw,pos:racePosition(),time:G.pFinish??G.raceT,gap:raceGap(),pen:0,rpm:v.rpm,redline:v.spec.redline,kmh:speedIn(v.kmh),unit:speedUnit(),gearLabel:G.state==='countdown'?'N':v.reverse?'R':String(v.gear),tc:v.tcOn,abs:v.absOn,esc:v.escOn,aidsOff:!settings.aids,shiftFlash:0,draft:0,nitrous:v.spec.nitrous===true,nitro:v.nitro,nitroOn:v.nitroOn,free:false,limit:null,traffic:traffic.cars.filter(c=>c.active),manual:v.manual,canUpshift:true,offRoute:nav.offRoute,routeCursor:nav});
+ document.body.classList.toggle('circuit-race',!!G.run?.r.closed&&!inFreeRoam());updateLapHud(G.run,!inFreeRoam()&&!inMenu()&&!isDrivingMode(G.ev?.def));
  updateWeather(frameDt);if(drawUnifiedAudio())updateAudio(frameDt);if(G.state==='race'&&G.raceT>5)document.body.classList.add('started');
 }
 function drawUnifiedFrame(dt,draw,visual,frameDt){stepUnified(dt,visual,frameDt);if(draw&&visual)render();}
