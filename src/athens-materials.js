@@ -4,6 +4,7 @@ import {municipalBinLabelTexture} from './street-life.js';
 import {roadNetworkMaterial} from './road-network.js';
 import {penteliRoadMaterial} from './maps/penteli-surface.js';
 import {terrainMaterial} from './terrain.js';
+import {penteliTerrainMaterial} from './penteli-terrain.js';
 import {facadeMaterial} from './buildings.js';
 import {createFacadeAtlas} from './facade-atlas.js';
 // Materials for the streamed Athens map. The asphalt and paving scans are the same shared library
@@ -41,6 +42,7 @@ export function athensMaterial(surface,rgb,vertexColors){
   if(surface.startsWith('penteliProp:')){const {texture,...options}=JSON.parse(surface.slice(12)),map=!texture?null:texture.kind==='speed'?faceTexture(texture.value):texture.kind==='road-sign'?roadSignAtlas(texture.keys):municipalBinLabelTexture();const m=new THREE.MeshStandardMaterial({...options,color:new THREE.Color(...rgb),vertexColors,map});const off=onSettings((s,k)=>{if(!k||k==='worldDetail')m.visible=s.worldDetail!==false;});m.visible=settings.worldDetail!==false;m.addEventListener('dispose',()=>{off();map?.dispose();});return m;}
   if(surface==='penteliNetwork')return roadNetworkMaterial();
   if(surface==='penteliRoad')return penteliRoadMaterial();
+  if(surface==='penteliMountain')return penteliTerrainMaterial();
   if(surface==='penteliTerrain')return terrainMaterial();
   if(surface==='penteliBuilding')return facadeMaterial(typeof document==='undefined'?null:createFacadeAtlas());
   if(surface==='penteliScenery'||surface==='penteliRail'||surface==='penteliConcrete'){

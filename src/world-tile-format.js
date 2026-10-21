@@ -53,6 +53,16 @@ function validateWorldDetail(m,arrays,buildingCount) {
     for(let j=0;j<4;j++)if(!Number.isFinite(p[i+j]))fail('worldDetail vegetation nonfinite');
     if(p[i]<0||p[i]>=TILE_METRES||p[i+2]<0||p[i+2]>=TILE_METRES||p[i+3]<0)fail('worldDetail vegetation position/height');
   }
+  if(d.penteli){
+    const trees=array(d.streetTrees,'Float32Array',5,'Penteli trees'),houses=array(d.penteliHouses,'Float32Array',7,'Penteli houses');
+    if(m.world!=='penteli'||trees.length/5>2000||houses.length/7>144||d.coastalTreeCount!==trees.length/5)fail('Penteli scenery ownership/count');
+    for(const[rows,stride]of [[trees,5],[houses,7]])for(let i=0;i<rows.length;i+=stride){
+      if(!rows.subarray(i,i+stride).every(Number.isFinite)||rows[i]<0||rows[i]>=512||rows[i+2]<0||rows[i+2]>=512)fail('Penteli scenery position');
+      if(stride===5&&(!integer(rows[i+4])||![1,4].includes(rows[i+4]>>3)))fail('Penteli tree species');
+      if(stride===7&&rows.subarray(i+4,i+7).some(v=>v<=0||v>20))fail('Penteli house dimensions');
+    }
+    if(!Number.isFinite(m.penteliSceneryBytes)||m.penteliSceneryBytes<trees.length/5*160+houses.length/7*128+16384)fail('Penteli scenery reservation');
+  }
 }
 /** FNV-1a over UTF-8 source IDs, e.g. way/123 or relation/123 (not a split-part ID). */
 export function worldDetailSeed(sourceId) {

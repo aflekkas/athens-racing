@@ -9,13 +9,15 @@ World cells remain exclusively in `athens-racing-world-staging`.
 
 `athens.inputs.json` extends this proof to all three enabled compiled routes. It was
 captured against the basin plus disconnected Penteli world set revision
-`4e4c4622b97d2bea7056ad1d52bf48afb942db8e6b29bc124ebade7619b7b726`
-at manifest `803754cf8aa7c04ceb9161d29061436292f6fe3f42fe13bf0d468de5f7e2d6a2`.
-The pilot and Faros capture replays against 53 hash-verified basin halo cells.
-Their geometry hashes are unchanged; Penteli contributes no race definition.
-The separately captured Riviera queries are merged by exact edge/query identity;
-all 43 referenced cell hashes match the composed release. Basin packet identities
-remain intact.
+`dd98d7bac13833eca19e0f583d6da49cd332df8cd6de3b84a1c72df4aaa8961d`
+at manifest `7de3a7d423f14780d906fa9af913325a8a0f0bf39bfbdc303ed349c2ea7d80d3`.
+This scenery pass preserves the existing validated corridor subset and race hashes.
+A fresh capture across 123 verified basin halo cells confirms all 6,400 contact
+queries are identical and every preserved width remains within the fresh proof.
+The Riviera road-width logic would otherwise widen 250 old queries. All 43
+referenced cell hashes remain identical, so the existing proof is rebound to the
+new world-set revision; no records or route geometry change. Penteli contributes
+no race definition.
 
 Psychiko overrides in `tools/world-gen/overrides/psychiko.json` rebuild the
 Faros route cells and their seam halo; unchanged cells retain their immutable

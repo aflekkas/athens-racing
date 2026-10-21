@@ -14,6 +14,15 @@ test('AWT/1 empty terrain tile is valid; unsupported revisions and malformed tab
   p.arrays[p.metadata.tables.coarseHeights] = new Float32Array(1088);
   assert.throws(() => validateWorldTile(p), /coarse terrain/);
 });
+test('Penteli wire scenery rejects foreign ownership, malformed rows and unreserved records',async()=>{
+ const {decorateAuthored}=await import('./world-gen/track-region-geometry.mjs');
+ const p=fixture();p.metadata.world='penteli';
+ decorateAuthored({tile:{t:{buildings:[]},penteliTrees:[20,100,30,0,8],penteliHouses:[40,100,50,0,10,3.4,10]},metadata:p.metadata,add:a=>{p.arrays.push(a);return p.arrays.length-1;}});
+ assert.equal(validateWorldTile(p).triangles,0);const d=p.metadata.extensions.worldDetail;
+ p.arrays[d.streetTrees][0]=512;assert.throws(()=>validateWorldTile(p),/Penteli scenery position/);p.arrays[d.streetTrees][0]=20;
+ p.metadata.world='athens';assert.throws(()=>validateWorldTile(p),/ownership/);p.metadata.world='penteli';
+ p.metadata.penteliSceneryBytes=0;assert.throws(()=>validateWorldTile(p),/reservation/);
+});
 test('canonical terrain seams reject one bit changes and missing boundary contact vertices', () => {
   const a = fixture(), b = fixture([1,0]); assert.equal(validateTileSeam(a,b),true);
   b.arrays[b.metadata.tables.coarseHeights][0] = .00001; assert.throws(() => validateTileSeam(a,b), /cracked seam/);
