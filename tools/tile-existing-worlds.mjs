@@ -18,7 +18,7 @@ function clip(poly,axis,value,sign){
     if(inside!==next){const t=(value-a[axis])/(b[axis]-a[axis]),p=a.map((v,k)=>v+(b[k]-v)*t);p[axis]=value;out.push(p);}
   }return out;
 }
-function triangleTiles(vertices,emit,profile=null){
+export function triangleTiles(vertices,emit,profile=null){
   const xs=vertices.map(v=>v[0]),zs=vertices.map(v=>v[2]);
   const x0=Math.floor(Math.min(...xs)/SIZE),x1=Math.max(x0,Math.ceil(Math.max(...xs)/SIZE)-1),z0=Math.floor(Math.min(...zs)/SIZE),z1=Math.max(z0,Math.ceil(Math.max(...zs)/SIZE)-1);
   const seam=x0!==x1||z0!==z1||vertices.some(v=>v[0]%512===0||v[2]%512===0);
@@ -149,23 +149,24 @@ function addTriangle(tile,vertices,kind,resolution=10){
   const t=tile.t,[tx,tz]=tile.cell,terrain=kind==='terrain';
   const local=vertices.map(v=>[Math.fround(v[0]-tx*512),v[1],Math.fround(v[2]-tz*512),...v.slice(3)]);
   for (const v of local) if (v[0]===0 || v[0]===512 || v[2]===0 || v[2]===512) {
-    const key=`${kind}:${Math.fround(v[0]+tx*512)}:${Math.fround(v[2]+tz*512)}`;
+    const key=`${kind}:${v[0]+tx*512}:${v[2]+tz*512}`;
     if(terrain){const previous=tile.borderProfiles.get(key);if(!previous||resolution<previous.resolution)tile.borderProfiles.set(key,{resolution,y:v[1],normal:v.slice(6,9),urban:v[9],color:v.slice(3,6)});}
     let heights=tile.boundaries.get(key);if(!heights)tile.boundaries.set(key,heights=[]);const previous=heights.find(y=>Math.abs(y-v[1])<=.001);if(previous!==undefined)v[1]=previous;else heights.push(v[1]);
   }
-  const [va,vb,vc]=local,contactable=terrain||Math.abs((vb[0]-va[0])*(vc[2]-va[2])-(vb[2]-va[2])*(vc[0]-va[0]))>1e-9;
+  const [va,vb,vc]=local,contactable=terrain||kind!=='render'&&Math.abs((vb[0]-va[0])*(vc[2]-va[2])-(vb[2]-va[2])*(vc[0]-va[0]))>1e-9;
   const positions=terrain?t.finePositions:t.contactPositions,triangles=terrain?t.fineTriangles:t.contactTriangles,vertexMap=tile.vertices[terrain?'terrain':'road'],indices=[];
-  if(contactable) for(const v of local){const xyz=[v[0],Math.fround(v[1] - (!terrain && v[3]>=.5 ? .14 : 0)),v[2]],key=xyz.join(',');let index=vertexMap.get(key);if(index===undefined){index=positions.length/3;positions.push(...xyz);vertexMap.set(key,index);if(terrain){tile.fineColors[index]=v.slice(3,6);tile.fineNormals[index]=v.slice(6,9);tile.fineUrban[index]=v[9];}}indices.push(index);}
-  if(contactable){triangles.push(...indices,...(terrain?[]:[2,1]));if(!terrain)t.contactLayers.push(0);}
-  if(terrain||kind==='contact')return;
+  if(contactable) for(const v of local){const xyz=[v[0],Math.fround(v[1] - (!terrain && !tile.authoredRegion && v[3]>=.5 ? .14 : 0)),v[2]],key=xyz.join(',');let index=vertexMap.get(key);if(index===undefined){index=positions.length/3;positions.push(...xyz);vertexMap.set(key,index);if(terrain){tile.fineColors[index]=v.slice(3,6);tile.fineNormals[index]=v.slice(6,9);tile.fineUrban[index]=v[9];}}indices.push(index);}
+  if(contactable){triangles.push(...indices,...(terrain?[]:[2,tile.authoredRegion&&local.every(v=>v[3]>=.5)?4:1]));if(!terrain)t.contactLayers.push(0);}
+  if(terrain||kind==='contact'||tile.skipRoadRender)return;
   let batch=tile.current;
   if(!batch||batch.triangles>=16384){batch={p:[],color:[],normal:[],uv:[],offset:[],triangles:0};tile.batches.push(batch);tile.current=batch;}
   for(const v of local){batch.p.push(...v.slice(0,3));batch.color.push(...v.slice(3,6));batch.normal.push(...v.slice(6,9));batch.uv.push(...v.slice(9,11));batch.offset.push(v[11]??(v[3]>=.5?.14:0));}batch.triangles++;
 }
-export async function bakeExistingTiles(bake,out){
-  const {map,network}=bake,tiles=new Map(),boundaries=new Map(),borderProfiles=new Map(),revision=hash(new Uint8Array(bake.terrain)).slice(0,32)+hash(new Uint8Array(bake.roads)).slice(0,32);
-  const sourceRoadHeight=typeof network.baseHeight==='function'?(x,z)=>{const y=map.terrain.refinedHeight?.(x,z);return y==null?network.baseHeight(x,z):y+.10;}:null;
-  const get=(x,z)=>{const key=`${x},${z}`;if(!tiles.has(key))tiles.set(key,emptyTile(map,[x,z],revision,boundaries,borderProfiles));return tiles.get(key);};
+export async function bakeExistingTiles(bake,out,options={}){
+  const transform=options.transform, position=v=>transform?transform.position(v):v;
+  const {map,network}=bake,tiles=new Map(),boundaries=new Map(),borderProfiles=new Map(),revision=options.revision||hash(new Uint8Array(bake.terrain)).slice(0,32)+hash(new Uint8Array(bake.roads)).slice(0,32);
+  const sourceRoadHeight=!transform&&typeof network.baseHeight==='function'?(x,z)=>{const y=map.terrain.refinedHeight?.(x,z);return y==null?network.baseHeight(x,z):y+.10;}:null;
+  const get=(x,z)=>{const key=`${x},${z}`;if(!tiles.has(key)){const tile=emptyTile(map,[x,z],revision,boundaries,borderProfiles);tile.authoredRegion=!!options.authoredContacts;tile.skipRoadRender=options.renderRoads===false;tiles.set(key,tile);}return tiles.get(key);};
   for(const [group,kind] of [[bake.terrainGroup,'terrain'],[bake.roadsGroup,'road']])for(const mesh of group.children){
     if(!mesh.isMesh)continue;
     const p=kind==='terrain'?terrainWorldPositions(mesh):mesh.geometry.attributes.position.array,c=mesh.geometry.attributes.color,index=mesh.geometry.userData.terrainLodSource?{array:mesh.geometry.userData.terrainLodSource,count:mesh.geometry.userData.terrainLodSource.length,getX(i){return this.array[i];}}:mesh.geometry.index;
@@ -173,13 +174,16 @@ export async function bakeExistingTiles(bake,out){
     const resolution=(map.terrain.T||10)/(mesh.userData.terrainRefinement||1)*(mesh.userData.coarseTerrain?4:1);
     for(let i=range?.start||0,n=index?Math.min(index.count,(range?.start||0)+(Number.isFinite(range?.count)?range.count:index.count)):p.length/3;i<n;i+=3){
       const v=[];for(let j=0;j<3;j++){const k=index?index.getX(i+j):i+j;const normal=mesh.geometry.attributes.normal,urban=mesh.geometry.attributes.aU,uv=mesh.geometry.attributes.uv;v.push([p[k*3],p[k*3+1],p[k*3+2],c?c.getX(k):.4,c?c.getY(k):.4,c?c.getZ(k):.4,normal?normal.getX(k):0,normal?normal.getY(k):1,normal?normal.getZ(k):0,kind==='terrain'?(urban?urban.getX(k):0):(uv?uv.getX(k):0),uv?uv.getY(k):0]);}
-      triangleTiles(v,(x,z,tri)=>addTriangle(get(x,z),tri,kind,resolution),kind==='road'?sourceRoadHeight:null);
+      const floorArea=Math.abs((v[1][0]-v[0][0])*(v[2][2]-v[0][2])-(v[1][2]-v[0][2])*(v[2][0]-v[0][0]));
+      const triangleKind=kind==='road'&&floorArea<1e-7?'render':kind;
+      if(transform)for(const vertex of v){vertex.splice(0,3,...transform.position(vertex));vertex.splice(6,3,...transform.normal(vertex.slice(6,9)));}
+      triangleTiles(v,(x,z,tri)=>addTriangle(get(x,z),tri,triangleKind,resolution),kind==='road'?sourceRoadHeight:null);
     }
   }
   // Bounded, plain main-carriageway ribbons, following the exact existing bank/profile.
   const r=map.route;
-  for(let s=0;s<r.length;s+=2){const end=Math.min(s+2,r.length),v=[];
-    for(const [station,side] of [[s,-1],[s,1],[end,-1],[end,1]]){const p=r.point(station,side*(r.edge(station)+(r.closed?0:.55)));v.push([p.x,p.y,p.z,.13,.14,.15]);}
+  for(let s=0;!options.authoredContacts&&s<r.length;s+=2){const end=Math.min(s+2,r.length),v=[];
+    for(const [station,side] of [[s,-1],[s,1],[end,-1],[end,1]]){const p=r.point(station,side*(r.edge(station)+(r.closed?0:.55)));v.push([...position([p.x,p.y,p.z]),.13,.14,.15]);}
     for(const tri of [[v[0],v[2],v[1]],[v[1],v[2],v[3]]])triangleTiles(tri,(x,z,tri)=>addTriangle(get(x,z),tri,'contact'),sourceRoadHeight);
   }
   // Legacy coarse/fine patches can disagree by metres at the same XYZ station.
@@ -201,23 +205,26 @@ export async function bakeExistingTiles(bake,out){
   }
   stitchTerrain(tiles);
   const roadWeld=sourceRoadHeight?stitchRoadBorders(tiles,{baseHeight:sourceRoadHeight}):null;
+  await options.populate?.({tiles,get,triangleTiles});
   const dir=resolve(out,'data/tiles',map.id);await mkdir(dir,{recursive:true});
-  const manifest={tileVersion:1,world:map.id,revision,tileMetres:512,projection:map.data.proj,elevation:{datum:'existing-map',source:map.definition.terrainUrl,sha256:hash(new Uint8Array(map.terrain.H.buffer))},defaults:{speedKph:50},spawn:{cell:[],anchor:'spawn:legacy'},tiles:{},migration:{partial:true,coverage:'terrain and road surfaces; existing scenery and route gameplay stay in the legacy adapter'}};
-  const spawn=r.point(r.start,0);manifest.spawn.cell=[Math.floor(spawn.x/512),Math.floor(spawn.z/512)];
+  const manifest={tileVersion:1,world:map.id,revision,tileMetres:512,projection:options.projection||map.data.proj,elevation:options.elevation||{datum:'existing-map',source:map.definition.terrainUrl,sha256:hash(new Uint8Array(map.terrain.H.buffer))},defaults:{speedKph:50},spawn:{cell:[],anchor:'spawn:legacy'},tiles:{},migration:{partial:true,coverage:'terrain and road surfaces; existing scenery and route gameplay stay in the legacy adapter'}};
+  const spawn=position(r.point(r.start,0).toArray?.()||Object.values(r.point(r.start,0)));manifest.spawn.cell=[Math.floor(spawn[0]/512),Math.floor(spawn[2]/512)];
+  if(options.manifest)Object.assign(manifest,options.manifest);
+  if(options.authoredContacts){let best,dist=Infinity;for(const tile of tiles.values())for(let i=0;i<tile.t.anchors.length;i+=5){const p=tile.t.anchorTransforms.slice(tile.t.anchors[i+1]*4,tile.t.anchors[i+1]*4+4),d=Math.hypot(p[0]+tile.cell[0]*512-spawn[0],p[2]+tile.cell[1]*512-spawn[2]);if(d<dist){dist=d;best={cell:tile.cell,anchor:tile.ids[tile.t.anchors[i]]};}}if(!best)throw Error('Imported region has no proven spawn anchor');manifest.spawn=best;}
+
   const signatures=new Map(),renderVariants=new Map();let totalBytes=0,decodedBytes=0,triangles=0;
   for(const [key,tile] of tiles){
     const {t,cell}=tile,arrays=[],tables={};
     const [x,z]=cell;
     // Existing global height solve, sampled identically on both sides of every border.
-    for(let iz=0;iz<33;iz++)for(let ix=0;ix<33;ix++)t.coarseHeights.push(Math.fround(map.terrain.refinedHeight?.(x*512+ix*16,z*512+iz*16)??map.terrain.height(x*512+ix*16,z*512+iz*16)));
+    for(let iz=0;iz<33;iz++)for(let ix=0;ix<33;ix++){const q=transform?transform.inverse([x*512+ix*16,0,z*512+iz*16]):[x*512+ix*16,0,z*512+iz*16];t.coarseHeights.push(Math.fround(map.terrain.refinedHeight?.(q[0],q[2])??map.terrain.height(q[0],q[2])));}
     for(const [name,[type]] of Object.entries(TILE_TABLES)){tables[name]=arrays.length;arrays.push(new globalThis[type](t[name]));}
     const add=a=>{arrays.push(a);return arrays.length-1;},meshes=[];
     // Shared canonical positions remove expanded render copies in dense Penteli
     // cells. Each draw stays <=16384 triangles; WebGL2 supports Uint32 indices.
     const color=add(Uint8Array.from(tile.fineColors.flat(),v=>Math.round(Math.max(0,Math.min(1,v))*255)));
     const normal=add(Int8Array.from(tile.fineNormals.flat(),v=>Math.round(Math.max(-1,Math.min(1,v))*127))),urban=add(Uint8Array.from(tile.fineUrban,v=>Math.round(Math.max(0,Math.min(1,v))*255)));
-    const Index=t.finePositions.length/3<=65535?Uint16Array:Uint32Array;
-    for(let i=0;i<t.fineTriangles.length;i+=16384*3)meshes.push({name:'migrated-terrain',material:0,attributes:{position:{array:tables.finePositions,itemSize:3,normalized:false},color:{array:color,itemSize:3,normalized:true},normal:{array:normal,itemSize:3,normalized:true},aU:{array:urban,itemSize:1,normalized:true}},index:add(new Index(t.fineTriangles.slice(i,i+16384*3))),userData:{tileSurface:'terrain'},layers:1,renderOrder:0});
+    for(let i=0;i<t.fineTriangles.length;i+=16384*3)meshes.push({name:'migrated-terrain',material:0,attributes:{position:{array:tables.finePositions,itemSize:3,normalized:false},color:{array:color,itemSize:3,normalized:true},normal:{array:normal,itemSize:3,normalized:true},aU:{array:urban,itemSize:1,normalized:true}},index:tables.fineTriangles,drawRange:{start:i,count:Math.min(16384*3,t.fineTriangles.length-i)},userData:{tileSurface:options.terrainSurface||'terrain'},layers:1,renderOrder:0});
     for(const batch of tile.batches){
       const unique=new Map(),positions=[],colors=[],normals=[],uvs=[],indices=[];
       for(let i=0;i<batch.p.length;i+=3){const rgb=batch.color.slice(i,i+3).map(v=>Math.round(Math.max(0,Math.min(1,v))*255)),xyz=batch.p.slice(i,i+3),nrm=batch.normal.slice(i,i+3).map(v=>Math.round(Math.max(-1,Math.min(1,v))*127)),uv=batch.uv.slice(i/3*2,i/3*2+2),key=xyz.join(',')+':'+rgb.join(',')+':'+nrm.join(',')+':'+uv.join(',');
@@ -226,12 +233,14 @@ export async function bakeExistingTiles(bake,out){
       const p=new Float32Array(positions),c=new Uint8Array(colors),n=new Int8Array(normals),uv=new Float32Array(uvs);
       meshes.push({name:'migrated-tile',material:0,attributes:{position:{array:add(p),itemSize:3,normalized:false},color:{array:add(c),itemSize:3,normalized:true},normal:{array:add(n),itemSize:3,normalized:true},uv:{array:add(uv),itemSize:2,normalized:false}},index:add(new Uint16Array(indices)),userData:{tileSurface:'network'},layers:1,renderOrder:0});
     }
-    const metadata={tileVersion:1,world:map.id,revision,cell,origin:[x*512,0,z*512],tables,ids:tile.ids,strings:tile.strings,palette:[[1,1,1]],terrain:{coarseSize:33,spacing:16},meshes,budgets:{triangles:meshes.reduce((n,m)=>n+(m.index==null?arrays[m.attributes.position.array].length/9:arrays[m.index].length/3),0),buildingTriangles:0},migration:manifest.migration};
+    const metadata={tileVersion:1,world:map.id,revision,cell,origin:[x*512,0,z*512],tables,ids:tile.ids,strings:tile.strings,palette:[[1,1,1]],terrain:{coarseSize:33,spacing:16},meshes,budgets:{triangles:meshes.reduce((n,m)=>n+(m.index==null?arrays[m.attributes.position.array].length/9:(m.drawRange?.count??arrays[m.index].length)/3),0),buildingTriangles:0},migration:manifest.migration};
+    options.decorate?.({tile,metadata,arrays,add});
     const pack={metadata,arrays};validateWorldTile(pack);
     signatures.set(key,tileEdgeSignatures(pack).map(hash));
     for(const variant of tileRenderVariants({metadata,arrays}))renderVariants.set(variant.key,variant);
     const raw=encodeGeometryPack(metadata,arrays),plain=gzipSync(new Uint8Array(raw),{level:9}),planeRaw=encodeGeometryPack(metadata,arrays,arrays.map(()=>true)),planes=gzipSync(new Uint8Array(planeRaw),{level:9}),body=plain.length<=planes.length?plain:planes,sha=hash(body),name=`${x}-${z}-${sha.slice(0,16)}.bin.gz`;
     if(body.length>25*1024*1024)throw new Error('Tile exceeds static asset cap');
+    await options.beforeWrite?.();
     await writeFile(resolve(dir,name),body);
     // Conservative upper bound includes CSR references, decoder buffers, CPU+GPU data.
     const measured=prepareTilePacket(decodeGeometryPack(plain.length<=planes.length?raw:planeRaw),{world:map.id,revision,cell,entry:{decodedBytes:Number.MAX_SAFE_INTEGER,triangles:metadata.budgets.triangles}});

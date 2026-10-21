@@ -24,10 +24,10 @@ import {AthensMarks} from './athens-marks.js';
 import {DRESSING_VARIANTS} from './world-tile-dressing.js';
 import {RouteRuntime} from './route-runtime.js';
 import {planRouteInterest} from './route-stream-policy.js';
-import {validateWorldDefinition} from './world-manifest.js';
+import {validateWorldDefinition,loadWorldDefinition} from './world-manifest.js';
 export async function createWorldSession({renderer,scene,resources,progress=()=>{},worldDefinition={},signal}){
  const manifestURL=new URL(worldDefinition.manifestURL||'/data/athens/manifest.json',globalThis.location?.href||'http://localhost/');
- const manifest=worldDefinition.manifest||await fetch(manifestURL,{signal}).then(r=>{if(!r.ok)throw Error('Athens world unavailable');return r.json();});validateWorldDefinition({...worldDefinition,manifest});
+ const manifest=worldDefinition.manifest||(await loadWorldDefinition(manifestURL,{signal})).manifest;validateWorldDefinition({...worldDefinition,manifest});
  let stream,roads,route=null,ground=null,interest=null,plan=null,selection=null,disposed=false,inventoryFrames=0;const tileListeners=new Set(),enrichments=new Map();
  const detailRoot=new THREE.Group();scene.add(detailRoot);
  const detail=new WorldDetail({id:'athens',terrain:{},data:{buildings:[],vegetation:[]},route:{length:0}},detailRoot,()=>0);
@@ -37,7 +37,7 @@ export async function createWorldSession({renderer,scene,resources,progress=()=>
  const obstacles=new WorldTileObstacles({detailEnabled:settings.worldDetail!==false});
  const unsubscribeProps=onSettings((s,key)=>{if(!key||key==='worldDetail'){obstacles.setDetailEnabled(s.worldDetail!==false);props.setEnabled(s.worldDetail!==false);horizon.setEnabled(s.worldDetail!==false);landmarks.setEnabled(s.worldDetail!==false);plazas.setEnabled(s.worldDetail!==false);lawns.setEnabled(s.worldDetail!==false);signs.setEnabled(s.worldDetail!==false);marks.setEnabled(s.worldDetail!==false);trees.setEnabled(s.worldDetail!==false);syncBoxes();}});
  horizon.load(new URL('./assets/athens/horizon.bin',document.baseURI)).catch(e=>console.warn(e.message));plazas.load(new URL('./assets/athens/plazas.json',document.baseURI)).catch(e=>console.warn(e.message));lawns.load(new URL('./assets/athens/lawns.json',document.baseURI)).catch(e=>console.warn(e.message));signs.load(new URL('./assets/athens/pois.json',document.baseURI)).catch(e=>console.warn(e.message));
- await loadAthensTextures(renderer);const sceneTiles=new WorldTileScene(scene,{renderer,materialFactory:athensMaterial}),barriers=new WorldTileBarriers();
+ await loadAthensTextures(renderer,{penteli:manifest.regionId==='penteli'||manifest.regions?.some(r=>r.id==='penteli')});const sceneTiles=new WorldTileScene(scene,{renderer,materialFactory:athensMaterial}),barriers=new WorldTileBarriers();
  const activationSteps=[];
  const adapter={
   warmup:p=>sceneTiles.warmup(p),
@@ -48,7 +48,7 @@ export async function createWorldSession({renderer,scene,resources,progress=()=>
    function* steps(){yield* build.steps;installed=true;
     if(manifest.tiles[key].contactEligible!==false)yield* roads.graph.installSteps(key,packet);yield;
     barriers.install(key,packet);obstacles.install(key,packet);yield;
-    detail.addRecords(key,[]);yield;
+    detail.addRecords(key,packet.metadata.authoredDetail||[]);yield;
     for(const [name,layer]of [['props',props],['trees',trees],['signs',signs],['marks',marks]]){if(layer.addTileSteps)yield* layer.addTileSteps(key,packet);else measured(name,()=>layer.addTile(key,packet));yield {stage:name};}
     for(const [name,layer]of [['landmarks',landmarks],['plazas',plazas],['lawns',lawns]]){measured(name,()=>layer.addTile(key));yield {stage:name};}
    }

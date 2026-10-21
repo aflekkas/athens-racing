@@ -11,6 +11,7 @@ export const ACCOUNT='d6f3d2dc5817687a91d74ccd257bad9e',STAGING='athens-racing-w
 const hash=b=>createHash('sha256').update(b).digest('hex');
 export async function publication(path){
  const dir=dirname(resolve(path)),manifest=validateWorldManifest(JSON.parse(await readFile(path,'utf8'))),objects=[];
+ if(manifest.acceptance&&manifest.acceptance.passed!==true)throw Error('World acceptance gates have not passed');
  if(manifest.developmentOnly!==true||manifest.releaseReady!==false)throw Error('Only development worlds may be staged');
  for(const e of Object.values(manifest.tiles)){
   const file=resolve(dir,e.url);if(relative(dir,file).startsWith('..')||e.range)throw Error('Only local standalone cells may be published');

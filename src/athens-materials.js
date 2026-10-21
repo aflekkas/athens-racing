@@ -1,3 +1,8 @@
+import {roadNetworkMaterial} from './road-network.js';
+import {penteliRoadMaterial} from './maps/penteli-surface.js';
+import {terrainMaterial} from './terrain.js';
+import {facadeMaterial} from './buildings.js';
+import {createFacadeAtlas} from './facade-atlas.js';
 // Materials for the streamed Athens map. The asphalt and paving scans are the same shared library
 // textures the hand-tuned maps use (src/road-asphalt.js): no new textures, no per-street data. Tile
 // meshes carry plain tile-local positions; 512 m is a whole number of texture periods, so planar
@@ -10,8 +15,9 @@ export const ASPHALT_PERIOD=512/122,PAVING_PERIOD=512/160,URBAN_PERIOD=512/80;
 // Mean grey of each scan, so palette colour keeps the street's overall tone and the scan only adds grain.
 const MEAN={asphalt:.096,paving:.198};
 export const ATHENS_TEXTURES=['asphalt_diff','paver_diff'];
-export function loadAthensTextures(renderer){
-  return loadTextureSubset(ATHENS_TEXTURES).then(textures=>{if(renderer){for(const t of textures)if(t.image)renderer.initTexture(t);renderer.initTexture(detailNoise());}return textures;});
+export const PENTELI_TEXTURES=['asphalt_nor','ground_diff','ground_nor','grass_diff','grass_nor','sand_diff','sand_nor','rock_diff','rock_nor','concrete_diff'];
+export function loadAthensTextures(renderer,{penteli=false}={}){
+  return loadTextureSubset(penteli?[...ATHENS_TEXTURES,...PENTELI_TEXTURES]:ATHENS_TEXTURES).then(textures=>{if(renderer){for(const t of textures)if(t.image)renderer.initTexture(t);renderer.initTexture(detailNoise());}return textures;});
 }
 function scanned(color,key,period,mean,contrast,{vertexColors=false,strength=1,drift=[61,80]}={}){
   const m=new THREE.MeshBasicMaterial({color:new THREE.Color(...color),vertexColors,side:THREE.FrontSide});
@@ -29,6 +35,16 @@ function scanned(color,key,period,mean,contrast,{vertexColors=false,strength=1,d
 }
 /** materialFactory for WorldTileScene: (tileSurface, linear rgb, hasVertexColors) -> material. */
 export function athensMaterial(surface,rgb,vertexColors){
+  if(surface==='penteliNetwork')return roadNetworkMaterial();
+  if(surface==='penteliRoad')return penteliRoadMaterial();
+  if(surface==='penteliTerrain')return terrainMaterial();
+  if(surface==='penteliBuilding')return facadeMaterial(typeof document==='undefined'?null:createFacadeAtlas());
+  if(surface==='penteliScenery'||surface==='penteliRail'||surface==='penteliConcrete'){
+    const m=new THREE.MeshStandardMaterial({color:new THREE.Color(...rgb),vertexColors,map:surface==='penteliConcrete'?TX.concrete_diff:null,roughness:surface==='penteliRail'?.42:.92,metalness:surface==='penteliRail'?.68:0,side:THREE.DoubleSide});
+    // Same daylight fill as the authored mountain props, without new lights.
+    m.onBeforeCompile=sh=>{sh.fragmentShader=sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance += diffuseColor.rgb * .52;');};
+    m.customProgramCacheKey=()=>surface+'-v1';return m;
+  }
   if(surface==='asphalt')return scanned(rgb,'asphalt_diff',ASPHALT_PERIOD,MEAN.asphalt,1);
   if(surface==='paving')return scanned(rgb,'paver_diff',PAVING_PERIOD,MEAN.paving,1);
   // Ground between buildings: the paving scan at twice the paving period, softened, over the muted urban vertex colour.
