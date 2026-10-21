@@ -22,8 +22,8 @@ export function boxGap(r1, r2) {
 }
 /** The player car and the traffic: 4.5 x 1.9 m. A parked car keeps at least this far from one standing on any tow anchor of the tile. */
 export const PLAYER_HALF = [2.25, .95], ANCHOR_CLEAR = .7;
-/** Paint indices of src/athens-props.js CAR_PAINT (0 white, 1 grey, 2 black, 3 blue, 4 red, 5 tan), weighted like the Athens fleet: mostly white, silver and dark. */
-const PAINT = [0, 0, 0, 1, 1, 1, 2, 2, 3, 4, 5];
+/** Paint indices of src/athens-props.js CAR_PAINT (0 white, 1 silver, 2 graphite, 3 black, 4 blue, 5 red, 6 beige, 7 dark green), weighted like the Athens fleet: mostly white, silver and dark, some blue and red. */
+const PAINT = [0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 5, 5, 6, 7];
 export function deriveParking(t, rings, inQuarter = () => false, occupied = [], trees = []) {
   const out = [], n = t.edges.length / 10;
   if (!n) return new Float32Array(0);
@@ -71,14 +71,14 @@ export function deriveParking(t, rings, inQuarter = () => false, occupied = [], 
     if ((flags & 6) || (t.edgeLayers && t.edgeLayers[e] !== 0) || lanes > 2 || speed > 50 || count < 2) continue;
     const seg = []; let length = 0; for (let k = 0; k < count - 1; k++) { const l = Math.hypot(P[(first + k + 1) * 3] - P[(first + k) * 3], P[(first + k + 1) * 3 + 2] - P[(first + k) * 3 + 2]); seg.push(l); length += l; }
     if (length < 26) continue;
-    // The row is laid along the kerb, one car after another: each car's length plus a gap of 0.9 to 1.5 m, a break of 5 to 10 m after four to six cars (a driveway, a door, a bin),
+    // The row is laid along the kerb, one car after another: each car's length plus a gap of 1.2 to 2.0 m, a break of 5 to 10 m after four to six cars (a driveway, a door, a bin),
     // an empty bay now and then. A car is fitted to the kerb itself: its heading is the line through the kerb at its two ends, it stands where the kerb is straight to within 45 cm,
     // and it sits on the highest of the four ground heights under its wheels (so it never sinks into a pavement or a kerb step); if the ground under its left and right wheels differs
     // by more than 15 cm it would straddle a step and is not parked, nor if the street climbs more than 40 cm along it.
     const at = sc => { let acc = 0, k = 0; while (k < seg.length - 1 && acc + seg[k] < sc) { acc += seg[k]; k++; } const a = first + k, l = seg[k] || 1, f = Math.min(1, Math.max(0, (sc - acc) / l)); return { x: P[a * 3] + (P[a * 3 + 3] - P[a * 3]) * f, y: P[a * 3 + 1] + (P[a * 3 + 4] - P[a * 3 + 1]) * f, z: P[a * 3 + 2] + (P[a * 3 + 5] - P[a * 3 + 2]) * f, tx: (P[a * 3 + 3] - P[a * 3]) / l, tz: (P[a * 3 + 5] - P[a * 3 + 2]) / l }; };
     const kerbAt = sc => { const p = at(sc); let w = -1; if (measured) w = asphalt.reach(p.x, p.z, -p.tz, p.tx, 9); else w = lanes >= 2 ? 3.2 : 2.5; return w < 1.6 || w > 8.5 ? null : { p, w, kx: p.x - p.tz * w, kz: p.z + p.tx * w }; };
     const wheelHeights = (x, z, tx, tz, hl, hw) => { const hs = []; for (const a of [-1, 1]) for (const b of [-1, 1]) hs.push(ground.count ? ground.heightAt(x + tx * hl * a - tz * hw * b, z + tz * hl * a + tx * hw * b) : NaN); return hs; }; // rear-left, rear-right, front-left, front-right
-    let s = 12 + 2.3, run = 0, guard = 0;
+    let s = 12 + 2.3, run = 0, guard = 0, lastPaint = -1;
     while (s < length - 12 - 2.3 && guard++ < 300) {
       const h = hashN(id * 7919 + Math.floor(s * 2) * 131 + 17), p0 = at(s);
       if (run >= 4 + (h >>> 5) % 3) { s += 5 + (h >>> 9) % 6; run = 0; continue; }
@@ -89,7 +89,7 @@ export function deriveParking(t, rings, inQuarter = () => false, occupied = [], 
       const kmx = (kf.kx + kb.kx) / 2, kmz = (kf.kz + kb.kz) / 2;
       if ((h >>> 3) % 100 < 13) { // scooters: a group on the pavement, noses to the kerb
         const m = 2 + (h >>> 12) % 3, off = 1.1; let any = false;
-        for (let q = 0; q < m; q++) { const sx = kmx + ux * (q - (m - 1) / 2) * .9 + nk[0] * off, sz = kmz + uz * (q - (m - 1) / 2) * .9 + nk[1] * off; if (!free(e, sx, sz, ux, uz, .5, .3, .7)) continue; const sb = boxCorners(sx, sz, yaw + Math.PI / 2, .55, .3); if (near(carGrid, sx, sz, 5).some(b => boxGap(sb, b) < .3)) continue;
+        for (let q = 0; q < m; q++) { const sx = kmx + ux * (q - (m - 1) / 2) * .9 + nk[0] * off, sz = kmz + uz * (q - (m - 1) / 2) * .9 + nk[1] * off; if (!free(e, sx, sz, uz, -ux, .55, .3, .7)) continue; const sb = boxCorners(sx, sz, yaw + Math.PI / 2, .55, .3); if (near(carGrid, sx, sz, 5).some(b => boxGap(sb, b) < .3)) continue;
           const hs = [ground.count ? ground.heightAt(sx - uz * .0 + ux * .5, sz + uz * .5) : NaN, ground.count ? ground.heightAt(sx - ux * .5, sz - uz * .5) : NaN].filter(Number.isFinite), sy = hs.length ? Math.max(...hs) : p0.y;
           grid(cGrid, sx, sz, sx, sz, [sx, sz]); out.push(sx, sy, sz, yaw + Math.PI / 2 + ((h >>> (q * 3)) % 5 - 2) * .06, 8 + (h >>> (16 + q * 2)) % 6); any = true; }
         s += any ? 2.2 : 1.5; run = 0; continue;
@@ -106,8 +106,9 @@ export function deriveParking(t, rings, inQuarter = () => false, occupied = [], 
         if (Math.abs(hs[0] - hs[1]) > .15 || Math.abs(hs[2] - hs[3]) > .15 || Math.abs((hs[2] + hs[3]) / 2 - (hs[0] + hs[1]) / 2) > .4) { s += 1.5; run = 0; continue; } // a kerb step under the wheels, or too steep
         sy = Math.max(...hs);
       }
-      grid(carGrid, x, z, x, z, me); grid(cGrid, x, z, x, z, [x, z]); out.push(x, sy, z, yaw, PAINT[(h >>> 14) % PAINT.length]); run++;
-      s += 4.3 + .9 + (h >>> 17) % 7 * .1;
+      grid(carGrid, x, z, x, z, me); grid(cGrid, x, z, x, z, [x, z]); let paint = PAINT[(h >>> 14) % PAINT.length]; for (let k = 1; paint === lastPaint; k++) paint = k < 4 ? PAINT[((h >>> 14) + k * 7) % PAINT.length] : (paint + 1) % 8; // neighbours differ
+      out.push(x, sy, z, yaw, paint); lastPaint = paint; run++;
+      s += 4.3 + 1.2 + (h >>> 17) % 9 * .1;
     }
   }
   return Float32Array.from(out.slice(0, PARKING_LIMIT * 5));

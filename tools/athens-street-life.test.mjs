@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { deriveParking, PARKING_LIMIT } from '../src/world-tile-parking.js';
-import { AthensProps, KINDS, propGeometry, kindGeometry } from '../src/athens-props.js';
+import { AthensProps, KINDS, propGeometry, kindGeometry, carMaterial } from '../src/athens-props.js';
 
 /** Ground under the whole test area: a flat quad at y = 5 (flag 2: terrain), listed after the asphalt triangles. */
 const ground = (positions, triangles, flags, y = 5) => { const base = positions.length / 3; return { finePositions: Float32Array.from([...positions, -50, y, -50, 400, y, -50, -50, y, 300, 400, y, 300]), fineTriangles: Uint32Array.from([...triangles, base, base + 2, base + 1, base + 1, base + 2, base + 3]), fineFlags: Uint8Array.from([...flags, 2, 2]) }; };
@@ -26,6 +26,9 @@ test('cars park on both kerbs of a quiet street, half on the pavement, leaving t
     assert.ok(Math.abs(Math.cos(rows[i + 3])) < .2 || scooter, 'a car lies along the street');
   }
   assert.ok(sides.n > 5 && sides.s > 5);
+  for (const north of [true, false]) { const cars = []; for (let i = 0; i < rows.length; i += 5) if (!(rows[i + 4] >> 3) && (rows[i + 2] < 100) === north) cars.push([rows[i], rows[i + 4]]); cars.sort((a, b) => a[0] - b[0]);
+    for (let i = 1; i < cars.length; i++) { assert.notEqual(cars[i][1], cars[i - 1][1], 'neighbouring cars never share a paint'); assert.ok(cars[i][0] - cars[i - 1][0] >= 5.4, `a car length and a gap of 1.2 m or more between neighbours, ${cars[i][0] - cars[i - 1][0]}`); } }
+  assert.ok(new Set(Array.from({ length: rows.length / 5 }, (_, i) => rows[i * 5 + 4]).filter(v => v < 8)).size >= 6, 'a street shows at least six paints');
   assert.deepEqual([...deriveParking(t, [])], [...rows], 'always the same cars');
   const wall = [[0, 80], [300, 80], [300, 103], [0, 103]];
   for (const r of [...deriveParking(t, [wall])].filter((_, i) => i % 5 === 2)) assert.ok(r > 103, 'nothing parks inside a building');
@@ -49,9 +52,11 @@ test('props draw parked cars and scooters with a paint each, and a contact shado
   props.setEnabled(false); assert.equal(props.group.visible, false);
   assert.ok(kindGeometry(KINDS.scooter).attributes.position.count / 3 < 120, 'a scooter is under 120 triangles'); assert.ok(propGeometry().attributes.position.count > 0);
 });
-test('a parked car is a proper low-poly car: 4.3 x 1.8 x 1.43 m, wheels 62 cm tall under a sill 17 cm off the ground, a glass band, four wheels and lights, under 130 triangles', () => {
+test('a parked car is a proper low-poly car: 4.3 x 1.8 x 1.43 m, wheels 62 cm tall under a sill 17 cm off the ground, a glass band, four wheels and lights, under 150 triangles, glass and wheels that keep their colour under any paint', () => {
   const g = kindGeometry(KINDS.parked_car); g.computeBoundingBox(); const b = g.boundingBox, size = [b.max.x - b.min.x, b.max.y - b.min.y, b.max.z - b.min.z];
-  assert.ok(Math.abs(size[2] - 4.3) < .05 && size[0] > 1.75 && size[0] < 2.1 && size[1] > 1.4 && size[1] < 1.48, size.join(' ')); assert.ok(Math.abs(b.min.y) < 1e-6, 'the wheels stand at y = 0'); assert.ok(b.min.y >= -1e-6 && g.index.count / 3 < 140, `${g.index.count / 3} triangles`);
+  assert.ok(Math.abs(size[2] - 4.3) < .05 && size[0] > 1.75 && size[0] < 2.1 && size[1] > 1.4 && size[1] < 1.48, size.join(' ')); assert.ok(Math.abs(b.min.y) < 1e-6, 'the wheels stand at y = 0'); assert.ok(b.min.y >= -1e-6 && g.index.count / 3 <= 150, `${g.index.count / 3} triangles`);
+  const paint = g.attributes.aPaint; let painted = 0; for (let i = 0; i < paint.count; i++) painted += paint.getX(i); assert.ok(painted > paint.count * .3 && painted < paint.count * .7, 'body, roof and pillar are paint, glass, wheels, sill and lights are not');
+  const sh = { vertexShader: '#include <common>\n#include <color_vertex>', fragmentShader: '' }; carMaterial().onBeforeCompile(sh); assert.match(sh.vertexShader, /mix\(vec3\(1\.0\),instanceColor\.xyz,aPaint\)/);
   const colours = g.attributes.color, dark = []; for (let i = 0; i < colours.count; i++) if (colours.getX(i) < .1 && colours.getY(i) < .1) dark.push(i); assert.ok(dark.length >= 16, 'wheels and glass are dark in the vertex colours, the paint white');
 });
 import { boxCorners, boxGap, parkedBoxes } from '../src/world-tile-parking.js';
