@@ -14,8 +14,9 @@ import {AthensRoute,AthensGround} from '../src/athens-ground.js';
 import {worldRecoveryTarget} from '../src/world-recovery.js';
 import {Vehicle} from '../src/physics.js';
 import {CARS} from '../src/cars.js';
-export async function acceptTrackRegion(dir){
- const path=resolve(dir,'data/tiles/penteli/world.json'),manifest=JSON.parse(await readFile(path)),report=JSON.parse(await readFile(resolve(dir,'penteli-equivalence.json')));
+export async function acceptTrackRegion(dir,id='penteli'){
+ if(!['penteli','megara'].includes(id))throw Error('Unknown region');
+ const path=resolve(dir,`data/tiles/${id}/world.json`),manifest=JSON.parse(await readFile(path)),report=JSON.parse(await readFile(resolve(dir,`${id}-equivalence.json`)));
  if(report.revision!==manifest.revision||report.budgets.worst2x2Bytes>60*1024**2)throw Error('Stale report or insufficient 2x2 headroom');
  if(!report.geometryPassed||!report.attachment.passed||!report.releaseProofs.bridgeClearance.passed)throw Error('Geometry, isolated attachment and bridge proofs required before tow acceptance');
  let roads;const barriers=new WorldTileBarriers(),obstacles=new WorldTileObstacles(),load=async job=>{const body=await readFile(new URL(job.url));if(body.length!==job.entry.bytes||createHash('sha256').update(body).digest('hex')!==job.entry.sha256)throw Error('Acceptance cell integrity');const b=gunzipSync(body);return prepareTilePacket(decodeGeometryPack(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength)),job);};
@@ -24,10 +25,10 @@ export async function acceptTrackRegion(dir){
  const timer=setInterval(()=>stream.activateFrame(),2),result={passed:false,capBytes:stream.capBytes,regionalBytes:manifest.regionResidentBytes||0,scenarios:[],missingContacts:0,maximumHeightError:0,maximumVerticalSpeed:0};
  const ready=async(p,contacts=[])=>{stream.update({...p,contacts});const start=performance.now();while(![p,...contacts].every(q=>stream.readyAt(q.x,q.z))){stream.activateFrame();if(stream.metrics.failures||performance.now()-start>30000)throw Error('Acceptance stream could not load mandatory footprint: '+[...stream.tiles].filter(([,t])=>t.error).map(([k,t])=>k+': '+t.error.message).join('; '));await new Promise(r=>setTimeout(r,5));}};
  try{
-  const stations=[40,360,680,1200,2000,2398,3000,4400,4600,5136,5680,6400,7600,8800,10000];
-  for(const s of stations){const i=Math.round(s/2),p=report.coverage.route[i],next=report.coverage.route[i+1],yaw=Math.atan2(p[0]-next[0],p[2]-next[2]);
+  const stations=id==='penteli'?[40,360,680,1200,2000,2398,3000,4400,4600,5136,5680,6400,7600,8800,10000]:[20,140,260,400,520,660,800,940,1080,1220,1360,1500,1640,1780,1920];
+  for(const s of stations){const i=id==='penteli'?Math.round(s/2):Math.round(s/(report.sourceLength/(report.sourceSamples-1))),p=report.coverage.route[i],next=report.coverage.route[i+1],yaw=Math.atan2(p[0]-next[0],p[2]-next[2]);
    for(const side of[-1,1]){const off={x:p[0]+Math.cos(yaw)*side*18,y:p[1],z:p[2]-Math.sin(yaw)*side*18,yaw},road={x:p[0],z:p[2]};await ready(off,[road]);
-    const spec=CARS.find(c=>c.id===(side<0?'corolla':'huracan')),target=worldRecoveryTarget(session,off,{route:null,halfWidth:(spec.width||1.84)/2,halfLength:(spec.length||4.4)/2});if(!target)throw Error('No safe nearest-road tow at '+s+':'+side);
+    const spec=CARS.find(c=>c.id===(side<0?'corolla':'huracan')),target=worldRecoveryTarget(session,off,{route:null,halfWidth:(spec.width||1.84)/2,halfLength:(spec.length||4.4)/2});if(!target)throw Error('No safe nearest-road tow at '+s+':'+side);if(id==='megara'&&!target.edgeId?.includes('raceway-70043234'))throw Error('Megara tow switched to an approach or other circuit leg at '+s+':'+side);
     const route=new AthensRoute(target),v=new Vehicle(spec,route),ground=new AthensGround(stream,route,barriers,obstacles);v.ground=ground;
     await stream.teleport(target,()=>{v.reset(0,0,0);Object.assign(v,{x:target.x,y:target.y,z:target.z,yaw:target.yaw,_network:true});ground.begin(v);ground.resolve(v,1/240);v.syncWheels();},{validatePose:session.safePose});
     let heightError=0,vertical=0;
@@ -35,7 +36,7 @@ export async function acceptTrackRegion(dir){
     result.maximumHeightError=Math.max(result.maximumHeightError,heightError);result.maximumVerticalSpeed=Math.max(result.maximumVerticalSpeed,vertical);result.scenarios.push({station:s,side,car:spec.id,edge:target.edgeId,layer:target.layer,towDistance:Math.hypot(target.x-off.x,target.z-off.z),heightError,vertical});
    }
   }
-  result.metrics=stream.metrics;result.passed=!result.missingContacts&&!stream.metrics.failures;report.releaseProofs.towGameplay=result;report.passed=report.geometryPassed&&report.attachment.passed&&Object.values(report.releaseProofs).every(p=>p.passed);manifest.acceptance={geometryPassed:report.geometryPassed,attachmentPassed:report.attachment.passed,passed:report.passed};await writeFile(path,JSON.stringify(manifest));await writeFile(resolve(dir,'penteli-equivalence.json'),JSON.stringify(report,null,2));return result;
+  result.metrics=stream.metrics;result.passed=result.scenarios.length===30&&!result.missingContacts&&!stream.metrics.failures;report.releaseProofs.towGameplay=result;report.passed=report.geometryPassed&&report.attachment.passed&&Object.values(report.releaseProofs).every(p=>p.passed);manifest.acceptance={geometryPassed:report.geometryPassed,attachmentPassed:report.attachment.passed,passed:report.passed};await writeFile(path,JSON.stringify(manifest));await writeFile(resolve(dir,`${id}-equivalence.json`),JSON.stringify(report,null,2));return result;
  }finally{clearInterval(timer);stream.dispose();roads.dispose();barriers.dispose();obstacles.dispose();}
 }
-if(process.argv[1]===import.meta.filename)console.log(JSON.stringify(await acceptTrackRegion(process.argv[2]),null,2));
+if(process.argv[1]===import.meta.filename)console.log(JSON.stringify(await acceptTrackRegion(process.argv[2],process.argv[3]||'penteli'),null,2));

@@ -90,7 +90,8 @@ export function terrainMaterial({ farmland = false, gardens = false } = {}) {
  * Build terrain meshes. `corridorPts` is an array of [x,z,r] stamps marking the detailed area.
  * clampFn(x, z) -> max height allowed (keeps the ground under the road and pavements) or Infinity.
  */
-export function buildTerrain(terrain, route, extraStamps, scene, { coastal = true, farmland = false, gardens = false, network = null, beachAreas = [] } = {}) {
+export function buildTerrain(terrain, route, extraStamps, scene, { coastal = true, farmland = false, gardens = false, network = null, beachAreas = [], subdivisions = null } = {}) {
+  if(subdivisions!==null&&(!Number.isInteger(subdivisions)||subdivisions<2||subdivisions>8))throw Error('Invalid terrain subdivisions');
   const { GX, GZ, T, minX, minZ, H, C: CL } = terrain;
   const mat = terrainMaterial({ farmland, gardens });
   // ---------------------------------------------------------------- corridor mask (10 m vertices)
@@ -295,7 +296,7 @@ export function buildTerrain(terrain, route, extraStamps, scene, { coastal = tru
 
   // Use the uncut DEM for feathering; earlier cuts are only an underlay.
   // This raises downhill fills as well as lowering uphill cuts.
-  const heights = new Map(), fixed = new Set(), n = farmland || gardens ? TERRAIN_SUBDIVISIONS : coastal ? 5 : 8, stride = (GX - 1) * n + 1;
+  const heights = new Map(), fixed = new Set(), n = subdivisions??(farmland || gardens ? TERRAIN_SUBDIVISIONS : coastal ? 5 : 8), stride = (GX - 1) * n + 1;
   const height = (ix, iz) => {
     const key = iz * stride + ix, cached = heights.get(key); if (cached !== undefined) return cached;
     const x = minX + ix * T / n, z = minZ + iz * T / n;

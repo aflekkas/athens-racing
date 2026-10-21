@@ -167,7 +167,7 @@ export async function bakeExistingTiles(bake,out,options={}){
   const {map,network}=bake,tiles=new Map(),boundaries=new Map(),borderProfiles=new Map(),revision=options.revision||hash(new Uint8Array(bake.terrain)).slice(0,32)+hash(new Uint8Array(bake.roads)).slice(0,32);
   const sourceRoadHeight=!transform&&typeof network.baseHeight==='function'?(x,z)=>{const y=map.terrain.refinedHeight?.(x,z);return y==null?network.baseHeight(x,z):y+.10;}:null;
   const get=(x,z)=>{const key=`${x},${z}`;if(!tiles.has(key)){const tile=emptyTile(map,[x,z],revision,boundaries,borderProfiles);tile.authoredRegion=!!options.authoredContacts;tile.skipRoadRender=options.renderRoads===false;tiles.set(key,tile);}return tiles.get(key);};
-  for(const [group,kind] of [[bake.terrainGroup,'terrain'],[bake.roadsGroup,'road']])for(const mesh of group.children){
+  for(const [group,kind] of [[bake.terrainGroup,'terrain'],...(options.sourceRoads===false?[]:[[bake.roadsGroup,'road']])])for(const mesh of group.children){
     if(!mesh.isMesh)continue;
     const p=kind==='terrain'?terrainWorldPositions(mesh):mesh.geometry.attributes.position.array,c=mesh.geometry.attributes.color,index=mesh.geometry.userData.terrainLodSource?{array:mesh.geometry.userData.terrainLodSource,count:mesh.geometry.userData.terrainLodSource.length,getX(i){return this.array[i];}}:mesh.geometry.index;
     const range=mesh.userData.terrainLod?.[0]||mesh.geometry.drawRange;

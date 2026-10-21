@@ -16,10 +16,10 @@ export function splitSegment(a,b){
 }
 const intern=(a,s)=>{let i=a.indexOf(s);if(i<0){i=a.length;a.push(s);}return i;};
 const local=(p,cell)=>[Math.fround(Math.max(0,Math.min(512,p[0]-cell[0]*512))),Math.fround(p[1]),Math.fround(Math.max(0,Math.min(512,p[2]-cell[1]*512)))];
-export function addAuthoredMeshes(group,get,transform,{surface='penteliScenery',contacts=false,detail=false,bridges=[]}={}){
+export function addAuthoredMeshes(group,get,transform,{surface='penteliScenery',contacts=false,detail=false,bridges=[],include=()=>true,maxContactGrade=Infinity,contactSurface=false,contactY=null}={}){
  let triangles=0;group.updateMatrixWorld(true);
  group.traverse(mesh=>{
-  if(!mesh.isMesh)return;
+  if(!mesh.isMesh||!include(mesh))return;
   if(Array.isArray(mesh.material))throw Error('Region mesh requires a single material');
   const geometry=mesh.geometry,attributes=Object.entries(geometry.attributes).filter(([name])=>!['aHeightResidual'].includes(name)),ix=geometry.index;
   const matrix=new THREE.Matrix4(),inst=new THREE.Matrix4(),normal=new THREE.Matrix3();
@@ -28,7 +28,7 @@ export function addAuthoredMeshes(group,get,transform,{surface='penteliScenery',
    const fields=attributes.map(([name,a])=>[name,a.itemSize]),size=fields.reduce((n,[,s])=>n+s,0);
    if(fields[0][0]!=='position')throw Error('Region geometry position must be first');
    const materialColor=mesh.material.color||new THREE.Color(1,1,1),instanceColor=new THREE.Color(1,1,1);if(mesh.instanceColor)mesh.getColorAt(instance,instanceColor);
-   const rgb=materialColor.clone().multiply(instanceColor).toArray(),recipe=detail?'penteliProp:'+JSON.stringify({texture:mesh.material.map?.userData.penteliRecipe,roughness:mesh.material.roughness,metalness:mesh.material.metalness,side:mesh.material.side,alphaTest:mesh.material.alphaTest,polygonOffset:mesh.material.polygonOffset,polygonOffsetFactor:mesh.material.polygonOffsetFactor,polygonOffsetUnits:mesh.material.polygonOffsetUnits}):mesh.name.startsWith('Penteli barrier chunk')?(mesh.material.metalness>.5?'penteliRail':'penteliConcrete'):mesh.name.startsWith('building-blocks:')?'penteliBuilding':surface;
+   const rgb=materialColor.clone().multiply(instanceColor).toArray(),recipe=detail?'penteliProp:'+JSON.stringify({texture:mesh.material.map?.userData.penteliRecipe,roughness:mesh.material.roughness,metalness:mesh.material.metalness,side:mesh.material.side,alphaTest:mesh.material.alphaTest,polygonOffset:mesh.material.polygonOffset,polygonOffsetFactor:mesh.material.polygonOffsetFactor,polygonOffsetUnits:mesh.material.polygonOffsetUnits}):mesh.name.startsWith('Penteli barrier chunk')?(mesh.material.metalness>.5?'penteliRail':'penteliConcrete'):mesh.name.startsWith('building-blocks:')?'penteliBuilding':typeof surface==='function'?surface(mesh):surface;
    for(let i=geometry.drawRange.start||0,end=Math.min(ix?.count??geometry.attributes.position.count,(geometry.drawRange.start||0)+geometry.drawRange.count);i<end;i+=3){
     const vertices=[];
     for(let j=0;j<3;j++){
@@ -44,7 +44,7 @@ export function addAuthoredMeshes(group,get,transform,{surface='penteliScenery',
      const tile=get(x,z);tile.authored??=new Map();const key=JSON.stringify([recipe,fields,rgb,detail]);let batches=tile.authored.get(key);if(!batches)tile.authored.set(key,batches=[]);
      let batch=batches.at(-1);if(!batch||batch.vertices.length/size>=16384*3){batch={fields,rgb,surface:recipe,detail,vertices:[]};batches.push(batch);}
      for(const v of tri)batch.vertices.push(...local(v,tile.cell),...v.slice(3));triangles++;
-     if(contacts){const p=tile.t.contactPositions,t=tile.t.contactTriangles,a=tri[0],b=tri[1],c=tri[2];if(Math.abs((b[0]-a[0])*(c[2]-a[2])-(b[2]-a[2])*(c[0]-a[0]))>1e-8){tile.contactVertices??=new Map();const ids=[];for(const v of tri){const xyz=local(v,tile.cell),key=xyz.join(',');let id=tile.contactVertices.get(key);if(id===undefined){id=p.length/3;p.push(...xyz);tile.contactVertices.set(key,id);}ids.push(id);}let offset=0,uIndex=-1,edgeIndex=-1;for(const[name,size]of fields){if(name==='aSU')uIndex=offset+1;if(name==='aEdge')edgeIndex=offset;offset+=size;}const gravel=uIndex>=0&&Math.abs(tri.reduce((n,v)=>n+v[uIndex]/3,0))>tri.reduce((n,v)=>n+v[edgeIndex]/3,0);const station=uIndex>=0?tri.reduce((n,v)=>n+v[uIndex-1]/3,0):null,bridge=bridges.find(b=>station>=b.from&&station<=b.to);t.push(...ids,bridge?intern(tile.ids,'surface:'+bridge.id):2,gravel?4:1);tile.t.contactLayers.push(bridge?1:0);if(bridge){tile.structures??=new Map();tile.structures.set(bridge.id,{kind:'osm-bridge-guarded',layer:1,shoulderMetres:.25,bridgeSources:[bridge.id],roads:[bridge.id]});}}}
+     if(contacts){const p=tile.t.contactPositions,t=tile.t.contactTriangles,a=tri[0],b=tri[1],c=tri[2],ux=b[0]-a[0],uy=b[1]-a[1],uz=b[2]-a[2],vx=c[0]-a[0],vy=c[1]-a[1],vz=c[2]-a[2],area=Math.abs(uz*vx-ux*vz),grade=area>1e-8?Math.hypot(uy*vz-uz*vy,ux*vy-uy*vx)/area:Infinity;if(area>1e-8&&grade<=maxContactGrade){tile.contactVertices??=new Map();const ids=[];for(const v of tri){const xyz=local(contactY?[v[0],contactY(v,recipe),v[2]]:v,tile.cell),key=xyz.join(',');let id=tile.contactVertices.get(key);if(id===undefined){id=p.length/3;p.push(...xyz);tile.contactVertices.set(key,id);}ids.push(id);}let offset=0,uIndex=-1,edgeIndex=-1;for(const[name,size]of fields){if(name==='aSU')uIndex=offset+1;if(name==='aEdge')edgeIndex=offset;offset+=size;}const gravel=uIndex>=0&&Math.abs(tri.reduce((n,v)=>n+v[uIndex]/3,0))>tri.reduce((n,v)=>n+v[edgeIndex]/3,0);const station=uIndex>=0?tri.reduce((n,v)=>n+v[uIndex-1]/3,0):null,bridge=bridges.find(b=>station>=b.from&&station<=b.to);t.push(...ids,bridge?intern(tile.ids,'surface:'+bridge.id):contactSurface?intern(tile.ids,'surface:'+recipe.split(':')[0]):2,gravel?4:1);tile.t.contactLayers.push(bridge?1:0);if(bridge){tile.structures??=new Map();tile.structures.set(bridge.id,{kind:'osm-bridge-guarded',layer:1,shoulderMetres:.25,bridgeSources:[bridge.id],roads:[bridge.id]});}}}
     });
    }
   }
@@ -57,7 +57,8 @@ export function decorateAuthored({tile,metadata,add}){
   let offset=0;
   for(const [name,size]of fields){const values=[];for(const row of rows)values.push(...row.slice(offset,offset+size));const packed=name==='normal'?Int8Array.from(values,v=>Math.round(Math.max(-1,Math.min(1,v))*127)):name==='color'?Uint8Array.from(values,v=>Math.round(Math.max(0,Math.min(1,v))*255)):new Float32Array(values);attributes[name]={array:add(packed),itemSize:size,normalized:name==='normal'||name==='color'};offset+=size;}
   let material=metadata.palette.findIndex(c=>c.every((v,i)=>v===rgb[i]));if(material<0){material=metadata.palette.length;metadata.palette.push(rgb);}
-  metadata.meshes.push({name:'imported-'+surface,material,attributes,index:add(new Uint16Array(indices)),userData:{tileSurface:surface,...(surface==='penteliConcrete'?{bridgeGuard:true}:{})},layers:1,renderOrder:surface==='penteliRoad'?1:0});metadata.budgets.triangles+=indices.length/3;
+  const tileSurface=/^megara(?:Asphalt|WornAsphalt|Rubber)$/.test(surface)?`${surface}@${tile.cell.join(',')}`:surface;
+  metadata.meshes.push({name:'imported-'+surface,material,attributes,index:add(new Uint16Array(indices)),userData:{tileSurface,...(surface==='penteliConcrete'?{bridgeGuard:true}:{})},layers:1,renderOrder:surface==='penteliRoad'||surface.startsWith('megaraAsphalt')||surface.startsWith('megaraWornAsphalt')?1:0});metadata.budgets.triangles+=indices.length/3;
  }
  if(tile.penteliPaint){const a=add(tile.penteliPaint);for(const mesh of metadata.meshes)if(mesh.userData?.tileSurface==='penteliMountain')mesh.attributes.aPCover={array:a,itemSize:1,normalized:false};}
  if(tile.penteliTrees){metadata.extensions={...metadata.extensions,worldDetail:{version:1,buildings:{facadeStyle:add(new Uint8Array(tile.t.buildings.length/4)),detailSeed:add(new Uint32Array(tile.t.buildings.length/4))},vegetation:{positionHeight:add(new Float32Array(0)),kind:add(new Uint8Array(0)),seed:add(new Uint32Array(0))},...metadata.extensions?.worldDetail,penteli:true,streetTrees:add(new Float32Array(tile.penteliTrees)),coastalTreeCount:tile.penteliTrees.length/5,penteliHouses:add(new Float32Array(tile.penteliHouses))}};metadata.penteliSceneryBytes=tile.penteliTrees.length/5*160+tile.penteliHouses.length/7*128+16384;}
@@ -74,22 +75,29 @@ export function addRails(runs,get,transform){
   for(const part of splitSegment(transform.position(p.p.toArray()),transform.position(q.p.toArray()))){const tile=get(...part.cell);tile.safetyRails??=[];tile.safetyRails.push([...local(part.a,part.cell),...local(part.b,part.cell),.85*Math.max(p.terminal,q.terminal)]);segments++;metres+=Math.hypot(...part.b.map((v,k)=>v-part.a[k]));}
  }return{segments,metres};
 }
+// The circuit's tyre stacks, concrete walls and armco are authored as short
+// boxes. Represent their centre lines with the streamer's swept collision rails.
+export function addBarrierObstacles(obstacles,get,transform,height=()=>0){
+ let segments=0,metres=0;for(const o of obstacles){const half=o.hl||.5,dx=Math.sin(o.yaw||0)*half,dz=Math.cos(o.yaw||0)*half,y=o.y??height(o.x,o.z);
+  for(const part of splitSegment(transform.position([o.x-dx,y,o.z-dz]),transform.position([o.x+dx,y,o.z+dz]))){const tile=get(...part.cell);tile.safetyRails??=[];tile.safetyRails.push([...local(part.a,part.cell),...local(part.b,part.cell),o.kind==='tyre'?1.25:1.5]);segments++;metres+=Math.hypot(part.b[0]-part.a[0],part.b[2]-part.a[2]);}
+ }return{segments,metres};
+}
 // Every vertex/portal is named in global space. Directed split edges are owned by
 // exactly one cell; both cells intern precisely the same portal coordinates.
-export function addRoadGraph(lines,get,transform){
+export function addRoadGraph(lines,get,transform,region='penteli'){
  const records=[],junctions=new Map(),shared=new Map();let maxGrade=0;
  const round=p=>p.map((v,k)=>k===1?Math.fround(v):Math.round(v*10000)/10000);
- const node=p=>'penteli:n:'+p.map(v=>v.toFixed(4).replace('-','m')).join(':');
+ const node=p=>region+':n:'+p.map(v=>v.toFixed(4).replace('-','m')).join(':');
  for(const line of lines)for(const p of line.points){const key=node(round(transform.position(p)));shared.set(key,(shared.get(key)||0)+1);}
  for(const line of lines){
   let chain=null,serial=0;
   const flush=()=>{if(!chain)return;const {cell,points,layer}=chain,a=points[0],b=points.at(-1),tile=get(...cell),id=s=>intern(tile.ids,s),text=s=>intern(tile.strings,s),from=node(a),to=node(b);serial++;
    for(const [name,p]of[[from,a],[to,b]])if(!tile.graphNodes?.has(name)){tile.graphNodes??=new Set();tile.graphNodes.add(name);tile.t.nodes.push(id(name),tile.t.nodePositions.length/3);tile.t.nodePositions.push(...local(p,cell));}
    for(const reverse of line.oneway?[false]:[false,true]){
-    const pp=reverse?[...points].reverse():points,src=reverse?to:from,dst=reverse?from:to,edge=`penteli:e:${line.id}:${serial}:${reverse?'r':'f'}`;
-    tile.t.edges.push(id(edge),id(src),id(dst),tile.t.edgePoints.length/3,pp.length,text(line.name||'Dionysou'),1,line.speed||50,line.restricted?8:0,id('surface:roads'));for(const p of pp)tile.t.edgePoints.push(...local(p,cell));tile.t.edgeLayers.push(layer);
+    const pp=reverse?[...points].reverse():points,src=reverse?to:from,dst=reverse?from:to,edge=`${region}:e:${line.id}:${serial}:${reverse?'r':'f'}`;
+    tile.t.edges.push(id(edge),id(src),id(dst),tile.t.edgePoints.length/3,pp.length,text(line.name||(region==='penteli'?'Dionysou':'Megara Circuit')),1,line.speed||50,line.restricted?8:0,id('surface:roads'));for(const p of pp)tile.t.edgePoints.push(...local(p,cell));tile.t.edgeLayers.push(layer);
     const rec={id:edge,from:src,to:dst,tile};records.push(rec);for(const n of[src,dst]){if(!junctions.has(n))junctions.set(n,[]);junctions.get(n).push(rec);}
-    if(!line.restricted&&!layer&&chain.length>=12){const j=Math.max(1,Math.floor(pp.length/2)),q=pp[j-1],r=pp[j],p=q.map((v,k)=>(v+r[k])/2),dx=r[0]-q[0],dz=r[2]-q[2],length=Math.hypot(dx,dz),lane=(line.width||6.8)/4;p[0]-=dz/length*lane;p[2]+=dx/length*lane;const yaw=Math.atan2(-dx,-dz);tile.t.anchors.push(id(`penteli:a:${edge}`),tile.t.anchorTransforms.length/4,id(edge),0,0);tile.t.anchorTransforms.push(...local(p,cell),yaw);}
+    if(!line.restricted&&!layer&&chain.length>=12){const j=Math.max(1,Math.floor(pp.length/2)),q=pp[j-1],r=pp[j],p=q.map((v,k)=>(v+r[k])/2),dx=r[0]-q[0],dz=r[2]-q[2],length=Math.hypot(dx,dz),lane=(line.width||6.8)/4;p[0]-=dz/length*lane;p[2]+=dx/length*lane;const yaw=Math.atan2(-dx,-dz);tile.t.anchors.push(id(`${region}:a:${edge}`),tile.t.anchorTransforms.length/4,id(edge),0,0);tile.t.anchorTransforms.push(...local(p,cell),yaw);}
    }chain=null;
   };
   for(let i=1;i<line.points.length;i++)for(const part of splitSegment(transform.position(line.points[i-1]),transform.position(line.points[i]))){
@@ -112,8 +120,9 @@ export function addBuildingColliders(buildings,get,transform,height){
   if(!Number.isFinite(low)||high<.2)continue;const xs=outline.map(p=>p[0]),zs=outline.map(p=>p[2]),x0=Math.floor(Math.min(...xs)/512),x1=Math.floor(Math.max(...xs)/512),z0=Math.floor(Math.min(...zs)/512),z1=Math.floor(Math.max(...zs)/512);
   for(let x=x0;x<=x1;x++)for(let z=z0;z<=z1;z++){let poly=outline;
    for(const[axis,value,sign]of[[0,x*512,1],[0,(x+1)*512,-1],[2,z*512,1],[2,(z+1)*512,-1]]){const out=[];for(let i=0;i<poly.length;i++){const a=poly[i],b=poly[(i+1)%poly.length],ia=(a[axis]-value)*sign>=0,ib=(b[axis]-value)*sign>=0;if(ia)out.push(a);if(ia!==ib){const f=(value-a[axis])/(b[axis]-a[axis]);out.push(a.map((v,k)=>k===axis?value:v+(b[k]-v)*f));}}poly=out;}
-   if(poly.length<3)continue;if(poly.length===3)poly.push(poly[0]);if(poly.length>14)throw Error('Imported footprint exceeds AWT corner limit');
-   const tile=get(x,z),id=intern(tile.ids,`penteli:building:${building.id}:${x}:${z}`);tile.t.buildings.push(id,tile.t.buildingCorners.length/2,poly.length,0);for(const p of poly)tile.t.buildingCorners.push(p[0]-x*512,p[2]-z*512);tile.t.buildingHeights.push(low-.6,high+Math.max(2.6,Number(building.h)||5.5)-low+.6);count++;
+   if(poly.length<3)continue;if(poly.length===3)poly.push(poly[0]);
+   const tile=get(x,z),emit=(corners,suffix)=>{const id=intern(tile.ids,`penteli:building:${building.id}:${x}:${z}:${suffix}`);tile.t.buildings.push(id,tile.t.buildingCorners.length/2,corners.length,0);for(const p of corners)tile.t.buildingCorners.push(Math.max(0,Math.min(512,p[0]-x*512)),Math.max(0,Math.min(512,p[2]-z*512)));tile.t.buildingHeights.push(low-.6,high+Math.max(2.6,Number(building.h)||5.5)-low+.6);count++;};
+   if(poly.length<=14)emit(poly,0);else for(let i=0;i<poly.length;i++){const a=poly[i],b=poly[(i+1)%poly.length],dx=b[0]-a[0],dz=b[2]-a[2],len=Math.hypot(dx,dz);if(len<.01)continue;const nx=-dz/len*.08,nz=dx/len*.08;emit([[a[0]+nx,0,a[2]+nz],[b[0]+nx,0,b[2]+nz],[b[0]-nx,0,b[2]-nz],[a[0]-nx,0,a[2]-nz]],i);}
   }
  }return count;
 }
