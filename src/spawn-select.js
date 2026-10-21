@@ -77,9 +77,9 @@ export function renderSpawnSelect(menu) {
 
 // ---------------------------------------------------------------- roads (fetched once per page)
 let roadsAsset;
-// The Athens world (dev flag) has its own street file, built from the published cells by tools/build-athens-streets.mjs.
+// The Athens world has its own street file, built from the published cells by tools/build-athens-streets.mjs.
 const loadRoads = (athens = false) => roadsAsset ||= fetch(athens ? 'assets/athens/streets.json' : 'assets/maps/spawn-roads.json').then(r => { if (!r.ok) throw new Error('spawn roads ' + r.status); return r.json(); }).then(decodeSpawnRoads).catch(error => { roadsAsset = null; throw error; });
-// The dev-flagged Athens world: the 512 m cells the published manifest hosts (a click only snaps to a street in one).
+// The Athens world: the 512 m cells the published manifest hosts (a click only snaps to a street in one).
 /** The Athens streets bucketed into ~350 m squares (each a Path2D per class), the renderer's drivable overlay. */
 function overlayCells(list, size = 4) {
   const buckets = new Map(), cell = (x, y) => `${Math.floor(x / size)},${Math.floor(y / size)}`;
@@ -337,7 +337,7 @@ export function mountSpawnSelect(root, menu) {
     if (choice.start) { const area = areas.find(a => a.id === choice.areaId || a.id === choice.id); if (area) render(startOf(area), { camera: !intro && motion?.type === 'fly' ? 'area' : 'stay' }); }
     want(true);
   }, error => console.error(error));
-  // Under ?map=athens only: the districts the published world hosts become the areas, and clicks snap only inside its cells.
+  // The districts the published world hosts become the areas, and clicks snap only inside its cells.
   if (athensMode) loadAthens().then(a => {
     if (signal.aborted) return; athens = a; if (a.cells.size) areas = spawnAreas({ athens: true, athensCells: a.cells });
     if (choice.start && !areas.some(d => d.id === choice.areaId) && areas.length) render(startOf(areas[0]), { camera: intro ? 'stay' : 'area' });
@@ -363,12 +363,14 @@ export function mountSpawnSelect(root, menu) {
   }, dispose() { events.abort(); resize.disconnect(); seen.disconnect(); stop(); clearTimeout(hideTimer); cancelAnimationFrame(resizeFrame); base?.dispose(); base = null; } };
 }
 
-/** DRIVE: start free roam where the picker says. The Athens open world (dev flag) is its own entry, so it is a page load. */
+/** DRIVE: start free roam where the picker says. The Athens open world is its own entry, so it is a page load. */
 export function driveFromSpawn(menu) {
   const choice = menu.data.spawn?.choice; if (!choice || menu.spawning) return;
   const [x, z] = choice.local.map(v => Math.round(v * 10) / 10);
   if (choice.mapId === 'athens') {
-    const params = new URLSearchParams(location.search); params.delete('menu'); params.set('spawn', `${x},${z}`);
+    const params = new URLSearchParams(location.search);
+    for (const key of ['menu', 'routes', 'route', 'routeEvent', 'setup', 'event', 'quick']) params.delete(key);
+    params.set('map', 'athens'); params.set('spawn', `${x},${z}`);
     const car = menu.h.carSpec?.(); if (car?.id) params.set('car', car.id);
     location.assign('?' + params); return;
   }

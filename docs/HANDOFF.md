@@ -4,7 +4,9 @@
 approved `62dbe66` game batch with the production manifest and six-route
 activation. Google OAuth is configured on both Workers. Signed-in production
 home, normal menu racing, Faros and Riviera passed acceptance. All six Athens routes are available from PLAY → QUICK RACE.
-The route picker also links to the original track selection. Read `/release.json` and
+The route picker also links to the original track selection. PLAY → FREE ROAM
+opens the full published Athens street map: click a street, then DRIVE to start
+on the nearest safe road. No special URL is required. Read `/release.json` and
 `~/.local/state/athens-release/train.log` for the actual live SHA.
 
 ## Live services and assets
