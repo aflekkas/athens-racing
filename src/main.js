@@ -908,8 +908,16 @@ function startCountdown() {
   G.cameraStarting = false; G.paused = null;
   syncSteeringAssist();
   if(worldSession){
-    const warmingTraffic=traffic;
-    requestAnimationFrame(()=>{if(traffic!==warmingTraffic||!['countdown','race'].includes(G.state))return;warmingTraffic.warmFleet();worldSession.warmOptional();compileScene().catch(error=>console.warn('Countdown fleet preparation',error));});
+    const warmingTraffic=traffic,generation=warmingTraffic.warmGeneration=(warmingTraffic.warmGeneration||0)+1;
+    const warm=()=>{
+      if(traffic!==warmingTraffic||warmingTraffic.warmGeneration!==generation)return;
+      if(G.paused){requestAnimationFrame(warm);return;}
+      if(!['countdown','race'].includes(G.state))return;
+      const hadFleet=!!warmingTraffic.pool;warmingTraffic.warmFleet();worldSession.warmOptional();
+      if(!hadFleet&&warmingTraffic.pool)compileScene().catch(error=>console.warn('Countdown fleet preparation',error));
+    };
+    // Paint the grid/countdown first; a menu transition cancels stale warming.
+    requestAnimationFrame(()=>requestAnimationFrame(warm));
   }
   G.state = 'countdown'; G.countT = 0; G.countShown = -1; G.countWall = 0;
   document.body.classList.remove('racing'); document.body.classList.add('counting');
