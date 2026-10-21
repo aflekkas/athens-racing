@@ -913,8 +913,8 @@ function startCountdown() {
       if(traffic!==warmingTraffic||warmingTraffic.warmGeneration!==generation)return;
       if(G.paused){requestAnimationFrame(warm);return;}
       if(!['countdown','race'].includes(G.state))return;
-      const hadFleet=!!warmingTraffic.pool;warmingTraffic.warmFleet();worldSession.warmOptional();
-      if(!hadFleet&&warmingTraffic.pool)compileScene().catch(error=>console.warn('Countdown fleet preparation',error));
+      worldSession.warmOptional();
+      warmingTraffic.warmFleet(()=>traffic===warmingTraffic&&!G.paused&&['countdown','race'].includes(G.state)).catch(error=>{if(!warmingTraffic.disposed)console.warn('Countdown fleet preparation',error);});
     };
     // Paint the grid/countdown first; a menu transition cancels stale warming.
     requestAnimationFrame(()=>requestAnimationFrame(warm));

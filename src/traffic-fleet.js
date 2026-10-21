@@ -1,4 +1,4 @@
-import {installTrafficCabin} from './vehicle-cabin.js';
+import {installTrafficCabin,trafficCabinTemplate,seedTrafficCabin} from './vehicle-cabin.js';
 import {installFleetLOD} from './vehicle-distance.js';
 // Shared geometry and distance detail for the Athens fleet. Builders author metres, nose -Z.
 import * as THREE from 'three';
@@ -210,3 +210,8 @@ export function bakeParkedFleet(models,cell=40){cell*=PARKED_CELL.scale;
   for(const cars of cells.values()){const origin=new THREE.Vector3();for(const c of cars)origin.add(c.root.position);origin.multiplyScalar(1/cars.length);origin.y=0;group.add(new ParkingCell(cars,origin));}
   return group;
 }
+
+// Prewarming keeps the procedural source authoritative, while moving its expensive
+// template geometry/compaction off the render thread. Clones retain normal hooks.
+export function fleetTemplateSet(type){return [false,true].map(low=>{const car=template(type,low,false);return {key:type.id+':'+Number(!!type.taxi)+':'+Number(low)+':0',car,cabin:trafficCabinTemplate(car,type)};});}
+export function seedFleetTemplate(key,car,cabin){if(!templates.has(key))templates.set(key,car);if(cabin)seedTrafficCabin(cabin.key,cabin.mesh);}

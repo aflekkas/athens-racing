@@ -4,6 +4,7 @@ import {edgePoint,projectEdge,edgeLength} from './route-geometry.js';
 import {resolveCarPair,bodyOffset} from './crash-contact.js';
 import {HeatMachine,policeTuning,pursuit} from './police.js';
 import {events} from './events.js';
+import {prewarmFleet} from './fleet-prewarm.js';
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 /** A legal civilian successor may leave the selected race. No route-successor shortcut. */
 export function trafficSuccessors(graph,edge,closures){return [...(graph.outgoing.get(edge.to)||[])].map(id=>graph.edges.get(id)?.value).filter(e=>e&&roadLayersConnect(edge,e)&&graph.legal(edge.id,e)&&!closures?.blocksEdge(e));}
@@ -14,7 +15,14 @@ export class WorldTraffic {
   for(const c of this.cars){if(c.police)c.cop||={};c.active=false;c.crashed=false;c.m.root.visible=false;c.point=null;c.vehicle=null;}
   Object.assign(pursuit,{enabled:this.policeEnabled,state:this.policeEnabled?'idle':'off',heat:0,level:0,bustMeter:0,evadeMeter:0,units:0});
  }
- warmFleet(){if(!this.pool&&this.definition)this.configure(this.definition);}
+ async warmFleet(ready=()=>true){
+  if(this.pool||!this.definition||!(this.level>0||this.policeEnabled))return;
+  if(this.fleetWarming)return this.fleetWarming;
+  const pool=this.warmingPool=new Traffic(this.scene,{closed:true},{},{poolSize:24,policePoolSize:5,roadVehiclesOnly:true,deferBuild:true,buildProxies:false});
+  this.fleetWarmMetrics={maxStepMs:0};
+  this.fleetWarming=prewarmFleet(pool.build,{ready,disposed:()=>this.disposed,metrics:this.fleetWarmMetrics}).then(()=>{this.pool=pool;this.cars=pool.cars;this.configure(this.definition);}).finally(()=>{this.warmingPool=null;this.fleetWarming=null;});
+  return this.fleetWarming;
+ }
  candidate(edge,offset,c){const p=edgePoint(edge,offset),key=edge.id+':'+Math.floor(offset/4)+':'+c.wid+':'+c.len,cached=this.widthCache.get(key),width=cached||this.session.roads.width(p,{radius:32,bounded:true,connected:true});if(!width)return null;
   const twins=[...(this.session.roads.graph.outgoing.get(edge.to)||[])].map(id=>this.session.roads.graph.edges.get(id)?.value).some(e=>e?.to===edge.from);
   const u=(width.right-width.left)/2+(twins?width.width/4:0);p.x+=p.rx*u;p.z+=p.rz*u;const contact=this.session.stream.contact(p.x,p.z,{referenceY:p.y,layer:edge.layer,requiredFlags:1});if(!contact)return null;p.y=contact.y;p.surfaceId=contact.surfaceId;p.edge=edge.id;p.edgeId=edge.id;
@@ -64,5 +72,5 @@ export class WorldTraffic {
  sync(){const o=this.session.stream.origin;for(const c of this.cars){const root=c.m.root;if(!c.active){root.visible=false;continue;}const v=c.vehicle;root.visible=true;root.position.set(v.x-o.x,v.y,v.z-o.z);root.rotation.set(0,v.yaw,0);c.m.update?.(1/60,c.v,0,c.v<1,{});c.m.setStrobe?.(c.police&&this.hm.state!=='idle',this.t);}}
  zone(){return 'town';}
  get actors(){return this.cars.filter(c=>c.active).map(c=>c.vehicle);}
- dispose(){if(!this.pool)return;const roots=[...this.cars.map(c=>c.m.root),this.pool.coneMesh,...(this.pool.proxies?.meshes||[])];const geos=new Set(),mats=new Set();for(const root of roots){root?.removeFromParent?.();root?.traverse?.(o=>{if(o.geometry&&!o.geometry.userData.shared)geos.add(o.geometry);for(const m of Array.isArray(o.material)?o.material:o.material?[o.material]:[])if(!m.userData?.shared)mats.add(m);});}for(const g of geos)g.dispose();for(const m of mats)m.dispose();this.pool.proxies?.dispose?.();this.cars=[];this.pool=null;Object.assign(pursuit,{enabled:false,state:'off'});}
+ dispose(){this.disposed=true;const pool=this.pool||this.warmingPool;if(!pool)return;const roots=[...(pool.cars||[]).map(c=>c.m.root),pool.coneMesh,...(pool.proxies?.meshes||[])];const geos=new Set(),mats=new Set();for(const root of roots){root?.removeFromParent?.();root?.traverse?.(o=>{if(o.geometry&&!o.geometry.userData.shared)geos.add(o.geometry);for(const m of Array.isArray(o.material)?o.material:o.material?[o.material]:[])if(!m.userData?.shared)mats.add(m);});}for(const g of geos)g.dispose();for(const m of mats)m.dispose();pool.proxies?.dispose?.();this.cars=[];this.pool=null;Object.assign(pursuit,{enabled:false,state:'off'});}
 }

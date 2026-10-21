@@ -22,7 +22,7 @@ const MEAN={asphalt:.096,paving:.198};
 export const ATHENS_TEXTURES=['asphalt_diff','paver_diff'];
 export const PENTELI_TEXTURES=['asphalt_nor','ground_diff','ground_nor','grass_diff','grass_nor','sand_diff','sand_nor','rock_diff','rock_nor','concrete_diff'];
 export function loadAthensTextures(renderer,{penteli=false}={}){
-  return loadTextureSubset(penteli?[...ATHENS_TEXTURES,...PENTELI_TEXTURES]:ATHENS_TEXTURES).then(textures=>{if(renderer){for(const t of textures)if(t.image)renderer.initTexture(t);if(settings.worldDetail!==false)renderer.initTexture(detailNoise());}return textures;});
+  return loadTextureSubset(penteli?[...ATHENS_TEXTURES,...(settings.worldDetail===false?['asphalt_nor','concrete_diff']:PENTELI_TEXTURES)]:ATHENS_TEXTURES).then(textures=>{if(renderer){for(const t of textures)if(t.image)renderer.initTexture(t);if(settings.worldDetail!==false)renderer.initTexture(detailNoise());}return textures;});
 }
 function scanned(color,key,period,mean,contrast,{vertexColors=false,strength=1,drift=[61,80]}={}){
   const m=new THREE.MeshBasicMaterial({color:new THREE.Color(...color),vertexColors,side:THREE.FrontSide});

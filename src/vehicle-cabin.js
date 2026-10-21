@@ -167,10 +167,15 @@ export function installCabinLOD(model,cockpit){
 }
 export function installTrafficCabin(model,type){
  if(type.scooter||type.moto)return;
- // Cache by actual cabin shape/seat layout, including commercial model kind.
- const key=JSON.stringify([exteriorCabinEnvelope(model,{cheap:true}),model.dims.W,model.shape?.leather,model.shape?.seats]);
- let template=trafficCabins.get(key);
- if(!template){template=cheapCabin(model);template.geometry.userData.shared=true;trafficCabins.set(key,template);}
+ const template=trafficCabinTemplate(model,type).mesh;
  const lod=new T.LOD();lod.name='traffic-cabin-lod';lod.userData.vehicleCabin=true;
  lod.addLevel(template.clone(),0);lod.addLevel(new T.Group(),40,.12);model.body.add(lod);
 }
+
+// Fleet workers build the same cached cabin; only its immutable mesh crosses threads.
+export function trafficCabinTemplate(model,type){
+ if(type.scooter||type.moto)return null;
+ const key=JSON.stringify([exteriorCabinEnvelope(model,{cheap:true}),model.dims.W,model.shape?.leather,model.shape?.seats]);
+ let mesh=trafficCabins.get(key);if(!mesh){mesh=cheapCabin(model);mesh.geometry.userData.shared=true;trafficCabins.set(key,mesh);}return {key,mesh};
+}
+export function seedTrafficCabin(key,mesh){if(!trafficCabins.has(key))trafficCabins.set(key,mesh);}

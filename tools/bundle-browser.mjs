@@ -24,7 +24,7 @@ export async function bundleBrowser(root, out, { three = process.env.ASR_THREE_M
   // tablet never downloads the game. A checkout without it (an old baseline) enters the game directly.
   const gate = await exists('src/entry.js') ? 'src/entry.js' : null;
   const auxiliaries = [];
-  for (const path of ['src/world-tile-worker.js', 'src/ragdoll-worker.js']) if (await exists(path)) auxiliaries.push(path);
+  for (const path of ['src/world-tile-worker.js', 'src/ragdoll-worker.js', 'src/traffic-fleet-worker.js']) if (await exists(path)) auxiliaries.push(path);
   const hasWorker = await exists('src/world-worker.js');
   const options = {
     absWorkingDir: root, entryPoints: [...(gate ? [gate] : []), entry, ...(three === 'bundled' ? auxiliaries : []), ...(hasWorker && three === 'bundled' ? ['src/world-worker.js'] : [])], outdir: resolve(out, 'src'),
@@ -85,6 +85,8 @@ export async function bundleBrowser(root, out, { three = process.env.ASR_THREE_M
   await prune(resolve(out, 'src'));
   const tileWorker = Object.entries(result.metafile.outputs).find(([, v]) => v.entryPoint === 'src/world-tile-worker.js')?.[0];
   if (tileWorker) await writeFile(resolve(out, 'src/world-tile-worker.js'), `import './${relative(resolve(out,'src'),resolve(root,tileWorker)).split(sep).join('/')}';\n`);
+  const fleetWorker = Object.entries(result.metafile.outputs).find(([, v]) => v.entryPoint === 'src/traffic-fleet-worker.js')?.[0];
+  if (fleetWorker) await writeFile(resolve(out, 'src/traffic-fleet-worker.js'), `import './${slash(relative(resolve(out, 'src'), resolve(root, fleetWorker)))}';\n`);
   const ragdoll = Object.entries(result.metafile.outputs).find(([, v]) => v.entryPoint === 'src/ragdoll-worker.js')?.[0];
   if (ragdoll) await writeFile(resolve(out, 'src/ragdoll-worker.js'), `export * from './${slash(relative(resolve(out, 'src'), resolve(root, ragdoll)))}';\n`);
   const outputOf = entryPoint => Object.entries(result.metafile.outputs).find(([, v]) => v.entryPoint === entryPoint)?.[0];

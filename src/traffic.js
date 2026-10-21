@@ -95,7 +95,11 @@ function lightBar(m, type) {
 function indicatorMat() { return new THREE.MeshStandardMaterial({ color: '#4a2a00', emissive: '#ff9a00', emissiveIntensity: 0, roughness: 0.4 }); }
 
 export class Traffic {
-  constructor(scene, route, data, { poolSize = POOL, policePoolSize = 8, roadVehiclesOnly = false } = {}) {
+  constructor(scene, route, data, { poolSize = POOL, policePoolSize = 8, roadVehiclesOnly = false, deferBuild = false, buildProxies = true } = {}) {
+    this.build=this.buildPool(scene,route,data,{poolSize,policePoolSize,roadVehiclesOnly,buildProxies});
+    if(!deferBuild)for(const _ of this.build){}
+  }
+  *buildPool(scene,route,data,{poolSize,policePoolSize,roadVehiclesOnly,buildProxies}) {
     this.scene = scene; this.route = route; this.data = data;
     const poolCount=Math.max(1,Math.min(POOL,Math.floor(poolSize)||POOL));
     this.rng = new RNG(4242);
@@ -110,6 +114,7 @@ export class Traffic {
       // a guaranteed share of the special vehicles (types the model library may or may not provide)
       const fixed = ['bus', 'bus', 'bus', 'taxi', 'taxi', 'taxi', 'taxi', 'golf', 'corolla', 'golf', 'corolla', 'delivery', 'delivery', 'delivery', 'delivery'][i];
       if (fixed && byId[fixed] && (!roadVehiclesOnly || spawnTypes.includes(byId[fixed]))) type = byId[fixed];
+      yield {type};
       const m = trafficModel(type, this.rng.pick(type.colors), this.rng);
       const indL = indicatorMat(), indR = indicatorMat();
       // headlight flash (a driver warning you off): its own material per car, dark until used
@@ -133,6 +138,7 @@ export class Traffic {
     // ΕΛ.ΑΣ. types, a white sedan / motorbike stands in with a light bar of our own
     for (let k = 0; k < Math.max(0,Math.min(8,policePoolSize)); k++) {
       const moto = k >= 6, type = byId[moto ? 'police_moto' : 'police'] || { ...(moto ? byId.moto : byId.taxi_superb || byId.sedan), id: moto ? 'police_moto' : 'police', police: true, taxi: false, colors: ['#f4f5f6'], w: 0 };
+      yield {type};
       const m = trafficModel(type, this.rng.pick(type.colors), this.rng);
       if (!m.setStrobe) lightBar(m, type);
       const indL = indicatorMat(), indR = indicatorMat(), flash = new THREE.MeshStandardMaterial({ color: '#202020', emissive: '#fff6e0', emissiveIntensity: 0, roughness: 0.3 });
@@ -142,7 +148,8 @@ export class Traffic {
       this.cars.push({ id: poolCount + k, type, kind: type.id, police: true, m, indL, indR, flash, len: type.len, wid: type.wid, mass, I: mass * (type.len * type.len + type.wid * type.wid) / 12, active: false, crash: null, beh: BEHAV.sedan, dmg: 0 });
     }
     // distant intact cars draw through shared instanced batches (src/traffic-proxies.js)
-    this.proxies = new TrafficProxies(scene, this.cars);
+    yield {stage:"proxies"};
+    this.proxies = buildProxies ? new TrafficProxies(scene, this.cars) : null;
     this.syncFrame = {};
     this.police = null; // set by Police
     // road works: cones + a sign, closing the kerb lane for ~45 m in town

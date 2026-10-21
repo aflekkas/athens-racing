@@ -1,5 +1,6 @@
 {
   "unit": [
+    "tools/fleet-prewarm.test.mjs",
     "tools/frame-cap.test.mjs",
     "tools/cabin-floor.test.mjs",
     "tools/exterior-cabin.test.mjs",
