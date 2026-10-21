@@ -20,3 +20,9 @@ test('worker fleet packets preserve native geometry, transforms, material proper
 test('deferred streamed pool creates no models until iterated and preserves deterministic population',()=>{
  const scene=new T.Scene(),pool=new Traffic(scene,{closed:true},{},{poolSize:24,policePoolSize:5,roadVehiclesOnly:true,deferBuild:true,buildProxies:false});assert.equal(scene.children.length,0);let count=0;for(const step of pool.build)if(step.type)count++;assert.equal(count,29);assert.equal(pool.cars.length,29);assert.equal(pool.cars.filter(c=>c.police).length,5);assert.equal(pool.proxies,null);assert.ok(pool.cars.every(c=>!c.m.root.visible));
 });
+test('disposing during worker generation terminates and rejects the pending request',async()=>{
+ const {prewarmFleet}=await import('../src/fleet-prewarm.js'),controller=new AbortController(),old=globalThis.requestAnimationFrame;let requested,terminated=0;
+ const request=new Promise(resolve=>requested=resolve),worker={postMessage(){requested();},terminate(){terminated++;}};
+ globalThis.requestAnimationFrame=cb=>setTimeout(cb,0);
+ try{const result=prewarmFleet((function*(){yield {type:{id:'golf'}};})(),{signal:controller.signal,createWorker:()=>worker});await request;controller.abort();await assert.rejects(result,/cancelled/);assert.ok(terminated>0);}finally{globalThis.requestAnimationFrame=old;}
+});

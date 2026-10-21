@@ -19,8 +19,8 @@ export class WorldTraffic {
   if(this.pool||!this.definition||!(this.level>0||this.policeEnabled))return;
   if(this.fleetWarming)return this.fleetWarming;
   const pool=this.warmingPool=new Traffic(this.scene,{closed:true},{},{poolSize:24,policePoolSize:5,roadVehiclesOnly:true,deferBuild:true,buildProxies:false});
-  this.fleetWarmMetrics={maxStepMs:0};
-  this.fleetWarming=prewarmFleet(pool.build,{ready,disposed:()=>this.disposed,metrics:this.fleetWarmMetrics}).then(()=>{this.pool=pool;this.cars=pool.cars;this.configure(this.definition);}).catch(error=>{releaseFleet(pool);throw error;}).finally(()=>{this.warmingPool=null;this.fleetWarming=null;});
+  this.fleetWarmMetrics={maxStepMs:0};this.fleetController=new AbortController();
+  this.fleetWarming=prewarmFleet(pool.build,{ready,disposed:()=>this.disposed,signal:this.fleetController.signal,metrics:this.fleetWarmMetrics}).then(()=>{this.pool=pool;this.cars=pool.cars;this.configure(this.definition);}).catch(error=>{releaseFleet(pool);throw error;}).finally(()=>{this.warmingPool=null;this.fleetWarming=null;this.fleetController=null;});
   return this.fleetWarming;
  }
  candidate(edge,offset,c){const p=edgePoint(edge,offset),key=edge.id+':'+Math.floor(offset/4)+':'+c.wid+':'+c.len,cached=this.widthCache.get(key),width=cached||this.session.roads.width(p,{radius:32,bounded:true,connected:true});if(!width)return null;
@@ -72,7 +72,7 @@ export class WorldTraffic {
  sync(){const o=this.session.stream.origin;for(const c of this.cars){const root=c.m.root;if(!c.active){root.visible=false;continue;}const v=c.vehicle;root.visible=true;root.position.set(v.x-o.x,v.y,v.z-o.z);root.rotation.set(0,v.yaw,0);c.m.update?.(1/60,c.v,0,c.v<1,{});c.m.setStrobe?.(c.police&&this.hm.state!=='idle',this.t);}}
  zone(){return 'town';}
  get actors(){return this.cars.filter(c=>c.active).map(c=>c.vehicle);}
- dispose(){this.disposed=true;releaseFleet(this.pool||this.warmingPool);this.cars=[];this.pool=null;Object.assign(pursuit,{enabled:false,state:'off'});}
+ dispose(){this.disposed=true;this.fleetController?.abort();releaseFleet(this.pool||this.warmingPool);this.cars=[];this.pool=null;Object.assign(pursuit,{enabled:false,state:'off'});}
 }
 
 function releaseFleet(pool){if(!pool||pool.released)return;pool.released=true;const roots=[...(pool.cars||[]).map(c=>c.m.root),pool.coneMesh,...(pool.proxies?.meshes||[])];const geos=new Set(),mats=new Set();for(const root of roots){root?.removeFromParent?.();root?.traverse?.(o=>{if(o.geometry&&!o.geometry.userData.shared)geos.add(o.geometry);for(const m of Array.isArray(o.material)?o.material:o.material?[o.material]:[])if(!m.userData?.shared)mats.add(m);});}for(const g of geos)g.dispose();for(const m of mats)m.dispose();pool.proxies?.dispose?.();}

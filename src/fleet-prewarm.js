@@ -1,12 +1,14 @@
 import {unpackFleetTemplate} from './fleet-template-codec.js';
 import {seedFleetTemplate} from './traffic-fleet.js';
 
-export async function prewarmFleet(build,{ready=()=>true,disposed=()=>false,metrics={maxStepMs:0},createWorker=()=>new Worker(new URL('./traffic-fleet-worker.js',import.meta.url),{type:'module'})}={}){
+export async function prewarmFleet(build,{ready=()=>true,disposed=()=>false,signal,metrics={maxStepMs:0},createWorker=()=>new Worker(new URL('./traffic-fleet-worker.js',import.meta.url),{type:'module'})}={}){
+ if(signal?.aborted)throw Error('Fleet preparation cancelled');
  const worker=createWorker(),pending=new Map(),prepared=new Set();let id=0;
+ const cancel=()=>{worker.terminate();for(const p of pending.values())p.reject(Error('Fleet preparation cancelled'));pending.clear();};signal?.addEventListener('abort',cancel,{once:true});
  worker.onmessage=({data})=>{const p=pending.get(data.id);if(!p)return;pending.delete(data.id);data.error?p.reject(Error(data.error)):p.resolve(data.templates);};
  worker.onerror=error=>{for(const p of pending.values())p.reject(Error(error.message));pending.clear();};
  const frame=()=>new Promise(resolve=>requestAnimationFrame(resolve));
- const wait=async()=>{await frame();while(!ready()&&!disposed())await frame();if(disposed())throw Error('Fleet preparation cancelled');};
+ const wait=async()=>{await frame();while(!ready()&&!disposed()&&!signal?.aborted)await frame();if(disposed()||signal?.aborted)throw Error('Fleet preparation cancelled');};
  try{
   let step,lastStage='pool';
   for(;;){
@@ -19,5 +21,5 @@ export async function prewarmFleet(build,{ready=()=>true,disposed=()=>false,metr
    }
    prepared.add(type.id);
   }
- }finally{worker.terminate();}
+ }finally{signal?.removeEventListener('abort',cancel);worker.terminate();}
 }
