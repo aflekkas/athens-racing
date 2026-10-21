@@ -16,8 +16,8 @@ rendered. This keeps road geometry, rail collisions and parked-car placement
 unchanged. The regional forest mask certifies the exact jittered billboard
 positions used by the renderer. Psychiko's retained trees use certified seeds.
 
-Vegetation stays opaque and instanced. Screen-door coverage changes continuously
-over distance, and newly arriving instances fade in over 1.2 seconds. The shader
+Vegetation stays opaque and instanced. LOD selection stays opaque at every
+distance. Newly arriving instances alone fade in over 1.2 seconds. The shader
 retains the analytic impostor silhouettes. Psychiko's merged tree cells retain
 their existing distance fade and also fade on arrival. No extra texture or render
 pass is introduced. World detail Off hides these layers.

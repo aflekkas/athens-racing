@@ -15,20 +15,20 @@ export function fadeMergedVegetation(mesh) {
   return mesh;
 }
 // Opaque ordered dithering: no transparent sorting, extra passes or textures.
-// Distance is evaluated every frame, not at the 8 m instance-list rebuilds.
+// LOD selection is opaque at every distance; only new arrivals briefly dither.
 export class VegetationFade {
   constructor(){this.clock={value:0};this.eye={value:new THREE.Vector2()};this.start=performance.now();this.batches=new Set();}
   attach(mesh,capacity){
     const data=new Float32Array(capacity*4),attribute=new THREE.InstancedBufferAttribute(data,4);attribute.setUsage(THREE.DynamicDrawUsage);mesh.geometry.setAttribute('aVegetationFade',attribute);
     const batch={attribute,ids:new Uint32Array(capacity),count:0,lookup:null};this.batches.add(batch);mesh.userData.vegetationFade=batch;
     const source=mesh.material,before=source.onBeforeCompile.bind(source),key=source.customProgramCacheKey.bind(source),material=mesh.material=source.clone();
-    material.customProgramCacheKey=()=>key()+'-vegetation-dither-v1';
+    material.customProgramCacheKey=()=>key()+'-vegetation-arrival-v2';
     material.onBeforeCompile=shader=>{
       before(shader);shader.uniforms.uVegetationTime=this.clock;shader.uniforms.uVegetationEye=this.eye;
       shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nattribute vec4 aVegetationFade;uniform float uVegetationTime;uniform vec2 uVegetationEye;varying float vVegetationFade;').replace('#include <begin_vertex>',`#include <begin_vertex>
         float vd=distance(instanceMatrix[3].xz,uVegetationEye);
-        float enter=aVegetationFade.x<=0. ? 1. : smoothstep(aVegetationFade.x,aVegetationFade.x+aVegetationFade.z,vd);
-        float leave=1.-smoothstep(aVegetationFade.y-aVegetationFade.z,aVegetationFade.y,vd);
+        float enter=aVegetationFade.x<=0. ? 1. : step(aVegetationFade.x+aVegetationFade.z,vd);
+        float leave=1.-step(aVegetationFade.y,vd);
         vVegetationFade=enter*leave*smoothstep(0.,1.2,uVegetationTime-aVegetationFade.w);
       `);
       shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying float vVegetationFade;').replace('#include <clipping_planes_fragment>',`#include <clipping_planes_fragment>

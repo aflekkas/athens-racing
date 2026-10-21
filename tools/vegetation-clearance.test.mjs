@@ -39,7 +39,7 @@ test('all camera-facing and near model vertices fit the audited crown envelope',
 test('late streamed foliage starts with zero coverage and keeps birth time across rebuilds; Off hides both LODs',()=>{
  const layer=new AthensTrees(new THREE.Group()),p={metadata:{origin:[0,0,0],extensions:{worldDetail:{streetTrees:0,penteli:true,coastalTreeCount:1}}},arrays:[new Float32Array([200,0,200,0,8])]};layer.addTile('0,0',p);layer.rebuild(200,240);
  const mesh=layer.meshes.get(TREE.pine).mesh,a=mesh.geometry.attributes.aVegetationFade,birth=a.getW(0);assert.ok(Math.abs(birth-layer.fade.clock.value)<1e-5);layer.rebuild(200,245);assert.equal(a.getW(0),birth);
- const shader={uniforms:{},vertexShader:'#include <common>\n#include <begin_vertex>',fragmentShader:'#include <common>\n#include <clipping_planes_fragment>'};mesh.material.onBeforeCompile(shader);assert.match(shader.vertexShader,/smoothstep\(0.,1.2/);assert.match(shader.fragmentShader,/vVegetationFade<=threshold/);
+ const shader={uniforms:{},vertexShader:'#include <common>\n#include <begin_vertex>',fragmentShader:'#include <common>\n#include <clipping_planes_fragment>'};mesh.material.onBeforeCompile(shader);assert.match(shader.vertexShader,/smoothstep\(0.,1.2/);assert.doesNotMatch(shader.vertexShader,/smoothstep\(aVegetationFade/);assert.match(shader.fragmentShader,/vVegetationFade<=threshold/);
  layer.setEnabled(false);assert.equal(layer.group.visible,false);layer.dispose();
 });
 test('distant forest certifies the same jittered positions used by its renderer',()=>{
