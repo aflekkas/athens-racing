@@ -24,6 +24,11 @@ const TIPS = [
   'Steering assist adapts to your device. Set it to OFF for full control.',
   'Choose JOIN GAME on the main menu to enter a code or browse open lobbies.',
 ];
+export const FREE_ROAM_TIPS = [
+  'Choose any street and explore. Free roam has no route or finish line.',
+  TIPS[1], TIPS[2], TIPS[4],
+];
+export const freeRoamLoadingTitle = area => area ? 'ATHENS · ' + area.trim().toUpperCase() : 'ATHENS';
 const CIRCUIT_TIPS = [
   'Brake before the turn and use the kerbs to hold a clean racing line.',
   'A smooth exit onto the straight is often faster than a late entry.',
@@ -100,10 +105,11 @@ class LoadingScreen {
     this.step = 0; this.kind = 'map'; this.label = 'LOADING MAP DATA'; this.bytes = null; this.parts = null; this.source = null;
     this.readiness=null;this.routeSelectionToken=null;this.failure = null; this.downloadTried = false; this.chosenBuild = false; this.note = ''; this.changed = this.started = performance.now();
   }
-  show(mapId = 'riviera', context = 'QUICK RACE') {
+  show(mapId = 'riviera', context = 'QUICK RACE', { freeRoam = false, area = '' } = {}) {
     const el = this.el; if (!el) return;
     clearTimeout(this.hideTimer);
     this.setMap(mapId);
+    if (freeRoam) this.setFreeRoam(area);
     const purpose = $('ldContext'); if (purpose) purpose.textContent = 'Loading ' + context;
     this.p = 0; this.reset(); this.applyRoute(); this.render(true);
     el.inert = false; el.style.pointerEvents = ''; el.removeAttribute('aria-hidden');
@@ -122,7 +128,13 @@ class LoadingScreen {
     location.assign(url.href);
   }
   setRoute(compiled){this.mapId='athens';this.routeSelectionToken=null;const copy=routeLoadingCopy(compiled);this.tips=copy.tips;this.tipIdx=-1;for(const [id,value]of Object.entries({ldName:copy.name,ldSub:copy.region,ldKind:copy.kind,ldLen:copy.distance})){const e=$(id);if(e)e.textContent=value;}this.nextTip();const host=$('ldArt');if(host){host.replaceChildren();const points=compiled.points,x=points.map(p=>p[0]),z=points.map(p=>p[2]),x0=Math.min(...x),z0=Math.min(...z),w=Math.max(1,Math.max(...x)-x0),h=Math.max(1,Math.max(...z)-z0),pad=Math.max(w,h)*.08,svg=document.createElementNS('http://www.w3.org/2000/svg','svg'),line=document.createElementNS(svg.namespaceURI,'polyline');svg.setAttribute('viewBox',`${x0-pad} ${z0-pad} ${w+pad*2} ${h+pad*2}`);svg.setAttribute('aria-hidden','true');line.setAttribute('points',points.map(p=>`${p[0]},${p[2]}`).join(' '));line.setAttribute('fill','none');line.setAttribute('stroke','#d9e5e3');line.setAttribute('stroke-width','3');line.setAttribute('vector-effect','non-scaling-stroke');svg.append(line);host.append(svg);}this.route=[];}
+  setFreeRoam(area = '') {
+    this.mapId = 'athens'; this.tips = FREE_ROAM_TIPS; this.tipIdx = -1; this.route = [];
+    for (const [id, value] of Object.entries({ ldName: freeRoamLoadingTitle(area), ldSub: 'Pick a street and explore', ldKind: 'FREE ROAM', ldLen: '' })) { const el = $(id); if (el) el.textContent = value; }
+    $('ldArt')?.replaceChildren();
+  }
   setMap(mapId) {
+    if (mapId === 'athens') { this.setFreeRoam(); return; }
     if (this.mapId === mapId) return;
     this.tips = TIPS;
     const map = MAPS.find((m) => m.id === mapId) || MAPS[0]; this.mapId = map.id;
