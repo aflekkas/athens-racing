@@ -54,7 +54,8 @@ export async function createWorldSession({renderer,scene,resources,progress=()=>
  // neighbouring cell first supplies a facade, coastal rock or water mesh.
  // Warm them before countdown so optional admission cannot trigger first-use
  // driver work during the countdown or the first seconds of driving.
- const commonPrograms=startsRegional?Promise.resolve():texturesReady.then(()=>sceneTiles.warmVariants(DRESSING_VARIANTS));commonPrograms.catch(()=>{});
+ const plainPrograms=[null,3,4].map(size=>{const variant={surface:'basic',attributes:{position:{type:'Float32Array',itemSize:3,normalized:false},...(size?{color:{type:'Uint8Array',itemSize:size,normalized:true}}:{})},index:null,terrain:false};return {...variant,key:JSON.stringify(variant)};});
+ const commonPrograms=startsRegional?Promise.resolve():texturesReady.then(()=>sceneTiles.warmVariants([...DRESSING_VARIANTS,...plainPrograms]));commonPrograms.catch(()=>{});
  let regionalTextures=startsRegional?texturesReady:null;
  const regionalScenery=new WorldRegionalScenerySet(scene,{trees});const activationSteps=[];
  const adapter={
