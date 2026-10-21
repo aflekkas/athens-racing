@@ -7,6 +7,8 @@ import { CELL, hashN, inRing } from './world-tile-trees.js';
 import { asphaltIndex } from './world-tile-asphalt.js';
 
 export const PARKING_LIMIT = 700;
+/** How far beyond a kerb a second stretch of asphalt still makes the strip between them a median (metres). */
+const MEDIAN_REACH = 18;
 /** A car-sized oriented rectangle: corners of the box centred on (x, z), `hl` long along (sin yaw, cos yaw), `hw` wide. */
 export const boxCorners = (x, z, yaw, hl, hw) => { const tx = Math.sin(yaw), tz = Math.cos(yaw), nx = tz, nz = -tx; return [[x + tx * hl + nx * hw, z + tz * hl + nz * hw], [x + tx * hl - nx * hw, z + tz * hl - nz * hw], [x - tx * hl - nx * hw, z - tz * hl - nz * hw], [x - tx * hl + nx * hw, z - tz * hl + nz * hw]]; };
 const segDist = (p, a, b) => { const dx = b[0] - a[0], dz = b[1] - a[1], q = dx * dx + dz * dz || 1, u = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dz) / q)); return Math.hypot(p[0] - a[0] - u * dx, p[1] - a[1] - u * dz); };
@@ -40,6 +42,20 @@ export function deriveParking(t, rings, inQuarter = () => false, occupied = [], 
     for (const ring of near(bGrid, x, z, hl + 1)) for (const [qx, qz] of pts) if (inRing(ring, qx, qz)) return false;
     return true;
   };
+  /** Does the kerb on the right of edge `e` at (px, pz) border a median or the other carriageway of a divided road, not a pavement and buildings? Two tests: asphalt again within
+   * MEDIAN_REACH metres beyond the kerb with no building in the gap (a central reservation, a traffic island), or a one-way twin running the other way on that side. */
+  const medianSide = (e, px, pz, tx, tz, w) => {
+    const nx = -tz, nz = tx;
+    if (E[e * 10 + 8] & 1) for (const [oe, x0, z0, x1, z1] of near(sGrid, px + nx * 20, pz + nz * 20, 26)) {
+      if (oe === e || !(E[oe * 10 + 8] & 1)) continue; const dx = x1 - x0, dz = z1 - z0, l = Math.hypot(dx, dz) || 1; if ((dx * tx + dz * tz) / l > -.8) continue;
+      const lat = ((x0 + x1) / 2 - px) * nx + ((z0 + z1) / 2 - pz) * nz; if (lat > w + 1 && lat < 45) return true;
+    }
+    let gapStart = -1; for (let d = w + .75; d <= w + MEDIAN_REACH; d += .75) {
+      if (asphalt.inside(px + nx * d, pz + nz * d)) { if (gapStart < 0) continue; const mid = (gapStart + d) / 2, mx = px + nx * mid, mz = pz + nz * mid; return !near(bGrid, mx, mz, 1).some(ring => inRing(ring, mx, mz)); }
+      if (gapStart < 0) gapStart = d;
+    }
+    return false;
+  };
   const free = (e, x, z, tx, tz, hl, hw, apart = 2.6) => {
     if (!clearOfBuildings(x, z, tx, tz, hl, hw)) return false;
     const me = boxCorners(x, z, Math.atan2(tx, tz), hl, hw);
@@ -65,6 +81,7 @@ export function deriveParking(t, rings, inQuarter = () => false, occupied = [], 
       // is wide enough to keep 1.5 m clear of the axis on this side (a street with a row on both sides keeps 3 m); on a narrow street it stands half on the pavement.
       let w = -1; if (measured) w = asphalt.reach(px, pz, -tz, tx, 9); else w = lanes >= 2 ? 3.2 : 2.5;
       if (w < 1.6 || w > 8.5) continue;
+      if (measured && medianSide(e, px, pz, tx, tz, w)) { run = 0; continue; } // Athens does not park against a median
       // Players, traffic and tow anchors drive up to 2.7 m off the axis (anchors lie 0.5 to 1.7 m off it, a car is 1.9 m wide). So a car stands against the kerb with its inner flank
       // at least 3.2 m from the axis, which is the case on streets whose carriageway is 10 m wide (w >= 5); on every narrower street it stands wholly on the pavement beyond
       // the kerb (centre w + 1.05) or, if a building is there, not at all.

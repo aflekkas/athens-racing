@@ -74,3 +74,20 @@ test('parked cars and scooters are in the obstacle index as walls the player hit
   assert.ok(obstacles.contact(120, 5, 100, .4), 'and the scooter');
   const none = buildTileObstacleIndex(t); assert.equal(none.segments.length, 0, 'tiles without parking build the same index as before');
 });
+test('nothing parks against a median or the inner kerb of a divided road, only on the outer kerb', () => {
+  // a two-way street at z = 100 (3 m of asphalt each side) and a second carriageway 9 to 15 m south of it (a median between): the south kerb of the street borders the median
+  const fwd = [], rev = []; for (let x = 20; x <= 220; x += 20) fwd.push(x, 5, 100); for (let x = 220; x >= 20; x -= 20) rev.push(x, 5, 100);
+  const strip = (z0, z1, base) => [0, 5, z0, 300, 5, z0, 0, 5, z1, 300, 5, z1].map((v, i) => v), tri = (o) => [o, o + 2, o + 1, o + 1, o + 2, o + 3];
+  const divided = { nodes: new Uint32Array(0), nodePositions: new Float32Array(0), edges: Uint32Array.from([1, 0, 1, 0, 11, 0, 1, 30, 0, 0, 2, 1, 0, 11, 11, 0, 1, 30, 0, 0]), edgePoints: Float32Array.from([...fwd, ...rev]), edgeLayers: Int8Array.from([0, 0]),
+    finePositions: Float32Array.from([...strip(97, 103), ...strip(109, 115)]), fineTriangles: Uint32Array.from([...tri(0), ...tri(4)]), fineFlags: Uint8Array.from([1, 1, 1, 1]) };
+  const rows = deriveParking(divided, []); assert.ok(rows.length > 0, 'the outer kerb still gets cars');
+  for (let i = 0; i < rows.length; i += 5) assert.ok(rows[i + 2] < 100, `a car at z = ${rows[i + 2]} stands on the median side`);
+  const wall = [[0, 104], [300, 104], [300, 108], [0, 108]]; // a building in the gap: not a median, a street front
+  assert.ok(deriveParking(divided, [wall]).some(r => r > 100), 'with buildings between the two roads the south kerb parks again') ; void rows;
+  const single = { ...divided, finePositions: Float32Array.from(strip(97, 103)), fineTriangles: Uint32Array.from(tri(0)), fineFlags: Uint8Array.from([1, 1]) };
+  const both = deriveParking(single, []), south = both.filter((_, i) => i % 5 === 2 && both[i] > 100).length; assert.ok(south > 5, 'an ordinary two-way street keeps both kerbs');
+  // two one-way carriageways side by side, east at z = 100 and west at z = 112 (asphalt 97..103 and 109..115, gap 6): the right kerb of the eastbound one is the south one, facing the westbound twin
+  const east = [], west = []; for (let x = 20; x <= 220; x += 20) east.push(x, 5, 100); for (let x = 220; x >= 20; x -= 20) west.push(x, 5, 112);
+  const pair = { ...divided, edges: Uint32Array.from([1, 0, 1, 0, 11, 0, 1, 30, 1, 0, 2, 2, 3, 11, 11, 0, 1, 30, 1, 0]), edgePoints: Float32Array.from([...east, ...west]) };
+  const pairRows = deriveParking(pair, []); for (let i = 0; i < pairRows.length; i += 5) assert.ok(pairRows[i + 2] < 100 || pairRows[i + 2] > 112, `a car at z = ${pairRows[i + 2]} stands between the two carriageways`);
+});
