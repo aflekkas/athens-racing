@@ -26,6 +26,7 @@ import {fleetModel} from './traffic-fleet.js';
 import {input} from './input.js';
 import {resolvePlayerContacts} from './multiplayer-contact.js';
 import {AccountsClient} from './accounts-client.js';
+import {bootScreen} from './ui/boot-screen.js';
 import {loading} from './ui/loading.js';
 import {ui} from './ui/components.js';
 import {Hud,fmtTime} from './hud.js';
@@ -37,8 +38,12 @@ const MiB=1024*1024,clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export async function bootAthens(){
  const started=performance.now(),query=new URLSearchParams(location.search);
  if(query.get('map')!=='athens')throw Error('Athens requires its development map flag');
+ // The central launch screen (src/ui/boot-screen.js) checks the session; signed out, the driver goes straight to the
+ // title's sign-in dialog instead of a prompt to go there.
+ bootScreen.step('CHECKING YOUR SESSION',.6);
  const account=new AccountsClient();await account.init();
- if(account.blocked){await ui.prompt({title:'SIGN IN TO DRIVE',body:'Sign in from the main menu to continue.',actions:[{id:'menu',label:'MAIN MENU',variant:'primary'}]});location.assign('/?menu=1');return;}
+ if(account.blocked){location.replace('/?menu=1');return;}
+ bootScreen.done();
  const canvas=document.getElementById('c'),renderer=new THREE.WebGLRenderer({canvas,antialias:false,stencil:false,powerPreference:'high-performance'}),gl=renderer.getContext(),debug=gl.getExtension('WEBGL_debug_renderer_info');
  const gfx=resolveGraphics(settings,{gpuName:debug?gl.getParameter(debug.UNMASKED_RENDERER_WEBGL):''}),resources=gfx.resources;
  renderer.setPixelRatio(gfx.pixelRatio);renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=false;

@@ -1,0 +1,158 @@
+{
+ "before-1": {
+  "signed-in": [
+   {
+    "t": 205,
+    "what": "BLANK"
+   },
+   {
+    "t": 1481,
+    "what": "SCREEN:scr--signin + DIALOG"
+   },
+   {
+    "t": 4080,
+    "what": "SCREEN:scr--title"
+   }
+  ],
+  "returning": [
+   {
+    "t": 1677,
+    "what": "BLANK"
+   },
+   {
+    "t": 1987,
+    "what": "SCREEN:scr--title"
+   }
+  ]
+ },
+ "before-2": {
+  "signed-in": [
+   {
+    "t": 190,
+    "what": "BLANK"
+   },
+   {
+    "t": 1417,
+    "what": "SCREEN:scr--signin + DIALOG"
+   },
+   {
+    "t": 3861,
+    "what": "SCREEN:scr--title"
+   }
+  ],
+  "returning": [
+   {
+    "t": 184,
+    "what": "BLANK"
+   },
+   {
+    "t": 848,
+    "what": "SCREEN:scr--title"
+   }
+  ]
+ },
+ "before-3": {
+  "signed-in": [
+   {
+    "t": 207,
+    "what": "BLANK"
+   },
+   {
+    "t": 1327,
+    "what": "SCREEN:scr--signin + DIALOG"
+   },
+   {
+    "t": 3759,
+    "what": "SCREEN:scr--title"
+   }
+  ],
+  "returning": [
+   {
+    "t": 69,
+    "what": "BLANK"
+   },
+   {
+    "t": 713,
+    "what": "SCREEN:scr--title"
+   }
+  ]
+ },
+ "after-1": {
+  "signed-in": [
+   {
+    "t": 232,
+    "what": "BOOT:LOADING"
+   },
+   {
+    "t": 1552,
+    "what": "BOOT:CHECKING YOUR SESSION"
+   },
+   {
+    "t": 1772,
+    "what": "SCREEN:scr--title"
+   }
+  ],
+  "returning": [
+   {
+    "t": 56,
+    "what": "BOOT:LOADING"
+   },
+   {
+    "t": 654,
+    "what": "SCREEN:scr--title"
+   }
+  ]
+ },
+ "after-2": {
+  "signed-in": [
+   {
+    "t": 202,
+    "what": "BOOT:LOADING"
+   },
+   {
+    "t": 1477,
+    "what": "BOOT:CHECKING YOUR SESSION"
+   },
+   {
+    "t": 1662,
+    "what": "SCREEN:scr--title"
+   }
+  ],
+  "returning": [
+   {
+    "t": 68,
+    "what": "BOOT:LOADING"
+   },
+   {
+    "t": 646,
+    "what": "SCREEN:scr--title"
+   }
+  ]
+ },
+ "after-3": {
+  "signed-in": [
+   {
+    "t": 197,
+    "what": "BOOT:LOADING"
+   },
+   {
+    "t": 1293,
+    "what": "BOOT:CHECKING YOUR SESSION"
+   },
+   {
+    "t": 1451,
+    "what": "SCREEN:scr--title"
+   }
+  ],
+  "returning": [
+   {
+    "t": 73,
+    "what": "BOOT:LOADING"
+   },
+   {
+    "t": 577,
+    "what": "SCREEN:scr--title"
+   }
+  ]
+ }
+}

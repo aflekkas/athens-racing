@@ -5,4 +5,9 @@ import { deviceBlockReason, readDevice, showDeviceGate } from './device-gate.js'
 
 const reason = deviceBlockReason(readDevice());
 if (reason) showDeviceGate(document, reason);
-else await import('./main.js');
+else {
+  // The launch's session check starts now, alongside loading the game, not after it (src/accounts-client.js uses these answers).
+  const ask = path => { const answer = fetch(path, { credentials: 'same-origin', signal: AbortSignal.timeout(8000) }); answer.catch(() => {}); return answer; };
+  globalThis.__authPrefetch = { '/api/auth/config': ask('/api/auth/config'), '/api/auth/session': ask('/api/auth/session') };
+  await import('./main.js');
+}

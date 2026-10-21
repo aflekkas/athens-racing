@@ -16,8 +16,9 @@ const TEMPLATE = /\bC\.(?:heroTiles|sidebarContent|browseGrid|stageInspector|map
 test('no module outside the kit renders its own .scr shell or calls screen()', () => {
   const hits = [];
   const shell = /class\s*=\s*["'`][^"'`]*\bscr(?:\s|"|'|`)|classList\.add\(\s*['"`]scr['"`]|className\s*=\s*['"`]scr\b|\bC\.screen\(|\bscreen\(\s*\{|data-layout\s*=/;
-  // index.html's loading screen and desktop gate are generated from the kit's mapStage({variant:'loading'}) and sheetList({variant:'narrow'}) (tools/sync-loading-layout.mjs).
-  const html = read('index.html').replace(/<!-- ui-layout:(loading|device-gate):start -->[\s\S]*?<!-- ui-layout:\1:end -->/g, '');
+  // index.html's loading screen, desktop gate and launch screen are generated from the kit's mapStage({variant:'loading'}) and
+  // sheetList({variant:'narrow'}) (tools/sync-loading-layout.mjs; tools/launch-gate.test.mjs checks the launch screen is in sync).
+  const html = read('index.html').replace(/<!-- ui-layout:(loading|device-gate|boot):start -->[\s\S]*?<!-- ui-layout:\1:end -->/g, '');
   for (const [file, text] of [...walk('src', /\.js$/).filter((f) => f !== KIT_JS).map((f) => [f, read(f)]), ['index.html', html]]) {
     text.split('\n').forEach((line, i) => {
       if (/^\s*(\/\/|\*|\/\*)/.test(line)) return;

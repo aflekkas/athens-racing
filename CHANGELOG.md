@@ -8,6 +8,9 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Launch: one loading screen while the game loads and checks your sign-in, then straight to the title or to sign-in. No blank screen, no sign-in box flashing up.
+- Fewer steps to a race: setup opens on CHOOSE CAR, the car picker on your own car, and Track select on the track you raced last.
+- Free Roam opens on the place you last started. The results lead with RACE AGAIN (one press, same car) and CHANGE CAR.
 - Maps: the mouse wheel zooms on a Mac too, one step per notch, centred on the pointer. On the Free Roam map, + and − zoom, and you can zoom right in to street level.
 - One car per model: the garage keeps each car's top trim, with no trim or body choice. Saved cars, paints and times move to it.
 - Honda Jazz: the drift spec is gone. The Jazz is the Dynamic road car.

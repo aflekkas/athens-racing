@@ -1,0 +1,92 @@
+{
+ "signed-in": [
+  {
+   "t": 203,
+   "what": "BOOT:LOADING"
+  },
+  {
+   "t": 2810,
+   "what": "BOOT:CHECKING YOUR SESSION"
+  },
+  {
+   "t": 3141,
+   "what": "SCREEN:scr--title"
+  }
+ ],
+ "returning": [
+  {
+   "t": 576,
+   "what": "BOOT:LOADING"
+  },
+  {
+   "t": 1687,
+   "what": "SCREEN:scr--title"
+  }
+ ],
+ "signed-out": [
+  {
+   "t": 159,
+   "what": "BOOT:LOADING"
+  },
+  {
+   "t": 1968,
+   "what": "BOOT:CHECKING YOUR SESSION"
+  },
+  {
+   "t": 2178,
+   "what": "SCREEN:scr--signin + DIALOG"
+  }
+ ],
+ "expired": [
+  {
+   "t": 150,
+   "what": "BOOT:LOADING"
+  },
+  {
+   "t": 1160,
+   "what": "BOOT:CHECKING YOUR SESSION"
+  },
+  {
+   "t": 1264,
+   "what": "SCREEN:scr--signin + DIALOG"
+  }
+ ],
+ "offline": [
+  {
+   "t": 159,
+   "what": "BOOT:LOADING"
+  },
+  {
+   "t": 948,
+   "what": "BOOT:CHECKING YOUR SESSION"
+  },
+  {
+   "t": 1006,
+   "what": "SCREEN:scr--signin + DIALOG"
+  }
+ ],
+ "slow": [
+  {
+   "t": 148,
+   "what": "BOOT:LOADING"
+  },
+  {
+   "t": 895,
+   "what": "BOOT:CHECKING YOUR SESSION"
+  },
+  {
+   "t": 5201,
+   "what": "SCREEN:scr--title"
+  }
+ ],
+ "slow-returning": [
+  {
+   "t": 108,
+   "what": "BOOT:LOADING"
+  },
+  {
+   "t": 1300,
+   "what": "SCREEN:scr--title"
+  }
+ ]
+}

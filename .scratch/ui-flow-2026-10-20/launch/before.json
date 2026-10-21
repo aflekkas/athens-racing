@@ -1,0 +1,76 @@
+{
+ "signed-in": [
+  {
+   "t": 195,
+   "what": "BLANK"
+  },
+  {
+   "t": 1168,
+   "what": "SCREEN:scr--signin + DIALOG"
+  },
+  {
+   "t": 3439,
+   "what": "SCREEN:scr--title"
+  }
+ ],
+ "returning": [
+  {
+   "t": 4312,
+   "what": "BLANK"
+  },
+  {
+   "t": 4581,
+   "what": "SCREEN:scr--title"
+  }
+ ],
+ "signed-out": [
+  {
+   "t": 207,
+   "what": "BLANK"
+  },
+  {
+   "t": 2075,
+   "what": "SCREEN:scr--signin + DIALOG"
+  }
+ ],
+ "expired": [
+  {
+   "t": 168,
+   "what": "BLANK"
+  },
+  {
+   "t": 1814,
+   "what": "SCREEN:scr--signin + DIALOG"
+  }
+ ],
+ "offline": [
+  {
+   "t": 311,
+   "what": "BLANK"
+  },
+  {
+   "t": 2456,
+   "what": "SCREEN:scr--signin + DIALOG"
+  }
+ ],
+ "slow": [
+  {
+   "t": 158,
+   "what": "BLANK"
+  },
+  {
+   "t": 1885,
+   "what": "SCREEN:scr--signin + DIALOG"
+  }
+ ],
+ "slow-returning": [
+  {
+   "t": 139,
+   "what": "BLANK"
+  },
+  {
+   "t": 1411,
+   "what": "SCREEN:scr--signin + DIALOG"
+  }
+ ]
+}

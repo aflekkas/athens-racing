@@ -15,6 +15,22 @@ export const offlineAllowed = (error, online = true) =>
   error?.name === "AbortError" ||
   error?.name === "SyntaxError" ||
   error?.status === 404;
+// After a good check the client keeps a small hint of who is signed in (never the token: the session cookie is HttpOnly).
+// While it is unexpired and the browser is online, the launch goes straight to the title and checks in the background; the
+// server's answer still decides (owner 2026-10-20: the signed-in launch must not wait on the check).
+const HINT = "paraliaki.sessionHint";
+function readHint(storage) {
+  try {
+    const h = JSON.parse(storage?.getItem(HINT) || "null");
+    return h && typeof h.id === "string" && typeof h.displayName === "string" && h.displayName && Number.isFinite(h.expires) && h.expires > Date.now() + 60000 ? h : null;
+  } catch { return null; }
+}
+/** an answer the page entry already asked for (src/entry.js starts the launch check alongside loading the game), used once */
+function prefetched(path) {
+  const all = globalThis.__authPrefetch, answer = all?.[path];
+  if (answer) delete all[path];
+  return answer || null;
+}
 export class AccountsClient {
   constructor({
     fetcher = fetch,
@@ -35,11 +51,20 @@ export class AccountsClient {
     this.presence = {};
     this.offline = false;
     this.ready = false;
+    this.hint = readHint(storage);
   }
-  get blocked() { return this.required && (!this.ready || this.offline || !this.user || !this.user.displayName); }
+  /** before the first answer: a recent sign-in on this device, online, lets the launch show the title while the check runs */
+  get optimistic() { return !this.ready && !!this.hint && globalThis.navigator?.onLine !== false; }
+  get blocked() { return this.required && (this.ready ? this.offline || !this.user || !this.user.displayName : !this.optimistic); }
+  remember(s) {
+    try {
+      if (s?.user?.displayName && Number.isFinite(s.expires)) this.storage?.setItem(HINT, JSON.stringify({ id: s.user.id, displayName: s.user.displayName, expires: s.expires }));
+      else this.storage?.removeItem(HINT);
+    } catch {}
+  }
   setSession(s) {
     clearTimeout(this.sessionTimer);
-    this.user = s.user; this.csrf = s.csrf;
+    this.user = s.user; this.csrf = s.csrf; this.remember(s);
     if (s.user && Number.isFinite(s.expires)) {
       this.sessionTimer = setTimeout(() => {
         if (s.expires > Date.now()) { void this.revalidate(); return; }
@@ -68,7 +93,8 @@ export class AccountsClient {
     finally { this.checking = false; }
   }
   async api(path, data) {
-    const r = await this.fetcher(path, {
+    const early = data === undefined ? prefetched(path) : null;
+    const r = early ? await early : await this.fetcher(path, {
       credentials: "same-origin",
       signal: AbortSignal.timeout(8000),
       ...(data === undefined
@@ -199,7 +225,7 @@ export class AccountsClient {
   }
   disconnect() {
     clearTimeout(this.sessionTimer);
-    this.user = null;
+    this.user = null; this.remember(null);
     clearTimeout(this.retry);
     clearTimeout(this.expireTimer);
     clearInterval(this.timer);

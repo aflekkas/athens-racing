@@ -1,11 +1,12 @@
 // Regenerate the pre-module static screens from the shared kit; no runtime flash.
 //   - the loading frame (mapStage loading variant)
 //   - the desktop gate (#device-gate: sheetList narrow variant), the only screen a phone or tablet ever sees (src/device-gate.js)
+//   - the launch screen (#boot: sheetList narrow variant), up from the first paint until the session is checked (src/ui/boot-screen.js)
 // node tools/sync-loading-layout.mjs [--check]
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { mapStage, sheetList, emptyState, chip, SPRITE } from '../src/ui/components.js';
+import { mapStage, sheetList, emptyState, chip, progress, SPRITE } from '../src/ui/components.js';
 import { loadingContent } from '../src/ui/loading-content.js';
 import { GATE_TITLE, GATE_TEXT, GATE_URL } from '../src/device-gate.js';
 
@@ -19,9 +20,15 @@ export function deviceGateMarkup() {
   const screen = sheetList({ variant: 'narrow', back: false, cls: 'scr--device-gate', rows }).replaceAll(SPRITE, 'assets/icons/sprite.svg');
   return `<div id="device-gate" class="device-gate" role="main" aria-label="Athens Racing is made for computers">${screen}</div>`;
 }
+/** the launch screen: the brand, one quiet status line and one thin bar (the only accent), from the first paint */
+export function bootMarkup() {
+  const rows = `<div class="boot__brand">${BRAND}</div><div class="boot__status"><span class="boot__step">LOADING</span>${progress(.15, 'boot__bar')}</div>`;
+  return `<div id="boot" class="boot" role="status" aria-live="polite" aria-label="Loading Athens Racing">${sheetList({ variant: 'narrow', back: false, cls: 'scr--boot', rows })}</div>`;
+}
 export const syncLayouts = html => html
   .replace(blockPattern('loading'), () => block('loading', mapStage({ variant: 'loading', ...loadingContent })))
-  .replace(blockPattern('device-gate'), () => block('device-gate', deviceGateMarkup()));
+  .replace(blockPattern('device-gate'), () => block('device-gate', deviceGateMarkup()))
+  .replace(blockPattern('boot'), () => block('boot', bootMarkup()));
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   const path = 'index.html', html = readFileSync(path, 'utf8'), next = syncLayouts(html);
