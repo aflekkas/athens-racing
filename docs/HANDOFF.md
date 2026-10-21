@@ -1,12 +1,11 @@
 # Athens Racing operations handoff — 21 October 2026
 
-**Status: production cutover blocked on GOOGLE_CLIENT_ID/SECRET.** The owner is
-setting the two production OAuth secrets. Production currently serves activation
-`db402449`; its normal menu race works without sign-in, but its prebuilt route
-catalogue is empty. Correction `35dfb3b1` forwards production's configured route
-flags through the train. Keep `production-hold` present until credentials are
-available and the signed-in production smoke can finish. Read `/release.json`
-and `~/.local/state/athens-release/train.log` for the actual live SHA.
+**Status: production cutover complete.** Production and staging serve the
+approved `62dbe66` game batch with the production manifest and six-route
+activation. Google OAuth is configured on both Workers. Signed-in production
+home, normal menu racing, Faros and Riviera passed acceptance. Athens remains
+opt-in; normal menu defaults are unchanged. Read `/release.json` and
+`~/.local/state/athens-release/train.log` for the actual live SHA.
 
 ## Live services and assets
 
@@ -28,7 +27,7 @@ and `~/.local/state/athens-release/train.log` for the actual live SHA.
   defaults are unchanged. Route JSON is generated into Worker static assets,
   not stored in R2. Its hashes bind to browser source as well as geometry.
 
-## Deploy and finish this release
+## Deploy
 
 Use a clean worktree from local `prod`; never touch the shared stale checkout
 or index. Check disk first; do not start large work at 85% usage. Test an exact
@@ -39,8 +38,9 @@ Commit only intended files, then land with
 `git update-ref refs/heads/prod <new> <old>`. Retry a CAS race only after review;
 never force-push. The train pushes and deploys committed archives.
 
-The owner must run these from `/home/dev/projects/paraliaki-racing`, entering
-values at Wrangler's private prompts; never put values in chat or Git:
+Both production Google secrets are installed. To rotate them, run these from
+`/home/dev/projects/paraliaki-racing`, entering values at Wrangler's private
+prompts; never put values in chat or Git:
 
 ```sh
 npx wrangler secret put GOOGLE_CLIENT_ID --env production
@@ -49,7 +49,7 @@ npx wrangler secret put GOOGLE_CLIENT_SECRET --env production
 
 The Google OAuth client must allow
 `https://athensracing.com/api/auth/google/callback`. Confirm both secret names
-with `npx wrangler secret list --env production`. Then remove
+with `npx wrangler secret list --env production`. For a held release, remove
 `~/.local/state/athens-release/production-hold`; if promoting the already recorded
 SHA, also remove the train's `deployed` marker. Start
 `systemctl --user start athens-release.service` and watch `train.log` through
