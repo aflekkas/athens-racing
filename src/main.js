@@ -1312,7 +1312,7 @@ function flowAction(name) {
   if (!menu || G.state === 'loading' && !menu.open && multiplayer.panel.hidden) return false;
   if (menu.accounts?.blocked) { menu.action(name); return true; }
   if (!menu.open && multiplayer.panel.hidden && (G.state === 'finished' || G.state === 'onlineFinished')) {
-    if (name === 'restart' && !multiplayer.active) { openEvent(G.ev.def); return true; }
+    if (name === 'reset' || name === 'tow') return true; // the parked finished car needs no recovery
     if (['pause', 'back', 'confirm', 'restart'].includes(name)) { finishViewResults(); return true; }
     if (name === 'left' || name === 'right') {
       const direction = name === 'left' ? -1 : 1;
@@ -2342,7 +2342,7 @@ function step(dt, draw = true, visual = true, frameDt = dt) {
   window.__ghostLap?.visual(dt);
   updateCamera(dt);
   const finishWatched = watchingDriver();
-  updateFinishSpectateHud({ visible: !!finishWatched && !inMenu(), name: finishWatched?.name, position: multiplayer.active ? multiplayer.ranking().findIndex(p => p.id === finishWatched?.id) + 1 : finishWatched?.position, time: fmtTime(G.pFinish), ownPosition: multiplayer.active ? multiplayer.ranking().findIndex(p => p.id === multiplayer.id) + 1 : racePosition(), canRestart: !multiplayer.active });
+  updateFinishSpectateHud({ visible: !!finishWatched && !inMenu(), name: finishWatched?.name, position: multiplayer.active ? multiplayer.ranking().findIndex(p => p.id === finishWatched?.id) + 1 : finishWatched?.position, time: fmtTime(G.pFinish), ownPosition: multiplayer.active ? multiplayer.ranking().findIndex(p => p.id === multiplayer.id) + 1 : racePosition() });
   updateRacerMarkers();
   if (towOffer.element) towOffer.element.hidden = G.state !== 'race' || !!menu?.open || !multiplayer.panel.hidden;
   // sun + shadows follow the action

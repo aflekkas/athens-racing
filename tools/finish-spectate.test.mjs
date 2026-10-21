@@ -46,7 +46,7 @@ test('multiplayer finish uses existing standings and peers; disconnect, finish a
   assert.equal(mp.spectating().id, 'near'); mp.selection.skip(); assert.equal(mp.spectating(), null);
   mp.lobby.status = 'results'; assert.equal(mp.spectating(), null);
 });
-test('spectate HUD stays on the watched driver: lap hidden, gap trails the leader, solo R restarts', () => {
+test('spectate HUD stays on the watched driver: lap hidden, gap trails the leader, honest keys', () => {
   const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
   const card = readFileSync(new URL('../src/ui/finish-spectate.js', import.meta.url), 'utf8');
   const decisions = readFileSync(new URL('../docs/OWNER-DECISIONS.md', import.meta.url), 'utf8');
@@ -57,17 +57,19 @@ test('spectate HUD stays on the watched driver: lap hidden, gap trails the leade
   // The frozen player progress must not leak into the gap: the watched driver trails the race leader.
   assert.match(main, /leaderProg - earnedProgress\(finishWatched\.car\)/, owner);
   assert.match(main, /gap: leaderProg - earnedProgress\(finishWatched\.car\), gapUnit: 'm'/, owner);
-  // Solo R restarts like R after a race normally does; multiplayer R still opens results.
-  assert.match(main, /if \(name === 'restart' && !multiplayer\.active\) \{ openEvent\(G\.ev\.def\); return true; \}/, owner);
-  assert.match(main, /updateFinishSpectateHud\(\{[^}]*canRestart: !multiplayer\.active \}/, owner);
-  assert.match(card, /canRestart/, owner);
-  // Each chip names its actual key: the R chip restarts, Esc/Enter open results, and the
-  // labels carry no duplicated key text (the binding-derived keyHints would show Enter).
-  assert.match(card, /C\.kbd\('R'\)\}<\/span>[\s\S]*?RESTART<\/span>/, owner);
-  assert.match(card, /C\.kbd\('ESC'\)\}\$\{C\.kbd\('ENTER'\)\}.*RESULTS<\/span>/s, owner);
-  assert.doesNotMatch(card, /keyHints/, owner);
-  assert.doesNotMatch(card, /RESTART · R/, owner);
-  assert.doesNotMatch(card, /RESULTS · ENTER/, owner);
+  // Physical R is tow/reset, so it is an explicit no-op on the parked finished car; every other
+  // finish key (including the restart action, bound to Enter) opens results.
+  assert.match(main, /if \(name === 'reset' \|\| name === 'tow'\) return true;/, owner);
+  assert.doesNotMatch(main, /name === 'restart' && !multiplayer\.active/, owner);
+  assert.doesNotMatch(main, /canRestart/, owner);
+  // Every chip is the live primary binding of the action it labels: A/D cycle drivers,
+  // Esc/Enter open results. No R chip and no restart row (R is tow/reset here).
+  assert.match(card, /bindingLabel\(C\.hintBindings/, owner);
+  assert.match(card, /chips\('left', 'right'\)[\s\S]*?DRIVER<\/span>/, owner);
+  assert.match(card, /chips\('back', 'confirm'\)[\s\S]*?RESULTS<\/span>/, owner);
+  assert.doesNotMatch(card, /canRestart/, owner);
+  assert.doesNotMatch(card, /kbd\('R'\)/, owner);
+  assert.doesNotMatch(card, /RESTART/, owner);
   assert.match(decisions, /non-colliding ghost/, owner);
 });
 test('owner-locked spectate on finish is connected to both production finish paths and interpolated camera', () => {
