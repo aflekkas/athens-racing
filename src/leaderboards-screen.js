@@ -41,9 +41,9 @@ function trackHistory(filters, state) {
   const edition = filters.historyEdition || historicalEdition(filters.routeId);
   return dedupeHistory([...getRouteHistoricalTimes(filters.routeId, undefined, { edition }), ...(state.history || []).filter(r => r.identity?.edition === edition)], { me: driverId() });
 }
-const HISTORY_ROWS = 5;
+const HISTORY_ROWS = 3;
 /** Race Setup's records: one compact block that never needs its own scrollbar. PB and Top 3 are rows (an empty one is a single
- *  line), and the original-course times sit behind one toggle (`d.showHistory`), fastest five shown. */
+ *  line), and the original-course times sit behind one toggle (`d.showHistory`), fastest three shown. */
 export function renderSetupRecords(menu, d, filters) {
   const best = listPersonalBests(filters)[0], state = d.trackTimes ||= { loading: true };
   const row = (title, desc, meta, cls = '') => C.listRow({ title, desc, meta, cls: `recs__row ${cls}`, focusable: false, go: false });
@@ -56,7 +56,7 @@ export function renderSetupRecords(menu, d, filters) {
   queueMicrotask(() => loadTrackTimes(menu, d, state, filters));
   const history = trackHistory(filters, state), edition = filters.historyEdition || historicalEdition(filters.routeId);
   const old = history.length ? `<div class="recs__group recs__group--history">${C.button({ label: `${esc(historicalEditionLabel(edition).toUpperCase())} · ${history.length} ${history.length === 1 ? 'TIME' : 'TIMES'}`, icon: 'timer', iconRight: d.showHistory ? 'chevron-up' : 'chevron-down', variant: 'ghost', size: 'sm', act: 'setupHistory', cls: 'recs__toggle', attrs: { 'aria-expanded': String(!!d.showHistory) } })}
-    ${d.showHistory ? `<div class="recs__list">${history.slice(0, HISTORY_ROWS).map((r, i) => row(`<span class="recs__rank">${i + 1}</span>${esc(r.driverId && r.driverId !== driverId() ? r.name || 'DRIVER' : 'YOU')}`, esc([carLabel(r, CARS), recordDate(r)].filter(t => t && t !== 'Date unknown').join(' · ')), esc(formatRecordTime(r.time ?? r.bestTime)))).join('')}${history.length > HISTORY_ROWS ? `<div class="recs__line">Fastest ${HISTORY_ROWS} of ${history.length}.</div>` : ''}</div>` : ''}</div>` : '';
+    ${d.showHistory ? `<div class="recs__list">${history.slice(0, HISTORY_ROWS).map((r, i) => row(`<span class="recs__rank">${i + 1}</span>${esc(r.name || 'YOU')}`, esc([carLabel(r, CARS), recordDate(r)].filter(t => t && t !== 'Date unknown').join(' · ')), esc(formatRecordTime(r.time ?? r.bestTime)))).join('')}${history.length > HISTORY_ROWS ? `<div class="recs__line">Fastest ${HISTORY_ROWS} of ${history.length}.</div>` : ''}</div>` : ''}</div>` : '';
   return `<section class="recs" aria-label="Times">${pb}<div class="recs__group" aria-live="polite" aria-busy="${!!state.loading}"><h4 class="recs__k">TOP 3</h4>${top}</div>${old}</section>`;
 }
 async function loadTrackTimes(menu, d, state, filters) {
