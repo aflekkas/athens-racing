@@ -124,6 +124,12 @@ async function buildEnvironment({ dir, env, sha, log }) {
   // Low priority: this must not slow the tests, and it is a cache hit unless map code or data changed.
   const built = await run('node tools/prepare-deploy.mjs', { cwd: copy, env: common, log, nice: 5 });
   if (!built.ok) return built;
+  // A successful bundle is still invalid if its compiled route artifacts name
+  // a different world set than the manifest Wrangler is about to deploy.
+  if (env === 'staging') {
+    const routes = await run('node tools/check-route-release.mjs', { cwd: copy, env: common, log: log + '.routes', nice: 5 });
+    if (!routes.ok) return {...routes, ms: built.ms + routes.ms, log: log + '.routes'};
+  }
   const dry = await run(`node_modules/.bin/wrangler deploy --env ${env} --config wrangler.prebuilt.jsonc --dry-run`, { cwd: copy, env: common, log: log + '.dry', nice: 5 });
   return { ok: dry.ok, ms: built.ms + dry.ms, built: built.ms, dry: dry.ms };
 }
@@ -151,7 +157,7 @@ export async function gates({ dir, tree, sha, envs = [], logFile, trainLog, useC
   }
   for (const env of envs) {
     const log = resolve(logs, `build-${env}.log`);
-    jobs.push(record(`build-${env}`, async () => ({ ...(await buildEnvironment({ dir, env, sha, log })), log })));
+    jobs.push(record(`build-${env}`, async () => { const result = await buildEnvironment({ dir, env, sha, log }); return {...result, log: result.log || log}; }));
   }
   await Promise.all(jobs);
   const failed = results.filter(r => !r.ok);

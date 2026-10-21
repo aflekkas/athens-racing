@@ -1,5 +1,6 @@
 import {exportPsychikoDetail} from './export-psychiko-detail.mjs';
 import {buildRoutes} from './build-routes.mjs';
+import {activeRouteWorld, rebindRouteShard, checkBuiltRouteRelease} from './route-release.mjs';
 import {unifiedRouteConfig} from '../server/route-definitions.mjs';
 // An allowlist keeps server code, tools, credentials and scratch files off the CDN.
 import './check-browser-imports.mjs';
@@ -41,7 +42,7 @@ const buildEnvironment = process.env.ASR_BUILD_ENV || process.env.CLOUDFLARE_ENV
 // The bounded emitted graph/contact proof shard is source data; world cell bodies stay in R2.
 const routeIds=String(process.env.ASR_UNIFIED_ROUTES||'').split(',').filter(Boolean);
 let routeBuild={index:{routes:[]},server:{routes:[]}};
-if(routeIds.length){const shardPath=resolve(root,'data/routes/validation/athens.inputs.json'),shard=JSON.parse(await readFile(shardPath,'utf8'));const worldPath=resolve(root,'.deploy/route-world-set.json');await writeFile(worldPath,JSON.stringify({revision:shard.worldSetRevision,tiles:shard.cells}));routeBuild=await buildRoutes({world:worldPath,graph:shardPath,routes:resolve(root,'data/routes'),out:resolve(out,'data/routes')});await rm(worldPath);}
+if(routeIds.length){const source=JSON.parse(await readFile(resolve(root,'data/routes/validation/athens.inputs.json'),'utf8')),{manifest}=await activeRouteWorld(root,buildEnvironment),bound=rebindRouteShard(source,manifest),worldPath=resolve(root,'.deploy/route-world-set.json'),shardPath=resolve(root,'.deploy/route-inputs.json');await writeFile(worldPath,JSON.stringify(bound.world));await writeFile(shardPath,JSON.stringify(bound.shard));try{routeBuild=await buildRoutes({world:worldPath,graph:shardPath,routes:resolve(root,'data/routes'),out:resolve(out,'data/routes')});}finally{await rm(worldPath,{force:true});await rm(shardPath,{force:true});}}
 // Validation evidence and authored definitions never become public cells or editable runtime inputs.
 await rm(resolve(out,'data/routes/validation'),{recursive:true,force:true});
 for(const name of await readdir(resolve(out,'data/routes')).catch(()=>[]))if(name.endsWith('.route.json')||name==='server-catalogue.json')await rm(resolve(out,'data/routes',name));
@@ -82,4 +83,5 @@ if (largest.size > 25 * 1024 * 1024) throw new Error(`Cloudflare asset exceeds 2
 const catalogue = await readFile(resolve(root, 'src/cars.js'), 'utf8');
 const { cars, nitrousCars, specs: carSpecs } = readCarCapabilities(catalogue);
 await writeFile(resolve(root, '.deploy/catalogue.json'), JSON.stringify({ maps, cars, nitrousCars, carSpecs, routeConfig, routes:routeBuild.server.routes }));
+if(routeIds.length)await checkBuiltRouteRelease(root,buildEnvironment);
 console.log(JSON.stringify({ assets: count, bytes, largest, release: { version: version.version, sha: version.sha, build: release.build, files: Object.keys(release.files).length, copies: release.copies, swBytes }, maps: maps.map(m => ({ id: m.id, version: m.track.version, events: m.definitions.length })) }, null, 2));
