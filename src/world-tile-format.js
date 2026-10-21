@@ -159,6 +159,7 @@ export function validateWorldManifest(m) {
     if (!/^-?\d+,-?\d+$/.test(key) || key.split(',').some(v => !Number.isSafeInteger(Number(v)))) fail('tile key');
     if (typeof entry.url !== 'string' || !entry.url || !/^[a-f0-9]{64}$/.test(entry.sha256) || !integer(entry.bytes,1) || entry.bytes > 25*1024*1024 || !integer(entry.decodedBytes,1) || !integer(entry.triangles)) fail(`entry ${key}`);
     for(const field of ['residentBytes','transientBytes'])if(entry[field]!==undefined&&!integer(entry[field],1))fail(`entry ${key} ${field}`);
+    if(entry.source){const s=entry.source;if(Object.keys(s).some(k=>!['regionId','world','revision'].includes(k))||!['regionId','world','revision'].every(k=>typeof s[k]==='string'&&s[k])||s.regionId!=='basin'&&!m.regions?.some(r=>r.id===s.regionId))fail(`entry ${key} source`);}
     if(entry.transientBytes!==undefined&&entry.transientBytes<2*entry.decodedBytes+entry.bytes)fail(`entry ${key} transient allowance`);
     if (!Array.isArray(entry.dependencies) || new Set(entry.dependencies).size !== entry.dependencies.length || entry.dependencies.some(d => typeof d !== 'string' || d === key || !Object.hasOwn(m.tiles,d))) fail(`dependencies ${key}`);
     if (entry.range && (!integer(entry.range.offset) || !integer(entry.range.length,1) || entry.range.length !== entry.bytes || entry.range.offset + entry.range.length > 25*1024*1024)) fail('range');
@@ -193,9 +194,9 @@ export function tileEdgeSignatures(pack){
  });
 }
 /** Compare all canonical terrain/contact samples on the common edge, including missing vertices. */
-export function validateTileSeam(a, b) {
+export function validateTileSeam(a, b, {crossSource=false}={}) {
   const am = a.metadata, bm = b.metadata, dx = bm.cell[0]-am.cell[0], dz = bm.cell[1]-am.cell[1];
-  if (am.world !== bm.world || am.revision !== bm.revision || Math.abs(dx)+Math.abs(dz) !== 1) fail('seam neighbours');
+  if (am.world !== bm.world || !crossSource && am.revision !== bm.revision || Math.abs(dx)+Math.abs(dz) !== 1) fail('seam neighbours');
   const at = tileTables(a), bt = tileTables(b);
   const boundary = (m, t, side) => {
     const axis=dx?0:2,samples=boundarySamples(m,t,axis,side*TILE_METRES);

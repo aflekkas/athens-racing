@@ -24,6 +24,7 @@ export class AthensGround{
   return Object.assign(out,c,{surf,water:Math.max(0,-.05-c.y),hump:0,network:true,planeY:c.y});
  }
  resolve(v,dt){
+  this.closures?.resolve(v);for(const e of this.enrichments?.values()||[])e.resolve(v);
   if(this.barriers.resolve(v,this.previous))this.barrierHits++;
   this.previous={x:v.x,y:v.y,z:v.z,yaw:v.yaw}; // each substep sweeps from where the last one ended
   let fx=-Math.sin(v.yaw),fz=-Math.cos(v.yaw),rx=Math.cos(v.yaw),rz=-Math.sin(v.yaw);

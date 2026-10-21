@@ -56,11 +56,11 @@
     "staging": {
       "name": "athens-street-racers-staging",
       "vars": {
-        "ASR_UNIFIED_ROUTES": "syntagma-pilot",
-        "ATHENS_WORLD_MANIFEST": "manifests/6d57b168364cd168f8beb419f864edff1a8d94729e4119745a84597c4ce3ab4a.json"
+        "ASR_UNIFIED_ROUTES": "syntagma-pilot,psychiko-faros",
+        "ATHENS_WORLD_MANIFEST": "manifests/377cd6c880ae85661c44dbec6f974a5f406c41d7e39299aed3c501f6a0d935f3.json"
       },
       "build": {
-        "command": "ASR_BUILD_ENV=staging ASR_UNIFIED_ROUTES=syntagma-pilot node tools/prepare-deploy.mjs"
+        "command": "ASR_BUILD_ENV=staging ASR_UNIFIED_ROUTES=syntagma-pilot,psychiko-faros node tools/prepare-deploy.mjs"
       },
       "routes": [
         {

@@ -1,3 +1,4 @@
+import {exportPsychikoDetail} from './export-psychiko-detail.mjs';
 import {buildRoutes} from './build-routes.mjs';
 import {unifiedRouteConfig} from '../server/route-definitions.mjs';
 // An allowlist keeps server code, tools, credentials and scratch files off the CDN.
@@ -34,12 +35,13 @@ async function copy(path) {
 }
 for (const path of ['index.html', 'style.css', 'robots.txt', 'sitemap.xml', 'src', 'assets', 'data']) await copy(resolve(root, path));
 await bakeWorlds(root, out, PLAYABLE_MAPS);
+await exportPsychikoDetail(root,out);
 // Explicit Wrangler build commands set ASR_BUILD_ENV; unknown deployment IDs remain visibly staging.
 const buildEnvironment = process.env.ASR_BUILD_ENV || process.env.CLOUDFLARE_ENV || 'staging';
-// The pilot's small emitted validation shard is source data; world cell bodies stay in R2.
+// The bounded emitted graph/contact proof shard is source data; world cell bodies stay in R2.
 const routeIds=String(process.env.ASR_UNIFIED_ROUTES||'').split(',').filter(Boolean);
 let routeBuild={index:{routes:[]},server:{routes:[]}};
-if(routeIds.length){const shardPath=resolve(root,'data/routes/validation/syntagma-pilot.inputs.json'),shard=JSON.parse(await readFile(shardPath,'utf8'));const worldPath=resolve(root,'.deploy/route-world-set.json');await writeFile(worldPath,JSON.stringify({revision:shard.worldSetRevision,tiles:shard.cells}));routeBuild=await buildRoutes({world:worldPath,graph:shardPath,routes:resolve(root,'data/routes'),out:resolve(out,'data/routes')});await rm(worldPath);}
+if(routeIds.length){const shardPath=resolve(root,'data/routes/validation/athens.inputs.json'),shard=JSON.parse(await readFile(shardPath,'utf8'));const worldPath=resolve(root,'.deploy/route-world-set.json');await writeFile(worldPath,JSON.stringify({revision:shard.worldSetRevision,tiles:shard.cells}));routeBuild=await buildRoutes({world:worldPath,graph:shardPath,routes:resolve(root,'data/routes'),out:resolve(out,'data/routes')});await rm(worldPath);}
 // Validation evidence and authored definitions never become public cells or editable runtime inputs.
 await rm(resolve(out,'data/routes/validation'),{recursive:true,force:true});
 for(const name of await readdir(resolve(out,'data/routes')).catch(()=>[]))if(name.endsWith('.route.json')||name==='server-catalogue.json')await rm(resolve(out,'data/routes',name));

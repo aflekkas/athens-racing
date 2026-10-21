@@ -120,14 +120,15 @@ export class AthensTrees {
     this._m = new THREE.Matrix4(); this._q = new THREE.Quaternion(); this._e = new THREE.Euler(); this._p = new THREE.Vector3(); this._s = new THREE.Vector3(); this._c = new THREE.Color();
   }
   /** Read a decoded tile: the bake's vegetation rows and the derived street trees (`worldDetail.streetTrees`). */
-  addTile(key, packet) {
+  addTile(key, packet) {for(const _ of this.addTileSteps(key,packet))void _;}
+  *addTileSteps(key, packet) {
     this.removeTile(key);
     const ext = packet.metadata.extensions?.worldDetail, o = packet.metadata.origin, records = [];
     const veg = ext?.vegetation;
     if (veg) { const p = packet.arrays[veg.positionHeight], k = packet.arrays[veg.kind], seed = packet.arrays[veg.seed];
-      for (let i = 0; i < k.length; i++) records.push({ species: speciesOfBakeRow(k[i], seed[i]), x: p[i * 4] + o[0], y: p[i * 4 + 1], z: p[i * 4 + 2] + o[2], height: Math.min(10, Math.max(3, p[i * 4 + 3])), yaw: (seed[i] % 628) / 100, variant: seed[i] % 8 }); }
+      for (let i = 0; i < k.length; i++) {records.push({ species: speciesOfBakeRow(k[i], seed[i]), x: p[i * 4] + o[0], y: p[i * 4 + 1], z: p[i * 4 + 2] + o[2], height: Math.min(10, Math.max(3, p[i * 4 + 3])), yaw: (seed[i] % 628) / 100, variant: seed[i] % 8 });if(i%32===31)yield {stage:'trees'};} }
     if (ext?.streetTrees != null) { const r = packet.arrays[ext.streetTrees];
-      for (let i = 0; i < r.length; i += 5) { const code = r[i + 4] | 0, species = code >> 3, v = code & 7; records.push({ species, coastal:i/5>=r.length/5-(ext.coastalTreeCount||0), x: r[i] + o[0], y: r[i + 1], z: r[i + 2] + o[2], height: BASE[species] * (species === TREE.orange ? .72 + v * .06 : .85 + v * .04), yaw: r[i + 3], variant: v }); } }
+      for (let i = 0; i < r.length; i += 5) { const code = r[i + 4] | 0, species = code >> 3, v = code & 7; records.push({ species, coastal:i/5>=r.length/5-(ext.coastalTreeCount||0), x: r[i] + o[0], y: r[i + 1], z: r[i + 2] + o[2], height: BASE[species] * (species === TREE.orange ? .72 + v * .06 : .85 + v * .04), yaw: r[i + 3], variant: v });if(i%160===155)yield {stage:'trees'}; } }
     this.tiles.set(key, records); this.last.x = Infinity;
   }
   removeTile(key) { if (this.tiles.delete(key)) this.last.x = Infinity; }

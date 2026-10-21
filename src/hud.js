@@ -140,6 +140,7 @@ export class Hud {
     const sc=zoom*W/600,cx=W/2,cy=H*.62;g.setTransform(1,0,0,1,0,0);g.fillStyle='#101b21';g.fillRect(0,0,W,H);g.save();g.translate(cx,cy);g.rotate(st.yaw);g.scale(sc,sc);g.translate(-st.x,-st.z);
     const graph=this.worldRoads?.graph;for(const k of this.worldStreetCache.keys())if(!graph?.owners.has(k))this.worldStreetCache.delete(k);
     for(const [k,owner]of graph?.owners||[]){if(this.worldRoads.stream.tiles.get(k)?.state!=='active')continue;let paths=this.worldStreetCache.get(k);if(!paths){paths=owner.edges.map(id=>graph.edges.get(id)?.value).filter(e=>e&&!(e.flags&8)).map(e=>e.points);this.worldStreetCache.set(k,paths);}g.strokeStyle='#697477';g.lineWidth=2/sc;for(const p of paths){if(!p.some(q=>Math.hypot(q[0]-st.x,q[2]-st.z)<500))continue;g.beginPath();p.forEach((q,i)=>i?g.lineTo(q[0],q[2]):g.moveTo(q[0],q[2]));g.stroke();}}
+    if(!st.free&&st.routeCursor?.offRoute&&st.routeCursor.returnPath?.length){g.save();g.setLineDash([5/sc,5/sc]);g.strokeStyle='#9ca8aa';g.lineWidth=1.5/sc;g.beginPath();g.moveTo(st.x,st.z);for(const p of st.routeCursor.returnPath)g.lineTo(p[0],p[2]);g.stroke();g.restore();}
     if(!st.free)this.routeGuidance?.drawMinimap(g,sc);
     g.restore();if(!st.free)this.routeGuidance?.drawTurnPreview(g,W,H);g.save();g.translate(cx,cy);g.fillStyle='#f5f2e8';g.beginPath();g.moveTo(0,-8);g.lineTo(5,6);g.lineTo(0,3);g.lineTo(-5,6);g.closePath();g.fill();g.restore();
   }
@@ -469,6 +470,12 @@ export class Hud {
     const c = this.el.count; c.textContent = text; c.className = ''; void c.offsetWidth; c.className = go ? 'go' : 'tick';
   }
   message(html, dur = 2.5) { notifications.toast(html,{ms:dur*1000,priority:40}); }
+  routeNotice(nav,active=true){
+    if(active&&nav.notice)notifications.toast(nav.notice,{id:'compiled-route-notice',group:'route-notice',ms:4500,priority:70});
+    if(active&&(nav.offRoute||nav.wrongWay))notifications.post({id:'compiled-route-state',slot:'badge',title:nav.wrongWay?'WRONG WAY':'RETURN TO ROUTE',tone:'info',persistent:true,priority:45});
+    else notifications.dismiss('compiled-route-state');
+    if(!active)notifications.dismiss('compiled-route-notice');
+  }
   // ------------------------------------------------------------------ menu
   showMenu(mode, info) {
     const el = this.el; el.menu.className = mode + (info.win === true ? ' win' : info.win === false ? ' lose' : '');

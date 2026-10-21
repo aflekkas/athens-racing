@@ -5,7 +5,7 @@
     "megara": "195ce8b322f2297034be56c8e38b8899321c2bb3",
     "psychiko": "Current authored-height-preserving base geometry with optional detail Off (height reference 492f14e)"
   },
-  "method": "Earlier Riviera/Penteli/Megara counters retained: their map inputs and geometry are unchanged; shared atlas index rounding changes no resources, topology, culling or passes. Psychiko: production fixed day/night chase/cockpit poses, current course, detail Off/On. SwiftShader; no FPS claims.",
+  "method": "Earlier Riviera/Penteli/Megara counters retained: their map inputs and geometry are unchanged; shared atlas index rounding changes no resources, topology, culling or passes. Psychiko: production fixed day/night chase/cockpit poses, current course, detail Off/On. SwiftShader; no FPS claims. Phase 2 legacy Psychiko remains on the unfiltered branch; a supplemental day/night chase/cockpit detail capture stays within the owner budgets with zero browser errors.",
   "browserErrors": [],
   "sourceHashes": {
     "src/world-detail.js": "3ec3124347d45038dabd6acc6624beff2f53e3e42213323927fb971e1893caab",
@@ -27,7 +27,7 @@
     "src/traffic-passenger-models.js": "7d10c7595114bf448dc2a04fef6fd28735e4cc580db74e47f3381f9ff039e10d",
     "src/road.js": "758c008f3f4a02efe94edd75b5aabcb568dcb477327e21b181cfea0cab052503",
     "src/gantry-legs.js": "6087989ede49581b23984b7dabe70a01fdfdaf668bbd63ef941aad7de6142f4c",
-    "src/maps/psychiko-streetscape.js": "a9fd982adeb839d4207edeb1295a0e3892c5143837f153b411bf124b5cae3c73",
+    "src/maps/psychiko-streetscape.js": "0a2e049788c403b42543bdbf09316cbf550a47ee1685e7f8f6a0835ef35ce20a",
     "src/maps/psychiko-recognition.js": "53e9dc2bac773b763f6ecf64208e6397df7e744b6bacc4bf5b2f9b41a1fe366d"
   },
   "rows": [

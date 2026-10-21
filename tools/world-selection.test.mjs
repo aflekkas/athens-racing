@@ -1,0 +1,22 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {createWorldSelection} from '../src/world-selection.js';import {fixture} from './fixtures/routes/fixture.mjs';import {compileRoute} from '../src/route-compile.js';
+async function fixtureSession(){const f=fixture(),compiled=await compileRoute(f.definition,f.graph,f.contacts),cells=Object.fromEntries(Array.from({length:16},(_,i)=>`${Math.floor(i/4)-1},${i%4-1}`).map(k=>[k,{bytes:100,residentBytes:1000,transientBytes:1000,decodedBytes:100,contactEligible:true,dependencies:[]}])),manifest={revision:compiled.worldSetRevision,tiles:cells},pins=new Set(),tiles=new Map(Object.keys(cells).map(k=>[k,{state:'active',packet:{}}]));let commits=0,block=null,waitResolve;
+ const stream={tiles,capBytes:64*1024*1024,transientCap:64*1024*1024,metrics:{loadedBytes:100},entry:k=>cells[k],pin:()=>{const key=Symbol();pins.add(key);return()=>pins.delete(key);},update(){},activateFrame(){},async spawnAtRoute(){},async teleport(){if(block)await block;},roads:{*anchors(){yield{x:100,y:0,z:400};},safe:()=>true}};
+ const signal=new AbortController(),originalAdd=signal.signal.addEventListener.bind(signal.signal),originalRemove=signal.signal.removeEventListener.bind(signal.signal);let signalListeners=0;signal.signal.addEventListener=(...args)=>{signalListeners++;return originalAdd(...args);};signal.signal.removeEventListener=(...args)=>{signalListeners--;return originalRemove(...args);};
+ const session=createWorldSelection({stream,manifest,signal:signal.signal,makeGround:route=>({route}),safePose:()=>true,onCommit:()=>commits++,waitFrame:()=>new Promise(r=>{waitResolve=r;})});return{session,stream,compiled,pins,signal,get signalListeners(){return signalListeners;},get commits(){return commits;},blockSpawn(p){block=p;},releaseFrame(){waitResolve?.();}};}
+
+test('aborting prepareRoute releases every pin and leaves the committed session route unchanged',async()=>{
+ const f=await fixtureSession();await f.session.prepareRoute(f.compiled);const previous=f.session.route;assert.ok(f.pins.size>0);for(const tile of f.stream.tiles.values())tile.state='loading';const abort=new AbortController(),request=f.session.prepareRoute(f.compiled,{signal:abort.signal});await Promise.resolve();assert.ok(f.pins.size>0);abort.abort();assert.equal(f.pins.size,0,'abort releases pins immediately while the next frame is pending');f.releaseFrame();await assert.rejects(request,/cancelled/);assert.equal(f.session.route,previous);assert.equal(f.commits,1);f.session.dispose();
+});
+
+test('dispose is idempotent, rejects stale work and releases the parent listener and tile subscriptions',async()=>{
+ const f=await fixtureSession();await f.session.prepareRoute(f.compiled);let calls=0;const off=f.session.subscribeTiles({activated:()=>calls++});assert.equal(calls,16);assert.equal(f.session.listenerCount,1);off();off();assert.equal(f.session.listenerCount,0);f.session.subscribeTiles({});assert.equal(f.signalListeners,1);f.session.dispose();f.session.dispose();assert.equal(f.session.listenerCount,0);assert.equal(f.pins.size,0);assert.equal(f.signalListeners,0);await assert.rejects(f.session.prepareRoute(f.compiled),/cancelled/);
+});
+
+test('a stale prepareSpawn cannot replace the route after a newer selection commits',async()=>{
+ const f=await fixtureSession();await f.session.prepareRoute(f.compiled);let resolve;f.blockSpawn(new Promise(r=>resolve=r));const old=f.session.prepareSpawn({x:100,z:400});await Promise.resolve();await f.session.prepareRoute(f.compiled);const current=f.session.route;resolve();await assert.rejects(old,/cancelled/);assert.equal(f.session.route,current);assert.equal(f.commits,2);f.session.dispose();
+});
+
+test('a resident restart keeps the compiled route and its mandatory pins',async()=>{
+ const f=await fixtureSession(),first=await f.session.prepareRoute(f.compiled),count=f.pins.size;assert.ok(count>0);
+ const again=await f.session.prepareRoute(f.compiled,{cars:[{width:2.2,length:5.6}]});assert.equal(again,first);assert.equal(f.pins.size,count);assert.equal(f.session.route,first);f.session.dispose();assert.equal(f.pins.size,0);
+});

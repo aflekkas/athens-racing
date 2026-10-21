@@ -82,7 +82,7 @@ test('fallback refuses oversize payloads and quota failures while retaining an e
 });
 test('interchange rejects bad version, impossible counts, malformed time/bytes and strips untrusted metadata', () => {
   const valid = JSON.parse(encodeGhost(record()));
-  for (const patch of [{ version: 2 }, { frames: 1e9 }, { frames: 0 }, { hz: 30 }, { data: '!!!' }, { data: 'AAAA' }, { time: -1 }, { splits: [null] }, { duration: 4 }, { tracks: [] }]) {
+  for (const patch of [{ version: 3 }, { frames: 1e9 }, { frames: 0 }, { hz: 30 }, { data: '!!!' }, { data: 'AAAA' }, { time: -1 }, { splits: [null] }, { duration: 4 }, { tracks: [] }]) {
     assert.throws(() => decodeGhost(JSON.stringify({ ...valid, ...patch })));
   }
   assert.equal(decodeGhost(JSON.stringify({ ...valid, valid: true, html: '<script>' })).html, undefined);
@@ -96,4 +96,23 @@ test('promoted fleet cars retain their ids through ghost lap recording', () => {
     assert.equal(lap.car, car);
     assert.ok(sampleGhost(lap, .05));
   }
+});
+
+test('v2 recording uses a double origin across large global coordinates and survives render rebasing',()=>{
+ const origin=[31234567.12345,204.23456,-22345678.76543],identity={worldId:'athens',regionId:'basin',routeId:'psychiko-faros',geometryHash:'a'.repeat(64),edition:'world-lanes-v1:test',direction:1,laps:2,projectionId:'athens-v1',setupKey:'exact-setup'};
+ const r=new Recorder([{car:'z4'}],{...meta,...identity});for(let i=0;i<=20;i++)r.tick(i? .05:0,[{...state(i*.05),position:origin.map((v,k)=>v+(k===0?i*.1234:k===2?-i*.2345:0))}]);
+ const lap=decodeGhost(encodeGhost(r.finish())),p=sampleGhost(lap,.5);assert.deepEqual(lap.recordingOrigin,origin);assert.equal(lap.routeId,identity.routeId);assert.ok(Math.abs(p.position[0]-origin[0]-1.234)<.0051);assert.ok(Math.abs(p.position[2]-origin[2]+2.345)<.0051);
+ for(const renderOrigin of [{x:0,z:0},{x:31234048,z:-22345728}]){const local=p.position.map((v,k)=>v-(k===0?renderOrigin.x:k===2?renderOrigin.z:0));assert.ok(Math.abs(local[0]+renderOrigin.x-p.position[0])<1e-8);assert.ok(Math.abs(local[2]+renderOrigin.z-p.position[2])<1e-8);}
+ const raw=JSON.parse(encodeGhost(lap));raw.recordingOrigin[0]=null;assert.throws(()=>decodeGhost(JSON.stringify(raw)),/coordinate origin/);
+});
+
+test('original v1 absolute-coordinate ghosts remain readable without rewriting their storage bytes',async()=>{
+ const fresh=record(1),v1={...fresh,version:1};delete v1.recordingOrigin;const view=new DataView(v1.data.buffer,v1.data.byteOffset,v1.data.byteLength);
+ for(let f=0;f<v1.frames;f++)for(let k=0;k<3;k++)view.setInt32(f*GHOST_STRIDE+k*4,view.getInt32(f*GHOST_STRIDE+k*4,true)+Math.round(fresh.recordingOrigin[k]*100),true);
+ const storage=memoryStorage(),raw=encodeGhost(v1),key='paraliaki.ghost.'+meta.eventId+':'+meta.car;storage.setItem(key,raw);const store=new GhostStore({indexedDB:null,storage}),read=await store.load(meta.eventId,meta.car);assert.equal(read.version,1);assert.equal(storage.getItem(key),raw);assert.ok(Math.hypot(...sampleGhost(read,.5).position.map((v,k)=>v-state(.5).position[k]))<.05);
+});
+
+test('historical Faros ghost aliases use the frozen geometry and whole-lap endpoints without repacking originals',async()=>{
+ const storage=memoryStorage(),lap={...record(1),eventId:'pb:old-hashed-setup',type:'sprint',trackVersion:'75a42bf0',routeKey:'0>11465'},raw=encodeGhost(lap),key='paraliaki.ghost.'+lap.eventId+':'+lap.car;storage.setItem(key,raw);const store=new GhostStore({indexedDB:null,storage}),history=await store.historical('psychiko-faros');assert.equal(history.length,1);assert.equal(history[0].identity.edition,'legacy-faros-v3');assert.equal(history[0].identity.laps,2);assert.equal(storage.getItem(key),raw);assert.deepEqual(history[0].data,lap.data);
+ const {historicalGhostIdentity}=await import('../src/route-migrations.js');assert.equal(historicalGhostIdentity({...lap,trackVersion:'garden-v2'}),null);assert.equal(historicalGhostIdentity({...lap,routeKey:'0>11500'}),null);
 });

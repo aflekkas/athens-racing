@@ -223,7 +223,7 @@ export class PsychikoStreetscape {
   groundY(x, z) { const n = this.network?.sample(x, z); return n ? n.y : this.height(x, z); }
   buildCell(kind, key) {
     const m = new Mesher(2048), items = (kind === 'props' ? this.props : this.canopy).get(key) || [];
-    for (const r of items) if(r.kind!=='car')this[r.kind](m, r);
+    for (const r of items) if(r.kind!=='car'&&(!this.activeAt||this.activeAt(r.x??r.A?.x??r.a?.x??0,r.z??r.A?.z??r.a?.z??0)))this[r.kind](m, r);
     if (!m.v) return null;
     const mesh = new THREE.Mesh(m.geometry(), this.materials[kind]); mesh.name = 'psychiko-streetscape:' + kind + ':' + key;
     mesh.matrixAutoUpdate = false; mesh.updateMatrixWorld(true); this.stats.builds++; return mesh;
@@ -280,7 +280,7 @@ export class PsychikoStreetscape {
     this.materials.parking.userData.far.value=far;
     let visible=0;
     for(const mesh of this.parking){let n=0;
-      for(const r of mesh.userData.parkingRecords)if(Math.hypot(r.x-p.x,r.z-p.z)<far+4){mesh.setMatrixAt(n,r.matrix);mesh.setColorAt(n,C.set(CAR_COLORS[r.color]));mesh.geometry.attributes.aCarShape.setX(n++,r.shape);}
+      for(const r of mesh.userData.parkingRecords)if(Math.hypot(r.x-p.x,r.z-p.z)<far+4&&(!this.activeAt||this.activeAt(r.x,r.z))){if(this.streamed)r.matrix.elements[13]=this.groundY(r.x,r.z)+.04;mesh.setMatrixAt(n,r.matrix);mesh.setColorAt(n,C.set(CAR_COLORS[r.color]));mesh.geometry.attributes.aCarShape.setX(n++,r.shape);}
       mesh.count=n;mesh.visible=n>0;mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;mesh.geometry.attributes.aCarShape.needsUpdate=true;visible+=n;
     }
     this.stats.parkingActive=visible;
@@ -382,7 +382,7 @@ export class PsychikoStreetscape {
     this.materials.props.userData.far.value = farProps; this.materials.trees.userData.far.value = farTrees;
     const jump = Math.hypot(p.x - this.last.x, p.z - this.last.z); if (jump < 8) return;
     this.updateParking(p,farProps);
-    let budget = jump > 150 ? Infinity : 2; // a teleport builds everything now; driving adds at most two cells per pass
+    let budget = jump > 150&&!this.streamed ? Infinity : 2; // a teleport builds everything now; driving adds at most two cells per pass
     const want = new Set();
     for (const [kind, size, far] of [['props', 256, farProps], ['trees', 320, farTrees]]) {
       const source = kind === 'props' ? this.props : this.canopy, r = Math.ceil(far / size) + 1, cx = Math.floor(p.x / size), cz = Math.floor(p.z / size);

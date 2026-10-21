@@ -81,3 +81,9 @@ test('optional World detail validates facade rows, stable seeds and half-open ve
  ext.version=2;assert.throws(()=>validateWorldTile(p),/version/);ext.version=1;
  p.arrays[ext.buildings.detailSeed]=new Uint32Array(0);assert.throws(()=>validateWorldTile(p),/building row count/);
 });
+
+test('composed entries retain immutable source identity and explicit cross-source seams still require exact boundaries',async()=>{
+ const {validateWorldManifest}=await import('../src/world-tile-format.js'),source={regionId:'basin',world:'athens',revision:'old'},entry={url:'tile.gz',sha256:'0'.repeat(64),bytes:1,decodedBytes:1,triangles:0,dependencies:[],source};const m={tileVersion:1,tileMetres:512,world:'athens',revision:'release',projection:{lat0:37.98,lon0:23.73,mlat:111320,mlon:87700},spawn:{cell:[0,0],anchor:'spawn'},tiles:{'0,0':entry}};
+ assert.equal(validateWorldManifest(m).tiles['0,0'].source.revision,'old');entry.source={...source,regionId:'unknown'};assert.throws(()=>validateWorldManifest(m),/source/);entry.source={...source,override:true};assert.throws(()=>validateWorldManifest(m),/source/);entry.source=source;
+ const a=fixture(),b=fixture([1,0]);b.metadata.revision='other';assert.throws(()=>validateTileSeam(a,b),/neighbours/);assert.equal(validateTileSeam(a,b,{crossSource:true}),true);b.arrays[b.metadata.tables.coarseHeights][0]=.01;assert.throws(()=>validateTileSeam(a,b,{crossSource:true}),/cracked seam/);assert.equal(b.metadata.revision,'other');
+});

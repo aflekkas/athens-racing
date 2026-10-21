@@ -1,13 +1,16 @@
+import {migrateRouteRecords,routeHistory,routeEdition} from '../src/route-migrations.js';
 import { resultContext, validResult, resultEntry, leaderboardVersion, boardKey, filterEntries, canonicalResult, canonicalEntries } from '../server/leaderboard-policy.mjs';
 import { LEGACY_CAR_IDS } from '../src/car-ids.js';
 
-export function createSqlLeaderboard(sql, maps, cars) {
+export function createSqlLeaderboard(sql, maps, cars,{transactionSync=fn=>fn()}={}) {
   sql.exec(`CREATE TABLE IF NOT EXISTS times (
     key TEXT PRIMARY KEY, board TEXT NOT NULL, mapId TEXT NOT NULL, version TEXT NOT NULL,
     eventId TEXT NOT NULL, car TEXT NOT NULL, traffic INTEGER NOT NULL,
     time REAL NOT NULL, at INTEGER NOT NULL, entry TEXT NOT NULL
   ); CREATE INDEX IF NOT EXISTS times_board ON times(board, time);
     CREATE INDEX IF NOT EXISTS times_lookup ON times(mapId, version, eventId, car, traffic, time, at);`);
+  sql.exec('CREATE TABLE IF NOT EXISTS route_record_history (id TEXT PRIMARY KEY, entry TEXT NOT NULL); CREATE TABLE IF NOT EXISTS route_record_migrations (version INTEGER PRIMARY KEY)');
+  if(maps.routes?.size&&![...sql.exec('SELECT version FROM route_record_migrations WHERE version = 2')].length)transactionSync(()=>{for(const record of migrateRouteRecords([...sql.exec('SELECT entry FROM times')].map(r=>JSON.parse(r.entry)),{source:'do-sqlite'})){if(record.identity?.compatibility==='historical')sql.exec('INSERT OR IGNORE INTO route_record_history VALUES (?, ?)',record.migration.id,JSON.stringify(record));}sql.exec('INSERT OR IGNORE INTO route_record_migrations VALUES (2)');});
   // Owner decision 2026-10-20 (docs/OWNER-DECISIONS.md): rows stored under a removed trim move to that model's top trim, lose their trim
   // fields, and a driver's duplicates on one board keep the fastest time. Runs once; later starts find nothing to change.
   const legacy = Object.keys(LEGACY_CAR_IDS).filter(id => !cars.has(id)), marks = legacy.map(() => '?').join(',');
@@ -33,6 +36,7 @@ export function createSqlLeaderboard(sql, maps, cars) {
     return { saved: true, best: entry.time };
   };
   const list = (filters = {}) => {
+    if(filters.routeId){if(String(filters.history)==='true')return filterEntries(routeHistory([...sql.exec('SELECT entry FROM route_record_history')].map(r=>JSON.parse(r.entry)),filters.routeId),{...filters,mapId:undefined});const c=maps.routes?.get(filters.routeId);return c?filterEntries([...sql.exec('SELECT entry FROM times WHERE mapId = ? AND version = ? ORDER BY time, at','athens',routeEdition(c))].map(r=>JSON.parse(r.entry)).filter(e=>e.routeId===c.id),filters):[];}
     const mapId = filters.mapId || 'riviera';
     // Apply JSON setup filters before limiting; legacy rows have no setup and only match unfiltered views.
     const rows = [...sql.exec('SELECT entry FROM times WHERE mapId = ? AND version = ? ORDER BY time, at', mapId, leaderboardVersion(mapId, maps.get(mapId)?.track.version || ''))];

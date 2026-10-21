@@ -89,10 +89,10 @@ export class WorldTileRoads {
     const first=this.graph.edges.get(a.edge).value,last=this.graph.edges.get(b.edge).value;
     // Same edge backwards requires a legal directed loop, never a shortcut.
     const station=(e,p)=>{let total=0,best=Infinity,s=0;for(let i=1;i<e.points.length;i++){const u=e.points[i-1],v=e.points[i],dx=v[0]-u[0],dz=v[2]-u[2],l=Math.hypot(dx,dz),f=Math.max(0,Math.min(1,((p.x-u[0])*dx+(p.z-u[2])*dz)/(l*l||1))),d=Math.hypot(p.x-u[0]-dx*f,p.z-u[2]-dz*f);if(d<best){best=d;s=total+l*f;}total+=l;}return s;};
-    if(first.id===last.id&&station(first,b)>=station(first,a))return {edges:[first.id],seconds:(station(first,b)-station(first,a))/((first.speedKph||50)/3.6)};
+    if(first.id===last.id&&station(first,b)>=station(first,a))return {edges:[first.id],start:a,end:b,seconds:(station(first,b)-station(first,a))/((first.speedKph||50)/3.6)};
     const path=this.graph.route(first.to,last.from,{initialEdge:first.id,terminalEdge:last});
     if(!path||!this.graph.legal(path.edges.at(-1)||first.id,last))return null;
-    return {edges:[first.id,...path.edges,last.id],seconds:path.seconds+(first.length-station(first,a))/((first.speedKph||50)/3.6)+station(last,b)/((last.speedKph||50)/3.6)};
+    return {edges:[first.id,...path.edges,last.id],start:a,end:b,seconds:path.seconds+(first.length-station(first,a))/((first.speedKph||50)/3.6)+station(last,b)/((last.speedKph||50)/3.6)};
   }
   /** Low-density traffic advances only over loaded, legal directed fragments.
    * Unknown continuation and failed footprint checks stop the car in place.

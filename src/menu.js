@@ -342,7 +342,7 @@ export class Menu {
         ${C.option({ icon: 'car', title: 'GARAGE', desc: `${GARAGE_CARS.length} cars · city to super`, act: 'garage', cls: 'option--tile' })}
         ${C.option({ icon: 'settings', title: 'SETTINGS', desc: 'Sound, graphics, driving and controls', act: 'settings', cls: 'option--tile' })}`, foot: Release.titleExtras(this), hints: [['select', 'SELECT'], ['confirm', 'OK'], ['garage', 'GARAGE']] });
   }
-  r_routes(d){return C.sheetList({variant:'flow',kick:'ATHENS',title:'SELECT ROUTE',rows:d.catalogue.map(r=>C.option({icon:'flag',title:esc(r.name),desc:`${fmtDist(r.lengthM)} · SOLO · TRAFFIC OFF`,act:'unifiedRoute',attrs:{'data-route':r.id}})).join(''),hints:[['select','SELECT'],['confirm','RACE'],['back','BACK']]});}
+  r_routes(d){return C.sheetList({variant:'flow',kick:'ATHENS',title:'SELECT ROUTE',rows:d.catalogue.map(r=>C.option({icon:'flag',title:esc(r.name),desc:`${fmtDist(r.lengthM)} · ${r.events[0]?.laps||1} LAP${(r.events[0]?.laps||1)>1?'S':''} · ${r.events[0]?.rivals||0} RIVALS`,act:'unifiedRoute',attrs:{'data-route':r.id}})).join(''),hints:[['select','SELECT'],['confirm','RACE'],['back','BACK']]});}
   r_leaderboards(d) { return renderLeaderboards(this, d); }
   // RACE is solo (owner 2026-10-18): two artwork-led cards fill the screen; multiplayer lives behind the title's MULTIPLAYER tile.
   r_mode() {
@@ -393,7 +393,7 @@ export class Menu {
   /** Session facts; Quick Race has no event medals or event records. Best times show as one line, only once set. */
   eventSummary(e, r) {
     const n = rivalCount(e), free = e.type === 'free';
-    const mapName = (MAPS.find((m) => m.id === this.h.ctx().mapId) || MAPS[0]).name;
+    const mapName = e.routeId?this.h.ctx().route.compiled.definition.name:(MAPS.find((m) => m.id === this.h.ctx().mapId) || MAPS[0]).name;
     const facts = free ? [['MAP', esc(mapName), 'map'], ['ROAD', TRAFFIC(e.traffic ?? 1), 'traffic-cone']] :
       [['DISTANCE', fmtDist(r.len), 'route'], ['FIELD', n ? `${n + 1} CARS` : 'JUST YOU', 'users'], ['ROAD', r.closed ? 'CLOSED CIRCUIT' : TRAFFIC(e.traffic ?? 1), 'traffic-cone']];
     const pb = free ? null : this.h.personalBests?.(e, r), T = (x) => this.h.fmtTime(x.time);
@@ -427,11 +427,11 @@ export class Menu {
       if (f.key === 'weather') rows.push(C.segmented({ key: 'weather', label: 'WEATHER', icon: cur.weather === 'rain' ? 'cloud-rain' : cur.weather === 'overcast' ? 'cloud' : 'sun', value: cur.weather, dflt: f.dflt, attrs: A, options: WEATHERS.map(([v, l]) => [v, l, v === 'rain' ? 'cloud-rain' : v === 'overcast' ? 'cloud' : 'sun']) }));
     }
     // Fewer steps (owner 2026-10-20): the screen opens on CHOOSE CAR, so Enter goes straight on; the options are one press up.
-    const note = '';
-    const map = MAPS.find((m) => m.id === ctx.mapId) || MAPS[0];
-    return C.stageInspector({ variant: 'setup', cls: 'scr--setup', kick: def.quick ? 'QUICK RACE' : `${TYPES[def.type].label} · ${esc((MAPS.find((m) => m.id === ctx.mapId) || MAPS[0]).name)}`, title: def.objectiveMode || def.type === 'free' ? 'SESSION SETUP' : 'RACE SETUP',
+    const note = def.pilot?'Staging pilot: rivals, traffic, police and alternate conditions are unavailable.':'';
+    const map = def.routeId?{name:ctx.route.compiled.definition.name}:MAPS.find((m) => m.id === ctx.mapId) || MAPS[0];
+    return C.stageInspector({ variant: 'setup', cls: 'scr--setup', kick: def.quick ? 'QUICK RACE' : `${TYPES[def.type].label} · ${esc(map.name)}`, title: def.objectiveMode || def.type === 'free' ? 'SESSION SETUP' : 'RACE SETUP',
       hints: [['updown', 'SELECT'], ['leftright', 'CHANGE'], ['confirm', 'OK'], ['back', 'BACK']],
-      stage: `${map.preview ? `<img class="setup__map" src="${esc(map.preview)}" alt="Route preview: ${esc(map.name)}">` : ''}${this.eventSummary(runDef, r, runDef.id)}`, inspectorTitle: '', inspector: `${rows.filter(row => /data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('')}${C.button({ label: this.data.advanced ? 'HIDE ADVANCED OPTIONS' : 'ADVANCED OPTIONS', icon: 'sliders-horizontal', act: 'setupAdvanced', variant: 'ghost', size: 'sm' })}${this.data.advanced ? rows.filter(row => !/data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('') : ''}`, note, actions: C.button({ label: 'CHOOSE CAR', icon: 'car', iconRight: 'chevron-right', variant: 'primary', act: 'setupGo', attrs: { 'data-default': '' } }), inspectorHead: C.button({ label: 'DEFAULTS', icon: 'rotate-ccw', variant: 'ghost', size: 'sm', act: 'setupReset', disabled: !custom }) });
+      stage: `${map.preview ? `<img class="setup__map" src="${esc(map.preview)}" alt="Route preview: ${esc(map.name)}">` : ''}${this.eventSummary(runDef, r, runDef.id)}${def.routeId?renderTrackTimes(this,this.data,{mapId:'athens',routeId:def.routeId,eventId:def.baseId||def.id}):''}`, inspectorTitle: '', inspector: `${rows.filter(row => /data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('')}${C.button({ label: this.data.advanced ? 'HIDE ADVANCED OPTIONS' : 'ADVANCED OPTIONS', icon: 'sliders-horizontal', act: 'setupAdvanced', variant: 'ghost', size: 'sm' })}${this.data.advanced ? rows.filter(row => !/data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('') : ''}`, note, actions: C.button({ label: 'CHOOSE CAR', icon: 'car', iconRight: 'chevron-right', variant: 'primary', act: 'setupGo', attrs: { 'data-default': '' } }), inspectorHead: C.button({ label: 'DEFAULTS', icon: 'rotate-ccw', variant: 'ghost', size: 'sm', act: 'setupReset', disabled: !custom }) });
   }
   startSetup() {
     const def = this.setupDef(), runDef = applySetup(def, loadSetup(this.setupKey()), { closed: this.isClosed() });

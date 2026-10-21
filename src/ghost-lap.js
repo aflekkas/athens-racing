@@ -1,6 +1,7 @@
+import {historicalGhostIdentity} from './route-migrations.js';
 // Personal-best ghost samples and storage. Legacy v1 files remain readable. No race playback.
 // v1 little-endian, frame-major: 44 bytes/car at 20 Hz (317 KB per six-minute solo run).
-export const GHOST_HZ = 20, GHOST_STRIDE = 44, GHOST_VERSION = 1;
+export const GHOST_HZ = 20, GHOST_STRIDE = 44, GHOST_VERSION = 2;
 export const MAX_GHOST_BYTES = 6 * 1024 * 1024;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 // Keep overlapping cars out of the cockpit/chase sightline; reach full translucency at 10 metres.
@@ -52,7 +53,7 @@ function read(v, o) {
 export class Recorder {
   constructor(tracks, metadata = {}, { hz = GHOST_HZ, maxSeconds = 720 } = {}) {
     if (!tracks.length || tracks.length > 9) throw new Error('Expected one to nine recorded cars');
-    this.tracks = tracks.map(t => ({ ...t })); this.metadata = { ...metadata }; this.hz = hz;
+    this.tracks = tracks.map(t => ({ ...t })); this.metadata = { ...metadata }; this.origin=null; this.hz = hz;
     this.maxFrames = Math.min(Math.floor(maxSeconds * hz) + 1, Math.floor(MAX_GHOST_BYTES / (tracks.length * GHOST_STRIDE)));
     this.capacity = Math.min(1024, this.maxFrames); this.data = new Uint8Array(this.capacity * tracks.length * GHOST_STRIDE);
     this.view = new DataView(this.data.buffer); this.frames = 0; this.elapsed = 0; this.previous = null; this.truncated = false;
@@ -64,7 +65,7 @@ export class Recorder {
       const data = new Uint8Array(this.capacity * this.tracks.length * GHOST_STRIDE); data.set(this.data);
       this.data = data; this.view = new DataView(data.buffer);
     }
-    states.forEach((s, i) => write(this.view, (this.frames * this.tracks.length + i) * GHOST_STRIDE, s)); this.frames++;
+    this.origin ||= states[0].position.map(Number);states.forEach((s, i) => write(this.view, (this.frames * this.tracks.length + i) * GHOST_STRIDE, {...s,position:s.position.map((v,k)=>v-this.origin[k])})); this.frames++;
   }
   // Called from the bounded physics step, never requestAnimationFrame or the visual wheel update.
   tick(dt, states) {
@@ -81,14 +82,14 @@ export class Recorder {
   finish(metadata = {}) {
     return { format: 'paraliaki-replay', version: GHOST_VERSION, hz: this.hz, stride: GHOST_STRIDE,
       tracks: this.tracks, frames: this.frames, duration: Math.max(0, (this.frames - 1) / this.hz),
-      ...this.metadata, ...metadata, truncated: this.truncated, data: this.data.slice(0, this.frames * this.tracks.length * GHOST_STRIDE) };
+      ...this.metadata, ...metadata, recordingOrigin:this.origin||[0,0,0], truncated: this.truncated, data: this.data.slice(0, this.frames * this.tracks.length * GHOST_STRIDE) };
   }
 }
 export function sampleGhost(lap, time, track = 0) {
   if (track < 0 || track >= lap.tracks.length || !lap.frames) return null;
   const at = clamp(time * lap.hz, 0, lap.frames - 1), i = Math.floor(at), j = Math.min(i + 1, lap.frames - 1);
   const v = new DataView(lap.data.buffer, lap.data.byteOffset, lap.data.byteLength), n = lap.tracks.length;
-  return interpolate(read(v, (i * n + track) * GHOST_STRIDE), read(v, (j * n + track) * GHOST_STRIDE), at - i);
+  const pose=interpolate(read(v,(i*n+track)*GHOST_STRIDE),read(v,(j*n+track)*GHOST_STRIDE),at-i);if(lap.version===2)pose.position=pose.position.map((v,k)=>v+lap.recordingOrigin[k]);return pose;
 }
 function base64(bytes) {
   if (typeof Buffer !== 'undefined') return Buffer.from(bytes).toString('base64');
@@ -98,20 +99,22 @@ export function encodeGhost(lap) { return JSON.stringify({ ...lap, data: base64(
 export function decodeGhost(text) {
   if (typeof text !== 'string' || text.length > MAX_GHOST_BYTES * 1.4 + 65536) throw new Error('Ghost file is too large');
   const r = JSON.parse(text);
-  if (r.format !== 'paraliaki-replay' || r.version !== GHOST_VERSION || r.stride !== GHOST_STRIDE || r.hz !== GHOST_HZ ||
+  if (r.format !== 'paraliaki-replay' || ![1,GHOST_VERSION].includes(r.version) || r.stride !== GHOST_STRIDE || r.hz !== GHOST_HZ ||
     !Array.isArray(r.tracks) || !r.tracks.length || r.tracks.length > 9 || !Number.isInteger(r.frames) || r.frames < 1 ||
     typeof r.eventId !== 'string' || typeof r.car !== 'string' || typeof r.routeKey !== 'string' ||
     !Number.isFinite(r.duration) || Math.abs(r.duration - (r.frames - 1) / r.hz) > .001 ||
     !Number.isFinite(r.time) || r.time < 0 || r.time > 86400 || !Array.isArray(r.splits) || r.splits.length > 100 ||
     r.splits.some(t => !Number.isFinite(t) || t < 0) || typeof r.data !== 'string' || !/^[A-Za-z0-9+/]*={0,2}$/.test(r.data) ||
     r.frames * r.tracks.length * GHOST_STRIDE > MAX_GHOST_BYTES) throw new Error('Invalid or unsupported ghost file');
+  if(r.version===2&&(!Array.isArray(r.recordingOrigin)||r.recordingOrigin.length!==3||!r.recordingOrigin.every(Number.isFinite)))throw new Error('Invalid ghost coordinate origin');
+  if(r.routeId&&(!['worldId','regionId','geometryHash','routeId','edition','projectionId','setupKey'].every(k=>typeof r[k]==='string'&&r[k].length>0&&r[k].length<8192)||![1,-1].includes(r.direction)||!Number.isInteger(r.laps)||r.laps<1||r.laps>20))throw new Error('Invalid ghost route identity');
   r.data = typeof Buffer !== 'undefined' ? new Uint8Array(Buffer.from(r.data, 'base64')) : Uint8Array.from(atob(r.data), c => c.charCodeAt(0));
   if (r.data.length !== r.frames * r.tracks.length * GHOST_STRIDE) throw new Error('Ghost data length mismatch');
   // Render/storage metadata is allow-listed; imported files never contribute arbitrary result fields.
   return { format: r.format, version: r.version, stride: r.stride, hz: r.hz, frames: r.frames, duration: r.duration,
     eventId: r.eventId.slice(0, 100), car: r.car.slice(0, 100), routeKey: r.routeKey.slice(0, 100), time: r.time,
     splits: r.splits, tracks: r.tracks.map(t => ({ car: String(t.car || '').slice(0, 100), name: String(t.name || '').slice(0, 100) })),
-    trackVersion: String(r.trackVersion || '').slice(0, 100), data: r.data, truncated: !!r.truncated };
+    trackVersion: String(r.trackVersion || '').slice(0, 100),...(['sprint','timetrial'].includes(r.type)?{type:r.type}:{}),...(r.version===2?{recordingOrigin:r.recordingOrigin}:{}),...(r.routeId?Object.fromEntries(['worldId','regionId','geometryHash','routeId','edition','direction','laps','projectionId','setupKey'].map(k=>[k,r[k]])):{}), data: r.data, truncated: !!r.truncated };
 }
 export const ghostKey = (eventId, car) => `${eventId}:${car}`;
 export class GhostStore {
@@ -154,6 +157,7 @@ export class GhostStore {
     }
     this.cache.set(key, lap); return { saved: true, best: lap, persistent };
   }
+  async historical(routeId){return (await this.all()).flatMap(lap=>{const identity=historicalGhostIdentity(lap);return identity?.routeId===routeId?[{...lap,identity}]:[];});}
   async all() {
     try { for (const r of await this.operation('readonly', s => s.getAll())) this.cache.set(ghostKey(r.eventId, r.car), r); } catch {}
     try { for (let i = 0; i < (this.storage?.length || 0); i++) { const key = this.storage.key(i); if (key?.startsWith('paraliaki.ghost.')) { try { const r = decodeGhost(this.storage.getItem(key)); if (!this.cache.has(ghostKey(r.eventId, r.car))) this.cache.set(ghostKey(r.eventId, r.car), r); } catch {} } } } catch {}

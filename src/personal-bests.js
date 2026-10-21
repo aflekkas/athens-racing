@@ -1,5 +1,6 @@
 import { matchesRecord } from './leaderboard-records.js';
 import { canonicalCarId } from './car-ids.js';
+import {migrateRouteRecord,competitiveRecordKey} from './route-migrations.js';
 // Personal records are versioned separately from the event medal/leaderboard store.
 // Only a completed, normally driven run can enter this local board.
 const STORAGE_KEY = 'paraliaki.personalBests.v1';
@@ -9,6 +10,7 @@ const storage = () => { try { return globalThis.localStorage || fallback; } catc
 const station = s => Math.round(Number(s || 0) * 1000) / 1000;
 export function personalBestSetup({ mapId, def = {}, route = {}, car, carSpec = {}, conditions = {}, assists = {} }) {
   return {
+    ...(def.routeId?{worldId:def.worldId,routeId:def.routeId,geometryHash:def.geometryHash,edition:def.edition,policeLevel:def.rules?.policeLevel||'normal',busted:def.rules?.busted!==false,signals:def.rules?.signals===true}:{}),
     map: mapId || def.mapId || 'riviera', event: def.baseId || String(def.id || 'quick').split('~')[0],
     type: def.type || 'sprint', from: station(route.s0), to: station(route.s1), direction: route.dir || 1,
     laps: route.laps || 1, car: car || def.car || 'unknown',
@@ -27,9 +29,9 @@ const legacyBestKey = setup => JSON.stringify(personalBestSetup({
 }));
 // One board per car: the car id is the only car field in the key (names are display metadata). Trim fields no longer exist.
 // A setup that still names a removed trim reads and writes its model's top-trim board.
-export const exactBestKey = setup => legacyBestKey(canonicalSetup(setup));
+export const exactBestKey = setup => setup.routeId?competitiveRecordKey({routeId:setup.routeId,edition:setup.edition,eventId:setup.event,car:setup.car,setup:canonicalSetup(setup)}):legacyBestKey(canonicalSetup(setup));
 // Route board intentionally spans cars, event names, weather, traffic and aids.
-export const routeBestKey = s => JSON.stringify([s.map, s.from, s.to, s.direction, s.laps]);
+export const routeBestKey = s => JSON.stringify(s.routeId?[s.routeId,s.edition,s.direction,s.laps]:[s.map, s.from, s.to, s.direction, s.laps]);
 export const bestGhostEvent = setup => 'personal-best:' + exactBestKey(setup);
 // Owner decision 2026-10-20 (docs/OWNER-DECISIONS.md): a record set with a removed trim belongs to that model's top trim, and the trim
 // fields are gone. Idempotent; where two records land on one board the faster time wins.
@@ -57,21 +59,29 @@ function canonicalStore(d) {
   return { ...d, exact, routes };
 }
 function read(st) { try { const d = JSON.parse(st.getItem(STORAGE_KEY) || '{}'); return d?.version === 1 && d.exact && d.routes ? canonicalStore(d) : { version: 1, exact: {}, routes: {} }; } catch { return { version: 1, exact: {}, routes: {} }; } }
+const ROUTE_STORAGE_KEY='paraliaki.personalBests.v2';
+function readRoutes(st){let d;try{d=JSON.parse(st.getItem(ROUTE_STORAGE_KEY)||'{}');}catch{}if(d?.version!==2||!d.exact||!d.routes||!d.history)d={version:2,exact:{},routes:{},history:{}};
+  const legacy=read(st);for(const [key,record]of Object.entries(legacy.exact)){const r=migrateRouteRecord(record,{source:'personal-bests-v1',key});if(r.identity)d.history[r.migration.id]=r;}
+  // Event counters are independent from the personal-best index. Keep their original storage keys and all fields.
+  if(typeof st.key==='function')for(let i=0;i<st.length;i++){const key=st.key(i);if(!/^paraliaki\.events\.psychiko-(race|tt)(?:\.|$)/.test(key||'')||/\.[a-f0-9]{64}$/.test(key))continue;try{const record=JSON.parse(st.getItem(key));if(!record||typeof record!=='object')continue;const r=migrateRouteRecord({...record,eventId:key.match(/psychiko-(?:race|tt)/)[0],mapId:'psychiko'},{source:'event-store',key});if(r.identity)d.history[r.migration.id]=r;}catch{}}
+  try{st.setItem(ROUTE_STORAGE_KEY,JSON.stringify(d));}catch{}return d;
+}
+export function getRouteHistoricalTimes(routeId,st=storage()){return Object.values(readRoutes(st).history).filter(r=>r.identity?.routeId===routeId).sort((a,b)=>(a.time??a.bestTime??Infinity)-(b.time??b.bestTime??Infinity));}
 const valid = record => record && Number.isFinite(record.time) && record.time > 0;
 export function getPersonalBests(setup, st = storage()) {
-  const d = read(st), exact = d.exact[exactBestKey(setup)], route = d.routes[routeBestKey(setup)];
-  return { exact: valid(exact) ? exact : null, route: valid(route) ? route : null };
+  const d = setup.routeId?readRoutes(st):read(st), exact = d.exact[exactBestKey(setup)], route = d.routes[routeBestKey(setup)];
+  return { exact: valid(exact) ? exact : null, route: valid(route) ? route : null,...(setup.routeId?{history:Object.values(d.history).filter(r=>r.identity?.routeId===setup.routeId)}:{}) };
 }
 export function recordPersonalBest(setup, result, st = storage()) {
   const before = getPersonalBests(setup, st);
   if (!result.valid || result.time == null || !Number.isFinite(result.time) || result.time <= 0 || result.busted || result.retired || result.wrecked) return { ...before, newBest: false, delta: null, eligible: false };
-  const d = read(st), key = exactBestKey(setup), routeKey = routeBestKey(setup);
+  const d = setup.routeId?readRoutes(st):read(st), key = exactBestKey(setup), routeKey = routeBestKey(setup);
   const newBest = !before.exact || result.time < before.exact.time;
   const entry = { time: result.time, car: setup.car, date: result.date || new Date().toISOString(), setup: { ...setup } };
   if (newBest) d.exact[key] = entry;
   if (!before.route || result.time < before.route.time) d.routes[routeKey] = entry;
   let persistent = false;
-  try { st.setItem(STORAGE_KEY, JSON.stringify(d)); persistent = true; } catch {}
+  try { st.setItem(setup.routeId?ROUTE_STORAGE_KEY:STORAGE_KEY, JSON.stringify(d)); persistent = true; } catch {}
   return { exact: newBest ? entry : before.exact, route: d.routes[routeKey], newBest, delta: before.exact ? result.time - before.exact.time : null, eligible: true, persistent };
 }
 export function personalBestLabel(pb) {
@@ -84,7 +94,7 @@ export function getMapPersonalBest(mapId, st = storage()) {
 
 // Exact records contain every setup PB. The route index is a fallback for older stores.
 export function listPersonalBests(filters = {}, st = storage()) {
-  const d = read(st), records = new Map();
+  const legacy=read(st),v2=readRoutes(st),d={exact:{...legacy.exact,...v2.exact},routes:{...legacy.routes,...v2.routes}},records = new Map();
   for (const [key, raw] of Object.entries(d.exact)) {
     if (!valid(raw)) continue;
     let setup = raw.setup;

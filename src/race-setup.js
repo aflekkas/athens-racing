@@ -34,6 +34,7 @@ const baseLaps = (def) => Math.max(1, Math.floor(def.laps || 1));
 
 /** what this event lets you change: [{ key, dflt }] in display order */
 export function setupFields(def, { closed = false } = {}) {
+  if(def.pilot)return [];
   const out = [];
   if (def.type === 'sprint') out.push({ key: 'rivals', dflt: rivalCount(def), min: 0, max: MAX_RIVALS });
   // Saved race-setup keys: `police` (boolean), `policeLevel` (POLICE_LEVELS id) and `busted` (can the police arrest you).
@@ -42,7 +43,7 @@ export function setupFields(def, { closed = false } = {}) {
     { key: 'policeLevel', dflt: isPoliceLevel(def.rules?.policeLevel) ? def.rules.policeLevel : 'normal' }, { key: 'busted', dflt: def.rules?.busted !== false });
   if (!closed || def.type === 'sprint' || def.type === 'free' || isDrivingMode(def)) out.push({ key: 'traffic', dflt: def.traffic ?? 1, levels: trafficLevels(def.traffic ?? 1) });
   if (closed && def.type !== 'free' && !isDrivingMode(def)) out.push({ key: 'laps', dflt: baseLaps(def), min: 1, max: MAX_LAPS });
-  if (!['pursuit', 'free'].includes(def.type) && !isDrivingMode(def) && canReverse(def.mapId)) out.push({ key: 'reverse', dflt: false });
+  if (!['pursuit', 'free'].includes(def.type) && !isDrivingMode(def) && (def.routeId?def.allowReverse:canReverse(def.mapId))) out.push({ key: 'reverse', dflt: false });
   out.push({ key: 'time', dflt: def.conditions?.time || 'afternoon' }, { key: 'weather', dflt: def.conditions?.weather || 'clear' });
   return out;
 }

@@ -42,12 +42,13 @@ class GhostLap {
     if (this.ctx.online() || !['timetrial', 'sprint'].includes(p.type)) return;
     const run = p.run, routeKey = `${Math.round(run.r.s0)}>${Math.round(run.r.s1)}`;
     this.recorder = new Recorder([{ car: p.car, name: 'YOU' }],
-      { eventId: p.eventId, car: p.car, routeKey, trackVersion: this.ctx.trackVersion(), type: p.type, pbEventId: this.ctx.G.bestSetup ? bestGhostEvent(this.ctx.G.bestSetup) : null });
+      { ...(this.ctx.routeIdentity?.()||{}),eventId: p.eventId, car: p.car, routeKey, trackVersion: this.ctx.trackVersion(), type: p.type, pbEventId: this.ctx.G.bestSetup ? bestGhostEvent(this.ctx.G.bestSetup) : null });
     this.recorder.tick(0, this.capture()); this.startToken = (this.startToken || 0) + 1;
     const token = this.startToken;
     if (!settings.ghostEnabled) return;
     this.store.load(this.recorder.metadata.pbEventId || p.eventId, p.car).then(r => {
       if (token !== this.startToken || !this.recorder || !settings.ghostEnabled || !r || r.routeKey !== routeKey || r.trackVersion !== this.ctx.trackVersion()) return;
+      const identity=this.ctx.routeIdentity?.();if(identity&&(['worldId','regionId','geometryHash','routeId','edition','direction','laps','projectionId','setupKey'].some(k=>r[k]!==identity[k])||r.version!==2))return;
       this.ghostLap = r; this.buildGhost(r.car);
     });
   }
@@ -95,7 +96,7 @@ class GhostLap {
     const { G } = this.ctx;
     if (this.ghost && this.ghostLap && settings.ghostEnabled && G.state === 'race') {
       const t = this.recorder?.elapsed || 0, root = this.ghost.model.root;
-      applyState(this.ghost.model, sampleGhost(this.ghostLap, t));
+      const state=sampleGhost(this.ghostLap,t),origin=this.ctx.origin?.()||{x:0,z:0};state.position[0]-=origin.x;state.position[2]-=origin.z;applyState(this.ghost.model,state);
       this.ghost.mat.opacity = ghostOpacity(root.position.distanceTo(this.ctx.player().model.root.position));
       root.visible = t <= this.ghostLap.duration && this.ghost.mat.opacity > .001;
     } else if (this.ghost) this.ghost.model.root.visible = false;

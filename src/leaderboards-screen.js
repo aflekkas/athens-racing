@@ -3,7 +3,7 @@ import { MAPS } from './map-catalog.js';
 import { getEvents } from './events.js';
 import { CARS } from './cars.js';
 import { inGarage } from './car-catalog.js';
-import { listPersonalBests } from './personal-bests.js';
+import {getRouteHistoricalTimes, listPersonalBests } from './personal-bests.js';
 import { getLeaderboard } from './leaderboard.js';
 import { matchesRecord, recordEvent, carLabel, routeId, routeLabel, setupLabels, recordDate, formatRecordTime } from './leaderboard-records.js';
 const { esc } = C;
@@ -31,19 +31,20 @@ export function renderTrackTimes(menu, d, filters) {
   else if (state.error) global = `<p>${esc(state.error)}</p>${C.button({ label: 'TRY AGAIN', act: 'trackTimesRetry', size: 'sm' })}`;
   else global = state.entries.length ? state.entries.map((r, i) => renderBestRecord(r, { rank: i + 1, global: true, compact: true })).join('') : '<p class="muted">No times yet. Be the first.</p>';
   queueMicrotask(() => loadTrackTimes(menu, d, state, filters));
-  return `${personal}${C.panel('TOP 3', global, { attrs: { 'aria-live': 'polite', 'aria-busy': !!state.loading } })}`;
+  const history=filters.routeId?[...getRouteHistoricalTimes(filters.routeId),...(state.history||[])]:[];
+  return `${personal}${C.panel('TOP 3',global,{attrs:{'aria-live':'polite','aria-busy':!!state.loading}})}${filters.routeId?C.panel('HISTORICAL TIMES',history.length?history.map(r=>{const time=r.time??r.bestTime;return renderBestRecord({...r,time},{title:`${(r.identity?.edition||'Historical course').toUpperCase()} · ${formatRecordTime(time)}`});}).join(''):'<p class="muted">Earlier Faros and Psychiko times stay in history. The current road course has a separate edition.</p>'):''}`;
 }
 async function loadTrackTimes(menu, d, state, filters) {
-  if (menu.screen !== 'mapConfirm' || menu.data !== d || d.trackTimes !== state || state.requested) return;
+  if (!['mapConfirm','setup'].includes(menu.screen) || menu.data !== d || d.trackTimes !== state || state.requested) return;
   state.requested = true;
   try {
-    const entries = await getLeaderboard({ ...filters, limit: 3 });
+    const entries = await getLeaderboard({ ...filters, limit: 3 });if(filters.routeId)state.history=await getLeaderboard({...filters,mapId:undefined,history:true,limit:100});
     state.entries = entries.filter(r => matchesRecord(r, filters)).sort((a, b) => a.time - b.time).slice(0, 3);
   } catch (error) { state.error = error.message; }
   finally {
     state.loading = false;
     // An abandoned request cannot repaint another track, setup or the full board.
-    if (menu.screen === 'mapConfirm' && menu.data === d && d.trackTimes === state) menu.refresh();
+    if (['mapConfirm','setup'].includes(menu.screen) && menu.data === d && d.trackTimes === state) menu.refresh();
   }
 }
 export function renderLeaderboards(menu, d) {

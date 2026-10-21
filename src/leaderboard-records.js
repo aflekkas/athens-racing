@@ -7,11 +7,11 @@ export const recordEvent = r => r.setup?.event || r.eventId || 'unknown';
 export const recordCar = r => canonicalCarId(r.setup?.car || r.car);
 export function matchesRecord(r, filters = {}) {
   const s = recordSetup(r);
-  return (!filters.mapId || recordMap(r) === filters.mapId) &&
+  return (!filters.routeId||(r.routeId||s.routeId||r.identity?.routeId)===filters.routeId)&&(!filters.edition||(r.edition||s.edition||r.identity?.edition)===filters.edition)&&(!filters.mapId || recordMap(r) === filters.mapId) &&
     (!filters.eventId || recordEvent(r) === filters.eventId) &&
     (!filters.route || routeId(r) === filters.route) &&
     (!filters.car || recordCar(r) === canonicalCarId(filters.car)) &&
-    ['weather', 'tc', 'abs', 'steering', 'gearbox'].every(k => filters[k] === undefined || filters[k] === '' || String(s[k]) === String(filters[k])) &&
+    ['time','weather', 'tc', 'abs', 'steering', 'gearbox'].every(k => filters[k] === undefined || filters[k] === '' || String(s[k]) === String(filters[k])) &&
     (filters.traffic === undefined || (typeof filters.traffic === 'boolean' ? (s.traffic !== undefined ? s.traffic > 0 : r.traffic) === filters.traffic : s.traffic === filters.traffic));
 }
 export const routeId = r => JSON.stringify([recordEvent(r), r.setup?.from ?? r.routeKey ?? null, r.setup?.to ?? null, r.setup?.direction ?? null, r.setup?.laps ?? null]);

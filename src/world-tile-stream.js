@@ -37,7 +37,7 @@ export class WorldTileStream {
     this.nearRing=nearRing;this.safetyRing=safetyRing;this.lookaheadSeconds=lookaheadSeconds;this.activationMs=activationMs;this.now=now;this.retryMs=retryMs;
     this.tiles=new Map();this.pins=new Map();this.wanted=new Map();this.origin={x:0,z:0};this.generation=0;this.disposed=false;
     this.residentBytes=0;this.reservedBytes=0;this.transientBytes=0;this.inflight=0;
-    this.metrics={loadedBytes:0,evictions:0,failures:0,peakResidentBytes:0,peakReservedBytes:0,peakTransientBytes:0,peakJSBytes:0,peakGPUBytes:0,maxActivationMs:0,activationLongTasks:0,p95ActivationMs:0,p95FetchDecodeSeconds:0,activationFrameMs:[],fetchDecodeMs:[]};
+    this.metrics={loadedBytes:0,evictions:0,failures:0,peakResidentBytes:0,peakReservedBytes:0,peakTransientBytes:0,peakJSBytes:0,peakGPUBytes:0,maxActivationMs:0,activationLongTasks:0,p95ActivationMs:0,p95FetchDecodeSeconds:0,activationFrameMs:[],fetchDecodeMs:[],activationStepMax:{}};
     this.spawnRelease=pinSpawn?this.pin('spawn',manifest.spawn.cell.join(',')):null;
   }
   entry(key){return this.manifest.tiles[key];}
@@ -98,7 +98,7 @@ export class WorldTileStream {
       this.metrics.peakTransientBytes=Math.max(this.metrics.peakTransientBytes,this.transientBytes);
       this.metrics.peakReservedBytes=Math.max(this.metrics.peakReservedBytes,this.residentBytes+this.reservedBytes);
       tile.started=this.now();
-      const job={url:new URL(entry.url,this.baseURL).href,entry,world:this.manifest.world,revision:this.manifest.revision,cell:key.split(',').map(Number)};
+      const job={url:new URL(entry.url,this.baseURL).href,entry,world:entry.source?.world||this.manifest.world,revision:entry.source?.revision||this.manifest.revision,cell:key.split(',').map(Number)};
       Promise.resolve().then(()=>this.load(job,controller.signal)).then(packet=>{
         if(this.disposed||this.tiles.get(key)!==tile)return;
         if(!Number.isSafeInteger(packet.bytes)||packet.bytes<0||packet.bytes>reserved)throw new Error('Tile exceeded reservation');
@@ -135,7 +135,7 @@ export class WorldTileStream {
         do{
           const step=tile.build.steps.next();
           if(step.done){tile.handle=tile.build.commit();tile.state='active';tile.used=this.now();}
-          const duration=this.now()-at;
+          const duration=this.now()-at,stage=step.done?'commit':step.value?.stage||'adapter';this.metrics.activationStepMax[stage]=Math.max(this.metrics.activationStepMax[stage]||0,duration);
           this.metrics.maxActivationMs=Math.max(this.metrics.maxActivationMs,duration);if(duration>50)this.metrics.activationLongTasks++;
           if(step.done)break;
           at=this.now();
