@@ -166,19 +166,25 @@ function attachLevels(near,far){
   let detailed=null;near.setLOD=distance=>{const next=Number(distance)<(detailed?65:55);if(next===detailed)return;detailed=next;for(const o of nearNodes)o.visible=next;for(const o of farNodes)o.visible=!next;near.lodLevel=next?0:1;};
   near.setLOD(0);return near;
 }
-export function fleetModel(type,color,rng,opts={}){
+export function* fleetModelSteps(type,color,rng,opts={}){
   const parked=!!opts.parked,plate=nextRegistration(!!type.taxi),p=parked?parkedPlate(plate):{material:makePlateMaterial(plate)};
+  yield {stage:'plate'};
   const lowOnly=parked||!!opts.low,t=template(type,lowOnly,parked),car=cloneTemplate(t,color,p.material,p.uv);car.plate=plate;car.spec.id=type.id;car.spec.engineZone=type.catalogueCar?.engineZone||(type.bus?'rear':'front');
-  if(!lowOnly){const far=cloneTemplate(template(type,true,false),color,p.material);attachLevels(car,far);}
+  yield {stage:'near-model'};
+  if(!lowOnly){const far=cloneTemplate(template(type,true,false),color,p.material);yield {stage:'far-model'};attachLevels(car,far);}
   else{car.lodLevel=1;car.setLOD=()=>{};}
   car.setLights=on=>{car.lightsOn=!!on;car.root.traverse(o=>{if(!o.isMesh||!o.userData.damagePart?.startsWith('light_f'))return;const m=o.material;if(m.userData.damageBroken)return;if(m.emissive){m.emissive.set(on?'#fff1df':'#182129');m.emissiveIntensity=on?5:0;}});};
+  yield {stage:'model-levels'};
   car.damageCheap=true;damageSystem(car);
+  yield {stage:'damage-hooks'};
   installTrafficCabin(car,type);
   if(parked)car.makeNear=()=>{
     const n=cloneTemplate(template(type,false,true),color,p.material,p.uv);n.plate=plate;n.root.position.copy(car.root.position);n.root.quaternion.copy(car.root.quaternion);n.root.scale.copy(car.root.scale);installTrafficCabin(n,type);return n;
   };
   return car;
 }
+
+export function fleetModel(type,color,rng,opts={}){const build=fleetModelSteps(type,color,rng,opts);let step;do{step=build.next();}while(!step.done);return step.value;}
 
 function bake(models,origin){
   const group=new THREE.Group(),buckets=new Map();

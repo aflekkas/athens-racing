@@ -21,7 +21,7 @@ import { ROAD } from './road.js';
 import { LANE_W } from './map.js';
 import { SURF } from './ground.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { bakeParkedFleet } from './traffic-fleet.js';
+import { bakeParkedFleet, fleetModelSteps } from './traffic-fleet.js';
 import { damageIncrement, equivalentBarrierSpeed } from './damage-math.js';
 
 const POOL = 66;
@@ -96,10 +96,10 @@ function indicatorMat() { return new THREE.MeshStandardMaterial({ color: '#4a2a0
 
 export class Traffic {
   constructor(scene, route, data, { poolSize = POOL, policePoolSize = 8, roadVehiclesOnly = false, deferBuild = false, buildProxies = true } = {}) {
-    this.build=this.buildPool(scene,route,data,{poolSize,policePoolSize,roadVehiclesOnly,buildProxies});
+    this.build=this.buildPool(scene,route,data,{poolSize,policePoolSize,roadVehiclesOnly,buildProxies,deferBuild});
     if(!deferBuild)for(const _ of this.build){}
   }
-  *buildPool(scene,route,data,{poolSize,policePoolSize,roadVehiclesOnly,buildProxies}) {
+  *buildPool(scene,route,data,{poolSize,policePoolSize,roadVehiclesOnly,buildProxies,deferBuild}) {
     this.scene = scene; this.route = route; this.data = data;
     const poolCount=Math.max(1,Math.min(POOL,Math.floor(poolSize)||POOL));
     this.rng = new RNG(4242);
@@ -115,7 +115,7 @@ export class Traffic {
       const fixed = ['bus', 'bus', 'bus', 'taxi', 'taxi', 'taxi', 'taxi', 'golf', 'corolla', 'golf', 'corolla', 'delivery', 'delivery', 'delivery', 'delivery'][i];
       if (fixed && byId[fixed] && (!roadVehiclesOnly || spawnTypes.includes(byId[fixed]))) type = byId[fixed];
       yield {type};
-      const m = trafficModel(type, this.rng.pick(type.colors), this.rng);
+      const color=this.rng.pick(type.colors),m = deferBuild ? (yield* fleetModelSteps(type,color,this.rng)) : trafficModel(type,color,this.rng);
       const indL = indicatorMat(), indR = indicatorMat();
       // headlight flash (a driver warning you off): its own material per car, dark until used
       const flash = new THREE.MeshStandardMaterial({ color: '#202020', emissive: '#fff6e0', emissiveIntensity: 0, roughness: 0.3 });
@@ -139,7 +139,7 @@ export class Traffic {
     for (let k = 0; k < Math.max(0,Math.min(8,policePoolSize)); k++) {
       const moto = k >= 6, type = byId[moto ? 'police_moto' : 'police'] || { ...(moto ? byId.moto : byId.taxi_superb || byId.sedan), id: moto ? 'police_moto' : 'police', police: true, taxi: false, colors: ['#f4f5f6'], w: 0 };
       yield {type};
-      const m = trafficModel(type, this.rng.pick(type.colors), this.rng);
+      const color=this.rng.pick(type.colors),m = deferBuild ? (yield* fleetModelSteps(type,color,this.rng)) : trafficModel(type,color,this.rng);
       if (!m.setStrobe) lightBar(m, type);
       const indL = indicatorMat(), indR = indicatorMat(), flash = new THREE.MeshStandardMaterial({ color: '#202020', emissive: '#fff6e0', emissiveIntensity: 0, roughness: 0.3 });
       if (!type.scooter) for (const [mat, sx] of [[indL, -1], [indR, 1]]) for (const z of [-1, 1]) { const b = new THREE.Mesh(indGeo, mat); b.position.set(sx * type.wid * 0.47, 0.72, z * type.len * 0.5); m.body.add(b); }
