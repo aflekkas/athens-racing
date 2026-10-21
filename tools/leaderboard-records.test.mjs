@@ -20,7 +20,7 @@ test('shared historical cards display only recorded car, time, date and known pa
   const partial=renderBestRecord({...record,setup:{tc:false,abs:true,weather:'rain',police:false,steering:'unknown'}},{historical:true,title});
   assert.match(partial,/TC off/);assert.match(partial,/ABS on/);assert.match(partial,/RAIN/);assert.match(partial,/Police off/);assert.doesNotMatch(partial,/unknown|Steering|Gearbox/i);
  }
- assert.doesNotMatch(renderBestRecord({time:90},{historical:true,title:'Earlier course · 1:30.00'}),/Unknown car|Date unknown/);
+ for(const record of [{time:90},{time:90,car:'unknown'},{time:90,carName:'UNKNOWN CAR'}])assert.doesNotMatch(renderBestRecord(record,{historical:true,title:'Earlier course · 1:30.00'}),/unknown/i);
 });
 import { recordPersonalBest } from '../src/personal-bests.js';
 const tick = () => new Promise(resolve => setImmediate(resolve));

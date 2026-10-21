@@ -17,7 +17,7 @@ export function renderBestRecord(r, { rank, global = false, title, compact = fal
   if (compact) return C.listRow({ title: `${rank ? `#${rank} · ` : ''}${esc(r.name || 'DRIVER')}`, desc: esc(carLabel(r, CARS)), meta: esc(formatRecordTime(r.time)), focusable: false, go: false });
   const heading = title || `#${rank} · ${formatRecordTime(r.time)}`, car = carLabel(r, CARS), date = recordDate(r);
   return C.panel(esc(heading), `<div class="lb-record">
-    ${global ? `<b>${esc(r.name || 'DRIVER')}</b>` : ''}${car !== 'Unknown car' ? `<b>${esc(car)}</b>` : ''}
+    ${global ? `<b>${esc(r.name || 'DRIVER')}</b>` : ''}${!/^unknown(?: car)?$/i.test(car.trim()) ? `<b>${esc(car)}</b>` : ''}
     ${historical ? '' : `<span class="muted">${esc(recordEvent(r).replace(/[-_]/g, ' ').toUpperCase())} · ${esc(routeLabel(r))}</span>`}
     ${setupLabels(r).map(line => `<span>${esc(line)}</span>`).join('')}
     </div>`, { icon: 'timer', cls: 'lb-entry', right: date === 'Date unknown' ? '' : `<span class="muted">${esc(date)}</span>` });
