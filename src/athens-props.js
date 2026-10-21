@@ -49,10 +49,10 @@ export function propParts(){
   add(9,3.4,.5,3.4,0,.25,0,'#b7b8b2',{segments:8});add(9,3,.08,3,0,.5,0,'#5f8da0',{segments:8});add(9,.4,1.8,.4,0,1.2,0,'#cfcdc4',{segments:6});add(9,1.5,.2,1.5,0,2.1,0,'#b7b8b2',{segments:8});
   // monument: plinth, column, cap
   add(10,1.5,1,1.5,0,.5,0,'#d8d5cb');add(10,.55,2.6,.55,0,2.3,0,'#e2dfd5');add(10,.9,.35,.9,0,3.75,0,'#d8d5cb');
-  // parked car, 4.3 x 1.8 x 1.4 m, nose toward +z: a body with a lower bonnet and a lower boot (the steps), a low glasshouse (glass band) under a roof, wheels, head and tail lights;
-  // the paint arrives through the instance colour
-  add(11,1.8,.62,2.3,0,.59,-.1,'#ffffff');add(11,1.78,.5,1.15,0,.53,1.57,'#ffffff');add(11,1.78,.56,.85,0,.56,-1.72,'#ffffff');add(11,1.52,.36,1.95,0,1.08,-.15,'#26323a');add(11,1.46,.06,1.65,0,1.29,-.15,'#ffffff');
-  for(const x of [-.9,.9])for(const z of [-1.35,1.35])add(11,.22,.62,.62,x,.31,z,'#17191b');
+  // parked car, 4.3 x 1.8 x 1.43 m, nose toward +z, on the ground at y = 0 (its row stands it on the highest ground under its wheels): wheels 0.62 m tall under a body whose sill is 17 cm off the
+  // ground, a lower bonnet and a lower boot (the steps), a glasshouse of 50 cm (glass band) under a roof, head and tail lights; the paint arrives through the instance colour
+  add(11,1.74,.70,2.3,0,.52,-.1,'#ffffff');add(11,1.72,.56,1.15,0,.45,1.57,'#ffffff');add(11,1.72,.62,.85,0,.48,-1.72,'#ffffff');add(11,1.52,.5,1.95,0,1.12,-.15,'#26323a');add(11,1.46,.06,1.65,0,1.4,-.15,'#ffffff');
+  for(const x of [-.83,.83])for(const z of [-1.35,1.35])add(11,.26,.62,.62,x,.31,z,'#17191b');
   for(const x of [-.55,.55]){add(11,.42,.14,0,x,.6,2.151,'#f4f0d8',{quad:1});add(11,.4,.14,0,x,.62,-2.151,'#b3261e',{quad:-1});}
   // pedestrian-crossing sign: post, blue plate, white pedestrian block
   add(12,.06,2.3,.06,0,1.15,0,grey);add(12,.62,.62,.04,0,2.1,0,'#2a5a9c');add(12,.3,.34,.05,0,2.1,0,'#f4f2ec');add(12,.14,.14,.05,0,2.28,0,'#2a5a9c');
