@@ -72,3 +72,25 @@ test('distant rivals follow compiled occurrences for two laps, pin no corridor a
 test('minimap return path ends at the earned rejoin point within its final edge',async()=>{
  const {returnRoutePoints}=await import('../src/route-navigation.js'),g=fixture().graph,p=returnRoutePoints({edges:['a','b'],start:{x:100,z:300},end:{x:250,z:100}},g);assert.deepEqual(p[0],[100,0,300]);assert.deepEqual(p.at(-1),[250,0,100]);assert.ok(p.every(v=>v[0]<=250));
 });
+
+test('lane centres of every published route stay on route, including regional hairpins and both directions',async()=>{
+ const {mkdtemp,writeFile,rm}=await import('node:fs/promises'),{tmpdir}=await import('node:os'),{join}=await import('node:path'),{readRouteInputs}=await import('./route-input.mjs');
+ const dir=await mkdtemp(join(tmpdir(),'athens-route-lanes-'));
+ try{const shard=JSON.parse(await readFile(new URL('../data/routes/validation/athens.inputs.json',import.meta.url)));await writeFile(join(dir,'world.json'),JSON.stringify({revision:shard.worldSetRevision,tiles:shard.cells}));
+ const input=await readRouteInputs({world:join(dir,'world.json'),graph:new URL('../data/routes/validation/athens.inputs.json',import.meta.url)});
+ for(const id of ['syntagma-pilot','riviera-coast','psychiko-faros','penteli-hill','penteli-descent','megara-club']){
+  const def=JSON.parse(await readFile(new URL(`../data/routes/${id}.route.json`,import.meta.url))),r=new RouteRuntime(await compileRoute(def,input.graph,input.contacts,{closures:new Set(def.closureIds||[])}));
+  const surfaces=new Set([...input.graph.edges.values()].map(({value:e})=>e.layer+'|'+e.surface));
+  r.contactAllowed=(q,p)=>q.layer===p.layer&&(q.surfaceId===p.surfaceId||surfaces.has(p.layer+'|'+p.surfaceId));
+  for(const side of [-1,1]){const nav=new RouteNavigation(r);let time=0;
+   for(let s=0;s<r.length;s+=5){const f=r.frame(s),u=side*Math.min(2,(side<0?f.leftM:f.rightM)/2),p=r.point(s,u),state=nav.update({dt:.9,position:p,heading:f.yaw,speed:20/3.6,earnedS:s,time:time+=.9,contact:{y:p.y,layer:f.layer,surfaceId:f.surfaceId}});
+    assert.equal(state.offRoute,false,`${id} lane ${side} at ${s}: ${JSON.stringify(state)}`);assert.equal(state.notice,null,`${id} lane ${side} at ${s}`);
+   }
+  }
+ }
+ }finally{await rm(dir,{recursive:true,force:true});}
+});
+test('navigation reacquires a legal lane after recovery beyond its hint without granting course progress',async()=>{
+ const f=fixture(),r=new RouteRuntime(await compileRoute(f.definition,f.graph,f.contacts)),nav=new RouteNavigation(r),s=600,p=r.point(s),fr=r.frame(s);
+ for(let i=0;i<10;i++){const state=nav.update({dt:.1,position:p,heading:fr.yaw,speed:5,earnedS:10,time:i*.1,contact:{y:p.y,layer:fr.layer,surfaceId:fr.surfaceId}});assert.equal(state.offRoute,false);assert.equal(state.notice,null);assert.equal(state.rejoinS,10);assert.ok(Math.abs(state.s-s)<.01);}
+});

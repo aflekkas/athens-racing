@@ -75,7 +75,7 @@ test('keyboard and controller action edges fire once, including short key taps a
 
 test('standard face buttons, shoulders, D-pad and held look-back expose the expected actions', () => {
   const { input, pads } = setup(), pad = gamepad(); pads([pad]); input.setNitrousEnabled(true);
-  for (const [button, action] of [[0, 'handbrake'], [1, 'nitro'], [2, 'nitro'], [3, 'camera'], [4, 'shiftDown'], [5, 'shiftUp'], [8, 'restart'], [9, 'pause'], [11, 'lookBack'], [12, 'up'], [13, 'down'], [14, 'left'], [15, 'right']]) {
+  for (const [button, action] of [[0, 'handbrake'], [1, 'nitro'], [2, 'nitro'], [3, 'camera'], [4, 'shiftDown'], [5, 'shiftUp'], [8, 'cameraPosition'], [9, 'pause'], [11, 'lookBack'], [12, 'up'], [13, 'down'], [14, 'left'], [15, 'right']]) {
     pad.buttons[button].value = 1; input.update(1 / 60); assert.equal(input.state[action], true, action);
     input.update(1 / 60); if (['handbrake', 'nitro', 'lookBack'].includes(action)) assert.equal(input.state[action], true); else assert.equal(input.state[action], false);
     if (action === 'lookBack') assert.ok(!input.actions.includes('lookBack'));
@@ -88,7 +88,7 @@ test('standard face buttons, shoulders, D-pad and held look-back expose the expe
 test('gamepad rebinding waits for neutral and does not dispatch the captured press', () => {
   const { input, pads, key } = setup(), pad = gamepad(); pads([pad]);
   input.capture = { kind: 'gamepad', action: 'restart', ready: false }; pad.buttons[0].value = 1;
-  input.update(1 / 60); assert.deepEqual(input.bindings.gamepad.restart, ['b8']); assert.equal(input.actions.length, 0);
+  input.update(1 / 60); assert.deepEqual(input.bindings.gamepad.restart, []); assert.equal(input.actions.length, 0);
   pad.buttons[0].value = 0; input.update(1 / 60); pad.buttons[3].value = 1; input.update(1 / 60);
   assert.deepEqual(input.bindings.gamepad.restart, ['b3']); assert.equal(input.actions.length, 0);
   input.update(1 / 60); assert.equal(input.state.restart, false);

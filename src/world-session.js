@@ -4,6 +4,7 @@ import {roadLayersConnect} from './world-tile-graph.js';
 import {worldRecoveryTarget} from './world-recovery.js';
 import {createWorldSelection} from './world-selection.js';
 import {estimateSceneMemory} from './asset-metrics.js';
+import {worldResourceUsage,worldResourcesFit} from './world-resource-usage.js';
 // Single owner for streamed Athens contacts, graph, scene layers and interest. No driving loop.
 import * as THREE from 'three';
 import {settings,onSettings} from './settings.js';
@@ -78,7 +79,15 @@ export async function createWorldSession({renderer,scene,resources,progress=()=>
 
  const safeAbort=()=>{if(disposed||signal?.aborted)throw Error('World selection cancelled');};
  const safePose=(p,{halfWidth=1.1,halfLength=2.8}={})=>{if([...enrichments.values()].some(e=>!e.safe(p,{halfWidth,halfLength})))return false;if(session.closures?.safe(p,{halfWidth,halfLength})===false)return false;if(!roads.safe({...p,edge:p.edgeId||p.edge,surfaceId:p.surfaceId||stream.contact(p.x,p.z,{referenceY:p.y,layer:p.layer,requiredFlags:1})?.surfaceId},{halfWidth,halfLength,connected:true})||!barriers.safe(p,{halfWidth,halfLength}))return false;for(const a of [-halfLength+halfWidth,0,halfLength-halfWidth])if(obstacles.contact(p.x-Math.sin(p.yaw)*a,p.y,p.z-Math.cos(p.yaw)*a,halfWidth+.1))return false;return true;};
- const inventory=()=>{const sceneBytes=estimateSceneMemory(scene);let tileJS=0,tileGPU=0;for(const t of stream.tiles.values())if(t.packet){tileJS+=t.packet.jsBytes||0;tileGPU+=t.packet.gpuBytes||0;}const size=renderer.getDrawingBufferSize(new THREE.Vector2()),js=Math.max(performance.memory?.usedJSHeapSize||0,tileJS+sceneBytes.geometryBytes+sceneBytes.textureBytes)+regionalScenery.cachedBytes,gpu=sceneBytes.gpuBytes+tileGPU+size.x*size.y*20+16*1024*1024;session.metrics.maxEstimatedJSBytes=Math.max(session.metrics.maxEstimatedJSBytes||0,js);session.metrics.maxEstimatedGPUBytes=Math.max(session.metrics.maxEstimatedGPUBytes||0,gpu);const result={jsBytes:js,gpuBytes:gpu,streamResidentBytes:stream.residentBytes,decoderReservationBytes:stream.transientBytes};if(js>resources.jsBytes||gpu>resources.gpuBytes)throw Object.assign(Error('World resource admission exceeded'),{detail:result});return result;};
+ const inventory=()=>{
+  const sceneBytes=estimateSceneMemory(scene);let tileJS=0,tileGPU=0;
+  for(const t of stream.tiles.values())if(t.packet){tileJS+=t.packet.jsBytes||0;tileGPU+=t.packet.gpuBytes||0;}
+  const size=renderer.getDrawingBufferSize(new THREE.Vector2());
+  const usage=worldResourceUsage({scene:sceneBytes,tileJS,tileGPU,regionalBytes:regionalScenery.cachedBytes,width:size.x,height:size.y,heapBytes:performance.memory?.usedJSHeapSize||0});
+  session.metrics.maxEstimatedJSBytes=Math.max(session.metrics.maxEstimatedJSBytes||0,usage.jsBytes);session.metrics.maxEstimatedGPUBytes=Math.max(session.metrics.maxEstimatedGPUBytes||0,usage.gpuBytes);
+  const result={...usage,streamResidentBytes:stream.residentBytes,decoderReservationBytes:stream.transientBytes};
+  if(!worldResourcesFit(usage,resources))throw Object.assign(Error('World resource admission exceeded'),{detail:result});return result;
+ };
  const session={inventory,safePose,
  warmOptional(){if(route?.isWorldRoute)stream.update({...route.compiled.startPose,routeInterest:plan?.routeInterest||[]});},
  async prepareEnrichments(point){for(const spec of manifest.enrichments||[]){if(enrichments.has(spec.kind)||point.x<spec.bounds[0]-400||point.x>spec.bounds[2]+400||point.z<spec.bounds[1]-400||point.z>spec.bounds[3]+400)continue;if(spec.kind!=='psychiko-streetscape-v1')throw Error('Unknown world detail recipe');const response=await fetch(spec.url,{signal});if(!response.ok)throw Error('World detail unavailable');const data=await response.json();safeAbort();if(data.sourceMapSha256!==spec.sourceMapSha256)throw Error('World detail release mismatch');const {WorldPsychikoDetail}=await import('./world-psychiko-detail.js');safeAbort();enrichments.set(spec.kind,new WorldPsychikoDetail(session,scene,data));}},

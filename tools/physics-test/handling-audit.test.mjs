@@ -4,13 +4,16 @@ import assert from 'node:assert/strict';
 import { CARS, route } from './handling.mjs';
 import { driveCorner, routes } from './driver-feel.mjs';
 import { Vehicle } from '../../src/physics.js';
+import { driveCorner as driveQuarterCorner } from './corner-bench.mjs';
 const ids=['huracan','carrera','e36_m3','golf_gti','mini','superb_4x4'];
 test('full gamepad request stays within useful front slip on Megara without a drift latch',()=>{
  const megara=routes.find(r=>r.def.id==='megara').route;
  for(const id of ids){
   const r=driveCorner(CARS.find(c=>c.id===id),megara,60,{device:'gamepad'});
   assert.ok(r.trace.every(t=>t.driftLatch===0),id);
-  assert.ok(r.trace.every(t=>t.frontWheels.every(w=>Math.abs(w.sy)<=1.15)),`${id}: front beyond useful slip`);
+  // The softer guard permits a brief 1.15–1.25x slip request while still
+  // preventing the 2x-plus front scrub of the unaided rack.
+  assert.ok(r.trace.every(t=>t.frontWheels.every(w=>Math.abs(w.sy)<=1.26)),`${id}: front beyond useful slip`);
   assert.ok(r.achievedG>.88,`${id}: planted cornering`);
  }
 });
@@ -51,8 +54,25 @@ test('Megara hairpin does not release the slip guard for same-yaw understeer',()
  for(const id of ids)for(const device of ['keyboard','gamepad']){
   const spec=CARS.find(c=>c.id===id),kmh=Math.sqrt(radius*spec.grip*9.81*.8)*3.6;
   const r=driveCorner(spec,megara,kmh,{device,bend,seconds:1.5});
-  assert.ok(r.trace.every(t=>t.frontWheels.every(w=>Math.abs(w.sy)<=1.15)),`${id}/${device}: outside front scrub`);
+  assert.ok(r.trace.every(t=>t.frontWheels.every(w=>Math.abs(w.sy)<=1.26)),`${id}/${device}: outside front scrub`);
   assert.ok(r.trace.every(t=>t.driftLatch===0),`${id}/${device}: ordinary corner latched drift`);
   assert.ok(r.achievedG>.8,`${id}/${device}: lost useful hairpin grip`);
+ }
+});
+
+test('brisk 40 m corner keeps steering authority; a ploughing full-stick hairpin still gets caught',()=>{
+ const megara=routes.find(r=>r.def.id==='megara').route;
+ const bend={s:1772.647222987506,radius:10.62414361941502,k:megara.curv(1772.647222987506)};
+ for(const id of ['mini','z4','huracan']){
+  const spec=CARS.find(c=>c.id===id);
+  const brisk=driveQuarterCorner(spec,{kind:'clean',v0:90,brakeAt:32,level:.6,vCorner:55,tthr:30,thr:.9},{R:40,dev:6,assist:.35});
+  assert.ok(brisk.ok && brisk.apexT<5.1 && brisk.turnInYaw>.18,`${id}: ordinary turn-in slowed`);
+  assert.equal(brisk.guardIntegral,0,`${id}: guard intervened in a brisk grip corner`);
+  const kmh=Math.sqrt(bend.radius*spec.grip*9.81*.8)*3.6;
+  const aided=driveCorner(spec,megara,kmh,{device:'gamepad',assist:.35,bend,seconds:1.5});
+  const raw=driveCorner(spec,megara,kmh,{device:'gamepad',assist:0,bend,seconds:1.5});
+  const slip=r=>Math.max(...r.trace.flatMap(t=>t.frontWheels.map(w=>Math.abs(w.sy))));
+  assert.ok(slip(aided)<1.26 && slip(raw)>2,`${id}: severe front scrub not caught`);
+  assert.ok(aided.achievedG>raw.achievedG+.07,`${id}: plough correction did not restore grip`);
  }
 });

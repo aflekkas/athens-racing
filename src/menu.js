@@ -1,4 +1,4 @@
-import { renderLeaderboards, renderBestRecord, renderTrackTimes, leaderboardChange } from './leaderboards-screen.js';
+import { renderLeaderboards, renderBestRecord, renderTrackTimes, renderSetupRecords, leaderboardChange } from './leaderboards-screen.js';
 import { seatPosition, setSeatPosition, resetSeatPosition } from './seat-position.js';
 import { loadUnifiedRouteCatalogue } from './unified-routes.js';
 import { importWithUpdate } from './client-release.js';
@@ -10,7 +10,7 @@ import { install as installAccounts } from './ui/account-loader.js';
 // (lists, grids and card rails alike); on an adjustable row (slider, toggle, segmented, stepper, select) left / right
 // change its value. Menu items are not native <button>s on purpose: the input system ignores key events aimed at
 // focused form controls, so focus is drawn with a class and the keys keep flowing through flowAction().
-import { getEvents, QUICK_RACE, TYPES, resolve, rivalCount, SP_RIVALS, MAX_RIVALS } from './events.js';
+import { getEvents, QUICK_RACE, TYPES, resolve, SP_RIVALS, MAX_RIVALS } from './events.js';
 import * as S from './settings.js';
 import { renderMapSelect, selectMap, mountMapSelect } from './map-select.js';
 import { renderSpawnSelect, mountSpawnSelect, driveFromSpawn } from './spawn-select.js';
@@ -34,7 +34,6 @@ import { installArticleScroll, articleAction, clearArticleFocus } from './ui/art
 
 const { settings, setSetting, steeringAssistChoice, fmtDist } = S;
 const { esc, icon } = C;
-const TRAFFIC = (d) => (d <= 0 ? 'CLOSED ROAD' : d < 0.6 ? 'LIGHT TRAFFIC' : d < 1.2 ? 'NORMAL TRAFFIC' : d < 1.8 ? 'HEAVY TRAFFIC' : 'EXTREME TRAFFIC');
 const arrow = (rev) => icon(rev ? 'arrow-left' : 'arrow-right', 'ico--route');
 const NUM = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'];
 const count = (n) => NUM[n] || String(n);
@@ -44,6 +43,28 @@ const lastMode = () => { try { return localStorage.getItem('paraliaki.lastMode')
 const rememberMode = mode => { try { localStorage.setItem('paraliaki.lastMode', mode); } catch {} };
 const quickBlurb = () => `Pick a track and race ${count(SP_RIVALS)} locals against the clock.`;
 const routeLine = (r) => r.closed ? `${r.laps} ${r.laps === 1 ? 'LAP' : 'LAPS'}` : `${esc(r.fromName)} ${arrow(false)} ${esc(r.toName)}`;
+// Race Setup header copy. The Penteli descent runs its map's road the other way; regions are what a player calls the place.
+const PLACE = { 'penteli-descent': 'Karakanta to Dionysos' };
+const REGION = { athens: 'ATHENS', riviera: 'ATHENS', psychiko: 'ATHENS', penteli: 'PENTELI', megara: 'MEGARA' };
+/** a compiled world route as a small outline: plan view (x, z), north up, scaled into a fixed box; cached per geometry */
+const outlines = new Map();
+function routeOutline(compiled) {
+  const key = compiled.geometryHash || compiled.id;
+  if (outlines.has(key)) return outlines.get(key);
+  const pts = compiled.points || [], step = Math.max(1, Math.floor(pts.length / 160)), xy = [];
+  for (let i = 0; i < pts.length; i += step) xy.push([pts[i][0], pts[i][2]]);
+  if (pts.length) xy.push([pts.at(-1)[0], pts.at(-1)[2]]);
+  let svg = '';
+  if (xy.length > 1) {
+    const xs = xy.map((p) => p[0]), zs = xy.map((p) => p[1]), x0 = Math.min(...xs), z0 = Math.min(...zs), dx = Math.max(...xs) - x0 || 1, dz = Math.max(...zs) - z0 || 1;
+    const W = 320, H = 120, k = Math.min((W - 12) / dx, (H - 12) / dz), ox = (W - dx * k) / 2, oz = (H - dz * k) / 2;
+    const line = xy.map(([x, z]) => `${(ox + (x - x0) * k).toFixed(1)},${(oz + (z - z0) * k).toFixed(1)}`).join(' ');
+    const [sx, sz] = line.split(' ')[0].split(',');
+    svg = `<svg class="route-outline" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet"><polyline class="route-outline__line" points="${line}"/><circle class="route-outline__start" cx="${sx}" cy="${sz}" r="3.2"/></svg>`;
+  }
+  outlines.set(key, svg);
+  return svg;
+}
 C.registerFormat('seatCm',v=>(v>0?'+':'')+Math.round(v*100)+' cm');
 C.registerFormat('rivals', (v) => (+v === 0 ? 'NONE · SOLO' : `${v} ${+v === 1 ? 'RIVAL' : 'RIVALS'}`));
 C.registerFormat('laps', (v) => `${v} ${+v === 1 ? 'LAP' : 'LAPS'}`);
@@ -85,6 +106,7 @@ export class Menu {
       void loadGarage().then(() => { if (this.screen === from) this.show(screen, data, push); }).catch(error => C.ui.toast(error.message, { tone: 'bad' }));
       return;
     }
+    if (screen === 'routes') { screen = 'maps'; data = { ...data, mode: 'quick' }; }
     if (screen === 'events') screen = 'mode'; // Legacy results return to the two-mode picker.
     this.leaving();
     if (push && this.screen) this.stack.push({ screen: this.screen, data: this.data, focus: this.focus });
@@ -128,7 +150,7 @@ export class Menu {
     cancelAnimationFrame(this.settling); this.settling = requestAnimationFrame(() => { this.settling = requestAnimationFrame(() => this.root.classList.remove('is-settling')); });
     if (stage) this.root.querySelector('#carStage')?.replaceWith(stage);
     else if (this.screen === 'car') this.carView = this.data.detail ? garage.mountCarSelect(this.root, this.data.index || 0) : garage.mountCarGrid(this.root);
-    if (this.screen === 'maps') this.mapView = this.data.mode === 'free' ? mountSpawnSelect(this.root, this) : mountMapSelect(this.root);
+    if (this.screen === 'maps') this.mapView = this.data.mode === 'free' ? mountSpawnSelect(this.root, this) : mountMapSelect(this.root, this.data.catalogue, id => selectMap(this, id));
     for (const t of this.root.querySelectorAll('.tabs')) { const on = t.querySelector('.tab.on'); if (on && t.scrollWidth > t.clientWidth) t.scrollLeft = on.offsetLeft - (t.clientWidth - on.offsetWidth) / 2; }
     if (this.screen === 'settings' && this.data.tab === 'controls') this.h.cancelBindings?.();
     const it = this.items();
@@ -194,6 +216,7 @@ export class Menu {
   /** a named input action; true if the menu used it */
   action(name) {
     if (!this.screen) return false;
+    if (this.mapLoading) return true;
     C.navigationFocus();
     if (C.ui.action(name)) return true;
     if (this.screen === 'maps' && this.mapView?.action(name)) return true;
@@ -249,7 +272,6 @@ export class Menu {
     if (a?.startsWith('mp') && MP.act(this, el)) return;
     switch (a) {
       case 'unifiedRoute': void Promise.resolve().then(() => this.h.selectUnifiedRoute(el.dataset.route,el.dataset.event)).catch(error => C.ui.toast(error.message, { tone: 'bad' })); break;
-      case 'classicTracks': this.filter = 'sprint'; this.show('maps', { filter: 'sprint', mode: 'quick' }, true); break;
       case 'seatReset': { resetSeatPosition(this.h.carSpec?.()?.id); for(const key of ['height','position']){const el=this.root.querySelector('[data-key=seat-'+key+']');if(el)C.setValue(el,0,false);} break; }
       case 'mapPrev': case 'mapNext': case 'mapZoomIn': case 'mapZoomOut': this.mapView?.action(a); break;
       case 'spawnDrive': driveFromSpawn(this); break;
@@ -276,6 +298,7 @@ export class Menu {
       case 'carConfirm': this.confirmCar(); break;
       case 'paint': this.carView?.paint(el.dataset.color); for (const paint of this.root.querySelectorAll('.paint')) paint.classList.toggle('selected', paint === el); this.root.querySelector('.car-paint-name').textContent = el.title; break;
       case 'setupAdvanced': this.data.advanced = !this.data.advanced; this.refresh(); break;
+      case 'setupHistory': this.data.showHistory = !this.data.showHistory; this.refresh(); break;
       case 'setupGo': this.startSetup(); break;
       case 'setupReset': saveSetup(this.setupKey(), {}); this.refresh(); C.ui.toast('DEFAULTS RESTORED', { icon: 'rotate-ccw' }); break;
       case 'multiplayer': case 'mp': case 'mpJoin': MP.openEntry(this, 'join'); break;
@@ -351,13 +374,12 @@ export class Menu {
     try {
       const catalogue = await loadUnifiedRouteCatalogue({ allowEmpty: true });
       if (this.screen !== screen || this.data !== data) return;
-      if (catalogue.length) this.show('routes', { catalogue }, true);
-      else { this.filter = 'sprint'; this.show('maps', { filter: 'sprint', mode: 'quick' }, true); }
+      this.filter = 'sprint'; this.show('maps', { catalogue, filter: 'sprint', mode: 'quick' }, true);
     } catch (error) {
       if (this.screen === screen && this.data === data) C.ui.toast(error.message, { tone: 'bad' });
     } finally { this.loadingRoutes = false; }
   }
-  r_routes(d){return C.sheetList({variant:'flow',kick:'ATHENS',title:'SELECT ROUTE',rows:d.catalogue.flatMap(r=>r.events.map(e=>C.option({icon:'flag',title:esc(r.name+(r.events.length>1&&e.type==='timetrial'?' · TIME TRIAL':'')),desc:`${fmtDist(r.lengthM)} · ${e.laps||1} LAP${(e.laps||1)>1?'S':''} · ${e.rivals||0} RIVALS${['penteli','megara'].includes(r.regionId)?' · ATTACHED DESTINATION':''}`,act:'unifiedRoute',attrs:{'data-route':r.id,'data-event':e.id}}))).join('')+C.option({icon:'flag',title:'ORIGINAL TRACKS',desc:'Choose from the original track selection',act:'classicTracks'}),hints:[['select','SELECT'],['confirm','RACE'],['back','BACK']]});}
+  r_routes(d) { return renderMapSelect(undefined, d.catalogue); }
   r_leaderboards(d) { return renderLeaderboards(this, d); }
   // RACE is solo (owner 2026-10-18): two artwork-led cards fill the screen; multiplayer lives behind the title's MULTIPLAYER tile.
   r_mode() {
@@ -380,7 +402,7 @@ export class Menu {
   r_mpResults() { return MP.renderResults(this, window.__multiplayer); }
 
   // ---------------------------------------------------------------- maps
-  r_maps() { return this.data.mode === 'free' ? renderSpawnSelect(this) : renderMapSelect(this.h.ctx?.().mapId); }
+  r_maps() { return this.data.mode === 'free' ? renderSpawnSelect(this) : renderMapSelect(this.h.ctx?.().route?.compiled?.id || this.h.ctx?.().mapId, this.data.catalogue); }
   r_mapConfirm(d) {
     const map = MAPS.find(m => m.id === d.mapId) || MAPS[0], def = this.setupDef();
     d.eventId = (def.baseId || def.id).split('~')[0];
@@ -406,23 +428,21 @@ export class Menu {
     if(ctx.route?.isWorldRoute)return (ctx.events||[]).filter(e=>e.id===(this.data.eventId||ctx.eventId||ctx.events?.[0]?.id));
     return this.data.mode === 'quick' ? [ctx.mapId === 'riviera' ? QUICK_RACE : (ctx.events || getEvents(ctx.mapId)).find((e) => e.type === 'sprint')].filter(Boolean) : getEvents(ctx.mapId || 'riviera');
   }
-  /** Session facts; Quick Race has no event medals or event records. Best times show as one line, only once set. */
-  eventSummary(e, r) {
-    const n = rivalCount(e), free = e.type === 'free';
-    const mapName = e.routeId?this.h.ctx().route.compiled.definition.name:(MAPS.find((m) => m.id === this.h.ctx().mapId) || MAPS[0]).name;
-    const facts = free ? [['MAP', esc(mapName), 'map'], ['ROAD', TRAFFIC(e.traffic ?? 1), 'traffic-cone']] :
-      [['DISTANCE', fmtDist(r.len), 'route'], ['FIELD', n ? `${n + 1} CARS` : 'JUST YOU', 'users'], ['ROAD', r.closed ? 'CLOSED CIRCUIT' : TRAFFIC(e.traffic ?? 1), 'traffic-cone']];
-    const pb = free ? null : this.h.personalBests?.(e, r), T = (x) => this.h.fmtTime(x.time);
-    const best = [pb?.exact && `<span>BEST <b>${T(pb.exact)}</b></span>`,
-      pb?.route && (!pb.exact || pb.route.time < pb.exact.time) && `<span>ROUTE BEST <b>${T(pb.route)}</b> · ANY CAR</span>`].filter(Boolean);
-    // The track's name is the heading (the screen title already says what this is); the route is one quiet line.
-    return `<h3 class="evs__name">${esc(mapName)}</h3>${free ? '' : `<p class="evs__route"><span>${routeLine(r)}${r.reverse ? ' · REVERSE' : ''}</span></p>`}
-      ${C.stats(facts.map(([k, v, ic]) => [k, v, { icon: ic }]), 'evs__facts')}${best.length ? `<p class="evs__best">${icon('timer')}${best.join('')}</p>` : ''}`;
+  /** Race Setup's track header (owner 2026-10-21, "this is the ui that is chopped"): the name, one quiet place line, a route
+   *  outline and three facts. Rivals and traffic are settings on the right, so the header repeats neither. */
+  setupSummary(e, r, map) {
+    const free = e.type === 'free', compiled = e.routeId && this.h.ctx().route?.compiled, home = compiled ? MAPS.find((m) => m.id === e.routeId.split('-')[0]) : map;
+    const name = compiled ? compiled.definition.name : map.name;
+    const where = PLACE[e.routeId] || home?.subtitle || '';
+    const format = free ? 'FREE ROAM' : `${r.closed ? (e.type === 'timetrial' ? 'TIME TRIAL' : 'CIRCUIT') : TYPES[e.type]?.label || 'SPRINT'}${r.closed ? ` · ${r.laps} ${r.laps === 1 ? 'LAP' : 'LAPS'}` : ''}${r.reverse ? ' · REVERSE' : ''}`;
+    const region = REGION[compiled?.regionId === 'basin' ? 'athens' : compiled?.regionId || home?.id] || 'ATTICA';
+    const outline = compiled ? routeOutline(compiled) : map.preview ? `<img class="setup-head__art" src="${esc(map.preview)}" alt="">` : '';
+    const facts = free ? [['REGION', region]] : [['DISTANCE', fmtDist(r.len)], ['FORMAT', format], ['REGION', region]];
+    return `<header class="setup-head">${outline ? `<div class="setup-head__map" aria-hidden="true">${outline}</div>` : ''}<h3 class="setup-head__name">${esc(name)}</h3>${where ? `<p class="setup-head__where">${esc(where)}</p>` : ''}</header>${C.stats(facts, 'setup-head__facts')}`;
   }
 
-
   // ---------------------------------------------------------------- race setup (event detail)
-  setupDef() { if (this.data.mode === 'free') return window.__flow.freeRoamDef(); return { ...(this.eventsHere()[0] || QUICK_RACE), mapId: this.h.ctx().mapId, quick: true, name: 'QUICK RACE' }; }
+  setupDef() { if (this.data.mode === 'free') return window.__flow.freeRoamDef(); if (this.data.def) return this.data.def; return { ...(this.eventsHere()[0] || QUICK_RACE), mapId: this.h.ctx().mapId, quick: true, name: 'QUICK RACE' }; }
   setupKey() { const d = this.setupDef(); if(d.routeId)return d.id;return d.quick ? 'quick:' + (this.h.ctx().mapId || 'riviera') : d.id; }
   isClosed() { return !!this.h.ctx().route?.closed; }
   r_setup() {
@@ -439,15 +459,17 @@ export class Menu {
       if (f.key === 'traffic') rows.push(C.segmented({ key: 'traffic', label: 'TRAFFIC', icon: 'traffic-cone', value: cur.traffic, type: 'num', dflt: f.dflt, attrs: A, options: f.levels.map(([, v, l]) => [v, l]) }));
       if (f.key === 'laps') rows.push(C.stepper({ key: 'laps', label: 'LAPS', icon: 'refresh-cw', value: cur.laps, min: f.min, max: f.max, format: 'laps', attrs: A, note: `${fmtDist(r.len).toLowerCase()} in total` }));
       if (f.key === 'reverse') rows.push(C.segmented({ key: 'reverse', label: 'DIRECTION', icon: 'arrow-left-right', value: String(cur.reverse), type: 'bool', dflt: 'false', attrs: A, options: [['false', closed ? 'CLOCKWISE' : 'FORWARD'], ['true', closed ? 'ANTI-CLOCKWISE' : 'REVERSE']] }));
-      if (f.key === 'time') rows.push(C.select({ key: 'time', label: 'TIME OF DAY', icon: cur.time === 'night' ? 'moon' : cur.time === 'sunset' || cur.time === 'dawn' ? 'sunrise' : 'sun', value: cur.time, attrs: A, options: TIMES.map(([v, l]) => [v, v === f.dflt ? `${l} · DEFAULT` : l]) }));
+      // A list stepper like AI RIVALS (owner 2026-10-21): left / right cycle it, no dropdown to open.
+      if (f.key === 'time') rows.push(C.stepper({ key: 'time', label: 'TIME OF DAY', icon: cur.time === 'night' ? 'moon' : cur.time === 'sunset' || cur.time === 'dawn' ? 'sunrise' : 'sun', value: cur.time, attrs: A, options: TIMES.map(([v, l]) => [v, l]),
+        note: f.dflt === cur.time ? '' : `Default: ${(TIMES.find(([v]) => v === f.dflt)?.[1] || f.dflt).toLowerCase()}` }));
       if (f.key === 'weather') rows.push(C.segmented({ key: 'weather', label: 'WEATHER', icon: cur.weather === 'rain' ? 'cloud-rain' : cur.weather === 'overcast' ? 'cloud' : 'sun', value: cur.weather, dflt: f.dflt, attrs: A, options: WEATHERS.map(([v, l]) => [v, l, v === 'rain' ? 'cloud-rain' : v === 'overcast' ? 'cloud' : 'sun']) }));
     }
     // Fewer steps (owner 2026-10-20): the screen opens on CHOOSE CAR, so Enter goes straight on; the options are one press up.
     const note = def.pilot?'Staging pilot: rivals, traffic, police and alternate conditions are unavailable.':'';
-    const map = def.routeId?{name:ctx.route.compiled.definition.name}:MAPS.find((m) => m.id === ctx.mapId) || MAPS[0];
+    const map = def.routeId ? { name: ctx.route.compiled.definition.name } : MAPS.find((m) => m.id === ctx.mapId) || MAPS[0];
     return C.stageInspector({ variant: 'setup', cls: 'scr--setup', kick: def.quick ? 'QUICK RACE' : `${TYPES[def.type].label} · ${esc(map.name)}`, title: def.objectiveMode || def.type === 'free' ? 'SESSION SETUP' : 'RACE SETUP',
       hints: [['updown', 'SELECT'], ['leftright', 'CHANGE'], ['confirm', 'OK'], ['back', 'BACK']],
-      stage: `${map.preview ? `<img class="setup__map" src="${esc(map.preview)}" alt="Route preview: ${esc(map.name)}">` : ''}${this.eventSummary(runDef, r, runDef.id)}${def.routeId?renderTrackTimes(this,this.data,{mapId:'athens',routeId:def.routeId,eventId:def.baseId||def.id}):''}`, inspectorTitle: '', inspector: `${rows.filter(row => /data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('')}${C.button({ label: this.data.advanced ? 'HIDE ADVANCED OPTIONS' : 'ADVANCED OPTIONS', icon: 'sliders-horizontal', act: 'setupAdvanced', variant: 'ghost', size: 'sm' })}${this.data.advanced ? rows.filter(row => !/data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('') : ''}`, note, actions: C.button({ label: 'CHOOSE CAR', icon: 'car', iconRight: 'chevron-right', variant: 'primary', act: 'setupGo', attrs: { 'data-default': '' } }), inspectorHead: C.button({ label: 'DEFAULTS', icon: 'rotate-ccw', variant: 'ghost', size: 'sm', act: 'setupReset', disabled: !custom }) });
+      stage: `${this.setupSummary(runDef, r, map)}${def.type === 'free' ? '' : renderSetupRecords(this, this.data, def.routeId ? { mapId: 'athens', routeId: def.routeId, eventId: def.baseId || def.id } : { mapId: ctx.mapId || 'riviera', eventId: (def.baseId || def.id).split('~')[0] })}`, inspectorTitle: '', inspector: `${rows.filter(row => /data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('')}${C.button({ label: this.data.advanced ? 'HIDE ADVANCED OPTIONS' : 'ADVANCED OPTIONS', icon: 'sliders-horizontal', act: 'setupAdvanced', variant: 'ghost', size: 'sm', block: true, cls: 'setup__more' })}${this.data.advanced ? rows.filter(row => !/data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('') : ''}`, note, actions: C.button({ label: 'CHOOSE CAR', icon: 'car', iconRight: 'chevron-right', variant: 'primary', act: 'setupGo', attrs: { 'data-default': '' } }), inspectorHead: C.button({ label: 'DEFAULTS', icon: 'rotate-ccw', variant: 'ghost', size: 'sm', act: 'setupReset', disabled: !custom }) });
   }
   startSetup() {
     const def = this.setupDef(), runDef = applySetup(def, loadSetup(this.setupKey()), { closed: this.isClosed() });
@@ -485,7 +507,7 @@ export class Menu {
       const tg = (k, label) => has(k) ? C.toggle({ key: k, label, value: settings[k], attrs: SET }) : '';
       body = `<div class="group"><h3 class="group__title">SEAT · ${esc(this.h.carSpec?.()?.name||'CURRENT CAR')}</h3>${[['height','SEAT HEIGHT'],['position','SEAT POSITION']].map(([key,label])=>C.slider({key:'seat-'+key,label,value:seatPosition(this.h.carSpec?.()?.id)[key],min:-.08,max:.08,step:.01,format:'seatCm',note:'Saved for this car.',attrs:SET})).join('')}${C.button({label:'RESET SEAT',act:'seatReset',variant:'ghost',icon:'rotate-ccw'})}</div><div class="group"><h3 class="group__title">VIEW</h3>${sl('chaseFov', 'CHASE FIELD OF VIEW', 45, 75, 1, 'deg')}${sl('cockpitFov', 'COCKPIT FIELD OF VIEW', 45, 90, 1, 'deg')}${tg('speedFov', 'SPEED FOV EFFECT')}${has('hudMotion') ? C.segmented({ key: 'hudMotion', label: 'HUD MOTION', value: v('hudMotion'), options: [['off', 'OFF'], ['subtle', 'SUBTLE'], ['full', 'FULL']], attrs: SET }) : ''}</div>
         <div class="group"><h3 class="group__title">LOOK AROUND</h3>${has('mouseLook') ? C.toggle({ key: 'mouseLook', label: 'MOUSE FREE LOOK', value: settings.mouseLook === true, note: settings.mouseLook === true ? 'Move the mouse to look around.' : 'Hold the left or right button and drag to look.', attrs: SET }) : ''}${sl('mouseSensitivity', 'LOOK SENSITIVITY', 0.25, 3, 0.05, 'x')}${tg('invertLookY', 'INVERT LOOK Y')}
-          <p class="group__note">${C.keyHints([['lookBack', 'LOOK BACK (HOLD)']])} The right stick also looks and returns to the road when released.</p></div>
+          <p class="group__note">${C.keyHints([['camera', 'POV / OUTSIDE'], ['cameraPosition', 'VIEW POSITION'], ['lookBack', 'LOOK BACK (HOLD)']])} The right stick also looks and returns to the road when released.</p></div>
         <div class="group"><h3 class="group__title">TAGS</h3>${tg('playerMarkers', 'ONLINE PLAYER TAGS')}${tg('rivalMarkers', 'AI RIVAL TAGS')}</div>`;
     } else if (tab === 'controls') body = renderControls(this);
     else if (tab === 'about') body = Release.renderAbout(this);

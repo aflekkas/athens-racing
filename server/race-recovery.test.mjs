@@ -62,11 +62,13 @@ test('a tow lands where the car is but never before its latest valid pose, and n
 
 test('police capture retains five seconds through persisted resume; receipt time and epoch cannot buy forward progress', t => {
   const r = race(t); r.advance(500);
-  r.send(r.a, { type: 'state', raceId: r.lobby.raceId, state: { ...state(70), bodyDynamic: true, bodyQ: [1,0,0,0], air: true, vy: 5, engineStalled: true, engineDamage: 1, engHealth: 0, coolantTemp: 140, bodyRoll: 3 } });
+  r.send(r.a, { type: 'state', raceId: r.lobby.raceId, state: { ...state(70), bodyDynamic: true, bodyQ: [1,0,0,0], air: true, vy: 5, engineStalled: true, engineDamage: 1, engHealth: 0, coolantTemp: 140, bodyRoll: 3, damage: {front:1,rear:.8,left:.6,right:.4}, impactMechanical:.9, frontMechanical:.8, radiatorDamage:.9, steerPull:.01 } });
   r.send(r.a, { type: 'recover', raceId: r.lobby.raceId, motionEpoch: 2, capture: true });
   const ack = r.a.messages.at(-1); assert.equal(ack.until - r.now, 5000);
   const repaired = r.core.clientData(r.a).state;
   assert.equal(repaired.bodyDynamic,false);assert.equal(repaired.bodyQ,null);assert.equal(repaired.engineStalled,false);assert.equal(repaired.engHealth,1);assert.equal(repaired.bodyRoll,0);assert.equal(repaired.vy,0);
+  assert.deepEqual(repaired.damage,{front:0,rear:0,left:0,right:0});assert.deepEqual(repaired.cornerDamage,[0,0,0,0]);
+  for(const key of ['impactMechanical','frontMechanical','radiatorDamage','steerPull','engineDamage'])assert.equal(repaired[key],0,key);
   // An ordinary request during capture cannot replace its hold with a cheap tow.
   r.send(r.a, { type: 'recover', raceId: r.lobby.raceId, motionEpoch: 3 });
   assert.equal(r.a.messages.at(-1).until, ack.until);

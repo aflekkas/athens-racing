@@ -99,6 +99,7 @@
     "tools/driving-aids.test.mjs",
     "tools/driving-objectives.test.mjs",
     "tools/gameplay-camera.test.mjs",
+    "tools/camera-views.test.mjs",
     "tools/chase-orbit.test.mjs",
     "tools/gameplay-recovery.test.mjs",
     "tools/gameplay-toast.test.mjs",
@@ -173,6 +174,7 @@
     "tools/ui-components.test.mjs",
     "tools/ui-layouts.test.mjs",
     "tools/screen-layouts.test.mjs",
+    "tools/race-setup-screen.test.mjs",
     "tools/article-scroll.test.mjs",
     "tools/settings-nav.test.mjs",
     "tools/simple-header.test.mjs",
@@ -260,7 +262,8 @@
     "tools/world-selection.test.mjs",
     "tools/import-track-region.test.mjs",
     "tools/route-phase4a.test.mjs",
-    "tools/route-phase4b.test.mjs"
+    "tools/route-phase4b.test.mjs",
+    "tools/track-select.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",

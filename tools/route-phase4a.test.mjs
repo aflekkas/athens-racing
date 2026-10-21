@@ -56,7 +56,9 @@ test('Penteli picker retains selected TT, independent setup keys, and marks the 
  const events=hill.events.map(e=>routeEvent({id:hill.id,definition:{...hill,events:hill.events.map(e=>({...e,enabled:true,laps:1}))},regionId:'penteli',lengthM:hill.lengthM,geometryHash:'hash'},e.id));
  const menu={data:{mode:'quick'},h:{ctx:()=>({mapId:'athens',route:{isWorldRoute:true},events,eventId:'penteli-tt'})}};menu.eventsHere=()=>Menu.prototype.eventsHere.call(menu);menu.setupDef=()=>Menu.prototype.setupDef.call(menu);
  assert.equal(menu.setupDef().id,'penteli-tt');assert.equal(Menu.prototype.setupKey.call(menu),'penteli-tt');assert.equal(menu.setupDef().rivals,0);
- const html=Menu.prototype.r_routes.call({}, {catalogue:[{id:hill.id,name:hill.name,lengthM:hill.lengthM,regionId:'penteli',events}, {id:descent.id,name:descent.name,lengthM:descent.lengthM,regionId:'penteli',events:[{id:'penteli-descent-tt',laps:1,rivals:0}]}]});assert.match(html,/ATTACHED DESTINATION/);for(const e of ['penteli-race','penteli-tt','penteli-descent-tt'])assert.ok(html.includes(`data-event="${e}"`));
+ const priorDocument=globalThis.document;globalThis.document={getElementById:()=>({})};
+ try { const html=Menu.prototype.r_routes.call({}, {catalogue:[{id:hill.id,name:hill.name,lengthM:hill.lengthM,regionId:'penteli',preview:[[0,0],[100,100]],events}, {id:descent.id,name:descent.name,lengthM:descent.lengthM,regionId:'penteli',preview:[[100,100],[0,0]],events:[{id:'penteli-descent-tt',laps:1,rivals:0}]}]});for(const id of [hill.id,descent.id])assert.ok(html.includes(`data-map-id="${id}"`));assert.doesNotMatch(html,/data-map-id="penteli"/); }finally{globalThis.document=priorDocument;}
+
 });
 
 test('regional proof siblings reject traversal, nested shards, stale releases and changed exact queries',async()=>{

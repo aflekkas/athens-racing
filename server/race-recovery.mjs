@@ -1,16 +1,27 @@
 import { courseTowLimits, towCourseTo, coursePoseValid } from '../src/course.js';
 import { planWorldTow, planTow, rawRoute, RoadIndex, roadSegments } from '../src/tow-placement.js';
-import { impactPowerFactor } from '../src/damage-math.js';
+import {rememberTowHeading, towHeading} from '../src/tow-heading.js';
 export const RECOVERY_MS = 250;
 export const CAPTURE_RECOVERY_MS = 5000;
 export const RECOVERY_COOLDOWN_MS = 1000;
 const finite = Number.isFinite;
 export function resetRecovery(driver, raceId) {
-  driver.recoveryRace = raceId; driver.recovery = null;
+  driver.recoveryRace = raceId; driver.recovery = null; driver.towHeading = undefined;
 }
-export function rememberRecoveryRoad(driver, event, raceId) {
+export function rememberRecoveryRoad(driver, event, raceId, route = null) {
   if (driver.recoveryRace !== raceId) resetRecovery(driver, raceId);
   if (driver.recovery?.raceId === raceId) driver.state.recoveryUntil = driver.recovery.until;
+  const state = driver.state;
+  if (!state || !route) return;
+  let onRoad;
+  if (route.isWorldRoute) onRoad = !!route.contactAt?.(state.x, state.z, {referenceY: state.y, requiredFlags: 1});
+  else {
+    if (!route.x?.length || !route.z?.length || !finite(route.step)) return;
+    const map = towMap(route), q = map.route.project(state.x, state.z);
+    onRoad = Math.abs(q.u) <= map.route.edge(q.s) || map.index.near(state.x, state.z, 1)[0]?.edge === 0;
+  }
+  const pose = {...state, towHeading: driver.towHeading};
+  rememberTowHeading(pose, onRoad); driver.towHeading = pose.towHeading;
 }
 // Immutable catalogue geometry: the route adapter and the street index are built once per map.
 const towMaps = new WeakMap();
@@ -23,11 +34,11 @@ function towMap(geometry) {
 // within 40 m and never places the car before its latest valid on-road pose; the course tracker still counts only
 // continuous on-route movement, so a tow cannot advance progress. The client's claimed position is never used.
 function towPose(driver, event, route) {
-  if(route?.isWorldRoute){const candidates=route.recoveryCandidates?.(driver.state,driver)||[];return planWorldTow({pose:driver.state,course:driver.course,route,roadCandidates:candidates,footprint:route.recoveryFootprint?.(driver)});}
+  if(route?.isWorldRoute){const candidates=route.recoveryCandidates?.(driver.state,driver)||[];return planWorldTow({pose:{...driver.state,towHeading:driver.towHeading},course:driver.course,route,roadCandidates:candidates,footprint:route.recoveryFootprint?.(driver)});}
   const state = driver.state, course = driver.course;
   if (route?.x?.length && [state.x, state.z, state.yaw].every(finite)) {
     const map = towMap(route);
-    return planTow({ x: state.x, z: state.z, yaw: state.yaw, route: map.route, index: map.index, dir: event.dir || 1, course: course ? courseTowLimits(course) : null });
+    return planTow({ x: state.x, z: state.z, yaw: towHeading({...state,towHeading:driver.towHeading}), route: map.route, index: map.index, dir: event.dir || 1, course: course ? courseTowLimits(course) : null });
   }
   // Without geometry (test fixtures) the car stays at its own station, never before its latest valid pose.
   let s = state.s;
@@ -58,9 +69,9 @@ export function requestRecovery(driver, event, raceId, epoch, now, { route = nul
     vLong: 0, vLat: 0, steer: 0, gear: 1, rpm: 900, reverse: false,
     bodyDynamic: false, bodyQ: null, air: false, vy: 0, angularX: 0, angularY: 0, angularZ: 0,
     bodyHeave: 0, bodyPitch: 0, bodyRoll: 0,
-    // (a tow keeps the car's damage: body, bent corners and mechanical wear stay until the run is restarted; only the acute
-    // failures that stopped it are cleared, so it comes back running. `damage`, `impactMechanical` and `engHealth` are left as they were.)
-    maxImpactEbs: 0, engHealth: impactPowerFactor(Math.min(0.9, Number(driver.state.impactMechanical) || 0)), engineDamage: 0, coolantTemp: 90, engineStalled: false, drivetrainBroken: false,
+    damage: {front: 0, rear: 0, left: 0, right: 0}, cornerDamage: [0, 0, 0, 0],
+    impactMechanical: 0, frontMechanical: 0, radiatorDamage: 0, steerPull: 0,
+    maxImpactEbs: 0, engHealth: 1, engineDamage: 0, coolantTemp: 90, engineStalled: false, drivetrainBroken: false,
     engineFailureReason: null, mechanicalOverrevRpm: 0, motionEpoch: epoch, recoveryUntil: recovery.until };
   driver.stateAt = now;
   if (driver.course) towCourseTo(driver.course, { ...driver.state, kind }, now / 1000);

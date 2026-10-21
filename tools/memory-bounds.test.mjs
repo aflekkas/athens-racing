@@ -62,3 +62,17 @@ test('memory estimate includes shared shader textures, cube faces and instance b
   assert.equal(memory.textureBytes,512*512*4);
   assert.equal(memory.geometryBytes,Object.values(geometry.attributes).reduce((n,a)=>n+a.array.byteLength,0)+geometry.index.array.byteLength+10*16*4);
 });
+
+
+test('route admission is independent of uncollected V8 garbage; retained world and GPU limits still reject', async () => {
+  const {worldResourceUsage,worldResourcesFit}=await import('../src/world-resource-usage.js');
+  const MiB=1024*1024,scene={geometryBytes:8*MiB,textureBytes:16*MiB,gpuBytes:24*MiB};
+  const retained={scene,tileJS:32*MiB,tileGPU:8*MiB,regionalBytes:4*MiB,width:1280,height:800};
+  const fresh=worldResourceUsage({...retained,heapBytes:64*MiB}),beforeGC=worldResourceUsage({...retained,heapBytes:400*MiB});
+  assert.equal(fresh.residentJSBytes,beforeGC.residentJSBytes);
+  assert.equal(beforeGC.jsBytes,400*MiB,'raw heap remains visible in diagnostics');
+  assert.equal(worldResourcesFit(fresh,RESOURCE_BUDGETS.low),true);
+  assert.equal(worldResourcesFit(beforeGC,RESOURCE_BUDGETS.low),true,'shader/JSON garbage must not strand the track picker');
+  assert.equal(worldResourcesFit(worldResourceUsage({...retained,tileJS:300*MiB}),RESOURCE_BUDGETS.low),false);
+  assert.equal(worldResourcesFit(worldResourceUsage({...retained,tileGPU:300*MiB}),RESOURCE_BUDGETS.low),false);
+});

@@ -1,4 +1,4 @@
-import{test}from'node:test';import assert from'node:assert/strict';import{fixture}from'./world-tile-format.test.mjs';import{sampleContactSeam}from'./validate-world-tile-contacts.mjs';
+import{test}from'node:test';import assert from'node:assert/strict';import{fixture}from'./world-tile-format.test.mjs';import{buildTileContactIndex,sampleTileContact}from'../src/world-tile-contact.js';import{tileTables}from'../src/world-tile-format.js';import{sampleContactSeam}from'./validate-world-tile-contacts.mjs';
 function ground(cell){const p=fixture(cell);p.arrays[p.metadata.tables.finePositions]=new Float32Array([0,0,0,512,0,0,0,0,512,512,0,512]);p.arrays[p.metadata.tables.fineTriangles]=new Uint32Array([0,2,1,1,2,3]);return p;}
 test('contact seam samples every metre, vertices and midpoints across actual indexed surfaces',()=>{
  const a=ground([0,0]),b=ground([1,0]),result=sampleContactSeam(a,b);assert.ok(result.samples>2000);assert.equal(result.missing,0);assert.equal(result.maxDelta,0);assert.deepEqual(result.failures,[]);
@@ -29,4 +29,9 @@ test('a diagonal bridge corner compares each physical layer at the boundary and 
  assert.ok(sampleContactSeam(a,b).failures.some(f=>f.missingLayerBoundary),'a different layer cannot stand in for the bridge floor');
  b.arrays[b.metadata.tables.contactLayers][0]=1;b.arrays[b.metadata.tables.contactPositions][1]=6.1;
  assert.ok(sampleContactSeam(a,b).failures.some(f=>f.layerBoundary),'the same 2 cm height gate applies at the corner');
+});
+
+test('Penteli lane-centre contact chooses asphalt above fine terrain even when the reference is nearer the terrain',()=>{
+ const p=ground([0,0]);p.arrays[p.metadata.tables.contactPositions]=new Float32Array([0,.08,0,512,.08,0,0,.08,512,512,.08,512]);p.arrays[p.metadata.tables.contactTriangles]=new Uint32Array([0,2,1,1,1,1,2,3,1,1]);p.arrays[p.metadata.tables.contactLayers]=new Int8Array(2);
+ const t=tileTables(p),index=buildTileContactIndex(t);for(const referenceY of [0,.01,.04,.08,1]){const c=sampleTileContact(t,index,100,100,{referenceY});assert.equal(c.flags,1);assert.equal(c.surface,1);assert.ok(Math.abs(c.y-.08)<1e-6);}
 });

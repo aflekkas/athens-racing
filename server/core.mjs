@@ -504,7 +504,7 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
             c.state.sampleAge = Number.isFinite(s.sampleAge) ? Math.max(0, Math.min(1000, s.sampleAge)) : 0;
           }
           rememberSample(c, l.raceId, c.state, now);
-          rememberRecoveryRoad(c, event, l.raceId);
+          rememberRecoveryRoad(c, event, l.raceId, maps.get(l.mapId).geometry);
           // Objective modes never take the crossing finish; reversed runs keep
           // their time but stay off the leaderboard.
           if (c.finish === null && event.type === 'sprint' && courseComplete(c.course) && (s.s - event.s1) * event.dir >= 0 && Math.abs(s.u) < 30) {

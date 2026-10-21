@@ -1,8 +1,7 @@
 // Geographic track selector: the full-screen Attica map (offline OSM/DEM, pre-rendered by tools/build-attica-map.py) with
 // the track card floating over it. Selecting a track flies the camera to frame its route; there is no reset control.
-import { MAPS } from './map-catalog.js';
-import { getPlayableMaps, isMapEnabled } from './enabled-maps.js';
-import { MAP_VIEW, MAP_ASSETS, TRACK_ROUTES, MAP_LABELS } from './attica-map-data.js';
+import { quickRaceTracks } from './track-catalog.js';
+import { MAP_VIEW, MAP_ASSETS, MAP_LABELS } from './attica-map-data.js';
 import { coverScale, routeBounds, fitTracks, focusTrack, clampCamera, flight, MAX_SCALE } from './map-select-camera.js';
 import { createMapRenderer } from './map-select-render.js';
 import { createWheelClassifier, wheelZoomFactor, wheelPan, createGlide } from './map-wheel.js';
@@ -11,8 +10,8 @@ import * as C from './ui/components.js';
 import { getMapPersonalBest } from './personal-bests.js';
 
 const { esc } = C;
-const playable = () => getPlayableMaps(MAPS).filter(m => TRACK_ROUTES[m.id]);
-const color = id => id === 'penteli' ? '#71d5c1' : id === 'megara' ? '#e4bf70' : id === 'psychiko' ? '#d7cf83' : '#ff7868';
+const playable = catalogue => quickRaceTracks(catalogue);
+const color = id => id.startsWith('penteli') ? '#71d5c1' : id.startsWith('megara') ? '#e4bf70' : id.startsWith('psychiko') ? '#d7cf83' : '#ff7868';
 function style() {
   if (document.getElementById('map-select-style')) return;
   const link = document.createElement('link'); link.id = 'map-select-style'; link.rel = 'stylesheet'; link.href = new URL('./map-select.css', import.meta.url).href; document.head.append(link);
@@ -21,7 +20,7 @@ const KIND = m => m.type === 'circuit' ? 'Circuit' : m.id === 'penteli' ? 'Hill 
 const lapTime = t => `${Math.floor(t / 60)}:${(t % 60).toFixed(2).padStart(5, '0')}`;
 // The big map frames the selected route, so the card carries only what the map cannot say.
 function preview(map) {
-  const pb = getMapPersonalBest(map.id);
+  const pb = map.routeId ? null : getMapPersonalBest(map.id);
   // A best only appears once one exists; an empty record box is noise.
   const best = pb ? `<div class="map-specs"><div class="map-spec map-spec--best"><small>YOUR BEST</small><b>${lapTime(pb.time)}</b><span>${esc(pb.setup.car)} · ${pb.setup.laps} LAP${pb.setup.laps === 1 ? '' : 'S'}${pb.setup.direction < 0 ? ' · REV' : ''}</span></div></div>` : '';
   // One heading, one line of what the map cannot show (route ends), one quiet line of facts; no coloured kicker.
@@ -32,10 +31,10 @@ function preview(map) {
 const count = (selectable, m) => `${selectable.indexOf(m) + 1} <span>/ ${selectable.length}</span>`;
 // A pin's name chip sits on the side away from its route, so it never covers the track it names.
 const side = r => (r.bounds[0] + r.bounds[2]) / 2 >= r.start[0] - .5 ? 'l' : 'r';
-export function renderMapSelect(selectedId = 'riviera') {
-  style(); const selectable = playable(), selected = selectable.find(m => m.id === selectedId) || selectable[0];
+export function renderMapSelect(selectedId = 'riviera', catalogue = []) {
+  style(); const selectable = playable(catalogue), selected = selectable.find(m => m.id === selectedId || m.legacyId === selectedId) || selectable[0];
   const labels = MAP_LABELS.map((l, i) => `<span class="map-label map-label--${l.k}" data-label="${i}"><i></i><b>${esc(l.t)}${l.s ? `<small>${esc(l.s)}</small>` : ''}</b></span>`).join('');
-  const pins = selectable.map((m, i) => `<span role="button" tabindex="-1" class="mi track-pin ${m.id === selected.id ? 'selected active' : ''}" aria-label="Preview ${esc(m.name)}" aria-pressed="${m.id === selected.id}" data-map-id="${m.id}" data-side="${side(TRACK_ROUTES[m.id])}" style="--pin:${color(m.id)}" ${m.id === selected.id ? 'data-default' : ''}><i class="track-pin__dot">${i + 1}</i><span>${esc(m.name)}</span></span>`).join('');
+  const pins = selectable.map((m, i) => `<span role="button" tabindex="-1" class="mi track-pin ${m.id === selected.id ? 'selected active' : ''}" aria-label="Preview ${esc(m.name)}" aria-pressed="${m.id === selected.id}" data-map-id="${m.id}" data-side="${side(m.shape)}" style="--pin:${color(m.id)}" ${m.id === selected.id ? 'data-default' : ''}><i class="track-pin__dot">${i + 1}</i><span>${esc(m.name)}</span></span>`).join('');
   return C.mapStage({ variant: 'floating', cls: 'scr--maps', kick: 'QUICK RACE', title: 'CHOOSE A TRACK',
     hints: [['leftright', 'TRACK'], ['confirm', 'SELECT'], ['back', 'BACK']],
     stageAttrs: { role: 'img', 'aria-label': `Map of Attica with ${selectable.length} tracks: ${selectable.map(m => m.name).join(', ')}` },
@@ -86,22 +85,22 @@ const hit = (a, b) => a[0] < b[2] && a[2] > b[0] && a[1] < b[3] && a[3] > b[1];
 const PIXEL_BUDGET = 5.5e6;
 const PLACES = { c: [-.5, -.5, 0, 0], r: [0, -.5, 8, 0], l: [-1, -.5, -8, 0], t: [-.5, -1, 0, -6], b: [-.5, 0, 0, 6] };
 
-export function mountMapSelect(root) {
+export function mountMapSelect(root, catalogue = [], onSelect) {
   const map = root.querySelector('.attica-map'), canvas = map?.querySelector('.attica-canvas'), card = root.querySelector('.map-preview'), overlay = root.querySelector('.attica-overlay');
   if (!map || !canvas) return;
   const ctx = canvas.getContext('2d', { alpha: false }), credit = map.querySelector('.attica-credit');
-  const selectable = playable(), events = new AbortController(), { signal } = events;
+  const selectable = playable(catalogue), events = new AbortController(), { signal } = events;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
   const { width: W, height: H } = MAP_VIEW;
   let selected = card.dataset.map, camera, view, safe, dpr = 1, layers = null, art = null, base = null, drag, pinch, frame = 0, resizeFrame = 0, motion = null, last = 0, reveal = null, intro = true, dirty = false, settling = false, onScreen = true, panning = false, moving = false, shown = null;
-  const bounds = routeBounds(selectable.map(m => TRACK_ROUTES[m.id]));
-  const routes = Object.fromEntries(selectable.map(m => { const r = TRACK_ROUTES[m.id], path = new Path2D(r.path);
+  const bounds = routeBounds(selectable.map(m => m.shape));
+  const routes = Object.fromEntries(selectable.map(m => { const r = m.shape, path = new Path2D(r.path);
     // Sample points (every half unit) let labels avoid the line itself rather than its whole bounding box.
     const pts = r.path.slice(1).split('L').map(p => p.split(',').map(Number)), samples = [];
     pts.forEach((p, i) => { const q = pts[i + 1]; if (!q) return samples.push(p); const n = Math.ceil(Math.hypot(q[0] - p[0], q[1] - p[1]) / .5); for (let k = 0; k < n; k++) samples.push([p[0] + (q[0] - p[0]) * k / n, p[1] + (q[1] - p[1]) * k / n]); });
     return [m.id, { ...r, path2d: path, samples, color: color(m.id) }]; }));
   const pointers = new Map(), wheelKind = createWheelClassifier(), glide = createGlide();
-  const pins = [...overlay.querySelectorAll('.track-pin')].map(el => ({ el, id: el.dataset.mapId, side: el.dataset.side, prefer: el.dataset.side, at: TRACK_ROUTES[el.dataset.mapId].start }));
+  const pins = [...overlay.querySelectorAll('.track-pin')].map(el => ({ el, id: el.dataset.mapId, side: el.dataset.side, prefer: el.dataset.side, at: selectable.find(m => m.id === el.dataset.mapId).shape.start }));
   const DOT = 24, anchor = p => p.side === 'l' ? p.w - DOT / 2 : DOT / 2;
   // The chip part of a pin (not its dot) for a side, in screen px.
   const chipRect = (p, side, sx, sy) => side === 'l' ? [sx - p.w + DOT / 2, sy - p.h / 2, sx - DOT / 2 - 2, sy + p.h / 2] : [sx + DOT / 2 + 2, sy - p.h / 2, sx - DOT / 2 + p.w, sy + p.h / 2];
@@ -241,7 +240,7 @@ export function mountMapSelect(root) {
   };
   // Frame the route and its pin's name chip together, so the chip never ends up clipped at the screen edge.
   const framing = () => {
-    const route = TRACK_ROUTES[selected], pin = pins.find(p => p.id === selected);
+    const route = selectable.find(m => m.id === selected).shape, pin = pins.find(p => p.id === selected);
     let cam = focusTrack(view, MAP_VIEW, route, safe);
     if (!pin?.w) return cam;
     for (let i = 0; i < 2; i++) {
@@ -270,7 +269,9 @@ export function mountMapSelect(root) {
   const cycle = delta => { const index = selectable.findIndex(m => m.id === selected); show(selectable[(index + delta + selectable.length) % selectable.length].id); card.querySelector('[data-confirm-track]').focus({ preventScroll: true }); };
   root.addEventListener('focusin', e => { const pin = e.target.closest('.track-pin'); if (pin && pin.dataset.mapId !== selected) show(pin.dataset.mapId); }, { signal });
   root.addEventListener('click', e => { const pin = e.target.closest('.track-pin'); if (pin) { e.stopPropagation(); show(pin.dataset.mapId, true); } }, { capture: true, signal });
-  root.addEventListener('keydown', e => { if (e.target.closest('input,textarea,select,[contenteditable]')) return; if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); e.stopPropagation(); if (!e.repeat) cycle(e.key === 'ArrowRight' ? 1 : -1); } }, { capture: true, signal });
+  // The kit draws focus without moving DOM focus off body. Listen at window so
+  // short arrow taps cannot disappear between the input system's polling frames.
+  window.addEventListener('keydown', e => { if (root.inert || C.ui.modalOpen || C.listboxOpen() || e.target.closest?.('input,textarea,select,[contenteditable]')) return; if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)) { e.preventDefault(); e.stopPropagation(); if (!e.repeat) cycle(['ArrowRight','ArrowDown'].includes(e.key) ? 1 : -1); } }, { capture: true, signal });
   // Where overflow: clip is unsupported, a focused off-screen pin could scroll the map layer: pin it back.
   map.addEventListener('scroll', () => { map.scrollLeft = 0; map.scrollTop = 0; }, { signal });
   // Two-finger trackpad scroll pans, a pinch (ctrl+wheel) or a mouse wheel zooms (src/map-wheel.js, owner 2026-10-20).
@@ -326,20 +327,24 @@ export function mountMapSelect(root) {
   document.fonts?.ready.then(() => { if (!signal.aborted && view) { measure(); sync(performance.now(), true); } });
 
   return { preview: show, action(name) {
-    if (['left', 'shiftDown', 'mapPrev'].includes(name)) { cycle(-1); return true; }
-    if (['right', 'shiftUp', 'mapNext'].includes(name)) { cycle(1); return true; }
+    if (name === 'confirm' && onSelect) { onSelect(selected); return true; }
+    if (['left', 'up', 'shiftDown', 'mapPrev'].includes(name)) { cycle(-1); return true; }
+    if (['right', 'down', 'shiftUp', 'mapNext'].includes(name)) { cycle(1); return true; }
     if (name === 'mapZoomIn' || name === 'mapZoomOut') { if (view) zoomAt(name === 'mapZoomIn' ? 1.35 : 1 / 1.35, (safe.left + safe.right) / 2, (safe.top + safe.bottom) / 2); return true; }
     return false;
   }, dispose() { events.abort(); resize.disconnect(); seen.disconnect(); stop(); cancelAnimationFrame(resizeFrame); base?.dispose(); base = null; } };
 }
 // Quick Race confirms the track and compares times before race setup. (Free roam has no tracks: src/spawn-select.js.)
 export async function selectMap(menu, id) {
-  if (menu.mapLoading || !isMapEnabled(id)) return;
+  const track = quickRaceTracks(menu.data.catalogue).find(m => m.id === id);
+  if (menu.mapLoading || !track) return;
   menu.mapLoading = true;
+  if (menu.root) menu.root.inert = true;
   try {
+    if (track.routeId) { await menu.h.selectUnifiedRoute(track.routeId, track.eventId); return; }
     menu.h.selectMap(id);
     menu.filter = menu.data.filter || menu.filter || 'all';
     menu.show('mapConfirm', { mapId: id, mode: 'quick' }, true);
   } catch (error) { C.ui.toast('COULD NOT LOAD THIS MAP', { icon: 'triangle-alert', tone: 'bad' }); console.error(error); }
-  finally { menu.mapLoading = false; }
+  finally { menu.mapLoading = false; if (menu.root) menu.root.inert = false; }
 }

@@ -3,9 +3,9 @@ import { MAPS } from './map-catalog.js';
 import { getEvents } from './events.js';
 import { CARS } from './cars.js';
 import { inGarage } from './car-catalog.js';
-import {historicalEdition,historicalEditionLabel} from './route-migrations.js';
+import {historicalEdition,historicalEditionLabel,dedupeHistory} from './route-migrations.js';
 import {getRouteHistoricalTimes, listPersonalBests } from './personal-bests.js';
-import { getLeaderboard } from './leaderboard.js';
+import { getLeaderboard, driverId } from './leaderboard.js';
 import { matchesRecord, recordEvent, carLabel, routeId, routeLabel, setupLabels, recordDate, formatRecordTime } from './leaderboard-records.js';
 const { esc } = C;
 const ALL = ['', 'ALL'];
@@ -32,8 +32,32 @@ export function renderTrackTimes(menu, d, filters) {
   else if (state.error) global = `<p>${esc(state.error)}</p>${C.button({ label: 'TRY AGAIN', act: 'trackTimesRetry', size: 'sm' })}`;
   else global = state.entries.length ? state.entries.map((r, i) => renderBestRecord(r, { rank: i + 1, global: true, compact: true })).join('') : '<p class="muted">No times yet. Be the first.</p>';
   queueMicrotask(() => loadTrackTimes(menu, d, state, filters));
-  const edition=filters.historyEdition||historicalEdition(filters.routeId),history=filters.routeId?[...getRouteHistoricalTimes(filters.routeId,undefined,{edition}),...(state.history||[]).filter(r=>r.identity?.edition===edition)]:[];
+  const history=trackHistory(filters,state);
   return `${personal}${C.panel('TOP 3',global,{attrs:{'aria-live':'polite','aria-busy':!!state.loading}})}${filters.routeId?C.panel('HISTORICAL TIMES',history.length?history.map(r=>{const time=r.time??r.bestTime;return renderBestRecord({...r,time},{historical:true,title:`${historicalEditionLabel(r.identity?.edition)} · ${formatRecordTime(time)}`});}).join(''):'<p class="muted">Verified earlier course times stay in their historical edition. This road course has a separate board.</p>'):''}`;
+}
+// This device's original runs plus the server's: a run this device submitted is in both and is shown once.
+function trackHistory(filters, state) {
+  if (!filters.routeId) return [];
+  const edition = filters.historyEdition || historicalEdition(filters.routeId);
+  return dedupeHistory([...getRouteHistoricalTimes(filters.routeId, undefined, { edition }), ...(state.history || []).filter(r => r.identity?.edition === edition)], { me: driverId() });
+}
+const HISTORY_ROWS = 5;
+/** Race Setup's records: one compact block that never needs its own scrollbar. PB and Top 3 are rows (an empty one is a single
+ *  line), and the original-course times sit behind one toggle (`d.showHistory`), fastest five shown. */
+export function renderSetupRecords(menu, d, filters) {
+  const best = listPersonalBests(filters)[0], state = d.trackTimes ||= { loading: true };
+  const row = (title, desc, meta, cls = '') => C.listRow({ title, desc, meta, cls: `recs__row ${cls}`, focusable: false, go: false });
+  const pb = best ? row('PERSONAL BEST', esc([carLabel(best, CARS), recordDate(best)].filter(t => t && t !== 'Date unknown').join(' · ')), esc(formatRecordTime(best.time)), 'recs__row--pb')
+    : row('PERSONAL BEST', 'No time yet. Finish a clean race to set one.', '', 'recs__row--empty');
+  let top;
+  if (state.loading) top = `<div class="recs__line">${C.spinner()}<span>Loading times</span></div>`;
+  else if (state.error) top = `<div class="recs__line"><span>${esc(state.error)}</span>${C.button({ label: 'TRY AGAIN', act: 'trackTimesRetry', size: 'sm', variant: 'ghost' })}</div>`;
+  else top = state.entries.length ? state.entries.map((r, i) => row(`<span class="recs__rank">${i + 1}</span>${esc(r.name || 'DRIVER')}`, esc(carLabel(r, CARS)), esc(formatRecordTime(r.time)))).join('') : '<div class="recs__line">No times yet. Be the first.</div>';
+  queueMicrotask(() => loadTrackTimes(menu, d, state, filters));
+  const history = trackHistory(filters, state), edition = filters.historyEdition || historicalEdition(filters.routeId);
+  const old = history.length ? `<div class="recs__group recs__group--history">${C.button({ label: `${esc(historicalEditionLabel(edition).toUpperCase())} · ${history.length} ${history.length === 1 ? 'TIME' : 'TIMES'}`, icon: 'timer', iconRight: d.showHistory ? 'chevron-up' : 'chevron-down', variant: 'ghost', size: 'sm', act: 'setupHistory', cls: 'recs__toggle', attrs: { 'aria-expanded': String(!!d.showHistory) } })}
+    ${d.showHistory ? `<div class="recs__list">${history.slice(0, HISTORY_ROWS).map((r, i) => row(`<span class="recs__rank">${i + 1}</span>${esc(r.driverId && r.driverId !== driverId() ? r.name || 'DRIVER' : 'YOU')}`, esc([carLabel(r, CARS), recordDate(r)].filter(t => t && t !== 'Date unknown').join(' · ')), esc(formatRecordTime(r.time ?? r.bestTime)))).join('')}${history.length > HISTORY_ROWS ? `<div class="recs__line">Fastest ${HISTORY_ROWS} of ${history.length}.</div>` : ''}</div>` : ''}</div>` : '';
+  return `<section class="recs" aria-label="Times">${pb}<div class="recs__group" aria-live="polite" aria-busy="${!!state.loading}"><h4 class="recs__k">TOP 3</h4>${top}</div>${old}</section>`;
 }
 async function loadTrackTimes(menu, d, state, filters) {
   if (!['mapConfirm','setup'].includes(menu.screen) || menu.data !== d || d.trackTimes !== state || state.requested) return;

@@ -16,7 +16,7 @@ import { button, setProgress, esc } from './components.js';
 const TIPS = [
   'Running a red light adds a time penalty. The SEAT’s nitrous bottle refills while waiting at a red.',
   () => 'Stuck off the road? ' + bindingLabel(input.bindings, 'tow', document.body.dataset.input === 'gamepad' ? 'gamepad' : 'keyboard') + ' to be towed back onto it.',
-  () => bindingLabel(input.bindings, 'camera') + ' switches between the cockpit and chase cameras.',
+  () => bindingLabel(input.bindings, 'camera') + ' toggles POV and outside; ' + bindingLabel(input.bindings, 'cameraPosition') + ' cycles view position.',
   'Change AI rivals, traffic, time of day and weather in the race setup before every Quick Race.',
   'Pavements and dirt lay-bys are drivable. Kerbs and humps will unsettle the car.',
   () => 'Manual gearbox: ' + gearboxMessage('manual', true, input.bindings, document.body.dataset.input === 'gamepad' ? 'gamepad' : 'keyboard'),

@@ -58,7 +58,7 @@ if (query.get('routes')==='1' || (query.get('map')==='athens' && !query.has('men
   const pollMenu = () => {
     if (runtime) return;
     controls.update(1 / 60, { inMenu: true, blocked: document.hidden });
-    for (const action of controls.actions) { if (action === 'garage') menu.h.garage(); else menu.action(action); }
+    for (const action of controls.actions) { if ((action === 'restart' && controls.state.confirm) || (action === 'pause' && controls.state.back)) continue; if (action === 'garage') menu.h.garage(); else menu.action(action); }
     requestAnimationFrame(pollMenu);
   };
   requestAnimationFrame(pollMenu);

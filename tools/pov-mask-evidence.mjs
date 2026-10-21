@@ -11,7 +11,7 @@ export async function povSourceHashes(){
  names.push('src/traffic-passenger-shapes.js','tools/pov-mask.js','tools/cockpit-structure-mask.js','tools/pov-audit.js','src/brand-badges.js','src/manufacturers.js','assets/brand-badges/atlas.svg');const hashes={};for(const n of names)hashes[n]=hash(await fs.readFile(n));
  const {TEXTURE_MANIFEST}=await import('../src/texture-manifest.js');const badge=TEXTURE_MANIFEST['/assets/brand-badges/atlas.svg'];hashes['src/texture-manifest.js#badge']=hash(JSON.stringify(badge)+hash(await fs.readFile('.'+badge.url)));
  const weather=await fs.readFile('src/weather.js','utf8');hashes['src/weather.js#cockpit-rain']=hash(weather.slice(weather.indexOf('// ---- drops on the cockpit windscreen'),weather.indexOf('// ------------------------------------------------------------------ state'))+weather.slice(weather.indexOf('  // ---- windscreen drops (cockpit view only)')));
- const main=await fs.readFile('src/main.js','utf8'),eye=main.indexOf('const eye = player.cockpit.eye'),start=main.lastIndexOf("if (G.cam === 'cockpit')",eye),end=main.indexOf("} else if (G.cam === 'chase')",eye);
+ const main=await fs.readFile('src/main.js','utf8'),eye=main.indexOf('const eye = player.cockpit.eye'),start=main.lastIndexOf("if (G.cam === 'cockpit')",eye),end=main.indexOf("} else if (G.cam === 'chase'",eye);
  if(start<0||end<0)throw Error('POV guard cannot locate the live camera branch; review docs/OWNER-DECISIONS.md');
  hashes['src/main.js#cockpit-camera']=hash(main.slice(start,end));return hashes;
 }

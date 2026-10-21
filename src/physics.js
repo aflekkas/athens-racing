@@ -16,6 +16,7 @@
 //    counter-steer
 //  - crash damage per zone (front / rear / left / right) from the equivalent barrier speed of each impact
 import * as THREE from 'three';
+import {rememberTowHeading} from './tow-heading.js';
 import { clamp, lerp, damp, smoothstep } from './util.js';
 import { damageIncrement, equivalentBarrierSpeed, isGroundContact, frontalBarrierSpeed, mechanicalIncrement, impactPowerFactor, impactDragFactor, isTerminalImpact } from './damage-math.js';
 import { ROAD } from './road.js';
@@ -165,6 +166,7 @@ export class Vehicle {
     // integrator's differences and every per-car cache ground.js keeps (contact history, airborne state, kerb zones)
     this.roadPrev = this.roadFPrev = this.lastAbsBeta = undefined;
     this._gx = this._gz = this._gy = this._gt = this._gu = undefined; this._curbZ = null;
+    this.towHeading = undefined;
     this._network = false; // A tow leaves the side-road surface and its contact mode behind.
     this.rigid = null; this.bodyDynamic = false; this.bodyQ = null; this._supportY = undefined; this._crestTime = 0; this.landingSpeed = 0;
     this.air = 0; this.vy = 0; this.yAir = undefined; this.sink = 0; this.water = 0; this.gradeG = undefined; this.grade = 0; this.bank = 0;
@@ -354,9 +356,9 @@ export class Vehicle {
   }
 
   /**
-   * What a crash leaves behind, to carry across a tow or a reset (a restart builds the car afresh and clears it): the body, the bent
+   * What a crash leaves behind, to preserve across a landmark teleport: the body, the bent
    * corners, the steering pull and the mechanical damage. Acute failures (a stalled engine, a broken driveshaft, a boiling radiator,
-   * the wreck flag that offers a tow) do not survive the tow: the car comes back running, in whatever state the damage has left it.
+   * the wreck flag that offers a tow) are cleared by reset. Towing uses reset directly and fully repairs the car.
    */
   damageSnapshot() {
     this.damageFx();
@@ -617,6 +619,7 @@ export class Vehicle {
   }
 
   step(dt, inp) {
+    rememberTowHeading(this, this.surf === 'asphalt' && !this.offroad);
     this.damageFx(dt);
     // after a hard hit: a short stabilised moment (the yaw a blow put in dies away faster than the tyres alone would take it)
     // and, while still touching a wall, help round to run along it (src/crash-contact.js). Drivable, not a spin-out.
@@ -722,6 +725,7 @@ export class Vehicle {
     // Same-sign sideslip during a slow understeering turn is not a rear
     // slide to catch. Only opposite-yaw countersteer needs the raw guard exit.
     const catchingSlide = counter > 0 && sliding && sIn * this.w < 0;
+    this.understeerGuardCut = 0;
     if (guard > 0 && vx > 0 && !catchingSlide && target * sIn > 0) {
       const side = Math.sign(sIn);
       // The outside front contact travels faster than the axle centre in a
@@ -731,9 +735,12 @@ export class Vehicle {
       const frontTravel = Math.min(
         Math.atan2(frontLat, Math.max(2, vx - this.w * this.cy[0])) * side,
         Math.atan2(frontLat, Math.max(2, vx - this.w * this.cy[1])) * side);
-      const useful = Math.max(0, frontTravel + aOpt * (sp.steerSlipGuard ?? 1.02) + comp * side - yawOver);
+      // Allow a little more slip before trimming. Keep each car's existing
+      // tuning offset, and let the correction vanish as soon as excess does.
+      const useful = Math.max(0, frontTravel + aOpt * ((sp.steerSlipGuard ?? 1.02) + 0.06) + comp * side - yawOver);
       const excess = Math.max(0, Math.abs(target) - useful);
-      target -= Math.sign(target) * excess * Math.min(1, guard / 0.35);
+      this.understeerGuardCut = excess * Math.min(1, guard / 0.35) * 0.85 * smoothstep(0.001, 0.012, excess);
+      target -= Math.sign(target) * this.understeerGuardCut;
     }
     const rate = (sp.steerRate ?? 1) * (2.4 + 1.5 / (1 + vt / 10));
     this.steer += clamp(target - this.steer, -rate * dt, rate * dt);

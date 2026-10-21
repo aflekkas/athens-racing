@@ -8,6 +8,8 @@ import * as THREE from 'three';
 import {settings,setSetting,onSettings,applySteeringAssist} from './settings.js';
 import {Menu} from './menu.js';
 import {Cockpit} from './cockpit.js';
+import {createCameraViews,CAMERA_NAMES} from './camera-views.js';
+import {chaseRig} from './vehicle-camera.js';
 import {seatPosition} from './seat-position.js';
 import {applyVehicleAids,toggleTractionControl} from './driving-aids.js';
 import {shiftTransmission} from './transmission.js';
@@ -70,7 +72,8 @@ export async function bootAthens(){
  document.getElementById('rZone').textContent='ATHENS';document.getElementById('rRoad').textContent=guidance?'ROUTE DEMO':'FREE ROAM';
  const tacho=document.getElementById('tacho'),dial=Object.assign(Object.create(Hud.prototype),{tacho,tctx:tacho.getContext('2d')});
  dial.mini=document.getElementById('minimap');dial.mctx=dial.mini.getContext('2d');dial.worldRoads=roads;dial.worldStreetCache=new Map();
- let cam='chase',hudAt=0,mapAt=0;
+ const cameraViews=createCameraViews(['cockpit','chase','far','bumper','hood'].includes(query.get('cam'))?query.get('cam'):null);
+ let cam=cameraViews.current,hudAt=0,mapAt=0;
  const canvasFocus=()=>{canvas.tabIndex=-1;canvas.focus({preventScroll:true});};
  const resume=()=>{menu.hide();paused=false;input.clear();canvasFocus();};
  const pause=()=>{if(towing)return;paused=true;input.clear();menu.show('pause',{inFreeRoam:true,roamActions:false,kick:area?'ATHENS · '+area:'ATHENS'});document.getElementById('ui').focus({preventScroll:true});};
@@ -84,7 +87,7 @@ export async function bootAthens(){
   if(ui.action(name))return;
   if(name==='pause')pause();
   else if(name==='tow'||name==='reset')void tow();
-  else if(name==='camera'){cam=cam==='chase'?'front':cam==='front'?'cockpit':'chase';input.toast(cam.toUpperCase()+' CAM',{ms:1200});}
+  else if(name==='camera'||name==='cameraPosition'){cam=name==='camera'?cameraViews.toggle():cameraViews.cycle();input.toast(CAMERA_NAMES[cam]+' CAM',{ms:1200});}
   else if(name==='map')dial.toggleBigMap();
   else if(name==='transmission')setSetting('transmission',settings.transmission==='manual'?'auto':'manual');
   else if(name==='shiftUp'||name==='shiftDown')shiftTransmission(player.veh,name==='shiftUp'?1:-1);
@@ -111,11 +114,22 @@ export async function bootAthens(){
  }
  function render(dt){
   const v=player.veh,o=stream.origin;v.place(player.model.root);player.model.root.position.x-=o.x;player.model.root.position.z-=o.z;player.model.update(dt,v.vLong,v.steer,input.state.brake>.2,v.pose,v.corners,v.w);
-  worldTraffic.sync();
+  player.model.setDamageSnapshot?.(v.damage);worldTraffic.sync();
   const fx=-Math.sin(v.yaw),fz=-Math.cos(v.yaw),cock=cam==='cockpit';
+  document.body.dataset.cameraView=cam;
   player.cockpit.setVisible(cock);player.cockpit.update(dt,{vehicle:v,ignition:true,manual:v.manual,rpm:v.rpm,redline:spec.redline,gear:v.gear,gearLabel:String(v.gear),kmh:v.kmh,steerInput:input.state.steer,handbrake:input.state.handbrake});
   if(cock){const seat=seatPosition(spec.id);camera.position.copy(player.cockpit.eye);camera.position.y+=seat.height;camera.position.z-=seat.position;player.model.body.updateWorldMatrix(true,false);player.model.body.localToWorld(camera.position);player.model.body.getWorldQuaternion(camera.quaternion);camera.rotateX(player.cockpit.eyePitch??-.045);}
-  else{const front=cam==='front',back=front?-8:8;camera.position.set(v.x-o.x-fx*back,v.y+3.8,v.z-o.z-fz*back);camera.lookAt(v.x-o.x+(front?0:fx*8),v.y+1,v.z-o.z+(front?0:fz*8));}
+  else if(cam==='chase'||cam==='far'){
+   const rig=chaseRig(spec,clamp(Math.abs(v.vLong)*3.6/260,0,1.2)),scale=cam==='far'?1.55:1;
+   camera.position.set(v.x-o.x-fx*rig.back*scale,v.y+rig.up*scale,v.z-o.z-fz*rig.back*scale);
+   camera.lookAt(v.x-o.x+fx*5,v.y+rig.targetY,v.z-o.z+fz*5);
+  }else{
+   const forward=Math.max(1,(spec.length||4)*(cam==='bumper' ? .51 : .36));
+   const height=cam==='bumper' ? clamp((spec.height||1.5)*.52,.68,1.05) : clamp((spec.height||1.5)*.85,1.18,2.5);
+   camera.position.set(v.x-o.x+fx*forward,v.y+height,v.z-o.z+fz*forward);
+   camera.lookAt(camera.position.x+fx*24,camera.position.y+.15,camera.position.z+fz*24);
+  }
+  const near=cock?.05:.25;if(camera.near!==near){camera.near=near;camera.updateProjectionMatrix();}
   const fov=cock?settings.cockpitFov:62;if(camera.fov!==fov){camera.fov=fov;camera.updateProjectionMatrix();}if(cameraHook)cameraHook(camera,v,o);sky.position.copy(camera.position);ENV.updateSun(sun,player.model.root.position);ENV.U.time.value=elapsed;SEA_TIME.value=elapsed;
   session.setInterest({player:v,actors:worldTraffic.actors});session.update(dt);session.updateView(camera);
   guidance?.update(v,o,performance.now());
