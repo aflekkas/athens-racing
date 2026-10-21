@@ -216,3 +216,8 @@ test('spawn pins can be released and dependency-only scenery never supplies driv
  const s=new WorldTileStream(m,{load:async job=>packet(job.cell),adapter:adapter(),capBytes:300,nearRing:0});s.update({x:1,z:1});await settle(s);assert.ok(s.pins.has('0,0'));
  s.releaseSpawn();s.releaseSpawn();assert.equal(s.pins.size,0);s.update({x:1025,z:1});await settle(s);assert.equal(s.readyAt(1025,1),false);assert.equal(s.contact(1025,1),null);s.dispose();
 });
+
+test('route preparation admits only mandatory pins and their one-hop owners; countdown restores optional interest',async()=>{
+ const m=manifest(5);m.tiles['1,0'].dependencies=['2,0'];const s=new WorldTileStream(m,{load:async job=>packet(job.cell),adapter:adapter(),nearRing:1,safetyRing:0,pinSpawn:false,capBytes:1000});
+ try{const release=s.pin('route-start','1,0'),interest=[{key:'1,0',priority:-1},{key:'3,0',priority:.1}];s.update({x:520,z:10,routeInterest:interest,mandatoryOnly:true});assert.deepEqual([...s.wanted.keys()].sort(),['1,0','2,0']);await settle(s,10);assert.equal(s.readyAt(520,10),true);assert.equal(s.tiles.has('3,0'),false);s.update({x:520,z:10,routeInterest:interest});await settle(s,10);assert.equal(s.tiles.get('3,0').state,'active');release();}finally{s.dispose();}
+});

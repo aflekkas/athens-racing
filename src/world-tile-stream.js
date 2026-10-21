@@ -51,7 +51,7 @@ export class WorldTileStream {
   // Owners loaded only to complete this base cell never become new base requests.
   // This same one-hop set drives admission, pins, readiness and teleports.
   dependencies(key) {return new Set([key,...(this.entry(key)?.dependencies||[])]);}
-  update({x,z,vx=0,vz=0,latencySeconds=0,interest=[],contacts=[],routeInterest=[]}) {
+  update({x,z,vx=0,vz=0,latencySeconds=0,interest=[],contacts=[],routeInterest=[],mandatoryOnly=false}) {
     if(this.disposed)return;
     this.position={x,z};
     this.contactKeys=new Set([tileKey(x,z),...contacts.map(p=>tileKey(p.x,p.z))]);
@@ -71,6 +71,7 @@ export class WorldTileStream {
     for(const key of this.contactKeys)if(this.entry(key))for(const d of this.dependencies(key))this.wanted.set(d,-.5);
     for(const {key,priority} of routeInterest){if(!this.entry(key)||!Number.isFinite(priority))continue;for(const d of this.dependencies(key))this.wanted.set(d,Math.min(this.wanted.get(d)??Infinity,priority));}
     for(const key of this.pins.keys())this.wanted.set(key,-1);
+    if(mandatoryOnly){const allowed=new Set([...this.pins.keys(),...this.contactKeys]);for(const key of this.wanted.keys())if(!allowed.has(key))this.wanted.delete(key);}
     // Latest-interest generation cancels stale fetches before new reservations are admitted.
     for(const [key,tile] of this.tiles)if(!this.wanted.has(key)&&['loading','preparing'].includes(tile.state))this.remove(key);
     const ox=Math.abs(x-this.origin.x)>2048?Math.floor(x/TILE_METRES)*TILE_METRES:this.origin.x;

@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtemp, mkdir, writeFile, rm} from 'node:fs/promises';
+import {mkdtemp, mkdir, writeFile, rm, symlink} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {rebindRouteShard, checkBuiltRouteRelease} from './route-release.mjs';
 import {fixture} from './fixtures/routes/fixture.mjs';
+import {attachRivalPlans} from './build-rival-plans.mjs';
 import {compileRoute} from '../src/route-compile.js';
 
 const old = 'a'.repeat(64), next = 'b'.repeat(64), cellHash = 'c'.repeat(64);
@@ -25,7 +26,8 @@ test('route asset URL changes with its world binding while geometry identity sta
 test('the release gate rejects a stale compiled route or a changed Wrangler pointer', async () => {
   const root=await mkdtemp(join(tmpdir(),'athens-route-release-'));
   try {
-    const key=`manifests/${old}.json`, entry={id:'syntagma-pilot',routeHash:cellHash,geometryHash:old,worldSetRevision:next};
+    const f=fixture(),[artifact]=await attachRivalPlans([await compileRoute(f.definition,f.graph,{...f.contacts,worldSetRevision:next})]),key=`manifests/${old}.json`,entry={id:artifact.id,routeHash:artifact.routeHash,geometryHash:artifact.geometryHash,worldSetRevision:next};
+    await symlink(new URL('../src',import.meta.url).pathname,join(root,'src'));await symlink(new URL('.',import.meta.url).pathname,join(root,'tools'));
     for(const path of ['assets/athens','.deploy/assets/data/routes','.deploy/assets'])await mkdir(join(root,path),{recursive:true});
     const put=(path,value)=>writeFile(join(root,path),JSON.stringify(value));
     await put('wrangler.jsonc',{env:{staging:{vars:{ATHENS_WORLD_MANIFEST:key}}}});
@@ -33,10 +35,12 @@ test('the release gate rejects a stale compiled route or a changed Wrangler poin
     await put('.deploy/assets/data/routes/index.json',{routes:[entry]});
     await put('.deploy/assets/route-config.json',{routes:[entry]});
     await put('.deploy/catalogue.json',{routes:[entry]});
-    await put(`.deploy/assets/data/routes/${entry.id}.${entry.routeHash}.json`,entry);
+    await put(`.deploy/assets/data/routes/${entry.id}.${entry.routeHash}.json`,artifact);
     assert.deepEqual(await checkBuiltRouteRelease(root),{checked:1,revision:next});
-    await put(`.deploy/assets/data/routes/${entry.id}.${entry.routeHash}.json`,{...entry,worldSetRevision:old});
+    await put(`.deploy/assets/data/routes/${entry.id}.${entry.routeHash}.json`,{...artifact,worldSetRevision:old});
     await assert.rejects(checkBuiltRouteRelease(root),/artifact\/world release mismatch/);
+    await put(`.deploy/assets/data/routes/${entry.id}.${entry.routeHash}.json`,{...artifact,rivalPlan:{...artifact.rivalPlan,geometryHash:old}});
+    await assert.rejects(checkBuiltRouteRelease(root),/Stale rival/);
     await put('wrangler.jsonc',{env:{staging:{vars:{ATHENS_WORLD_MANIFEST:`manifests/${next}.json`}}}});
     await assert.rejects(checkBuiltRouteRelease(root),/Picker streets and deployed world manifest differ/);
   } finally {await rm(root,{recursive:true,force:true});}

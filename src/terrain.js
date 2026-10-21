@@ -1,3 +1,4 @@
+import {trackDetailMaterial} from './athens-detail.js';
 import { worldDetailEnabled } from './world-detail-state.js';
 // Terrain meshes from the DEM/land-cover grid: a 10 m mesh along the route corridor and a 40 m mesh beyond.
 import * as THREE from 'three';
@@ -22,8 +23,11 @@ export function terrainMaterial({ farmland = false, gardens = false } = {}) {
   // texture splatting driven by the land-cover vertex colour + slope + height: dry cracked soil, withered grass /
   // maquis ground, beach sand (wet near the waterline) and limestone rock faces (tri-planar on steep ground)
   const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.96, metalness: 0 });
-  mat.customProgramCacheKey = () => farmland ? 'terrain-owner-area-farmland' : 'terrain-owner-area';
-  mat.onBeforeCompile = (sh) => {
+  trackDetailMaterial(mat);
+  mat.customProgramCacheKey = () => (farmland ? 'terrain-owner-area-farmland' : 'terrain-owner-area')+(worldDetailEnabled.value?':detail':':plain');
+  mat.onBeforeCompile = function(sh) {
+    trackDetailMaterial(this);
+    if(!worldDetailEnabled.value){sh.fragmentShader=sh.fragmentShader.replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nroughnessFactor = 0.95;');return;}
     Object.assign(sh.uniforms, { uWorldDetail: worldDetailEnabled,
       tGD: { value: TX.ground_diff }, tGN: { value: TX.ground_nor }, tSD: { value: TX.grass_diff }, tSN: { value: TX.grass_nor },
       tBD: { value: TX.sand_diff }, tBN: { value: TX.sand_nor }, tRD: { value: TX.rock_diff }, tRN: { value: TX.rock_nor },

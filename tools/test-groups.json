@@ -285,7 +285,8 @@
     "tools/rivals-test.mjs",
     "tools/physics-test/airborne.test.mjs",
     "tools/world-tile-barriers.test.mjs",
-    "tools/crash-physics.test.mjs"
+    "tools/crash-physics.test.mjs",
+    "tools/rival-plan.test.mjs"
   ],
   "damage": [
     "tools/damage-geometry.test.mjs",

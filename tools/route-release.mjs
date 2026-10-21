@@ -1,3 +1,4 @@
+import {checkRivalPlan,rivalSourceHash} from './build-rival-plans.mjs';
 import {readFile,writeFile,rm} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {loadWorldDefinition,canonicalWorldJSON} from '../src/world-manifest.js';
@@ -47,11 +48,13 @@ export async function checkBuiltRouteRelease(root, environment = 'staging') {
   const catalogue = JSON.parse(await readFile(resolve(root, '.deploy/catalogue.json'), 'utf8'));
   const entries = index.routes || [], enabled = config.routes || [], server = catalogue.routes || [];
   if (!entries.length || entries.length !== enabled.length || entries.length !== server.length) throw Error('Compiled route catalogue incomplete');
+  const sourceHash=await rivalSourceHash(root);
   for (const entry of entries) {
     const counterpart = enabled.find(r => r.id === entry.id), backend = server.find(r => r.id === entry.id);
     if (!counterpart || !backend || !hex64.test(entry.routeHash || '') || entry.worldSetRevision !== revision || counterpart.worldSetRevision !== revision || backend.worldSetRevision !== revision || counterpart.routeHash !== entry.routeHash || backend.routeHash !== entry.routeHash) throw Error(`Compiled route/world release mismatch: ${entry.id}`);
     const artifact = JSON.parse(await readFile(resolve(out, `data/routes/${entry.id}.${entry.routeHash}.json`), 'utf8'));
     if (artifact.worldSetRevision !== revision || artifact.routeHash !== entry.routeHash || artifact.geometryHash !== entry.geometryHash) throw Error(`Compiled route artifact/world release mismatch: ${entry.id}`);
+    await checkRivalPlan(artifact,{sourceHash});
   }
   return {checked: entries.length, revision};
 }

@@ -78,3 +78,9 @@ test('run-time tagging gives older bakes their ground and sea layers, and declar
   tagDressedSurfaces(pack);assert.deepEqual(pack.metadata.meshes.map(m=>m.userData.tileSurface),['ground','urban','sea','paving',undefined]);
   assert.deepEqual(DRESSING_VARIANTS.map(v=>v.surface),['coastalUrban','coastalGround','coastalDetail','ground','coastalBuilding','building','sea','foam']);for(const v of DRESSING_VARIANTS)assert.equal(v.key,JSON.stringify({surface:v.surface,attributes:v.attributes,index:v.index,terrain:v.terrain}));
 });
+
+test('terrain Off removes unused texture uniforms and preserves the plain roughness; live toggles recompile clones',async()=>{
+ const {terrainMaterial}=await import('../src/terrain.js'),{penteliTerrainMaterial}=await import('../src/penteli-terrain.js');
+ const compile=m=>{const sh={uniforms:{},vertexShader:'#include <common>\n#include <begin_vertex>\n#include <worldpos_vertex>',fragmentShader:'#include <common>\n#include <color_fragment>\n#include <roughnessmap_fragment>\n#include <normal_fragment_maps>'};m.onBeforeCompile(sh);return sh;};
+ for(const make of [terrainMaterial,penteliTerrainMaterial]){const material=make(),clone=terrainChunkMaterial(material,{version:1,offset:[0,0,0],scale:[1,1,1]});try{setSetting('worldDetail',false);const plain=compile(clone),key=clone.customProgramCacheKey(),version=clone.version;assert.equal(plain.uniforms.tGD,undefined);assert.match(plain.fragmentShader,/roughnessFactor = 0.95/);assert.match(plain.vertexShader,/terrainOffset/);setSetting('worldDetail',true);assert.ok(clone.version>version);assert.notEqual(clone.customProgramCacheKey(),key);assert.ok(compile(clone).uniforms.tGD);}finally{material.dispose();clone.dispose();setSetting('worldDetail',true);}}
+});

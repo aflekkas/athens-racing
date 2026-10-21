@@ -1,3 +1,4 @@
+import {validateRivalPlan,unpackRivalArray,rivalLineKey} from './rival-plan.js';
 import {entryYieldDistance} from './roundabouts.js';
 // Race driving uses only ordinary Vehicle inputs. Geometry stays in route metres;
 // closed routes repeat their line/profile, while vehicle.s stays unwrapped across laps.
@@ -293,7 +294,11 @@ function getLine(route, veh, options) {
   if (options.roadEdges) return new RacingLine(route, { ...options, halfWidth: veh.halfW });
   let cache = lineCache.get(route); if (!cache) lineCache.set(route, cache = new Map());
   const key = `${options.dir || 1}:${veh.halfW}:${!!options.closedRoad}`;
-  if (!cache.has(key)) cache.set(key, new RacingLine(route, { ...options, halfWidth: veh.halfW }));
+  if (!cache.has(key)) {
+    const plan=route.compiled&&validateRivalPlan(route.compiled,{required:!!route.requireRivalPlan}),data=plan?.lines[rivalLineKey(options.dir||1,veh.halfW)];
+    if(data){const line=Object.create(RacingLine.prototype);Object.assign(line,{route,dir:options.dir||1,halfWidth:veh.halfW,closedRoad:!!options.closedRoad,closed:!!route.closed,length:route.length,n:plan.n,step:plan.step});for(const name of ['u','k','grade','vertical'])line[name]=unpackRivalArray(data[name]||plan[name],plan.n);cache.set(key,line);}
+    else {if(route.requireRivalPlan)throw Error('Missing shipped rival line');cache.set(key,new RacingLine(route,{...options,halfWidth:veh.halfW}));}
+  }
   return cache.get(key);
 }
 
@@ -312,7 +317,16 @@ function preparedProfile(line, veh) {
   let cache = profileCache.get(line); if (!cache) profileCache.set(line, cache = new WeakMap());
   const methods = [veh.maxLatAccel,veh.maxBrakeDecel,veh.maxDriveAccel,veh.steerLockAt],old = cache.get(veh);
   if (old?.key === key && methods.every((method,i)=>method===old.methods[i])) return old.profile.slice();
-  const profile = line.speedProfile(veh); cache.set(veh, { key, methods, profile: profile.slice() });
+  const plan=line.route.compiled?.rivalPlan,shipped=plan?.profiles[veh.spec.id];
+  let profile;
+  if(shipped?.stateKey===key&&shipped.lineKey===rivalLineKey(line.dir,line.halfWidth))profile=unpackRivalArray(shipped.v,line.n);
+  else {
+    if(line.route.requireRivalPlan&&!shipped)throw Error('Missing shipped rival speed profile');
+    // Weather and damage change live capabilities after entry. This remains
+    // the existing adaptive solve, never a substitute for a missing artifact.
+    profile=line.speedProfile(veh);
+  }
+  cache.set(veh, { key, methods, profile: profile.slice() });
   return profile;
 }
 

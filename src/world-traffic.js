@@ -9,11 +9,12 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export function trafficSuccessors(graph,edge,closures){return [...(graph.outgoing.get(edge.to)||[])].map(id=>graph.edges.get(id)?.value).filter(e=>e&&roadLayersConnect(edge,e)&&graph.legal(edge.id,e)&&!closures?.blocksEdge(e));}
 export class WorldTraffic {
  constructor(session,scene,route,{closures}={}){Object.assign(this,{session,scene,route,closures});this.pool=null;this.cars=[];this.widthCache=new Map();this.sites=[];this.level=0;this.disabled=true;this.t=0;this.spawnT=0;this.hm=new HeatMachine();this.policeEnabled=false;this.wrecks=[];this.honks=[];this.sounds=[];}
- configure(def){this.level=clamp(def.traffic??0,0,2);this.disabled=this.level===0;this.policeEnabled=def.rules?.police===true;this.tuning=policeTuning(def.rules?.policeLevel,def.rules?.busted);this.hm=new HeatMachine(this.tuning);this.crossedRed=null;this.spawnT=0;this.widthCache.clear();
-  if((this.level>0||this.policeEnabled)&&!this.pool){this.pool=new Traffic(this.scene,{closed:true},{},{poolSize:24,policePoolSize:5,roadVehiclesOnly:true});this.cars=this.pool.cars;}
+ configure(def,{deferFleet=false}={}){this.definition=def;this.level=clamp(def.traffic??0,0,2);this.disabled=this.level===0;this.policeEnabled=def.rules?.police===true;this.tuning=policeTuning(def.rules?.policeLevel,def.rules?.busted);this.hm=new HeatMachine(this.tuning);this.crossedRed=null;this.spawnT=0;this.widthCache.clear();
+  if(!deferFleet&&(this.level>0||this.policeEnabled)&&!this.pool){this.pool=new Traffic(this.scene,{closed:true},{},{poolSize:24,policePoolSize:5,roadVehiclesOnly:true});this.cars=this.pool.cars;}
   for(const c of this.cars){if(c.police)c.cop||={};c.active=false;c.crashed=false;c.m.root.visible=false;c.point=null;c.vehicle=null;}
   Object.assign(pursuit,{enabled:this.policeEnabled,state:this.policeEnabled?'idle':'off',heat:0,level:0,bustMeter:0,evadeMeter:0,units:0});
  }
+ warmFleet(){if(!this.pool&&this.definition)this.configure(this.definition);}
  candidate(edge,offset,c){const p=edgePoint(edge,offset),key=edge.id+':'+Math.floor(offset/4)+':'+c.wid+':'+c.len,cached=this.widthCache.get(key),width=cached||this.session.roads.width(p,{radius:32,bounded:true,connected:true});if(!width)return null;
   const twins=[...(this.session.roads.graph.outgoing.get(edge.to)||[])].map(id=>this.session.roads.graph.edges.get(id)?.value).some(e=>e?.to===edge.from);
   const u=(width.right-width.left)/2+(twins?width.width/4:0);p.x+=p.rx*u;p.z+=p.rz*u;const contact=this.session.stream.contact(p.x,p.z,{referenceY:p.y,layer:edge.layer,requiredFlags:1});if(!contact)return null;p.y=contact.y;p.surfaceId=contact.surfaceId;p.edge=edge.id;p.edgeId=edge.id;
