@@ -1,10 +1,10 @@
-// Shared presentation/filter logic. Missing historical settings stay unknown.
+// Shared presentation/filter logic. Missing settings never acquire invented values.
 import { canonicalCarId } from './car-ids.js';
 export const SETUP_FIELDS = ['time', 'weather', 'traffic', 'rivals', 'police', 'tc', 'abs', 'steering', 'gearbox'];
 export const recordSetup = r => r?.setup || {};
 export const recordMap = r => r.setup?.map || r.mapId || 'riviera';
 export const recordEvent = r => r.setup?.event || r.eventId || 'unknown';
-export const recordCar = r => canonicalCarId(r.setup?.car || r.car);
+export const recordCar = r => canonicalCarId(r.setup?.car || r.car || r.bestCar);
 export function matchesRecord(r, filters = {}) {
   const s = recordSetup(r);
   return (!filters.routeId||(r.routeId||s.routeId||r.identity?.routeId)===filters.routeId)&&(!filters.edition||(r.edition||s.edition||r.identity?.edition)===filters.edition)&&(!filters.mapId || recordMap(r) === filters.mapId) &&
@@ -16,11 +16,13 @@ export function matchesRecord(r, filters = {}) {
 }
 export const routeId = r => JSON.stringify([recordEvent(r), r.setup?.from ?? r.routeKey ?? null, r.setup?.to ?? null, r.setup?.direction ?? null, r.setup?.laps ?? null]);
 export function setupLabels(r) {
-  const s = recordSetup(r), text = v => v == null ? 'Unknown' : String(v).toUpperCase();
-  const flag = (k, label) => `${label} ${s[k] == null ? 'unknown' : s[k] ? 'on' : 'off'}`;
-  const traffic = s.traffic == null ? (r.traffic == null ? 'unknown' : r.traffic ? 'on (density unknown)' : 'off') : s.traffic === 0 ? 'off' : `${s.traffic}×`;
-  return [`${text(s.time)} · ${text(s.weather)}`, `Traffic ${traffic} · Rivals ${s.rivals ?? 'unknown'} · ${flag('police', 'Police')}`,
-    `${flag('tc', 'TC')} · ${flag('abs', 'ABS')} · Steering ${text(s.steering)} · Gearbox ${text(s.gearbox)}`];
+  const s = recordSetup(r), known = v => v != null && v !== '' && !/^unknown$/i.test(String(v));
+  const text = v => known(v) ? String(v).toUpperCase() : '';
+  const flag = (k, label) => typeof s[k] === 'boolean' ? `${label} ${s[k] ? 'on' : 'off'}` : '';
+  const traffic = Number.isFinite(s.traffic) ? (s.traffic === 0 ? 'off' : `${s.traffic}×`) : typeof r.traffic === 'boolean' ? (r.traffic ? 'on' : 'off') : '';
+  return [[text(s.time), text(s.weather)], [traffic && `Traffic ${traffic}`, Number.isFinite(s.rivals) ? `Rivals ${s.rivals}` : '', flag('police', 'Police')],
+    [flag('tc', 'TC'), flag('abs', 'ABS'), known(s.steering) && `Steering ${text(s.steering)}`, known(s.gearbox) && `Gearbox ${text(s.gearbox)}`]]
+    .map(parts => parts.filter(Boolean).join(' · ')).filter(Boolean);
 }
 export function carLabel(r, cars = []) {
   const spec = cars.find(c => c.id === recordCar(r));

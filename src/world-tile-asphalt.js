@@ -1,7 +1,12 @@
 // The carriageway of a tile, measured from its drivable-asphalt ground triangles (contact flag bit 0), so things that stand beside a street (parked cars, scooters)
 // can sit against the real kerb instead of a guessed lane count. Works on compact tiles (fineTriangles + fineFlags) and classic ones (contactTriangles rows).
 const CELL = 8;
+import {tileSurfaceIndex} from './world-tile-surface-cache.js';
 export function asphaltIndex(t) {
+  const fine=!!(t.fineFlags&&t.fineTriangles);
+  return tileSurfaceIndex(fine?'asphalt-fine':'asphalt-contact',fine?[t.finePositions,t.fineTriangles,t.fineFlags]:[t.contactPositions,t.contactTriangles],()=>buildAsphaltIndex(t));
+}
+function buildAsphaltIndex(t) {
   const tris = [], grid = new Map();
   const add = (P, a, b, c) => {
     const ax = P[a * 3], az = P[a * 3 + 2], bx = P[b * 3], bz = P[b * 3 + 2], cx = P[c * 3], cz = P[c * 3 + 2], i = tris.length / 6;

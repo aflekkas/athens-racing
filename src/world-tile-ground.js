@@ -2,7 +2,12 @@
 // the height of the surface under a point, interpolated across its triangle, or NaN where the tile has none. The tile worker uses it to stand parked cars on the ground under their
 // wheels. One 8 m grid of triangle indices, built once per tile.
 const CELL = 8;
+import {tileSurfaceIndex} from './world-tile-surface-cache.js';
 export function groundIndex(t) {
+  const fine=!!(t.fineTriangles&&t.finePositions);
+  return tileSurfaceIndex(fine?'ground-fine':'ground-contact',fine?[t.finePositions,t.fineTriangles]:[t.contactPositions,t.contactTriangles],()=>buildGroundIndex(t));
+}
+function buildGroundIndex(t) {
   const tris = [], grid = new Map();
   const add = (P, a, b, c) => {
     const ax = P[a * 3], ay = P[a * 3 + 1], az = P[a * 3 + 2], bx = P[b * 3], by = P[b * 3 + 1], bz = P[b * 3 + 2], cx = P[c * 3], cy = P[c * 3 + 1], cz = P[c * 3 + 2], i = tris.length / 9;

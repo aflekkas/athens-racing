@@ -65,7 +65,7 @@ const resourceBudget = (js, gpu, cap, transient, concurrency) => Object.freeze({
 });
 export const RESOURCE_BUDGETS = Object.freeze({
   potato: resourceBudget(256, 192, 64, 64, 1),
-  low: resourceBudget(256, 192, 64, 64, 1),
+  low: resourceBudget(256, 192, 64, 64, 2),
   med: resourceBudget(384, 256, 128, 96, 2),
   high: resourceBudget(512, 384, 256, 192, 2),
 });

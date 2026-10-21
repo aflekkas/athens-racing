@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { setupLabels, carLabel, matchesRecord, routeId, formatRecordTime, recordDate } from '../src/leaderboard-records.js';
-test('old records explicitly disclose unknown settings; missing values never match assist/weather filters', () => {
- const old={car:'mini',traffic:true,time:90};assert.match(setupLabels(old).join(' '),/density unknown/);assert.match(setupLabels(old).join(' '),/TC unknown/);
+test('old records show only known settings; missing values never match assist/weather filters', () => {
+ const old={car:'mini',traffic:true,time:90};assert.deepEqual(setupLabels(old),['Traffic on']);assert.deepEqual(setupLabels({car:'mini',time:90}),[]);
  assert(!matchesRecord(old,{tc:'true'}));assert(!matchesRecord(old,{weather:'clear'}));assert(matchesRecord(old,{mapId:'riviera'}));
  const jcw=[{id:'mini_jcw',name:'MINI JCW'}];assert.equal(carLabel({...old,car:'mini_jcw',carGeneration:'F57',carTrim:'Cooper S'},jcw),'MINI JCW','a car label never carries generation or trim text');assert.equal(carLabel(old,jcw),'MINI JCW','a record still naming a removed trim shows the kept car');assert(matchesRecord(old,{car:'mini_jcw'})&&matchesRecord({...old,car:'mini_jcw'},{car:'mini_cooper'}),'the car filter treats a removed trim as its kept car');assert.equal(recordDate(old),'Date unknown');assert.equal(formatRecordTime(65.25),'1:05.25');assert.equal(formatRecordTime(59.999),'1:00.00');
 });
@@ -11,7 +11,17 @@ test('route filtering keeps lap counts and directions distinct', () => {
  assert(matchesRecord(r,{route:routeId(r)}));assert(!matchesRecord({...r,setup:{...r.setup,laps:2}},{route:routeId(r)}));
 });
 
-import { renderTrackTimes } from '../src/leaderboards-screen.js';
+import { renderTrackTimes, renderBestRecord } from '../src/leaderboards-screen.js';
+test('shared historical cards display only recorded car, time, date and known partial settings',()=>{
+ for(const title of ['Original Faros circuit','Original Riviera track','Original Penteli road']){
+  const record={car:'mini',time:90,date:'2026-10-20'},html=renderBestRecord(record,{historical:true,title:`${title} · 1:30.00`});
+  assert.match(html,/MINI JOHN COOPER WORKS/);assert.match(html,/1:30.00/);assert.match(html,/2026/);assert.match(html,new RegExp(title));
+  assert.doesNotMatch(html,/unknown|unavailable|Traffic|Rivals|Police|TC|ABS|Steering|Gearbox/i);
+  const partial=renderBestRecord({...record,setup:{tc:false,abs:true,weather:'rain',police:false,steering:'unknown'}},{historical:true,title});
+  assert.match(partial,/TC off/);assert.match(partial,/ABS on/);assert.match(partial,/RAIN/);assert.match(partial,/Police off/);assert.doesNotMatch(partial,/unknown|Steering|Gearbox/i);
+ }
+ for(const record of [{time:90},{time:90,car:'unknown'},{time:90,carName:'UNKNOWN CAR'}])assert.doesNotMatch(renderBestRecord(record,{historical:true,title:'Earlier course · 1:30.00'}),/unknown/i);
+});
 import { recordPersonalBest } from '../src/personal-bests.js';
 const tick = () => new Promise(resolve => setImmediate(resolve));
 test('Quick Race track times filter PB and globals by the actual event, rank three, and ignore abandoned views', async () => {

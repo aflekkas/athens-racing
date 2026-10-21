@@ -99,6 +99,10 @@ export class WorldTileStream {
       this.metrics.peakReservedBytes=Math.max(this.metrics.peakReservedBytes,this.residentBytes+this.reservedBytes);
       tile.started=this.now();
       const job={url:new URL(entry.url,this.baseURL).href,entry,world:entry.source?.world||this.manifest.world,revision:entry.source?.revision||this.manifest.revision,cell:key.split(',').map(Number)};
+      const failed=error=>{
+        if(this.tiles.get(key)!==tile||this.disposed)return;
+        this.residentBytes-=tile.bytes||0;tile.bytes=0;tile.packet=null;tile.state='failed';tile.error=error;tile.retryAt=this.now()+this.retryMs*2**(tile.attempts-1);this.metrics.failures++;
+      };
       Promise.resolve().then(()=>this.load(job,controller.signal)).then(packet=>{
         if(this.disposed||this.tiles.get(key)!==tile)return;
         if(!Number.isSafeInteger(packet.bytes)||packet.bytes<0||packet.bytes>reserved)throw new Error('Tile exceeded reservation');
@@ -112,14 +116,15 @@ export class WorldTileStream {
         this.metrics.peakGPUBytes=Math.max(this.metrics.peakGPUBytes,gpuBytes);
         this.metrics.loadedBytes+=entry.bytes;this.metrics.peakResidentBytes=Math.max(this.metrics.peakResidentBytes,this.residentBytes);
         const warming=this.adapter?.warmup?.(tile.packet);packet=null;
-        if(warming)return Promise.resolve(warming).then(()=>{if(!this.disposed&&this.tiles.get(key)===tile)tile.state='ready';});
-        tile.state='ready';
-      }).catch(error=>{
-        if(this.tiles.get(key)!==tile||this.disposed)return;
-        this.residentBytes-=tile.bytes||0;tile.bytes=0;tile.packet=null;tile.state='failed';tile.error=error;tile.retryAt=this.now()+this.retryMs*2**(tile.attempts-1);this.metrics.failures++;
-      }).finally(()=>{
+        // Decode has returned its transferred packet: the worker and transient
+        // reservation are free even while the GPU prepares common programs.
+        // Residency still accounts for this packet, and activation stays gated.
+        if(warming)Promise.resolve(warming).then(()=>{if(!this.disposed&&this.tiles.get(key)===tile)tile.state='ready';}).catch(failed);
+        else tile.state='ready';
+      }).catch(failed).finally(()=>{
         if(tile.reserved){this.reservedBytes-=tile.reserved;tile.reserved=0;}
         this.transientBytes-=tile.transient;tile.transient=0;this.inflight--;
+        this.pump();
       });
     }
   }

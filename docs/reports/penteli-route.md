@@ -40,3 +40,29 @@ with native Vehicle instances at 150 km/h, 60 native tow-and-settle cases, 105
 contact boundaries and 312,455 seam samples. The maximum tow height error is
 8.854 mm and vertical speed 0.426 m/s. These are independent current-cell checks;
 the original full-region import and scenery handoffs remain their own evidence.
+
+The entry acceptance series caught first-time regional background construction
+inside activation. Regional warmup now constructs one detached background from
+the authenticated asset; activation attaches that exact prepared identity and
+updates its cell mask. Cancellation disposes detached geometry/materials, and
+returning to an evicted region prepares a fresh detached scene from the retained
+asset. Ownership, affine transforms, World detail and visible geometry stay the
+same. The final follow-up is checked by focused lifecycle tests and the release
+train's exact-candidate full gates; the one manual full-suite run is retained
+separately with its original candidate SHA in the feed.
+
+Lead review found that the capture script had seeded a local 7:00.25, Oct 20
+history entry, matching the explicitly documented Faros/Riviera capture fixtures.
+That seed is removed. Acceptance captures now show the genuine native 12:06.12 PB
+and an empty historical board. No fixture is submitted to the live service.
+Read-only authenticated staging/production API checks of the reported event/car
+boards found no matching 420.25-second record. Production remains on the old
+API, so its original map boards were queried. See `phase4a-history-audit.json`.
+
+Shared history cards omit absent settings, car/date placeholders and course
+metadata already covered by the edition title. Partial known settings remain
+visible. Backend migration requires a submitted driver id, timestamp, positive
+time and car; explicitly tagged fixtures and the old local `fixture` key never
+acquire history aliases, including previously migrated copies. Untouched original
+stores remain available for audit. A genuine submitted 420.25-second record is
+preserved; time/date values are never used as a deletion heuristic.

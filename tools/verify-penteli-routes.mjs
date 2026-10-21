@@ -30,10 +30,10 @@ try{
   console.log(JSON.stringify(await page.evaluate(()=>{const p=window.__routePilot;window.__manualDrive=true;return {state:p.G.state,metrics:p.session.metrics,stream:p.session.stream.metrics,resources:p.session.inventory(),actors:p.traffic.actors.length,rivals:p.rivals.length};})));
   if(mode==='records'){
    const prior=JSON.parse(await readFile(feed+'/phase4a-trial-drive.json')),result=prior.final.result,entry={time:result.time,car:result.car,date:result.date,setup:result.setup};
-   await page.evaluate(async({entry,key,routeKey})=>{localStorage.setItem('paraliaki.personalBests.v2',JSON.stringify({version:2,exact:{[key]:entry},routes:{[routeKey]:entry},history:{}}));const old={mapId:'penteli',eventId:'penteli-tt',version:'33ed3ce1',time:420.25,car:'mini',date:'2026-10-20',setup:{map:'penteli',event:'penteli-tt',from:292,to:10188,direction:1,laps:1}};localStorage.setItem('paraliaki.personalBests.v1',JSON.stringify({version:1,exact:{fixture:old},routes:{}}));await window.__flow.menu.h.selectUnifiedRoute('penteli-hill','penteli-tt');},{entry,key:exactBestKey(result.setup),routeKey:routeBestKey(result.setup)});
-   await page.waitForFunction(()=>document.body.textContent.includes('Original Penteli road'));await page.waitForTimeout(300);
-   await page.getByText('Original Penteli road · 7:00.25',{exact:false}).scrollIntoViewIfNeeded();
-   await snap(page,'phase4a-penteli-finish-records','Penteli TT records. Current 12:06.12 PB is restored from the valid native drive evidence; Original Penteli road 7:00.25 is a local historical fixture.');
+   await page.evaluate(async({entry,key,routeKey})=>{localStorage.removeItem('paraliaki.personalBests.v1');localStorage.setItem('paraliaki.personalBests.v2',JSON.stringify({version:2,exact:{[key]:entry},routes:{[routeKey]:entry},history:{}}));await window.__flow.menu.h.selectUnifiedRoute('penteli-hill','penteli-tt');},{entry,key:exactBestKey(result.setup),routeKey:routeBestKey(result.setup)});
+   await page.waitForFunction(()=>document.body.textContent.includes('PERSONAL BEST · 12:06.12'));await page.waitForTimeout(300);
+   await page.getByText('HISTORICAL TIMES',{exact:true}).scrollIntoViewIfNeeded();
+   await snap(page,'phase4a-penteli-finish-records','Penteli TT records. Current 12:06.12 PB is restored from the valid native drive evidence. No synthetic historical records are seeded.');
    await writeFile(feed+'/phase4a-records-browser.json',JSON.stringify({nativeResult:{time:result.time,valid:result.valid,eventId:result.eventId,car:result.car},text:await page.locator('body').innerText(),errors},null,2));
   }
   if(['drive','trial'].includes(mode)){
@@ -47,8 +47,8 @@ try{
    }
    if(mode==='trial'){
     const result=await page.evaluate(()=>window.__routePilot.G.result);if(!result?.valid)throw Error('Native TT did not complete validly: '+JSON.stringify(result));
-    await page.evaluate(async()=>{window.__manualDrive=false;const old={mapId:'penteli',eventId:'penteli-tt',version:'33ed3ce1',time:420.25,car:'mini',date:'2026-10-20',setup:{map:'penteli',event:'penteli-tt',from:292,to:10188,direction:1,laps:1}};localStorage.setItem('paraliaki.personalBests.v1',JSON.stringify({version:1,exact:{fixture:old},routes:{}}));await window.__flow.menu.h.selectUnifiedRoute('penteli-hill','penteli-tt');});
-    await page.waitForFunction(()=>document.body.textContent.includes('Original Penteli road'));await snap(page,'phase4a-penteli-finish-records','Penteli TT records after a valid native completion. Original Penteli road 7:00.25 is a labelled local historical fixture; the current personal best comes from the real drive.');
+    await page.evaluate(async()=>{window.__manualDrive=false;await window.__flow.menu.h.selectUnifiedRoute('penteli-hill','penteli-tt');});
+    await page.waitForFunction(()=>document.body.textContent.includes('PERSONAL BEST'));await snap(page,'phase4a-penteli-finish-records','Penteli TT records after a valid native completion. The current personal best comes from the real drive; no synthetic history is seeded.');
    }
    await writeFile(feed+(mode==='trial'?'/phase4a-trial-drive.json':'/phase4a-drive.json'),JSON.stringify({entryMs:ms,trace,errors,final:await page.evaluate(()=>{const p=window.__routePilot;return {tiles:[...p.session.stream.tiles].map(([key,t])=>({key,state:t.state,bytes:t.bytes,reserved:t.reserved,error:String(t.error||'')})),pins:[...p.session.stream.pins],metrics:p.session.metrics,stream:p.session.stream.metrics,result:p.G.result,course:{validProgress:p.run?.course.validProgress,rejoinLimit:p.run?.course.rejoinLimit,finishedAt:p.run?.course.finishedAt},resources:p.session.inventory()};})},null,2));
   }

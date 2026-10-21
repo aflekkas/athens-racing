@@ -4,7 +4,25 @@
 // node --test tools/rival-racecraft.test.mjs
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { planBraking, cornerSpeed, shouldCommit, choosePassSide, passVerdict, driverPersonality } from '../src/rival-ai.js';
+import { RacingLine, RivalAI, prepareRacingLine, planBraking, cornerSpeed, shouldCommit, choosePassSide, passVerdict, driverPersonality } from '../src/rival-ai.js';
+
+test('racing-line prefetch is the exact cached line consumed by the real controller',()=>{
+ const route={length:80,closed:false,edge:()=>6,frame:(s,out={})=>Object.assign(out,{x:0,z:s,rx:1,rz:0,grade:0}),point:(s,u,out={})=>Object.assign(out,{x:u,y:0,z:s}),y:()=>0,curv:()=>0};
+ const prepared=prepareRacingLine(route,.95,{dir:1,closedRoad:false});
+ const veh={halfW:.95,halfL:2,wb:2.6,u:0,s:0,vLong:0,vLat:0,spec:{vmax:100,mass:1200,grip:1,cdA:.6,brake:1,drive:'fwd',gears:[3],final:4,wheelR:.3,idle:800,redline:6000,power:100,torque:180},lockAt:()=>.5};
+ const ai=new RivalAI(route,veh);assert.equal(ai.line,prepared);assert.deepEqual(ai.profile,prepared.speedProfile(veh));
+ assert.notEqual(prepareRacingLine(route,1.05),prepared,'body widths keep their own line');
+});
+
+test('profile capability reuse is exact and scoped to one build, including live grip refresh',()=>{
+ const line=Object.assign(Object.create(RacingLine.prototype),{n:120,step:2,dir:1,closed:false,route:{streetCircuit:false},k:new Float64Array(120),grade:new Float64Array(120),vertical:new Float64Array(120)});
+ line.k.fill(.025,40,65);line.vertical.fill(-.002,80,90);let calls=0,grip=1;
+ const veh={spec:{vmax:180},wb:2.6,maxLatAccel:v=>{calls++;return (9+v*.001)*grip;},maxBrakeDecel:v=>10*grip+v*.001,maxDriveAccel:v=>Math.max(0,5-v*.07),steerLockAt:()=>.5};
+ const expected=line.speedProfile(veh),uncached=calls;calls=0;veh.planningStateKey=()=>String(grip);
+ assert.deepEqual(line.speedProfile(veh),expected);assert.ok(calls<uncached*.8,'repeated exact speeds avoid repeated tyre solves');
+ grip=.6;const changed=line.speedProfile(veh);delete veh.planningStateKey;
+ assert.deepEqual(changed,line.speedProfile(veh));assert.notDeepEqual(changed,expected,'refresh sees new grip');
+});
 
 // Straight road into one corner of curvature k starting `at` metres ahead.
 const cornerAhead = (at, k, lat = 9, vmax = 70) => ({ limit: (d) => d >= at && d < at + 40 ? cornerSpeed(k, lat) : vmax });

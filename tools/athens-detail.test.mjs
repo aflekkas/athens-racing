@@ -3,7 +3,26 @@ import test from 'node:test';import assert from 'node:assert/strict';import {rea
 import {GROUND_CLASS_COLOURS,GROUND_NAMES,groundWeights,buildNoise,NOISE_SIZE,detailNoiseBytes,GROUND_GLSL,FACADE_GLSL,SEA_GLSL,FOAM_GLSL} from '../src/athens-detail.js';
 import {deriveBuildingMeshes,facadeStyleFor} from '../src/world-tile-buildings.js';
 import {tagDressedSurfaces,DRESSING_VARIANTS} from '../src/world-tile-dressing.js';
+import * as THREE from 'three';
+import {FACADE_PLAIN,FACADE_SHADE_GLSL,patchMaterial,SEA_APPLY,SEA_VERTEX_BODY,SEA_VERTEX_VARYINGS} from '../src/athens-detail.js';
+import {terrainChunkMaterial} from '../src/terrain-layout.js';
+import {setSetting} from '../src/settings.js';
+
+test('World detail Off compiles away detail and live toggles invalidate ordinary and terrain-cloned programs',()=>{
+ const material=patchMaterial(new THREE.MeshBasicMaterial(),{key:'test-sea',vertexVaryings:SEA_VERTEX_VARYINGS,vertexBody:SEA_VERTEX_BODY,fragmentGlsl:SEA_GLSL,apply:SEA_APPLY}),clone=terrainChunkMaterial(material,{offset:[0,0,0],scale:[1,1,1]});
+ const compile=m=>{const shader={uniforms:{},vertexShader:'#include <common>\n#include <begin_vertex>',fragmentShader:'#include <common>\n#include <color_fragment>'};m.onBeforeCompile(shader);return shader;};
+ try{setSetting('worldDetail',false);const key=clone.customProgramCacheKey(),plain=compile(material),terrain=compile(clone);assert.doesNotMatch(plain.fragmentShader,/seaColour|detailMap|uWorldDetail/);assert.equal(plain.uniforms.detailMap,undefined);assert.match(terrain.vertexShader,/terrainOffset/);
+  const version=material.version,cloneVersion=clone.version;setSetting('worldDetail',true);assert.ok(material.version>version);assert.ok(clone.version>cloneVersion);assert.notEqual(clone.customProgramCacheKey(),key);assert.match(compile(clone).fragmentShader,/seaColour/);
+ }finally{material.dispose();clone.dispose();setSetting('worldDetail',true);}
+});
 const linear=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);
+test('plain derived buildings retain base face shade and flat roofs without facade sampling',()=>{
+ const material=patchMaterial(new THREE.MeshBasicMaterial(),{key:'test-facade',fragmentGlsl:FACADE_GLSL,vertexVaryings:'',vertexBody:'',apply:'',plain:FACADE_PLAIN});
+ try{setSetting('worldDetail',false);const shader={uniforms:{},vertexShader:'#include <common>\n#include <begin_vertex>',fragmentShader:'#include <common>\n#include <color_fragment>'};material.onBeforeCompile(shader);
+  assert.ok(shader.fragmentShader.includes(FACADE_SHADE_GLSL));assert.ok(FACADE_GLSL.includes(FACADE_SHADE_GLSL));assert.match(shader.fragmentShader,/diffuseColor.rgb\*=wallShade/);
+  assert.match(shader.vertexShader,/transformed.y-=mod\(yy,1024.\)\*\.1/);assert.doesNotMatch(shader.fragmentShader,/texture2D|detailMap|facadeMul/);
+ }finally{material.dispose();setSetting('worldDetail',true);}
+});
 test('the shader classes use exactly the colours the bake paints (appearance.py TERRAIN)',()=>{
   const py=readFileSync(new URL('./world-gen/appearance.py',import.meta.url),'utf8'),terrain=py.match(/TERRAIN=dict\(([^)]*)\)/)[1];
   const baked=Object.fromEntries([...terrain.matchAll(/(\w+)='(#[0-9a-f]{6})'/g)].map(m=>[m[1],m[2]]));

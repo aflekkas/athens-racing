@@ -20,7 +20,7 @@ test('auto resolution follows the class, an explicit scale and range stay availa
   assert.match(source('src/car-select.js'), /setPixelRatio\(Math\.min\(devicePixelRatio \|\| 1, lite \? 1 : 1\.5\)\)/, 'the showroom is capped at 1.5, and at 1 on the lite class');
 });
 
-test('shared resource budgets: every class resolves to its own frozen budget, and the low-end desktop classes stay small enough to decode one dense cell', () => {
+test('shared resource budgets: low-end desktop decode parallelism retains the same hard byte limits', () => {
   const MiB = 1024 * 1024;
   for (const perfClass of ['potato', 'low', 'med', 'high']) {
     const resources = resolveGraphics({ perfClass }).resources;
@@ -31,7 +31,7 @@ test('shared resource budgets: every class resolves to its own frozen budget, an
   for (const perfClass of ['potato', 'low']) { // the low-end desktop budget
     const { jsBytes, gpuBytes, stream } = RESOURCE_BUDGETS[perfClass];
     assert(jsBytes <= 256 * MiB); assert(gpuBytes <= 192 * MiB);
-    assert.equal(stream.concurrency, 1);
+    assert.equal(stream.concurrency, perfClass==='low'?2:1);
     assert(stream.transientBytes >= 2 * 20 * MiB + 4 * MiB);
   }
 });
