@@ -2,6 +2,9 @@ import * as THREE from 'three';
 import { restoreTerrainLayout } from './terrain-layout.js';
 import { TileResources } from './world-tile-stream.js';
 import { GL_ARRAY_TYPES, tileGPUPlan, tileRenderVariants } from './world-tile-gpu.js';
+// Cell origins are uniforms in these shared programs. Warm the exact layout
+// once; draw-time materials still retain their own origin and resource keys.
+const warmupKey=v=>/^megara(?:Asphalt|WornAsphalt|Rubber)@/.test(v.surface||'')?v.key.replace(JSON.stringify(v.surface),JSON.stringify(v.surface.split('@')[0])):v.key;
 /** Each iterator step creates one pre-bounded mesh; worker supplies all bounds. */
 export class WorldTileScene {
   constructor(scene,{resources=new TileResources(),renderer=null,uploadChunkBytes=32768,materialFactory=null,warmCanvas=true}={}){
@@ -13,19 +16,19 @@ export class WorldTileScene {
   prewarm(variants){return this.warmVariants(variants).then(()=>{this.startupComplete=true;});}
   warmup(packet){
     const variants=packet.renderVariants||tileRenderVariants(packet);
-    if(this.startupComplete&&variants.some(v=>!this.warmups.has(v.key)))throw new Error('Undeclared tile render variant; map fallback required');
+    if(this.startupComplete&&variants.some(v=>!this.warmups.has(warmupKey(v))))throw new Error('Undeclared tile render variant; map fallback required');
     return this.warmVariants(variants);
   }
   warmVariants(variants){
     if(!this.renderer)return Promise.resolve();
     let source=this.scene;while(source.parent)source=source.parent;
-    const fresh=variants.filter(v=>!this.warmups.has(v.key));
+    const keyed=new Map(variants.map(v=>[warmupKey(v),v])),fresh=[...keyed].filter(([key])=>!this.warmups.has(key));
     if(fresh.length){
-      const promise=this.warmupQueue.then(()=>this.warmVariantBatch(fresh,source));this.warmupQueue=promise.catch(()=>{});
-      for(const variant of fresh)this.warmups.set(variant.key,promise);
-      promise.catch(()=>{for(const variant of fresh)if(this.warmups.get(variant.key)===promise)this.warmups.delete(variant.key);});
+      const promise=this.warmupQueue.then(()=>this.warmVariantBatch(fresh.map(([,variant])=>variant),source));this.warmupQueue=promise.catch(()=>{});
+      for(const [key] of fresh)this.warmups.set(key,promise);
+      promise.catch(()=>{for(const [key] of fresh)if(this.warmups.get(key)===promise)this.warmups.delete(key);});
     }
-    return Promise.all(variants.map(v=>this.warmups.get(v.key)));
+    return Promise.all([...keyed.keys()].map(key=>this.warmups.get(key)));
   }
   async warmVariantBatch(variants,source){
     const renderer=this.renderer,owned=[],start=performance.now();

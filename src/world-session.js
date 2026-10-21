@@ -31,7 +31,7 @@ import {validateWorldDefinition,loadWorldDefinition} from './world-manifest.js';
 export async function createWorldSession({renderer,scene,resources,progress=()=>{},worldDefinition={},signal}){
  // Base scans and manifests are independent. Keep their I/O parallel, then
  // gate shader preparation on uploads rather than delaying contact admission.
- const texturesReady=loadAthensTextures(renderer);texturesReady.catch(()=>{});
+ const startsRegional=['penteli','megara'].includes(worldDefinition.regionId),texturesReady=loadAthensTextures(renderer,{penteli:startsRegional});texturesReady.catch(()=>{});
  const manifestURL=new URL(worldDefinition.manifestURL||'/data/athens/manifest.json',globalThis.location?.href||'http://localhost/');
  const manifest=worldDefinition.manifest||(await loadWorldDefinition(manifestURL,{signal})).manifest;validateWorldDefinition({...worldDefinition,manifest});
  let stream,roads,route=null,ground=null,interest=null,plan=null,selection=null,disposed=false,inventoryFrames=0,plannedRoute=null,plannedS=-Infinity,planAge=0;const tileListeners=new Set(),enrichments=new Map();
@@ -42,7 +42,7 @@ export async function createWorldSession({renderer,scene,resources,progress=()=>
  // Buildings a landmark model replaces stay in their tile as hidden meshes; World detail Off shows the old boxes again.
  const syncBoxes=()=>{const hidden=settings.worldDetail!==false;for(const root of boxRoots)for(const c of root.children)if(c.userData.landmarkBox)c.visible=!hidden;};
  const obstacles=new WorldTileObstacles({detailEnabled:settings.worldDetail!==false});
- const unsubscribeProps=onSettings((s,key)=>{if(!key||key==='worldDetail'){obstacles.setDetailEnabled(s.worldDetail!==false);props.setEnabled(s.worldDetail!==false);horizon.setEnabled(s.worldDetail!==false);landmarks.setEnabled(s.worldDetail!==false);plazas.setEnabled(s.worldDetail!==false);lawns.setEnabled(s.worldDetail!==false);signs.setEnabled(s.worldDetail!==false);marks.setEnabled(s.worldDetail!==false);trees.setEnabled(s.worldDetail!==false);houses.setEnabled(s.worldDetail!==false);syncBoxes();}});
+ const unsubscribeProps=onSettings((s,key)=>{if(!key||key==='worldDetail'){if(s.worldDetail!==false)loadAthensTextures(renderer,{penteli:true}).catch(error=>console.warn('Regional texture preparation',error));obstacles.setDetailEnabled(s.worldDetail!==false);props.setEnabled(s.worldDetail!==false);horizon.setEnabled(s.worldDetail!==false);landmarks.setEnabled(s.worldDetail!==false);plazas.setEnabled(s.worldDetail!==false);lawns.setEnabled(s.worldDetail!==false);signs.setEnabled(s.worldDetail!==false);marks.setEnabled(s.worldDetail!==false);trees.setEnabled(s.worldDetail!==false);houses.setEnabled(s.worldDetail!==false);syncBoxes();}});
  horizon.load(new URL('./assets/athens/horizon.bin',document.baseURI)).catch(e=>console.warn(e.message));plazas.load(new URL('./assets/athens/plazas.json',document.baseURI)).catch(e=>console.warn(e.message));lawns.load(new URL('./assets/athens/lawns.json',document.baseURI)).catch(e=>console.warn(e.message));signs.load(new URL('./assets/athens/pois.json',document.baseURI)).catch(e=>console.warn(e.message));
  // A composed world can contain distant regions. Load their texture library
  // only when a cell from that region is admitted, before its shader warmup.
@@ -50,10 +50,16 @@ export async function createWorldSession({renderer,scene,resources,progress=()=>
  // targets. Only the final post quad draws to the canvas; its world variants
  // would double startup compilation without being used by a race frame.
  const sceneTiles=new WorldTileScene(scene,{renderer,materialFactory:athensMaterial,warmCanvas:false}),barriers=new WorldTileBarriers();
- let regionalTextures=null;
+ // These shared basin programs are start readiness, independent of which
+ // neighbouring cell first supplies a facade, coastal rock or water mesh.
+ // Warm them before countdown so optional admission cannot trigger first-use
+ // driver work during the countdown or the first seconds of driving.
+ const plainPrograms=[null,3,4].map(size=>{const variant={surface:'basic',attributes:{position:{type:'Float32Array',itemSize:3,normalized:false},...(size?{color:{type:'Uint8Array',itemSize:size,normalized:true}}:{})},index:null,terrain:false};return {...variant,key:JSON.stringify(variant)};});
+ const commonPrograms=startsRegional?Promise.resolve():texturesReady.then(()=>sceneTiles.warmVariants([...DRESSING_VARIANTS,...plainPrograms]));commonPrograms.catch(()=>{});
+ let regionalTextures=startsRegional?texturesReady:null;
  const regionalScenery=new WorldRegionalScenerySet(scene,{trees});const activationSteps=[];
  const adapter={
-  warmup:async p=>{await texturesReady;if([p.metadata.regionalScenery?.surface,...p.metadata.meshes.map(m=>m.userData?.tileSurface)].some(surface=>/^(penteli|megara)/.test(surface||'')))await(regionalTextures??=loadAthensTextures(renderer,{penteli:true}));await Promise.all([sceneTiles.warmup(p),regionalScenery.prepare(p.metadata.regionalScenery)]);},
+  warmup:async p=>{await commonPrograms;await texturesReady;if([p.metadata.regionalScenery?.surface,...p.metadata.meshes.map(m=>m.userData?.tileSurface)].some(surface=>/^(penteli|megara)/.test(surface||'')))await(regionalTextures??=loadAthensTextures(renderer,{penteli:true}));await Promise.all([sceneTiles.warmup(p),regionalScenery.prepare(p.metadata.regionalScenery)]);},
   rebase(origin,previous){sceneTiles.rebase(origin,previous);regionalScenery.rebase(origin);detailRoot.position.set(-origin.x,0,-origin.z);},
   prepare(key,packet,origin){const build=sceneTiles.prepare(key,packet,origin);let installed=false,committed=false,disposed=false;
    const measured=(name,fn)=>{const at=performance.now();fn();const ms=performance.now()-at;if(ms>1){activationSteps.push({name,ms});if(activationSteps.length>64)activationSteps.shift();}};
@@ -74,6 +80,7 @@ export async function createWorldSession({renderer,scene,resources,progress=()=>
  const safePose=(p,{halfWidth=1.1,halfLength=2.8}={})=>{if([...enrichments.values()].some(e=>!e.safe(p,{halfWidth,halfLength})))return false;if(session.closures?.safe(p,{halfWidth,halfLength})===false)return false;if(!roads.safe({...p,edge:p.edgeId||p.edge,surfaceId:p.surfaceId||stream.contact(p.x,p.z,{referenceY:p.y,layer:p.layer,requiredFlags:1})?.surfaceId},{halfWidth,halfLength,connected:true})||!barriers.safe(p,{halfWidth,halfLength}))return false;for(const a of [-halfLength+halfWidth,0,halfLength-halfWidth])if(obstacles.contact(p.x-Math.sin(p.yaw)*a,p.y,p.z-Math.cos(p.yaw)*a,halfWidth+.1))return false;return true;};
  const inventory=()=>{const sceneBytes=estimateSceneMemory(scene);let tileJS=0,tileGPU=0;for(const t of stream.tiles.values())if(t.packet){tileJS+=t.packet.jsBytes||0;tileGPU+=t.packet.gpuBytes||0;}const size=renderer.getDrawingBufferSize(new THREE.Vector2()),js=Math.max(performance.memory?.usedJSHeapSize||0,tileJS+sceneBytes.geometryBytes+sceneBytes.textureBytes)+regionalScenery.cachedBytes,gpu=sceneBytes.gpuBytes+tileGPU+size.x*size.y*20+16*1024*1024;session.metrics.maxEstimatedJSBytes=Math.max(session.metrics.maxEstimatedJSBytes||0,js);session.metrics.maxEstimatedGPUBytes=Math.max(session.metrics.maxEstimatedGPUBytes||0,gpu);const result={jsBytes:js,gpuBytes:gpu,streamResidentBytes:stream.residentBytes,decoderReservationBytes:stream.transientBytes};if(js>resources.jsBytes||gpu>resources.gpuBytes)throw Object.assign(Error('World resource admission exceeded'),{detail:result});return result;};
  const session={inventory,safePose,
+ warmOptional(){if(route?.isWorldRoute)stream.update({...route.compiled.startPose,routeInterest:plan?.routeInterest||[]});},
  async prepareEnrichments(point){for(const spec of manifest.enrichments||[]){if(enrichments.has(spec.kind)||point.x<spec.bounds[0]-400||point.x>spec.bounds[2]+400||point.z<spec.bounds[1]-400||point.z>spec.bounds[3]+400)continue;if(spec.kind!=='psychiko-streetscape-v1')throw Error('Unknown world detail recipe');const response=await fetch(spec.url,{signal});if(!response.ok)throw Error('World detail unavailable');const data=await response.json();safeAbort();if(data.sourceMapSha256!==spec.sourceMapSha256)throw Error('World detail release mismatch');const {WorldPsychikoDetail}=await import('./world-psychiko-detail.js');safeAbort();enrichments.set(spec.kind,new WorldPsychikoDetail(session,scene,data));}},
  subscribeTiles:listener=>selection.subscribeTiles(listener),stream,roads,barriers,obstacles,manifest,detail,props,trees,signs,marks,horizon,landmarks,plazas,lawns,sceneTiles,
  get tileListenerCount(){return selection.listenerCount;},get ground(){return ground;},get route(){return route;},get selectionToken(){return selection.token;},

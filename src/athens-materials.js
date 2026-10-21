@@ -3,6 +3,7 @@ import {roadSignAtlas} from './road-signs.js';
 import {municipalBinLabelTexture} from './street-life.js';
 import {roadNetworkMaterial} from './road-network.js';
 import {penteliRoadMaterial} from './maps/penteli-surface.js';
+import {worldDetailEnabled} from './world-detail-state.js';
 import {terrainMaterial} from './terrain.js';
 import {penteliTerrainMaterial} from './penteli-terrain.js';
 import {facadeMaterial} from './buildings.js';
@@ -14,14 +15,14 @@ import {createFacadeAtlas} from './facade-atlas.js';
 import * as THREE from 'three';
 import {TX,GLSL_HELPERS,loadTextureSubset} from './tex.js';
 import {settings,onSettings} from './settings.js';
-import {detailNoise,SEA_TIME,patchMaterial,GROUND_GLSL,GROUND_VERTEX_VARYINGS,GROUND_VERTEX_BODY,GROUND_APPLY,FACADE_GLSL,FACADE_VERTEX_VARYINGS,FACADE_VERTEX_BODY,FACADE_APPLY,FACADE_PLAIN,SEA_GLSL,SEA_VERTEX_VARYINGS,SEA_VERTEX_BODY,SEA_APPLY,FOAM_GLSL,FOAM_VERTEX_VARYINGS,FOAM_VERTEX_BODY,FOAM_APPLY} from './athens-detail.js';
+import {trackDetailMaterial,detailNoise,SEA_TIME,patchMaterial,GROUND_GLSL,GROUND_VERTEX_VARYINGS,GROUND_VERTEX_BODY,GROUND_APPLY,FACADE_GLSL,FACADE_VERTEX_VARYINGS,FACADE_VERTEX_BODY,FACADE_APPLY,FACADE_PLAIN,SEA_GLSL,SEA_VERTEX_VARYINGS,SEA_VERTEX_BODY,SEA_APPLY,FOAM_GLSL,FOAM_VERTEX_VARYINGS,FOAM_VERTEX_BODY,FOAM_APPLY} from './athens-detail.js';
 export const ASPHALT_PERIOD=512/122,PAVING_PERIOD=512/160,URBAN_PERIOD=512/80;
 // Mean grey of each scan, so palette colour keeps the street's overall tone and the scan only adds grain.
 const MEAN={asphalt:.096,paving:.198};
 export const ATHENS_TEXTURES=['asphalt_diff','paver_diff'];
 export const PENTELI_TEXTURES=['asphalt_nor','ground_diff','ground_nor','grass_diff','grass_nor','sand_diff','sand_nor','rock_diff','rock_nor','concrete_diff'];
 export function loadAthensTextures(renderer,{penteli=false}={}){
-  return loadTextureSubset(penteli?[...ATHENS_TEXTURES,...PENTELI_TEXTURES]:ATHENS_TEXTURES).then(textures=>{if(renderer){for(const t of textures)if(t.image)renderer.initTexture(t);if(settings.worldDetail!==false)renderer.initTexture(detailNoise());}return textures;});
+  return loadTextureSubset(penteli?[...ATHENS_TEXTURES,...(settings.worldDetail===false?['asphalt_nor','concrete_diff']:PENTELI_TEXTURES)]:ATHENS_TEXTURES).then(textures=>{if(renderer){for(const t of textures)if(t.image)renderer.initTexture(t);if(settings.worldDetail!==false)renderer.initTexture(detailNoise());}return textures;});
 }
 function scanned(color,key,period,mean,contrast,{vertexColors=false,strength=1,drift=[61,80]}={}){
   const m=new THREE.MeshBasicMaterial({color:new THREE.Color(...color),vertexColors,side:THREE.FrontSide});
@@ -37,9 +38,17 @@ function scanned(color,key,period,mean,contrast,{vertexColors=false,strength=1,d
   };
   return m;
 }
+// Only streamed terrain specializes Off. Authored map materials keep their
+// measured programs and budgets. Track decoder clones for live detail toggles.
+function streamedTerrainMaterial(factory){
+ const material=factory(),before=material.onBeforeCompile,key=material.customProgramCacheKey;
+ trackDetailMaterial(material);material.customProgramCacheKey=()=>key.call(material)+(worldDetailEnabled.value?':detail':':plain');
+ material.onBeforeCompile=function(shader,renderer){trackDetailMaterial(this);if(worldDetailEnabled.value)return before.call(this,shader,renderer);shader.fragmentShader=shader.fragmentShader.replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nroughnessFactor = 0.95;');};
+ return material;
+}
 /** materialFactory for WorldTileScene: (tileSurface, linear rgb, hasVertexColors) -> material. */
 export function athensMaterial(surface,rgb,vertexColors){
-  if(surface==='megaraTerrain')return terrainMaterial();
+  if(surface==='megaraTerrain')return streamedTerrainMaterial(terrainMaterial);
   if(surface==='megaraNetwork')return roadNetworkMaterial();
   if(surface.startsWith('megaraSolid:')){const o=JSON.parse(surface.slice(12));return new THREE.MeshStandardMaterial({...o,color:new THREE.Color(...rgb),vertexColors});}
   if(surface==='megaraTyre'){
@@ -51,14 +60,14 @@ export function athensMaterial(surface,rgb,vertexColors){
   if(surface.startsWith('megaraAsphalt@')||surface.startsWith('megaraWornAsphalt@')||surface.startsWith('megaraRubber@')){
     const [type,cell]=surface.split('@'),[cx,cz]=cell.split(',').map(Number),worn=type==='megaraWornAsphalt',rubber=type==='megaraRubber';
     const m=new THREE.MeshStandardMaterial({color:new THREE.Color(...rgb),vertexColors,side:THREE.DoubleSide,roughness:.92,transparent:rubber,opacity:rubber?.075:1,depthWrite:!rubber,polygonOffset:rubber,polygonOffsetFactor:rubber?-1:0});
-    m.onBeforeCompile=sh=>{sh.uniforms.tSurface={value:TX.asphalt_diff};sh.uniforms.tSurfaceN={value:TX.asphalt_nor};sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 vMegaraWorld;').replace('#include <begin_vertex>',`#include <begin_vertex>\nvMegaraWorld=position+vec3(${(cx*512).toFixed(1)},0.,${(cz*512).toFixed(1)});`);sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 vMegaraWorld;uniform sampler2D tSurface;uniform sampler2D tSurfaceN;\n'+GLSL_HELPERS).replace('#include <color_fragment>',rubber?'#include <color_fragment>\ndiffuseColor.a*=smoothstep(.20,.70,fbm2(vMegaraWorld.xz*.22));':`#include <color_fragment>\nvec2 uvMegara=vMegaraWorld.xz/3.4;vec3 scan=texNoTile(tSurface,uvMegara).rgb;float lum=dot(scan,vec3(.3333));float macro=fbm2(vMegaraWorld.xz*.045);vec2 repairCell=floor(vMegaraWorld.xz/vec2(8.,19.));vec2 repairUV=fract(vMegaraWorld.xz/vec2(8.,19.));float repair=step(.84,h12(repairCell))*step(.12,repairUV.x)*step(repairUV.x,.88)*step(.18,repairUV.y)*step(repairUV.y,.83);diffuseColor.rgb=${worn?'vec3(.245,.245,.232)':'vec3(.135,.132,.126)'}*(.65+lum*3.8)*(.83+.32*macro)*(1.-.2*repair);`).replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\nvec3 scannedNormal=texture2D(tSurfaceN,vMegaraWorld.xz/2.6).xyz*2.-1.;normal=perturb(-vViewPosition,normal,vMegaraWorld.xz/2.6,scannedNormal,.5);');};m.customProgramCacheKey=()=>surface+'-v1';return m;
+    m.onBeforeCompile=sh=>{sh.uniforms.uMegaraOrigin={value:new THREE.Vector3(cx*512,0,cz*512)};sh.uniforms.tSurface={value:TX.asphalt_diff};sh.uniforms.tSurfaceN={value:TX.asphalt_nor};sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 vMegaraWorld;uniform vec3 uMegaraOrigin;').replace('#include <begin_vertex>','#include <begin_vertex>\nvMegaraWorld=position+uMegaraOrigin;');sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 vMegaraWorld;uniform sampler2D tSurface;uniform sampler2D tSurfaceN;\n'+GLSL_HELPERS).replace('#include <color_fragment>',rubber?'#include <color_fragment>\ndiffuseColor.a*=smoothstep(.20,.70,fbm2(vMegaraWorld.xz*.22));':`#include <color_fragment>\nvec2 uvMegara=vMegaraWorld.xz/3.4;vec3 scan=texNoTile(tSurface,uvMegara).rgb;float lum=dot(scan,vec3(.3333));float macro=fbm2(vMegaraWorld.xz*.045);vec2 repairCell=floor(vMegaraWorld.xz/vec2(8.,19.));vec2 repairUV=fract(vMegaraWorld.xz/vec2(8.,19.));float repair=step(.84,h12(repairCell))*step(.12,repairUV.x)*step(repairUV.x,.88)*step(.18,repairUV.y)*step(repairUV.y,.83);diffuseColor.rgb=${worn?'vec3(.245,.245,.232)':'vec3(.135,.132,.126)'}*(.65+lum*3.8)*(.83+.32*macro)*(1.-.2*repair);`).replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\nvec3 scannedNormal=texture2D(tSurfaceN,vMegaraWorld.xz/2.6).xyz*2.-1.;normal=perturb(-vViewPosition,normal,vMegaraWorld.xz/2.6,scannedNormal,.5);');};m.customProgramCacheKey=()=>type+'-shared-origin-v2';return m;
   }
   if(surface==='megaraRubber')return new THREE.MeshStandardMaterial({color:new THREE.Color(...rgb),vertexColors,transparent:true,opacity:.075,depthWrite:false,side:THREE.DoubleSide});
   if(surface.startsWith('penteliProp:')){const {texture,...options}=JSON.parse(surface.slice(12)),map=!texture?null:texture.kind==='speed'?faceTexture(texture.value):texture.kind==='road-sign'?roadSignAtlas(texture.keys):municipalBinLabelTexture();const m=new THREE.MeshStandardMaterial({...options,color:new THREE.Color(...rgb),vertexColors,map});const off=onSettings((s,k)=>{if(!k||k==='worldDetail')m.visible=s.worldDetail!==false;});m.visible=settings.worldDetail!==false;m.addEventListener('dispose',()=>{off();map?.dispose();});return m;}
   if(surface==='penteliNetwork')return roadNetworkMaterial();
   if(surface==='penteliRoad')return penteliRoadMaterial();
-  if(surface==='penteliMountain')return penteliTerrainMaterial();
-  if(surface==='penteliTerrain')return terrainMaterial();
+  if(surface==='penteliMountain')return streamedTerrainMaterial(penteliTerrainMaterial);
+  if(surface==='penteliTerrain')return streamedTerrainMaterial(terrainMaterial);
   if(surface==='penteliBuilding')return facadeMaterial(typeof document==='undefined'?null:createFacadeAtlas());
   if(surface==='penteliScenery'||surface==='penteliRail'||surface==='penteliConcrete'){
     const m=new THREE.MeshStandardMaterial({color:new THREE.Color(...rgb),vertexColors,map:surface==='penteliConcrete'?TX.concrete_diff:null,roughness:surface==='penteliRail'?.42:.92,metalness:surface==='penteliRail'?.68:0,side:THREE.DoubleSide});

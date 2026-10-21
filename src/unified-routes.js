@@ -1,13 +1,19 @@
 // Query parameters opt into server-enabled staging entries; they never authorize a route.
 export const LEGACY_ROUTE_DESTINATIONS=Object.freeze({riviera:'riviera-coast',psychiko:'psychiko-faros',penteli:'penteli-hill',megara:'megara-club'});
 export const routeDestinationForMap=mapId=>Object.hasOwn(LEGACY_ROUTE_DESTINATIONS,mapId)?LEGACY_ROUTE_DESTINATIONS[mapId]:null;
+const artifacts=new WeakMap();
 export async function loadUnifiedRoute(query,{fetcher=fetch}={}){
  if(query.get('routes')!=='1')return null;
  const r=await fetcher('/api/routes',{cache:'no-store'});if(!r.ok)throw Error('Routes unavailable');const config=await r.json();
  if(config.environment!=='staging'||!config.routes?.length)throw Error('Route pilot is unavailable in this release');
  const id=query.get('route')||routeDestinationForMap(query.get('map'))||config.routes[0].id,entry=config.routes.find(e=>e.id===id);if(!entry)throw Error('Route is not enabled');
+ // Refresh authorization above on every selection. Reuse only the exact
+ // immutable release already resident, including its larger racing plan.
+ let cache=artifacts.get(fetcher);if(!cache)artifacts.set(fetcher,cache=new Map());
+ const key=JSON.stringify([entry.url,...['id','routeHash','geometryHash','worldSetRevision'].map(k=>entry[k])]);if(cache.has(key))return cache.get(key);
  const response=await fetcher(entry.url);if(!response.ok)throw Error('Route unavailable');const compiled=await response.json();
  for(const k of ['id','routeHash','geometryHash','worldSetRevision'])if(entry[k]!==compiled[k])throw Error('Route release mismatch');
+ cache.set(key,compiled);if(cache.size>8)cache.delete(cache.keys().next().value);
  return compiled;
 }
 

@@ -78,3 +78,17 @@ test('run-time tagging gives older bakes their ground and sea layers, and declar
   tagDressedSurfaces(pack);assert.deepEqual(pack.metadata.meshes.map(m=>m.userData.tileSurface),['ground','urban','sea','paving',undefined]);
   assert.deepEqual(DRESSING_VARIANTS.map(v=>v.surface),['coastalUrban','coastalGround','coastalDetail','ground','coastalBuilding','building','sea','foam']);for(const v of DRESSING_VARIANTS)assert.equal(v.key,JSON.stringify({surface:v.surface,attributes:v.attributes,index:v.index,terrain:v.terrain}));
 });
+
+test('terrain Off removes unused texture uniforms and preserves the plain roughness; live toggles recompile clones',async()=>{
+ const {athensMaterial}=await import('../src/athens-materials.js');
+ const compile=m=>{const sh={uniforms:{},vertexShader:'#include <common>\n#include <begin_vertex>\n#include <worldpos_vertex>',fragmentShader:'#include <common>\n#include <color_fragment>\n#include <roughnessmap_fragment>\n#include <normal_fragment_maps>'};m.onBeforeCompile(sh);return sh;};
+ for(const surface of ['megaraTerrain','penteliTerrain','penteliMountain']){const material=athensMaterial(surface,[1,1,1],true),clone=terrainChunkMaterial(material,{version:1,offset:[0,0,0],scale:[1,1,1]});try{setSetting('worldDetail',false);const plain=compile(clone),key=clone.customProgramCacheKey(),version=clone.version;assert.equal(plain.uniforms.tGD,undefined);assert.match(plain.fragmentShader,/roughnessFactor = 0.95/);assert.match(plain.vertexShader,/terrainOffset/);setSetting('worldDetail',true);assert.ok(clone.version>version);assert.notEqual(clone.customProgramCacheKey(),key);assert.ok(compile(clone).uniforms.tGD);}finally{material.dispose();clone.dispose();setSetting('worldDetail',true);}}
+});
+
+test('Megara cell origins stay exact uniforms while matching surface types share a shader program',async()=>{
+ const {athensMaterial}=await import('../src/athens-materials.js');
+ for(const type of ['megaraAsphalt','megaraWornAsphalt','megaraRubber']){
+  const make=cell=>{const material=athensMaterial(type+'@'+cell,[1,1,1],true),shader={uniforms:{},vertexShader:'#include <common>\n#include <begin_vertex>',fragmentShader:'#include <common>\n#include <color_fragment>\n#include <normal_fragment_maps>\n#include <alphatest_fragment>'};material.onBeforeCompile(shader);return{material,shader};},a=make('-64,-2'),b=make('-63,-2');
+  try{assert.equal(a.material.customProgramCacheKey(),b.material.customProgramCacheKey());assert.equal(a.shader.vertexShader,b.shader.vertexShader);assert.equal(a.shader.fragmentShader,b.shader.fragmentShader);assert.deepEqual(a.shader.uniforms.uMegaraOrigin.value.toArray(),[-32768,0,-1024]);assert.deepEqual(b.shader.uniforms.uMegaraOrigin.value.toArray(),[-32256,0,-1024]);assert.match(a.shader.vertexShader,/vMegaraWorld=position\+uMegaraOrigin/);}finally{a.material.dispose();b.material.dispose();}
+ }
+});

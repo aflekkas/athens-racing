@@ -28,10 +28,10 @@ export function createWorldSelection({stream,manifest,makeGround,safePose,prepar
     // The route cells and the local visual recipe are independent requests. Start
     // the mandatory cell fetch before waiting for the recipe so both can prepare
     // during the same network round trip.
-    stream.update({...compiled.startPose,routeInterest:plan.routeInterest});
+    stream.update({...compiled.startPose,routeInterest:plan.routeInterest,mandatoryOnly:true});
     await prepareEnrichments(compiled.startPose);job.check();
     while(!plan.requiredCells.every(k=>stream.tiles.get(k)?.state==='active')){
-     job.check();if(now()-start>180000)throw Error('Route start timed out');stream.update({...compiled.startPose,routeInterest:plan.routeInterest});stream.activateFrame();
+     job.check();if(now()-start>180000)throw Error('Route start timed out');stream.update({...compiled.startPose,routeInterest:plan.routeInterest,mandatoryOnly:true});stream.activateFrame();
      for(const k of plan.requiredCells){const t=stream.tiles.get(k);if(t?.state==='failed'&&t.attempts>=3)throw t.error;}
      emit(stream.inflight?'download':'activate',stream.inflight?'Loading start area':'Preparing roads');await waitFrame();
     }

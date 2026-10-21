@@ -43,7 +43,8 @@ import { inGarage, canonicalCarId, DEFAULT_CAR_ID } from './car-catalog.js';
 import { shiftTransmission } from './transmission.js';
 import { savedPaint } from './vehicle-paint.js';
 import { Vehicle } from './physics.js';
-import { RivalAI, prepareRacingLine } from './rival-ai.js';
+import { RivalAI } from './rival-ai.js';
+import {validateRivalPlan} from './rival-plan.js';
 import { input as controls } from './input.js';
 import { routeVel } from './traffic.js';
 import { Police, pursuit } from './police.js';
@@ -335,27 +336,23 @@ async function loadUnifiedWorld(compiled,{eventId=Q.get('routeEvent')}={}) {
   const started=performance.now(),entryPhases={},stamp=name=>{entryPhases[name]=performance.now()-started;};
   try {
     if(!sky){sky=ENV.createSky();scene.add(sky);const baked=ENV.bakeSky(renderer,sky);probeSeed=baked.cube;scene.environment=baked.env;setCarEnv(baked.env);({sun}=ENV.createLights(scene));}
-    const sessionReady=worldSession?Promise.resolve(worldSession):createWorldSession({renderer,scene,resources:GFX.resources,progress:lstat,worldDefinition:{manifestURL:'/data/athens/manifest.json'}});
+    const sessionReady=worldSession?Promise.resolve(worldSession):createWorldSession({renderer,scene,resources:GFX.resources,progress:lstat,worldDefinition:{manifestURL:'/data/athens/manifest.json',regionId:compiled.regionId}});
     // An async compile may still be polling these materials on the next frame.
     // Dispose the previous fleet before collecting programs for the new entry.
     traffic?.dispose?.();traffic=null;
-    if(!player){route=new RouteRuntime(compiled);setCar(G.carIdx,false);rival.model.root.visible=false;}post ||= createPost(renderer,scene,camera);const carPrograms=worldSession?Promise.resolve():compileScene();
+    if(!player){route=new RouteRuntime(compiled);setCar(G.carIdx,false);rival.model.root.visible=false;}post ||= createPost(renderer,scene,camera);
+    // Weather owns a permanent headlight. Establish its light layout before
+    // warming programs; the later world binding retains the same light count.
+    if(!worldSession)bindMapWeather();
+    const carPrograms=worldSession?Promise.resolve():compileScene();
     worldSession=await sessionReady;stamp('sessionReady');worldSession.metrics.entryPhases=entryPhases;if(Q.has('simhook'))window.__worldSession=worldSession;
-    const pendingRoute=route?.compiled===compiled?route:new RouteRuntime(compiled),entryEvent=routeEvent(compiled,compiled.definition.events.find(e=>e.enabled&&e.id===eventId)?.id);
+    const pendingRoute=route?.compiled===compiled?route:new RouteRuntime(compiled);
     const routeReady=worldSession.prepareRoute(compiled,{cars:[CARS[G.carIdx]],runtime:pendingRoute});await Promise.resolve();
-    // Native fleet construction overlaps independent cell fetch/decode.
-    traffic=new WorldTraffic(worldSession,scene,route);traffic.configure(routeEvent(compiled));stamp('fleetReady');
-    const linesReady=(async()=>{
-      await carPrograms;
-      // Racing-line geometry needs only immutable route widths, not contacts or
-      // actor placement. Yield between rivals so decoded cells can be admitted.
-      const drivers=entryEvent.type==='sprint'?EV.gridFor(entryEvent):[];
-      for(const spec of gridCarSpecs(entryEvent,drivers)){
-        prepareRacingLine(pendingRoute,spec.width==null?new Vehicle(spec,pendingRoute).halfW:spec.width/2,{dir:1,closedRoad:entryEvent.traffic===0});
-        await new Promise(resolve=>requestAnimationFrame(resolve));
-      }
-      stamp('linesReady');
-    })();
+    // Traffic is optional during entry; its models/programs warm in countdown.
+    traffic=new WorldTraffic(worldSession,scene,pendingRoute);
+    validateRivalPlan(compiled,{required:!['localhost','127.0.0.1','[::1]'].includes(location.hostname)});
+    pendingRoute.requireRivalPlan=!!compiled.rivalPlan;
+    const linesReady=carPrograms;
     // Fetch/decode the start while initial car programs are pending. Join both
     // before buildGrid can dispose the boot-time rival's compiled materials.
     const prepared=await Promise.allSettled([routeReady,linesReady]);
@@ -380,7 +377,7 @@ async function loadUnifiedWorld(compiled,{eventId=Q.get('routeEvent')}={}) {
 }
 function resetUnifiedRace(){
   G.run?.abort('restart');notifications.clear();routeNavigation.reset();buildGrid();const pv=player.veh,p=G.unifiedCompiled.grid[0];
-  traffic.configure(G.ev.def);policeVoice.reset();routeClosures.setEvent(G.ev.def);resetTowOffer();
+  traffic.configure(G.ev.def,{deferFleet:true});policeVoice.reset();routeClosures.setEvent(G.ev.def);resetTowOffer();
   pv.reset(0,0,0);Object.assign(pv,{x:p.x,y:p.y,z:p.z,yaw:p.yaw,vLong:0,vLat:0,w:0,s:-8,u:0,_network:true});pv.ground=ground;ground.begin(pv);ground.resolve(pv,1/240);pv.syncWheels();applyDriving();$('rivalName').textContent='BEST';
   Object.assign(G,{raceT:0,pen:0,crashes:0,topSpeed:0,pFinish:null,rFinish:null,finishedT:0,postT:0,result:null,routeHint:false,streamInterrupted:false,towing:false,bestSetupChanged:false,marksDir:[],markIdx:0});
   G.tP=new Float32Array(Math.ceil(G.ev.r.len/10)+4).fill(NaN);G.tR=new Float32Array(G.tP.length).fill(NaN);
@@ -914,6 +911,18 @@ function startCountdown() {
   document.body.classList.remove('menu-backdrop');
   G.cameraStarting = false; G.paused = null;
   syncSteeringAssist();
+  if(worldSession){
+    const warmingTraffic=traffic,generation=warmingTraffic.warmGeneration=(warmingTraffic.warmGeneration||0)+1;
+    const warm=()=>{
+      if(traffic!==warmingTraffic||warmingTraffic.warmGeneration!==generation)return;
+      if(G.paused){requestAnimationFrame(warm);return;}
+      if(!['countdown','race'].includes(G.state))return;
+      worldSession.warmOptional();
+      warmingTraffic.warmFleet(()=>traffic===warmingTraffic&&!G.paused&&['countdown','race'].includes(G.state)).catch(error=>{if(!warmingTraffic.disposed)console.warn('Countdown fleet preparation',error);});
+    };
+    // Paint the grid/countdown first; a menu transition cancels stale warming.
+    requestAnimationFrame(()=>requestAnimationFrame(warm));
+  }
   G.state = 'countdown'; G.countT = 0; G.countShown = -1; G.countWall = 0;
   document.body.classList.remove('racing'); document.body.classList.add('counting');
   hud.hideMenu();

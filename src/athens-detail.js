@@ -10,7 +10,7 @@ import {onSettings} from './settings.js';
 // Include terrain clones as they compile, and drop disposed materials. Off
 // must remove the detail shader's cost as well as its visible contribution.
 const detailMaterials=new Set();
-function trackDetailMaterial(material){if(detailMaterials.has(material))return;detailMaterials.add(material);material.addEventListener('dispose',()=>detailMaterials.delete(material));}
+export function trackDetailMaterial(material){if(detailMaterials.has(material))return;detailMaterials.add(material);material.addEventListener('dispose',()=>detailMaterials.delete(material));}
 onSettings((s,key)=>{if(!key||key==='worldDetail')for(const material of detailMaterials)material.needsUpdate=true;});
 
 // ---- ground classes ---------------------------------------------------------------------------------------------
