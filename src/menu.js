@@ -342,7 +342,7 @@ export class Menu {
         ${C.option({ icon: 'car', title: 'GARAGE', desc: `${GARAGE_CARS.length} cars · city to super`, act: 'garage', cls: 'option--tile' })}
         ${C.option({ icon: 'settings', title: 'SETTINGS', desc: 'Sound, graphics, driving and controls', act: 'settings', cls: 'option--tile' })}`, foot: Release.titleExtras(this), hints: [['select', 'SELECT'], ['confirm', 'OK'], ['garage', 'GARAGE']] });
   }
-  r_routes(d){return C.sheetList({variant:'flow',kick:'ATHENS',title:'SELECT ROUTE',rows:d.catalogue.flatMap(r=>r.events.map(e=>C.option({icon:'flag',title:esc(r.name+(r.events.length>1&&e.type==='timetrial'?' · TIME TRIAL':'')),desc:`${fmtDist(r.lengthM)} · ${e.laps||1} LAP${(e.laps||1)>1?'S':''} · ${e.rivals||0} RIVALS${r.regionId==='penteli'?' · ATTACHED DESTINATION':''}`,act:'unifiedRoute',attrs:{'data-route':r.id,'data-event':e.id}}))).join(''),hints:[['select','SELECT'],['confirm','RACE'],['back','BACK']]});}
+  r_routes(d){return C.sheetList({variant:'flow',kick:'ATHENS',title:'SELECT ROUTE',rows:d.catalogue.flatMap(r=>r.events.map(e=>C.option({icon:'flag',title:esc(r.name+(r.events.length>1&&e.type==='timetrial'?' · TIME TRIAL':'')),desc:`${fmtDist(r.lengthM)} · ${e.laps||1} LAP${(e.laps||1)>1?'S':''} · ${e.rivals||0} RIVALS${['penteli','megara'].includes(r.regionId)?' · ATTACHED DESTINATION':''}`,act:'unifiedRoute',attrs:{'data-route':r.id,'data-event':e.id}}))).join(''),hints:[['select','SELECT'],['confirm','RACE'],['back','BACK']]});}
   r_leaderboards(d) { return renderLeaderboards(this, d); }
   // RACE is solo (owner 2026-10-18): two artwork-led cards fill the screen; multiplayer lives behind the title's MULTIPLAYER tile.
   r_mode() {

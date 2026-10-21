@@ -1,5 +1,6 @@
 import { WorldRoadGraph } from './world-tile-graph.js';
 import { tileKey } from './world-tile-format.js';
+import {MEGARA_RACEWAY,MEGARA_DRIVE_SURFACES} from './route-surface.js';
 
 /** Graph and contact queries share the scene's activation/eviction transaction. */
 export class WorldTileRoads {
@@ -28,6 +29,7 @@ export class WorldTileRoads {
    */
   connected(edge){
     const result=new Map([[edge.surface,edge.layer]]);
+    if(MEGARA_RACEWAY.test(edge.id)&&edge.surface==='surface:roads'&&edge.layer===0&&!(edge.flags&8))for(const surface of MEGARA_DRIVE_SURFACES)result.set(surface,0);
     for(const {value:e} of this.graph.edges.values()){if(e.flags&8)continue;if((e.from===edge.to&&this.graph.legal(edge.id,e)||e.to===edge.from&&this.graph.legal(e.id,edge))&&Math.abs((e.from===edge.to?e.points[0][1]-edge.points.at(-1)[1]:e.points.at(-1)[1]-edge.points[0][1]))<.025)result.set(e.surface,e.layer);if(e.layer!==edge.layer)continue;for(const [node,y]of [[edge.from,edge.points[0][1]],[edge.to,edge.points.at(-1)[1]]])if(e.from===node&&Math.abs(e.points[0][1]-y)<.025||e.to===node&&Math.abs(e.points.at(-1)[1]-y)<.025)result.set(e.surface,e.layer);}
     return result;
   }

@@ -24,7 +24,7 @@ test('the prebuilt config reader accepts comments and trailing commas but never 
 });
 test('prebuilt staging builds inherit the route flag; production and unconfigured builds stay off', () => {
   const source = readFileSync(resolve(root, 'wrangler.jsonc'), 'utf8');
-  assert.deepEqual(unifiedRouteBuildVars(source, 'staging'), { ASR_UNIFIED_ROUTES: 'syntagma-pilot,psychiko-faros,riviera-coast,penteli-hill,penteli-descent' });
+  assert.deepEqual(unifiedRouteBuildVars(source, 'staging'), { ASR_UNIFIED_ROUTES: 'syntagma-pilot,psychiko-faros,riviera-coast,penteli-hill,penteli-descent,megara-club' });
   assert.deepEqual(unifiedRouteBuildVars(source, 'production'), { ASR_UNIFIED_ROUTES: '' });
   assert.deepEqual(unifiedRouteBuildVars('{"env":{"production":{"vars":{"ASR_UNIFIED_ROUTES":"syntagma-pilot"}}}}', 'production'), { ASR_UNIFIED_ROUTES: '' });
   assert.deepEqual(unifiedRouteBuildVars('{}', 'staging'), { ASR_UNIFIED_ROUTES: '' });
