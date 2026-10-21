@@ -3,7 +3,7 @@
 // (tools/world-gen/props.py): flat rows of tile-local positions. Signal heads read their lamp from the instance's `iState`, so a
 // phase change rewrites one number. World detail Off hides the lot and builds no instances.
 import * as THREE from 'three';
-import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
+import {mergeGeometries,mergeVertices} from 'three/addons/utils/BufferGeometryUtils.js';
 import {signalState,STOP_OFF} from './signal-plan.js';
 
 export const KINDS=Object.freeze({lamp:0,bus_stop:1,bus_shelter:2,kiosk:3,bench:4,bollard:5,stop:6,give_way:7,oneway:8,fountain:9,monument:10,parked_car:11,crossing:12,signal:13,rooftop:14,solar:15,antenna:16,pergola:17,scooter:18});
@@ -11,19 +11,32 @@ export const PROP_LIMITS=Object.freeze({capacity:2600,near:230,rebuildMetres:10}
 /** How far each model is drawn (metres). Small or rare models stop earlier, so a street scene costs a handful of draw calls, not one per model type. */
 export const PROP_NEAR=Object.freeze({lamp:210,signal:230,bus_stop:140,bus_shelter:140,kiosk:140,stop:110,give_way:110,oneway:100,crossing:100,bench:80,bollard:80,fountain:160,monument:160,parked_car:100,rooftop:120,solar:100,antenna:120,pergola:100,scooter:80});
 const NEAR_BY_KIND=Object.fromEntries(Object.entries(PROP_NEAR).map(([n,d])=>[KINDS[n],d]));
-const CAR_PAINT=['#e9e9e6','#9ea4a8','#26292c','#2f4d78','#8c2f2b','#b9a98a'];
+/** Car paints, mostly what Athens drives: white, silver, graphite and black, with some blue, red, beige and a dark green (the row picks them by src/world-tile-parking.js PAINT). */
+const CAR_PAINT=['#ecebe6','#b4b9bc','#4e5459','#1e2124','#2b4f86','#a8302b','#c4b595','#35574a'];
 const STATE_CODE={R:1,A:2,G:3};
 /** Contact shadow of each kind: half width and half length of the dark ellipse, in the model's frame (its long axis is z). */
 const SHADOW={[KINDS.parked_car]:[1.2,2.6],[KINDS.scooter]:[.5,1.05],[KINDS.kiosk]:[1.3,1.1],[KINDS.bus_shelter]:[1.9,1.1],[KINDS.bench]:[.5,1],[KINDS.fountain]:[2.3,2.3],[KINDS.monument]:[1.1,1.1]};
 
-function part(w,h,d,x,y,z,colour,{kind,lamp=0,rotZ=0,rotX=0,segments=0,faceZ=false,quad=0}={}){
-  const g=quad?new THREE.PlaneGeometry(w,h):segments?new THREE.CylinderGeometry(w/2,w/2,h,segments):new THREE.BoxGeometry(w,h,d);
+/** A convex side profile [[z, y], ...] (counter-clockwise) extruded across `width` metres: flat-shaded, with its own normals so `shade` can read them. */
+function prism(profile,width){
+  const hx=width/2,pos=[],nor=[],n=profile.length,tri=(a,b,c,nx,ny,nz)=>{for(const v of [a,b,c]){pos.push(v[0],v[1],v[2]);nor.push(nx,ny,nz);}};
+  for(let i=1;i<n-1;i++){tri([hx,profile[0][1],profile[0][0]],[hx,profile[i][1],profile[i][0]],[hx,profile[i+1][1],profile[i+1][0]],1,0,0);tri([-hx,profile[0][1],profile[0][0]],[-hx,profile[i+1][1],profile[i+1][0]],[-hx,profile[i][1],profile[i][0]],-1,0,0);}
+  for(let i=0;i<n;i++){const a=profile[i],b=profile[(i+1)%n],dz=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dz,dy),ny=-dz/l,nz=dy/l;
+    tri([-hx,a[1],a[0]],[hx,a[1],a[0]],[hx,b[1],b[0]],0,ny,nz);tri([-hx,a[1],a[0]],[hx,b[1],b[0]],[-hx,b[1],b[0]],0,ny,nz);}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('normal',new THREE.Float32BufferAttribute(nor,3));return g;
+}
+/** Baked "fake light" for a painted body: the roof and bonnet brightest, the flanks and nose darker, the tail darker still, the underside dark. */
+const shadeOf=(nx,ny,nz)=>ny<-.5?.52:.72+.28*Math.max(ny,0)+(Math.abs(nx)>.7?.06:0)-(nz<-.7?.05:0);
+function part(w,h,d,x,y,z,colour,{kind,lamp=0,rotZ=0,rotX=0,segments=0,faceZ=false,quad=0,paint=0,shade=false,profile=null}={}){
+  const g=profile?prism(profile,w):quad?new THREE.PlaneGeometry(w,h):segments?new THREE.CylinderGeometry(w/2,w/2,h,segments):new THREE.BoxGeometry(w,h,d);
   if(quad<0)g.rotateY(Math.PI);
-  if(faceZ)g.rotateX(Math.PI/2);if(rotZ)g.rotateZ(rotZ);if(rotX)g.rotateX(rotX);g.translate(x,y,z);g.deleteAttribute('uv');g.deleteAttribute('normal');
-  const c=new THREE.Color(colour),n=g.attributes.position.count,col=new Float32Array(n*3),k=new Float32Array(n).fill(kind),l=new Float32Array(n).fill(lamp);
-  for(let i=0;i<n;i++){col[i*3]=c.r;col[i*3+1]=c.g;col[i*3+2]=c.b;}
-  g.setAttribute('color',new THREE.BufferAttribute(col,3));g.setAttribute('aKind',new THREE.BufferAttribute(k,1));g.setAttribute('aLamp',new THREE.BufferAttribute(l,1));
-  return g;
+  if(faceZ)g.rotateX(Math.PI/2);if(rotZ)g.rotateZ(rotZ);if(rotX)g.rotateX(rotX);g.translate(x,y,z);
+  const nrm=g.attributes.normal;g.deleteAttribute('uv');
+  const c=new THREE.Color(colour),n=g.attributes.position.count,col=new Float32Array(n*3),k=new Float32Array(n).fill(kind),l=new Float32Array(n).fill(lamp),pa=new Float32Array(n).fill(paint);
+  for(let i=0;i<n;i++){const f=shade?shadeOf(nrm.getX(i),nrm.getY(i),nrm.getZ(i)):1;col[i*3]=c.r*f;col[i*3+1]=c.g*f;col[i*3+2]=c.b*f;}
+  g.deleteAttribute('normal');
+  g.setAttribute('color',new THREE.BufferAttribute(col,3));g.setAttribute('aKind',new THREE.BufferAttribute(k,1));g.setAttribute('aLamp',new THREE.BufferAttribute(l,1));g.setAttribute('aPaint',new THREE.BufferAttribute(pa,1));
+  return profile?mergeVertices(g):g;
 }
 /** Models, in a frame where the road is toward -x and the direction faced is -z. Low-poly boxes (street props <= 150 triangles). */
 export function propParts(){
@@ -49,11 +62,17 @@ export function propParts(){
   add(9,3.4,.5,3.4,0,.25,0,'#b7b8b2',{segments:8});add(9,3,.08,3,0,.5,0,'#5f8da0',{segments:8});add(9,.4,1.8,.4,0,1.2,0,'#cfcdc4',{segments:6});add(9,1.5,.2,1.5,0,2.1,0,'#b7b8b2',{segments:8});
   // monument: plinth, column, cap
   add(10,1.5,1,1.5,0,.5,0,'#d8d5cb');add(10,.55,2.6,.55,0,2.3,0,'#e2dfd5');add(10,.9,.35,.9,0,3.75,0,'#d8d5cb');
-  // parked car, 4.3 x 1.8 x 1.43 m, nose toward +z, on the ground at y = 0 (its row stands it on the highest ground under its wheels): wheels 0.62 m tall under a body whose sill is 17 cm off the
-  // ground, a lower bonnet and a lower boot (the steps), a glasshouse of 50 cm (glass band) under a roof, head and tail lights; the paint arrives through the instance colour
-  add(11,1.74,.70,2.3,0,.52,-.1,'#ffffff');add(11,1.72,.56,1.15,0,.45,1.57,'#ffffff');add(11,1.72,.62,.85,0,.48,-1.72,'#ffffff');add(11,1.52,.5,1.95,0,1.12,-.15,'#26323a');add(11,1.46,.06,1.65,0,1.4,-.15,'#ffffff');
-  for(const x of [-.83,.83])for(const z of [-1.35,1.35])add(11,.26,.62,.62,x,.31,z,'#17191b');
-  for(const x of [-.55,.55]){add(11,.42,.14,0,x,.6,2.151,'#f4f0d8',{quad:1});add(11,.4,.14,0,x,.62,-2.151,'#b3261e',{quad:-1});}
+  // parked car, 4.3 x 1.43 m (1.92 m over the wheels), nose toward +z, on the ground at y = 0 (its row stands it on the highest ground under its wheels). A real silhouette: a body with a sloping bonnet
+  // and a short boot over a dark sill, a glasshouse with raked windscreen and rear window (blue-grey glass, a painted roof and a painted B pillar so the side windows read as two), four wheels 62 cm
+  // tall under a sill 22 cm off the ground, lights, grille and plate. The paint arrives through the instance colour and tints only the parts flagged as paint; the glass, wheels, sill and lights keep their own
+  // colours. The painted faces carry baked shading (roof brightest, flanks and nose darker) so the shape reads without lights.
+  add(11,1.82,0,0,0,0,0,'#ffffff',{profile:[[-2.15,.22],[2.15,.22],[2.15,.58],[1.95,.74],[1.0,.84],[-1.15,.86],[-2.05,.8],[-2.15,.62]],paint:1,shade:true});
+  add(11,1.56,0,0,0,0,0,'#5a7184',{profile:[[1.05,.84],[.45,1.37],[-.95,1.37],[-1.55,.84]],shade:true});
+  add(11,1.6,.06,1.44,0,1.4,-.25,'#ffffff',{paint:1,shade:true});add(11,1.62,.53,.12,0,1.105,-.3,'#ffffff',{paint:1,shade:true});
+  add(11,1.86,.12,4.26,0,.28,0,'#2a2d30',{shade:true});
+  for(const x of [-.84,.84])for(const z of [-1.35,1.35])add(11,.24,.62,.62,x,.31,z,'#17191b');
+  for(const x of [-.55,.55]){add(11,.42,.13,0,x,.46,2.152,'#f4f0d8',{quad:1});add(11,.4,.13,0,x,.48,-2.152,'#b3261e',{quad:-1});}
+  add(11,.5,.12,0,0,.44,2.152,'#202326',{quad:1});add(11,.5,.12,0,0,.44,-2.152,'#e8e4d0',{quad:-1});
   // pedestrian-crossing sign: post, blue plate, white pedestrian block
   add(12,.06,2.3,.06,0,1.15,0,grey);add(12,.62,.62,.04,0,2.1,0,'#2a5a9c');add(12,.3,.34,.05,0,2.1,0,'#f4f2ec');add(12,.14,.14,.05,0,2.28,0,'#2a5a9c');
   // rooftop kit of a polykatoikia, four small models: the stair head with a white tank on a stand (14), a solar water heater (a tilted panel on its frame and a drum tank, 15),
@@ -72,6 +91,7 @@ export function propParts(){
 /** One merged geometry per model, so each draw call carries only that model's triangles. */
 export function kindGeometry(kind){
   const parts=propParts().filter(g=>g.attributes.aKind.array[0]===kind);for(const g of parts)g.deleteAttribute('aKind');
+  if(kind!==KINDS.parked_car)for(const g of parts)g.deleteAttribute('aPaint');
   const g=mergeGeometries(parts,false);if(!g)throw new Error('prop geometry '+kind);return g;
 }
 export function propGeometry(){return mergeGeometries(propParts(),false);}  // every model in one geometry (budget checks)
@@ -79,6 +99,13 @@ export function propGeometry(){return mergeGeometries(propParts(),false);}  // e
 const SIGNAL_VERTEX='attribute float aLamp;attribute float iState;varying float vLit;';
 /** Plain unlit props (vertex colour times instance colour). */
 export function propMaterial(){return new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.DoubleSide});}
+/** Parked cars: vertex colour, and the instance colour (the paint) tints only the vertices flagged `aPaint`, so glass, wheels, sill and lights keep their own colours. */
+export function carMaterial(){
+  const m=new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.DoubleSide});
+  m.customProgramCacheKey=()=>'athens-car-v1';
+  m.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute float aPaint;').replace('#include <color_vertex>','vColor=vec3(1.0);\n#ifdef USE_COLOR\nvColor*=color;\n#endif\n#ifdef USE_INSTANCING_COLOR\nvColor.xyz*=mix(vec3(1.0),instanceColor.xyz,aPaint);\n#endif');};
+  return m;
+}
 /** Signal heads: the lamp whose number equals the instance's state is lit, the others dim. */
 export function signalMaterial(){
   const m=new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.DoubleSide});
@@ -99,7 +126,7 @@ export class AthensProps{
     this.group=new THREE.Group();this.group.name='athens-props-layer';parent.add(this.group);this.group.visible=enabled;
     this.meshes=new Map();this.signalState=null;
     for(const kind of Object.values(KINDS)){
-      const cap=KIND_CAPACITY[kind]||100,geometry=kindGeometry(kind);let material=propMaterial();
+      const cap=KIND_CAPACITY[kind]||100,geometry=kindGeometry(kind);let material=kind===KINDS.parked_car?carMaterial():propMaterial();
       if(kind===KINDS.signal){this.signalState=new THREE.InstancedBufferAttribute(new Float32Array(cap),1);this.signalState.setUsage(THREE.DynamicDrawUsage);geometry.setAttribute('iState',this.signalState);material=signalMaterial();}
       const mesh=new THREE.InstancedMesh(geometry,material,cap);mesh.count=0;mesh.visible=false;mesh.frustumCulled=false;mesh.name='athens-props:'+kind;mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
       this.group.add(mesh);this.meshes.set(kind,{mesh,cap});

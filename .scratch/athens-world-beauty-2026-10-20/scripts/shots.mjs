@@ -26,7 +26,7 @@ try{
       return null;},s.deck).catch(e=>String(e.message).slice(0,200));
     await page.evaluate(async d=>{(await import('/src/settings.js')).setSetting('worldDetail',d);},s.detail!==false);
     await page.evaluate(([cfg])=>{const A=window.__athens;A.setPaused(true);
-      A.setCameraHook((cam,v,o)=>{
+      A.setCameraHook((cam,v,o)=>{A.__o=o;
         if(cfg.carcam){cam.far=cfg.far||700;A.scene.fog.near=cam.far*.65;A.scene.fog.far=cam.far;cam.updateProjectionMatrix();const [side,up,back,ahead]=cfg.carcam,fx=-Math.sin(v.yaw),fz=-Math.cos(v.yaw),rx=Math.cos(v.yaw),rz=-Math.sin(v.yaw);cam.position.set(v.x-o.x-fx*back+rx*side,v.y+up,v.z-o.z-fz*back+rz*side);cam.lookAt(v.x-o.x+fx*ahead,v.y+1,v.z-o.z+fz*ahead);return;}
         cam.far=cfg.far||850;A.scene.fog.near=cam.far*.65;A.scene.fog.far=cam.far;cam.updateProjectionMatrix();
         if(cfg.eye){ // eye [x,z,height above the ground there], look [x,z,absolute y]: a ground-level view toward any point
@@ -37,5 +37,13 @@ try{
       });},[{at:s.deck&&!s.at?[s.deck[0],s.deck[1]]:s.at,cam:s.cam,far:s.far,lookUp:s.lookUp,carcam:s.carcam,eye:s.eye,look:s.look,eyeRef:s.eyeRef,eyeY:s.eyeY,layer:s.layer,fixedY:s.fixedY,deckAt:!!s.deck&&!s.at}]);
     if(s.pre)await page.evaluate(code=>{const A=window.__athens;return eval(code);},s.pre);
     await page.waitForTimeout(s.wait||9000);await page.screenshot({path:`${outdir}/${s.name}.png`});const info=await page.evaluate(()=>{const A=window.__athens,i=A.renderer.info;i.autoReset=false;i.reset();A.render(.016);const out={calls:i.render.calls,triangles:i.render.triangles,textures:i.memory.textures,geometries:i.memory.geometries};i.autoReset=true;return out;});report.shots.push({name:s.name,placed:res,info});console.log('shot',s.name,JSON.stringify(res));
+    if(s.measure)report[s.name+'-measure']=await page.evaluate(()=>{const A=window.__athens,o=A.__o,cam=A.camera;
+      cam.updateMatrixWorld();const el=A.renderer.domElement,W=el.clientWidth,Hh=el.clientHeight,V=cam.position.constructor,dir=new V();cam.getWorldDirection(dir);
+      const box=(x,y,z,yaw,L,Wd,Hg)=>{const sn=Math.sin(yaw),cs=Math.cos(yaw);let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(const l of [-L/2,L/2])for(const w of [-Wd/2,Wd/2])for(const h of [0,Hg]){const v=new V(x+sn*l+cs*w-o.x,y+h,z+cs*l-sn*w-o.z);if(v.clone().applyMatrix4(cam.matrixWorldInverse).z>-.3)return null;v.project(cam);const px=(v.x*.5+.5)*W,py=(-v.y*.5+.5)*Hh;x0=Math.min(x0,px);x1=Math.max(x1,px);y0=Math.min(y0,py);y1=Math.max(y1,py);}
+        const bw=x1-x0,bh=y1-y0,cosA=Math.abs(dir.x*sn+dir.z*cs);return {w:+bw.toFixed(1),h:+bh.toFixed(1),hw:+(bh/bw).toFixed(3),alongAxis:+cosA.toFixed(2)};};
+      const out={cars:[],player:null,viewport:[W,Hh]};
+      for(const r of A.props.near){if(r.kind!==11)continue;const d=Math.hypot(r.x-o.x-cam.position.x,r.z-o.z-cam.position.z);if(d<20||d>60)continue;{const b=box(r.x,r.y,r.z,r.yaw,4.3,1.92,1.43);if(b)out.cars.push({d:+d.toFixed(1),...b});}}
+      out.cars.sort((a,b)=>a.d-b.d);const v=A.player.veh;if(v)out.player={d:+Math.hypot(v.x-o.x-cam.position.x,v.z-o.z-cam.position.z).toFixed(1),...box(v.x,v.y??0,v.z,v.yaw,4.5,1.9,1.4)};
+      return out;}).catch(e=>String(e.message).slice(0,300));
   }
 }catch(e){report.failure=e.stack;console.log(e.stack)}finally{await browser.close();server.close();console.log(JSON.stringify({errors:report.errors.slice(0,6),worldBytes:c.world.bytes,cells:c.world.count}));const {writeFile}=await import('node:fs/promises');await writeFile(outdir+'/report.json',JSON.stringify(report,null,1));}

@@ -1,0 +1,4 @@
+before glyfada-street  player {'d': 70.4, 'w': 36.6, 'h': 15.6, 'hw': 0.425, 'alongAxis': 0.99} | cars 20-60 m in front of camera: 14; viewed >=36 deg off their axis: n=5 median h/w 0.26; near end-on: n=9 median h/w 0.74
+before cars-40m        player {'d': 26.1, 'w': 194.3, 'h': 49, 'hw': 0.252, 'alongAxis': 0.42} | cars 20-60 m in front of camera: 5; viewed >=36 deg off their axis: n=5 median h/w 0.32; near end-on: n=0
+after  glyfada-street  player {'d': 70.4, 'w': 36.6, 'h': 15.6, 'hw': 0.425, 'alongAxis': 0.99} | cars 20-60 m in front of camera: 13; viewed >=36 deg off their axis: n=7 median h/w 0.26; near end-on: n=6 median h/w 0.52
+after  cars-40m        player {'d': 26.1, 'w': 194.3, 'h': 49, 'hw': 0.252, 'alongAxis': 0.42} | cars 20-60 m in front of camera: 6; viewed >=36 deg off their axis: n=6 median h/w 0.32; near end-on: n=0

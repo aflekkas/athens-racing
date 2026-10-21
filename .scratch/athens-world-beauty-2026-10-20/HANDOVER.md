@@ -37,3 +37,6 @@ Mural sites come from the long road-facing walls of each cell's buildings; 24 de
 
 ### Step 5d (cars on the ground): nothing to rebake
 Heights come from each cell's own ground triangles at run time. A bake that stored a per-edge kerb line or parking rule would replace the kerb fit.
+
+### Step 5e (cars read as cars): nothing to rebake
+Run-time only: car model, paint shader and row spacing. A later bake that stored OSM `parking:lane` would let rows follow real bays.
