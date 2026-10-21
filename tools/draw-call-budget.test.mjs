@@ -76,9 +76,16 @@ test('other drivers\' cars drop to the road-distance model sooner on weak classe
   scaleVehicleLod(car, 1);
   assert.deepEqual(body.levels.map(l => l.distance), authored[0], 'a class change back to high restores the authored distances');
   assert.ok(low > PERFORMANCE.potato.lod * authored[0][1] - 1e-9 && low < authored[0][1]);
+  for (const quality of [PERFORMANCE.potato.lod, PERFORMANCE.low.lod, PERFORMANCE.med.lod, PERFORMANCE.high.lod]) {
+    scaleVehicleLod(car, quality, 40);
+    for (const lod of [body, wheel]) {
+      assert.ok(lod.levels[1].distance >= 40, 'nearby rivals keep the full model at every quality');
+      assert.equal(lod.getObjectForDistance(35), lod.levels[0].object, '35 m chase view uses close detail');
+    }
+  }
   const main = (await import('node:fs')).readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
-  assert.match(main, /if \(!isPlayer\) scaleVehicleLod\(model, GFX\.vehicleLod\)/, 'only rivals and online players');
-  assert.match(main, /scaleVehicleLod\(c\.model, GFX\.vehicleLod\)/, 'a live class change re-applies it');
+  assert.match(main, /if \(!isPlayer\) scaleVehicleLod\(model, GFX\.vehicleLod, 40\)/, 'only rivals and online players');
+  assert.match(main, /scaleVehicleLod\(c\.model, GFX\.vehicleLod, 40\)/, 'a live class change re-applies it');
 });
 
 test('Riviera road: one mesh per material and chunk (median and skirt share the verge), and weaker classes draw coarser guardrail chunks with the same rails', async () => {

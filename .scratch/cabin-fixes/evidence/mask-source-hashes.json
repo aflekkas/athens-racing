@@ -35,7 +35,7 @@
   "src/vehicle-cabin.js": "db1818ef5d01828acaae910a1bdaacb79a5caa3e69e29c9ee5cbb45193fb452c",
   "src/vehicle-camera.js": "12865245bdf8cb38a202a58cb1672e1801da92b372f3c9f7cea62aab973fd9f0",
   "src/vehicle-distance.js": "d5475e30a260952fff9f97ae50576c028a39e7102b7371b8725f32cc0c46ea93",
-  "src/vehicle-lod.js": "82cf1d96e77edc59ec21cb1ccacf38167013b2ee770597abf52efdd338bf80a6",
+  "src/vehicle-lod.js": "cadccd7d836709d6b4a6219cf21d5640ebfa64cae4999c59d1da3bb2d47a8593",
   "src/vehicle-mirrors.js": "f09cfde3b710c11239c4f9190dcf1fcf89a269c6d4ee4031d3d90e50c6ead9b3",
   "src/vehicle-models.js": "38aed773a0668d1f25b861f729dd744d89b35a78381b6926f689253a22f6017a",
   "src/vehicle-paint.js": "6e2f8f7a17352a9699f45bf2038f237c3d4d935df9889baf7a1066638e2ccdcd",
