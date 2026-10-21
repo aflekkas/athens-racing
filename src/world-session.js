@@ -1,5 +1,5 @@
 import {PenteliHouses} from './penteli-houses.js';
-import {WorldRegionalScenery} from './world-regional-scenery.js';
+import {WorldRegionalScenerySet} from './world-regional-scenery.js';
 import {roadLayersConnect} from './world-tile-graph.js';
 import {worldRecoveryTarget} from './world-recovery.js';
 import {createWorldSelection} from './world-selection.js';
@@ -41,8 +41,8 @@ export async function createWorldSession({renderer,scene,resources,progress=()=>
  const obstacles=new WorldTileObstacles({detailEnabled:settings.worldDetail!==false});
  const unsubscribeProps=onSettings((s,key)=>{if(!key||key==='worldDetail'){obstacles.setDetailEnabled(s.worldDetail!==false);props.setEnabled(s.worldDetail!==false);horizon.setEnabled(s.worldDetail!==false);landmarks.setEnabled(s.worldDetail!==false);plazas.setEnabled(s.worldDetail!==false);lawns.setEnabled(s.worldDetail!==false);signs.setEnabled(s.worldDetail!==false);marks.setEnabled(s.worldDetail!==false);trees.setEnabled(s.worldDetail!==false);houses.setEnabled(s.worldDetail!==false);syncBoxes();}});
  horizon.load(new URL('./assets/athens/horizon.bin',document.baseURI)).catch(e=>console.warn(e.message));plazas.load(new URL('./assets/athens/plazas.json',document.baseURI)).catch(e=>console.warn(e.message));lawns.load(new URL('./assets/athens/lawns.json',document.baseURI)).catch(e=>console.warn(e.message));signs.load(new URL('./assets/athens/pois.json',document.baseURI)).catch(e=>console.warn(e.message));
- await loadAthensTextures(renderer,{penteli:manifest.regionId==='penteli'||manifest.regions?.some(r=>r.id==='penteli')});const sceneTiles=new WorldTileScene(scene,{renderer,materialFactory:athensMaterial}),barriers=new WorldTileBarriers();
- const regionalScenery=new WorldRegionalScenery(scene,{trees});const activationSteps=[];
+ await loadAthensTextures(renderer,{penteli:['penteli','megara'].includes(manifest.regionId)||manifest.regions?.some(r=>['penteli','megara'].includes(r.id))});const sceneTiles=new WorldTileScene(scene,{renderer,materialFactory:athensMaterial}),barriers=new WorldTileBarriers();
+ const regionalScenery=new WorldRegionalScenerySet(scene,{trees});const activationSteps=[];
  const adapter={
   warmup:p=>Promise.all([sceneTiles.warmup(p),regionalScenery.prepare(p.metadata.regionalScenery)]),
   rebase(origin,previous){sceneTiles.rebase(origin,previous);regionalScenery.rebase(origin);detailRoot.position.set(-origin.x,0,-origin.z);},

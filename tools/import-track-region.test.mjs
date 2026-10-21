@@ -5,7 +5,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {createHash} from 'node:crypto';
 import * as THREE from 'three';
-import {regionTransform,splitSegment,addAuthoredMeshes,addRails,addRoadGraph} from './world-gen/track-region-geometry.mjs';
+import {regionTransform,splitSegment,addAuthoredMeshes,addRails,addBarrierObstacles,addRoadGraph} from './world-gen/track-region-geometry.mjs';
 import {checkSourceHashes,rejectDuplicateCells,regionBudgets} from './import-track-region.mjs';
 import {TILE_TABLES} from '../src/world-tile-format.js';
 const source={lat0:38.08,lon0:23.9,mlat:110997.96415769357,mlon:87737.04446643248};
@@ -31,6 +31,10 @@ test('source locks fail on stale inputs and duplicate cells fail regardless of m
  }finally{await rm(dir,{recursive:true,force:true});}
  assert.throws(()=>rejectDuplicateCells({tiles:{'0,0':{}}},{tiles:{'0,0':{}}}),/Duplicate region cell/);
  assert.equal(regionBudgets({tiles:{'0,0':{bytes:1,decodedBytes:65*1024**2}}}).passed,false);
+});
+test('Megara access inclusion stays on the source-backed motor raceway',async()=>{
+ const config={schemaVersion:1,id:'megara',tileMetres:512,access:'circuit',elevation:{source:'EU-DEM v1.1',datum:'EVRS2000',verticalOffset:0},inclusion:{racewayWays:[70043225],evidence:'tools/maps/megara/SOURCES.md'},sourceHashes:{}};
+ await assert.rejects(checkSourceHashes(new URL('..',import.meta.url).pathname,config),/raceway inclusion/);
 });
 
 import {composeWorldManifest,loadWorldDefinition,canonicalWorldJSON} from '../src/world-manifest.js';
@@ -58,7 +62,7 @@ test('imported Penteli rail segments retain the 150 km/h swept collision across 
  const v={x:520,y:10,z:512,yaw:-Math.PI/2,halfL:2.5,halfW:1,vLong:150/3.6,vLat:0,w:0};assert.ok(barriers.resolve(v,{x:503,y:10,z:512,yaw:v.yaw}));assert.ok(v.x+v.halfL<=512-.15);assert.equal(v.y,10);
 });
 
-import {WorldRegionalScenery} from '../src/world-regional-scenery.js';
+import {WorldRegionalScenery,WorldRegionalScenerySet} from '../src/world-regional-scenery.js';
 import {setSetting} from '../src/settings.js';
 test('regional silhouettes share resident ownership, rebase and obey World detail Off',()=>{
  const parent=new THREE.Group(),layer=new WorldRegionalScenery(parent),spec={kind:'penteli',projection:source};layer.add('30,-23',spec);const root=layer.root;assert.equal(root.children.length,11);layer.add('31,-23',spec);assert.equal(layer.root,root);assert.equal(parent.children.length,1);layer.rebase({x:15360,z:-11776});assert.equal(root.position.x,-15360);assert.equal(root.position.z,11776);setSetting('worldDetail',false);assert.equal(root.visible,false);setSetting('worldDetail',true);layer.remove('30,-23');assert.equal(parent.children.length,1);layer.remove('31,-23');assert.equal(parent.children.length,0);layer.dispose();
@@ -70,4 +74,10 @@ test('degree-two graph compression preserves sampled bends, grades, junctions an
 test('regional background masks resident fine cells and releases its last GPU owner',()=>{
  const parent=new THREE.Group(),layer=new WorldRegionalScenery(parent),spec={kind:'penteli',projection:source};layer.asset={bytes:123,metadata:{bounds:[15360,-11776,16384,-11264],meshes:[{surface:'penteliBuilding',attributes:{position:{array:0,size:3}},index:1}]},arrays:[new Float32Array([15360,0,-11776,15872,0,-11776,15360,0,-11264]),new Uint16Array([0,1,2])]};
  layer.add('30,-23',spec);assert.deepEqual([...layer.mask.data],[255,0]);layer.add('31,-23',spec);assert.deepEqual([...layer.mask.data],[255,255]);const camera=new THREE.PerspectiveCamera(60,1,.1,850);camera.position.set(15400,20,-11700);layer.view(camera);assert.equal(camera.far,90000);let disposed=0;layer.mask.texture.addEventListener('dispose',()=>disposed++);layer.remove('30,-23');assert.deepEqual([...layer.mask.data],[0,255]);layer.remove('31,-23');assert.equal(disposed,1);assert.equal(parent.children.length,0);assert.equal(layer.cachedBytes,123);layer.dispose();assert.equal(layer.cachedBytes,0);assert.equal(camera.far,850);
+});
+test('Penteli and Megara can own separate regional backgrounds in one scene',()=>{
+ const parent=new THREE.Group(),set=new WorldRegionalScenerySet(parent),p={kind:'penteli',projection:source},m={kind:'megara',projection:source};set.add('30,-23',p);set.add('-64,-2',m);assert.equal(parent.children.length,2);assert.equal(set.layers.size,2);set.remove('30,-23');assert.equal(parent.children.length,1);assert.equal(set.layers.get('megara').cells.size,1);set.dispose();assert.equal(parent.children.length,0);
+});
+test('Megara tyre and wall boxes emit raised swept barriers',()=>{
+ const {get,tiles}=fixture(),t=regionTransform(source,source),stats=addBarrierObstacles([{x:511,z:20,yaw:Math.PI/2,hl:2,hw:.5,kind:'tyre'}],get,t,()=>9);assert.equal(stats.segments,2);for(const tile of tiles.values())for(const rail of tile.safetyRails)assert.equal(rail[1],9);
 });

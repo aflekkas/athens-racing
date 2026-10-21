@@ -5,7 +5,7 @@
     "megara": "195ce8b322f2297034be56c8e38b8899321c2bb3",
     "psychiko": "Current authored-height-preserving base geometry with optional detail Off (height reference 492f14e)"
   },
-  "method": "Earlier Riviera/Penteli/Megara counters retained: their map inputs and geometry are unchanged; shared atlas index rounding changes no resources, topology, culling or passes. Psychiko: production fixed day/night chase/cockpit poses, current course, detail Off/On. SwiftShader; no FPS claims. Phase 2 legacy Psychiko remains on the unfiltered branch; a supplemental day/night chase/cockpit detail capture stays within the owner budgets with zero browser errors.",
+  "method": "Earlier Riviera/Penteli/Megara counters retained: their map inputs and geometry are unchanged; shared atlas index rounding changes no resources, topology, culling or passes. Psychiko: production fixed day/night chase/cockpit poses, current course, detail Off/On. SwiftShader; no FPS claims. Phase 2 legacy Psychiko remains on the unfiltered branch; a supplemental day/night chase/cockpit detail capture stays within the owner budgets with zero browser errors. Shared terrain builder now accepts an optional subdivision count used only by offline Megara import; all fixed-pose map calls retain the same default count.",
   "browserErrors": [],
   "sourceHashes": {
     "src/world-detail.js": "3ec3124347d45038dabd6acc6624beff2f53e3e42213323927fb971e1893caab",
@@ -13,7 +13,7 @@
     "src/world-detail-state.js": "68b0bd6e470e6d0dc2da5d5468c34000bec0514c4b376ba66409c55a112d9416",
     "src/facade-atlas.js": "52c7f3caf1fa1176f376d40ffd2416c69996c2df9674d3287069e4658e66d414",
     "src/buildings.js": "c518abd13eed9de886bc521e143ed327ea0ada915f8b534758144a9419d82fe3",
-    "src/terrain.js": "e7472515b0d8f36b7ded1764b6560a1522c2eff08cd1cada006b17d595f46440",
+    "src/terrain.js": "1b8a2b622075845e5c299fd853f835a2a31121251e6892e8b1649fa5f46768ef",
     "src/terrain-lod.js": "7273d46dc2bb0d3e2df0a91c9b370a9a389721010c217259ef96aae4cffe9561",
     "src/scenery.js": "38b96d0dc796f6cabb8a6dbf6989c57427e2b0e74674f66ea002ee84a525af98",
     "src/map-world.js": "1edaf1d36ce91120f2dcf08e43e138b6a1719687f8e6e8f74481cc8f9b547545",

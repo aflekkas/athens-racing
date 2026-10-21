@@ -12,7 +12,7 @@ import {createFacadeAtlas} from './facade-atlas.js';
 // meshes carry plain tile-local positions; 512 m is a whole number of texture periods, so planar
 // UVs taken straight from the local position continue seamlessly across every tile border.
 import * as THREE from 'three';
-import {TX,loadTextureSubset} from './tex.js';
+import {TX,GLSL_HELPERS,loadTextureSubset} from './tex.js';
 import {settings,onSettings} from './settings.js';
 import {detailNoise,SEA_TIME,patchMaterial,GROUND_GLSL,GROUND_VERTEX_VARYINGS,GROUND_VERTEX_BODY,GROUND_APPLY,FACADE_GLSL,FACADE_VERTEX_VARYINGS,FACADE_VERTEX_BODY,FACADE_APPLY,SEA_GLSL,SEA_VERTEX_VARYINGS,SEA_VERTEX_BODY,SEA_APPLY,FOAM_GLSL,FOAM_VERTEX_VARYINGS,FOAM_VERTEX_BODY,FOAM_APPLY} from './athens-detail.js';
 export const ASPHALT_PERIOD=512/122,PAVING_PERIOD=512/160,URBAN_PERIOD=512/80;
@@ -39,6 +39,21 @@ function scanned(color,key,period,mean,contrast,{vertexColors=false,strength=1,d
 }
 /** materialFactory for WorldTileScene: (tileSurface, linear rgb, hasVertexColors) -> material. */
 export function athensMaterial(surface,rgb,vertexColors){
+  if(surface==='megaraTerrain')return terrainMaterial();
+  if(surface==='megaraNetwork')return roadNetworkMaterial();
+  if(surface.startsWith('megaraSolid:')){const o=JSON.parse(surface.slice(12));return new THREE.MeshStandardMaterial({...o,color:new THREE.Color(...rgb),vertexColors});}
+  if(surface==='megaraTyre'){
+    const m=new THREE.MeshStandardMaterial({color:new THREE.Color(...rgb),roughness:.97,vertexColors});m.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 tyreLocal;').replace('#include <begin_vertex>','#include <begin_vertex>\ntyreLocal=position;');sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 tyreLocal;').replace('#include <color_fragment>','#include <color_fragment>\nfloat tread=step(.44,length(tyreLocal.xz));float groove=step(.83,fract(atan(tyreLocal.z,tyreLocal.x)*15.2789+tyreLocal.y*7.));diffuseColor.rgb*=1.-tread*groove*.45;');};m.customProgramCacheKey=()=> 'megara-streamed-tyre-v1';return m;
+  }
+  if(surface==='megaraFence'){
+    const m=new THREE.MeshStandardMaterial({color:new THREE.Color(...rgb),vertexColors,transparent:true,opacity:.47,depthWrite:false,side:THREE.DoubleSide,roughness:.67,metalness:.25});m.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying vec2 vFenceUV;').replace('#include <begin_vertex>','#include <begin_vertex>\nvFenceUV=uv;');sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying vec2 vFenceUV;').replace('#include <alphatest_fragment>',`vec2 diamond=vec2(vFenceUV.x+vFenceUV.y,vFenceUV.x-vFenceUV.y)/.105;vec2 fw=max(fwidth(diamond),vec2(.001));vec2 d=abs(fract(diamond+.5)-.5);vec2 wires=1.-smoothstep(vec2(.032)-fw*.5,vec2(.032)+fw*.5,d);diffuseColor.a*=max(wires.x,wires.y)*clamp(1.5/max(fw.x,fw.y),0.,1.);if(diffuseColor.a<.018)discard;\n#include <alphatest_fragment>`);};m.customProgramCacheKey=()=> 'megara-streamed-fence-v1';return m;
+  }
+  if(surface.startsWith('megaraAsphalt@')||surface.startsWith('megaraWornAsphalt@')||surface.startsWith('megaraRubber@')){
+    const [type,cell]=surface.split('@'),[cx,cz]=cell.split(',').map(Number),worn=type==='megaraWornAsphalt',rubber=type==='megaraRubber';
+    const m=new THREE.MeshStandardMaterial({color:new THREE.Color(...rgb),vertexColors,side:THREE.DoubleSide,roughness:.92,transparent:rubber,opacity:rubber?.075:1,depthWrite:!rubber,polygonOffset:rubber,polygonOffsetFactor:rubber?-1:0});
+    m.onBeforeCompile=sh=>{sh.uniforms.tSurface={value:TX.asphalt_diff};sh.uniforms.tSurfaceN={value:TX.asphalt_nor};sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 vMegaraWorld;').replace('#include <begin_vertex>',`#include <begin_vertex>\nvMegaraWorld=position+vec3(${(cx*512).toFixed(1)},0.,${(cz*512).toFixed(1)});`);sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 vMegaraWorld;uniform sampler2D tSurface;uniform sampler2D tSurfaceN;\n'+GLSL_HELPERS).replace('#include <color_fragment>',rubber?'#include <color_fragment>\ndiffuseColor.a*=smoothstep(.20,.70,fbm2(vMegaraWorld.xz*.22));':`#include <color_fragment>\nvec2 uvMegara=vMegaraWorld.xz/3.4;vec3 scan=texNoTile(tSurface,uvMegara).rgb;float lum=dot(scan,vec3(.3333));float macro=fbm2(vMegaraWorld.xz*.045);vec2 repairCell=floor(vMegaraWorld.xz/vec2(8.,19.));vec2 repairUV=fract(vMegaraWorld.xz/vec2(8.,19.));float repair=step(.84,h12(repairCell))*step(.12,repairUV.x)*step(repairUV.x,.88)*step(.18,repairUV.y)*step(repairUV.y,.83);diffuseColor.rgb=${worn?'vec3(.245,.245,.232)':'vec3(.135,.132,.126)'}*(.65+lum*3.8)*(.83+.32*macro)*(1.-.2*repair);`).replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\nvec3 scannedNormal=texture2D(tSurfaceN,vMegaraWorld.xz/2.6).xyz*2.-1.;normal=perturb(-vViewPosition,normal,vMegaraWorld.xz/2.6,scannedNormal,.5);');};m.customProgramCacheKey=()=>surface+'-v1';return m;
+  }
+  if(surface==='megaraRubber')return new THREE.MeshStandardMaterial({color:new THREE.Color(...rgb),vertexColors,transparent:true,opacity:.075,depthWrite:false,side:THREE.DoubleSide});
   if(surface.startsWith('penteliProp:')){const {texture,...options}=JSON.parse(surface.slice(12)),map=!texture?null:texture.kind==='speed'?faceTexture(texture.value):texture.kind==='road-sign'?roadSignAtlas(texture.keys):municipalBinLabelTexture();const m=new THREE.MeshStandardMaterial({...options,color:new THREE.Color(...rgb),vertexColors,map});const off=onSettings((s,k)=>{if(!k||k==='worldDetail')m.visible=s.worldDetail!==false;});m.visible=settings.worldDetail!==false;m.addEventListener('dispose',()=>{off();map?.dispose();});return m;}
   if(surface==='penteliNetwork')return roadNetworkMaterial();
   if(surface==='penteliRoad')return penteliRoadMaterial();
