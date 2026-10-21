@@ -1,0 +1,7 @@
+export const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+export const cellKey=(x,z)=>`${Math.floor(x/512)},${Math.floor(z/512)}`;
+export const edgeValue=(graph,id)=>graph.edges.get(id)?.value||graph.edges.get(id);
+export function edgeLength(e){return e.points.slice(1).reduce((s,p,i)=>s+Math.hypot(...p.map((v,j)=>v-e.points[i][j])),0);}
+export function edgePoint(e,s){let at=0;for(let i=1;i<e.points.length;i++){const a=e.points[i-1],b=e.points[i],len=Math.hypot(...a.map((v,k)=>b[k]-v));if(at+len>=s-1e-8||i===e.points.length-1){const t=clamp((s-at)/len,0,1),h=Math.hypot(b[0]-a[0],b[2]-a[2])||1,tx=(b[0]-a[0])/h,tz=(b[2]-a[2])/h;return{x:a[0]+(b[0]-a[0])*t,y:a[1]+(b[1]-a[1])*t,z:a[2]+(b[2]-a[2])*t,tx,tz,rx:-tz,rz:tx,yaw:Math.atan2(-tx,-tz),edge:e.id,edgeId:e.id,layer:e.layer};}at+=len;}}
+export function projectEdge(e,x,z){let best=null,s=0;for(let i=1;i<e.points.length;i++){const a=e.points[i-1],b=e.points[i],dx=b[0]-a[0],dz=b[2]-a[2],len=Math.hypot(...a.map((v,k)=>b[k]-v)),f=clamp(((x-a[0])*dx+(z-a[2])*dz)/(dx*dx+dz*dz||1),0,1),d=Math.hypot(x-a[0]-f*dx,z-a[2]-f*dz);if(!best||d<best.distance)best={...edgePoint(e,s+len*f),offsetM:s+len*f,distance:d};s+=len;}return best;}
+export function allowedTurn(def,graph,from,to,history=[]){if(from.to!==to.from||from.layer!==to.layer||to.flags&8||!graph.legal(from.id,to,history))return false;const matches=t=>t.fromEdge===from.id&&t.viaNode===to.from;return !def.turns.disallowed.some(t=>matches(t)&&t.toEdge===to.id)&&(!def.turns.allowed.some(matches)||def.turns.allowed.some(t=>matches(t)&&t.toEdge===to.id));}

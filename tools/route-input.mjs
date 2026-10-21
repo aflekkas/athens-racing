@@ -1,0 +1,21 @@
+// Immutable emitted-graph/contact-proof index. Raw pre-exclusion generator graphs fail closed.
+import {readFile} from 'node:fs/promises';
+import {execFile} from 'node:child_process';import {promisify} from 'node:util';
+import {WorldRoadGraph} from '../src/world-tile-graph.js';import {RouteError} from '../src/route-definition.js';
+export async function readRouteInputs({world,graph}){
+ if(!world||!graph)throw new RouteError('input-unavailable');let manifest,shard;
+ try{manifest=JSON.parse(await readFile(world,'utf8'));if(/\.sqlite$/.test(graph)){
+  // Bounded Python transport works on Node builds without node:sqlite. This is an emitted index, not source OSM.
+  const script="import sqlite3,json,sys\nc=sqlite3.connect('file:'+sys.argv[1]+'?mode=ro',uri=True)\nr=c.execute('select json from route_validation_shards limit 65').fetchall()\nassert len(r)==1, 'expected one bounded emitted route shard'\nassert len(r[0][0])<=8*1024*1024, 'route shard too large'\nprint(r[0][0])";
+  shard=JSON.parse((await promisify(execFile)('python3',['-c',script,graph],{maxBuffer:8*1024*1024})).stdout);
+ }else{const b=await readFile(graph);if(b.length>8*1024*1024)throw Error('Route index too large');shard=JSON.parse(b);}}
+ catch(e){throw new RouteError('input-unavailable',{reason:e.message});}
+ manifest=manifest.manifest||manifest;if(shard.schemaVersion!==1||shard.worldSetRevision!==manifest.revision||!Array.isArray(shard.edges)||!shard.proofs)throw new RouteError('emitted-input-mismatch');
+ for(const [cell,hash]of shard.sourceHashes){if(manifest.tiles[cell]?.sha256!==hash||manifest.tiles[cell]?.contactEligible===false)throw new RouteError('emitted-input-mismatch',{cell});}
+ const g=new WorldRoadGraph();for(const e of shard.edges){if(g.edges.has(e.id))throw new RouteError('duplicate-graph-id',{edgeId:e.id});g.edges.set(e.id,{value:e});if(!g.outgoing.has(e.from))g.outgoing.set(e.from,new Set());g.outgoing.get(e.from).add(e.id);}
+ for(const t of shard.turns)g.turns.set(JSON.stringify(t),{value:t});
+ const proof=(kind,...args)=>{const k=JSON.stringify(args);if(!Object.hasOwn(shard.proofs[kind],k))throw new RouteError('contact-proof-unavailable',{kind});return shard.proofs[kind][k];};
+ const contacts={worldSetRevision:manifest.revision,eligible:k=>!!manifest.tiles[k]&&manifest.tiles[k].contactEligible!==false&&!!shard.cells[k],surfaceAllowed:(e,c)=>c.layer===e.layer&&[...g.edges.values()].some(v=>v.value.surface===c.surfaceId&&v.value.layer===c.layer),contact:(...a)=>proof('contact',...a),width:(...a)=>proof('width',...a),safe:(...a)=>proof('safe',...a),sourceHashes:cells=>cells.map(k=>[k,manifest.tiles[k].sha256])};
+ return{manifest,graph:g,contacts,shard};
+}
+export function argumentsOf(args){const out={};for(let i=0;i<args.length;i++){if(!args[i].startsWith('--'))throw Error('Unexpected argument '+args[i]);const key=args[i].slice(2);if(!['world','graph','routes','report','out','legacy','manifest-url','cell-only'].includes(key))throw Error('Unknown flag --'+key);out[key]=key==='cell-only'?true:args[++i];}return out;}

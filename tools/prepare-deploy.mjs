@@ -1,3 +1,5 @@
+import {buildRoutes} from './build-routes.mjs';
+import {unifiedRouteConfig} from '../server/route-definitions.mjs';
 // An allowlist keeps server code, tools, credentials and scratch files off the CDN.
 import './check-browser-imports.mjs';
 import { buildTextures } from './build-textures.mjs';
@@ -34,6 +36,15 @@ for (const path of ['index.html', 'style.css', 'robots.txt', 'sitemap.xml', 'src
 await bakeWorlds(root, out, PLAYABLE_MAPS);
 // Explicit Wrangler build commands set ASR_BUILD_ENV; unknown deployment IDs remain visibly staging.
 const buildEnvironment = process.env.ASR_BUILD_ENV || process.env.CLOUDFLARE_ENV || 'staging';
+// The pilot's small emitted validation shard is source data; world cell bodies stay in R2.
+const routeIds=String(process.env.ASR_UNIFIED_ROUTES||'').split(',').filter(Boolean);
+let routeBuild={index:{routes:[]},server:{routes:[]}};
+if(routeIds.length){const shardPath=resolve(root,'data/routes/validation/syntagma-pilot.inputs.json'),shard=JSON.parse(await readFile(shardPath,'utf8'));const worldPath=resolve(root,'.deploy/route-world-set.json');await writeFile(worldPath,JSON.stringify({revision:shard.worldSetRevision,tiles:shard.cells}));routeBuild=await buildRoutes({world:worldPath,graph:shardPath,routes:resolve(root,'data/routes'),out:resolve(out,'data/routes')});await rm(worldPath);}
+// Validation evidence and authored definitions never become public cells or editable runtime inputs.
+await rm(resolve(out,'data/routes/validation'),{recursive:true,force:true});
+for(const name of await readdir(resolve(out,'data/routes')).catch(()=>[]))if(name.endsWith('.route.json')||name==='server-catalogue.json')await rm(resolve(out,'data/routes',name));
+const routeConfig=unifiedRouteConfig({environment:buildEnvironment,enabled:routeIds.join(','),routes:routeBuild.index.routes});routeConfig.routes=routeConfig.routes.map(r=>({...r,url:routeBuild.index.routes.find(x=>x.id===r.id).url}));
+await writeFile(resolve(out,'route-config.json'),JSON.stringify(routeConfig));
 const indexPath = resolve(out, 'index.html');
 await writeFile(indexPath, (await readFile(indexPath, 'utf8')).replace('</head>', `<meta name="asr-environment" content="${buildEnvironment === 'production' ? 'production' : 'staging'}">\n</head>`));
 // ASR_CLIENT_BUNDLE=source is an operational rollback; development never invokes this tool.
@@ -62,10 +73,11 @@ async function inventory(dir) {
     else { const info = await stat(path); count++; bytes += info.size; if (info.size > largest.size) largest = { path: relative(out, path), size: info.size }; }
   }
 }
+const releasePath=resolve(out,'release.json');const releaseInfo=JSON.parse(await readFile(releasePath,'utf8'));await writeFile(releasePath,JSON.stringify({...releaseInfo,unifiedRoutes:routeConfig}));
 await inventory(out);
 if (count > 20000) throw new Error(`Cloudflare free-tier asset count exceeds 20000: ${count}`);
 if (largest.size > 25 * 1024 * 1024) throw new Error(`Cloudflare asset exceeds 25 MiB after packaging: ${largest.path}`);
 const catalogue = await readFile(resolve(root, 'src/cars.js'), 'utf8');
 const { cars, nitrousCars, specs: carSpecs } = readCarCapabilities(catalogue);
-await writeFile(resolve(root, '.deploy/catalogue.json'), JSON.stringify({ maps, cars, nitrousCars, carSpecs }));
+await writeFile(resolve(root, '.deploy/catalogue.json'), JSON.stringify({ maps, cars, nitrousCars, carSpecs, routeConfig, routes:routeBuild.server.routes }));
 console.log(JSON.stringify({ assets: count, bytes, largest, release: { version: version.version, sha: version.sha, build: release.build, files: Object.keys(release.files).length, copies: release.copies, swBytes }, maps: maps.map(m => ({ id: m.id, version: m.track.version, events: m.definitions.length })) }, null, 2));

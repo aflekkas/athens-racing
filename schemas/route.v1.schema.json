@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "route.v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "schemaVersion", "id", "revision", "worldId", "regionId", "name", "kind", "lengthM", "path", "start", "finish", "turns", "timeOfDay", "trafficLevel"],
+  "properties": {
+    "$schema": {"const": "../../schemas/route.v1.schema.json"},
+    "schemaVersion": {"const": 1},
+    "id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{2,63}$"},
+    "revision": {"type": "integer", "minimum": 1},
+    "worldId": {"const": "athens"},
+    "regionId": {"type": "string", "pattern": "^[a-z][a-z0-9-]{1,31}$"},
+    "name": {"type": "string", "minLength": 1, "maxLength": 80},
+    "description": {"type": "string", "maxLength": 240},
+    "kind": {"enum": ["sprint", "circuit"]},
+    "lengthM": {"type": "number", "exclusiveMinimum": 0, "maximum": 200000},
+    "laps": {"type": "integer", "minimum": 1, "maximum": 20, "default": 1},
+    "allowReverse": {"type": "boolean", "default": false},
+    "timeOfDay": {"enum": ["dawn", "day", "afternoon", "sunset", "night", "dynamic"]},
+    "weather": {"enum": ["clear", "overcast", "rain", "dynamic"], "default": "clear"},
+    "trafficLevel": {"type": "number", "minimum": 0, "maximum": 2},
+    "rivals": {"type": "integer", "minimum": 0, "maximum": 2, "default": 2},
+    "path": {
+      "oneOf": [
+        {"type": "object", "additionalProperties": false, "required": ["edges"], "properties": {
+          "edges": {"type": "array", "minItems": 1, "maxItems": 20000, "items": {"$ref": "#/$defs/graphId"}}
+        }},
+        {"type": "object", "additionalProperties": false, "required": ["waypoints"], "properties": {
+          "waypoints": {"type": "array", "minItems": 2, "maxItems": 256, "items": {
+            "type": "object", "additionalProperties": false, "required": ["x", "z", "layer", "headingRad"], "properties": {
+              "x": {"type": "number"}, "z": {"type": "number"},
+              "layer": {"type": "integer", "minimum": -16, "maximum": 16},
+              "headingRad": {"type": "number", "minimum": -3.141592654, "maximum": 3.141592654},
+              "snapM": {"type": "number", "minimum": 0, "maximum": 20, "default": 8}
+            }
+          }}
+        }}
+      ]
+    },
+    "start": {"$ref": "#/$defs/pose"},
+    "finish": {"$ref": "#/$defs/pose"},
+    "turns": {
+      "type": "object", "additionalProperties": false, "required": ["allowed", "disallowed"], "properties": {
+        "allowed": {"type": "array", "maxItems": 20000, "uniqueItems": true, "items": {"$ref": "#/$defs/turn"}},
+        "disallowed": {"type": "array", "maxItems": 20000, "uniqueItems": true, "items": {"$ref": "#/$defs/turn"}}
+      }
+    },
+    "closureIds": {"type": "array", "maxItems": 256, "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9:._/-]*$"}},
+    "sectorsM": {"type": "array", "maxItems": 64, "items": {"type": "number", "exclusiveMinimum": 0}},
+    "events": {"type": "array", "minItems": 1, "maxItems": 16, "items": {
+      "type": "object", "additionalProperties": false, "required": ["id", "type"], "properties": {
+        "id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{1,79}$"},
+        "type": {"enum": ["sprint", "timetrial"]},
+        "enabled": {"type": "boolean", "default": true},
+        "laps": {"type": "integer", "minimum": 1, "maximum": 20},
+        "rivals": {"type": "integer", "minimum": 0, "maximum": 2},
+        "trafficLevel": {"type": "number", "minimum": 0, "maximum": 2},
+        "reverse": {"type": "boolean", "default": false}
+      }
+    }}
+  },
+  "$defs": {
+    "graphId": {"type": "string", "minLength": 1, "maxLength": 200, "pattern": "^[A-Za-z0-9][A-Za-z0-9:._/-]*$"},
+    "pose": {"type": "object", "additionalProperties": false, "required": ["edgeId", "offsetM", "lateralM", "yawRad"], "properties": {
+      "edgeId": {"$ref": "#/$defs/graphId"},
+      "offsetM": {"type": "number", "minimum": 0},
+      "lateralM": {"type": "number", "minimum": -20, "maximum": 20},
+      "yawRad": {"type": "number", "minimum": -3.141592654, "maximum": 3.141592654}
+    }},
+    "turn": {"type": "object", "additionalProperties": false, "required": ["fromEdge", "viaNode", "toEdge"], "properties": {
+      "fromEdge": {"$ref": "#/$defs/graphId"}, "viaNode": {"$ref": "#/$defs/graphId"}, "toEdge": {"$ref": "#/$defs/graphId"}
+    }}
+  }
+}

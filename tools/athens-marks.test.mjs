@@ -42,6 +42,6 @@ test('the marks layer drapes rows near the camera as one mesh of vertex-coloured
 });
 import { readFileSync } from 'node:fs';
 test('the marks layer is wired once into the Athens entry', () => {
-  const world = readFileSync(new URL('../src/athens-world.js', import.meta.url), 'utf8');
-  assert.match(world, /marks=new AthensMarks\(detailRoot,\{enabled:settings\.worldDetail!==false\}\)/); assert.match(world, /marks\.setEnabled\(s\.worldDetail!==false\)/); assert.match(world, /marks\.addTile\(key,packet\)/);
+  const world = readFileSync(new URL('../src/world-session.js', import.meta.url), 'utf8');
+  assert.match(world, /marks=new AthensMarks\(detailRoot,\{enabled:settings\.worldDetail!==false\}\)/); assert.match(world, /marks\.setEnabled\(s\.worldDetail!==false\)/); assert.match(world, /\['marks',marks\]/);assert.match(world,/layer\.addTile\(key,packet\)/);
 });

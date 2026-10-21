@@ -36,6 +36,7 @@ export class WorldTileBarriers{
   install(key,packet){this.tiles.set(key,{rails:packet.metadata.rails||[],origin:packet.metadata.origin});}
   remove(key){this.tiles.delete(key);}
   dispose(){this.tiles.clear();}
+  safe(point,{halfWidth=1.1,halfLength=2.8}={}){for(const {rails,origin}of this.tiles.values())for(const rail of rails)if(sweep(point,point,halfLength,halfWidth,rail,origin))return false;return true;}
   resolve(vehicle,previous){
     let first=null;
     for(const {rails,origin} of this.tiles.values())for(const rail of rails){

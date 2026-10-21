@@ -11,9 +11,9 @@ import { settings, onSettings } from './settings.js';
 import { input as controls } from './input.js';
 import { Audio } from './audio.js';
 const query = new URLSearchParams(location.search);
-const direct = !query.has('menu') && ['simhook', 'autodrive', 'car', 's', 'event', 'quick', 'fixeddt', 'turbo'].some(key => query.has(key));
+const direct = !query.has('menu') && ['routes','simhook', 'autodrive', 'car', 's', 'event', 'quick', 'fixeddt', 'turbo'].some(key => query.has(key));
 // ?map=athens boots the open world directly; with ?menu=1 it opens the menu, whose free roam spawn picker then offers the open world.
-if ((query.get('map')==='athens' && !query.has('menu')) || direct || query.has('lobby')) {
+if (query.get('routes')==='1' || (query.get('map')==='athens' && !query.has('menu')) || direct || query.has('lobby')) {
   await (await importWithUpdate(() => import('./main.js'))).gameReady;
 } else {
   let mapId = initialMapId(query), car = Math.max(0, CARS.findIndex(c => c.id === DEFAULT_CAR_ID)), runtime;

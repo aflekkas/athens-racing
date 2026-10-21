@@ -1,21 +1,21 @@
 import { tileTables } from './world-tile-format.js';
+// Decode the graph in the tile worker; the activation transaction only interns ready records.
+export function readGraphShard(pack){const m=pack.metadata,t=pack.tables||tileTables(pack),nodes=[],edges=[],turns=[];
+ for(let i=0;i<t.nodes.length;i+=2){const p=t.nodes[i+1]*3,id=m.ids[t.nodes[i]];nodes.push({id,x:t.nodePositions[p]+m.origin[0],y:t.nodePositions[p+1],z:t.nodePositions[p+2]+m.origin[2]});}
+ for(let i=0;i<t.edges.length;i+=10){const a=t.edges,points=[];for(let j=a[i+3];j<a[i+3]+a[i+4];j++)points.push([t.edgePoints[j*3]+m.origin[0],t.edgePoints[j*3+1],t.edgePoints[j*3+2]+m.origin[2]]);let length=0;for(let j=1;j<points.length;j++)length+=Math.hypot(...points[j].map((v,k)=>v-points[j-1][k]));edges.push({id:m.ids[a[i]],from:m.ids[a[i+1]],to:m.ids[a[i+2]],points,name:m.strings[a[i+5]],lanes:a[i+6],speedKph:a[i+7],flags:a[i+8],surface:m.ids[a[i+9]],layer:t.edgeLayers[i/10],length});}
+ for(let i=0;i<t.turns.length;i+=4){const a=t.turns;turns.push({from:m.ids[a[i]],via:m.ids[a[i+1]],to:m.ids[a[i+2]],rule:a[i+3]});}return{nodes,edges,turns};
+}
 // Tile graph ownership is independent of scene objects. World IDs survive portal crossings and eviction.
 export class WorldRoadGraph {
   constructor(){this.nodes=new Map();this.edges=new Map();this.outgoing=new Map();this.turns=new Map();this.owners=new Map();}
   install(key,pack){
     if(this.owners.has(key))throw new Error('Graph tile already installed');
-    const m=pack.metadata,t=pack.tables||tileTables(pack),owned={nodes:[],edges:[],turns:[]};
+    const shard=pack.roadGraph||readGraphShard(pack),owned={nodes:[],edges:[],turns:[]};
     const intern=(registry,id,value)=>{const old=registry.get(id);if(old){if(JSON.stringify(old.value)!==JSON.stringify(value))throw new Error(`Conflicting graph portal ${id}`);old.refs++;}else registry.set(id,{value,refs:1});};
     try{
-      for(let i=0;i<t.nodes.length;i+=2){const id=m.ids[t.nodes[i]],p=t.nodes[i+1]*3;intern(this.nodes,id,{id,x:t.nodePositions[p]+m.origin[0],y:t.nodePositions[p+1],z:t.nodePositions[p+2]+m.origin[2]});owned.nodes.push(id);}
-      for(let i=0;i<t.edges.length;i+=10){
-        const a=t.edges,id=m.ids[a[i]],points=[];
-        for(let j=a[i+3];j<a[i+3]+a[i+4];j++)points.push([t.edgePoints[j*3]+m.origin[0],t.edgePoints[j*3+1],t.edgePoints[j*3+2]+m.origin[2]]);
-        let length=0;for(let j=1;j<points.length;j++)length+=Math.hypot(...points[j].map((v,k)=>v-points[j-1][k]));
-        const edge={id,from:m.ids[a[i+1]],to:m.ids[a[i+2]],points,name:m.strings[a[i+5]],lanes:a[i+6],speedKph:a[i+7],flags:a[i+8],surface:m.ids[a[i+9]],layer:t.edgeLayers[i/10],length};
-        intern(this.edges,id,edge);owned.edges.push(id);let out=this.outgoing.get(edge.from);if(!out)this.outgoing.set(edge.from,out=new Set());out.add(id);
-      }
-      for(let i=0;i<t.turns.length;i+=4){const a=t.turns,rule={from:m.ids[a[i]],via:m.ids[a[i+1]],to:m.ids[a[i+2]],rule:a[i+3]},id=JSON.stringify(rule);intern(this.turns,id,rule);owned.turns.push(id);}
+      for(const node of shard.nodes){intern(this.nodes,node.id,node);owned.nodes.push(node.id);}
+      for(const edge of shard.edges){intern(this.edges,edge.id,edge);owned.edges.push(edge.id);let out=this.outgoing.get(edge.from);if(!out)this.outgoing.set(edge.from,out=new Set());out.add(edge.id);}
+      for(const rule of shard.turns){const id=JSON.stringify(rule);intern(this.turns,id,rule);owned.turns.push(id);}
       this.owners.set(key,owned);
     }catch(error){this.owners.set(key,owned);this.remove(key);throw error;}
   }
