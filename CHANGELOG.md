@@ -8,6 +8,9 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- On staging, choose the Penteli hill climb, uphill time trial or legal descent from the Athens route picker. Earlier times stay under Original Penteli road.
+  ![Penteli village start on the Athens world](assets/changelog/2026.10.21.1/penteli-route.webp "The Penteli hill-climb start.")
+
 - On staging, race the Riviera coast through the Loumbarda tunnel on the shared Athens world, with two rivals, road traffic and police.
   ![Rivals on the Riviera coast](assets/changelog/2026.10.21.1/riviera-coast-rivals.webp "Riviera coast on the shared Athens world.")
   ![The Loumbarda tunnel on the Riviera route](assets/changelog/2026.10.21.1/riviera-tunnel.webp "The forward Loumbarda tunnel.")

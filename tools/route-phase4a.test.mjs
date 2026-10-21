@@ -50,3 +50,19 @@ test('imported bridge compatibility requires the actual authenticated deck, cont
 test('Penteli rollout independently gates each direction and stays off production',()=>{
  const routes=[{id:'penteli-hill'},{id:'penteli-descent'}];assert.deepEqual(unifiedRouteConfig({environment:'staging',enabled:'penteli-hill',routes}).routes.map(r=>r.id),['penteli-hill']);assert.deepEqual(unifiedRouteConfig({environment:'production',enabled:'penteli-hill,penteli-descent',routes}).routes,[]);
 });
+
+test('Penteli picker retains selected TT, independent setup keys, and marks the disconnected destination',async()=>{
+ const {Menu}=await import('../src/menu.js'),hill=await read('data/routes/penteli-hill.route.json'),descent=await read('data/routes/penteli-descent.route.json');
+ const events=hill.events.map(e=>routeEvent({id:hill.id,definition:{...hill,events:hill.events.map(e=>({...e,enabled:true,laps:1}))},regionId:'penteli',lengthM:hill.lengthM,geometryHash:'hash'},e.id));
+ const menu={data:{mode:'quick'},h:{ctx:()=>({mapId:'athens',route:{isWorldRoute:true},events,eventId:'penteli-tt'})}};menu.eventsHere=()=>Menu.prototype.eventsHere.call(menu);menu.setupDef=()=>Menu.prototype.setupDef.call(menu);
+ assert.equal(menu.setupDef().id,'penteli-tt');assert.equal(Menu.prototype.setupKey.call(menu),'penteli-tt');assert.equal(menu.setupDef().rivals,0);
+ const html=Menu.prototype.r_routes.call({}, {catalogue:[{id:hill.id,name:hill.name,lengthM:hill.lengthM,regionId:'penteli',events}, {id:descent.id,name:descent.name,lengthM:descent.lengthM,regionId:'penteli',events:[{id:'penteli-descent-tt',laps:1,rivals:0}]}]});assert.match(html,/ATTACHED DESTINATION/);for(const e of ['penteli-race','penteli-tt','penteli-descent-tt'])assert.ok(html.includes(`data-event="${e}"`));
+});
+
+test('regional proof siblings reject traversal, nested shards, stale releases and changed exact queries',async()=>{
+ const dir=await mkdtemp(join(tmpdir(),'athens-route-shards-'));try{const revision='a'.repeat(64),entry={sha256:'b'.repeat(64)},root={schemaVersion:1,worldSetRevision:revision,cells:{'0,0':entry},sourceHashes:[['0,0',entry.sha256]],edges:[],turns:[],proofs:{contact:{fixture:{y:0}},width:{},safe:{}},shards:['penteli.inputs.json']},extra={...root,proofs:{contact:{fixture:{y:0}},width:{},safe:{}}};delete extra.shards;
+  const world=join(dir,'world.json'),graph=join(dir,'athens.inputs.json'),sibling=join(dir,'penteli.inputs.json');await writeFile(world,JSON.stringify({revision,tiles:root.cells}));await writeFile(graph,JSON.stringify(root));await writeFile(sibling,JSON.stringify(extra));assert.equal((await readRouteInputs({world,graph})).shard.worldSetRevision,revision);
+  for(const bad of [{...extra,worldSetRevision:'c'.repeat(64)},{...extra,shards:[]},{...extra,proofs:{...extra.proofs,contact:{fixture:{y:1}}}}]){await writeFile(sibling,JSON.stringify(bad));await assert.rejects(readRouteInputs({world,graph}),/emitted-input-mismatch/);}
+  await writeFile(graph,JSON.stringify({...root,shards:['../penteli.inputs.json']}));await assert.rejects(readRouteInputs({world,graph}),/emitted-input-mismatch/);
+ }finally{await rm(dir,{recursive:true,force:true});}
+});
