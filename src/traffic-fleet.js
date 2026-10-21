@@ -1,4 +1,5 @@
-import {installTrafficCabin,trafficCabinTemplate,seedTrafficCabin} from './vehicle-cabin.js';
+import {installTrafficCabin} from './vehicle-cabin.js';
+import {exteriorCabinEnvelope} from './vehicle-cabin-envelope.js';
 import {installFleetLOD} from './vehicle-distance.js';
 // Shared geometry and distance detail for the Athens fleet. Builders author metres, nose -Z.
 import * as THREE from 'three';
@@ -12,6 +13,20 @@ import { damageSystem, makePlateMaterial, nextRegistration, buildDetailedCar } f
 import { RNG } from './util.js';
 
 const templates=new Map();
+const preparedCabins=new Map();
+const cabinKey=car=>JSON.stringify([exteriorCabinEnvelope(car,{cheap:true}),car.dims.W,car.shape?.leather,car.shape?.seats]);
+function trafficCabinTemplate(car,type){
+ if(type.scooter||type.moto)return null;
+ const key=cabinKey(car);if(preparedCabins.has(key))return {key,mesh:preparedCabins.get(key)};
+ // Use the unchanged authored cabin builder in the worker, then transport its
+ // immutable clone separately from the fleet shell.
+ installTrafficCabin(car,type);const lod=car.body.getObjectByName('traffic-cabin-lod'),mesh=lod.levels[0].object;mesh.removeFromParent();lod.removeFromParent();preparedCabins.set(key,mesh);return {key,mesh};
+}
+function attachPreparedCabin(car,type){
+ const mesh=!(type.scooter||type.moto)&&preparedCabins.get(cabinKey(car));if(!mesh)return installTrafficCabin(car,type);
+ const lod=new THREE.LOD();lod.name='traffic-cabin-lod';lod.userData.vehicleCabin=true;lod.addLevel(mesh.clone(),0);lod.addLevel(new THREE.Group(),40,.12);car.body.add(lod);
+}
+
 const trimMaterial=new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:.65,metalness:.12,side:THREE.DoubleSide});
 function buildCatalogueModel(type,color,rng,opts) {
   const entry=type.catalogueCar;
@@ -177,7 +192,7 @@ export function* fleetModelSteps(type,color,rng,opts={}){
   yield {stage:'model-levels'};
   car.damageCheap=true;damageSystem(car);
   yield {stage:'damage-hooks'};
-  installTrafficCabin(car,type);
+  attachPreparedCabin(car,type);
   if(parked)car.makeNear=()=>{
     const n=cloneTemplate(template(type,false,true),color,p.material,p.uv);n.plate=plate;n.root.position.copy(car.root.position);n.root.quaternion.copy(car.root.quaternion);n.root.scale.copy(car.root.scale);installTrafficCabin(n,type);return n;
   };
@@ -220,4 +235,4 @@ export function bakeParkedFleet(models,cell=40){cell*=PARKED_CELL.scale;
 // Prewarming keeps the procedural source authoritative, while moving its expensive
 // template geometry/compaction off the render thread. Clones retain normal hooks.
 export function fleetTemplateSet(type){return [false,true].map(low=>{const car=template(type,low,false);return {key:type.id+':'+Number(!!type.taxi)+':'+Number(low)+':0',car,cabin:trafficCabinTemplate(car,type)};});}
-export function seedFleetTemplate(key,car,cabin){if(!templates.has(key))templates.set(key,car);if(cabin)seedTrafficCabin(cabin.key,cabin.mesh);}
+export function seedFleetTemplate(key,car,cabin){if(!templates.has(key))templates.set(key,car);if(cabin&&!preparedCabins.has(cabin.key))preparedCabins.set(cabin.key,cabin.mesh);}

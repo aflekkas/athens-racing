@@ -11,11 +11,8 @@ export function brandBadgeMaterial(spec){
   if(!atlas){
     atlas=new THREE.Texture();atlas.colorSpace=THREE.SRGBColorSpace;atlas.anisotropy=1;atlas.name='shared-brand-badges';
     const fallback=()=>new THREE.ImageLoader().load('/assets/brand-badges/atlas.svg',image=>{atlas.image=image;atlas.needsUpdate=true;});
-    // Template workers reuse the render thread's shared atlas.
-    if(typeof document.createElementNS==='function'){
-      if(!textureCodecsEnabled())fallback();
-      else void loadCompressedTexture(atlas,'/assets/brand-badges/atlas.svg').then(loaded=>{if(!loaded)fallback();});
-    }
+    if(!textureCodecsEnabled())fallback();
+    else void loadCompressedTexture(atlas,'/assets/brand-badges/atlas.svg').then(loaded=>{if(!loaded)fallback();});
   }
   const m=new THREE.MeshStandardMaterial({map:atlas,transparent:true,depthWrite:false,roughness:.3,metalness:.25,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
   m.name='brand-badge';m.userData.brandBadge=true;
@@ -120,5 +117,3 @@ export function settleBadges(car){
   }
   return moved;
 }
-
-export function brandBadgeTexture(){return brandBadgeMaterial({}).map;}
