@@ -2,15 +2,15 @@
 
 `syntagma-pilot.inputs.json` is a reduced emitted graph and contact-proof shard,
 not a world tile or a render mesh. It records source tile hashes at world revision
-`23d19ec1592a6a337d9289d4f82161751875348be049a56e5042e87138416ca6`.
+`2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39`.
 The source is the existing staging AWT manifest
-`fc9995d6150f1b98ec4732353ef2a0b4b11d864677c73130d27407aad3dab46b`.
+`6d57b168364cd168f8beb419f864edff1a8d94729e4119745a84597c4ce3ab4a`.
 World cells remain exclusively in `athens-racing-world-staging`.
 
 `athens.inputs.json` extends this proof to both enabled compiled routes. It was
 captured against the composed coast and Psychiko world set revision
-`48d988201269f02eaf0ebe4d5e57a0adb6786c78a64a83e6d985317fdcb4db76`
-at manifest `b2fe46c80f36d9dd6d0c2f3dfd5462e6ebf6c5418da99a772bf15ec9076ce3b0`.
+`4241d71bb4d87f995cde84bbf5af3d3c11d014f5ca5e4a2055c65c42f437827e`
+at manifest `377cd6c880ae85661c44dbec6f974a5f406c41d7e39299aed3c501f6a0d935f3`.
 Psychiko overrides in `tools/world-gen/overrides/psychiko.json` rebuild the
 Faros route cells and their seam halo; unchanged cells retain their immutable
 coast source and all replacement cells carry a distinct source revision. The
