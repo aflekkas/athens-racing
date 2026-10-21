@@ -31,7 +31,7 @@ test('target HUD uses its speed, gear, rpm, finish clock and directed distance i
   m.lobby.standings = [{ id: 'a', progress: 90 }, { id: 'b', progress: 50 }, { id: 'me', progress: 0 }];
   assert.equal(m.telemetry({ s: 0 }).gap, 40); assert.equal(m.telemetry({ s: 0 }).leaderMetres, 40);
   m.lobby.standings = [{ id: 'a', progress: 70 }, { id: 'b', progress: 50 }, { id: 'me', progress: 0 }];
-  m.lobby.players[2].finish = 19; assert.equal(m.spectating().id, 'b'); assert.equal(m.telemetry({ s: 0 }).time, 19);
+  m.lobby.players[2].finish = 19; assert.equal(m.spectating().id, 'a'); assert.equal(m.telemetry({ s: 0 }).time, 20);
   m.lobby.players[2].connected = false; assert.equal(m.spectating().id, 'a');
   m.lobby.status = 'results'; assert.equal(m.spectating(), null);
 });

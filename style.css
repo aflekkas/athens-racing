@@ -231,3 +231,8 @@ body.fading #fade { opacity: 1; }
 .pop.quote.good small { color: #6dff9b; }
 
 /* Standalone legal documents are linked from account and release screens. */
+
+/* Finish spectator readouts use the shared kit; keep the road ahead clear. */
+#finish-spectate { position: fixed; top: 76px; right: 24px; width: 290px; display: grid; gap: 8px; z-index: 12; pointer-events: none; }
+#finish-spectate[hidden] { display: none; }
+#finish-spectate .stats { grid-template-columns: 1fr 1.5fr; }

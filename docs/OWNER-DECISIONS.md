@@ -236,3 +236,7 @@ Owner decisions:
 - **No Honda Jazz drift spec.** "remove the honda jazz drift spec". The Jazz keeps its top road trim, never the drift-spec variant.
 - **Handbrake shown in the cabin.** "in cars, when the handbrake is pulled make sure it is pulled". The cabin's handbrake lever (or the button/indicator on cars that have an electric one) visibly moves to the pulled position while the handbrake is held, and returns when it is released.
 - **Guard:** `tools/owner-locked-car-library.test.mjs` pins these decisions (the SVJ pop code and its toggle are gone from the sources and the wire). Ask the owner before changing it.
+
+## 2026-10-21: Spectate on finish
+
+“when we finish i want us to immediately spectate, if there are others”. Solo AI and multiplayer finishes immediately follow the nearest unfinished racer behind you with a smooth chase-camera handoff. Left/right or A/D cycles unfinished drivers; your finish time and position remain in a compact corner card. All finished, the race timeout, or Esc/Enter opens results. Multiplayer reuses interpolated snapshots, and disconnected drivers are skipped. Guard: `tools/finish-spectate.test.mjs`.
