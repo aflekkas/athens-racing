@@ -24,6 +24,11 @@ test('every shipped route line and speed profile exactly equals the runtime plan
     for(const name of ['u','k','grade','vertical'])assert.deepEqual(actual.line[name],line[name],`${compiled.id}/${id}/${name}`);
     assert.deepEqual(unpackRivalArray(p.v,line.n),profile,`${compiled.id}/${id}/profile`);assert.deepEqual(actual.profile,profile);
     for(let i=0;i<line.n;i++){const point=route.point(i*line.step,actual.line.u[i]);assert.equal(point.x,line.x[i]);assert.equal(point.z,line.z[i]);}
+    // Traffic-free events set closedRoad even on open-ended world routes.
+    // Prove those real reset options retain the exact shipped world corridor.
+    const closedLine=new RacingLine(route,{halfWidth:veh.halfW,closedRoad:true}),closedAI=new RivalAI(route,veh,{closedRoad:true});
+    for(const name of ['u','k','grade','vertical'])assert.deepEqual(closedAI.line[name],closedLine[name],`${compiled.id}/${id}/closedRoad/${name}`);
+    assert.deepEqual(closedAI.profile,closedLine.speedProfile(veh),`${compiled.id}/${id}/closedRoad/profile`);
     const original=RacingLine.prototype.speedProfile;RacingLine.prototype.speedProfile=()=>{throw Error('Runtime solve on reset');};
     try{assert.deepEqual(new RivalAI(route,veh).profile,profile);}finally{RacingLine.prototype.speedProfile=original;}
    }
