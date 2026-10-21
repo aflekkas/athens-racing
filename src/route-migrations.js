@@ -21,7 +21,20 @@ export function recordIdentity(record,options={}) {
  return null;
 }
 const stable=(v)=>{if(Array.isArray(v))return '['+v.map(stable).join(',')+']';if(v&&typeof v==='object')return '{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+stable(v[k])).join(',')+'}';return JSON.stringify(v??null);};
+// Keep original stores intact, but never promote capture fixtures or unsubmitted
+// backend rows into player history. A coincidentally identical time is legitimate.
+export function eligibleHistoricalRecord(record,{source='',key=''}={}) {
+ const original=record?.migration?.version===2?record.migration.original:record;
+ if(!original||typeof original!=='object')return false;
+ source=record.migration?.source||source;key=record.migration?.key||key;
+ if(key==='fixture'||original.fixture===true||original.testFixture===true||[original.source,original.provenance].some(v=>['fixture','test-fixture','capture-fixture'].includes(v)))return false;
+ const time=original.time??original.bestTime;if(!Number.isFinite(time)||time<=0)return false;
+ if(['server-json','do-sqlite'].includes(source))return /^[a-zA-Z0-9_-]{8,64}$/.test(original.driverId||'')&&Number.isFinite(original.at)&&original.at>0&&typeof original.car==='string'&&!!original.car;
+ return true;
+}
 export function migrateRouteRecord(record,{source='unknown',key='',...options}={}) {
+ if(!record||typeof record!=='object')return record;
+ if(!eligibleHistoricalRecord(record,{source,key})){const original=record.migration?.version===2?record.migration.original:record;if(!original||typeof original!=='object')return record;const {identity,migration,...unmapped}=original;return unmapped;}
  if(record?.migration?.version===2){const identity=recordIdentity(record.migration.original,{key:record.migration.key,...options});return identity?{...record,identity}:structuredClone(record.migration.original);}
  const identity=recordIdentity(record,{key,...options});if(!identity)return record;
  return {...record,car:record.car==null?record.car:canonicalCarId(record.car),...(record.setup?{setup:{...record.setup,...(record.setup.car?{car:canonicalCarId(record.setup.car)}:{})}}:{}),identity,

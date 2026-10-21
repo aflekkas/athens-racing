@@ -81,3 +81,14 @@ test('Penteli and Megara can own separate regional backgrounds in one scene',()=
 test('Megara tyre and wall boxes emit raised swept barriers',()=>{
  const {get,tiles}=fixture(),t=regionTransform(source,source),stats=addBarrierObstacles([{x:511,z:20,yaw:Math.PI/2,hl:2,hw:.5,kind:'tyre'}],get,t,()=>9);assert.equal(stats.segments,2);for(const tile of tiles.values())for(const rail of tile.safetyRails)assert.equal(rail[1],9);
 });
+
+test('regional warmup builds a detached background; activation only attaches the prepared identity',async()=>{
+ const parent=new THREE.Group(),forest=[],layer=new WorldRegionalScenery(parent,'penteli',{trees:{setMountainForest:asset=>forest.push(asset)}}),spec={kind:'penteli',projection:source,terrain:{sha256:'fixture'}};
+ layer.assetPromise=Promise.resolve();layer.terrainHash='fixture';layer.asset={bytes:123,metadata:{bounds:[15360,-11776,16384,-11264],meshes:[{surface:'penteliBuilding',attributes:{position:{array:0,size:3}},index:1}]},arrays:[new Float32Array([15360,0,-11776,15872,0,-11776,15360,0,-11264]),new Uint16Array([0,1,2])]};
+ try{await layer.prepare(spec);const root=layer.preparedRoot;assert.ok(root);assert.equal(layer.root,null);assert.equal(layer.cells.size,0);assert.equal(parent.children.length,0);assert.equal(forest.length,0);const original=layer.buildRoot;layer.buildRoot=()=>{throw Error('Activation rebuilt scenery');};setSetting('worldDetail',false);layer.add('30,-23',spec);assert.equal(layer.root,root);assert.equal(layer.preparedRoot,null);assert.equal(root.visible,false);assert.equal(parent.children.length,1);assert.deepEqual([...layer.mask.data],[255,0]);assert.equal(forest[0],layer.asset);layer.buildRoot=original;layer.remove('30,-23');await layer.prepare(spec);assert.ok(layer.preparedRoot);assert.notEqual(layer.preparedRoot,root);assert.equal(parent.children.length,0);
+ }finally{setSetting('worldDetail',true);layer.dispose();}
+});
+
+test('cancelled regional preparation disposes its detached geometries, materials and mask without activating',async()=>{
+ const parent=new THREE.Group(),layer=new WorldRegionalScenery(parent),spec={kind:'penteli',projection:source};layer.prepareRoot(spec);const root=layer.preparedRoot;let geometry=0,material=0;root.traverse(o=>o.geometry?.addEventListener('dispose',()=>geometry++));for(const m of root.userData.ownedMaterials)m.addEventListener('dispose',()=>material++);const meshes=root.children.length,materials=root.userData.ownedMaterials.length;layer.dispose();assert.equal(geometry,meshes);assert.equal(material,materials);assert.equal(parent.children.length,0);assert.equal(layer.preparedRoot,null);layer.prepareRoot(spec);assert.equal(layer.preparedRoot,null);
+});

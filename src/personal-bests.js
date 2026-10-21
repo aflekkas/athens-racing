@@ -1,6 +1,6 @@
 import { matchesRecord } from './leaderboard-records.js';
 import { canonicalCarId } from './car-ids.js';
-import {migrateRouteRecord,competitiveRecordKey,routeHistory,historicalEdition} from './route-migrations.js';
+import {migrateRouteRecord,competitiveRecordKey,routeHistory,historicalEdition,eligibleHistoricalRecord} from './route-migrations.js';
 // Personal records are versioned separately from the event medal/leaderboard store.
 // Only a completed, normally driven run can enter this local board.
 const STORAGE_KEY = 'paraliaki.personalBests.v1';
@@ -49,10 +49,12 @@ function canonicalStore(d) {
   const keyOf = (key, setup) => { if (setup) return exactBestKey(setup); try { const s = JSON.parse(key); return s && typeof s === 'object' && !Array.isArray(s) ? exactBestKey(canonicalSetup(s)) : key; } catch { return key; } };
   const exact = {}, routes = {};
   for (const [key, raw] of Object.entries(d.exact)) {
+    if(!eligibleHistoricalRecord(raw,{key}))continue;
     const record = canonicalRecord(raw), next = keyOf(key, record?.setup);
     if (!exact[next] || !valid(exact[next]) || (valid(record) && record.time < exact[next].time)) exact[next] = record;
   }
   for (const [key, raw] of Object.entries(d.routes)) {
+    if(!eligibleHistoricalRecord(raw,{key}))continue;
     const record = canonicalRecord(raw);
     if (!routes[key] || !valid(routes[key]) || (valid(record) && record.time < routes[key].time)) routes[key] = record;
   }
