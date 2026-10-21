@@ -242,6 +242,7 @@
   ],
   "physics": [
     "tools/finish-flow.test.mjs",
+    "tools/finish-spectate.test.mjs",
     "tools/race-progress-sim.test.mjs",
     "server/finish-all-maps.test.mjs",
     "tools/physics-test/manual.test.mjs",

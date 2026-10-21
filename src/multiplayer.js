@@ -1,3 +1,4 @@
+import { FinishSpectator } from './finish-spectate.js';
 import { icon } from './ui/components.js';
 import { ReconnectHistory, reconnectDelay } from './reconnect-history.js';
 import { MULTIPLAYER_PROTOCOL, UPDATE_CLOSE_CODE, AUTH_CLOSE_CODE, STATE_BATCHING, protocolVersion, clientHello } from './multiplayer-protocol.js';
@@ -6,7 +7,7 @@ import { driverId, getLeaderboard } from './leaderboard.js';
 import { MAPS } from './map-catalog.js';
 import { StateSender } from './multiplayer-state.js';
 import { ServerClock } from './server-clock.js';
-import { SpectatorSelection, rankDrivers, driverTelemetry } from './race-lifecycle.js';
+import { rankDrivers, driverTelemetry } from './race-lifecycle.js';
 import { receiveRemoteSnapshot, resetRemoteTimelines } from './remote-timeline.js';
 import { driverName } from './driver-name.js';
 import { presetCars } from './plate.js';
@@ -552,15 +553,15 @@ export class Multiplayer {
   }
   spectating() {
     if (!this.active || (this.me?.finish == null && !this.retired) || this.lobby.status === 'results') return null;
-    this.selection ||= new SpectatorSelection();
-    return this.selection.target(this.lobby.raceId, this.spectatorDrivers());
+    this.selection ||= new FinishSpectator();
+    return this.selection.update({ raceId: this.lobby.raceId, finished: true, drivers: this.spectatorDrivers() });
   }
   spectatorDrivers() {
-    // A chosen finisher stays selected while the race is running. Disconnects/retirements are removed.
-    return (this.lobby?.players || []).filter(p => p.id !== this.id && !p.dnf && p.connected !== false && this.peers.has(p.id));
+    // Standings already order the unfinished field nearest the finish first. No new packets.
+    return this.ranking().filter(p => p.id !== this.id && p.finish == null && !p.dnf && p.connected !== false && this.peers.has(p.id));
   }
-  selectSpectator(id) { this.selection ||= new SpectatorSelection(); return this.selection.choose(id, this.lobby?.raceId, this.spectatorDrivers()); }
-  stepSpectator(direction) { this.selection ||= new SpectatorSelection(); return this.selection.step(direction, this.lobby?.raceId, this.spectatorDrivers()); }
+  selectSpectator(id) { this.selection ||= new FinishSpectator(); return this.selection.choose(id, this.lobby?.raceId, this.spectatorDrivers()); }
+  stepSpectator(direction) { this.selection ||= new FinishSpectator(); return this.selection.step(direction, this.lobby?.raceId, this.spectatorDrivers()); }
   telemetry(localState, id = this.spectating()?.id || this.id) {
     const member = this.lobby?.players.find(p => p.id === id), state = id === this.id ? localState : this.peers.get(id)?.state;
     return driverTelemetry({ member, state, event: this.lobby?.event, startAt: this.lobby?.startAt, now: this.now(), ranked: this.ranking(localState.s), progress: p => this.driverProgress(p, localState.s) });
