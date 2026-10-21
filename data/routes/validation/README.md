@@ -8,9 +8,13 @@ The source is the existing staging AWT manifest
 World cells remain exclusively in `athens-racing-world-staging`.
 
 `athens.inputs.json` extends this proof to both enabled compiled routes. It was
-captured against the composed coast and Psychiko world set revision
-`4241d71bb4d87f995cde84bbf5af3d3c11d014f5ca5e4a2055c65c42f437827e`
-at manifest `377cd6c880ae85661c44dbec6f974a5f406c41d7e39299aed3c501f6a0d935f3`.
+captured against the basin plus disconnected Penteli world set revision
+`4e4c4622b97d2bea7056ad1d52bf48afb942db8e6b29bc124ebade7619b7b726`
+at manifest `803754cf8aa7c04ceb9161d29061436292f6fe3f42fe13bf0d468de5f7e2d6a2`.
+The 2026-10-21 capture replays both existing routes against 53 hash-verified
+basin halo cells. Their geometry hashes are unchanged; Penteli contributes no
+race definition. Basin packet identities remain intact.
+
 Psychiko overrides in `tools/world-gen/overrides/psychiko.json` rebuild the
 Faros route cells and their seam halo; unchanged cells retain their immutable
 coast source and all replacement cells carry a distinct source revision. The

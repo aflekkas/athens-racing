@@ -18,6 +18,7 @@ export async function publication(path){
   const bytes=await readFile(file);if(hash(bytes)!==e.sha256||bytes.length!==e.bytes)throw Error('Cell integrity mismatch: '+file);
   const key='cells/'+e.sha256+'.bin.gz';objects.push({key,file,size:bytes.length});e.url='/world/'+key;
  }
+ for(const asset of manifest.regionalAssets||[]){const file=resolve(dir,asset.file||'');if(relative(dir,file).startsWith('..')||!asset.file)throw Error('Regional asset must be local');const bytes=await readFile(file);if(hash(bytes)!==asset.sha256||bytes.length!==asset.bytes)throw Error('Regional asset integrity mismatch');objects.push({key:'cells/'+asset.sha256+'.bin.gz',file,size:bytes.length});delete asset.file;}
  const body=Buffer.from(JSON.stringify(manifest)),key='manifests/'+hash(body)+'.json';objects.push({key,body,size:body.length});
  return{manifest,key,objects:[...new Map(objects.map(o=>[o.key,o])).values()]};
 }

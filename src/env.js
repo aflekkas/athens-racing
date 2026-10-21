@@ -954,6 +954,7 @@ export function createFarScenery(proj, region = 'riviera') {
       ridge(38.60, 23.85, 15000, 7000, 1743, 0.35, 29, '#80827a', 'Dirfys · Euboea'),
     ];
     for (const r of ranges) { r.scale.y = 1.25; r.material = inland; }
+    g.userData.ownedMaterials=[inland];
     return g;
   }
   if (region === 'megara') {

@@ -13,20 +13,26 @@ export function composeWorldManifest(def,sources){
  keysOnly(def,['schemaVersion','id','revision','projection','tileMetres','regions']);
  if(def.schemaVersion!==1||def.id!=='athens'||def.tileMetres!==512||!Array.isArray(def.regions)||!def.regions.length||!/^[a-f0-9]{64}$/.test(def.revision))throw Error('Invalid world set');
  const projection=canonical(def.projection),expected=canonical(ATHENS_PROJECTION);if(sourceFields.some(k=>projection[k]!==expected[k]))throw Error('World set projection mismatch');
- const regions=new Set(),tiles={},variants=new Map(),sourceIdentities=new Map();let spawn,datum;
+ const regions=new Set(),tiles={},variants=new Map(),sourceIdentities=new Map();let spawn;const datums=new Set(),enrichments=[],regionMetadata=[],regionalAssets=[];
  for(const region of def.regions){
-  keysOnly(region,['id','manifestUrl','manifestSha256','sourceWorld','sourceRevision','access']);
+  keysOnly(region,['id','manifestUrl','manifestSha256','sourceWorld','sourceRevision','access','elevation','externalPortals']);
   if(!/^[a-z][a-z0-9-]*$/.test(region.id)||regions.has(region.id)||!['public','circuit'].includes(region.access)||!/^[a-f0-9]{64}$/.test(region.manifestSha256))throw Error('Invalid or duplicate region');regions.add(region.id);
   const source=sources[region.id],manifest=validateWorldManifest(source?.manifest);if(manifest.world!==region.sourceWorld||manifest.revision!==region.sourceRevision)throw Error('Stale region source revision');
   if(manifest.acceptance&&manifest.acceptance.passed!==true)throw Error('Region acceptance gates have not passed');
   const p=canonical(manifest.projection);if(sourceFields.some(k=>p[k]!==projection[k]))throw Error('Region projection mismatch');
-  if(!manifest.elevation?.datum)throw Error('Region vertical datum required');if(datum&&datum!==manifest.elevation.datum)throw Error('Region vertical datum mismatch');datum=manifest.elevation.datum;
+  if(!manifest.elevation?.datum)throw Error('Region vertical datum required');
+  if(region.elevation&&canonicalWorldJSON(region.elevation)!==canonicalWorldJSON(manifest.elevation))throw Error('Region vertical datum metadata mismatch');
+  datums.add(manifest.elevation.datum);regionMetadata.push({...region,elevation:manifest.elevation});
+  enrichments.push(...(manifest.enrichments||[]));regionalAssets.push(...(manifest.regionalAssets||[]));
   for(const [key,entry]of Object.entries(manifest.tiles)){if(Object.hasOwn(tiles,key))throw Error('Duplicate region cell: '+key);const identity={regionId:region.id,world:entry.source?.world||manifest.world,revision:entry.source?.revision||manifest.revision};sourceIdentities.set(JSON.stringify(identity),identity);tiles[key]={...entry,url:new URL(entry.url,source.url).href,source:identity};}
   for(const v of manifest.renderVariants||[])variants.set(v.key,v);spawn??=manifest.spawn;
  }
+ // Absence of a portal declaration is not proof of isolation. Both the
+ // authenticated source and release descriptor must explicitly certify none.
+ if(datums.size>1)for(const region of def.regions){const portals=sources[region.id].manifest.externalPortals;if(!Array.isArray(portals)||portals.length||!Array.isArray(region.externalPortals)||region.externalPortals.length)throw Error('Mixed vertical datums require isolated regions without portals');}
  // Touching independently baked sources require a rebuilt common boundary.
  for(const[key,entry]of Object.entries(tiles)){const[x,z]=key.split(',').map(Number);for(const next of[`${x+1},${z}`,`${x},${z+1}`])if(tiles[next]&&tiles[next].source.regionId!==entry.source.regionId)throw Error('Cross-region boundary requires shared seam/portal proof');}
- return validateWorldManifest({tileVersion:1,world:'athens',revision:def.revision,tileMetres:512,projection,elevation:{datum},regions:def.regions,sourceIdentities:[...sourceIdentities.values()],spawn,tiles,renderVariants:[...variants.values()],developmentOnly:true,releaseReady:false});
+ return validateWorldManifest({tileVersion:1,world:'athens',revision:def.revision,tileMetres:512,projection,elevation:datums.size===1?{datum:[...datums][0]}:{perRegion:Object.fromEntries(regionMetadata.map(r=>[r.id,r.elevation]))},regions:regionMetadata,enrichments,regionalAssets,regionResidentBytes:regionalAssets.reduce((n,a)=>n+a.residentBytes,0),sourceIdentities:[...sourceIdentities.values()],spawn,tiles,renderVariants:[...variants.values()],developmentOnly:true,releaseReady:false});
 }
 /** Each region document is authenticated before it can supply packet identities. */
 export async function loadWorldDefinition(url,{fetcher=fetch,signal}={}){
