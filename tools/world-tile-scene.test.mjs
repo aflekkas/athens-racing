@@ -7,6 +7,12 @@ import { fixture } from './world-tile-format.test.mjs';
 import { encodeGeometryPack } from '../src/baked-geometry.js';
 import { fetchTilePacket } from '../src/world-tile-worker.js';
 import { WorldTileScene } from '../src/world-tile-scene.js';
+test('shared Megara origin uniforms warm once per actual vertex layout and surface program',async()=>{
+ const adapter=new WorldTileScene(new THREE.Scene(),{renderer:{}}),batches=[];adapter.warmVariantBatch=async variants=>batches.push(variants);
+ const variant=(surface,attributes={position:{type:'Float32Array',itemSize:3,normalized:false}})=>{const v={surface,attributes,index:'Uint16Array',terrain:false};return {...v,key:JSON.stringify(v)};};
+ const a=variant('megaraAsphalt@-64,-2'),b=variant('megaraAsphalt@-63,-2');await adapter.prewarm([a,b]);assert.equal(batches.length,1);assert.equal(batches[0].length,1);await adapter.warmup({renderVariants:[a,b]});assert.equal(batches.length,1);
+ adapter.startupComplete=false;await adapter.warmVariants([variant('megaraWornAsphalt@-63,-2'),variant('megaraAsphalt@-63,-2',{position:{type:'Uint16Array',itemSize:3,normalized:false}})]);assert.equal(batches[1].length,2,'different programs and vertex layouts must still warm');adapter.dispose();
+});
 
 test('shared plain/quantized attributes and indices allocate one GPU buffer per worker-accounted identity',async()=>{
  const originalFetch=globalThis.fetch;
