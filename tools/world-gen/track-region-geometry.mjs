@@ -16,7 +16,7 @@ export function splitSegment(a,b){
 }
 const intern=(a,s)=>{let i=a.indexOf(s);if(i<0){i=a.length;a.push(s);}return i;};
 const local=(p,cell)=>[Math.fround(Math.max(0,Math.min(512,p[0]-cell[0]*512))),Math.fround(p[1]),Math.fround(Math.max(0,Math.min(512,p[2]-cell[1]*512)))];
-export function addAuthoredMeshes(group,get,transform,{surface='penteliScenery',contacts=false,detail=false}={}){
+export function addAuthoredMeshes(group,get,transform,{surface='penteliScenery',contacts=false,detail=false,bridges=[]}={}){
  let triangles=0;group.updateMatrixWorld(true);
  group.traverse(mesh=>{
   if(!mesh.isMesh)return;
@@ -28,7 +28,7 @@ export function addAuthoredMeshes(group,get,transform,{surface='penteliScenery',
    const fields=attributes.map(([name,a])=>[name,a.itemSize]),size=fields.reduce((n,[,s])=>n+s,0);
    if(fields[0][0]!=='position')throw Error('Region geometry position must be first');
    const materialColor=mesh.material.color||new THREE.Color(1,1,1),instanceColor=new THREE.Color(1,1,1);if(mesh.instanceColor)mesh.getColorAt(instance,instanceColor);
-   const rgb=materialColor.clone().multiply(instanceColor).toArray(),recipe=mesh.name.startsWith('Penteli barrier chunk')?(mesh.material.metalness>.5?'penteliRail':'penteliConcrete'):mesh.name.startsWith('building-blocks:')?'penteliBuilding':surface;
+   const rgb=materialColor.clone().multiply(instanceColor).toArray(),recipe=detail?'penteliProp:'+JSON.stringify({texture:mesh.material.map?.userData.penteliRecipe,roughness:mesh.material.roughness,metalness:mesh.material.metalness,side:mesh.material.side,alphaTest:mesh.material.alphaTest,polygonOffset:mesh.material.polygonOffset,polygonOffsetFactor:mesh.material.polygonOffsetFactor,polygonOffsetUnits:mesh.material.polygonOffsetUnits}):mesh.name.startsWith('Penteli barrier chunk')?(mesh.material.metalness>.5?'penteliRail':'penteliConcrete'):mesh.name.startsWith('building-blocks:')?'penteliBuilding':surface;
    for(let i=geometry.drawRange.start||0,end=Math.min(ix?.count??geometry.attributes.position.count,(geometry.drawRange.start||0)+geometry.drawRange.count);i<end;i+=3){
     const vertices=[];
     for(let j=0;j<3;j++){
@@ -44,7 +44,7 @@ export function addAuthoredMeshes(group,get,transform,{surface='penteliScenery',
      const tile=get(x,z);tile.authored??=new Map();const key=JSON.stringify([recipe,fields,rgb,detail]);let batches=tile.authored.get(key);if(!batches)tile.authored.set(key,batches=[]);
      let batch=batches.at(-1);if(!batch||batch.vertices.length/size>=16384*3){batch={fields,rgb,surface:recipe,detail,vertices:[]};batches.push(batch);}
      for(const v of tri)batch.vertices.push(...local(v,tile.cell),...v.slice(3));triangles++;
-     if(contacts){const p=tile.t.contactPositions,t=tile.t.contactTriangles,a=tri[0],b=tri[1],c=tri[2];if(Math.abs((b[0]-a[0])*(c[2]-a[2])-(b[2]-a[2])*(c[0]-a[0]))>1e-8){tile.contactVertices??=new Map();const ids=[];for(const v of tri){const xyz=local(v,tile.cell),key=xyz.join(',');let id=tile.contactVertices.get(key);if(id===undefined){id=p.length/3;p.push(...xyz);tile.contactVertices.set(key,id);}ids.push(id);}let offset=0,uIndex=-1,edgeIndex=-1;for(const[name,size]of fields){if(name==='aSU')uIndex=offset+1;if(name==='aEdge')edgeIndex=offset;offset+=size;}const gravel=uIndex>=0&&Math.abs(tri.reduce((n,v)=>n+v[uIndex]/3,0))>tri.reduce((n,v)=>n+v[edgeIndex]/3,0);t.push(...ids,2,gravel?4:1);tile.t.contactLayers.push(0);}}
+     if(contacts){const p=tile.t.contactPositions,t=tile.t.contactTriangles,a=tri[0],b=tri[1],c=tri[2];if(Math.abs((b[0]-a[0])*(c[2]-a[2])-(b[2]-a[2])*(c[0]-a[0]))>1e-8){tile.contactVertices??=new Map();const ids=[];for(const v of tri){const xyz=local(v,tile.cell),key=xyz.join(',');let id=tile.contactVertices.get(key);if(id===undefined){id=p.length/3;p.push(...xyz);tile.contactVertices.set(key,id);}ids.push(id);}let offset=0,uIndex=-1,edgeIndex=-1;for(const[name,size]of fields){if(name==='aSU')uIndex=offset+1;if(name==='aEdge')edgeIndex=offset;offset+=size;}const gravel=uIndex>=0&&Math.abs(tri.reduce((n,v)=>n+v[uIndex]/3,0))>tri.reduce((n,v)=>n+v[edgeIndex]/3,0);const station=uIndex>=0?tri.reduce((n,v)=>n+v[uIndex-1]/3,0):null,bridge=bridges.find(b=>station>=b.from&&station<=b.to);t.push(...ids,bridge?intern(tile.ids,'surface:'+bridge.id):2,gravel?4:1);tile.t.contactLayers.push(bridge?1:0);if(bridge){tile.structures??=new Map();tile.structures.set(bridge.id,{kind:'osm-bridge-guarded',layer:1,shoulderMetres:.25,bridgeSources:[bridge.id],roads:[bridge.id]});}}}
     });
    }
   }
@@ -53,15 +53,17 @@ export function addAuthoredMeshes(group,get,transform,{surface='penteliScenery',
 export function decorateAuthored({tile,metadata,add}){
  for(const batches of tile.authored?.values()||[])for(const batch of batches){
   const {fields,vertices,rgb,surface}=batch,stride=fields.reduce((n,[,s])=>n+s,0),attributes={},unique=new Map(),rows=[],indices=[];
-  for(let i=0;i<vertices.length;i+=stride){const row=vertices.slice(i,i+stride),key=row.join(',');let id=unique.get(key);if(id===undefined){id=rows.length;unique.set(key,id);rows.push(row);}indices.push(id);}
+  for(let i=0;i<vertices.length;i+=stride){const row=vertices.slice(i,i+stride);let at=0;for(const[name,n]of fields){for(let j=0;j<n;j++)row[at+j]=name==='normal'?Math.round(Math.max(-1,Math.min(1,row[at+j]))*127)/127:name==='color'?Math.round(Math.max(0,Math.min(1,row[at+j]))*255)/255:Math.fround(row[at+j]);at+=n;}const key=row.join(',');let id=unique.get(key);if(id===undefined){id=rows.length;unique.set(key,id);rows.push(row);}indices.push(id);}
   let offset=0;
   for(const [name,size]of fields){const values=[];for(const row of rows)values.push(...row.slice(offset,offset+size));const packed=name==='normal'?Int8Array.from(values,v=>Math.round(Math.max(-1,Math.min(1,v))*127)):name==='color'?Uint8Array.from(values,v=>Math.round(Math.max(0,Math.min(1,v))*255)):new Float32Array(values);attributes[name]={array:add(packed),itemSize:size,normalized:name==='normal'||name==='color'};offset+=size;}
   let material=metadata.palette.findIndex(c=>c.every((v,i)=>v===rgb[i]));if(material<0){material=metadata.palette.length;metadata.palette.push(rgb);}
-  metadata.meshes.push({name:'imported-'+surface,material,attributes,index:add(new Uint16Array(indices)),userData:{tileSurface:surface},layers:1,renderOrder:surface==='penteliRoad'?1:0});metadata.budgets.triangles+=indices.length/3;
+  metadata.meshes.push({name:'imported-'+surface,material,attributes,index:add(new Uint16Array(indices)),userData:{tileSurface:surface,...(surface==='penteliConcrete'?{bridgeGuard:true}:{})},layers:1,renderOrder:surface==='penteliRoad'?1:0});metadata.budgets.triangles+=indices.length/3;
  }
  if(tile.safetyRails)metadata.safetyRails=tile.safetyRails;
  if(tile.authoredDetail)metadata.authoredDetail=tile.authoredDetail;
- metadata.provenance=tile.provenance;
+ if(tile.structures)metadata.structures=[...tile.structures.values()];if(tile.structures)metadata.rails=tile.safetyRails||[];
+ if(tile.authoredObstacles)metadata.authoredObstacles=tile.authoredObstacles;
+ metadata.regionalScenery=tile.regionalScenery;metadata.provenance=tile.provenance;
  tile.authored?.clear();
 }
 export function addRails(runs,get,transform){
@@ -73,24 +75,32 @@ export function addRails(runs,get,transform){
 // Every vertex/portal is named in global space. Directed split edges are owned by
 // exactly one cell; both cells intern precisely the same portal coordinates.
 export function addRoadGraph(lines,get,transform){
- const records=[],junctions=new Map();let maxGrade=0;
+ const records=[],junctions=new Map(),shared=new Map();let maxGrade=0;
+ const round=p=>p.map((v,k)=>k===1?Math.fround(v):Math.round(v*10000)/10000);
  const node=p=>'penteli:n:'+p.map(v=>v.toFixed(4).replace('-','m')).join(':');
- for(const line of lines)for(let i=1;i<line.points.length;i++)for(const part of splitSegment(transform.position(line.points[i-1]),transform.position(line.points[i]))){
-  const a=part.a.map((v,k)=>k===1?Math.fround(v):Math.round(v*10000)/10000),b=part.b.map((v,k)=>k===1?Math.fround(v):Math.round(v*10000)/10000);
-  const grade=Math.abs(b[1]-a[1])/Math.hypot(b[0]-a[0],b[2]-a[2]);if(!Number.isFinite(grade)||grade>.45)throw Error('Imported profile exceeds 45%: '+line.id);maxGrade=Math.max(maxGrade,grade);
-  const tile=get(...part.cell),id=s=>intern(tile.ids,s),text=s=>intern(tile.strings,s),from=node(a),to=node(b);
-  for(const [name,p]of[[from,a],[to,b]])if(!tile.graphNodes?.has(name)){tile.graphNodes??=new Set();tile.graphNodes.add(name);tile.t.nodes.push(id(name),tile.t.nodePositions.length/3);tile.t.nodePositions.push(...local(p,part.cell));}
-  for(const reverse of line.oneway?[false]:[false,true]){
-   const pp=reverse?[b,a]:[a,b],src=reverse?to:from,dst=reverse?from:to,edge=`penteli:e:${line.id}:${i}:${part.f0.toFixed(7)}:${reverse?'r':'f'}`,surface='surface:roads';
-   tile.t.edges.push(id(edge),id(src),id(dst),tile.t.edgePoints.length/3,2,text(line.name||'Dionysou'),1,line.speed||50,line.restricted?8:0,id(surface));tile.t.edgePoints.push(...local(pp[0],part.cell),...local(pp[1],part.cell));tile.t.edgeLayers.push(0);
-   const rec={id:edge,from:src,to:dst,tile,points:pp,source:line.id,index:i,reverse};records.push(rec);for(const n of[src,dst]){if(!junctions.has(n))junctions.set(n,[]);junctions.get(n).push(rec);}
-   if(!line.restricted&&i%20===0&&Math.hypot(b[0]-a[0],b[2]-a[2])>1){const p=pp[0].map((v,k)=>(v+pp[1][k])/2),dx=pp[1][0]-pp[0][0],dz=pp[1][2]-pp[0][2],length=Math.hypot(dx,dz),lane=(line.width||6.8)/4;p[0]-=dz/length*lane;p[2]+=dx/length*lane;const yaw=Math.atan2(pp[0][0]-pp[1][0],pp[0][2]-pp[1][2]);tile.t.anchors.push(id(`penteli:a:${edge}`),tile.t.anchorTransforms.length/4,id(edge),0,0);tile.t.anchorTransforms.push(...local(p,part.cell),yaw);}
-  }
+ for(const line of lines)for(const p of line.points){const key=node(round(transform.position(p)));shared.set(key,(shared.get(key)||0)+1);}
+ for(const line of lines){
+  let chain=null,serial=0;
+  const flush=()=>{if(!chain)return;const {cell,points,layer}=chain,a=points[0],b=points.at(-1),tile=get(...cell),id=s=>intern(tile.ids,s),text=s=>intern(tile.strings,s),from=node(a),to=node(b);serial++;
+   for(const [name,p]of[[from,a],[to,b]])if(!tile.graphNodes?.has(name)){tile.graphNodes??=new Set();tile.graphNodes.add(name);tile.t.nodes.push(id(name),tile.t.nodePositions.length/3);tile.t.nodePositions.push(...local(p,cell));}
+   for(const reverse of line.oneway?[false]:[false,true]){
+    const pp=reverse?[...points].reverse():points,src=reverse?to:from,dst=reverse?from:to,edge=`penteli:e:${line.id}:${serial}:${reverse?'r':'f'}`;
+    tile.t.edges.push(id(edge),id(src),id(dst),tile.t.edgePoints.length/3,pp.length,text(line.name||'Dionysou'),1,line.speed||50,line.restricted?8:0,id('surface:roads'));for(const p of pp)tile.t.edgePoints.push(...local(p,cell));tile.t.edgeLayers.push(layer);
+    const rec={id:edge,from:src,to:dst,tile};records.push(rec);for(const n of[src,dst]){if(!junctions.has(n))junctions.set(n,[]);junctions.get(n).push(rec);}
+    if(!line.restricted&&!layer&&chain.length>=12){const j=Math.max(1,Math.floor(pp.length/2)),q=pp[j-1],r=pp[j],p=q.map((v,k)=>(v+r[k])/2),dx=r[0]-q[0],dz=r[2]-q[2],length=Math.hypot(dx,dz),lane=(line.width||6.8)/4;p[0]-=dz/length*lane;p[2]+=dx/length*lane;const yaw=Math.atan2(-dx,-dz);tile.t.anchors.push(id(`penteli:a:${edge}`),tile.t.anchorTransforms.length/4,id(edge),0,0);tile.t.anchorTransforms.push(...local(p,cell),yaw);}
+   }chain=null;
+  };
+  for(let i=1;i<line.points.length;i++)for(const part of splitSegment(transform.position(line.points[i-1]),transform.position(line.points[i]))){
+   const a=round(part.a),b=round(part.b),length=Math.hypot(b[0]-a[0],b[2]-a[2]),grade=Math.abs(b[1]-a[1])/length,layer=line.layerAt?.(i-1,i)||0;
+   if(!Number.isFinite(grade)||grade>.45)throw Error('Imported profile exceeds 45%: '+line.id);maxGrade=Math.max(maxGrade,grade);
+   if(chain&&(chain.cell.join()!=part.cell.join()||chain.layer!==layer||node(chain.points.at(-1))!==node(a)))flush();
+   chain??={cell:part.cell,points:[a],layer,length:0};chain.points.push(b);chain.length+=length;
+   // Preserve every sampled point, every junction and every boundary. Only
+   // redundant degree-two graph records disappear; no rendered LOD changes.
+   if(chain.length>=40||shared.get(node(b))>1)flush();
+  }flush();
  }
- for(const [via,edges]of junctions)for(const incoming of edges.filter(e=>e.to===via))for(const outgoing of edges.filter(e=>e.from===via)){
-  // Reverse twins are excluded; turning around is a driver manoeuvre, not a route turn.
-  if(incoming.from===outgoing.to)continue;const tile=incoming.tile,id=s=>intern(tile.ids,s);tile.t.turns.push(id(incoming.id),id(via),id(outgoing.id),0);
- }
+ for(const [via,edges]of junctions)for(const incoming of edges.filter(e=>e.to===via))for(const outgoing of edges.filter(e=>e.from===via)){if(incoming.from===outgoing.to)continue;const tile=incoming.tile,id=s=>intern(tile.ids,s);tile.t.turns.push(id(incoming.id),id(via),id(outgoing.id),0);}
  return {directedEdges:records.length,nodes:junctions.size,maxGrade};
 }
 export function addBuildingColliders(buildings,get,transform,height){
@@ -111,7 +121,7 @@ export function addBuildingColliders(buildings,get,transform,height){
 // dependencies. Runtime recovery still repeats its normal vehicle-specific test.
 export function proveAnchors(tiles,{buildIndex,sample,Barriers,buildObstacles,Obstacles}){
  let accepted=0,rejected=0;
- for(const[key,tile]of tiles){const t=tile.t,index=buildIndex(t),rows=[],poses=[],origin=[tile.cell[0]*512,0,tile.cell[1]*512],barriers=new Barriers(),obstacles=new Obstacles();barriers.install(key,{metadata:{origin,safetyRails:tile.safetyRails||[]}});obstacles.install(key,{metadata:{origin},obstacleIndex:buildObstacles(t)});
+ for(const[key,tile]of tiles){const t=tile.t,index=buildIndex(t),rows=[],poses=[],origin=[tile.cell[0]*512,0,tile.cell[1]*512],barriers=new Barriers(),obstacles=new Obstacles();barriers.install(key,{metadata:{origin,safetyRails:tile.safetyRails||[]}});obstacles.install(key,{metadata:{origin},obstacleIndex:buildObstacles(t),detailObstacleIndex:tile.authoredObstacles?buildObstacles({buildings:[],buildingCorners:[],buildingHeights:[]},tile.authoredObstacles):undefined});
   for(let i=0;i<t.anchors.length;i+=5){const p=t.anchorTransforms.slice(t.anchors[i+1]*4,t.anchors[i+1]*4+4),[x,y,z,yaw]=p,hit=sample(t,index,x,z,{requiredFlags:1,referenceY:y});let safe=!!hit&&Math.abs(hit.y-y)<=.15;
    for(const a of[-2.8,0,2.8])for(const b of[-1.1,0,1.1]){const xx=x-Math.sin(yaw)*a+Math.cos(yaw)*b,zz=z-Math.cos(yaw)*a-Math.sin(yaw)*b,c=sample(t,index,xx,zz,{requiredFlags:1,referenceY:y});if(xx<.01||xx>511.99||zz<.01||zz>511.99||!c||!hit||Math.abs(c.y-(hit.y+hit.nx*(xx-x)+hit.nz*(zz-z)))>.15)safe=false;}
    const pose={x:x+origin[0],y:hit?.y??y,z:z+origin[2],yaw};if(safe&&!barriers.safe(pose))safe=false;
@@ -120,4 +130,23 @@ export function proveAnchors(tiles,{buildIndex,sample,Barriers,buildObstacles,Ob
   }
   t.anchors=rows;t.anchorTransforms=poses;
  }return {accepted,rejected};
+}
+
+// The legacy bridge mouths/shoulders are flush with the emitted fine terrain.
+// Give that same geometry a deck-layer contact over the short approach apron;
+// do not invent an underpass or move the source terrain vertically.
+export function addBridgeAprons(map,tiles,transform){
+ let triangles=0;
+ for(const bridge of map.data.penteli.bridges)for(let s=bridge.from-2;s<bridge.to+2;s+=2){
+  let polygon=[[s,-1],[s+2,-1],[s+2,1],[s,1]].map(([q,side])=>transform.position(map.route.point(q,side*(map.route.edge(q)+1.2)).toArray()));
+  const cross=(a,b,p)=>(b[0]-a[0])*(p[2]-a[2])-(b[2]-a[2])*(p[0]-a[0]);if(cross(polygon[0],polygon[1],polygon[2])<0)polygon.reverse();
+  const minX=Math.min(...polygon.map(p=>p[0])),maxX=Math.max(...polygon.map(p=>p[0])),minZ=Math.min(...polygon.map(p=>p[2])),maxZ=Math.max(...polygon.map(p=>p[2]));
+  for(let x=Math.floor(minX/512);x<=Math.floor(maxX/512);x++)for(let z=Math.floor(minZ/512);z<=Math.floor(maxZ/512);z++){
+   const tile=tiles.get(`${x},${z}`);if(!tile)continue;const t=tile.t,p=t.finePositions,ix=t.fineTriangles;
+   for(let i=0;i<ix.length;i+=3){let poly=ix.slice(i,i+3).map(j=>[p[j*3]+x*512,p[j*3+1],p[j*3+2]+z*512]);if(Math.max(...poly.map(p=>p[0]))<minX||Math.min(...poly.map(p=>p[0]))>maxX||Math.max(...poly.map(p=>p[2]))<minZ||Math.min(...poly.map(p=>p[2]))>maxZ)continue;
+    for(let k=0;k<4&&poly.length;k++){const a=polygon[k],b=polygon[(k+1)%4],out=[];for(let j=0;j<poly.length;j++){const v=poly[j],w=poly[(j+1)%poly.length],d=cross(a,b,v),e=cross(a,b,w);if(d>=0)out.push(v);if((d>=0)!==(e>=0)){const f=d/(d-e);out.push(v.map((q,k)=>q+(w[k]-q)*f));}}poly=out;}
+    for(let j=1;j+1<poly.length;j++){const tri=[poly[0],poly[j],poly[j+1]].map(p=>local(p,tile.cell));if(Math.abs(cross(...tri))<1e-7)continue;const ids=[];tile.contactVertices??=new Map();for(const v of tri){const key=v.join(',');let id=tile.contactVertices.get(key);if(id===undefined){id=t.contactPositions.length/3;tile.contactVertices.set(key,id);t.contactPositions.push(...v);}ids.push(id);}t.contactTriangles.push(...ids,intern(tile.ids,'surface:'+bridge.id),2);t.contactLayers.push(1);triangles++;}
+   }
+  }
+ }return triangles;
 }

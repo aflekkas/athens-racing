@@ -1,3 +1,4 @@
+import {loadWorldDefinition} from './world-manifest.js';
 // Free roam spawn picker (owner decisions 2026-10-19 "i just pick where to be spawned" and 2026-10-20 "would it not make
 // sense for free roam to just be click anywhere on the map"). The same full-page Attica map and screen template as Track
 // select (src/map-select.js), with the floating panel over it. There are no POI pins: a click anywhere snaps to the nearest
@@ -93,11 +94,7 @@ function overlayCells(list, size = 4) {
   return { major: of('major'), minor: of('minor'), colour: COLORS.athens, streetsFrom: 0, streetsFull: 0 };
 }
 let athensAsset;
-const loadAthens = () => athensAsset ||= fetch(new URL('./data/athens/manifest.json', document.baseURI)).then(async r => {
-  if (!r.ok) throw new Error('Athens cells are not hosted on this server');
-  const manifest = await r.json();
-  return { cells: new Set(Object.keys(manifest.tiles || {})) };
-}).catch(error => { console.info('[spawn] Athens world unavailable:', error.message); return { cells: new Set() }; });
+const loadAthens = () => athensAsset ||= loadWorldDefinition(new URL('./data/athens/manifest.json', document.baseURI)).then(({manifest}) => ({cells:new Set(Object.keys(manifest.tiles))})).catch(error => { console.info('[spawn] Athens world unavailable:', error.message); return { cells: new Set() }; });
 
 export function mountSpawnSelect(root, menu) {
   const map = root.querySelector('.attica-map'), canvas = map?.querySelector('.attica-canvas'), cardEl = root.querySelector('.map-preview'), overlay = root.querySelector('.attica-overlay');

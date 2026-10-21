@@ -61,6 +61,7 @@ export const ATHENS_DISTRICTS = Object.freeze([
   district('marousi', 'MAROUSI', 38.0502, 23.8071), district('kifisia', 'KIFISIA', 38.0737, 23.8114),
   district('zografou', 'ZOGRAFOU', 37.9915, 23.768), district('kaisariani', 'KAISARIANI', 37.957, 23.791),
   district('vyronas', 'VYRONAS', 37.955, 23.762), district('ilioupoli', 'ILIOUPOLI', 37.918, 23.756),
+  district('penteli', 'PENTELI', 38.0959, 23.8913),
   district('argyroupoli', 'ARGYROUPOLI', 37.907, 23.75), district('agia-paraskevi', 'AGIA PARASKEVI', 38.005, 23.82),
 ]);
 /** the hosted districts, each with its Attica-map point and its Athens-world metres */

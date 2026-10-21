@@ -1,3 +1,4 @@
+import {loadWorldDefinition} from '../src/world-manifest.js';
 // The free roam picker's view of the streamed Athens open world (owner 2026-10-20: "I can't click on the map anywhere" in
 // the Athens world). Reads every cell of one published world manifest, keeps each drivable road edge the game installs
 // (contact-eligible cells, restricted ways dropped, the reverse twin of a two-way road dropped) and writes them in the
@@ -78,7 +79,7 @@ export function packStreets(cells, { manifest, revision, world }) {
   const names = [], nameIndex = new Map(), seen = new Set(), roads = [], all = [];
   const nameOf = n => { if (!n) return -1; if (!nameIndex.has(n)) { nameIndex.set(n, names.length); names.push(n); } return nameIndex.get(n); };
   for (const key of [...cells.keys()].sort()) for (const s of cells.get(key)) {
-    const twin = s.id.replace(/:[fr]:(-?\d+):(-?\d+)$/, ':$1:$2'); if (seen.has(twin)) continue; seen.add(twin); all.push(s);
+    const twin = s.id.replace(/:[fr]:(-?\d+):(-?\d+)$/, ':$1:$2').replace(/^(penteli:e:.*):[fr]$/, '$1'); if (seen.has(twin)) continue; seen.add(twin); all.push(s);
   }
   for (const s of chainStreets(all)) {
     const pts = simplify(s.pts, SIMPLIFY_M), row = [nameOf(s.name), s.major ? 0 : 1]; let px = 0, py = 0;
@@ -102,7 +103,7 @@ async function fetchCell(url, sha256, decodedBytes, tries = 4) {
 
 export async function buildAthensStreets(manifestURL, { concurrency = 8, log = () => {} } = {}) {
   const r = await fetch(manifestURL); if (!r.ok) throw new Error(`manifest ${r.status} ${manifestURL}`);
-  const manifest = await r.json(), keys = Object.keys(manifest.tiles).filter(k => manifest.tiles[k].contactEligible !== false);
+  const document = await r.json(), manifest=document.regions&&document.tileVersion!==1?(await loadWorldDefinition(r.url)).manifest:document, keys = Object.keys(manifest.tiles).filter(k => manifest.tiles[k].contactEligible !== false);
   const cells = new Map(); let next = 0, done = 0;
   await Promise.all(Array.from({ length: concurrency }, async () => {
     while (next < keys.length) {

@@ -10,14 +10,7 @@ const CELL = 180;
 class BinLabelBatch {
   constructor(group) {
     this.group=group; this.cells=new Map();
-    const map=canvasTex(256,256,c=>{
-      for(let row=0;row<2;row++) {
-        c.fillStyle='#e3d5a3';c.fillRect(8,row*128+8,240,108);
-        c.fillStyle='#173e38';c.textAlign='center';c.font='bold 24px sans-serif';
-        c.fillText(row?'ΑΝΑΚΥΚΛΩΣΗ':'ΔΗΜΟΣ',128,row*128+50,218);
-        c.font='18px sans-serif';c.fillText(row?'♻  RECYCLE':'ΚΑΘΑΡΙΟΤΗΤΑ',128,row*128+85,218);
-      }
-    });
+    const map=municipalBinLabelTexture();
     this.material=new THREE.MeshStandardMaterial({map,roughness:.96,alphaTest:.12,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
   }
   add(x,y,z,yaw,recycling) {
@@ -96,4 +89,16 @@ export function buildStreetLife(map, scene, heightC, roadside = null) {
   const stats={bins:bins.length,recycling:bins.filter(b=>b.recycling).length,cellMeshes:group.children.length};
   group.userData.streetLife=stats;group.userData.bins=bins;
   return {group,obstacles,stats};
+}
+
+export function municipalBinLabelTexture(){
+    const map=canvasTex(256,256,c=>{
+      for(let row=0;row<2;row++) {
+        c.fillStyle='#e3d5a3';c.fillRect(8,row*128+8,240,108);
+        c.fillStyle='#173e38';c.textAlign='center';c.font='bold 24px sans-serif';
+        c.fillText(row?'ΑΝΑΚΥΚΛΩΣΗ':'ΔΗΜΟΣ',128,row*128+50,218);
+        c.font='18px sans-serif';c.fillText(row?'♻  RECYCLE':'ΚΑΘΑΡΙΟΤΗΤΑ',128,row*128+85,218);
+      }
+    });
+ map.userData.penteliRecipe={kind:'bin-label'};return map;
 }

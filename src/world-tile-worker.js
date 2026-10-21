@@ -33,6 +33,7 @@ export function prepareTilePacket(pack,{entry,world,revision,cell}){
   const checked=validateWorldTile(pack,{world,revision,cell});
   // Footprints are stored once; their wall and roof meshes are built here, before bounds, GPU plan and byte accounting.
   addDerivedBuildings(pack,checked.tables);tagDressedSurfaces(pack);
+  if(pack.metadata.authoredObstacles){if(pack.detailObstacleIndex)throw Error('Conflicting authored obstacle ownership');pack.detailObstacleIndex=buildTileObstacleIndex({buildings:[],buildingCorners:[],buildingHeights:[]},pack.metadata.authoredObstacles);}
   const contactIndex=buildTileContactIndex(checked.tables,Math.floor(entry.decodedBytes/4));
   // Bounding volumes are built in the worker, avoiding a vertex scan during activation.
   let gpuBytes=0;const gpuViews=new Map();

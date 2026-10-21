@@ -1,3 +1,6 @@
+import {faceTexture} from './speed-signs.js';
+import {roadSignAtlas} from './road-signs.js';
+import {municipalBinLabelTexture} from './street-life.js';
 import {roadNetworkMaterial} from './road-network.js';
 import {penteliRoadMaterial} from './maps/penteli-surface.js';
 import {terrainMaterial} from './terrain.js';
@@ -35,6 +38,7 @@ function scanned(color,key,period,mean,contrast,{vertexColors=false,strength=1,d
 }
 /** materialFactory for WorldTileScene: (tileSurface, linear rgb, hasVertexColors) -> material. */
 export function athensMaterial(surface,rgb,vertexColors){
+  if(surface.startsWith('penteliProp:')){const {texture,...options}=JSON.parse(surface.slice(12)),map=!texture?null:texture.kind==='speed'?faceTexture(texture.value):texture.kind==='road-sign'?roadSignAtlas(texture.keys):municipalBinLabelTexture();const m=new THREE.MeshStandardMaterial({...options,color:new THREE.Color(...rgb),vertexColors,map});const off=onSettings((s,k)=>{if(!k||k==='worldDetail')m.visible=s.worldDetail!==false;});m.visible=settings.worldDetail!==false;m.addEventListener('dispose',()=>{off();map?.dispose();});return m;}
   if(surface==='penteliNetwork')return roadNetworkMaterial();
   if(surface==='penteliRoad')return penteliRoadMaterial();
   if(surface==='penteliTerrain')return terrainMaterial();

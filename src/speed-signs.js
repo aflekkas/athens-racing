@@ -19,9 +19,9 @@ const CELL = 1500; // a handful of chunks per map: few draw calls, per-chunk cul
 const FAR = 900; // authored at the 2 km reference draw distance (see scenery.js)
 
 /** white disc, red ring, black numerals — drawn, never loaded, so no assets ship */
-function faceTexture(v) {
+export function faceTexture(v) {
   const label = String(v);
-  return canvasTex(256, 256, (g) => {
+  const texture=canvasTex(256, 256, (g) => {
     g.clearRect(0, 0, 256, 256);
     g.fillStyle = '#f7f7f4';
     g.beginPath(); g.arc(128, 128, 124, 0, Math.PI * 2); g.fill();
@@ -30,7 +30,7 @@ function faceTexture(v) {
     g.fillStyle = '#111314'; g.textAlign = 'center'; g.textBaseline = 'middle';
     g.font = `900 ${label.length > 2 ? 104 : 132}px system-ui, sans-serif`;
     g.fillText(label, 128, 136, 174);
-  });
+  });texture.userData.penteliRecipe={kind:'speed',value:v};return texture;
 }
 
 /**

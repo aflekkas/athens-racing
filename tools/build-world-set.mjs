@@ -7,7 +7,7 @@ import {canonicalWorldJSON,composeWorldManifest} from '../src/world-manifest.js'
 const hash=b=>createHash('sha256').update(b).digest('hex');
 export async function buildWorldSet(regions){
  const sources={},records=[];
- for(const r of regions){const bytes=await readFile(r.path),manifest=JSON.parse(bytes);sources[r.id]={manifest,url:r.manifestUrl||pathToFileURL(resolve(r.path)).href};records.push({id:r.id,manifestUrl:sources[r.id].url,manifestSha256:hash(bytes),sourceWorld:manifest.world,sourceRevision:manifest.revision,access:r.access});}
+ for(const r of regions){const bytes=await readFile(r.path),manifest=JSON.parse(bytes);sources[r.id]={manifest,url:r.manifestUrl||pathToFileURL(resolve(r.path)).href};records.push({id:r.id,manifestUrl:sources[r.id].url,manifestSha256:hash(bytes),sourceWorld:manifest.world,sourceRevision:manifest.revision,access:r.access,elevation:manifest.elevation,externalPortals:manifest.externalPortals});}
  const content={schemaVersion:1,id:'athens',tileMetres:512,projection:{lat0:37.98,lon0:23.73,mlat:111320,mlon:111320*Math.cos(37.98*Math.PI/180)},regions:records},def={...content,revision:hash(canonicalWorldJSON(content))};
  const manifest=composeWorldManifest(def,sources);return{definition:def,manifest};
 }
