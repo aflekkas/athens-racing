@@ -103,7 +103,7 @@
     "production": {
       "name": "athens-street-racers",
       "build": {
-        "command": "ASR_BUILD_ENV=production node tools/prepare-deploy.mjs"
+        "command": "ASR_BUILD_ENV=production ASR_UNIFIED_ROUTES=syntagma-pilot,psychiko-faros,riviera-coast,penteli-hill,penteli-descent,megara-club node tools/prepare-deploy.mjs"
       },
       "routes": [
         {
@@ -145,7 +145,11 @@
           "binding": "ATHENS_WORLD",
           "bucket_name": "athens-racing-world"
         }
-      ]
+      ],
+      "vars": {
+        "ASR_UNIFIED_ROUTES": "syntagma-pilot,psychiko-faros,riviera-coast,penteli-hill,penteli-descent,megara-club",
+        "ATHENS_WORLD_MANIFEST": "manifests/5b7c87c65d6ce353fc3e7ede46d54e91aa79c5303407c58d1d42cca9c921190d.json"
+      }
     }
   },
   "d1_databases": [

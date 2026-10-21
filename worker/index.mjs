@@ -18,7 +18,7 @@ import { createGameCore } from '../server/core.mjs';
 import { createSqlLeaderboard } from './leaderboard.mjs';
 
 const maps = new Map(catalogue.maps.map(m => [m.id, { ...m, definitions: new Map(m.definitions) }]));
-maps.routes=new Map((catalogue.routes||[]).filter(c=>catalogue.routeConfig?.environment==='staging'&&catalogue.routeConfig.routes.some(r=>r.id===c.id)).map(c=>[c.id,c]));
+maps.routes=new Map((catalogue.routes||[]).filter(c=>['staging','production'].includes(catalogue.routeConfig?.environment)&&catalogue.routeConfig.routes.some(r=>r.id===c.id)).map(c=>[c.id,c]));
 const cars = new Set(catalogue.cars);
 const nitrousCars = new Set(catalogue.nitrousCars || []);
 const carSpecs = catalogue.carSpecs || {};

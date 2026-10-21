@@ -32,7 +32,7 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
     catch (e) { if (def.id === 'riviera' || e.code !== 'ENOENT') throw e; console.warn(`Map ${def.id} unavailable: ${def.dataUrl}; skipping.`); continue; }
     maps.set(def.id, resolveMap(def, data));
   }
-  try{const built=JSON.parse(await readFile(resolve(root,'.deploy/catalogue.json'),'utf8')),enabled=new Set(built.routeConfig?.environment==='staging'?built.routeConfig.routes.map(r=>r.id):[]);maps.routes=new Map((built.routes||[]).filter(c=>enabled.has(c.id)).map(c=>[c.id,c]));}catch{maps.routes=new Map();}
+  try{const built=JSON.parse(await readFile(resolve(root,'.deploy/catalogue.json'),'utf8')),enabled=new Set(['staging','production'].includes(built.routeConfig?.environment)?built.routeConfig.routes.map(r=>r.id):[]);maps.routes=new Map((built.routes||[]).filter(c=>enabled.has(c.id)).map(c=>[c.id,c]));}catch{maps.routes=new Map();}
   const { track, definitions } = maps.get('riviera');
   const leaderboard = await createLeaderboard(resolve(dataDir, 'leaderboard.json'), definitions, CARS, track.version, maps);
   const core = createGameCore({ maps, cars: CARS, carSpecs, nitrousCars, leaderboard, countdownMs, raceLimitMs, reconnectGraceMs });

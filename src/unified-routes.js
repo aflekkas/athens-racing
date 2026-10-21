@@ -1,11 +1,11 @@
-// Query parameters opt into server-enabled staging entries; they never authorize a route.
+// Query parameters opt into server-enabled release entries; they never authorize a route.
 export const LEGACY_ROUTE_DESTINATIONS=Object.freeze({riviera:'riviera-coast',psychiko:'psychiko-faros',penteli:'penteli-hill',megara:'megara-club'});
 export const routeDestinationForMap=mapId=>Object.hasOwn(LEGACY_ROUTE_DESTINATIONS,mapId)?LEGACY_ROUTE_DESTINATIONS[mapId]:null;
 const artifacts=new WeakMap();
 export async function loadUnifiedRoute(query,{fetcher=fetch}={}){
  if(query.get('routes')!=='1')return null;
  const r=await fetcher('/api/routes',{cache:'no-store'});if(!r.ok)throw Error('Routes unavailable');const config=await r.json();
- if(config.environment!=='staging'||!config.routes?.length)throw Error('Route pilot is unavailable in this release');
+ if(!['staging','production'].includes(config.environment)||!config.routes?.length)throw Error('Route pilot is unavailable in this release');
  const id=query.get('route')||routeDestinationForMap(query.get('map'))||config.routes[0].id,entry=config.routes.find(e=>e.id===id);if(!entry)throw Error('Route is not enabled');
  // Refresh authorization above on every selection. Reuse only the exact
  // immutable release already resident, including its larger racing plan.
@@ -17,5 +17,5 @@ export async function loadUnifiedRoute(query,{fetcher=fetch}={}){
  return compiled;
 }
 
-export function enabledRouteCatalogue(config,index){if(config.environment!=='staging'||index.schemaVersion!==1)throw Error('Route catalogue unavailable');return config.routes.map(enabled=>{const item=index.routes.find(r=>r.id===enabled.id);if(!item||['routeHash','geometryHash','worldSetRevision','url'].some(k=>item[k]!==enabled[k]))throw Error('Route catalogue release mismatch');return item;});}
-export async function loadUnifiedRouteCatalogue({fetcher=fetch}={}){const response=await fetcher('/api/routes',{cache:'no-store'});if(!response.ok)throw Error('Route catalogue unavailable');const config=await response.json();if(config.environment!=='staging'||!config.routes?.length)throw Error('Route catalogue unavailable');const index=await fetcher('/data/routes/index.json');if(!index.ok)throw Error('Route catalogue unavailable');return enabledRouteCatalogue(config,await index.json());}
+export function enabledRouteCatalogue(config,index){if(!['staging','production'].includes(config.environment)||index.schemaVersion!==1)throw Error('Route catalogue unavailable');return config.routes.map(enabled=>{const item=index.routes.find(r=>r.id===enabled.id);if(!item||['routeHash','geometryHash','worldSetRevision','url'].some(k=>item[k]!==enabled[k]))throw Error('Route catalogue release mismatch');return item;});}
+export async function loadUnifiedRouteCatalogue({fetcher=fetch}={}){const response=await fetcher('/api/routes',{cache:'no-store'});if(!response.ok)throw Error('Route catalogue unavailable');const config=await response.json();if(!['staging','production'].includes(config.environment)||!config.routes?.length)throw Error('Route catalogue unavailable');const index=await fetcher('/data/routes/index.json');if(!index.ok)throw Error('Route catalogue unavailable');return enabledRouteCatalogue(config,await index.json());}
