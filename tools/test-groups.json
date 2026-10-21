@@ -238,7 +238,8 @@
     "tools/draw-call-budget.test.mjs",
     "tools/far-cull.test.mjs",
     "tools/far-cull-budget.test.mjs",
-    "tools/no-third-party-media.test.mjs"
+    "tools/no-third-party-media.test.mjs",
+    "tools/route-guidance.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",
