@@ -248,7 +248,8 @@
     "tools/route-race.test.mjs",
     "tools/unified-routes.test.mjs",
     "tools/route-catalogue.test.mjs",
-    "tools/route-tow.test.mjs"
+    "tools/route-tow.test.mjs",
+    "tools/world-bore-audit.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",

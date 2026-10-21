@@ -33,7 +33,7 @@ function sweep(a,b,halfL,halfW,rail,origin){
 }
 export class WorldTileBarriers{
   constructor(){this.tiles=new Map();}
-  install(key,packet){this.tiles.set(key,{rails:packet.metadata.rails||[],origin:packet.metadata.origin});}
+  install(key,packet){this.tiles.set(key,{rails:[...(packet.metadata.rails||[]),...(packet.metadata.safetyRails||[])],origin:packet.metadata.origin});}
   remove(key){this.tiles.delete(key);}
   dispose(){this.tiles.clear();}
   safe(point,{halfWidth=1.1,halfLength=2.8}={}){for(const {rails,origin}of this.tiles.values())for(const rail of rails)if(sweep(point,point,halfLength,halfWidth,rail,origin))return false;return true;}

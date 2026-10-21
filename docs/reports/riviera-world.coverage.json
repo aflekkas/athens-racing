@@ -1,0 +1,962 @@
+{
+  "referenceLengthMetres": 10988,
+  "raceStartMetres": 241,
+  "raceFinishMetres": 10548,
+  "spacingMetres": 2,
+  "baseline": {
+    "world": "athens-east-development",
+    "revision": "23d19ec1592a6a337d9289d4f82161751875348be049a56e5042e87138416ca6",
+    "reference": {
+      "samples": 5495,
+      "cellSamples": 273,
+      "cellPercent": 4.968152866242038,
+      "missingCells": [
+        "10,38",
+        "11,36",
+        "11,37",
+        "11,38",
+        "12,34",
+        "12,35",
+        "12,36",
+        "12,37",
+        "13,34",
+        "14,34",
+        "15,34",
+        "15,35",
+        "15,36",
+        "16,36",
+        "17,34",
+        "17,35",
+        "17,36",
+        "18,34",
+        "18,35",
+        "19,35",
+        "8,37",
+        "9,37",
+        "9,38",
+        "9,39"
+      ],
+      "perKm": [
+        {
+          "fromMetres": 0,
+          "toMetres": 1000,
+          "samples": 500,
+          "cellSamples": 273,
+          "cellPercent": 54.6
+        },
+        {
+          "fromMetres": 1000,
+          "toMetres": 2000,
+          "samples": 500,
+          "cellSamples": 0,
+          "cellPercent": 0
+        },
+        {
+          "fromMetres": 2000,
+          "toMetres": 3000,
+          "samples": 500,
+          "cellSamples": 0,
+          "cellPercent": 0
+        },
+        {
+          "fromMetres": 3000,
+          "toMetres": 4000,
+          "samples": 500,
+          "cellSamples": 0,
+          "cellPercent": 0
+        },
+        {
+          "fromMetres": 4000,
+          "toMetres": 5000,
+          "samples": 500,
+          "cellSamples": 0,
+          "cellPercent": 0
+        },
+        {
+          "fromMetres": 5000,
+          "toMetres": 6000,
+          "samples": 500,
+          "cellSamples": 0,
+          "cellPercent": 0
+        },
+        {
+          "fromMetres": 6000,
+          "toMetres": 7000,
+          "samples": 500,
+          "cellSamples": 0,
+          "cellPercent": 0
+        },
+        {
+          "fromMetres": 7000,
+          "toMetres": 8000,
+          "samples": 500,
+          "cellSamples": 0,
+          "cellPercent": 0
+        },
+        {
+          "fromMetres": 8000,
+          "toMetres": 9000,
+          "samples": 500,
+          "cellSamples": 0,
+          "cellPercent": 0
+        },
+        {
+          "fromMetres": 9000,
+          "toMetres": 10000,
+          "samples": 500,
+          "cellSamples": 0,
+          "cellPercent": 0
+        },
+        {
+          "fromMetres": 10000,
+          "toMetres": 10988,
+          "samples": 495,
+          "cellSamples": 0,
+          "cellPercent": 0
+        }
+      ],
+      "gaps": [
+        {
+          "fromMetres": 546,
+          "toMetres": 10988,
+          "cells": [
+            "8,37",
+            "9,37",
+            "9,38",
+            "9,39",
+            "10,38",
+            "11,38",
+            "11,37",
+            "12,37",
+            "11,36",
+            "12,36",
+            "12,35",
+            "12,34",
+            "13,34",
+            "14,34",
+            "15,34",
+            "15,35",
+            "15,36",
+            "16,36",
+            "17,36",
+            "17,35",
+            "17,34",
+            "18,34",
+            "18,35",
+            "19,35"
+          ]
+        }
+      ]
+    },
+    "race": {
+      "samples": 5154,
+      "cellSamples": 152,
+      "cellPercent": 2.949165696546372,
+      "missingCells": [
+        "10,38",
+        "11,36",
+        "11,37",
+        "11,38",
+        "12,34",
+        "12,35",
+        "12,36",
+        "12,37",
+        "13,34",
+        "14,34",
+        "15,34",
+        "15,35",
+        "15,36",
+        "16,36",
+        "17,34",
+        "17,35",
+        "17,36",
+        "18,34",
+        "8,37",
+        "9,37",
+        "9,38",
+        "9,39"
+      ],
+      "perKm": [
+        {
+          "fromMetres": 0,
+          "toMetres": 1000,
+          "samples": 379,
+          "cellSamples": 152,
+          "cellPercent": 40.105540897097626
+        },
+        {
+          "fromMetres": 1000,
+          "toMetres": 2000,
+          "samples": 500,
+          "cellSamples": 0,
+          "cellPercent": 0
+        },
+        {
+          "fromMetres": 2000,
+          "toMetres": 3000,
+          "samples": 500,
+          "cellSamples": 0,
+          "cellPercent": 0
+        },
+        {
+          "fromMetres": 3000,
+          "toMetres": 4000,
+          "samples": 500,
+          "cellSamples": 0,
+          "cellPercent": 0
+        },
+        {
+          "fromMetres": 4000,
+          "toMetres": 5000,
+          "samples": 500,
+          "cellSamples": 0,
+          "cellPercent": 0
+        },
+        {
+          "fromMetres": 5000,
+          "toMetres": 6000,
+          "samples": 500,
+          "cellSamples": 0,
+          "cellPercent": 0
+        },
+        {
+          "fromMetres": 6000,
+          "toMetres": 7000,
+          "samples": 500,
+          "cellSamples": 0,
+          "cellPercent": 0
+        },
+        {
+          "fromMetres": 7000,
+          "toMetres": 8000,
+          "samples": 500,
+          "cellSamples": 0,
+          "cellPercent": 0
+        },
+        {
+          "fromMetres": 8000,
+          "toMetres": 9000,
+          "samples": 500,
+          "cellSamples": 0,
+          "cellPercent": 0
+        },
+        {
+          "fromMetres": 9000,
+          "toMetres": 10000,
+          "samples": 500,
+          "cellSamples": 0,
+          "cellPercent": 0
+        },
+        {
+          "fromMetres": 10000,
+          "toMetres": 10548,
+          "samples": 275,
+          "cellSamples": 0,
+          "cellPercent": 0
+        }
+      ],
+      "gaps": [
+        {
+          "fromMetres": 546,
+          "toMetres": 10548,
+          "cells": [
+            "8,37",
+            "9,37",
+            "9,38",
+            "9,39",
+            "10,38",
+            "11,38",
+            "11,37",
+            "12,37",
+            "11,36",
+            "12,36",
+            "12,35",
+            "12,34",
+            "13,34",
+            "14,34",
+            "15,34",
+            "15,35",
+            "15,36",
+            "16,36",
+            "17,36",
+            "17,35",
+            "17,34",
+            "18,34"
+          ]
+        }
+      ]
+    }
+  },
+  "notes": [
+    "Cell coverage alone does not certify road contacts, direction, legal turns or race equivalence.",
+    "Raw legacy polyline crosses the Loumbarda rock pier; native gameplay uses src/maps/riviera-tunnels.js carriageway corridors. Asphalt gaps here are reported, never filled by a pasted road."
+  ],
+  "candidate": {
+    "world": "athens-east-development",
+    "revision": "74f4c8da82f6338c8642e808e0f3fcf4b3fdfba5a058b1501c521fa51b946957",
+    "routeCells": [
+      {
+        "cell": "8,36",
+        "contactEligible": true,
+        "asphaltTriangles": 2911
+      },
+      {
+        "cell": "8,37",
+        "contactEligible": true,
+        "asphaltTriangles": 215
+      },
+      {
+        "cell": "9,37",
+        "contactEligible": true,
+        "asphaltTriangles": 1862
+      },
+      {
+        "cell": "9,38",
+        "contactEligible": true,
+        "asphaltTriangles": 1384
+      },
+      {
+        "cell": "9,39",
+        "contactEligible": true,
+        "asphaltTriangles": 449
+      },
+      {
+        "cell": "10,38",
+        "contactEligible": true,
+        "asphaltTriangles": 1104
+      },
+      {
+        "cell": "11,38",
+        "contactEligible": true,
+        "asphaltTriangles": 1129
+      },
+      {
+        "cell": "11,37",
+        "contactEligible": true,
+        "asphaltTriangles": 1042
+      },
+      {
+        "cell": "12,37",
+        "contactEligible": true,
+        "asphaltTriangles": 299
+      },
+      {
+        "cell": "11,36",
+        "contactEligible": true,
+        "asphaltTriangles": 2243
+      },
+      {
+        "cell": "12,36",
+        "contactEligible": true,
+        "asphaltTriangles": 560
+      },
+      {
+        "cell": "12,35",
+        "contactEligible": true,
+        "asphaltTriangles": 2986
+      },
+      {
+        "cell": "12,34",
+        "contactEligible": true,
+        "asphaltTriangles": 5884
+      },
+      {
+        "cell": "13,34",
+        "contactEligible": true,
+        "asphaltTriangles": 4629
+      },
+      {
+        "cell": "14,34",
+        "contactEligible": true,
+        "asphaltTriangles": 2604
+      },
+      {
+        "cell": "15,34",
+        "contactEligible": true,
+        "asphaltTriangles": 246
+      },
+      {
+        "cell": "15,35",
+        "contactEligible": true,
+        "asphaltTriangles": 1355
+      },
+      {
+        "cell": "15,36",
+        "contactEligible": true,
+        "asphaltTriangles": 530
+      },
+      {
+        "cell": "16,36",
+        "contactEligible": true,
+        "asphaltTriangles": 760
+      },
+      {
+        "cell": "17,36",
+        "contactEligible": true,
+        "asphaltTriangles": 1868
+      },
+      {
+        "cell": "17,35",
+        "contactEligible": true,
+        "asphaltTriangles": 1482
+      },
+      {
+        "cell": "17,34",
+        "contactEligible": true,
+        "asphaltTriangles": 425
+      },
+      {
+        "cell": "18,34",
+        "contactEligible": true,
+        "asphaltTriangles": 2116
+      },
+      {
+        "cell": "18,35",
+        "contactEligible": true,
+        "asphaltTriangles": 473
+      },
+      {
+        "cell": "19,35",
+        "contactEligible": true,
+        "asphaltTriangles": 3198
+      }
+    ],
+    "reference": {
+      "samples": 5495,
+      "cellSamples": 5495,
+      "cellPercent": 100,
+      "asphaltSamples": 4452,
+      "asphaltPercent": 81.01910828025478,
+      "missingCells": [],
+      "perKm": [
+        {
+          "fromMetres": 0,
+          "toMetres": 1000,
+          "samples": 500,
+          "cellSamples": 500,
+          "asphaltSamples": 334,
+          "cellPercent": 100,
+          "asphaltPercent": 66.8
+        },
+        {
+          "fromMetres": 1000,
+          "toMetres": 2000,
+          "samples": 500,
+          "cellSamples": 500,
+          "asphaltSamples": 500,
+          "cellPercent": 100,
+          "asphaltPercent": 100
+        },
+        {
+          "fromMetres": 2000,
+          "toMetres": 3000,
+          "samples": 500,
+          "cellSamples": 500,
+          "asphaltSamples": 500,
+          "cellPercent": 100,
+          "asphaltPercent": 100
+        },
+        {
+          "fromMetres": 3000,
+          "toMetres": 4000,
+          "samples": 500,
+          "cellSamples": 500,
+          "asphaltSamples": 500,
+          "cellPercent": 100,
+          "asphaltPercent": 100
+        },
+        {
+          "fromMetres": 4000,
+          "toMetres": 5000,
+          "samples": 500,
+          "cellSamples": 500,
+          "asphaltSamples": 437,
+          "cellPercent": 100,
+          "asphaltPercent": 87.4
+        },
+        {
+          "fromMetres": 5000,
+          "toMetres": 6000,
+          "samples": 500,
+          "cellSamples": 500,
+          "asphaltSamples": 218,
+          "cellPercent": 100,
+          "asphaltPercent": 43.6
+        },
+        {
+          "fromMetres": 6000,
+          "toMetres": 7000,
+          "samples": 500,
+          "cellSamples": 500,
+          "asphaltSamples": 147,
+          "cellPercent": 100,
+          "asphaltPercent": 29.4
+        },
+        {
+          "fromMetres": 7000,
+          "toMetres": 8000,
+          "samples": 500,
+          "cellSamples": 500,
+          "asphaltSamples": 414,
+          "cellPercent": 100,
+          "asphaltPercent": 82.8
+        },
+        {
+          "fromMetres": 8000,
+          "toMetres": 9000,
+          "samples": 500,
+          "cellSamples": 500,
+          "asphaltSamples": 500,
+          "cellPercent": 100,
+          "asphaltPercent": 100
+        },
+        {
+          "fromMetres": 9000,
+          "toMetres": 10000,
+          "samples": 500,
+          "cellSamples": 500,
+          "asphaltSamples": 407,
+          "cellPercent": 100,
+          "asphaltPercent": 81.4
+        },
+        {
+          "fromMetres": 10000,
+          "toMetres": 10988,
+          "samples": 495,
+          "cellSamples": 495,
+          "asphaltSamples": 495,
+          "cellPercent": 100,
+          "asphaltPercent": 100
+        }
+      ],
+      "gaps": [
+        {
+          "fromMetres": 126,
+          "toMetres": 134,
+          "cells": [
+            "8,36"
+          ]
+        },
+        {
+          "fromMetres": 238,
+          "toMetres": 290,
+          "cells": [
+            "8,36"
+          ]
+        },
+        {
+          "fromMetres": 322,
+          "toMetres": 368,
+          "cells": [
+            "8,36"
+          ]
+        },
+        {
+          "fromMetres": 394,
+          "toMetres": 514,
+          "cells": [
+            "8,36"
+          ]
+        },
+        {
+          "fromMetres": 544,
+          "toMetres": 560,
+          "cells": [
+            "8,36",
+            "8,37"
+          ]
+        },
+        {
+          "fromMetres": 596,
+          "toMetres": 630,
+          "cells": [
+            "9,37"
+          ]
+        },
+        {
+          "fromMetres": 662,
+          "toMetres": 684,
+          "cells": [
+            "9,37"
+          ]
+        },
+        {
+          "fromMetres": 812,
+          "toMetres": 812,
+          "cells": [
+            "9,37"
+          ]
+        },
+        {
+          "fromMetres": 844,
+          "toMetres": 860,
+          "cells": [
+            "9,37"
+          ]
+        },
+        {
+          "fromMetres": 4548,
+          "toMetres": 4618,
+          "cells": [
+            "12,36",
+            "12,35"
+          ]
+        },
+        {
+          "fromMetres": 4652,
+          "toMetres": 4684,
+          "cells": [
+            "12,35"
+          ]
+        },
+        {
+          "fromMetres": 4936,
+          "toMetres": 4954,
+          "cells": [
+            "12,35"
+          ]
+        },
+        {
+          "fromMetres": 5178,
+          "toMetres": 5198,
+          "cells": [
+            "12,34"
+          ]
+        },
+        {
+          "fromMetres": 5208,
+          "toMetres": 5208,
+          "cells": [
+            "12,34"
+          ]
+        },
+        {
+          "fromMetres": 5396,
+          "toMetres": 5404,
+          "cells": [
+            "12,34"
+          ]
+        },
+        {
+          "fromMetres": 5440,
+          "toMetres": 5714,
+          "cells": [
+            "12,34",
+            "13,34"
+          ]
+        },
+        {
+          "fromMetres": 5746,
+          "toMetres": 6398,
+          "cells": [
+            "13,34",
+            "14,34"
+          ]
+        },
+        {
+          "fromMetres": 6450,
+          "toMetres": 6754,
+          "cells": [
+            "14,34",
+            "15,34"
+          ]
+        },
+        {
+          "fromMetres": 7370,
+          "toMetres": 7492,
+          "cells": [
+            "15,35"
+          ]
+        },
+        {
+          "fromMetres": 7532,
+          "toMetres": 7534,
+          "cells": [
+            "15,36"
+          ]
+        },
+        {
+          "fromMetres": 7564,
+          "toMetres": 7606,
+          "cells": [
+            "15,36"
+          ]
+        },
+        {
+          "fromMetres": 9338,
+          "toMetres": 9522,
+          "cells": [
+            "17,36",
+            "17,35"
+          ]
+        }
+      ],
+      "cellGaps": []
+    },
+    "race": {
+      "samples": 5154,
+      "cellSamples": 5154,
+      "cellPercent": 100,
+      "asphaltSamples": 4118,
+      "asphaltPercent": 79.89910748932867,
+      "missingCells": [],
+      "perKm": [
+        {
+          "fromMetres": 0,
+          "toMetres": 1000,
+          "samples": 379,
+          "cellSamples": 379,
+          "asphaltSamples": 220,
+          "cellPercent": 100,
+          "asphaltPercent": 58.047493403693935
+        },
+        {
+          "fromMetres": 1000,
+          "toMetres": 2000,
+          "samples": 500,
+          "cellSamples": 500,
+          "asphaltSamples": 500,
+          "cellPercent": 100,
+          "asphaltPercent": 100
+        },
+        {
+          "fromMetres": 2000,
+          "toMetres": 3000,
+          "samples": 500,
+          "cellSamples": 500,
+          "asphaltSamples": 500,
+          "cellPercent": 100,
+          "asphaltPercent": 100
+        },
+        {
+          "fromMetres": 3000,
+          "toMetres": 4000,
+          "samples": 500,
+          "cellSamples": 500,
+          "asphaltSamples": 500,
+          "cellPercent": 100,
+          "asphaltPercent": 100
+        },
+        {
+          "fromMetres": 4000,
+          "toMetres": 5000,
+          "samples": 500,
+          "cellSamples": 500,
+          "asphaltSamples": 437,
+          "cellPercent": 100,
+          "asphaltPercent": 87.4
+        },
+        {
+          "fromMetres": 5000,
+          "toMetres": 6000,
+          "samples": 500,
+          "cellSamples": 500,
+          "asphaltSamples": 218,
+          "cellPercent": 100,
+          "asphaltPercent": 43.6
+        },
+        {
+          "fromMetres": 6000,
+          "toMetres": 7000,
+          "samples": 500,
+          "cellSamples": 500,
+          "asphaltSamples": 147,
+          "cellPercent": 100,
+          "asphaltPercent": 29.4
+        },
+        {
+          "fromMetres": 7000,
+          "toMetres": 8000,
+          "samples": 500,
+          "cellSamples": 500,
+          "asphaltSamples": 414,
+          "cellPercent": 100,
+          "asphaltPercent": 82.8
+        },
+        {
+          "fromMetres": 8000,
+          "toMetres": 9000,
+          "samples": 500,
+          "cellSamples": 500,
+          "asphaltSamples": 500,
+          "cellPercent": 100,
+          "asphaltPercent": 100
+        },
+        {
+          "fromMetres": 9000,
+          "toMetres": 10000,
+          "samples": 500,
+          "cellSamples": 500,
+          "asphaltSamples": 407,
+          "cellPercent": 100,
+          "asphaltPercent": 81.4
+        },
+        {
+          "fromMetres": 10000,
+          "toMetres": 10548,
+          "samples": 275,
+          "cellSamples": 275,
+          "asphaltSamples": 275,
+          "cellPercent": 100,
+          "asphaltPercent": 100
+        }
+      ],
+      "gaps": [
+        {
+          "fromMetres": 242,
+          "toMetres": 290,
+          "cells": [
+            "8,36"
+          ]
+        },
+        {
+          "fromMetres": 322,
+          "toMetres": 368,
+          "cells": [
+            "8,36"
+          ]
+        },
+        {
+          "fromMetres": 394,
+          "toMetres": 514,
+          "cells": [
+            "8,36"
+          ]
+        },
+        {
+          "fromMetres": 544,
+          "toMetres": 560,
+          "cells": [
+            "8,36",
+            "8,37"
+          ]
+        },
+        {
+          "fromMetres": 596,
+          "toMetres": 630,
+          "cells": [
+            "9,37"
+          ]
+        },
+        {
+          "fromMetres": 662,
+          "toMetres": 684,
+          "cells": [
+            "9,37"
+          ]
+        },
+        {
+          "fromMetres": 812,
+          "toMetres": 812,
+          "cells": [
+            "9,37"
+          ]
+        },
+        {
+          "fromMetres": 844,
+          "toMetres": 860,
+          "cells": [
+            "9,37"
+          ]
+        },
+        {
+          "fromMetres": 4548,
+          "toMetres": 4618,
+          "cells": [
+            "12,36",
+            "12,35"
+          ]
+        },
+        {
+          "fromMetres": 4652,
+          "toMetres": 4684,
+          "cells": [
+            "12,35"
+          ]
+        },
+        {
+          "fromMetres": 4936,
+          "toMetres": 4954,
+          "cells": [
+            "12,35"
+          ]
+        },
+        {
+          "fromMetres": 5178,
+          "toMetres": 5198,
+          "cells": [
+            "12,34"
+          ]
+        },
+        {
+          "fromMetres": 5208,
+          "toMetres": 5208,
+          "cells": [
+            "12,34"
+          ]
+        },
+        {
+          "fromMetres": 5396,
+          "toMetres": 5404,
+          "cells": [
+            "12,34"
+          ]
+        },
+        {
+          "fromMetres": 5440,
+          "toMetres": 5714,
+          "cells": [
+            "12,34",
+            "13,34"
+          ]
+        },
+        {
+          "fromMetres": 5746,
+          "toMetres": 6398,
+          "cells": [
+            "13,34",
+            "14,34"
+          ]
+        },
+        {
+          "fromMetres": 6450,
+          "toMetres": 6754,
+          "cells": [
+            "14,34",
+            "15,34"
+          ]
+        },
+        {
+          "fromMetres": 7370,
+          "toMetres": 7492,
+          "cells": [
+            "15,35"
+          ]
+        },
+        {
+          "fromMetres": 7532,
+          "toMetres": 7534,
+          "cells": [
+            "15,36"
+          ]
+        },
+        {
+          "fromMetres": 7564,
+          "toMetres": 7606,
+          "cells": [
+            "15,36"
+          ]
+        },
+        {
+          "fromMetres": 9338,
+          "toMetres": 9522,
+          "cells": [
+            "17,36",
+            "17,35"
+          ]
+        }
+      ],
+      "cellGaps": []
+    }
+  }
+}

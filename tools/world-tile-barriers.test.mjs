@@ -34,3 +34,11 @@ test('rotating rear corners cannot pass through a bridge rail',()=>{
  const b=barriers(),v={x:-1.2,z:0,y:0,yaw:-Math.PI/4,halfL:2.5,halfW:1,vLong:0,vLat:0,w:2};
  assert.ok(b.resolve(v,{x:-1.2,z:0,y:0,yaw:0}));assert.equal(v.yaw,0);assert.ok(v.x+v.halfW<-.15);
 });
+
+test('coast rails and bore walls use the same swept collision and release with their cell',()=>{
+ const b=new WorldTileBarriers();b.install('bore',{metadata:{origin:[512,0,512],rails:[],safetyRails:[[0,10,-200,0,10,200,3.6]]}});
+ const v={x:527,z:512,y:12,yaw:-Math.PI/2,halfL:2.5,halfW:1,vLong:speed,vLat:0,w:0};
+ assert.ok(b.resolve(v,{x:497,z:512,y:12,yaw:v.yaw}));assert.ok(v.x+v.halfL<512-.15);
+ v.x=527;v.y=4;assert.equal(b.resolve(v,{x:497,z:512,y:4,yaw:v.yaw}),false,'independent vertically separated road');
+ b.remove('bore');v.y=12;assert.equal(b.resolve(v,{x:497,z:512,y:12,yaw:v.yaw}),false);
+});

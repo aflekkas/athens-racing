@@ -1,0 +1,128 @@
+{
+  "sourceStability": {
+    "profiles.roads": {
+      "records": 134685,
+      "changed": 0
+    },
+    "profiles.points": {
+      "records": 1099557,
+      "changed": 0
+    },
+    "graph.edges": {
+      "records": 225054,
+      "changed": 0
+    },
+    "sections.sections": {
+      "records": 134685,
+      "changed": 0
+    },
+    "basinStructures": {
+      "groups": 49,
+      "changed": 0
+    },
+    "newCells": 82,
+    "rebuiltCells": 211,
+    "reusedCells": 1240,
+    "totalCells": 1451
+  },
+  "safetyRepair": {
+    "oldRevision": "2a43f4effe073a3e7caa2c427fbc79c2b59f1fbd6695789d57f1bee3cca3df5b",
+    "revision": "74f4c8da82f6338c8642e808e0f3fcf4b3fdfba5a058b1501c521fa51b946957",
+    "rebuiltCells": 211,
+    "safetyRepairedCells": 29,
+    "contactAndGraphTablesUnchanged": true,
+    "changedGeneratorInputs": [
+      "riviera_safety.py"
+    ],
+    "coastSafetySegments": 1901,
+    "boreWalls": 111
+  },
+  "exclusions": {
+    "worldExcludedRoads": 746,
+    "byReason": {
+      "structure-plan": 393,
+      "tunnel": 256,
+      "layer -1 without a bridge": 30,
+      "layer 1 without a bridge": 33,
+      "layer 2 without a bridge": 3,
+      "bridge on layer 0": 2,
+      "steep": 14,
+      "bridge on layer 2": 14,
+      "coast": 1
+    },
+    "steepExcludedInWorld": 14,
+    "globalSteepList": 14,
+    "steepIds": [
+      "w116650376:0",
+      "w1250220482:0",
+      "w1250220483:0",
+      "w146047777:0",
+      "w156417289:0",
+      "w203529576:0",
+      "w203532215:0",
+      "w225922250:0",
+      "w346063306:2",
+      "w552896140:0",
+      "w917627799:0",
+      "w917627801:0",
+      "w948871940:15",
+      "w976901163:0"
+    ],
+    "varkizaServiceUnderpass": "tunnel",
+    "loumbarda": {
+      "w25371523:0": null,
+      "w172988026:0": null
+    }
+  },
+  "pilotStability": {
+    "edgesEqual": true,
+    "turnsEqual": true,
+    "contactProofsEqual": true,
+    "widthProofsEqual": true,
+    "safeProofsEqual": true,
+    "oldEdges": 88,
+    "newEdges": 88
+  },
+  "runtimeFixture": {
+    "hashesMatch": 209,
+    "negativeZeroOnlyCells": [
+      {
+        "key": "12,34",
+        "mdEqual": true,
+        "metadataKeys": [],
+        "arrays": 36,
+        "otherArrays": 36,
+        "dif": [
+          {
+            "i": 33,
+            "type": "Float32Array",
+            "otherType": "Float32Array",
+            "length": 564,
+            "otherLength": 564,
+            "changed": 1,
+            "negativeZero": 1
+          }
+        ]
+      },
+      {
+        "key": "14,32",
+        "mdEqual": true,
+        "metadataKeys": [],
+        "arrays": 28,
+        "otherArrays": 28,
+        "dif": [
+          {
+            "i": 25,
+            "type": "Float32Array",
+            "otherType": "Float32Array",
+            "length": 380,
+            "otherLength": 380,
+            "changed": 1,
+            "negativeZero": 1
+          }
+        ]
+      }
+    ],
+    "differingTable": "anchorTransforms"
+  }
+}

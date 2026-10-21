@@ -4,3 +4,5 @@ const python=process.env.WORLD_GEN_PYTHON||'python3',shapely=spawnSync(python,['
 test('areas share one world, buildings clip to cells, the bridge guardrail is a low post-and-beam rail',{skip:!shapely&&'shapely is not installed for '+python+' (set WORLD_GEN_PYTHON to the world-gen venv)'},()=>{
   const r=spawnSync(python,[fileURLToPath(new URL('./area_test.py',import.meta.url))],{encoding:'utf8'});assert.equal(r.status,0,r.error?.message||r.stderr||r.stdout);
 });
+
+test('mapped rock bores preserve source/layer, reject unsupported crossings and clip walls at cell borders',{skip:!shapely&&'shapely is not installed'},()=>{const r=spawnSync(python,[fileURLToPath(new URL('./rock_bores_test.py',import.meta.url))],{encoding:'utf8'});assert.equal(r.status,0,r.stderr||r.stdout);});
