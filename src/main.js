@@ -1312,6 +1312,7 @@ function flowAction(name) {
   if (!menu || G.state === 'loading' && !menu.open && multiplayer.panel.hidden) return false;
   if (menu.accounts?.blocked) { menu.action(name); return true; }
   if (!menu.open && multiplayer.panel.hidden && (G.state === 'finished' || G.state === 'onlineFinished')) {
+    if (name === 'restart' && !multiplayer.active) { openEvent(G.ev.def); return true; }
     if (['pause', 'back', 'confirm', 'restart'].includes(name)) { finishViewResults(); return true; }
     if (name === 'left' || name === 'right') {
       const direction = name === 'left' ? -1 : 1;
@@ -2341,7 +2342,7 @@ function step(dt, draw = true, visual = true, frameDt = dt) {
   window.__ghostLap?.visual(dt);
   updateCamera(dt);
   const finishWatched = watchingDriver();
-  updateFinishSpectateHud({ visible: !!finishWatched && !inMenu(), name: finishWatched?.name, position: multiplayer.active ? multiplayer.ranking().findIndex(p => p.id === finishWatched?.id) + 1 : finishWatched?.position, time: fmtTime(G.pFinish), ownPosition: multiplayer.active ? multiplayer.ranking().findIndex(p => p.id === multiplayer.id) + 1 : racePosition() });
+  updateFinishSpectateHud({ visible: !!finishWatched && !inMenu(), name: finishWatched?.name, position: multiplayer.active ? multiplayer.ranking().findIndex(p => p.id === finishWatched?.id) + 1 : finishWatched?.position, time: fmtTime(G.pFinish), ownPosition: multiplayer.active ? multiplayer.ranking().findIndex(p => p.id === multiplayer.id) + 1 : racePosition(), canRestart: !multiplayer.active });
   updateRacerMarkers();
   if (towOffer.element) towOffer.element.hidden = G.state !== 'race' || !!menu?.open || !multiplayer.panel.hidden;
   // sun + shadows follow the action
@@ -2386,9 +2387,13 @@ function step(dt, draw = true, visual = true, frameDt = dt) {
   st.objectiveMode = multiplayer.active ? isDrivingMode(multiplayer.lobby?.mode || multiplayer.lobby?.event?.type) : isDrivingMode(G.ev?.def);
   const objectiveDriver = multiplayer.active ? multiplayer.spectating?.() || multiplayer.me : null;
   st.objectiveTarget = st.objectiveMode ? drivingModeTarget(multiplayer.active ? objectiveDriver?.objective : G.run?.objective, multiplayer.active ? multiplayer.lobby.event?.objectiveRoutes : G.run?.routes) : null;
-  if (!multiplayer.active && finishWatched) {
+  if (!multiplayer.active && finishWatched?.car) {
     const v = finishWatched.car.veh, spec = finishWatched.car.spec;
-    Object.assign(st, { pos: finishWatched.position, time: G.raceT + G.postT, kmh: speedIn(v.kmh), rpm: v.rpm, redline: spec.redline, gearLabel: v.reverse ? 'R' : String(v.gear), x: v.x, z: v.z, yaw: v.yaw, s: v.s, manual: false, canUpshift: false, damageLabel: '', tc: false, abs: false, esc: false, nitrous: spec.nitrous === true, nitro: v.nitro, nitroOn: v.nitroOn });
+    // The frozen player progress must not leak into the gap: the watched driver trails the race leader.
+    let leaderProg = earnedProgress(), leaderName = 'YOU';
+    for (const c of grid) { const p = earnedProgress(c); if (p > leaderProg) { leaderProg = p; leaderName = c.name; } }
+    if (leaderName) $('rivalName').textContent = leaderName;
+    Object.assign(st, { pos: finishWatched.position, time: G.raceT + G.postT, gap: leaderProg - earnedProgress(finishWatched.car), gapUnit: 'm', kmh: speedIn(v.kmh), rpm: v.rpm, redline: spec.redline, gearLabel: v.reverse ? 'R' : String(v.gear), x: v.x, z: v.z, yaw: v.yaw, s: v.s, manual: false, canUpshift: false, damageLabel: '', tc: false, abs: false, esc: false, nitrous: spec.nitrous === true, nitro: v.nitro, nitroOn: v.nitroOn });
   }
   hud.update(st);
   const watched = multiplayer.active ? multiplayer.spectating() : null;
@@ -2402,7 +2407,7 @@ function step(dt, draw = true, visual = true, frameDt = dt) {
   for (const id of ['posBox', 'timeBox', 'gapBox', 'evBox']) { const el = $(id); if (el) { const hidden = inFreeRoam(); if (el.hidden !== hidden) el.hidden = hidden; const display = hidden ? 'none' : ''; if (el.style.display !== display) el.style.display = display; } }
   if (inFreeRoam()) { $('tRace').textContent = '—'; $('posN').textContent = '—'; }
   if (multiplayer.retired && !multiplayer.spectating()) { $('posN').textContent = 'DNF'; $('posSuf').textContent = ''; $('tRace').textContent = '—'; }
-  updateLapHud(G.run, !multiplayer.active && !isDrivingMode(G.ev?.def) && !MENU_STATES.includes(G.state));
+  updateLapHud(G.run, !finishWatched && !multiplayer.active && !isDrivingMode(G.ev?.def) && !MENU_STATES.includes(G.state));
   const onlineObjective = multiplayer.active && isDrivingMode(multiplayer.lobby?.mode || multiplayer.lobby?.event?.type);
   const watchedObjective = onlineObjective ? multiplayer.spectating?.() : null;
   const objective = onlineObjective ? (watchedObjective || multiplayer.me)?.objective : G.run?.objective;

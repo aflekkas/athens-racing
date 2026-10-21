@@ -239,4 +239,4 @@ Owner decisions:
 
 ## 2026-10-21: Spectate on finish
 
-“when we finish i want us to immediately spectate, if there are others”. Solo AI and multiplayer finishes immediately follow the nearest unfinished racer behind you with a smooth chase-camera handoff. Left/right or A/D cycles unfinished drivers; your finish time and position remain in a compact corner card. All finished, the race timeout, or Esc/Enter opens results. Multiplayer reuses interpolated snapshots, and disconnected drivers are skipped. Guard: `tools/finish-spectate.test.mjs`.
+“when we finish i want us to immediately spectate, if there are others”. Solo AI and multiplayer finishes immediately follow the nearest unfinished racer behind you with a smooth chase-camera handoff. Left/right or A/D cycles unfinished drivers; your finish time and position remain in a compact corner card. All finished, the race timeout, or Esc/Enter opens results. Multiplayer reuses interpolated snapshots, and disconnected drivers are skipped. Your finished car is parked as a non-colliding ghost. Guard: `tools/finish-spectate.test.mjs`.
