@@ -85,6 +85,7 @@ export class Menu {
       void loadGarage().then(() => { if (this.screen === from) this.show(screen, data, push); }).catch(error => C.ui.toast(error.message, { tone: 'bad' }));
       return;
     }
+    if (screen === 'routes') { screen = 'maps'; data = { ...data, mode: 'quick' }; }
     if (screen === 'events') screen = 'mode'; // Legacy results return to the two-mode picker.
     this.leaving();
     if (push && this.screen) this.stack.push({ screen: this.screen, data: this.data, focus: this.focus });
@@ -128,7 +129,7 @@ export class Menu {
     cancelAnimationFrame(this.settling); this.settling = requestAnimationFrame(() => { this.settling = requestAnimationFrame(() => this.root.classList.remove('is-settling')); });
     if (stage) this.root.querySelector('#carStage')?.replaceWith(stage);
     else if (this.screen === 'car') this.carView = this.data.detail ? garage.mountCarSelect(this.root, this.data.index || 0) : garage.mountCarGrid(this.root);
-    if (this.screen === 'maps') this.mapView = this.data.mode === 'free' ? mountSpawnSelect(this.root, this) : mountMapSelect(this.root);
+    if (this.screen === 'maps') this.mapView = this.data.mode === 'free' ? mountSpawnSelect(this.root, this) : mountMapSelect(this.root, this.data.catalogue, id => selectMap(this, id));
     for (const t of this.root.querySelectorAll('.tabs')) { const on = t.querySelector('.tab.on'); if (on && t.scrollWidth > t.clientWidth) t.scrollLeft = on.offsetLeft - (t.clientWidth - on.offsetWidth) / 2; }
     if (this.screen === 'settings' && this.data.tab === 'controls') this.h.cancelBindings?.();
     const it = this.items();
@@ -194,6 +195,7 @@ export class Menu {
   /** a named input action; true if the menu used it */
   action(name) {
     if (!this.screen) return false;
+    if (this.mapLoading) return true;
     C.navigationFocus();
     if (C.ui.action(name)) return true;
     if (this.screen === 'maps' && this.mapView?.action(name)) return true;
@@ -249,7 +251,6 @@ export class Menu {
     if (a?.startsWith('mp') && MP.act(this, el)) return;
     switch (a) {
       case 'unifiedRoute': void Promise.resolve().then(() => this.h.selectUnifiedRoute(el.dataset.route,el.dataset.event)).catch(error => C.ui.toast(error.message, { tone: 'bad' })); break;
-      case 'classicTracks': this.filter = 'sprint'; this.show('maps', { filter: 'sprint', mode: 'quick' }, true); break;
       case 'seatReset': { resetSeatPosition(this.h.carSpec?.()?.id); for(const key of ['height','position']){const el=this.root.querySelector('[data-key=seat-'+key+']');if(el)C.setValue(el,0,false);} break; }
       case 'mapPrev': case 'mapNext': case 'mapZoomIn': case 'mapZoomOut': this.mapView?.action(a); break;
       case 'spawnDrive': driveFromSpawn(this); break;
@@ -351,13 +352,12 @@ export class Menu {
     try {
       const catalogue = await loadUnifiedRouteCatalogue({ allowEmpty: true });
       if (this.screen !== screen || this.data !== data) return;
-      if (catalogue.length) this.show('routes', { catalogue }, true);
-      else { this.filter = 'sprint'; this.show('maps', { filter: 'sprint', mode: 'quick' }, true); }
+      this.filter = 'sprint'; this.show('maps', { catalogue, filter: 'sprint', mode: 'quick' }, true);
     } catch (error) {
       if (this.screen === screen && this.data === data) C.ui.toast(error.message, { tone: 'bad' });
     } finally { this.loadingRoutes = false; }
   }
-  r_routes(d){return C.sheetList({variant:'flow',kick:'ATHENS',title:'SELECT ROUTE',rows:d.catalogue.flatMap(r=>r.events.map(e=>C.option({icon:'flag',title:esc(r.name+(r.events.length>1&&e.type==='timetrial'?' · TIME TRIAL':'')),desc:`${fmtDist(r.lengthM)} · ${e.laps||1} LAP${(e.laps||1)>1?'S':''} · ${e.rivals||0} RIVALS${['penteli','megara'].includes(r.regionId)?' · ATTACHED DESTINATION':''}`,act:'unifiedRoute',attrs:{'data-route':r.id,'data-event':e.id}}))).join('')+C.option({icon:'flag',title:'ORIGINAL TRACKS',desc:'Choose from the original track selection',act:'classicTracks'}),hints:[['select','SELECT'],['confirm','RACE'],['back','BACK']]});}
+  r_routes(d) { return renderMapSelect(undefined, d.catalogue); }
   r_leaderboards(d) { return renderLeaderboards(this, d); }
   // RACE is solo (owner 2026-10-18): two artwork-led cards fill the screen; multiplayer lives behind the title's MULTIPLAYER tile.
   r_mode() {
@@ -380,7 +380,7 @@ export class Menu {
   r_mpResults() { return MP.renderResults(this, window.__multiplayer); }
 
   // ---------------------------------------------------------------- maps
-  r_maps() { return this.data.mode === 'free' ? renderSpawnSelect(this) : renderMapSelect(this.h.ctx?.().mapId); }
+  r_maps() { return this.data.mode === 'free' ? renderSpawnSelect(this) : renderMapSelect(this.h.ctx?.().route?.compiled?.id || this.h.ctx?.().mapId, this.data.catalogue); }
   r_mapConfirm(d) {
     const map = MAPS.find(m => m.id === d.mapId) || MAPS[0], def = this.setupDef();
     d.eventId = (def.baseId || def.id).split('~')[0];
@@ -422,7 +422,7 @@ export class Menu {
 
 
   // ---------------------------------------------------------------- race setup (event detail)
-  setupDef() { if (this.data.mode === 'free') return window.__flow.freeRoamDef(); return { ...(this.eventsHere()[0] || QUICK_RACE), mapId: this.h.ctx().mapId, quick: true, name: 'QUICK RACE' }; }
+  setupDef() { if (this.data.mode === 'free') return window.__flow.freeRoamDef(); if (this.data.def) return this.data.def; return { ...(this.eventsHere()[0] || QUICK_RACE), mapId: this.h.ctx().mapId, quick: true, name: 'QUICK RACE' }; }
   setupKey() { const d = this.setupDef(); if(d.routeId)return d.id;return d.quick ? 'quick:' + (this.h.ctx().mapId || 'riviera') : d.id; }
   isClosed() { return !!this.h.ctx().route?.closed; }
   r_setup() {

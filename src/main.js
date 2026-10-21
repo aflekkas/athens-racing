@@ -1085,7 +1085,7 @@ function initFlow() {
   let plate = driverName.plate();
   driverName.onChange(() => { const next = driverName.plate(); if (next !== plate) { plate = next; player?.model.setPlate(next); } });
   const handlers = {
-    selectUnifiedRoute:async (id,eventId)=>{const url=new URL(location.href);url.searchParams.set('routes','1');url.searchParams.set('route',id);if(eventId)url.searchParams.set('routeEvent',eventId);else url.searchParams.delete('routeEvent');url.searchParams.delete('menu');url.searchParams.set('setup','1');const compiled=await loadUnifiedRoute(url.searchParams);G.unifiedCompiled=compiled;await loadUnifiedWorld(compiled,{eventId});history.replaceState(null,'',url);G.state='menu';menu.show('setup',{mode:'quick'});},
+    selectUnifiedRoute:async (id,eventId)=>{const url=new URL(location.href);url.searchParams.set('routes','1');url.searchParams.set('route',id);if(eventId)url.searchParams.set('routeEvent',eventId);else url.searchParams.delete('routeEvent');url.searchParams.delete('menu');url.searchParams.set('setup','1');const compiled=await loadUnifiedRoute(url.searchParams);G.unifiedCompiled=compiled;await loadUnifiedWorld(compiled,{eventId});history.replaceState(null,'',url);G.state='menu';menu.show('setup',{mode:'quick',eventId:G.ev.def.id,def:G.ev.def},true);},
     quickRace: () => openEvent('quick'), openEvent, startFree: def => startEvent(def, { car: G.carIdx }), multiplayer: () => multiplayer.open(), garage: openGarage, selectMap: selectMenuMap, switchMap,
     chooseCar: (index, def, garage) => {
       try { localStorage.setItem('paraliaki.car', CARS[index].id); } catch {}
