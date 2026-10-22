@@ -1,4 +1,5 @@
 import {buildTileObstacleIndex,obstacleBytes} from './world-tile-obstacles.js';
+import {psychikoMappedBuildings} from './world-tile-psychiko.js';
 import {coastalMappedBuildings,coastalInfillTables,clearCoastalStreetTrees,coastalRecipe,coastalRows,appendCoastalSurfaces,dressCoastalGround} from './world-tile-coast.js';
 // Building meshes are DERIVED from the `buildings`, `buildingCorners` and `buildingHeights` tables when a tile declares
 // `extensions.derivedBuildings`: the wire format stores each footprint once instead of a second time as flat-shaded
@@ -126,6 +127,9 @@ export function deriveBuildingMeshes(t, m, styles = null, roofs = null) {
     const first = t.buildings[row * 4 + 1], n = t.buildings[row * 4 + 2], material = t.buildings[row * 4 + 3];
     const base = t.buildingHeights[row * 2], top = base + t.buildingHeights[row * 2 + 1];
     let ring = Array.from({ length: n }, (_, k) => [t.buildingCorners[(first + k) * 2], t.buildingCorners[(first + k) * 2 + 1]]);
+    // The existing Psychiko detail recipe draws these exact shells and their tiled roofs.
+    // Keep the same footprints in the worker's collision/tree exclusions, without a second facade/roof.
+    if (m.ids?.[t.buildings[row * 4]]?.startsWith('building:psychiko:')) { extra.rings.push(ring); continue; }
     let area = 0; for (let k = 0; k < n; k++) { const a = ring[k], b = ring[(k + 1) % n]; area += a[0] * b[1] - b[0] * a[1]; }
     if (area < 0) ring = ring.reverse();
     // A building a landmark model replaces (LANDMARK_HIDDEN) is kept, but in its own meshes that the scene hides while World detail is on.
@@ -190,9 +194,9 @@ export function addDerivedBuildings(pack, tables) {
   const flag = pack.metadata.extensions?.derivedBuildings;
   if (!flag || flag.derived) return pack;
   const wd = pack.metadata.extensions?.worldDetail?.buildings, styleIndex = wd?.facadeStyle, roofIndex = wd?.roofShape;
-  const recipe=coastalRecipe(pack.metadata.cell),mapped=coastalMappedBuildings(tables,pack.metadata,recipe),styles=styleIndex==null?null:Uint8Array.from(mapped.rows.map(i=>pack.arrays[styleIndex][i])),roofs=roofIndex==null?null:Uint8Array.from(mapped.rows.map(i=>pack.arrays[roofIndex][i]));
+  const psychiko=psychikoMappedBuildings(tables,pack.metadata),recipe=coastalRecipe(pack.metadata.cell),mapped=coastalMappedBuildings(psychiko.tables,pack.metadata,recipe),sourceRows=mapped.rows.map(i=>psychiko.rows[i]),styles=styleIndex==null?null:Uint8Array.from(sourceRows.map(i=>i<0?0:pack.arrays[styleIndex][i])),roofs=roofIndex==null?null:Uint8Array.from(sourceRows.map(i=>i<0?0:pack.arrays[roofIndex][i]));
   const { arrays, meshes, extra } = deriveBuildingMeshes(mapped.tables,pack.metadata,styles,roofs),offset=pack.arrays.length;
-  if(mapped.removed)pack.coastalObstacleTables=mapped.tables;
+  if(mapped.removed||psychiko.removed||pack.metadata.psychikoShells?.length)pack.coastalObstacleTables=mapped.tables;
   const infill=coastalInfillTables(mapped.tables,recipe);
   const houses=deriveBuildingMeshes(infill,{...pack.metadata,ids:infill.ids,inferredCoastal:true},new Uint8Array(infill.ids.length).fill(2),new Uint8Array(infill.ids.map((_,i)=>i%2?1:3)));
   extra.rings.push(...houses.extra.rings);

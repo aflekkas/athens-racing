@@ -184,6 +184,7 @@
     "tools/gantry-clearance.test.mjs",
     "tools/rain-overlays.test.mjs",
     "tools/world-tile-format.test.mjs",
+    "tools/world-psychiko-buildings.test.mjs",
     "tools/world-tile-contact-seams.test.mjs",
     "tools/world-tile-conversion.test.mjs",
     "tools/world-tile-flag.test.mjs",

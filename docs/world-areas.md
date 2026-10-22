@@ -183,3 +183,10 @@ The same 1,369 cells, rebaked with three changes. Tools: `tools/world-gen/infill
 * **Gardens and lawns.** `leisure=garden|park`, `landscape=lawn` and `landuse=flowerbed` closed ways are read as `landcover`, which the ground lookup gives the grass class.
 
 Gates, numbers and per-district counts: `.scratch/athens-world-infill-2026-10-20/README.md`. Kaisariani has 3 generated lots.
+
+
+## Authored Psychiko precedence (2026-10-22)
+
+The 2026-10-20 infill bake (`9c90acfb`) did not know the reviewed villa gardens. The partial unified-world migration (`dfc13ca5`) retained streetscape decorations and roofs but omitted the original building renderer; normal Quick Race switched to that world in `0dd8d39d` (confirmed with `git bisect --no-checkout`). The original source from PR #3 / `f4fbc90d` and the frontage/port review branches remained intact.
+
+`tools/export-psychiko-buildings.mjs` freezes its 3,647 reviewed footprint pieces and garden exclusions for the worker. `world-tile-psychiko.js` replaces matching OSM boxes, removes generated lots intersecting those gardens or within 2 m of authored footprints, and supplies the same complete footprint and terrain fit to collision and the original `buildBuildings` renderer. Each shell has one tile owner, including across tile borders; roofs and recognition facades use its exact top. Surrounding gap infill remains. The optional recipe loads when entering these tiles, and shells unload with them. This is a client restoration over existing immutable cells; no R2 rebake or manifest change.

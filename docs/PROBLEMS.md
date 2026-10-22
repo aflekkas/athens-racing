@@ -44,15 +44,6 @@ Difficulty: 🟢 good first fix · 🟡 medium · 🔴 deep / needs care.
 
 ## Open: reported by the owner (most important first)
 
-### 1. Psychiko is buried under generic buildings 🔴
-**What's wrong:** Psychiko looks overrun by procedural "building slop". Vas's hand-made Psychiko work (the centre, his landmarks and layout, merged in PR #3 / `f4fbc90d`) seems to have been overwritten or hidden by the streamed Athens world's generated infill buildings.
-**Where to look:**
-- `tools/maps/psychiko/` (sources, see `SOURCES.md`)
-- `src/athens-world.js`, `src/athens-quarters.js`, `src/buildings.js`, `src/athens-landmark-hide.js`
-- the world-area docs `docs/world-areas.md` and `docs/world-tiles-format.md`
-
-**Done when:** in Psychiko, Vas's authored buildings and layout show, and generated infill only fills the gaps around them. Include before/after screenshots from the same spots in the centre.
-
 ### 3. No direction arrows 🟡
 **What's wrong:** nothing in the world shows which way to go. The plan (`docs/plans/unified-world.md`) calls for low, subtle chevrons at junctions and turns, but they're missing or invisible in play.
 **Where to look:** `src/route-guidance.js` (the module exists, see `docs/route-guidance.md`), how `src/main.js` wires it up, and `src/hud.js` for the minimap route.
@@ -94,6 +85,8 @@ Difficulty: 🟢 good first fix · 🟡 medium · 🔴 deep / needs care.
 - **A failed commit is never retried on its own.** After a failure the release train skips that commit until `~/.local/state/athens-release/failed` is removed.
 
 ## Fixed
+
+- **1. Psychiko buried under generic buildings (2026-10-22):** restored Vas's original shells, surveyed facades and roofs with tile-owned collision; excluded generated lots from authored villa gardens and footprints. Matching centre views: `/home/dev/data/agent-feed/fix-wave/psychiko/`. No world rebake.
 
 - **2. Race finishes / harsh off-track handling.** Short kerb/verge/roundabout cuts preserve progress without notices; prolonged departures guide back without resetting. Accepted station crossings time every split and finish; headless regressions drive all six Quick Race routes and their full lap counts.
 

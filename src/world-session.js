@@ -35,7 +35,7 @@ export async function createWorldSession({renderer,scene,resources,progress=()=>
  const startsRegional=['penteli','megara'].includes(worldDefinition.regionId),texturesReady=loadAthensTextures(renderer,{penteli:startsRegional});texturesReady.catch(()=>{});
  const manifestURL=new URL(worldDefinition.manifestURL||'/data/athens/manifest.json',globalThis.location?.href||'http://localhost/');
  const manifest=worldDefinition.manifest||(await loadWorldDefinition(manifestURL,{signal})).manifest;validateWorldDefinition({...worldDefinition,manifest});
- let stream,roads,route=null,ground=null,interest=null,plan=null,selection=null,disposed=false,inventoryFrames=0,plannedRoute=null,plannedS=-Infinity,planAge=0;const tileListeners=new Set(),enrichments=new Map();
+ let stream,roads,route=null,ground=null,interest=null,plan=null,selection=null,disposed=false,inventoryFrames=0,plannedRoute=null,plannedS=-Infinity,planAge=0;const tileListeners=new Set(),enrichments=new Map(),enrichmentLoads=new Map();
  const detailRoot=new THREE.Group();scene.add(detailRoot);
  const houses=new PenteliHouses(detailRoot,{enabled:settings.worldDetail!==false});
  const detail=new WorldDetail({id:'athens',terrain:{},data:{buildings:[],vegetation:[]},route:{length:0}},detailRoot,()=>0);
@@ -60,7 +60,7 @@ export async function createWorldSession({renderer,scene,resources,progress=()=>
  let regionalTextures=startsRegional?texturesReady:null;
  const regionalScenery=new WorldRegionalScenerySet(scene,{trees});const activationSteps=[];
  const adapter={
-  warmup:async p=>{await commonPrograms;await texturesReady;if([p.metadata.regionalScenery?.surface,...p.metadata.meshes.map(m=>m.userData?.tileSurface)].some(surface=>/^(penteli|megara)/.test(surface||'')))await(regionalTextures??=loadAthensTextures(renderer,{penteli:true}));await Promise.all([sceneTiles.warmup(p),regionalScenery.prepare(p.metadata.regionalScenery)]);},
+  warmup:async p=>{if(p.metadata.psychikoShells?.length)await session.prepareEnrichments({x:p.metadata.origin[0]+256,z:p.metadata.origin[2]+256});await commonPrograms;await texturesReady;if([p.metadata.regionalScenery?.surface,...p.metadata.meshes.map(m=>m.userData?.tileSurface)].some(surface=>/^(penteli|megara)/.test(surface||'')))await(regionalTextures??=loadAthensTextures(renderer,{penteli:true}));await Promise.all([sceneTiles.warmup(p),regionalScenery.prepare(p.metadata.regionalScenery)]);},
   rebase(origin,previous){sceneTiles.rebase(origin,previous);regionalScenery.rebase(origin);detailRoot.position.set(-origin.x,0,-origin.z);},
   prepare(key,packet,origin){const build=sceneTiles.prepare(key,packet,origin);let installed=false,committed=false,disposed=false;
    const measured=(name,fn)=>{const at=performance.now();fn();const ms=performance.now()-at;if(ms>1){activationSteps.push({name,ms});if(activationSteps.length>64)activationSteps.shift();}};
@@ -90,7 +90,10 @@ export async function createWorldSession({renderer,scene,resources,progress=()=>
  };
  const session={inventory,safePose,
  warmOptional(){if(route?.isWorldRoute)stream.update({...route.compiled.startPose,routeInterest:plan?.routeInterest||[]});},
- async prepareEnrichments(point){for(const spec of manifest.enrichments||[]){if(enrichments.has(spec.kind)||point.x<spec.bounds[0]-400||point.x>spec.bounds[2]+400||point.z<spec.bounds[1]-400||point.z>spec.bounds[3]+400)continue;if(spec.kind!=='psychiko-streetscape-v1')throw Error('Unknown world detail recipe');const response=await fetch(spec.url,{signal});if(!response.ok)throw Error('World detail unavailable');const data=await response.json();safeAbort();if(data.sourceMapSha256!==spec.sourceMapSha256)throw Error('World detail release mismatch');const {WorldPsychikoDetail}=await import('./world-psychiko-detail.js');safeAbort();enrichments.set(spec.kind,new WorldPsychikoDetail(session,scene,data));}},
+ async prepareEnrichments(point){for(const spec of manifest.enrichments||[]){if(enrichments.has(spec.kind)||point.x<spec.bounds[0]-400||point.x>spec.bounds[2]+400||point.z<spec.bounds[1]-400||point.z>spec.bounds[3]+400)continue;
+  if(!enrichmentLoads.has(spec.kind))enrichmentLoads.set(spec.kind,(async()=>{if(spec.kind!=='psychiko-streetscape-v1')throw Error('Unknown world detail recipe');const response=await fetch(spec.url,{signal});if(!response.ok)throw Error('World detail unavailable');const data=await response.json();safeAbort();if(data.sourceMapSha256!==spec.sourceMapSha256)throw Error('World detail release mismatch');const {WorldPsychikoDetail}=await import('./world-psychiko-detail.js');safeAbort();enrichments.set(spec.kind,new WorldPsychikoDetail(session,scene,data));})().catch(error=>{enrichmentLoads.delete(spec.kind);throw error;}));
+  await enrichmentLoads.get(spec.kind);
+ }},
  subscribeTiles:listener=>selection.subscribeTiles(listener),stream,roads,barriers,obstacles,manifest,detail,props,trees,signs,marks,horizon,landmarks,plazas,lawns,sceneTiles,
  get tileListenerCount(){return selection.listenerCount;},get ground(){return ground;},get route(){return route;},get selectionToken(){return selection.token;},
  prepareRoute:(compiled,options)=>selection.prepareRoute(compiled,options),
