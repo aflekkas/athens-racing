@@ -1,6 +1,6 @@
 # Athens Racing operations handoff — 21 October 2026
 
-> **Start with [`docs/PROBLEMS.md`](PROBLEMS.md)**: the list of known problems and what to fix next.
+> **Start with [`docs/PROBLEMS.md`](PROBLEMS.md)**: open problems and good places to contribute.
 
 **Status: production cutover complete.** Production and staging serve the
 approved `62dbe66` game batch with the production manifest and six-route

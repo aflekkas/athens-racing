@@ -6,6 +6,10 @@ Psychiko follows the supplied red neighbourhood loop: 5.961 km per lap, with two
 
 Built with Three.js and a Node.js WebSocket lobby server. No build step.
 
+## Contribute
+
+Want to help? See [`docs/PROBLEMS.md`](docs/PROBLEMS.md) for open problems and good first fixes, and [`CONTRIBUTING.md`](CONTRIBUTING.md) for how to open a PR.
+
 ## Play
 
 ```sh
