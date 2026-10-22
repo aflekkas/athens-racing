@@ -8,6 +8,7 @@ import {psychikoMappedBuildings,psychikoInfillBlocked} from '../src/world-tile-p
 import {deriveBuildingMeshes} from '../src/world-tile-buildings.js';
 import {buildTileObstacleIndex,WorldTileObstacles} from '../src/world-tile-obstacles.js';
 import {WorldPsychikoDetail} from '../src/world-psychiko-detail.js';
+import {buildBuildings} from '../src/buildings.js';
 const data=JSON.parse(await readFile(new URL('../data/maps/psychiko/map.json',import.meta.url)));
 const ground=()=>({buildings:new Uint32Array(),buildingCorners:new Float32Array(),buildingHeights:new Float32Array(),finePositions:Float32Array.of(0,190,0,512,192,0,512,194,512,0,192,512),fineTriangles:Uint32Array.of(0,2,1,0,3,2)});
 const metadata=cell=>({cell,origin:[cell[0]*512,0,cell[1]*512],ids:[]});
@@ -47,6 +48,9 @@ test('authored facades, shell heights and roofs survive rebasing/detail Off, sha
  try{detail.changed('7,-7',true);detail.update(player);const b=detail.buildings.get('7,-7'),shell=b.roofs.find(b=>b.id===425080449);assert.equal(shell.gmin,190);assert.equal(shell.top,199.3);assert.equal(shell.facadeStyle,5);assert.equal(shell.color,'#eee8d8');assert(detail.roofs.get('7,-7').geometry.attributes.position.count>0);
   detail.street.setEnabled(false);assert.equal(b.group.visible,true,'plain buildings remain when World detail is Off');
   detail.changed('7,-8',true);detail.update(player);assert.equal(detail.buildings.get('7,-8').group.children[0].material,b.group.children[0].material);
+  const source=data.buildings[index],native=buildBuildings({data:{buildings:[source]}},new THREE.Group(),(x,z)=>x===source.p[0]&&z===source.p[1]?194:195),actual=detail.buildings.get('7,-8').group.children[0].geometry,expected=native.group.children[0].geometry;
+  for(const key of Object.keys(expected.attributes))assert.deepEqual(actual.attributes[key].array,expected.attributes[key].array,'original building kit '+key);
+  native.group.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});
   session.stream.origin={x:4096,z:-4096};detail.update(player);assert.equal(b.group.position.x,detail.ox-4096);assert.equal(b.group.scale.x,detail.sx);
   const geometries=b.group.children.map(m=>m.geometry),disposed=new Set();for(const g of geometries)g.addEventListener('dispose',()=>disposed.add(g));detail.changed('7,-7',false);assert.equal(disposed.size,geometries.length);assert(!scene.getObjectByName('psychiko-authored-buildings:7,-7'));assert(!detail.roofs.has('7,-7'));
  }finally{detail.dispose();}assert.equal(listeners.size,0);assert(!scene.getObjectByName('psychiko-authored-buildings:7,-8'));

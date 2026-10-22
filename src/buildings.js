@@ -129,7 +129,7 @@ export function buildingBlockGeometry(points,height) {
   const g=new THREE.ExtrudeGeometry(shape,{depth:height,steps:1,bevelEnabled:false,curveSegments:1});
   g.rotateX(-Math.PI/2);g.clearGroups();assertWorldBudget('building',g);return g;
 }
-export function buildBuildings(map,scene,heightC,labels,infill=[],sharedMaterial=null) {
+export function buildBuildings(map,scene,heightC,labels,infill=[]) {
   const group=new THREE.Group();group.name='block-buildings';scene.add(group);
   const chunks=new Map(),roofs=[],footprints=[];
   const palette=BUILDING_PALETTE;
@@ -137,8 +137,6 @@ export function buildBuildings(map,scene,heightC,labels,infill=[],sharedMaterial
     if(!b.p||b.p.length<6)continue;
     const p=Array.isArray(b.p[0])?b.p.flat():b.p,bb=polyBounds(p),cx=(bb.x0+bb.x1)/2,cz=(bb.z0+bb.z1)/2;
     let lo=Infinity,hi=-Infinity;for(let i=0;i<p.length;i+=2){const h=heightC(p[i],p[i+1]);lo=Math.min(lo,h);hi=Math.max(hi,h);}
-    // Streamed authored shells use the worker's terrain fit, also used by their collision walls.
-    lo=b.groundMin??lo;hi=b.groundMax??hi;
     if(!Number.isFinite(lo)||hi<.2)continue;
     const h=Math.max(2.6,Number(b.h||b.height)||5.5),base=lo-.6,top=hi+h;
     const g=buildingBlockGeometry(p,top-base);g.translate(0,base,0);
@@ -154,7 +152,7 @@ export function buildBuildings(map,scene,heightC,labels,infill=[],sharedMaterial
     g.dispose();
     footprints.push({p,bb});roofs.push({...b,p,bb,cx,cz,gmin:lo,top,area:Math.abs(polyArea(p)),roofOccupied:[]});
   }
-  const material=sharedMaterial||facadeMaterial(typeof document==='undefined'?null:createFacadeAtlas());
+  const material=facadeMaterial(typeof document==='undefined'?null:createFacadeAtlas());
   for(const [key,batch] of chunks){const g=batch.build();g.setAttribute('aFacade',new THREE.Float32BufferAttribute(batch.facade,4));const m=new THREE.Mesh(g,material);m.name='building-blocks:'+key;m.castShadow=true;m.receiveShadow=true;m.layers.enable(REFLECT_LAYER);g.computeBoundingSphere();m.boundingSphere=g.boundingSphere;m.userData={lod:true,far:6000,impostor:false,worldCategory:'building'};group.add(m);}
   return {group,roofs,inBuilding:(x,z,pad=0)=>footprints.some(b=>x>=b.bb.x0-pad&&x<=b.bb.x1+pad&&z>=b.bb.z0-pad&&z<=b.bb.z1+pad&&pointInPoly(x,z,b.p))};
 }
