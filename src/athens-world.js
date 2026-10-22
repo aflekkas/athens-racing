@@ -5,9 +5,9 @@ import {createWorldSession} from './world-session.js';
 // Connected free-roam world. This entry owns its scene and never calls
 // loadMap/buildMapWorld: no monolithic legacy geometry or contact pack coexists.
 import * as THREE from 'three';
-import {settings,setSetting,onSettings,applySteeringAssist} from './settings.js';
+import {settings,setSetting,onSettings,applySteeringAssist,mirrorQuality} from './settings.js';
 import {Menu} from './menu.js';
-import {Cockpit} from './cockpit.js';
+import {Cockpit,mirrorsInView} from './cockpit.js';
 import {createCameraViews,CAMERA_NAMES} from './camera-views.js';
 import {chaseRig} from './vehicle-camera.js';
 import {seatPosition} from './seat-position.js';
@@ -135,6 +135,9 @@ export async function bootAthens(){
   const fov=cock?settings.cockpitFov:62;if(camera.fov!==fov){camera.fov=fov;camera.updateProjectionMatrix();}if(cameraHook)cameraHook(camera,v,o);sky.position.copy(camera.position);ENV.updateSun(sun,player.model.root.position);ENV.U.time.value=elapsed;SEA_TIME.value=elapsed;
   session.setInterest({player:v,actors:worldTraffic.actors});session.update(dt);session.updateView(camera);
   guidance?.update(v,o,performance.now());
+  // In-car mirrors only (Settings > Graphics > Mirror: Off / Low / High), like the race render (src/main.js).
+  const mirrorQ=mirrorQuality(settings.mirrors,gfx.perfClass);
+  if(mirrorsInView(cam))player.cockpit.renderMirrors(renderer,scene,{enabled:mirrorQ!=='off',quality:mirrorQ});
   post.render(dt);
   const now=performance.now();freeRoamHud(dial,v,{spec,aidsOff:!settings.aids,tacho:now-hudAt>1000/30,map:now-mapAt>1000/15});if(now-hudAt>1000/30)hudAt=now;if(now-mapAt>1000/15)mapAt=now;
   drivingHints.update({state:paused?'paused':'race',blocked:towing||account.blocked,device:input.drivingSource,car:spec,manual:v.manual});document.getElementById('tRace').textContent=fmtTime(elapsed);

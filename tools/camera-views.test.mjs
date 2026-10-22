@@ -91,5 +91,5 @@ test('the separate streamed Athens free roam entry uses the same camera controls
   assert.doesNotMatch(source, /cam==='front'/);
   assert.match(source, /input\.state\.lookBack/, 'Athens honours held look-back');
   assert.doesNotMatch(source, /cam==='hood'/, 'hood is not a selectable Athens view');
-  // NOTE: the Athens live-mirror pass (mirrorsInView) lands with the mirror commit; its assertion returns there.
+  assert.match(source, /mirrorsInView\(cam\)/), 'Athens cockpit renders the live mirror pass';
 });
