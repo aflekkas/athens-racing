@@ -92,6 +92,6 @@ Difficulty: 🟢 good first fix · 🟡 medium · 🔴 deep / needs care.
 
 - **Driving map overlay (2026-10-22):** kept both M ranges compact, replaced resident-cell/500 m street clipping with the published-world street overview, restored sea/coast and area labels, and added a calm race route with a labeled finish instead of the tiny green flag. Street paths prepare across frames and cache by view. No world rebake.
 
-- **Traffic pile-up.** Persistent contacts and stalled drivers recycle outside all player views; Glyfada graph traffic now settles and slowly rejoins a safe lane instead of remaining permanently crashed. Rivals brake at civilian bumper contact, use equal collision mass, and tiny nudges preserve recovery. Headless recovery and real-controller regressions added.
+- **Traffic pile-up.** Persistent contacts, stalled drivers and wreck towing recycle outside all player views; Glyfada graph traffic now settles and slowly rejoins a safe lane instead of remaining permanently crashed. Rivals brake at civilian bumper contact, use equal collision mass, and tiny nudges preserve recovery. Headless recovery and real-controller regressions added.
 
 (Move items here with the PR or commit that fixed them.)
