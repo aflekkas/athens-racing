@@ -96,8 +96,9 @@ test('gamepad rebinding waits for neutral and does not dispatch the captured pre
   input.capture = { kind: 'gamepad', action: 'camera', ready: false }; key('keydown', 'Escape'); assert.equal(input.capture, null); input.destroy();
 });
 
-test('removed photo shortcut preserves Space handbrake/menu confirm', () => {
+test('removed photo shortcut preserves Space handbrake/menu confirm; P cycles the view position', () => {
   const { input, key } = setup(); key('keydown', 'KeyP'); input.update(1 / 60); assert.equal(input.actions.includes('photo'), false);
+  assert.equal(input.state.cameraPosition, true); input.update(1 / 60); assert.equal(input.state.cameraPosition, false); key('keyup', 'KeyP');
   assert.equal('photo' in input.bindings.keyboard, false);
   input.update(1 / 60); assert.equal(input.state.photo, undefined);
   key('keydown', 'Space'); input.update(1 / 60); assert.equal(input.state.handbrake, true); assert.equal(input.state.confirm, true); assert.equal('replayPlay' in input.bindings.keyboard, false);
@@ -210,27 +211,62 @@ test('a pointer lock granted after pause/quit is released without reopening paus
   input.destroy(); assert.equal(unlocks, 0);
 });
 
-// Owner playtest 2026-10-18: a look-back camera on V, held to look behind, on keyboard and controller.
-test('V is held to look behind (no TC toggle on it), the controller has a look-back button, and old saved bindings move over', () => {
+// Owner playtest 2026-10-18: a look-back camera on B, held to look behind, on keyboard and controller.
+test('B is held to look behind (and never cycles the view), the controller has a look-back button, and old saved bindings move over', () => {
   const { input, key, pads, storage } = setup(), pad = gamepad();
   try {
-    assert.deepEqual(DEFAULT_BINDINGS.keyboard.lookBack, ['KeyV']);
-    assert.equal(Object.entries(DEFAULT_BINDINGS.keyboard).filter(([, codes]) => codes.includes('KeyV')).length, 1, 'V belongs to the look-back camera alone');
+    assert.deepEqual(DEFAULT_BINDINGS.keyboard.lookBack, ['KeyB']);
+    assert.equal(Object.entries(DEFAULT_BINDINGS.keyboard).filter(([, codes]) => codes.includes('KeyB')).length, 1, 'B belongs to the look-back camera alone');
+    assert.deepEqual(DEFAULT_BINDINGS.keyboard.cameraPosition, ['KeyP']);
     assert.deepEqual(DEFAULT_BINDINGS.gamepad.lookBack, ['b11']);
-    key('keydown', 'KeyV'); input.update(1 / 60); assert.equal(input.state.lookBack, true); assert.equal(input.state.tractionControl, false);
+    key('keydown', 'KeyB'); input.update(1 / 60); assert.equal(input.state.lookBack, true); assert.equal(input.state.tractionControl, false);
+    assert.equal(input.state.cameraPosition, false, 'held B does not emit the position-cycle action');
+    assert.ok(!input.actions.includes('cameraPosition'));
     input.update(1 / 60); assert.equal(input.state.lookBack, true, 'held, not a tap');
-    key('keyup', 'KeyV'); input.update(1 / 60); assert.equal(input.state.lookBack, false);
+    key('keyup', 'KeyB'); input.update(1 / 60); assert.equal(input.state.lookBack, false);
+    key('keydown', 'KeyP'); input.update(1 / 60); assert.equal(input.state.cameraPosition, true, 'P cycles the view position');
+    input.update(1 / 60); assert.equal(input.state.cameraPosition, false); key('keyup', 'KeyP'); input.update(1 / 60);
     pads([pad]); pad.buttons[11].value = 1; input.update(1 / 60); assert.equal(input.state.lookBack, true);
     pad.buttons[11].value = 0; input.update(1 / 60); assert.equal(input.state.lookBack, false);
     // looking back is not available in a menu
-    key('keydown', 'KeyV'); input.update(1 / 60, { inMenu: true }); assert.equal(input.state.lookBack, false); key('keyup', 'KeyV');
+    key('keydown', 'KeyB'); input.update(1 / 60, { inMenu: true }); assert.equal(input.state.lookBack, false); key('keyup', 'KeyB');
   } finally { input.destroy(); }
   // a saved set from before (V = TC, B = look back) follows the new defaults; a customised one is left alone
   const old = { ...DEFAULT_BINDINGS.keyboard, tractionControl: ['KeyV'], lookBack: ['KeyB'] };
   const first = setup(); first.storage.setItem('paraliaki.input.keyboard', JSON.stringify(old));
   const migrated = new Input({ target: new EventTarget(), navigator: { getGamepads: () => [] }, storage: first.storage, document: null });
-  assert.deepEqual(migrated.bindings.keyboard.lookBack, ['KeyV']); assert.deepEqual(migrated.bindings.keyboard.tractionControl, ['KeyX']); migrated.destroy(); first.input.destroy();
+  assert.deepEqual(migrated.bindings.keyboard.lookBack, ['KeyB']); assert.deepEqual(migrated.bindings.keyboard.tractionControl, ['KeyX']); migrated.destroy(); first.input.destroy();
   const second = setup(); second.storage.setItem('paraliaki.input.keyboard', JSON.stringify({ ...old, lookBack: ['KeyN'] }));
   const kept = new Input({ target: new EventTarget(), navigator: { getGamepads: () => [] }, storage: second.storage, document: null });
   assert.deepEqual(kept.bindings.keyboard.lookBack, ['KeyN']); assert.deepEqual(kept.bindings.keyboard.tractionControl, ['KeyV']); kept.destroy(); second.input.destroy();
+});
+
+test('previous shipped camera defaults migrate to B look-back / P position; custom B cameras keep B alone', () => {
+  // previous shipped set: B cycled the view, V looked back
+  const prev = { ...DEFAULT_BINDINGS.keyboard, cameraPosition: ['KeyB'], lookBack: ['KeyV'] };
+  const first = setup(); first.storage.setItem('paraliaki.input.keyboard', JSON.stringify(prev));
+  const migrated = new Input({ target: new EventTarget(), navigator: { getGamepads: () => [] }, storage: first.storage, document: null });
+  try {
+    assert.deepEqual(migrated.bindings.keyboard.lookBack, ['KeyB']);
+    assert.deepEqual(migrated.bindings.keyboard.cameraPosition, ['KeyP']);
+    const { input, key } = setup();
+    input.bindings = migrated.bindings;
+    key('keydown', 'KeyB'); input.update(1 / 60);
+    assert.equal(input.state.lookBack, true); assert.equal(input.state.cameraPosition, false, 'migrated held B looks back only');
+    key('keyup', 'KeyB'); input.update(1 / 60); input.destroy();
+  } finally { migrated.destroy(); first.input.destroy(); }
+  // pre-position set (V look-back, no cameraPosition key): V moves to B when B is free
+  const pre = { ...DEFAULT_BINDINGS.keyboard, lookBack: ['KeyV'] }; delete pre.cameraPosition;
+  const second = setup(); second.storage.setItem('paraliaki.input.keyboard', JSON.stringify(pre));
+  const moved = new Input({ target: new EventTarget(), navigator: { getGamepads: () => [] }, storage: second.storage, document: null });
+  try { assert.deepEqual(moved.bindings.keyboard.lookBack, ['KeyB']); } finally { moved.destroy(); second.input.destroy(); }
+  // custom camera on B: the inherited look-back takes V so B keeps a single function
+  const custom = { camera: ['KeyB'] };
+  const third = setup(); third.storage.setItem('paraliaki.input.keyboard', JSON.stringify(custom));
+  const kept = new Input({ target: new EventTarget(), navigator: { getGamepads: () => [] }, storage: third.storage, document: null });
+  try {
+    assert.deepEqual(kept.bindings.keyboard.camera, ['KeyB']);
+    assert.deepEqual(kept.bindings.keyboard.lookBack, ['KeyV']);
+    assert.deepEqual(kept.bindings.keyboard.cameraPosition, ['KeyP']);
+  } finally { kept.destroy(); third.input.destroy(); }
 });

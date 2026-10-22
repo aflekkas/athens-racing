@@ -7,8 +7,8 @@ const copy = x => JSON.parse(JSON.stringify(x));
 export const DEFAULT_BINDINGS = {
   keyboard: {
     throttle: ['KeyW', 'ArrowUp'], brake: ['KeyS', 'ArrowDown'], left: ['KeyA', 'ArrowLeft'], right: ['KeyD', 'ArrowRight'],
-    handbrake: ['Space'], nitro: ['ShiftLeft', 'ShiftRight'], camera: ['KeyC'], cameraPosition: ['KeyB'], restart: ['Enter'], pause: ['Escape'],
-    garage: ['KeyG'], shiftUp: ['KeyE'], shiftDown: ['KeyQ'], lookBack: ['KeyV'], tow: ['KeyR', 'KeyT'], reset: ['Backspace', 'KeyR'], transmission: ['KeyL'], tractionControl: ['KeyX'], map: ['KeyM'],
+    handbrake: ['Space'], nitro: ['ShiftLeft', 'ShiftRight'], camera: ['KeyC'], cameraPosition: ['KeyP'], restart: ['Enter'], pause: ['Escape'],
+    garage: ['KeyG'], shiftUp: ['KeyE'], shiftDown: ['KeyQ'], lookBack: ['KeyB'], tow: ['KeyR', 'KeyT'], reset: ['Backspace', 'KeyR'], transmission: ['KeyL'], tractionControl: ['KeyX'], map: ['KeyM'],
     up: ['ArrowUp', 'KeyW'], down: ['ArrowDown', 'KeyS'], confirm: ['Enter', 'Space'], back: ['Escape', 'Backspace'],
   },
   gamepad: {
@@ -81,8 +81,32 @@ export class Input {
         if (kind === 'keyboard' && saved?.restart?.join(',') === 'KeyR,Enter') saved.restart = ['Enter'];
         // M is the big map now; migrate the old gearbox binding to L.
         if (kind === 'keyboard' && saved?.transmission?.join(',') === 'KeyM') saved.transmission = [...DEFAULT_BINDINGS.keyboard.transmission];
-        // V looks back and X toggles TC / ESC now; a saved set that still has the old V (TC) and B (look back) follows.
+        // B looks back and X toggles TC / ESC now; a saved set that still has the old V (TC) and B (look back) follows the current defaults.
         if (kind === 'keyboard' && saved?.tractionControl?.join(',') === 'KeyV' && saved?.lookBack?.join(',') === 'KeyB') { saved.tractionControl = [...DEFAULT_BINDINGS.keyboard.tractionControl]; saved.lookBack = [...DEFAULT_BINDINGS.keyboard.lookBack]; }
+        // B is hold-to-look-back now and P cycles the view position; a saved set with the previous shipped
+        // defaults (B = position, V = look back) follows. Customised sets stay untouched.
+        if (kind === 'keyboard' && saved?.cameraPosition?.join(',') === 'KeyB' && saved?.lookBack?.join(',') === 'KeyV') {
+          const taken = new Set(Object.values(saved).flatMap(keys => Array.isArray(keys) ? keys : []));
+          taken.delete('KeyB');
+          const spare = ['KeyP', 'KeyN', 'KeyH'].find(key => !taken.has(key));
+          saved.cameraPosition = spare ? [spare] : [];
+          if (!Object.values(saved).some(keys => Array.isArray(keys) && keys.includes('KeyB'))) saved.lookBack = ['KeyB'];
+        }
+        // A set from before view-position cycling (saved V look-back, no cameraPosition) takes the new B
+        // default when no custom action owns B.
+        if (kind === 'keyboard' && saved?.lookBack?.join(',') === 'KeyV' && saved?.cameraPosition == null) {
+          if (!Object.values(saved).some(keys => Array.isArray(keys) && keys.includes('KeyB'))) saved.lookBack = ['KeyB'];
+        }
+        // A custom camera on B keeps working alone: when lookBack only inherits the new B default, it takes
+        // a free fallback (V first) instead of doubling B's function. Explicit double binds are left alone.
+        if (kind === 'keyboard' && saved?.lookBack == null) {
+          const bOwned = Object.entries(saved || {}).some(([a, keys]) => a !== 'lookBack' && Array.isArray(keys) && keys.includes('KeyB'));
+          if (bOwned) {
+            const taken = new Set(Object.values(saved).flatMap(keys => Array.isArray(keys) ? keys : []));
+            saved.lookBack = [ ['KeyV', 'KeyN', 'KeyH'].find(key => !taken.has(key)) || 'KeyB' ];
+          }
+        }
+
         if (kind === 'keyboard' && saved && !saved.cameraPosition && Object.values(saved).some(keys => Array.isArray(keys) && keys.includes('KeyB')))
           saved.cameraPosition = [['KeyP', 'KeyN', 'KeyH'].find(key => !Object.values(saved).some(keys => Array.isArray(keys) && keys.includes(key))) || 'KeyP'];
         if (kind === 'gamepad' && saved?.restart?.join(',') === 'b8' && !saved.cameraPosition) saved.restart = [];
@@ -102,12 +126,9 @@ export class Input {
   }
   bind(kind, action, bindings) {
     if (!(action in this.bindings[kind]) || !bindings.every(b => kind === 'keyboard' ? /^[A-Za-z0-9]+$/.test(b) : /^(b\d+|a\d+[+-])$/.test(b))) return false;
-    // These pairs must remain distinct even after rebinding.
-    const group = [['transmission', 'map'], ['camera', 'cameraPosition']].find(pair => pair.includes(action));
-    if (group) {
-      const others = group.filter(other => other !== action);
-      if (others.some(other => bindings.some(key => this.bindings[kind][other].includes(key)))) return false;
-    }
+    // These pairs must remain distinct even after rebinding: B never both cycles the view and looks back.
+    const groups = [['transmission', 'map'], ['camera', 'cameraPosition'], ['camera', 'lookBack'], ['cameraPosition', 'lookBack']].filter(pair => pair.includes(action));
+    if (groups.some(group => group.some(other => other !== action && bindings.some(key => this.bindings[kind][other].includes(key))))) return false;
     this.bindings[kind][action] = [...bindings]; this.save(kind, this.bindings[kind]); this.clear(); return true;
   }
   resetBindings() {

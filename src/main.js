@@ -234,7 +234,7 @@ function driverVoice(c, category = 'driver', options = {}) {
 }
 
 // ------------------------------------------------------------------ game state
-const cameraViews = createCameraViews(['cockpit', 'chase', 'far', 'bumper', 'hood'].includes(Q.get('cam')) ? Q.get('cam') : null);
+const cameraViews = createCameraViews(['cockpit', 'chase', 'far', 'bumper'].includes(Q.get('cam')) ? Q.get('cam') : null);
 const G = {
   state: 'loading', t: 0, raceT: 0, countT: 0, cam: cameraViews.current, userCam: cameraViews.current, carIdx: 0, selIdx: 0, menuFrom: null,
   crashes: 0, topSpeed: 0, pFinish: null, rFinish: null, lastLead: 0, leadT: 0,

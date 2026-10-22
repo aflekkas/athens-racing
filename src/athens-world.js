@@ -47,7 +47,7 @@ export async function bootAthens(){
  const post=createPost(renderer,scene,camera);
  const area=pickedAthensArea(query);
  loading.show('athens','FREE ROAM',{freeRoam:true,area});
- let scripted=false,driver=null,cameraHook=null,player=null,stopped=false,paused=false,towing=false,frameId,elapsed=0,accumulator=0,last=performance.now(),lastTraffic=-10;
+ let scripted=false,driver=null,cameraHook=null,player=null,stopped=false,paused=false,towing=false,frameId,elapsed=0,accumulator=0,last=performance.now(),lastTraffic=-10,lookBackA=0;
  let worldTraffic;const stats={frames:0,simulationSeconds:0,metres:0,holds:0,missingContacts:0,carHits:0,frameMs:[],cpuMs:[],initialDownloadBytes:0,initialDriveMs:0,maxEstimatedJSBytes:0,maxEstimatedGPUBytes:0};
  const session=await createWorldSession({renderer,scene,resources,progress:(...args)=>loading.progress(...args)});
  const {stream,roads,barriers,obstacles,detail,props,trees,signs,marks,horizon,landmarks,plazas,lawns,sceneTiles,manifest}=session;
@@ -72,7 +72,7 @@ export async function bootAthens(){
  document.getElementById('rZone').textContent='ATHENS';document.getElementById('rRoad').textContent=guidance?'ROUTE DEMO':'FREE ROAM';
  const tacho=document.getElementById('tacho'),dial=Object.assign(Object.create(Hud.prototype),{tacho,tctx:tacho.getContext('2d')});
  dial.mini=document.getElementById('minimap');dial.mctx=dial.mini.getContext('2d');dial.worldRoads=roads;dial.worldStreetCache=new Map();
- const cameraViews=createCameraViews(['cockpit','chase','far','bumper','hood'].includes(query.get('cam'))?query.get('cam'):null);
+ const cameraViews=createCameraViews(['cockpit','chase','far','bumper'].includes(query.get('cam'))?query.get('cam'):null);
  let cam=cameraViews.current,hudAt=0,mapAt=0;
  const canvasFocus=()=>{canvas.tabIndex=-1;canvas.focus({preventScroll:true});};
  const resume=()=>{menu.hide();paused=false;input.clear();canvasFocus();};
@@ -118,16 +118,18 @@ export async function bootAthens(){
   const fx=-Math.sin(v.yaw),fz=-Math.cos(v.yaw),cock=cam==='cockpit';
   document.body.dataset.cameraView=cam;
   player.cockpit.setVisible(cock);player.cockpit.update(dt,{vehicle:v,ignition:true,manual:v.manual,rpm:v.rpm,redline:spec.redline,gear:v.gear,gearLabel:String(v.gear),kmh:v.kmh,steerInput:input.state.steer,handbrake:input.state.handbrake});
-  if(cock){const seat=seatPosition(spec.id);camera.position.copy(player.cockpit.eye);camera.position.y+=seat.height;camera.position.z-=seat.position;player.model.body.updateWorldMatrix(true,false);player.model.body.localToWorld(camera.position);player.model.body.getWorldQuaternion(camera.quaternion);camera.rotateX(player.cockpit.eyePitch??-.045);}
+  // Held look-back (B): eased toward a half turn while held, released back to the road.
+  lookBackA+=((input.state.lookBack?Math.PI:0)-lookBackA)*Math.min(1,dt*10);
+  if(cock){const seat=seatPosition(spec.id);camera.position.copy(player.cockpit.eye);camera.position.y+=seat.height;camera.position.z-=seat.position;player.model.body.updateWorldMatrix(true,false);player.model.body.localToWorld(camera.position);player.model.body.getWorldQuaternion(camera.quaternion);camera.rotateX(player.cockpit.eyePitch??-.045);if(lookBackA>.001)camera.rotateY(lookBackA);}
   else if(cam==='chase'||cam==='far'){
-   const rig=chaseRig(spec,clamp(Math.abs(v.vLong)*3.6/260,0,1.2)),scale=cam==='far'?1.55:1;
-   camera.position.set(v.x-o.x-fx*rig.back*scale,v.y+rig.up*scale,v.z-o.z-fz*rig.back*scale);
-   camera.lookAt(v.x-o.x+fx*5,v.y+rig.targetY,v.z-o.z+fz*5);
+   const yaw=v.yaw+lookBackA,bx=-Math.sin(yaw),bz=-Math.cos(yaw),rig=chaseRig(spec,clamp(Math.abs(v.vLong)*3.6/260,0,1.2)),scale=cam==='far'?1.55:1;
+   camera.position.set(v.x-o.x-bx*rig.back*scale,v.y+rig.up*scale,v.z-o.z-bz*rig.back*scale);
+   camera.lookAt(v.x-o.x+bx*5,v.y+rig.targetY,v.z-o.z+bz*5);
   }else{
    const forward=Math.max(1,(spec.length||4)*(cam==='bumper' ? .51 : .36));
    const height=cam==='bumper' ? clamp((spec.height||1.5)*.52,.68,1.05) : clamp((spec.height||1.5)*.85,1.18,2.5);
    camera.position.set(v.x-o.x+fx*forward,v.y+height,v.z-o.z+fz*forward);
-   camera.lookAt(camera.position.x+fx*24,camera.position.y+.15,camera.position.z+fz*24);
+   camera.lookAt(camera.position.x+fx*24,camera.position.y+.15,camera.position.z+fz*24);if(lookBackA>.001)camera.rotateY(lookBackA);
   }
   const near=cock?.05:.25;if(camera.near!==near){camera.near=near;camera.updateProjectionMatrix();}
   const fov=cock?settings.cockpitFov:62;if(camera.fov!==fov){camera.fov=fov;camera.updateProjectionMatrix();}if(cameraHook)cameraHook(camera,v,o);sky.position.copy(camera.position);ENV.updateSun(sun,player.model.root.position);ENV.U.time.value=elapsed;SEA_TIME.value=elapsed;
