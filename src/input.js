@@ -98,12 +98,14 @@ export class Input {
           if (!Object.values(saved).some(keys => Array.isArray(keys) && keys.includes('KeyB'))) saved.lookBack = ['KeyB'];
         }
         // A custom camera on B keeps working alone: when lookBack only inherits the new B default, it takes
-        // a free fallback (V first) instead of doubling B's function. Explicit double binds are left alone.
+        // a free fallback (V first), or stays unbound when none is free, instead of doubling B's function.
+        // Explicit double binds are left alone.
         if (kind === 'keyboard' && saved?.lookBack == null) {
           const bOwned = Object.entries(saved || {}).some(([a, keys]) => a !== 'lookBack' && Array.isArray(keys) && keys.includes('KeyB'));
           if (bOwned) {
             const taken = new Set(Object.values(saved).flatMap(keys => Array.isArray(keys) ? keys : []));
-            saved.lookBack = [ ['KeyV', 'KeyN', 'KeyH'].find(key => !taken.has(key)) || 'KeyB' ];
+            const spare = ['KeyV', 'KeyN', 'KeyH'].find(key => !taken.has(key));
+            saved.lookBack = spare ? [spare] : [];
           }
         }
 

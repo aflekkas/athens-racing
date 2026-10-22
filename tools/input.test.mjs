@@ -269,4 +269,13 @@ test('previous shipped camera defaults migrate to B look-back / P position; cust
     assert.deepEqual(kept.bindings.keyboard.lookBack, ['KeyV']);
     assert.deepEqual(kept.bindings.keyboard.cameraPosition, ['KeyP']);
   } finally { kept.destroy(); third.input.destroy(); }
+  // every fallback taken: the inherited look-back stays unbound rather than doubling B
+  const full = { camera: ['KeyB'], map: ['KeyV'], transmission: ['KeyN'], tractionControl: ['KeyH'] };
+  const fourth = setup(); fourth.storage.setItem('paraliaki.input.keyboard', JSON.stringify(full));
+  const unbound = new Input({ target: new EventTarget(), navigator: { getGamepads: () => [] }, storage: fourth.storage, document: null });
+  try {
+    assert.deepEqual(unbound.bindings.keyboard.camera, ['KeyB']);
+    assert.deepEqual(unbound.bindings.keyboard.lookBack, [], 'no free fallback: unbound, never B');
+    assert.deepEqual(unbound.bindings.keyboard.map, ['KeyV']);
+  } finally { unbound.destroy(); fourth.input.destroy(); }
 });
