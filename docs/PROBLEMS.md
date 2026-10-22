@@ -68,7 +68,8 @@ Difficulty: 🟢 good first fix · 🟡 medium · 🔴 deep / needs care.
 
 **Where to look:** `src/athens-props.js`, `src/athens-detail.js`, `src/athens-ground.js`, `src/athens-materials.js`, `docs/world-dressing.md` and `docs/world-beauty.md`.
 **Done when:** parked cars read as whole cars at every distance; there are no road patches on pavements and no visible seams. Include before/after screenshots from Glyfada, Syntagma and Psychiko.
-**Fix wave (staging verification pending):** reset leaked contact-shadow scale; sparse shared parking density, complete asphalt/support/clearance checks and stop/crossing exclusions; correct classic asphalt flags and drape fully contained road decals. Evidence: `/home/dev/data/agent-feed/fix-wave/parking/`. No world rebake.
+**Implemented (2026-10-22, `45704212`):** reset leaked contact-shadow scale; sparse shared parking density, complete asphalt/support/clearance checks and stop/crossing exclusions; correct classic asphalt flags and drape fully contained road decals. 29 focused regressions pass. Matching staging evidence: `/home/dev/data/agent-feed/fix-wave/parking/`.
+**Remaining:** inherited road/terrain mesh seams, visible around Syntagma, need the separate terrain fix in item 4. Untagged driveways are inferred from road mouths and empty runs. No world rebake or R2 upload in this parking/decal change.
 
 ## Open: other known issues
 
