@@ -137,3 +137,32 @@ test('Race Setup layout lives in the kit: equal panels, no visible inner scrollb
   assert.match(css, /\.recs \.list-row\.recs__row \{[^}]*min-height: 2\.6rem/, 'record rows are compact');
   assert.doesNotMatch(read('src/menu.js'), /evs__|eventSummary/, 'the old cramped summary is gone');
 });
+
+test('deep-linked Race Setup carries the picker, so Back steps back one screen', () => {
+  assert.match(read('src/main.js'), /menu\.show\('setup',\{mode:'quick',catalogue\}\)/, 'a directly opened Race Setup carries the track catalogue');
+  assert.match(read('src/menu.js'), /this\.show\('maps', \{ catalogue: this\.data\.catalogue, mode: this\.data\.mode \|\| 'quick' \}\)/, 'Back from a stack-less setup reopens the track picker');
+});
+
+test('deep-linked Race Setup: Back opens the track picker, not the title', () => {
+  const catalogue = [{ id: 'test-coast', name: 'Test Coast', lengthM: 5000, preview: [[0, 0], [3000, 0], [6000, 100]], events: [{ id: 'test-sprint', type: 'sprint' }] }];
+  const root = { innerHTML: '', className: '', tabIndex: 0, classList: { add() {}, remove() {} }, querySelector: () => null, querySelectorAll: () => [], addEventListener() {} };
+  const prior = { document: globalThis.document, window: globalThis.window, requestAnimationFrame: globalThis.requestAnimationFrame, cancelAnimationFrame: globalThis.cancelAnimationFrame, localStorage: globalThis.localStorage };
+  globalThis.window = {};
+  globalThis.document = { baseURI: 'http://localhost/', querySelector: () => null, getElementById: () => ({}), createElement: () => ({ style: {}, setAttribute() {}, }), body: { classList: { add() {}, remove() {}, contains: () => false }, dataset: {} } };
+  globalThis.requestAnimationFrame = () => 0; globalThis.cancelAnimationFrame = () => {};
+  globalThis.localStorage = memoryStorage();
+  try {
+    const compiled = compiledRoute('riviera-coast'), def = routeEvent(compiled, compiled.definition.events[0].id);
+    const ctx = { mapId: 'athens', eventId: def.id, events: [def], route: { isWorldRoute: true, compiled, length: compiled.lengthM, closed: false, from: compiled.definition.name, to: 'FINISH' } };
+    const menu = Object.assign(Object.create(Menu.prototype), { root, h: { ctx: () => ctx, fmtTime: (t) => String(t), ui() {} }, screen: null, shown: undefined, data: {}, stack: [], filter: 'all', focus: 0, mapView: null, carView: null });
+    menu.show('setup', { mode: 'quick', catalogue, trackTimes: { loading: false, entries: [], requested: true } }); // deep link or reload: shown without a push
+    assert.equal(menu.screen, 'setup');
+    menu.back();
+    assert.equal(menu.screen, 'maps', 'Back from a deep-linked Race Setup opens the track picker');
+    assert.deepEqual(menu.stack, []);
+    menu.back();
+    assert.equal(menu.screen, 'title', 'Back from the picker still reaches the title');
+  } finally {
+    for (const [key, value] of Object.entries(prior)) { if (value === undefined) delete globalThis[key]; else globalThis[key] = value; }
+  }
+});

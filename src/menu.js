@@ -249,6 +249,9 @@ export class Menu {
     if (this.screen === 'results') { this.h.quit('title'); return; }
     const cancel = this.screen === 'car' ? this.data.onCancel : null;
     if (this.pop()) { if(this.screen!=='car')cancel?.(); return; }
+    // Deep-linked Race Setup (Athens route URL, reload, version update): nothing to pop to, so Back opens the
+    // track picker it came from instead of the title screen.
+    if (this.screen === 'setup' && this.data.catalogue?.length) { this.show('maps', { catalogue: this.data.catalogue, mode: this.data.mode || 'quick' }); return; }
     if (this.screen !== 'title') this.show('title');
     cancel?.();
   }

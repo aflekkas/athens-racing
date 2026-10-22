@@ -327,7 +327,7 @@ async function boot() {
     if(G.unifiedCompiled&&Q.has('car')){const i=CARS.findIndex(c=>c.id===canonicalCarId(Q.get('car')));if(i>=0)G.carIdx=i;}
     await switchMap(G.unifiedCompiled?'athens':initialMapId(Q), Q.get('event') === 'free' ? 'FREE ROAM' : 'QUICK RACE');
     prepareEvent(Q.get('routeEvent') || Q.get('event') || 'quick'); resetRace();
-    G.cam = G.userCam; applyCamMode(); updateCamera(0, true);if(G.unifiedCompiled&&Q.has('setup')){G.state='menu';menu.show('setup',{mode:'quick'});}else startCountdown();
+    G.cam = G.userCam; applyCamMode(); updateCamera(0, true);if(G.unifiedCompiled&&Q.has('setup')){G.state='menu';const catalogue=await loadUnifiedRouteCatalogue({allowEmpty:true}).catch(()=>[]);menu.show('setup',{mode:'quick',catalogue});}else startCountdown();
   }
   document.body.classList.add('loaded');
   performance.mark('menu-ready'); tlog('ready');
