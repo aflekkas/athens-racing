@@ -146,3 +146,10 @@ test('streamed traffic yields its proposed footprint at a crossing junction',()=
  const {t,c}=graphQueue();const crossing={x:3,y:0,z:103,yaw:Math.PI/2,halfL:3,halfW:1,vLong:0,vLat:0};
  t.update(.1,{x:100,y:0,z:100},[crossing]);assert.equal(c.vehicle.z,100);assert.equal(c.vehicle.vLong,0);assert.ok(c.blockedAt!=null);
 });
+
+test('rendered traffic beyond the old distance cutoff remains visible until it is actually unseen',()=>{
+ const {t,c,mesh}=graphQueue(),player={x:700,y:0,z:100};
+ for(let i=0;i<30;i++){t.update(.1,player,[]);mesh.onBeforeRender();assert.equal(c.active,true);}
+ for(let i=0;i<25;i++)t.update(.1,player,[]);
+ assert.equal(c.active,false);
+});

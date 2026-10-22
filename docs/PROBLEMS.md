@@ -90,6 +90,6 @@ Difficulty: 🟢 good first fix · 🟡 medium · 🔴 deep / needs care.
 
 - **Driving map overlay (2026-10-22):** kept both M ranges compact, replaced resident-cell/500 m street clipping with the published-world street overview, restored sea/coast and area labels, and added a calm race route with a labeled finish instead of the tiny green flag. Nearby streets prepare first across frames, independently of the coast, and cache by view; area, turn and destination captions use separate rows. No world rebake.
 
-- **Traffic pile-up.** Common graph traffic now rejoins safe lanes, times out missing paths and trapped wrecks only when unseen by main/mirror rendering, filters stacked-road leaders, and prevents proposed footprint overlaps. Rivals brake at contact and tiny nudges preserve recovery. Visible cars with no safe escape continue waiting; regional staging proof is required for the newest follow-up.
+- **Traffic pile-up.** Common graph traffic now rejoins safe lanes, times out missing paths and trapped wrecks, and retires distant cars, only when unseen by main/mirror rendering, filters stacked-road leaders, and prevents proposed footprint overlaps. Rivals brake at contact and tiny nudges preserve recovery. Visible cars with no safe escape continue waiting; regional staging proof is required for the newest follow-up.
 
 (Move items here with the PR or commit that fixed them.)
