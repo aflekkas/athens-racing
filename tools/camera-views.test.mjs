@@ -13,15 +13,25 @@ const store = () => {
 
 test('mode toggle and position cycle are independent, and positions survive recreation', () => {
   const storage = store(), views = createCameraViews(null, storage);
-  assert.equal(views.current, 'chase');
+  assert.equal(views.current, 'cockpit', 'races and free roam start in the driver seat');
   assert.deepEqual(CAMERA_POSITIONS.outside, ['chase', 'far', 'bumper']);
-  assert.deepEqual(CAMERA_POSITIONS.pov, ['cockpit', 'hood']);
+  assert.deepEqual(CAMERA_POSITIONS.pov, ['cockpit'], 'hood POV is retired');
+  assert.equal(views.cycle(), 'cockpit', 'one POV position: cycling is a no-op');
+  assert.equal(views.toggle(), 'chase', 'C toggles POV / outside');
   assert.equal(views.cycle(), 'far'); assert.equal(views.toggle(), 'cockpit');
-  assert.equal(views.cycle(), 'hood'); assert.equal(views.toggle(), 'far');
-  assert.equal(views.cycle(), 'bumper'); assert.equal(views.cycle(), 'chase');
-  assert.equal(views.toggle(), 'hood');
+  assert.equal(views.cycle(), 'cockpit');
   const again = createCameraViews(null, storage);
-  assert.equal(again.current, 'chase'); assert.equal(again.toggle(), 'hood');
+  assert.equal(again.current, 'cockpit'); assert.equal(again.toggle(), 'far', 'the cycled outside position survived recreation');
+});
+
+test('legacy hood (query or saved) resolves to the cockpit driver seat', () => {
+  const hoodQuery = createCameraViews('hood', store());
+  assert.equal(hoodQuery.current, 'cockpit');
+  const storage = store();
+  storage.setItem('paraliaki.camera.views', JSON.stringify({ outside: 'chase', pov: 'hood' }));
+  const saved = createCameraViews(null, storage);
+  assert.equal(saved.current, 'cockpit', 'stale saved POV hood falls back to cockpit');
+  assert.equal(saved.toggle(), 'chase');
 });
 
 test('chase elevation cannot become top-down even from extreme mouse input or tall vehicles', () => {
@@ -44,8 +54,11 @@ test('both controls are distinct and rebindable on keyboard and gamepad', () => 
     assert.notDeepEqual(DEFAULT_BINDINGS[kind].camera, DEFAULT_BINDINGS[kind].cameraPosition);
   }
   const input = new Input({ target: new EventTarget(), navigator: null, document: null, storage: store() });
-  assert.equal(input.bind('keyboard', 'cameraPosition', ['KeyN']), true);
   assert.equal(input.bind('keyboard', 'cameraPosition', ['KeyC']), false);
+  assert.equal(input.bind('keyboard', 'lookBack', ['KeyC']), false, 'look-back cannot take the camera key');
+  assert.equal(input.bind('keyboard', 'lookBack', ['KeyP']), false, 'look-back cannot take the position-cycle key');
+  assert.equal(input.bind('keyboard', 'cameraPosition', ['KeyB']), false, 'position cycling cannot take the look-back key');
+  assert.equal(input.bind('keyboard', 'cameraPosition', ['KeyN']), true);
   assert.equal(input.bind('gamepad', 'cameraPosition', ['b16']), true);
   input.destroy();
   const legacy = store();
@@ -53,6 +66,7 @@ test('both controls are distinct and rebindable on keyboard and gamepad', () => 
   legacy.setItem('paraliaki.input.gamepad', JSON.stringify({ camera: ['b8'] }));
   const migrated = new Input({ target: new EventTarget(), navigator: null, document: null, storage: legacy });
   assert.deepEqual(migrated.bindings.keyboard.cameraPosition, ['KeyP']);
+  assert.deepEqual(migrated.bindings.keyboard.lookBack, ['KeyV'], 'custom camera keeps B alone; inherited look-back takes V');
   assert.deepEqual(migrated.bindings.gamepad.cameraPosition, ['b16']);
   migrated.destroy();
 });
@@ -75,4 +89,7 @@ test('the separate streamed Athens free roam entry uses the same camera controls
   assert.match(source, /cam==='bumper'/);
   assert.match(source, /player\.cockpit\.setVisible\(cock\)/);
   assert.doesNotMatch(source, /cam==='front'/);
+  assert.match(source, /input\.state\.lookBack/, 'Athens honours held look-back');
+  assert.doesNotMatch(source, /cam==='hood'/, 'hood is not a selectable Athens view');
+  // NOTE: the Athens live-mirror pass (mirrorsInView) lands with the mirror commit; its assertion returns there.
 });

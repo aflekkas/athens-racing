@@ -1,4 +1,4 @@
-// Owner playtest 2026-10-18: the look-back camera (V) and opt-in mouse look must be visible where controls are listed.
+// Owner playtest 2026-10-18: the look-back camera (B) and opt-in mouse look must be visible where controls are listed.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -7,7 +7,7 @@ import { input } from '../src/input.js';
 const text = html => html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
 test('the race-start key hints list LOOK BACK with its binding, for keyboard and controller', () => {
   const keyboard = text(controlsStrip({ device: 'keyboard' })), pad = text(controlsStrip({ device: 'gamepad' }));
-  assert.match(keyboard, /V\s*LOOK BACK/); assert.match(pad, /RS\s*LOOK BACK/);
+  assert.match(keyboard, /B\s*LOOK BACK/); assert.match(pad, /RS\s*LOOK BACK/);
   assert.match(keyboard, /HOLD TO LOOK/, 'the mouse hint says a button is held; it does not claim the mouse looks by itself');
   assert.doesNotMatch(keyboard, /CLICK ROAD TO CAPTURE/);
   const was = input.bindings.keyboard.lookBack; input.bindings.keyboard.lookBack = ['KeyN'];

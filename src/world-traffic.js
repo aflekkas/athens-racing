@@ -39,7 +39,7 @@ export class WorldTraffic {
  }
  update(dt,player,actors=[]){this.t+=dt;if(!this.pool)return;this.spawnT-=dt;if(this.spawnT<=0){this.spawnT=.5;this.spawn(player,actors);}
   const graph=this.session.roads.graph;
-  for(const c of this.cars){if(!c.active)continue;this.watchVisibility(c);if(c.blockedAt!=null&&(c.point.edge!==c.blockedEdge||Math.abs(c.offset-c.blockedOffset)>1))c.blockedAt=null;if(this.retireUnseen(c,[player,...actors]))continue;let edge=graph.edges.get(c.point.edge)?.value;const distance=Math.hypot(c.vehicle.x-player.x,c.vehicle.z-player.z);if(distance>600){c.active=false;c.m.root.visible=false;continue;}if(!edge){this.stopBlocked(c);continue;}
+  for(const c of this.cars){if(!c.active)continue;this.watchVisibility(c);if(c.blockedAt!=null&&(c.point.edge!==c.blockedEdge||Math.abs(c.offset-c.blockedOffset)>1))c.blockedAt=null;if(this.retireUnseen(c,[player,...actors]))continue;let edge=graph.edges.get(c.point.edge)?.value;const distance=Math.hypot(c.vehicle.x-player.x,c.vehicle.z-player.z);if(distance>600&&this.outOfView(c,[player,...actors])){c.active=false;c.m.root.visible=false;continue;}if(!edge){this.stopBlocked(c);continue;}
    c.contactT=this.t-(c.contactAt??-Infinity)<.3?(c.contactT||0)+dt:0;if(c.contactT>4&&!c.police)c.crashed=true;
    if(c.crashed){this.recover(c,edge,dt,[player,...actors]);continue;}
    let target=(edge.speedKph||35)/3.6*(c.drv?.vf||1);if(c.police){target=this.hm.state==='idle'?5:Math.min(35,Math.abs(player.vLong)+4);}
@@ -64,9 +64,9 @@ export class WorldTraffic {
   if(meshes){c.visibilityTracked=true;c.lastSeenAt=this.t;}
  }
  stopBlocked(c){c.v=c.vehicle.vLong=0;if(c.blockedAt==null){c.blockedAt=this.t;c.blockedEdge=c.point.edge;c.blockedOffset=c.offset;}}
+ outOfView(c,actors){return c.visibilityTracked&&this.t-c.lastSeenAt>2&&!actors.some(a=>Math.abs((a.y||0)-c.vehicle.y)<3&&Math.hypot(a.x-c.vehicle.x,a.z-c.vehicle.z)<25);}
  retireUnseen(c,actors){
-  if(!(c.recoveryT>8&&c.crashed||c.blockedAt!=null&&this.t-c.blockedAt>8)||!c.visibilityTracked||this.t-c.lastSeenAt<2)return false;
-  if(actors.some(a=>Math.abs((a.y||0)-c.vehicle.y)<3&&Math.hypot(a.x-c.vehicle.x,a.z-c.vehicle.z)<25))return false;
+  if(!(c.recoveryT>8&&c.crashed||c.blockedAt!=null&&this.t-c.blockedAt>8)||!this.outOfView(c,actors))return false;
   c.active=false;c.crashed=false;c.m.root.visible=false;return true;
  }
  poseBlocked(c,p,actors){

@@ -1,16 +1,19 @@
 // The mode and the position have independent controls. Keep each mode's last position.
-export const CAMERA_POSITIONS = Object.freeze({ outside: ['chase', 'far', 'bumper'], pov: ['cockpit', 'hood'] });
+// The driver seat is the default everywhere (owner 2026-10): races and free roam start in cockpit,
+// C toggles POV / outside, and the hood POV is retired (legacy / saved hood resolves to cockpit).
+export const CAMERA_POSITIONS = Object.freeze({ outside: ['chase', 'far', 'bumper'], pov: ['cockpit'] });
 export const CAMERA_NAMES = Object.freeze({ chase: 'CHASE', far: 'FAR CHASE', bumper: 'BUMPER', cockpit: 'DRIVER POV', hood: 'HOOD POV' });
 export const MAX_CHASE_ELEVATION = 0.48; // radians, including temporary mouse orbit
 
 export function createCameraViews(initial = null, storage = globalThis.localStorage) {
+  if (initial === 'hood') initial = 'cockpit';
   let saved;
   try { saved = JSON.parse(storage?.getItem('paraliaki.camera.views') || 'null'); } catch {}
   const position = {
     outside: CAMERA_POSITIONS.outside.includes(saved?.outside) ? saved.outside : 'chase',
     pov: CAMERA_POSITIONS.pov.includes(saved?.pov) ? saved.pov : 'cockpit',
   };
-  let mode = CAMERA_POSITIONS.pov.includes(initial) ? 'pov' : 'outside';
+  let mode = initial == null ? 'pov' : CAMERA_POSITIONS.pov.includes(initial) ? 'pov' : 'outside';
   if (CAMERA_POSITIONS[mode].includes(initial)) position[mode] = initial;
   const persist = () => { try { storage?.setItem('paraliaki.camera.views', JSON.stringify(position)); } catch {} };
   return {
