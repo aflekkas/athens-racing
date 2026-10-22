@@ -171,7 +171,7 @@ export class Hud {
     if (!st.free) {
       const destination = st.objectiveTarget || this.routeData?.finish;
       if (destination) drawMapDestination(g, W, H, st, sc, destination, st.objectiveTarget ? 'DESTINATION' : 'FINISH');
-      this.routeGuidance?.drawTurnPreview(g, W, H);
+      g.save(); g.translate(0, W / 10); this.routeGuidance?.drawTurnPreview(g, W, H); g.restore();
     }
     g.save(); g.translate(cx, cy); g.fillStyle = '#f5f2e8'; g.beginPath();
     g.moveTo(0, -10); g.lineTo(6, 7); g.lineTo(0, 3); g.lineTo(-6, 7); g.closePath(); g.fill(); g.restore();

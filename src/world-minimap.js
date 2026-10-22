@@ -112,6 +112,7 @@ export function drawMapDestination(g, W, H, st, scale, target, label) {
   const [x, y] = mapScreenPoint(W, H, st, scale, target.x, target.z);
   const px = Math.max(28, Math.min(W - 28, x)), py = Math.max(65, Math.min(H - 65, y));
   g.save(); g.fillStyle = '#d6c79b'; g.beginPath(); g.arc(px, py, 5, 0, Math.PI * 2); g.fill();
-  g.font = `${Math.round(W / 18)}px sans-serif`; g.textAlign = px > W / 2 ? 'right' : 'left'; g.textBaseline = 'bottom';
-  g.fillText(label, px + (px > W / 2 ? -10 : 10), py - 8); g.restore();
+  // Reserve the footer for the destination legend; area and turn captions stay above it.
+  g.font = `${Math.round(W / 18)}px sans-serif`; g.textAlign = 'right'; g.textBaseline = 'bottom';
+  g.fillText(label, W - 14, H - 37); g.restore();
 }
