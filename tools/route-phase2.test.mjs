@@ -32,9 +32,10 @@ test('civilian graph turns can branch away from the race and respect closures/re
 
 test('a newly spawned graph traffic actor has finite route coordinates before rival AI sees it',async()=>{
  const {WorldTraffic}=await import('../src/world-traffic.js'),edge={id:'branch',from:'n0',to:'n1',points:[[0,0,200],[0,0,220]],layer:0,flags:0},car={type:{},crashed:true,wid:2,len:4,mass:1200,m:{root:{visible:false}}},route={project:()=>({s:210,u:12})};
- const session={roads:{graph:{edges:new Map([[edge.id,{value:edge}]]),outgoing:new Map(),legal:()=>true}}},traffic=new WorldTraffic(session,{},route);
+ const next={...edge,id:'continuation',from:'n1',to:'n2',points:[[0,0,220],[0,0,250]]};
+ const session={roads:{graph:{edges:new Map([[edge.id,{value:edge}],[next.id,{value:next}]]),outgoing:new Map([['n1',new Set([next.id])]]),legal:()=>true}}},traffic=new WorldTraffic(session,{},route);
  traffic.pool={rng:{next:()=>0},pickFree:()=>car,initDrive:c=>{c.drv={vf:1};}};traffic.cars=[car];traffic.level=1;traffic.candidate=()=>({x:0,y:0,z:210,yaw:Math.PI,edge:edge.id,edgeId:edge.id,layer:0});
- traffic.spawn({x:0,z:0},[]);assert.equal(car.active,true);assert.equal(car.crashed,false,'a reused graph pool slot must drive after its earlier wreck');assert.deepEqual([car.veh.s,car.veh.u,car.s,car.u],[210,12,210,12]);assert.equal(car.veh.halfL,2);assert.equal(car.veh.halfW,1);
+ traffic.laneClear=()=>true;traffic.turnPaths=()=>[{}];traffic.spawn({x:0,z:0},[]);assert.equal(car.active,true);assert.equal(car.crashed,false,'a reused graph pool slot must drive after its earlier wreck');assert.deepEqual([car.veh.s,car.veh.u,car.s,car.u],[210,12,210,12]);assert.equal(car.veh.halfL,2);assert.equal(car.veh.halfW,1);
 });
 
 test('short cuts stay quiet; long departures guide back, wrong-way notices share a five-second limit',async()=>{
