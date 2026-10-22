@@ -227,9 +227,7 @@ and adds a fresh empty "## Unreleased" above it. -->
 <!-- Through a15a9ed. -->
 ## 2026.10.15.3 — 2026-10-15
 
-![Volkswagen Golf R with its engine trim choices in the garage](assets/changelog/2026.10.15.3/golf-trims.webp "Choose an engine trim in the garage.")
-
-- Cars now come in generations with engine trims. Pick your engine trim in the garage; your earlier car choice carries over.
+- The garage offers one car per model, with paint choices. Your earlier car choice carries over.
 - Dashboard warning lights react to what your car is doing, with a check of the lights when you start the engine.
 - The speed-limit sign is bigger and flashes red when you are over the limit.
   ![A coastal race with rivals ahead and a flashing 50 km/h speed-limit sign](assets/changelog/2026.10.15.3/race-hud.webp "The race HUD keeps the speed limit in view.")
