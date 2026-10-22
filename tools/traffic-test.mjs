@@ -218,3 +218,11 @@ test('tiny repeated nudges preserve a crashed driver recovery clock',()=>{
   assert.equal(c.crash.t,4);assert.equal(c.crash.rec,1);
   T.hitCar(c,B,1,'rear',3);assert.equal(c.crash.t,.5);assert.equal(c.crash.rec,0);
 });
+
+
+test('queued racers never make a visible wreck disappear through the old tow timer',()=>{
+ const {T,c}=world();c.crash={wreck:true,vs:0,vu:0};T.racers=[racer({},c.s-8,0)];
+ for(let i=0;i<150;i++){T.t+=.1;T.trackHeldRacers(.1);assert.equal(T.recoverStuck(c,.1,c.s-8),false);}
+ assert.ok(c.heldT>10);assert.equal(c.active,true);
+ T.racers=[];assert.equal(T.recoverStuck(c,.1,0),true);assert.equal(c.active,false);
+});

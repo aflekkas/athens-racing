@@ -98,6 +98,10 @@ test('the real CHANGELOG.md is valid, newest first, and written for players', ()
     assert.ok(!/`|\b[0-9a-f]{7,40}\b|\b(?:src|tools|server|worker|assets)\/|\.m?js\b|\bAPI\b|protocol/i.test(text), `no internal jargon: ${text}`);
     assert.match(text, /[.!?]$/, `ends like a sentence: ${text}`);
   }
+  for (const text of log.unreleased) {
+    if (!/\btrim/i.test(text)) continue;
+    assert.match(text, /top trim|no trim/i, `only the one-car-per-model removal note may mention trims: ${text}`);
+  }
 });
 
 test('hasPriorPlay ignores what the game writes at startup and sees real play data', () => {

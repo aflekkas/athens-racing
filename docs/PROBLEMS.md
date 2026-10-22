@@ -44,31 +44,11 @@ Difficulty: 🟢 good first fix · 🟡 medium · 🔴 deep / needs care.
 
 ## Open: reported by the owner (most important first)
 
-### 1. Psychiko is buried under generic buildings 🔴
-**What's wrong:** Psychiko looks overrun by procedural "building slop". Vas's hand-made Psychiko work (the centre, his landmarks and layout, merged in PR #3 / `f4fbc90d`) seems to have been overwritten or hidden by the streamed Athens world's generated infill buildings.
-**Where to look:**
-- `tools/maps/psychiko/` (sources, see `SOURCES.md`)
-- `src/athens-world.js`, `src/athens-quarters.js`, `src/buildings.js`, `src/athens-landmark-hide.js`
-- the world-area docs `docs/world-areas.md` and `docs/world-tiles-format.md`
-
-**Done when:** in Psychiko, Vas's authored buildings and layout show, and generated infill only fills the gaps around them. Include before/after screenshots from the same spots in the centre.
-
-### 2. Finishing races doesn't work reliably, and going off track is far too harsh 🟡
-**What's wrong:** races often can't be finished cleanly. Leaving the road is punished too hard: off-route notices, lost progress, forced recovery.
-**Where to look:**
-- `src/route-navigation.js` and `src/course.js`, which own off-route, wrong-way and rejoin
-- `src/driving-objectives.js`
-- `docs/route-guidance.md`
-
-**Done when:**
-- Cutting across a kerb, verge or short shortcut doesn't trigger anything.
-- Only clearly leaving the route for a long way does.
-- Every Quick Race route can be finished start to finish, and a test drives each one to the finish.
-
 ### 3. No direction arrows 🟡
 **What's wrong:** nothing in the world shows which way to go. The plan (`docs/plans/unified-world.md`) calls for low, subtle chevrons at junctions and turns, but they're missing or invisible in play.
 **Where to look:** `src/route-guidance.js` (the module exists, see `docs/route-guidance.md`), how `src/main.js` wires it up, and `src/hud.js` for the minimap route.
 **Done when:** low, understated arrows on or beside the road point the way at junctions and tight turns, readable at speed but not shouty. No glows or outlines; this is an owner-locked decision.
+**Fix wave (staging verification pending):** wired legacy Quick Race to the pooled road paint, added within-edge bends, and moved larger faint chevrons toward turn edges to clear the chase car. Speed controls the 48–80 m preview even on delayed frames. Syntagma candidate verified; remaining: deployed Riviera/Syntagma/Penteli browser checks. Evidence: `/home/dev/data/agent-feed/fix-wave/direction-arrows/`. No world rebake.
 
 ### 4. Unrealistic terrain 🔴
 **What's wrong:** the ground and roads rise and fall in big unrealistic lumps and dips that real Athens streets don't have.
@@ -89,6 +69,8 @@ Difficulty: 🟢 good first fix · 🟡 medium · 🔴 deep / needs care.
 
 **Where to look:** `src/athens-props.js`, `src/athens-detail.js`, `src/athens-ground.js`, `src/athens-materials.js`, `docs/world-dressing.md` and `docs/world-beauty.md`.
 **Done when:** parked cars read as whole cars at every distance; there are no road patches on pavements and no visible seams. Include before/after screenshots from Glyfada, Syntagma and Psychiko.
+**Implemented (2026-10-22, `45704212`):** reset leaked contact-shadow scale; sparse shared parking density, complete asphalt/support/clearance checks and stop/crossing exclusions; correct classic asphalt flags and drape fully contained road decals. 29 focused regressions pass. Matching staging evidence: `/home/dev/data/agent-feed/fix-wave/parking/`.
+**Remaining:** inherited road/terrain mesh seams, visible around Syntagma, need the separate terrain fix in item 4. Untagged driveways are inferred from road mouths and empty runs. No world rebake or R2 upload in this parking/decal change.
 
 ## Open: other known issues
 
@@ -106,6 +88,12 @@ Difficulty: 🟢 good first fix · 🟡 medium · 🔴 deep / needs care.
 
 ## Fixed
 
-- **Traffic pile-up.** Persistent contacts and stalled drivers recycle outside all player views; rivals brake at civilian bumper contact, use equal collision mass, and tiny nudges no longer reset crash recovery. Headless recovery and real-controller regressions added.
+- **1. Psychiko buried under generic buildings (2026-10-22):** restored all 3,647 authored pieces with the original building kit, surveyed facades, roofs and tile-owned collision; excluded generated lots from authored villa gardens and footprints. Matching centre views: `/home/dev/data/agent-feed/fix-wave/psychiko/`; native day/night budgets recaptured and 32 focused regressions pass. No world rebake.
+
+- **2. Race finishes / harsh off-track handling.** Short kerb/verge/roundabout cuts preserve progress without notices; prolonged departures guide back without resetting. Accepted station crossings time every split and finish; headless regressions drive all six Quick Race routes and their full lap counts.
+
+- **Driving map overlay (2026-10-22):** kept both M ranges compact, replaced resident-cell/500 m street clipping with the published-world street overview, restored sea/coast and area labels, and added a calm race route with a labeled finish instead of the tiny green flag. Nearby streets prepare first across frames, independently of the coast, and cache by view; area, turn and destination captions use separate rows. No world rebake.
+
+- **Traffic pile-up.** Persistent contacts, stalled drivers and wreck towing recycle outside all player views; Glyfada graph traffic now settles and slowly rejoins a safe lane instead of remaining permanently crashed. Rivals brake at civilian bumper contact, use equal collision mass, and tiny nudges preserve recovery. Headless recovery and real-controller regressions added.
 
 (Move items here with the PR or commit that fixed them.)

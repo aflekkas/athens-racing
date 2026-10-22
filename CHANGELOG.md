@@ -56,10 +56,6 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 - Weak laptops: the picture no longer drops as low when your computer struggles, so your car stays sharp.
 
-- Garage: the car and its trims are now clearly separate: the car is named at the top, its trims sit below as labelled chips with power and 0-100 time.
-
-- Multiplayer lobby: your trim now has its own chip under your car's name.
-
 - Cars: badges now sit on the bodywork. The 911 crest is no longer buried and the 928 shows its model name once.
 
 - Cars: the 348 has one horse at the front, and the BMW and MINI roundels no longer float off the car.
@@ -90,7 +86,7 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 - Multiplayer: other drivers' tyre smoke, burnouts and skid marks are now visible, and so are your own online. Sparks and dust show too.
 
-- Multiplayer lobby: CHANGE CAR / TRIM is its own button under your car, says it opens the garage, and explains when your car is locked.
+- Multiplayer lobby: CHANGE CAR is its own button under your car, says it opens the garage, and explains when your car is locked.
 
 - Multiplayer: a driver the lobby shows as "loading" now reports in again every few seconds, so nobody gets stuck on loading.
 
@@ -102,8 +98,6 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 - Multiplayer: after you retire, the mouse cursor stays visible so you can pick which driver to watch.
 
-- Multiplayer lobby: the driver list names the whole car ("FIAT PANDA · 1.1") instead of only the trim.
-
 - Towing and reset put you back on the road nearest to where you are, facing the way you were heading. In a race a tow never counts as progress.
 
 - Frame rate limit: NO LIMIT now draws at your screen's full refresh rate everywhere, including the online car showroom that stayed at 30. The overlay shows your limit.
@@ -114,11 +108,9 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 - Credits and What's new are full pages you can scroll with keys, gamepad, wheel or touch. Credits are grouped by kind, and release pictures sit inline.
   ![Credits page with the team, map data and elevation attribution in a centred column](assets/changelog/2026.10.16.1/about-pages.webp "Credits read as one clear page, with every attribution fully visible.")
 
-- Trims run from base to top model throughout the garage and online car lists, with fantasy builds last and saved choices kept.
-
 - The garage now offers cars and larger vehicles only. Saved motorcycle choices switch to the MINI; traffic bikes still share the road.
 
-- Drive the Mercedes SL and A-Class, Ferrari 348 and Porsche 928, with 12 trims, period cockpits and distinct engine sounds.
+- Drive the Mercedes SL and A-Class, Ferrari 348 and Porsche 928, with period cockpits and distinct engine sounds.
 - Choose the 348 coupe, targa or Spider, and watch the 928’s headlamps rise at night.
 
 - Crests and hard collisions can launch, spin or roll your car. If you stop on the roof or side, recovery becomes available after a short wait.
@@ -218,8 +210,8 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 - Drive the Aventador SVJ with a screaming V12, hard ISR shifts and switchable exhaust flames and crackles.
   ![The green Aventador SVJ in the garage with its exhaust pops switch](assets/changelog/2026.10.15.3/svj-garage.webp "A V12, a huge wing, and hot exhausts.")
-- Garage trim changes keep drag rotation working, and slow touch drags rotate your car.
-  ![The garage after changing trims and rotating the car](assets/changelog/2026.10.15.3/garage-rotation.webp "Rotate your car after choosing another trim.")
+- Slow touch drags rotate your car in the garage.
+  ![Rotating the car in the garage](assets/changelog/2026.10.15.3/garage-rotation.webp "Drag to rotate your car.")
 - Scooter riders return correctly when traffic recovers after a crash.
 
 - Welcome to ATHENS RACING: a new name and bold A-and-red-slash logo. Your saved progress stays with you.

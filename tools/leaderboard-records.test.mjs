@@ -11,7 +11,7 @@ test('route filtering keeps lap counts and directions distinct', () => {
  assert(matchesRecord(r,{route:routeId(r)}));assert(!matchesRecord({...r,setup:{...r.setup,laps:2}},{route:routeId(r)}));
 });
 
-import { renderTrackTimes, renderBestRecord } from '../src/leaderboards-screen.js';
+import { renderTrackTimes, renderSetupRecords, renderBestRecord } from '../src/leaderboards-screen.js';
 test('shared historical cards display only recorded car, time, date and known partial settings',()=>{
  for(const title of ['Original Faros circuit','Original Riviera track','Original Penteli road']){
   const record={car:'mini',time:90,date:'2026-10-20'},html=renderBestRecord(record,{historical:true,title:`${title} · 1:30.00`});
@@ -62,4 +62,22 @@ test('track global errors settle and offer retry without discarding the PB', asy
     const html = renderTrackTimes(menu, data, filters);
     assert.match(html, /Leaderboard unavailable/); assert.match(html, /data-act="trackTimesRetry"/); assert.match(html, /PERSONAL BEST/);
   } finally { globalThis.fetch = previous; }
+});
+test('Top 3 offers sign-in to signed-out players instead of the raw leaderboard error', () => {
+  const previous = globalThis.localStorage;
+  globalThis.localStorage = { getItem: () => null, setItem: () => {} };
+  try {
+    const filters = { mapId: 'riviera', eventId: 'quick' };
+    const failed = () => ({ loading: false, error: 'Leaderboard unavailable.', entries: [], requested: true });
+    const setupHtml = accounts => renderSetupRecords({ screen: 'setup', data: {}, refresh() {}, accounts }, { trackTimes: failed() }, filters);
+    const trackHtml = accounts => renderTrackTimes({ screen: 'mapConfirm', data: {}, refresh() {}, accounts }, { trackTimes: failed() }, filters);
+    for (const html of [setupHtml({ required: true, user: null }), trackHtml({ required: true, user: null })]) {
+      assert.match(html, /Sign in to see the leaderboard/); assert.match(html, /data-act="account"/);
+      assert.doesNotMatch(html, /Leaderboard unavailable/); assert.match(html, /TOP 3/);
+    }
+    for (const html of [setupHtml({ required: true, user: { id: 'x' } }), trackHtml({ required: true, user: { id: 'x' } }), setupHtml(undefined), trackHtml(undefined)]) {
+      assert.match(html, /Leaderboard unavailable/); assert.match(html, /data-act="trackTimesRetry"/);
+      assert.doesNotMatch(html, /Sign in to see the leaderboard/);
+    }
+  } finally { globalThis.localStorage = previous; }
 });

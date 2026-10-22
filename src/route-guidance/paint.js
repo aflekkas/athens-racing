@@ -68,7 +68,14 @@ export class RoutePaint {
             let half=.5;for(;half<8;half+=.5)if(!this.contact(x-r.tz*half,z+r.tx*half,r.y,r.layer)||!this.contact(x+r.tz*half,z-r.tx*half,r.y,r.layer))break;
             width=Math.max(.5,(half-.5)*2);
           }
-        }else if(Number.isFinite(r.leftM)&&Number.isFinite(r.rightM))width=Math.min(width,2*Math.min(r.leftM,r.rightM));
+        }else if(Number.isFinite(r.leftM)&&Number.isFinite(r.rightM)){
+          width=Math.min(width,2*Math.min(r.leftM,r.rightM));
+          // Clear the chase car's silhouette, while keeping every corner inside
+          // the supplied road width. Narrow lanes retain centred paint.
+          const side=r.side||1,edge=side<0?r.leftM:r.rightM;
+          const offset=side*Math.max(0,Math.min(4,edge-width/2-.25));
+          x-=r.tz*offset;z+=r.tx*offset;
+        }
         if(width<=0)continue;
         const heights=[];
         for(const forward of [-.5,.5])for(const side of [-.5,.5]){
@@ -87,5 +94,5 @@ export class RoutePaint {
     this.mesh.count=count;this.mesh.visible=count>0;this.stats.instances=count;
     this.mesh.instanceMatrix.needsUpdate=true;this.meta.needsUpdate=true;this.heights.needsUpdate=true;
   }
-  dispose(){this.prepared.clear();this.chunks.dispose();this.mesh.removeFromParent();this.mesh.geometry.dispose();this.material.dispose();this.atlas.dispose();}
+  dispose(){this.prepared.clear();this.chunks.dispose();this.mesh.removeFromParent();this.mesh.dispose();this.mesh.geometry.dispose();this.material.dispose();this.atlas.dispose();}
 }

@@ -30,7 +30,8 @@ export class RouteGuidance {
     }
     this.cursorS=this.data.closed?((cursorS%this.data.lengthM)+this.data.lengthM)%this.data.lengthM:Math.max(0,Math.min(this.data.lengthM,cursorS));
     const now=performance.now(),previous=this.lastFrame;
-    if(previous&&position){const dt=(now-previous.time)/1000;if(dt>.001&&dt<.5){const speed=Math.hypot(position.x-previous.x,position.z-previous.z)/dt;this.paint.preview.value=Math.max(48,Math.min(80,48+speed*1.6));}}
+    if(Number.isFinite(position?.vLong))this.paint.preview.value=Math.max(48,Math.min(80,48+Math.abs(position.vLong)*1.6));
+    else if(previous&&position){const dt=(now-previous.time)/1000;if(dt>.001&&dt<.5){const speed=Math.hypot(position.x-previous.x,position.z-previous.z)/dt;this.paint.preview.value=Math.max(48,Math.min(80,48+speed*1.6));}}
     if(position)this.lastFrame={x:position.x,z:position.z,time:now};
     this.paint.update(this.cursorS,origin);
   }

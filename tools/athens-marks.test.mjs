@@ -26,8 +26,8 @@ test('bus stops get alternating red and white paint on the kerb beside them', ()
   assert.ok(strips.filter(s => Math.abs(s.x - 120) < 7 && s.c !== 0).every(s => s.z < 100), 'only on the stop\'s side of the street (z < 100 for a stop at z = 96.5)') ;
 });
 test('manholes and patches lie in the lane, inside the carriageway, and are capped per cell', () => {
-  const art = deriveStreetArt(street(), { strings: [] }, []), rows = rowsOf(art.marks), holes = rows.filter(r => r.type === 1), patches = rows.filter(r => r.type === 2);
-  assert.ok(holes.length >= 2 && patches.length >= 1, `${holes.length} manholes, ${patches.length} patches`);
+  const t=street();t.edges[0]=3;const art = deriveStreetArt(t, { strings: [] }, []), rows = rowsOf(art.marks), holes = rows.filter(r => r.type === 1), patches = rows.filter(r => r.type === 2);
+  assert.ok(holes.length >= 1 && patches.length >= 1, `${holes.length} manholes, ${patches.length} patches`);
   for (const h of holes) { assert.ok(Math.abs(h.z - 100) < 2.4 && h.a > .25 && h.a < .45); } for (const p of patches) { const w = (p.c % 10), len = p.b; assert.ok(Math.abs(p.z - 100) < 2.4 && len >= 1.4 && len <= 3.5 && w >= .6 && w <= 1.4, `${len} x ${w}`); }
   assert.ok(ART_LIMITS.marks <= 2000);
 });
@@ -43,5 +43,25 @@ test('the marks layer drapes rows near the camera as one mesh of vertex-coloured
 import { readFileSync } from 'node:fs';
 test('the marks layer is wired once into the Athens entry', () => {
   const world = readFileSync(new URL('../src/world-session.js', import.meta.url), 'utf8');
-  assert.match(world, /marks=new AthensMarks\(detailRoot,\{enabled:settings\.worldDetail!==false\}\)/); assert.match(world, /marks\.setEnabled\(s\.worldDetail!==false\)/); assert.match(world, /\['marks',marks\]/);assert.match(world,/layer\.addTile\(key,packet\)/);
+  assert.match(world, /marks=new AthensMarks\(detailRoot,\{enabled:settings\.worldDetail!==false,groundAt:/); assert.match(world, /marks\.setEnabled\(s\.worldDetail!==false\)/); assert.match(world, /\['marks',marks\]/);assert.match(world,/layer\.addTile\(key,packet\)/);
+});
+
+test('road mark vertices follow the actual road slope with a stable depth gap',()=>{
+ const marks=new AthensMarks(new THREE.Group(),{groundAt:(x,z)=>5+x*.1+z*.03});
+ marks.addTile('0,0',{metadata:{origin:[0,0,0],extensions:{worldDetail:{roadMarks:0}}},arrays:[Float32Array.from([2,10,5,10,1,3,1])]});marks.rebuild(10,10);
+ assert.equal(marks.stats.triangles,2);const p=marks.position.array;for(let i=0;i<18;i+=3)assert.ok(Math.abs(p[i+1]-(5+p[i]*.1+p[i+2]*.03+.025))<1e-5);marks.dispose();
+});
+
+import {asphaltIndex} from '../src/world-tile-asphalt.js';
+test('classic asphalt reads contact flags, not the surface ID, and excludes elevated decks',()=>{
+ const t={contactPositions:Float32Array.from([0,5,0,10,5,0,0,5,10]),contactTriangles:Uint32Array.from([0,1,2,2,1]),contactLayers:Int8Array.from([0])};
+ assert.ok(asphaltIndex(t).inside(1,1),'even surface ID with road flag');
+ assert.equal(asphaltIndex({...t,contactTriangles:Uint32Array.from([0,1,2,1,2])}).count,0,'odd surface ID with terrain flag is not road');
+ assert.equal(asphaltIndex({...t,contactTriangles:t.contactTriangles.slice(),contactLayers:Int8Array.from([1])}).count,0,'a bridge is not ground-level parking asphalt');
+});
+test('every emitted mark corner stays on asphalt at the kerb',()=>{
+ const t=street(),art=deriveStreetArt(t,{strings:[]},[]),marks=new AthensMarks(new THREE.Group());
+ marks.addTile('0,0',{metadata:{origin:[0,0,0],extensions:{worldDetail:{roadMarks:0}}},arrays:[art.marks]});marks.rebuild(120,100);
+ const asphalt=asphaltIndex(t),p=marks.position.array;assert.ok(marks.stats.triangles>0);
+ for(let i=0;i<marks.stats.triangles*9;i+=3)assert.ok(asphalt.inside(p[i],p[i+2]),'no paving spill');marks.dispose();
 });

@@ -8,8 +8,8 @@ const KERB = ['#e5b92a', '#e8e8e2', '#c3302b'], MANHOLE = ['#2f2e2c', '#5d5f61']
 export const KERB_WIDTH = .32;
 
 export class AthensMarks {
-  constructor(parent, { enabled = true } = {}) {
-    this.enabled = enabled; this.tiles = new Map(); this.last = { x: Infinity, z: Infinity }; this.stats = { triangles: 0, rows: 0, rebuilds: 0, ms: 0 };
+  constructor(parent, { enabled = true, groundAt = null } = {}) {
+    this.groundAt = groundAt; this.enabled = enabled; this.tiles = new Map(); this.last = { x: Infinity, z: Infinity }; this.stats = { triangles: 0, rows: 0, rebuilds: 0, ms: 0 };
     this.position = new THREE.BufferAttribute(new Float32Array(MARK_LIMITS.triangles * 9), 3); this.colour = new THREE.BufferAttribute(new Float32Array(MARK_LIMITS.triangles * 9), 3);
     this.position.setUsage(THREE.DynamicDrawUsage); this.colour.setUsage(THREE.DynamicDrawUsage);
     const g = new THREE.BufferGeometry(); g.setAttribute('position', this.position); g.setAttribute('color', this.colour); g.setDrawRange(0, 0); g.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1e6);
@@ -26,7 +26,9 @@ export class AthensMarks {
   update(camera) { if (!this.enabled) return; const p = camera.position || camera; if (Math.hypot(p.x - this.last.x, p.z - this.last.z) >= MARK_LIMITS.rebuildMetres) this.rebuild(p.x, p.z); }
   rebuild(x, z) {
     const t0 = performance.now(), P = this.position.array, C = this.colour.array, R = MARK_LIMITS.near; let tri = 0, rows = 0;
-    const push = (a, b, c, col) => { if (tri >= MARK_LIMITS.triangles) return; const o = tri * 9; P[o] = a[0]; P[o + 1] = a[1]; P[o + 2] = a[2]; P[o + 3] = b[0]; P[o + 4] = b[1]; P[o + 5] = b[2]; P[o + 6] = c[0]; P[o + 7] = c[1]; P[o + 8] = c[2]; for (let i = 0; i < 3; i++) { C[o + i * 3] = col.r; C[o + i * 3 + 1] = col.g; C[o + i * 3 + 2] = col.b; } tri++; };
+    const push = (a, b, c, col) => { if (tri >= MARK_LIMITS.triangles) return;
+      if(this.groundAt)for(const p of [a,b,c]){const y=this.groundAt(p[0],p[2],p[1]);if(y==null||!Number.isFinite(y))return;p[1]=y+.025;}
+      const o = tri * 9; P[o] = a[0]; P[o + 1] = a[1]; P[o + 2] = a[2]; P[o + 3] = b[0]; P[o + 4] = b[1]; P[o + 5] = b[2]; P[o + 6] = c[0]; P[o + 7] = c[1]; P[o + 8] = c[2]; for (let i = 0; i < 3; i++) { C[o + i * 3] = col.r; C[o + i * 3 + 1] = col.g; C[o + i * 3 + 2] = col.b; } tri++; };
     const quad = (a, b, c, d, col) => { push(a, b, c, col); push(a, c, d, col); };
     for (const { rows: r, o } of this.tiles.values()) for (let i = 0; i < r.length; i += 7) {
       const type = r[i], px = r[i + 1] + o[0], py = r[i + 2], pz = r[i + 3] + o[2]; if (Math.abs(px - x) > R || Math.abs(pz - z) > R || Math.hypot(px - x, pz - z) > R) continue; rows++;

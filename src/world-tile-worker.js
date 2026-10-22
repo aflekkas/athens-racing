@@ -7,7 +7,7 @@ import { tileGPUPlan, tileRenderVariants } from './world-tile-gpu.js';
 import { addDerivedBuildings } from './world-tile-buildings.js';
 import { tagDressedSurfaces, dressingBytes } from './world-tile-dressing.js';
 import {buildTileObstacleIndex,obstacleBytes} from './world-tile-obstacles.js';
-import {parkedBoxes} from './world-tile-parking.js';
+import {parkedBoxes,filterParkingStops} from './world-tile-parking.js';
 import {withTileSurfaceIndexes} from './world-tile-surface-cache.js';
 const controllers = new Map();
 async function limitedBuffer(stream,limit,onBytes=null) {
@@ -41,6 +41,8 @@ export function prepareTilePacket(pack,{entry,world,revision,cell}){
   const checked=validateWorldTile(pack,{world,revision,cell});
   // Footprints are stored once; their wall and roof meshes are built here, before bounds, GPU plan and byte accounting.
   withTileSurfaceIndexes(()=>{addDerivedBuildings(pack,checked.tables);clearPacketVegetation(pack,checked.tables);});tagDressedSurfaces(pack);
+  const detail=pack.metadata.extensions?.worldDetail;
+  if(detail?.parking!=null&&detail.props)pack.arrays[detail.parking]=filterParkingStops(pack.arrays[detail.parking],pack.arrays[detail.props.rows],pack.arrays[detail.props.kind]);
   if(pack.metadata.authoredObstacles){if(pack.detailObstacleIndex)throw Error('Conflicting authored obstacle ownership');pack.detailObstacleIndex=buildTileObstacleIndex({buildings:[],buildingCorners:[],buildingHeights:[]},pack.metadata.authoredObstacles);}
   const derived=performance.now(),contactIndex=buildTileContactIndex(checked.tables,Math.floor(entry.decodedBytes/4)),contacted=performance.now();
   // Bounding volumes are built in the worker, avoiding a vertex scan during activation.

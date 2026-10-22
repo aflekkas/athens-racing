@@ -37,11 +37,21 @@ test('a newly spawned graph traffic actor has finite route coordinates before ri
  traffic.spawn({x:0,z:0},[]);assert.equal(car.active,true);assert.equal(car.crashed,false,'a reused graph pool slot must drive after its earlier wreck');assert.deepEqual([car.veh.s,car.veh.u,car.s,car.u],[210,12,210,12]);assert.equal(car.veh.halfL,2);assert.equal(car.veh.halfW,1);
 });
 
-test('off-route notices debounce for .75 s, wrong direction for 1 s, and share a five-second limit',async()=>{
+test('short cuts stay quiet; long departures guide back, wrong-way notices share a five-second limit',async()=>{
  const f=fixture(),r=new RouteRuntime(await compileRoute(f.definition,f.graph,f.contacts)),nav=new RouteNavigation(r),base={position:r.point(100),heading:r.frame(100).yaw,speed:10,earnedS:100,contact:{y:0,layer:0,surfaceId:'road-a'}};
- let state;for(let i=1;i<=7;i++)state=nav.update({...base,position:r.point(100,20),dt:.1,time:i*.1});assert.equal(state.notice,null);state=nav.update({...base,position:r.point(100,20),dt:.1,time:.8});assert.equal(state.notice,'RETURN TO ROUTE');assert.equal(state.rejoinS,100);
- for(let i=0;i<20;i++){state=nav.update({...base,heading:base.heading+Math.PI,dt:.1,time:1+i*.1});assert.equal(state.notice,null);}state=nav.update({...base,heading:base.heading+Math.PI,dt:.1,time:6});assert.equal(state.notice,'WRONG WAY');
- nav.reset();for(let i=0;i<11;i++)state=nav.update({...base,speed:-10,dt:.1,time:i*.1});assert.equal(state.wrongWay,false,'aligned reversing earns no progress and is exempt from WRONG WAY');
+ let state;
+ for(let i=1;i<=47;i++){state=nav.update({...base,position:r.point(100,20),dt:.25,time:i*.25});assert.equal(state.offRoute,false);assert.equal(state.notice,null);}
+ state=nav.update({...base,position:r.point(100,20),dt:.25,time:12});assert.equal(state.notice,'RETURN TO ROUTE');assert.equal(state.rejoinS,100);
+ for(let i=0;i<20;i++){state=nav.update({...base,heading:base.heading+Math.PI,dt:.1,time:12.1+i*.1});assert.equal(state.notice,null);}
+ state=nav.update({...base,heading:base.heading+Math.PI,dt:.1,time:17});assert.equal(state.notice,'WRONG WAY');
+ nav.reset();for(let i=0;i<20;i++)state=nav.update({...base,heading:base.heading+Math.PI,speed:-10,dt:.1,time:i*.1});assert.equal(state.wrongWay,false,'reversing is exempt from WRONG WAY');
+ nav.reset();
+ for(let i=0;i<9;i++){state=nav.update({...base,position:r.point(100+i*10,14),dt:.25,time:i*.25});assert.equal(state.offRoute,false);}
+ for(let i=0;i<3;i++)state=nav.update({...base,dt:.1,time:3+i*.1});
+ assert.equal(state.offRoute,false,'a short verge shortcut rejoins without a notice');
+ nav.reset();
+ for(let i=0;i<20;i++)state=nav.update({...base,position:r.point(100+i*12,40),dt:.25,time:i*.25});
+ assert.equal(state.offRoute,true,'a sustained 180+ metre departure offers guidance before twelve seconds');
 });
 
 test('native route setup offers 0–2 rivals, traffic, police, conditions and laps, with reverse withheld',async()=>{

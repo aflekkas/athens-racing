@@ -34,13 +34,14 @@ export class WorldTraffic {
   const c=needCop?this.cars.find(c=>c.police&&!c.active):this.pool.pickFree(c=>!c.type.bus&&!c.type.scooter);if(!c)return;
   const graph=this.session.roads.graph,edges=[...graph.edges.values()].map(e=>e.value).filter(e=>!(e.flags&8)&&!this.closures?.blocksEdge(e));
   for(let i=0;i<Math.min(80,edges.length);i++){const edge=edges[Math.floor(this.pool.rng.next()*edges.length)],p=this.candidate(edge,edgeLength(edge)*.5,c);if(!p)continue;const d=Math.hypot(p.x-player.x,p.z-player.z);if(d<160||d>450||[...actors,...this.cars.filter(q=>q.active).map(q=>q.vehicle)].some(a=>Math.hypot(a.x-p.x,a.z-p.z)<12))continue;
-   this.pool.repair?.(c);this.pool.initDrive(c,false);c.crashed=false;c.active=true;c.point=p;c.offset=projectEdge(edge,p.x,p.z).offsetM;c.v=needCop?0:7;const q=this.route.project(p.x,p.z,{referenceY:p.y,heading:p.yaw});c.vehicle={...p,s:q.s,u:q.u,m:c.mass,halfL:c.len/2,halfW:c.wid/2,vLong:c.v,vLat:0,w:0};c.veh=c.vehicle;c.model=c.m;Object.assign(c,{s:q.s,u:q.u,hs:c.len/2,hu:c.wid/2,vs:c.v,vu:0,x:p.x,y:p.y,z:p.z});c.m.root.visible=true;return;
+   this.pool.repair?.(c);this.pool.initDrive(c,false);c.crashed=false;c.recoveryT=0;c.contactT=0;c.contactAt=-Infinity;c.active=true;c.point=p;c.offset=projectEdge(edge,p.x,p.z).offsetM;c.v=needCop?0:7;const q=this.route.project(p.x,p.z,{referenceY:p.y,heading:p.yaw});c.vehicle={...p,s:q.s,u:q.u,m:c.mass,halfL:c.len/2,halfW:c.wid/2,vLong:c.v,vLat:0,w:0};c.veh=c.vehicle;c.model=c.m;Object.assign(c,{s:q.s,u:q.u,hs:c.len/2,hu:c.wid/2,vs:c.v,vu:0,x:p.x,y:p.y,z:p.z});c.m.root.visible=true;return;
   }
  }
  update(dt,player,actors=[]){this.t+=dt;if(!this.pool)return;this.spawnT-=dt;if(this.spawnT<=0){this.spawnT=.5;this.spawn(player,actors);}
   const graph=this.session.roads.graph;
   for(const c of this.cars){if(!c.active)continue;let edge=graph.edges.get(c.point.edge)?.value;const distance=Math.hypot(c.vehicle.x-player.x,c.vehicle.z-player.z);if(!edge||distance>600){c.active=false;c.m.root.visible=false;continue;}
-   if(c.crashed){c.v*=Math.exp(-dt*3);continue;}
+   c.contactT=this.t-(c.contactAt??-Infinity)<.3?(c.contactT||0)+dt:0;if(c.contactT>4&&!c.police)c.crashed=true;
+   if(c.crashed){this.recover(c,edge,dt,[player,...actors]);continue;}
    let target=(edge.speedKph||35)/3.6*(c.drv?.vf||1);if(c.police){target=this.hm.state==='idle'?5:Math.min(35,Math.abs(player.vLong)+4);}
    const held=this.session.props.hold(c.point,edge.points);if(held&&!(c.police&&this.hm.active))target=0;
    const f=edgePoint(edge,c.offset);let gap=Infinity,leaderV=target;
@@ -56,6 +57,20 @@ export class WorldTraffic {
   }
   this.updatePolice(dt,player);
  }
+ // Rejoin the nearest safe lane slowly after an incident; never snap back to the pre-impact pose.
+ recover(c,edge,dt,actors){
+  c.recoveryT=(c.recoveryT||0)+dt;c.v*=Math.exp(-dt*3);
+  const v=c.vehicle;v.vLong=c.v;v.vLat=0;v.w=0;
+  if(c.recoveryT<4||this.t-(c.contactAt??-Infinity)<.5||c.v>.5)return;
+  const offset=projectEdge(edge,v.x,v.z).offsetM,p=this.candidate(edge,offset,c);if(!p)return;
+  const dx=p.x-v.x,dz=p.z-v.z,d=Math.hypot(dx,dz),angle=Math.atan2(Math.sin(p.yaw-v.yaw),Math.cos(p.yaw-v.yaw));
+  if(d>8||Math.abs(p.y-v.y)>1)return;
+  const k=Math.min(1,.7*dt/Math.max(.001,d)),next={...p,x:v.x+dx*k,z:v.z+dz*k,y:v.y+(p.y-v.y)*k,yaw:v.yaw+clamp(angle,-.6*dt,.6*dt)};
+  const nearby=[...actors,...this.cars.filter(q=>q.active&&q!==c).map(q=>q.vehicle)];
+  if(nearby.some(a=>a!==v&&Math.abs(a.y-next.y)<2.5&&Math.hypot(a.x-next.x,a.z-next.z)<c.len/2+(a.halfL||2.5)+1)||!this.session.safePose(next,{halfWidth:c.wid/2,halfLength:c.len/2}))return;
+  Object.assign(v,next);const q=this.route.project(v.x,v.z,{referenceY:v.y,heading:v.yaw});Object.assign(v,{s:q.s,u:q.u});Object.assign(c,{s:q.s,u:q.u,x:v.x,y:v.y,z:v.z,vs:0,vu:0});
+  if(d<.05&&Math.abs(angle)<.03){c.offset=offset;c.point=p;c.crashed=false;c.recoveryT=0;c.v=v.vLong=0;}
+ }
  updatePolice(dt,player){if(!this.policeEnabled)return;const C=this.tuning,units=this.cars.filter(c=>c.active&&c.police),visible=units.filter(c=>{const d=Math.hypot(c.vehicle.x-player.x,c.vehicle.z-player.z);if(d>(this.hm.active?C.pursuitRange:C.witnessRange)||Math.abs(c.vehicle.y-player.y)>3||this.session.barriers?.lineBlocked({...c.vehicle,y:c.vehicle.y+1},{...player,y:player.y+1}))return false;for(let t=.1;t<1;t+=.1){const x=c.vehicle.x+(player.x-c.vehicle.x)*t,z=c.vehicle.z+(player.z-c.vehicle.z)*t;if(this.session.obstacles.contact(x,player.y+1,z,.1))return false;}return true;});
   const seen=this.seen=visible.length>0,nearest=this.session.roads.graph.nearest(player.x,player.z,{referenceY:player.y,maxDistance:20}),edge=nearest&&this.session.roads.graph.edges.get(nearest.edge)?.value,limit=edge?.speedKph||50,over=Math.abs(player.vLong)*3.6-limit;
   const wrong=edge&&(edge.flags&1)?Math.cos(player.yaw-projectEdge(edge,player.x,player.z).yaw)<-.4&&Math.abs(player.vLong)>3:false;
@@ -68,7 +83,7 @@ export class WorldTraffic {
   for(const event of transitions)events.emit('pursuit',event);
   Object.assign(pursuit,{enabled:true,state:this.hm.state,heat:this.hm.heat,level:this.hm.level,bustMeter:this.hm.bust,evadeMeter:this.hm.evade,time:this.hm.time,units:units.length});
  }
- collide(actor,out,now){for(const c of this.cars){if(!c.active||!c.vehicle||Math.abs(c.vehicle.y-actor.veh.y)>2.5||Math.hypot(c.vehicle.x-actor.veh.x,c.vehicle.z-actor.veh.z)>10)continue;const hit=resolveCarPair(actor.veh,c.vehicle);if(!hit)continue;if(hit.hitA){const offset=bodyOffset(actor.veh,hit.c.x,hit.c.z),cs=Math.cos(actor.veh.yaw),sn=Math.sin(actor.veh.yaw),localNormal={x:hit.c.nx*cs-hit.c.nz*sn,y:0,z:hit.c.nx*sn+hit.c.nz*cs},zone=Math.abs(localNormal.x)>Math.abs(localNormal.z)?(localNormal.x>0?'left':'right'):(localNormal.z>0?'front':'rear');actor.veh.addDamage?.(zone,hit.hitA.dv,{kind:'crash',sev:hit.vn,car:{mass:c.mass},localPoint:{x:offset.py,y:.5,z:-offset.px},localNormal});actor.veh.impactDynamics?.({dv:hit.hitA.dv,nx:hit.c.nx,nz:hit.c.nz,forward:offset.px,right:offset.py,height:.5,kind:'car',yawSolved:true});}if(hit.vn>3){c.crashed=true;this.pool.damageCar(c,'front',hit.hitB?.dv||0,{ebs:hit.vn});out.push({kind:'crash',sev:hit.vn,car:c,who:actor.kind});if(this.policeEnabled)this.hm.offence('collision',1,this.seen||c.police,{serious:hit.vn>11});}c.v=Math.max(0,c.vehicle.vLong);}}
+ collide(actor,out,now){for(const c of this.cars){if(!c.active||!c.vehicle||Math.abs(c.vehicle.y-actor.veh.y)>2.5||Math.hypot(c.vehicle.x-actor.veh.x,c.vehicle.z-actor.veh.z)>10)continue;const hit=resolveCarPair(actor.veh,c.vehicle);if(!hit)continue;c.contactAt=this.t;if(hit.hitA){const offset=bodyOffset(actor.veh,hit.c.x,hit.c.z),cs=Math.cos(actor.veh.yaw),sn=Math.sin(actor.veh.yaw),localNormal={x:hit.c.nx*cs-hit.c.nz*sn,y:0,z:hit.c.nx*sn+hit.c.nz*cs},zone=Math.abs(localNormal.x)>Math.abs(localNormal.z)?(localNormal.x>0?'left':'right'):(localNormal.z>0?'front':'rear');actor.veh.addDamage?.(zone,hit.hitA.dv,{kind:'crash',sev:hit.vn,car:{mass:c.mass},localPoint:{x:offset.py,y:.5,z:-offset.px},localNormal});actor.veh.impactDynamics?.({dv:hit.hitA.dv,nx:hit.c.nx,nz:hit.c.nz,forward:offset.px,right:offset.py,height:.5,kind:'car',yawSolved:true});}if(hit.vn>3){c.crashed=true;this.pool.damageCar(c,'front',hit.hitB?.dv||0,{ebs:hit.vn});out.push({kind:'crash',sev:hit.vn,car:c,who:actor.kind});if(this.policeEnabled)this.hm.offence('collision',1,this.seen||c.police,{serious:hit.vn>11});}c.v=Math.max(0,c.vehicle.vLong);}}
  sync(){const o=this.session.stream.origin;for(const c of this.cars){const root=c.m.root;if(!c.active){root.visible=false;continue;}const v=c.vehicle;root.visible=true;root.position.set(v.x-o.x,v.y,v.z-o.z);root.rotation.set(0,v.yaw,0);c.m.update?.(1/60,c.v,0,c.v<1,{});c.m.setStrobe?.(c.police&&this.hm.state!=='idle',this.t);}}
  zone(){return 'town';}
  get actors(){return this.cars.filter(c=>c.active).map(c=>c.vehicle);}

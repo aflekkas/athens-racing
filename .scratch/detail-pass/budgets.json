@@ -5,7 +5,7 @@
     "megara": "195ce8b322f2297034be56c8e38b8899321c2bb3",
     "psychiko": "Current authored-height-preserving base geometry with optional detail Off (height reference 492f14e)"
   },
-  "method": "Earlier Riviera/Penteli/Megara counters retained: their map inputs and geometry are unchanged; shared atlas index rounding changes no resources, topology, culling or passes. Psychiko: production fixed day/night chase/cockpit poses, current course, detail Off/On. SwiftShader; no FPS claims. Phase 2 legacy Psychiko remains on the unfiltered branch; a supplemental day/night chase/cockpit detail capture stays within the owner budgets with zero browser errors. Shared terrain builder now accepts an optional subdivision count used only by offline Megara import; all fixed-pose map calls retain the same default count.",
+  "method": "Earlier Riviera/Penteli/Megara counters retained: their map inputs and geometry are unchanged; shared atlas index rounding changes no resources, topology, culling or passes. Psychiko: production fixed day/night chase/cockpit poses, current course, detail Off/On. SwiftShader; no FPS claims. Phase 2 legacy Psychiko remains on the unfiltered branch; a supplemental day/night chase/cockpit detail capture stays within the owner budgets with zero browser errors. Shared terrain builder now accepts an optional subdivision count used only by offline Megara import; all fixed-pose map calls retain the same default count. Psychiko day/night chase/cockpit On/Off recaptured at the exact stored cameras after the 2026-10-22 sparse-parking change, with existing immutable staging terrain/road bakes and current source. All four poses remain within the owner budgets; unchanged other-map evidence is retained.",
   "browserErrors": [],
   "sourceHashes": {
     "src/world-detail.js": "3ec3124347d45038dabd6acc6624beff2f53e3e42213323927fb971e1893caab",
@@ -27,7 +27,7 @@
     "src/traffic-passenger-models.js": "7d10c7595114bf448dc2a04fef6fd28735e4cc580db74e47f3381f9ff039e10d",
     "src/road.js": "758c008f3f4a02efe94edd75b5aabcb568dcb477327e21b181cfea0cab052503",
     "src/gantry-legs.js": "6087989ede49581b23984b7dabe70a01fdfdaf668bbd63ef941aad7de6142f4c",
-    "src/maps/psychiko-streetscape.js": "0a2e049788c403b42543bdbf09316cbf550a47ee1685e7f8f6a0835ef35ce20a",
+    "src/maps/psychiko-streetscape.js": "974957ff2fd7eca54bd7481d7114d3d85428c3b24086614caa1137a3a8df6ae5",
     "src/maps/psychiko-recognition.js": "53e9dc2bac773b763f6ecf64208e6397df7e744b6bacc4bf5b2f9b41a1fe366d"
   },
   "rows": [
@@ -1188,10 +1188,10 @@
           0.04230307744253829,
           -0.48195706386840204
         ],
-        "calls": 159,
-        "triangles": 629167,
-        "geometryBytes": 253199890,
-        "textureBytes": 92168192.00000003,
+        "calls": 154,
+        "triangles": 608021,
+        "geometryBytes": 253097822,
+        "textureBytes": 90453333.33333336,
         "shadows": false
       },
       "on": {
@@ -1208,10 +1208,10 @@
           0.04230307744253829,
           -0.48195706386840204
         ],
-        "calls": 169,
-        "triangles": 700316,
-        "geometryBytes": 258050989,
-        "textureBytes": 95051776.00000004,
+        "calls": 164,
+        "triangles": 677900,
+        "geometryBytes": 257948921,
+        "textureBytes": 93336917.33333337,
         "shadows": false
       }
     },
@@ -1252,10 +1252,10 @@
           0.02005071810149271,
           -0.45345997466552923
         ],
-        "calls": 139,
-        "triangles": 694284,
-        "geometryBytes": 253358442,
-        "textureBytes": 95838212,
+        "calls": 133,
+        "triangles": 673954,
+        "geometryBytes": 253269082,
+        "textureBytes": 94123353.33333333,
         "shadows": false
       },
       "on": {
@@ -1272,10 +1272,10 @@
           0.02005071810149271,
           -0.45345997466552923
         ],
-        "calls": 149,
-        "triangles": 765445,
-        "geometryBytes": 258209541,
-        "textureBytes": 98721796.00000001,
+        "calls": 143,
+        "triangles": 743845,
+        "geometryBytes": 258120181,
+        "textureBytes": 97006937.33333334,
         "shadows": false
       }
     },
@@ -1316,10 +1316,10 @@
           0.04230307744253829,
           -0.48195706386840204
         ],
-        "calls": 161,
-        "triangles": 630127,
-        "geometryBytes": 253199890,
-        "textureBytes": 91774980.00000003,
+        "calls": 154,
+        "triangles": 608965,
+        "geometryBytes": 253097822,
+        "textureBytes": 90060121.33333336,
         "shadows": false
       },
       "on": {
@@ -1336,10 +1336,10 @@
           0.04230307744253829,
           -0.48195706386840204
         ],
-        "calls": 171,
-        "triangles": 701276,
-        "geometryBytes": 258050989,
-        "textureBytes": 94658564.00000004,
+        "calls": 164,
+        "triangles": 678844,
+        "geometryBytes": 257948921,
+        "textureBytes": 92943705.33333337,
         "shadows": false
       }
     },
@@ -1380,10 +1380,10 @@
           0.02005071810149271,
           -0.45345997466552923
         ],
-        "calls": 141,
-        "triangles": 695244,
-        "geometryBytes": 253358442,
-        "textureBytes": 95838212,
+        "calls": 135,
+        "triangles": 674914,
+        "geometryBytes": 253269082,
+        "textureBytes": 94123353.33333333,
         "shadows": false
       },
       "on": {
@@ -1400,10 +1400,10 @@
           0.02005071810149271,
           -0.45345997466552923
         ],
-        "calls": 151,
-        "triangles": 766405,
-        "geometryBytes": 258209541,
-        "textureBytes": 98721796.00000001,
+        "calls": 145,
+        "triangles": 744805,
+        "geometryBytes": 258120181,
+        "textureBytes": 97006937.33333334,
         "shadows": false
       }
     }

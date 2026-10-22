@@ -286,3 +286,8 @@ section each OSM road was drawn with; the packer gates it (`tools/world-roads-au
 (`asphalt`, `paving`, `marking`); the runtime maps it to an unlit material that multiplies the palette colour by the shared library scan
 (asphalt / paving) using **tile-local planar UVs** (no UV attribute, no per-tile texture: 512 m is exactly 122 asphalt and 160 paving periods, so scans never seam).
 Kerb and sidewalk heights are real emitted vertices, so contact and render agree. See [world-roads.md](world-roads.md).
+
+
+## Derived Psychiko shells (2026-10-22)
+
+The worker derives `metadata.psychikoShells` as `[sourceBuildingIndex, groundMin, groundMax]` rows from the source-hashed `src/psychiko-building-data.js` recipe. These are runtime metadata, not additional wire tables. Original OSM shell rows and conflicting generated lots are filtered together for rendering and collision. Replacement collision rows use complete simplified source footprints with one owner cell, and the main thread reuses the original authored renderer, shared facade atlas, roof and frontage recipes for that cell. The atlas remains shared across cell unloads; the whole detail owner disposes it. World detail Off retains the plain building shells. Regenerate the worker recipe when `data/maps/psychiko/map.json` changes; the source-equality test enforces this.

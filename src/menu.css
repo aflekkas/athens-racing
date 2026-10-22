@@ -46,8 +46,10 @@ body[data-mode=pursuit] #posBox .row.rv { display:none; }
 #hud #rbar { height:4px; margin:0; background:rgba(255,255,255,.2); }
 body.circuit-race #routeBox { display:none; }
 #hud #mapBox { width:180px; height:180px; bottom:22px; }
-/* M: the big map (src/hud.js toggleBigMap) grows from the same corner, on every layout */
-body #hud #mapBox.is-big { width: min(62vmin, 560px) !important; height: min(62vmin, 560px) !important; z-index: 3; }
+/* M changes the map range; both sizes stay in the lower corner while driving. */
+body #hud #mapBox.is-big { width: min(28vw, 32vh, 260px) !important; height: min(28vw, 32vh, 260px) !important; z-index: 3; }
+#hud #mapBox { border: 0; box-shadow: none; }
+#hud #mapBox::after { display: none; }
 #hud #dialBox { width:270px; height:270px; }
 #hud #mapLabel { font-size:11px; letter-spacing:.08em; }
 #hud #posBox .pos { padding:10px 28px 8px 18px; }

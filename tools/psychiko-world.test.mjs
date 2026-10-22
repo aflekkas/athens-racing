@@ -150,7 +150,7 @@ test('Psychiko uses shared footprint boxes and budgeted streetscape props',async
  assert.ok(data.vegetation?.length>0,'OSM vegetation records feed the budgeted detail layer');
  const sc=data.psychiko.scenery;assert.deepEqual(Object.keys(sc),['version','parkingStride','source','roads','walls','trees','parking','poles','zebras']);assert.equal(sc.roads,data.roadNetwork.roads.length);
  const street=new PsychikoStreetscape(map,new THREE.Group(),(x,z)=>terrain.height(x,z));
- assert(street.canopy.size>20&&street.props.size>50&&street.obstacles.length>200&&street.obstacles.length<700);
+ assert(street.canopy.size>20&&street.props.size>50&&street.obstacles.length>50&&street.obstacles.length<160);
  // Kerb parking never narrows the raced width: lap cars sit astride the kerb, side-street rows stay off the lap.
  for(const o of street.obstacles){const q=route.project(o.x,o.z,null);if(Math.abs(q.u)<route.edge(q.s)+4)assert(Math.abs(q.u)-o.hw>=route.edge(q.s)-.05,`parked car intrudes at s=${q.s.toFixed(1)}`);}
  let tris=0;for(const key of street.props.keys()){const m=street.buildCell('props',key);if(m){tris+=m.geometry.attributes.position.count/3;m.geometry.dispose();}}
@@ -359,9 +359,9 @@ test('station-backed parking records cover both panes, preserve empty kerbs and 
    assert(g.attributes.position.count/3<450,'bounded template geometry');
    assert(g.attributes.aPaint.array.some(v=>v===255)&&g.attributes.aPaint.array.some(v=>v===0),'paint mask preserves glass and wheel colours');
   }
-  const camera={position:route.point(1100,0)};street.update(camera);
+  const physicalCount=street.obstacles.length,camera={position:route.point(1100,0)};street.update(camera);
   assert(street.stats.parkingActive>0&&street.stats.parkingActive<street.stats.parked,'distant cars are omitted from submitted instances');
-  assert.equal(street.obstacles.length,394,'distance culling never changes physical colliders');
+  assert.equal(street.obstacles.length,physicalCount,'distance culling never changes physical colliders');
   const F=data.psychiko.arterial.faros.openApron,cx=(F.lon-data.proj.lon0)*data.proj.mlon,cz=-(F.lat-data.proj.lat0)*data.proj.mlat;
   const trees=[...street.canopy.values(),...street.props.values()].flat().filter(r=>r.kind==='tree');assert(!trees.some(t=>!t.pavement&&Math.hypot(t.x-cx,t.z-cz)<F.radius-.4),'commercial junction apron excludes garden filler');
   assert(trees.filter(t=>t.pavement).length<=8,'only sparse pavement-pit trees in the open apron');

@@ -506,8 +506,7 @@ export class Traffic {
         held = true; break;
       }
       c.heldT = held ? c.heldT + dt : Math.max(0, c.heldT - dt * 2);
-      // a wreck the field has been stuck behind is towed away
-      if (c.crash && c.crash.wreck && c.heldT > 10) { c.active = false; c.m.root.visible = false; c.crash = null; c.cross = null; this.clearRider(c); }
+      // recoverStuck retires unresolved wrecks only outside every player's view.
     }
   }
 

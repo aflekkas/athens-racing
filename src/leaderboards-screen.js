@@ -9,6 +9,8 @@ import { getLeaderboard, driverId } from './leaderboard.js';
 import { matchesRecord, recordEvent, carLabel, routeId, routeLabel, setupLabels, recordDate, formatRecordTime } from './leaderboard-records.js';
 const { esc } = C;
 const ALL = ['', 'ALL'];
+/** the Top 3 board cannot load because there is no signed-in player (and sign-in exists): offer it, not the raw error */
+const signedOut = (menu) => !!menu.accounts?.required && !menu.accounts.user;
 export function lastLeaderboardMap() {
   try { const id = localStorage.getItem('paraliaki.lastPlayedMap'); if (MAPS.some(m => m.id === id)) return id; } catch {}
   return window.__flow?.mapId || 'riviera';
@@ -29,6 +31,7 @@ export function renderTrackTimes(menu, d, filters) {
     C.panel('PERSONAL BEST', '<p class="muted">No time yet. Finish a clean race to set one.</p>');
   let global;
   if (state.loading) global = C.spinner();
+  else if (state.error && signedOut(menu)) global = `<p>Sign in to see the leaderboard.</p>${C.button({ label: 'SIGN IN', act: 'account', size: 'sm' })}`;
   else if (state.error) global = `<p>${esc(state.error)}</p>${C.button({ label: 'TRY AGAIN', act: 'trackTimesRetry', size: 'sm' })}`;
   else global = state.entries.length ? state.entries.map((r, i) => renderBestRecord(r, { rank: i + 1, global: true, compact: true })).join('') : '<p class="muted">No times yet. Be the first.</p>';
   queueMicrotask(() => loadTrackTimes(menu, d, state, filters));
@@ -51,6 +54,7 @@ export function renderSetupRecords(menu, d, filters) {
     : row('PERSONAL BEST', 'No time yet. Finish a clean race to set one.', '', 'recs__row--empty');
   let top;
   if (state.loading) top = `<div class="recs__line">${C.spinner()}<span>Loading times</span></div>`;
+  else if (state.error && signedOut(menu)) top = `<div class="recs__line"><span>Sign in to see the leaderboard.</span>${C.button({ label: 'SIGN IN', act: 'account', size: 'sm', variant: 'ghost' })}</div>`;
   else if (state.error) top = `<div class="recs__line"><span>${esc(state.error)}</span>${C.button({ label: 'TRY AGAIN', act: 'trackTimesRetry', size: 'sm', variant: 'ghost' })}</div>`;
   else top = state.entries.length ? state.entries.map((r, i) => row(`<span class="recs__rank">${i + 1}</span>${esc(r.name || 'DRIVER')}`, esc(carLabel(r, CARS)), esc(formatRecordTime(r.time)))).join('') : '<div class="recs__line">No times yet. Be the first.</div>';
   queueMicrotask(() => loadTrackTimes(menu, d, state, filters));
