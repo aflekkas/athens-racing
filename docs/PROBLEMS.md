@@ -84,7 +84,7 @@ Difficulty: 🟢 good first fix · 🟡 medium · 🔴 deep / needs care.
 
 - **3. Direction arrows (2026-10-22):** Quick Race now shares faint road chevrons with the streamed routes; larger, width-bounded marks sit beside the car, cover within-edge bends, and fade over a speed-based approach. One 128-instance pool, no glows or gates, and no world rebake. Browser evidence: `/home/dev/data/agent-feed/fix-wave/direction-arrows/`.
 
-- **1. Psychiko buried under generic buildings (2026-10-22):** restored all 3,647 authored pieces with the original building kit, surveyed facades, roofs and tile-owned collision; excluded generated lots from authored villa gardens and footprints. Matching centre views: `/home/dev/data/agent-feed/fix-wave/psychiko/`; native day/night budgets recaptured and 32 focused regressions pass. No world rebake.
+- **1. Psychiko buried under generic buildings (2026-10-22):** restored all 3,647 authored pieces with the original building kit, surveyed facades, roofs and tile-owned collision; excluded generated lots from authored villa gardens and footprints; stationary spawns finish loading walls, trees and frontage details. Matching centre views: `/home/dev/data/agent-feed/fix-wave/psychiko/`; native day/night budgets recaptured and 32 focused regressions pass. No world rebake.
 
 - **2. Race finishes / harsh off-track handling.** Short kerb/verge/roundabout cuts preserve progress without notices; prolonged departures guide back without resetting. Accepted station crossings time every split and finish; headless regressions drive all six Quick Race routes and their full lap counts.
 
