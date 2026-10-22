@@ -120,3 +120,9 @@ test('left-turn paint uses the inside edge, bounded by the narrower left width',
  }
  v.dispose();
 });
+
+test('a fast car gets the full approach preview even on its first or a delayed render frame',()=>{
+ const v=new RouteGuidance(new THREE.Scene(),{contact:()=>({y:0})});v.setRoute(supplied());v.onTileActivated('0,0');
+ v.update({cursorS:100,position:{x:80,z:0,vLong:25},isRace:true});assert.equal(v.paint.preview.value,80);
+ v.update({cursorS:100,position:{x:80,z:0,vLong:0},isRace:true});assert.equal(v.paint.preview.value,48);v.dispose();
+});

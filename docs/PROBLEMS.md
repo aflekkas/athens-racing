@@ -48,6 +48,7 @@ Difficulty: 🟢 good first fix · 🟡 medium · 🔴 deep / needs care.
 **What's wrong:** nothing in the world shows which way to go. The plan (`docs/plans/unified-world.md`) calls for low, subtle chevrons at junctions and turns, but they're missing or invisible in play.
 **Where to look:** `src/route-guidance.js` (the module exists, see `docs/route-guidance.md`), how `src/main.js` wires it up, and `src/hud.js` for the minimap route.
 **Done when:** low, understated arrows on or beside the road point the way at junctions and tight turns, readable at speed but not shouty. No glows or outlines; this is an owner-locked decision.
+**Fix wave (staging verification pending):** wired legacy Quick Race to the pooled road paint, added within-edge bends, and moved larger faint chevrons toward turn edges to clear the chase car. Speed controls the 48–80 m preview even on delayed frames. Syntagma candidate verified; remaining: deployed Riviera/Syntagma/Penteli browser checks. Evidence: `/home/dev/data/agent-feed/fix-wave/direction-arrows/`. No world rebake.
 
 ### 4. Unrealistic terrain 🔴
 **What's wrong:** the ground and roads rise and fall in big unrealistic lumps and dips that real Athens streets don't have.
