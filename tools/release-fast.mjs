@@ -24,6 +24,7 @@ import { mkdir, readFile, writeFile, rm, readdir, stat, symlink, realpath } from
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { fileURLToPath } from 'node:url';
+import { credentials } from './world-r2.mjs';
 import { bakeCacheDir, cacheRoot, pruneEntries, DEFAULT_MAX_BYTES } from './bake-cache.mjs';
 
 export const ACCOUNT_ID = 'd6f3d2dc5817687a91d74ccd257bad9e';
@@ -177,6 +178,20 @@ export async function gates({ dir, tree, sha, envs = [], logFile, trainLog, useC
   return { ok: !failed.length, results, failed: failed.map(r => r.name) };
 }
 
+/** Fail closed against the actual production bucket before uploading a Worker pointer. */
+export async function checkProductionWorld(jsonc, { token, fetcher = fetch } = {}) {
+  const config = JSON.parse(prebuiltConfig(jsonc)), production = config.env?.production;
+  const key = production?.vars?.ATHENS_WORLD_MANIFEST;
+  const bucket = production?.r2_buckets?.find(b => b.binding === 'ATHENS_WORLD')?.bucket_name;
+  if (bucket !== 'athens-racing-world' || !/^manifests\/[a-f0-9]{64}\.json$/.test(key || '')) throw Error('Production world guard: invalid bucket or manifest binding');
+  const response = await fetcher(`https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/r2/buckets/${bucket}/objects/${key}`, {
+    headers: { Authorization: 'Bearer ' + token }, signal: AbortSignal.timeout(30000),
+  });
+  if (!response.ok) throw Error(`Production world guard: ${bucket}/${key} HTTP ${response.status}; copy and checksum world objects before deploying`);
+  const body = Buffer.from(await response.arrayBuffer());
+  if (sh(body) !== key.slice(10, -5)) throw Error(`Production world guard: manifest checksum mismatch in ${bucket}/${key}`);
+}
+
 export async function deploy({ dir, env, sha, logFile, trainLog }) {
   const copy = prebuiltDir(dir, env), ready = existsSync(resolve(copy, '.deploy/assets')) && existsSync(resolve(copy, 'wrangler.prebuilt.jsonc'));
   const logs = resolve(workDir(dir), 'logs'); await mkdir(logs, { recursive: true });
@@ -185,6 +200,17 @@ export async function deploy({ dir, env, sha, logFile, trainLog }) {
     say(`no prebuilt ${env} bundle: building it now`);
     const built = await buildEnvironment({ dir, env, sha, log: resolve(logs, `build-${env}.log`) });
     if (!built.ok) { if (logFile) await writeFile(logFile, await readFile(resolve(logs, `build-${env}.log`), 'utf8').catch(() => 'build failed')); return { ok: false }; }
+  }
+  if (env === 'production') {
+    try {
+      process.env.CLOUDFLARE_ACCOUNT_ID = ACCOUNT_ID;
+      await checkProductionWorld(await readFile(resolve(copy, 'wrangler.prebuilt.jsonc'), 'utf8'), { token: await credentials() });
+    } catch (error) {
+      const message = `Production deployment blocked: ${error.message}`;
+      say(message); trainLine(trainLog, sha, message);
+      if (logFile) await writeFile(logFile, message + '\n');
+      return { ok: false };
+    }
   }
   const r = await run(`node_modules/.bin/wrangler deploy --env ${env} --config wrangler.prebuilt.jsonc`, { cwd: copy, env: common, log: resolve(logs, `deploy-${env}.log`), timeoutMs: 2700_000 });
   if (!r.ok && logFile) await writeFile(logFile, await readFile(resolve(logs, `deploy-${env}.log`), 'utf8').catch(() => 'deploy failed'));
