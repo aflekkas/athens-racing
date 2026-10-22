@@ -67,3 +67,30 @@ test('Riviera replays the emitted staging proof deterministically, retains the l
  const ids=[...definition.path.edges],fork=first.decisions.find(d=>d.rejected.length&&ids.indexOf(d.toEdge)>0),i=ids.indexOf(fork.toEdge);assert.ok(i>0);ids[i]=fork.rejected[0];await assert.rejects(compileRoute({...definition,path:{edges:ids}},input.graph,input.contacts));
  }finally{await rm(dir,{recursive:true,force:true});}
 });
+
+
+function stalledTraffic(){
+ const edge={id:'road',points:[[0,0,0],[0,0,100]],layer:0},session={safePose:()=>true},traffic=new WorldTraffic(session,{}, {project:(x,z)=>({s:z,u:x})});
+ const c={active:true,crashed:true,v:0,len:4,wid:2,vehicle:{x:1,y:0,z:50,yaw:Math.PI,vLong:8,vLat:2,w:1},m:{root:{visible:true}}};
+ traffic.cars=[c];traffic.candidate=()=>({x:0,y:0,z:50,yaw:Math.PI,edge:'road'});
+ return {traffic,c,edge};
+}
+test('graph traffic settles and rejoins its nearest lane gradually, without a visible snap',()=>{
+ const {traffic:t,c,edge}=stalledTraffic();
+ for(let i=0;i<39;i++){t.t+=.1;t.recover(c,edge,.1,[]);assert.equal(c.vehicle.x,1);}
+ for(let i=0;i<40&&c.crashed;i++){const x=c.vehicle.x;t.t+=.1;t.recover(c,edge,.1,[]);assert.ok(Math.abs(c.vehicle.x-x)<=.071);}
+ assert.equal(c.crashed,false);assert.ok(c.vehicle.x<.05);assert.equal(c.vehicle.vLat,0);assert.equal(c.vehicle.w,0);assert.equal(c.vehicle.vLong,0);assert.equal(c.s,50);
+});
+test('graph traffic recovery respects live contacts, other cars, safe poses and missing lanes',()=>{
+ for(const block of ['contact','car','unsafe','missing']){
+  const {traffic:t,c,edge}=stalledTraffic();c.recoveryT=8;
+  if(block==='unsafe')t.session.safePose=()=>false;if(block==='missing')t.candidate=()=>null;
+  for(let i=0;i<60;i++){t.t+=.1;if(block==='contact')c.contactAt=t.t;t.recover(c,edge,.1,block==='car'?[{x:0,y:0,z:50,halfL:2}]:[]);}
+  assert.equal(c.crashed,true,block);assert.equal(c.vehicle.x,1,block);
+ }
+});
+test('graph traffic never recovers through another road layer or a distant lane',()=>{
+ for(const p of [{x:20,y:0,z:50,yaw:Math.PI},{x:0,y:5,z:50,yaw:Math.PI}]){
+  const {traffic:t,c,edge}=stalledTraffic();c.recoveryT=8;t.candidate=()=>p;t.recover(c,edge,.1,[]);assert.equal(c.vehicle.x,1);assert.equal(c.crashed,true);
+ }
+});
