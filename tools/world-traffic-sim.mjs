@@ -34,17 +34,20 @@ export function flowSample(traffic,dt,records=new Map()){
 
 export async function simulateFlow({session,route,position,mode='parked',level=1,seconds=180,seed=42,TrafficClass=WorldTraffic}){
  const traffic=trafficPool(new TrafficClass(session,{},route),seed);traffic.level=level;traffic.disabled=level===0;
- const records=new Map(),summary={mode,level,seconds,seed,maxStopped:0,maxClusters:0,maxFacing:0,maxStop:0,stoppedCarSeconds:0,clusterSeconds:0,peak:[],reasons:{},spawned:0};
+ const records=new Map(),summary={mode,level,seconds,seed,maxStopped:0,maxClusters:0,maxFacing:0,maxStop:0,stoppedCarSeconds:0,clusterSeconds:0,peak:[],reasons:{},spawned:0,maxActive:0,minActiveAfterWarmup:null,activeCarSeconds:0,maxMoving:0,movingCarSeconds:0,trafficMetres:0};
  const original=traffic.stopBlocked;traffic.stopBlocked=function(c){const e=session.roads.graph.edges.get(c.point.edge)?.value;const reason=!e?'missing-edge':c.offset>=(e.length||0)-2?'junction/end':'geometry/contact';summary.reasons[reason]=(summary.reasons[reason]||0)+1;original.call(this,c);};
- let previous=new Set();
+ let previous=new Set(),lastPositions=new Map();
  for(let step=0;step<seconds*20;step++){
   const t=step/20,player=position(t,mode);session.props.time=t;traffic.update(.05,player,[player]);
   // A conservative forward cone approximates the main view; this does not grant permission to retire visible cars.
   for(const c of traffic.cars)if(c.active){const dx=c.x-player.x,dz=c.z-player.z,d=Math.hypot(dx,dz);if(d<25||d<250&&(dx*-Math.sin(player.yaw)+dz*-Math.cos(player.yaw))>d*.35)c.lastSeenAt=traffic.t;}
   const current=new Set(traffic.cars.filter(c=>c.active).map(c=>c.vehicle));summary.spawned+=[...current].filter(c=>!previous.has(c)).length;previous=current;
+  const active=traffic.cars.filter(c=>c.active),moving=active.filter(c=>Math.abs(c.v)>.5);summary.maxActive=Math.max(summary.maxActive,active.length);summary.maxMoving=Math.max(summary.maxMoving,moving.length);summary.activeCarSeconds+=active.length*.05;summary.movingCarSeconds+=moving.length*.05;
+  if(t>=30)summary.minActiveAfterWarmup=Math.min(summary.minActiveAfterWarmup??Infinity,active.length);
+  for(const c of active){const p=lastPositions.get(c.vehicle);if(p)summary.trafficMetres+=Math.hypot(c.x-p.x,c.z-p.z);}lastPositions=new Map(active.map(c=>[c.vehicle,{x:c.x,z:c.z}]));
   const s=flowSample(traffic,.05,records);summary.maxStopped=Math.max(summary.maxStopped,s.stopped);summary.maxClusters=Math.max(summary.maxClusters,s.clusters);summary.maxFacing=Math.max(summary.maxFacing,s.facing);summary.maxStop=Math.max(summary.maxStop,s.maxStop);summary.stoppedCarSeconds+=s.stopped*.05;summary.clusterSeconds+=s.clusters*.05;if(s.stopped>summary.peak.length)summary.peak=s.cars;
  }
- for(const k of ['maxStop','stoppedCarSeconds','clusterSeconds'])summary[k]=+summary[k].toFixed(2);
+ for(const k of ['maxStop','stoppedCarSeconds','clusterSeconds','activeCarSeconds','movingCarSeconds','trafficMetres'])summary[k]=+summary[k].toFixed(2);
  return summary;
 }
 
@@ -70,7 +73,7 @@ async function main(){
   }
  }
  await writeFile(out,JSON.stringify(result,null,2));
- if(process.argv.includes('--check'))for(const row of result){assert.equal(row.maxClusters,0,JSON.stringify(row));assert.equal(row.maxFacing,0,JSON.stringify(row));assert.ok(row.maxStopped<=6,JSON.stringify(row));if(row.level)assert.ok(row.spawned>0,'empty traffic scenario '+row.id);}
+ if(process.argv.includes('--check'))for(const row of result){assert.equal(row.maxClusters,0,JSON.stringify(row));assert.equal(row.maxFacing,0,JSON.stringify(row));assert.ok(row.maxStopped<=6,JSON.stringify(row));if(row.level){assert.ok(row.spawned>0&&row.maxActive>=2,'empty traffic scenario '+row.id);assert.ok(row.movingCarSeconds>row.seconds*.5,'traffic must actually move: '+JSON.stringify(row));}}
 }
 
 // Public immutable assets only. Bounded to ~45 MB at the current release;

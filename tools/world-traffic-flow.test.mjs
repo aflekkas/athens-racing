@@ -74,6 +74,13 @@ test('a blocked turn backs out continuously and checks cars behind before moving
  for(let i=0;i<200&&c.yielding;i++)t.yieldBack(c,e,.1,[]);
  assert.equal(c.yielding,null);assert.equal(c.turn,null);assert.ok(c.vehicle.z<94);assert.equal(c.avoidNext.id,'exit');
 });
+test('reversing a turn samples current ground contact instead of cached curve height',()=>{
+ const e={id:'road',from:'a',to:'b',layer:0,flags:1,lanes:2,points:[[0,0,0],[0,0,1000]]},w=ribbonWorld([e]),t=trafficPool(new WorldTraffic(w,{}, {project:(x,z)=>({s:z,u:x})})),c=t.cars[0],pose=edgePoint(e,105);
+ Object.assign(c,{active:true,offset:105,point:pose,vehicle:{...pose,halfL:2.2,halfW:.9,vLong:0},stoppedT:7,v:0,turn:{entry:100,progress:5,next:'exit',points:[{...edgePoint(e,100),s:0},{...edgePoint(e,110),s:10}]}});
+ const contact=w.stream.contact;w.stream.contact=(x,z,o)=>{const p=contact(x,z,o);return p&&{...p,y:.7};};
+ t.yieldBack(c,e,.1,[]);assert.equal(c.vehicle.y,.7);assert.equal(c.point.y,.7);
+ const before={...c.vehicle};w.stream.contact=()=>null;t.yieldBack(c,e,.1,[]);assert.deepEqual([c.vehicle.x,c.vehicle.y,c.vehicle.z],[before.x,before.y,before.z]);assert.equal(c.vehicle.vLong,0);
+});
 
 // This deterministic gate uses the real published-route graph geometry with
 // ideal road ribbons. The separate CLI acceptance uses emitted contacts,
