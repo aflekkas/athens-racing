@@ -102,6 +102,8 @@ test('the real CHANGELOG.md is valid, newest first, and written for players', ()
     if (!/\btrim/i.test(text)) continue;
     assert.match(text, /top trim|no trim/i, `only the one-car-per-model removal note may mention trims: ${text}`);
   }
+  const current = log.releases[0]; // Unreleased is excluded from the player-facing release data.
+  assert.ok(!/\btrims?\b/i.test(JSON.stringify({items: current.items, images: current.images})), 'current shipped notes and images do not advertise the removed trim picker');
 });
 
 test('hasPriorPlay ignores what the game writes at startup and sees real play data', () => {

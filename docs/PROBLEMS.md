@@ -69,7 +69,7 @@ Difficulty: 🟢 good first fix · 🟡 medium · 🔴 deep / needs care.
 ## Open: other known issues
 
 - 🟢 **Esc goes to the wrong screen.** In the Athens route flow, Esc from Race Setup goes to the title screen instead of the track picker.
-- 🟢 **Stale What's New.** It still mentions engine trims, which were removed. Update `CHANGELOG.md` / What's New.
+- 🟢 **Stale What's New.** The Unreleased cleanup did not affect player-facing notes. Follow-up corrects the current release text and removes its obsolete trim-picker image; staging confirmation pending.
 - 🟢 **Signed-out leaderboard.** Signed-out players see "Leaderboard unavailable" in Top 3; show something friendlier.
 - 🔴 **Slow first load.** Cold load is still above the 8 s target: Megara about 8.1 s, Penteli hill about 9.1 s.
 - 🔴 **Old per-track loaders not removed.** They still serve the normal menu races; finishing the move to one Athens world means deleting them.
