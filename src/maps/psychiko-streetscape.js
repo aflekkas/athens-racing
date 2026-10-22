@@ -4,6 +4,7 @@
 // Blocky low-poly merged geometry, streamed in camera-centred cells: one draw call per cell and only nearby cells
 // resident (ranges follow the draw-distance class), so memory and draw calls stay bounded. World detail Off hides it.
 import * as THREE from 'three';
+import { PARKING_DENSITY } from '../world-tile-parking.js';
 import { indexFaros, drawFarosPaving } from './psychiko-faros.js';
 import { parkedCarTemplates, PARKED_CAR_COLORS as CAR_COLORS } from './psychiko-parked-cars.js';
 import { stoneTexture, recognitionAssets, indexRecognition, drawRecognition } from './psychiko-recognition.js';
@@ -184,7 +185,7 @@ export class PsychikoStreetscape {
     for (let i = 0; i < Pk.length; i += (sc.parkingStride||4)) {
       const st = strip(Pk[i]); if (!st) continue; const side = Pk[i + 1], s0 = Pk[i + 2] / 10, s1 = Pk[i + 3] / 10, lap = Pk[i] < 0;
       for (let d = s0 + 2.6, n = 0; d <= s1 - 2.4; d += 5.1 + hash(i, n) * 1.2, n++) {
-        if (hash(Pk[i+2], side, n, 3) > (sc.parkingStride?Pk[i+4]/100:.86)) continue; // the odd empty bay
+        if (hash(Pk[i+2], side, n, 3) > Math.min(PARKING_DENSITY,sc.parkingStride?Pk[i+4]/100:1)) continue; // the odd empty bay
         if ((sc.zebras || []).some((ref, j, a) => j % 2 === 0 && ref === Pk[i] && Math.abs(a[j + 1] / 10 - d) < 6)) continue;
         // Side streets: on the asphalt against the kerb. The lap: astride the kerb, just outside the raced width.
         const u = lap ? st.hw(d) + (Pk[i+5]===1?1.05:1.18) : st.hw(d) - 1 - hash(i, n, 4) * .25, p = off(st, d, u, side), yaw = Math.atan2(p.tx, p.tz) + (side > 0 ? 0 : Math.PI), color = Math.floor(hash(i, n, 5) * (CAR_COLORS.length-1));

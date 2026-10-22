@@ -7,6 +7,7 @@
 //   marks   [type, x, y, z, a, b, c]  type 0 kerb strip from (x, z) to (a, b), c colour (0 yellow, 1 white, 2 red); 1 manhole at (x, z), a radius, c 0 dark / 1 grey;
 //           2 asphalt patch at (x, z), a yaw, b length, c = width + 10 * tone (0 darker, 1 lighter)
 import { CELL, hashN } from './world-tile-trees.js';
+import { groundIndex } from './world-tile-ground.js';
 import { asphaltIndex } from './world-tile-asphalt.js';
 import { inArtQuarter } from './athens-quarters.js';
 
@@ -86,7 +87,15 @@ export function deriveStreetArt(t, m, infos, { ox = 0, oz = 0, propsRows = null,
     }
   }
   // ---- road marks: kerb paint, manholes, asphalt patches
-  const asphalt = asphaltIndex(t);
+  const asphalt = asphaltIndex(t), ground = groundIndex(t), markedRoads = new Set();
+  // A whole mark must fit, including its edges on a bend. Sampling only its centre spills onto paving.
+  const fits = (x,z,yaw,hl,hw) => {
+    const tx=Math.sin(yaw),tz=Math.cos(yaw);
+    for(let a=-hl;a<=hl+.001;a+=hl/4||1)for(let b=-hw;b<=hw+.001;b+=hw/2||1)
+      if(!asphalt.inside(x+tx*a+tz*b,z+tz*a-tx*b))return false;
+    return true;
+  };
+  const markY = (x,z,y) => {const h=ground.heightAt(x,z);return Number.isFinite(h)?h+.025:y+.025;};
   if (STREET_ART.marks && asphalt.count) {
     const stops = []; if (propsRows && propsKinds) for (let i = 0; i < propsKinds.length; i++) if (propsKinds[i] === 1 || propsKinds[i] === 2) stops.push(propsRows[i * 5], propsRows[i * 5 + 2]);
     for (let e = 0; e < E.length / 10 && marks.length < ART_LIMITS.marks * 7; e++) {
@@ -95,7 +104,7 @@ export function deriveStreetArt(t, m, infos, { ox = 0, oz = 0, propsRows = null,
       const seg = []; let length = 0; for (let k = 0; k < count - 1; k++) { const l = Math.hypot(P[(first + k + 1) * 3] - P[(first + k) * 3], P[(first + k + 1) * 3 + 2] - P[(first + k) * 3 + 2]); seg.push(l); length += l; }
       if (length < 12) continue;
       const at = s => { let acc = 0, k = 0; while (k < seg.length - 1 && acc + seg[k] < s) { acc += seg[k]; k++; } const a = first + k, l = seg[k] || 1, f = Math.min(1, Math.max(0, (s - acc) / l)); return { x: P[a * 3] + (P[a * 3 + 3] - P[a * 3]) * f, y: P[a * 3 + 1] + (P[a * 3 + 4] - P[a * 3 + 1]) * f, z: P[a * 3 + 2] + (P[a * 3 + 5] - P[a * 3 + 2]) * f, tx: (P[a * 3 + 3] - P[a * 3]) / l, tz: (P[a * 3 + 5] - P[a * 3 + 2]) / l }; };
-      const kerb = s => { const p = at(s), w = asphalt.reach(p.x, p.z, -p.tz, p.tx, 9); return w < 1.2 ? null : { ...p, w, kx: p.x - p.tz * (w - KERB_WIDTH / 2 - .02), kz: p.z + p.tx * (w - KERB_WIDTH / 2 - .02) }; };
+      const kerb = s => { const p = at(s), w = asphalt.reach(p.x, p.z, -p.tz, p.tx, 9); return w < 1.2 ? null : { ...p, w, kx: p.x - p.tz * (w - KERB_WIDTH / 2 - .15), kz: p.z + p.tx * (w - KERB_WIDTH / 2 - .15) }; };
       let prev = null;
       for (let s = 0; s <= length + .01; s += STRIP) {
         const cur = kerb(Math.min(s, length));
@@ -105,15 +114,18 @@ export function deriveStreetArt(t, m, infos, { ox = 0, oz = 0, propsRows = null,
           if (mid < YELLOW_NEAR || mid > length - YELLOW_NEAR || length < 2 * YELLOW_NEAR + 6) colour = 0; else if (hashN(id * 131 + window) % 100 < 20) colour = 0;
           const px = (prev.kx + cur.kx) / 2, pz = (prev.kz + cur.kz) / 2;
           for (let i = 0; i < stops.length; i += 2) if (Math.hypot(stops[i] - px, stops[i + 1] - pz) < 7.5 && (stops[i] - prev.x) * (-prev.tz) + (stops[i + 1] - prev.z) * prev.tx > 0) { colour = Math.floor(mid / 1.2) % 2 ? 2 : 1; break; }
-          if (colour >= 0) marks.push(0, prev.kx, prev.y + .03, prev.kz, cur.kx, cur.kz, colour);
+          if (colour >= 0 && fits(px,pz,Math.atan2(cur.kx-prev.kx,cur.kz-prev.kz),Math.hypot(cur.kx-prev.kx,cur.kz-prev.kz)/2,KERB_WIDTH/2)) marks.push(0, prev.kx, markY(prev.kx,prev.kz,prev.y), prev.kz, cur.kx, cur.kz, colour);
         }
         prev = cur;
       }
+      const repairKey=[E[o+1],E[o+2]].sort((a,b)=>a-b).join(':');
+      if (markedRoads.has(repairKey)) continue; // One repair set per two-way road, avoiding coplanar duplicates.
+      markedRoads.add(repairKey);
       for (let s = 9 + hashN(id) % 30; s < length - 6; s += 34 + hashN(id * 7 + Math.floor(s)) % 40) { // manholes and patches in the lane
         const p = at(s), h = hashN(id * 13 + Math.floor(s)), w = asphalt.reach(p.x, p.z, -p.tz, p.tx, 9); if (w < 1.6) continue;
         const lat = ((h >>> 5) % 100 / 100 - .5) * Math.min(2.4, w * .8), x = p.x - p.tz * lat, z = p.z + p.tx * lat;
-        if (h % 5 < 3) marks.push(1, x, p.y + .03, z, .3 + (h % 3) * .03, 0, (h >>> 9) % 4 === 0 ? 1 : 0);
-        else marks.push(2, x, p.y + .025, z, Math.atan2(p.tx, p.tz) + ((h >>> 7) % 7 - 3) * .03, 1.4 + (h >>> 11) % 20 / 10, Math.min(1.3, w * .6) + 10 * ((h >>> 3) % 2));
+        if (h % 5 < 3) {const r=.3+(h%3)*.03;if(fits(x,z,0,r,r))marks.push(1,x,markY(x,z,p.y),z,r,0,(h>>>9)%4===0?1:0);}
+        else {const yaw=Math.atan2(p.tx,p.tz)+((h>>>7)%7-3)*.03,len=1.4+(h>>>11)%20/10,wid=Math.min(1.3,w*.6);if(fits(x,z,yaw,len/2,wid/2))marks.push(2,x,markY(x,z,p.y),z,yaw,len,wid+10*((h>>>3)%2));}
       }
     }
   }

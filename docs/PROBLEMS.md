@@ -77,6 +77,7 @@ Difficulty: 🟢 good first fix · 🟡 medium · 🔴 deep / needs care.
 
 **Where to look:** `src/athens-props.js`, `src/athens-detail.js`, `src/athens-ground.js`, `src/athens-materials.js`, `docs/world-dressing.md` and `docs/world-beauty.md`.
 **Done when:** parked cars read as whole cars at every distance; there are no road patches on pavements and no visible seams. Include before/after screenshots from Glyfada, Syntagma and Psychiko.
+**Fix wave (staging verification pending):** reset leaked contact-shadow scale; sparse shared parking density, complete asphalt/support/clearance checks and stop/crossing exclusions; correct classic asphalt flags and drape fully contained road decals. Evidence: `/home/dev/data/agent-feed/fix-wave/parking/`. No world rebake.
 
 ## Open: other known issues
 

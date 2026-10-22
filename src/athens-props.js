@@ -147,7 +147,7 @@ export class AthensProps{
   *addTileSteps(key,packet){
     this.removeTile(key);const m=packet.metadata,ext=m.extensions?.worldDetail,o=m.origin,records=[],edges=[];
     const sig=ext?.signals,props=ext?.props,roofs=ext?.rooftops;
-    if(props){const r=packet.arrays[props.rows],k=packet.arrays[props.kind];for(let i=0;i<k.length;i++){const x=r[i*5]+o[0],z=r[i*5+2]+o[2];if(this.skip&&this.skip(k[i],x,z))continue;records.push({kind:k[i],x,y:r[i*5+1],z,yaw:r[i*5+3],variant:r[i*5+4]|0,state:0});if(i%32===31)yield {stage:'props'};}}
+    if(props){const r=packet.arrays[props.rows],k=packet.arrays[props.kind];for(let i=0;i<k.length;i++){const x=r[i*5]+o[0],z=r[i*5+2]+o[2];if(k[i]===KINDS.parked_car||this.skip&&this.skip(k[i],x,z))continue; /* Only validated derived parking, never the old ungrounded bake rows. */records.push({kind:k[i],x,y:r[i*5+1],z,yaw:r[i*5+3],variant:r[i*5+4]|0,state:0});if(i%32===31)yield {stage:'props'};}}
     if(ext?.parking!=null){const r=packet.arrays[ext.parking];for(let i=0;i<r.length;i+=5){const code=r[i+4]|0;records.push({kind:(code>>3)?KINDS.scooter:KINDS.parked_car,x:r[i]+o[0],y:r[i+1],z:r[i+2]+o[2],yaw:r[i+3],variant:code&7,state:0});if(i%160===155)yield {stage:'props'};}}
     if(ext?.coastalBoats!=null){const r=packet.arrays[ext.coastalBoats];for(let i=0;i<r.length;i+=5){records.push({kind:r[i+4]?KINDS.motorboat:KINDS.sailboat,x:r[i]+o[0],y:r[i+1],z:r[i+2]+o[2],yaw:r[i+3],variant:0,state:0});if(i%160===155)yield {stage:'props'};}}
     if(roofs!=null){const r=packet.arrays[roofs];for(let i=0;i<r.length;i+=5){const code=r[i+4]|0;records.push({kind:KINDS.rooftop+(code>>2),x:r[i]+o[0],y:r[i+1],z:r[i+2]+o[2],yaw:r[i+3],variant:code&3,state:0});if(i%160===155)yield {stage:'props'};}}
@@ -170,6 +170,7 @@ export class AthensProps{
   }
   rebuild(x,z){
     const near=this.collect(x,z),M=this._m,Q=this._q,E=this._e,V=this._p,S=this._s,C=this._c,used=new Map();this.near=[];
+    S.set(1,1,1); // Contact shadows reuse this scratch vector; every prop keeps its model dimensions.
     for(const r of near){const slot=this.meshes.get(r.kind),n=used.get(r.kind)||0;if(n>=slot.cap)continue;used.set(r.kind,n+1);r.slot=n;this.near.push(r);
       M.compose(V.set(r.x,r.y,r.z),Q.setFromEuler(E.set(0,r.yaw,0)),S);slot.mesh.setMatrixAt(n,M);
       slot.mesh.setColorAt(n,r.kind===KINDS.parked_car||r.kind===KINDS.scooter?C.set(CAR_PAINT[r.variant%CAR_PAINT.length]):C.set('#ffffff'));}
