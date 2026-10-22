@@ -106,6 +106,8 @@ Difficulty: 🟢 good first fix · 🟡 medium · 🔴 deep / needs care.
 
 ## Fixed
 
+- **Driving map overlay (2026-10-22):** kept both M ranges compact, replaced resident-cell/500 m street clipping with the published-world street overview, restored sea/coast and area labels, and added a calm race route with a labeled finish instead of the tiny green flag. No world rebake.
+
 - **Traffic pile-up.** Persistent contacts and stalled drivers recycle outside all player views; rivals brake at civilian bumper contact, use equal collision mass, and tiny nudges no longer reset crash recovery. Headless recovery and real-controller regressions added.
 
 (Move items here with the PR or commit that fixed them.)

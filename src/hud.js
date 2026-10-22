@@ -1,4 +1,7 @@
 import {buildRouteGuidanceData} from './route-guidance-data.js';
+import { drawWorldMapBase, drawMapLabels, drawMapDestination } from './world-minimap.js';
+import { routeMetrics } from './route-guidance/route.js';
+import { drawRouteOverlay } from './route-guidance/minimap.js';
 import { icon } from './ui/components.js';
 import { upperName } from './greek-caps.js';
 import { notifications } from './ui/notifications.js';
@@ -135,14 +138,43 @@ export class Hud {
     this.rates = { tacho: 30, map: 15, mapBig: 30 }; this._tachoAt = this._mapAt = -1e9; // Hz; setRates() follows the performance class
   }
 
-  setRoute(compiled){this.routeData=compiled?buildRouteGuidanceData(compiled):null;this.worldStreetCache=new Map();}
-  drawWorldMinimap(g,W,H,st,zoom=2.2){
-    const sc=zoom*W/600,cx=W/2,cy=H*.62;g.setTransform(1,0,0,1,0,0);g.fillStyle='#101b21';g.fillRect(0,0,W,H);g.save();g.translate(cx,cy);g.rotate(st.yaw);g.scale(sc,sc);g.translate(-st.x,-st.z);
-    const graph=this.worldRoads?.graph;for(const k of this.worldStreetCache.keys())if(!graph?.owners.has(k))this.worldStreetCache.delete(k);
-    for(const [k,owner]of graph?.owners||[]){if(this.worldRoads.stream.tiles.get(k)?.state!=='active')continue;let paths=this.worldStreetCache.get(k);if(!paths){paths=owner.edges.map(id=>graph.edges.get(id)?.value).filter(e=>e&&!(e.flags&8)).map(e=>e.points);this.worldStreetCache.set(k,paths);}g.strokeStyle='#697477';g.lineWidth=2/sc;for(const p of paths){if(!p.some(q=>Math.hypot(q[0]-st.x,q[2]-st.z)<500))continue;g.beginPath();p.forEach((q,i)=>i?g.lineTo(q[0],q[2]):g.moveTo(q[0],q[2]));g.stroke();}}
-    if(!st.free&&st.routeCursor?.offRoute&&st.routeCursor.returnPath?.length){g.save();g.setLineDash([5/sc,5/sc]);g.strokeStyle='#9ca8aa';g.lineWidth=1.5/sc;g.beginPath();g.moveTo(st.x,st.z);for(const p of st.routeCursor.returnPath)g.lineTo(p[0],p[2]);g.stroke();g.restore();}
-    if(!st.free)this.routeGuidance?.drawMinimap(g,sc);
-    g.restore();if(!st.free)this.routeGuidance?.drawTurnPreview(g,W,H);g.save();g.translate(cx,cy);g.fillStyle='#f5f2e8';g.beginPath();g.moveTo(0,-8);g.lineTo(5,6);g.lineTo(0,3);g.lineTo(-5,6);g.closePath();g.fill();g.restore();
+  setRoute(compiled) {
+    this.routeData = compiled ? buildRouteGuidanceData(compiled) : null;
+    this.minimapRoute = this.routeData ? routeMetrics(this.routeData.polyline) : null;
+    this.worldStreetCache = new Map();
+  }
+  drawWorldMinimap(g, W, H, st, zoom = 2.2) {
+    const sc = zoom * W / 600, cx = W / 2, cy = H * .62;
+    const radius = Math.hypot(W, H) / sc;
+    g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, W, H);
+    g.save(); g.translate(cx, cy); g.rotate(st.yaw); g.scale(sc, sc); g.translate(-st.x, -st.z);
+    drawWorldMapBase(g, st, radius, sc);
+    // Resident roads add newly published detail while the continuous street layer loads.
+    // Cull by segment bounds, never a vertex radius (long roads may cross the entire view).
+    g.strokeStyle = '#738083'; g.lineWidth = 1.5 / sc; g.lineCap = 'round'; g.lineJoin = 'round';
+    for (const { value: edge } of this.worldRoads?.graph.edges.values() || []) {
+      if (edge.flags & 8) continue;
+      const p = edge.points;
+      for (let i = 1; i < p.length; i++) {
+        const a = p[i - 1], b = p[i];
+        if (Math.max(a[0], b[0]) < st.x - radius || Math.min(a[0], b[0]) > st.x + radius || Math.max(a[2], b[2]) < st.z - radius || Math.min(a[2], b[2]) > st.z + radius) continue;
+        g.beginPath(); g.moveTo(a[0], a[2]); g.lineTo(b[0], b[2]); g.stroke();
+      }
+    }
+    if (!st.free && st.routeCursor?.offRoute && st.routeCursor.returnPath?.length) {
+      g.save(); g.setLineDash([5 / sc, 5 / sc]); g.strokeStyle = '#9ca8aa'; g.lineWidth = 1.5 / sc;
+      g.beginPath(); g.moveTo(st.x, st.z); for (const p of st.routeCursor.returnPath) g.lineTo(p[0], p[2]); g.stroke(); g.restore();
+    }
+    if (!st.free && this.minimapRoute) drawRouteOverlay(g, this.minimapRoute, this.routeGuidance?.cursorS ?? st.routeCursor?.s ?? st.s ?? 0, [], sc);
+    g.restore();
+    drawMapLabels(g, W, H, st, sc);
+    if (!st.free) {
+      const destination = st.objectiveTarget || this.routeData?.finish;
+      if (destination) drawMapDestination(g, W, H, st, sc, destination, st.objectiveTarget ? 'DESTINATION' : 'FINISH');
+      this.routeGuidance?.drawTurnPreview(g, W, H);
+    }
+    g.save(); g.translate(cx, cy); g.fillStyle = '#f5f2e8'; g.beginPath();
+    g.moveTo(0, -10); g.lineTo(6, 7); g.lineTo(0, 3); g.lineTo(-6, 7); g.closePath(); g.fill(); g.restore();
   }
 
   // ------------------------------------------------------------------ overview (title screen)
@@ -240,9 +272,9 @@ export class Hud {
   }
   /** redraw rates (Hz) of the analogue cluster and the minimap: the performance class's HUD budget */
   setRates({ tacho = 30, map = 15, mapBig = 30 } = {}) { this.rates = { tacho, map, mapBig }; }
-  /** M: the minimap grows into a wide-area map (about 0.8 km around you) so the other drivers are in view */
+  /** M: switch to a wider street view while keeping the driving view clear. */
   toggleBigMap(on = !this.bigMap) {
-    this.bigMap = on; this.mini.width = this.mini.height = on ? 640 : 300;
+    this.bigMap = on; this.mini.width = this.mini.height = on ? 420 : 300;
     this.mini.parentElement?.classList.toggle('is-big', on); return on;
   }
 

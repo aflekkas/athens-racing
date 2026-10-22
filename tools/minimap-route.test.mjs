@@ -40,3 +40,34 @@ test('no marker for a spare rival that nobody races, but rivals and remote drive
   assert.ok(draw({ s: 500, r0: 0, r1: 1000, rx: 520 }).cyan >= 1, 'a racing rival is marked');
   assert.equal(draw({ s: 500, r0: 0, r1: 1000, remotes: [{ x: 510, z: 0 }, { x: 530, z: 0 }] }).cyan >= 2, true);
 });
+
+// The wide driving map must keep the published streets even when their render cells unload.
+const { indexMapRoads, visibleMapRoads, mapScreenPoint, drawMapDestination } = await import('../src/world-minimap.js');
+const { atticaFromAthens } = await import('../src/spawn-spots.js');
+const road = (points, major = false) => ({ major, pts: points.flatMap(p => atticaFromAthens(...p)) });
+const makePath = () => ({ moveTo() {}, lineTo() {} });
+test('a road crossing the view is retained even when both endpoints are over 500 metres away', () => {
+  const cells = indexMapRoads([road([[-1800, 0], [1800, 0]])], makePath);
+  assert.equal(visibleMapRoads(cells, 0, 0, 180).size, 1);
+  assert.equal(visibleMapRoads(cells, 0, 1800, 180).size, 0);
+});
+test('connected roads survive cell boundaries and wide-view culling without duplicate drawing', () => {
+  const cells = indexMapRoads([road([[-800, 500], [600, 500]]), road([[600, 500], [1200, 800]])], makePath);
+  const roads = [...visibleMapRoads(cells, 512, 512, 1800)];
+  assert.equal(roads.length, 2);
+  assert.ok(Math.abs(roads[0].box[2] - roads[1].box[0]) < .001);
+});
+test('map heading aligns world positions with the player and destination remains labeled on either range', () => {
+  const st = { x: 10, z: 20, yaw: Math.PI / 2 };
+  assert.deepEqual(mapScreenPoint(300, 300, st, 1, 10, 20), [150, 186]);
+  const [x, y] = mapScreenPoint(300, 300, st, 1, 110, 20);
+  assert.ok(Math.abs(x - 150) < .001 && Math.abs(y - 286) < .001);
+  for (const scale of [1.1, .175]) {
+    const calls = [], g = new Proxy({}, { get: (_, key) => (...args) => calls.push([key, ...args]), set: () => true });
+    drawMapDestination(g, 300, 300, st, scale, { x: 5000, z: -5000 }, 'FINISH');
+    assert.ok(calls.some(c => c[0] === 'fillText' && c[1] === 'FINISH'));
+    const circle = calls.find(c => c[0] === 'arc');
+    assert.ok(circle[1] >= 28 && circle[1] <= 272 && circle[2] >= 65 && circle[2] <= 235);
+    assert.ok(!calls.some(c => c[0] === 'fillRect'), 'no unexplained square flag');
+  }
+});
