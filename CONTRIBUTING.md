@@ -2,6 +2,8 @@
 
 Thanks for helping. This page is the whole process: read it once before your first pull request.
 
+**Looking for something to work on?** [`docs/PROBLEMS.md`](docs/PROBLEMS.md) lists the open problems, each marked by difficulty and with pointers to the code.
+
 ## The rules
 
 1. **Everything goes through a pull request into `staging`.** There are two long-lived branches:
