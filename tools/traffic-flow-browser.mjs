@@ -27,9 +27,10 @@ try{
    if(window.__athens){const a=__athens;window.__flowPilot={...a,route:a.player.veh.route,G:{state:'race'},session:{props:a.props,roads:a.roads},traffic:{cars:a.traffic},step(dt,draw){a.stream.activateFrame();for(let i=0;i<4;i++)a.step(dt/4);if(draw)a.render(1/60);}};}else window.__flowPilot=__routePilot;
    const p=__flowPilot,v=p.player.veh;
    await p.traffic.warmFleet?.();__flow.menu.hide();p.G.bestSetupChanged=true;p.G.streamInterrupted=true;
-   window.__flowStats={area,elapsed:0,distance:0,last:{x:v.x,z:v.z},maxStopped:0,maxClusters:0,maxStop:0,stoppedCarSeconds:0,clusterSeconds:0,stops:new Map(),samples:[]};
+   window.__flowStats={area,elapsed:0,distance:0,last:{x:v.x,z:v.z},maxStopped:0,maxClusters:0,maxStop:0,stoppedCarSeconds:0,clusterSeconds:0,carContacts:0,stops:new Map(),samples:[]};
+   if(p.traffic.collide){const collide=p.traffic.collide.bind(p.traffic);p.traffic.collide=(actor,out,...rest)=>{const n=out.length;try{return collide(actor,out,...rest);}finally{__flowStats.carContacts+=out.length-n;}};}
    p.setDriver(v=>{
-    if(window.__flowStats.parked)return {throttle:0,brake:1,steer:0,handbrake:false};
+    if(window.__flowStats.parked)return {throttle:0,brake:0,steer:0,handbrake:true};
     let target;
     if(area!=='quick'){
      const graph=p.session.roads.graph,n=graph.nearest(v.x,v.z,{referenceY:v.y,maxDistance:30});
@@ -60,12 +61,12 @@ try{
      s.maxStopped=Math.max(s.maxStopped,stopped.length);s.maxClusters=Math.max(s.maxClusters,clusters);s.stoppedCarSeconds+=stopped.length/60;s.clusterSeconds+=clusters/60;
      if(i%60===0){p.step(.00001,true,true,1/60);await new Promise(r=>setTimeout(r,0));}
     }
-    const row={elapsed:s.elapsed,distance:s.distance,maxStopped:s.maxStopped,maxClusters:s.maxClusters,maxStop:s.maxStop,stoppedCarSeconds:s.stoppedCarSeconds,clusterSeconds:s.clusterSeconds,active:p.traffic.cars.filter(c=>c.active).length,position:[v.x,v.y,v.z],speed:v.vLong,state:p.G.state};s.samples.push(row);return row;
+    const row={elapsed:s.elapsed,physicsSeconds:p.stats?.simulationSeconds??p.G.raceT,distance:s.distance,maxStopped:s.maxStopped,maxClusters:s.maxClusters,maxStop:s.maxStop,stoppedCarSeconds:s.stoppedCarSeconds,clusterSeconds:s.clusterSeconds,active:p.traffic.cars.filter(c=>c.active).length,moving:p.traffic.cars.filter(c=>c.active&&Math.abs(c.v)>.5).length,contacts:p.stats?.carHits??s.carContacts,missingContacts:p.stats?.missingContacts??p.session.metrics?.missingContacts??0,holds:p.stats?.holds??p.session.metrics?.holds??0,position:[v.x,v.y,v.z],speed:v.vLong,state:p.G.state};s.samples.push(row);return row;
    },batch);
    console.log(area,batch,JSON.stringify(state));
    if([17,23].includes(batch)){const file=resolve(out,`${phase}-${area}-${batch===17?'drive':'parked'}.png`),temp=file+'.tmp';await page.screenshot({path:temp,type:'png',timeout:60000});await rename(temp,file);}
   }
-  report.rows.push(await page.evaluate(()=>{const s=__flowStats,p=__flowPilot;return {area:s.area,build:document.querySelector('meta[name="asr-sha"]')?.content,elapsed:s.elapsed,distance:s.distance,maxStopped:s.maxStopped,maxClusters:s.maxClusters,maxStop:s.maxStop,stoppedCarSeconds:s.stoppedCarSeconds,clusterSeconds:s.clusterSeconds,samples:s.samples,trafficSource:p.traffic.candidate?.toString().slice(0,100)||'WorldTraffic free roam'};}));
+  report.rows.push(await page.evaluate(()=>{const s=__flowStats,p=__flowPilot;return {area:s.area,build:document.querySelector('meta[name="asr-sha"]')?.content,elapsed:s.elapsed,physicsSeconds:p.stats?.simulationSeconds??p.G.raceT,distance:s.distance,maxStopped:s.maxStopped,maxClusters:s.maxClusters,maxStop:s.maxStop,stoppedCarSeconds:s.stoppedCarSeconds,clusterSeconds:s.clusterSeconds,contacts:p.stats?.carHits??s.carContacts,missingContacts:p.stats?.missingContacts??p.session.metrics?.missingContacts??0,holds:p.stats?.holds??p.session.metrics?.holds??0,samples:s.samples,trafficSource:p.traffic.candidate?.toString().slice(0,100)||'WorldTraffic free roam'};}));
   await context.close();await writeFile(resolve(out,phase+'-browser.json'),JSON.stringify(report,null,2));
  }
 }finally{await writeFile(resolve(out,phase+'-browser.json'),JSON.stringify(report,null,2));await browser.close();}

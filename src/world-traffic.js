@@ -103,6 +103,7 @@ export class WorldTraffic {
   let p,offset=c.offset,turn=c.turn;
   if(turn&&turn.progress>0){const progress=Math.max(0,turn.progress-.7*dt),i=Math.max(1,turn.points.findIndex(p=>p.s>=progress)),a=turn.points[i-1],b=turn.points[i],t=(progress-a.s)/(b.s-a.s||1);p={...a,x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t,z:a.z+(b.z-a.z)*t,yaw:a.yaw+Math.atan2(Math.sin(b.yaw-a.yaw),Math.cos(b.yaw-a.yaw))*t};turn={...turn,progress};offset=turn.entry+progress;
   }else{turn=null;offset=Math.max(0,c.offset-.7*dt);p=this.candidate(edge,offset,c);}
+  if(p){const contact=this.session.stream.contact(p.x,p.z,{referenceY:p.y,layer:p.layer,requiredFlags:1});if(contact){p.y=contact.y;p.surfaceId=contact.surfaceId;}else p=null;}
   if(!p||this.poseBlocked(c,p,actors)||!this.session.safePose(p,{halfWidth:c.wid/2,halfLength:c.len/2})){this.stopBlocked(c);return true;}
   c.offset=offset;c.turn=turn;c.point=p;c.v=-.7;this.placeTraffic(c,p);
   if(!turn&&offset<=Math.max(0,c.yielding.target)){c.avoidNext={id:c.yielding.next,until:this.t+8};c.yielding=null;c.stoppedT=0;c.blockedAt=null;c.v=c.vehicle.vLong=0;}
