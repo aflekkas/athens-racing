@@ -94,3 +94,55 @@ test('graph traffic never recovers through another road layer or a distant lane'
   const {traffic:t,c,edge}=stalledTraffic();c.recoveryT=8;t.candidate=()=>p;t.recover(c,edge,.1,[]);assert.equal(c.vehicle.x,1);assert.equal(c.crashed,true);
  }
 });
+
+import {Traffic} from '../src/traffic.js';
+function graphQueue(speed=8,gap=20){
+ const edge={id:'lane',from:'a',to:'b',points:[[0,0,0],[0,0,1000]],speedKph:60,layer:0},graph={edges:new Map([['lane',{value:edge}]]),outgoing:new Map(),legal:()=>true};
+ const t=new WorldTraffic({roads:{graph},props:{hold:()=>false},safePose:()=>true},{},{project:(x,z)=>({s:z,u:x})}),mesh={isMesh:true,onBeforeRender(){}};
+ const c={active:true,crashed:false,len:4,wid:2,v:speed,offset:100,point:{edge:'lane'},vehicle:{x:0,y:0,z:100,yaw:Math.PI,vLong:speed,vLat:0,w:0,halfL:2,halfW:1},drv:{a:1.8,b:3,T:1.2,s0:2.2,vf:1},m:{root:{visible:true,traverse:fn=>fn(mesh)}}};
+ t.pool={idm:Traffic.prototype.idm};t.cars=[c];t.spawnT=100;t.candidate=(_e,s)=>({x:0,y:0,z:s,yaw:Math.PI,edge:'lane'});
+ const leader={x:0,y:0,z:104+gap,yaw:Math.PI,vLong:0,vLat:0,halfL:2,halfW:1};return {t,c,leader,edge,mesh};
+}
+test('streamed traffic brakes for normal queues and cannot push through a sudden close blockage',()=>{
+ for(const [speed,gap] of [[8,20],[15,8]]){const {t,c,leader}=graphQueue(speed,gap);let minimum=gap;
+  for(let i=0;i<2400;i++){t.update(1/240,{x:200,y:0,z:100},[leader]);minimum=Math.min(minimum,leader.z-c.vehicle.z-4);}
+  assert.ok(minimum>=.349);assert.equal(c.v,0);assert.equal(c.vehicle.vLong,0);
+ }
+});
+test('streamed traffic ignores a stopped leader on a stacked bridge',()=>{
+ const {t,c,leader}=graphQueue();leader.y=6;
+ for(let i=0;i<1200;i++)t.update(1/240,{x:200,y:0,z:100},[leader]);
+ assert.ok(c.v>8);assert.ok(c.vehicle.z>leader.z);
+});
+test('streamed traffic arms a timer for missing candidates and dead ends, and recycles only after unseen',()=>{
+ for(const failure of ['candidate','successor']){const {t,c,mesh}=graphQueue();if(failure==='candidate')t.candidate=()=>null;else{c.offset=c.vehicle.z=999.99;}
+  const player={x:100,y:0,z:c.vehicle.z};
+  for(let i=0;i<100;i++){t.update(.1,player,[]);mesh.onBeforeRender();assert.equal(c.active,true,failure);}
+  assert.ok(c.blockedAt!=null);assert.equal(c.vehicle.vLong,0);
+  for(let i=0;i<25;i++)t.update(.1,player,[]);
+  assert.equal(c.active,false,failure);assert.equal(c.m.root.visible,false);
+ }
+});
+test('streamed traffic retires far-displaced, invalid-lane and paired wrecks without moving visible bodies',()=>{
+ for(const failure of ['far','missing','pair']){const {traffic:t,c,edge}=stalledTraffic();c.visibilityTracked=true;c.lastSeenAt=0;c.recoveryT=9;t.t=20;
+  if(failure==='far')t.candidate=()=>({x:20,y:0,z:50,yaw:Math.PI});if(failure==='missing')t.candidate=()=>null;
+  if(failure==='pair')t.cars.push({...c,vehicle:{...c.vehicle,x:2},m:{root:{visible:true}}});
+  for(const car of t.cars)t.recover(car,edge,.1,[]);
+  assert.ok(t.cars.every(car=>!car.active));assert.equal(c.vehicle.x,1);
+ }
+});
+test('rendered traffic including mirrors stays protected, and nearby actors protect unseen wrecks',()=>{
+ const {t,c,mesh,edge}=graphQueue();let previous=0;mesh.onBeforeRender=()=>previous++;t.watchVisibility(c);c.crashed=true;c.recoveryT=9;t.t=20;t.candidate=()=>null;mesh.onBeforeRender();
+ t.recover(c,edge,.1,[]);assert.equal(c.active,true);assert.equal(previous,1);
+ t.t=23;t.recover(c,edge,.1,[{x:0,y:0,z:105}]);assert.equal(c.active,true);
+ t.recover(c,edge,.1,[]);assert.equal(c.active,false);
+});
+test('graph traffic recovery can gently separate an existing overlap and does not confuse adjacent lanes',()=>{
+ const {traffic:t,c,edge}=stalledTraffic();c.recoveryT=5;
+ t.cars.push({active:true,vehicle:{x:3,y:0,z:50,yaw:Math.PI,halfW:1,halfL:2,vLong:0,vLat:0}});
+ t.recover(c,edge,.1,[]);assert.ok(c.vehicle.x<1,'reducing an existing overlap is permitted');
+});
+test('streamed traffic yields its proposed footprint at a crossing junction',()=>{
+ const {t,c}=graphQueue();const crossing={x:3,y:0,z:103,yaw:Math.PI/2,halfL:3,halfW:1,vLong:0,vLat:0};
+ t.update(.1,{x:100,y:0,z:100},[crossing]);assert.equal(c.vehicle.z,100);assert.equal(c.vehicle.vLong,0);assert.ok(c.blockedAt!=null);
+});
