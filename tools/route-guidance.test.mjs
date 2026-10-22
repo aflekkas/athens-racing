@@ -94,6 +94,7 @@ test('Quick Race adapts only the selected event, reverses arrows and keeps its e
  assert.deepEqual(data.decisions.map(d=>d.s),[50,130]);assert.equal(data.polyline[0].x,50);assert.equal(data.polyline.at(-1).x,250);
  const back=legacyGuidanceData(map,{s0:250,s1:50,dir:-1,closed:false},[{s:100}]);
  assert.deepEqual(back.decisions.map(d=>d.s),[70,150]);assert.equal(back.polyline[0].z,-2);assert.equal(back.polyline.at(-1).x,50);
+ assert.equal(back.polyline[0].leftM,2);assert.equal(back.polyline[0].rightM,4);
  const scene=new THREE.Scene(),v=createLegacyGuidance(scene,map,forward,[{s:100}],{at:()=>({y:0,surf:'asphalt'})});
  v.update({cursorS:30,isRace:true});assert.ok(v.stats.instances>0);assert.ok(v.stats.instances<=128);
  assert.equal(v.paint.chunks.records.some(r=>r.kind===2),false);
@@ -108,4 +109,14 @@ test('paint remains within asymmetric road bounds while clearing the car silhoue
   for(const side of [-.5,.5]){const p=new THREE.Vector3(side,0,0).applyMatrix4(m),u=(p.x-r.x)*-r.tz+(p.z-r.z)*r.tx;assert.ok(u>=-r.leftM-1e-5&&u<=r.rightM+1e-5);}
  }
  assert.ok(paint.mesh.instanceMatrix.array[14]>0,'forward chevrons sit beside the centre line');v.dispose();
+});
+
+test('left-turn paint uses the inside edge, bounded by the narrower left width',()=>{
+ const v=new RouteGuidance(new THREE.Scene(),{contact:()=>({y:0})}),d=supplied();d.paintTiming=false;d.decisions[0].turn='left';v.setRoute(d);v.onTileActivated('0,0');v.update({cursorS:100,isRace:true});
+ const paint=v.paint,rows=paint.chunks.visible(100);
+ for(let i=0;i<paint.mesh.count;i++){
+  const r=rows[i],m=new THREE.Matrix4();paint.mesh.getMatrixAt(i,m);const centre=new THREE.Vector3(0,0,0).applyMatrix4(m),offset=(centre.x-r.x)*-r.tz+(centre.z-r.z)*r.tx;
+  assert.ok(offset<0);assert.ok(offset-r.width/2>=-r.leftM-1e-5);
+ }
+ v.dispose();
 });

@@ -5,7 +5,10 @@ import {cellKey,decisionPoints} from './route.js';
 // selected event, in driving order; keep paint on the driver's carriageway.
 export function legacyGuidanceData(map,event,junctions=[]){
   const route=map.route,dir=event.dir||1,lengthM=event.closed?route.length:Math.abs(event.s1-event.s0);
-  const at=s=>route.point(event.s0+dir*s,route.closed?0:dir*route.laneU(event.s0+dir*s,0));
+  const at=s=>{
+    const station=event.s0+dir*s,u=route.closed?0:dir*route.laneU(station,0),edge=route.edge(station);
+    return {...route.point(station,u),leftM:route.closed?edge:Math.abs(u)-(route.medHalf?.(station)||0),rightM:edge-Math.abs(u)};
+  };
   const polyline=[];
   for(let s=0;s<lengthM;s+=4)polyline.push({...at(s),s});
   polyline.push({...at(lengthM),s:lengthM});

@@ -70,7 +70,7 @@ export class GuidanceChunks {
     for(const d of decisions)for(const offset of [-35,-20,-8,8]){
       const station=d.s+offset;if(!this.closed&&(station<0||station>this.route.length))continue;
       const p=sampleRoute(this.route,this.closed?(station+this.route.length)%this.route.length:station);
-      if(p)this.records.push({...p,kind:0,decisionS:d.s,width:1.6,length:3.2});
+      if(p)this.records.push({...p,kind:0,decisionS:d.s,side:d.turn==='left'||d.angle<0?-1:1,width:1.6,length:3.2});
     }
     for(const s of timing?.paintTiming===false?[]:this.closed?[0]:[0,this.route.length]){
       const supplied=s===0?timing?.start:timing?.finish,p=supplied?{...supplied,tx:-Math.sin(supplied.yaw),tz:-Math.cos(supplied.yaw)}:sampleRoute(this.route,s);

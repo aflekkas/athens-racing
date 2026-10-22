@@ -72,7 +72,8 @@ export class RoutePaint {
           width=Math.min(width,2*Math.min(r.leftM,r.rightM));
           // Clear the chase car's silhouette, while keeping every corner inside
           // the supplied road width. Narrow lanes retain centred paint.
-          const offset=Math.max(0,Math.min(1.8,r.rightM-width/2-.25));
+          const side=r.side||1,edge=side<0?r.leftM:r.rightM;
+          const offset=side*Math.max(0,Math.min(4,edge-width/2-.25));
           x-=r.tz*offset;z+=r.tx*offset;
         }
         if(width<=0)continue;
