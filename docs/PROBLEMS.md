@@ -44,12 +44,6 @@ Difficulty: 🟢 good first fix · 🟡 medium · 🔴 deep / needs care.
 
 ## Open: reported by the owner (most important first)
 
-### 3. No direction arrows 🟡
-**What's wrong:** nothing in the world shows which way to go. The plan (`docs/plans/unified-world.md`) calls for low, subtle chevrons at junctions and turns, but they're missing or invisible in play.
-**Where to look:** `src/route-guidance.js` (the module exists, see `docs/route-guidance.md`), how `src/main.js` wires it up, and `src/hud.js` for the minimap route.
-**Done when:** low, understated arrows on or beside the road point the way at junctions and tight turns, readable at speed but not shouty. No glows or outlines; this is an owner-locked decision.
-**Fix wave (staging verification pending):** wired legacy Quick Race to the pooled road paint, added within-edge bends, and moved larger faint chevrons toward turn edges to clear the chase car. Speed controls the 48–80 m preview even on delayed frames. Syntagma candidate verified; remaining: deployed Riviera/Syntagma/Penteli browser checks. Evidence: `/home/dev/data/agent-feed/fix-wave/direction-arrows/`. No world rebake.
-
 ### 4. Unrealistic terrain 🔴
 **What's wrong:** the ground and roads rise and fall in big unrealistic lumps and dips that real Athens streets don't have.
 **Where to look:**
@@ -88,7 +82,9 @@ Difficulty: 🟢 good first fix · 🟡 medium · 🔴 deep / needs care.
 
 ## Fixed
 
-- **1. Psychiko buried under generic buildings (2026-10-22):** restored all 3,647 authored pieces with the original building kit, surveyed facades, roofs and tile-owned collision; excluded generated lots from authored villa gardens and footprints. Matching centre views: `/home/dev/data/agent-feed/fix-wave/psychiko/`; native day/night budgets recaptured and 32 focused regressions pass. No world rebake.
+- **3. Direction arrows (2026-10-22):** Quick Race now shares faint road chevrons with the streamed routes; larger, width-bounded marks sit beside the car, cover within-edge bends, and fade over a speed-based approach. One 128-instance pool, no glows or gates, and no world rebake. Browser evidence: `/home/dev/data/agent-feed/fix-wave/direction-arrows/`.
+
+- **1. Psychiko buried under generic buildings (2026-10-22):** restored all 3,647 authored pieces with the original building kit, surveyed facades, roofs and tile-owned collision; excluded generated lots from authored villa gardens and footprints; stationary spawns finish loading walls, trees and frontage details. Matching centre views: `/home/dev/data/agent-feed/fix-wave/psychiko/`; native day/night budgets recaptured and 32 focused regressions pass. No world rebake.
 
 - **2. Race finishes / harsh off-track handling.** Short kerb/verge/roundabout cuts preserve progress without notices; prolonged departures guide back without resetting. Accepted station crossings time every split and finish; headless regressions drive all six Quick Race routes and their full lap counts.
 

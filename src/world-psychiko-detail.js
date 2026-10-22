@@ -21,7 +21,7 @@ export class WorldPsychikoDetail {
   this.street=new PsychikoStreetscape(map,parent,height);for(const mesh of this.street.parking){mesh.count=0;mesh.visible=false;}this.street.streamed=true;this.street.activeAt=(x,z)=>this.active(x,z);this.street.groundY=height;
   // The immutable scenery rebake certifies complete crown footprints against emitted contacts.
   const safeTrees=new Set(data.vegetationClearance?.version===1?data.vegetationClearance.allowedTreeSeeds:[]),drawTree=this.street.tree.bind(this.street);this.street.tree=(m,r)=>{if(safeTrees.has(r.seed))drawTree(m,r);};
-  const buildCell=this.street.buildCell.bind(this.street);this.street.buildCell=(kind,key)=>{const mesh=buildCell(kind,key);return mesh?fadeMergedVegetation(mesh):mesh;};
+  const buildCell=this.street.buildCell.bind(this.street);this.street.buildCell=(kind,key)=>{this.builtStreetCell=true;const mesh=buildCell(kind,key);return mesh?fadeMergedVegetation(mesh):mesh;};
   this.street.network.height=height;this.height=height;this.obstacleBuckets=new Map();for(const b of this.street.obstacles){const p={...b,...this.world(b.x,b.z),yaw:Math.atan2(Math.sin(b.yaw)*this.sx,Math.cos(b.yaw)*this.sz),hl:b.hl*Math.max(this.sx,this.sz),hw:b.hw*Math.max(this.sx,this.sz),kind:'parked'};const k=`${Math.floor(p.x/64)},${Math.floor(p.z/64)}`;if(!this.obstacleBuckets.has(k))this.obstacleBuckets.set(k,[]);this.obstacleBuckets.get(k).push(p);}this.off=session.subscribeTiles({activated:k=>this.changed(k,true),removed:k=>this.changed(k,false)});
  }
  world(x,z){return{x:this.ox+x*this.sx,z:this.oz+z*this.sz};}
@@ -41,7 +41,11 @@ export class WorldPsychikoDetail {
   // Recognition facades use the same base/top as the restored shells, including sloping lots.
   for(const cell of street.cells.values())if(cell){cell.removeFromParent();cell.geometry.dispose();}street.cells.clear();street.last.x=Infinity;
  }
- update(player){if(this.roofQueue.size){const k=this.roofQueue.values().next().value;this.roofQueue.delete(k);this.buildRoof(k);}const o=this.session.stream.origin,group=this.street.group;group.position.set(this.ox-o.x,0,this.oz-o.z);group.scale.set(this.sx,1,this.sz);for(const b of this.buildings.values()){b.group.position.copy(group.position);b.group.scale.copy(group.scale);}const p={x:(player.x-this.ox)/this.sx,z:(player.z-this.oz)/this.sz};this.street.update({position:p});}
+ update(player){if(this.roofQueue.size){const k=this.roofQueue.values().next().value;this.roofQueue.delete(k);this.buildRoof(k);}const o=this.session.stream.origin,group=this.street.group;group.position.set(this.ox-o.x,0,this.oz-o.z);group.scale.set(this.sx,1,this.sz);for(const b of this.buildings.values()){b.group.position.copy(group.position);b.group.scale.copy(group.scale);}const p={x:(player.x-this.ox)/this.sx,z:(player.z-this.oz)/this.sz};this.builtStreetCell=false;this.street.update({position:p});
+  // The streamed two-cell budget also applies after a teleport. Continue next frame
+  // until the queue drains, even if the player has not moved another eight metres.
+  if(this.builtStreetCell)this.street.last.x=Infinity;
+ }
  nearby(p){const result=[],x=Math.floor(p.x/64),z=Math.floor(p.z/64);for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)for(const b of this.obstacleBuckets.get(`${x+dx},${z+dz}`)||[])if(this.session.stream.readyAt(b.x,b.z)&&Math.hypot(b.x-p.x,b.z-p.z)<12)result.push(b);return result;}
  safe(p,{halfLength,halfWidth}){return !this.nearby(p).some(b=>carOverlap({...p,halfL:halfLength,halfW:halfWidth},{...b,halfL:b.hl,halfW:b.hw}));}
  resolve(v){for(const b of this.nearby(v)){const c=carOverlap(v,{...b,halfL:b.hl,halfW:b.hw});if(c)Ground.prototype._hit.call(this,v,c.nx,c.nz,c.depth,undefined,b);}}
