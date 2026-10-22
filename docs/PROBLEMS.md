@@ -96,7 +96,6 @@ Difficulty: 🟢 good first fix · 🟡 medium · 🔴 deep / needs care.
 - 🟢 **Stale What's New.** It still mentions engine trims, which were removed. Update `CHANGELOG.md` / What's New.
 - 🟢 **Signed-out leaderboard.** Signed-out players see "Leaderboard unavailable" in Top 3; show something friendlier.
 - 🟡 **Free-roam mirror is a still picture.** In free roam the cockpit mirror shows a static image and ignores Settings → Graphics → Mirror. Quick Race mirrors work.
-- 🟡 **Traffic pile-up.** One traffic car got stuck being pushed by the AI in a Glyfada drive.
 - 🔴 **Slow first load.** Cold load is still above the 8 s target: Megara about 8.1 s, Penteli hill about 9.1 s.
 - 🔴 **Old per-track loaders not removed.** They still serve the normal menu races; finishing the move to one Athens world means deleting them.
 
@@ -106,5 +105,7 @@ Difficulty: 🟢 good first fix · 🟡 medium · 🔴 deep / needs care.
 - **A failed commit is never retried on its own.** After a failure the release train skips that commit until `~/.local/state/athens-release/failed` is removed.
 
 ## Fixed
+
+- **Traffic pile-up.** Persistent contacts and stalled drivers recycle outside all player views; rivals brake at civilian bumper contact, use equal collision mass, and tiny nudges no longer reset crash recovery. Headless recovery and real-controller regressions added.
 
 (Move items here with the PR or commit that fixed them.)

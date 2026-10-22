@@ -961,6 +961,15 @@ export class RivalAI {
     if (!this.perfect && this.elapsed > this.nextMistake) { this.mistake = 0.35 + this.random() * 0.35; this.nextMistake = this.elapsed + 1 / Math.max(1e-5, p.mistakeRate) * (0.75 + this.random()); }
     if (this.mistake > 0) { this.mistake -= dt; targetSpeed *= 0.96; }
 
+    // A civilian's crash velocity can be our own pushing speed. Following that
+    // velocity keeps the throttle open forever: release it at bumper contact.
+    // Leave reverse/backoff recovery available once we are nearly stationary.
+    if (veh.vLong > 0.5 && obs.some(o => !o.racer && o.d > 0 && o.d < veh.halfL + o.hs + 0.8 &&
+      Math.abs(o.u - veh.u) < bodyHalfW + o.hu + 0.15)) {
+      this.integral = Math.min(0, this.integral); this.slow = 0;
+      return this.result(0, veh.vLong < 1 ? 0.45 : 0.85, steer, false, false, 'traffic-contact', 0, baseU + this.offset);
+    }
+
     // Boxed in at a standstill behind a stopped car with a clear lane beside it:
     // a car cannot step sideways at rest. Back off until the gap allows a
     // full-lock turn out, then creep out on lock until clear of its flank.

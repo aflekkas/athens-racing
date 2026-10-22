@@ -251,3 +251,16 @@ for (const dir of [1, -1]) test(`no-escape-across-oncoming-${dir}`, () => {
   record(`no-escape-across-oncoming-${dir}`, { crossed, contacts }, []);
   if (!baseline) { assert.equal(crossed, false, 'escaped across the oncoming car'); assert.equal(contacts, 0); }
 });
+
+
+test('rivals brake at civilian bumper contact even if the civilian is being pushed at their speed',()=>{
+  for(const dir of [1,-1])for(const speed of [.8,8]){
+    const route=road({wide:true}),{veh,controller}=make(route,500,dir*2.25,speed,dir);
+    controller.elapsed=5;
+    const c=obstacle(500+dir*(veh.halfL+2.2-.1),veh.u,dir*speed);
+    c.dir=dir;c.crash={vs:dir*speed,vu:0,yaw:0,w:0};
+    const input=controller.update(dt,{traffic:[c]});
+    assert.equal(input.throttle,0);assert.ok(input.brake>0);assert.equal(controller.debug.phase,'traffic-contact');
+    if(speed<1)assert.ok(input.brake<=.45,'service brake must not select reverse');
+  }
+});
