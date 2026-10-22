@@ -53,18 +53,6 @@ Difficulty: 🟢 good first fix · 🟡 medium · 🔴 deep / needs care.
 
 **Done when:** in Psychiko, Vas's authored buildings and layout show, and generated infill only fills the gaps around them. Include before/after screenshots from the same spots in the centre.
 
-### 2. Finishing races doesn't work reliably, and going off track is far too harsh 🟡
-**What's wrong:** races often can't be finished cleanly. Leaving the road is punished too hard: off-route notices, lost progress, forced recovery.
-**Where to look:**
-- `src/route-navigation.js` and `src/course.js`, which own off-route, wrong-way and rejoin
-- `src/driving-objectives.js`
-- `docs/route-guidance.md`
-
-**Done when:**
-- Cutting across a kerb, verge or short shortcut doesn't trigger anything.
-- Only clearly leaving the route for a long way does.
-- Every Quick Race route can be finished start to finish, and a test drives each one to the finish.
-
 ### 3. No direction arrows 🟡
 **What's wrong:** nothing in the world shows which way to go. The plan (`docs/plans/unified-world.md`) calls for low, subtle chevrons at junctions and turns, but they're missing or invisible in play.
 **Where to look:** `src/route-guidance.js` (the module exists, see `docs/route-guidance.md`), how `src/main.js` wires it up, and `src/hud.js` for the minimap route.
@@ -105,6 +93,8 @@ Difficulty: 🟢 good first fix · 🟡 medium · 🔴 deep / needs care.
 - **A failed commit is never retried on its own.** After a failure the release train skips that commit until `~/.local/state/athens-release/failed` is removed.
 
 ## Fixed
+
+- **2. Race finishes / harsh off-track handling.** Short kerb/verge/roundabout cuts preserve progress without notices; prolonged departures guide back without resetting. Accepted station crossings time every split and finish; headless regressions drive all six Quick Race routes and their full lap counts.
 
 - **Driving map overlay (2026-10-22):** kept both M ranges compact, replaced resident-cell/500 m street clipping with the published-world street overview, restored sea/coast and area labels, and added a calm race route with a labeled finish instead of the tiny green flag. No world rebake.
 

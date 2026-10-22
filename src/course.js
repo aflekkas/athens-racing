@@ -1,8 +1,8 @@
-import {crossTimingLine} from './route-timing.js';
+import { ROUTE_TOLERANCE } from './route-navigation.js';
 import { LocalCarriageways } from './local-carriageways.js';
 // Shared course rule (owner decision 2026-10-18: no checkpoints). Progress along the route is tracked
-// invisibly: only continuous, on-road movement advances it, a shortcut off the route buys nothing, and a
-// finish needs the whole route covered. A tow puts the car on the nearest road (owner decision 2026-10-18: "we just
+// invisibly: continuous driving advances it. World routes allow brief kerb/verge cuts; prolonged
+// departures and teleports cannot skip the course. A tow puts the car on the nearest road (owner decision 2026-10-18: "we just
 // want to tow back onto the road", src/tow-placement.js); this module only bounds where on the route that may be.
 // No DOM, timers or network. The Worker uses receipt time; solo uses simulation time.
 // Station spacing for the dense on-road check between two consecutive poses (metres).
@@ -166,18 +166,61 @@ export function observeCourse(course, pose, now, { initialTime = 0, recovery = f
   course.previousTime = now;
   return course;
 }
-// Route progress is recomputed from accepted world poses. Off-route travel earns no rejoin allowance.
-function observeRouteCourse(course,received,now,{initialTime,recovery,route}){
- const prev=course.previous,dt=Math.max(0,Math.min(5,now-(course.previousTime??initialTime))),q=route.project(received.x,received.z,{hint:prev.s,referenceY:received.y,layer:received.layer,heading:received.yaw,maxTravel:30+150*dt}),pose={...received,...q,layer:received.layer,surfaceId:received.surfaceId},d0=progress(course,prev.s),d1=progress(course,pose.s),continuous=Number.isFinite(q.distance)&&Math.abs(pose.s-prev.s)<=30+150*dt&&Math.hypot(pose.x-prev.x,pose.z-prev.z)<=15+150*dt;
- const onRoute=coursePoseValid(course,pose,route),n=Math.ceil(Math.hypot(pose.x-prev.x,pose.z-prev.z)/PATH_SAMPLE);let chord=true;
- for(let i=1;i<n&&chord;i++){const t=i/n,x=prev.x+(pose.x-prev.x)*t,z=prev.z+(pose.z-prev.z)*t,y=prev.y+(pose.y-prev.y)*t,s=prev.s+(pose.s-prev.s)*t,contact=route.contactAt?.(x,z,{referenceY:y,layer:pose.layer});chord=coursePoseValid(course,{x,y,z,s,layer:contact?.layer??pose.layer,surfaceId:contact?.surfaceId??(route.contactAt?null:pose.surfaceId)},route,Math.min(CHORD_MARGIN,1));}
- const followed=onRoute&&continuous&&chord&&!recovery;
- if(!followed)course.rejoinLimit??=course.validProgress+2;
- const rejoined=course.rejoinLimit==null||d1<=course.rejoinLimit;
- const valid=followed&&rejoined&&d0<=course.reached+2;
- if(valid){delete course.rejoinLimit;course.validProgress=d1;course.lastRoad={...pose};if(d1>course.reached){const before=course.reached;course.reached=d1;for(let i=0;i<course.marks.length;i++){const d=course.marks[i];if(course.markTimes[i]!=null||d1<d||before>=d)continue;const f=route.frame(course.s0+course.dir*d),line={...f,surfaceId:undefined,leftM:f.leftM,rightM:f.rightM};const cross=coursePoseValid(course,prev,route)?crossTimingLine({...prev,time:course.previousTime??initialTime}, {...pose,time:now},line):null;if(cross)course.markTimes[i]=cross.time;}if(course.finishedAt==null&&d1>=course.len&&course.markTimes.at(-1)!=null)course.finishedAt=course.markTimes.at(-1);}}
- if(!valid&&d1>0&&course.reached>0&&!course.firstInvalid)course.firstInvalid={onRoute,continuous,chord,rejoined,d0,d1,dt,pose:{...pose},previous:{...prev}};
- course.onRoute=valid;course.previous={...pose};course.previousTime=now;return course;
+// World routes tolerate short excursions; only prolonged departures hold progress.
+// Projection stays independent of the cosmetic navigation cursor and claimed station.
+function observeRouteCourse(course, received, now, { initialTime, recovery, route }) {
+  const prev = course.previous, dt = Math.max(0, Math.min(5, now - (course.previousTime ?? initialTime)));
+  const q = route.project(received.x, received.z, { hint: prev.s, referenceY: received.y, layer: received.layer,
+    heading: received.yaw, headingWeight: 4, maxTravel: 30 + 150 * dt });
+  // Keep the actual vehicle height: replacing it with the projected road height
+  // hid wrong-deck poses and made validation disagree with the physical contact.
+  const pose = { ...received, ...q, y: received.y, layer: received.layer, surfaceId: received.surfaceId };
+  const d0 = progress(course, prev.s), d1 = progress(course, pose.s);
+  const continuous = finite(q.distance) && Math.abs(pose.s - prev.s) <= 30 + 150 * dt &&
+    Math.hypot(pose.x - prev.x, pose.z - prev.z) <= 15 + 150 * dt;
+  const sameDeck = q.layer === pose.layer && finite(pose.y) && Math.abs(pose.y - q.y) < ROUTE_TOLERANCE.height;
+  const nearRoute = sameDeck && q.distance <= Math.max(q.leftM, q.rightM) + ROUTE_TOLERANCE.margin;
+  const onRoute = coursePoseValid(course, pose, route);
+  const n = Math.ceil(Math.hypot(pose.x - prev.x, pose.z - prev.z) / PATH_SAMPLE);
+  let chord = true;
+  for (let i = 1; i < n && chord; i++) {
+    const t = i / n, x = prev.x + (pose.x - prev.x) * t, z = prev.z + (pose.z - prev.z) * t;
+    const y = prev.y + (pose.y - prev.y) * t, s = prev.s + (pose.s - prev.s) * t;
+    const sample = route.project(x, z, { hint: s, referenceY: y, layer: pose.layer, maxTravel: 30 });
+    chord = finite(sample.distance) && sample.distance <= Math.max(sample.leftM, sample.rightM) + ROUTE_TOLERANCE.margin &&
+      Math.abs(y - sample.y) < ROUTE_TOLERANCE.height;
+  }
+  if (!onRoute || !chord) course.excursion ??= { at: now - dt, progress: course.validProgress };
+  const short = !course.excursion || now - course.excursion.at <= ROUTE_TOLERANCE.seconds &&
+    Math.abs(d1 - course.excursion.progress) <= ROUTE_TOLERANCE.distance;
+  if (!continuous || !sameDeck || recovery || !short) course.rejoinLimit ??= course.validProgress + 2;
+  const rejoined = course.rejoinLimit == null || d1 <= course.rejoinLimit;
+  const valid = continuous && sameDeck && !recovery && rejoined && short && (onRoute || nearRoute);
+  if (valid) {
+    delete course.rejoinLimit;
+    course.validProgress = d1;
+    if (onRoute) course.lastRoad = { ...pose };
+    if (d1 > course.reached) {
+      course.reached = d1;
+      // Stations already passed the continuity/deck/excursion rules above. Timing
+      // must not add a second narrow gate that can be missed forever at a kerb,
+      // width seam, exact endpoint, or the last vertex of a circuit lap.
+      for (let i = 0; i < course.marks.length; i++) {
+        const d = course.marks[i];
+        if (course.markTimes[i] != null || d1 < d) continue;
+        const fraction = d1 > d0 ? Math.max(0, Math.min(1, (d - d0) / (d1 - d0))) : 1;
+        course.markTimes[i] = now - dt + dt * fraction;
+      }
+      if (course.finishedAt == null && d1 >= course.len) course.finishedAt = course.markTimes.at(-1);
+    }
+  }
+  if (onRoute && chord && continuous && sameDeck && rejoined && !recovery) {
+    delete course.excursion; delete course.rejoinLimit;
+  }
+  if (!valid && d1 > 0 && course.reached > 0 && !course.firstInvalid)
+    course.firstInvalid = { onRoute, continuous, chord, rejoined, d0, d1, dt, pose: { ...pose }, previous: { ...prev } };
+  course.onRoute = valid; course.previous = { ...pose }; course.previousTime = now;
+  return course;
 }
 
 // A tow places the car on the nearest road: history restarts at the placement, so neither the placement nor the
