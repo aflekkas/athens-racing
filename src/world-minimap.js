@@ -2,7 +2,7 @@
 // Reuse the published world's street overview and the existing OSM coastline;
 // no external tiles, extra world cells, or new map assets are needed.
 import { MAP_ASSETS, MAP_LABELS } from './attica-map-data.js';
-import { athensFromAttica, athensFromLonLat, ATHENS_DISTRICTS, decodeSpawnRoads } from './spawn-spots.js';
+import { athensFromAttica, athensFromLonLat, atticaFromAthens, ATHENS_DISTRICTS, decodeSpawnRoads } from './spawn-spots.js';
 
 export const MAP_CELL = 512;
 export const intersectsMapView = (box, x, z, radius) => box[0] <= x + radius && box[2] >= x - radius && box[1] <= z + radius && box[3] >= z - radius;
@@ -47,18 +47,23 @@ function coastPaths(buffer) {
   }
   return { land, coast };
 }
-async function streetIndex(json) {
-  const roads = decodeSpawnRoads(json).athens.roads, cells = new Map();
+async function streetIndex(json, near) {
+  const roads = decodeSpawnRoads(json).athens.roads, cells = new Map(), [ax, az] = atticaFromAthens(near.x, near.z);
+  // Make this neighbourhood usable first, rather than waiting for the whole city.
+  const distance = road => (road.pts[0] - ax) ** 2 + (road.pts[1] - az) ** 2;
+  roads.sort((a, b) => distance(a) - distance(b));
+  base.roads = cells;
   // Parsing the city must not hold a driving frame while creating every path.
   for (let i = 0; i < roads.length; i += 750) {
     for (const [key, batch] of indexMapRoads(roads.slice(i, i + 750))) {
       if (cells.has(key)) cells.get(key).push(...batch); else cells.set(key, batch);
     }
+    streetView = null;
     await new Promise(resolve => setTimeout(resolve, 0));
   }
   return cells;
 }
-let base, pending, retryAt = 0, streetView;
+let base = { roads: new Map() }, complete = false, pending, retryAt = 0, streetView;
 function streetPaths(cells, x, z, radius) {
   const bounds = [Math.floor((x - radius) / MAP_CELL), Math.floor((z - radius) / MAP_CELL), Math.floor((x + radius) / MAP_CELL), Math.floor((z + radius) / MAP_CELL)];
   const key = bounds.join(',');
@@ -69,19 +74,20 @@ function streetPaths(cells, x, z, radius) {
   streetView = { key, paths }; return paths;
 }
 const read = async url => { const r = await fetch(url); if (!r.ok) throw Error(`Map layer ${r.status}`); return r; };
-function loadBase() {
-  if (base || pending || performance.now() < retryAt) return;
+function loadBase(near) {
+  if (complete || pending || performance.now() < retryAt) return;
   pending = Promise.all([
-    read('assets/athens/streets.json').then(r => r.json()).then(streetIndex),
-    read(MAP_ASSETS.vectors).then(r => r.arrayBuffer()).then(coastPaths),
-  ]).then(([roads, coast]) => { base = { roads, ...coast }; }).catch(() => { retryAt = performance.now() + 15000; }).finally(() => { pending = null; });
+    read('assets/athens/streets.json').then(r => r.json()).then(json => streetIndex(json, near)),
+    read(MAP_ASSETS.vectors).then(r => r.arrayBuffer()).then(coastPaths).then(coast => { Object.assign(base, coast); }),
+  ]).then(() => { complete = true; }).catch(() => { retryAt = performance.now() + 15000; }).finally(() => { pending = null; });
 }
 export function drawWorldMapBase(g, st, radius, scale) {
-  loadBase();
-  g.fillStyle = base ? '#18313d' : '#202c30'; g.fillRect(st.x - radius, st.z - radius, radius * 2, radius * 2);
-  if (!base) return;
-  g.fillStyle = '#202c30'; g.fill(base.land, 'evenodd');
-  g.strokeStyle = '#547985'; g.lineWidth = 1.3 / scale; g.stroke(base.coast);
+  loadBase(st);
+  g.fillStyle = base.land ? '#18313d' : '#202c30'; g.fillRect(st.x - radius, st.z - radius, radius * 2, radius * 2);
+  if (base.land) {
+    g.fillStyle = '#202c30'; g.fill(base.land, 'evenodd');
+    g.strokeStyle = '#547985'; g.lineWidth = 1.3 / scale; g.stroke(base.coast);
+  }
   g.lineCap = 'round'; g.lineJoin = 'round';
   const [minor, major] = streetPaths(base.roads, st.x, st.z, radius);
   g.strokeStyle = '#657477'; g.lineWidth = 1.4 / scale; g.stroke(minor);

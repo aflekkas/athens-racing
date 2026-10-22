@@ -92,7 +92,7 @@ Difficulty: 🟢 good first fix · 🟡 medium · 🔴 deep / needs care.
 
 - **2. Race finishes / harsh off-track handling.** Short kerb/verge/roundabout cuts preserve progress without notices; prolonged departures guide back without resetting. Accepted station crossings time every split and finish; headless regressions drive all six Quick Race routes and their full lap counts.
 
-- **Driving map overlay (2026-10-22):** kept both M ranges compact, replaced resident-cell/500 m street clipping with the published-world street overview, restored sea/coast and area labels, and added a calm race route with a labeled finish instead of the tiny green flag. Street paths prepare across frames and cache by view; area, turn and destination captions use separate rows. No world rebake.
+- **Driving map overlay (2026-10-22):** kept both M ranges compact, replaced resident-cell/500 m street clipping with the published-world street overview, restored sea/coast and area labels, and added a calm race route with a labeled finish instead of the tiny green flag. Nearby streets prepare first across frames, independently of the coast, and cache by view; area, turn and destination captions use separate rows. No world rebake.
 
 - **Traffic pile-up.** Persistent contacts, stalled drivers and wreck towing recycle outside all player views; Glyfada graph traffic now settles and slowly rejoins a safe lane instead of remaining permanently crashed. Rivals brake at civilian bumper contact, use equal collision mass, and tiny nudges preserve recovery. Headless recovery and real-controller regressions added.
 
