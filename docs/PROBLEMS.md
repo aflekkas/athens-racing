@@ -27,7 +27,7 @@ Production is https://athensracing.com, last checked at `a8eaa73` on 2026-10-22.
    - **A short top half for a human reviewer:** a plain-words summary, a **video, GIF or screenshot of the fix working** (before and after), steps to try it, and the risk.
    - **A detailed collapsed half:** how you did it, **which tools and AI models you used for which part**, every file and why, the exact test commands and results, and the known limits.
 
-   PRs without visual proof of the fix working are sent back. Link the issue.
+   You must have **tested it yourself**: played the fix in the real game, not only run unit tests, and written down what you did and what happened. PRs without visual proof or real testing are sent back. Link the issue.
 7. **Update this file in the same PR.** Move the item to "Fixed" with a one-line note. Add anything new you found under "Open".
 
 **Ground rules for every fix:**

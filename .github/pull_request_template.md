@@ -4,6 +4,7 @@ How to write this PR (people and AI agents alike):
 - The bottom half (inside <details>) is the full record: how you did it, which tools and AI models you used,
   every file and why, exact commands and their output. Be as detailed as you like there.
 - A PR without a video, GIF or screenshot of the change WORKING in the game is sent back. No exceptions.
+- You must have TESTED it yourself: played it in the real game AND run the automated checks. Untested PRs are closed.
 -->
 
 ## Summary (for the reviewer)
@@ -23,6 +24,14 @@ Our own game footage only. No Street View, web images or other third-party media
 
 Map / area: <!-- e.g. Athens · Glyfada, Penteli hill, Megara -->  ·  Graphics preset: <!-- Potato–Ultra -->  ·  Camera: <!-- chase / cockpit -->  ·  Build/commit tested: <!-- SHA -->
 
+## How I tested it (required)
+<!-- You must have actually played the change in the real game, not only run unit tests. Say exactly what you did and what happened. -->
+- **Played in:** <!-- local build / staging · browser + GPU (or SwiftShader) · resolution -->
+- **What I did:** <!-- e.g. Quick Race → Penteli hill → drove off the road at the hairpin three times → tow → finished the race -->
+- **Result:** <!-- what happened; matches the video above -->
+- **Automated checks:** <!-- npm test N passed / 0 failed · physics regress N passed · new test: tools/xyz.test.mjs -->
+- **Not tested:** <!-- be honest: maps, cars, modes or settings you didn't try -->
+
 ## How to try it (2 minutes)
 <!-- Exact steps for the reviewer: menu → event → car → where to drive → what to look for. -->
 1.
@@ -37,6 +46,7 @@ Map / area: <!-- e.g. Athens · Glyfada, Penteli hill, Megara -->  ·  Graphics 
 ## Checklist
 - [ ] Branched from the latest `staging` and targeting `staging`; one feature or fix in this PR
 - [ ] Video, GIF or screenshot of it working is attached above (before and after for visual changes)
+- [ ] I tested this myself: played it in the real game, and the "How I tested it" section is filled in
 - [ ] `npm test`, physics regress, events, ghosts, syntax and browser-import checks pass locally (CI will re-run them)
 - [ ] Added or updated a test that would have caught this problem
 - [ ] Performance noted if I added models, effects or scenery (draw calls and frame time on Low and High)
