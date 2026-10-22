@@ -177,3 +177,44 @@ test('rider cleanup does not deactivate a pool body reassigned to another owner'
  const {T,c}=world();c.riderBody={kind:'rider',owner:99,active:true};const b=c.riderBody;
  T.initDrive(c);assert.equal(b.active,true);assert.equal(c.riderBody,null);
 });
+
+
+test('persistent pushing recycles only out of every player view, even when the car is moving', () => {
+  const {T,c}=world(); c.v=8; T.drawRange=650;
+  for(let i=0;i<50;i++){T.t+=.1;c.contactAt=T.t;assert.equal(T.recoverStuck(c,.1,c.s),false);}
+  assert.ok(c.contactT>=4);assert.equal(c.active,true);
+  T.onlineFoci=[c.s];assert.equal(T.recoverStuck(c,.1,0),false);
+  T.onlineFoci=[];assert.equal(T.recoverStuck(c,.1,0),true);
+  assert.equal(c.active,false);assert.equal(c.m.root.visible,false);
+  T.initDrive(c);assert.equal(c.contactT,0);assert.equal(c.recoveryT,0);assert.equal(c.contactAt,-Infinity);
+});
+
+test('recovery tolerates short contacts, signals, bus tasks and parked or police cars', () => {
+  for(const setup of [c=>{},c=>{c.task={kind:'bus'};c.stuckT=30;},c=>{c.mode='parked';c.crash={};},c=>{c.cop={};c.crash={};}]){
+    const {T,c}=world();setup(c);
+    for(let i=0;i<100;i++){T.t+=.1;assert.equal(T.recoverStuck(c,.1,0),false);}
+    assert.equal(c.active,true);
+  }
+  const {T,c}=world();c.contactAt=0;
+  for(let i=0;i<50;i++){T.t+=.1;assert.equal(T.recoverStuck(c,.1,0),false);}
+  assert.equal(c.contactT,0);
+});
+
+test('unresolved crashes and blocked drivers are recycled; loop copies remain visible',()=>{
+  for(const crash of [true,false]){
+    const {T,c}=world();if(crash)c.crash={};else c.stuckT=20;
+    for(let i=0;i<79;i++){T.t+=.1;assert.equal(T.recoverStuck(c,.1,0),false);}
+    assert.equal(T.recoverStuck(c,.2,0),true);assert.equal(c.crash,null);
+  }
+  const {T,c}=world();T.route.closed=true;T.route.length=2000;c.crash={};c.recoveryT=10;
+  assert.equal(T.recoverStuck(c,.1,c.s+2000),false);
+});
+
+test('tiny repeated nudges preserve a crashed driver recovery clock',()=>{
+  const {T,c}=world();
+  const B={vs:0,vu:0,w:0,phi:0};T.hitCar(c,B,.5,'rear',0);
+  c.crash.t=4;c.crash.rec=1;
+  for(let i=0;i<20;i++)T.hitCar(c,B,.01,'rear',i*.1);
+  assert.equal(c.crash.t,4);assert.equal(c.crash.rec,1);
+  T.hitCar(c,B,1,'rear',3);assert.equal(c.crash.t,.5);assert.equal(c.crash.rec,0);
+});

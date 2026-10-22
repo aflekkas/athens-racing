@@ -287,6 +287,7 @@ export class Traffic {
     Object.assign(c, {
       mode: 'drive', uT: c.u, uv: 0, acc: 0, accT: 0, lcEval: this.rng.range(0.2, 1.2), lcT: 0, lcDelay: 0, blinkSide: 0, hazard: false,
       ovt: null, split: false, task: null, evade: null, yieldT: 0, yieldU: undefined, yieldFor: null, seeT: 0, flashT: 0, shakenT: 0, quirkT: this.rng.range(4, 30), lastJ: null, stuckT: 0, heldT: 0, honkCool: this.rng.range(1, 3), waitT: 0, brakeT: 0, lastStop: -1e9, wheel: c.wheel || 0, yawLC: 0,
+      contactAt: -Infinity, contactT: 0, recoveryT: 0,
       _roundabout:null,_world:null,_sharedPosition:false,hs: c.len * 0.5, hu: c.wid * 0.5, sigJ: -1, sigGo: false, cross: null, crash: null,
     });
   }
@@ -460,6 +461,7 @@ export class Traffic {
     for (const c of this.cars) {
       if (!c.active) continue;
       c.honkCool -= dt;
+      if (this.recoverStuck(c, dt, ps)) continue;
       if (c.crash) { this.updateCrashed(c, dt); continue; }
       if (c.cross) continue; // side-street cars crossing the junction: see updateCross
       if (c.mode === 'parked') { if (!c.cop) this.updateParked(c, dt); continue; }
@@ -468,6 +470,27 @@ export class Traffic {
     }
     this.updateCross(dt, ps, actors);
     this.updateCones(dt);
+  }
+
+  /** Persistent contact includes cars being pushed at speed, not just zero-speed queues.
+   * Keep visible incidents physical; the normal spawner reuses the slot only after it is out of view. */
+  recoverStuck(c, dt, ps) {
+    if (c.cop || c.cross || c.mode === 'parked') return false;
+    const contact = this.t - (c.contactAt ?? -Infinity) < 0.3;
+    c.contactT = contact ? (c.contactT || 0) + dt : 0;
+    const blocked = c.crash || (!c.task && c.stuckT > 12);
+    c.recoveryT = blocked ? (c.recoveryT || 0) + dt : 0;
+    if (c.contactT < 4 && c.recoveryT < 8) return false;
+    const range = (this.drawRange || 650) + c.len + 40;
+    const near = s => {
+      let d = c.s - s;
+      if (this.route.closed) d -= Math.round(d / this.route.length) * this.route.length;
+      return Math.abs(d) <= range;
+    };
+    if (near(ps) || this.onlineFoci?.some(near) || this.racers.some(r => r.kind === 'player' && near(r.s))) return false;
+    c.active = false; c.m.root.visible = false; c.crash = null; c.cross = null;
+    this.clearRider(c);
+    return true;
   }
 
   /** how long a racer has been queued behind each civilian (standing or crawling within 40 m, in its lane): c.heldT.
@@ -1245,7 +1268,8 @@ export class Traffic {
     }
     const k = c.crash;
     k.vs = B.vs; k.vu = B.vu; k.w = B.w; k.yaw = B.phi - (c.dir < 0 ? Math.PI : 0);
-    k.t = Math.min(k.t, 0.5); k.rec = 0;
+    // Tiny repeated nudges must not restart the driver's entire recovery pause.
+    if (dv > 0.35) { k.t = Math.min(k.t, 0.5); k.rec = 0; }
     c.dmg += dv;
     if (big || c.dmg > 4) k.wreck = true;
     // the car's own suspension takes a jolt (pitch from a front / rear hit, roll from a side hit)
@@ -1311,9 +1335,10 @@ export class Traffic {
       }
       if (ox <= -0.3 || oy <= -0.3 || (c.crash && c.crash.y > 1.2)) continue;
       if (!rv) rv = routeVel(veh, route);
-      this.vehBody(veh, rv, actor.kind === 'rival' ? 2.5 : 1, A); // the rival shoulders his way through
+      this.vehBody(veh, rv, 1, A);
       this.carBody(c, B);
       const ct = obbContact(A, B); if (!ct) continue;
+      c.contactAt = this.t;
       const beforeOnline = this.online ? { ...B } : null;
       const vs0 = A.vs, vu0 = A.vu, vbs0 = B.vs, vbu0 = B.vu;
       const r = impulse(A, B, ct, c.crash && c.crash.onSide ? 0.05 : null, 0.45);
@@ -1372,6 +1397,7 @@ export class Traffic {
       if (q === c || !q.active || Math.abs(q.s - c.s) > 10 || Math.abs(q.u - c.u) > 6) continue;
       this.carBody(q, B);
       const ct = obbContact(A, B); if (!ct) continue;
+      c.contactAt = q.contactAt = this.t;
       const vA0s = A.vs, vA0u = A.vu;
       const r = impulse(A, B, ct, null, 0.45);
       const zoneA = zoneOf(A, ct.ps, ct.pu), zoneB = zoneOf(B, ct.ps, ct.pu);
@@ -1398,6 +1424,7 @@ export class Traffic {
       if (q === c || !q.active || Math.abs(q.s - c.s) > 10 || Math.abs(q.u - c.u) > 8) continue;
       this.carBody(q, B);
       const ct = obbContact(A, B); if (!ct) continue;
+      c.contactAt = q.contactAt = this.t;
       const vA0s = A.vs, vA0u = A.vu;
       const r = impulse(A, B, ct, null, 0.45);
       const zoneA = zoneOf(A, ct.ps, ct.pu), zoneB = zoneOf(B, ct.ps, ct.pu);
