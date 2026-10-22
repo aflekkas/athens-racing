@@ -260,6 +260,7 @@
     "tools/coastal-dressing.test.mjs",
     "tools/route-phase2.test.mjs",
     "tools/route-phase3.test.mjs",
+    "tools/world-traffic-flow.test.mjs",
     "tools/route-migrations.test.mjs",
     "tools/world-selection.test.mjs",
     "tools/import-track-region.test.mjs",

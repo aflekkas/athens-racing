@@ -98,7 +98,7 @@ test('graph traffic never recovers through another road layer or a distant lane'
 import {Traffic} from '../src/traffic.js';
 function graphQueue(speed=8,gap=20){
  const edge={id:'lane',from:'a',to:'b',points:[[0,0,0],[0,0,1000]],speedKph:60,layer:0},graph={edges:new Map([['lane',{value:edge}]]),outgoing:new Map(),legal:()=>true};
- const t=new WorldTraffic({roads:{graph},props:{hold:()=>false},safePose:()=>true},{},{project:(x,z)=>({s:z,u:x})}),mesh={isMesh:true,onBeforeRender(){}};
+ const t=new WorldTraffic({roads:{graph,width:()=>({left:3,right:3,width:6})},props:{hold:()=>false},safePose:()=>true},{},{project:(x,z)=>({s:z,u:x})}),mesh={isMesh:true,onBeforeRender(){}};
  const c={active:true,crashed:false,len:4,wid:2,v:speed,offset:100,point:{edge:'lane'},vehicle:{x:0,y:0,z:100,yaw:Math.PI,vLong:speed,vLat:0,w:0,halfL:2,halfW:1},drv:{a:1.8,b:3,T:1.2,s0:2.2,vf:1},m:{root:{visible:true,traverse:fn=>fn(mesh)}}};
  t.pool={idm:Traffic.prototype.idm};t.cars=[c];t.spawnT=100;t.candidate=(_e,s)=>({x:0,y:0,z:s,yaw:Math.PI,edge:'lane'});
  const leader={x:0,y:0,z:104+gap,yaw:Math.PI,vLong:0,vLat:0,halfL:2,halfW:1};return {t,c,leader,edge,mesh};
