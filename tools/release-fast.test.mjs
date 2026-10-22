@@ -4,7 +4,7 @@ import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, existsSync
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { prebuiltConfig, unifiedRouteBuildVars, staticChecks, checkRecord, workDir, gates, STAB_SHARDS } from './release-fast.mjs';
+import { checkProductionWorld, prebuiltConfig, unifiedRouteBuildVars, staticChecks, checkRecord, workDir, gates, STAB_SHARDS } from './release-fast.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 
@@ -72,4 +72,20 @@ test('a passed check is skipped on the same tree and rerun for any other; failur
     assert.equal((await runGates('t3')).ok, false); assert.equal(count(), before + 1, 'only the failed check reruns; the nine that passed are remembered');
     assert.equal((await runGates('t3', { useCache: false })).ok, false); assert.equal(count(), before + 1 + 10, '--no-cache reruns all');
   } finally { rmSync(scratch, { recursive: true, force: true }); }
+});
+
+test('production deploy guard checks the production bucket and fails closed on missing or corrupt manifests', async () => {
+  const body = Buffer.from('{"regions":[]}');
+  const { createHash } = await import('node:crypto');
+  const key = 'manifests/' + createHash('sha256').update(body).digest('hex') + '.json';
+  const config = JSON.stringify({ env: { production: { vars: { ATHENS_WORLD_MANIFEST: key }, r2_buckets: [{ binding: 'ATHENS_WORLD', bucket_name: 'athens-racing-world' }] } } });
+  let called = false;
+  await checkProductionWorld(config, { token: 'test', fetcher: async (url, options) => {
+    called = true; assert.ok(url.endsWith('/athens-racing-world/objects/' + key));
+    assert.equal(options.headers.Authorization, 'Bearer test'); return new Response(body);
+  } });
+  assert.ok(called);
+  await assert.rejects(checkProductionWorld(config, { fetcher: async () => new Response('', { status: 404 }) }), /HTTP 404; copy and checksum/);
+  await assert.rejects(checkProductionWorld(config, { fetcher: async () => new Response('corrupt') }), /checksum mismatch/);
+  await assert.rejects(checkProductionWorld(config.replace('athens-racing-world"', 'athens-racing-world-staging"')), /invalid bucket/);
 });

@@ -82,3 +82,17 @@ Cold load remains above the 8 s target: Megara **8.1 s**, Penteli hill **9.1 s**
 MULTIPLAYER in solo races, Porsche tilt/stray shadow. A traffic-car pile-up was
 seen during a Glyfada AI drive. Old per-track loaders remain and still serve
 normal menu races; their removal is unfinished. These are not release fixes.
+
+## 22 October P0 world repair
+
+Production `be71ab7` selected `manifests/55d13b9a8643363d7cf1a9390fd1994869ff8326c16e61d42bb7c278f2cfb74b.json`
+while the vegetation rebake had published its dependencies only to staging.
+Copy the complete dependency closure, including enrichment JSON, before activating
+any new production pointer. Routes are Worker static assets, not R2 objects.
+The repair audit is `/home/dev/data/agent-feed/final-qa/fixed-world-copy.json`;
+production smoke evidence is `/home/dev/data/agent-feed/final-qa/fixed-world-smoke.json`.
+`release-fast.mjs deploy --env production` now reads the exact prebuilt production
+binding and verifies that manifest's presence and SHA-256 in the production R2
+bucket before Wrangler can deploy. Missing objects or API/auth failures block
+deployment with an explicit error; staging deploys are unaffected. This guard
+checks the root manifest; copying and verifying all dependencies remains required.
