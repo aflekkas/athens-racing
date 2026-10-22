@@ -145,7 +145,7 @@ export class Hud {
   }
   drawWorldMinimap(g, W, H, st, zoom = 2.2) {
     const sc = zoom * W / 600, cx = W / 2, cy = H * .62;
-    const radius = Math.hypot(W, H) / sc;
+    const radius = (Math.hypot(W / 2, H * .62) + 12) / sc;
     g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, W, H);
     g.save(); g.translate(cx, cy); g.rotate(st.yaw); g.scale(sc, sc); g.translate(-st.x, -st.z);
     drawWorldMapBase(g, st, radius, sc);

@@ -47,12 +47,32 @@ function coastPaths(buffer) {
   }
   return { land, coast };
 }
-let base, pending, retryAt = 0;
+async function streetIndex(json) {
+  const roads = decodeSpawnRoads(json).athens.roads, cells = new Map();
+  // Parsing the city must not hold a driving frame while creating every path.
+  for (let i = 0; i < roads.length; i += 750) {
+    for (const [key, batch] of indexMapRoads(roads.slice(i, i + 750))) {
+      if (cells.has(key)) cells.get(key).push(...batch); else cells.set(key, batch);
+    }
+    await new Promise(resolve => setTimeout(resolve, 0));
+  }
+  return cells;
+}
+let base, pending, retryAt = 0, streetView;
+function streetPaths(cells, x, z, radius) {
+  const bounds = [Math.floor((x - radius) / MAP_CELL), Math.floor((z - radius) / MAP_CELL), Math.floor((x + radius) / MAP_CELL), Math.floor((z + radius) / MAP_CELL)];
+  const key = bounds.join(',');
+  if (streetView?.key === key) return streetView.paths;
+  const found = new Set(), paths = [new Path2D(), new Path2D()];
+  for (let i = bounds[0]; i <= bounds[2]; i++) for (let j = bounds[1]; j <= bounds[3]; j++) for (const item of cells.get(`${i},${j}`) || []) found.add(item);
+  for (const item of found) paths[item.major ? 1 : 0].addPath(item.path);
+  streetView = { key, paths }; return paths;
+}
 const read = async url => { const r = await fetch(url); if (!r.ok) throw Error(`Map layer ${r.status}`); return r; };
 function loadBase() {
   if (base || pending || performance.now() < retryAt) return;
   pending = Promise.all([
-    read('assets/athens/streets.json').then(r => r.json()).then(j => indexMapRoads(decodeSpawnRoads(j).athens.roads)),
+    read('assets/athens/streets.json').then(r => r.json()).then(streetIndex),
     read(MAP_ASSETS.vectors).then(r => r.arrayBuffer()).then(coastPaths),
   ]).then(([roads, coast]) => { base = { roads, ...coast }; }).catch(() => { retryAt = performance.now() + 15000; }).finally(() => { pending = null; });
 }
@@ -63,9 +83,9 @@ export function drawWorldMapBase(g, st, radius, scale) {
   g.fillStyle = '#202c30'; g.fill(base.land, 'evenodd');
   g.strokeStyle = '#547985'; g.lineWidth = 1.3 / scale; g.stroke(base.coast);
   g.lineCap = 'round'; g.lineJoin = 'round';
-  for (const item of visibleMapRoads(base.roads, st.x, st.z, radius)) {
-    g.strokeStyle = item.major ? '#8e9999' : '#657477'; g.lineWidth = (item.major ? 2.2 : 1.4) / scale; g.stroke(item.path);
-  }
+  const [minor, major] = streetPaths(base.roads, st.x, st.z, radius);
+  g.strokeStyle = '#657477'; g.lineWidth = 1.4 / scale; g.stroke(minor);
+  g.strokeStyle = '#8e9999'; g.lineWidth = 2.2 / scale; g.stroke(major);
 }
 const places = [...ATHENS_DISTRICTS, { name: 'VOULIAGMENI', lon: 23.778, lat: 37.815 }, { name: 'VARKIZA', lon: 23.801, lat: 37.82 }].map(p => ({ name: p.name, point: athensFromLonLat(p.lon, p.lat) }));
 const water = MAP_LABELS.filter(p => p.k === 'water').map(p => ({ name: p.t, point: athensFromAttica(p.x, p.y) }));
