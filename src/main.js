@@ -5,6 +5,7 @@ import {RouteClosures} from './route-closures.js';
 import {WorldSignals} from './world-signals.js';
 import {WorldTraffic} from './world-traffic.js';
 import {RouteGuidance} from './route-guidance.js';
+import {createLegacyGuidance} from './route-guidance/legacy.js';
 import {createWorldSession} from './world-session.js';
 import {loadUnifiedRoute,loadUnifiedRouteCatalogue} from './unified-routes.js';
 import {routeEvent} from './route-events.js';
@@ -1136,6 +1137,8 @@ function prepareEvent(e) {
   const r = EV.resolve(def, evCtx());
   G.ev = { def, r }; G.dir = r.dir; startS = r.s0;
   if(worldSession){configureWorldLife(def,G.baseCond||window.__conditions());ENV.setConditions(def.conditions);post?.setConditions(ENV.COND_STATE);hud.setRange(r.s0,r.s1);document.body.dataset.mode=def.type;return r;}
+  routeGuidance?.dispose();routeGuidance=null;
+  if(def.type!=='free'&&!isDrivingMode(def))routeGuidance=createLegacyGuidance(scene,map,r,signals.J,ground);
   traffic.dir = r.dir;
   hud.setRange(r.s0, r.s1);
   world?.roadworks?.setEvent(def);
@@ -2449,6 +2452,7 @@ function step(dt, draw = true, visual = true, frameDt = dt) {
     if (leaderName) $('rivalName').textContent = leaderName;
     Object.assign(st, { pos: finishWatched.position, time: G.raceT + G.postT, gap: leaderProg - earnedProgress(finishWatched.car), gapUnit: 'm', kmh: speedIn(v.kmh), rpm: v.rpm, redline: spec.redline, gearLabel: v.reverse ? 'R' : String(v.gear), x: v.x, z: v.z, yaw: v.yaw, s: v.s, manual: false, canUpshift: false, damageLabel: '', tc: false, abs: false, esc: false, nitrous: spec.nitrous === true, nitro: v.nitro, nitroOn: v.nitroOn });
   }
+  routeGuidance?.update({cursorS:(pv.s-G.ev.r.s0)*G.ev.r.dir,position:pv,isRace:!inFreeRoam()&&!isDrivingMode(G.ev?.def)&&['race','countdown','onlineCountdown'].includes(G.state)});
   hud.update(st);
   const watched = multiplayer.active ? multiplayer.spectating() : null;
   const swayCar = (watched && remoteCars.get(watched.id)?.veh) || pv;

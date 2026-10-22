@@ -85,3 +85,27 @@ test('§7 isRace:false removes every visual, decision and minimap stroke and can
  v.drawMinimap({beginPath(){throw Error('free roam must not draw');}});
  v.update({cursorS:100,isRace:true});assert.ok(v.paint.mesh.visible);v.setRoute(null);assert.equal(v.paint,null);v.dispose();
 });
+
+test('Quick Race adapts only the selected event, reverses arrows and keeps its existing timing marks',async()=>{
+ const {legacyGuidanceData,createLegacyGuidance}=await import('../src/route-guidance/legacy.js');
+ const road={closed:false,length:300,point:(s,u)=>({x:s,y:0,z:u}),laneU:()=>2,edge:()=>6,project:(x,z)=>({s:x,u:z})};
+ const map={id:'test',route:road,data:{sideRoads:[{p:[180,0,180,20]},{f:true,p:[210,0,210,20]}]}};
+ const forward={s0:50,s1:250,dir:1,closed:false},data=legacyGuidanceData(map,forward,[{s:100},{s:280}]);
+ assert.deepEqual(data.decisions.map(d=>d.s),[50,130]);assert.equal(data.polyline[0].x,50);assert.equal(data.polyline.at(-1).x,250);
+ const back=legacyGuidanceData(map,{s0:250,s1:50,dir:-1,closed:false},[{s:100}]);
+ assert.deepEqual(back.decisions.map(d=>d.s),[70,150]);assert.equal(back.polyline[0].z,-2);assert.equal(back.polyline.at(-1).x,50);
+ const scene=new THREE.Scene(),v=createLegacyGuidance(scene,map,forward,[{s:100}],{at:()=>({y:0,surf:'asphalt'})});
+ v.update({cursorS:30,isRace:true});assert.ok(v.stats.instances>0);assert.ok(v.stats.instances<=128);
+ assert.equal(v.paint.chunks.records.some(r=>r.kind===2),false);
+ v.update({cursorS:30,isRace:false});assert.equal(v.paint.mesh.visible,false);v.dispose();assert.equal(scene.children.length,0);
+});
+
+test('paint remains within asymmetric road bounds while clearing the car silhouette',()=>{
+ const v=new RouteGuidance(new THREE.Scene(),{contact:()=>({y:0})});const d=supplied();d.paintTiming=false;v.setRoute(d);v.onTileActivated('0,0');v.update({cursorS:100,isRace:true});
+ const paint=v.paint,rows=paint.chunks.visible(100);assert.equal(paint.mesh.count,4);
+ for(let i=0;i<paint.mesh.count;i++){
+  const r=rows[i],m=new THREE.Matrix4();paint.mesh.getMatrixAt(i,m);
+  for(const side of [-.5,.5]){const p=new THREE.Vector3(side,0,0).applyMatrix4(m),u=(p.x-r.x)*-r.tz+(p.z-r.z)*r.tx;assert.ok(u>=-r.leftM-1e-5&&u<=r.rightM+1e-5);}
+ }
+ assert.ok(paint.mesh.instanceMatrix.array[14]>0,'forward chevrons sit beside the centre line');v.dispose();
+});
