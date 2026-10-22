@@ -43,3 +43,11 @@ Run these on a clean `git archive` of your exact candidate, inside your temp dir
 - `node tools/check-syntax.mjs`
 
 All must pass.
+
+## Pull requests and reports (required)
+
+- **Template:** use `.github/pull_request_template.md` for every PR, and the same structure for your final report when you land work directly. See CONTRIBUTING.md rule 6.
+- **Top half, for a human reviewer:** short and plain. A summary, **a video, GIF or screenshot of the change working in the game** (before and after for visual changes), 2-minute try-it steps, and the risk and rollback.
+- **Bottom half, in the collapsed "How it was done" section:** the full detail. Root cause and approach, **which tools and AI models did which part** (name the exact model, e.g. "Claude Opus 5.5", "Codex gpt-6.1-sol", or "by hand"), every file changed and why, exact test commands with their pass/fail counts, how the proof was captured, performance, and known limits.
+- No visual proof means not done. Our own game captures only; third-party media never goes in git or in a PR.
+- Update `docs/PROBLEMS.md` in the same change: move what you fixed to Fixed, and add anything new you found.

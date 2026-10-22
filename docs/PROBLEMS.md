@@ -23,7 +23,11 @@ Production is https://athensracing.com, last checked at `a8eaa73` on 2026-10-22.
    - Run `npm test`, plus the physics, syntax and import checks listed in CONTRIBUTING.md.
    - Add or update a test that would have caught the problem.
    - Take an **after** screenshot from the same spot.
-6. **Open the PR into `staging`.** Use the template, include before/after pictures and the map and graphics preset, and link the issue.
+6. **Open the PR into `staging`, using the template.** It has two parts:
+   - **A short top half for a human reviewer:** a plain-words summary, a **video, GIF or screenshot of the fix working** (before and after), steps to try it, and the risk.
+   - **A detailed collapsed half:** how you did it, **which tools and AI models you used for which part**, every file and why, the exact test commands and results, and the known limits.
+
+   PRs without visual proof of the fix working are sent back. Link the issue.
 7. **Update this file in the same PR.** Move the item to "Fixed" with a one-line note. Add anything new you found under "Open".
 
 **Ground rules for every fix:**

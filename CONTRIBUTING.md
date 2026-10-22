@@ -14,7 +14,10 @@ Thanks for helping. This page is the whole process: read it once before your fir
 2. **CI must be green.** The `test` check (`.github/workflows/ci.yml`) runs on every PR and must pass before merging.
 3. **The maintainer reviews and merges.** @aflekkas is the code owner and approves every PR. Nothing reaches players without that review.
 4. **Deploys are done by the maintainer**, never from a PR. Merged work goes to staging for a playtest first, and is promoted from `staging` to `prod` (production) only when the maintainer says so. See `deploy/README.md`.
-5. **Show your work.** Every PR that changes anything a player can see, hear or feel needs screenshots or a short video in the PR description (the template asks for them). Before *and* after for visual changes. A PR without them will be sent back.
+5. **Show your work: every PR must prove the change works.** Every PR needs a short video, GIF or screenshot of the change *working* in the real game, with before *and* after for visual changes. A PR without visual proof is sent back, no exceptions.
+6. **Write the PR for two readers.** Fill in the template ([`.github/pull_request_template.md`](.github/pull_request_template.md)):
+   - **The top half is for a human reviewer:** a plain-words summary, the proof media, 2-minute steps to try it, and the risk and rollback. Keep it short enough to review in a few minutes.
+   - **The bottom half is the full record, in a collapsed "How it was done" section:** the root cause and approach, **which tools and AI models did which part** (for example "Claude Opus 5.5 wrote X, Codex gpt-6.1-sol reviewed", or "by hand"), every file changed and why, the exact test commands with their results, how the proof was captured, performance, and known limits. Be as verbose as you like there. An agent picking up the work later should be able to continue from it without asking.
 
 ## Workflow
 
