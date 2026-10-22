@@ -48,7 +48,8 @@ export class WorldTraffic {
   for(const next of trafficSuccessors(this.session.roads.graph,edge,this.closures)){
    const exit=Math.min(8,edgeLength(next)*.4),b=this.candidate(next,exit,{...c,laneShift:0});if(!b)continue;
    const reach=Math.max(2,Math.hypot(b.x-a.x,b.z-a.z)*.5),A={x:a.x-Math.sin(a.yaw)*reach,z:a.z-Math.cos(a.yaw)*reach},B={x:b.x+Math.sin(b.yaw)*reach,z:b.z+Math.cos(b.yaw)*reach},points=[];let length=0,valid=true;
-   for(let i=0;i<=20;i++){const t=i/20,u=1-t,x=u*u*u*a.x+3*u*u*t*A.x+3*u*t*t*B.x+t*t*t*b.x,z=u*u*u*a.z+3*u*u*t*A.z+3*u*t*t*B.z+t*t*t*b.z,dx=3*u*u*(A.x-a.x)+6*u*t*(B.x-A.x)+3*t*t*(b.x-B.x),dz=3*u*u*(A.z-a.z)+6*u*t*(B.z-A.z)+3*t*t*(b.z-B.z),p={...a,x,z,y:a.y+(b.y-a.y)*t,yaw:Math.atan2(-dx,-dz)};
+   for(let i=0;i<=20;i++){const t=i/20,u=1-t,x=u*u*u*a.x+3*u*u*t*A.x+3*u*t*t*B.x+t*t*t*b.x,z=u*u*u*a.z+3*u*u*t*A.z+3*u*t*t*B.z+t*t*t*b.z,dx=3*u*u*(A.x-a.x)+6*u*t*(B.x-A.x)+3*t*t*(b.x-B.x),dz=3*u*u*(A.z-a.z)+6*u*t*(B.z-A.z)+3*t*t*(b.z-B.z),p={...a,x,z,y:a.y+(b.y-a.y)*t,yaw:Math.atan2(-dx,-dz),layer:i<10?a.layer:b.layer};
+    const contact=this.session.stream.contact(x,z,{referenceY:p.y,layer:p.layer,requiredFlags:1});if(!contact){valid=false;break;}p.y=contact.y;p.surfaceId=contact.surfaceId;
     if(!this.session.safePose(p,{halfWidth:c.wid/2,halfLength:c.len/2})||this.closures?.safe(p,{halfWidth:c.wid/2,halfLength:c.len/2})===false){valid=false;break;}
     if(i)length+=Math.hypot(x-points.at(-1).x,z-points.at(-1).z);points.push({...p,s:length});
    }
@@ -63,6 +64,7 @@ export class WorldTraffic {
   if(clear&&!this.candidate(edge,end,c))clear=false;
   if(this.laneCache.size>=4096)this.laneCache.delete(this.laneCache.keys().next().value);this.laneCache.set(key,{edge,revision,clear,until:this.t+1});return clear;
  }
+ throughPaths(edge,c){const joined={...c,laneShift:0};return this.turnPaths(edge,c).filter(p=>{const e=this.session.roads.graph.edges.get(p.next)?.value;return e&&this.laneClear(e,joined)&&this.turnPaths(e,joined).length;});}
  advanceLane(c,edge,travel,player){
   let turn=c.turn,offset=c.offset+travel;
   const entry=edgeLength(edge)-Math.min(8,edgeLength(edge)*.4);
@@ -70,7 +72,7 @@ export class WorldTraffic {
    // The first car admitted owns the junction until its rear has left the
    // curve. Queued approaches cannot enter and mutually block one another.
    if(this.cars.some(q=>q!==c&&q.active&&q.turn?.via===edge.to&&!(q.stoppedT>2)))return null;
-   const joined={...c,laneShift:0},paths=this.turnPaths(edge,c).filter(p=>{const e=this.session.roads.graph.edges.get(p.next)?.value,b=p.points.at(-1);return !(c.avoidNext?.id===p.next&&c.avoidNext.until>this.t)&&e&&this.laneClear(e,joined)&&this.turnPaths(e,joined).length&&!this.cars.some(q=>q!==c&&q.active&&(q.point.edge===e.id&&q.stoppedT>2||Math.abs(q.vehicle.y-b.y)<2.5&&Math.hypot(q.vehicle.x-b.x,q.vehicle.z-b.z)<c.len+4));});if(!paths.length){this.avoidEdges.set(edge.id,this.t+30);return null;}
+   const paths=this.throughPaths(edge,c).filter(p=>{const b=p.points.at(-1);return !(c.avoidNext?.id===p.next&&c.avoidNext.until>this.t)&&!this.cars.some(q=>q!==c&&q.active&&(q.point.edge===p.next&&q.stoppedT>2||Math.abs(q.vehicle.y-b.y)<2.5&&Math.hypot(q.vehicle.x-b.x,q.vehicle.z-b.z)<c.len+4));});if(!paths.length){this.avoidEdges.set(edge.id,this.t+30);return null;}
    turn=c.police&&this.hm.active&&player?[...paths].sort((a,b)=>{const end=p=>this.session.roads.graph.edges.get(p.next).value.points.at(-1);return Math.hypot(end(a)[0]-player.x,end(a)[2]-player.z)-Math.hypot(end(b)[0]-player.x,end(b)[2]-player.z);})[0]:paths[Math.floor(this.pool.rng.next()*paths.length)];turn={...turn,progress:Math.max(0,c.offset-entry)};travel=Math.max(0,offset-entry);
   }
   if(!turn)return {p:this.candidate(edge,offset,c),offset,turn:null};
@@ -79,7 +81,7 @@ export class WorldTraffic {
   if(progress>=turn.length){const next=this.session.roads.graph.edges.get(turn.next).value;offset=Math.min(edgeLength(next),turn.exit+progress-turn.length);return {p:this.candidate(next,offset,{...c,laneShift:0}),offset,turn:null,laneShift:0};}
   const i=Math.max(1,turn.points.findIndex(p=>p.s>=progress)),a=turn.points[i-1],b=turn.points[i],t=(progress-a.s)/(b.s-a.s||1),yaw=a.yaw+Math.atan2(Math.sin(b.yaw-a.yaw),Math.cos(b.yaw-a.yaw))*t;
   const p={...a,x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t,z:a.z+(b.z-a.z)*t,yaw};
-  const contact=this.session.stream.contact(p.x,p.z,{referenceY:p.y,requiredFlags:1});if(!contact)return null;p.y=contact.y;
+  const contact=this.session.stream.contact(p.x,p.z,{referenceY:p.y,layer:p.layer,requiredFlags:1});if(!contact)return null;p.y=contact.y;p.surfaceId=contact.surfaceId;
   return {p,offset:turn.entry+progress,turn:{...turn,progress}};
  }
  // A stopped vehicle must not pin every lane of a broad avenue. Move only
@@ -89,7 +91,8 @@ export class WorldTraffic {
   if(c.bypassTarget==null){const base=this.laneOffset(edge,c),width=this.laneCache.get(edge.id+':'+c.wid)?.width;if(!width)return;
    const middle=(width.right-width.left)/2;
    for(const shift of [2.25,-2.25,3,-3]){const u=base+shift;if(u<-width.left+c.wid/2+.2||u>width.right-c.wid/2-.2||!(edge.flags&1)&&u<middle+c.wid/2+.2)continue;
-    let safe=true;for(const s of [c.offset,c.offset+6,c.offset+12]){const p=this.candidate(edge,s,{...c,laneShift:shift});if(!p||this.poseBlocked(c,p,actors)){safe=false;break;}}
+    const passing={...c,laneShift:shift},entry=edgeLength(edge)-Math.min(8,edgeLength(edge)*.4);if(c.offset+12>=entry&&!this.throughPaths(edge,passing).length)continue;
+    let safe=true;for(const s of [c.offset,c.offset+6,c.offset+12]){const p=this.candidate(edge,s,passing);if(!p||this.poseBlocked(c,p,actors)){safe=false;break;}}
     if(safe){c.bypassTarget=shift;break;}
    }
   }
@@ -117,7 +120,7 @@ export class WorldTraffic {
   c.laneShift=0;c.bypassTarget=null;
   const graph=this.session.roads.graph,edges=[...graph.edges.values()].map(e=>e.value).filter(e=>!(e.flags&8)&&!this.closures?.blocksEdge(e)&&!(this.avoidEdges.get(e.id)>this.t)&&trafficSuccessors(graph,e,this.closures).length);
   for(let i=0;i<Math.min(80,edges.length);i++){const edge=edges[Math.floor(this.pool.rng.next()*edges.length)],s=edgeLength(edge)*.5,centre=edgePoint(edge,s),d=Math.hypot(centre.x-player.x,centre.z-player.z);if(d<160||d>450)continue;
-   const p=this.candidate(edge,s,c);if(!p||!this.laneClear(edge,c)||!this.turnPaths(edge,c).length)continue;
+   const p=this.candidate(edge,s,c);if(!p||!this.laneClear(edge,c)||!this.throughPaths(edge,c).length)continue;
    if([...actors,...this.cars.filter(q=>q.active).map(q=>q.vehicle)].some(a=>Math.abs(a.y-p.y)<3&&Math.hypot(a.x-p.x,a.z-p.z)<22)||this.cars.filter(q=>q.active&&q.point.edge===edge.id).length>=2||this.cars.some(q=>q.active&&q.point.edge===edge.id&&q.v<1))continue;
    this.pool.repair?.(c);this.pool.initDrive(c,false);c.turn=null;c.yielding=null;c.avoidNext=null;c.laneShift=0;c.bypassTarget=null;c.crashed=false;c.recoveryT=0;c.stoppedT=0;c.contactT=0;c.contactAt=-Infinity;c.blockedAt=null;c.lastSeenAt=this.t;c.active=true;c.point=p;c.offset=s;c.v=needCop?0:7;const q=this.route.project(p.x,p.z,{referenceY:p.y,heading:p.yaw});c.vehicle={...p,s:q.s,u:q.u,m:c.mass,halfL:c.len/2,halfW:c.wid/2,vLong:c.v,vLat:0,w:0};c.veh=c.vehicle;c.model=c.m;Object.assign(c,{s:q.s,u:q.u,hs:c.len/2,hu:c.wid/2,vs:c.v,vu:0,x:p.x,y:p.y,z:p.z});c.m.root.visible=true;return;
   }

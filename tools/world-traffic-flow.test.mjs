@@ -30,6 +30,11 @@ test('random graph choices never select the immediate reverse edge',()=>{
  const e={id:'a',from:'n0',to:'n1',layer:0,points:[[0,0,0],[0,0,100]],flags:0},reverse={...e,id:'reverse',from:'n1',to:'n0',points:[...e.points].reverse()},next={...e,id:'next',from:'n1',to:'n2',points:[[0,0,100],[30,0,130]]},w=ribbonWorld([e,reverse,next]);
  assert.deepEqual(trafficSuccessors(w.roads.graph,e).map(e=>e.id),['next']);
 });
+test('spawn and driving use the same complete successor admission check',()=>{
+ const a={id:'a',from:'n0',to:'n1',flags:1,lanes:1,layer:0,points:[[0,0,200],[0,0,240]]},b={...a,id:'b',from:'n1',to:'n2',points:[[0,0,240],[0,0,280]]},w=ribbonWorld([a,b]),t=trafficPool(new WorldTraffic(w,{}, {project:(x,z)=>({s:z,u:x})}));t.level=1;t.pool.rng.next=()=>0;
+ t.turnPaths=e=>e.id==='a'?[{next:'b'}]:[];t.spawn({x:0,y:0,z:0},[]);assert.ok(t.cars.every(c=>!c.active),'an immediate turn with no usable continuation is not a spawn route');
+ t.turnPaths=()=>[{next:'b'}];t.spawn({x:0,y:0,z:0},[]);assert.ok(t.cars.some(c=>c.active));
+});
 test('junction curves remain continuous and a second approach yields to the admitted car',()=>{
  const e={id:'in',from:'a',to:'b',layer:0,flags:1,lanes:1,points:[[0,0,0],[0,0,60]]},next={...e,id:'out',from:'b',to:'c',points:[[0,0,60],[60,0,60]]},out={...next,id:'after',from:'c',to:'d',points:[[60,0,60],[120,0,60]]},w=ribbonWorld([e,next,out]),t=trafficPool(new WorldTraffic(w,{},{}));
  const c=t.cars[0];Object.assign(c,{active:true,offset:51.9,point:{edge:e.id}});c.vehicle=t.candidate(e,c.offset,c);
@@ -66,6 +71,12 @@ test('a visible car passes a parked vehicle using a spare lane without crossing 
  for(let i=0;i<400;i++){t.update(.05,player,[player]);c.lastSeenAt=t.t;}
  assert.ok(c.vehicle.z>130,JSON.stringify(c.vehicle));assert.ok(c.laneShift>=2.2);assert.ok(c.active);
 });
+test('a spare lane near a junction needs a checked exit before cars fan out',()=>{
+ const e={id:'road',from:'a',to:'b',layer:0,flags:1,lanes:3,points:[[0,0,0],[0,0,100]]},w=ribbonWorld([e]),t=trafficPool(new WorldTraffic(w,{},{})),c=t.cars[0];
+ Object.assign(c,{offset:85,stoppedT:3,laneShift:0,vehicle:{...edgePoint(e,85),halfL:2.2,halfW:.9}});
+ t.throughPaths=()=>[];t.bypass(c,e,.1,[]);assert.equal(c.laneShift,0);assert.equal(c.bypassTarget,undefined);
+ const checked=[];t.throughPaths=(_e,car)=>{checked.push(car.laneShift);return [{}];};t.bypass(c,e,.1,[]);assert.deepEqual(checked,[2.25]);assert.ok(c.laneShift>0);
+});
 test('a blocked turn backs out continuously and checks cars behind before moving',()=>{
  const e={id:'road',from:'a',to:'b',layer:0,flags:1,lanes:2,points:[[0,0,0],[0,0,1000]]},w=ribbonWorld([e]),t=trafficPool(new WorldTraffic(w,{}, {project:(x,z)=>({s:z,u:x})})),c=t.cars[0],pose=edgePoint(e,105);
  Object.assign(c,{active:true,offset:105,point:pose,vehicle:{...pose,halfL:2.2,halfW:.9,vLong:0},stoppedT:7,v:0,turn:{entry:100,progress:5,next:'exit',points:[{...edgePoint(e,100),s:0},{...edgePoint(e,110),s:10}]}});
@@ -80,6 +91,25 @@ test('reversing a turn samples current ground contact instead of cached curve he
  const contact=w.stream.contact;w.stream.contact=(x,z,o)=>{const p=contact(x,z,o);return p&&{...p,y:.7};};
  t.yieldBack(c,e,.1,[]);assert.equal(c.vehicle.y,.7);assert.equal(c.point.y,.7);
  const before={...c.vehicle};w.stream.contact=()=>null;t.yieldBack(c,e,.1,[]);assert.deepEqual([c.vehicle.x,c.vehicle.y,c.vehicle.z],[before.x,before.y,before.z]);assert.equal(c.vehicle.vLong,0);
+});
+test('forward curves keep their road layer and adopt the current contact owner',()=>{
+ const e={id:'road',from:'a',to:'b',layer:0,flags:1,lanes:2,points:[[0,0,0],[0,0,1000]]},w=ribbonWorld([e]),t=trafficPool(new WorldTraffic(w,{},{})),c=t.cars[0];
+ Object.assign(c,{offset:105,point:{edge:'road'},turn:{entry:100,progress:5,next:'road',length:10,points:[{...edgePoint(e,100),surfaceId:'old-owner',s:0},{...edgePoint(e,110),surfaceId:'old-owner',s:10}]}});
+ const layers=[];w.stream.contact=(_x,_z,o)=>{layers.push(o.layer);return o.layer===0?{y:.2,layer:0,surfaceId:'connected-owner'}:{y:.7,layer:1,surfaceId:'unrelated-deck'};};
+ const n=t.advanceLane(c,e,.1);assert.ok(n?.p);assert.equal(n.p.y,.2);assert.equal(n.p.layer,0);assert.equal(n.p.surfaceId,'connected-owner');assert.deepEqual(layers,[0]);
+});
+test('curve admission checks the actual centre height and owner before the complete footprint',()=>{
+ const a={id:'a',from:'n0',to:'n1',layer:0,flags:1,lanes:2,points:[[0,0,0],[0,0,100]]},b={...a,id:'b',from:'n1',to:'n2',points:[[0,0,100],[0,0,200]]},w=ribbonWorld([a,b]),t=trafficPool(new WorldTraffic(w,{},{})),c=t.cars[0],contact=w.stream.contact;
+ w.stream.contact=(x,z,o)=>{const p=contact(x,z,o);return p&&{...p,y:Math.max(0,.4*Math.sin((z-92)/16*Math.PI)),surfaceId:z<100?'a-owner':'b-owner'};};
+ const safe=w.safePose;w.safePose=(p,o)=>{const ground=w.stream.contact(p.x,p.z,{referenceY:p.y,layer:p.layer});return safe(p,o)&&Math.abs(p.y-ground.y)<1e-8&&p.surfaceId===ground.surfaceId;};
+ const paths=t.turnPaths(a,c);assert.equal(paths.length,1);assert.ok(paths[0].points.some(p=>p.y>.3));assert.equal(paths[0].points.at(-1).surfaceId,'b-owner');
+});
+test('a legal bridge approach changes curve contact layer to its connected exit',()=>{
+ const a={id:'approach',from:'a',to:'b',layer:0,flags:3,lanes:1,surface:'approach',points:[[0,6,0],[0,6,100]]},b={...a,id:'bridge',from:'b',to:'c',layer:1,surface:'deck',points:[[0,6,100],[0,6,200]]},out={...b,id:'after',from:'c',to:'d',points:[[0,6,200],[0,6,300]]},w=ribbonWorld([a,b,out]),t=trafficPool(new WorldTraffic(w,{},{})),c=t.cars[0];
+ Object.assign(c,{active:true,offset:91.9,point:{edge:'approach'}});c.vehicle=t.candidate(a,c.offset,c);let crossed=false;
+ const contact=w.stream.contact;w.stream.contact=(x,z,o)=>{const p=contact(x,z,o);if(!p)return null;return {...p,layer:o.layer,surfaceId:o.layer===1?'deck':'approach'};};
+ for(let i=0;i<200&&c.point.edge!=='bridge';i++){const n=t.advanceLane(c,a,.1);assert.ok(n?.p);Object.assign(c,{offset:n.offset,turn:n.turn,point:n.p,vehicle:n.p});if(n.p.z>104&&n.turn){assert.equal(n.p.layer,1);assert.equal(n.p.surfaceId,'deck');crossed=true;}}
+ assert.ok(crossed);assert.equal(c.point.edge,'bridge');
 });
 
 // This deterministic gate uses the real published-route graph geometry with
