@@ -71,7 +71,6 @@ Difficulty: 🟢 good first fix · 🟡 medium · 🔴 deep / needs care.
 - 🟢 **Esc goes to the wrong screen.** In the Athens route flow, Esc from Race Setup goes to the title screen instead of the track picker.
 - 🟢 **Stale What's New.** It still mentions engine trims, which were removed. Update `CHANGELOG.md` / What's New.
 - 🟢 **Signed-out leaderboard.** Signed-out players see "Leaderboard unavailable" in Top 3; show something friendlier.
-- 🟡 **Free-roam mirror is a still picture.** In free roam the cockpit mirror shows a static image and ignores Settings → Graphics → Mirror. Quick Race mirrors work.
 - 🔴 **Slow first load.** Cold load is still above the 8 s target: Megara about 8.1 s, Penteli hill about 9.1 s.
 - 🔴 **Old per-track loaders not removed.** They still serve the normal menu races; finishing the move to one Athens world means deleting them.
 
@@ -81,6 +80,8 @@ Difficulty: 🟢 good first fix · 🟡 medium · 🔴 deep / needs care.
 - **A failed commit is never retried on its own.** After a failure the release train skips that commit until `~/.local/state/athens-release/failed` is removed.
 
 ## Fixed
+
+- **Free-roam mirror is a still picture (2026-10-22):** the standalone Athens free-roam render never ran the mirror pass, so the interior glass kept its static fallback texture and ignored Settings → Graphics → Mirror. It now renders the live rear view with the same Off / Low / High gate as races. Same fix wave: cockpit is the default view (C toggles POV/outside), B is hold-to-look-back in every Athens view, hood POV retired, position cycling moved to P with default migration. Browser evidence: `/home/dev/data/agent-feed/fix-wave/mirror/` (two driving shots with changing mirror content, one Off shot).
 
 - **3. Direction arrows (2026-10-22):** Quick Race now shares faint road chevrons with the streamed routes; larger, width-bounded marks sit beside the car, cover within-edge bends, and fade over a speed-based approach. One 128-instance pool, no glows or gates, and no world rebake. Browser evidence: `/home/dev/data/agent-feed/fix-wave/direction-arrows/`.
 
