@@ -28,6 +28,8 @@ export function eligibleHistoricalRecord(record,{source='',key=''}={}) {
  const original=record?.migration?.version===2?record.migration.original:record;
  if(!original||typeof original!=='object')return false;
  source=record.migration?.source||source;key=record.migration?.key||key;
+ // Deployment smoke sessions (server/smoke-session.mjs, driver ids 'smoke-…') prove the release; they are not players' history.
+ if(String(original.driverId||'').startsWith('smoke-'))return false;
  if(key==='fixture'||original.fixture===true||original.testFixture===true||[original.source,original.provenance].some(v=>['fixture','test-fixture','capture-fixture'].includes(v)))return false;
  const time=original.time??original.bestTime;if(!Number.isFinite(time)||time<=0)return false;
  if(['server-json','do-sqlite'].includes(source))return /^[a-zA-Z0-9_-]{8,64}$/.test(original.driverId||'')&&Number.isFinite(original.at)&&original.at>0&&typeof original.car==='string'&&!!original.car;

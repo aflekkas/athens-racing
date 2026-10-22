@@ -1,3 +1,4 @@
+import {clearPacketVegetation} from './vegetation-clearance.js';
 import {readGraphShard} from './world-tile-graph.js';
 import { decodeTilePack } from './world-tile-codec.js';
 import { validateWorldTile, residentArrayBytes } from './world-tile-format.js';
@@ -39,7 +40,7 @@ export function prepareTilePacket(pack,{entry,world,revision,cell}){
   const start=performance.now();
   const checked=validateWorldTile(pack,{world,revision,cell});
   // Footprints are stored once; their wall and roof meshes are built here, before bounds, GPU plan and byte accounting.
-  withTileSurfaceIndexes(()=>addDerivedBuildings(pack,checked.tables));tagDressedSurfaces(pack);
+  withTileSurfaceIndexes(()=>{addDerivedBuildings(pack,checked.tables);clearPacketVegetation(pack,checked.tables);});tagDressedSurfaces(pack);
   if(pack.metadata.authoredObstacles){if(pack.detailObstacleIndex)throw Error('Conflicting authored obstacle ownership');pack.detailObstacleIndex=buildTileObstacleIndex({buildings:[],buildingCorners:[],buildingHeights:[]},pack.metadata.authoredObstacles);}
   const derived=performance.now(),contactIndex=buildTileContactIndex(checked.tables,Math.floor(entry.decodedBytes/4)),contacted=performance.now();
   // Bounding volumes are built in the worker, avoiding a vertex scan during activation.

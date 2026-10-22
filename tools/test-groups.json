@@ -118,6 +118,7 @@
     "tools/map-select-camera.test.mjs",
     "tools/map-select-perf.test.mjs",
     "tools/mirror-cadence.test.mjs",
+    "tools/mirror-settings.test.mjs",
     "tools/modes.test.mjs",
     "tools/nitrous-input.test.mjs",
     "tools/notice-style.test.mjs",
@@ -263,7 +264,8 @@
     "tools/import-track-region.test.mjs",
     "tools/route-phase4a.test.mjs",
     "tools/route-phase4b.test.mjs",
-    "tools/track-select.test.mjs"
+    "tools/track-select.test.mjs",
+    "tools/vegetation-clearance.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",

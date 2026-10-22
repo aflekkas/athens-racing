@@ -11,12 +11,12 @@ import { CU, AP_UNIFORMS, AERIAL_GLSL, AP_K } from './env.js';
 //   msaa / fxaa / ao / bloomMips / blurTaps / sharpen: 0 = off · dofTaps: depth of field taps for the garage / orbit
 //   cameras only · heat: no heat shimmer · grade: false = tone map + time-of-day grade only (no sun glare, lens ghosts
 //   or rain on the lens) · simple: cheap sky / sea / terrain shading · waterEvery: 0 = no sea reflection pass ·
-//   particles: weather / tyre-smoke detail · mirror: cockpit mirror view (every n-th frame, far plane m, width px) ·
+//   particles: weather / tyre-smoke detail · mirror: cockpit mirror view (Low refreshes every n-th frame, far plane m, width px = High target cap) ·
 //   scenery / horizon: the world tier and far-impostor tier · anisotropy: texture filtering
 export const RENDER = Object.freeze({
   shadow: null, shadowEvery: 1, probeEvery: 0,
   msaa: 0, fxaa: false, ao: 0, bloomMips: 0, blurTaps: 0, dofTaps: 8, sharpen: 0, heat: false, grade: false, simple: true,
-  waterEvery: 0, particles: 'low', mirror: Object.freeze({ every: 3, far: 150, width: 384 }),
+  waterEvery: 0, particles: 'low', mirror: Object.freeze({ every: 2, far: 150, width: 768 }),
   scenery: 'high', horizon: 'high', anisotropy: 8,
 });
 // PERFORMANCE classes change only resolution, draw ranges and how much is simulated and refreshed, never the look. settings.perfClass

@@ -49,6 +49,10 @@ test('one original run held by two local stores and the server is one historical
   assert.deepEqual(kept.map(r => r.time), [86.512, 90.1], 'fastest first; the copy with its setup is kept');
   assert.ok(kept[0].setup);
   assert.equal(routeHistory([RUN, RUN], 'riviera-coast').length, 1, 'the shared history helper (client and server boards) dedupes too');
+  // The owner's '1:26.51 ×2' on production: two deployment smoke clients' runs (server/smoke-session.mjs ids), not players' history.
+  const smoke = { ...RUN, driverId: 'smoke-efdad773-8768-43e6', name: 'Deployment smoke', at: 1792606860656 };
+  assert.equal(routeHistory(migrateRouteRecords([smoke, { ...smoke, driverId: 'smoke-158b9cd7-d0de', name: 'Deployment smo#2', time: 86.513 }], { source: 'do-sqlite' }), 'riviera-coast').length, 0);
+  assert.equal(routeHistory(migrateRouteRecords([{ ...smoke, driverId: 'player-1234567890', name: 'NIKOS' }], { source: 'do-sqlite' }), 'riviera-coast').length, 1, 'a real driver still counts');
 });
 
 test('Race Setup records: single-line empty states, collapsed and deduped history, no cards or inner scroll', async () => {
@@ -64,6 +68,12 @@ test('Race Setup records: single-line empty states, collapsed and deduped histor
     assert.doesNotMatch(html, /1:26\.51/, 'collapsed history lists no rows');
     d.showHistory = true; html = renderSetupRecords({ screen: 'test' }, d, filters);
     assert.equal([...html.matchAll(/1:26\.51/g)].length, 1, 'expanded history shows the run once');
+    assert.match(html, /recs__rank">1<\/span>YOU</, 'a run from this device is YOU');
+    d.trackTimes.history = migrateRouteRecords([3, 4, 5, 6].map(t => ({ ...RUN, time: 86 + t, driverId: `player-${t}-abcdefgh`, name: `DRIVER ${t}`, at: 1792606860656 + t })), { source: 'do-sqlite' });
+    html = renderSetupRecords({ screen: 'test' }, d, filters);
+    assert.match(html, /DRIVER 3/, 'another driver shows by name, never as YOU');
+    assert.equal([...html.matchAll(/recs__rank/g)].length, 3, 'expanded history lists the fastest three, so it fits beside advanced options at 1280x800');
+    assert.match(html, /Fastest 3 of 4\./);
     assert.match(html, /aria-expanded="true"/);
     d.trackTimes = { loading: false, error: 'Leaderboard unavailable.', entries: [], requested: true };
     html = renderSetupRecords({ screen: 'test' }, d, { mapId: 'megara', eventId: 'megara-race' });

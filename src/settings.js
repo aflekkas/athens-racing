@@ -14,7 +14,10 @@
 //   settings.pixelRatioCap    legacy, unused
 //   settings.frameCap         frame rate limit: 30 | 60 | 120 | 0 (unlimited); high-refresh screens otherwise draw every vsync
 //   settings.drawDistance     'auto' (the performance class's) | 300 | 500 | 1000 | 2000 | 4000 metres (src/scenery.js, applies live)
-//   settings.mirrors          working in-car rear-view / door mirrors on / off (src/cockpit.js); never in the chase camera
+//   settings.mirrors          working in-car rear-view / door mirrors: 'off' | 'low' | 'high' (src/cockpit.js);
+//                             Off hides the mirrors and skips the pass, Low halves the resolution and refreshes every
+//                             other frame, High is full resolution every frame. A low performance class caps High at
+//                             Low (mirrorQuality). Never in the chase camera.
 //   settings.ghostEnabled     race against your best ghost (src/ghost-lap.js reads it)
 //   onSettings((settings, changedKey) => ...) returns an unsubscribe function
 
@@ -44,7 +47,14 @@ export function frameCapValue(value, fallback = DEFAULTS.frameCap) {
 const AUDIO_DEFAULT_VERSION = 'paraliaki.audio-default-version';
 const TYRE_DEFAULT_VERSION = 'paraliaki.tyre-default-version';
 const HUD_MOTION_DEFAULT_VERSION = 'paraliaki.hud-motion-default-version';
-export const DEFAULTS = { master: 0.6, sfx: 1, engine: 0.85, tyres: 0.28, ambience: 0.5, traffic: 0.65, voice: 0.65, ui: 0.4, mildLanguage: false, units: 'kmh', aids: true, abs: true, transmission: 'auto', steeringAssist: null, perfClass: 'auto', renderScale: 'auto', dynamicResolution: true, pixelRatioCap: 1.5, frameCap: 60, drawDistance: 'auto', worldDetail: true, mirrors: true, ghostEnabled: true,
+export const MIRROR_LEVELS = ['off', 'low', 'high'];
+/** The effective mirror quality: the saved Off / Low / High choice, except a low performance class caps High at Low. */
+export function mirrorQuality(preference = settings.mirrors, perfClass = settings.perfClass) {
+  if (preference === 'off' || preference === false) return 'off';
+  if (preference === 'low') return 'low';
+  return perfClass === 'potato' || perfClass === 'low' ? 'low' : 'high';
+}
+export const DEFAULTS = { master: 0.6, sfx: 1, engine: 0.85, tyres: 0.28, ambience: 0.5, traffic: 0.65, voice: 0.65, ui: 0.4, mildLanguage: false, units: 'kmh', aids: true, abs: true, transmission: 'auto', steeringAssist: null, perfClass: 'auto', renderScale: 'auto', dynamicResolution: true, pixelRatioCap: 1.5, frameCap: 60, drawDistance: 'auto', worldDetail: true, mirrors: 'high', ghostEnabled: true,
   mouseSensitivity: 1, mouseLook: false, invertLookY: false, chaseFov: 58, cockpitFov: 66, speedFov: true, playerMarkers: true, rivalMarkers: true, perfOverlay: false, hudMotion: 'full' };
 export const HUD_MOTION_VALUES = ['off', 'subtle', 'full'];
 const reducedMotion = () => { try { return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } };
@@ -67,8 +77,10 @@ const ls = () => { try { return typeof localStorage !== 'undefined' ? localStora
 
 function load() {
   const out = { ...DEFAULTS, hudMotion: reducedMotion() ? 'off' : DEFAULTS.hudMotion };
+  let hadMirrors = false;
   try {
     const storage = ls(), saved = JSON.parse(storage?.getItem(KEY) || '{}');
+    hadMirrors = Object.hasOwn(saved, 'mirrors');
     // Owner-locked removal (docs/OWNER-DECISIONS.md): drop the obsolete tyre-grip HUD preference, persisted copies too.
     if (Object.hasOwn(saved, 'showTyreGrip')) {
       delete saved.showTyreGrip;
@@ -129,7 +141,12 @@ function load() {
   delete out.police; // police are a race / lobby setting only, never a per-browser preference
   out.mildLanguage = out.mildLanguage === true;
   out.dynamicResolution = out.dynamicResolution !== false;
-  out.mirrors = out.mirrors !== false;
+  // Mirror Off / Low / High (owner request 2026-10-21): legacy boolean saves map to High / Off.
+  // A low performance class picks Low unless the player already chose (also capped live by mirrorQuality).
+  if (out.mirrors === true) out.mirrors = 'high';
+  else if (out.mirrors === false) out.mirrors = 'off';
+  if (!MIRROR_LEVELS.includes(out.mirrors)) out.mirrors = 'high';
+  if (!hadMirrors && (out.perfClass === 'potato' || out.perfClass === 'low')) out.mirrors = 'low';
   out.worldDetail = out.worldDetail !== false;
   if (!HUD_MOTION_VALUES.includes(out.hudMotion)) out.hudMotion = reducedMotion() ? 'off' : DEFAULTS.hudMotion;
   if (![300, 500, 1000, 2000, 4000].includes(+out.drawDistance)) out.drawDistance = 'auto'; else out.drawDistance = +out.drawDistance;
@@ -146,6 +163,10 @@ export function setSetting(key, value) {
   if (key === 'frameCap') { value = frameCapValue(value, null); if (value === null) return; }
   if (key === 'pixelRatioCap') value = pixelRatioCapValue(value);
   if (key === 'worldDetail' || key === 'dynamicResolution' || key === 'mildLanguage' || key === 'aids' || key === 'abs') value = value === true;
+  if (key === 'mirrors') {
+    if (value === true) value = 'high'; else if (value === false) value = 'off';
+    if (!MIRROR_LEVELS.includes(value)) return;
+  }
   if (key in CAMERA_RANGES || CAMERA_FLAGS.includes(key)) value = cameraValue(key, value);
   if (AUDIO_VOLUMES.includes(key)) value = Math.max(0, Math.min(1, +value || 0));
   if (!(key in DEFAULTS) || settings[key] === value) return;

@@ -93,7 +93,7 @@ import { firstRunPerformanceCheck } from './ui/graphics-onboarding.js';
 import { storedPerfCeiling } from './perf-ceiling.js';
 import { Menu } from './menu.js';
 import { updateLapHud } from './lap-hud.js';
-import { settings, setSetting, onSettings, steeringAssistChoice, applySteeringAssist as applyVehicleSteeringAssist, fmtSpeed, fmtDist, speedIn, speedUnit } from './settings.js';
+import { settings, setSetting, onSettings, steeringAssistChoice, applySteeringAssist as applyVehicleSteeringAssist, fmtSpeed, fmtDist, speedIn, speedUnit, mirrorQuality } from './settings.js';
 import { trackVersion } from './network-track.js';
 import { initWeather, updateWeather, updateRoadWeather, disposeWeather } from './weather.js';
 import { wetPlanningPace, WEATHER } from './wet-grip.js';
@@ -2568,10 +2568,10 @@ function render() {
   // The one look (graphics.js RENDER): no shadow maps, no car reflection probe re-renders, no sea reflection pass.
   if ((frameN % 6) === 0 || camera.position.distanceToSquared(lodAt) > 1e4) updateLod(); // and at once after a teleport / reset
   sky.position.copy(camera.position);
-  // In-car mirrors only (Settings > Mirrors). Owner-locked: the chase / third-person camera never renders a mirror or
-  // a rear-view strip, and never pays for the mirror pass (docs/OWNER-DECISIONS.md).
-  const mirrorsOn = settings.mirrors !== false;
-  if (mirrorsInView(G.cam)) { if (cockpitInView) player.cockpit.renderMirrors(renderer, scene, { enabled: mirrorsOn }); }
+  // In-car mirrors only (Settings > Graphics > Mirrors: Off / Low / High). Owner-locked: the chase / third-person
+  // camera never renders a mirror or a rear-view strip, and never pays for the mirror pass (docs/OWNER-DECISIONS.md).
+  const mirrorQ = mirrorQuality(settings.mirrors, GFX.perfClass);
+  if (mirrorsInView(G.cam)) { if (cockpitInView) player.cockpit.renderMirrors(renderer, scene, { enabled: mirrorQ !== 'off', quality: mirrorQ }); }
   // post: depth of field for the orbit cameras
   const orbit = G.cam === 'orbit';
   post.comp.uDof.value = orbit ? 5.5 : 0;
