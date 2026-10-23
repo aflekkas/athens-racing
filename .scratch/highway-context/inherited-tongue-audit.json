@@ -1,0 +1,13 @@
+{
+  "status": "UNCLASSIFIED inherited artifact; present in both matched before/after guard detail frames",
+  "pixelApprox": [
+    650,
+    455
+  ],
+  "evidence": [
+    "dionysou-posts-before.jpg",
+    "dionysou-posts-after.jpg"
+  ],
+  "attempt": "Read-only offline original-cell/neighbor mesh and generated-runtime-mark projections with camera/FOV62 did not uniquely identify a corresponding pale triangle. No geometry cause, fix or regression assertion.",
+  "next": "Use actual rendered camera/object/packet picking in an allocated browser retry; large earth cuts and geographic profile remain open."
+}

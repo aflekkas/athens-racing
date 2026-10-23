@@ -36,7 +36,7 @@ The [bridge designer's Greek project page](https://www.kalliergos.com/t-el/roadb
 
 The [Rizariou reduced source record](rizariou-source.json) separately retains its bounded API hash/URL and six relevant way versions/coordinates/tags.
 
-Mapped retaining walls w475170425 v5, w475170431 v4 (A6 vicinity) and w440936123 v1 (Rizariou vicinity) have no height tags in the bounded snapshots. The importer currently discards non-road/non-coast ways. An additive wall source/mesh/collision contract requires coordination and verified profiles; no arbitrary wall height or support placement has been implemented.
+Mapped retaining walls w475170425 v5, w475170431 v4 (A6 vicinity) and w440936123 v1 (Rizariou vicinity) have no height tags in the bounded snapshots. The original importer discarded non-road/non-coast ways. The new source-only context extractor retains these records in separate tables. Actual certified top/bottom owner profiles are still required; no arbitrary wall height or support placement has been implemented.
 
 ## Current offline helper and actual game baseline
 
@@ -58,10 +58,16 @@ All three requested Google pano links returned “No Street View imagery availab
 
 ## Outstanding acceptance
 
-- Paired AFTER guard detail and native driving proof. The three crossing baselines are now captured.
+- Native AFTER driving proof remains open. The [matched static after record](after-game-proof.json) has two ready/loading-hidden frames; the52s bounded browser deadline interrupted the12s native drive, so it is not a drive pass. [Guard detail after](dionysou-posts-after.jpg), [Dionysou overview after](dionysou-a6-after.jpg). Both frames inherit an [unclassified pale tongue](inherited-tongue-audit.json) near the far rail.
 - Actual Street View snapped location/date/approach inspection in the coordinated browser slot.
 - Final source/imagery comparison and concrete owner policy question only if the faithful repair needs locked stacked structures.
 - Clean npm and physics gates in the coordinated CPU slot.
 - Broader supports, abutments, medians/barriers and geographic-profile work remain open. Correct layer order and safe 5.5 m clearance do not establish a source-faithful uniform six-metre ground depression.
 
 Codex gpt-6.1-sol; Cogenly terminal, Python/Shapely and Node. No push/upload/deployment. Task temp `/tmp/athens-highway.GIu3` is active; its pinned Python venv is read-shared with terrain for the bounded Ekali bake and must be retained until handback. Initial disk: 145G total, 74G used, 71G available, 52%. Removed the superseded own clean archive (~810MiB); active task temp now187MiB, primarily the read-shared pinned venv plus reduced proof fixtures. Current disk145G total,73G used,73G available,51%. All owned browsers/proxies and bounded repair jobs are closed. Final cleanup awaits remaining gates/after capture and terrain venv handback.
+
+## Source-only prototype (not actual world activation)
+
+`3c3554b3` adds [the context API](../../tools/world-gen/structure-context.md), separate source extraction tables, exact-cell triangle certificates, mapped wall clipping, and an explicit experimental three-level scalar feasibility solver. Every result is releaseEligible:false; ordinary policy/plans and runtime stay unchanged. Focused wrapper10/10PASS,0skip (8Node +7Python source/context/ingest +10Python experimental tests). Full exact-candidate gates queued, not yet passed.
+
+[Bounded actual source approach audit](experimental-real-approaches.json):44ways,156consecutive source-node segments,22roundabout pieces,10junction boundaries,0unresolved crop endpoints, cells12,-14and13,-14. Endpoint source API hashes/versions retained. This completes top-ring adjacency only: not lower-road crossing coverage, boundary-height certification or real three-level feasibility. OSM API bbox can miss a long crossing way with no vertex inside; w154259480 needs separately pinned full-way source before lower-level scope certification. Synthetic feasible/infeasible certificates are tests, not measured elevations or game proof.

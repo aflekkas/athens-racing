@@ -1,0 +1,5565 @@
+{
+  "readDate": "2026-10-23",
+  "licence": "OpenStreetMap contributors, ODbL1.0",
+  "graph": {
+    "sourceSha256": "ed5b1804e36f8688015efd4b57b9ff651e3847a366f8b97f6869f5414c9cb2b8",
+    "primarySourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+    "bounds": [
+      23.7985,
+      38.04,
+      23.807,
+      38.045
+    ],
+    "nodes": {
+      "1668235239": {
+        "point": [
+          6335.261511318166,
+          -6917.524988000315
+        ],
+        "version": 8,
+        "timestamp": "2026-09-06T21:36:21Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "1668235247": {
+        "point": [
+          6374.158991781917,
+          -6893.613452000097
+        ],
+        "version": 12,
+        "timestamp": "2026-09-06T21:36:21Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "1701819369": {
+        "point": [
+          6523.08027272698,
+          -7005.712692000243
+        ],
+        "version": 4,
+        "timestamp": "2020-12-07T07:51:56Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "1701819374": {
+        "point": [
+          6528.415185454685,
+          -7015.642436000009
+        ],
+        "version": 3,
+        "timestamp": "2018-07-03T13:26:24Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "1765697910": {
+        "point": [
+          6376.2297802747935,
+          -6929.436228000299
+        ],
+        "version": 9,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "1838808523": {
+        "point": [
+          6405.326113507065,
+          -6853.259952000735
+        ],
+        "version": 8,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "1838808528": {
+        "point": [
+          6394.805455019243,
+          -6862.933660000674
+        ],
+        "version": 8,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "2193136847": {
+        "point": [
+          6377.686351842086,
+          -6894.003072000695
+        ],
+        "version": 7,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "2193136851": {
+        "point": [
+          6513.779273563645,
+          -6961.730160000394
+        ],
+        "version": 8,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "2251395170": {
+        "point": [
+          6411.2138214679835,
+          -6849.196772000711
+        ],
+        "version": 6,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "2271048380": {
+        "point": [
+          6386.408232189676,
+          -6874.132452000242
+        ],
+        "version": 6,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "2542062153": {
+        "point": [
+          6284.3692517446925,
+          -7007.404756000243
+        ],
+        "version": 5,
+        "timestamp": "2026-09-13T09:27:18Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "2656090056": {
+        "point": [
+          6482.112003770352,
+          -7011.545860000386
+        ],
+        "version": 11,
+        "timestamp": "2025-03-03T15:13:12Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "2656090057": {
+        "point": [
+          6375.203160555971,
+          -6922.356276000614
+        ],
+        "version": 14,
+        "timestamp": "2026-04-19T19:34:06Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "294112451": {
+        "point": [
+          6309.025674055412,
+          -6926.998320000284
+        ],
+        "version": 14,
+        "timestamp": "2026-09-06T21:36:21Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "295775329": {
+        "point": [
+          6555.572348106439,
+          -6834.691776000473
+        ],
+        "version": 9,
+        "timestamp": "2026-09-06T21:37:57Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "295775657": {
+        "point": [
+          6539.207854295463,
+          -6839.010992000325
+        ],
+        "version": 12,
+        "timestamp": "2026-09-06T21:37:57Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "295775659": {
+        "point": [
+          6924.953632807675,
+          -6718.93010800024
+        ],
+        "version": 21,
+        "timestamp": "2026-09-06T21:37:57Z",
+        "sourceSha256": "3057c1c825b891d615a125e0519b0b2bb8cd8f57e258c48cc9d79a3e5b0a7eac",
+        "complete": true
+      },
+      "295775759": {
+        "point": [
+          6471.907228273249,
+          -6840.057400000689
+        ],
+        "version": 14,
+        "timestamp": "2026-09-06T21:37:57Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "295776873": {
+        "point": [
+          6612.589227883947,
+          -6889.015936000156
+        ],
+        "version": 15,
+        "timestamp": "2026-09-06T21:37:57Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "35839639": {
+        "point": [
+          6424.761691947519,
+          -6987.122252000512
+        ],
+        "version": 24,
+        "timestamp": "2026-09-06T21:36:21Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "35839640": {
+        "point": [
+          6387.004900060652,
+          -6956.442460000297
+        ],
+        "version": 14,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "35839642": {
+        "point": [
+          6379.678169587361,
+          -6887.179156000048
+        ],
+        "version": 16,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "35839644": {
+        "point": [
+          6399.84203381146,
+          -6857.857468000676
+        ],
+        "version": 13,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "35839646": {
+        "point": [
+          6498.309781558822,
+          -6852.580900000709
+        ],
+        "version": 15,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "35839649": {
+        "point": [
+          6504.688863060581,
+          -6857.835204000416
+        ],
+        "version": 13,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "35839650": {
+        "point": [
+          6523.089047254595,
+          -6883.605784000211
+        ],
+        "version": 13,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "35839651": {
+        "point": [
+          6527.493860065999,
+          -6933.198843999975
+        ],
+        "version": 15,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "35840828": {
+        "point": [
+          6534.76794337391,
+          -7084.838948000269
+        ],
+        "version": 9,
+        "timestamp": "2021-04-12T15:28:06Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "35840829": {
+        "point": [
+          6512.761428372125,
+          -7046.99014800012
+        ],
+        "version": 7,
+        "timestamp": "2018-07-03T13:26:20Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "35840830": {
+        "point": [
+          6492.202710410017,
+          -7020.484856000439
+        ],
+        "version": 6,
+        "timestamp": "2018-07-03T13:26:20Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "35840949": {
+        "point": [
+          6537.856577058617,
+          -7031.917420000366
+        ],
+        "version": 10,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "35841268": {
+        "point": [
+          6501.573905793652,
+          -6974.476300000642
+        ],
+        "version": 13,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "35841269": {
+        "point": [
+          6494.931588466553,
+          -6979.374380000141
+        ],
+        "version": 13,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "35841879": {
+        "point": [
+          6432.702639346394,
+          -6827.1554120002
+        ],
+        "version": 9,
+        "timestamp": "2019-04-30T13:06:04Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "35841880": {
+        "point": [
+          6442.75824787591,
+          -6834.213100000416
+        ],
+        "version": 10,
+        "timestamp": "2020-12-31T23:36:28Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "360016036": {
+        "point": [
+          6397.806343428733,
+          -6997.786708000163
+        ],
+        "version": 11,
+        "timestamp": "2021-03-29T15:33:37Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "361422854": {
+        "point": [
+          6617.968013249106,
+          -6812.950980000312
+        ],
+        "version": 13,
+        "timestamp": "2026-09-06T21:37:57Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "361423237": {
+        "point": [
+          6253.614532812784,
+          -7016.711108000633
+        ],
+        "version": 9,
+        "timestamp": "2026-09-06T21:36:21Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "4339293220": {
+        "point": [
+          6439.634516081676,
+          -6991.140904000015
+        ],
+        "version": 6,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "4526920760": {
+        "point": [
+          6626.3301379688355,
+          -6809.97873600038
+        ],
+        "version": 4,
+        "timestamp": "2026-09-06T21:37:57Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "4526920762": {
+        "point": [
+          6612.492708081427,
+          -6814.899080000138
+        ],
+        "version": 5,
+        "timestamp": "2026-09-06T21:37:57Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "549775642": {
+        "point": [
+          6407.8268538481,
+          -6978.07193600074
+        ],
+        "version": 12,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "549775644": {
+        "point": [
+          6403.887090995004,
+          -6975.110824000148
+        ],
+        "version": 12,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "549775645": {
+        "point": [
+          6383.152882482462,
+          -6949.685336000431
+        ],
+        "version": 13,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "549775654": {
+        "point": [
+          6437.730443611307,
+          -6838.799484000227
+        ],
+        "version": 16,
+        "timestamp": "2025-04-11T04:56:12Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "549775665": {
+        "point": [
+          6510.462502163748,
+          -6863.735164000548
+        ],
+        "version": 12,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "549775669": {
+        "point": [
+          6529.029402380581,
+          -6925.094748000187
+        ],
+        "version": 16,
+        "timestamp": "2023-08-03T08:08:31Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "549775673": {
+        "point": [
+          6507.663427887225,
+          -6968.876904000068
+        ],
+        "version": 12,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "549775677": {
+        "point": [
+          6463.123926232976,
+          -6991.352412000115
+        ],
+        "version": 14,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "549778898": {
+        "point": [
+          6514.849765920232,
+          -6981.634176000447
+        ],
+        "version": 4,
+        "timestamp": "2018-10-15T17:10:14Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "549778899": {
+        "point": [
+          6376.843997200689,
+          -6845.7013240002025
+        ],
+        "version": 6,
+        "timestamp": "2018-07-03T13:26:22Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "549778900": {
+        "point": [
+          6372.219821201711,
+          -6823.570908000233
+        ],
+        "version": 5,
+        "timestamp": "2018-07-03T13:26:22Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "549778901": {
+        "point": [
+          6338.078134649919,
+          -6766.808840000535
+        ],
+        "version": 7,
+        "timestamp": "2021-03-29T16:57:25Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "549778915": {
+        "point": [
+          6374.211638946986,
+          -6761.164916000231
+        ],
+        "version": 4,
+        "timestamp": "2024-04-12T06:05:06Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "5736644522": {
+        "point": [
+          6357.487389507838,
+          -6793.202812000497
+        ],
+        "version": 2,
+        "timestamp": "2021-03-29T16:57:25Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "5736644523": {
+        "point": [
+          6362.910047510761,
+          -6802.754068000587
+        ],
+        "version": 2,
+        "timestamp": "2021-03-29T16:57:25Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "5736644524": {
+        "point": [
+          6377.809195227141,
+          -6856.9669080005515
+        ],
+        "version": 1,
+        "timestamp": "2018-07-03T13:26:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "5736644528": {
+        "point": [
+          6529.880531549594,
+          -6840.235512000398
+        ],
+        "version": 6,
+        "timestamp": "2026-09-13T09:27:19Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "5736644533": {
+        "point": [
+          6515.578051703878,
+          -6870.225120000457
+        ],
+        "version": 5,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "5736644534": {
+        "point": [
+          6529.687491944241,
+          -6916.8570680004195
+        ],
+        "version": 5,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "5736644537": {
+        "point": [
+          6519.974089987666,
+          -6877.216016000682
+        ],
+        "version": 5,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "5736644538": {
+        "point": [
+          6526.405818654493,
+          -6892.400064000155
+        ],
+        "version": 5,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "5736644539": {
+        "point": [
+          6528.371312817233,
+          -6900.426236000614
+        ],
+        "version": 5,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "5736644542": {
+        "point": [
+          6476.36468824972,
+          -6841.259656000501
+        ],
+        "version": 5,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "5736644544": {
+        "point": [
+          6444.820261841482,
+          -6837.775340000123
+        ],
+        "version": 5,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "5736644545": {
+        "point": [
+          6412.170244966819,
+          -6811.826648000619
+        ],
+        "version": 2,
+        "timestamp": "2019-04-30T13:06:05Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "5736644546": {
+        "point": [
+          6376.080613307206,
+          -6900.971704000661
+        ],
+        "version": 6,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "5736644554": {
+        "point": [
+          6501.249248275629,
+          -7030.4702600000655
+        ],
+        "version": 1,
+        "timestamp": "2018-07-03T13:26:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "5736644555": {
+        "point": [
+          6390.251475240251,
+          -6868.466264000468
+        ],
+        "version": 5,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "5736644556": {
+        "point": [
+          6418.189570840718,
+          -6984.28359200056
+        ],
+        "version": 5,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "5736644558": {
+        "point": [
+          6529.468128756354,
+          -6908.6082560005225
+        ],
+        "version": 5,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "5736644559": {
+        "point": [
+          6395.358250252455,
+          -6967.262764000188
+        ],
+        "version": 5,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "5736644560": {
+        "point": [
+          6487.797897598614,
+          -6983.548880000675
+        ],
+        "version": 5,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "5736644561": {
+        "point": [
+          6456.1130787504035,
+          -6992.07599200066
+        ],
+        "version": 5,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "5737500215": {
+        "point": [
+          6268.618974859612,
+          -7011.067184000329
+        ],
+        "version": 4,
+        "timestamp": "2026-09-13T09:27:19Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "5986351133": {
+        "point": [
+          6468.388642740695,
+          -6839.111180000705
+        ],
+        "version": 4,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "5986351135": {
+        "point": [
+          6460.219557626318,
+          -6837.830999999982
+        ],
+        "version": 4,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "6438628879": {
+        "point": [
+          6382.784352326987,
+          -6880.64467200041
+        ],
+        "version": 2,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "6438628880": {
+        "point": [
+          6447.847473833506,
+          -6992.0537280004
+        ],
+        "version": 2,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "6438628884": {
+        "point": [
+          6451.971501764339,
+          -6837.419116000706
+        ],
+        "version": 4,
+        "timestamp": "2024-05-10T05:39:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "6438630286": {
+        "point": [
+          6405.633221969857,
+          -6805.848764000367
+        ],
+        "version": 1,
+        "timestamp": "2019-04-30T13:06:03Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "6438630288": {
+        "point": [
+          6363.822598372144,
+          -6900.815856000421
+        ],
+        "version": 5,
+        "timestamp": "2026-09-13T09:27:19Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "6438630289": {
+        "point": [
+          6342.8251540342635,
+          -6913.8180320004985
+        ],
+        "version": 5,
+        "timestamp": "2026-09-13T09:27:19Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "789386140": {
+        "point": [
+          6420.681536654138,
+          -6818.617168000084
+        ],
+        "version": 14,
+        "timestamp": "2025-03-03T15:13:12Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "800140461": {
+        "point": [
+          6305.498313995243,
+          -7003.987232000644
+        ],
+        "version": 6,
+        "timestamp": "2026-09-13T09:27:18Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "800140463": {
+        "point": [
+          6530.915925796032,
+          -6930.115280000325
+        ],
+        "version": 9,
+        "timestamp": "2023-06-26T06:07:29Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "800140466": {
+        "point": [
+          6459.359653930002,
+          -6997.330296000367
+        ],
+        "version": 8,
+        "timestamp": "2025-04-10T17:36:20Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "800140483": {
+        "point": [
+          6510.42740405391,
+          -6965.726548000428
+        ],
+        "version": 12,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "800140485": {
+        "point": [
+          6215.875289980837,
+          -7030.759692000283
+        ],
+        "version": 5,
+        "timestamp": "2026-09-13T09:27:18Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "800140501": {
+        "point": [
+          6551.009593799832,
+          -6915.910848000435
+        ],
+        "version": 5,
+        "timestamp": "2022-03-23T15:17:52Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "800140509": {
+        "point": [
+          6368.815304526597,
+          -6897.565312000403
+        ],
+        "version": 11,
+        "timestamp": "2026-09-06T21:36:21Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "8016380929": {
+        "point": [
+          6696.324543937436,
+          -6792.011688000024
+        ],
+        "version": 4,
+        "timestamp": "2026-09-13T09:27:19Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "8016380930": {
+        "point": [
+          6727.000292121743,
+          -6783.017032000112
+        ],
+        "version": 4,
+        "timestamp": "2026-09-13T09:27:19Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "8016380931": {
+        "point": [
+          6739.547866464989,
+          -6778.597628000671
+        ],
+        "version": 4,
+        "timestamp": "2026-09-13T09:27:19Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "8016380956": {
+        "point": [
+          6720.12106255184,
+          -6785.421544000526
+        ],
+        "version": 4,
+        "timestamp": "2026-09-13T09:27:19Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "8016589461": {
+        "point": [
+          6398.885610312624,
+          -6798.345796000484
+        ],
+        "version": 1,
+        "timestamp": "2020-10-17T15:09:41Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "8016589462": {
+        "point": [
+          6387.584018876399,
+          -6783.918724000367
+        ],
+        "version": 1,
+        "timestamp": "2020-10-17T15:09:41Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "809948956": {
+        "point": [
+          6351.661103239291,
+          -6783.996648000486
+        ],
+        "version": 6,
+        "timestamp": "2021-03-29T16:57:25Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "8119881812": {
+        "point": [
+          6178.565998996735,
+          -7048.403912000031
+        ],
+        "version": 3,
+        "timestamp": "2026-09-06T21:36:21Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "8280035696": {
+        "point": [
+          6501.117630362959,
+          -6828.1572920000435
+        ],
+        "version": 2,
+        "timestamp": "2026-03-15T15:49:35Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "8280035704": {
+        "point": [
+          6477.8826815093835,
+          -6832.910656000224
+        ],
+        "version": 1,
+        "timestamp": "2020-12-31T23:36:28Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "8572117133": {
+        "point": [
+          6367.192016936798,
+          -6992.755044000686
+        ],
+        "version": 3,
+        "timestamp": "2026-09-13T09:27:19Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "8572117134": {
+        "point": [
+          6382.135037290942,
+          -6990.46185199999
+        ],
+        "version": 3,
+        "timestamp": "2026-09-13T09:27:19Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "8572117135": {
+        "point": [
+          6352.48590882577,
+          -6995.749552000087
+        ],
+        "version": 3,
+        "timestamp": "2026-09-13T09:27:19Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "8572117136": {
+        "point": [
+          6399.3769838534645,
+          -6988.99242800022
+        ],
+        "version": 3,
+        "timestamp": "2026-09-13T09:27:19Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "936803971": {
+        "point": [
+          6480.269352992666,
+          -6986.944140000012
+        ],
+        "version": 10,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "936803976": {
+        "point": [
+          6713.02246979405,
+          -6787.636812000313
+        ],
+        "version": 8,
+        "timestamp": "2026-09-06T21:37:57Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "936803978": {
+        "point": [
+          6472.416150869009,
+          -6989.515632000006
+        ],
+        "version": 11,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "936804018": {
+        "point": [
+          6378.932334748796,
+          -6872.0062400007055
+        ],
+        "version": 6,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "936804030": {
+        "point": [
+          6471.126295324535,
+          -7003.809120000145
+        ],
+        "version": 3,
+        "timestamp": "2018-07-03T13:26:23Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "936804051": {
+        "point": [
+          6571.559537234637,
+          -6906.226008000367
+        ],
+        "version": 2,
+        "timestamp": "2018-07-03T13:26:23Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "936804069": {
+        "point": [
+          6894.857003439114,
+          -6726.566660000101
+        ],
+        "version": 7,
+        "timestamp": "2026-09-06T21:37:57Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "936804078": {
+        "point": [
+          6322.898202052969,
+          -6922.6011800003125
+        ],
+        "version": 9,
+        "timestamp": "2026-09-06T21:36:21Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "936804109": {
+        "point": [
+          6513.867018838861,
+          -6969.1218080005565
+        ],
+        "version": 6,
+        "timestamp": "2023-06-26T06:07:29Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "936804145": {
+        "point": [
+          6430.772243293803,
+          -6840.469283999965
+        ],
+        "version": 11,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "936804178": {
+        "point": [
+          6534.004559480427,
+          -6928.000200000128
+        ],
+        "version": 3,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "936804207": {
+        "point": [
+          6330.4706192963695,
+          -6919.79591599996
+        ],
+        "version": 9,
+        "timestamp": "2026-09-13T09:27:18Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "936804244": {
+        "point": [
+          6518.429773145468,
+          -6995.025972000331
+        ],
+        "version": 3,
+        "timestamp": "2018-10-15T17:10:14Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "936804254": {
+        "point": [
+          6368.1923130733985,
+          -6813.284940000259
+        ],
+        "version": 4,
+        "timestamp": "2021-03-29T16:57:25Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "936804319": {
+        "point": [
+          6825.204804043766,
+          -6748.196136000544
+        ],
+        "version": 5,
+        "timestamp": "2026-09-06T21:37:57Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "936804340": {
+        "point": [
+          6375.124189808369,
+          -6908.062788000476
+        ],
+        "version": 12,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "936804374": {
+        "point": [
+          6374.983797368084,
+          -6834.535928000234
+        ],
+        "version": 4,
+        "timestamp": "2018-07-03T13:26:23Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "936804397": {
+        "point": [
+          6529.3101872611505,
+          -6921.621564000729
+        ],
+        "version": 11,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "936804402": {
+        "point": [
+          6444.442957158391,
+          -6835.281772000249
+        ],
+        "version": 10,
+        "timestamp": "2023-06-26T06:07:29Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "936804446": {
+        "point": [
+          6351.3890928866485,
+          -6909.120328000178
+        ],
+        "version": 10,
+        "timestamp": "2026-09-13T09:27:18Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "936804466": {
+        "point": [
+          6383.047588152326,
+          -6776.727452000172
+        ],
+        "version": 3,
+        "timestamp": "2015-11-08T18:05:51Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "936804477": {
+        "point": [
+          6378.616451758388,
+          -6866.507032000511
+        ],
+        "version": 8,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "936804486": {
+        "point": [
+          6392.28716562329,
+          -6790.319624000025
+        ],
+        "version": 6,
+        "timestamp": "2020-10-17T15:09:41Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "936804519": {
+        "point": [
+          6513.691528288427,
+          -6966.015980000647
+        ],
+        "version": 4,
+        "timestamp": "2018-10-15T17:10:14Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "9599972962": {
+        "point": [
+          6431.56195076982,
+          -6989.359784000558
+        ],
+        "version": 1,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "9599972963": {
+        "point": [
+          6411.915783669096,
+          -6980.832672000572
+        ],
+        "version": 1,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "9599972964": {
+        "point": [
+          6400.447476210052,
+          -6972.294428000457
+        ],
+        "version": 1,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "9599972965": {
+        "point": [
+          6390.751623308396,
+          -6961.7969520003835
+        ],
+        "version": 1,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "9599972966": {
+        "point": [
+          6380.22219029327,
+          -6943.161984000131
+        ],
+        "version": 1,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "9599972967": {
+        "point": [
+          6377.905715029973,
+          -6936.382596000005
+        ],
+        "version": 1,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "9599972968": {
+        "point": [
+          6374.834630400496,
+          -6915.20953200015
+        ],
+        "version": 1,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "9599972969": {
+        "point": [
+          6417.452510529457,
+          -6845.233780000275
+        ],
+        "version": 1,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "9599972970": {
+        "point": [
+          6423.989533526419,
+          -6842.762476000662
+        ],
+        "version": 1,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "9599972972": {
+        "point": [
+          6484.06872340579,
+          -6844.243032000562
+        ],
+        "version": 1,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "9599972973": {
+        "point": [
+          6491.413002933999,
+          -6848.027912000498
+        ],
+        "version": 1,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "9599972974": {
+        "point": [
+          6525.107188582404,
+          -6941.1025640005855
+        ],
+        "version": 1,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "9599972975": {
+        "point": [
+          6521.886936985338,
+          -6948.705720000056
+        ],
+        "version": 1,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "9599972976": {
+        "point": [
+          6517.868203384641,
+          -6955.930388000641
+        ],
+        "version": 1,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "9599972977": {
+        "point": [
+          6513.112409472682,
+          -6962.676380000377
+        ],
+        "version": 1,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "9599972978": {
+        "point": [
+          6536.707113954429,
+          -6925.740404000613
+        ],
+        "version": 1,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "9599972979": {
+        "point": [
+          6541.287417315954,
+          -6922.222692000635
+        ],
+        "version": 1,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "9599972980": {
+        "point": [
+          6546.332770635787,
+          -6918.760640000517
+        ],
+        "version": 1,
+        "timestamp": "2022-03-23T15:12:08Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "9599972981": {
+        "point": [
+          6547.552429959962,
+          -6837.096288000097
+        ],
+        "version": 5,
+        "timestamp": "2026-09-13T09:27:19Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "9599972982": {
+        "point": [
+          6378.870913056113,
+          -6889.928760000541
+        ],
+        "version": 2,
+        "timestamp": "2026-09-06T21:36:21Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "9599972983": {
+        "point": [
+          6357.706752695724,
+          -6905.235260000653
+        ],
+        "version": 3,
+        "timestamp": "2026-09-13T09:27:19Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "9599996164": {
+        "point": [
+          6528.757392027938,
+          -6926.530776000358
+        ],
+        "version": 1,
+        "timestamp": "2022-03-23T15:17:52Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "9599996165": {
+        "point": [
+          6557.028919673731,
+          -6912.6603040004165
+        ],
+        "version": 1,
+        "timestamp": "2022-03-23T15:17:52Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "9606323135": {
+        "point": [
+          6516.49060256495,
+          -6988.83657999998
+        ],
+        "version": 1,
+        "timestamp": "2022-03-25T17:45:46Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "9606323136": {
+        "point": [
+          6520.544434275797,
+          -7000.614235999985
+        ],
+        "version": 1,
+        "timestamp": "2022-03-25T17:45:46Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      },
+      "985946470": {
+        "point": [
+          6590.872272290036,
+          -6897.776820000501
+        ],
+        "version": 2,
+        "timestamp": "2018-07-03T13:26:24Z",
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "complete": true
+      }
+    },
+    "segments": {
+      "w1042971402:0": {
+        "way": "w1042971402",
+        "index": 0,
+        "a": "549775669",
+        "b": "9599996164"
+      },
+      "w1042971403:0": {
+        "way": "w1042971403",
+        "index": 0,
+        "a": "9599972975",
+        "b": "9599972976"
+      },
+      "w1042971403:1": {
+        "way": "w1042971403",
+        "index": 1,
+        "a": "9599972976",
+        "b": "2193136851"
+      },
+      "w1042971404:0": {
+        "way": "w1042971404",
+        "index": 0,
+        "a": "35839651",
+        "b": "9599972974"
+      },
+      "w1042971404:1": {
+        "way": "w1042971404",
+        "index": 1,
+        "a": "9599972974",
+        "b": "9599972975"
+      },
+      "w1081013285:0": {
+        "way": "w1081013285",
+        "index": 0,
+        "a": "6438628880",
+        "b": "4339293220"
+      },
+      "w1281357280:0": {
+        "way": "w1281357280",
+        "index": 0,
+        "a": "6438628884",
+        "b": "5986351135"
+      },
+      "w209086211:0": {
+        "way": "w209086211",
+        "index": 0,
+        "a": "2193136851",
+        "b": "936804519"
+      },
+      "w209086211:1": {
+        "way": "w209086211",
+        "index": 1,
+        "a": "936804519",
+        "b": "936804109"
+      },
+      "w209086211:2": {
+        "way": "w209086211",
+        "index": 2,
+        "a": "936804109",
+        "b": "549778898"
+      },
+      "w209086211:3": {
+        "way": "w209086211",
+        "index": 3,
+        "a": "549778898",
+        "b": "9606323135"
+      },
+      "w209086211:4": {
+        "way": "w209086211",
+        "index": 4,
+        "a": "9606323135",
+        "b": "936804244"
+      },
+      "w209086211:5": {
+        "way": "w209086211",
+        "index": 5,
+        "a": "936804244",
+        "b": "9606323136"
+      },
+      "w209086211:6": {
+        "way": "w209086211",
+        "index": 6,
+        "a": "9606323136",
+        "b": "1701819369"
+      },
+      "w209086211:7": {
+        "way": "w209086211",
+        "index": 7,
+        "a": "1701819369",
+        "b": "1701819374"
+      },
+      "w209086211:8": {
+        "way": "w209086211",
+        "index": 8,
+        "a": "1701819374",
+        "b": "35840949"
+      },
+      "w215668928:0": {
+        "way": "w215668928",
+        "index": 0,
+        "a": "35841268",
+        "b": "35841269"
+      },
+      "w215668928:1": {
+        "way": "w215668928",
+        "index": 1,
+        "a": "35841269",
+        "b": "5736644560"
+      },
+      "w215668928:2": {
+        "way": "w215668928",
+        "index": 2,
+        "a": "5736644560",
+        "b": "936803971"
+      },
+      "w215668928:3": {
+        "way": "w215668928",
+        "index": 3,
+        "a": "936803971",
+        "b": "936803978"
+      },
+      "w215668928:4": {
+        "way": "w215668928",
+        "index": 4,
+        "a": "936803978",
+        "b": "549775677"
+      },
+      "w215668929:0": {
+        "way": "w215668929",
+        "index": 0,
+        "a": "35839642",
+        "b": "6438628879"
+      },
+      "w215668929:1": {
+        "way": "w215668929",
+        "index": 1,
+        "a": "6438628879",
+        "b": "2271048380"
+      },
+      "w215668930:0": {
+        "way": "w215668930",
+        "index": 0,
+        "a": "1838808528",
+        "b": "35839644"
+      },
+      "w215668930:1": {
+        "way": "w215668930",
+        "index": 1,
+        "a": "35839644",
+        "b": "1838808523"
+      },
+      "w215668930:2": {
+        "way": "w215668930",
+        "index": 2,
+        "a": "1838808523",
+        "b": "2251395170"
+      },
+      "w215668930:3": {
+        "way": "w215668930",
+        "index": 3,
+        "a": "2251395170",
+        "b": "9599972969"
+      },
+      "w215668930:4": {
+        "way": "w215668930",
+        "index": 4,
+        "a": "9599972969",
+        "b": "9599972970"
+      },
+      "w215668930:5": {
+        "way": "w215668930",
+        "index": 5,
+        "a": "9599972970",
+        "b": "936804145"
+      },
+      "w215668930:6": {
+        "way": "w215668930",
+        "index": 6,
+        "a": "936804145",
+        "b": "549775654"
+      },
+      "w215668931:0": {
+        "way": "w215668931",
+        "index": 0,
+        "a": "35839646",
+        "b": "35839649"
+      },
+      "w215668931:1": {
+        "way": "w215668931",
+        "index": 1,
+        "a": "35839649",
+        "b": "549775665"
+      },
+      "w215668931:10": {
+        "way": "w215668931",
+        "index": 10,
+        "a": "936804397",
+        "b": "549775669"
+      },
+      "w215668931:2": {
+        "way": "w215668931",
+        "index": 2,
+        "a": "549775665",
+        "b": "5736644533"
+      },
+      "w215668931:3": {
+        "way": "w215668931",
+        "index": 3,
+        "a": "5736644533",
+        "b": "5736644537"
+      },
+      "w215668931:4": {
+        "way": "w215668931",
+        "index": 4,
+        "a": "5736644537",
+        "b": "35839650"
+      },
+      "w215668931:5": {
+        "way": "w215668931",
+        "index": 5,
+        "a": "35839650",
+        "b": "5736644538"
+      },
+      "w215668931:6": {
+        "way": "w215668931",
+        "index": 6,
+        "a": "5736644538",
+        "b": "5736644539"
+      },
+      "w215668931:7": {
+        "way": "w215668931",
+        "index": 7,
+        "a": "5736644539",
+        "b": "5736644558"
+      },
+      "w215668931:8": {
+        "way": "w215668931",
+        "index": 8,
+        "a": "5736644558",
+        "b": "5736644534"
+      },
+      "w215668931:9": {
+        "way": "w215668931",
+        "index": 9,
+        "a": "5736644534",
+        "b": "936804397"
+      },
+      "w215668932:0": {
+        "way": "w215668932",
+        "index": 0,
+        "a": "9599996164",
+        "b": "35839651"
+      },
+      "w215668934:0": {
+        "way": "w215668934",
+        "index": 0,
+        "a": "549775677",
+        "b": "5736644561"
+      },
+      "w217799667:0": {
+        "way": "w217799667",
+        "index": 0,
+        "a": "936804078",
+        "b": "936804207"
+      },
+      "w217799667:1": {
+        "way": "w217799667",
+        "index": 1,
+        "a": "936804207",
+        "b": "1668235239"
+      },
+      "w219037843:0": {
+        "way": "w219037843",
+        "index": 0,
+        "a": "4339293220",
+        "b": "9599972962"
+      },
+      "w219037843:1": {
+        "way": "w219037843",
+        "index": 1,
+        "a": "9599972962",
+        "b": "35839639"
+      },
+      "w219037843:2": {
+        "way": "w219037843",
+        "index": 2,
+        "a": "35839639",
+        "b": "5736644556"
+      },
+      "w219037843:3": {
+        "way": "w219037843",
+        "index": 3,
+        "a": "5736644556",
+        "b": "9599972963"
+      },
+      "w219037843:4": {
+        "way": "w219037843",
+        "index": 4,
+        "a": "9599972963",
+        "b": "549775642"
+      },
+      "w219039297:0": {
+        "way": "w219039297",
+        "index": 0,
+        "a": "2193136851",
+        "b": "9599972977"
+      },
+      "w219039297:1": {
+        "way": "w219039297",
+        "index": 1,
+        "a": "9599972977",
+        "b": "800140483"
+      },
+      "w247294870:0": {
+        "way": "w247294870",
+        "index": 0,
+        "a": "936804069",
+        "b": "295775659"
+      },
+      "w264694128:0": {
+        "way": "w264694128",
+        "index": 0,
+        "a": "1668235239",
+        "b": "6438630289"
+      },
+      "w264694128:1": {
+        "way": "w264694128",
+        "index": 1,
+        "a": "6438630289",
+        "b": "936804446"
+      },
+      "w264694128:2": {
+        "way": "w264694128",
+        "index": 2,
+        "a": "936804446",
+        "b": "9599972983"
+      },
+      "w264694128:3": {
+        "way": "w264694128",
+        "index": 3,
+        "a": "9599972983",
+        "b": "6438630288"
+      },
+      "w264694128:4": {
+        "way": "w264694128",
+        "index": 4,
+        "a": "6438630288",
+        "b": "800140509"
+      },
+      "w264694128:5": {
+        "way": "w264694128",
+        "index": 5,
+        "a": "800140509",
+        "b": "1668235247"
+      },
+      "w264694128:6": {
+        "way": "w264694128",
+        "index": 6,
+        "a": "1668235247",
+        "b": "9599972982"
+      },
+      "w307514074:0": {
+        "way": "w307514074",
+        "index": 0,
+        "a": "985946470",
+        "b": "936804051"
+      },
+      "w307514074:1": {
+        "way": "w307514074",
+        "index": 1,
+        "a": "936804051",
+        "b": "9599996165"
+      },
+      "w307514074:2": {
+        "way": "w307514074",
+        "index": 2,
+        "a": "9599996165",
+        "b": "800140501"
+      },
+      "w32229108:0": {
+        "way": "w32229108",
+        "index": 0,
+        "a": "35839639",
+        "b": "8572117136"
+      },
+      "w32229108:1": {
+        "way": "w32229108",
+        "index": 1,
+        "a": "8572117136",
+        "b": "8572117134"
+      },
+      "w32229108:2": {
+        "way": "w32229108",
+        "index": 2,
+        "a": "8572117134",
+        "b": "8572117133"
+      },
+      "w32229108:3": {
+        "way": "w32229108",
+        "index": 3,
+        "a": "8572117133",
+        "b": "8572117135"
+      },
+      "w32229108:4": {
+        "way": "w32229108",
+        "index": 4,
+        "a": "8572117135",
+        "b": "800140461"
+      },
+      "w32229108:5": {
+        "way": "w32229108",
+        "index": 5,
+        "a": "800140461",
+        "b": "2542062153"
+      },
+      "w32229108:6": {
+        "way": "w32229108",
+        "index": 6,
+        "a": "2542062153",
+        "b": "5737500215"
+      },
+      "w32229108:7": {
+        "way": "w32229108",
+        "index": 7,
+        "a": "5737500215",
+        "b": "361423237"
+      },
+      "w32229108:8": {
+        "way": "w32229108",
+        "index": 8,
+        "a": "361423237",
+        "b": "800140485"
+      },
+      "w32229108:9": {
+        "way": "w32229108",
+        "index": 9,
+        "a": "800140485",
+        "b": "8119881812"
+      },
+      "w396095371:0": {
+        "way": "w396095371",
+        "index": 0,
+        "a": "5736644554",
+        "b": "35840830"
+      },
+      "w396095371:1": {
+        "way": "w396095371",
+        "index": 1,
+        "a": "35840830",
+        "b": "2656090056"
+      },
+      "w396095371:2": {
+        "way": "w396095371",
+        "index": 2,
+        "a": "2656090056",
+        "b": "936804030"
+      },
+      "w396095371:3": {
+        "way": "w396095371",
+        "index": 3,
+        "a": "936804030",
+        "b": "800140466"
+      },
+      "w437409812:0": {
+        "way": "w437409812",
+        "index": 0,
+        "a": "35839642",
+        "b": "936804018"
+      },
+      "w437409812:1": {
+        "way": "w437409812",
+        "index": 1,
+        "a": "936804018",
+        "b": "936804477"
+      },
+      "w437409812:10": {
+        "way": "w437409812",
+        "index": 10,
+        "a": "809948956",
+        "b": "549778901"
+      },
+      "w437409812:2": {
+        "way": "w437409812",
+        "index": 2,
+        "a": "936804477",
+        "b": "5736644524"
+      },
+      "w437409812:3": {
+        "way": "w437409812",
+        "index": 3,
+        "a": "5736644524",
+        "b": "549778899"
+      },
+      "w437409812:4": {
+        "way": "w437409812",
+        "index": 4,
+        "a": "549778899",
+        "b": "936804374"
+      },
+      "w437409812:5": {
+        "way": "w437409812",
+        "index": 5,
+        "a": "936804374",
+        "b": "549778900"
+      },
+      "w437409812:6": {
+        "way": "w437409812",
+        "index": 6,
+        "a": "549778900",
+        "b": "936804254"
+      },
+      "w437409812:7": {
+        "way": "w437409812",
+        "index": 7,
+        "a": "936804254",
+        "b": "5736644523"
+      },
+      "w437409812:8": {
+        "way": "w437409812",
+        "index": 8,
+        "a": "5736644523",
+        "b": "5736644522"
+      },
+      "w437409812:9": {
+        "way": "w437409812",
+        "index": 9,
+        "a": "5736644522",
+        "b": "809948956"
+      },
+      "w456432944:0": {
+        "way": "w456432944",
+        "index": 0,
+        "a": "4526920762",
+        "b": "361422854"
+      },
+      "w456432944:1": {
+        "way": "w456432944",
+        "index": 1,
+        "a": "361422854",
+        "b": "4526920760"
+      },
+      "w456432947:0": {
+        "way": "w456432947",
+        "index": 0,
+        "a": "4526920760",
+        "b": "8016380929"
+      },
+      "w456432947:1": {
+        "way": "w456432947",
+        "index": 1,
+        "a": "8016380929",
+        "b": "936803976"
+      },
+      "w475170433:0": {
+        "way": "w475170433",
+        "index": 0,
+        "a": "936803976",
+        "b": "8016380956"
+      },
+      "w475170433:1": {
+        "way": "w475170433",
+        "index": 1,
+        "a": "8016380956",
+        "b": "8016380930"
+      },
+      "w475170433:2": {
+        "way": "w475170433",
+        "index": 2,
+        "a": "8016380930",
+        "b": "8016380931"
+      },
+      "w475170433:3": {
+        "way": "w475170433",
+        "index": 3,
+        "a": "8016380931",
+        "b": "936804319"
+      },
+      "w475170433:4": {
+        "way": "w475170433",
+        "index": 4,
+        "a": "936804319",
+        "b": "936804069"
+      },
+      "w5168796:0": {
+        "way": "w5168796",
+        "index": 0,
+        "a": "549775644",
+        "b": "9599972964"
+      },
+      "w5168796:1": {
+        "way": "w5168796",
+        "index": 1,
+        "a": "9599972964",
+        "b": "5736644559"
+      },
+      "w5168796:10": {
+        "way": "w5168796",
+        "index": 10,
+        "a": "9599972968",
+        "b": "936804340"
+      },
+      "w5168796:11": {
+        "way": "w5168796",
+        "index": 11,
+        "a": "936804340",
+        "b": "5736644546"
+      },
+      "w5168796:2": {
+        "way": "w5168796",
+        "index": 2,
+        "a": "5736644559",
+        "b": "9599972965"
+      },
+      "w5168796:3": {
+        "way": "w5168796",
+        "index": 3,
+        "a": "9599972965",
+        "b": "35839640"
+      },
+      "w5168796:4": {
+        "way": "w5168796",
+        "index": 4,
+        "a": "35839640",
+        "b": "549775645"
+      },
+      "w5168796:5": {
+        "way": "w5168796",
+        "index": 5,
+        "a": "549775645",
+        "b": "9599972966"
+      },
+      "w5168796:6": {
+        "way": "w5168796",
+        "index": 6,
+        "a": "9599972966",
+        "b": "9599972967"
+      },
+      "w5168796:7": {
+        "way": "w5168796",
+        "index": 7,
+        "a": "9599972967",
+        "b": "1765697910"
+      },
+      "w5168796:8": {
+        "way": "w5168796",
+        "index": 8,
+        "a": "1765697910",
+        "b": "2656090057"
+      },
+      "w5168796:9": {
+        "way": "w5168796",
+        "index": 9,
+        "a": "2656090057",
+        "b": "9599972968"
+      },
+      "w604643265:1": {
+        "way": "w604643265",
+        "index": 1,
+        "a": "549778915",
+        "b": "936804466"
+      },
+      "w604643265:10": {
+        "way": "w604643265",
+        "index": 10,
+        "a": "35841880",
+        "b": "936804402"
+      },
+      "w604643265:2": {
+        "way": "w604643265",
+        "index": 2,
+        "a": "936804466",
+        "b": "8016589462"
+      },
+      "w604643265:3": {
+        "way": "w604643265",
+        "index": 3,
+        "a": "8016589462",
+        "b": "936804486"
+      },
+      "w604643265:4": {
+        "way": "w604643265",
+        "index": 4,
+        "a": "936804486",
+        "b": "8016589461"
+      },
+      "w604643265:5": {
+        "way": "w604643265",
+        "index": 5,
+        "a": "8016589461",
+        "b": "6438630286"
+      },
+      "w604643265:6": {
+        "way": "w604643265",
+        "index": 6,
+        "a": "6438630286",
+        "b": "5736644545"
+      },
+      "w604643265:7": {
+        "way": "w604643265",
+        "index": 7,
+        "a": "5736644545",
+        "b": "789386140"
+      },
+      "w604643265:8": {
+        "way": "w604643265",
+        "index": 8,
+        "a": "789386140",
+        "b": "35841879"
+      },
+      "w604643265:9": {
+        "way": "w604643265",
+        "index": 9,
+        "a": "35841879",
+        "b": "35841880"
+      },
+      "w604643266:0": {
+        "way": "w604643266",
+        "index": 0,
+        "a": "295775759",
+        "b": "5736644528"
+      },
+      "w604643266:1": {
+        "way": "w604643266",
+        "index": 1,
+        "a": "5736644528",
+        "b": "295775657"
+      },
+      "w604643266:2": {
+        "way": "w604643266",
+        "index": 2,
+        "a": "295775657",
+        "b": "9599972981"
+      },
+      "w604643266:3": {
+        "way": "w604643266",
+        "index": 3,
+        "a": "9599972981",
+        "b": "295775329"
+      },
+      "w604643270:0": {
+        "way": "w604643270",
+        "index": 0,
+        "a": "800140501",
+        "b": "9599972980"
+      },
+      "w604643270:1": {
+        "way": "w604643270",
+        "index": 1,
+        "a": "9599972980",
+        "b": "9599972979"
+      },
+      "w604643270:2": {
+        "way": "w604643270",
+        "index": 2,
+        "a": "9599972979",
+        "b": "9599972978"
+      },
+      "w604643270:3": {
+        "way": "w604643270",
+        "index": 3,
+        "a": "9599972978",
+        "b": "936804178"
+      },
+      "w604643270:4": {
+        "way": "w604643270",
+        "index": 4,
+        "a": "936804178",
+        "b": "800140463"
+      },
+      "w604643270:5": {
+        "way": "w604643270",
+        "index": 5,
+        "a": "800140463",
+        "b": "35839651"
+      },
+      "w604643271:0": {
+        "way": "w604643271",
+        "index": 0,
+        "a": "295776873",
+        "b": "985946470"
+      },
+      "w604643288:0": {
+        "way": "w604643288",
+        "index": 0,
+        "a": "294112451",
+        "b": "936804078"
+      },
+      "w604643289:0": {
+        "way": "w604643289",
+        "index": 0,
+        "a": "5736644546",
+        "b": "2193136847"
+      },
+      "w604643290:0": {
+        "way": "w604643290",
+        "index": 0,
+        "a": "295775329",
+        "b": "4526920762"
+      },
+      "w604643292:0": {
+        "way": "w604643292",
+        "index": 0,
+        "a": "549775654",
+        "b": "5736644544"
+      },
+      "w604643292:1": {
+        "way": "w604643292",
+        "index": 1,
+        "a": "5736644544",
+        "b": "6438628884"
+      },
+      "w604643293:0": {
+        "way": "w604643293",
+        "index": 0,
+        "a": "4339293220",
+        "b": "360016036"
+      },
+      "w604643295:0": {
+        "way": "w604643295",
+        "index": 0,
+        "a": "800140466",
+        "b": "6438628880"
+      },
+      "w604643298:0": {
+        "way": "w604643298",
+        "index": 0,
+        "a": "35840828",
+        "b": "35840829"
+      },
+      "w604643298:1": {
+        "way": "w604643298",
+        "index": 1,
+        "a": "35840829",
+        "b": "5736644554"
+      },
+      "w604643299:0": {
+        "way": "w604643299",
+        "index": 0,
+        "a": "800140483",
+        "b": "549775673"
+      },
+      "w604643299:1": {
+        "way": "w604643299",
+        "index": 1,
+        "a": "549775673",
+        "b": "35841268"
+      },
+      "w604643301:0": {
+        "way": "w604643301",
+        "index": 0,
+        "a": "2271048380",
+        "b": "5736644555"
+      },
+      "w604643301:1": {
+        "way": "w604643301",
+        "index": 1,
+        "a": "5736644555",
+        "b": "1838808528"
+      },
+      "w604643302:0": {
+        "way": "w604643302",
+        "index": 0,
+        "a": "549775642",
+        "b": "549775644"
+      },
+      "w604643305:0": {
+        "way": "w604643305",
+        "index": 0,
+        "a": "5736644561",
+        "b": "6438628880"
+      },
+      "w656340468:0": {
+        "way": "w656340468",
+        "index": 0,
+        "a": "2193136847",
+        "b": "9599972982"
+      },
+      "w656340468:1": {
+        "way": "w656340468",
+        "index": 1,
+        "a": "9599972982",
+        "b": "35839642"
+      },
+      "w686877513:0": {
+        "way": "w686877513",
+        "index": 0,
+        "a": "5986351135",
+        "b": "5986351133"
+      },
+      "w686877513:1": {
+        "way": "w686877513",
+        "index": 1,
+        "a": "5986351133",
+        "b": "295775759"
+      },
+      "w686877513:2": {
+        "way": "w686877513",
+        "index": 2,
+        "a": "295775759",
+        "b": "5736644542"
+      },
+      "w686877513:3": {
+        "way": "w686877513",
+        "index": 3,
+        "a": "5736644542",
+        "b": "9599972972"
+      },
+      "w686877513:4": {
+        "way": "w686877513",
+        "index": 4,
+        "a": "9599972972",
+        "b": "9599972973"
+      },
+      "w686877513:5": {
+        "way": "w686877513",
+        "index": 5,
+        "a": "9599972973",
+        "b": "35839646"
+      },
+      "w686877514:0": {
+        "way": "w686877514",
+        "index": 0,
+        "a": "936804402",
+        "b": "6438628884"
+      },
+      "w890883247:0": {
+        "way": "w890883247",
+        "index": 0,
+        "a": "5986351135",
+        "b": "8280035704"
+      },
+      "w890883247:1": {
+        "way": "w890883247",
+        "index": 1,
+        "a": "8280035704",
+        "b": "8280035696"
+      }
+    },
+    "ways": {
+      "w1042971402": {
+        "version": 3,
+        "tags": {
+          "bridge": "yes",
+          "destination:int_ref:lanes": "E 94|E 94||",
+          "destination:lanes": "\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1|\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1|\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac|\u039a\u03b7\u03c6\u03b9\u03c3\u03af\u03ac",
+          "destination:ref:lanes": "\u03916|\u03916|\u0395\u039f83|\u0395\u039f83",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "4",
+          "layer": "1",
+          "lit": "yes",
+          "maxspeed": "40",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt",
+          "turn:lanes": "through|through|through;slight_right|through;slight_right"
+        },
+        "sourceLayer": 1,
+        "refs": [
+          "549775669",
+          "9599996164"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w1042971403": {
+        "version": 3,
+        "tags": {
+          "destination:int_ref:lanes": "E 94|E 94||",
+          "destination:lanes": "\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1|\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1|\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac|\u039a\u03b7\u03c6\u03b9\u03c3\u03af\u03ac",
+          "destination:ref:lanes": "\u03916|\u03916|\u0395\u039f83|\u0395\u039f83",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "4",
+          "lit": "yes",
+          "maxspeed": "40",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt",
+          "turn:lanes": "through|through|through;slight_right|through;slight_right"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "9599972975",
+          "9599972976",
+          "2193136851"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w1042971404": {
+        "version": 3,
+        "tags": {
+          "destination:int_ref:lanes": "E 94|E 94||",
+          "destination:lanes": "\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1|\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1|\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac|\u039a\u03b7\u03c6\u03b9\u03c3\u03af\u03ac",
+          "destination:ref:lanes": "\u03916|\u03916|\u0395\u039f83|\u0395\u039f83",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "4",
+          "lit": "yes",
+          "maxspeed": "40",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt",
+          "turn:lanes": "through|through|through;slight_right|through;slight_right"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "35839651",
+          "9599972974",
+          "9599972975"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w1081013285": {
+        "version": 3,
+        "tags": {
+          "destination:int_ref:lanes": "||E 94|E 94",
+          "destination:lanes": "\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf|\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf|\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1|\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1",
+          "destination:ref:lanes": "\u0395\u039f83|\u0395\u039f83|\u03916|\u03916",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "4",
+          "lit": "yes",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt",
+          "turn:lanes": "through|through|through;slight_right|through;slight_right"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "6438628880",
+          "4339293220"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w1281357280": {
+        "version": 2,
+        "tags": {
+          "destination": "\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "3",
+          "lit": "yes",
+          "maxspeed": "40",
+          "placement": "right_of:2",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "6438628884",
+          "5986351135"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w209086211": {
+        "version": 25,
+        "tags": {
+          "destination": "\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac",
+          "destination:lang:el-Latn": "Kifissia",
+          "destination:ref": "\u0395\u039f83",
+          "destination:street": "\u039a\u03b7\u03c6\u03b9\u03c3\u03af\u03b1\u03c2",
+          "highway": "primary_link",
+          "lit": "yes",
+          "oneway": "yes",
+          "smoothness": "excellent",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "2193136851",
+          "936804519",
+          "936804109",
+          "549778898",
+          "9606323135",
+          "936804244",
+          "9606323136",
+          "1701819369",
+          "1701819374",
+          "35840949"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w215668928": {
+        "version": 16,
+        "tags": {
+          "bridge": "yes",
+          "destination:int_ref:lanes": "||E 94|E 94",
+          "destination:lanes": "\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf|\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf|\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1|\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1",
+          "destination:ref:lanes": "\u0395\u039f83|\u0395\u039f83|\u03916|\u03916",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "4",
+          "layer": "1",
+          "lit": "yes",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "both",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt",
+          "turn:lanes": "through|through|through;slight_right|through;slight_right"
+        },
+        "sourceLayer": 1,
+        "refs": [
+          "35841268",
+          "35841269",
+          "5736644560",
+          "936803971",
+          "936803978",
+          "549775677"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w215668929": {
+        "version": 19,
+        "tags": {
+          "destination": "\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf",
+          "destination:int_ref": "E 94",
+          "destination:symbol": "airport",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "4",
+          "lit": "yes",
+          "maxspeed": "40",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "35839642",
+          "6438628879",
+          "2271048380"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w215668930": {
+        "version": 18,
+        "tags": {
+          "bridge": "yes",
+          "destination:int_ref:lanes": "||E 94|E 94",
+          "destination:lanes": "\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac|\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac|\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf|\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf",
+          "destination:ref:lanes": "\u0395\u039f83|\u0395\u039f83|\u03916|\u03916",
+          "destination:symbol:lanes": "||airport|airport",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "4",
+          "layer": "1",
+          "lit": "yes",
+          "maxspeed": "40",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "both",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt",
+          "turn:lanes": "through|through|through;slight_right|through;slight_right"
+        },
+        "sourceLayer": 1,
+        "refs": [
+          "1838808528",
+          "35839644",
+          "1838808523",
+          "2251395170",
+          "9599972969",
+          "9599972970",
+          "936804145",
+          "549775654"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w215668931": {
+        "version": 17,
+        "tags": {
+          "bridge": "yes",
+          "destination:int_ref:lanes": "E 94|E 94||",
+          "destination:lanes": "\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1|\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1|\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac|\u039a\u03b7\u03c6\u03b9\u03c3\u03af\u03ac",
+          "destination:ref:lanes": "\u03916|\u03916|\u0395\u039f83|\u0395\u039f83",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "4",
+          "layer": "1",
+          "lit": "yes",
+          "maxspeed": "40",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "both",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt",
+          "turn:lanes": "through|through|through;slight_right|through;slight_right"
+        },
+        "sourceLayer": 1,
+        "refs": [
+          "35839646",
+          "35839649",
+          "549775665",
+          "5736644533",
+          "5736644537",
+          "35839650",
+          "5736644538",
+          "5736644539",
+          "5736644558",
+          "5736644534",
+          "936804397",
+          "549775669"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w215668932": {
+        "version": 18,
+        "tags": {
+          "destination:int_ref:lanes": "E 94|E 94||",
+          "destination:lanes": "\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1|\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1|\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac|\u039a\u03b7\u03c6\u03b9\u03c3\u03af\u03ac",
+          "destination:ref:lanes": "\u03916|\u03916|\u0395\u039f83|\u0395\u039f83",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "4",
+          "lit": "yes",
+          "maxspeed": "40",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt",
+          "turn:lanes": "through|through|through;slight_right|through;slight_right"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "9599996164",
+          "35839651"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w215668934": {
+        "version": 15,
+        "tags": {
+          "bridge": "yes",
+          "destination:int_ref:lanes": "||E 94|E 94",
+          "destination:lanes": "\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf|\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf|\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1|\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1",
+          "destination:ref:lanes": "\u0395\u039f83|\u0395\u039f83|\u03916|\u03916",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "4",
+          "layer": "1",
+          "lit": "yes",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt",
+          "turn:lanes": "through|through|through;slight_right|through;slight_right"
+        },
+        "sourceLayer": 1,
+        "refs": [
+          "549775677",
+          "5736644561"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w217799667": {
+        "version": 28,
+        "tags": {
+          "destination": "\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac",
+          "destination:lang:el-Latn": "Kifissia",
+          "destination:ref": "\u0395\u039f83",
+          "highway": "motorway_link",
+          "junction:ref": "11",
+          "lanes": "2",
+          "lit": "yes",
+          "maxspeed": "40",
+          "oneway": "yes",
+          "operator": "\u039d\u03ad\u03b1 \u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "operator:1996-2024": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "smoothness": "excellent",
+          "source:destination": "Mapillary (2025-08-06)",
+          "source:junction:ref": "Mapillary (2023-02-20)",
+          "surface": "asphalt",
+          "toll": "yes"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "936804078",
+          "936804207",
+          "1668235239"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w219037843": {
+        "version": 14,
+        "tags": {
+          "destination:int_ref:lanes": "E 94|E 94|",
+          "destination:lanes": "\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf|\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf|\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf",
+          "destination:ref:lanes": "\u03916|\u03916|\u0395\u039f83",
+          "destination:symbol:lanes": "airport|airport|",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "3",
+          "lit": "yes",
+          "maxspeed": "50",
+          "placement": "right_of:2",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "4339293220",
+          "9599972962",
+          "35839639",
+          "5736644556",
+          "9599972963",
+          "549775642"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w219039297": {
+        "version": 15,
+        "tags": {
+          "destination:int_ref:lanes": "||E 94",
+          "destination:lanes": "\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf|\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf|\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1",
+          "destination:ref:lanes": "\u0395\u039f83|\u0395\u039f83|\u03916",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "3",
+          "lit": "yes",
+          "placement": "right_of:2",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "2193136851",
+          "9599972977",
+          "800140483"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w247294870": {
+        "version": 18,
+        "tags": {
+          "destination": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2;\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf",
+          "destination:int_ref": "E 94",
+          "destination:lang:el-Latn": "Attiki Odos;Markopoulo",
+          "destination:ref": "\u03916",
+          "destination:symbol": "motorway;toll,airport",
+          "highway": "motorway_link",
+          "junction:ref": "11",
+          "lanes": "1",
+          "lit": "yes",
+          "maxheight": "5",
+          "maxspeed": "50",
+          "oneway": "yes",
+          "operator": "\u039d\u03ad\u03b1 \u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "operator:1996-2024": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "placement": "transition",
+          "smoothness": "excellent",
+          "source:destination": "Mapillary (2025-08-06)",
+          "source:junction:ref": "Mapillary (2023-02-20)",
+          "surface": "asphalt",
+          "toll": "yes"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "936804069",
+          "295775659"
+        ],
+        "sourceSha256": "3057c1c825b891d615a125e0519b0b2bb8cd8f57e258c48cc9d79a3e5b0a7eac",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w264694128": {
+        "version": 20,
+        "tags": {
+          "destination": "\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac",
+          "destination:lang:el-Latn": "Kifissia",
+          "destination:ref": "\u0395\u039f83",
+          "highway": "motorway_link",
+          "junction:ref": "11",
+          "lanes": "3",
+          "lit": "yes",
+          "maxspeed": "40",
+          "oneway": "yes",
+          "operator": "\u039d\u03ad\u03b1 \u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "operator:1996-2024": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "placement": "right_of:1",
+          "smoothness": "excellent",
+          "source:destination": "Mapillary (2025-08-06)",
+          "source:junction:ref": "Mapillary (2023-02-20)",
+          "surface": "asphalt",
+          "toll": "yes"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "1668235239",
+          "6438630289",
+          "936804446",
+          "9599972983",
+          "6438630288",
+          "800140509",
+          "1668235247",
+          "9599972982"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w307514074": {
+        "version": 16,
+        "tags": {
+          "destination": "\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf",
+          "destination:lang:el-Latn": "Athina;Olympic Stadium",
+          "destination:ref": "\u0395\u039f83",
+          "highway": "primary_link",
+          "lanes": "2",
+          "lit": "yes",
+          "maxspeed": "60",
+          "oneway": "yes",
+          "smoothness": "excellent",
+          "source:destination": "Mapillary (2025-08-06)",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "985946470",
+          "936804051",
+          "9599996165",
+          "800140501"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w32229108": {
+        "version": 36,
+        "tags": {
+          "destination": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2;\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1",
+          "destination:int_ref": "E 94",
+          "destination:int_ref:to": "E 75",
+          "destination:lang:el-Latn": "Attiki Odos;Elefsina",
+          "destination:ref": "\u03916",
+          "destination:ref:to": "\u03911",
+          "destination:symbol": "motorway;toll",
+          "destination:to": "\u0395\u03b8\u03bd\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "destination:to:lang:el-Latn": "National Road",
+          "highway": "motorway_link",
+          "junction:ref": "11",
+          "lanes": "1",
+          "lit": "yes",
+          "maxheight": "5",
+          "maxspeed": "50",
+          "oneway": "yes",
+          "operator": "\u039d\u03ad\u03b1 \u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "operator:1996-2024": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "smoothness": "excellent",
+          "source:destination": "Mapillary (2025-08-06)",
+          "source:junction:ref": "Mapillary (2023-02-20)",
+          "surface": "asphalt",
+          "toll": "yes"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "35839639",
+          "8572117136",
+          "8572117134",
+          "8572117133",
+          "8572117135",
+          "800140461",
+          "2542062153",
+          "5737500215",
+          "361423237",
+          "800140485",
+          "8119881812",
+          "8119896619",
+          "4526920763"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w396095371": {
+        "version": 10,
+        "tags": {
+          "destination": "\u0395\u03bb\u03b5\u03c5\u03c3\u03b9\u03bd\u03b1;\u039c\u03b1\u03c1\u03ba\u03bf\u03c0\u03bf\u03c5\u03bb\u03bf",
+          "destination:lang:el-Latn": "Elefsina;Markopoulo",
+          "destination:ref": "\u0395\u039f83",
+          "destination:symbol": "airport",
+          "highway": "primary_link",
+          "lit": "yes",
+          "oneway": "yes",
+          "smoothness": "excellent",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "5736644554",
+          "35840830",
+          "2656090056",
+          "936804030",
+          "800140466"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w437409812": {
+        "version": 13,
+        "tags": {
+          "destination": "\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf",
+          "destination:lang:en": "Athens;Ol. Stadium",
+          "destination:ref": "\u0395\u039f83",
+          "frontage_road": "yes",
+          "highway": "secondary",
+          "int_name": "Kifisias",
+          "lanes": "2",
+          "lit": "yes",
+          "name": "\u039a\u03b7\u03c6\u03b9\u03c3\u03af\u03b1\u03c2",
+          "name:ca": "Avinguda Kifissias",
+          "name:el": "\u039a\u03b7\u03c6\u03b9\u03c3\u03af\u03b1\u03c2",
+          "name:fr": "Avenue Kifissias",
+          "name:prefix": "\u039b\u03b5\u03c9\u03c6\u03cc\u03c1\u03bf\u03c2",
+          "oneway": "yes",
+          "smoothness": "excellent",
+          "surface": "asphalt",
+          "wikidata": "Q785707",
+          "wikipedia": "el:\u039b\u03b5\u03c9\u03c6\u03cc\u03c1\u03bf\u03c2 \u039a\u03b7\u03c6\u03b9\u03c3\u03af\u03b1\u03c2"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "35839642",
+          "936804018",
+          "936804477",
+          "5736644524",
+          "549778899",
+          "936804374",
+          "549778900",
+          "936804254",
+          "5736644523",
+          "5736644522",
+          "809948956",
+          "549778901"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w456432944": {
+        "version": 17,
+        "tags": {
+          "covered": "yes",
+          "destination": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2;\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf",
+          "destination:int_ref": "E 94",
+          "destination:lang:el-Latn": "Attiki Odos;Markopoulo",
+          "destination:ref": "\u03916",
+          "destination:symbol": "motorway;toll,airport",
+          "highway": "motorway_link",
+          "junction:ref": "11",
+          "lanes": "5",
+          "lit": "yes",
+          "maxheight": "5",
+          "maxspeed": "50",
+          "oneway": "yes",
+          "operator": "\u039d\u03ad\u03b1 \u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "operator:1996-2024": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "smoothness": "excellent",
+          "source:destination": "Mapillary (2025-08-06)",
+          "source:junction:ref": "Mapillary (2023-02-20)",
+          "surface": "concrete",
+          "toll": "yes"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "4526920762",
+          "361422854",
+          "4526920760"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w456432947": {
+        "version": 18,
+        "tags": {
+          "destination": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2;\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf",
+          "destination:int_ref": "E 94",
+          "destination:lang:el-Latn": "Attiki Odos;Markopoulo",
+          "destination:ref": "\u03916",
+          "destination:symbol": "motorway;toll,airport",
+          "highway": "motorway_link",
+          "junction:ref": "11",
+          "lanes": "1",
+          "lit": "yes",
+          "maxheight": "5",
+          "maxspeed": "50",
+          "oneway": "yes",
+          "operator": "\u039d\u03ad\u03b1 \u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "operator:1996-2024": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "smoothness": "excellent",
+          "source:destination": "Mapillary (2025-08-06)",
+          "source:junction:ref": "Mapillary (2023-02-20)",
+          "surface": "asphalt",
+          "toll": "yes"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "4526920760",
+          "8016380929",
+          "936803976"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w475170433": {
+        "version": 16,
+        "tags": {
+          "destination": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2;\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf",
+          "destination:int_ref": "E 94",
+          "destination:lang:el-Latn": "Attiki Odos;Markopoulo",
+          "destination:ref": "\u03916",
+          "destination:symbol": "motorway;toll,airport",
+          "highway": "motorway_link",
+          "junction:ref": "11",
+          "lanes": "1",
+          "lit": "yes",
+          "maxheight": "5",
+          "maxspeed": "50",
+          "oneway": "yes",
+          "operator": "\u039d\u03ad\u03b1 \u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "operator:1996-2024": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "smoothness": "excellent",
+          "source:destination": "Mapillary (2025-08-06)",
+          "source:junction:ref": "Mapillary (2023-02-20)",
+          "surface": "asphalt",
+          "toll": "yes"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "936803976",
+          "8016380956",
+          "8016380930",
+          "8016380931",
+          "936804319",
+          "936804069"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w5168796": {
+        "version": 38,
+        "tags": {
+          "bridge": "yes",
+          "destination:int_ref:lanes": "E 94|E 94||",
+          "destination:lanes": "\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf|\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf|\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf|\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf",
+          "destination:ref:lanes": "\u03916|\u03916|\u0395\u039f83|\u0395\u039f83",
+          "destination:symbol:lanes": "airport|airport||",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "4",
+          "layer": "1",
+          "lit": "yes",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "both",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt",
+          "turn:lanes": "through|through|through;slight_right|through;slight_right"
+        },
+        "sourceLayer": 1,
+        "refs": [
+          "549775644",
+          "9599972964",
+          "5736644559",
+          "9599972965",
+          "35839640",
+          "549775645",
+          "9599972966",
+          "9599972967",
+          "1765697910",
+          "2656090057",
+          "9599972968",
+          "936804340",
+          "5736644546"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w604643265": {
+        "version": 12,
+        "tags": {
+          "destination:ref": "\u0395\u039f83",
+          "frontage_road": "yes",
+          "highway": "primary",
+          "lanes": "3",
+          "lit": "yes",
+          "name": "\u039a\u03b7\u03c6\u03b9\u03c3\u03af\u03b1\u03c2",
+          "oneway": "yes",
+          "smoothness": "excellent",
+          "surface": "asphalt",
+          "wikidata": "Q785707",
+          "wikipedia": "el:\u039b\u03b5\u03c9\u03c6\u03cc\u03c1\u03bf\u03c2 \u039a\u03b7\u03c6\u03b9\u03c3\u03af\u03b1\u03c2"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "549775695",
+          "549778915",
+          "936804466",
+          "8016589462",
+          "936804486",
+          "8016589461",
+          "6438630286",
+          "5736644545",
+          "789386140",
+          "35841879",
+          "35841880",
+          "936804402"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w604643266": {
+        "version": 18,
+        "tags": {
+          "destination": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2;\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf",
+          "destination:int_ref": "E 94",
+          "destination:lang:el-Latn": "Attiki Odos;Markopoulo",
+          "destination:ref": "\u03916",
+          "destination:symbol": "motorway;toll,airport",
+          "highway": "motorway_link",
+          "junction:ref": "11",
+          "lanes": "2",
+          "lit": "yes",
+          "maxheight": "5",
+          "maxspeed": "50",
+          "oneway": "yes",
+          "operator": "\u039d\u03ad\u03b1 \u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "operator:1996-2024": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "smoothness": "excellent",
+          "source:destination": "Mapillary (2025-08-06)",
+          "source:junction:ref": "Mapillary (2023-02-20)",
+          "surface": "asphalt",
+          "toll": "yes"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "295775759",
+          "5736644528",
+          "295775657",
+          "9599972981",
+          "295775329"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w604643270": {
+        "version": 6,
+        "tags": {
+          "destination": "\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf",
+          "destination:lang:el-Latn": "Athina;Olympic Stadium",
+          "destination:ref": "\u0395\u039f83",
+          "highway": "primary_link",
+          "lanes": "3",
+          "lit": "yes",
+          "maxspeed": "60",
+          "oneway": "yes",
+          "placement": "right_of:1",
+          "smoothness": "excellent",
+          "source:destination": "Mapillary (2025-08-06)",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "800140501",
+          "9599972980",
+          "9599972979",
+          "9599972978",
+          "936804178",
+          "800140463",
+          "35839651"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w604643271": {
+        "version": 5,
+        "tags": {
+          "destination": "\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf",
+          "destination:lang:el-Latn": "Athina;Olympic Stadium",
+          "destination:ref": "\u0395\u039f83",
+          "highway": "primary_link",
+          "lanes": "3",
+          "lit": "yes",
+          "maxspeed": "60",
+          "oneway": "yes",
+          "smoothness": "excellent",
+          "source:destination": "Mapillary (2025-08-06)",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "295776873",
+          "985946470"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w604643288": {
+        "version": 10,
+        "tags": {
+          "destination": "\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac",
+          "destination:lang:el-Latn": "Kifissia",
+          "destination:ref": "\u0395\u039f83",
+          "highway": "motorway_link",
+          "junction:ref": "11",
+          "lanes": "2",
+          "lit": "yes",
+          "maxspeed": "60",
+          "oneway": "yes",
+          "operator": "\u039d\u03ad\u03b1 \u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "operator:1996-2024": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "placement": "transition",
+          "smoothness": "excellent",
+          "source:destination": "Mapillary (2025-08-06)",
+          "source:junction:ref": "Mapillary (2023-02-20)",
+          "surface": "asphalt",
+          "toll": "yes"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "294112451",
+          "936804078"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w604643289": {
+        "version": 4,
+        "tags": {
+          "bridge": "yes",
+          "destination:int_ref:lanes": "E 94|E 94||",
+          "destination:lanes": "\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf|\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf|\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf|\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf",
+          "destination:ref:lanes": "\u03916|\u03916|\u0395\u039f83|\u0395\u039f83",
+          "destination:symbol:lanes": "airport|airport||",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "4",
+          "layer": "1",
+          "lit": "yes",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt",
+          "turn:lanes": "through|through|through;slight_right|through;slight_right"
+        },
+        "sourceLayer": 1,
+        "refs": [
+          "5736644546",
+          "2193136847"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w604643290": {
+        "version": 13,
+        "tags": {
+          "destination": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2;\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf",
+          "destination:int_ref": "E 94",
+          "destination:lang:el-Latn": "Attiki Odos;Markopoulo",
+          "destination:ref": "\u03916",
+          "destination:symbol": "motorway;toll,airport",
+          "highway": "motorway_link",
+          "junction:ref": "11",
+          "lanes": "5",
+          "lit": "yes",
+          "maxheight": "5",
+          "maxspeed": "50",
+          "oneway": "yes",
+          "operator": "\u039d\u03ad\u03b1 \u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "operator:1996-2024": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "smoothness": "excellent",
+          "source:destination": "Mapillary (2025-08-06)",
+          "source:junction:ref": "Mapillary (2023-02-20)",
+          "surface": "asphalt",
+          "toll": "yes"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "295775329",
+          "4526920762"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w604643292": {
+        "version": 9,
+        "tags": {
+          "destination": "\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "3",
+          "lit": "yes",
+          "maxspeed": "40",
+          "placement": "right_of:2",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "549775654",
+          "5736644544",
+          "6438628884"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w604643293": {
+        "version": 7,
+        "tags": {
+          "bicycle": "no",
+          "destination": "\u039f\u03b4. \u0394\u03b9\u03bf\u03bd\u03cd\u03c3\u03bf\u03c5;\u039f\u03b4. \u0391\u03b3. \u0398\u03c9\u03bc\u03ac",
+          "destination:int_ref": "E 94",
+          "destination:ref": "\u03916",
+          "destination:symbol": "motorway",
+          "highway": "primary_link",
+          "lanes": "1",
+          "lit": "yes",
+          "maxspeed": "50",
+          "oneway": "yes",
+          "smoothness": "excellent",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "4339293220",
+          "360016036"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w604643295": {
+        "version": 8,
+        "tags": {
+          "destination": "\u0395\u03bb\u03b5\u03c5\u03c3\u03b9\u03bd\u03b1;\u039c\u03b1\u03c1\u03ba\u03bf\u03c0\u03bf\u03c5\u03bb\u03bf",
+          "destination:lang:el-Latn": "Elefsina;Markopoulo",
+          "destination:ref": "\u0395\u039f83",
+          "destination:symbol": "airport",
+          "highway": "primary_link",
+          "lit": "yes",
+          "oneway": "yes",
+          "smoothness": "excellent",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "800140466",
+          "6438628880"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w604643298": {
+        "version": 5,
+        "tags": {
+          "destination": "\u0395\u03bb\u03b5\u03c5\u03c3\u03b9\u03bd\u03b1;\u039c\u03b1\u03c1\u03ba\u03bf\u03c0\u03bf\u03c5\u03bb\u03bf",
+          "destination:lang:el-Latn": "Elefsina;Markopoulo",
+          "destination:symbol": "airport",
+          "highway": "primary_link",
+          "lit": "yes",
+          "oneway": "yes",
+          "smoothness": "excellent",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "35840828",
+          "35840829",
+          "5736644554"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w604643299": {
+        "version": 4,
+        "tags": {
+          "bridge": "yes",
+          "destination:int_ref:lanes": "||E 94",
+          "destination:lanes": "\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf|\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf|\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1",
+          "destination:ref:lanes": "\u0395\u039f83|\u0395\u039f83|\u03916",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "3",
+          "layer": "1",
+          "lit": "yes",
+          "placement": "right_of:2",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 1,
+        "refs": [
+          "800140483",
+          "549775673",
+          "35841268"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w604643301": {
+        "version": 4,
+        "tags": {
+          "bridge": "yes",
+          "destination:int_ref:lanes": "||E 94|E 94",
+          "destination:lanes": "\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac|\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac|\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf|\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf",
+          "destination:ref:lanes": "\u0395\u039f83|\u0395\u039f83|\u03916|\u03916",
+          "destination:symbol:lanes": "||airport|airport",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "4",
+          "layer": "1",
+          "lit": "yes",
+          "maxspeed": "40",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt",
+          "turn:lanes": "through|through|through;slight_right|through;slight_right"
+        },
+        "sourceLayer": 1,
+        "refs": [
+          "2271048380",
+          "5736644555",
+          "1838808528"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w604643302": {
+        "version": 4,
+        "tags": {
+          "bridge": "yes",
+          "destination:int_ref:lanes": "E 94|E 94|",
+          "destination:lanes": "\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf|\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf|\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf",
+          "destination:ref:lanes": "\u03916|\u03916|\u0395\u039f83",
+          "destination:symbol:lanes": "airport|airport|",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "3",
+          "layer": "1",
+          "lit": "yes",
+          "placement": "right_of:2",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "both",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 1,
+        "refs": [
+          "549775642",
+          "549775644"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w604643305": {
+        "version": 6,
+        "tags": {
+          "destination:int_ref:lanes": "||E 94|E 94",
+          "destination:lanes": "\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf|\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf|\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1|\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1",
+          "destination:ref:lanes": "\u0395\u039f83|\u0395\u039f83|\u03916|\u03916",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "4",
+          "lit": "yes",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt",
+          "turn:lanes": "through|through|through;slight_right|through;slight_right"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "5736644561",
+          "6438628880"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w656340468": {
+        "version": 6,
+        "tags": {
+          "destination": "\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf",
+          "destination:int_ref": "E 94",
+          "destination:symbol": "airport",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "4",
+          "lit": "yes",
+          "maxspeed": "40",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "2193136847",
+          "9599972982",
+          "35839642"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w686877513": {
+        "version": 7,
+        "tags": {
+          "destination": "\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "3",
+          "lit": "yes",
+          "maxspeed": "40",
+          "placement": "right_of:2",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "5986351135",
+          "5986351133",
+          "295775759",
+          "5736644542",
+          "9599972972",
+          "9599972973",
+          "35839646"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w686877514": {
+        "version": 5,
+        "tags": {
+          "destination:ref": "\u0395\u039f83",
+          "frontage_road": "yes",
+          "highway": "primary",
+          "lanes": "3",
+          "lit": "yes",
+          "name": "\u039a\u03b7\u03c6\u03b9\u03c3\u03af\u03b1\u03c2",
+          "oneway": "yes",
+          "smoothness": "excellent",
+          "surface": "asphalt",
+          "wikidata": "Q785707",
+          "wikipedia": "el:\u039b\u03b5\u03c9\u03c6\u03cc\u03c1\u03bf\u03c2 \u039a\u03b7\u03c6\u03b9\u03c3\u03af\u03b1\u03c2"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "936804402",
+          "6438628884"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w890883247": {
+        "version": 3,
+        "tags": {
+          "highway": "primary_link",
+          "lanes": "1",
+          "lit": "yes",
+          "oneway": "yes",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "5986351135",
+          "8280035704",
+          "8280035696"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      }
+    },
+    "adjacencyProofs": {
+      "936804319": {
+        "url": "https://api.openstreetmap.org/api/0.6/node/936804319/ways",
+        "sha256": "2573e7868c8a5594744cbf34199ad7b55bdd16d984c713a08a7349f135970568",
+        "wayVersions": {
+          "w475170433": 16
+        }
+      },
+      "936804069": {
+        "url": "https://api.openstreetmap.org/api/0.6/node/936804069/ways",
+        "sha256": "488600e64b075a9b88da55156ea59538a96bd7d04673b17616e7f5a633a11ec6",
+        "wayVersions": {
+          "w247294870": 18,
+          "w475170433": 16
+        }
+      },
+      "295775659": {
+        "url": "https://api.openstreetmap.org/api/0.6/node/295775659/ways",
+        "sha256": "1a08c7638e64bd626bcae89c13476f31cd34eff93939fa232fc55de0811a3798",
+        "wayVersions": {
+          "w247294870": 18,
+          "w307514082": 26,
+          "w604643282": 16
+        }
+      }
+    },
+    "wayProofs": {
+      "w247294870": {
+        "url": "https://api.openstreetmap.org/api/0.6/way/247294870/full",
+        "sha256": "3057c1c825b891d615a125e0519b0b2bb8cd8f57e258c48cc9d79a3e5b0a7eac",
+        "version": 18
+      },
+      "w307514082": {
+        "url": "https://api.openstreetmap.org/api/0.6/way/307514082/full",
+        "sha256": "95c762d364e006b52d6ff60829c0e81c219d631a9bb4e27f79051740073cfe4a",
+        "version": 26
+      },
+      "w604643282": {
+        "url": "https://api.openstreetmap.org/api/0.6/way/604643282/full",
+        "sha256": "a6bd76fd58248cb2edbedd9163ba88c1cd85b744b1cd6f747c65e279e4426c7a",
+        "version": 16
+      }
+    }
+  },
+  "scope": {
+    "releaseEligible": false,
+    "sourceSha256": "ed5b1804e36f8688015efd4b57b9ff651e3847a366f8b97f6869f5414c9cb2b8",
+    "bridgeWays": [
+      "w1042971402",
+      "w215668928",
+      "w215668930",
+      "w215668931",
+      "w215668934",
+      "w5168796",
+      "w604643289",
+      "w604643299",
+      "w604643301",
+      "w604643302"
+    ],
+    "roundaboutFamily": [
+      "w1042971402",
+      "w1042971403",
+      "w1042971404",
+      "w1081013285",
+      "w1281357280",
+      "w215668928",
+      "w215668929",
+      "w215668930",
+      "w215668931",
+      "w215668932",
+      "w215668934",
+      "w219037843",
+      "w219039297",
+      "w5168796",
+      "w604643289",
+      "w604643292",
+      "w604643299",
+      "w604643301",
+      "w604643302",
+      "w604643305",
+      "w656340468",
+      "w686877513"
+    ],
+    "segments": [
+      "w1042971402:0",
+      "w1042971403:0",
+      "w1042971403:1",
+      "w1042971404:0",
+      "w1042971404:1",
+      "w1081013285:0",
+      "w1281357280:0",
+      "w209086211:0",
+      "w209086211:1",
+      "w209086211:2",
+      "w209086211:3",
+      "w209086211:4",
+      "w209086211:5",
+      "w209086211:6",
+      "w209086211:7",
+      "w209086211:8",
+      "w215668928:0",
+      "w215668928:1",
+      "w215668928:2",
+      "w215668928:3",
+      "w215668928:4",
+      "w215668929:0",
+      "w215668929:1",
+      "w215668930:0",
+      "w215668930:1",
+      "w215668930:2",
+      "w215668930:3",
+      "w215668930:4",
+      "w215668930:5",
+      "w215668930:6",
+      "w215668931:0",
+      "w215668931:1",
+      "w215668931:10",
+      "w215668931:2",
+      "w215668931:3",
+      "w215668931:4",
+      "w215668931:5",
+      "w215668931:6",
+      "w215668931:7",
+      "w215668931:8",
+      "w215668931:9",
+      "w215668932:0",
+      "w215668934:0",
+      "w217799667:0",
+      "w217799667:1",
+      "w219037843:0",
+      "w219037843:1",
+      "w219037843:2",
+      "w219037843:3",
+      "w219037843:4",
+      "w219039297:0",
+      "w219039297:1",
+      "w247294870:0",
+      "w264694128:0",
+      "w264694128:1",
+      "w264694128:2",
+      "w264694128:3",
+      "w264694128:4",
+      "w264694128:5",
+      "w264694128:6",
+      "w307514074:0",
+      "w307514074:1",
+      "w307514074:2",
+      "w32229108:0",
+      "w32229108:1",
+      "w32229108:2",
+      "w32229108:3",
+      "w32229108:4",
+      "w32229108:5",
+      "w32229108:6",
+      "w32229108:7",
+      "w32229108:8",
+      "w32229108:9",
+      "w396095371:0",
+      "w396095371:1",
+      "w396095371:2",
+      "w396095371:3",
+      "w437409812:0",
+      "w437409812:1",
+      "w437409812:10",
+      "w437409812:2",
+      "w437409812:3",
+      "w437409812:4",
+      "w437409812:5",
+      "w437409812:6",
+      "w437409812:7",
+      "w437409812:8",
+      "w437409812:9",
+      "w456432944:0",
+      "w456432944:1",
+      "w456432947:0",
+      "w456432947:1",
+      "w475170433:0",
+      "w475170433:1",
+      "w475170433:2",
+      "w475170433:3",
+      "w475170433:4",
+      "w5168796:0",
+      "w5168796:1",
+      "w5168796:10",
+      "w5168796:11",
+      "w5168796:2",
+      "w5168796:3",
+      "w5168796:4",
+      "w5168796:5",
+      "w5168796:6",
+      "w5168796:7",
+      "w5168796:8",
+      "w5168796:9",
+      "w604643265:1",
+      "w604643265:10",
+      "w604643265:2",
+      "w604643265:3",
+      "w604643265:4",
+      "w604643265:5",
+      "w604643265:6",
+      "w604643265:7",
+      "w604643265:8",
+      "w604643265:9",
+      "w604643266:0",
+      "w604643266:1",
+      "w604643266:2",
+      "w604643266:3",
+      "w604643270:0",
+      "w604643270:1",
+      "w604643270:2",
+      "w604643270:3",
+      "w604643270:4",
+      "w604643270:5",
+      "w604643271:0",
+      "w604643288:0",
+      "w604643289:0",
+      "w604643290:0",
+      "w604643292:0",
+      "w604643292:1",
+      "w604643293:0",
+      "w604643295:0",
+      "w604643298:0",
+      "w604643298:1",
+      "w604643299:0",
+      "w604643299:1",
+      "w604643301:0",
+      "w604643301:1",
+      "w604643302:0",
+      "w604643305:0",
+      "w656340468:0",
+      "w656340468:1",
+      "w686877513:0",
+      "w686877513:1",
+      "w686877513:2",
+      "w686877513:3",
+      "w686877513:4",
+      "w686877513:5",
+      "w686877514:0",
+      "w890883247:0",
+      "w890883247:1"
+    ],
+    "ways": {
+      "w1042971402": {
+        "version": 3,
+        "tags": {
+          "bridge": "yes",
+          "destination:int_ref:lanes": "E 94|E 94||",
+          "destination:lanes": "\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1|\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1|\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac|\u039a\u03b7\u03c6\u03b9\u03c3\u03af\u03ac",
+          "destination:ref:lanes": "\u03916|\u03916|\u0395\u039f83|\u0395\u039f83",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "4",
+          "layer": "1",
+          "lit": "yes",
+          "maxspeed": "40",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt",
+          "turn:lanes": "through|through|through;slight_right|through;slight_right"
+        },
+        "sourceLayer": 1,
+        "refs": [
+          "549775669",
+          "9599996164"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w1042971403": {
+        "version": 3,
+        "tags": {
+          "destination:int_ref:lanes": "E 94|E 94||",
+          "destination:lanes": "\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1|\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1|\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac|\u039a\u03b7\u03c6\u03b9\u03c3\u03af\u03ac",
+          "destination:ref:lanes": "\u03916|\u03916|\u0395\u039f83|\u0395\u039f83",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "4",
+          "lit": "yes",
+          "maxspeed": "40",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt",
+          "turn:lanes": "through|through|through;slight_right|through;slight_right"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "9599972975",
+          "9599972976",
+          "2193136851"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w1042971404": {
+        "version": 3,
+        "tags": {
+          "destination:int_ref:lanes": "E 94|E 94||",
+          "destination:lanes": "\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1|\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1|\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac|\u039a\u03b7\u03c6\u03b9\u03c3\u03af\u03ac",
+          "destination:ref:lanes": "\u03916|\u03916|\u0395\u039f83|\u0395\u039f83",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "4",
+          "lit": "yes",
+          "maxspeed": "40",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt",
+          "turn:lanes": "through|through|through;slight_right|through;slight_right"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "35839651",
+          "9599972974",
+          "9599972975"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w1081013285": {
+        "version": 3,
+        "tags": {
+          "destination:int_ref:lanes": "||E 94|E 94",
+          "destination:lanes": "\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf|\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf|\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1|\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1",
+          "destination:ref:lanes": "\u0395\u039f83|\u0395\u039f83|\u03916|\u03916",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "4",
+          "lit": "yes",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt",
+          "turn:lanes": "through|through|through;slight_right|through;slight_right"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "6438628880",
+          "4339293220"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w1281357280": {
+        "version": 2,
+        "tags": {
+          "destination": "\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "3",
+          "lit": "yes",
+          "maxspeed": "40",
+          "placement": "right_of:2",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "6438628884",
+          "5986351135"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w209086211": {
+        "version": 25,
+        "tags": {
+          "destination": "\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac",
+          "destination:lang:el-Latn": "Kifissia",
+          "destination:ref": "\u0395\u039f83",
+          "destination:street": "\u039a\u03b7\u03c6\u03b9\u03c3\u03af\u03b1\u03c2",
+          "highway": "primary_link",
+          "lit": "yes",
+          "oneway": "yes",
+          "smoothness": "excellent",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "2193136851",
+          "936804519",
+          "936804109",
+          "549778898",
+          "9606323135",
+          "936804244",
+          "9606323136",
+          "1701819369",
+          "1701819374",
+          "35840949"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w215668928": {
+        "version": 16,
+        "tags": {
+          "bridge": "yes",
+          "destination:int_ref:lanes": "||E 94|E 94",
+          "destination:lanes": "\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf|\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf|\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1|\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1",
+          "destination:ref:lanes": "\u0395\u039f83|\u0395\u039f83|\u03916|\u03916",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "4",
+          "layer": "1",
+          "lit": "yes",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "both",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt",
+          "turn:lanes": "through|through|through;slight_right|through;slight_right"
+        },
+        "sourceLayer": 1,
+        "refs": [
+          "35841268",
+          "35841269",
+          "5736644560",
+          "936803971",
+          "936803978",
+          "549775677"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w215668929": {
+        "version": 19,
+        "tags": {
+          "destination": "\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf",
+          "destination:int_ref": "E 94",
+          "destination:symbol": "airport",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "4",
+          "lit": "yes",
+          "maxspeed": "40",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "35839642",
+          "6438628879",
+          "2271048380"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w215668930": {
+        "version": 18,
+        "tags": {
+          "bridge": "yes",
+          "destination:int_ref:lanes": "||E 94|E 94",
+          "destination:lanes": "\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac|\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac|\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf|\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf",
+          "destination:ref:lanes": "\u0395\u039f83|\u0395\u039f83|\u03916|\u03916",
+          "destination:symbol:lanes": "||airport|airport",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "4",
+          "layer": "1",
+          "lit": "yes",
+          "maxspeed": "40",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "both",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt",
+          "turn:lanes": "through|through|through;slight_right|through;slight_right"
+        },
+        "sourceLayer": 1,
+        "refs": [
+          "1838808528",
+          "35839644",
+          "1838808523",
+          "2251395170",
+          "9599972969",
+          "9599972970",
+          "936804145",
+          "549775654"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w215668931": {
+        "version": 17,
+        "tags": {
+          "bridge": "yes",
+          "destination:int_ref:lanes": "E 94|E 94||",
+          "destination:lanes": "\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1|\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1|\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac|\u039a\u03b7\u03c6\u03b9\u03c3\u03af\u03ac",
+          "destination:ref:lanes": "\u03916|\u03916|\u0395\u039f83|\u0395\u039f83",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "4",
+          "layer": "1",
+          "lit": "yes",
+          "maxspeed": "40",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "both",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt",
+          "turn:lanes": "through|through|through;slight_right|through;slight_right"
+        },
+        "sourceLayer": 1,
+        "refs": [
+          "35839646",
+          "35839649",
+          "549775665",
+          "5736644533",
+          "5736644537",
+          "35839650",
+          "5736644538",
+          "5736644539",
+          "5736644558",
+          "5736644534",
+          "936804397",
+          "549775669"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w215668932": {
+        "version": 18,
+        "tags": {
+          "destination:int_ref:lanes": "E 94|E 94||",
+          "destination:lanes": "\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1|\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1|\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac|\u039a\u03b7\u03c6\u03b9\u03c3\u03af\u03ac",
+          "destination:ref:lanes": "\u03916|\u03916|\u0395\u039f83|\u0395\u039f83",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "4",
+          "lit": "yes",
+          "maxspeed": "40",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt",
+          "turn:lanes": "through|through|through;slight_right|through;slight_right"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "9599996164",
+          "35839651"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w215668934": {
+        "version": 15,
+        "tags": {
+          "bridge": "yes",
+          "destination:int_ref:lanes": "||E 94|E 94",
+          "destination:lanes": "\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf|\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf|\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1|\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1",
+          "destination:ref:lanes": "\u0395\u039f83|\u0395\u039f83|\u03916|\u03916",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "4",
+          "layer": "1",
+          "lit": "yes",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt",
+          "turn:lanes": "through|through|through;slight_right|through;slight_right"
+        },
+        "sourceLayer": 1,
+        "refs": [
+          "549775677",
+          "5736644561"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w217799667": {
+        "version": 28,
+        "tags": {
+          "destination": "\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac",
+          "destination:lang:el-Latn": "Kifissia",
+          "destination:ref": "\u0395\u039f83",
+          "highway": "motorway_link",
+          "junction:ref": "11",
+          "lanes": "2",
+          "lit": "yes",
+          "maxspeed": "40",
+          "oneway": "yes",
+          "operator": "\u039d\u03ad\u03b1 \u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "operator:1996-2024": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "smoothness": "excellent",
+          "source:destination": "Mapillary (2025-08-06)",
+          "source:junction:ref": "Mapillary (2023-02-20)",
+          "surface": "asphalt",
+          "toll": "yes"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "936804078",
+          "936804207",
+          "1668235239"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w219037843": {
+        "version": 14,
+        "tags": {
+          "destination:int_ref:lanes": "E 94|E 94|",
+          "destination:lanes": "\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf|\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf|\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf",
+          "destination:ref:lanes": "\u03916|\u03916|\u0395\u039f83",
+          "destination:symbol:lanes": "airport|airport|",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "3",
+          "lit": "yes",
+          "maxspeed": "50",
+          "placement": "right_of:2",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "4339293220",
+          "9599972962",
+          "35839639",
+          "5736644556",
+          "9599972963",
+          "549775642"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w219039297": {
+        "version": 15,
+        "tags": {
+          "destination:int_ref:lanes": "||E 94",
+          "destination:lanes": "\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf|\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf|\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1",
+          "destination:ref:lanes": "\u0395\u039f83|\u0395\u039f83|\u03916",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "3",
+          "lit": "yes",
+          "placement": "right_of:2",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "2193136851",
+          "9599972977",
+          "800140483"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w247294870": {
+        "version": 18,
+        "tags": {
+          "destination": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2;\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf",
+          "destination:int_ref": "E 94",
+          "destination:lang:el-Latn": "Attiki Odos;Markopoulo",
+          "destination:ref": "\u03916",
+          "destination:symbol": "motorway;toll,airport",
+          "highway": "motorway_link",
+          "junction:ref": "11",
+          "lanes": "1",
+          "lit": "yes",
+          "maxheight": "5",
+          "maxspeed": "50",
+          "oneway": "yes",
+          "operator": "\u039d\u03ad\u03b1 \u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "operator:1996-2024": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "placement": "transition",
+          "smoothness": "excellent",
+          "source:destination": "Mapillary (2025-08-06)",
+          "source:junction:ref": "Mapillary (2023-02-20)",
+          "surface": "asphalt",
+          "toll": "yes"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "936804069",
+          "295775659"
+        ],
+        "sourceSha256": "3057c1c825b891d615a125e0519b0b2bb8cd8f57e258c48cc9d79a3e5b0a7eac",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w264694128": {
+        "version": 20,
+        "tags": {
+          "destination": "\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac",
+          "destination:lang:el-Latn": "Kifissia",
+          "destination:ref": "\u0395\u039f83",
+          "highway": "motorway_link",
+          "junction:ref": "11",
+          "lanes": "3",
+          "lit": "yes",
+          "maxspeed": "40",
+          "oneway": "yes",
+          "operator": "\u039d\u03ad\u03b1 \u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "operator:1996-2024": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "placement": "right_of:1",
+          "smoothness": "excellent",
+          "source:destination": "Mapillary (2025-08-06)",
+          "source:junction:ref": "Mapillary (2023-02-20)",
+          "surface": "asphalt",
+          "toll": "yes"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "1668235239",
+          "6438630289",
+          "936804446",
+          "9599972983",
+          "6438630288",
+          "800140509",
+          "1668235247",
+          "9599972982"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w307514074": {
+        "version": 16,
+        "tags": {
+          "destination": "\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf",
+          "destination:lang:el-Latn": "Athina;Olympic Stadium",
+          "destination:ref": "\u0395\u039f83",
+          "highway": "primary_link",
+          "lanes": "2",
+          "lit": "yes",
+          "maxspeed": "60",
+          "oneway": "yes",
+          "smoothness": "excellent",
+          "source:destination": "Mapillary (2025-08-06)",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "985946470",
+          "936804051",
+          "9599996165",
+          "800140501"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w32229108": {
+        "version": 36,
+        "tags": {
+          "destination": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2;\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1",
+          "destination:int_ref": "E 94",
+          "destination:int_ref:to": "E 75",
+          "destination:lang:el-Latn": "Attiki Odos;Elefsina",
+          "destination:ref": "\u03916",
+          "destination:ref:to": "\u03911",
+          "destination:symbol": "motorway;toll",
+          "destination:to": "\u0395\u03b8\u03bd\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "destination:to:lang:el-Latn": "National Road",
+          "highway": "motorway_link",
+          "junction:ref": "11",
+          "lanes": "1",
+          "lit": "yes",
+          "maxheight": "5",
+          "maxspeed": "50",
+          "oneway": "yes",
+          "operator": "\u039d\u03ad\u03b1 \u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "operator:1996-2024": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "smoothness": "excellent",
+          "source:destination": "Mapillary (2025-08-06)",
+          "source:junction:ref": "Mapillary (2023-02-20)",
+          "surface": "asphalt",
+          "toll": "yes"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "35839639",
+          "8572117136",
+          "8572117134",
+          "8572117133",
+          "8572117135",
+          "800140461",
+          "2542062153",
+          "5737500215",
+          "361423237",
+          "800140485",
+          "8119881812",
+          "8119896619",
+          "4526920763"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w396095371": {
+        "version": 10,
+        "tags": {
+          "destination": "\u0395\u03bb\u03b5\u03c5\u03c3\u03b9\u03bd\u03b1;\u039c\u03b1\u03c1\u03ba\u03bf\u03c0\u03bf\u03c5\u03bb\u03bf",
+          "destination:lang:el-Latn": "Elefsina;Markopoulo",
+          "destination:ref": "\u0395\u039f83",
+          "destination:symbol": "airport",
+          "highway": "primary_link",
+          "lit": "yes",
+          "oneway": "yes",
+          "smoothness": "excellent",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "5736644554",
+          "35840830",
+          "2656090056",
+          "936804030",
+          "800140466"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w437409812": {
+        "version": 13,
+        "tags": {
+          "destination": "\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf",
+          "destination:lang:en": "Athens;Ol. Stadium",
+          "destination:ref": "\u0395\u039f83",
+          "frontage_road": "yes",
+          "highway": "secondary",
+          "int_name": "Kifisias",
+          "lanes": "2",
+          "lit": "yes",
+          "name": "\u039a\u03b7\u03c6\u03b9\u03c3\u03af\u03b1\u03c2",
+          "name:ca": "Avinguda Kifissias",
+          "name:el": "\u039a\u03b7\u03c6\u03b9\u03c3\u03af\u03b1\u03c2",
+          "name:fr": "Avenue Kifissias",
+          "name:prefix": "\u039b\u03b5\u03c9\u03c6\u03cc\u03c1\u03bf\u03c2",
+          "oneway": "yes",
+          "smoothness": "excellent",
+          "surface": "asphalt",
+          "wikidata": "Q785707",
+          "wikipedia": "el:\u039b\u03b5\u03c9\u03c6\u03cc\u03c1\u03bf\u03c2 \u039a\u03b7\u03c6\u03b9\u03c3\u03af\u03b1\u03c2"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "35839642",
+          "936804018",
+          "936804477",
+          "5736644524",
+          "549778899",
+          "936804374",
+          "549778900",
+          "936804254",
+          "5736644523",
+          "5736644522",
+          "809948956",
+          "549778901"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w456432944": {
+        "version": 17,
+        "tags": {
+          "covered": "yes",
+          "destination": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2;\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf",
+          "destination:int_ref": "E 94",
+          "destination:lang:el-Latn": "Attiki Odos;Markopoulo",
+          "destination:ref": "\u03916",
+          "destination:symbol": "motorway;toll,airport",
+          "highway": "motorway_link",
+          "junction:ref": "11",
+          "lanes": "5",
+          "lit": "yes",
+          "maxheight": "5",
+          "maxspeed": "50",
+          "oneway": "yes",
+          "operator": "\u039d\u03ad\u03b1 \u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "operator:1996-2024": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "smoothness": "excellent",
+          "source:destination": "Mapillary (2025-08-06)",
+          "source:junction:ref": "Mapillary (2023-02-20)",
+          "surface": "concrete",
+          "toll": "yes"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "4526920762",
+          "361422854",
+          "4526920760"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w456432947": {
+        "version": 18,
+        "tags": {
+          "destination": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2;\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf",
+          "destination:int_ref": "E 94",
+          "destination:lang:el-Latn": "Attiki Odos;Markopoulo",
+          "destination:ref": "\u03916",
+          "destination:symbol": "motorway;toll,airport",
+          "highway": "motorway_link",
+          "junction:ref": "11",
+          "lanes": "1",
+          "lit": "yes",
+          "maxheight": "5",
+          "maxspeed": "50",
+          "oneway": "yes",
+          "operator": "\u039d\u03ad\u03b1 \u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "operator:1996-2024": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "smoothness": "excellent",
+          "source:destination": "Mapillary (2025-08-06)",
+          "source:junction:ref": "Mapillary (2023-02-20)",
+          "surface": "asphalt",
+          "toll": "yes"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "4526920760",
+          "8016380929",
+          "936803976"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w475170433": {
+        "version": 16,
+        "tags": {
+          "destination": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2;\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf",
+          "destination:int_ref": "E 94",
+          "destination:lang:el-Latn": "Attiki Odos;Markopoulo",
+          "destination:ref": "\u03916",
+          "destination:symbol": "motorway;toll,airport",
+          "highway": "motorway_link",
+          "junction:ref": "11",
+          "lanes": "1",
+          "lit": "yes",
+          "maxheight": "5",
+          "maxspeed": "50",
+          "oneway": "yes",
+          "operator": "\u039d\u03ad\u03b1 \u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "operator:1996-2024": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "smoothness": "excellent",
+          "source:destination": "Mapillary (2025-08-06)",
+          "source:junction:ref": "Mapillary (2023-02-20)",
+          "surface": "asphalt",
+          "toll": "yes"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "936803976",
+          "8016380956",
+          "8016380930",
+          "8016380931",
+          "936804319",
+          "936804069"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w5168796": {
+        "version": 38,
+        "tags": {
+          "bridge": "yes",
+          "destination:int_ref:lanes": "E 94|E 94||",
+          "destination:lanes": "\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf|\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf|\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf|\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf",
+          "destination:ref:lanes": "\u03916|\u03916|\u0395\u039f83|\u0395\u039f83",
+          "destination:symbol:lanes": "airport|airport||",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "4",
+          "layer": "1",
+          "lit": "yes",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "both",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt",
+          "turn:lanes": "through|through|through;slight_right|through;slight_right"
+        },
+        "sourceLayer": 1,
+        "refs": [
+          "549775644",
+          "9599972964",
+          "5736644559",
+          "9599972965",
+          "35839640",
+          "549775645",
+          "9599972966",
+          "9599972967",
+          "1765697910",
+          "2656090057",
+          "9599972968",
+          "936804340",
+          "5736644546"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w604643265": {
+        "version": 12,
+        "tags": {
+          "destination:ref": "\u0395\u039f83",
+          "frontage_road": "yes",
+          "highway": "primary",
+          "lanes": "3",
+          "lit": "yes",
+          "name": "\u039a\u03b7\u03c6\u03b9\u03c3\u03af\u03b1\u03c2",
+          "oneway": "yes",
+          "smoothness": "excellent",
+          "surface": "asphalt",
+          "wikidata": "Q785707",
+          "wikipedia": "el:\u039b\u03b5\u03c9\u03c6\u03cc\u03c1\u03bf\u03c2 \u039a\u03b7\u03c6\u03b9\u03c3\u03af\u03b1\u03c2"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "549775695",
+          "549778915",
+          "936804466",
+          "8016589462",
+          "936804486",
+          "8016589461",
+          "6438630286",
+          "5736644545",
+          "789386140",
+          "35841879",
+          "35841880",
+          "936804402"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w604643266": {
+        "version": 18,
+        "tags": {
+          "destination": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2;\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf",
+          "destination:int_ref": "E 94",
+          "destination:lang:el-Latn": "Attiki Odos;Markopoulo",
+          "destination:ref": "\u03916",
+          "destination:symbol": "motorway;toll,airport",
+          "highway": "motorway_link",
+          "junction:ref": "11",
+          "lanes": "2",
+          "lit": "yes",
+          "maxheight": "5",
+          "maxspeed": "50",
+          "oneway": "yes",
+          "operator": "\u039d\u03ad\u03b1 \u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "operator:1996-2024": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "smoothness": "excellent",
+          "source:destination": "Mapillary (2025-08-06)",
+          "source:junction:ref": "Mapillary (2023-02-20)",
+          "surface": "asphalt",
+          "toll": "yes"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "295775759",
+          "5736644528",
+          "295775657",
+          "9599972981",
+          "295775329"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w604643270": {
+        "version": 6,
+        "tags": {
+          "destination": "\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf",
+          "destination:lang:el-Latn": "Athina;Olympic Stadium",
+          "destination:ref": "\u0395\u039f83",
+          "highway": "primary_link",
+          "lanes": "3",
+          "lit": "yes",
+          "maxspeed": "60",
+          "oneway": "yes",
+          "placement": "right_of:1",
+          "smoothness": "excellent",
+          "source:destination": "Mapillary (2025-08-06)",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "800140501",
+          "9599972980",
+          "9599972979",
+          "9599972978",
+          "936804178",
+          "800140463",
+          "35839651"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w604643271": {
+        "version": 5,
+        "tags": {
+          "destination": "\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf",
+          "destination:lang:el-Latn": "Athina;Olympic Stadium",
+          "destination:ref": "\u0395\u039f83",
+          "highway": "primary_link",
+          "lanes": "3",
+          "lit": "yes",
+          "maxspeed": "60",
+          "oneway": "yes",
+          "smoothness": "excellent",
+          "source:destination": "Mapillary (2025-08-06)",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "295776873",
+          "985946470"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w604643288": {
+        "version": 10,
+        "tags": {
+          "destination": "\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac",
+          "destination:lang:el-Latn": "Kifissia",
+          "destination:ref": "\u0395\u039f83",
+          "highway": "motorway_link",
+          "junction:ref": "11",
+          "lanes": "2",
+          "lit": "yes",
+          "maxspeed": "60",
+          "oneway": "yes",
+          "operator": "\u039d\u03ad\u03b1 \u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "operator:1996-2024": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "placement": "transition",
+          "smoothness": "excellent",
+          "source:destination": "Mapillary (2025-08-06)",
+          "source:junction:ref": "Mapillary (2023-02-20)",
+          "surface": "asphalt",
+          "toll": "yes"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "294112451",
+          "936804078"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w604643289": {
+        "version": 4,
+        "tags": {
+          "bridge": "yes",
+          "destination:int_ref:lanes": "E 94|E 94||",
+          "destination:lanes": "\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf|\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf|\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf|\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf",
+          "destination:ref:lanes": "\u03916|\u03916|\u0395\u039f83|\u0395\u039f83",
+          "destination:symbol:lanes": "airport|airport||",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "4",
+          "layer": "1",
+          "lit": "yes",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt",
+          "turn:lanes": "through|through|through;slight_right|through;slight_right"
+        },
+        "sourceLayer": 1,
+        "refs": [
+          "5736644546",
+          "2193136847"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w604643290": {
+        "version": 13,
+        "tags": {
+          "destination": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2;\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf",
+          "destination:int_ref": "E 94",
+          "destination:lang:el-Latn": "Attiki Odos;Markopoulo",
+          "destination:ref": "\u03916",
+          "destination:symbol": "motorway;toll,airport",
+          "highway": "motorway_link",
+          "junction:ref": "11",
+          "lanes": "5",
+          "lit": "yes",
+          "maxheight": "5",
+          "maxspeed": "50",
+          "oneway": "yes",
+          "operator": "\u039d\u03ad\u03b1 \u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "operator:1996-2024": "\u0391\u03c4\u03c4\u03b9\u03ba\u03ae \u039f\u03b4\u03cc\u03c2",
+          "smoothness": "excellent",
+          "source:destination": "Mapillary (2025-08-06)",
+          "source:junction:ref": "Mapillary (2023-02-20)",
+          "surface": "asphalt",
+          "toll": "yes"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "295775329",
+          "4526920762"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w604643292": {
+        "version": 9,
+        "tags": {
+          "destination": "\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "3",
+          "lit": "yes",
+          "maxspeed": "40",
+          "placement": "right_of:2",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "549775654",
+          "5736644544",
+          "6438628884"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w604643293": {
+        "version": 7,
+        "tags": {
+          "bicycle": "no",
+          "destination": "\u039f\u03b4. \u0394\u03b9\u03bf\u03bd\u03cd\u03c3\u03bf\u03c5;\u039f\u03b4. \u0391\u03b3. \u0398\u03c9\u03bc\u03ac",
+          "destination:int_ref": "E 94",
+          "destination:ref": "\u03916",
+          "destination:symbol": "motorway",
+          "highway": "primary_link",
+          "lanes": "1",
+          "lit": "yes",
+          "maxspeed": "50",
+          "oneway": "yes",
+          "smoothness": "excellent",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "4339293220",
+          "360016036"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w604643295": {
+        "version": 8,
+        "tags": {
+          "destination": "\u0395\u03bb\u03b5\u03c5\u03c3\u03b9\u03bd\u03b1;\u039c\u03b1\u03c1\u03ba\u03bf\u03c0\u03bf\u03c5\u03bb\u03bf",
+          "destination:lang:el-Latn": "Elefsina;Markopoulo",
+          "destination:ref": "\u0395\u039f83",
+          "destination:symbol": "airport",
+          "highway": "primary_link",
+          "lit": "yes",
+          "oneway": "yes",
+          "smoothness": "excellent",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "800140466",
+          "6438628880"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w604643298": {
+        "version": 5,
+        "tags": {
+          "destination": "\u0395\u03bb\u03b5\u03c5\u03c3\u03b9\u03bd\u03b1;\u039c\u03b1\u03c1\u03ba\u03bf\u03c0\u03bf\u03c5\u03bb\u03bf",
+          "destination:lang:el-Latn": "Elefsina;Markopoulo",
+          "destination:symbol": "airport",
+          "highway": "primary_link",
+          "lit": "yes",
+          "oneway": "yes",
+          "smoothness": "excellent",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "35840828",
+          "35840829",
+          "5736644554"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w604643299": {
+        "version": 4,
+        "tags": {
+          "bridge": "yes",
+          "destination:int_ref:lanes": "||E 94",
+          "destination:lanes": "\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf|\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf|\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1",
+          "destination:ref:lanes": "\u0395\u039f83|\u0395\u039f83|\u03916",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "3",
+          "layer": "1",
+          "lit": "yes",
+          "placement": "right_of:2",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 1,
+        "refs": [
+          "800140483",
+          "549775673",
+          "35841268"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w604643301": {
+        "version": 4,
+        "tags": {
+          "bridge": "yes",
+          "destination:int_ref:lanes": "||E 94|E 94",
+          "destination:lanes": "\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac|\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac|\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf|\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf",
+          "destination:ref:lanes": "\u0395\u039f83|\u0395\u039f83|\u03916|\u03916",
+          "destination:symbol:lanes": "||airport|airport",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "4",
+          "layer": "1",
+          "lit": "yes",
+          "maxspeed": "40",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt",
+          "turn:lanes": "through|through|through;slight_right|through;slight_right"
+        },
+        "sourceLayer": 1,
+        "refs": [
+          "2271048380",
+          "5736644555",
+          "1838808528"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w604643302": {
+        "version": 4,
+        "tags": {
+          "bridge": "yes",
+          "destination:int_ref:lanes": "E 94|E 94|",
+          "destination:lanes": "\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf|\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf|\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf",
+          "destination:ref:lanes": "\u03916|\u03916|\u0395\u039f83",
+          "destination:symbol:lanes": "airport|airport|",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "3",
+          "layer": "1",
+          "lit": "yes",
+          "placement": "right_of:2",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "both",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 1,
+        "refs": [
+          "549775642",
+          "549775644"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w604643305": {
+        "version": 6,
+        "tags": {
+          "destination:int_ref:lanes": "||E 94|E 94",
+          "destination:lanes": "\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf|\u0391\u03b8\u03ae\u03bd\u03b1;\u039f\u03bb\u03c5\u03bc\u03c0\u03b9\u03b1\u03ba\u03cc \u03a3\u03c4\u03ac\u03b4\u03b9\u03bf|\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1|\u0395\u03bb\u03b5\u03c5\u03c3\u03af\u03bd\u03b1",
+          "destination:ref:lanes": "\u0395\u039f83|\u0395\u039f83|\u03916|\u03916",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "4",
+          "lit": "yes",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt",
+          "turn:lanes": "through|through|through;slight_right|through;slight_right"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "5736644561",
+          "6438628880"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w656340468": {
+        "version": 6,
+        "tags": {
+          "destination": "\u039c\u03b1\u03c1\u03ba\u03cc\u03c0\u03bf\u03c5\u03bb\u03bf",
+          "destination:int_ref": "E 94",
+          "destination:symbol": "airport",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "4",
+          "lit": "yes",
+          "maxspeed": "40",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "2193136847",
+          "9599972982",
+          "35839642"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w686877513": {
+        "version": 7,
+        "tags": {
+          "destination": "\u039a\u03b7\u03c6\u03b9\u03c3\u03b9\u03ac",
+          "highway": "primary",
+          "junction": "roundabout",
+          "lanes": "3",
+          "lit": "yes",
+          "maxspeed": "40",
+          "placement": "right_of:2",
+          "ref": "\u0395\u039f83",
+          "sidewalk": "left",
+          "smoothness": "excellent",
+          "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "5986351135",
+          "5986351133",
+          "295775759",
+          "5736644542",
+          "9599972972",
+          "9599972973",
+          "35839646"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w686877514": {
+        "version": 5,
+        "tags": {
+          "destination:ref": "\u0395\u039f83",
+          "frontage_road": "yes",
+          "highway": "primary",
+          "lanes": "3",
+          "lit": "yes",
+          "name": "\u039a\u03b7\u03c6\u03b9\u03c3\u03af\u03b1\u03c2",
+          "oneway": "yes",
+          "smoothness": "excellent",
+          "surface": "asphalt",
+          "wikidata": "Q785707",
+          "wikipedia": "el:\u039b\u03b5\u03c9\u03c6\u03cc\u03c1\u03bf\u03c2 \u039a\u03b7\u03c6\u03b9\u03c3\u03af\u03b1\u03c2"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "936804402",
+          "6438628884"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      },
+      "w890883247": {
+        "version": 3,
+        "tags": {
+          "highway": "primary_link",
+          "lanes": "1",
+          "lit": "yes",
+          "oneway": "yes",
+          "surface": "asphalt"
+        },
+        "sourceLayer": 0,
+        "refs": [
+          "5986351135",
+          "8280035704",
+          "8280035696"
+        ],
+        "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "public": true,
+        "review": false,
+        "tunnel": false
+      }
+    },
+    "boundaries": {
+      "35840949": [
+        "w207285124:0",
+        "w209086211:8",
+        "w26984438:12",
+        "w396095352:0"
+      ],
+      "295775659": [
+        "w247294870:0",
+        "w307514082:0",
+        "w604643282:0"
+      ],
+      "8119881812": [
+        "w32229108:10",
+        "w32229108:9",
+        "w871771642:0"
+      ],
+      "549778901": [
+        "w43547584:0",
+        "w437409812:10",
+        "w437409814:7"
+      ],
+      "295776873": [
+        "w26984438:0",
+        "w307514072:0",
+        "w604643271:0",
+        "w84950784:3"
+      ],
+      "360016036": [
+        "w604643293:0",
+        "w604643296:0",
+        "w65611480:11"
+      ],
+      "8280035696": [
+        "w209086214:0",
+        "w5191692:11",
+        "w890883247:1"
+      ],
+      "35840828": [
+        "w418978954:1",
+        "w604643298:0",
+        "w65611480:0"
+      ],
+      "549778915": [
+        "w5191692:0",
+        "w604643265:0",
+        "w604643265:1"
+      ],
+      "294112451": [
+        "w307514073:0",
+        "w604643283:0",
+        "w604643288:0"
+      ]
+    },
+    "unresolvedNodes": [],
+    "cells": [
+      [
+        12,
+        -14
+      ],
+      [
+        13,
+        -14
+      ]
+    ],
+    "boundaryProfilesRequired": [
+      "294112451",
+      "295775659",
+      "295776873",
+      "35840828",
+      "35840949",
+      "360016036",
+      "549778901",
+      "549778915",
+      "8119881812",
+      "8280035696"
+    ]
+  },
+  "releaseEligible": false,
+  "status": "Source adjacency only; no boundary/height/pier certification",
+  "reduction": "Only chosen approach segments/nodes/ways; boundary adjacency IDs and endpoint source proof hashes retained in scope. This is not all lower-crossing source coverage."
+}

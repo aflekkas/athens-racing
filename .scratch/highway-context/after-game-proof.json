@@ -1,0 +1,74 @@
+{
+  "reports": [
+    {
+      "name": "dionysou-a6",
+      "x": 6224.8311,
+      "z": -6984.3117,
+      "contact": {
+        "y": 182.59139982352596,
+        "nx": -0.03211798584261671,
+        "nz": 0.08579834527254457,
+        "flags": 1,
+        "layer": 0,
+        "surface": 9,
+        "surfaceId": "surface:w154259480:0",
+        "tile": "12,-14"
+      },
+      "player": {
+        "x": 6226.807375521221,
+        "y": 188.62861768963114,
+        "z": -6983.289107722475
+      },
+      "inventory": {
+        "js": 131963010,
+        "gpu": 77504303,
+        "heap": 131963010,
+        "sharedJS": 35228315,
+        "tileJS": 24220350,
+        "tileGPU": 12391572,
+        "renderTargetsAndSkyAllowance": 29884416,
+        "resources": {
+          "jsBytes": 268435456,
+          "gpuBytes": 201326592,
+          "stream": {
+            "capBytes": 67108864,
+            "transientBytes": 67108864,
+            "concurrency": 2
+          }
+        },
+        "streamReserved": 46857397,
+        "transient": 0
+      },
+      "file": "/home/dev/.cogenly/worktrees/athens-racing/t3-83f3d59d/.scratch/highway-context/dionysou-a6-after.jpg"
+    },
+    {
+      "name": "post-detail",
+      "phase": "after",
+      "camera": {
+        "position": [
+          66,
+          194.2,
+          197.5
+        ],
+        "origin": {
+          "x": 6144,
+          "z": -7168
+        },
+        "target": [
+          6218,
+          191.6,
+          -6961.5
+        ]
+      },
+      "file": "/home/dev/.cogenly/worktrees/athens-racing/t3-83f3d59d/.scratch/highway-context/dionysou-posts-after.jpg"
+    }
+  ],
+  "errors": [],
+  "status": "Static matched pair captured; native12s afterdrive INTERRUPTED by52s deadline, not a drive pass",
+  "runtime": "6a336191947fad205a4d1d35818a996296717f29",
+  "guardHelper": "af7080be2ed323f732d22cb924dfb21bb180a038",
+  "fixtureRevision": "4f9cc7c4f6fe04d5cf01f2ef880d18fe1399422d781386eca23c4bd6247f74f5",
+  "browserClosed": true,
+  "serverClosed": true,
+  "sourceContextActivated": false
+}
