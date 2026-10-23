@@ -87,12 +87,23 @@ export function athensMaterial(surface,rgb,vertexColors){
 
 // Dry limestone: broken strata, small fissures and grey-green scrub pockets.
 // Reuses the existing noise atlas; coordinates repeat exactly at cell borders.
-const LIMESTONE_GLSL=`vec3 coastLimestone(vec3 colour,vec3 pos){
+const LIMESTONE_GLSL=`// The far footprint tends to the area average of the narrow fissure mask,
+// rather than selecting a different dark line on every subpixel camera move.
+float coastFissure(float phase,float footprint){
+ float width=min(.35,footprint*.5);
+ float line=smoothstep(.86-width,.98+width,abs(sin(phase)));
+ return mix(line,.25,smoothstep(.35,1.5,footprint));
+}
+vec3 coastLimestone(vec3 colour,vec3 pos){
  vec3 n=abs(normalize(cross(dFdx(pos),dFdy(pos))));
  vec2 p=n.y>.65?pos.xz:n.x>n.z?pos.zy:pos.xy;
  vec4 coarse=texture2D(detailMap,p/128.),mid=texture2D(detailMap,p/16.),fine=texture2D(detailMap,p/2.);
- float strata=sin(p.y*2.1+mid.b*9.);float fissure=smoothstep(.86,.98,abs(strata))*(.3+.7*mid.r);
- vec3 stone=colour*(.62+.65*coarse.b)*(.82+.28*fine.g)*(1.-.24*fissure);
+ // 160 complete cycles per 512m cell; the former 2.1rad/m reset by 44deg.
+ float phase=p.y*(6.283185307179586/3.2)+mid.b*9.;
+ float fissure=coastFissure(phase,fwidth(phase))*(.3+.7*mid.r);
+ // Restrained aggregate from the same mip-filtered lookup: at most +/-6%.
+ float chip=smoothstep(.57,.8,fine.r),pit=1.-smoothstep(.18,.36,fine.g);
+ vec3 stone=colour*(.62+.65*coarse.b)*(.82+.28*fine.g)*(1.-.24*fissure)*(1.+.06*chip-.06*pit);
  float pocket=smoothstep(.42,.66,texture2D(detailMap,pos.xz/64.).b+.13*mid.b)*smoothstep(.35,.82,n.y);
  return mix(stone,vec3(.115,.145,.075)*(.75+.5*fine.g),pocket*.78);
 }`;
@@ -102,7 +113,7 @@ function dressedMaterial(surface,rgb,vertexColors){
   const base=()=>new THREE.MeshBasicMaterial({color:new THREE.Color(...rgb),vertexColors,side:THREE.FrontSide});
   if(surface==='coastalGround'||surface==='coastalUrban'){
     const m=surface==='coastalUrban'?scanned(rgb,'paver_diff',URBAN_PERIOD,MEAN.paving,1,{vertexColors,strength:.7,drift:[40,80]}):base(),scan=m.onBeforeCompile;
-    patchMaterial(m,{key:'athens-'+surface+'-v1',vertexVaryings:GROUND_VERTEX_VARYINGS+'attribute vec4 aCoastColor;varying vec4 vCoastColor;varying vec3 vCoastP;',vertexBody:GROUND_VERTEX_BODY+'vCoastColor=aCoastColor;vCoastP=position;',fragmentGlsl:GROUND_GLSL+LIMESTONE_GLSL+'varying vec4 vCoastColor;varying vec3 vCoastP;',apply:`diffuseColor.rgb=mix(diffuseColor.rgb,vCoastColor.rgb,uWorldDetail);${GROUND_APPLY}
+    patchMaterial(m,{key:'athens-'+surface+'-v2',vertexVaryings:GROUND_VERTEX_VARYINGS+'attribute vec4 aCoastColor;varying vec4 vCoastColor;varying vec3 vCoastP;',vertexBody:GROUND_VERTEX_BODY+'vCoastColor=aCoastColor;vCoastP=position;',fragmentGlsl:GROUND_GLSL+LIMESTONE_GLSL+'varying vec4 vCoastColor;varying vec3 vCoastP;',apply:`diffuseColor.rgb=mix(diffuseColor.rgb,vCoastColor.rgb,uWorldDetail);${GROUND_APPLY}
       vec3 limestone=coastLimestone(vCoastColor.rgb,vCoastP);
       diffuseColor.rgb=mix(diffuseColor.rgb,limestone,uWorldDetail*vCoastColor.a);`});
     const patch=m.onBeforeCompile;m.onBeforeCompile=function(shader){patch.call(this,shader);if(surface==='coastalUrban'){// Insert the old scan before the coastal mix, so Off is byte-for-byte the original courtyard recipe.
@@ -114,7 +125,7 @@ function dressedMaterial(surface,rgb,vertexColors){
   if(surface==='sea')return patchMaterial(base(),{key:'athens-sea-v1',vertexVaryings:SEA_VERTEX_VARYINGS,vertexBody:SEA_VERTEX_BODY,fragmentGlsl:SEA_GLSL,apply:SEA_APPLY,uniforms:{uSeaTime:SEA_TIME}});
   if(surface==='coastalDetail'||surface==='coastalBuilding'){
     const m=surface==='coastalBuilding'?dressedMaterial('building',rgb,vertexColors):base(),off=onSettings((s,key)=>{if(!key||key==='worldDetail')m.visible=s.worldDetail!==false;});
-    if(surface==='coastalDetail')patchMaterial(m,{key:'coastal-limestone',vertexVaryings:GROUND_VERTEX_VARYINGS+'attribute float aRock;varying float vRock;varying vec3 vRockP;',vertexBody:GROUND_VERTEX_BODY+'vRock=aRock;vRockP=position;',fragmentGlsl:GROUND_GLSL+LIMESTONE_GLSL+'varying float vRock;varying vec3 vRockP;',apply:`diffuseColor.rgb=mix(diffuseColor.rgb,coastLimestone(diffuseColor.rgb,vRockP),vRock*uWorldDetail);`});
+    if(surface==='coastalDetail')patchMaterial(m,{key:'coastal-limestone-v2',vertexVaryings:GROUND_VERTEX_VARYINGS+'attribute float aRock;varying float vRock;varying vec3 vRockP;',vertexBody:GROUND_VERTEX_BODY+'vRock=aRock;vRockP=position;',fragmentGlsl:GROUND_GLSL+LIMESTONE_GLSL+'varying float vRock;varying vec3 vRockP;',apply:`diffuseColor.rgb=mix(diffuseColor.rgb,coastLimestone(diffuseColor.rgb,vRockP),vRock*uWorldDetail);`});
     m.visible=settings.worldDetail!==false;m.addEventListener('dispose',off);return m;
   }
   if(surface==='foam'){
