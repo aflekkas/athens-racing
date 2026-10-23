@@ -285,7 +285,9 @@
     "tools/ekali-route.test.mjs",
     "tools/world-gen/context.test.mjs",
     "tools/world-traffic-budget.test.mjs",
-    "tools/terrain-lp.test.mjs"
+    "tools/terrain-lp.test.mjs",
+    "tools/riviera-probe-geometry.test.mjs",
+    "tools/riviera-probe-binding.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",
