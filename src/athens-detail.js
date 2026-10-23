@@ -86,10 +86,16 @@ vec3 g_urban(vec2 p,vec4 a,vec4 b,float low,vec4 fine){
   vec2 c=fract(p/2.56);float edge=min(min(c.x,1.-c.x),min(c.y,1.-c.y))*2.56;float joint=1.-smoothstep(.012,.05,edge);
   return vec3((.88+.24*b.r)*(.88+.24*a.g)*(1.-.22*joint)*(1.-.22*smoothstep(.8,1.,a.a)));}
 vec3 g_earth(vec2 p,vec4 a,vec4 b,float low,vec4 fine){
-  float peb=.7+.6*b.r;float blot=.72+.56*a.g;return vec3(peb*blot*(.94+.12*fine.r))*mix(vec3(1.07,1.,.88),vec3(.93,.98,1.07),low);}
+  // Aggregate has irregular pale grains rather than the paving joint grid.
+  float peb=smoothstep(.56,.8,fine.r),pit=1.-smoothstep(.18,.32,fine.g);
+  float blot=.76+.48*a.g;return vec3((.84+.25*peb-.12*pit)*blot*(.85+.3*b.r))*mix(vec3(1.1,1.,.84),vec3(.92,.98,1.08),low);}
 vec3 g_grass(vec2 p,vec4 a,vec4 b,float low,vec4 fine){
   float dry=smoothstep(.5,.85,low*.6+a.b*.4);vec3 tone=mix(vec3(.84,1.06,.76),vec3(1.14,1.04,.72),dry);
-  return tone*(.7+.6*a.g)*(.8+.4*b.r)*(.92+.16*fine.r);}
+  // Thin directional blades use the existing fine noise, filtered by screen
+  // derivatives; close grass reads as fibres, distant grass stays a calm patch.
+  float fibre=sin(p.x*6.283185/0.16+fine.g*5.);
+  float blade=smoothstep(.35,.85,fibre)*(1.-smoothstep(.05,.2,fwidth(p.x)));
+  return tone*(.76+.48*a.g)*(.82+.36*b.r)*(.87+.23*fine.r+.1*blade);}
 vec3 g_scrub(vec2 p,vec4 a,vec4 b,float low,vec4 fine){
   float bush=smoothstep(.46,.62,a.g*.55+b.g*.45);vec3 dryTone=vec3(1.16,1.05,.86);vec3 leaf=vec3(.6,.76,.52);
   return mix(dryTone,leaf,bush)*(.78+.44*b.r)*(.88+.24*low);}
@@ -99,7 +105,8 @@ vec3 g_forest(vec2 p,vec4 a,vec4 b,float low,vec4 fine){
 vec3 g_sand(vec2 p,vec4 a,vec4 b,float low,vec4 fine){
   float rip=texture2D(detailMap,vec2(p.x/10.24,p.y/1.6)).a;return vec3((.92+.16*b.r)*(.9+.2*rip)*(.94+.12*low));}
 vec3 g_rock(vec2 p,vec4 a,vec4 b,float low,vec4 fine){
-  float crack=smoothstep(.7,.95,a.a);float strata=.88+.2*sin(p.y*.9+a.g*4.);return vec3((.74+.52*a.g)*strata*(1.-.45*crack)*(.86+.28*b.r));}
+  float crack=smoothstep(.7,.95,a.a);float strata=.9+.18*sin(p.y*6.283185/1.28+a.g*4.);
+  float chip=smoothstep(.55,.8,fine.g);return mix(vec3(.9,.98,1.08),vec3(1.1,1.02,.88),low)*(.76+.48*a.g)*strata*(1.-.38*crack)*(.85+.22*chip);}
 vec3 groundMul(vec2 p,vec3 base){
   vec4 a=texture2D(detailMap,p/16.),b=texture2D(detailMap,p/4.+.31),fine=texture2D(detailMap,p/1.28+.17);
   float low=(texture2D(detailMap,p/128.).b+texture2D(detailMap,p/(512./3.)+.37).b)*.5;

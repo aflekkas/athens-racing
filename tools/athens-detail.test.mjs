@@ -92,3 +92,11 @@ test('Megara cell origins stay exact uniforms while matching surface types share
   try{assert.equal(a.material.customProgramCacheKey(),b.material.customProgramCacheKey());assert.equal(a.shader.vertexShader,b.shader.vertexShader);assert.equal(a.shader.fragmentShader,b.shader.fragmentShader);assert.deepEqual(a.shader.uniforms.uMegaraOrigin.value.toArray(),[-32768,0,-1024]);assert.deepEqual(b.shader.uniforms.uMegaraOrigin.value.toArray(),[-32256,0,-1024]);assert.match(a.shader.vertexShader,/vMegaraWorld=position\+uMegaraOrigin/);}finally{a.material.dispose();b.material.dispose();}
  }
 });
+
+test('fine grass fibres and rock strata continue at cell boundaries without extra texture samples; ground Off removes them',()=>{
+ const waves=[...GROUND_GLSL.matchAll(/p\.([xy])\*6\.283185\/([\d.]+)/g)];assert.equal(waves.length,2);
+ for(const [,axis,period]of waves){assert.ok(Math.abs(512/Number(period)-Math.round(512/Number(period)))<1e-9);for(const phase of [0,.4,2])assert.ok(Math.abs(Math.sin(phase)-Math.sin(phase+512*2*Math.PI/Number(period)))<1e-9,axis);}
+ assert.equal((GROUND_GLSL.match(/texture2D\(/g)||[]).length,6,'five shared ground samples and the existing sand ripple sample');
+ const material=patchMaterial(new THREE.MeshBasicMaterial(),{key:'ground-off-test',fragmentGlsl:GROUND_GLSL,vertexVaryings:'',vertexBody:'',apply:''});
+ try{setSetting('worldDetail',false);const shader={uniforms:{},vertexShader:'#include <common>\n#include <begin_vertex>',fragmentShader:'#include <common>\n#include <color_fragment>'};material.onBeforeCompile(shader);assert.doesNotMatch(shader.fragmentShader,/texture2D|detailMap|fibre|strata/);assert.equal(shader.uniforms.detailMap,undefined);}finally{material.dispose();setSetting('worldDetail',true);}
+});

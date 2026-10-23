@@ -136,3 +136,29 @@ The reproducible distortion was scratch-state leakage: `AthensProps.rebuild` com
 Classic asphalt rows store surface ID at offset 3 and flags at offset 4; using the former as flags misclassified some paving. The lookup now reads the flags and excludes decks. Road marks validate their entire footprint, inset kerb paint beyond the reach query's 12.5 cm uncertainty, generate one repair set per two-way road, and drape every emitted vertex on streamed road contact with a 2.5 cm depth gap. This changes runtime dressing only; no world assets or R2 data are rebaked.
 
 Regression checks cover repeated prop rebuilds, sparse spacing, whole asphalt/support footprints, wall/anchor/stop/crossing clearance, classic contact flags, and sloped/contained decals. Matching staging views and measurements are in `/home/dev/data/agent-feed/fix-wave/parking/`; 29 focused regressions pass (27 car/decal tests and 2 Psychiko parking tests). Inherited road/terrain mesh seams remain under the terrain fix; see PROBLEMS.md.
+
+## Safe setback planting (October 2026)
+
+Street-tree seeds originally sat 4.6–5.3 m from road centrelines, inside the
+full shoulder contacts, so the later crown-clearance audit removed them. The
+worker now tries the original seed and four progressively wider setbacks, up
+to 21.3 m, on ground-level roads with at most two lanes and speeds up to 50 km/h.
+It accepts a site only when the whole crown plus its unchanged safety margin
+clears every road layer and building edge. Mapped non-terrain surfaces
+(including paved squares and sidewalks) also exclude planting. Bases come from
+the actual fine ground triangles; missing ground, water-level ground and slopes
+varying over two metres across the crown are rejected. Mapped furniture and
+signals have an additional two-metre separation. Authored Psychiko buildings
+and gardens exclude the entire crown square in absolute world coordinates.
+
+These are deterministic inferred planting sites from the existing road,
+terrain and building data, **not surveyed tree locations or an exact recreation
+of Kefalari gardens**. The OSM vegetation cache currently includes parks but
+omits garden/woodland area ingestion; this change does not claim to fill that
+source-data gap. No coordinates or street names select the rule.
+
+Caps remain 700 derived rows per cell (14,000 bytes), 420 detailed trees in
+view and the existing species pools/ranges. There are no new models, textures,
+colliders, physical arrays or wire records. World detail Off hides the tree
+layer through the existing switch. A combined terrain/scenery publication
+must rerun full crown clearance after moving any vegetation bases.

@@ -106,3 +106,14 @@ $CACHE/venv/bin/python tools/world-gen/street_nodes.py $CACHE/greece-261014.osm.
 
 * Compressed **+0.04 to +6.8 KB per cell** (+0.1% to +1.8%: signals, props and the kind column), resident **+0.2 to +12 KB** (+0.1% to +0.3%). Dense cells hold 100 to 400 rows (2 to 8 KB raw).
 * Draw calls and triangles in the dense views, whole layer (signals + details) On against the step-1 tree, `step3/measure.json`: Syntagma 113 to 121 calls (+7.1%), triangles +12.5%; Plaka 153 to 156 (+2.0%), +0.4%; Kypseli 122 to 127 (+4.1%), +2.6%; Piraeus 130 to 139 (+6.9%), +5.0%. With World detail Off: unchanged in all four (the layer builds nothing).
+
+### October 2026 material refinement
+
+The existing shared noise now gives dry earth pale aggregate and darker pits,
+grass derivative-filtered directional fibres, and rock chipped warm/cool strata.
+Asphalt and paved surfaces retain their separate shared scans and joint pattern.
+All changes are colour-only in the existing unlit ground program: no extra
+texture samples, textures, geometry, draw calls, passes or per-cell bytes. The
+shared noise remains 256×256 RGBA with mips (349,525 bytes). Off still compiles
+the entire detail recipe out. Ground class colours and land classification are
+unchanged; the new patterns do not invent missing landuse data.

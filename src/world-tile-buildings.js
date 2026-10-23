@@ -1,5 +1,5 @@
 import {buildTileObstacleIndex,obstacleBytes} from './world-tile-obstacles.js';
-import {psychikoMappedBuildings} from './world-tile-psychiko.js';
+import {psychikoMappedBuildings,psychikoInfillBlocked} from './world-tile-psychiko.js';
 import {coastalMappedBuildings,coastalInfillTables,clearCoastalStreetTrees,coastalRecipe,coastalRows,appendCoastalSurfaces,dressCoastalGround} from './world-tile-coast.js';
 // Building meshes are DERIVED from the `buildings`, `buildingCorners` and `buildingHeights` tables when a tile declares
 // `extensions.derivedBuildings`: the wire format stores each footprint once instead of a second time as flat-shaded
@@ -8,7 +8,7 @@ import {coastalMappedBuildings,coastalInfillTables,clearCoastalStreetTrees,coast
 // the facade material shades each face from its own normal (`FACADE_GLSL`, `wallShade`, the bake's old face_shaded() values).
 import { LANDMARK_HIDDEN, osmBuildingId } from './athens-landmark-hide.js';
 import { inOldQuarter } from './athens-quarters.js';
-import { deriveStreetTrees } from './world-tile-trees.js';
+import { deriveStreetTrees,deriveLegacyStreetTreeSeeds } from './world-tile-trees.js';
 import { deriveParking } from './world-tile-parking.js';
 import { deriveStreetArt } from './world-tile-street-art.js';
 export const BUILDING_MESH_TRIANGLES = 16384;
@@ -200,12 +200,23 @@ export function addDerivedBuildings(pack, tables) {
   const infill=coastalInfillTables(mapped.tables,recipe);
   const houses=deriveBuildingMeshes(infill,{...pack.metadata,ids:infill.ids,inferredCoastal:true},new Uint8Array(infill.ids.length).fill(2),new Uint8Array(infill.ids.map((_,i)=>i%2?1:3)));
   extra.rings.push(...houses.extra.rings);
-  const ox = pack.metadata.origin?.[0] ?? 0, oz = pack.metadata.origin?.[2] ?? 0, trees = clearCoastalStreetTrees(tables,deriveStreetTrees(tables, extra.rings, (x, z) => inOldQuarter(ox + x, oz + z)),recipe);
+  const ox = pack.metadata.origin?.[0] ?? 0, oz = pack.metadata.origin?.[2] ?? 0;
+  const detail=pack.metadata.extensions?.worldDetail, occupiedTrees=[];
+  for(const [index,stride]of [[detail?.props?.rows,5],[detail?.signals?.rows,6]])if(index!=null){const rows=pack.arrays[index];for(let i=0;i<rows.length;i+=stride)occupiedTrees.push([rows[i],rows[i+2]]);}
+  const pavedGroundTriangles=new Uint8Array(tables.fineTriangles.length/3);
+  for(const mesh of pack.metadata.meshes)if(mesh.userData?.tileSurface==='urban'&&pack.arrays[mesh.index]===tables.fineTriangles){const first=(mesh.drawRange?.start??0)/3,last=first+(mesh.drawRange?.count??tables.fineTriangles.length)/3;pavedGroundTriangles.fill(1,first,last);}
+  const trees = clearCoastalStreetTrees(tables,deriveStreetTrees(tables,extra.rings,(x,z)=>inOldQuarter(ox+x,oz+z),{
+    pavedGroundTriangles,setbacks:!recipe,landSurfaceIds:new Set(pack.metadata.ids.flatMap((id,i)=>id.startsWith('terrain:')?[i]:[])),
+    blocked:(x,z,r)=>occupiedTrees.some(([px,pz])=>Math.hypot(px-x,pz-z)<r+2)||psychikoInfillBlocked([[x-r+ox,z-r+oz],[x+r+ox,z-r+oz],[x+r+ox,z+r+oz],[x-r+ox,z+r+oz]]),
+  }),recipe);
   const coast=coastalRows(tables,extra.rings,coastalRecipe(pack.metadata.cell),trees,pack.arrays[pack.metadata.extensions?.worldDetail?.coastalTreeOccupancy??pack.metadata.extensions?.worldDetail?.vegetation?.positionHeight],pack.metadata.cell,pack.metadata.coastalLakes);
   const allTrees=new Float32Array(trees.length+coast.trees.length);allTrees.set(trees);allTrees.set(coast.trees,trees.length);
   const inQuarter = (x, z) => inOldQuarter(ox + x, oz + z), propsExt = pack.metadata.extensions?.worldDetail?.props, occupied = [];
   if (propsExt) { const rows = pack.arrays[propsExt.rows]; for (let i = 0; i < rows.length; i += 5) occupied.push(rows[i], rows[i + 2]); } // the bake's own props (parked cars, kiosks, benches...) keep their places
-  const parking = deriveParking(tables, extra.rings, inQuarter, occupied, allTrees);
+  // Collision-bearing parking keeps its original proposal inputs. Changing
+  // visual foliage must not move parked cars or alter their collision walls.
+  const parkingTrees=recipe?allTrees:deriveLegacyStreetTreeSeeds(tables,extra.rings,inQuarter);
+  const parking = deriveParking(tables, extra.rings, inQuarter, occupied, parkingTrees);
   const propsKinds = propsExt ? pack.arrays[propsExt.kind] : null, art = deriveStreetArt(tables, pack.metadata, extra.infos, { ox, oz, propsRows: propsExt ? pack.arrays[propsExt.rows] : null, propsKinds });
   extra.infos.length = 0;
   pack.derivedExtraBytes = extra.vertices * 16 * 2 + extra.indices * 2 * 2 + (extra.rooftops.byteLength + allTrees.byteLength + coast.boats.byteLength + parking.byteLength + art.plates.byteLength + art.shops.byteLength + art.walls.byteLength + art.marks.byteLength) * 6 + art.plateNames.reduce((n, x) => n + x.length * 2 + 40, 0) + parking.length / 5 * 4 * 40; // + four collision walls per car or scooter // pitched roofs: CPU copy and GPU copy of the added vertices and indices; the rooftop rows and the prop records made from them

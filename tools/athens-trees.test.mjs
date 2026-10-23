@@ -2,9 +2,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
-import { deriveStreetTrees, TREE, STREET_TREE_LIMIT } from '../src/world-tile-trees.js';
+import { deriveStreetTrees, deriveLegacyStreetTreeSeeds, TREE, STREET_TREE_LIMIT } from '../src/world-tile-trees.js';
 import { AthensTrees, treeTriangles, speciesOfBakeRow, TREE_LIMITS } from '../src/athens-trees.js';
 import { rooftopKit } from '../src/world-tile-buildings.js';
+import {vegetationContactIndex,vegetationRadius,streetTreeHeight} from '../src/vegetation-clearance.js';
 import { KINDS } from '../src/athens-props.js';
 
 // one two-way street along x at z = 100, 160 m long: two directed edges, geometry shared
@@ -59,4 +60,20 @@ test('a flat roof gets about one solar heater per 80 m2, antennas, a stair head 
   assert.ok(antennas / roofs >= 1.5 && stairs / roofs > .9 && pergolas / roofs > .08 && pergolas / roofs < .25);
   assert.equal(rooftopKit(roof(5, 5), 15, 123456, 25).length, 0, 'a tiny roof gets nothing'); assert.equal(rooftopKit(roof(20, 20), 3, 123456, 400).length, 0, 'not on a one-floor house');
   assert.deepEqual([KINDS.rooftop, KINDS.solar, KINDS.antenna, KINDS.pergola], [14, 15, 16, 17]);
+});
+
+// Real cells reserve an eight-metre carriageway+shoulder strip. The old
+// 4.6 m seeds were all discarded by prepareTilePacket's crown audit.
+test('setback planting survives full shoulders, follows ground, and respects buildings, ownership and bridges',()=>{
+ const t=street();t.finePositions=new Float32Array([0,7,0,512,7,0,512,7,512,0,7,512]);t.fineTriangles=new Uint32Array([0,1,2,0,2,3]);t.fineFlags=new Uint8Array([0,0]);
+ t.contactPositions=new Float32Array([0,5,92,512,5,92,512,5,108,0,5,108]);t.contactTriangles=new Uint32Array([0,1,2,1,1,0,2,3,1,1]);
+ const q=vegetationContactIndex(t),r=deriveStreetTrees(t,[]),legacy=deriveLegacyStreetTreeSeeds(t,[]);assert.ok(legacy.length>0);for(let i=0;i<legacy.length;i+=5)assert.ok(Math.abs(legacy[i+2]-100)<6,'legacy parking seeds stay at their original kerb positions');assert.equal(deriveLegacyStreetTreeSeeds(street({speed:50}),[]).length,0,'legacy speed eligibility is unchanged');assert.ok(r.length/5>=8);
+ for(let i=0;i<r.length;i+=5){const code=r[i+4]|0,radius=vegetationRadius(code>>3,streetTreeHeight(code>>3,code&7));assert.ok(q.clear(r[i],r[i+2],radius));assert.equal(r[i+1],7);assert.ok(Math.abs(r[i+2]-100)>12);}
+ assert.deepEqual(r,deriveStreetTrees(t,[]));assert.ok(r.byteLength<=STREET_TREE_LIMIT*20);
+ assert.equal(deriveStreetTrees(t,[],()=>false,{blocked:()=>true}).length,0,'authored ownership can exclude the whole planting envelope');
+ const walls=[[[0,70],[200,70],[200,91],[0,91]],[[0,109],[200,109],[200,130],[0,130]]];assert.equal(deriveStreetTrees(t,walls).length,0,'no space for a full crown between road and building');
+ t.fineSurface=new Uint32Array([1,1]);assert.equal(deriveStreetTrees(t,[],()=>false,{landSurfaceIds:new Set([2])}).length,0,'mapped paving is not planting land');
+ assert.equal(deriveStreetTrees(t,[],()=>false,{landSurfaceIds:new Set([1]),pavedGroundTriangles:new Uint8Array([1,1])}).length,0,'urban paving remains excluded even when the source surface ID is terrain');
+ t.finePositions.fill(-1);assert.equal(deriveStreetTrees(t,[]).length,0,'missing ground does not fall back to road height');
+ t.edgeLayers.fill(1);assert.equal(deriveStreetTrees(t,[]).length,0);
 });
