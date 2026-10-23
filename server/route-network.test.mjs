@@ -29,8 +29,9 @@ async function setup(t, { circuit = false } = {}) {
   }
   const c = await compileRoute(f.definition, f.graph, f.contacts), geometry = new RouteRuntime(c), routeIdentity = routeNetworkIdentity(c, 'd'.repeat(64));
   const event = { ...routeEvent(c), ...resolve(routeEvent(c), { route: geometry, marks: [] }), mapId: c.id };
+  const free = { ...event, id: 'free:' + c.id, name: 'FREE ROAM', type: 'free', free: true, sectors: [], save: false };
   const gridPose = slot => ({ ...geometry.point(-8 * (slot + 1)), s: -8 * (slot + 1), yaw: geometry.frame(0).yaw, slot });
-  const map = { id: c.id, name: c.id, routeIdentity, geometry, track: { start: 0, finish: c.lengthM, version: c.routeHash + ':' + routeIdentity.onlineGridHash, routeIdentity }, definitions: new Map([[event.id, event]]), gridPose };
+  const map = { id: c.id, name: c.id, routeIdentity, geometry, track: { start: 0, finish: c.lengthM, version: c.routeHash + ':' + routeIdentity.onlineGridHash, routeIdentity }, definitions: new Map([[event.id, event], [free.id, free]]), gridPose };
   const maps = new Map([['riviera', { track: { version: 'old' }, definitions: new Map() }], [c.id, map]]); maps.routeConfig = { online: true }; maps.routes = new Map([[c.id, c]]);
   let now = 100000; t.mock.method(Date, 'now', () => now);
   const submitted = [], opts = { maps, cars: new Set(['mini']), carSpecs: { mini: { width: 2, length: 4 } }, leaderboard: { submit: async result => submitted.push(result) }, countdownMs: 0 };
@@ -108,4 +109,13 @@ for (const drift of ['position', 'generation', 'identity']) test(`recovery prefl
   const x = await setup(t); x.ready(); x.advance(); x.send(x.a, x.packet({ type: 'state', state: x.pose(-8) })); const recover = x.packet({ type: 'recover', motionEpoch: 1 });
   x.map.prepareRecovery = async driver => { if (drift === 'position') driver.state = { ...driver.state, x: driver.state.x + 1 }; if (drift === 'generation') x.lobby.generation++; if (drift === 'identity') x.lobby.routeIdentity = { ...x.lobby.routeIdentity, onlineGridHash: 'f'.repeat(64) }; return true; };
   assert.equal(await x.core.prepareMessage(x.a, JSON.stringify(recover)), false); assert.equal(x.a.messages.at(-1).type, 'recover-denied'); assert.equal(x.core.clientData(x.a).recovery, null);
+});
+
+test('authenticated world free roam accepts distant roads without course stations or records and still rejects teleports', async t => {
+  const x = await setup(t); x.send(x.a, { type: 'options', eventId: 'free:' + x.c.id }); x.ready();
+  let state = { ...x.pose(-8), s: 10000, u: 10000 };
+  x.advance(); x.send(x.a, x.packet({ type: 'state', state })); assert.ok(x.core.clientData(x.a).state); assert.equal(x.core.clientData(x.a).course, null);
+  for (let i = 1; i <= 100; i++) { state = { ...state, x: state.x + 10, s: state.s + 100, u: state.u + 100 }; x.advance(); x.send(x.a, x.packet({ type: 'state', state })); }
+  assert.equal(x.core.clientData(x.a).state.x, state.x); assert.equal(x.core.clientData(x.a).finish, null); assert.equal(x.submitted.length, 0);
+  const before = x.core.clientData(x.a).state; x.advance(); x.send(x.a, x.packet({ type: 'state', state: { ...state, x: state.x + 10000 } })); assert.deepEqual(x.core.clientData(x.a).state, before);
 });

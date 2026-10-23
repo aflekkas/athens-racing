@@ -85,3 +85,14 @@ test('separate online approach projects the eighth slot beyond eighty metres wit
 test('a partial static road snapshot cannot enable online even with valid hashes and eight slots', async () => { const { c, roads, build } = await catalogue(), hash = await sha256(roads); build.routeConfig.routes[0].recovery = { schemaVersion: 1, hash, url: `/data/routes/${c.id}.recovery.${hash}.json` }; build.routeRoads = [{ hash, body: roads }]; const maps = new Map(); await installRouteMaps(maps, build); assert.equal(maps.has(c.id), false); assert.match(maps.routeIssues.get(c.id), /Full-domain streamed/); });
 
 test('streamed recovery needs exact published-world coverage, including empty road cells', async () => { const { c, build } = await catalogue(); build.recoveryWorld.sourceHashes.push(['2,0', 'e'.repeat(64)]); const maps = new Map(); await installRouteMaps(maps, build); assert.equal(maps.has(c.id), false); assert.match(maps.routeIssues.get(c.id), /omits or changes/); });
+
+test('shared immutable recovery manifest URL and route-bound free roam preserve the online mode contract', async () => { const { c, build } = await catalogue(); build.routeConfig.routes[0].recovery.url = `/world/recovery/manifest.${build.routeConfig.routes[0].recovery.hash}.json`; const maps = new Map(); await installRouteMaps(maps, build); const map = maps.get(c.id), free = map.definitions.get('free:' + c.id); assert.equal(free.type, 'free'); assert.equal(free.save, false); assert.deepEqual(free.sectors, []); assert.equal(free.mapId, c.id); });
+
+test('free roam and off-course race recoveries on distant surveyed roads return finite stations', async () => {
+ const {c,build}=await catalogue(),maps=new Map();await installRouteMaps(maps,build,{carSpecs:{mini:{width:2,length:4}}});const map=maps.get(c.id),route=map.geometry;
+ route.recoveryCandidates=()=>[{x:1000,y:0,z:1000,yaw:0,layer:0,edgeId:'distant-road',surfaceId:'distant-road'}];
+ for(const event of map.definitions.values()){
+  const driver={car:'mini',state:{x:1000,y:0,z:1000,yaw:0,s:0,u:0,layer:0,surfaceId:'distant-road',motionEpoch:0},stateAt:1000,course:event.type==='free'?null:buildCourse(event,route)};
+  const recovery=requestRecovery(driver,event,'race',1,1100,{route});assert.ok(recovery);assert.equal(recovery.kind,'road');assert.ok(Number.isFinite(recovery.s)&&Number.isFinite(recovery.u));assert.equal(recovery.u,0);if(driver.course)assert.equal(driver.course.reached,0);
+ }
+});

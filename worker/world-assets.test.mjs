@@ -11,6 +11,7 @@ test('recovery JSON has immutable bounded hash-verified bytes and the correct co
  let reads=0;const env={ATHENS_WORLD_MANIFEST:manifest,ATHENS_WORLD:{async get(k){reads++;return k===key?{body:bytes,size:bytes.byteLength,httpEtag:'"recovery"'}:null;}}};
  const response=await worldAssets(new Request('https://x/world/'+key),env,null,null);assert.equal(response.status,200);assert.equal(response.headers.get('Content-Type'),'application/json');assert.match(response.headers.get('Cache-Control'),/immutable/);assert.deepEqual(await response.json(),body);
  assert.equal((await worldAssets(new Request('https://x/world/recovery/-1,2.short.json'),env,null,null)).status,404);assert.equal(reads,1);
+ const rootKey=`recovery/manifest.${hash}.json`,rootEnv={...env,ATHENS_WORLD:{async get(k){return k===rootKey?{body:bytes,size:bytes.byteLength,httpEtag:'"root"'}:null;}}};assert.equal((await worldAssets(new Request('https://x/world/'+rootKey),rootEnv,null,null)).status,200);
  const tampered={...env,ATHENS_WORLD:{async get(){const b=new TextEncoder().encode(text.replace('athens-v1','athens-v2'));return{body:b,size:b.length,httpEtag:'"bad"'};}}};
  const rejected=await worldAssets(new Request('https://x/world/'+key),tampered,null,null);assert.equal(rejected.status,502);assert.equal(rejected.headers.get('Cache-Control'),'no-store');
  const oversized={...env,ATHENS_WORLD:{async get(){return{body:bytes,size:2*1024*1024+1};}}};assert.equal((await worldAssets(new Request('https://x/world/'+key),oversized,null,null)).status,413);

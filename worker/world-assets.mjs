@@ -1,14 +1,14 @@
 import { sha256 } from '../src/route-definition.js';
 // Immutable R2 cells are compressed application payloads, NOT HTTP Content-Encoding.
 // The tile worker hashes the compressed bytes before inflating them itself.
-const keyPattern=/^(?:cells\/[a-f0-9]{64}\.bin\.gz|manifests\/[a-f0-9]{64}\.json|recovery\/-?\d+,-?\d+\.[a-f0-9]{64}\.json)$/;
+const keyPattern=/^(?:cells\/[a-f0-9]{64}\.bin\.gz|manifests\/[a-f0-9]{64}\.json|recovery\/(?:-?\d+,-?\d+|manifest)\.[a-f0-9]{64}\.json)$/;
 const noStore={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'};
 export async function worldAssets(request,env,ctx,cache=globalThis.caches?.default){
  const url=new URL(request.url),alias=url.pathname==='/data/athens/manifest.json';
  if(!alias&&!url.pathname.startsWith('/world/'))return null;
  if(!['GET','HEAD'].includes(request.method))return new Response('Use GET or HEAD',{status:405,headers:{...noStore,Allow:'GET, HEAD'}});
  // No production manifest is configured until the owner activates that env.
- if(!env.ATHENS_WORLD||!/^manifests\/[a-f0-9]{64}\.json|recovery\/-?\d+,-?\d+\.[a-f0-9]{64}\.json$/.test(env.ATHENS_WORLD_MANIFEST||''))return new Response('World unavailable',{status:404,headers:noStore});
+ if(!env.ATHENS_WORLD||!/^manifests\/[a-f0-9]{64}\.json|recovery\/(?:-?\d+,-?\d+|manifest)\.[a-f0-9]{64}\.json$/.test(env.ATHENS_WORLD_MANIFEST||''))return new Response('World unavailable',{status:404,headers:noStore});
  if(alias)return new Response(null,{status:307,headers:{...noStore,Location:'/world/'+env.ATHENS_WORLD_MANIFEST}});
  const key=url.pathname.slice(7);if(!keyPattern.test(key))return new Response('Not found',{status:404,headers:noStore});
  // Query parameters and request cookies must not fragment the public asset cache.

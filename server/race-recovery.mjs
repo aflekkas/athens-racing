@@ -34,7 +34,13 @@ function towMap(geometry) {
 // within 40 m and never places the car before its latest valid on-road pose; the course tracker still counts only
 // continuous on-route movement, so a tow cannot advance progress. The client's claimed position is never used.
 function towPose(driver, event, route) {
-  if(route?.isWorldRoute){const candidates=route.recoveryCandidates?.(driver.state,driver)||[];return planWorldTow({pose:{...driver.state,towHeading:driver.towHeading},course:driver.course,route,roadCandidates:candidates,footprint:route.recoveryFootprint?.(driver)});}
+  if (route?.isWorldRoute) {
+    const candidates = route.recoveryCandidates?.(driver.state, driver) || [];
+    const target = planWorldTow({ pose: { ...driver.state, towHeading: driver.towHeading }, course: event.type === 'free' ? null : driver.course, route: event.type === 'free' ? null : route, roadCandidates: candidates, footprint: route.recoveryFootprint?.(driver) });
+    // Off-course projection has no lateral station. Its Infinity sentinel must
+    // never escape as null JSON into an otherwise proven world-road placement.
+    return target ? { ...target, u: Number.isFinite(target.u) ? target.u : 0 } : null;
+  }
   const state = driver.state, course = driver.course;
   if (route?.x?.length && [state.x, state.z, state.yaw].every(finite)) {
     const map = towMap(route);

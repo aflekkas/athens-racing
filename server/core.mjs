@@ -494,12 +494,13 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
           const fields = ['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear'];
           if (!m.state || fields.some(k => !Number.isFinite(m.state[k]))) return;
           const s = m.state, event = effectiveEvent(lobbyEvent(l), l.config);
+          const worldFree = routeMap?.routeIdentity && event.type === 'free';
           if (routeMap?.routeIdentity && (!Number.isInteger(s.layer) || typeof s.surfaceId !== 'string' || s.surfaceId.length > 200 || typeof s.edgeId !== 'string' || s.edgeId.length > 200)) return;
           if (!recoveryStateAllowed(c, s, l.raceId, now, { route: maps.get(l.mapId).geometry, event })) return;
           const zones = ['front', 'rear', 'left', 'right'];
           if (s.nitro !== undefined && (!Number.isFinite(s.nitro) || s.nitro < 0 || s.nitro > 1)) return;
           if (s.damage !== undefined && (!s.damage || zones.some(k => !Number.isFinite(s.damage[k]) || s.damage[k] < 0 || s.damage[k] > 1))) return;
-          if (Math.abs(s.x) > 100000 || Math.abs(s.z) > 100000 || Math.abs(s.y) > 10000 || Math.abs(s.u) > 500 || s.s < Math.min(event.s0, event.s1) - 500 || s.s > Math.max(event.s0, event.s1) + 500 || Math.abs(s.vLong) > 150 || Math.abs(s.vLat) > 150 || s.rpm < 0 || s.rpm > 20000 || s.gear < 1 || s.gear > 10) return;
+          if (Math.abs(s.x) > 100000 || Math.abs(s.z) > 100000 || Math.abs(s.y) > 10000 || (worldFree ? Math.abs(s.u) > 1e7 || Math.abs(s.s) > 1e7 : Math.abs(s.u) > 500 || s.s < Math.min(event.s0, event.s1) - 500 || s.s > Math.max(event.s0, event.s1) + 500) || Math.abs(s.vLong) > 150 || Math.abs(s.vLat) > 150 || s.rpm < 0 || s.rpm > 20000 || s.gear < 1 || s.gear > 10) return;
           // Client physics with bounded progress; the server owns race timing/results.
           const prevS = c.state?.s ?? (routeMap?.routeIdentity ? routeMap.gridPose(c.gridSlot, c.car).s : event.s0);
           const elapsed = Math.max(0, (now - Math.max(c.stateAt ?? Math.max(l.startAt, c.enteredAt || 0), c.recovery?.raceId === l.raceId ? c.recovery.until : l.startAt)) / 1000);
@@ -513,8 +514,8 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
             }
           }
           const recovered = c.recovery?.raceId === l.raceId && now <= c.recovery.until;
-          const previousPose = c.state || c.course?.previous;
-          const discontinuous = Math.abs(s.s - prevS) > 30 + 150 * (courseEnabled ? Math.min(5, elapsed) : elapsed) || !recovered && previousPose && Math.hypot(s.x - previousPose.x, s.z - previousPose.z) > 15 + 150 * (courseEnabled ? Math.min(5, elapsed) : elapsed);
+          const previousPose = c.state || c.course?.previous || (routeMap?.routeIdentity ? routeMap.gridPose(c.gridSlot, c.car) : null);
+          const discontinuous = !worldFree && Math.abs(s.s - prevS) > 30 + 150 * (courseEnabled ? Math.min(5, elapsed) : elapsed) || !recovered && previousPose && Math.hypot(s.x - previousPose.x, s.z - previousPose.z) > 15 + 150 * (courseEnabled ? Math.min(5, elapsed) : elapsed);
           // A jump is never accepted as movement; progress simply stays where it was (and the course's
           // rejoin rule keeps it there until the driver returns to the route or is recovered).
           if (discontinuous) return;

@@ -1,7 +1,7 @@
 import { routeSurfaceAllowed } from '../src/route-surface.js';
 import { RouteNetworkRuntime } from '../src/route-network-runtime.js';
 import { routeEvent } from '../src/route-events.js';
-import { resolve as resolveEvent } from '../src/events.js';
+import { resolve as resolveEvent, freeRoam } from '../src/events.js';
 import { routeNetworkIdentity, sameRouteIdentity, ROUTE_HASH } from '../src/route-network.js';
 import { validateOnlineGrid, onlineGridPose } from '../src/online-grid.js';
 import { validateRecoveryManifest, createStreamedRoadAuthority } from './route-road-stream.mjs';
@@ -30,7 +30,7 @@ export async function installRouteMaps(maps, catalogue, { carSpecs = {}, loadRoa
         if (descriptor?.schemaVersion !== 1 || descriptor.capacity !== 8 || descriptor.url !== immutableURL(c.id, 'online-grid', descriptor.hash) || !grid) throw Error('Unsupported online capacity: eight certified grid slots unavailable');
         const onlineGrid = await validateOnlineGrid(grid.body, c, { expectedHash: descriptor.hash });
         const recovery = entry.recovery, roads = catalogue.routeRoads?.find(r => r.hash === recovery?.hash);
-        if (recovery?.schemaVersion !== 1 || recovery.url !== immutableURL(c.id, 'recovery', recovery.hash) || !roads) throw Error('Authoritative recovery roads unavailable');
+        if (recovery?.schemaVersion !== 1 || ![immutableURL(c.id, 'recovery', recovery.hash), `/world/recovery/manifest.${recovery.hash}.json`].includes(recovery.url) || !roads) throw Error('Authoritative recovery roads unavailable');
         if (recovery.streamed !== true) throw Error('Full-domain streamed recovery authority required for online racing');
         if (typeof loadRoadArtifact !== 'function') throw Error('Authoritative recovery loader unavailable');
         if (!roadAuthorities.has(recovery.hash)) {
@@ -48,6 +48,8 @@ export async function installRouteMaps(maps, catalogue, { carSpecs = {}, loadRoa
           definitions.set(e.id, { ...def, ...resolved, mapId: c.id, routeKey: `${resolved.s0}>${resolved.s1}`, traffic: e.trafficLevel > 0, trafficLevel: e.trafficLevel });
         }
         if (!definitions.size) throw Error('No supported online race');
+        const free = { ...freeRoam(c.id), worldId: 'athens', routeId: c.id, routeHash: c.routeHash, geometryHash: c.geometryHash, worldSetRevision: c.worldSetRevision, s0: 0, s1: c.lengthM, dir: 1, len: c.lengthM, laps: 1, closed: geometry.closed, sectors: [], routeKey: null, free: true, save: false, traffic: c.definition.trafficLevel > 0, trafficLevel: c.definition.trafficLevel, conditions: { time: c.definition.timeOfDay, weather: c.definition.weather } };
+        definitions.set(free.id, free);
         const spec = car => carSpecs instanceof Map ? carSpecs.get(car) : carSpecs[car];
         const footprint = driver => { const car = spec(driver.car); return { halfWidth: car?.width > 0 ? car.width / 2 : Infinity, halfLength: car?.length > 0 ? car.length / 2 : Infinity }; };
         geometry.contactAllowed = (q, pose) => {
