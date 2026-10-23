@@ -62,7 +62,7 @@ export async function selectInspector(inspector, targetId) {
   return possible[0];
 }
 export async function fixtureIdentity({ worldFile, compiledFile, catalogueFile, worldRevision, routeHash }) {
-  const [world, compiled, catalogue] = await Promise.all([worldFile, compiledFile, catalogueFile].map(async path => JSON.parse(await readFile(path, 'utf8'))));
+  const [world, compiled, catalogue] = await Promise.all([worldFile, compiledFile, catalogueFile].map(async path => JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(await readFile(path)))));
   if (world.developmentOnly !== true || world.fixture?.publish !== false || world.fixture?.kind !== 'local-online-parity') throw Error('Only explicitly unpublished local parity fixtures are supported');
   if (!/^[a-f0-9]{64}$/.test(worldRevision || '') || !/^[a-f0-9]{64}$/.test(routeHash || '') || world.revision !== worldRevision || compiled.worldSetRevision !== worldRevision || compiled.routeHash !== routeHash) throw Error('Fixture identity differs from pinned world/route hashes');
   if (await routeGeometryHash(compiled) !== compiled.geometryHash || await sha256({ definition: compiled.definition, geometryHash: compiled.geometryHash, worldSetRevision: worldRevision }) !== routeHash) throw Error('Compiled fixture content differs from its immutable hashes');

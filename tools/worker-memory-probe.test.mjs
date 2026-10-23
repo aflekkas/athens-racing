@@ -53,3 +53,13 @@ test('a genuine Worker global with another catalogue cannot supply fixture memor
  const {base,methods}=await fakeInspector(t,{matchingSource:false});await assert.rejects(sampleWorker({inspector:base,identity,seconds:1}),/pinned fixture catalogue/);
  assert.equal(methods.includes('Runtime.getHeapUsage'),false);assert.ok(methods.includes('Debugger.disable'));
 });
+
+test('fixture identity never replaces malformed UTF-8 in root-bearing source metadata', async t => {
+ const fs=await import('node:fs/promises'), {join}=await import('node:path'), {tmpdir}=await import('node:os'), {fixtureIdentity}=await import('./worker-memory-probe.mjs');
+ const dir=await fs.mkdtemp(join(process.env.ATHENS_TEST_TMPDIR||tmpdir(),'athens-probe-metadata-'));t.after(()=>fs.rm(dir,{recursive:true,force:true}));
+ const files=['world.json','compiled.json','catalogue.json'].map(name=>join(dir,name));
+ for(let bad=0;bad<files.length;bad++){
+  await Promise.all(files.map((path,i)=>fs.writeFile(path,i===bad?Buffer.concat([Buffer.from('{"label":"'),Buffer.from([255]),Buffer.from('"}')]):'{}')));
+  await assert.rejects(fixtureIdentity({worldFile:files[0],compiledFile:files[1],catalogueFile:files[2],worldRevision:'a'.repeat(64),routeHash:'b'.repeat(64)}),TypeError);
+ }
+});
