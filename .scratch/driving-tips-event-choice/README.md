@@ -39,7 +39,7 @@ catalogue, compiled routes and world cells are read-only GETs from our staging s
 | File | What it shows |
 |---|---|
 | `after-tip-pad-1280x800.jpg`, `after-tip-pad-1280x720.jpg` | controller tip, verified in the image (re-measured after the screenshot: still shown): LS, RB / LB, A, D-pad left, Y, VIEW, RS; TOW and BIG MAP have no default controller binding and read UNBOUND; no mouse row |
-| `after-1-picker-f88.jpg` | picker with the opaque no-blur card (potato). Not a matched framing: the camera finished its flight to Megara, so no label sits under the card here |
+| `after-1-picker-f88.jpg` | picker with the opaque card. Not a matched framing: the camera finished its flight to Megara, so no label sits under the card here |
 | `after-4-race-timetrial-f88.jpg` | the time trial started from Race Setup: `megara-tt`, timetrial, 3 laps, 0 rivals on the grid, HUD LAP 1/3 |
 
 `event-choice-megara-f88.json`: RACE default (2 rivals) → TIME TRIAL (no rivals, 3 laps) → CHOOSE CAR → Back → Back
