@@ -1,0 +1,238 @@
+{
+  "schema": "integrated-source-gate-1",
+  "verdict": "PASS",
+  "scope": "Frozen integrated SOURCE checkpoint only; no final-world/release/production acceptance",
+  "pin": "ba930a1fae696987f002415bd7165de08f64b7ab",
+  "tree": "9753b91d82782b6bd0bcc6b8d91b9c131b5170fb",
+  "startedUTC": "2026-10-23T12:16:27.101560+00:00",
+  "completedUTC": "2026-10-23T12:30:46.513558+00:00",
+  "elapsedSeconds": 859.411997795105,
+  "gates": [
+    {
+      "gate": "npm",
+      "command": [
+        "npm",
+        "test"
+      ],
+      "exitCode": 0,
+      "seconds": 639.8851225376129
+    },
+    {
+      "gate": "physics",
+      "command": [
+        "node",
+        "--import",
+        "./tools/physics-test/register.mjs",
+        "tools/physics-test/regress.mjs"
+      ],
+      "exitCode": 0,
+      "seconds": 187.44070720672607
+    },
+    {
+      "gate": "imports",
+      "command": [
+        "node",
+        "tools/check-browser-imports.mjs"
+      ],
+      "exitCode": 0,
+      "seconds": 1.035966396331787
+    },
+    {
+      "gate": "syntax",
+      "command": [
+        "node",
+        "tools/check-syntax.mjs"
+      ],
+      "exitCode": 0,
+      "seconds": 21.63623571395874
+    }
+  ],
+  "npm": {
+    "files": 323,
+    "tests": 3140,
+    "pass": 3133,
+    "failFirstAttempts": 0,
+    "skipped": 7,
+    "flaky": 0,
+    "hardFailedFiles": 0,
+    "isolatedRetries": 0,
+    "retryPolicy": "normal frozen runner: isolated retry only; no retries needed"
+  },
+  "physics": {
+    "pass": 1323,
+    "fail": 0
+  },
+  "browserImports": {
+    "modules": 366,
+    "fail": 0
+  },
+  "syntax": {
+    "modules": 478,
+    "fail": 0
+  },
+  "skips": [
+    {
+      "test": "baked penteli exactly equals generated terrain, roads and wheel surface",
+      "reason": "nightly full-map generation; default npm gate uses Riviera codec fixture"
+    },
+    {
+      "test": "baked psychiko exactly equals generated terrain, roads and wheel surface",
+      "reason": "nightly full-map generation; default npm gate uses Riviera codec fixture"
+    },
+    {
+      "test": "megara rendered terrain clears every road and six-metre shoulders",
+      "reason": "nightly full-map rendered terrain scan"
+    },
+    {
+      "test": "penteli rendered terrain clears every road and six-metre shoulders",
+      "reason": "nightly full-map rendered terrain scan"
+    },
+    {
+      "test": "every human git author is listed in CREDITS.md",
+      "reason": "clean archive has no .git history"
+    },
+    {
+      "test": "Athens real cells asphalt/shoulders/guard/contact/seams conformance",
+      "reason": "ATHENS_WORLD_SPOOL unset; no actual-world spool provided"
+    },
+    {
+      "test": "live Worker identity/cookies and independent local names MP race",
+      "reason": "ASR_TEST_BASE unset; no live Worker endpoint provided"
+    }
+  ],
+  "environment": {
+    "ASR_TEST_JOBS": "2",
+    "BROWSER_SLOTS": "1",
+    "BROWSER_SLOT_WAIT": "180",
+    "WORLD_GEN_PYTHON": "/tmp/athens-highway.GIu3/venv/bin/python",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "TMPDIR": "/tmp/athens-greenery.98Rc",
+    "CHROME_BIN": "/home/dev/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome",
+    "PLAYWRIGHT_MODULE": "/home/dev/.cogenly/worktrees/athens-racing/t3-d44ea933/node_modules/playwright/index.mjs",
+    "ASR_TEST_VERBOSE": "1",
+    "ASR_TEST_FLAKY_LOG": "/tmp/athens-greenery.98Rc/gate-ba930-flaky.jsonl"
+  },
+  "dependencyLockSha256": "4c6ccf17d01774f8db1c7c924cb2438637691345d400f1b3adc9c73857c1d5e6",
+  "dependencies": {
+    "path": "/home/dev/.cogenly/worktrees/athens-racing/t3-d44ea933/node_modules",
+    "verified": 44,
+    "unsupportedOptionalOmissions": 51
+  },
+  "python": {
+    "version": "3.12.3",
+    "shapely": "2.2.0",
+    "numpy": "2.5.4",
+    "rasterio": "1.4.3",
+    "osmium": "4.3.1",
+    "environmentMutated": false
+  },
+  "chromium": {
+    "path": "/home/dev/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome",
+    "bytes": 301186376,
+    "executable": true,
+    "launched": false,
+    "resolvedExecutable": "/tmp/athens-loaders.OfMh/browsers/chromium-1248/chrome-linux64/chrome"
+  },
+  "garage": {
+    "file": "tools/garage-cards.test.mjs",
+    "tests": 7,
+    "pass": 7,
+    "fail": 0,
+    "skip": 0,
+    "seconds": 7.3,
+    "actualBrowserSubtestSeconds": 5.205902534,
+    "CSSViewports": [
+      "1280x844",
+      "960x844"
+    ],
+    "deviceScaleFactor": 2,
+    "renderer": "headless Chromium / SwiftShader",
+    "proof": "actual drive-pill containment, manufacturer filter, viewer container and equal spec tile assertions",
+    "browserAndServerClosed": true,
+    "closure": "frozen script finally awaits browser.close and server.close; child completed before file PASS",
+    "newScreenshotsCaptured": false
+  },
+  "archive": {
+    "path": "/tmp/athens-greenery.98Rc/candidate-ba930",
+    "sizeAtCompletion": "840 MiB",
+    "sourceChecks": [
+      {
+        "path": "tools/world-gen/mutate-cell.mjs",
+        "sha256": "8599f872b7acda4810e0a15f843d05a14b4e4e7da1aff228b58589e2d919600e",
+        "matchesFrozenGitBlob": true,
+        "ownWorkingSourceMatches": true
+      },
+      {
+        "path": "tools/world-gen/mutate-cell.test.mjs",
+        "sha256": "2987b4de4feaa9714968d97c24eb33dbc224db0528fb58d64012c973c70c2714",
+        "matchesFrozenGitBlob": true,
+        "ownWorkingSourceMatches": true
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "4c6ccf17d01774f8db1c7c924cb2438637691345d400f1b3adc9c73857c1d5e6",
+        "matchesFrozenGitBlob": true
+      },
+      {
+        "path": "tools/test-groups.json",
+        "sha256": "81d862df065c38346d291e494cb201c0c6de0bd003720e0fa6b637368c9aa588",
+        "matchesFrozenGitBlob": true
+      }
+    ],
+    "parentIndependentInspection": "parent reported ten frozen source files matching git ba930; no source discrepancy",
+    "mutatedByAgent": false,
+    "cleanupAuthorization": "remove only this owned archive AFTER durable receipt commit and source check; retain all logs, dependencies and source caches"
+  },
+  "processes": {
+    "terminalId": "agent-ce41ccf3-5584-4976-b2ee-a07f7897f02d",
+    "launchPid": 1278875,
+    "exitCode": 0,
+    "timedOut": false,
+    "runningOwnedTerminalsAtFullEnd": 0,
+    "browserServerJobsRemaining": 0
+  },
+  "disk": {
+    "before": "145G total,70G used,75G available,49%",
+    "afterGatesBeforeArchiveCleanup": "145G total,71G used,74G available,49%"
+  },
+  "logs": [
+    {
+      "gate": "npm",
+      "path": "/tmp/athens-greenery.98Rc/gate-ba930-npm.log",
+      "bytes": 1385466,
+      "sha256": "df61be02f96751ed629bc5bd1150c2cc41d28e967e52c2eeea2a1eb8b6e34fc4"
+    },
+    {
+      "gate": "physics",
+      "path": "/tmp/athens-greenery.98Rc/gate-ba930-physics.log",
+      "bytes": 181519,
+      "sha256": "8df4b87b20277fbfb5cb8dc6bb1fad5e4c025f12f880ee42b19872c82053edcb"
+    },
+    {
+      "gate": "imports",
+      "path": "/tmp/athens-greenery.98Rc/gate-ba930-imports.log",
+      "bytes": 43,
+      "sha256": "c00d9c863029f6e46e3c198cf8cbd4ba0fc88486beb642fc8f9c8711c08a2d90"
+    },
+    {
+      "gate": "syntax",
+      "path": "/tmp/athens-greenery.98Rc/gate-ba930-syntax.log",
+      "bytes": 39,
+      "sha256": "0e7962b3a1128d9ebf354330d5d4a77df4c5c556da0b82290a5fb904b194f59e"
+    },
+    {
+      "gate": "controller",
+      "path": "/tmp/athens-greenery.98Rc/gate-ba930-controller.log",
+      "bytes": 3270,
+      "sha256": "710d2234060781a5649235bae2ec37a5fe33e198368e86e8570387663451816b"
+    }
+  ],
+  "limits": [
+    "No actual two-cell assembler decode/apply/pack; metadata plan remains separately pending",
+    "No1748/63/39 actual-cell scan, terrain release bake, final combined-world seam/global budgets or publication",
+    "Default nightly and live-service skips remain explicit above",
+    "No archive edits, dependency installation, manual retries, assertion bypass, pushes or deployment",
+    "Only this JSON and sibling Markdown are added by the receipt commit; tracker/changelog remain parent-owned"
+  ],
+  "toolsAndModel": "Codex gpt-6.1-sol; Cogenly owned terminals, git archive/private index, Python controller, repository Node gates, Playwright/Chromium through browser-slot1"
+}
