@@ -40,3 +40,19 @@ Protected/source-missing nodes and every node shared with a protected owner rema
 6. Only final authenticated manifests/cells feed route/grid/width/contact/sidecar regeneration and eight spaced online-grid poses. No hand-edited geometry hashes or repeated old-world full exports. Parent owns both-bucket publication and release binding after all game/geographic/physical/source gates pass.
 
 The source composer now has an explicit regional-repair mode: `composeExtension(base, repair, {regionId:'megara', preservePacketSources:true, regionalManifest:{bytes,sha256,url}})`. It verifies the exact regional manifest bytes/hash and semantic identity, preserves each declared packet source, retains same-hash original entries exactly, and replaces only that region's manifest descriptor with the authenticated derived manifest binding. It does not create or repair packets. Undeclared identities, unchanged-byte relabeling and unauthenticated regional descriptors fail. An in-memory check against the real e5d17857 Megara receipt changes exactly5 entries, preserves1,761 others in the1,766-cell Ekali development composition, and retains the67old/5new Megara source split. No combined manifest was written or published. Homogeneous Ekali composition retains its previous default behaviour.
+
+## Fresh infill source binding
+
+The approved fresh plan from `872e57a0` applies only to the authenticated ORIGINAL `15,-21` packet before terrain. Required order is physical infill → terrain → paint/guards → scenery with immediate pre/post invariance → actual new derived packet identity → ordinary packer. The old physical overlay is historical evidence and cannot be retagged into the new recipe.
+
+These distinct hashes were checked read-only using the actual approved helper and original cached body:
+
+| Binding | SHA256 |
+|---|---|
+| Canonical reviewed-plan digest (`repairPlanSha256`) | `e16d3e96ccb502a27adfe8b1095974402cff31963176adecf316441e7f4cb177` |
+| Raw plan file bytes | `8b95782c235e929929176472c190252528c7d53668515a5d8f08c7cfbac4d177` |
+| Original compressed packet (`sourceCellSha256`) | `d3fc0efacc9ddeaba0fd3565ffa1127d0306e4d3081c7cca2876b35ca00d9b8d` |
+| Decoded full packet fingerprint (`packSha256`) | `ec19495d2f018395139928e0c8218650f167d4340696320f14623a0996c18217` |
+| Approved `repair-infill.mjs` helper | `979aa0f38999a0b1d3e1250351d157af3371f4d00812ad35a3946fcc3ffcd635` |
+
+Native source identity is `athens-east-development` / `2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39` / `[15,-21]`. The fresh plan names ten exact generated-building IDs/rows and retains its source snapshot/record and policy hashes. Both read-only copies at the infill child and parent have the same raw file hash. Actual apply must use `applyReviewedInfillRepair` with the canonical reviewed digest, actual pinned source path and compressed cell SHA, letting its code/source/full-pack guards run. Do not substitute the raw-file digest for the canonical plan digest or the decoded fingerprint for the compressed entry SHA. No mutation, new packing or new world was performed for this source-contract check.
