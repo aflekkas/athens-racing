@@ -1,0 +1,598 @@
+{
+  "sourceCommit": "26e05b244b411d791ba89083b21d91c2c961eeca",
+  "worldSetRevision": "80055f9208753e2d6fa8658b31c90216d22c650f7f33588ebd5178d1a6b804a1",
+  "sourceSetSha256": "a218f9ca471d3417205b4e9d6acd5b79c2ede58c9825a2604c2c0d852317020b",
+  "sourceFilesMatch": 414,
+  "tower": {
+    "reference": {
+      "panoId": "3oyte2cVix7kdzQXwFpi5g",
+      "date": "April 2026",
+      "lat": 37.8832955,
+      "lon": 23.7279485,
+      "headingDeg": 242.96,
+      "pitchDeg": 10
+    },
+    "cameraWorldXYZ": [
+      -180.00943192260831,
+      6.56920985757241,
+      10765.144939999354
+    ],
+    "assumedEyeHeightM": 2.5,
+    "horizontalFovDeg": 90,
+    "verticalFovDeg": 64.0107664,
+    "viewport": [
+      1280,
+      800
+    ],
+    "runtime": {
+      "contact": {
+        "y": 4.06920985757241,
+        "nx": 0.015803460250327698,
+        "nz": -0.022806299805960658,
+        "flags": 1,
+        "layer": 0,
+        "surface": 28,
+        "surfaceId": "surface:w174698180:0",
+        "tile": "-1,21"
+      },
+      "origin": {
+        "x": -512,
+        "z": 12800
+      },
+      "camera": [
+        331.9905680773917,
+        6.56920985757241,
+        -2034.8550600006456
+      ],
+      "quaternion": [
+        -0.04551280776714399,
+        -0.8495772517282787,
+        0.0743283783157346,
+        -0.5202137732239785
+      ],
+      "loading": "0",
+      "errors": [],
+      "shaderFailures": 0,
+      "err": ""
+    },
+    "image": "static-tower.jpg",
+    "status": "generic model presence baseline only; street context incompletely streamed/camera focus differs from player focus; no height/architecture/current construction acceptance",
+    "pngSavedBeforeJPEG": true,
+    "encodingIssue": "first two encoders unavailable; premature JPG-ready message corrected after installed sharp completed and JPEG metadata decoded",
+    "imageBytes": 97213,
+    "imageSha256": "e4d44f05aea6155e0cc768d14cd19bb7638d921682adcb7d7fe5f5668bd93ff5"
+  },
+  "station3000": {
+    "cameraWorldXYZ": [
+      5921.103812719877,
+      20.424224079641334,
+      19612.37986399972
+    ],
+    "headingDeg": 29.84,
+    "pitchDeg": 0,
+    "pixels": [
+      [
+        700,
+        475
+      ],
+      [
+        720,
+        480
+      ],
+      [
+        710,
+        474
+      ]
+    ],
+    "runtime": {
+      "picks": [
+        {
+          "pixel": [
+            700,
+            475
+          ],
+          "hits": [
+            {
+              "distance": 1006.7819883297082,
+              "world": {
+                "x": 6497.4756491559165,
+                "y": -96.25147237832698,
+                "z": 18795.194291412612
+              },
+              "object": {
+                "name": "athens-horizon",
+                "type": "Mesh",
+                "userData": {},
+                "parent": ""
+              },
+              "face": {
+                "a": 12092,
+                "b": 12089,
+                "c": 12093,
+                "normal": {
+                  "x": 0.5753599979029088,
+                  "y": 0,
+                  "z": -0.8179002829276714
+                },
+                "materialIndex": 0
+              },
+              "faceIndex": 841,
+              "material": {
+                "name": "",
+                "type": "ShaderMaterial"
+              },
+              "vertices": [
+                [
+                  6498.249015356596,
+                  -525.8782661547336,
+                  18795.738323472375
+                ],
+                [
+                  6494.680228735502,
+                  8.423648060354225,
+                  18793.2278254255
+                ],
+                [
+                  6498.249015356596,
+                  8.423648060354225,
+                  18795.738323472375
+                ]
+              ],
+              "physicalContact": null
+            },
+            {
+              "distance": 1006.7819883297082,
+              "world": {
+                "x": 6497.4756491559165,
+                "y": -96.25147237832698,
+                "z": 18795.194291412612
+              },
+              "object": {
+                "name": "athens-horizon",
+                "type": "Mesh",
+                "userData": {},
+                "parent": ""
+              },
+              "face": {
+                "a": 6328,
+                "b": 6325,
+                "c": 6329,
+                "normal": {
+                  "x": 0.5753599979029088,
+                  "y": 0,
+                  "z": -0.8179002829276714
+                },
+                "materialIndex": 0
+              },
+              "faceIndex": 9481,
+              "material": {
+                "name": "",
+                "type": "ShaderMaterial"
+              },
+              "vertices": [
+                [
+                  6498.249015356596,
+                  -525.8782661547336,
+                  18795.738323472375
+                ],
+                [
+                  6494.680228735502,
+                  8.423648060354225,
+                  18793.2278254255
+                ],
+                [
+                  6498.249015356596,
+                  8.423648060354225,
+                  18795.738323472375
+                ]
+              ],
+              "physicalContact": null
+            },
+            {
+              "distance": 1006.7819883297082,
+              "world": {
+                "x": 6497.4756491559165,
+                "y": -96.25147237832698,
+                "z": 18795.194291412612
+              },
+              "object": {
+                "name": "athens-horizon",
+                "type": "Mesh",
+                "userData": {},
+                "parent": ""
+              },
+              "face": {
+                "a": 564,
+                "b": 561,
+                "c": 565,
+                "normal": {
+                  "x": 0.5753599979029088,
+                  "y": 0,
+                  "z": -0.8179002829276714
+                },
+                "materialIndex": 0
+              },
+              "faceIndex": 18121,
+              "material": {
+                "name": "",
+                "type": "ShaderMaterial"
+              },
+              "vertices": [
+                [
+                  6498.249015356596,
+                  -525.8782661547336,
+                  18795.738323472375
+                ],
+                [
+                  6494.680228735502,
+                  8.423648060354225,
+                  18793.2278254255
+                ],
+                [
+                  6498.249015356596,
+                  8.423648060354225,
+                  18795.738323472375
+                ]
+              ],
+              "physicalContact": null
+            }
+          ]
+        },
+        {
+          "pixel": [
+            720,
+            480
+          ],
+          "hits": [
+            {
+              "distance": 1007.6617692248592,
+              "world": {
+                "x": 6522.430389878393,
+                "y": -103.61036545936274,
+                "z": 18813.37798079913
+              },
+              "object": {
+                "name": "athens-horizon",
+                "type": "Mesh",
+                "userData": {},
+                "parent": ""
+              },
+              "face": {
+                "a": 12120,
+                "b": 12117,
+                "c": 12121,
+                "normal": {
+                  "x": 0.6000693796289812,
+                  "y": 0,
+                  "z": -0.7999479605772426
+                },
+                "materialIndex": 0
+              },
+              "faceIndex": 883,
+              "material": {
+                "name": "",
+                "type": "ShaderMaterial"
+              },
+              "vertices": [
+                [
+                  6522.918815161283,
+                  -525.8782661547336,
+                  18813.744365952844
+                ],
+                [
+                  6519.428397680815,
+                  8.423648060354225,
+                  18811.12607982003
+                ],
+                [
+                  6522.918815161283,
+                  8.423648060354225,
+                  18813.744365952844
+                ]
+              ],
+              "physicalContact": null
+            },
+            {
+              "distance": 1007.6617692248592,
+              "world": {
+                "x": 6522.430389878393,
+                "y": -103.61036545936274,
+                "z": 18813.37798079913
+              },
+              "object": {
+                "name": "athens-horizon",
+                "type": "Mesh",
+                "userData": {},
+                "parent": ""
+              },
+              "face": {
+                "a": 6356,
+                "b": 6353,
+                "c": 6357,
+                "normal": {
+                  "x": 0.6000693796289812,
+                  "y": 0,
+                  "z": -0.7999479605772426
+                },
+                "materialIndex": 0
+              },
+              "faceIndex": 9523,
+              "material": {
+                "name": "",
+                "type": "ShaderMaterial"
+              },
+              "vertices": [
+                [
+                  6522.918815161283,
+                  -525.8782661547336,
+                  18813.744365952844
+                ],
+                [
+                  6519.428397680815,
+                  8.423648060354225,
+                  18811.12607982003
+                ],
+                [
+                  6522.918815161283,
+                  8.423648060354225,
+                  18813.744365952844
+                ]
+              ],
+              "physicalContact": null
+            },
+            {
+              "distance": 1007.6617692248592,
+              "world": {
+                "x": 6522.430389878393,
+                "y": -103.61036545936274,
+                "z": 18813.37798079913
+              },
+              "object": {
+                "name": "athens-horizon",
+                "type": "Mesh",
+                "userData": {},
+                "parent": ""
+              },
+              "face": {
+                "a": 592,
+                "b": 589,
+                "c": 593,
+                "normal": {
+                  "x": 0.6000693796289812,
+                  "y": 0,
+                  "z": -0.7999479605772426
+                },
+                "materialIndex": 0
+              },
+              "faceIndex": 18163,
+              "material": {
+                "name": "",
+                "type": "ShaderMaterial"
+              },
+              "vertices": [
+                [
+                  6522.918815161283,
+                  -525.8782661547336,
+                  18813.744365952844
+                ],
+                [
+                  6519.428397680815,
+                  8.423648060354225,
+                  18811.12607982003
+                ],
+                [
+                  6522.918815161283,
+                  8.423648060354225,
+                  18813.744365952844
+                ]
+              ],
+              "physicalContact": null
+            }
+          ]
+        },
+        {
+          "pixel": [
+            710,
+            474
+          ],
+          "hits": [
+            {
+              "distance": 1006.581750346234,
+              "world": {
+                "x": 6510.0438521126525,
+                "y": -94.51507261794704,
+                "z": 18804.205744020128
+              },
+              "object": {
+                "name": "athens-horizon",
+                "type": "Mesh",
+                "userData": {},
+                "parent": ""
+              },
+              "face": {
+                "a": 12108,
+                "b": 12105,
+                "c": 12109,
+                "normal": {
+                  "x": 0.5895531903468659,
+                  "y": 0,
+                  "z": -0.8077295560717287
+                },
+                "materialIndex": 0
+              },
+              "faceIndex": 865,
+              "material": {
+                "name": "",
+                "type": "ShaderMaterial"
+              },
+              "vertices": [
+                [
+                  6512.413444067533,
+                  -525.8782661547336,
+                  18805.935283921594
+                ],
+                [
+                  6508.88909104019,
+                  8.423648060354225,
+                  18803.36289622628
+                ],
+                [
+                  6512.413444067533,
+                  8.423648060354225,
+                  18805.935283921594
+                ]
+              ],
+              "physicalContact": null
+            },
+            {
+              "distance": 1006.581750346234,
+              "world": {
+                "x": 6510.0438521126525,
+                "y": -94.51507261794704,
+                "z": 18804.205744020128
+              },
+              "object": {
+                "name": "athens-horizon",
+                "type": "Mesh",
+                "userData": {},
+                "parent": ""
+              },
+              "face": {
+                "a": 6344,
+                "b": 6341,
+                "c": 6345,
+                "normal": {
+                  "x": 0.5895531903468659,
+                  "y": 0,
+                  "z": -0.8077295560717287
+                },
+                "materialIndex": 0
+              },
+              "faceIndex": 9505,
+              "material": {
+                "name": "",
+                "type": "ShaderMaterial"
+              },
+              "vertices": [
+                [
+                  6512.413444067533,
+                  -525.8782661547336,
+                  18805.935283921594
+                ],
+                [
+                  6508.88909104019,
+                  8.423648060354225,
+                  18803.36289622628
+                ],
+                [
+                  6512.413444067533,
+                  8.423648060354225,
+                  18805.935283921594
+                ]
+              ],
+              "physicalContact": null
+            },
+            {
+              "distance": 1006.581750346234,
+              "world": {
+                "x": 6510.0438521126525,
+                "y": -94.51507261794704,
+                "z": 18804.205744020128
+              },
+              "object": {
+                "name": "athens-horizon",
+                "type": "Mesh",
+                "userData": {},
+                "parent": ""
+              },
+              "face": {
+                "a": 580,
+                "b": 577,
+                "c": 581,
+                "normal": {
+                  "x": 0.5895531903468659,
+                  "y": 0,
+                  "z": -0.8077295560717287
+                },
+                "materialIndex": 0
+              },
+              "faceIndex": 18145,
+              "material": {
+                "name": "",
+                "type": "ShaderMaterial"
+              },
+              "vertices": [
+                [
+                  6512.413444067533,
+                  -525.8782661547336,
+                  18805.935283921594
+                ],
+                [
+                  6508.88909104019,
+                  8.423648060354225,
+                  18803.36289622628
+                ],
+                [
+                  6512.413444067533,
+                  8.423648060354225,
+                  18805.935283921594
+                ]
+              ],
+              "physicalContact": null
+            }
+          ]
+        }
+      ],
+      "failed": [
+        {
+          "name": "probe",
+          "type": "Mesh",
+          "error": "index.getX is not a function"
+        },
+        {
+          "name": "probe",
+          "type": "Mesh",
+          "error": "index.getX is not a function"
+        },
+        {
+          "name": "probe",
+          "type": "Mesh",
+          "error": "index.getX is not a function"
+        },
+        {
+          "name": "probe",
+          "type": "Mesh",
+          "error": "index.getX is not a function"
+        },
+        {
+          "name": "probe",
+          "type": "Mesh",
+          "error": "index.getX is not a function"
+        }
+      ],
+      "origin": {
+        "x": 5632,
+        "z": 19456
+      },
+      "loading": "0",
+      "errors": [],
+      "shaderFailures": 0
+    },
+    "status": "UNCLASSIFIED: native probe meshes rejected standard Three.js raycast (index.getX is not a function); partial per-mesh retry excludes failed meshes and returned horizon only, NOT the tan polygon owner; no source guess or cause claim",
+    "closestPhysicalSupport": "unresolved for tan polygon; horizon hit contacts null do not prove absent local support"
+  },
+  "capture": {
+    "nativeHook": true,
+    "sourceInjection": false,
+    "sceneReplacement": false,
+    "driveClaim": false,
+    "positivePhysicsStep": 0.004166666666666667,
+    "positiveRenderStep": 0.016666666666666666,
+    "browserWideStartupErrorsExported": false,
+    "cleanup": "preview tab, own proxy and slot explicitly closed; no new navigation or fixes"
+  },
+  "disk": {
+    "before": "49%,70G used/76G available",
+    "after": "49%,70G used/75G available"
+  }
+}

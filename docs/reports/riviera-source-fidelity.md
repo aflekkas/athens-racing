@@ -439,3 +439,50 @@ Checks:3runtime exactcontactYmatches,3loading-hidden/positive-render snapshots,
 3shaderdiagnostic zeros at verification,414/414source blobs match, metadata and
 image hashes recorded. Fidelity/clean-startup-error export/Tower game view and
 unclassified brown-polygon diagnosis remain open. No overall issue closure.
+
+### Follow-up: Tower static baseline and inconclusive live polygon picks
+
+A subsequent bounded native-browser turn used exact MASTER
+`26e05b244b411d791ba89083b21d91c2c961eeca` and the same immutable80055 world.
+All414 served source files match that commit; their source-set SHA256 remains
+`a218f9ca471d3417205b4e9d6acd5b79c2ede58c9825a2604c2c0d852317020b`.
+No source injection, scene replacement, route changes or driving were used.
+
+[Tower own-game static baseline](../../.scratch/riviera-source-audit/game/static-tower.jpg)
+shows the generic windowed tower block at the actual April2026 pano XZ,
+heading242.96/pitch10, horizontalFOV90. Its floor is the unique authenticated
+layer0 road contact `surface:w174698180:0`, Y4.06920985757241, plus an explicitly
+assumed2.5m eye height. A positive1/240s physics and1/60s render step preceded the
+capture; loading opacity0, post-setup window errors empty and shader diagnostic
+failures0 were observed. This is **presence only**: surrounding street detail is
+incomplete and the stream/player origin was(-512,12800), about2km from the
+static camera. It does not establish matched context, architecture/height,
+current construction or completed occupancy. Startup-wide pageerror history
+was not exported. No measured camera height or metric height claim is made.
+
+The PNG was saved, but the first JPEG encoding attempts used unavailable
+module paths. The initial ready notice was premature. The installed `sharp`
+then wrote the97,213-byte JPEG; decoding verified1280x800 and SHA256
+`e4d44f05aea6155e0cc768d14cd19bb7638d921682adcb7d7fe5f5668bd93ff5`.
+The PNG intermediate was removed after verification.
+
+Station3000 was revisited at its exact prior camera for live ray picks at
+700,475;720,480;710,474. Standard Three.js whole-scene raycasting threw
+`index.getX is not a function` in native meshes named `probe`. A per-mesh retry
+recorded these failures and skipped the failing meshes; its remaining hits
+were distant `athens-horizon` ShaderMaterial triangles about1007m away with
+null physical contacts. **These partial results do not identify the visible
+tan polygon.** Its actual mesh/material/triangle/source owner and closest
+physical support remain unresolved; horizon hit coordinates are not substituted
+for that ownership. No source guess, layer inversion or terrain cause is
+inferred. The exact attempted hits, vertices, runtime floors, errors and limits
+are retained in
+[tower/pick receipt](../../.scratch/riviera-source-audit/game/tower-pick-baseline.json).
+A later diagnostic needs native rendered-geometry picking that covers the
+failing objects, plus a fresh frame and exact camera matrix verification.
+
+The preview tab, own proxy and browser-slot holder were explicitly closed;
+no owned browser/server/heavy process remains. The initial readiness curl
+raced server startup and failed; subsequent HTTP200 and native navigation
+succeeded. No product failure is inferred. Disk was49% before and after.
+No full gates were run for this evidence-only addition; runtime/world unchanged.
