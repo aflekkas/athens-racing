@@ -271,7 +271,8 @@
     "tools/route-phase4a.test.mjs",
     "tools/route-phase4b.test.mjs",
     "tools/track-select.test.mjs",
-    "tools/vegetation-clearance.test.mjs"
+    "tools/vegetation-clearance.test.mjs",
+    "tools/kifissia-route.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",

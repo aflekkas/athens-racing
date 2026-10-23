@@ -56,11 +56,11 @@
     "staging": {
       "name": "athens-street-racers-staging",
       "vars": {
-        "ASR_UNIFIED_ROUTES": "syntagma-pilot,psychiko-faros,riviera-coast,penteli-hill,penteli-descent,megara-club",
+        "ASR_UNIFIED_ROUTES": "syntagma-pilot,psychiko-faros,riviera-coast,penteli-hill,penteli-descent,megara-club,kifissia-kefalari",
         "ATHENS_WORLD_MANIFEST": "manifests/55d13b9a8643363d7cf1a9390fd1994869ff8326c16e61d42bb7c278f2cfb74b.json"
       },
       "build": {
-        "command": "ASR_BUILD_ENV=staging ASR_UNIFIED_ROUTES=syntagma-pilot,psychiko-faros,riviera-coast,penteli-hill,penteli-descent,megara-club node tools/prepare-deploy.mjs"
+        "command": "ASR_BUILD_ENV=staging ASR_UNIFIED_ROUTES=syntagma-pilot,psychiko-faros,riviera-coast,penteli-hill,penteli-descent,megara-club,kifissia-kefalari node tools/prepare-deploy.mjs"
       },
       "routes": [
         {
@@ -103,7 +103,7 @@
     "production": {
       "name": "athens-street-racers",
       "build": {
-        "command": "ASR_BUILD_ENV=production ASR_UNIFIED_ROUTES=syntagma-pilot,psychiko-faros,riviera-coast,penteli-hill,penteli-descent,megara-club node tools/prepare-deploy.mjs"
+        "command": "ASR_BUILD_ENV=production ASR_UNIFIED_ROUTES=syntagma-pilot,psychiko-faros,riviera-coast,penteli-hill,penteli-descent,megara-club,kifissia-kefalari node tools/prepare-deploy.mjs"
       },
       "routes": [
         {
@@ -147,7 +147,7 @@
         }
       ],
       "vars": {
-        "ASR_UNIFIED_ROUTES": "syntagma-pilot,psychiko-faros,riviera-coast,penteli-hill,penteli-descent,megara-club",
+        "ASR_UNIFIED_ROUTES": "syntagma-pilot,psychiko-faros,riviera-coast,penteli-hill,penteli-descent,megara-club,kifissia-kefalari",
         "ATHENS_WORLD_MANIFEST": "manifests/55d13b9a8643363d7cf1a9390fd1994869ff8326c16e61d42bb7c278f2cfb74b.json"
       }
     }

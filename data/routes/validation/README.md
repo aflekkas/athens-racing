@@ -85,3 +85,12 @@ checking each segment midpoint against its authenticated OSM bridge structure,
 layer-1 asphalt surface and matching height. It never relaxes approach/stacked
 road connection rules. Future imports must refresh their own source lock and
 rebake; this is a reader compatibility fix for existing immutable packets.
+
+`kifissia.inputs.json` is the third and final allowed sibling. It proves the
+Kifissia/Kefalari two-lap circuit against seven unchanged north-basin cells,
+2,031,067 compressed bytes. The file is about 1.02 MB, with no render/contact
+triangle arrays. The root binds its source hashes and metadata so existing
+readers authenticate all three sibling shards against one world revision.
+The unchanged three-sibling and 8 MiB per-file bounds are tested explicitly,
+including rejection of a fourth sibling. See `tools/maps/kifissia/SOURCES.md`
+for exact source hashes, street decisions and inspected Street View references.
