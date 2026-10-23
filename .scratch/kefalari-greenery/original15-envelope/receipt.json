@@ -1,0 +1,96 @@
+{
+  "schema": "original15-durable-envelope-evidence-1",
+  "status": "ACTUAL-CLOSED-METADATA-ONLY-NO-ADMISSION",
+  "sourceCheckpoint": "6721129cc1cc99dfac81afcfe2c1f60704f77c8b",
+  "actualReview": 53,
+  "receiptPackageSHA": "a1acde3ca4b3de134238c69112394901498c98f0b7eea78852e35b55916a9e9c",
+  "files": {
+    "README.md": {
+      "bytes": 5555,
+      "sha256": "9b2aab5f4a4610fcc59fe00e8b0c7218b425c753359fd9c9b4ebbb43054f1a93"
+    },
+    "actual-closure.json": {
+      "bytes": 6480,
+      "sha256": "68515a5c7de378de495ed627d87f4bb4e7d7d1e1dadc05b79fbcae651cfe9e2c"
+    },
+    "actual-controller.json": {
+      "bytes": 7071,
+      "sha256": "15227381ce8cea0757ddc98c05e7120f7c8bf2a44b8503721e2c55d423aceb42"
+    },
+    "actual-metrics.json": {
+      "bytes": 1605,
+      "sha256": "345ce8258793687683a5998531bc25b4a4cdbc080685e0be76c8f19624097763"
+    },
+    "failed-launcher.json": {
+      "bytes": 239,
+      "sha256": "ec382f9ad2cf14d0c47ba6441cc540bf54079e9707c144dcbb87dad99735e29b"
+    },
+    "frozen/code-proof.json": {
+      "bytes": 6356,
+      "sha256": "d78d5c7889a218b62f5873fa04a5d99d569a566fbedbff1c0d0e5a2bfe611ca2"
+    },
+    "frozen/controller.py": {
+      "bytes": 20220,
+      "sha256": "7c0ccc55a43cf8815b35b5430cdabb039b1652068235e4fcb392f24dc63a8b18"
+    },
+    "frozen/native-startup.json": {
+      "bytes": 2737,
+      "sha256": "8e2fc58a751b5199c5db87bc22cd5bee3b5b558eaf9093cac9dec4cead29b83b"
+    },
+    "frozen/parent-scenery-pin.json": {
+      "bytes": 1499,
+      "sha256": "1ca20b8881e33ca87162f00d027d4036bc20238b49082e9710c25d35a62e4026"
+    },
+    "frozen/plan.json": {
+      "bytes": 20204,
+      "sha256": "1aa2fd1dedff02ee6e84a14cbfcfc18d02189f37a48289925c9c1b3faf1d7438"
+    },
+    "frozen/scope.json": {
+      "bytes": 370,
+      "sha256": "b14c4ba944fbaf126c5a8ffab683da4261c591f3f2a9e30101b4331b902e3837"
+    },
+    "frozen/source-review-receipt.json": {
+      "bytes": 5749,
+      "sha256": "a1acde3ca4b3de134238c69112394901498c98f0b7eea78852e35b55916a9e9c"
+    },
+    "frozen/worker.mjs": {
+      "bytes": 10414,
+      "sha256": "041ec8c53646de35f2ae9d87e841cdddc56978462b9ddf1334c10642c127b848"
+    },
+    "launch-boundary.json": {
+      "bytes": 239,
+      "sha256": "de0a03f07f1e05fcab4f4b6a517c5760e680282d526ffda8df9ff7398e0f937d"
+    },
+    "policy-lower.json": {
+      "bytes": 1371,
+      "sha256": "44d4a727067115011a621c3f924afdf9bdf4e9c5e044f9eb7c8a4ea5063f7e3f"
+    },
+    "preflight.txt": {
+      "bytes": 869,
+      "sha256": "cb823881c2523fa75ea67c1cf58249541eadfeca38f78aee92a5cfdec14e6e82"
+    },
+    "preservation-citations.json": {
+      "bytes": 10691,
+      "sha256": "53e2afd01cc74ccebdf125131f9ecda11a26ebb168748723f4c4824ac5e97768"
+    },
+    "reviewed-command.txt": {
+      "bytes": 785,
+      "sha256": "46003d35cc64a39e81dc22a3e6f83bffeefb4b40646f2b3d07a6096387f01e5a"
+    }
+  },
+  "actualControllerAttempts": 1,
+  "failedPrePythonLauncher": {
+    "exit": 127,
+    "actualControllerLaunches": 0
+  },
+  "noGeometryDecoder": true,
+  "noStagesOrSupportReads": true,
+  "noWorldAdmission": true,
+  "policyMinimumBytes": 69813499,
+  "policyOverCapBytes": 2704635,
+  "MPTypedDesign": "OPEN-INCOMPLETE; no two-phase implementation/fit approval",
+  "checksThisChange": "JSON identity/SHA/size/source citations/arithmetic/diff only; no tests/gates/data reads",
+  "metadataPolicyReserveNotPhysicalHeap": true,
+  "partialRSSNotCapacity": true,
+  "totalBytesExcludingThisReceipt": 102454
+}

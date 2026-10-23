@@ -1,0 +1,1 @@
+{"launcherPID":1349182,"status":"BEGIN","parentBoundary":"trusted /bin/sh unset startup+loader vars; /usr/bin/env -i /bin/bash --noprofile --norc","pythonArgvPrefix":["/usr/bin/python3.12","-I","-S","-B"],"terminalHardMilliseconds":95000}

@@ -1,0 +1,73 @@
+{
+  "schema": "envelope15-native-startup-closure-1",
+  "status": "REVIEW51-SOURCE-ONLY-NO-ACTUAL-GRANT",
+  "runtimes": [
+    {
+      "path": "/usr/bin/python3.12",
+      "resolvedPath": "/usr/bin/python3.12",
+      "bytes": 8020928,
+      "sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "version": "3.12.3",
+      "dev": "2049",
+      "ino": "2029",
+      "mtimeNs": "1788171506000000000",
+      "ctimeNs": "1789131544338952611",
+      "uid": 0,
+      "modeOctal": "0o755"
+    },
+    {
+      "path": "/usr/bin/node",
+      "resolvedPath": "/usr/bin/node",
+      "bytes": 124827920,
+      "sha256": "fde6a4bf8d0562f7751d1a2d6cb9b417c4cfe107bbcb0aa3e9a24e125e348f48",
+      "version": "22.23.3",
+      "dev": "2049",
+      "ino": "6261",
+      "mtimeNs": "1790150208000000000",
+      "ctimeNs": "1791511012414451387",
+      "uid": 0,
+      "modeOctal": "0o755"
+    }
+  ],
+  "pythonExternalFlags": [
+    "-I",
+    "-S",
+    "-B"
+  ],
+  "externalLaunchBoundary": "builtin exec -c in an already trusted Bash shell; empty env handed to the Python ELF loader before interpreter startup",
+  "controllerEnvironmentAllowed": [
+    {},
+    {
+      "LC_CTYPE": "C.UTF-8"
+    }
+  ],
+  "grant": "--grant-marker 6721129 explicit CLI argument; no inherited grant environment",
+  "nodeExecutable": "/usr/bin/node",
+  "nodeArgvPrefix": [
+    "/usr/bin/node",
+    "--max-old-space-size=48",
+    "--max-semi-space-size=4",
+    "--input-type=module",
+    "-e",
+    "<captured SHA-verified worker source>",
+    "--",
+    "--execute-envelope",
+    "--payload-bytes",
+    "<bounded length>",
+    "--payload-sha",
+    "<payload SHA>"
+  ],
+  "nodeChildEnv": {
+    "ATHENS_SINGLE15_ENVELOPE_GRANT": "6721129",
+    "TMPDIR": "/tmp/athens-greenery.98Rc",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "TZ": "UTC"
+  },
+  "nodeCwd": "/tmp/athens-greenery.98Rc",
+  "closeFds": true,
+  "inheritedEnvironmentEntries": 0,
+  "trustedOSBoundary": "Native executable hashes are reviewed root-owned OS snapshots, not a self-authentication claim by code already running. The script cannot undo an already executed parent/loader/Python hook. Caller must use the reviewed clean launch, trusted OS executables/shared libraries, loader config and stdlib. OS upgrades/replacements require fresh native pin verification before grant. /etc/ld.so.preload or compromised root/launcher are outside the environment-isolation guarantee.",
+  "dynamicLoader": "LD_PRELOAD/LD_AUDIT/LD_LIBRARY_PATH/LD_DEBUG/GLIBC_TUNABLES and every other inherited env entry are absent before Python exec via exec-c, and absent in the Node env supplied directly to execve. -I/-S alone do not suppress ELF loader variables.",
+  "nativeAllocationBoundsProven": false
+}

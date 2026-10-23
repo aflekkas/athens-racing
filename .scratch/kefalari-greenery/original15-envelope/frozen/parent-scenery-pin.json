@@ -1,0 +1,34 @@
+{
+  "schema": "parent-authenticated-scenery-pin-1",
+  "status": "PIN-ONLY-NOT-CONSUMED-OR-ADMITTED",
+  "sourceCheckpoint": "6721129cc1cc99dfac81afcfe2c1f60704f77c8b",
+  "sourceSha256": "b0fdb4dfc11c71cc8363551226be18618fff8733c6563b2cc309b173f90bb4eb",
+  "catalogSha256": "6d921ae084b2dccca3b8d6de410aa7cca98cfe1832d1d64cc5c24865615d5d73",
+  "codeProof": {
+    "projection": "483594a365a43bc62e3b6a169302c78c44220684c07418a3e94859e0c482677e",
+    "scenery": "0d85be480a23a412a6673632311845bfe811ae1888fc12fb77f0c2ea58e5fe14",
+    "clearance": "b1f6f3481b3f0f9d318cf63822dea4e1dbb8dce280e17cd6d4482e1441647a0c"
+  },
+  "selection": {
+    "cell": [
+      15,
+      -21
+    ],
+    "originXZ": [
+      7680,
+      -10752
+    ],
+    "tileMetres": 512,
+    "selectorVersion": "complete-support-1",
+    "haloMetres": 17
+  },
+  "projectedPath": "/tmp/athens-master.PDhi/original15-support-correct-selection/support.json",
+  "projectedBytes": 266159,
+  "projectedSha256": "34f9e9650e99f6db4a5d12498bcaf511ad7287a2004279edc97295b2bb56da1f",
+  "explicitPinAuthority": "parent user steering, not self-attested token",
+  "parentReceiptPath": "/tmp/athens-master.PDhi/original15-support-correct-selection/receipt.json",
+  "parentReceiptBytes": 2930,
+  "parentReceiptSha256": "f3ff20d15cedddef135e4417ac59c2c861aafe372fb62eab0bd7ce6838e9c2ad",
+  "futureRequirement": "verifyScenerySupport must rederive from authenticated full catalog; this descriptor is not a sealed token",
+  "actualSupportBodyReadHere": false
+}

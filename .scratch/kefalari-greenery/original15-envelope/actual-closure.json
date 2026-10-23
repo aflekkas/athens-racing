@@ -1,0 +1,184 @@
+{
+  "schema": "single-original15-envelope-actual-closure-1",
+  "status": "FULLEND-METADATA-ONLY-NO-CELL-ADMISSION",
+  "actualGrant": "user after scoped source Review53; historical Review51 placeholder superseded",
+  "completedUtc": "2026-10-23T15:29:19Z",
+  "actualControllerAttempts": 1,
+  "actualTerminal": {
+    "id": "agent-14b32b49-36b8-4d51-a16b-0178b7c566bd",
+    "startedAt": "2026-10-23T15:27:16.055Z",
+    "finishedAt": "2026-10-23T15:27:16.396Z",
+    "exitCode": 0,
+    "timedOut": false,
+    "runningSubprocesses": false,
+    "hardMilliseconds": 95000
+  },
+  "failedInitialShell": {
+    "terminalId": "agent-7cbebbe2-e990-4b04-ad31-5b6e3ebbfc6b",
+    "exitCode": 127,
+    "status": "FAILED-BEFORE-PYTHON-NOT-PASS",
+    "actualControllerStarts": 0,
+    "actualInputReads": 0,
+    "correctionExplicitlyAuthorizedByParent": true
+  },
+  "preflight": {
+    "newReceiptSha256": "a1acde3ca4b3de134238c69112394901498c98f0b7eea78852e35b55916a9e9c",
+    "newPinsMatched": 14,
+    "oldPinsMatched": 11,
+    "historicalReceiptReadmePlanProofScopeUnchanged": true,
+    "nativePythonNodeSHARealpathOwnerDescriptorVersionMatched": true,
+    "outputPrefixFresh": true,
+    "ownVersionChildReaped": true
+  },
+  "startupBoundary": "trusted calling /bin/sh builtin unset startup/dynamic-loader variables; /usr/bin/env -i /bin/bash --noprofile --norc; Bash asserts named forbidden variables absent, records BASHPID, then executes unchanged reviewed exec -c /usr/bin/python3.12 -I -S -B controller command",
+  "trustedOSAndAlreadyRunningLauncherLimitationRetained": true,
+  "pids": {
+    "launcherController": {
+      "pid": 1349182,
+      "procAbsent": true
+    },
+    "node": {
+      "pid": 1349183,
+      "procAbsent": true
+    },
+    "preflightPython": {
+      "pid": 1348151,
+      "procAbsent": true
+    },
+    "preflightVersionNode": {
+      "pid": 1348152,
+      "procAbsent": true
+    }
+  },
+  "elapsedControllerSeconds": 0.19440908302203752,
+  "original": {
+    "cell": [
+      15,
+      -21
+    ],
+    "compressedSha256": "d3fc0efacc9ddeaba0fd3565ffa1127d0306e4d3081c7cca2876b35ca00d9b8d",
+    "counters": {
+      "originalOpens": 1,
+      "compressedBytesRead": 289767,
+      "eofProbes": 1,
+      "compressedShaAuthenticated": true
+    },
+    "actualInflatedBytes": 763126,
+    "actualRawBackingBytes": 763126,
+    "declaredDecodedCapNotActual": 4104578,
+    "metadataBytes": 33006,
+    "metadataTokenHeapBound": 629376,
+    "sourceRetainedExactFormula": 16411362,
+    "knownFutureFloorOnly": 57475949,
+    "metadataParses": 1
+  },
+  "declaredMetricsOnly": {
+    "viewCount": 31,
+    "rawViewBytes": 730097,
+    "rawViewElements": 234143,
+    "declaredLogicalTableCount": 26,
+    "declaredLogicalTableElements": 226602,
+    "numericValuesJSONCharUpper": 14743840,
+    "synthesizedTablesExactNumericCharsAndPostrepairCounts": "UNKNOWN"
+  },
+  "resourceObservability": {
+    "controllerReservationBytes": 32423110,
+    "probePhaseReservations": [
+      {
+        "phase": "bounded inflate",
+        "reservationBytes": 48527642
+      },
+      {
+        "phase": "metadata UTF8/parse",
+        "reservationBytes": 52625270
+      }
+    ],
+    "sampledCombinedRSSPeak": 69074944,
+    "aliveRSSSamples": 3,
+    "reapedRSS": null,
+    "rssUncertain": false,
+    "capacityClaim": false,
+    "note": "3 live samples plus explicit reaped state. Sample peak is partial observability, not complete combined lifetime peak or capacity proof. Native/model allowances remain estimates.",
+    "childKernelMaxRSSKiB": 53632,
+    "childKernelMaxRSSBytes": 54919168,
+    "childCPUUserMicroseconds": 83767,
+    "childCPUSystemMicroseconds": 44406,
+    "cpuRlimits": {
+      "controller": [
+        2,
+        3
+      ],
+      "child": [
+        57,
+        62
+      ],
+      "aggregateHardSeconds": 65
+    },
+    "stderrBytes": 0,
+    "ownedRawOutputBytes": 8684
+  },
+  "notRun": {
+    "geometryDecoder": 0,
+    "geometryArrays": 0,
+    "supportBodyReads": 0,
+    "sourceProjection": 0,
+    "infillBodyHash": 0,
+    "stages": 0,
+    "apply": 0,
+    "prepare": 0,
+    "pack": 0,
+    "browser": 0,
+    "network": 0,
+    "archive": 0,
+    "fullPackFingerprint": false,
+    "actualCellAdmission": false,
+    "worldPublication": false
+  },
+  "nextJobStarted": false,
+  "sourceEdits": 0,
+  "source53VerifiedByController": {
+    "checkpoint": "6721129cc1cc99dfac81afcfe2c1f60704f77c8b",
+    "planSha256": "1aa2fd1dedff02ee6e84a14cbfcfc18d02189f37a48289925c9c1b3faf1d7438",
+    "codeProofRawSha256": "d78d5c7889a218b62f5873fa04a5d99d569a566fbedbff1c0d0e5a2bfe611ca2",
+    "verifiedSourceFiles": 53,
+    "controllerSha256": "7c0ccc55a43cf8815b35b5430cdabb039b1652068235e4fcb392f24dc63a8b18",
+    "workerSha256": "041ec8c53646de35f2ae9d87e841cdddc56978462b9ddf1334c10642c127b848"
+  },
+  "files": {
+    "single-original15-v2-failed-sh-launcher.json": {
+      "bytes": 239,
+      "sha256": "ec382f9ad2cf14d0c47ba6441cc540bf54079e9707c144dcbb87dad99735e29b"
+    },
+    "single-original15-v2-actual-preflight.json": {
+      "bytes": 869,
+      "sha256": "cb823881c2523fa75ea67c1cf58249541eadfeca38f78aee92a5cfdec14e6e82"
+    },
+    "single-original15-v2-actual-launcher.pid": {
+      "bytes": 8,
+      "sha256": "53c2365f70b8606863effcf2f1b6bc0a12d556f05cb5271b99e478398599462c"
+    },
+    "single-original15-v2-actual-launch-boundary.json": {
+      "bytes": 239,
+      "sha256": "de0a03f07f1e05fcab4f4b6a517c5760e680282d526ffda8df9ff7398e0f937d"
+    },
+    "single-original15-reviewed-envelope-v2-attempt1.stdout.json": {
+      "bytes": 1605,
+      "sha256": "345ce8258793687683a5998531bc25b4a4cdbc080685e0be76c8f19624097763"
+    },
+    "single-original15-reviewed-envelope-v2-attempt1.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "single-original15-reviewed-envelope-v2-attempt1.controller.json": {
+      "bytes": 7071,
+      "sha256": "15227381ce8cea0757ddc98c05e7120f7c8bf2a44b8503721e2c55d423aceb42"
+    },
+    "single-original15-reviewed-envelope-v2-attempt1.pid": {
+      "bytes": 8,
+      "sha256": "ed302a7f164371524ff860700a15b426160641822c3d7360a96e1dc20925cb76"
+    }
+  },
+  "diskBefore": "145G total71Gused74Gfree49%",
+  "diskAfter": "145G total71Gused74Gfree49%",
+  "cleanup": "Owned child reaped without signals; launcher/controller PID absent; terminal closed. No servers/browser/intermediates. Raw receipts, failed launcher, frozen source/native pins and prior logs retained in single existing28MiB tasktemp."
+}

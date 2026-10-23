@@ -1,0 +1,30 @@
+{"nativeVersionPIDStartedHere": 1348152}
+{
+  "status": "PASS-PRELAUNCH-ONLY",
+  "startedUtc": "2026-10-23T15:24:58Z",
+  "pidStartedHere": 1348151,
+  "actualCellReads": 0,
+  "supportBodyReads": 0,
+  "nativeVersionPID": 1348152,
+  "newPins": 14,
+  "oldPins": 11,
+  "oldImmutableExtras": 5,
+  "natives": [
+    {
+      "path": "/usr/bin/python3.12",
+      "sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "matched": true
+    },
+    {
+      "path": "/usr/bin/node",
+      "sha256": "fde6a4bf8d0562f7751d1a2d6cb9b417c4cfe107bbcb0aa3e9a24e125e348f48",
+      "matched": true
+    }
+  ],
+  "pythonVersion": "3.12.3",
+  "nodeVersion": "22.23.3",
+  "nativeVersionChildReaped": true,
+  "freshOutputPrefix": true,
+  "exactCommandSha256": "5c7a74dd0e1696bd0c935eb32041dc16441a24aaf6726e548e6b0eb3b2fd5c8f",
+  "diskBefore": "49% 71G used 74G free"
+}

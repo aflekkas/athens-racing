@@ -1,0 +1,121 @@
+{
+  "schema": "envelope15-review51-1",
+  "status": "FROZEN-SOURCE-ONLY-REVIEW51-REQUIRED",
+  "review50": "one reproduced P2, inherited Node environment and external Python startup hooks; final report said no other independently reproduced P1/P2",
+  "oldFrozenReceiptSha256": "e288e179461e6816a8a8c1f3858c20f079d0bd38ace1338c882a5f6482a5cc9e",
+  "allOld11PinsPlusReceiptAndReadmeUnchanged": true,
+  "files": {
+    "envelope15_controller_v2.py": {
+      "bytes": 20220,
+      "sha256": "7c0ccc55a43cf8815b35b5430cdabb039b1652068235e4fcb392f24dc63a8b18"
+    },
+    "envelope15_worker_v2.mjs": {
+      "bytes": 10414,
+      "sha256": "041ec8c53646de35f2ae9d87e841cdddc56978462b9ddf1334c10642c127b848"
+    },
+    "envelope15_controller_v2_test.py": {
+      "bytes": 22198,
+      "sha256": "dfd53c5cb6604cd4a88022a79472fb6a9c75864acebccb72db75386385e0efa8"
+    },
+    "envelope15_worker_v2.test.mjs": {
+      "bytes": 6995,
+      "sha256": "bd6376ce3d3f91a4318b44073d6a8831f5484eaab2624d9c0301160892aac0d7"
+    },
+    "single-original15-envelope-plan-parent34f-v2.json": {
+      "bytes": 20204,
+      "sha256": "1aa2fd1dedff02ee6e84a14cbfcfc18d02189f37a48289925c9c1b3faf1d7438"
+    },
+    "envelope15-v2-startup-manifest.json": {
+      "bytes": 2737,
+      "sha256": "8e2fc58a751b5199c5db87bc22cd5bee3b5b558eaf9093cac9dec4cead29b83b"
+    },
+    "envelope15-v2-resource-forecast.json": {
+      "bytes": 1521,
+      "sha256": "153a5705820645925ca6bf89935b715ec99f6782c3bbfbed29473d9fac8485ed"
+    },
+    "envelope15-v2-source-diff.patch": {
+      "bytes": 18241,
+      "sha256": "99896f8d0378ca616df0d497cdc03c87fd719dd66c055fdcbac97df1705eebe0"
+    },
+    "envelope15-v2-command-NOT-RUN.txt": {
+      "bytes": 785,
+      "sha256": "46003d35cc64a39e81dc22a3e6f83bffeefb4b40646f2b3d07a6096387f01e5a"
+    },
+    "envelope15-v2-controller-tests.log": {
+      "bytes": 5581,
+      "sha256": "a3d2d66266a27a61c03543a52287fa49e329aede0acf8d323fd34993ea09ab7c"
+    },
+    "envelope15-v2-worker-tests.log": {
+      "bytes": 3383,
+      "sha256": "a408895b4c7d9e8c0c9a642c0be1cd876a8ac0cb66dc2aedc93692e462d84112"
+    },
+    "envelope15-v2-synthetic-processes.json": {
+      "bytes": 1138,
+      "sha256": "9867615dabdffcad5675eb939f56a83a6f67913db20da417f57591bbd6813e04"
+    },
+    "envelope15-v2-controller-tests.log.fixture-error": {
+      "bytes": 6755,
+      "sha256": "a32c87553a343c74e5127e928f80121cbed8bf552bf72f1ebc4253c040c1507b"
+    },
+    "envelope15-v2-synthetic-processes.json.fixture-error": {
+      "bytes": 1138,
+      "sha256": "79c609ebc70ec25efef7d8f122fba82476c4991b2101df19decd1aae4034b9af"
+    }
+  },
+  "tests": {
+    "existingControlsRetained": 59,
+    "newStartupControls": 12,
+    "pythonPassed": 52,
+    "nodePassed": 19,
+    "failed": 0,
+    "skipped": 0,
+    "syntaxPassed": 2,
+    "initialNewControlFixtureFailure": "NODE_OPTIONS unescaped quote syntax caused its preload itself to throw; corrected percent-encoded data URL. The initial test log/PID receipt are retained. No actual diagnostic run or retry.",
+    "tinySyntheticProcessesFinal": 13,
+    "tinySyntheticProcessesInitialFixturePass": 13,
+    "allRecordedAndReaped": true
+  },
+  "actualCells": {
+    "stat": 0,
+    "bodyRead": 0,
+    "headerRead": 0,
+    "inflate": 0,
+    "supportRead": 0,
+    "sourceGeometryRead": 0,
+    "project": 0,
+    "apply": 0,
+    "pack": 0,
+    "browser": 0,
+    "network": 0
+  },
+  "nativeBinaryReadScope": "only the explicitly requested actual resolved Python/Node executable hashes; no world source/cache/support data read",
+  "repositoryEdits": 0,
+  "actualGrant": false,
+  "forecast": {
+    "status": "METADATA-ARITHMETIC-ONLY-NO-ACTUAL-CELL-METRICS",
+    "controllerReservationBytes": 32423110,
+    "controllerCaptureCount": 57,
+    "sourceFiles": 53,
+    "sourceRawBytes": 1462976,
+    "initialBoundedInflateReservation": 48527642,
+    "limitBytes": 67108864,
+    "knownFutureOtherFloor": 41064587,
+    "exactLaterRetainedFormula": "15*max(actualRawBackingBytes,actualInflatedBytes,65536)+6*(metadataTokenHeapBound+6*actualMetadataBytes)",
+    "laterTerms": "UNKNOWN; no geometry, full fingerprint, metadata parse, repaired counts, exclusions, invariant copies, codec or packer admission",
+    "noGarbageCollectionCredit": true,
+    "nativeEstimatesNotProvenBounds": true,
+    "parserCopies": "128 B per externally SHA-pinned small plan/proof byte; before decode/parse",
+    "captureHistories": "all 57 captures charged cumulatively, two full byte histories plus native hash/descriptor/read histories; code captures not released",
+    "monitorHistories": "4096 deadline checks *1024 B;1802 monitor observations *8192 B;1MiB IPC/result; fixed slabs reused; 8-row report ring does not erase lifetime accounting",
+    "controllerReservationBaseBytes": 1048576,
+    "bootstrapNativeBytesEstimate": 3145728,
+    "sourceRetainedAndFutureSupportOverlapKnown": false,
+    "old53378321AdmissionClaim": false,
+    "executionClosure": "explicit clean external interpreter startup and fixed minimal Node child environment; native binary pins are review snapshots of trusted root-owned OS executables",
+    "nativeBinaryHashVerificationInController": false
+  },
+  "model": "Codex gpt-6.1-sol",
+  "nativeExecutionClosureLimits": "Native executable hashes are reviewed root-owned OS snapshots, not a self-authentication claim by code already running. The script cannot undo an already executed parent/loader/Python hook. Caller must use the reviewed clean launch, trusted OS executables/shared libraries, loader config and stdlib. OS upgrades/replacements require fresh native pin verification before grant. /etc/ld.so.preload or compromised root/launcher are outside the environment-isolation guarantee.",
+  "diskBefore": "49%",
+  "diskAfter": "49%"
+}

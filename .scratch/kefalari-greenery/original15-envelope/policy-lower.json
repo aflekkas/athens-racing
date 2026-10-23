@@ -1,0 +1,32 @@
+{
+  "status": "POLICY-LOWER-BOUND-NOT-PHYSICAL-HEAP",
+  "limitBytes": 67108864,
+  "terms": {
+    "sourceRetainedExactPolicy": 16411362,
+    "rawArrayBytes": 730097,
+    "spoolPlusTwoParsedNumericHistories": 44955456,
+    "twoStringWorkingHistoriesMinimum": 5619432,
+    "twoCodecNativeAllowances": 2097152
+  },
+  "minimumBytes": 69813499,
+  "excessBytes": 2704635,
+  "givenHistoricalFutureFloor": 57475949,
+  "givenFloorHeadroom": 9632915,
+  "floorCaveat": "historical support forecast is not measured verification/consume; minimum69,813,499 is independent of it",
+  "conditions": [
+    "fresh infill retains every original array",
+    "approved empty guard recipes: no-op branch succeeds or strict guard/protected proof rejects; no terrain/paint",
+    "scenery asserts prior arrays immutable and only appends",
+    "ordinary lifetime formula R+S+2*(W+P+C), S/P>=64E, W=6J,J>=2E,C>=1MiB"
+  ],
+  "notUsedAsActual": "numeric JSON upper14,743,840 is neither actual characters nor a lower bound",
+  "omittedPositiveCosts": [
+    "logical-table copies",
+    "code proof",
+    "infill/support",
+    "metadata/lineage",
+    "appended arrays",
+    "prepared/contact/obstacle/GPU/graph/audit/readline scratch"
+  ],
+  "nextWork": "M/P/supervisor/authenticated typed-checkpoint design OPEN/incomplete, no implementation/runtime approval. Numeric census cannot fix current bound."
+}

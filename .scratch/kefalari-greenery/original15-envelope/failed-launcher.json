@@ -1,0 +1,1 @@
+{"status":"FAILED-LAUNCHER-BEFORE-PYTHON","terminalId":"agent-7cbebbe2-e990-4b04-ad31-5b6e3ebbfc6b","exitCode":127,"error":"/bin/sh: 1: exec: -c: not found","actualControllerLaunches":0,"sourcePreflightExecuted":false,"actualCellReads":0}

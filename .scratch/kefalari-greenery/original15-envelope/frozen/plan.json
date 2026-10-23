@@ -1,0 +1,539 @@
+{
+  "schema": "single-original15-envelope-plan-3",
+  "status": "REVIEW51-CANDIDATE-NO-EXECUTION-GRANT",
+  "sourceCheckpoint": "6721129cc1cc99dfac81afcfe2c1f60704f77c8b",
+  "sourceTree": "6375247ba41a28f73040acc625f7f738be6b3457",
+  "ownSourceCommit": "8963958de0eb6a9e1e0f5309417e80b7177d9081",
+  "sourceGraph": {
+    "path": "/tmp/athens-greenery.98Rc/single-original15-code-proof-6721129.json",
+    "sha256": "d78d5c7889a218b62f5873fa04a5d99d569a566fbedbff1c0d0e5a2bfe611ca2",
+    "modules": 53,
+    "canonicalCodeProofSha256": "8a7605689fbf71c0c3a1289085d0d10a9167ed30309adcca1622b174cb07589a",
+    "readReservationBytes": 6892580,
+    "allDependencyBodiesMatchIntegratedGit": true,
+    "bytes": 6356,
+    "files": [
+      {
+        "path": "package-lock.json",
+        "bytes": 51450,
+        "sha256": "4c6ccf17d01774f8db1c7c924cb2438637691345d400f1b3adc9c73857c1d5e6"
+      },
+      {
+        "path": "assets/athens/plazas.json",
+        "bytes": 97501,
+        "sha256": "3bf44fc1243b545ec86de612fdd3e7e81ef3e09f747bbe07daae8d7a9042df2a"
+      },
+      {
+        "path": "src/athens-landmarks.js",
+        "bytes": 9279,
+        "sha256": "7605a0f6533d807ca9fe0df484046b728dcc1a16c2a0a1c76f5e7c572b6bf9fe"
+      },
+      {
+        "path": "src/athens-landmark-data.js",
+        "bytes": 1779,
+        "sha256": "28ba284064fde0857147d95b9c4047594b2053c7fa34acd71426f732d262cceb"
+      },
+      {
+        "path": "src/athens-landmark-models.js",
+        "bytes": 22219,
+        "sha256": "f7a65fb5111fd2cd47eaae1d98e7513f77ffa1741947d2beff5cddaa1170cbb4"
+      },
+      {
+        "path": "src/athens-plazas.js",
+        "bytes": 9454,
+        "sha256": "e14a77cbfe46aa81753cd02fe9d55360fa3b8100d8bce6fb4fdc2d5f3eed892c"
+      },
+      {
+        "path": "src/coastal-dressing-data.js",
+        "bytes": 259387,
+        "sha256": "c5a019cef4aa0acdb385f746dd651c9baee43f35aa132c2a1e9b41cd7e02e656"
+      },
+      {
+        "path": "src/world-tile-coast.js",
+        "bytes": 16090,
+        "sha256": "ad7793ff0f7f3803f62983bd2341e9f1d53f9e24a9d80110eb19e03de8485406"
+      },
+      {
+        "path": "src/world-tile-trees.js",
+        "bytes": 8034,
+        "sha256": "0ce457d8f3a3467beb4a7a67343867956028414bf9a06913b61b5961a71d4c03"
+      },
+      {
+        "path": "src/vegetation-clearance.js",
+        "bytes": 5199,
+        "sha256": "b1f6f3481b3f0f9d318cf63822dea4e1dbb8dce280e17cd6d4482e1441647a0c"
+      },
+      {
+        "path": "src/world-tile-ground.js",
+        "bytes": 2440,
+        "sha256": "697500fef1f8cb2f3e884bd7db0a7a0bf3d2667194be19dd71c48790af7b4061"
+      },
+      {
+        "path": "src/world-tile-surface-cache.js",
+        "bytes": 801,
+        "sha256": "b64a4c237c2fcd6817c75cfd92aa52069260893ced1525db5ae3756d36891399"
+      },
+      {
+        "path": "src/world-tile-asphalt.js",
+        "bytes": 2618,
+        "sha256": "5ad760f8a801812919b0777eb843233dc46e5b212ceedb4b33fb2d2ea57674b9"
+      },
+      {
+        "path": "src/world-tile-coast-bores.js",
+        "bytes": 10520,
+        "sha256": "0eda181e28d2d59227b88f5cf0684c9025e25261771716b4a91234d1571a46d2"
+      },
+      {
+        "path": "src/coastal-bore-data.js",
+        "bytes": 8245,
+        "sha256": "9e4689725ac0f3aa5d5270378f436a80f156a354eb6b2d1e534d4ba0a0429d97"
+      },
+      {
+        "path": "src/psychiko-building-data.js",
+        "bytes": 638861,
+        "sha256": "3ed990c1a0ed4e6e58901bb6711dbb7d63b8f0e670e0364f01cc3a35d04cc222"
+      },
+      {
+        "path": "src/world-tile-psychiko.js",
+        "bytes": 3985,
+        "sha256": "dc36fcccec25f794125521cfc7732e3121e53dd8d54e717b0cd29ab263d29931"
+      },
+      {
+        "path": "src/world-tile-obstacles.js",
+        "bytes": 4154,
+        "sha256": "e3b6edda5f614dcdea075075594c34faeb2450e0dafc8a72f325c3592d821797"
+      },
+      {
+        "path": "src/world-tile-parking.js",
+        "bytes": 13513,
+        "sha256": "77767451675ec29b36752546d63fbd26c0bda4326157688e8ff2ad98c7df769f"
+      },
+      {
+        "path": "src/world-tile-buildings.js",
+        "bytes": 24415,
+        "sha256": "01ed8e7ef2eaf1f2e6429247db8a70773827bd192348379d14199e8baf71493d"
+      },
+      {
+        "path": "src/world-tile-street-art.js",
+        "bytes": 13394,
+        "sha256": "bb26156d51c1ee38eede18edfb179c00ce41cc4a7b32d0d00df472e560df3c76"
+      },
+      {
+        "path": "src/athens-quarters.js",
+        "bytes": 2051,
+        "sha256": "4d425409403b5f02c70d81a9a4843105804c77e798d12329f95fea9bbbe0149a"
+      },
+      {
+        "path": "src/athens-landmark-hide.js",
+        "bytes": 633,
+        "sha256": "e4ee5a60ff8e968d3a327528ef4b74aa6ff951b00ef28271318a34c4c5bdefaa"
+      },
+      {
+        "path": "src/world-tile-worker.js",
+        "bytes": 7675,
+        "sha256": "79cc9cfa461b6277708708e9137565a18438ebbae77b62743e1b5edfec4babbf"
+      },
+      {
+        "path": "src/world-tile-dressing.js",
+        "bytes": 2599,
+        "sha256": "cfc88fd3b540a52b48ed209a12d0ee789dda82c8e282c41a74c7991ba5473ef8"
+      },
+      {
+        "path": "src/world-tile-gpu.js",
+        "bytes": 1822,
+        "sha256": "4532b04e0e44fe9091d52490eafdf33af634cca5768c835d6e0ace0c471cbfbf"
+      },
+      {
+        "path": "src/world-tile-contact.js",
+        "bytes": 5792,
+        "sha256": "e11c73c6b5c09601bb8afdee6111d241e730c5aee7a77d3b2770d1790573c362"
+      },
+      {
+        "path": "src/world-tile-format.js",
+        "bytes": 19575,
+        "sha256": "56800180d50db23c63276cc4609d4f3d7dbebd4530bd2cc1961ff5ccb418662f"
+      },
+      {
+        "path": "src/world-tile-codec.js",
+        "bytes": 1261,
+        "sha256": "862ca7bbab99c2de47153dfbb0d1c6321f43f1c92ebe58d8de0cd872f8487717"
+      },
+      {
+        "path": "src/meshopt-pack.js",
+        "bytes": 3614,
+        "sha256": "83cfbeb56142fab8436484457c09f4fd26f13d261ad4f91aef8689c56374a3ff"
+      },
+      {
+        "path": "src/baked-geometry.js",
+        "bytes": 3424,
+        "sha256": "f8ff434d07e51ddac2f4fa1148e9320b8ae4d7ce92dfc875ecbc2e3b7bd768f3"
+      },
+      {
+        "path": "src/world-tile-graph.js",
+        "bytes": 6120,
+        "sha256": "3aa22bdf99b0457642cb8831930b53c2b8e0984c73eaf4b6d5a32024a3dc9807"
+      },
+      {
+        "path": "src/imported-bridge-graph.js",
+        "bytes": 1296,
+        "sha256": "1796b6bd7f90662cfc30d7efa9f2825329c8796863041468e104ff4e4489589c"
+      },
+      {
+        "path": "tools/world-bore-audit.mjs",
+        "bytes": 3557,
+        "sha256": "c2a81ce5c4a9cf5a40836172d49ce9ed6ca9aa41c63a427fc2628abbad3856f7"
+      },
+      {
+        "path": "tools/world-roads-audit.mjs",
+        "bytes": 3408,
+        "sha256": "2b20e0f2ed61ae89e9b45b43926bcdc2caa10025f5340eff30089331428d45f9"
+      },
+      {
+        "path": "src/maps/psychiko-streets.js",
+        "bytes": 3217,
+        "sha256": "2ae934a3ed194e814a2338f6693ca3fb04e62c2a4b0f6ff33f21f5c4d13b29b4"
+      },
+      {
+        "path": "tools/world-bridge-audit.mjs",
+        "bytes": 3628,
+        "sha256": "50ad9da43ed8ba4c8c7948655fdf27cc05ddbcc5d0f8842532d521e4b82de4d3"
+      },
+      {
+        "path": "tools/world-surface-audit.mjs",
+        "bytes": 6850,
+        "sha256": "85e969c25aeaf99b941541b8c9342cb4cdb9fad33ef9025f55a9ea90b33d981e"
+      },
+      {
+        "path": "tools/audit-world-vegetation.mjs",
+        "bytes": 1906,
+        "sha256": "1cf35423de81ab243010154f82f1dafffa8054e5c47dee00f303b63deea2f7f6"
+      },
+      {
+        "path": "src/vegetation-forest.js",
+        "bytes": 908,
+        "sha256": "1ab9bc3d7280c862a95c2df9fadaa65fc6034c6d9e1670c2a1524628f3ddf642"
+      },
+      {
+        "path": "tools/world-gen/areas/authored-guard-preservation.json",
+        "bytes": 1539,
+        "sha256": "9b7b64cf63f136898ac4a1ed75e378cb4a35ea84ca5f6785134d1380c2147aba"
+      },
+      {
+        "path": "tools/world-gen/terrain-acceptance.mjs",
+        "bytes": 1795,
+        "sha256": "38a7f9a29f2328506edfa579bb02ed36c686fbe3c6e61c804dd39f5d797d5af5"
+      },
+      {
+        "path": "tools/world-gen/buildings.py",
+        "bytes": 6426,
+        "sha256": "8545ba7f3fb88e28b717fbf204370ef6a2ece0443237168c763e5d06a0b62e63"
+      },
+      {
+        "path": "tools/world-gen/model.py",
+        "bytes": 4371,
+        "sha256": "2564b867f1f1529abac370daf8d0901a4837aac00cbab853c4f740c909f88959"
+      },
+      {
+        "path": "tools/world-gen/infill.py",
+        "bytes": 22535,
+        "sha256": "d44025a1a6e37b8e3ac70477c0e5aac1fc695cc864519c1ce448a23ef684926a"
+      },
+      {
+        "path": "tools/world-gen/pack.mjs",
+        "bytes": 8143,
+        "sha256": "92106e7351ba440041527fe38888a77344e0756d1dc8b913edbcd6cf789b0c8e"
+      },
+      {
+        "path": "tools/world-gen/scenery-projection.mjs",
+        "bytes": 29869,
+        "sha256": "483594a365a43bc62e3b6a169302c78c44220684c07418a3e94859e0c482677e"
+      },
+      {
+        "path": "tools/scenery-cell.mjs",
+        "bytes": 4632,
+        "sha256": "0d85be480a23a412a6673632311845bfe811ae1888fc12fb77f0c2ea58e5fe14"
+      },
+      {
+        "path": "tools/world-gen/bridge-guards.mjs",
+        "bytes": 16844,
+        "sha256": "3db424a1e07c11316604b6c74596c5a6525898b9b0b84215ef8739350936cb9d"
+      },
+      {
+        "path": "tools/world-gen/marking-surface.mjs",
+        "bytes": 6348,
+        "sha256": "85c3255c13189f188bf8901b3e3526dca26d868d4fca787a76d4e4742bc53695"
+      },
+      {
+        "path": "tools/world-gen/terrain-relief.mjs",
+        "bytes": 7777,
+        "sha256": "d0259d328c35f3af2aa8575938ec9245fc363f13b0fc30a058a2a3cd5bbc0a59"
+      },
+      {
+        "path": "tools/world-gen/repair-infill.mjs",
+        "bytes": 15822,
+        "sha256": "979aa0f38999a0b1d3e1250351d157af3371f4d00812ad35a3946fcc3ffcd635"
+      },
+      {
+        "path": "tools/world-gen/mutate-cell.mjs",
+        "bytes": 54201,
+        "sha256": "ac19cd9b6ecea15f6b9459e26e77a9598de7bacecc82af12a3256222f60f7242"
+      }
+    ],
+    "sourceRoot": "/home/dev/.cogenly/worktrees/athens-racing/t3-41c48689",
+    "sourceBodiesMatchPinAndRoot": true
+  },
+  "manifest": {
+    "path": "/tmp/athens-loaders.OfMh/original-world.json",
+    "bytes": 891630,
+    "sha256": "2790fa21d0c16271f5e4a097101ba1414ca8a949f8805c416b4b8dfbc68dc718",
+    "worldSetRevision": "80055f9208753e2d6fa8658b31c90216d22c650f7f33588ebd5178d1a6b804a1"
+  },
+  "original": {
+    "cachePath": "/tmp/athens-loaders.OfMh/cells/d3fc0efacc9ddeaba0fd3565ffa1127d0306e4d3081c7cca2876b35ca00d9b8d.bin.gz",
+    "entry": {
+      "bytes": 289767,
+      "contactEligible": true,
+      "decodedBytes": 4104578,
+      "dependencies": [],
+      "residentBytes": 2961557,
+      "sha256": "d3fc0efacc9ddeaba0fd3565ffa1127d0306e4d3081c7cca2876b35ca00d9b8d",
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      },
+      "transientBytes": 8498923,
+      "triangles": 33877,
+      "url": "https://staging.athensracing.com/world/cells/d3fc0efacc9ddeaba0fd3565ffa1127d0306e4d3081c7cca2876b35ca00d9b8d.bin.gz"
+    },
+    "source": {
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "cell": [
+        15,
+        -21
+      ]
+    },
+    "compressedShaExpectedOnly": "d3fc0efacc9ddeaba0fd3565ffa1127d0306e4d3081c7cca2876b35ca00d9b8d",
+    "compressedBodyReadThisTurn": false,
+    "stat": {
+      "bytes": 289767,
+      "dev": "2049",
+      "ino": "1386753",
+      "mtimeNs": "1792737930092027391",
+      "ctimeNs": "1792737930092027391"
+    },
+    "fullPackFingerprintExpectedOnly": "ec19495d2f018395139928e0c8218650f167d4340696320f14623a0996c18217"
+  },
+  "scope": {
+    "path": "/tmp/athens-greenery.98Rc/single-original15-scope-6721129.json",
+    "bytes": 370,
+    "sha256": "b14c4ba944fbaf126c5a8ffab683da4261c591f3f2a9e30101b4331b902e3837"
+  },
+  "infill": {
+    "planPath": "/home/dev/.cogenly/worktrees/athens-racing/t3-41c48689/.scratch/source-backed-infill/plan-15,-21-1cf.json",
+    "planBytes": 5643,
+    "rawPlanSha256": "8b95782c235e929929176472c190252528c7d53668515a5d8f08c7cfbac4d177",
+    "canonicalPlanSha256": "e16d3e96ccb502a27adfe8b1095974402cff31963176adecf316441e7f4cb177",
+    "policyCode": {
+      "infill.py": "d44025a1a6e37b8e3ac70477c0e5aac1fc695cc864519c1ce448a23ef684926a",
+      "model.py": "2564b867f1f1529abac370daf8d0901a4837aac00cbab853c4f740c909f88959",
+      "buildings.py": "8545ba7f3fb88e28b717fbf204370ef6a2ece0443237168c763e5d06a0b62e63",
+      "repair-infill.mjs": "979aa0f38999a0b1d3e1250351d157af3371f4d00812ad35a3946fcc3ffcd635",
+      "../../src/psychiko-building-data.js": "3ed990c1a0ed4e6e58901bb6711dbb7d63b8f0e670e0364f01cc3a35d04cc222",
+      "../../src/coastal-dressing-data.js": "c5a019cef4aa0acdb385f746dd651c9baee43f35aa132c2a1e9b41cd7e02e656"
+    },
+    "sourcePath": "/tmp/athens-greenery.98Rc/kefalari-core.osm",
+    "sourceBytes": 8457632,
+    "sourceSha256": "dc8befa257f20b2091256e580000df2075455fec135cbf224cec81a1c4961fdd",
+    "recordPath": "/tmp/athens-greenery.98Rc/kefalari-core.source.json",
+    "recordBytes": 1430983,
+    "recordSha256": "24afe113cc4958c5b5427550811698482e698fecabcc3f1f81217aa4db4df8d7",
+    "independentPairedIOBytes": 19777234,
+    "streamReservationForecast": 905217,
+    "hashBodiesReadThisTurn": false,
+    "apply": "fresh ORIGINAL first; no terrain and no prior scenery"
+  },
+  "scenery": {
+    "sourcePath": "/tmp/athens-greenery.98Rc/kefalari-scenery-clearance.json",
+    "sourceBytes": 2118802,
+    "sourceSha256": "b0fdb4dfc11c71cc8363551226be18618fff8733c6563b2cc309b173f90bb4eb",
+    "codeProof": {
+      "projection": "483594a365a43bc62e3b6a169302c78c44220684c07418a3e94859e0c482677e",
+      "scenery": "0d85be480a23a412a6673632311845bfe811ae1888fc12fb77f0c2ea58e5fe14",
+      "clearance": "b1f6f3481b3f0f9d318cf63822dea4e1dbb8dce280e17cd6d4482e1441647a0c"
+    },
+    "catalogSha256Historical": "6d921ae084b2dccca3b8d6de410aa7cca98cfe1832d1d64cc5c24865615d5d73",
+    "selection": {
+      "cell": [
+        15,
+        -21
+      ],
+      "originXZ": [
+        7680,
+        -10752
+      ],
+      "tileMetres": 512,
+      "selectorVersion": "complete-support-1",
+      "haloMetres": 17
+    },
+    "maximumRadius": 16.205882352941178,
+    "projectionSha256": "34f9e9650e99f6db4a5d12498bcaf511ad7287a2004279edc97295b2bb56da1f",
+    "projectionPinStatus": "PARENT SOURCE-SUPPORT ARTIFACT PINNED; NOT VERIFIED/CONSUMED BY THIS PROBE",
+    "projectionBytes": 266159,
+    "projectionPath": "/tmp/athens-master.PDhi/original15-support-correct-selection/support.json",
+    "recipePin": {
+      "path": "/tmp/athens-greenery.98Rc/single-original15-parent-scenery-pin-34f9e965.json",
+      "bytes": 1499,
+      "sha256": "1ca20b8881e33ca87162f00d027d4036bc20238b49082e9710c25d35a62e4026"
+    }
+  },
+  "protection": {
+    "entrySourceExact": {
+      "regionId": "basin",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "world": "athens-east-development"
+    },
+    "protectedSources": null,
+    "scopeManifestBound": true,
+    "authoredGuardRegistrySha256": "9b7b64cf63f136898ac4a1ed75e378cb4a35ea84ca5f6785134d1380c2147aba",
+    "guards": {
+      "codeSha256": "3db424a1e07c11316604b6c74596c5a6525898b9b0b84215ef8739350936cb9d",
+      "recipes": []
+    },
+    "nativeOrAuthoredMutation": "reject; never substitute fake native family or reseal repaired guards",
+    "terrain": "omitted; all current fields rejected",
+    "order": [
+      "authenticate original entry/header/source",
+      "native/protected exact binding",
+      "ORIGINAL guard preseal",
+      "fresh original infill",
+      "paint if requested",
+      "strict original-sealed guards once",
+      "verified scenery and raw complete physical invariance",
+      "identity/lineage last",
+      "encoding admission before spool; ordinary pack only under separate grant"
+    ]
+  },
+  "forecast": {
+    "limitBytes": 67108864,
+    "knownFirstTerms": 53378321,
+    "knownTermCaveat": "53,378,321 excludes original actual metadata/decode histories and later stages; NOT admission",
+    "laterPhases": [
+      {
+        "phase": "original envelope",
+        "reservation": "input/scope/backings+3*declared decoded bound",
+        "status": "initial terms only; no read granted"
+      },
+      {
+        "phase": "authenticated metadata/decoders",
+        "reservation": "input histories+15*actual raw backing+6*(metadataHeap+6*metadataBytes)",
+        "status": "unknown actual header/token metrics; BLOCKED"
+      },
+      {
+        "phase": "fresh original infill",
+        "reservation": "prior retained+stream batch+actual pure repair JS/table/CSR histories",
+        "status": "stream estimate known, physical scratch not established"
+      },
+      {
+        "phase": "scenery",
+        "reservation": "prior retained+complete source catalog/support histories+raw invariance+full physical exclusions",
+        "status": "support numeric forecast only; actual physical scratch unknown"
+      },
+      {
+        "phase": "spool",
+        "reservation": "R+S",
+        "status": "unknown actual element/metadata metrics; BLOCKED"
+      },
+      {
+        "phase": "stringify",
+        "reservation": "R+S+W",
+        "status": "unknown; BLOCKED"
+      },
+      {
+        "phase": "parse",
+        "reservation": "R+S+W+P",
+        "status": "unknown; BLOCKED"
+      },
+      {
+        "phase": "expected encode",
+        "reservation": "R+S+W+P+C",
+        "status": "unknown; BLOCKED"
+      },
+      {
+        "phase": "ordinary packer",
+        "reservation": "R+S+2*(W+P+C) + any prepared/CSR/audit scratch not already covered",
+        "status": "unknown; BLOCKED"
+      }
+    ],
+    "reportPath": "/tmp/athens-greenery.98Rc/infill-stream-resource-forecast.json"
+  },
+  "readiness": {
+    "directAssembler": false,
+    "reasons": [
+      "initial/plain admission failures expose messages, not full numeric memory object",
+      "actual metadata/view/element/alias/numeric-character bounds remain unknown"
+    ],
+    "recommendedNextGrant": "ONE original envelope/metadata metric probe only; authenticate compressed289767B, bounded gunzip <=4104578B, no geometry-array decoder, stages, projection, infill body hash, preparation or packer"
+  },
+  "limits": {
+    "targetCells": [
+      "15,-21"
+    ],
+    "excludedCells": [
+      "16,-21",
+      "other38",
+      "all remaining world"
+    ],
+    "wallSeconds": 90,
+    "cpuSeconds": 60,
+    "rssBytes": 201326592,
+    "v8OldSpaceMiB": 48,
+    "v8SemiSpaceMiB": 4,
+    "workloadPhaseCapBytes": 67108864,
+    "outputBytes": 131072,
+    "workers": 1,
+    "downloads": 0,
+    "worldWrites": 0,
+    "copiesOfOriginalOnDisk": 0,
+    "retries": 0,
+    "stopAtFirstFailure": true,
+    "cpuHardSeconds": 65,
+    "workWallSeconds": 88,
+    "cleanupReserveSeconds": 2
+  },
+  "cleanup": {
+    "singleTaskTemp": "/tmp/athens-greenery.98Rc",
+    "retainExistingFixture": true,
+    "retainExistingLogs": true,
+    "signals": "only PID/process group started and recorded by this one granted diagnostic",
+    "finally": "close owned FileHandle; stop only own diagnostic process on caps; no browser/server; write reduced result atomically <=128KiB; no source artifact publication"
+  },
+  "executionCounters": {
+    "actualCellReads": 0,
+    "headersRead": 0,
+    "decodes": 0,
+    "projections": 0,
+    "applications": 0,
+    "packs": 0
+  },
+  "historicalPlan": {
+    "path": "/tmp/athens-greenery.98Rc/single-original15-admission-plan-6721129.json",
+    "bytes": 9686,
+    "sha256": "1a104a3f33f20f5adea79bcf3d1dfca364d581de42f1d2635a2653d93d781012",
+    "unchanged": true
+  },
+  "execution": {
+    "operation": "envelope-metadata-only-no-geometry",
+    "worker": {
+      "path": "/tmp/athens-greenery.98Rc/envelope15_worker_v2.mjs",
+      "bytes": 10414,
+      "sha256": "041ec8c53646de35f2ae9d87e841cdddc56978462b9ddf1334c10642c127b848"
+    },
+    "actualCellGrant": false,
+    "externalPlanShaRequired": true,
+    "grantMarker": "--grant-marker 6721129 (only after future specific grant)",
+    "planAndCodeCapturedBeforeParse": true,
+    "startupClosure": "trusted calling shell builtin exec -c /usr/bin/python3.12 -I -S -B; exact fixed Node child env; no inherited startup knobs"
+  }
+}
