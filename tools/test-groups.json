@@ -306,7 +306,8 @@
   "damage": [
     "tools/damage-geometry.test.mjs",
     "tools/damage-ground.test.mjs",
-    "tools/physics-test/recovery.test.mjs"
+    "tools/physics-test/recovery.test.mjs",
+    "tools/car-surface.test.mjs"
   ],
   "world": [
     "tools/world-tests.test.mjs",

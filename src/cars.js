@@ -8,6 +8,7 @@ import {buildPlayerFleet,animatePlayerFleet} from './player-fleet.js';
 import { fleetModel } from './traffic-fleet.js';
 import { migrateStoredCarSelection } from './car-catalog.js';
 import { savedPaint, setPaint } from './vehicle-paint.js';
+import { installCarSurface } from './car-surface.js';
 export { setPaint } from './vehicle-paint.js';
 
 // Every car supports the player’s Auto / Manual setting.
@@ -1664,6 +1665,7 @@ export class CarModel {
       o.receiveShadow = true;
     });
     this.cockpit = new Cockpit(spec,this);
+    installCarSurface(this);
     this.wheelSpin = 0;
     // No ground-contact decal: a flat quad under the car cuts through crowned roads, kerbs and slopes as a hard-edged
     // dark patch detached from the wheels (and traffic cars never had one).
