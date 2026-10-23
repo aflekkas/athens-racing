@@ -1,5 +1,6 @@
+import {prepareBundleWorldAssets, bundleWorldSourceFromCatalogue, serveBundleWorldRequest} from './bundle-world-assets.mjs';
 // Local production-assets host with the real multiplayer transport. No build step for npm start.
-import { createGameServer } from '../server/index.mjs';
+import { readBuiltCatalogue, createGameServer } from '../server/index.mjs';
 import { readFile, stat } from 'node:fs/promises';
 import { createReadStream } from 'node:fs';
 import { resolve, extname } from 'node:path';
@@ -8,9 +9,17 @@ import { gzipSync } from 'node:zlib';
 import { createHash } from 'node:crypto';
 export async function serveBundle(root = resolve('.deploy/assets'), options = {}) {
   const app = await createGameServer({ root, ...options, builtCataloguePath: options.builtCataloguePath === undefined ? resolve(root, '..', 'catalogue.json') : options.builtCataloguePath });
+  let worldAssets;
+  const closeApp=app.close;
+  app.close=async()=>{const errors=[];for(const close of [()=>worldAssets?.close(),()=>closeApp()]){try{await close();}catch(error){errors.push(error);}}if(errors.length)throw errors[0];};
+  try {
+    const catalogue=await readBuiltCatalogue(root,options.builtCataloguePath===undefined?resolve(root,'..','catalogue.json'):options.builtCataloguePath);
+    const source=bundleWorldSourceFromCatalogue(catalogue,app.routeConfig);
+    if(source)worldAssets=await prepareBundleWorldAssets(source);
   const listeners = app.server.listeners('request'); app.server.removeAllListeners('request');
   const compressed = new Map();
   app.server.on('request', async (req, res) => {
+    if(await serveBundleWorldRequest(worldAssets,req,res))return;
     const path = new URL(req.url, 'http://localhost').pathname;
     if (path !== '/sw.js' && !/^\/_c\/[a-f0-9]{16}\.[a-z0-9]+$/.test(path) && !/^\/(?:src|assets|data)\/[a-zA-Z0-9_/-]+\.(?:js|css|json|svg)$/.test(path) && path !== '/style.css') {
       for (const listener of listeners) listener(req, res); return;
@@ -31,7 +40,8 @@ export async function serveBundle(root = resolve('.deploy/assets'), options = {}
     } catch { res.writeHead(404); res.end(); }
   });
   await new Promise(done => app.server.listen(options.port || 0, '127.0.0.1', done));
-  return { ...app, url: `http://127.0.0.1:${app.server.address().port}` };
+  return { ...app, worldAssets, url: `http://127.0.0.1:${app.server.address().port}` };
+  } catch(error) {if(error.cleanupError)try{console.error('Secondary world preparation cleanup failure:',error.cleanupError.message);}catch{}try{await app.close();}catch(secondary){try{console.error('Secondary bundle host cleanup failure:',secondary.message);}catch{}}throw error;}
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   const app = await serveBundle(resolve(process.argv[2] || '.deploy/assets'), { port: Number(process.env.PORT || 8001) });
