@@ -6,6 +6,9 @@ import {HeatMachine,policeTuning,pursuit,encodePursuit,decodePursuit} from './po
 import {events} from './events.js';
 import {prewarmFleet} from './fleet-prewarm.js';
 import {worldOwner} from './shared-world-protocol.js';
+import {Group} from 'three';
+import {ImpactBodies} from './impact-ragdoll-view.js';
+import {impactTarget,LIFE,STEP} from './impact-ragdoll.js';
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 // Samples at a curve knot carry that knot's road identity. Snapping tiny
 // interpolation roundoff keeps the exact layer boundary usable in both directions.
@@ -19,10 +22,60 @@ function turnPoint(turn,progress){
 export function trafficSuccessors(graph,edge,closures){return [...(graph.outgoing.get(edge.to)||[])].map(id=>graph.edges.get(id)?.value).filter(e=>e&&e.to!==edge.from&&roadLayersConnect(edge,e)&&graph.legal(edge.id,e)&&!closures?.blocksEdge(e));}
 export class WorldTraffic {
  constructor(session,scene,route,{closures,poolSize=24,policePoolSize=5,focusProvider}={}){Object.assign(this,{session,scene,route,closures,poolSize,policePoolSize,focusProvider});this.onlineTargets=new Map();this.onlineDriver=null;this.onlineAuthority=false;this.focusCursor=0;this.pool=null;this.cars=[];this.widthCache=new Map();this.laneCache=new Map();this.pathCache=new Map();this.avoidEdges=new Map();this.sites=[];this.level=0;this.disabled=true;this.t=0;this.spawnT=0;this.hm=new HeatMachine();this.policeEnabled=false;this.wrecks=[];this.honks=[];this.sounds=[];}
- configure(def,{deferFleet=false}={}){this.definition=def;this.level=clamp(def.traffic??0,0,2);this.disabled=this.level===0;this.policeEnabled=def.rules?.police===true;this.tuning=policeTuning(def.rules?.policeLevel,def.rules?.busted);this.hm=new HeatMachine(this.tuning);this.onlineTargets.clear();this.onlineDriver=null;this.onlineAuthority=false;this.pendingCopFocus=null;this.focusCursor=0;this.crossedRed=null;this.spawnT=0;this.widthCache.clear();this.laneCache.clear();this.pathCache.clear();this.avoidEdges.clear();
+ configure(def,{deferFleet=false}={}){this.clearRiders();this.definition=def;this.level=clamp(def.traffic??0,0,2);this.disabled=this.level===0;this.policeEnabled=def.rules?.police===true;this.tuning=policeTuning(def.rules?.policeLevel,def.rules?.busted);this.hm=new HeatMachine(this.tuning);this.onlineTargets.clear();this.onlineDriver=null;this.onlineAuthority=false;this.pendingCopFocus=null;this.focusCursor=0;this.crossedRed=null;this.spawnT=0;this.widthCache.clear();this.laneCache.clear();this.pathCache.clear();this.avoidEdges.clear();
   if(!deferFleet&&(this.level>0||this.policeEnabled)&&!this.pool){this.pool=new Traffic(this.scene,{closed:true},{},{poolSize:this.poolSize,policePoolSize:this.policePoolSize,roadVehiclesOnly:true});this.cars=this.pool.cars;}
   for(const c of this.cars){if(c.police)c.cop||={};c.active=false;c.crashed=false;c.targetId=null;if(c.cop)Object.assign(c.cop,{target:null,chase:false,siren:false});c.m.root.visible=false;c.point=null;c.vehicle=null;}
   Object.assign(pursuit,{enabled:this.policeEnabled,state:this.policeEnabled?'idle':'off',heat:0,level:0,bustMeter:0,evadeMeter:0,units:0});
+ }
+
+ // Rider seeds use absolute world coordinates on both authority and replicas.
+ // Quantize before replay, exactly as the physical snapshot boundary does.
+ ejectRider(c,dv){
+  if(this.onlineDriver&&!this.onlineAuthority||impactTarget(c.type)!=='rider'||!Number.isFinite(dv)||dv<3||c.rider)return false;
+  const v=c.vehicle;if(!v)return false;const Q=n=>Math.round(n*100)/100,s=Math.sin(v.yaw),cs=Math.cos(v.yaw);
+  const rider={x:Q(v.x),z:Q(v.z),y:Q(v.y),yaw:Q(v.yaw),vx:Q(-s*v.vLong+cs*(v.vLat||0)),vz:Q(-cs*v.vLong-s*(v.vLat||0)),vy:Q(Math.min(7,2+dv*.22)),age:0};
+  if(!Object.values(rider).every(Number.isFinite))return false;c.rider=rider;
+  this.sounds.push({kind:'rider-thrown',target:'rider',who:'traffic',c,car:c,sev:dv,...rider});return true;
+ }
+ riderPool(){
+  if(this.riderBodies)return this.riderBodies;
+  this.riderRoot=new Group();this.riderRoot.name='world-traffic-riders';this.scene.add(this.riderRoot);
+  this.riderBodies=new ImpactBodies(this.riderRoot,(x,z,body)=>{
+   const referenceY=body.riderReferenceY??0,contact=this.session.stream.contact(x,z,{referenceY,requiredFlags:3});
+   if(contact)body.riderReferenceY=contact.y;return (contact?.y??referenceY)+.015;
+  });return this.riderBodies;
+ }
+ syncRiders(){
+  const valid=r=>r&&['x','z','y','yaw','vx','vz','vy','age'].every(k=>Number.isFinite(r[k]))&&r.age>=0&&r.age<=LIFE;
+  const live=this.cars.filter(c=>c.active&&valid(c.rider)),pool=live.some(c=>c.rider.age<LIFE)?this.riderPool():this.riderBodies;
+  const replica=!!this.onlineDriver&&!this.onlineAuthority;
+  for(const c of this.cars){const r=c.active&&valid(c.rider)?c.rider:null;
+   if(c.riderHidden!==!!r){c.riderHidden=!!r;c.m.root.traverse(o=>{if(o.name==='attached-rider')o.visible=!r;});}
+   if(!r){if(c.riderBody?.owner===c.id)c.riderBody.active=false;c.riderDrawn=c.riderPacket=c.riderBody=null;continue;}
+   if(!pool||r.age>=LIFE)continue;
+   // Received snapshot objects change at 5 Hz. Age is not a new ejection seed.
+   const key=[r.x,r.z,r.y,r.yaw,r.vx,r.vz,r.vy].join(':');
+   if(c.riderPacket!==r){if(r.age+STEP<(c.riderSnapshotAge??r.age))c.riderDrawn=null;c.riderSnapshotAge=r.age;c.riderPacket=r;c.riderReceivedAt=this.t;}
+   const age=Math.min(LIFE,r.age+(replica?Math.min(.2,Math.max(0,this.t-c.riderReceivedAt)):0));
+   let b=c.riderBody;
+   if(c.riderDrawn!==key||!b){
+    b=pool.spawn({kind:'rider',owner:c.id,seed:c.id,x:r.x,y:r.y+.12,z:r.z,yaw:r.yaw,vx:r.vx,vz:r.vz,vy:r.vy});
+    b.riderReferenceY=r.y;c.riderDrawn=key;c.riderBody=b;
+   }
+   if(!b.active||b.kind!=='rider'||b.owner!==c.id)continue; // pool eviction stays evicted
+   const target=Math.floor(age/STEP)*STEP;while(b.age+STEP<=target+1e-8)b.update(STEP,pool.ground);
+  }
+  if(pool){const byId=new Map(this.cars.map(c=>[c.id,c]));for(const b of pool.bodies)if(b.active&&b.kind==='rider'){const c=byId.get(b.owner);if(!c?.active||!valid(c.rider)||c.rider.age>=LIFE)b.active=false;}
+   const o=this.session.stream.origin||{x:0,z:0};this.riderRoot?.position.set(-o.x,0,-o.z);pool.render();}
+ }
+ clearRiders(){
+  for(const c of this.cars){if(c.riderBody?.owner===c.id)c.riderBody.active=false;c.rider=c.riderDrawn=c.riderPacket=c.riderBody=null;if(c.riderHidden)c.m.root.traverse(o=>{if(o.name==='attached-rider')o.visible=true;});c.riderHidden=false;}
+  this.riderBodies?.clear();
+ }
+ disposeRiders(){
+  this.clearRiders();this.riderBodies?.dispose();const geos=new Set(),mats=new Set(),skeletons=new Set();
+  this.riderRoot?.traverse(o=>{if(o.geometry)geos.add(o.geometry);if(o.skeleton)skeletons.add(o.skeleton);for(const m of Array.isArray(o.material)?o.material:o.material?[o.material]:[])mats.add(m);});
+  this.riderRoot?.removeFromParent();for(const g of geos)g.dispose();for(const m of mats)m.dispose();for(const s of skeletons)s.dispose();this.riderBodies=this.riderRoot=null;
  }
 
  // Online law judgment is local to each accepted driver. This never advances
@@ -202,7 +255,7 @@ export class WorldTraffic {
    this.pool.repair?.(c);this.pool.initDrive(c,false);c.turn=null;c.yielding=null;c.avoidNext=null;c.laneShift=0;c.bypassTarget=null;c.crashed=false;c.recoveryT=0;c.stoppedT=0;c.contactT=0;c.contactAt=-Infinity;c.blockedAt=null;c.lastSeenAt=this.t;c.active=true;c.targetId=needCop&&this.onlineAuthority?this.pendingCopFocus?.id:null;if(needCop&&this.onlineAuthority){const focus=this.onlineTargets.get(c.targetId);c.cop={...c.cop,target:focus?.gridSlot??null,chase:focus?.state!=='idle',siren:focus?.state!=='idle'};}c.point=p;c.offset=s;c.v=needCop?0:7;const q=this.route.project(p.x,p.z,{referenceY:p.y,heading:p.yaw});c.vehicle={...p,s:q.s,u:q.u,m:c.mass,halfL:c.len/2,halfW:c.wid/2,vLong:c.v,vLat:0,w:0};c.veh=c.vehicle;c.model=c.m;Object.assign(c,{s:q.s,u:q.u,hs:c.len/2,hu:c.wid/2,vs:c.v,vu:0,x:p.x,y:p.y,z:p.z});c.m.root.visible=true;return;
   }
  }
- update(dt,player,actors=[]){this.t+=dt;if(!this.pool)return;this.spawnT-=dt;if(this.spawnT<=0){this.spawnT=.5;this.spawn(player,actors);}
+ update(dt,player,actors=[]){if(this.onlineDriver&&!this.onlineAuthority)return;this.t+=dt;if(!this.pool)return;for(const c of this.cars)if(c.rider)c.rider.age=Math.min(LIFE,c.rider.age+dt);this.spawnT-=dt;if(this.spawnT<=0){this.spawnT=.5;this.spawn(player,actors);}
   const graph=this.session.roads.graph;
   for(const c of this.cars){if(!c.active)continue;this.watchVisibility(c);if(c.blockedAt!=null&&(c.point.edge!==c.blockedEdge||Math.abs(c.offset-c.blockedOffset)>1))c.blockedAt=null;if(this.retireUnseen(c,[player,...actors]))continue;let edge=graph.edges.get(c.point.edge)?.value;const distance=this.onlineAuthority?Math.min(...[...this.onlineTargets.values()].map(t=>Math.hypot(c.vehicle.x-t.vehicle.x,c.vehicle.z-t.vehicle.z))):Math.hypot(c.vehicle.x-player.x,c.vehicle.z-player.z);if(distance>600&&this.outOfView(c,[player,...actors])){c.active=false;c.m.root.visible=false;continue;}if(!edge){this.stopBlocked(c);continue;}
    c.contactT=this.t-(c.contactAt??-Infinity)<.3?(c.contactT||0)+dt:0;if(c.contactT>4&&!c.police)c.crashed=true;
@@ -230,7 +283,7 @@ export class WorldTraffic {
   if(meshes){c.visibilityTracked=true;c.lastSeenAt=this.t;}
  }
  stopBlocked(c){c.v=c.vehicle.vLong=0;if(c.blockedAt==null){c.blockedAt=this.t;c.blockedEdge=c.point.edge;c.blockedOffset=c.offset;}}
- outOfView(c,actors){return !(this.onlineAuthority&&[...this.onlineTargets.values()].some(t=>Math.hypot(c.vehicle.x-t.vehicle.x,c.vehicle.z-t.vehicle.z)<350))&&c.visibilityTracked&&this.t-c.lastSeenAt>2&&!actors.some(a=>Math.abs((a.y||0)-c.vehicle.y)<3&&Math.hypot(a.x-c.vehicle.x,a.z-c.vehicle.z)<25);}
+ outOfView(c,actors){if(c.rider&&c.rider.age<LIFE)return false;return !(this.onlineAuthority&&[...this.onlineTargets.values()].some(t=>Math.hypot(c.vehicle.x-t.vehicle.x,c.vehicle.z-t.vehicle.z)<350))&&c.visibilityTracked&&this.t-c.lastSeenAt>2&&!actors.some(a=>Math.abs((a.y||0)-c.vehicle.y)<3&&Math.hypot(a.x-c.vehicle.x,a.z-c.vehicle.z)<25);}
  retireUnseen(c,actors){
   if(!(c.recoveryT>8&&c.crashed||c.blockedAt!=null&&this.t-c.blockedAt>8)||!this.outOfView(c,actors))return false;
   c.active=false;c.crashed=false;c.m.root.visible=false;return true;
@@ -266,11 +319,11 @@ export class WorldTraffic {
   for(const event of transitions)events.emit('pursuit',event);
   Object.assign(pursuit,{enabled:true,state:this.hm.state,heat:this.hm.heat,level:this.hm.level,bustMeter:this.hm.bust,evadeMeter:this.hm.evade,time:this.hm.time,units:mine.length});
  }
- collide(actor,out,now){for(const c of this.cars){if(!c.active||!c.vehicle||Math.abs(c.vehicle.y-actor.veh.y)>2.5||Math.hypot(c.vehicle.x-actor.veh.x,c.vehicle.z-actor.veh.z)>10)continue;const hit=resolveCarPair(actor.veh,c.vehicle);if(!hit)continue;c.contactAt=this.t;if(hit.hitA){const offset=bodyOffset(actor.veh,hit.c.x,hit.c.z),cs=Math.cos(actor.veh.yaw),sn=Math.sin(actor.veh.yaw),localNormal={x:hit.c.nx*cs-hit.c.nz*sn,y:0,z:hit.c.nx*sn+hit.c.nz*cs},zone=Math.abs(localNormal.x)>Math.abs(localNormal.z)?(localNormal.x>0?'left':'right'):(localNormal.z>0?'front':'rear');actor.veh.addDamage?.(zone,hit.hitA.dv,{kind:'crash',sev:hit.vn,car:{mass:c.mass},localPoint:{x:offset.py,y:.5,z:-offset.px},localNormal});actor.veh.impactDynamics?.({dv:hit.hitA.dv,nx:hit.c.nx,nz:hit.c.nz,forward:offset.px,right:offset.py,height:.5,kind:'car',yawSolved:true});}if(hit.vn>3){c.crashed=true;this.pool.damageCar(c,'front',hit.hitB?.dv||0,{ebs:hit.vn});out.push({kind:'crash',sev:hit.vn,car:c,who:actor.kind});if(this.policeEnabled&&(!this.onlineDriver||actor.veh===this.onlineDriver.player))this.hm.offence('collision',1,this.seen||c.police,{serious:hit.vn>11});}c.v=Math.max(0,c.vehicle.vLong);}}
- sync(){const o=this.session.stream.origin;for(const c of this.cars){const root=c.m.root;if(!c.active){root.visible=false;continue;}const v=c.vehicle;root.visible=true;root.position.set(v.x-o.x,v.y,v.z-o.z);root.rotation.set(0,v.yaw,0);c.m.update?.(1/60,c.v,0,c.v<1,{});c.m.setStrobe?.(c.police&&(this.onlineAuthority||this.onlineDriver?!!(c.cop?.siren||c.cop?.chase):this.hm.state!=='idle'),this.t);}}
+ collide(actor,out,now){for(const c of this.cars){if(!c.active||!c.vehicle||Math.abs(c.vehicle.y-actor.veh.y)>2.5||Math.hypot(c.vehicle.x-actor.veh.x,c.vehicle.z-actor.veh.z)>10)continue;const hit=resolveCarPair(actor.veh,c.vehicle);if(!hit)continue;c.contactAt=this.t;if(hit.hitA){const offset=bodyOffset(actor.veh,hit.c.x,hit.c.z),cs=Math.cos(actor.veh.yaw),sn=Math.sin(actor.veh.yaw),localNormal={x:hit.c.nx*cs-hit.c.nz*sn,y:0,z:hit.c.nx*sn+hit.c.nz*cs},zone=Math.abs(localNormal.x)>Math.abs(localNormal.z)?(localNormal.x>0?'left':'right'):(localNormal.z>0?'front':'rear');actor.veh.addDamage?.(zone,hit.hitA.dv,{kind:'crash',sev:hit.vn,car:{mass:c.mass},localPoint:{x:offset.py,y:.5,z:-offset.px},localNormal});actor.veh.impactDynamics?.({dv:hit.hitA.dv,nx:hit.c.nx,nz:hit.c.nz,forward:offset.px,right:offset.py,height:.5,kind:'car',yawSolved:true});}if(hit.vn>3){c.crashed=true;this.ejectRider(c,hit.hitB?.dv||0);this.pool.damageCar(c,'front',hit.hitB?.dv||0,{ebs:hit.vn});out.push({kind:'crash',sev:hit.vn,car:c,who:actor.kind});if(this.policeEnabled&&(!this.onlineDriver||actor.veh===this.onlineDriver.player))this.hm.offence('collision',1,this.seen||c.police,{serious:hit.vn>11});}c.v=Math.max(0,c.vehicle.vLong);}}
+ sync(){this.syncRiders();const o=this.session.stream.origin;for(const c of this.cars){const root=c.m.root;if(!c.active){root.visible=false;continue;}const v=c.vehicle;root.visible=true;root.position.set(v.x-o.x,v.y,v.z-o.z);root.rotation.set(0,v.yaw,0);c.m.update?.(1/60,c.v,0,c.v<1,{});c.m.setStrobe?.(c.police&&(this.onlineAuthority||this.onlineDriver?!!(c.cop?.siren||c.cop?.chase):this.hm.state!=='idle'),this.t);}}
  zone(){return 'town';}
  get actors(){return this.cars.filter(c=>c.active).map(c=>c.vehicle);}
- dispose(){this.disposed=true;this.fleetController?.abort();releaseFleet(this.pool||this.warmingPool);this.cars=[];this.pool=null;Object.assign(pursuit,{enabled:false,state:'off'});}
+ dispose(){this.disposeRiders();this.disposed=true;this.fleetController?.abort();releaseFleet(this.pool||this.warmingPool);this.cars=[];this.pool=null;Object.assign(pursuit,{enabled:false,state:'off'});}
 }
 
 function releaseFleet(pool){if(!pool||pool.released)return;pool.released=true;const roots=[...(pool.cars||[]).map(c=>c.m.root),pool.coneMesh,...(pool.proxies?.meshes||[])];const geos=new Set(),mats=new Set();for(const root of roots){root?.removeFromParent?.();root?.traverse?.(o=>{if(o.geometry&&!o.geometry.userData.shared)geos.add(o.geometry);for(const m of Array.isArray(o.material)?o.material:o.material?[o.material]:[])if(!m.userData?.shared)mats.add(m);});}for(const g of geos)g.dispose();for(const m of mats)m.dispose();pool.proxies?.dispose?.();}
