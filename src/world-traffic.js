@@ -6,6 +6,14 @@ import {HeatMachine,policeTuning,pursuit} from './police.js';
 import {events} from './events.js';
 import {prewarmFleet} from './fleet-prewarm.js';
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+// Samples at a curve knot carry that knot's road identity. Snapping tiny
+// interpolation roundoff keeps the exact layer boundary usable in both directions.
+function turnPoint(turn,progress){
+ const i=Math.max(1,turn.points.findIndex(p=>p.s>=progress)),a=turn.points[i-1],b=turn.points[i],t=(progress-a.s)/(b.s-a.s||1);
+ if(t<1e-8)return {...a};if(t>1-1e-8)return {...b};
+ return {...a,x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t,z:a.z+(b.z-a.z)*t,yaw:a.yaw+Math.atan2(Math.sin(b.yaw-a.yaw),Math.cos(b.yaw-a.yaw))*t};
+}
+
 /** A legal civilian successor may leave the selected race. No route-successor shortcut. */
 export function trafficSuccessors(graph,edge,closures){return [...(graph.outgoing.get(edge.to)||[])].map(id=>graph.edges.get(id)?.value).filter(e=>e&&e.to!==edge.from&&roadLayersConnect(edge,e)&&graph.legal(edge.id,e)&&!closures?.blocksEdge(e));}
 export class WorldTraffic {
@@ -48,7 +56,7 @@ export class WorldTraffic {
   for(const next of trafficSuccessors(this.session.roads.graph,edge,this.closures)){
    const exit=Math.min(8,edgeLength(next)*.4),b=this.candidate(next,exit,{...c,laneShift:0});if(!b)continue;
    const reach=Math.max(2,Math.hypot(b.x-a.x,b.z-a.z)*.5),A={x:a.x-Math.sin(a.yaw)*reach,z:a.z-Math.cos(a.yaw)*reach},B={x:b.x+Math.sin(b.yaw)*reach,z:b.z+Math.cos(b.yaw)*reach},points=[];let length=0,valid=true;
-   for(let i=0;i<=20;i++){const t=i/20,u=1-t,x=u*u*u*a.x+3*u*u*t*A.x+3*u*t*t*B.x+t*t*t*b.x,z=u*u*u*a.z+3*u*u*t*A.z+3*u*t*t*B.z+t*t*t*b.z,dx=3*u*u*(A.x-a.x)+6*u*t*(B.x-A.x)+3*t*t*(b.x-B.x),dz=3*u*u*(A.z-a.z)+6*u*t*(B.z-A.z)+3*t*t*(b.z-B.z),p={...a,x,z,y:a.y+(b.y-a.y)*t,yaw:Math.atan2(-dx,-dz),layer:i<10?a.layer:b.layer};
+   for(let i=0;i<=20;i++){const t=i/20,u=1-t,x=u*u*u*a.x+3*u*u*t*A.x+3*u*t*t*B.x+t*t*t*b.x,z=u*u*u*a.z+3*u*u*t*A.z+3*u*t*t*B.z+t*t*t*b.z,dx=3*u*u*(A.x-a.x)+6*u*t*(B.x-A.x)+3*t*t*(b.x-B.x),dz=3*u*u*(A.z-a.z)+6*u*t*(B.z-A.z)+3*t*t*(b.z-B.z),p={...a,x,z,y:a.y+(b.y-a.y)*t,yaw:Math.atan2(-dx,-dz),edgeId:i<10?edge.id:next.id,layer:i<10?a.layer:b.layer};
     const contact=this.session.stream.contact(x,z,{referenceY:p.y,layer:p.layer,requiredFlags:1});if(!contact){valid=false;break;}p.y=contact.y;p.surfaceId=contact.surfaceId;
     if(!this.session.safePose(p,{halfWidth:c.wid/2,halfLength:c.len/2})||this.closures?.safe(p,{halfWidth:c.wid/2,halfLength:c.len/2})===false){valid=false;break;}
     if(i)length+=Math.hypot(x-points.at(-1).x,z-points.at(-1).z);points.push({...p,s:length});
@@ -79,8 +87,7 @@ export class WorldTraffic {
   if(!this.session.roads.graph.edges.has(turn.next))return null;
   const progress=turn.progress+travel;
   if(progress>=turn.length){const next=this.session.roads.graph.edges.get(turn.next).value;offset=Math.min(edgeLength(next),turn.exit+progress-turn.length);return {p:this.candidate(next,offset,{...c,laneShift:0}),offset,turn:null,laneShift:0};}
-  const i=Math.max(1,turn.points.findIndex(p=>p.s>=progress)),a=turn.points[i-1],b=turn.points[i],t=(progress-a.s)/(b.s-a.s||1),yaw=a.yaw+Math.atan2(Math.sin(b.yaw-a.yaw),Math.cos(b.yaw-a.yaw))*t;
-  const p={...a,x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t,z:a.z+(b.z-a.z)*t,yaw};
+  const p=turnPoint(turn,progress);
   const contact=this.session.stream.contact(p.x,p.z,{referenceY:p.y,layer:p.layer,requiredFlags:1});if(!contact)return null;p.y=contact.y;p.surfaceId=contact.surfaceId;
   return {p,offset:turn.entry+progress,turn:{...turn,progress}};
  }
@@ -104,7 +111,7 @@ export class WorldTraffic {
  yieldBack(c,edge,dt,actors){
   if(!c.yielding){if(!c.turn||c.stoppedT<6)return false;c.yielding={target:c.turn.entry-c.len-2,next:c.turn.next};}
   let p,offset=c.offset,turn=c.turn;
-  if(turn&&turn.progress>0){const progress=Math.max(0,turn.progress-.7*dt),i=Math.max(1,turn.points.findIndex(p=>p.s>=progress)),a=turn.points[i-1],b=turn.points[i],t=(progress-a.s)/(b.s-a.s||1);p={...a,x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t,z:a.z+(b.z-a.z)*t,yaw:a.yaw+Math.atan2(Math.sin(b.yaw-a.yaw),Math.cos(b.yaw-a.yaw))*t};turn={...turn,progress};offset=turn.entry+progress;
+  if(turn&&turn.progress>0){const progress=Math.max(0,turn.progress-.7*dt);p=turnPoint(turn,progress);turn={...turn,progress};offset=turn.entry+progress;
   }else{turn=null;offset=Math.max(0,c.offset-.7*dt);p=this.candidate(edge,offset,c);}
   if(p){const contact=this.session.stream.contact(p.x,p.z,{referenceY:p.y,layer:p.layer,requiredFlags:1});if(contact){p.y=contact.y;p.surfaceId=contact.surfaceId;}else p=null;}
   if(!p||this.poseBlocked(c,p,actors)||!this.session.safePose(p,{halfWidth:c.wid/2,halfLength:c.len/2})){this.stopBlocked(c);return true;}

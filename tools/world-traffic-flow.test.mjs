@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {WorldTraffic,trafficSuccessors} from '../src/world-traffic.js';
+import {WorldTileRoads} from '../src/world-tile-roads.js';
 import {WorldRoadGraph} from '../src/world-tile-graph.js';
 import {edgePoint,projectEdge,edgeLength} from '../src/route-geometry.js';
 import {simulateFlow,trafficPool,flowSample} from './world-traffic-sim.mjs';
@@ -26,6 +27,50 @@ test('a failed pose is retried after streaming finishes even when graph revision
  const e={id:'road',from:'a',to:'b',points:[[0,0,0],[0,0,100]],flags:1,lanes:1,layer:0},w=ribbonWorld([e]),t=new WorldTraffic(w,{},{}),c={len:4.4,wid:1.8},contact=w.stream.contact;w.stream.contact=()=>null;
  assert.equal(t.candidate(e,50,c),null);w.stream.contact=contact;t.t=1.1;assert.ok(t.candidate(e,50,c));
 });
+// Use runtime's real surface/layer footprint admission, not ribbonWorld's
+// permissive contact-only safePose, at both ends of a structure transition.
+function transitionWorld({reverse=false,fromLayer=0,toLayer=1}={}) {
+ const z=s=>reverse?300-s:s;
+ const incoming={id:'incoming',from:'a',to:'b',layer:fromLayer,flags:3,lanes:1,surface:'incoming-asphalt',points:[[0,6,z(0)],[0,6,z(100)]]};
+ const outgoing={...incoming,id:'outgoing',from:'b',to:'c',layer:toLayer,surface:'outgoing-asphalt',points:[[0,6,z(100)],[0,6,z(200)]]};
+ const after={...outgoing,id:'after',from:'c',to:'d',points:[[0,6,z(200)],[0,6,z(300)]]};
+ const stream={tiles:new Map(),contact(x,position,{layer=null}={}) {
+  const s=reverse?300-position:position,actual=s<100?fromLayer:toLayer;
+  if(Math.abs(x)>3||s<0||s>300||layer!==null&&layer!==actual)return null;
+  return {y:6,layer:actual,surfaceId:s<100?incoming.surface:outgoing.surface};
+ }};
+ const roads=new WorldTileRoads(stream);
+ for(const e of [incoming,outgoing,after]){roads.graph.edges.set(e.id,{value:e});roads.graph.outgoing.set(e.from,new Set([e.id]));}
+ roads.width=()=>({left:3,right:3,width:6});
+ const checked=[],session={roads,stream,safePose(p,o){checked.push({...p});return roads.safe({...p,edge:p.edgeId||p.edge},{...o,connected:true});}};
+ const traffic=trafficPool(new WorldTraffic(session,{}, {project:(x,z)=>({s:z,u:x})}));
+ return {incoming,outgoing,after,roads,stream,session,traffic,checked};
+}
+
+test('structure turns retain their legal validation edge across real road-safety layer and owner changes',()=>{
+ for(const reverse of [false,true])for(const [fromLayer,toLayer]of [[0,1],[1,0],[0,0]]){
+  const w=transitionWorld({reverse,fromLayer,toLayer}),{traffic:t,incoming:a,outgoing:b}=w,c=t.cars[0];
+  const paths=t.turnPaths(a,c);assert.equal(paths.length,1,JSON.stringify({reverse,fromLayer,toLayer}));
+  for(const p of paths[0].points){assert.equal(w.roads.graph.edges.get(p.edgeId).value.layer,p.layer);assert.equal(p.edge,a.id,'navigation stays on the incoming edge until the curve exits');}
+  assert.ok(w.checked.some(p=>p.surfaceId===b.surface&&p.edgeId===b.id),'outgoing centre owner is validated against the outgoing edge');
+  Object.assign(c,{active:true,offset:91.9,point:{edge:a.id},v:1});c.vehicle=t.candidate(a,c.offset,c);
+  for(let i=0;i<300&&c.point.edge!==b.id;i++){const n=t.advanceLane(c,a,.1);assert.ok(n?.p,JSON.stringify({reverse,fromLayer,toLayer,offset:c.offset,turn:c.turn&&{progress:c.turn.progress,length:c.turn.length},point:c.point}));assert.ok(w.session.safePose(n.p,{halfWidth:c.wid/2,halfLength:c.len/2}));Object.assign(c,{offset:n.offset,turn:n.turn,point:n.p,vehicle:n.p});}
+  assert.equal(c.point.edge,b.id,'forward movement completes the legal layer transition');
+  const point=paths[0].points[15],turn={...paths[0],progress:point.s};Object.assign(c,{offset:turn.entry+point.s,point,vehicle:{...point,halfL:c.len/2,halfW:c.wid/2},turn,stoppedT:7,v:0});
+  for(let i=0;i<300&&(c.turn||c.yielding);i++)t.yieldBack(c,a,.1,[]);
+  assert.equal(c.turn,null);assert.equal(c.yielding,null,'a trapped car can reverse over the same checked transition');
+ }
+});
+
+test('transition identity never grants an unconnected or neighboring road layer',()=>{
+ const w=transitionWorld(),c=w.traffic.cars[0];
+ w.incoming.flags=w.outgoing.flags=1;
+ assert.equal(w.traffic.turnPaths(w.incoming,c).length,0,'a different layer without a legal structure connection stays rejected');
+ w.incoming.flags=w.outgoing.flags=3;w.roads.graph.revision++;
+ const contact=w.stream.contact;w.stream.contact=(x,z,o)=>{const p=contact(x,z,o);return p&&z>=100?{...p,layer:2,surfaceId:'neighbor-deck'}:p;};
+ assert.equal(w.traffic.turnPaths(w.incoming,c).length,0,'the true footprint check rejects a neighboring layer and owner');
+});
+
 test('random graph choices never select the immediate reverse edge',()=>{
  const e={id:'a',from:'n0',to:'n1',layer:0,points:[[0,0,0],[0,0,100]],flags:0},reverse={...e,id:'reverse',from:'n1',to:'n0',points:[...e.points].reverse()},next={...e,id:'next',from:'n1',to:'n2',points:[[0,0,100],[30,0,130]]},w=ribbonWorld([e,reverse,next]);
  assert.deepEqual(trafficSuccessors(w.roads.graph,e).map(e=>e.id),['next']);
