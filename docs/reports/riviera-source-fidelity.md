@@ -115,6 +115,13 @@ The width-query cross-section20.962m at that junction may include intersecting
 surfaces; it is not a three-lane width or median measurement. No place-specific
 paint patch or road widening is proposed. Tower-adjacent `lane_markings=no`
 was sent separately to infrastructure for its existing shared-policy audit.
+Its follow-up check confirms that this exact residential/one-way source with no
+lane count already defaults to one4.8m lane with no centre/lane/edge paint.
+Therefore **no current emitted marking defect is proved on w174698180**.
+`road_section.py` does not consume the no-markings tag; a synthetic two-lane
+variant still emits a dashed divider, exposing a generic ignored-tag policy
+gap only. This does not establish actual two-lane width, road access or a
+place-specific visual defect; source/runtime remained frozen during gates.
 
 ## Verification, ownership and limits
 
