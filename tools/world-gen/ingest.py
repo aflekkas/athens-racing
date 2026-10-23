@@ -10,9 +10,10 @@ import sqlite3
 import resource
 import time
 import osmium
-from shapely.geometry import shape, LineString, box
+from shapely.geometry import shape, LineString, Polygon, box
 from shapely.ops import transform
 from model import PROJECTION, VERSION, project, road_tags
+from structure_context import context_kind, source_record as context_source_record, create_context_tables, insert_context
 
 
 def encode(value):
@@ -27,7 +28,7 @@ def sha(path):
 def ingest(pbf, output, bounds):
     start = time.monotonic()
     fingerprint = dict(pbfSha256=sha(pbf), generator=VERSION, bounds=bounds,
-                       codeSha256=hashlib.sha256((Path(__file__).read_bytes()+Path(__file__).with_name('model.py').read_bytes()+Path(__file__).with_name('appearance.py').read_bytes())).hexdigest())
+                       codeSha256=hashlib.sha256((Path(__file__).read_bytes()+Path(__file__).with_name('model.py').read_bytes()+Path(__file__).with_name('appearance.py').read_bytes()+Path(__file__).with_name('structure_context.py').read_bytes())).hexdigest())
     extraction=None
     source_record=Path(pbf).with_suffix('.source.json')
     if source_record.exists():
@@ -60,7 +61,8 @@ def ingest(pbf, output, bounds):
       CREATE TABLE restrictions(id INTEGER PRIMARY KEY,tags TEXT,members TEXT);
       CREATE TABLE node_use(id INTEGER PRIMARY KEY,uses INTEGER NOT NULL);
     ''')
-    counts = collections.Counter(); errors = collections.Counter()
+    create_context_tables(db)
+    counts = collections.Counter(); errors = collections.Counter(); context_counts = collections.Counter()
     west,south,east,north = bounds
     region = box(*project(west,north),*project(east,south))
     factory = osmium.geom.GeoJSONFactory()
@@ -84,6 +86,10 @@ def ingest(pbf, output, bounds):
             if tags.get('type') == 'multipolygon' and tags.get('building') not in (None,'no'):
                 db.execute('INSERT INTO building_relations VALUES(?)',(relation.id,))
                 db.executemany('INSERT OR IGNORE INTO memberships VALUES(?)', ((m.ref,) for m in relation.members if m.type == 'w'))
+            if tags.get('type') == 'multipolygon' and context_kind(tags) == 'bridge_footprint':
+                members=[(m.type,m.ref,m.role) for m in relation.members]
+                db.execute('INSERT INTO context_relations VALUES(?,?,?,?)',(relation.id,relation.version,str(relation.timestamp),encode(members)))
+                db.executemany('INSERT OR IGNORE INTO context_memberships VALUES(?)',((m.ref,) for m in relation.members if m.type=='w'))
             if tags.get('type') == 'restriction':
                 db.execute('INSERT INTO restrictions VALUES(?,?,?)',
                            (relation.id,encode(tags),encode([(m.type,m.ref,m.role) for m in relation.members])))
@@ -99,7 +105,8 @@ def ingest(pbf, output, bounds):
             tags = dict(way.tags)
             road = road_tags(tags)
             coast = tags.get('natural') == 'coastline'
-            if road is None and not coast:
+            context = context_kind(tags)
+            if road is None and not coast and context is None:
                 return
             try:
                 points = [project(n.lon,n.lat) for n in way.nodes]
@@ -111,6 +118,15 @@ def ingest(pbf, output, bounds):
             if not region.intersects(line):
                 return
             refs = [n.ref for n in way.nodes]
+            if context and not (context=='bridge_footprint' and db.execute('select 1 from context_memberships where way=?',(way.id,)).fetchone()):
+                try:
+                    if context=='bridge_footprint' and (len(refs)<4 or refs[0]!=refs[-1]):
+                        raise ValueError('Unclosed bridge footprint')
+                    geom=Polygon(points) if context=='bridge_footprint' else line
+                    record=context_source_record('w'+str(way.id),context,way.version,str(way.timestamp),fingerprint['pbfSha256'],tags,geom,refs)
+                    insert_context(db,record,geom);context_counts[context]+=1
+                except ValueError:
+                    errors['invalidContext:'+context]+=1
             if road:feature('w'+str(way.id),'road',tags,line,refs)
             if coast:feature('w'+str(way.id),'coast',tags,line,refs)
             if road:
@@ -125,7 +141,8 @@ def ingest(pbf, output, bounds):
             landuse = bool(tags.get('landuse'))
             landcover = tags.get('natural') in ('beach','sand','bare_rock','scree','shingle','scrub','heath','grassland','wood')
             water = tags.get('natural') == 'water' or tags.get('waterway') == 'riverbank'
-            if not (boundary or building or landuse or water or landcover):
+            bridge_footprint = not area.from_way() and context_kind(tags)=='bridge_footprint'
+            if not (boundary or building or landuse or water or landcover or bridge_footprint):
                 return
             if building and area.from_way() and db.execute('select 1 from memberships where way=?',(area.orig_id(),)).fetchone():
                 return
@@ -133,6 +150,15 @@ def ingest(pbf, output, bounds):
                 geom = transform(lambda x,y,z=None: project(x,y), shape(json.loads(factory.create_multipolygon(area))))
             except (RuntimeError, ValueError):
                 errors['invalidArea'] += 1; return
+            if bridge_footprint:
+                relation=db.execute('select version,timestamp,members from context_relations where id=?',(area.orig_id(),)).fetchone()
+                try:
+                    if relation is None:raise ValueError('Unproven context relation')
+                    record=context_source_record('r'+str(area.orig_id()),'bridge_footprint',relation[0],relation[1],fingerprint['pbfSha256'],tags,geom,json.loads(relation[2]))
+                    insert_context(db,record,geom);context_counts['bridge_footprint']+=1
+                except ValueError:
+                    errors['invalidContext:bridge_footprint']+=1
+            if not (boundary or building or landuse or water or landcover):return
             feature(('w' if area.from_way() else 'r')+str(area.orig_id()),
                     'boundary' if boundary else 'building' if building else 'water' if water else 'landuse' if landuse else 'landcover', tags, geom)
 
@@ -147,7 +173,8 @@ def ingest(pbf, output, bounds):
     errors['unassembledOrOutsideBuildingRelations']=db.execute("SELECT count(*) FROM building_relations b WHERE NOT EXISTS(SELECT 1 FROM features f WHERE f.id='r'||b.id)").fetchone()[0]
     # Keep only relevant restrictions, while retaining via-way/conditional cases verbatim.
     db.execute("DELETE FROM restrictions WHERE NOT EXISTS (SELECT 1 FROM json_each(restrictions.members) m JOIN features f ON f.id='w'||json_extract(m.value,'$[1]') WHERE json_extract(m.value,'$[0]')='w')")
-    manifest = dict(inputs=fingerprint, projection=PROJECTION, counts=counts, errors=errors,
+    errors['unassembledContextRelations']=db.execute("SELECT count(*) FROM context_relations r WHERE NOT EXISTS(SELECT 1 FROM context_sources c WHERE c.id='r'||r.id)").fetchone()[0]
+    manifest = dict(contextCounts=context_counts, inputs=fingerprint, projection=PROJECTION, counts=counts, errors=errors,
                     sourceBytes=Path(pbf).stat().st_size,
                     attribution='© OpenStreetMap contributors (ODbL 1.0)', sourceExtraction=extraction,
                     restrictions=db.execute('SELECT count(*) FROM restrictions').fetchone()[0])

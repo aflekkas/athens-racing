@@ -172,3 +172,15 @@ def bridge_edges(platform,cell,deck,ground):
  posts,post_indices=bridge_post_mesh(platform,cell,rails)
  offset=len(gp)//3;gp.extend(posts);gi.extend(i+offset for i in post_indices)
  return (fp,fi),(gp,gi),rails
+
+
+def mapped_retaining_wall_mesh(record, geometry, certificate, cell):
+ """Source-only wall faces from exact compiled support owners; no height fallback."""
+ from structure_context import mapped_wall_mesh
+ return mapped_wall_mesh(record, geometry, certificate, cell)
+
+
+def matched_bridge_footprint(records, bridge_sources, source_sha):
+ """Only an explicit source association may constrain a bridge's context."""
+ from structure_context import matched_footprint
+ return matched_footprint(records, bridge_sources, source_sha)

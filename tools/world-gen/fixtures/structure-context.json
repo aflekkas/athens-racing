@@ -1,0 +1,104 @@
+{
+  "synthetic": true,
+  "wall": {
+    "record": {
+      "id": "w900",
+      "kind": "retaining_wall",
+      "version": 3,
+      "timestamp": "2026-01-01T00:00:00Z",
+      "sourceSha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "tags": {
+        "barrier": "retaining_wall"
+      },
+      "refs": [
+        9001,
+        9002
+      ],
+      "geometrySha256": "2610a09c9b5105ba6301cf187a703d6d1b27e2b018a85bc2229442738075491e",
+      "recordSha256": "a69fb53620c1d88c8dced48023cd3be4412340936d5717c657a69604e3642f57"
+    },
+    "geometryHex": "0102000000020000000000000000e07f40000000000000244000000000001080400000000000002440",
+    "certificate": "{\"geometrySha256\":\"2610a09c9b5105ba6301cf187a703d6d1b27e2b018a85bc2229442738075491e\",\"kind\":\"certified-mapped-wall-profile\",\"recordSha256\":\"a69fb53620c1d88c8dced48023cd3be4412340936d5717c657a69604e3642f57\",\"releaseEligible\":false,\"retainedSide\":\"left\",\"schemaVersion\":1,\"sources\":[{\"cell\":[0,0],\"revision\":\"fixture-original\",\"sourceSha256\":\"32036a09a8bd148e40f6bc564a9935dd59e9858aee6bb22ee6214a7fe65a8f2e\",\"world\":\"fixture-context\"},{\"cell\":[1,0],\"revision\":\"fixture-original\",\"sourceSha256\":\"13107159dc7199010af36b490fa889d8e0bfab224de75543f2f3cff05cd2aea7\",\"world\":\"fixture-context\"}],\"spans\":[{\"a\":{\"bottom\":0,\"top\":6,\"x\":510,\"z\":10},\"b\":{\"bottom\":0,\"top\":6,\"x\":512,\"z\":10},\"bottom\":{\"layer\":0,\"owner\":\"terrain:0,0\",\"sourceSha256\":\"32036a09a8bd148e40f6bc564a9935dd59e9858aee6bb22ee6214a7fe65a8f2e\",\"table\":\"fineTriangles\",\"triangle\":0},\"from\":0,\"to\":2,\"top\":{\"layer\":1,\"owner\":\"surface:top\",\"sourceSha256\":\"32036a09a8bd148e40f6bc564a9935dd59e9858aee6bb22ee6214a7fe65a8f2e\",\"table\":\"contactTriangles\",\"triangle\":0}},{\"a\":{\"bottom\":0,\"top\":6,\"x\":512,\"z\":10},\"b\":{\"bottom\":0,\"top\":6,\"x\":514,\"z\":10},\"bottom\":{\"layer\":0,\"owner\":\"terrain:1,0\",\"sourceSha256\":\"13107159dc7199010af36b490fa889d8e0bfab224de75543f2f3cff05cd2aea7\",\"table\":\"fineTriangles\",\"triangle\":1},\"from\":2,\"to\":4,\"top\":{\"layer\":1,\"owner\":\"surface:top\",\"sourceSha256\":\"13107159dc7199010af36b490fa889d8e0bfab224de75543f2f3cff05cd2aea7\",\"table\":\"contactTriangles\",\"triangle\":1}}]}",
+    "certificateSha256": "90347e1c216d3966900a255e77c0532215e7cb5ac1c6fee47f53675cc9185fe5"
+  },
+  "experimental": {
+    "recipe": {
+      "id": "kifisias-a6-three-level-v1",
+      "sourceSha256": "f7b0fc892de176e13059c228345c4893c181f01f6dfb14de17d126ac6d642627",
+      "bridgeWays": [
+        "w215668928"
+      ],
+      "supportWays": [
+        "w26984266",
+        "w154259480"
+      ],
+      "segments": [
+        "w154259480:0",
+        "w215668928:0",
+        "w26984266:0"
+      ],
+      "wayVersions": {
+        "w154259480": 1,
+        "w215668928": 1,
+        "w26984266": 1
+      },
+      "physicalLayers": {
+        "w154259480:0": 0,
+        "w215668928:0": 2,
+        "w26984266:0": 1
+      },
+      "dependencies": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ]
+      ]
+    },
+    "certificate": "{\"kind\":\"certified-structure-boundaries\",\"nodes\":{\"101\":{\"support\":{\"layer\":0,\"owner\":\"terrain:-1,0\",\"sourceSha256\":\"4b86f15c237ebe2c93ebd34726f83719180dbf2caa9a19c3c5f05ed5f85eca13\",\"table\":\"fineTriangles\",\"triangle\":0},\"x\":-99.99999999993724,\"y\":0,\"z\":100.00000000019043},\"102\":{\"support\":{\"layer\":0,\"owner\":\"terrain:0,0\",\"sourceSha256\":\"187b9d0f83cf6389245f52f65ba3b112c9dfe45324ae591e4a09850151f7c921\",\"table\":\"fineTriangles\",\"triangle\":1},\"x\":99.99999999993724,\"y\":0,\"z\":100.00000000019043},\"201\":{\"support\":{\"layer\":1,\"owner\":\"surface:top\",\"sourceSha256\":\"187b9d0f83cf6389245f52f65ba3b112c9dfe45324ae591e4a09850151f7c921\",\"table\":\"contactTriangles\",\"triangle\":0},\"x\":0,\"y\":6,\"z\":0},\"202\":{\"support\":{\"layer\":1,\"owner\":\"surface:top\",\"sourceSha256\":\"187b9d0f83cf6389245f52f65ba3b112c9dfe45324ae591e4a09850151f7c921\",\"table\":\"contactTriangles\",\"triangle\":1},\"x\":0,\"y\":6,\"z\":200.00000000038085},\"301\":{\"support\":{\"layer\":2,\"owner\":\"surface:upper\",\"sourceSha256\":\"4b86f15c237ebe2c93ebd34726f83719180dbf2caa9a19c3c5f05ed5f85eca13\",\"table\":\"contactTriangles\",\"triangle\":2},\"x\":-99.99999999993724,\"y\":12,\"z\":150.00000000028564},\"302\":{\"support\":{\"layer\":2,\"owner\":\"surface:upper\",\"sourceSha256\":\"187b9d0f83cf6389245f52f65ba3b112c9dfe45324ae591e4a09850151f7c921\",\"table\":\"contactTriangles\",\"triangle\":3},\"x\":99.99999999993724,\"y\":12,\"z\":150.00000000028564},\"profile:w154259480:0@0x1.0000000000000p-1\":{\"support\":{\"layer\":0,\"owner\":\"terrain:0,0\",\"sourceSha256\":\"187b9d0f83cf6389245f52f65ba3b112c9dfe45324ae591e4a09850151f7c921\",\"table\":\"fineTriangles\",\"triangle\":1},\"x\":0,\"y\":0,\"z\":100.00000000019043},\"profile:w26984266:0@0x1.0000000000000p-1\":{\"support\":{\"layer\":1,\"owner\":\"surface:top\",\"sourceSha256\":\"187b9d0f83cf6389245f52f65ba3b112c9dfe45324ae591e4a09850151f7c921\",\"table\":\"contactTriangles\",\"triangle\":1},\"x\":0,\"y\":6,\"z\":100.00000000019043},\"profile:w26984266:0@0x1.7ffffffffffffp-1\":{\"support\":{\"layer\":1,\"owner\":\"surface:top\",\"sourceSha256\":\"187b9d0f83cf6389245f52f65ba3b112c9dfe45324ae591e4a09850151f7c921\",\"table\":\"contactTriangles\",\"triangle\":1},\"x\":0,\"y\":6,\"z\":150.00000000028564}},\"releaseEligible\":false,\"schemaVersion\":1,\"sourceGraphSha256\":\"f7b0fc892de176e13059c228345c4893c181f01f6dfb14de17d126ac6d642627\",\"sources\":[{\"cell\":[-1,0],\"revision\":\"fixture-original\",\"sourceSha256\":\"4b86f15c237ebe2c93ebd34726f83719180dbf2caa9a19c3c5f05ed5f85eca13\",\"world\":\"fixture-context\"},{\"cell\":[0,0],\"revision\":\"fixture-original\",\"sourceSha256\":\"187b9d0f83cf6389245f52f65ba3b112c9dfe45324ae591e4a09850151f7c921\",\"world\":\"fixture-context\"}]}",
+    "certificateSha256": "a20b09524341779bcf975aad582823b990008ea346ea0f7e3529c6ae96ac9011"
+  },
+  "infeasible": {
+    "recipe": {
+      "id": "kifisias-a6-three-level-v1",
+      "sourceSha256": "192fdce1c8677c605dad6dfad18be07c641ffe87a3b4b794e51a2534bc590805",
+      "bridgeWays": [
+        "w215668928"
+      ],
+      "supportWays": [
+        "w26984266",
+        "w154259480"
+      ],
+      "segments": [
+        "w154259480:0",
+        "w215668928:0",
+        "w26984266:0"
+      ],
+      "wayVersions": {
+        "w154259480": 1,
+        "w215668928": 1,
+        "w26984266": 1
+      },
+      "physicalLayers": {
+        "w154259480:0": 0,
+        "w215668928:0": 2,
+        "w26984266:0": 1
+      },
+      "dependencies": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ]
+      ]
+    },
+    "certificate": "{\"kind\":\"certified-structure-boundaries\",\"nodes\":{\"101\":{\"support\":{\"layer\":0,\"owner\":\"terrain:-1,0\",\"sourceSha256\":\"b0f0b11bd51a04056e48bd2fbfcdc9568e655b6e5447f0c92a153788af2ad8e7\",\"table\":\"fineTriangles\",\"triangle\":0},\"x\":-99.99999999993724,\"y\":0,\"z\":100.00000000019043},\"102\":{\"support\":{\"layer\":0,\"owner\":\"terrain:0,0\",\"sourceSha256\":\"ab494bd008c62dee840911293e60f8cd25e2f60bb7afb0a796224d21502f235d\",\"table\":\"fineTriangles\",\"triangle\":1},\"x\":99.99999999993724,\"y\":0,\"z\":100.00000000019043},\"201\":{\"support\":{\"layer\":1,\"owner\":\"surface:top\",\"sourceSha256\":\"ab494bd008c62dee840911293e60f8cd25e2f60bb7afb0a796224d21502f235d\",\"table\":\"contactTriangles\",\"triangle\":0},\"x\":0,\"y\":6,\"z\":0},\"202\":{\"support\":{\"layer\":1,\"owner\":\"surface:top\",\"sourceSha256\":\"ab494bd008c62dee840911293e60f8cd25e2f60bb7afb0a796224d21502f235d\",\"table\":\"contactTriangles\",\"triangle\":1},\"x\":0,\"y\":6,\"z\":200.00000000038085},\"301\":{\"support\":{\"layer\":2,\"owner\":\"surface:upper\",\"sourceSha256\":\"b0f0b11bd51a04056e48bd2fbfcdc9568e655b6e5447f0c92a153788af2ad8e7\",\"table\":\"contactTriangles\",\"triangle\":2},\"x\":-2.0000000001047344,\"y\":6,\"z\":150.00000000028564},\"302\":{\"support\":{\"layer\":2,\"owner\":\"surface:upper\",\"sourceSha256\":\"ab494bd008c62dee840911293e60f8cd25e2f60bb7afb0a796224d21502f235d\",\"table\":\"contactTriangles\",\"triangle\":3},\"x\":2.0000000001047344,\"y\":6,\"z\":150.00000000028564},\"profile:w154259480:0@0x1.0000000000000p-1\":{\"support\":{\"layer\":0,\"owner\":\"terrain:0,0\",\"sourceSha256\":\"ab494bd008c62dee840911293e60f8cd25e2f60bb7afb0a796224d21502f235d\",\"table\":\"fineTriangles\",\"triangle\":1},\"x\":0,\"y\":0,\"z\":100.00000000019043},\"profile:w26984266:0@0x1.0000000000000p-1\":{\"support\":{\"layer\":1,\"owner\":\"surface:top\",\"sourceSha256\":\"ab494bd008c62dee840911293e60f8cd25e2f60bb7afb0a796224d21502f235d\",\"table\":\"contactTriangles\",\"triangle\":1},\"x\":0,\"y\":6,\"z\":100.00000000019043},\"profile:w26984266:0@0x1.7ffffffffffffp-1\":{\"support\":{\"layer\":1,\"owner\":\"surface:top\",\"sourceSha256\":\"ab494bd008c62dee840911293e60f8cd25e2f60bb7afb0a796224d21502f235d\",\"table\":\"contactTriangles\",\"triangle\":1},\"x\":0,\"y\":6,\"z\":150.00000000028564}},\"releaseEligible\":false,\"schemaVersion\":1,\"sourceGraphSha256\":\"192fdce1c8677c605dad6dfad18be07c641ffe87a3b4b794e51a2534bc590805\",\"sources\":[{\"cell\":[-1,0],\"revision\":\"fixture-original\",\"sourceSha256\":\"b0f0b11bd51a04056e48bd2fbfcdc9568e655b6e5447f0c92a153788af2ad8e7\",\"world\":\"fixture-context\"},{\"cell\":[0,0],\"revision\":\"fixture-original\",\"sourceSha256\":\"ab494bd008c62dee840911293e60f8cd25e2f60bb7afb0a796224d21502f235d\",\"world\":\"fixture-context\"}]}",
+    "certificateSha256": "6d0d40447d2b5b7f6f4a7d6e585e5e1305224859d6893d264103f8d092863787"
+  }
+}

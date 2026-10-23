@@ -282,7 +282,8 @@
     "tools/world-traffic-riders.test.mjs",
     "tools/float-panel-fallback.test.mjs",
     "tools/world-tile-road-width.test.mjs",
-    "tools/ekali-route.test.mjs"
+    "tools/ekali-route.test.mjs",
+    "tools/world-gen/context.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",
