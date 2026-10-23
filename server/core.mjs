@@ -66,7 +66,13 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
     for (const p of l.players.values()) p.balance = table.cars[p.car] || null;
   };
   const sharedWorld = createSharedWorldRelay(send, { period: l => maps.get(l.mapId)?.closed ? maps.get(l.mapId).track.finish - maps.get(l.mapId).track.start : 0 });
-  const handlers = new Map();
+  const handlers = new Map(), recoveryPreparations = new WeakMap(), recoverySockets = new WeakMap();
+  const releasePreparation = preparation => {
+    if (!preparation || recoveryPreparations.get(preparation.driver) !== preparation) return;
+    preparation.map.releaseRecovery?.(preparation.driver);
+    recoveryPreparations.delete(preparation.driver);
+    if (recoverySockets.get(preparation.ws) === preparation) recoverySockets.delete(preparation.ws);
+  };
   // Every accepted car sample since the last snapshot, so a receiver interpolates the sender's real 20 Hz data instead of only
   // the newest sample. Motion fields only (cosmetics ride on the newest `state`); keyed by race so an old race can never leak in.
   const trails = new WeakMap();
@@ -660,15 +666,19 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
     if (!map?.prepareRecovery || !driver.state || !Number.isSafeInteger(message.motionEpoch) || message.motionEpoch <= (driver.state.motionEpoch ?? -1) || driver.finish !== null || driver.dnf || lobby.status !== 'race' || message.raceId !== lobby.raceId || message.generation !== lobby.generation || !routePacketMatches(map, message)) return true;
     const deny = text => send(ws, { type: 'recover-denied', raceId: message.raceId, generation: lobby.generation || 0, motionEpoch: message.motionEpoch, routeIdentity: lobby.routeIdentity, message: text });
     const now = Date.now();
-    if (now - (driver.recoveryPrepareAt ?? -Infinity) < 1000) { deny('Recovery roads are preparing. Try again.'); return false; }
+    if (recoveryPreparations.has(driver) || now - (driver.recoveryPrepareAt ?? -Infinity) < 1000) { deny('Recovery roads are preparing. Try again.'); return false; }
     driver.recoveryPrepareAt = now;
     const generation = lobby.generation;
     const poseKey = () => JSON.stringify(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'layer', 'surfaceId', 'edgeId', 'motionEpoch'].map(k => driver.state?.[k]));
     const acceptedPose = poseKey();
+    // Reservation spans asynchronous IO AND the subsequent synchronous handler.
+    // One driver cannot overwrite another in-flight context after the cooldown.
+    const preparation = { driver, map, ws, ready: false };
+    recoveryPreparations.set(driver, preparation); recoverySockets.set(ws, preparation);
     try {
-      if (!await map.prepareRecovery(driver) || !driver.connected || ws.readyState !== 1 || driver.ws !== ws || driver.lobby !== lobby || lobby.raceId !== message.raceId || lobby.generation !== generation || poseKey() !== acceptedPose || !routePacketMatches(map, message) || !sameRouteIdentity(lobby.routeIdentity, map.routeIdentity)) { map.releaseRecovery?.(driver); deny('Recovery position changed. Try again.'); return false; }
-      return true;
-    } catch (error) { map.releaseRecovery?.(driver); deny(error.message || 'Recovery roads unavailable. Try again.'); return false; }
+      if (!await map.prepareRecovery(driver) || !driver.connected || ws.readyState !== 1 || driver.ws !== ws || driver.lobby !== lobby || lobby.raceId !== message.raceId || lobby.generation !== generation || poseKey() !== acceptedPose || !routePacketMatches(map, message) || !sameRouteIdentity(lobby.routeIdentity, map.routeIdentity)) { releasePreparation(preparation); deny('Recovery position changed. Try again.'); return false; }
+      preparation.ready = true; return true;
+    } catch (error) { releasePreparation(preparation); deny(error.message || 'Recovery roads unavailable. Try again.'); return false; }
   };
   const nextWake = () => {
     let at = Infinity;
@@ -680,5 +690,21 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
     }
     return Number.isFinite(at) ? at : null;
   };
-  return { connect, prepareMessage, message: (ws, bytes) => { const driver = [...clients].find(c => c.ws === ws), map = maps.get(driver?.lobby?.mapId); try { return handlers.get(ws)?.message(bytes); } finally { if (driver) map?.releaseRecovery?.(driver); } }, disconnect: ws => { handlers.get(ws)?.close(); handlers.delete(ws); }, pong: ws => handlers.get(ws)?.pong(), tick, nextWake, exportState, restore, clientData: ws => { const c = [...clients].find(c => c.ws === ws); return c && clientData(c); }, discover, publicLobby, lobbies, clients, sessions, track };
+  const message = (ws, bytes) => {
+    const driver = [...clients].find(c => c.ws === ws), map = maps.get(driver?.lobby?.mapId);
+    const preparation = recoverySockets.get(ws);
+    let consumesPreparation = false;
+    if (preparation?.ready) { try { consumesPreparation = JSON.parse(bytes)?.type === 'recover'; } catch {} }
+    try { return handlers.get(ws)?.message(bytes); }
+    finally {
+      if (consumesPreparation) releasePreparation(preparation);
+      else if (!preparation && driver) map?.releaseRecovery?.(driver);
+    }
+  };
+  const disconnect = ws => {
+    const preparation = recoverySockets.get(ws);
+    if (preparation?.ready) releasePreparation(preparation);
+    handlers.get(ws)?.close(); handlers.delete(ws);
+  };
+  return { connect, prepareMessage, message, disconnect, pong: ws => handlers.get(ws)?.pong(), tick, nextWake, exportState, restore, clientData: ws => { const c = [...clients].find(c => c.ws === ws); return c && clientData(c); }, discover, publicLobby, lobbies, clients, sessions, track };
 }

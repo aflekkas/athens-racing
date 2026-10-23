@@ -7,6 +7,8 @@ import { sha256 } from '../src/route-definition.js';
 import { installRouteMaps as installRoutes } from './route-maps.mjs';
 import { validateRouteRoads, routeRoadAuthority } from './route-roads.mjs';
 import { requestRecovery, recoveryStateAllowed } from './race-recovery.mjs';
+import { createGameCore } from './core.mjs';
+import { MULTIPLAYER_PROTOCOL } from '../src/multiplayer-protocol.js';
 import { buildCourse, observeCourse } from '../src/course.js';
 const installRouteMaps = (maps, build, options = {}) => installRoutes(maps, build, { ...options, loadRoadArtifact: async url => build.roadArtifacts[url] });
 async function bindRoads(build, roads) {
@@ -124,4 +126,32 @@ test('TT-only authenticated routes activate atomically with eight human slots an
  assert.equal(event.type,'timetrial');assert.equal(event.rivals,0);assert.equal(event.rivalCount,0);assert.equal(event.routeHash,c.routeHash);assert.equal(event.geometryHash,c.geometryHash);
  assert.equal(new Set(Array.from({length:8},(_,slot)=>JSON.stringify(map.gridPose(slot,'mini')))).size,8);
  const invalid=await catalogue({timetrial:true});invalid.build.routeGrids[0].body.poses.pop();const blocked=new Map();await installRouteMaps(blocked,invalid.build);assert.equal(blocked.routeConfig.onlineAvailable,false);assert.equal(blocked.onlineMapIds.size,0);
+});
+
+for (const sameDriver of [true, false]) test(`real streamed preflights ${sameDriver?'serialize one driver across 1100ms overlap':'retain independent driver concurrency'} and release every lease`, async t=>{
+ const {c,build}=await catalogue(),maps=new Map();let unblock,fetches=0;const blocked=new Promise(resolve=>unblock=resolve);
+ await installRoutes(maps,build,{carSpecs:{mini:{width:2,length:4}},loadRoadArtifact:async url=>{fetches++;await blocked;return structuredClone(build.roadArtifacts[url]);}});
+ const map=maps.get(c.id),event=[...map.definitions.values()][0];let now=100000;t.mock.method(Date,'now',()=>now);
+ const core=createGameCore({maps,cars:new Set(['mini']),carSpecs:{mini:{width:2,length:4}},leaderboard:{submit:async()=>{}},countdownMs:0});
+ const socket=()=>({readyState:1,messages:[],send(data){this.messages.push(JSON.parse(data));},close(){this.readyState=3;}}),a=socket(),b=socket();
+ const send=(ws,p)=>core.message(ws,JSON.stringify(p));for(const [i,ws]of[a,b].entries())core.connect(ws,String(i),{protocol:MULTIPLAYER_PROTOCOL});
+ send(a,{type:'create',mapId:c.id,eventId:event.id,car:'mini'});const lobby=[...core.lobbies.values()][0];send(b,{type:'join',code:lobby.code,car:'mini'});
+ const packet=p=>({mapId:c.id,routeIdentity:map.routeIdentity,raceId:lobby.raceId,generation:lobby.generation,...p});
+ for(const ws of[a,b])send(ws,packet({type:'ready',ready:true,version:map.track.version}));send(a,{type:'start'});core.tick();now+=100;
+ for(const ws of[a,b]){const d=core.clientData(ws),pose=map.gridPose(d.gridSlot,d.car);send(ws,packet({type:'state',state:{...pose,u:0,vLong:0,vLat:0,steer:0,rpm:900,gear:1}}));assert.ok(core.clientData(ws).state);}
+ const firstPacket=packet({type:'recover',motionEpoch:1}),secondPacket=packet({type:'recover',motionEpoch:2});
+ const first=core.prepareMessage(a,JSON.stringify(firstPacket));assert.equal(map.recoveryStats().leases,1);now+=1100;
+ const second=core.prepareMessage(sameDriver?a:b,JSON.stringify(secondPacket));unblock();const admitted=await Promise.all([first,second]);
+ for(const [i,ok]of admitted.entries())if(ok)send(i===0?a:(sameDriver?a:b),i===0?firstPacket:secondPacket);
+ assert.equal(map.recoveryStats().leases,0,'all per-request leases must be released after handler cleanup');
+ assert.deepEqual(admitted,sameDriver?[true,false]:[true,true]);assert.equal(fetches,1,'same-cell immutable loading remains deduplicated');
+ now+=1100;const third=packet({type:'recover',motionEpoch:3});assert.equal(await core.prepareMessage(a,JSON.stringify(third)),true);send(a,third);assert.equal(map.recoveryStats().leases,0,'serialization reservation must clear for the next request');
+});
+
+test('direct map preparation cannot overwrite an in-flight driver lease',async()=>{
+ const {c,build}=await catalogue(),maps=new Map();let unblock;const blocked=new Promise(resolve=>unblock=resolve);
+ await installRoutes(maps,build,{carSpecs:{mini:{width:2,length:4}},loadRoadArtifact:async url=>{await blocked;return structuredClone(build.roadArtifacts[url]);}});
+ const map=maps.get(c.id),driver={car:'mini',state:{...map.gridPose(0,'mini')}};
+ const first=map.prepareRecovery(driver);await assert.rejects(map.prepareRecovery(driver),/preparing/);unblock();assert.equal(await first,true);
+ assert.equal(map.recoveryStats().leases,1);map.releaseRecovery(driver);assert.equal(map.recoveryStats().leases,0);
 });

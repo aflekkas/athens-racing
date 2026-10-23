@@ -52,7 +52,7 @@ export async function installRouteMaps(maps, catalogue, { carSpecs = {}, loadRoa
         definitions.set(free.id, free);
         const spec = car => carSpecs instanceof Map ? carSpecs.get(car) : carSpecs[car];
         const footprint = driver => { const car = spec(driver.car); return { halfWidth: car?.width > 0 ? car.width / 2 : Infinity, halfLength: car?.length > 0 ? car.length / 2 : Infinity }; };
-        const preparedRecovery = new WeakMap(); let activeRecovery = null;
+        const preparedRecovery = new WeakMap(), preparingRecovery = new WeakSet(); let activeRecovery = null;
         const releaseRecovery = driver => { const context = preparedRecovery.get(driver); if (context) { context.release(); preparedRecovery.delete(driver); if (activeRecovery === context) activeRecovery = null; } };
         geometry.contactAllowed = (q, pose) => {
           const station = geometry.closed && q.s >= 0 ? geometry.wrap(q.s) : q.s;
@@ -66,7 +66,16 @@ export async function installRouteMaps(maps, catalogue, { carSpecs = {}, loadRoa
         geometry.recoveryCandidates = (pose, driver) => { activeRecovery = preparedRecovery.get(driver) || null; if (activeRecovery?.pose !== JSON.stringify(pose)) activeRecovery = null; return (activeRecovery?.candidates || []).filter(a => a.layer === pose.layer && Math.abs(a.y - pose.y) < 8).filter(a => ![...(driver.lobby?.players?.values() || [])].some(p => p !== driver && p.connected && p.state && Math.abs(p.state.y - a.y) < 3 && Math.hypot(p.state.x - a.x, p.state.z - a.z) < footprint(driver).halfLength + footprint(p).halfLength + 1)); };
         geometry.contactAt = authority.contactAt;
         const track = { start: 0, finish: c.lengthM, version: `${c.routeHash}:${descriptor.hash}`, routeIdentity: identity };
-        const map = { id: c.id, name: c.definition.name, track, routeIdentity: identity, geometry, closed: geometry.closed, definitions, onlineGrid, prepareRecovery: async driver => { releaseRecovery(driver); const context = await authority.prepare(driver.state, footprint(driver)); preparedRecovery.set(driver, context); return true; }, releaseRecovery, supportsCar: car => { const f = footprint({ car }); try { onlineGridPose(onlineGrid, 0, spec(car)); } catch { return false; } return roadBody.footprints.some(p => p.halfWidth >= f.halfWidth && p.halfLength >= f.halfLength); }, gridPose: (slot, car) => onlineGridPose(onlineGrid, slot, spec(car)), trips: { taxi: null, getaway: null } };
+        const prepareRecovery = async driver => {
+          if (preparingRecovery.has(driver)) throw Error('Recovery roads are preparing. Try again.');
+          preparingRecovery.add(driver);
+          try {
+            releaseRecovery(driver);
+            const context = await authority.prepare(driver.state, footprint(driver));
+            preparedRecovery.set(driver, context); return true;
+          } finally { preparingRecovery.delete(driver); }
+        };
+        const map = { id: c.id, name: c.definition.name, track, routeIdentity: identity, geometry, closed: geometry.closed, definitions, onlineGrid, prepareRecovery, releaseRecovery, recoveryStats: authority.stats, supportsCar: car => { const f = footprint({ car }); try { onlineGridPose(onlineGrid, 0, spec(car)); } catch { return false; } return roadBody.footprints.some(p => p.halfWidth >= f.halfWidth && p.halfLength >= f.halfLength); }, gridPose: (slot, car) => onlineGridPose(onlineGrid, slot, spec(car)), trips: { taxi: null, getaway: null } };
         onlineMaps.set(c.id, map); exposed.onlineGrid = descriptor; exposed.recovery = recovery;
       } catch (error) { issues.set(c.id, error.message); exposed.onlineUnsupported = error.message; }
     }

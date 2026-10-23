@@ -102,7 +102,7 @@ test('asynchronous recovery preflight never fetches for spoofed tuples and reche
   const recover = x.packet({ type: 'recover', motionEpoch: 1 });
   await x.core.prepareMessage(x.a, JSON.stringify({ ...recover, mapId: 'spoof' })); assert.equal(fetches, 0);
   await x.core.prepareMessage(x.a, JSON.stringify({ ...recover, generation: recover.generation - 1 })); assert.equal(fetches, 0);
-  assert.equal(await x.core.prepareMessage(x.a, JSON.stringify(recover)), true); assert.equal(fetches, 1);
+  assert.equal(await x.core.prepareMessage(x.a, JSON.stringify(recover)), true); assert.equal(fetches, 1); x.send(x.a, recover);
   x.advance(1100); x.map.prepareRecovery = async () => { x.lobby.raceId = 'new-race'; return true; };
   assert.equal(await x.core.prepareMessage(x.a, JSON.stringify(recover)), false); assert.equal(x.a.messages.at(-1).type, 'recover-denied');
 });
@@ -135,6 +135,7 @@ test('state batches count real wire packets once while the eighty-message guard 
   x.send(x.a, packet); assert.equal(held, false); assert.equal(releases, 1);
   x.advance(1100); assert.equal(await x.core.prepareMessage(x.a, JSON.stringify({ ...packet, motionEpoch: 2 })), true);
   x.send(x.a, { ...packet, motionEpoch: 2, mapId: 'spoof' }); assert.equal(held, false); assert.equal(releases, 2);
+  x.advance(1100); assert.equal(await x.core.prepareMessage(x.a, JSON.stringify({ ...packet, motionEpoch: 3 })), true); x.send(x.a, { type: 'ping' }); assert.equal(held, true, 'unrelated messages cannot consume another request context'); x.core.disconnect(x.a); assert.equal(held, false); assert.equal(releases, 3);
  });
 
 test('authenticated online Time Trial keeps its edition, zero AI rivals and continuous timed human finishes', async t => {
@@ -145,4 +146,11 @@ test('authenticated online Time Trial keeps its edition, zero AI rivals and cont
  assert.equal(x.lobby.status,'results');assert.equal(x.submitted.length,2);
  for(const record of x.submitted){assert.equal(record.source,'online');assert.equal(record.setup.type,'timetrial');assert.equal(record.setup.rivals,0);assert.equal(record.eventId,'fixture-tt');assert.equal(record.edition,x.event.edition);assert.equal(record.routeHash,x.c.routeHash);assert.ok(validResult(record,resultContext(record,new Map(),'',x.maps).event,new Set(['mini'])));}
  const before=x.submitted.length;x.advance();x.send(x.a,x.packet({type:'state',state:x.pose(x.event.s1+6)}));assert.equal(x.submitted.length,before);
+});
+
+test('failed asynchronous preparation clears its per-driver reservation before retry',async t=>{
+ const x=await setup(t);x.ready();x.advance();x.send(x.a,x.packet({type:'state',state:x.pose(-8)}));const packet=x.packet({type:'recover',motionEpoch:1});let fail=true;
+ x.map.prepareRecovery=async()=>{if(fail)throw Error('unavailable cell');return true;};
+ assert.equal(await x.core.prepareMessage(x.a,JSON.stringify(packet)),false);fail=false;x.advance(1100);
+ assert.equal(await x.core.prepareMessage(x.a,JSON.stringify(packet)),true);x.send(x.a,packet);
 });
