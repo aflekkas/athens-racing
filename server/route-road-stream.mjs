@@ -29,16 +29,37 @@ export function recoveryDataBytes(value, limit = Infinity) {
   };
   visit(value); return bytes;
 }
-// Scan untrusted JSON before allocation: dense tiny-value arrays/objects can
-// expand far beyond their wire size. Count syntax only outside quoted strings.
-function admitJSON(text) {
-  let estimate = text.length * 2, quoted = false, escaped = false;
+// Scan untrusted JSON before allocation. This is conservative accounting, not
+// a measurement of V8 heap usage. Keep the request-time early rejection while
+// allowing offline audits to obtain every contribution without JSON.parse.
+function scanRecoveryJSON(text, limit = Infinity) {
+  let quoted = false, escaped = false, stringStarts = 0, arrayOpens = 0, objectOpens = 0, commas = 0, colons = 0;
+  const stringStorageBytes = text.length * 2;
+  let estimatedDecodedBytes = stringStorageBytes;
   for (const ch of text) {
     if (quoted) { if (escaped) escaped = false; else if (ch === '\\') escaped = true; else if (ch === '"') quoted = false; }
-    else if (ch === '"') { quoted = true; estimate += 96; }
-    else if ('[{,:'.includes(ch)) estimate += 128;
-    if (estimate > RECOVERY_MEMORY.decoded) throw Error('Recovery decoded memory budget exceeded');
+    else if (ch === '"') { quoted = true; stringStarts++; estimatedDecodedBytes += 96; }
+    else if ('[{,:'.includes(ch)) {
+      if (ch === '[') arrayOpens++; else if (ch === '{') objectOpens++; else if (ch === ',') commas++; else colons++;
+      estimatedDecodedBytes += 128;
+    }
+    if (estimatedDecodedBytes > limit) throw Error('Recovery decoded memory budget exceeded');
   }
+  const structuralTokens = arrayOpens + objectOpens + commas + colons;
+  return Object.freeze({ codeUnits: text.length, stringStorageBytes, stringStarts, stringTokenBytes: stringStarts * 96,
+    arrayOpens, objectOpens, commas, colons, structuralTokens, structuralBytes: structuralTokens * 128, estimatedDecodedBytes });
+}
+/** Pure preparse accounting, including all tokens even when over budget.
+ * Does not parse, authenticate, or admit the artifact. Quoted punctuation is
+ * excluded; UTF-16 storage and UTF-8 wire bytes are reported separately. */
+export function estimateRecoveryJSON(raw) {
+  if (typeof raw !== 'string' && !(raw instanceof Uint8Array)) throw TypeError('Recovery JSON must be text or bytes');
+  const text = typeof raw === 'string' ? raw : new TextDecoder().decode(raw);
+  const wireBytes = typeof raw === 'string' ? new TextEncoder().encode(raw).length : raw.byteLength;
+  const estimate = scanRecoveryJSON(text);
+  return Object.freeze({ ...estimate, wireBytes, decodedLimitBytes: RECOVERY_MEMORY.decoded,
+    exceedsDecodedLimit: estimate.estimatedDecodedBytes > RECOVERY_MEMORY.decoded,
+    artifactLimitBytes: RECOVERY_ARTIFACT_BYTES, exceedsArtifactLimit: wireBytes > RECOVERY_ARTIFACT_BYTES });
 }
 export const RECOVERY_MEMORY = Object.freeze({ cache: 16 * 1024 * 1024, decoded: 12 * 1024 * 1024, context: 2 * 1024 * 1024, contexts: 2 });
 /** Pure admission shared by the offline release audit and request-time loader.
@@ -50,7 +71,7 @@ export async function admitRecoverySidecar(raw, { expectedHash, worldSetRevision
     bytes = typeof raw === 'string' ? new TextEncoder().encode(raw).length : raw.byteLength;
     if (bytes > RECOVERY_ARTIFACT_BYTES) throw Error('Recovery sidecar exceeds artifact budget');
     const text = typeof raw === 'string' ? raw : new TextDecoder().decode(raw);
-    admitJSON(text); body = JSON.parse(text);
+    scanRecoveryJSON(text, RECOVERY_MEMORY.decoded); body = JSON.parse(text);
   } else { body = raw; bytes = new TextEncoder().encode(canonicalJSON(body)).length; }
   recoveryDataBytes(body, RECOVERY_MEMORY.decoded);
   const proven = await validateRouteRoads(body, { expectedHash, worldSetRevision });

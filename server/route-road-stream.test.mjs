@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { sha256 } from '../src/route-definition.js';
-import { validateRecoveryManifest, createStreamedRoadAuthority, admitRecoverySidecar } from './route-road-stream.mjs';
+import { validateRecoveryManifest, createStreamedRoadAuthority, admitRecoverySidecar, estimateRecoveryJSON, RECOVERY_MEMORY } from './route-road-stream.mjs';
 import { validateRouteRoads, routeRoadAuthority } from './route-roads.mjs';
 const revision = 'a'.repeat(64), source = 'b'.repeat(64);
 async function setup({ maxEntries } = {}) {
@@ -164,4 +164,37 @@ test('explicit one-way reverse endpoints never form a group or override the near
   for(const anchor of body.anchors)anchor.roadId='forward|reverse';
   await assert.rejects(admitRecoverySidecar(JSON.stringify(body),{expectedHash:await sha256(body),worldSetRevision:revision}),/road group/);
  }
+});
+
+
+test('preparse estimate separates exact token charges from UTF-16 storage and UTF-8 wire bytes', () => {
+  const raw = JSON.stringify({ a: '[{,:"\\😀', b: [0, 1] });
+  const result = estimateRecoveryJSON(raw);
+  assert.equal(result.stringStarts, 3); // Two keys and one string value.
+  assert.equal(result.arrayOpens, 1); assert.equal(result.objectOpens, 1);
+  assert.equal(result.commas, 2); assert.equal(result.colons, 2);
+  assert.equal(result.structuralTokens, 6); assert.equal(result.structuralBytes, 768);
+  assert.equal(result.stringTokenBytes, 288);
+  assert.equal(result.stringStorageBytes, raw.length * 2);
+  assert.equal(result.estimatedDecodedBytes, raw.length * 2 + 768 + 288);
+  assert.equal(result.wireBytes, Buffer.byteLength(raw));
+  const bytes = new TextEncoder().encode(raw), before = bytes.slice();
+  assert.deepEqual(estimateRecoveryJSON(bytes), result); assert.deepEqual(bytes, before);
+  assert.equal(Object.isFrozen(result), true); assert.throws(() => estimateRecoveryJSON({}), TypeError);
+});
+test('preparse estimate reports the complete over-budget input and preserves strict 12MiB boundary', async () => {
+  // [0,...,0]: 2*n+1 code units, n structural tokens, no strings.
+  const n = 95000, base = '[' + Array(n).fill('0').join(',') + ']';
+  const padding = (RECOVERY_MEMORY.decoded - (132 * n + 2)) / 2;
+  const boundary = base + ' '.repeat(padding), exact = estimateRecoveryJSON(boundary);
+  assert.equal(exact.estimatedDecodedBytes, RECOVERY_MEMORY.decoded);
+  assert.equal(exact.exceedsDecodedLimit, false); assert.equal(exact.exceedsArtifactLimit, false);
+  const over = estimateRecoveryJSON(boundary + ' ');
+  assert.equal(over.estimatedDecodedBytes, RECOVERY_MEMORY.decoded + 2);
+  assert.equal(over.exceedsDecodedLimit, true); assert.equal(over.commas, n - 1);
+  await assert.rejects(admitRecoverySidecar(boundary + ' '), /Recovery decoded memory budget exceeded/);
+  // Trailing syntax still contributes after the first budget crossing.
+  const complete = estimateRecoveryJSON(boundary + ',:');
+  assert.equal(complete.estimatedDecodedBytes, RECOVERY_MEMORY.decoded + 260);
+  assert.equal(complete.commas, n); assert.equal(complete.colons, 1);
 });
