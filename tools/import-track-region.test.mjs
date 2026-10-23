@@ -135,3 +135,36 @@ test('graph surface binding preserves one-way permissions and rejects absent, wr
  }
  assert.equal(before[8],f.tile.t.edges[8]);
 });
+
+import {encodeGeometryPack,decodeGeometryPack} from '../src/baked-geometry.js';
+import {gzipSync,gunzipSync} from 'node:zlib';
+import {patchEncodedGraphSurfaceWords,megaraSurfaceRepairContract,repairMegaraGraphCell,ORIGINAL_MEGARA_IMPORTER_SHA256} from './world-gen/repair-megara-graph-surfaces.mjs';
+const sha=b=>createHash('sha256').update(b).digest('hex');
+function repairFixture({shuffled=false,oneway=false,flags=0,surface='surface:roads',layer=0,contactLayer=0,contactFlags=1,id='megara:e:way-123-0:1:f'}={}){
+ const ids=['','surface:roads','surface:megaraNetwork',id,'megara:e:raceway-70043234:1:f'],tables=Object.fromEntries(Object.keys(TILE_TABLES).map((k,i)=>[k,i])),arrays=Object.values(TILE_TABLES).map(([type])=>new globalThis[type]());
+ arrays[tables.edges]=new Uint32Array([3,0,0,0,2,0,1,50,flags,ids.indexOf(surface),4,0,0,0,2,0,1,80,0,1]);arrays[tables.edgeLayers]=new Int8Array([layer,0]);arrays[tables.edgePoints]=new Float32Array([1,9,2,4,9,6]);arrays[tables.contactPositions]=new Float32Array([1,9,2,4,9,6,8,9,10]);arrays[tables.contactTriangles]=new Uint32Array([0,1,2,2,contactFlags]);arrays[tables.contactLayers]=new Int8Array([contactLayer]);arrays.push(new Float32Array([Math.fround(1/3),-0,123.456]));
+ const revision='a'.repeat(64),raw=Buffer.from(encodeGeometryPack({tileVersion:1,world:'megara',revision,cell:[-64,-1],origin:[-32768,0,-512],ids,strings:[''],tables,meshes:[{attributes:{position:{array:arrays.length-1,size:3}}}],provenance:{region:'megara',revision}},arrays,arrays.map(()=>shuffled))),body=gzipSync(raw),mapBytes=Buffer.from(JSON.stringify({id:'megara',roadNetwork:{roads:[{id:123,part:0,oneway,p:[1,2,4,6]}]}})),contextBytes=Buffer.from(JSON.stringify([{id:123,tags:flags===8?{access:'private'}:{}}]));
+ const manifestBytes=Buffer.from(JSON.stringify({world:'megara',revision,sourceHashes:{'data/maps/megara/map.json':sha(mapBytes),'tools/maps/megara/raw/context.json':sha(contextBytes),'tools/import-track-region.mjs':ORIGINAL_MEGARA_IMPORTER_SHA256},tiles:{'-64,-1':{sha256:sha(body),bytes:body.length,decodedBytes:raw.length}}})),args={manifestBytes,expectedManifestHash:sha(manifestBytes),mapBytes,contextBytes};
+ return {raw,body,args,contract:megaraSurfaceRepairContract(args),arrays,tables,revision};
+}
+
+test('source-bound Megara repair preserves raw and shuffled payload bytes outside exact graph surface words',()=>{
+ for(const shuffled of [false,true])for(const flags of [0,8]){
+  const f=repairFixture({shuffled,flags}),r=repairMegaraGraphCell(f.body,f.contract,{cell:'-64,-1',newRevision:'b'.repeat(64)}),raw=gunzipSync(r.body),ab=raw.buffer.slice(raw.byteOffset,raw.byteOffset+raw.length),next=decodeGeometryPack(ab),before=decodeGeometryPack(f.raw.buffer.slice(f.raw.byteOffset,f.raw.byteOffset+f.raw.length));
+  assert.equal(r.edges,1);assert.equal(next.metadata.revision,'b'.repeat(64));assert.equal(next.metadata.provenance.revision,'b'.repeat(64));assert.deepEqual(next.metadata.ids,before.metadata.ids);assert.deepEqual(next.metadata.meshes,before.metadata.meshes);assert.equal(next.arrays[f.tables.edges][9],2);assert.equal(before.arrays[f.tables.edges][9],1,'old graph fails real Network surface binding');assert.equal(next.arrays[f.tables.edges][19],1,'raceway untouched');assert.equal(next.arrays[f.tables.edges][8],flags);
+  for(let i=0;i<f.arrays.length;i++)if(i!==f.tables.edges)assert.deepEqual(Buffer.from(next.arrays[i].buffer,next.arrays[i].byteOffset,next.arrays[i].byteLength),Buffer.from(before.arrays[i].buffer,before.arrays[i].byteOffset,before.arrays[i].byteLength));
+  const start=f.raw.readUInt32LE(8),newStart=raw.readUInt32LE(8),v=before.metadata.views[f.tables.edges],allowed=new Set(Array.from({length:4},(_,b)=>v.offset+(shuffled?b*v.length+9:9*4+b)));
+  const a=f.raw.subarray(start),b=raw.subarray(newStart);assert.equal(a.length,b.length);for(let i=0;i<a.length;i++)if(!allowed.has(i))assert.equal(b[i],a[i],`encoded payload byte ${i}`);
+  assert.equal(sha(f.body),f.contract.manifest.tiles['-64,-1'].sha256,'immutable original retained');
+ }
+});
+
+test('Megara metadata repair rejects stale roots, unsupported importer/codec and unknown or physically unbound source roles',()=>{
+ const f=repairFixture(),opts={cell:'-64,-1',newRevision:'b'.repeat(64)};
+ assert.throws(()=>megaraSurfaceRepairContract({...f.args,expectedManifestHash:'c'.repeat(64)}),/manifest hash/);assert.throws(()=>megaraSurfaceRepairContract({...f.args,mapBytes:Buffer.from('{}')}),/source hash/);assert.throws(()=>megaraSurfaceRepairContract({...f.args,importerBytes:Buffer.from('different importer')}),/unsupported original importer/);
+ assert.throws(()=>repairMegaraGraphCell(Buffer.from('different'),f.contract,opts),/cell hash/);assert.throws(()=>repairMegaraGraphCell(f.body,{},opts),/unverified/);assert.throws(()=>repairMegaraGraphCell(f.body,f.contract,{...opts,newRevision:f.revision}),/derived revision/);
+ for(const config of [{id:'megara:e:way-999-0:1:f'},{surface:'surface:megaraNetwork'},{layer:1},{contactLayer:1},{contactFlags:0},{flags:1}]){const v=repairFixture(config);assert.throws(()=>repairMegaraGraphCell(v.body,v.contract,opts),/source edge|original graph surface|same-layer/);}
+ const unsupported=Buffer.from(f.raw);unsupported.writeUInt32LE(0x32525341,0);assert.throws(()=>patchEncodedGraphSurfaceWords(unsupported,[{word:9,from:1,to:2}],'b'.repeat(64),{}),/unsupported codec/);assert.throws(()=>patchEncodedGraphSurfaceWords(f.raw,[{word:8,from:0,to:2}],'b'.repeat(64),{}),/surface edit/);assert.throws(()=>patchEncodedGraphSurfaceWords(f.raw,[{word:9,from:2,to:1}],'b'.repeat(64),{}),/stale edge/);
+ const one=repairFixture({oneway:true});assert.equal(repairMegaraGraphCell(one.body,one.contract,opts).edges,1);const reverse=repairFixture({oneway:true,id:'megara:e:way-123-0:1:r'});assert.throws(()=>repairMegaraGraphCell(reverse.body,reverse.contract,opts),/source edge/);
+ assert.throws(()=>{f.contract.manifest.tiles['-64,-1'].sha256='c'.repeat(64);},TypeError);
+});
