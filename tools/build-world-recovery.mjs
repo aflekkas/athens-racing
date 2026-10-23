@@ -1,3 +1,4 @@
+import {admitRecoverySidecar} from '../server/route-road-stream.mjs';
 import {recoveryRoadGroup,recoveryRoadTwins} from '../src/world-road-group.js';
 // Offline recovery authority. Every active cell is read and hash verified; only
 // actual contact/obstacle proven discrete poses become server recovery anchors.
@@ -62,20 +63,28 @@ export function proveRecoveryCell(key,world,profiles,{spacingM=4,onEdge=()=>{}}=
  if(Buffer.byteLength(canonicalJSON(body))>MAX_RECOVERY_BYTES)throw Error('Recovery sidecar exceeds 2 MiB: '+key);
  return body;
 }
+// Use the exact request-time admission on the original immutable wire artifact.
+// Compact query data must never replace the published contact/edge proof.
+export async function admitRecoveryCell(raw,{key,manifest,hash}){
+ const admitted=await admitRecoverySidecar(raw,{expectedHash:hash,worldSetRevision:manifest.revision});
+ const expected=[...recoveryNeighborhood(key,manifest)].sort().map(k=>[k,manifest.tiles[k].sha256]);
+ if(canonicalJSON(admitted.body.sourceHashes)!==canonicalJSON(expected))throw Error('Recovery sidecar does not bind its exact active neighborhood: '+key);
+ return admitted.metrics;
+}
 export async function buildWorldRecovery({world,cells,out,profiles,readWorld=readEmittedRouteWorld,onCell=()=>{}}){
  const manifest=JSON.parse(await readFile(world,'utf8')),recoveryWorld=recoveryWorldRegistry(manifest),root={schemaVersion:1,worldId:'athens',projectionId:'athens-v1',worldSetRevision:manifest.revision,footprints:[],cells:{}},certificates=[];
- profiles||=await garageFootprints();await mkdir(out,{recursive:true});let totalBytes=0,anchorCount=0;
+ profiles||=await garageFootprints();await mkdir(out,{recursive:true});let totalBytes=0,anchorCount=0,maxSidecarBytes=0,maxDecodedBytes=0,admittedCells=0;
  for(const [key,sourceHash]of recoveryWorld.sourceHashes){
   const keys=recoveryNeighborhood(key,manifest),sample=await readWorld({world,cells,keys});
   for(const k of keys)if(!sample.tiles.has(k))throw Error('Incomplete recovery neighborhood: '+key+' missing '+k);
   const body=proveRecoveryCell(key,sample,profiles);
   if(!body)root.cells[key]={sourceHash,empty:true};
-  else {const text=canonicalJSON(body),hash=await sha256(body),name=`${key}.${hash}.json`;await writeFile(resolve(out,name),text);root.cells[key]={sourceHash,hash,url:'/world/recovery/'+name};totalBytes+=Buffer.byteLength(text);anchorCount+=body.anchors.length;for(const a of body.anchors)certificates.push(...a.footprints);}
+  else {const text=canonicalJSON(body),hash=await sha256(body),name=`${key}.${hash}.json`;const metrics=await admitRecoveryCell(text,{key,manifest,hash});maxSidecarBytes=Math.max(maxSidecarBytes,metrics.bytes);maxDecodedBytes=Math.max(maxDecodedBytes,metrics.decodedBytes);admittedCells++;await writeFile(resolve(out,name),text);root.cells[key]={sourceHash,hash,url:'/world/recovery/'+name};totalBytes+=Buffer.byteLength(text);anchorCount+=body.anchors.length;for(const a of body.anchors)certificates.push(...a.footprints);}
   sample.roads.graph.dispose();sample.tiles.clear();onCell({key,cells:Object.keys(root.cells).length,totalBytes,anchorCount});
  }
  root.footprints=paretoFootprints(certificates);if(!root.footprints.length)throw Error('World has no certified recovery vehicle');assertRecoveryCoverage(root,recoveryWorld);
  const hash=await sha256(root),text=canonicalJSON(root);if(Buffer.byteLength(text)>MAX_RECOVERY_BYTES)throw Error('Recovery root exceeds 2 MiB');await writeFile(resolve(out,`manifest.${hash}.json`),text);totalBytes+=Buffer.byteLength(text);
- return {hash,body:root,recoveryWorld,totalBytes,anchorCount,descriptor:{schemaVersion:1,url:`/world/recovery/manifest.${hash}.json`,hash,streamed:true}};
+ return {hash,body:root,recoveryWorld,totalBytes,anchorCount,admission:{cells:admittedCells,maxSidecarBytes,maxDecodedBytes},descriptor:{schemaVersion:1,url:`/world/recovery/manifest.${hash}.json`,hash,streamed:true}};
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href){
  const options={};for(let i=2;i<process.argv.length;i+=2)options[process.argv[i].slice(2)]=process.argv[i+1];

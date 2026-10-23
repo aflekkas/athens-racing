@@ -187,3 +187,16 @@ test('online sprint and TT finishes never read or write solo PB/event/ghost stor
  runInNewContext(code+';rememberResult(res);',{G,res,multiplayer:{active:false},Q:new URLSearchParams(),bestSetup:()=>G.bestSetup,exactBestKey:s=>s.key,recordPersonalBest(s,r){recorded++;assert.equal(r.valid,true);return {newBest:true};}});
  assert.equal(recorded,1);assert.equal(res.personalBest.newBest,true);
 });
+
+
+test('export admission checks original wire bytes, server budgets and every neighbor source hash',async()=>{
+ const {admitRecoveryCell}=await import('./build-world-recovery.mjs'),{canonicalJSON,sha256}=await import('../src/route-definition.js');
+ const revision='a'.repeat(64),source='b'.repeat(64),edge={id:'lane',from:'a',to:'b',flags:1,layer:0,surface:'asphalt',points:[[0,0,0],[0,0,40]]};
+ const anchor={edgeId:'lane',offsetM:20,x:0,y:0,z:20,yaw:-Math.PI,layer:0,surfaceId:'asphalt',leftM:4,rightM:4,halfWidth:1,halfLength:2,footprints:[{halfWidth:1,halfLength:2}]};
+ const body={schemaVersion:1,worldId:'athens',projectionId:'athens-v1',worldSetRevision:revision,sourceHashes:[['0,0',source]],edges:[edge],anchors:[anchor]},manifest={revision,tiles:{'0,0':{sha256:source}}},hash=await sha256(body),raw=canonicalJSON(body);
+ const metrics=await admitRecoveryCell(raw,{key:'0,0',manifest,hash});assert.equal(metrics.bytes,Buffer.byteLength(raw));assert.ok(metrics.decodedBytes>0);assert.equal(JSON.stringify(body).includes('points'),true);
+ await assert.rejects(admitRecoveryCell(raw.replace('"offsetM":20','"offsetM":21'),{key:'0,0',manifest,hash}),/Invalid authoritative/);
+ await assert.rejects(admitRecoveryCell(raw,{key:'0,0',manifest:{...manifest,tiles:{...manifest.tiles,'1,0':{sha256:'c'.repeat(64)}}},hash}),/exact active neighborhood/);
+ await assert.rejects(admitRecoveryCell(raw,{key:'0,0',manifest:{...manifest,tiles:{'0,0':{sha256:'c'.repeat(64)}}},hash}),/exact active neighborhood/);
+ await assert.rejects(admitRecoveryCell('['+'0,'.repeat(100000)+'0]',{key:'0,0',manifest,hash}),/memory budget/);
+});
