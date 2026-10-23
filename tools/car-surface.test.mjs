@@ -70,3 +70,12 @@ test('nonfinite input never poisons the bounded cosmetic state', () => {
   const {car,v}=fixture();v.vLong=Infinity;car.updateSurface(NaN,v);car.setDamage('left',.2,{localPoint:{x:NaN,y:Infinity,z:0}});
   assert.ok([...car.surface.dirt.toArray(),...car.surface.scuffs.flatMap(p=>p.toArray())].every(Number.isFinite));car.disposeDamage();
 });
+
+test('snapshot-only free-roam rendering consumes each real local impact and clears it on reset', () => {
+  const {car,v}=fixture();v.addDamage('left',8,hit);car.setDamageSnapshot(v.damage);
+  assert.equal(car.surface.scuffs[2].w,0);car.updateSurface(0,v,true,false);
+  assert.ok(car.surface.scuffs[2].w>0);assert.deepEqual(car.surface.scuffs[2].toArray().slice(0,3),[-.9,.55,-.3]);
+  const contact=car.surface.scuffs[2].toArray();v.lastDamage.localPoint.x=.9;
+  car.updateSurface(0,v,true,false);assert.deepEqual(car.surface.scuffs[2].toArray(),contact,'same serial cannot relocate the scuff');
+  v.reset(0,0);car.setDamageSnapshot(v.damage);car.updateSurface(0,v,true,false);assert.ok(car.surface.scuffs.every(p=>p.w===0));car.disposeDamage();
+});

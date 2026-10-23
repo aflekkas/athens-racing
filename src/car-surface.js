@@ -66,6 +66,11 @@ export function installCarSurface(car) {
   };
   paint.needsUpdate = true; // exactly once; wear updates mutate uniforms only
   const clear = () => { dirt.set(0, 0, 0, 0); for (const p of scuffs) p.set(0, 0, 0, 0); };
+  const recordScuff = (zone, total, p) => {
+    const i = ZONES.indexOf(zone);
+    if (i < 0 || !p || ![p.x, p.y, p.z].every(Number.isFinite)) return;
+    scuffs[i].set(Math.max(-car.dims.W / 2, Math.min(car.dims.W / 2, p.x)), Math.max(.15, Math.min(car.dims.H, p.y)), Math.max(-car.dims.L / 2, Math.min(car.dims.L / 2, p.z)), Math.min(.85, bounded(total) * 1.4));
+  };
   const setDamage = car.setDamage;
   car.setDamage = function(zone, value, hit) {
     const old = this.damage?.[zone] || 0;
@@ -75,22 +80,25 @@ export function installCarSurface(car) {
     if (total < old) {
       scuffs[i].w = Math.min(scuffs[i].w, total);
       if (ZONES.every(z => !this.damage?.[z])) clear();
-    } else if (total > old && hit?.localPoint) {
-      const p = hit.localPoint;
-      if ([p.x, p.y, p.z].every(Number.isFinite)) {
-        scuffs[i].set(Math.max(-car.dims.W / 2, Math.min(car.dims.W / 2, p.x)), Math.max(.15, Math.min(car.dims.H, p.y)), Math.max(-car.dims.L / 2, Math.min(car.dims.L / 2, p.z)), Math.min(.85, total * 1.4));
-      }
-    }
+    } else if (total > old) recordScuff(zone, total, hit?.localPoint);
     return result;
   };
   const snapshot = car.setDamageSnapshot;
   car.setDamageSnapshot = function(...args) { size.w = 0; return snapshot?.apply(this, args); };
   car.updateSurface = (dt, vehicle, detail = true, online = false) => {
     // reset() replaces the four contact records even for an undamaged but dirty car.
-    if (surface.contactEpoch !== vehicle.corners) { clear(); surface.contactEpoch = vehicle.corners; }
+    if (surface.contactEpoch !== vehicle.corners) { clear(); surface.contactEpoch = vehicle.corners; surface.impactSerial = null; }
     size.w = detail && !online ? 1 : 0;
     car.body.updateWorldMatrix(true, false); inverse.copy(car.body.matrixWorld).invert();
-    if (online || vehicle.air || vehicle.bodyDynamic) return;
+    if (online) return;
+    // The standalone world renderer uses absolute damage snapshots, so consume
+    // its existing local impact record too. One serial cannot repaint on repeats.
+    const hit = vehicle.lastDamage;
+    if (hit?.serial != null && hit.serial !== surface.impactSerial) {
+      surface.impactSerial = hit.serial;
+      recordScuff(hit.zone, car.damage?.[hit.zone], hit.localPoint);
+    }
+    if (vehicle.air || vehicle.bodyDynamic) return;
     const distance = bounded(Math.hypot(vehicle.vLong, vehicle.vLat), 70) * bounded(dt, .1);
     for (let i = 0; i < 4; i++) {
       if (!(vehicle.corners?.[i]?.Fz > 1)) continue;
