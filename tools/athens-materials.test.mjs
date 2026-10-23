@@ -99,3 +99,44 @@ test('complete coastal material shaders keep shared samples and compile detail o
   }
  }finally{setSetting('worldDetail',original);}
 });
+
+test('material proof waits paused for complete admission then takes exactly the same physics steps',async()=>{
+ const {readFile}=await import('node:fs/promises'),{runInNewContext}=await import('node:vm');
+ const source=await readFile(new URL('./terrain-material.browser.mjs',import.meta.url),'utf8');
+ const body=source.split('// BEGIN readiness protocol (also executed by source-only synthetic checks).')[1].split('// END readiness protocol')[0];
+ const exercise=async({admitAfter=1,initial=0,holdAt=-1}={})=>{
+  let activations=0,steps=0,now=0;const trace=[],tiles=new Map();
+  const stream={tiles,wanted:new Map(),pins:new Set(),position:{x:0,z:0},origin:{x:0,z:0},metrics:{activationStepMax:{}},entry:key=>({sha256:key}),contact:()=>({y:0}),readyAt:()=>activations>=admitAfter,activateFrame(){activations++;if(activations>=admitAfter)for(let x=-1;x<=1;x++)for(let z=-1;z<=1;z++)tiles.set(`${x},${z}`,{state:'active'});}};
+  const a={paused:false,menu:{close(){}},camera:{layers:{mask:7}},stream,stats:{simulationSeconds:initial},player:{veh:{x:0,y:0,z:0,vLong:0,vLat:0,ground:{ready:()=>activations>=admitAfter,footprint:()=>[{x:0,z:0}]}}},setPaused(p){this.paused=p;},setCameraHook(){},render(dt){trace.push({kind:'render',dt,paused:this.paused,elapsed:this.stats.simulationSeconds});},step(dt){trace.push({kind:'step',active:tiles.size,paused:this.paused});if(steps++!==holdAt)this.stats.simulationSeconds+=dt;}};
+  const fn=runInNewContext(body+';prepareTerrainView',{__athens:a,performance:{now:()=>now},document:{getElementById:()=>({})},getComputedStyle:()=>({display:'none',opacity:'0'}),setTimeout:resolve=>{now+=30;resolve();}});
+  let result,error;try{result=await fn({camera:{position:[0,0,0],lookAt:[0,0,1]}});}catch(e){error=e;}
+  assert.equal(a.camera.layers.mask,7,'camera layers restored even on failure');assert.equal(a.paused,false,'public pause restored');
+  return {result,error,trace,steps,a};
+ };
+ for(const admitAfter of [1,4,11]){
+  const {result,error,trace,steps}=await exercise({admitAfter});assert.ifError(error);assert.equal(result.ready,true);assert.equal(steps,24);assert.equal(result.warmup.simulationSeconds,0);assert.ok(Math.abs(result.last.simulationSeconds-.1)<1e-10);
+  assert.ok(trace.filter(t=>t.kind==='step').every(t=>t.active===9&&!t.paused),'no physics starts against a partial graph');
+  assert.ok(trace.filter(t=>t.kind==='render'&&t.paused).every(t=>t.dt===0&&t.elapsed===0),'warmup admits cells without elapsed simulation');
+ }
+ const nonzero=await exercise({initial:.01});assert.match(nonzero.error.message,/zero elapsed/);assert.equal(nonzero.steps,0);
+ const held=await exercise({admitAfter:3,holdAt:7});assert.ifError(held.error);assert.equal(held.result.ready,false);assert.match(held.result.failure,/held or failed: 7/);assert.equal(held.steps,8,'stop first failed physics step');
+});
+
+test('read-only native draw inventory accounts groups, instancing, double-sided passes and NPC ancestry',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const source=await readFile(new URL('./terrain-material.browser.mjs',import.meta.url),'utf8');
+ const body=source.slice(source.indexOf('const list=r.renderLists.get(a.scene,0)'),source.indexOf('return{jpeg,samples,inventory'));
+ const root={visible:true,name:'npc-model'},parent={visible:true,parent:root};
+ const material={type:'MeshBasicMaterial',name:'paint',customProgramCacheKey:()=> 'shared',transparent:true,side:2,forceSinglePass:false};
+ const geometry={type:'InstancedBufferGeometry',index:{count:120},attributes:{position:{count:40}},drawRange:{start:6,count:60},isInstancedBufferGeometry:true,instanceCount:5,_maxInstanceCount:3};
+ const object={name:'panel',type:'Mesh',isMesh:true,visible:true,parent};
+ const item={object,geometry,material,group:{start:12,count:24}};
+ let getCalls=0;const r={renderLists:{get(scene,depth){getCalls++;assert.equal(scene,'native-scene');assert.equal(depth,0);return {opaque:[],transmissive:[],transparent:[item]};}}};
+ const car={id:4,type:{id:'sedan'},kind:'sedan',active:true,m:{root},point:{edge:'road-2'},vehicle:{x:1,y:2,z:3,yaw:.4,vLong:7}};
+ const inventory=Function('a','r',body+'return inventory;')({scene:'native-scene',traffic:[car]},r);
+ assert.equal(getCalls,1);assert.equal(inventory.draws.length,1);assert.equal(inventory.draws[0].start,12);assert.equal(inventory.draws[0].count,24);assert.equal(inventory.draws[0].instances,3);assert.equal(inventory.draws[0].passes,2);assert.equal(inventory.draws[0].nominalTriangles,48);assert.equal(inventory.draws[0].npcId,4);
+ assert.equal(inventory.traffic[0].nominalTriangles,48);assert.deepEqual(inventory.traffic[0].pose,{x:1,y:2,z:3,yaw:.4,vLong:7});assert.equal(object.onBeforeRender,undefined,'no callback installed');assert.equal(root.visible,true,'native scene visibility untouched');
+ object.isInstancedMesh=true;object.count=2;material.forceSinglePass=true;
+ const second=Function('a','r',body+'return inventory;')({scene:'native-scene',traffic:[car]},r);
+ assert.equal(second.draws[0].instances,2);assert.equal(second.draws[0].nominalTriangles,16);
+});
