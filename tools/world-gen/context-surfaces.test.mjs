@@ -46,3 +46,39 @@ test('sealed source tokens, retained side and explicit boundary graph hash are m
 test('interior-only sliver ambiguity and road intrusion cannot evade endpoint/midpoint checks',async()=>{
  for(const sliver of ['ambiguity','intrusion']){const{proofs,input}=await setup({sliver});assert.throws(()=>compileMappedWallProfile(input,proofs),sliver==='ambiguity'?/ambiguous owner elevation/:/road clearance intrusion/);}
 });
+
+async function oneWall(s,points,triangle=0,more=[]){
+ const wall=wallRecord(points),length=Math.hypot(points[1][0]-points[0][0],points[1][1]-points[0][1]);
+ return {input:{...wall,retainedSide:'left',spans:[{from:0,to:length,top:ref(s,'contactTriangles',triangle,'surface:top',1),bottom:ref(s,'fineTriangles',triangle,'terrain:'+s.cell.join(','),0)}]},proofs:await Promise.all([s,...more].map(prepareContextCell))};
+}
+test('shared road diagonals, internal vertices and cell seams are never outer kerbs',async()=>{
+ // Before this fix the exact diagonal compiled two illegal faces.
+ const diagonal=await oneWall(source({intrusion:true}),[[10,10],[11,11]]);
+ assert.throws(()=>compileMappedWallProfile(diagonal.input,diagonal.proofs),/internal road union edge/);
+ const shifted=await oneWall(source({intrusion:true}),[[10,10.1],[11,11.1]],1);
+ assert.throws(()=>compileMappedWallProfile(shifted.input,shifted.proofs),/road clearance intrusion/);
+ const sloping=await oneWall(source({roadTriangles:[{points:[[0,2,0],[512,5,512],[512,4,0]]},{points:[[0,2,0],[0,3,512],[512,5,512]],layer:2}]}),[[10,10],[11,11]]);
+ assert.throws(()=>compileMappedWallProfile(sloping.input,sloping.proofs),/internal road union edge/);
+ const roadTriangles=[[[9,9],[11,9],[10,10]],[[11,9],[11,11],[10,10]],[[11,11],[9,11],[10,10]],[[9,11],[9,9],[10,10]]].map(points=>({points:points.map(([x,z])=>[x,3,z])}));
+ const vertex=await oneWall(source({roadTriangles}),[[9.5,9.5],[10.5,10.5]]);
+ assert.throws(()=>compileMappedWallProfile(vertex.input,vertex.proofs),/road clearance intrusion/);
+ const left=source({intrusion:true}),right=source({cell:[1,0],intrusion:true});
+ const seam=await oneWall(left,[[512,10],[512,11]],0,[right]);
+ assert.throws(()=>compileMappedWallProfile(seam.input,seam.proofs),/internal road union edge/);
+ const missing=await oneWall(right,[[512,10],[512,11]],1);
+ assert.throws(()=>compileMappedWallProfile(missing.input,missing.proofs),/neighbouring cell/);
+ const legalSeam=await oneWall(right,[[512,10],[512,11]],1,[source()]);
+ assert.equal(compileMappedWallProfile(legalSeam.input,legalSeam.proofs).triangles,2);
+});
+test('genuine union exterior stays legal; source layers cannot legalize same-height internal edges',async()=>{
+ const positive={points:[[10,3,20],[12,3,20],[10,3,22]]},opposite=y=>({points:[[10,y,20],[10,y,18],[12,y,20]],layer:2,owner:3});
+ for(const roadTriangles of [[positive],[positive,opposite(11)],[positive,opposite(-10)]]){
+  const wall=await oneWall(source({roadTriangles}),[[10,20],[11,20]],1);
+  assert.equal(compileMappedWallProfile(wall.input,wall.proofs).triangles,2);
+ }
+ const internal=await oneWall(source({roadTriangles:[positive,opposite(3)]}),[[10,20],[11,20]],1);
+ assert.throws(()=>compileMappedWallProfile(internal.input,internal.proofs),/internal road union edge/);
+ const above=await oneWall(source({top:14,intrusion:true}),[[10,10],[11,11]]);
+ // A higher top alone does not remove the road volume intersecting the wall.
+ assert.throws(()=>compileMappedWallProfile(above.input,above.proofs),/internal road union edge/);
+});

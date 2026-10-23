@@ -76,16 +76,46 @@ function positive(interval,f0,f1,threshold=EPS){
  if(Math.abs(d)<1e-14)return f0>threshold?interval:null;
  const cross=(threshold-f0)/d;if(d>0)lo=Math.max(lo,cross);else hi=Math.min(hi,cross);return hi-lo>EPS?[lo,hi]:null;
 }
+function roadRange(tri,p,q,a,b,threshold,range=[0,1]){
+ const wa=weights(tri.points,p),wb=weights(tri.points,q);
+ for(let k=0;k<3;k++)range=positive(range,wa[k],wb[k],threshold);
+ if(!range)return null;
+ range=positive(range,a.top-height(tri,p),b.top-height(tri,q));
+ return positive(range,height(tri,p)+4.5-a.bottom,height(tri,q)+4.5-b.bottom);
+}
+function sideOfLine(tri,p,q){
+ const values=tri.points.map(v=>(q[0]-p[0])*(v[2]-p[1])-(q[1]-p[1])*(v[0]-p[0]));
+ const lo=Math.min(...values),hi=Math.max(...values);
+ return lo>=-EPS&&hi>EPS?1:hi<=EPS&&lo< -EPS?-1:0;
+}
+function requireBoundaryNeighbours(sources,p,q){
+ // A tile border is not evidence of the road union's exterior. Both sides
+ // must be authenticated before a coincident edge may be called external.
+ const cells=new Set(sources.map(s=>s.cell.join(','))),mid=p.map((v,i)=>(v+q[i])/2);
+ for(let axis=0;axis<2;axis++)if(Math.abs(p[axis]-q[axis])<EPS&&Math.abs(p[axis]/512-Math.round(p[axis]/512))<EPS/512){
+  const c=mid.map(v=>Math.floor(v/512));c[axis]=Math.round(p[axis]/512);
+  const neighbour=[...c];neighbour[axis]--;
+  if(!cells.has(c.join(','))||!cells.has(neighbour.join(',')))fail('uncertified road boundary neighbouring cell');
+ }
+}
 function rejectsRoadIntrusion(sources,a,b){
- const p=[a.x,a.z],q=[b.x,b.z];
- for(const source of sources)for(const tri of source.triangles){if(!tri.drivable)continue;
-  const wa=weights(tri.points,p),wb=weights(tri.points,q);let range=[0,1];
-  // Strict road interior: a wall on the existing road edge may touch its boundary.
-  for(let k=0;k<3;k++)range=positive(range,wa[k],wb[k]);if(!range)continue;
-  const ya=height(tri,p),yb=height(tri,q);
-  range=positive(range,a.top-ya,b.top-yb);
-  range=positive(range,ya+4.5-a.bottom,yb+4.5-b.bottom);
-  if(range)fail('road clearance intrusion: '+tri.owner+' triangle '+tri.triangle);
+ const p=[a.x,a.z],q=[b.x,b.z],roads=sources.flatMap(s=>s.triangles.filter(t=>t.drivable));
+ for(const tri of roads){
+  if(roadRange(tri,p,q,a,b,EPS))fail('road clearance intrusion: '+tri.owner+' triangle '+tri.triangle);
+  const range=roadRange(tri,p,q,a,b,-EPS);if(!range)continue;
+  const side=sideOfLine(tri,p,q);if(!side)fail('unproven road union exterior boundary');
+  requireBoundaryNeighbours(sources,p,q);
+  // Inclusive per-triangle coverage alone cannot distinguish an outer kerb
+  // from an internal diagonal. A coplanar face on the opposite side closes
+  // the union around the wall; different source owners/layer tags cannot
+  // turn that physical interior into a legal edge. Different-height decks
+  // remain separate unions and still get their own clearance test above.
+  for(const other of roads){
+   if(other===tri||sideOfLine(other,p,q)!==-side)continue;
+   const overlap=roadRange(other,p,q,a,b,-EPS,range);if(!overlap)continue;
+   if(overlap.every(f=>{const point=[p[0]+(q[0]-p[0])*f,p[1]+(q[1]-p[1])*f];return Math.abs(height(tri,point)-height(other,point))<=1e-6;}))
+    fail('road clearance intrusion at internal road union edge: '+tri.owner+' / '+other.owner);
+  }
  }
 }
 
