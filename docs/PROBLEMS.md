@@ -55,6 +55,8 @@ Difficulty: 🟢 good first fix · 🟡 medium · 🔴 deep / needs care.
 **Done when:** city streets feel flat-to-gently-sloped like real Athens, and hills only appear where real ones are, such as Lycabettus and Penteli. The existing gates (≤30° asphalt, 15 cm step, ≤45% grade) aren't enough to make it feel right; add a smoothness check.
 **Note:** any world rebake must be uploaded to BOTH R2 buckets; see "Lessons" below.
 
+**In progress (2026-10-23, not published):** a 27-cell prototype passes physical/contact/seam checks and improves several urban roads, but its broader kernel lowers the hosted Lycabettus peak by about 26 m. Global baking is now blocked by an explicit geography-acceptance guard. A replacement tested on five cells preserves the hill better but fails unchanged Syntagma and Lycabettus comfort checks; it is rejected too. Neither prototype establishes full-world fidelity. All 3,647 authored Psychiko pieces must remain intact; the reduced candidate restores all 825 affected authored indices, with 2,822 in unchanged cells. See `.scratch/smooth-terrain-seams/README.md` and `docs/plans/terrain-ekali-world.md`.
+
 ### 5. Parked cars look chopped, and the roads have artefacts 🟡
 **What's wrong:**
 - Parked cars are cut off or chopped, and some render as flat slabs or look boxy up close.
@@ -68,11 +70,17 @@ Difficulty: 🟢 good first fix · 🟡 medium · 🔴 deep / needs care.
 
 ## Open: other known issues
 
-- 🟢 **Esc goes to the wrong screen.** In the Athens route flow, Esc from Race Setup goes to the title screen instead of the track picker.
-- 🟢 **Stale What's New.** The Unreleased cleanup did not affect player-facing notes. Follow-up corrects the current release text and removes its obsolete trim-picker image; staging confirmation pending.
-- 🟢 **Signed-out leaderboard.** Signed-out players see "Leaderboard unavailable" in Top 3; show something friendlier.
 - 🔴 **Slow first load.** Cold load is still above the 8 s target: Megara about 8.1 s, Penteli hill about 9.1 s.
-- 🔴 **Old per-track loaders not removed.** They still serve the normal menu races; finishing the move to one Athens world means deleting them.
+- 🔴 **Unified-world migration needs final parity proof.** Candidate source removes normal per-track runtime loading and supports immutable route/grid identities, streamed recovery and physical shared NPC transport. Solo Megara/Penteli direct entry is browser-verified; final two-client racing, reconnect, tow, full-domain recovery, police authority and atomic all-route activation remain required. Online remains disabled.
+- 🔴 **Kifisias and major infrastructure fidelity.** Three sampled upper bridge orders match source tags, but this does not validate the uniform lower-road depression. The circular interchange is actually omitted by the existing stacked-deck/short-approach policy. Dated reference/profile reconciliation and supported structural context remain open; do not invent walls or piers.
+- 🟡 **Floating and arbitrary road paint.** Exact offline asphalt draping and legal-junction kerb inference have matched local Glyfada/Vouliagmeni proof. Existing hosted cells still need coordinated immutable repacking and publication; this is not a worldwide deployed fix. See `.scratch/road-markings/README.md`.
+- 🔴 **NPC routing and passing.** Candidate fixes layer/owner transitions, measured directional lanes and continuity, with dense footprint validation. Actual combined passing/transition proof and longer Glyfada/Quick drives remain pending. A rejected planner curve alone is not evidence of a missing road.
+- 🔴 **Kefalari remains too sparse.** The new circuit has completed race/TT/tow/free-roam proof, but its streetscape is not yet faithful to the leafy real area. Bounded safe setback planting and materials are implemented; mapped garden/wood/tree ingestion and cleared scenery-cell reduction are in progress. Generic residential urban material is not surveyed paving.
+- 🔴 **Ekali is not playable yet.** A source-reviewed 2.117 km candidate follows all 56 legal directed traversals, including the corrected one-way roundabout. Authentic new emitted cells, DEM/border integration, scenery, route/grid/runout proofs and actual driving remain outstanding. See `tools/maps/ekali/SOURCES.md`.
+- 🟡 **Ellinikon Tower fidelity.** A 160 m generic building near the published tower location is present in the hosted cell; there is no named bespoke tower model. Generic presence does not establish architectural or construction-stage accuracy.
+- 🟡 **Car dirt/scuffs need appearance proof.** Candidate cosmetic paint shaders use loaded loose-ground contacts and local impacts, hidden online and with World detail Off. Shader compilation and lifecycle regressions pass, but convincing matched Low/High appearance, repair and final integrated browser proof remain pending.
+- 🟡 **Driving tip and event selection verification.** Candidate keycap layout and generic Race/Time Trial selector have partial real-menu evidence; complete tip-size/input and menu-to-driving proof remain required. Map labels can overlap the floating track card and pager.
+- 🔴 **Release access unavailable in this workspace.** Wrangler is unauthenticated and the expected release train is unavailable; restore the normal verified release path before combined staging/production publication. No new world or online feature has been deployed from this branch.
 
 ## Lessons from releases (read before touching the world or deploys)
 
@@ -80,6 +88,8 @@ Difficulty: 🟢 good first fix · 🟡 medium · 🔴 deep / needs care.
 - **A failed commit is never retried on its own.** After a failure the release train skips that commit until `~/.local/state/athens-release/failed` is removed.
 
 ## Fixed
+
+- **Race Setup navigation, signed-out Top 3 and current release notes (verified locally 2026-10-23):** existing fixes `c2bc4672` and `ce5cfa7e` are present. Real Faros deep-link Escape returns to the picker; signed-out fixture copy leads to the real sign-in action; the actual current version shows one-car-per-model notes without the obsolete trim image. Five local browser checks pass with no page errors. Evidence: `.scratch/ui-verification-2026-10-23/README.md`. This verifies current source, not a new deployment.
 
 - **Free-roam mirror is a still picture (2026-10-22):** the standalone Athens free-roam render never ran the mirror pass, so the interior glass kept its static fallback texture and ignored Settings → Graphics → Mirror. It now renders the live rear view with the same Off / Low / High gate as races. Same fix wave: cockpit is the default view (C toggles POV/outside), B is hold-to-look-back in every Athens view, hood POV retired, position cycling moved to P with default migration. Browser evidence: `/home/dev/data/agent-feed/fix-wave/mirror/` (two driving shots with changing mirror content, one Off shot).
 

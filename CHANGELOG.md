@@ -8,6 +8,8 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Add the Kifissia–Kefalari street circuit and Kefalari free-roam start, with separate race and time-trial records.
+
 - Shrubs and tree crowns stay clear of the roads, and roadside greenery fades in smoothly as you drive.
 
 - On staging, choose the Penteli hill climb, uphill time trial or legal descent from the Athens route picker. Earlier times stay under Original Penteli road.
