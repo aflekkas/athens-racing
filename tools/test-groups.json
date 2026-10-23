@@ -281,7 +281,8 @@
     "tools/infill-repair.test.mjs",
     "tools/world-traffic-riders.test.mjs",
     "tools/float-panel-fallback.test.mjs",
-    "tools/world-tile-road-width.test.mjs"
+    "tools/world-tile-road-width.test.mjs",
+    "tools/ekali-route.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",

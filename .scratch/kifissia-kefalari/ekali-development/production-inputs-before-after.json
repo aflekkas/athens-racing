@@ -1,0 +1,45 @@
+{
+  "baselineCommit": "2a436b849ee7737274601619364746e26da5532c",
+  "productionDiscovery": "validateRoutes readdir routes: all *.route.json before release filtering",
+  "definitionPath": ".scratch/kifissia-kefalari/ekali-development/ekali-circuit.route.json",
+  "definitionSha256": "902eab21a9ffacf3540c73fe5c9a56a7bc6823173f406f4c653432085294f5fc",
+  "definitionMatchesAuthorOutput": true,
+  "productionRouteCount": 7,
+  "productionInputs": [
+    {
+      "path": "data/routes/kifissia-kefalari.route.json",
+      "sha256": "04a4ae48c8894c6349f546f9fbefc7b20544cdf00d82884cd0214c64e213091a",
+      "unchanged": true
+    },
+    {
+      "path": "data/routes/megara-club.route.json",
+      "sha256": "c65a659ead088c9ef8947ea08f62a6f20b7271993738f81fcce41ba77e8d588d",
+      "unchanged": true
+    },
+    {
+      "path": "data/routes/penteli-descent.route.json",
+      "sha256": "1222e51ee6b60e69f2f91f001e14cdca7f8b0724abb1c8e1d77ba2b33870cc68",
+      "unchanged": true
+    },
+    {
+      "path": "data/routes/penteli-hill.route.json",
+      "sha256": "d1c2aa62522ff5c1c5466e8b17853e3a04fb8847b9628dfaa1f1670ade71799d",
+      "unchanged": true
+    },
+    {
+      "path": "data/routes/psychiko-faros.route.json",
+      "sha256": "032c5a5b5ed46ef3528c30324b18b51399c11fc526adf9d9487f2ba6b126921d",
+      "unchanged": true
+    },
+    {
+      "path": "data/routes/riviera-coast.route.json",
+      "sha256": "704b8b212a63eb11957fbdda8f0412ef92711ee1a45b9584e7bc97726be556dc",
+      "unchanged": true
+    },
+    {
+      "path": "data/routes/syntagma-pilot.route.json",
+      "sha256": "e177888ecc7896ca402b0162d2bcc5921be594f97d6e9171e2dd096692489bf3",
+      "unchanged": true
+    }
+  ]
+}

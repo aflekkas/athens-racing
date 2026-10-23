@@ -1,0 +1,75 @@
+{
+  "world": "athens",
+  "revision": "358325da4b458b4b15c2f419aed0c204da91e714f4a011991cbecbdb23d2e3a8",
+  "projection": {
+    "lat0": 37.98,
+    "lon0": 23.73,
+    "mlat": 111320,
+    "mlon": 87745.27512677578
+  },
+  "tileMetres": 512,
+  "developmentOnly": true,
+  "releaseReady": false,
+  "tiles": {
+    "17,-29": {
+      "bytes": 164633,
+      "contactEligible": true,
+      "decodedBytes": 2678647,
+      "dependencies": [],
+      "residentBytes": 1481475,
+      "sha256": "0ebfb1666e5086b0f9fef51a3300ea8bbac5af26d85610ff82f6c105815d8e50",
+      "source": {
+        "regionId": "basin",
+        "revision": "12935f07f7dceacdfbf96d7a9de8fa10ae88f49fcf673fb08c6c8dfe5cb0cc31",
+        "world": "athens-ekali-development"
+      },
+      "transientBytes": 5521927,
+      "triangles": 16291
+    },
+    "17,-30": {
+      "bytes": 375911,
+      "contactEligible": true,
+      "decodedBytes": 5197343,
+      "dependencies": [],
+      "residentBytes": 2781925,
+      "sha256": "182cb746248360e7ae1503a825236d77adb305ad18edaf55aab70d2dfea4c972",
+      "source": {
+        "regionId": "basin",
+        "revision": "12935f07f7dceacdfbf96d7a9de8fa10ae88f49fcf673fb08c6c8dfe5cb0cc31",
+        "world": "athens-ekali-development"
+      },
+      "transientBytes": 10770597,
+      "triangles": 28049
+    },
+    "18,-29": {
+      "bytes": 197181,
+      "contactEligible": true,
+      "decodedBytes": 3167167,
+      "dependencies": [],
+      "residentBytes": 1799289,
+      "sha256": "1eacbe80257859f5c178ad7adf51861e0f67ba0a814ae89cbba0aa04571b258b",
+      "source": {
+        "regionId": "basin",
+        "revision": "12935f07f7dceacdfbf96d7a9de8fa10ae88f49fcf673fb08c6c8dfe5cb0cc31",
+        "world": "athens-ekali-development"
+      },
+      "transientBytes": 6531515,
+      "triangles": 20816
+    },
+    "18,-30": {
+      "bytes": 264715,
+      "contactEligible": true,
+      "decodedBytes": 4186474,
+      "dependencies": [],
+      "residentBytes": 2362057,
+      "sha256": "48e419fe1d8eab16185f548c733a227bf5177854da54f075980ec975fb77b152",
+      "source": {
+        "regionId": "basin",
+        "revision": "12935f07f7dceacdfbf96d7a9de8fa10ae88f49fcf673fb08c6c8dfe5cb0cc31",
+        "world": "athens-ekali-development"
+      },
+      "transientBytes": 8637663,
+      "triangles": 28126
+    }
+  }
+}

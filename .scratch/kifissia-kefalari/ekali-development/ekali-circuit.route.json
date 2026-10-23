@@ -1,0 +1,89 @@
+{
+  "$schema": "../../schemas/route.v1.schema.json",
+  "schemaVersion": 1,
+  "id": "ekali-circuit",
+  "revision": 1,
+  "worldId": "athens",
+  "regionId": "basin",
+  "name": "EKALI",
+  "description": "Ekali public-street circuit.",
+  "kind": "circuit",
+  "lengthM": 2118.0347352997987,
+  "laps": 2,
+  "allowReverse": false,
+  "timeOfDay": "afternoon",
+  "weather": "clear",
+  "trafficLevel": 0,
+  "rivals": 2,
+  "police": false,
+  "signals": false,
+  "path": {
+    "edges": [
+      "osm:way:44130952:0-0:b:18:-29",
+      "osm:way:44130959:4-0:f:18:-29",
+      "osm:way:44130959:8-0:f:18:-29",
+      "osm:way:44130959:8-1:f:18:-30",
+      "osm:way:44130959:12-0:f:18:-30",
+      "osm:way:44130950:0-0:f:18:-30",
+      "osm:way:44130941:0-0:f:18:-30",
+      "osm:way:44130958:14-0:f:18:-30",
+      "osm:way:44130942:0-0:b:18:-30",
+      "osm:way:44130950:2-0:f:18:-30",
+      "osm:way:44130954:1-0:b:18:-30",
+      "osm:way:44130954:0-2:b:18:-30",
+      "osm:way:44130954:0-1:b:18:-29",
+      "osm:way:44130954:0-0:b:17:-29",
+      "osm:way:44154570:0-0:b:17:-29",
+      "osm:way:888683829:2-0:b:17:-29",
+      "osm:way:44154571:0-0:f:17:-29",
+      "osm:way:888683915:0-0:f:17:-29",
+      "osm:way:888683915:1-0:f:17:-29",
+      "osm:way:44154572:0-0:f:17:-29",
+      "osm:way:44154572:0-1:f:18:-29",
+      "osm:way:638497823:0-0:b:18:-29",
+      "osm:way:44154570:3-0:f:18:-29",
+      "osm:way:44154570:6-0:f:18:-29",
+      "osm:way:44154570:10-0:f:18:-29",
+      "osm:way:44130953:3-0:f:18:-29",
+      "osm:way:44130953:4-0:f:18:-29",
+      "osm:way:44130952:0-0:b:18:-29"
+    ]
+  },
+  "start": {
+    "edgeId": "osm:way:44130952:0-0:b:18:-29",
+    "offsetM": 120,
+    "lateralM": 0,
+    "yawRad": -0.2720837715228678
+  },
+  "finish": {
+    "edgeId": "osm:way:44130952:0-0:b:18:-29",
+    "offsetM": 120,
+    "lateralM": 0,
+    "yawRad": -0.2720837715228678
+  },
+  "turns": {
+    "allowed": [],
+    "disallowed": []
+  },
+  "sectorsM": [
+    706.0115784332662,
+    1412.0231568665324
+  ],
+  "closureIds": [],
+  "events": [
+    {
+      "id": "ekali-race",
+      "type": "sprint",
+      "laps": 2,
+      "rivals": 2,
+      "trafficLevel": 0
+    },
+    {
+      "id": "ekali-tt",
+      "type": "timetrial",
+      "laps": 2,
+      "rivals": 0,
+      "trafficLevel": 0
+    }
+  ]
+}

@@ -150,3 +150,29 @@ no arbitrary height offset is assumed. Terrain owns DEM acquisition, area
 configuration and world assembly. Route
 work will consume its authenticated emitted output and leave the old seven
 Kifissia proof cells protected unless coordinated reproof is required.
+
+## Complete-source development compilation
+
+The completed twenty-cell manifest SHA-256 is
+`41da1ae7e99346363d58582b8a2f69259e12b38515d13a8bd85811ffe3807167`,
+source world `athens-ekali-development` revision
+`12935f07f7dceacdfbf96d7a9de8fa10ae88f49fcf673fb08c6c8dfe5cb0cc31`.
+The development composed world revision is
+`358325da4b458b4b15c2f419aed0c204da91e714f4a011991cbecbdb23d2e3a8`,
+manifest SHA-256
+`4f1f69bd05b9a8c38747c12df5563f06387f43a197118698ee2a854a33cf043c`.
+Both manifests were hash-verified; all cell bodies remained read-only/shared.
+
+With the generic exact-bin width fix, the original legal reviewed route compiles
+to 27 unique directed edges and 2,118.060774 m, with three offline Pefkon grid
+poses and native graph-station run-in/runout checks. Its actual four-cell DEV
+query proof is 752,316 bytes. A combined north regional proof is 1,774,970 bytes,
+three siblings / 82 root cells, so no root-cap exception is needed. Neither
+proof is substituted into the active global root before final world binding.
+
+The committed standalone fixture is DEV evidence, not a fourth active sibling.
+Its tuple, precise runout/chord distinction, current test counts and remaining
+19/20 terrain-comfort defects are documented in
+`.scratch/kifissia-kefalari/ekali-development/README.md`. Native browser driving,
+final height/contact proof, current Street View character and catalogue/spawn
+activation remain outstanding. No complete route acceptance is claimed.

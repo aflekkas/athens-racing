@@ -1,0 +1,31 @@
+{
+  "status": "development-only; no catalogue activation or final acceptance",
+  "sourceManifestSha256": "41da1ae7e99346363d58582b8a2f69259e12b38515d13a8bd85811ffe3807167",
+  "composedManifestSha256": "4f1f69bd05b9a8c38747c12df5563f06387f43a197118698ee2a854a33cf043c",
+  "worldSetRevision": "358325da4b458b4b15c2f419aed0c204da91e714f4a011991cbecbdb23d2e3a8",
+  "sourceWorld": "athens-ekali-development",
+  "sourceRevision": "12935f07f7dceacdfbf96d7a9de8fa10ae88f49fcf673fb08c6c8dfe5cb0cc31",
+  "proofSha256": "49f89ebf96530a4050206d052002c133f9b67c08961757838de12951dee87d36",
+  "proofBytes": 752316,
+  "rootIntegration": {
+    "existingSiblings": 3,
+    "combinedNorthProofBytes": 1774970,
+    "combinedNorthProofSha256": "0ac9b68a6757ec1774bab9d84e12a4ea0863b797b7d8bbe843084a8af8ba51ca",
+    "prospectiveRootCells": 82,
+    "capsUnchanged": true,
+    "globalRootRebound": false
+  },
+  "pending": [
+    "comfort19/20cells",
+    "finalterrain/world and allroutequeryreproof",
+    "StreetView character",
+    "actualgame race/TT/tow/free acceptance",
+    "finalcleancandidategates"
+  ],
+  "definitionPath": ".scratch/kifissia-kefalari/ekali-development/ekali-circuit.route.json",
+  "definitionSha256": "902eab21a9ffacf3540c73fe5c9a56a7bc6823173f406f4c653432085294f5fc",
+  "productionRouteCount": 7,
+  "productionInputsUnchangedReceipt": "production-inputs-before-after.json",
+  "productionValidationReceipt": "production-validation.json",
+  "productionValidationScope": "existing source world and root proof; isolation only, not final-world or full-build acceptance"
+}
