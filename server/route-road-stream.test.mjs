@@ -115,8 +115,8 @@ test('offline admission is the exact immutable compact server path with byte and
 });
 
 const twoWayBody = () => ({ schemaVersion: 1, worldId: 'athens', projectionId: 'athens-v1', worldSetRevision: revision, sourceHashes: [['0,0', source]], edges: [
-  { id: 'forward', from: 'north', to: 'south', layer: 0, surface: 'road', flags: 1, points: [[100, 0, 200], [100, 0, 0]] },
-  { id: 'reverse', from: 'south', to: 'north', layer: 0, surface: 'road', flags: 1, points: [[100, 0, 0], [100, 0, 200]] }
+  { id: 'forward', from: 'north', to: 'south', layer: 0, surface: 'road', flags: 0, points: [[100, 0, 200], [100, 0, 0]] },
+  { id: 'reverse', from: 'south', to: 'north', layer: 0, surface: 'road', flags: 0, points: [[100, 0, 0], [100, 0, 200]] }
 ], anchors: [
   { edgeId: 'forward', roadId: 'forward|reverse', offsetM: 100, x: 101, y: 0, z: 100, yaw: 0, layer: 0, surfaceId: 'road', leftM: 4, rightM: 4, halfWidth: 1.1, halfLength: 6 },
   { edgeId: 'reverse', roadId: 'forward|reverse', offsetM: 100, x: 99, y: 0, z: 100, yaw: -Math.PI, layer: 0, surfaceId: 'road', leftM: 4, rightM: 4, halfWidth: 1.1, halfLength: 6 }
@@ -151,4 +151,17 @@ test('road groups require exact authoritative reverse membership and reject omit
   const authority = createStreamedRoadAuthority({ worldSetRevision: revision, cells: { '0,0': { sourceHash: 'c'.repeat(64), hash, url } } }, async () => JSON.stringify(body));
   await assert.rejects(authority.prepare({ x: 100, y: 0, z: 100 }, { halfWidth: 1, halfLength: 2 }), /source drift/);
   assert.equal(authority.stats().entries, 0); assert.equal(authority.stats().leases, 0);
+});
+
+test('explicit one-way reverse endpoints never form a group or override the nearest legal carriageway', async()=>{
+ const {planWorldTow}=await import('../src/tow-placement.js');
+ for(const flags of [[1,1],[1,0],[0,1]]){
+  const body=twoWayBody();body.edges.forEach((edge,i)=>edge.flags=flags[i]);body.anchors.forEach(anchor=>delete anchor.roadId);
+  const admitted=await admitRecoverySidecar(JSON.stringify(body),{expectedHash:await sha256(body),worldSetRevision:revision});
+  const pose={x:98,y:0,z:100,yaw:0,towHeading:0};const pick=roadCandidates=>planWorldTow({pose,route:null,course:null,roadCandidates});
+  assert.equal(pick(admitted.body.anchors).edgeId,'reverse');
+  assert.equal(pick(admitted.body.anchors.map(a=>({...a,roadId:'forward|reverse'}))).edgeId,'forward','old grouped one-way negative control chooses the wrong farther lane');
+  for(const anchor of body.anchors)anchor.roadId='forward|reverse';
+  await assert.rejects(admitRecoverySidecar(JSON.stringify(body),{expectedHash:await sha256(body),worldSetRevision:revision}),/road group/);
+ }
 });
