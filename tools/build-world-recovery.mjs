@@ -29,28 +29,28 @@ export function assertRecoveryCoverage(manifest,registry){
 export function recoveryNeighborhood(key,manifest){
  const [x,z]=key.split(',').map(Number),keys=new Set();for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++){const k=`${x+dx},${z+dz}`;if(manifest.tiles[k])keys.add(k);}return keys;
 }
-export function proveRecoveryCell(key,world,profiles,{spacingM=4,onEdge=()=>{}}={}){
+export function proveRecoveryCell(key,world,profiles,{spacingM=4,onEdge=()=>{},onSample=null}={}){
  if(!(spacingM>0&&spacingM<=4))throw Error('Recovery sampling must be at most four metres');
  const packet=world.tiles.get(key)?.packet;if(!packet)throw Error('Missing recovery owner: '+key);
  const ids=new Set((packet.roadGraph||readGraphShard(packet)).edges.filter(e=>!(e.flags&8)).map(e=>e.id));
- const anchors=[],edges=new Map(),seen=new Set();let roadSamples=0;
+ const anchors=[],edges=new Map(),seen=new Set(),observe=(stage,edge,point,extra={})=>onSample?.({stage,edgeId:edge.id,point,...extra});let roadSamples=0;
  for(const id of [...ids].sort()){
   const edge=edgeValue(world.roads.graph,id),group=recoveryRoadGroup(world.roads.graph,edge),length=edgeLength(edge),count=Math.max(1,Math.ceil(length/spacingM));let used=false;
   for(let i=0;i<=count;i++){
-   const point={...edgePoint(edge,length*i/count),offsetM:length*i/count};if(cellKey(point.x,point.z)!==key)continue;roadSamples++;
+   const point={...edgePoint(edge,length*i/count),offsetM:length*i/count};if(cellKey(point.x,point.z)!==key)continue;roadSamples++;observe('sample',edge,point);
    const contact=world.contacts.contact(point.x,point.z,{referenceY:point.y,layer:edge.layer,requiredFlags:1});
-   if(!contact||!routeSurfaceAllowed(edge,contact,world.roads.graph))continue;
-   Object.assign(point,{y:contact.y,surfaceId:contact.surfaceId});const width=world.contacts.width(point,{connected:true});if(!width)continue;
+   if(!contact){observe('noContact',edge,point);continue;}if(!routeSurfaceAllowed(edge,contact,world.roads.graph)){observe('surfaceMismatch',edge,point,{contact});continue;}
+   Object.assign(point,{y:contact.y,surfaceId:contact.surfaceId});const width=world.contacts.width(point,{connected:true});if(!width){observe('noWidth',edge,point,{contact});continue;}
    Object.assign(point,{leftM:width.left,rightM:width.right});
    // Each profile may need a different legal lane centre. Certify all profiles
    // at each distinct candidate, then retain a Pareto set of successful proofs.
-   const candidates=new Map();for(const profile of profiles){const p=legalLanePoint(world,point,profile,{validate:false});if(p)candidates.set(`${p.x.toFixed(6)},${p.z.toFixed(6)}`,p);}
+   const candidates=new Map();for(const profile of profiles){const p=legalLanePoint(world,point,profile,{validate:false,onReject:onSample?(stage,data)=>observe(stage,edge,data.point,data):null});if(p)candidates.set(`${p.x.toFixed(6)},${p.z.toFixed(6)}`,p);}
    for(const p of candidates.values()){
     const certified=[];for(const profile of [...profiles].sort((a,b)=>b.halfLength-a.halfLength||b.halfWidth-a.halfWidth)){if(certified.some(q=>q.halfWidth>=profile.halfWidth&&q.halfLength>=profile.halfLength))continue;if(p.leftM>=profile.halfWidth+.15&&p.rightM>=profile.halfWidth+.15&&world.contacts.safe(p,{...profile,connected:true}))certified.push(profile);}const compatible=paretoFootprints(certified);
-    if(!compatible.length)continue;
+    if(!compatible.length){observe('noCertifiedFootprint',edge,p);continue;}
     const projected=projectEdge(edge,p.x,p.z),identity=canonicalJSON([id,projected.offsetM]);if(seen.has(identity))continue;
-    if(Math.abs(projected.y-p.y)>.75||Math.cos(projected.yaw-p.yaw)<Math.cos(5*Math.PI/180))continue;
-    seen.add(identity);const first=compatible[0];anchors.push({edgeId:id,...(group?{roadId:group.roadId}:{}),offsetM:projected.offsetM,x:p.x,y:p.y,z:p.z,yaw:p.yaw,layer:p.layer,surfaceId:p.surfaceId,leftM:p.leftM,rightM:p.rightM,halfWidth:first.halfWidth,halfLength:first.halfLength,footprints:compatible});used=true;
+    if(Math.abs(projected.y-p.y)>.75||Math.cos(projected.yaw-p.yaw)<Math.cos(5*Math.PI/180)){observe('edgeProjection',edge,p);continue;}
+    seen.add(identity);const first=compatible[0];anchors.push({edgeId:id,...(group?{roadId:group.roadId}:{}),offsetM:projected.offsetM,x:p.x,y:p.y,z:p.z,yaw:p.yaw,layer:p.layer,surfaceId:p.surfaceId,leftM:p.leftM,rightM:p.rightM,halfWidth:first.halfWidth,halfLength:first.halfLength,footprints:compatible});observe('anchor',edge,p,{footprints:compatible});used=true;
    }
   }
   if(used){const pending=[edge];for(let j=0;j<pending.length;j++){const e=pending[j];if(edges.has(e.id))continue;edges.set(e.id,e);for(const twin of recoveryRoadTwins(world.roads.graph,e))if(!edges.has(twin.id))pending.push(twin);}}onEdge({edge:id,anchors:anchors.length});

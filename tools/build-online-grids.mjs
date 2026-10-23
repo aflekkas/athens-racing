@@ -60,14 +60,14 @@ function atStation(rows,s,world){
 }
 // One legal lane centre, adjusted inward only within that lane's valid interval.
 // The contact/footprint proof below remains authoritative at junction fans.
-export function legalLanePoint(world,point,footprint,{validate=true}={}){
+export function legalLanePoint(world,point,footprint,{validate=true,onReject=null}={}){
  const edge=edgeValue(world.roads.graph,point.edgeId),width=point.leftM+point.rightM,mid=(point.rightM-point.leftM)/2;
  const twin=!!recoveryRoadGroup(world.roads.graph,edge);
  let u=mid;
- if(twin){const min=mid+footprint.halfWidth+.05,max=point.rightM-footprint.halfWidth-.15;if(max<min)return null;u=Math.max(min,Math.min(mid+width/4,max));}
+ if(twin){const min=mid+footprint.halfWidth+.05,max=point.rightM-footprint.halfWidth-.15;if(max<min){onReject?.('noLegalLane',{point,footprint});return null;}u=Math.max(min,Math.min(mid+width/4,max));}
  const p={...point,x:point.x+point.rx*u,z:point.z+point.rz*u},contact=world.contacts.contact(p.x,p.z,{referenceY:p.y,layer:p.layer,requiredFlags:1});
- if(!contact||!routeSurfaceAllowed(edge,contact,world.roads.graph))return null;Object.assign(p,{y:contact.y,surfaceId:contact.surfaceId});
- if(!world.contacts.safe(p,{halfWidth:footprint.halfWidth,halfLength:footprint.halfLength,connected:true}))return null;
+ if(!contact){onReject?.('laneNoContact',{point:p,footprint});return null;}if(!routeSurfaceAllowed(edge,contact,world.roads.graph)){onReject?.('laneSurfaceMismatch',{point:p,footprint,contact});return null;}Object.assign(p,{y:contact.y,surfaceId:contact.surfaceId});
+ if(!world.contacts.safe(p,{halfWidth:footprint.halfWidth,halfLength:footprint.halfLength,connected:true})){onReject?.('laneFootprintUnsafe',{point:p,footprint});return null;}
  return p;
 }
 export async function buildOnlineGrid(compiled,world,{footprint,maxApproachM=256}={}){

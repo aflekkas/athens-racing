@@ -116,7 +116,8 @@ test('recovery survey certifies each vehicle against actual contact safety and f
  const body=proveRecoveryCell('0,0',world,[small,bus]);assert.equal(body.anchors.length,11);assert.equal(body.edges.length,1);assert.deepEqual(body.sourceHashes,[['0,0','b'.repeat(64)]]);
  for(const a of body.anchors)assert.deepEqual(a.footprints,[small]);assert.ok(calls.some(p=>p.halfLength===6));
  world.contacts.safe=()=>false;assert.throws(()=>proveRecoveryCell('0,0',world,[small,bus]),/roads but no certified/);
- world.contacts.contact=()=>null;assert.throws(()=>proveRecoveryCell('0,0',world,[small]),/roads but no certified/);
+ const stages=[];world.contacts.contact=()=>null;assert.throws(()=>proveRecoveryCell('0,0',world,[small],{onSample:r=>stages.push(r)}),/roads but no certified/);assert.equal(stages.filter(r=>r.stage==='sample').length,11);assert.equal(stages.filter(r=>r.stage==='noContact').length,11);assert.ok(stages.every(r=>r.edgeId==='test-road'));
+ world.contacts.contact=()=>({y:0,layer:0,surfaceId:'wrong-surface'});stages.length=0;assert.throws(()=>proveRecoveryCell('0,0',world,[small],{onSample:r=>stages.push(r)}),/roads but no certified/);assert.equal(stages.filter(r=>r.stage==='surfaceMismatch').length,11);assert.ok(stages.filter(r=>r.stage==='surfaceMismatch').every(r=>r.contact.surfaceId==='wrong-surface'));
  packet.roadGraph.edges=[];assert.equal(proveRecoveryCell('0,0',world,[small]),null);
  assert.throws(()=>proveRecoveryCell('0,0',world,[small],{spacingM:8}),/at most four/);
 });
