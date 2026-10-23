@@ -38,7 +38,7 @@ export class WorldTileRoads {
     const edge=this.graph.edges.get(point.edge)?.value;if(!edge)return null;
     const surfaces=connected?new Map([...this.publicSurfaces(edge.layer),...this.connected(edge)]):new Map([[edge.surface,edge.layer]]);if(point.surfaceId)surfaces.set(point.surfaceId,edge.layer);
     const rx=Math.cos(point.yaw),rz=-Math.sin(point.yaw),intervals=[],visited=new Set();
-    for(let d=-radius;d<=radius;d+=4){
+    for(const d of contactRayStations(point,rx,rz,radius)){
       const x=point.x+rx*d,z=point.z+rz*d,key=tileKey(x,z),tile=this.stream.tiles.get(key);
       if(tile?.state!=='active'||!this.stream.readyAt(x,z))continue;
       const {tables:t,metadata:m,contactIndex:index}=tile.packet,lx=x-m.origin[0],lz=z-m.origin[2],cell=Math.min(31,Math.floor(lz/16))*32+Math.min(31,Math.floor(lx/16));
@@ -140,4 +140,25 @@ function polygonsOverlap(a,b,clearance){
   const cross=(u,v,p)=>(v[0]-u[0])*(p[1]-u[1])-(v[1]-u[1])*(p[0]-u[0]);
   for(let i=0;i<a.length;i++)for(let j=0;j<b.length;j++){const u=a[i],v=a[(i+1)%a.length],p=b[j],q=b[(j+1)%b.length];if(cross(u,v,p)*cross(u,v,q)<0&&cross(p,q,u)*cross(p,q,v)<0)return true;if(Math.min(distance(p,u,v),distance(q,u,v),distance(u,p,q),distance(v,p,q))<=clearance)return true;}
   return false;
+}
+
+// The contact CSR uses 16 m bins. Fixed-distance sampling can skip a bin when
+// the ray crosses a short corner, even when both adjacent samples hit asphalt.
+// One interior point per exact crossing interval visits every crossed bin;
+// endpoints retain the bounded-search behavior at the requested radius.
+function* contactRayStations(point,rx,rz,radius){
+  const cuts=[-radius,radius];
+  for(const [position,direction] of [[point.x,rx],[point.z,rz]]){
+    if(!direction)continue;
+    const lo=Math.min(position-direction*radius,position+direction*radius);
+    const hi=Math.max(position-direction*radius,position+direction*radius);
+    for(let line=Math.floor(lo/16)+1;line*16<hi;line++){
+      const d=(line*16-position)/direction;
+      if(d>-radius&&d<radius)cuts.push(d);
+    }
+  }
+  cuts.sort((a,b)=>a-b);
+  yield -radius;
+  for(let i=1;i<cuts.length;i++)if(cuts[i]>cuts[i-1])yield (cuts[i]+cuts[i-1])/2;
+  yield radius;
 }
