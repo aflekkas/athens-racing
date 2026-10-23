@@ -1,5 +1,5 @@
 """Ground classes, the park and facade lookups, and the shore-foam strip (needs shapely)."""
-import json,os,sqlite3,tempfile,unittest
+import importlib.util,json,os,sqlite3,tempfile,unittest
 from shapely.geometry import Polygon,box
 from shapely import wkb
 import appearance
@@ -79,6 +79,7 @@ class SourceGreenAreas(unittest.TestCase):
    self.assertEqual([tags for g,tags in found],[tags for key,g,tags in records])
    self.assertTrue(found[0][0].equals(garden));self.assertEqual(len(found[0][0].interiors),1)
    self.assertEqual([ground_category(30,.1,tags.get('landuse',''),tags.get('natural',''),1e9,tags.get('leisure','')) for g,tags in found],['grass','forest','forest'])
+ @unittest.skipUnless(importlib.util.find_spec('osmium'),'osmium is not installed')
  def test_partial_green_relation_is_rejected_even_when_outer_way_exists(self):
   from vegetation import incomplete_green_relations
   xml="""<osm version="0.6"><node id="1" lat="38.07" lon="23.81"/><node id="2" lat="38.071" lon="23.81"/><node id="3" lat="38.071" lon="23.811"/><way id="10"><nd ref="1"/><nd ref="2"/><nd ref="3"/><nd ref="1"/></way><relation id="20"><member type="way" ref="10" role="outer"/><tag k="type" v="multipolygon"/><tag k="leisure" v="garden"/></relation><relation id="21"><member type="way" ref="10" role="outer"/><member type="way" ref="99" role="inner"/><tag k="type" v="multipolygon"/><tag k="natural" v="wood"/></relation><relation id="22"><member type="relation" ref="20" role="outer"/><tag k="type" v="multipolygon"/><tag k="landuse" v="forest"/></relation></osm>"""
@@ -86,6 +87,7 @@ class SourceGreenAreas(unittest.TestCase):
    path=os.path.join(d,'source.osm')
    with open(path,'w') as f:f.write(xml)
    self.assertEqual(incomplete_green_relations(path),{21,22})
+ @unittest.skipUnless(importlib.util.find_spec('osmium'),'osmium is not installed')
  def test_area_candidates_preserve_holes_and_source_classes(self):
   from vegetation import candidates,area_kind
   garden=Polygon([(0,0),(100,0),(100,100),(0,100)],holes=[[(20,20),(80,20),(80,80),(20,80)]])
