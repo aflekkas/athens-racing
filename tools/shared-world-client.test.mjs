@@ -59,3 +59,23 @@ test('delayed loading and reconnect stamps cannot override a fresher server cloc
   assert.equal(c.observe(6200,7000,6000),0,'a slower pong cannot replace the good sample');
   assert.equal(c.observe(NaN,7100),0);
 });
+
+test('authenticated physical rows reject mixed legacy geometry, bad deck/rider data and reserved bits',async()=>{
+ const {validCarRow,validWorldCarRow,validWorldConeRow,validWorldPart}=await import('../src/shared-world-protocol.js');
+ const r=[...row(),...Array(8).fill(0),-3245678,30546,-1091750,0,1200,100,1,0];assert.ok(validCarRow(r));assert.ok(validWorldCarRow(r));
+ for(const [at,value]of [[32,1e7+1],[33,1e6+1],[35,17],[36,20001],[38,4],[39,1],[24,1]]){const bad=r.slice();bad[at]=value;assert.equal(validWorldCarRow(bad),false,`${at}`);}
+ const rider=r.slice();rider[38]=3;rider.splice(24,8,123456,-234567,35000,314,-100,300,-200,500);assert.ok(validWorldCarRow(rider));rider[31]=-1;assert.equal(validWorldCarRow(rider),false);
+ const cone=[0,0,0,0,0,0,0,0,0,0,-3245678,30546,-1091750,0,1200,100,1,0];assert.ok(validWorldConeRow(cone));cone[17]=1;assert.equal(validWorldConeRow(cone),false);
+ assert.equal(validWorldPart({type:'world-frame',seq:1,at:1,total:1,part:0,rows:[r],cones:[]}),false,'world poses require authenticated route binding');
+});
+test('world parts retain exact immutable identity and cannot assemble parts from another edition',async()=>{
+ const {WorldAssembler,validWorldPart}=await import('../src/shared-world-protocol.js'),hash='a'.repeat(64),routeIdentity={worldId:'athens',routeId:'kifissia-kefalari',routeHash:hash,geometryHash:hash,worldSetRevision:hash,projectionId:'athens-v1',onlineGridHash:hash},r=[...row(),...Array(8).fill(0),-3245678,30546,-1091750,0,1200,100,1,0],base={raceId:'r',generation:1,owner:'host',seq:1,at:1,mapId:routeIdentity.routeId,routeIdentity};
+ const p=worldPackets(base,[r],[])[0];assert.deepEqual(p.routeIdentity,routeIdentity);assert.ok(validWorldPart(p));assert.equal(validWorldPart({...p,mapId:'other'}),false);assert.equal(validWorldPart({...p,rows:[row()]}),false);
+ const a=new WorldAssembler(),first={...p,total:2,part:0};assert.equal(a.accept(first),null);assert.equal(a.accept({...p,total:2,part:1,routeIdentity:{...routeIdentity,onlineGridHash:'b'.repeat(64)}}),null);assert.equal(a.accept({...p,total:2,part:1}),null,'cross-edition part cannot complete prior half frame');
+});
+test('full physical fleet and all displaced cones fit bounded packets and thirty messages per second without trimming',async()=>{
+ const {WORLD_IDS,worldFrameIntervalMs,validWorldPart}=await import('../src/shared-world-protocol.js'),hash='f'.repeat(64),routeIdentity={worldId:'athens',routeId:'kifissia-kefalari',routeHash:hash,geometryHash:hash,worldSetRevision:hash,projectionId:'athens-v1',onlineGridHash:hash};
+ const rows=Array.from({length:WORLD_IDS},(_,id)=>{const r=[...row(),-3245678,-1091750,30546,3141,-19999,19999,-19999,359999,-3245678,30546,-1091750,-16,-19999,19999,3,0];r[0]=id;return r;}),cones=Array.from({length:256},(_,id)=>[id,1234567,99999,9999,-19999,19999,-19999,12345,-12345,12345,-3245678,30546,-1091750,-16,-19999,19999,1,0]);
+ const packets=worldPackets({raceId:'r'.repeat(36),generation:123,owner:'p'.repeat(36),seq:12345,at:1792750000000,now:1792750000000,mapId:routeIdentity.routeId,routeIdentity},rows,cones);
+ assert.ok(packets.length>8&&packets.length<=24);assert.ok(packets.every(validWorldPart));assert.ok(packets.every(p=>Buffer.byteLength(JSON.stringify(p))<=3700));assert.equal(packets.flatMap(p=>p.rows).length,74);assert.equal(packets.flatMap(p=>p.cones).length,256);assert.ok(packets.length*1000/worldFrameIntervalMs(packets.length)<=30+1e-8);
+});
