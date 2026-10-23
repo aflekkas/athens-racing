@@ -1,0 +1,83 @@
+{
+  "status": "current local compiled candidate; native browser admission NOT tested",
+  "sourceCommit": "f1e05e1d9b06123685c7b2d2ebea80e2a5a36624",
+  "worldManifestSha256": "762bcff49ca15103bbdbe0e3b8f8d95e66fe96e4cb19cb7bfb6177777b7fb7b7",
+  "worldSetRevision": "80055f9208753e2d6fa8658b31c90216d22c650f7f33588ebd5178d1a6b804a1",
+  "routeId": "riviera-coast",
+  "revision": 1,
+  "routeHash": "d10498cd7f9a288433e28c3c125469017dccf8846cd6611c44f92a52925aa04f",
+  "geometryHash": "f6769329091422b4f6e7cebb34bf06e31a032ac13801982cb7b091544f0f8a6a",
+  "graphDigest": "3dc87007c684ba0461dc8c91f3935baf1f675e6c83f5da6422aa7ec7955cffb9",
+  "rivalPlanHash": "48f9914599aa5335f04dc2a94ce292952708ba38aea017997bc8d37e21a80d3b",
+  "rivalSourceHash": "3950f532f0a7b95723f20459e5f84a4436420880731ffbb22301dd9302975195",
+  "releasedRouteHash": "722e429c68c9a9bad90210ab7c4d7d132c30f7f6c237874b0c48540c95b02635",
+  "matchesOldReleasedRouteHash": false,
+  "artifactPath": "/tmp/athens-kifissia.O7Mn/built/riviera-coast.d10498cd7f9a288433e28c3c125469017dccf8846cd6611c44f92a52925aa04f.json",
+  "artifactBytes": 1638114,
+  "artifactSha256": "0b7f26ace7eb84960438640b0e76e9bbd8709655244b320954661867b70f4771",
+  "grid0": {
+    "x": 4556.66166995359,
+    "y": 5.941231120883114,
+    "z": 18634.376325396304,
+    "yaw": -2.834149242110301,
+    "edgeId": "osm:way:459160388:0-0:f:8:36",
+    "layer": 0
+  },
+  "grid0Edge": {
+    "id": "osm:way:459160388:0-0:f:8:36",
+    "from": "osm:node:7542589901",
+    "to": "osm:node:360324727",
+    "layer": 0,
+    "surface": "surface:w459160388:0",
+    "flags": 1
+  },
+  "compileProofBinding": "existing immutable emitted graph/contact/width/safe query proofs; no authored-start inference; native Quick ground/loader readiness remains pending",
+  "geometryMs": 707.099583,
+  "totalMs": 7103.6064209999995,
+  "rssBytes": 201924608,
+  "reproducerSha256": "5e2aac45526f1b1fcf1c3a0ccff52e54ce667643934883c4e5f581f89910a4ab",
+  "supervisor": {
+    "command": "NODE_OPTIONS=--max-old-space-size=512 /usr/bin/time -v timeout --signal=TERM --kill-after=2s 88s node compile-riviera-f1e05.mjs",
+    "exitCode": 0,
+    "wallSeconds": 7.88,
+    "maxRSSKiB": 198972,
+    "memoryBeforeSystemUsed": "3.2GiB",
+    "diskBefore": "49%",
+    "diskAfter": "49%"
+  },
+  "queryProofs": [
+    {
+      "path": "data/routes/validation/athens.inputs.json",
+      "bytes": 5702800,
+      "sha256": "67a82bc988f77370af49b3f3e76e24a2b99d3228c006c664986b0f611193d010",
+      "sourceHashRows": 78
+    },
+    {
+      "path": "data/routes/validation/penteli.inputs.json",
+      "bytes": 7822983,
+      "sha256": "b99b1847d0fe87ae86ab4b63144570e20fd1f978a3ca66b38de527cbf03c6d6b",
+      "sourceHashRows": 26
+    },
+    {
+      "path": "data/routes/validation/megara.inputs.json",
+      "bytes": 1859708,
+      "sha256": "632e089b24a29aea6384a16acd705fc0440f23e5943a1b6886a43a86c9efc2fa",
+      "sourceHashRows": 2
+    },
+    {
+      "path": "data/routes/validation/kifissia.inputs.json",
+      "bytes": 1022805,
+      "sha256": "182e41f0a3809042ee87a9367e6058c3215d112c754b7ecc1732fd0220f6fef2",
+      "sourceHashRows": 7
+    }
+  ],
+  "queryProofSourceHashRowsAllMatchManifest": 113,
+  "capsUnchanged": {
+    "maxSiblings": 3,
+    "maxProofFileBytes": 8388608
+  },
+  "noNetwork": true,
+  "noBrowser": true,
+  "nativeQuickReady": false,
+  "released722ArtifactSearch": "not found in own/loader exact-name search or two existing server catalogues; one UI authorizedGET returned404, no furtherfetch"
+}

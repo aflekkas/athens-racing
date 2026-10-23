@@ -1,0 +1,173 @@
+{
+  "status": "PROPOSAL ONLY; no browser launched; requires explicit parent grant after resource queue",
+  "sourcePin": "f1e05e1d9b06123685c7b2d2ebea80e2a5a36624",
+  "servedRuntimeFiles": 416,
+  "servedRuntimeSourceSetSha256": "c2a0b44bc801381993332e1ab6ea733203038280be115d72cccfeff6741e6bff",
+  "existingAppUpdatesRequiredAfterGrantOnly": [
+    "src/athens-materials.js",
+    "src/json-auth-snapshot.js",
+    "src/online-grid-snapshot.js",
+    "src/online-grid.js",
+    "src/penteli-houses.js"
+  ],
+  "world": {
+    "path": "/tmp/athens-kifissia.O7Mn/world.json",
+    "sha256": "762bcff49ca15103bbdbe0e3b8f8d95e66fe96e4cb19cb7bfb6177777b7fb7b7",
+    "revision": "80055f9208753e2d6fa8658b31c90216d22c650f7f33588ebd5178d1a6b804a1",
+    "noNewDownloadsOrCellCopies": true
+  },
+  "views": [
+    {
+      "id": "station3000",
+      "cameraXZ": [
+        5921.103812719877,
+        19612.37986399972
+      ],
+      "floorExpectedYDiagnosticOnly": 17.924224079641334,
+      "eyeAssumptionM": 2.5,
+      "headingDeg": 29.84,
+      "pitchDeg": 0,
+      "hFovDeg": 90,
+      "vFovDeg": 64.0107664,
+      "viewport": [
+        1280,
+        800
+      ],
+      "cameraNineCells": [
+        "10,37",
+        "10,38",
+        "10,39",
+        "11,37",
+        "11,38",
+        "11,39",
+        "12,37",
+        "12,38",
+        "12,39"
+      ],
+      "manifestCompressedBytes": 445108,
+      "manifestResidentBytes": 4631571,
+      "maxCellTransientBytes": 3460773
+    },
+    {
+      "id": "tower",
+      "cameraXZ": [
+        -180.00943192260831,
+        10765.144939999354
+      ],
+      "floorExpectedYDiagnosticOnly": 4.06920985757241,
+      "eyeAssumptionM": 2.5,
+      "headingDeg": 242.96,
+      "pitchDeg": 10,
+      "hFovDeg": 90,
+      "vFovDeg": 64.0107664,
+      "viewport": [
+        1280,
+        800
+      ],
+      "cameraNineCells": [
+        "-2,20",
+        "-2,21",
+        "-2,22",
+        "-1,20",
+        "-1,21",
+        "-1,22",
+        "0,20",
+        "0,21",
+        "0,22"
+      ],
+      "manifestCompressedBytes": 1067528,
+      "manifestResidentBytes": 10016749,
+      "maxCellTransientBytes": 7111142
+    }
+  ],
+  "lease": {
+    "totalSecondsMax": 120,
+    "oneBrowser": true,
+    "holderSeconds": 115,
+    "stopNewWorkAtSeconds": 100,
+    "closeBudgetSeconds": 20,
+    "order": [
+      "station3000pick",
+      "Towerreadiness if time remains"
+    ],
+    "noRetryNavigationOnSetupFailure": true
+  },
+  "preparation": [
+    "after grant and carFULLCLOSED only, update5changed sourcefiles in existing app from exact pin; verify ALL served source blobs and debugmodule hashes; no archive/assets/cellcopies",
+    "existing proxy remains GET-only local; optional diagnostictools GET must serve exact pinned modules read-only, never edit production runtime",
+    "verify HTTP200 before preview_open; start one browser-slot; record launchPID/absolute deadline"
+  ],
+  "zeroElapsedWarmup": [
+    "before __athens publication install diagnostic observer that calls ONLY native setPaused(true) immediately at publication, restores ordinary hook property, records actual spawn route.origin and player XYZ/yaw; no source-function replacement or clock writes",
+    "if publication already occurred and elapsed!=0, affectedview STOP; never reset elapsed to pretend zero",
+    "retain paused=true and stats.simulationSeconds=0; native stream.pin for each of9camera-neighbour cells+dependencies within UNCHANGED caps, explicitly diagnostic camera-interest pins; releases stored",
+    "loop native stream.activateFrame and native render(0), RAF-yield; record actualplayerXYZ/stream.position/origin independently; stop on source/admission/deadline/error",
+    "require all9cells ACTIVE+dependencies, live unique exact-camera ROADfloor matching authenticated source, ground.ready(player,1/240), loadingcomputedopacity0, native render shader/postsetup errors0 BEFORE any physics",
+    "no all-or-none requirement acrossviews: blockedfirstview does not license guesses or repeated navigation"
+  ],
+  "positivePhysics": [
+    "driver native {throttle:0,brake:0,steer:0,handbrake:true}; no place/pose writes",
+    "unpause only inside one synchronous evaluation; perform24 native step(1/240) calls; each requires simulationSeconds delta1/240 and holds/missing unchanged; repause immediately",
+    "native render(1/60) fresh positive frame with exact native cameraHook from authenticated floor+assumedeye; no drive/distance/spawn safety claim from staticcamera"
+  ],
+  "pick": [
+    "bind activepacket/root/mesh/gpuPlan to exactmanifestcellSHA/source tuple with pinned binder; assertStable and await byte-digest audit before+after",
+    "pixels700,475;720,480;710,474; verify finalcamera matrixWorld/projection and exacthitpixel+trianglevertices",
+    "eligible unsupported foreground blocks ownerclassification; no partialhorizon/nearestsource fallback; reportblocked if scene coverage unsupported",
+    "only complete hit can query physical contacts at SAME pickedXZ/referenceY, enumerate applicable source layers/road/terrain supports and report exact owner+verticaldelta; never substitute supportY into camera or infer cause",
+    "serialize compact selected binding/triangle/material/contact metadata; do not return cyclic Three objects/large rawarrays"
+  ],
+  "evidenceAndCleanup": [
+    "persist compact own-game JPG; await encode+decode+size/hash verification BEFORE immediate inline/parentpath notice",
+    "no thirdparty images captured/committed",
+    "release diagnostic pins and wrappers; dispose ONLY new CPU wrapper geometry; close native tab/own proxy/slot finally before deadline; explicit FULLCLOSED parent"
+  ],
+  "limits": [
+    "static diagnostic; no actualdrive/fullterrain/fidelity acceptance",
+    "Towercause UNRESOLVED until actualplayer/streamposition/all9cells receipt",
+    "runtime starts clock automatically: missed zero-elapsed pause aborts affectedview, no clock reset",
+    "allcaps unchanged;9cell residency metadata is not actual resource admission or active-state proof"
+  ],
+  "sourceModulePins": [
+    {
+      "path": "src/athens-world.js",
+      "sha256": "31cab82a8af2c7daea1df73754262338acdfbe674fe82023a0263e7fd1f866a7"
+    },
+    {
+      "path": "src/world-tile-stream.js",
+      "sha256": "78917443dc0f6596f2ad4e1b7a0bb85648c3b06cd8d2556b6e017ba7490fc400"
+    },
+    {
+      "path": "src/world-session.js",
+      "sha256": "4459bfd8bc18b539ff411fc26a7eea336faded0f9985afbad9d4306a873dbd10"
+    },
+    {
+      "path": "src/world-selection.js",
+      "sha256": "8b70bd88e0a89bf6ddc21e7836b38bff732522b53facd22dd2d9aa0329f14588"
+    },
+    {
+      "path": "src/world-tile-scene.js",
+      "sha256": "6e088bbf75623f7dca4ab753f18a55a91bab1bf78b16739ef53ca8fc0f8e0397"
+    },
+    {
+      "path": "src/world-tile-gpu.js",
+      "sha256": "4532b04e0e44fe9091d52490eafdf33af634cca5768c835d6e0ace0c471cbfbf"
+    },
+    {
+      "path": "src/terrain-layout.js",
+      "sha256": "33b1f03da5494525a8ef227ff393e8615b2158b5a5ce39de08c1e03dbef3694d"
+    },
+    {
+      "path": "src/athens-materials.js",
+      "sha256": "f1152b4838dc8e2a1423a71c296152d5070a458c3474c5e5f2387716fb1050be"
+    },
+    {
+      "path": "tools/riviera-probe-binding.mjs",
+      "sha256": "da94894eda2391f5f5f31a70fd88dde36cdbda79fd843deef0e667407317734b"
+    },
+    {
+      "path": "tools/riviera-probe-geometry.mjs",
+      "sha256": "9af220a015a0a5914f0a7db4f6b24a940387fe311a95038a26222c9d897b4365"
+    }
+  ]
+}

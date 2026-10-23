@@ -622,3 +622,57 @@ at its exact world XYZ for physical surface/contact ownership. No nearest-source
 guess or unsupported-to-horizon fallback is allowed. Tower context still requires
 actual player/stream positions and all9 camera-neighbour active cells; cause
 remains unresolved. All work here was by Codex gpt-6.1-sol with Node/Three.js.
+
+### Bounded current Riviera candidate compile and next browser plan
+
+The exact released722e compiled artifact was not found in bounded existing-only
+lookups of the route/loader caches or either cached server catalogue. The cached
+index pins it, but does not contain its grid. The UI's single permitted metadata
+GET returned404 with0retained artifact bytes; no retry or alternate fetch ran.
+No authored start was substituted for native grid0.
+
+The parent then granted one current-source compile, bounded90seconds, on exact
+`f1e05e1d9b06123685c7b2d2ebea80e2a5a36624`. The final reproducer SHA256 was recorded
+before execution as `5e2aac45526f1b1fcf1c3a0ccff52e54ce667643934883c4e5f581f89910a4ab`.
+Every tracked working file in src/tools/data/routes was checked against that pin
+before and after. Original manifestSHA762bcff49ca15103bbdbe0e3b8f8d95e66fe96e4cb19cb7bfb6177777b7fb7b7
+and all113 source-hash rows across the root/three sibling proofs matched unchanged.
+No caps changed and no new source assets, cell copies, archives or downloads ran.
+Only Riviera was compiled, then `attachRivalPlans` and `checkRivalPlan` ran.
+
+The compile passed: geometryHash
+`f6769329091422b4f6e7cebb34bf06e31a032ac13801982cb7b091544f0f8a6a`
+and graphDigest3dc87007c684ba0461dc8c91f3935baf1f675e6c83f5da6422aa7ec7955cffb9
+match the prior geometry. Actual current routeHash is
+`d10498cd7f9a288433e28c3c125469017dccf8846cd6611c44f92a52925aa04f`.
+It is **a local current candidate, not production722e**: rival plans bind all
+browser source, so the identity changed legitimately. No hash/edition was altered
+by hand. Actual emitted grid0 is(4556.66166995359,5.941231120883114,
+18634.376325396304), yaw-2.834149242110301, layer0, directed edge
+`osm:way:459160388:0-0:f:8:36` from7542589901 to360324727,
+source surface `surface:w459160388:0`, flags1. The compiler verified its existing
+contact/width/footprint proofs; **native Quick ground/loader readiness is pending**.
+
+[Compact receipt and exact reproducer](../../.scratch/riviera-source-audit/compile/README.md)
+record the immutable1,638,114-byte task-local artifact path/SHA, actual tuple/grid,
+proof identities and commands. The artifact itself is not duplicated in Git.
+The supervised job exited0 in7.88s, maxRSS198972KiB (~194MiB), disk49% before/after.
+No browser/server ran. Explicit FULLEND and the actual candidate/grid were sent
+to parent/UI; the parent's next UI readiness slot is separate authorization.
+No full suite or native driving acceptance is claimed for this metadata stage.
+
+The [next diagnostic plan](../../.scratch/riviera-source-audit/game/next-diagnostic-plan.json)
+is source-only, not launched. It pins416 served runtime files (source-setSHA
+c2a0b44bc801381993332e1ab6ea733203038280be115d72cccfeff6741e6bff), debug modules,
+world manifest, exact cameras and all9cell identities. The old reusable app needs
+five source updates only after a later grant; none were changed during the car/UI
+baseline. One browser lease<=120s must use paused elapsed0 native activation and
+render(0), all9cells/ground/loading readiness, then24 individually verified240Hz
+steps and a fresh positive frame. No clock resets, fake poses or actor models are
+allowed. Missed zero-clock pause, stale binding or unsupported foreground blocks
+classification. Temporary native camera-interest pins stay within unchanged
+admission budgets and must be labeled diagnostic interest. The plan records
+actual player XYZ/stream.position/origin separately; Tower context cause remains
+unresolved. All wrappers/pins/owned browser/proxy/slot must close at the deadline.
+A final combined-world/source freeze still requires the full route recompile and
+native game proof; this intermediate candidate does not replace that release gate.
