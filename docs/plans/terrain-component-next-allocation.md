@@ -108,3 +108,35 @@ dual gap. Failure or deadline leaves no accepted complete field. Even a complete
 source LP pass is not geographic, emitted physical/shoulder/portal or release
 acceptance. Secondary L1 requires a separate later grant and this verified
 complete inner optimum, not a partially successful batch.
+
+## Completed allocation A: necessary lower bound, primal rejection retained
+
+The exact frozen e4b/inpute85c/tool048b outer Syntagma diagnostic completed in
+14.271s, all owned processes exited. Solver IPM/presolveON was optimal in29 IPM
+and2925 crossover iterations. The independently reconstructed sparse dual gives
+a conservative necessary gradient lower bound **0.06017580950586256** for this
+original-baseline linear source model (outer objective0.060175809590095795,
+dual gap8.423e-11). Finite-facet maximum row violation7.22e-16, source sag
+0.5000000000000007, amplitude0.75 and fixed-profile correction0 are recorded
+floating-point residuals, not changes to any owner tolerance.
+
+The independent verifier returned **exit1 / primalPassed=false**. Actual maximum
+Euclidean gradient0.06135472339608911 exceeds outer G0.060175809590095795.
+This rejection remains visible in the receipt. Outer dual validity establishes
+only a necessary bound; the outer candidate is not accepted as a physical
+feasible field. The earlier inner exact-norm feasible upper bound remains
+0.0613547233960891. Neither bound is an exact disk optimum, whole-five-cell,
+geographic, emitted physical/shoulder/portal or publication result. The lower
+bound exceeds experimental design G0.06 under the source model's unchanged
+sag0.5/amplitude0.75/support32/protected131-sample constraints; it authorizes no
+new gradient/default or field adoption.
+
+Source artifacts are `syntagma-outer-diagnostic.json`, `syntagma-outer-certificate.json`
+(SHA2569e850aad8fbeb063723cdd2157da6a4885201d94ce68178afefc3e4b33b9d82b),
+solver text and exact supervisor in the task evidence directory. Output125647B
+is below10MB. Maximum monitored solver RSS261853184B and verifier155377664B
+were below1GiB; minimum available21.845GB exceeded6GiB. Solver used one thread;
+Node used one sequential JS task with11 observed internal runtime helper threads.
+Disk49%/75GB before and after. No guard trip, retry, other component, secondary,
+pack, default, global matrix or adoption occurred. Remaining-six plan B still
+requires its own allocation.

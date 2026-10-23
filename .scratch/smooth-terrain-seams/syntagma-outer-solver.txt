@@ -1,0 +1,94 @@
+/tmp/athens-terrain.uKVC/syntagma-component-e4b/tools/terrain-lp/model.py:127: OptimizeWarning: Unrecognized options detected: {'threads': 1}. These will be passed to HiGHS verbatim.
+  result=linprog(problem.objective,A_ub=matrix,b_ub=rhs,bounds=problem.bounds,method=method,options={'time_limit':seconds,'threads':1,'presolve':presolve,'disp':display})
+Running HiGHS 1.12.0 (git hash: 4f96ee8): Copyright (c) 2025 HiGHS under MIT licence terms
+LP has 111134 rows; 3275 cols; 395308 nonzeros
+Coefficient ranges:
+  Matrix  [9e-05, 1e+00]
+  Cost    [1e+00, 1e+00]
+  Bound   [8e-01, 8e-01]
+  RHS     [1e-04, 2e+00]
+Presolving model
+111128 rows, 3275 cols, 395254 nonzeros  0s
+87648 rows, 3275 cols, 325441 nonzeros  0s
+87648 rows, 3275 cols, 325441 nonzeros  0s
+Presolve reductions: rows 87648(-23486); columns 3275(-0); nonzeros 325441(-69867)
+Solving the presolved LP
+IPX model has 87648 rows, 3847 columns and 326013 nonzeros
+Input
+    Number of variables:                                3847
+    Number of free variables:                           0
+    Number of constraints:                              87648
+    Number of equality constraints:                     572
+    Number of matrix entries:                           326013
+    Matrix range:                                       [9e-05, 1e+00]
+    RHS range:                                          [5e-01, 6e-01]
+    Objective range:                                    [1e+00, 1e+00]
+    Bounds range:                                       [1e-04, 1e+00]
+Preprocessing
+    Dualized model:                                     yes
+    Number of dense columns:                            0
+    Range of scaling factors:                           [1.00e+00, 4.00e+00]
+    Scaled cost norm:                                   1.48406
+    Scaled bounds norm:                                 1
+IPX version 1.0
+Interior point solve
+ Iter       primal obj         dual obj       pinf       dinf       gap     time
+   0   -4.61479432e-18  -2.79347778e-22   7.50e-01   1.06e+00  4.61e-18       0s
+   1    2.40793908e+03  -2.46308288e+00   5.25e-02   3.15e-01  2.00e+00       0s
+   2    1.29528406e+03  -2.68959719e+00   2.31e-02   5.54e-02  2.01e+00       0s
+   3    7.55397074e+02  -2.72941922e+00   1.33e-02   1.73e-02  2.01e+00       0s
+   4    5.56901899e+02  -2.74036783e+00   9.77e-03   2.96e-03  2.01e+00       0s
+   5    4.52585862e+02  -2.75090208e+00   7.93e-03   2.85e-04  2.02e+00       0s
+ Constructing starting basis...
+   6    5.21247235e+00  -2.78076716e+00   1.89e-05   2.85e-10  3.61e+00       1s
+   7    8.74229193e-02  -1.64522797e+00   3.07e-07   2.82e-16  9.74e-01       1s
+   8    2.53574365e-02  -2.02522265e-01   8.89e-08   1.34e-16  2.09e-01       1s
+   9    2.38625619e-02  -1.81785782e-01   8.01e-08   1.01e-16  1.91e-01       1s
+  10    1.54495976e-02  -1.15250258e-01   4.58e-08   8.94e-17  1.24e-01       1s
+  11    7.51154140e-03  -8.86641720e-02   1.73e-08   6.70e-17  9.24e-02       1s
+  12    4.51467950e-03  -7.61822914e-02   1.06e-08   8.94e-17  7.79e-02       1s
+  13    3.62700010e-03  -7.32020081e-02   9.90e-09   8.94e-17  7.42e-02       1s
+  14   -3.71427337e-03  -7.10637176e-02   6.36e-09   8.94e-17  6.49e-02       1s
+  15   -2.80582418e-02  -7.88187196e-02   3.48e-09   6.70e-17  4.82e-02       1s
+  16   -4.36556645e-02  -6.68876748e-02   3.48e-15   8.94e-17  2.20e-02       1s
+  17   -4.59535600e-02  -6.25649924e-02   2.80e-15   8.94e-17  1.58e-02       1s
+  18   -5.60404789e-02  -6.12893664e-02   6.48e-15   4.47e-17  4.96e-03       1s
+  19   -5.79580687e-02  -6.04610045e-02   1.43e-14   4.47e-17  2.36e-03       2s
+  20   -5.83909082e-02  -6.02927776e-02   9.78e-15   8.94e-17  1.80e-03       2s
+  21   -5.87167007e-02  -6.02926176e-02   8.15e-15   8.94e-17  1.49e-03       2s
+  22   -5.96126461e-02  -6.01875355e-02   4.63e-15   8.94e-17  5.42e-04       2s
+  23   -6.01366017e-02  -6.01858572e-02   2.65e-15   8.94e-17  4.65e-05       2s
+  24   -6.01402975e-02  -6.01865812e-02   6.16e-15   8.94e-17  4.37e-05       2s
+  25   -6.01505852e-02  -6.01809329e-02   6.87e-15   8.94e-17  2.86e-05       2s
+  26   -6.01693234e-02  -6.01760135e-02   4.53e-15   6.70e-17  6.31e-06       2s
+  27   -6.01750727e-02  -6.01758061e-02   3.43e-15   8.94e-17  6.92e-07       3s
+  28   -6.01757493e-02  -6.01758076e-02   7.19e-15   8.94e-17  5.50e-08       3s
+  29*  -6.01758096e-02  -6.01758096e-02   2.11e-13   8.94e-17  4.75e-12       3s
+Running crossover as requested
+    Primal residual before push phase:                  3.41e-10
+    Dual residual before push phase:                    4.51e-16
+    Number of dual pushes required:                     3252
+    Number of primal pushes required:                   1
+Summary
+    Runtime:                                            4.15s
+    Status interior point solve:                        optimal
+    Status crossover:                                   optimal
+    objective value:                                    6.01758096e-02
+    interior solution primal residual (abs/rel):        2.22e-16 / 8.94e-17
+    interior solution dual residual (abs/rel):          3.24e-12 / 1.62e-12
+    interior solution objective gap (abs/rel):          5.23e-12 / 4.93e-12
+    basic solution primal infeasibility:                2.98e-14
+    basic solution dual infeasibility:                  6.05e-16
+Ipx: IPM       optimal
+Ipx: Crossover optimal
+
+Performed postsolve
+Solving the original LP from the solution after postsolve
+
+Model status        : Optimal
+IPM       iterations: 29
+Crossover iterations: 2925
+Objective value     :  6.0175809590e-02
+P-D objective error :  1.2386993128e-17
+HiGHS run time      :          4.80
+{"schema": "terrain-lp-component-1", "inputSHA256": "e85ca0c7de2cdc5f057d3e69828c41b45fea61d5bc03c595525b5e927ceaa281", "mode": "outer", "stage": "gradient", "facets": 16, "method": "highs-ipm", "presolve": true, "solverStatus": 0, "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)", "forecast": {"componentId": "-32,608", "nodes": 3274, "variables": 3275, "rows": 111134, "nonzeros": 395308, "forecastBytes": 376758786, "fullModelRows": 679034, "buildsMatrix": false}, "seconds": 5.472693270014133, "maxRSS": 261795840, "emittedCells": 0, "iterations": 29, "crossoverIterations": 2925, "gradientCap": null, "objective": 0.060175809590095795, "componentId": "-32,608", "fullRowCount": 679034, "partitionVersion": 1}

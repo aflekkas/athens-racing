@@ -1,0 +1,152 @@
+{
+  "status": "Validated OUTER necessary relaxation lower bound ONLY; no physical/whole-field acceptance",
+  "sourceCommit": "e4b7bf2ea6a6f71f21806480f19591c87de083a4",
+  "componentId": "-32,608",
+  "phases": [
+    {
+      "phase": "syntagma-outer-ipm",
+      "command": [
+        "/tmp/athens-terrain.uKVC/scipy-venv/bin/python",
+        "/tmp/athens-terrain.uKVC/syntagma-component-e4b/tools/terrain-lp/components.py",
+        "/tmp/athens-terrain.uKVC/min-gradient-input.json",
+        "--sha256",
+        "e85ca0c7de2cdc5f057d3e69828c41b45fea61d5bc03c595525b5e927ceaa281",
+        "--mode",
+        "outer",
+        "--component=-32,608",
+        "--solve",
+        "--method",
+        "highs-ipm",
+        "--seconds",
+        "40",
+        "--memory-bytes",
+        "1073741824",
+        "--output",
+        "/tmp/athens-terrain.uKVC/syntagma-outer-result.json"
+      ],
+      "startedSeconds": 0.01042619301006198,
+      "rssPeak": 261853184,
+      "minimumAvailable": 21845688320,
+      "maximumThreads": 1,
+      "ownedPID": 1278599,
+      "exitCode": 0,
+      "endedSeconds": 9.210926466999808
+    },
+    {
+      "phase": "syntagma-outer-independent",
+      "command": [
+        "node",
+        "--max-old-space-size=512",
+        "/tmp/athens-terrain.uKVC/syntagma-component-e4b/tools/terrain-lp/components.mjs",
+        "/tmp/athens-terrain.uKVC/min-gradient-input.json",
+        "/tmp/athens-terrain.uKVC/syntagma-outer-result.json",
+        "e85ca0c7de2cdc5f057d3e69828c41b45fea61d5bc03c595525b5e927ceaa281"
+      ],
+      "startedSeconds": 9.213987413997529,
+      "rssPeak": 155377664,
+      "minimumAvailable": 21860630528,
+      "maximumThreads": 11,
+      "ownedPID": 1278602,
+      "exitCode": 1,
+      "endedSeconds": 14.269627025991213
+    }
+  ],
+  "rssLimitBytes": 1073741824,
+  "minimumAvailableBytes": 6442450944,
+  "externalDeadlineSeconds": 60,
+  "internalDeadlineSeconds": 54,
+  "emittedCells": 0,
+  "adopted": false,
+  "physicalFeasibilityClaimed": false,
+  "savedInnerCertificateSHA256": "915062513c75851e76dfa73bdddfa0731c17c2d7d0a50ef031120ef46ccaca82",
+  "pin": {
+    "commit": "e4b7bf2ea6a6f71f21806480f19591c87de083a4",
+    "inputSHA256": "e85ca0c7de2cdc5f057d3e69828c41b45fea61d5bc03c595525b5e927ceaa281",
+    "toolReceiptSHA256": "048b493756127e3b5083601738b24838f1c5aa6519d9e3bed4d8e24269fa158d",
+    "files": {
+      "tools/terrain-lp/prepare.mjs": "10f10c456babf23106641cbecbb410003c8f5c6e7b1fbdbd8a843e65cddc99cc",
+      "tools/terrain-lp/components.py": "43cb9ec215e41dfcfe223eda56e644575335888c09884f8e56a9e876357d2c0e",
+      "tools/terrain-lp/verify.mjs": "acdaede9ca9ad9d49d3d4325a47c0f5ad0a522d9cb807509b176919674cf0481",
+      "tools/terrain-lp/model.py": "3ff95a6b102cf17c23c793ad2a4fe6a414e9adc2a0b2471656df32354f9f70d1",
+      "tools/terrain-lp/components.mjs": "5377780622fe0201c561579ef36e7dc79c3ebc4fc56f79d41a7c20cfe0fbb305"
+    }
+  },
+  "availableBefore": 22062084096,
+  "dfBefore": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/sda1       145G   70G   75G  49% /\n",
+  "solver": {
+    "schema": "terrain-lp-component-1",
+    "inputSHA256": "e85ca0c7de2cdc5f057d3e69828c41b45fea61d5bc03c595525b5e927ceaa281",
+    "mode": "outer",
+    "stage": "gradient",
+    "facets": 16,
+    "method": "highs-ipm",
+    "presolve": true,
+    "solverStatus": 0,
+    "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+    "forecast": {
+      "componentId": "-32,608",
+      "nodes": 3274,
+      "variables": 3275,
+      "rows": 111134,
+      "nonzeros": 395308,
+      "forecastBytes": 376758786,
+      "fullModelRows": 679034,
+      "buildsMatrix": false
+    },
+    "seconds": 5.472693270014133,
+    "maxRSS": 261795840,
+    "emittedCells": 0,
+    "iterations": 29,
+    "crossoverIterations": 2925,
+    "gradientCap": null,
+    "objective": 0.060175809590095795,
+    "componentId": "-32,608",
+    "fullRowCount": 679034,
+    "partitionVersion": 1
+  },
+  "certificateSHA256": "9e850aad8fbeb063723cdd2157da6a4885201d94ce68178afefc3e4b33b9d82b",
+  "independentVerification": {
+    "componentId": "-32,608",
+    "mode": "outer",
+    "stage": "gradient",
+    "primalPassed": false,
+    "dualPassed": true,
+    "objective": 0.060175809590095795,
+    "conservativeDualBound": 0.06017580950586256,
+    "dualityGap": 8.423323843986807e-11,
+    "gradientVariable": 0.060175809590095795,
+    "maxEuclideanGradient": 0.06135472339608911,
+    "maxSag": 0.5000000000000007,
+    "maxAdjustment": 0.75,
+    "maxProfileCorrection": 0,
+    "maxRowViolation": 7.216449660063518e-16,
+    "completeModelVerified": false,
+    "emittedCells": 0
+  },
+  "verifierExitCode": 1,
+  "finiteFacetRelaxationPassed": true,
+  "necessaryGradientLowerBound": 0.06017580950586256,
+  "secondarySkipped": true,
+  "seconds": 14.270694928010926,
+  "availableAfter": 22007078912,
+  "dfAfter": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/sda1       145G   70G   75G  49% /\n",
+  "outputBytes": 125647,
+  "scope": "OUTER necessary-relaxation dual lower bound for original-baseline source correction model only; true Euclidean primal rejected and no physical/global acceptance",
+  "innerExactNormFeasibleUpperBound": 0.0613547233960891,
+  "experimentalGradient006NecessaryFailure": true,
+  "ownerLimitsUnchanged": {
+    "sag": 0.5,
+    "amplitude": 0.75,
+    "supportMetres": 32,
+    "fixedSourceSamples": 131
+  },
+  "controllerSHA256": "a5b3737509372f420218b21ab5c2c6476586c790bcf212c16058a74d4156c1db",
+  "presolveLog": [
+    "Presolve reductions: rows 87648(-23486); columns 3275(-0); nonzeros 325441(-69867) "
+  ],
+  "solverLog": {
+    "rawSHA256": "1446ba0c5153987e141287d51ca65898e057cfa8ddb55b5b45147a99a541e08d",
+    "committedSHA256": "8664a397617b11ab805f18e78bab8f8c114b373e450be510584f566d6fa6842c",
+    "normalization": "Trailing whitespace stripped in committed log only."
+  }
+}
