@@ -207,6 +207,7 @@
     "tools/memory-bounds.test.mjs",
     "tools/lucide-icons.test.mjs",
     "tools/world-gen/influence.test.mjs",
+    "tools/world-gen/terrain-relief.test.mjs",
     "tools/world-surface-audit.test.mjs",
     "tools/world-roads-audit.test.mjs",
     "tools/athens-detail.test.mjs",
