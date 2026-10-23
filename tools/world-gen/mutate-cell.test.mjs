@@ -202,3 +202,41 @@ test('allocation-free JSON bound covers wire numeric extremes and escaped UTF16 
  const p=fixture().encoded.decoded;p.arrays.push(new Float32Array([-3.4028234663852886e38,3.4028234663852886e38,-1e20,1e20,-.0000000001,1.234567,0]),new Uint32Array([0,4294967295]),new Int8Array([-128,127]));p.metadata.numericProbe=-.0000012345678901234567;p.metadata.escapeProbe='\u0000\n\\" Ελληνικά 🙂';
  const reservation=mutationEncodingReservation(p),serialized=JSON.stringify(repairedSpool(p));assert.ok(serialized.length<=reservation.jsonChars);assert.ok(serialized.length*2<=reservation.serializedUTF16Bytes);
 });
+
+
+test('oversized pinned scope rejects before any byte copy, UTF8 conversion or JSON parse, including preserved paths',async t=>{
+ for(const mutate of [false,true]){
+  const a=args(fixture(),mutate?{paint:{codeSha256:code.paint},guards:{codeSha256:code.guards,recipes:[]}}:{}),scope=JSON.parse(a.releaseScope.bytes);scope.padding=Array(1000000).fill(0);const b=bytes(scope);a.releaseScope={bytes:b,sha256:hash(b)};pin(a);
+  let copies=0,strings=0,parses=0;
+  t.mock.method(Buffer,'from',()=>{copies++;throw Error('unexpected buffer copy');});
+  t.mock.method(Buffer.prototype,'toString',()=>{strings++;throw Error('unexpected UTF8 conversion');});
+  t.mock.method(JSON,'parse',()=>{parses++;throw Error('unexpected JSON parse');});
+  try{await assert.rejects(mutateOriginalCell(a),/pinned JSON.*budget before/);assert.deepEqual({copies,strings,parses},{copies:0,strings:0,parses:0});}finally{t.mock.restoreAll();}
+ }
+});
+
+test('stage and native-registry JSON have the same pre-snapshot admission, including unchanged native originals',async t=>{
+ for(const native of [false,true]){
+  const a=native?protectedArgs():args(),input=native?a.protectedSources.manifests[0]:null;
+  const body=native?JSON.parse(input.bytes):{padding:Array(1000000).fill(0)};if(native)body.padding=Array(1000000).fill(0);const b=bytes(body);
+  if(native){input.bytes=b;input.sha256=hash(b);}else a.stages.guards= {codeSha256:code.guards,recipes:[{compiledBytes:b,compiledSha256:hash(b),sourcePlanBytes:Buffer.from('{}'),sourcePlanSha256:hash(Buffer.from('{}'))}]};pin(a);
+  let copies=0,strings=0,parses=0;t.mock.method(Buffer,'from',()=>{copies++;throw Error('unexpected copy');});t.mock.method(Buffer.prototype,'toString',()=>{strings++;throw Error('unexpected conversion');});t.mock.method(JSON,'parse',()=>{parses++;throw Error('unexpected parse');});
+  try{await assert.rejects(mutateOriginalCell(a),/pinned JSON.*budget before/);assert.deepEqual({copies,strings,parses},{copies:0,strings:0,parses:0});}finally{t.mock.restoreAll();}
+ }
+});
+
+test('simultaneous individually bounded pinned inputs reject before copying; actual small parsed inputs remain valid',async t=>{
+ const a=args(),scope=JSON.parse(a.releaseScope.bytes);scope.padding=Array(110000).fill(0);const b=bytes(scope);a.releaseScope={bytes:b,sha256:hash(b)};const payload=bytes({padding:Array(110000).fill(0)});a.stages.scenery={codeSha256:code.scenery,bytes:payload,sha256:hash(payload)};pin(a);
+ let copies=0,parses=0;t.mock.method(Buffer,'from',()=>{copies++;throw Error('unexpected copy');});t.mock.method(JSON,'parse',()=>{parses++;throw Error('unexpected parse');});
+ try{await assert.rejects(mutateOriginalCell(a),/pinned JSON.*budget before/);assert.deepEqual({copies,parses},{copies:0,parses:0});}finally{t.mock.restoreAll();}
+ const valid=args(fixture(),{}),body=JSON.parse(valid.releaseScope.bytes);body.padding=[0,-1,1e-8,true,false,null,'escaped\\ \" \n café 🌲',{},[]];const small=bytes(body);valid.releaseScope={bytes:small,sha256:hash(small)};pin(valid);assert.equal((await mutateOriginalCell(valid)).kind,'preserved');
+ assert.equal((await mutateOriginalCell(protectedArgs())).kind,'preserved');assert.equal((await mutateOriginalCell(args())).kind,'mutated');
+});
+
+
+test('all pinned stage byte channels authenticate and reserve before copying or parsing',async t=>{
+ const payload=bytes({padding:Array(1000000).fill(0)}),sha256=hash(payload);
+ const stages=[{scenery:{bytes:payload,sha256}},{infill:{planBytes:payload,planFileSha256:sha256}},{terrain:{atlasBytes:payload,atlasSha256:sha256}},{terrain:{reportBytes:payload,reportSha256:sha256}},{guards:{recipes:[{sourcePlanBytes:payload,sourcePlanSha256:sha256}]}}];
+ for(const stage of stages){const a=args(fixture(),stage);let copies=0,strings=0,parses=0;t.mock.method(Buffer,'from',()=>{copies++;throw Error('unexpected copy');});t.mock.method(Buffer.prototype,'toString',()=>{strings++;throw Error('unexpected conversion');});t.mock.method(JSON,'parse',()=>{parses++;throw Error('unexpected parse');});try{await assert.rejects(mutateOriginalCell(a),/pinned JSON.*budget before/);assert.deepEqual({copies,strings,parses},{copies:0,strings:0,parses:0});}finally{t.mock.restoreAll();}}
+ const bad=args(fixture(),{scenery:{bytes:payload,sha256:'0'.repeat(64)}});await assert.rejects(mutateOriginalCell(bad),/byte hash mismatch/);
+});

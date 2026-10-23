@@ -40,10 +40,45 @@ const arrayDigest=a=>digest([a.constructor.name,a.length,sha(new Uint8Array(a.bu
 const validHash=(h,label)=>{if(!/^[a-f0-9]{64}$/.test(h||''))fail(label+' SHA required');};
 const freeze=v=>{if(v&&typeof v==='object'&&!Object.isFrozen(v)){if(Array.isArray(v)){for(let i=0;i<v.length;i++)freeze(v[i]);}else for(const k in v)if(Object.hasOwn(v,k))freeze(v[k]);Object.freeze(v);}return v;};
 function keys(v,allowed,label){if(!v||typeof v!=='object'||Array.isArray(v)||Object.keys(v).some(k=>!allowed.includes(k)))fail('unsupported '+label);}
-function pinnedJSON(bytes,hash,label,memory=null){validHash(hash,label);if(!(bytes instanceof Uint8Array)||bytes.byteLength>MAX||sha(bytes)!==hash)fail(label+' byte hash mismatch');const value=JSON.parse(Buffer.from(bytes).toString('utf8'));if(memory)memory.parsedInputs+=jsonMemory(value).heap+bytes.byteLength*3;return value;}
+// Scan authenticated UTF-8 bytes without a Buffer copy, string or parsed tree.
+// Token bounds deliberately overcount keys as both strings and properties;
+// decoded UTF-16 length cannot exceed the source byte count (including escapes).
+function pinnedJSONHeap(bytes){
+ let heap=128;
+ for(let i=0;i<bytes.length;){const c=bytes[i++];
+  if(c===34){const start=i;let closed=false;while(i<bytes.length){const b=bytes[i++];if(b===92){i++;continue;}if(b===34){closed=true;break;}}if(!closed)fail('invalid pinned JSON string');heap+=328+4*(i-start);}
+  else if(c===91||c===123)heap+=136;
+  else if(c===93||c===125||c===44||c===58||c===32||c===9||c===10||c===13)continue;
+  else {heap+=72;while(i<bytes.length&&bytes[i]!==44&&bytes[i]!==93&&bytes[i]!==125&&bytes[i]!==32&&bytes[i]!==9&&bytes[i]!==10&&bytes[i]!==13&&bytes[i]!==58)i++;}
+  if(heap>MAX)fail('pinned JSON workspace budget before input copy/UTF8/parse');
+ }return heap;
+}
+function reservePinnedInputs(value){
+ if(value instanceof Uint8Array){if(value.byteLength>MAX)fail('pinned JSON byte budget');
+  // Four complete parse/conversion histories cover assembler + helper rereads,
+  // including guard recipes and preservation registries; no GC release credit.
+  return 4*(pinnedJSONHeap(value)+7*value.byteLength);
+ }
+ let n=0;if(value&&typeof value==='object')for(const k in value)if(Object.hasOwn(value,k)){
+  if(value[k] instanceof Uint8Array){
+   const pin={bytes:'sha256',planBytes:'planFileSha256',compiledBytes:'compiledSha256',sourcePlanBytes:'sourcePlanSha256',atlasBytes:'atlasSha256',reportBytes:'reportSha256'}[k];
+   if(!pin)fail('unrecognized pinned JSON input');validHash(value[pin],k);if(sha(value[k])!==value[pin])fail(k+' byte hash mismatch');
+  }
+  n+=reservePinnedInputs(value[k]);if(n>MAX)fail('pinned JSON workspace budget before input copy/UTF8/parse');
+ }return n;
+}
+function admitPinned(memory){if(!memory||memory.inputCopies+memory.inputObjects+memory.parsedInputs+(memory.sourceRetained||0)+(memory.proofRetained||0)>MAX)fail('pinned JSON live workspace budget before input copy/UTF8/parse');}
+function pinnedJSON(bytes,hash,label,memory){
+ validHash(hash,label);if(!(bytes instanceof Uint8Array)||bytes.byteLength>MAX||sha(bytes)!==hash)fail(label+' byte hash mismatch');
+ const heap=pinnedJSONHeap(bytes);admitPinned(memory);if(4*(heap+7*bytes.byteLength)>memory.parsedInputs)fail('pinned JSON missing preparse reservation');
+ // Zero-copy byte view; its shared storage was charged before the input snapshot.
+ const text=Buffer.from(bytes.buffer,bytes.byteOffset,bytes.byteLength).toString('utf8');
+ const value=JSON.parse(text);if(jsonMemory(value).heap>heap)fail('pinned JSON heap bound');return value;
+}
 /** Pin .assembler and canonical digest(result) in derived.codeProofSha256; pin stage hashes too. */
-export async function mutationCodeProof(){
- let codeReadBytes=0;async function readCode(url){const info=await stat(url);if(!info.isFile()||4*(codeReadBytes+Math.max(info.size,8192))>MAX)fail('code proof workspace budget');codeReadBytes+=Math.max(info.size,8192);const b=await readFile(url);if(b.byteLength!==info.size)fail('code proof changed while reading');return b;}
+export async function mutationCodeProof({retainedBytes=0}={}){
+ if(!Number.isSafeInteger(retainedBytes)||retainedBytes<0||retainedBytes>MAX)fail('code proof retained budget');
+ let codeReadBytes=0;async function readCode(url){const info=await stat(url);if(!info.isFile()||retainedBytes+4*(codeReadBytes+Math.max(info.size,8192))+1024*1024>MAX)fail('code proof workspace budget');codeReadBytes+=Math.max(info.size,8192);const b=await readFile(url);if(b.byteLength!==info.size)fail('code proof changed while reading');return b;}
  const code=Object.fromEntries(await Promise.all(Object.entries(modules).map(async([name,path])=>[name,sha(await readCode(new URL(path,import.meta.url)))])));
  const pending=[...Object.values(modules),...dependencyFiles,'../../package-lock.json'].map(p=>new URL(p,import.meta.url)),seen=new Set(),dependencies={},root=fileURLToPath(new URL('../../',import.meta.url));
  while(pending.length){const url=pending.pop();if(seen.has(url.href))continue;seen.add(url.href);const label=relative(root,fileURLToPath(url));if(label.startsWith('..'))fail('code dependency outside repository');const b=await readCode(url);dependencies[label]=sha(b);
@@ -222,17 +257,18 @@ export function prepareMutationEncoding(pack,{dependencies=[],retainedBytes=0}={
  */
 export async function mutateOriginalCell({compressedBytes,entry,source,derived,stages={},protectedSources=null,releaseScope}){
  if(!(compressedBytes instanceof Uint8Array)||compressedBytes.byteLength>WIRE_MAX)fail('original compressed byte budget');
- order(stages);const inputShape={entry,source,derived:derived??null,stages,protectedSources,releaseScope};const memory={parsedInputs:0,files:0,prepared:0,inputCopies:2*binaryInputBytes({compressedBytes,stages,protectedSources,releaseScope}),inputObjects:2*jsonMemory(inputShape,new Set(),true).heap};if(memory.inputCopies+memory.inputObjects>MAX)fail('input snapshot workspace budget');
+ if(!entry||compressedBytes.byteLength!==entry.bytes||sha(compressedBytes)!==entry.sha256)fail('original compressed hash/size mismatch');
+ order(stages);const inputShape={entry,source,derived:derived??null,stages,protectedSources,releaseScope};const memory={parsedInputs:reservePinnedInputs({stages,protectedSources,releaseScope}),files:0,prepared:0,inputCopies:2*binaryInputBytes({compressedBytes,stages,protectedSources,releaseScope}),inputObjects:2*jsonMemory(inputShape,new Set(),true).heap};admitPinned(memory);
  // Snapshot inputs before the first await: later caller writes cannot alter a seal.
  compressedBytes=Buffer.from(compressedBytes);entry=structuredClone(entry);source=structuredClone(source);derived=structuredClone(derived);stages=structuredClone(stages);protectedSources=structuredClone(protectedSources);releaseScope=structuredClone(releaseScope);
- const sourceMemory=authenticate(compressedBytes,entry,source);keys(stages,['infill','terrain','paint','guards','scenery'],'stages');
+ const sourceMemory=authenticate(compressedBytes,entry,source);memory.sourceRetained=sourceMemory.inflatedBackingBytes*3+sourceMemory.arrayBytes*(sourceMemory.guardDecode?2:1)+sourceMemory.metadataBytes*6;admitPinned(memory);keys(stages,['infill','terrain','paint','guards','scenery'],'stages');
  const scope=scopeOf(releaseScope,entry,source,memory),pack0=decodePinnedSourceCell(compressedBytes,entry,source),inputFingerprint=packFingerprint(pack0),requested=Object.keys(stages).length>0;if(entry.triangles!==pack0.metadata.budgets.triangles)fail('original entry triangle mismatch');
  if(protectedBinding(protectedSources,entry,source,scope,memory)){
   if(requested)fail('protected native mutation requested');
   return {kind:'preserved',compressedBytes,entry,audit:freeze({kind:'preserved',sourceSha256:entry.sha256,inputFingerprint,native:true,identityUnchanged:true})};
  }
  // The original proof is sealed before ANY infill, terrain, paint or scenery.
- const recipes=[];if(stages.guards?.recipes)for(const r of stages.guards.recipes){keys(r,['compiledBytes','sourcePlanBytes','compiledSha256','sourcePlanSha256'],'guard recipe');const c=pinnedJSON(r.compiledBytes,r.compiledSha256,'compiled guard recipe',memory),p=pinnedJSON(r.sourcePlanBytes,r.sourcePlanSha256,'guard source plan',memory);memory.parsedInputs+=jsonMemory(c).heap+jsonMemory(p).heap+(r.compiledBytes.length+r.sourcePlanBytes.length)*3;recipes.push(readBridgeGuardRecipe(r));}
+ const recipes=[];if(stages.guards?.recipes)for(const r of stages.guards.recipes){keys(r,['compiledBytes','sourcePlanBytes','compiledSha256','sourcePlanSha256'],'guard recipe');pinnedJSON(r.compiledBytes,r.compiledSha256,'compiled guard recipe',memory);pinnedJSON(r.sourcePlanBytes,r.sourcePlanSha256,'guard source plan',memory);recipes.push(readBridgeGuardRecipe(r));}
  const proof=await prepareBridgeGuardRepair({compressedBytes,entry,...source},recipes);
  if(proof.mode==='preserve-authored'){
   if(requested)fail('protected authored mutation requested');
@@ -240,7 +276,7 @@ export async function mutateOriginalCell({compressedBytes,entry,source,derived,s
   return {kind:'preserved',compressedBytes,entry,audit:freeze({kind:'preserved',sourceSha256:entry.sha256,inputFingerprint,guard:report,identityUnchanged:true})};
  }
  if(!requested)return {kind:'preserved',compressedBytes,entry,audit:freeze({kind:'preserved',sourceSha256:entry.sha256,inputFingerprint,identityUnchanged:true})};
- const code=await mutationCodeProof();if(!derived||derived.assemblerSha256!==code.assembler||derived.codeProofSha256!==digest(code))fail('assembler/dependency code hash mismatch');
+ const code=await mutationCodeProof({retainedBytes:memory.sourceRetained+memory.inputCopies+memory.inputObjects+memory.parsedInputs});memory.proofRetained=code.readReservationBytes+jsonMemory(code).heap;admitPinned(memory);if(!derived||derived.assemblerSha256!==code.assembler||derived.codeProofSha256!==digest(code))fail('assembler/dependency code hash mismatch');
  if(typeof derived.world!=='string'||!derived.world||typeof derived.revision!=='string'||!derived.revision||derived.world===source.world&&derived.revision===source.revision)fail('new actual derived identity required');
  if(derived.recipeSha256!==mutationRecipeSha256({source,derived,stages,protectedSources,releaseScope}))fail('predeclared assembly recipe hash mismatch');
  if(!stages.guards)fail('original guard stage/code pin required');
