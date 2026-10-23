@@ -103,6 +103,7 @@ test('standalone wear consumes successful simulation time once across paused and
   const {car,v}=fixture(),source=readFileSync(new URL('../src/athens-world.js',import.meta.url),'utf8');
   const declaration=source.match(/ let scripted=false[^\n]+/)[0];
   const stepAt=source.indexOf(' function step(dt,drive){'),renderAt=source.indexOf(' function render(dt){');
+  const clockAt=source.indexOf(' function syncSurfaceClock(v){'),stateAt=clockAt>=0?clockAt:stepAt;
   const cameraAt=source.indexOf('  const fx=-Math.sin(v.yaw)',renderAt);
   assert.ok(stepAt>=0&&renderAt>stepAt&&cameraAt>renderAt);
   // Execute the production step and the render work before camera/HUD drawing.
@@ -117,7 +118,7 @@ test('standalone wear consumes successful simulation time once across paused and
     input:{state:{brake:0}},account:{blocked:false}};
   const runtime=Function('f',`const {stream,worldTraffic,barriers,stats,settings,input,account}=f;
     ${declaration} player=f.player;
-    ${source.slice(stepAt,renderAt)}
+    ${source.slice(stateAt,renderAt)}
     ${source.slice(renderAt,cameraAt)} }
     return {step,render,setPaused:value=>paused=value,setTowing:value=>towing=value};`)(state);
   const dirt=()=>car.surface.dirt.toArray();
@@ -138,5 +139,11 @@ test('standalone wear consumes successful simulation time once across paused and
     const resumed=dirt();assert.ok(resumed.every(n=>Math.abs(n-20*.09/230)<1e-12));
     runtime.render(10);runtime.render(0);
     assert.deepEqual(dirt(),resumed,'additional renders cannot consume simulation time twice');
+    runtime.step(.05);
+    v.reset(0,0,20);v.wheelSurf=['dirt','dirt','dirt','dirt'];for(const c of v.corners)c.Fz=3500;
+    runtime.step(.01);runtime.render(.1);
+    assert.ok(dirt().every(n=>Math.abs(n-20*.01/230)<1e-12),'reset discards unrendered pre-reset driving credit');
+    runtime.step(.05);v.reset(0,0,20);runtime.render(.1);
+    assert.deepEqual(dirt(),[0,0,0,0],'reset without another step consumes no stale credit');
   } finally {car.disposeDamage();}
 });

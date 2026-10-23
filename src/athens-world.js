@@ -47,7 +47,7 @@ export async function bootAthens(){
  const post=createPost(renderer,scene,camera);
  const area=pickedAthensArea(query);
  loading.show('athens','FREE ROAM',{freeRoam:true,area});
- let scripted=false,driver=null,cameraHook=null,player=null,stopped=false,paused=false,towing=false,frameId,elapsed=0,lastSurfaceElapsed=0,accumulator=0,last=performance.now(),lastTraffic=-10,lookBackA=0;
+ let scripted=false,driver=null,cameraHook=null,player=null,stopped=false,paused=false,towing=false,frameId,elapsed=0,lastSurfaceElapsed=0,surfaceVehicle=null,surfaceCorners=null,accumulator=0,last=performance.now(),lastTraffic=-10,lookBackA=0;
  let worldTraffic;const stats={frames:0,simulationSeconds:0,metres:0,holds:0,missingContacts:0,carHits:0,frameMs:[],cpuMs:[],initialDownloadBytes:0,initialDriveMs:0,maxEstimatedJSBytes:0,maxEstimatedGPUBytes:0};
  const session=await createWorldSession({renderer,scene,resources,progress:(...args)=>loading.progress(...args)});
  const {stream,roads,barriers,obstacles,detail,props,trees,signs,marks,horizon,landmarks,plazas,lawns,sceneTiles,manifest}=session;
@@ -102,12 +102,15 @@ export async function bootAthens(){
  }
  async function tow(){if(towing)return;towing=true;try{const v=player.veh,p=worldRecoveryTarget(session,v,{route:null,halfWidth:v.halfW,halfLength:v.halfL,actors:worldTraffic?.actors||[]});if(!p)throw Error('No safe loaded road');await stream.teleport(p,()=>place(v,p),{validatePose:session.safePose});}finally{towing=false;}}
  worldTraffic=new WorldTraffic(session,scene,player.veh.route);worldTraffic.configure({type:'free',traffic:1,rules:{police:false}});
+ function syncSurfaceClock(v){
+  if(surfaceVehicle!==v||surfaceCorners!==v.corners){surfaceVehicle=v;surfaceCorners=v.corners;lastSurfaceElapsed=elapsed;}
+ }
  function step(dt,drive){
   if(paused||towing||account.blocked)return;const v=player.veh;
   const points=v.ground.footprint(v,Math.hypot(v.vLong,v.vLat)*dt+.5),fx=-Math.sin(v.yaw),fz=-Math.cos(v.yaw),rx=Math.cos(v.yaw),rz=-Math.sin(v.yaw);
   stream.update({x:v.x,z:v.z,vx:fx*v.vLong+rx*v.vLat,vz:fz*v.vLong+rz*v.vLat,contacts:points,interest:worldTraffic.actors});
   if(!v.ground.ready(v,dt)){stats.holds++;return;}
-  const old={x:v.x,y:v.y,z:v.z,yaw:v.yaw};v.ground.begin(v);
+  syncSurfaceClock(v);const old={x:v.x,y:v.y,z:v.z,yaw:v.yaw};v.ground.begin(v);
   try{v.update(dt,drive||(driver?driver(v,dt):input.state));}catch(e){Object.assign(v,old,{vLong:0,vLat:0,w:0});stats.missingContacts++;throw e;}
   worldTraffic.update(dt,v,[v]);const collisions=[];worldTraffic.collide({veh:v,kind:'player'},collisions,elapsed);stats.carHits+=collisions.length;
   barriers.resolve(v,old);stats.metres+=Math.hypot(v.x-old.x,v.z-old.z);elapsed+=dt;stats.simulationSeconds=elapsed;
@@ -115,7 +118,7 @@ export async function bootAthens(){
  function render(dt){
   const v=player.veh,o=stream.origin;v.place(player.model.root);player.model.root.position.x-=o.x;player.model.root.position.z-=o.z;player.model.update(dt,v.vLong,v.steer,input.state.brake>.2,v.pose,v.corners,v.w);
   // Pauses and stream holds still render with the last loaded wheel contacts.
-  const surfaceDt=Math.max(0,elapsed-lastSurfaceElapsed);lastSurfaceElapsed=elapsed;
+  syncSurfaceClock(v);const surfaceDt=Math.max(0,elapsed-lastSurfaceElapsed);lastSurfaceElapsed=elapsed;
   player.model.setDamageSnapshot?.(v.damage);player.model.updateSurface?.(surfaceDt,v,settings.worldDetail!==false,false);worldTraffic.sync();
   const fx=-Math.sin(v.yaw),fz=-Math.cos(v.yaw),cock=cam==='cockpit';
   document.body.dataset.cameraView=cam;
