@@ -1,0 +1,17 @@
+// Explicit bounded five-cell input preparation. No solver, packing or network.
+import{readFile,writeFile}from'node:fs/promises';import{gunzipSync}from'node:zlib';import{createHash}from'node:crypto';
+import{decodeTilePack}from'../../src/world-tile-codec.js';import{validateWorldTile}from'../../src/world-tile-format.js';import{terrainProjectionChords}from'../world-gen/terrain-comfort-project.mjs';import{terrainReliefField,terrainAtlasCell}from'../world-gen/terrain-relief.mjs';
+const[manifestPath,cellsDir,atlasPath,outPath]=process.argv.slice(2);if(!outPath)throw Error('Usage: manifest cells atlas output');
+const sha=b=>createHash('sha256').update(b).digest('hex'),manifestBytes=await readFile(manifestPath),atlasBytes=await readFile(atlasPath);
+if(sha(manifestBytes)!=='2790fa21d0c16271f5e4a097101ba1414ca8a949f8805c416b4b8dfbc68dc718'||sha(atlasBytes)!=='988022635ddf80b26499e4d3a540f274264e27d9806e9c52e3ea6a76f48ca7d8')throw Error('Pinned original source integrity');
+const manifest=JSON.parse(manifestBytes),atlas=JSON.parse(atlasBytes);if(atlas.revision!==manifest.revision)throw Error('Atlas revision');const baseline=terrainReliefField(atlas),cells=['0,1','4,25','9,-7','2,-1','14,-21'],chords=[],sources=[];
+for(const key of cells){
+ const entry=manifest.tiles[key],bytes=await readFile(`${cellsDir}/${entry.sha256}.bin.gz`);if(bytes.length!==entry.bytes||sha(bytes)!==entry.sha256)throw Error('Source cell integrity '+key);
+ const raw=gunzipSync(bytes,{maxOutputLength:entry.decodedBytes}),pack=await decodeTilePack(raw.buffer.slice(raw.byteOffset,raw.byteOffset+raw.byteLength),entry.decodedBytes);validateWorldTile(pack,{...entry.source,cell:key.split(',').map(Number)});if(terrainAtlasCell(pack).protected)throw Error('Protected trial cell');
+ const[ox,,oz]=pack.metadata.origin;for(const c of terrainProjectionChords(pack,{include:(x,z)=>baseline.blend(ox+x,oz+z)>.999}))chords.push({id:c.id,a:c.a,b:c.b,c:c.c,signedSag:c.signedSag,terms:c.terms});sources.push({cell:key,sha256:entry.sha256,bytes:entry.bytes,...entry.source});
+}
+const nodes=new Map();for(const c of chords)for(const t of c.terms)for(let dx=-32;dx<=32;dx+=8)for(let dz=-32;dz<=32;dz+=8)if(dx*dx+dz*dz<=1024){const x=t.x+dx,z=t.z+dz;nodes.set(`${x},${z}`,{x,z,free:baseline.blend(x,z)>.999});}
+// Declared original-source safeguards, not a claim of surveyed geography.
+const fixedSamples=[],x=1161.6333738,z=-208.179532,sourceSHA256=sha(atlasBytes),add=(id,kind,a,b)=>fixedSamples.push({id,kind,x:a,z:b,sourceY:baseline.original(a,b),sourceSHA256});add('lycabettus-source-node835178426','summit',x,z);
+for(const[name,dx,dz]of[['eastWest',1,0],['northSouth',0,1]])for(let station=-256;station<=256;station+=8)add(`lycabettus-${name}:${station}`,'profile',x+dx*station,z+dz*station);
+const data={schema:'terrain-lp-input-1',sourceRevision:manifest.revision,source:{manifestSHA256:sha(manifestBytes),atlasSHA256:sourceSHA256,cells:sources},chords:chords.map(({terms,...c})=>c),nodes:[...nodes.values()],geography:{status:'declared fixed original-source samples; no surveyed/geographic acceptance',fixedSamples}};const output=JSON.stringify(data)+'\n';await writeFile(outPath,output);console.log(JSON.stringify({input:outPath,sha256:sha(output),bytes:Buffer.byteLength(output),cells:cells.length,chords:chords.length,nodes:nodes.size,fixedSourceSamples:fixedSamples.length,maxRSS:process.resourceUsage().maxRSS*1024,emittedCells:0}));

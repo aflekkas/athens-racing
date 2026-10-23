@@ -1,0 +1,38 @@
+{
+  "status": "SOURCE preflight only; no matrix/solver/pack",
+  "preparation": {
+    "input": "/tmp/athens-terrain.uKVC/min-gradient-input.json",
+    "sha256": "e85ca0c7de2cdc5f057d3e69828c41b45fea61d5bc03c595525b5e927ceaa281",
+    "bytes": 2987095,
+    "cells": 5,
+    "chords": 4202,
+    "nodes": 19470,
+    "fixedSourceSamples": 131,
+    "maxRSS": 443117568,
+    "emittedCells": 0
+  },
+  "forecast": {
+    "nonzeroUpperBound": 2756510,
+    "nodes": 19470,
+    "variables": 19471,
+    "rows": 679034,
+    "gradientTriangles": 41898,
+    "facets": 16,
+    "forecastBytes": 1925232927,
+    "calibrationRSS": 959492096,
+    "buildsMatrix": false,
+    "mode": "inner",
+    "stage": "gradient",
+    "sourceRevision": "80055f9208753e2d6fa8658b31c90216d22c650f7f33588ebd5178d1a6b804a1",
+    "emittedCells": 0
+  },
+  "tests": {
+    "focused": 12,
+    "passed": 12,
+    "failed": 0,
+    "skipped": 0
+  },
+  "headroomBytes": 22332784640,
+  "geographyAccepted": false,
+  "publicationAccepted": false
+}

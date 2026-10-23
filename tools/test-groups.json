@@ -284,7 +284,8 @@
     "tools/world-tile-road-width.test.mjs",
     "tools/ekali-route.test.mjs",
     "tools/world-gen/context.test.mjs",
-    "tools/world-traffic-budget.test.mjs"
+    "tools/world-traffic-budget.test.mjs",
+    "tools/terrain-lp.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",
