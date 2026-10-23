@@ -2,7 +2,7 @@
 
 Car paint collects bounded lower-body dirt from loaded wheels on loose ground and shows local impact scuffs. Tow/reset and complete repair clear it. These additions are hidden online and with World detail Off.
 
-**Status: Low and High appearance/lifecycle checks complete.** High-only retry passed after the first combined run hit its 330-second deadline. The required exact-candidate full archive gates remain pending CPU allocation; this is not a full-gates completion claim. Original `report.json` honestly retains the earlier combined-job failure; `high-report.json` records the completed High retry.
+**Status: Low and High appearance/lifecycle checks complete.** High-only retry passed after the first combined run hit its 330-second deadline. The required full archive gates are owned by greenery on frozen integrated master, superseding the earlier component-branch queue; this is not a full-gates completion claim. Original `report.json` honestly retains the earlier combined-job failure; `high-report.json` records the completed High retry.
 
 ## Proof it works
 
@@ -25,6 +25,22 @@ Athens · Psychiko · GR Yaris · Low at 1280×800, external matched camera. Act
 - Staged a 9m/s lateral wall impulse through existing `Ground._hit`, retaining its computed contact, mechanical response and damage. The production snapshot/render hook consumed the actual local impact serial. This is a staged solver contact, not a claim of steering into a mapped building.
 - Fresh render and JPEG encoding occurred together. Tow used actual `__athens.tow()`; final dirt/scuffs and all four damage totals were zero. Off and online-hidden frames differed at zero pixels; enabling wear changed 10,202 pixels.
 - Focused lifecycle/geometry tests: **16 passed / 0 failed** (10 surface, 6 damage). Proof-script syntax passed. High-only browser job exited 0 and passed all assertions. Full clean-archive gates remain pending; no overall full-gates PASS is claimed.
+
+## Combined clock integration proof
+
+Actual parent `aa3e513916d73973560e4168817e17fbe841484e`, including root standalone timing/reset fixes and loader main timing fix: [clock report with four exact served-module SHA256 hashes](clock-report.json). The actual `__athens` standalone route passed; main unified mode was not browser-tested here.
+
+| Driven | Paused | Readiness held | Resumed | Repaired |
+|---|---|---|---|---|
+| ![](clock-low-driven.jpg) | ![](clock-low-paused.jpg) | ![](clock-low-readiness-held.jpg) | ![](clock-low-resumed.jpg) | ![](clock-low-repaired.jpg) |
+
+Six seconds of real physics drove 10.708m with 5,760 loaded dirt-wheel contacts, producing dirt 0.0471370968 on each wheel. With stale speed -2.7356m/s and four loaded dirt wheels, actual public pause followed by 80 renders/eight attempted simulation seconds preserved dirt, scuffs, simulation time, distance and pose exactly. A separately labeled **test injection** temporarily replaced only `ground.ready` with false, restored in `finally`; the same hold assertions passed. No source, geometry, physical flags or wheel-contact data were injected. Six resumed physics seconds raised dirt to 0.0957746081 (21.991m total / 11,520 contacts). Public reset/place and actual tow both cleared all wear. Zero missing contacts, page errors or WebGL shader errors; local offline auth/session503 remained the only console resource failure.
+
+`tools/car-surface-clock.browser.mjs` passed syntax and its single bounded browser job exited 0. All camera layers were restored before fresh render+JPEG captures; intermediate scene draws were omitted for this lifecycle check. This is not a timing/performance claim. The first clean photograph is at spawn; subsequent matched-camera photos use the supported dirt strip. Car material/geometry/texture counts stayed31/125/8, paint version2 and one surface shader variant through completion. Chrome and proxy closed in `finally`.
+
+```sh
+SURFACE_ROOT=/home/dev/.cogenly/worktrees/athens-racing/t3-41c48689 SURFACE_PROXY_HELPER=/tmp/athens-ui-fixes.Nxho/local-server.mjs ASR_SURFACE_TEMP=/tmp/athens-car-surface.4wM2 SURFACE_OUT=/home/dev/.cogenly/worktrees/athens-racing/t3-d1bb19b7/.scratch/car-surface ASR_SURFACE_COMMIT=aa3e513916d73973560e4168817e17fbe841484e CHROME_BIN=/home/dev/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome BROWSER_SLOTS=1 bash tools/browser-slot.sh node tools/car-surface-clock.browser.mjs
+```
 
 ## How to try it (2 minutes)
 
@@ -88,7 +104,7 @@ The only observed console resource failure was local `/api/auth/session` HTTP503
 
 ### Cleanup and documentation handoff
 
-All owned browser/server jobs are closed. Removed the own downloaded world-miss cache and offline contact-scan intermediates after browser completion; shared cache/helper/dependency target remain untouched. Retained evidence is these eight own-game JPGs, two telemetry files and this README. Task temp `/tmp/athens-car-surface.4wM2` remains for the queued archive gates; shared dependency target/cache/helper are preserved. Initial disk: 145G total / 72G used / 73G free, 50%; latest High browser preflight: 72G used / 73G free, 50%. Final temp/symlink removal and final df follow the remaining checks.
+All owned browser/server jobs are closed. Removed the own downloaded world-miss cache and offline contact-scan intermediates after browser completion; shared cache/helper/dependency target remain untouched. Retained evidence is these eight own-game JPGs, two telemetry files and this README. No component archive was created; that queue was superseded. Task temp `/tmp/athens-car-surface.4wM2` remains only for proof/cleanup; shared dependency target/cache/helper are preserved. Initial disk: 145G total / 72G used / 73G free, 50%; latest High browser preflight: 72G used / 73G free, 50%. Final temp/symlink removal and final df follow the remaining checks.
 
 Parent proposed PROBLEMS Fixed entry: “Car paint now picks up bounded lower-body dirt from loaded wheels on loose ground, with impact-local scuffs; tow/reset clears all cosmetic wear. Hidden online because contact history is not synced, and World detail Off removes it.”
 
