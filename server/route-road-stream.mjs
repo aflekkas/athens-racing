@@ -1,7 +1,7 @@
 import { canonicalJSON, sha256 } from '../src/route-definition.js';
 import { ROUTE_HASH } from '../src/route-network.js';
 import { validateRouteRoads, routeRoadAuthority } from './route-roads.mjs';
-import { recoveryDataBytes, recoveryCanonicalSize } from './route-road-wire.mjs';
+import { recoveryDataBytes, recoveryCanonicalSize, recoveryUTF8Bytes } from './route-road-wire.mjs';
 export { recoveryDataBytes } from './route-road-wire.mjs';
 export const RECOVERY_ARTIFACT_BYTES = 2 * 1024 * 1024;
 const cellOf = pose => `${Math.floor(pose.x / 512)},${Math.floor(pose.z / 512)}`;
@@ -46,7 +46,7 @@ function scanRecoveryJSON(text, limit = Infinity) {
 export function estimateRecoveryJSON(raw) {
   if (typeof raw !== 'string' && !(raw instanceof Uint8Array)) throw TypeError('Recovery JSON must be text or bytes');
   const text = typeof raw === 'string' ? raw : new TextDecoder('utf-8', { fatal: true }).decode(raw);
-  const wireBytes = typeof raw === 'string' ? new TextEncoder().encode(raw).length : raw.byteLength;
+  const wireBytes = typeof raw === 'string' ? recoveryUTF8Bytes(raw) : raw.byteLength;
   const estimate = scanRecoveryJSON(text);
   return Object.freeze({ ...estimate, wireBytes, decodedLimitBytes: RECOVERY_MEMORY.decoded,
     exceedsDecodedLimit: estimate.estimatedDecodedBytes > RECOVERY_MEMORY.decoded,
@@ -59,7 +59,7 @@ export const RECOVERY_MEMORY = Object.freeze({ cache: 16 * 1024 * 1024, decoded:
 export async function admitRecoverySidecar(raw, { expectedHash, worldSetRevision } = {}) {
   let body, bytes, liveBufferBytes = 0, consumePacked = false;
   if (typeof raw === 'string' || raw instanceof Uint8Array) {
-    bytes = typeof raw === 'string' ? new TextEncoder().encode(raw).length : raw.byteLength;
+    bytes = typeof raw === 'string' ? recoveryUTF8Bytes(raw) : raw.byteLength;
     if (bytes > RECOVERY_ARTIFACT_BYTES) throw Error('Recovery sidecar exceeds artifact budget');
     const text = typeof raw === 'string' ? raw : new TextDecoder('utf-8', { fatal: true }).decode(raw);
     scanRecoveryJSON(text, RECOVERY_MEMORY.decoded); body = JSON.parse(text);

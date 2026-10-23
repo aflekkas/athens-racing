@@ -11,17 +11,16 @@ const freeze = value => { if (value && typeof value === 'object' && !Object.isFr
 // The release builder signs exact emitted edges and individually contact/obstacle
 // proven anchors. The request never contributes geometry or an unproved pose.
 async function authenticateRouteRoads(body, { expectedHash, worldSetRevision, maxCombinedBytes, liveBufferBytes, memoryStats }) {
-  let size;
-  if (body?.schemaVersion === 2) {
-    size = recoveryCanonicalSize(body);
-    if (size.bytes > 2 * 1024 * 1024) throw Error('Invalid authoritative recovery artifact');
-    // Charge the output plus a conservative digest input copy. Neither is
-    // retained after this helper; token writing avoids a full UTF-16 copy.
-    const bytes = recoveryDataBytes(body) + liveBufferBytes + size.maxTokenCodeUnits * 2 + size.bytes * 2;
-    if (bytes > maxCombinedBytes) throw Error('Recovery authentication memory budget exceeded');
-    if (memoryStats) memoryStats.authenticationBytes = bytes;
-  }
-  const encoded = size ? recoveryCanonicalBytes(body, size) : new TextEncoder().encode(canonicalJSON(body));
+  const size = recoveryCanonicalSize(body);
+  if (size.bytes > 2 * 1024 * 1024) throw Error('Invalid authoritative recovery artifact');
+  // Every supported schema/input path charges retained raw buffers, canonical
+  // UTF-16 (full V1 or one V2 token), UTF-8 output, and a digest input copy
+  // BEFORE creating any canonical string or encoded buffer.
+  const canonicalBytes = (body?.schemaVersion === 2 ? size.maxTokenCodeUnits : size.codeUnits) * 2;
+  const bytes = recoveryDataBytes(body) + liveBufferBytes + canonicalBytes + size.bytes * 2;
+  if (bytes > maxCombinedBytes) throw Error('Recovery authentication memory budget exceeded');
+  if (memoryStats) memoryStats.authenticationBytes = bytes;
+  const encoded = body?.schemaVersion === 2 ? recoveryCanonicalBytes(body, size) : new TextEncoder().encode(canonicalJSON(body));
   const digest = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', encoded)), v => v.toString(16).padStart(2, '0')).join('');
   if (!body || ![1, 2].includes(body.schemaVersion) || body.worldId !== 'athens' || body.projectionId !== 'athens-v1' || !ROUTE_HASH.test(expectedHash || '') || body.worldSetRevision !== worldSetRevision || !ROUTE_HASH.test(worldSetRevision || '') || encoded.length > 2 * 1024 * 1024 || digest !== expectedHash) throw Error('Invalid authoritative recovery artifact');
 }

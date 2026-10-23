@@ -18,6 +18,19 @@ export function recoveryDataBytes(value, limit = Infinity) {
   };
   visit(value); return bytes;
 }
+// TextEncoder's exact UTF-8 byte count, including replacement of lone UTF-16
+// surrogates, without allocating an encoded copy merely to measure the input.
+export function recoveryUTF8Bytes(text) {
+  let bytes = 0;
+  for (let i = 0; i < text.length; i++) {
+    const c = text.charCodeAt(i);
+    if (c < 128) bytes++;
+    else if (c < 2048) bytes += 2;
+    else if (c >= 0xd800 && c <= 0xdbff && text.charCodeAt(i + 1) >= 0xdc00 && text.charCodeAt(i + 1) <= 0xdfff) { bytes += 4; i++; }
+    else bytes += 3;
+  }
+  return bytes;
+}
 // Exact canonical JSON sizes without allocating its complete string/UTF-8
 // buffer. Charge both before the authentication helper creates either buffer.
 export function recoveryCanonicalSize(value) {

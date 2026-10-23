@@ -66,17 +66,33 @@ test('leased safety snapshots survive eviction, serialize parsing and release al
   await assert.rejects(limited.authority.prepare(limited.pose, f)); assert.equal(limited.authority.stats().leases, 0);
 });
 
-test('nine near-2MiB cells retain the complete safety set under a constrained heap', async () => {
+test('nine largest-admissible padded V1 byte cells retain complete leased sets under cache eviction', async () => {
   if (!process.env.ATHENS_RECOVERY_MEMORY_CHILD) {
     const { spawnSync } = await import('node:child_process');
     const env = { ...process.env, ATHENS_RECOVERY_MEMORY_CHILD: '1' }; delete env.NODE_TEST_CONTEXT;
-    const child = spawnSync(process.execPath, ['--max-old-space-size=24', '--test', '--test-name-pattern=nine near-2MiB', import.meta.filename], { encoding: 'utf8', env, timeout: 30000 });
+    const child = spawnSync(process.execPath, ['--max-old-space-size=24', '--test', '--test-name-pattern=nine largest-admissible', import.meta.filename], { encoding: 'utf8', env, timeout: 30000 });
     assert.equal(child.status, 0, child.stdout + child.stderr); assert.match(child.stdout, /recoveryMemoryProof/); console.log(child.stdout.split('\n').find(line => line.includes('recoveryMemoryProof'))); return;
   }
-  const { canonicalJSON } = await import('../src/route-definition.js'), cells = {}, descriptors = new Map();
+  const { canonicalJSON } = await import('../src/route-definition.js'), { recoveryDataBytes, recoveryCanonicalSize } = await import('./route-road-wire.mjs'), cells = {}, descriptors = new Map();
+  let padding = 0;
   // An emitted shard may carry long source metadata. It must not remain in the
   // decoded cache after validation. All nine candidates are within the query.
-  const make = key => ({ schemaVersion: 1, worldId: 'athens', projectionId: 'athens-v1', worldSetRevision: revision, sourceHashes: [[key, source]], edges: [{ id: key, from: 'a', to: 'b', layer: 0, flags: 1, surface: 'road', points: [[500, 0, 400], [500, 0, 600]], sourceMetadata: 'x'.repeat(1940000) }], anchors: [{ edgeId: key, offsetM: 100, x: 500, y: 0, z: 500, yaw: -Math.PI, layer: 0, surfaceId: 'road', leftM: 4, rightM: 4, halfWidth: 1.1, halfLength: 6 }] });
+  const make = key => ({ schemaVersion: 1, worldId: 'athens', projectionId: 'athens-v1', worldSetRevision: revision, sourceHashes: [[key, source]], edges: [{ id: key, from: 'a', to: 'b', layer: 0, flags: 1, surface: 'road', points: [[500, 0, 400], [500, 0, 600]], sourceMetadata: 'x'.repeat(padding) }], anchors: [{ edgeId: key, offsetM: 100, x: 500, y: 0, z: 500, yaw: -Math.PI, layer: 0, surfaceId: 'road', leftM: 4, rightM: 4, halfWidth: 1.1, halfLength: 6 }] });
+  const keys = Array.from({ length: 9 }, (_, i) => `${Math.floor(i / 3) - 1},${i % 3 - 1}`);
+  // ASCII padding adds exactly nine live-accounted bytes per character:
+  // parsed2 + rawUTF16 2 + inputUTF8 1 + canonicalUTF16 2 + UTF8/digestcopies2.
+  const basePhases = keys.map(key => { const b = make(key), size = recoveryCanonicalSize(b); return recoveryDataBytes(b) + size.codeUnits * 4 + size.bytes * 3; });
+  padding = Math.min(...basePhases.map(bytes => Math.floor((RECOVERY_MEMORY.decoded - bytes) / 9)));
+  assert.ok(Math.max(...basePhases) + padding * 9 <= RECOVERY_MEMORY.decoded);
+  assert.ok(Math.max(...basePhases) + (padding + 1) * 9 > RECOVERY_MEMORY.decoded, 'one more padding byte is inadmissible for the worst key');
+  const boundaryAuthenticationBytes = await (async () => {
+    const key = keys[basePhases.indexOf(Math.max(...basePhases))], body = make(key);
+    const accepted = await admitRecoverySidecar(new TextEncoder().encode(canonicalJSON(body)), { expectedHash: await sha256(body), worldSetRevision: revision });
+    assert.equal(accepted.metrics.memory.authenticationBytes, Math.max(...basePhases) + padding * 9);
+    body.edges[0].sourceMetadata += 'x';
+    await assert.rejects(admitRecoverySidecar(new TextEncoder().encode(canonicalJSON(body)), { expectedHash: await sha256(body), worldSetRevision: revision }), /authentication memory budget/);
+    return accepted.metrics.memory.authenticationBytes;
+  })();
   for (let x = -1; x <= 1; x++) for (let z = -1; z <= 1; z++) {
     const key = `${x},${z}`, body = make(key), hash = await sha256(body), url = `/world/recovery/${key}.${hash}.json`;
     cells[key] = { sourceHash: source, hash, url }; descriptors.set(url, key);
@@ -84,14 +100,19 @@ test('nine near-2MiB cells retain the complete safety set under a constrained he
   const manifest = { schemaVersion: 1, projectionId: 'athens-v1', worldId: 'athens', worldSetRevision: revision, cells, footprints: [{ halfWidth: 1.1, halfLength: 6 }] };
   await validateRecoveryManifest(manifest, { expectedHash: await sha256(manifest), worldSetRevision: revision });
   let calls = 0;
-  const authority = createStreamedRoadAuthority(manifest, async url => { calls++; return canonicalJSON(make(descriptors.get(url))); }, { maxEntries: 3 });
+  const authority = createStreamedRoadAuthority(manifest, async url => { calls++; return new TextEncoder().encode(canonicalJSON(make(descriptors.get(url)))); }, { maxEntries: 3 });
   const snapshot = await authority.prepare({ x: 500, y: 0, z: 500 }, { halfWidth: 1, halfLength: 2 });
   assert.equal(calls, 9); assert.equal(snapshot.candidates.length, 9); assert.equal(snapshot.edges.length, 9);
   assert.equal(authority.readyFor({ x: 500, y: 0, z: 500 }), false);
   assert.equal(authority.stats().entries, 3); assert.equal(authority.stats().peakParsing, 1);
   assert.ok(authority.stats().bytes <= 12 * 1024 * 1024); assert.ok(authority.stats().decodedBytes < 100000);
-  snapshot.release(); assert.equal(authority.stats().leases, 0);
-  console.log(JSON.stringify({ recoveryMemoryProof: authority.stats(), maxRSSKiB: process.resourceUsage().maxRSS, heapUsed: process.memoryUsage().heapUsed }));
+  const second = await authority.prepare({ x: 500, y: 0, z: 500 }, { halfWidth: 1, halfLength: 2 });
+  assert.equal(calls, 18); assert.equal(second.candidates.length, 9); assert.equal(snapshot.candidates.length, 9);
+  assert.deepEqual(new Set(snapshot.candidates.map(a => a.edgeId)), new Set(keys));
+  assert.deepEqual(new Set(second.candidates.map(a => a.edgeId)), new Set(keys));
+  assert.equal(authority.stats().leases, 2); await assert.rejects(authority.prepare({ x: 500, y: 0, z: 500 }, { halfWidth: 1, halfLength: 2 }), /busy/);
+  snapshot.release(); second.release(); assert.equal(authority.stats().leases, 0);
+  console.log(JSON.stringify({ recoveryMemoryProof: authority.stats(), padding, maxWireBytes: Math.max(...keys.map(key => recoveryCanonicalSize(make(key)).bytes)), maxAuthenticationBytes: boundaryAuthenticationBytes, maxRSSKiB: process.resourceUsage().maxRSS, heapUsed: process.memoryUsage().heapUsed }));
 });
 
 test('dense JSON expansion and decoded cache budgets reject before retaining geometry', async () => {
@@ -378,4 +399,36 @@ test('production Node recovery loader preserves file bytes and rejects UTF-8 bef
   // an apparently authenticated manifest before installRouteMaps receives it.
   await fs.writeFile(join(root,'.deploy/catalogue.json'),Buffer.concat([Buffer.from('{"recoveryRootName":"'),Buffer.from([255]),Buffer.from('"}')]));
   await assert.rejects(createGameServer({root}),/node-loader-captured/);assert.deepEqual(globalThis.__athensNodeRecoveryProbe.catalogue,{});
+});
+
+test('v1 near-2MiB wire cells exceeding the live phase budget reject before any authentication encoding', async t => {
+  const { canonicalJSON } = await import('../src/route-definition.js');
+  const { recoveryCanonicalSize, recoveryDataBytes } = await import('./route-road-wire.mjs');
+  const body = twoWayBody(); body.edges.pop();body.anchors.pop();body.edges[0].flags=1;delete body.anchors[0].roadId;
+  body.edges[0].sourceMetadata='x'.repeat(1940000);
+  const raw=canonicalJSON(body),hash=await sha256(body),inputBytes=new TextEncoder().encode(raw),size=recoveryCanonicalSize(body),dataBytes=recoveryDataBytes(body),NativeEncoder=TextEncoder;
+  assert.ok(inputBytes.byteLength<2*1024*1024);
+  for(const [kind,input,liveBufferBytes]of [['text',raw,raw.length*2],['bytes',inputBytes,raw.length*2+inputBytes.byteLength]]){
+    const authenticationBytes=dataBytes+liveBufferBytes+size.codeUnits*2+size.bytes*2;
+    assert.ok(authenticationBytes>RECOVERY_MEMORY.decoded);
+    let encodes=0,writes=0;globalThis.TextEncoder=class extends NativeEncoder{encode(...a){encodes++;return super.encode(...a)}encodeInto(...a){writes++;return super.encodeInto(...a)}};
+    try{let failure;try{await admitRecoverySidecar(input,{expectedHash:hash,worldSetRevision:revision})}catch(e){failure=e}
+      assert.equal(encodes,0,'overflow rejects before input sizing or canonical UTF8 allocation');assert.equal(writes,0);
+      assert.match(failure?.message||'',/authentication memory budget/);
+    }finally{globalThis.TextEncoder=NativeEncoder;}
+    t.diagnostic(JSON.stringify({kind,wireBytes:size.bytes,dataBytes,liveBufferBytes,authenticationBytes,limit:RECOVERY_MEMORY.decoded}));
+  }
+  body.edges[0].sourceMetadata='x'.repeat(1000);const small=canonicalJSON(body),smallHash=await sha256(body),smallSize=recoveryCanonicalSize(body),smallData=recoveryDataBytes(body);
+  for(const input of [body,small,new TextEncoder().encode(small)]){
+    const result=await admitRecoverySidecar(input,{expectedHash:smallHash,worldSetRevision:revision});
+    const live=typeof input==='string'?small.length*2:input instanceof Uint8Array?small.length*2+input.byteLength:0;
+    assert.equal(result.metrics.memory.authenticationBytes,smallData+live+smallSize.codeUnits*2+smallSize.bytes*2);
+    assert.ok(result.metrics.memory.authenticationBytes<=RECOVERY_MEMORY.decoded);
+  }
+});
+
+
+test('allocation-free raw UTF-8 sizing agrees with actual encoding for scalar and surrogate cases', async () => {
+  const { recoveryUTF8Bytes } = await import('./route-road-wire.mjs');
+  for (const text of ['', 'ascii', 'éΩ中😀', '\ud800', '\udc00', 'x\ud800y\udc00z', '\ud800\udc00', '\u0000\n\"\\']) assert.equal(recoveryUTF8Bytes(text), new TextEncoder().encode(text).length);
 });
