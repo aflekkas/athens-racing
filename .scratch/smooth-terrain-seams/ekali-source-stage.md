@@ -17,6 +17,10 @@ Twenty cells replace two old boundary cells and add eighteen. All 1,746 other or
 
 Source receipt, canonical official OSM closure, actual Copernicus DEM crop and pinned generator hashes remain in the one terrain task cache. No inferred DEM, invented connector or source clipping is used. No infill database is generated for Ekali. Source limitations remain: 29 invalid building footprints were rejected, one unassembled/outside building relation is counted, and positive-elevation inland mode retains actual water masks without inventing water-plane heights. Full crown/building/road clearance and final world scenery integration remain separate combined-candidate checks.
 
+## Independent comfort blocker
+
+A separate actual-contact comfort probe over the twenty new source packets found 19/20 cells exceed the unchanged 0.5 m affine-corrected 32 m chord limit somewhere on their roads (22,466 samples, zero nulls). Maximum is 1.136911 m at `19,-31`. Core-cell maxima are 0.746413 m (`17,-29`), 0.624580 m (`18,-30`) and 0.811323 m (`18,-29`); this whole-cell audit does not establish which exact route occurrences fail. Of the four protected structure cells, `17,-31` passes (0.441099 m); `17,-30`, `16,-30` and `16,-29` fail (0.597848/0.839445/0.614858 m). These protected failures require explicit separate review. No physical pass is presented as a comfort pass, and no threshold or protection was changed. Full results: `ekali-source-comfort.json`.
+
 ## What remains
 
 The route child must compile against the new composed identity, run unchanged corridor/run-in/runout/grid/contact/recovery proofs and drive the actual route in game. The runtime width fix must be included when regenerating per-point width results; do not hand-edit geometry hashes. Actual screenshots, final combined source clean-archive gates, all-route recompile/sidecars and release binding are pending. Existing all-world terrain smoothing remains blocked by the rejected Lycabettus profile; this source expansion does not resolve that independent blocker or the Kifisias six-metre geographic depression audit.
