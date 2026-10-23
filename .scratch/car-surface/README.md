@@ -50,11 +50,22 @@ Codex gpt-6.1-sol authored the implementation, tests and browser harness. Node/T
 
 ### Exact checks completed
 
-```text
-node --import ./tools/damage-test-register.mjs --test tools/car-surface.test.mjs tools/damage-geometry.test.mjs → 16 pass, 0 fail
-node --check tools/car-surface.browser.mjs → pass
-BROWSER_SLOTS=1 ... bash tools/browser-slot.sh node tools/car-surface.browser.mjs → Low lifecycle complete; first combined run stopped at 330s during High
-BROWSER_SLOTS=1 SURFACE_CLASSES=high SURFACE_REPORT=high-report.json ... bash tools/browser-slot.sh node tools/car-surface.browser.mjs → passed, exit 0
+```sh
+node --import ./tools/damage-test-register.mjs --test tools/car-surface.test.mjs tools/damage-geometry.test.mjs
+# 16 passed / 0 failed
+node --check tools/car-surface.browser.mjs
+# passed
+
+# Both actual browser jobs used these resolved environment values:
+export SURFACE_ROOT=/home/dev/.cogenly/worktrees/athens-racing/t3-41c48689
+export SURFACE_PROXY_HELPER=/tmp/athens-ui-fixes.Nxho/local-server.mjs
+export ASR_SURFACE_TEMP=/tmp/athens-car-surface.4wM2
+export CHROME_BIN=/home/dev/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome
+ASR_SURFACE_COMMIT=91763ed223e19a92df5915ce4564478dcf3cf08c BROWSER_SLOTS=1 SURFACE_SPARSE=0 bash tools/browser-slot.sh node tools/car-surface.browser.mjs
+# Low completed; original combined job reached its 330-second deadline during High.
+# SURFACE_SPARSE=0 reproduces that earlier script's normal intermediate drawing.
+ASR_SURFACE_COMMIT=e43991f98c832517f0e0e166c2be613f6f814e0d BROWSER_SLOTS=1 SURFACE_CLASSES=high SURFACE_REPORT=high-report.json bash tools/browser-slot.sh node tools/car-surface.browser.mjs
+# passed, exit 0; sparse accumulation policy; all proof frames fully rendered
 ```
 
 Earlier source checks: owner car-library/budget checks 83/0; rest-pose/shadow checks 3/0; imports 374 modules passed. Those do not replace required final exact-archive npm/physics/import/syntax gates.
@@ -77,7 +88,7 @@ The only observed console resource failure was local `/api/auth/session` HTTP503
 
 ### Cleanup and documentation handoff
 
-All owned browser/server jobs are closed. Retained evidence is these eight own-game JPGs, two telemetry files and this README. Task temp `/tmp/athens-car-surface.4wM2` remains for the queued archive gates; shared dependency target/cache/helper are preserved. Initial disk: 145G total / 72G used / 73G free, 50%; latest High browser preflight: 72G used / 73G free, 50%. Final temp/symlink removal and final df follow the remaining checks.
+All owned browser/server jobs are closed. Removed the own downloaded world-miss cache and offline contact-scan intermediates after browser completion; shared cache/helper/dependency target remain untouched. Retained evidence is these eight own-game JPGs, two telemetry files and this README. Task temp `/tmp/athens-car-surface.4wM2` remains for the queued archive gates; shared dependency target/cache/helper are preserved. Initial disk: 145G total / 72G used / 73G free, 50%; latest High browser preflight: 72G used / 73G free, 50%. Final temp/symlink removal and final df follow the remaining checks.
 
 Parent proposed PROBLEMS Fixed entry: “Car paint now picks up bounded lower-body dirt from loaded wheels on loose ground, with impact-local scuffs; tow/reset clears all cosmetic wear. Hidden online because contact history is not synced, and World detail Off removes it.”
 
