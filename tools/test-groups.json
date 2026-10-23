@@ -275,7 +275,8 @@
     "tools/kifissia-route.test.mjs",
     "tools/driving-controls-notice.test.mjs",
     "tools/setup-event-choice.test.mjs",
-    "tools/world-traffic-online-police.test.mjs"
+    "tools/world-traffic-online-police.test.mjs",
+    "tools/infill.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",

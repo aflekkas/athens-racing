@@ -73,7 +73,10 @@ def building_height(tags, landuse):
     if levels is not None and 0 < levels <= 200:
         return levels*3.2, 'levels'
     kind = tags.get('building')
-    if kind in ('garage', 'garages', 'shed'):
+    # OSM building=roof is open on at least two sides, not an apartment block.
+    # A one-storey fallback is an approximation, never a surveyed height; the
+    # current extrusion remains a solid collision prism (no open-side model).
+    if kind in ('garage', 'garages', 'shed', 'roof'):
         return 3.2, 'building-default'
     return HEIGHTS.get(landuse, 9.6), 'landuse-default' if landuse in HEIGHTS else 'default'
 

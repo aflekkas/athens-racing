@@ -3,8 +3,10 @@
 
 Every residential landuse polygon is cut by what OSM maps: buildings, roads and footways (with their width and a
 sidewalk), other landuse and landcover, water and coast, and the paved plazas and lawns of assets/athens/*.json.
-What is left is the empty block interior. Each interior component of at least 350 m2 is filled with 4 to 7 storey
-lots on a grid along its long side, up to 60% of its area. A lot is only kept when it lies wholly inside the free
+What is left is a possible block interior, not proof of missing buildings. Generic apartment infill additionally
+requires at least 35% unbuffered mapped building coverage within 150 m of each lot. This conservative inference
+policy is not a measurement of real building heights or development rights. Dense eligible gaps retain the
+4 to 7 storey recipe, capped by representative explicit residential height tags when available, up to 60% cover. A lot is only kept when it lies wholly inside the free
 interior, so it cannot touch a road, footway, park, plaza, water or an OSM building.
 
 Lots are written in the clean-database record format (one part, the same mesh builder) to `infill.sqlite` beside
@@ -21,14 +23,14 @@ import sqlite3
 import sys
 from pathlib import Path
 
-from shapely import affinity
+from shapely import affinity, from_wkb
 from shapely.geometry import LineString, Polygon, box, shape
 from shapely.ops import unary_union
 from shapely.strtree import STRtree
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from buildings import building_mesh  # noqa: E402  (the same mesh builder as the clean step)
-from model import palette_index  # noqa: E402
+from model import palette_index, building_height, project  # noqa: E402
 
 SIDEWALK_M = 2.0            # kerb to building line beyond the carriageway
 FOOTWAY_BUFFER_M = 2.5      # footway, path, steps, pedestrian way, cycleway
@@ -37,6 +39,12 @@ MIN_LOT_M2 = 150.0          # no generated lot is smaller than this (owner brief
 MAX_INTERIOR_M2 = 30000.0   # bigger free ground is open land, not a city block: no lots
 MIN_RING_BUILT = 0.15       # share of the 60 m ring around the interior that OSM builds on
 RING_M = 60.0
+CONTEXT_M = 150.0          # source neighbourhood around each candidate, independent of polygon/tile size
+MIN_LOCAL_COVER = 0.35     # conservative inference policy, not surveyed urban classification
+MIN_CONTEXT_BUILDINGS = 3
+LOW_RISE_KINDS = {'house', 'detached', 'semidetached_house', 'terrace', 'bungalow'}
+RESIDENTIAL_KINDS = LOW_RISE_KINDS | {'yes', 'apartments', 'residential'}
+ANCILLARY_KINDS = {'roof', 'garage', 'garages', 'shed', 'carport'}
 MAX_COVER = 0.60            # share of an interior that may be built
 LOT_W = (8.0, 13.0)          # street-facing width, metres, seeded per lot
 LOT_D = (11.0, 17.0)        # depth, metres, seeded per lot
@@ -119,6 +127,109 @@ def residential_blocks(db, tile):
                 yield oid, block
 
 
+def green_tags(tags):
+    return (tags.get('leisure') in ('garden', 'park')
+            or tags.get('natural') in ('wood', 'scrub', 'heath', 'grassland')
+            or tags.get('landuse') in ('forest', 'grass', 'meadow', 'orchard', 'recreation_ground'))
+
+
+class SourceContext:
+    """Source-only footprints and green areas; generated bodies never justify more infill.
+
+    Rows are (source ID, projected polygon, original tags). Use the same context for
+    candidate generation and an offline repair decision. This class does not modify
+    any geometry pack or collision table. Input coverage/provenance belongs to the bake.
+    """
+
+    def __init__(self, rows):
+        self.rows = sorted(((str(i), g, t) for i, g, t in rows if not g.is_empty and g.is_valid), key=lambda row: row[0])
+        self.buildings = [(i, g, t) for i, g, t in self.rows
+                          if t.get('building') not in (None, 'no') and t.get('generated') != 'yes'
+                          and t.get('building') not in ANCILLARY_KINDS]
+        self.polygons = [g for _, g, _ in self.buildings]
+        self.tree = STRtree(self.polygons) if self.polygons else None
+        self.greens = [g for _, g, t in self.rows if green_tags(t)]
+        self.green_tree = STRtree(self.greens) if self.greens else None
+
+    @classmethod
+    def from_database(cls, db, bounds, clean=False):
+        a, b, c, d = bounds
+        if not clean:
+            rows = db.execute('SELECT f.id,f.geometry,f.tags FROM spatial s JOIN features f ON f.rowid=s.rowid '
+                              "WHERE f.kind IN ('building','landuse','landcover') "
+                              'AND s.maxx>=? AND s.minx<=? AND s.maxz>=? AND s.minz<=? ORDER BY f.id',
+                              (a, c, b, d))
+            return cls((i, from_wkb(g), json.loads(t)) for i, g, t in rows)
+        # Legacy clean caches discard building types. Only explicit heightSource
+        # values are usable height evidence; the 9.6 m landuse fallback is not.
+        rows = db.execute('SELECT o.id,o.kind,o.data FROM spatial s JOIN objects o ON o.rowid=s.rowid '
+                          "WHERE o.kind IN ('building','landuse','landcover') "
+                          'AND s.maxx>=? AND s.minx<=? AND s.maxz>=? AND s.minz<=? ORDER BY o.id',
+                          (a, c, b, d))
+        features = []
+        for i, kind, data in rows:
+            v = json.loads(data)
+            if kind == 'building':
+                if v.get('generated') or i.startswith('gen:'):
+                    continue
+                g = unary_union([Polygon(p['footprint']) for p in v['parts']])
+                tags = {'building': 'yes'}
+                if all(p.get('heightSource') in ('height', 'levels') for p in v['parts']):
+                    tags['height'] = str(max(p['height'] for p in v['parts']))
+                features.append((i, g, tags))
+            else:
+                features.append((i, shape(v['geometry']), v['tags']))
+        return cls(features)
+
+    @classmethod
+    def from_osm(cls, path):
+        """Read a bounded official extract, including leisure gardens omitted by old ingest caches."""
+        import osmium
+        from shapely.ops import transform
+        rows = []
+        factory = osmium.geom.GeoJSONFactory()
+
+        class Collect(osmium.SimpleHandler):
+            def area(self, area):
+                tags = dict(area.tags)
+                if tags.get('building') in (None, 'no') and not green_tags(tags):
+                    return
+                geometry = transform(lambda x, y, z=None: project(x, y),
+                                     shape(json.loads(factory.create_multipolygon(area))))
+                rows.append((('w' if area.from_way() else 'r') + str(area.orig_id()), geometry, tags))
+
+        Collect().apply_file(str(path), locations=True)
+        return cls(rows)
+
+    def decision(self, footprint, storeys_range=STOREYS):
+        """Reviewable generic decision for one lot; never change a mapped building."""
+        neighbourhood = footprint.centroid.buffer(CONTEXT_M)
+        hits = [] if self.tree is None else self.tree.query(neighbourhood, predicate='intersects')
+        buildings = [self.buildings[int(i)] for i in hits]
+        cover = unary_union([g for _, g, _ in buildings]).intersection(neighbourhood).area / neighbourhood.area
+        green_hits = [] if self.green_tree is None else self.green_tree.query(footprint, predicate='intersects')
+        low_rise = sum(t.get('building') in LOW_RISE_KINDS for _, _, t in buildings)
+        samples = []
+        for _, _, tags in buildings:
+            if tags.get('building') in RESIDENTIAL_KINDS:
+                h, source = building_height(tags, 'residential')
+                if source in ('height', 'levels'):
+                    samples.append(h / FLOOR_M)
+        reason = ('mapped-green' if len(green_hits) else
+                  'source-sparse' if cover < MIN_LOCAL_COVER or len(buildings) < MIN_CONTEXT_BUILDINGS else
+                  'source-low-rise' if low_rise >= MIN_CONTEXT_BUILDINGS and low_rise * 2 >= len(buildings) else
+                  'dense-source')
+        floors = tuple(storeys_range)
+        # Require several explicit residential observations and majority coverage;
+        # a single hotel or default height must not set the neighbourhood's scale.
+        if len(samples) >= MIN_CONTEXT_BUILDINGS and len(samples) * 2 >= len(buildings):
+            cap = max(1, math.floor(sorted(samples)[math.ceil(len(samples) * .75) - 1] + 1e-9))
+            floors = (min(floors[0], cap), min(floors[1], cap))
+        return dict(eligible=reason == 'dense-source', reason=reason, mappedCover=round(cover, 6),
+                    mappedBuildings=len(buildings), explicitResidentialHeights=len(samples),
+                    storeys=list(floors), inferred=True)
+
+
 class Exclusions:
     """Everything OSM maps inside one bounding box, parsed once and indexed for the blocks in it."""
 
@@ -180,7 +291,7 @@ def interior_components(block, excluded):
     return [g for g in geoms if g.geom_type == 'Polygon' and g.area >= MIN_INTERIOR_M2]
 
 
-def lots_in(interior, storeys_range=STOREYS):
+def lots_in(interior, storeys_range=STOREYS, context=None):
     """Lots packed edge first: candidates on a 3 m grid in the interior's frame, nearest the block edge first,
     each kept only if it lies wholly inside, clears the lots already placed by GAP_M and stays under the cover cap."""
     rect = interior.minimum_rotated_rectangle
@@ -214,10 +325,15 @@ def lots_in(interior, storeys_range=STOREYS):
         clear = lot.buffer(GAP_M / 2)
         if any(clear.intersects(p) for p in placed):
             continue
+        world_lot = affinity.rotate(lot, angle, origin=centre)
+        decision = context.decision(world_lot, storeys_range) if context else None
+        if decision and not decision['eligible']:
+            continue
         placed.append(lot)
         built += lot.area
-        storeys = round(seeded(key + ':s', *storeys_range))
-        lots.append((key, affinity.rotate(lot, angle, origin=centre), storeys))
+        floors = decision['storeys'] if decision else storeys_range
+        storeys = round(seeded(key + ':s', *floors))
+        lots.append((key, world_lot, storeys))
     return lots
 
 
@@ -233,8 +349,16 @@ def generated_record(identifier, footprint, storeys):
             'generated': True, 'storeys': storeys, 'landuse': 'residential'}
 
 
-def build(cache, assets, out, bounds=WORLD_BOUNDS, storeys_range=STOREYS):
+def build(cache, assets, out, bounds=WORLD_BOUNDS, storeys_range=STOREYS, source_path=None):
     clean = sqlite3.connect(f'file:{Path(cache) / "clean.sqlite"}?mode=ro', uri=True)
+    # Original tags are preferred; legacy caches still support density and explicit
+    # height provenance. Pass a bounded .osm/.pbf to retain leisure-only green areas.
+    explicit_source = source_path is not None
+    source_path = Path(source_path) if explicit_source else Path(cache) / 'source.sqlite'
+    raw = sqlite3.connect(f'file:{source_path}?mode=ro', uri=True) if source_path.suffix == '.sqlite' and source_path.exists() else None
+    source_context = SourceContext.from_osm(source_path) if source_path.exists() and source_path.suffix != '.sqlite' else None
+    if explicit_source and not source_path.exists():
+        raise FileNotFoundError(source_path)
     plazas = assets_polygons(Path(assets) / 'plazas.json') + assets_polygons(Path(assets) / 'lawns.json')
     out = Path(out)
     if out.exists():
@@ -251,9 +375,10 @@ def build(cache, assets, out, bounds=WORLD_BOUNDS, storeys_range=STOREYS):
         blocks = [(bid, b) for bid, b in residential_blocks(clean, tile) if tile_owns(tile, b)]
         if not blocks:
             continue
-        span = (min(b.bounds[0] for _, b in blocks) - 5, min(b.bounds[1] for _, b in blocks) - 5,
-                max(b.bounds[2] for _, b in blocks) + 5, max(b.bounds[3] for _, b in blocks) + 5)
+        span = (min(b.bounds[0] for _, b in blocks) - CONTEXT_M, min(b.bounds[1] for _, b in blocks) - CONTEXT_M,
+                max(b.bounds[2] for _, b in blocks) + CONTEXT_M, max(b.bounds[3] for _, b in blocks) + CONTEXT_M)
         excl = Exclusions(clean, plazas, span)
+        context = source_context or SourceContext.from_database(raw or clean, span, clean=raw is None)
         for _, block in blocks:
             stats['blocks'] += 1
             excluded = excl.around(block.bounds)
@@ -266,7 +391,7 @@ def build(cache, assets, out, bounds=WORLD_BOUNDS, storeys_range=STOREYS):
                     stats['sparseRing'] = stats.get('sparseRing', 0) + 1
                     continue
                 stats['interiorM2'] += interior.area
-                for key, footprint, storeys in lots_in(interior, storeys_range):
+                for key, footprint, storeys in lots_in(interior, storeys_range, context):
                     if not footprint.within(interior):
                         continue
                     stats['candidatesKept'] = stats.get('candidatesKept', 0) + 1
@@ -278,6 +403,7 @@ def build(cache, assets, out, bounds=WORLD_BOUNDS, storeys_range=STOREYS):
                     if record is None:
                         stats['skippedMesh'] += 1
                         continue
+                    record['infillEvidence'] = context.decision(footprint, storeys_range)
                     cur = db.execute('INSERT INTO objects(id, kind, data) VALUES(?, ?, ?)',
                                      (identifier, 'building', json.dumps(record, separators=(',', ':'))))
                     minx, miny, maxx, maxy = footprint.bounds
@@ -288,11 +414,19 @@ def build(cache, assets, out, bounds=WORLD_BOUNDS, storeys_range=STOREYS):
     here = Path(__file__).resolve().parent
     meta = {'generator': 'infill.py', 'bounds': list(bounds), 'stats': stats,
             'codeSha256': {name: file_sha(here / name) for name in REVISION_FILES},
+            'sourceContext': dict(path=str(source_path) if source_path.exists() else None,
+                                  sha256=file_sha(source_path) if source_path.exists() else None,
+                                  fallback='clean-footprints' if raw is None and source_context is None else None),
+            'policy': dict(inferred=True, contextM=CONTEXT_M, minLocalCover=MIN_LOCAL_COVER,
+                           minContextBuildings=MIN_CONTEXT_BUILDINGS),
             'params': dict(sidewalk=SIDEWALK_M, footway=FOOTWAY_BUFFER_M, minInterior=MIN_INTERIOR_M2,
                            maxCover=MAX_COVER, gap=GAP_M, storeys=list(storeys_range), floor=FLOOR_M)}
     db.execute('INSERT INTO metadata(key, value) VALUES(?, ?)', ('infill', json.dumps(meta, sort_keys=True)))
     db.commit()
     db.close()
+    clean.close()
+    if raw is not None:
+        raw.close()
     return meta
 
 
@@ -302,9 +436,10 @@ def main(argv):
     ap.add_argument('assets')
     ap.add_argument('out')
     ap.add_argument('--bounds', default=None)
+    ap.add_argument('--source-path', type=Path, help='Original source.sqlite or bounded OSM extract')
     args = ap.parse_args(argv)
     bounds = tuple(float(v) for v in args.bounds.split(',')) if args.bounds else WORLD_BOUNDS
-    print(json.dumps(build(args.cache, args.assets, args.out, bounds)['stats'], sort_keys=True))
+    print(json.dumps(build(args.cache, args.assets, args.out, bounds, source_path=args.source_path)['stats'], sort_keys=True))
 
 
 if __name__ == '__main__':
