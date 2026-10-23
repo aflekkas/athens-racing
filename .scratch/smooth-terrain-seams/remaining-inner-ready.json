@@ -1,0 +1,221 @@
+{
+  "status": "SOURCE/METADATA ONLY; no grant, matrix or solve",
+  "pin": {
+    "sourceCommit": "e4b7bf2ea6a6f71f21806480f19591c87de083a4",
+    "inputSHA256": "e85ca0c7de2cdc5f057d3e69828c41b45fea61d5bc03c595525b5e927ceaa281",
+    "toolReceiptSHA256": "048b493756127e3b5083601738b24838f1c5aa6519d9e3bed4d8e24269fa158d",
+    "historicalCertificateSHA256": "915062513c75851e76dfa73bdddfa0731c17c2d7d0a50ef031120ef46ccaca82",
+    "sourceFiles": {
+      "tools/terrain-lp/prepare.mjs": "10f10c456babf23106641cbecbb410003c8f5c6e7b1fbdbd8a843e65cddc99cc",
+      "tools/terrain-lp/components.py": "43cb9ec215e41dfcfe223eda56e644575335888c09884f8e56a9e876357d2c0e",
+      "tools/terrain-lp/verify.mjs": "acdaede9ca9ad9d49d3d4325a47c0f5ad0a522d9cb807509b176919674cf0481",
+      "tools/terrain-lp/model.py": "3ff95a6b102cf17c23c793ad2a4fe6a414e9adc2a0b2471656df32354f9f70d1",
+      "tools/terrain-lp/components.mjs": "5377780622fe0201c561579ef36e7dc79c3ebc4fc56f79d41a7c20cfe0fbb305"
+    },
+    "controllerSHA256": "4d12d98ee71f21e5e60aa5118bfa8730a1068b992c5dee17770df03d452124f7"
+  },
+  "supervisedCommand": [
+    "timeout",
+    "--signal=TERM",
+    "--kill-after=2s",
+    "180s",
+    "python3",
+    "/tmp/athens-terrain.uKVC/plan-b-controller.py",
+    "--run"
+  ],
+  "controls": {
+    "totalExternalSeconds": 180,
+    "totalInternalSeconds": 174,
+    "eachSolverSeconds": 20,
+    "eachSolverPhaseSeconds": 27,
+    "componentVerificationSeconds": 12,
+    "fullVerificationReserveSeconds": 45,
+    "nextComponentMinimumRemaining": 84,
+    "rssBytes": 1073741824,
+    "minimumAvailableBytes": 6442450944,
+    "outputBytes": 10485760,
+    "solverThreads": 1
+  },
+  "historicalVerification": [
+    "node",
+    "--max-old-space-size=512",
+    "/tmp/athens-terrain.uKVC/syntagma-component-e4b/tools/terrain-lp/components.mjs",
+    "/tmp/athens-terrain.uKVC/min-gradient-input.json",
+    "/tmp/athens-terrain.uKVC/syntagma-e4b-result.json",
+    "e85ca0c7de2cdc5f057d3e69828c41b45fea61d5bc03c595525b5e927ceaa281"
+  ],
+  "remaining": [
+    {
+      "id": "-32,960",
+      "nodes": 196,
+      "rows": 7208,
+      "nonzeros": 23800,
+      "forecastBytes": 234881024,
+      "command": [
+        "/tmp/athens-terrain.uKVC/scipy-venv/bin/python",
+        "/tmp/athens-terrain.uKVC/syntagma-component-e4b/tools/terrain-lp/components.py",
+        "/tmp/athens-terrain.uKVC/min-gradient-input.json",
+        "--sha256",
+        "e85ca0c7de2cdc5f057d3e69828c41b45fea61d5bc03c595525b5e927ceaa281",
+        "--mode",
+        "inner",
+        "--component=-32,960",
+        "--solve",
+        "--method",
+        "highs-ipm",
+        "--seconds",
+        "20",
+        "--memory-bytes",
+        "1073741824",
+        "--output",
+        "/tmp/athens-terrain.uKVC/inner-batch-component-0.json"
+      ]
+    },
+    {
+      "id": "992,-488",
+      "nodes": 1958,
+      "rows": 68412,
+      "nonzeros": 240584,
+      "forecastBytes": 268694698,
+      "command": [
+        "/tmp/athens-terrain.uKVC/scipy-venv/bin/python",
+        "/tmp/athens-terrain.uKVC/syntagma-component-e4b/tools/terrain-lp/components.py",
+        "/tmp/athens-terrain.uKVC/min-gradient-input.json",
+        "--sha256",
+        "e85ca0c7de2cdc5f057d3e69828c41b45fea61d5bc03c595525b5e927ceaa281",
+        "--mode",
+        "inner",
+        "--component=992,-488",
+        "--solve",
+        "--method",
+        "highs-ipm",
+        "--seconds",
+        "20",
+        "--memory-bytes",
+        "1073741824",
+        "--output",
+        "/tmp/athens-terrain.uKVC/inner-batch-component-1.json"
+      ]
+    },
+    {
+      "id": "1200,-72",
+      "nodes": 973,
+      "rows": 33698,
+      "nonzeros": 120358,
+      "forecastBytes": 234881024,
+      "command": [
+        "/tmp/athens-terrain.uKVC/scipy-venv/bin/python",
+        "/tmp/athens-terrain.uKVC/syntagma-component-e4b/tools/terrain-lp/components.py",
+        "/tmp/athens-terrain.uKVC/min-gradient-input.json",
+        "--sha256",
+        "e85ca0c7de2cdc5f057d3e69828c41b45fea61d5bc03c595525b5e927ceaa281",
+        "--mode",
+        "inner",
+        "--component=1200,-72",
+        "--solve",
+        "--method",
+        "highs-ipm",
+        "--seconds",
+        "20",
+        "--memory-bytes",
+        "1073741824",
+        "--output",
+        "/tmp/athens-terrain.uKVC/inner-batch-component-2.json"
+      ]
+    },
+    {
+      "id": "2016,12856",
+      "nodes": 4444,
+      "rows": 150460,
+      "nonzeros": 541548,
+      "forecastBytes": 478897383,
+      "command": [
+        "/tmp/athens-terrain.uKVC/scipy-venv/bin/python",
+        "/tmp/athens-terrain.uKVC/syntagma-component-e4b/tools/terrain-lp/components.py",
+        "/tmp/athens-terrain.uKVC/min-gradient-input.json",
+        "--sha256",
+        "e85ca0c7de2cdc5f057d3e69828c41b45fea61d5bc03c595525b5e927ceaa281",
+        "--mode",
+        "inner",
+        "--component=2016,12856",
+        "--solve",
+        "--method",
+        "highs-ipm",
+        "--seconds",
+        "20",
+        "--memory-bytes",
+        "1073741824",
+        "--output",
+        "/tmp/athens-terrain.uKVC/inner-batch-component-3.json"
+      ]
+    },
+    {
+      "id": "4576,-3504",
+      "nodes": 4488,
+      "rows": 153256,
+      "nonzeros": 544324,
+      "forecastBytes": 480836228,
+      "command": [
+        "/tmp/athens-terrain.uKVC/scipy-venv/bin/python",
+        "/tmp/athens-terrain.uKVC/syntagma-component-e4b/tools/terrain-lp/components.py",
+        "/tmp/athens-terrain.uKVC/min-gradient-input.json",
+        "--sha256",
+        "e85ca0c7de2cdc5f057d3e69828c41b45fea61d5bc03c595525b5e927ceaa281",
+        "--mode",
+        "inner",
+        "--component=4576,-3504",
+        "--solve",
+        "--method",
+        "highs-ipm",
+        "--seconds",
+        "20",
+        "--memory-bytes",
+        "1073741824",
+        "--output",
+        "/tmp/athens-terrain.uKVC/inner-batch-component-4.json"
+      ]
+    },
+    {
+      "id": "7136,-10680",
+      "nodes": 4079,
+      "rows": 140478,
+      "nonzeros": 495284,
+      "forecastBytes": 446585156,
+      "command": [
+        "/tmp/athens-terrain.uKVC/scipy-venv/bin/python",
+        "/tmp/athens-terrain.uKVC/syntagma-component-e4b/tools/terrain-lp/components.py",
+        "/tmp/athens-terrain.uKVC/min-gradient-input.json",
+        "--sha256",
+        "e85ca0c7de2cdc5f057d3e69828c41b45fea61d5bc03c595525b5e927ceaa281",
+        "--mode",
+        "inner",
+        "--component=7136,-10680",
+        "--solve",
+        "--method",
+        "highs-ipm",
+        "--seconds",
+        "20",
+        "--memory-bytes",
+        "1073741824",
+        "--output",
+        "/tmp/athens-terrain.uKVC/inner-batch-component-5.json"
+      ]
+    }
+  ],
+  "completeOnlyVerifier": [
+    "node",
+    "--max-old-space-size=512",
+    "/tmp/athens-terrain.uKVC/syntagma-component-e4b/tools/terrain-lp/components.mjs",
+    "/tmp/athens-terrain.uKVC/min-gradient-input.json",
+    "/tmp/athens-terrain.uKVC/inner-batch-bundle.json",
+    "e85ca0c7de2cdc5f057d3e69828c41b45fea61d5bc03c595525b5e927ceaa281"
+  ],
+  "emittedCells": 0,
+  "tinySequenceTests": {
+    "passed": 11,
+    "failed": 0,
+    "realSolverRuns": 0
+  },
+  "testSourceSHA256": "ec9a9b7bf1feb8e89705fcc8f99113096bc2289727d03d9a66cadf83ce751c40",
+  "currentArtifact": "Frozen e4b source; no live repo edits, matrix, real component solve, full assembly, pack or adoption"
+}

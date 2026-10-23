@@ -140,3 +140,44 @@ Node used one sequential JS task with11 observed internal runtime helper threads
 Disk49%/75GB before and after. No guard trip, retry, other component, secondary,
 pack, default, global matrix or adoption occurred. Remaining-six plan B still
 requires its own allocation.
+
+## Plan B controller prepared; no real run yet
+
+The source-only supervisor is ready at
+`/tmp/athens-terrain.uKVC/plan-b-controller.py`; default invocation prints and
+authenticates metadata only. The exact source snapshot, historical certificate,
+input and tool pins plus structured argv are preserved in
+`remaining-inner-ready.json`. Its copied source and tiny sequence tests are in
+`proof-tools/run-remaining-inner-guarded.py` and
+`proof-tools/test-remaining-inner-controller.py`.
+
+The only prospective execution is an externally supervised180s command with
+`--run`, after a new CPU grant. Internal deadline174s leaves shutdown margin.
+It first independently re-verifies saved Syntagma certificate91506251 (no solve),
+then runs exactly the six listed INNER components sequentially. Each solver is
+capped20s, its whole launch/build/solve phase27s, followed by independent
+component verification capped12s. It reserves45s for complete all-row checking
+and refuses to start a component with less than84s remaining. This conservative
+rule may stop a partial batch early; the grant does not guarantee completion.
+
+All result headers, stable component IDs, full row count679034, input hash,
+method source, primal/dual booleans, finite residuals, profile/Euclidean checks
+and dual gap are checked before the next component. It stops at first error,
+timeout, nonoptimal status, invalid/malformed verifier, memory/output guard or
+time-budget shortage. It never retries or starts a later component after that
+failure. A complete seven-certificate bundle is written only after all seven
+verify, then the independent full-model checker has42s within the45s reserve.
+It must return fullPrimalPassed/fullDualPassed/optimumVerified and a tiny dual
+gap. Full reconstruction remains source analysis; no field/pack hook exists.
+
+Eleven pure tiny sequencing tests passed in0.001s: complete ordering, first
+nonoptimal stop, verifier rejection, wrong identity, historical pin mismatch,
+insufficient start budget, exhausted final reserve, propagated resource stop,
+profile drift despite claimed pass, invalid full optimum and nonfinite output.
+These do not claim an actual memory-pressure or full-data timing exercise.
+No solver, sparse matrix or new world decode was run to prepare this controller.
+The unchanged cached maximum forecast remains480836228B, not extrapolated from
+Syntagma's measured251MiB. Every actual child will still be RSS-guarded1GiB with
+>=6GiB system availability and one solver worker; Node runtime helper threads
+are reported separately. CPU remains owned by the server until explicit handoff
+and a specific new grant.
