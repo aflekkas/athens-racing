@@ -1,0 +1,99 @@
+{
+  "steps": [
+    {
+      "step": "picker",
+      "at": "2026-10-23T08:17:00.648Z",
+      "card": [
+        888,
+        301,
+        333,
+        252
+      ],
+      "background": "rgb(12, 17, 23)",
+      "backdrop": "none",
+      "uiBackdrop": "blur",
+      "moving": true,
+      "hits": [
+        {
+          "text": "4PSYCHIKO FAROS CIRCUIT",
+          "box": [
+            955,
+            370,
+            190,
+            24
+          ]
+        },
+        {
+          "text": "6SYNTAGMA SPRINT",
+          "box": [
+            1051,
+            439,
+            153,
+            24
+          ]
+        }
+      ],
+      "after": {
+        "card": [
+          888,
+          301,
+          333,
+          252
+        ],
+        "background": "rgb(12, 17, 23)",
+        "backdrop": "none",
+        "uiBackdrop": "blur",
+        "moving": true,
+        "hits": [
+          {
+            "text": "4PSYCHIKO FAROS CIRCUIT",
+            "box": [
+              877,
+              375,
+              190,
+              24
+            ]
+          },
+          {
+            "text": "6SYNTAGMA SPRINT",
+            "box": [
+              980,
+              436,
+              153,
+              24
+            ]
+          }
+        ]
+      },
+      "shot": "/tmp/athens-drivetips.755x/shots/after-picker-label-under-card.jpg"
+    },
+    {
+      "step": "setup",
+      "at": "2026-10-23T08:17:49.331Z",
+      "event": "megara-race",
+      "rivals": "2"
+    },
+    {
+      "step": "race",
+      "at": "2026-10-23T08:18:26.251Z",
+      "state": "race",
+      "id": "megara-race",
+      "baseId": "megara-race",
+      "type": "sprint",
+      "laps": 3,
+      "rivalCount": 2,
+      "rivalsOnGrid": 2,
+      "hud": "LAP 1/30:00.85",
+      "shot": "/tmp/athens-drivetips.755x/shots/after-race-sprint.jpg"
+    }
+  ],
+  "errors": [],
+  "boards": [
+    {
+      "mapId": "athens",
+      "routeId": "megara-club",
+      "eventId": "megara-race",
+      "limit": "3"
+    }
+  ]
+}

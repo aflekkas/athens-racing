@@ -45,7 +45,16 @@ catalogue, compiled routes and world cells are read-only GETs from our staging s
 `event-choice-megara-f88.json`: RACE default (2 rivals) → TIME TRIAL (no rivals, 3 laps) → CHOOSE CAR → Back → Back
 (screens `car`, `setup`) keeps TIME TRIAL → time trial on track. `tip-controller-report-f88.json`: controller DOM rows.
 
+## Picker card and race start (f88cce4c, 08:16–08:18 UTC)
+
+| File | What it shows |
+|---|---|
+| `after-picker-label-under-card-f88.jpg` | matched with the before `after-1-picker.jpg`: the DOM measured PSYCHIKO FAROS CIRCUIT and SYNTAGMA SPRINT under the card; the card paints `rgb(12, 17, 23)` and hides them, the 1 / 6 pager is clean |
+| `after-5-race-sprint-f88.jpg` | RACE (the default) started on track: `megara-race`, sprint, 3 laps, 2 rivals set and 2 on the grid, HUD LAP 1/3 |
+
+`picker-and-race-f88.json`: the measurements. The machine reported `data-ui-backdrop=blur`; the card was in its moving state
+(`panel--moving`, the map camera settling), which used a 94% tint before this change.
+
 ## Not yet proven
-- starting the RACE again after the time trial in the browser (the harness's quit-to-title step failed: `__flow` was
-  undefined there; covered by `tools/setup-event-choice.test.mjs`);
-- a matched picker frame with a label under the card (before: `after-1-picker.jpg`); 720 baseline.
+- the 720 baseline (before) image; the low/potato tint state was not separately captured (same opaque rule, guarded by
+  `tools/float-panel-fallback.test.mjs`).
