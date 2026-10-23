@@ -132,4 +132,6 @@ Source-model diagnostics remain separate from world acceptance: four of seven fi
 
 - 🟡 **Local Worker proof cannot establish a stable isolate yet.** The first bounded attempt populated the four exact local recovery objects, but repeated local reloads blocked the health/DO phase. It stopped and closed all owned processes before sampling, leases or WebSocket checks; no memory or capacity conclusion is supported. Watcher/runtime diagnostics are pending; online remains disabled.
 
+- 🟡 Free-roam bootstrap/direct destination: reviewed source now dispatches free mode before the race module graph, shares pure map selection, and validates the selected car footprint at an explicit destination before player construction. Optional tile lifecycle observation remains off by default. Focused tests and source review pass; fresh real-game cold-load, driving, matched UI captures and full clean gates remain pending.
+
 - 🟡 Session expiry timer: early or capped callbacks now re-arm to the actual expiry, and replaced/disconnected sessions ignore stale callbacks. Deterministic expiry controls and 45 focused tests pass with independent Review106; remote CI and real-game sign-in proof remain pending.

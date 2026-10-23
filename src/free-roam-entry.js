@@ -1,4 +1,4 @@
-import {initialMapId} from './menu-map.js';
+import {initialMapId} from './map-entry.js';
 import {AREA_STARTS,AREA_NAMES,MAP_PROJECTIONS,athensFromLonLat} from './spawn-spots.js';
 // Compatibility launch coordinates are converted once. Free roam then owns only
 // the published Athens scene/contacts, never an authored whole-map runtime.

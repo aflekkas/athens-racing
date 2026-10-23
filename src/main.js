@@ -1,3 +1,4 @@
+import {createTileObservationForDebug} from './world-tile-observation.js';
 import {StreamedSharedWorld} from './mp-world-traffic.js';
 import {loadNetworkRoute,assignedNetworkPose} from './network-route-client.js';
 import {AthensRoute} from './athens-ground.js';
@@ -119,10 +120,12 @@ import { aidSpec, applyVehicleAids, toggleTractionControl } from './driving-aids
 
 import { towCondition, recoveryHeld, TOW_PROMPT_SECONDS, TOW_PROMPT_COOLDOWN } from './recovery-policy.js';
 export let gameReady;
-const freeEntry=freeRoamEntryQuery(new URLSearchParams(location.search));
+const entryQuery=new URLSearchParams(location.search);
+const tileObserver=entryQuery.has('simhook')&&entryQuery.get('tileLifecycle')==='1'?createTileObservationForDebug(entryQuery):null;
+const freeEntry=freeRoamEntryQuery(entryQuery);
 if(freeEntry){
   history.replaceState(null,'','?'+freeEntry);
-  gameReady=importWithUpdate(()=>import('./athens-world.js')).then(m=>m.bootAthens());
+  gameReady=importWithUpdate(()=>import('./athens-world.js')).then(m=>m.bootAthens({tileObserver}));
 }else{
 const recoveryStyle = document.createElement('link'); recoveryStyle.rel = 'stylesheet'; recoveryStyle.href = new URL('./recovery-prompt.css', import.meta.url).href; document.head.append(recoveryStyle);
 const Q = new URLSearchParams(location.search);
@@ -344,7 +347,7 @@ async function loadUnifiedWorld(compiled,{eventId=Q.get('routeEvent')||Q.get('ev
   performance.mark('athens-route-selection');const started=performance.now(),entryPhases={},stamp=name=>{entryPhases[name]=performance.now()-started;};
   try {
     if(!sky){sky=ENV.createSky();scene.add(sky);const baked=ENV.bakeSky(renderer,sky);probeSeed=baked.cube;scene.environment=baked.env;setCarEnv(baked.env);({sun}=ENV.createLights(scene));}
-    const sessionReady=worldSession?Promise.resolve(worldSession):createWorldSession({renderer,scene,resources:GFX.resources,progress:lstat,worldDefinition:{manifestURL:'/data/athens/manifest.json',regionId:compiled.regionId,worldSetRevision:compiled.worldSetRevision}});
+    const sessionReady=worldSession?Promise.resolve(worldSession):createWorldSession({tileObserver,renderer,scene,resources:GFX.resources,progress:lstat,worldDefinition:{manifestURL:'/data/athens/manifest.json',regionId:compiled.regionId,worldSetRevision:compiled.worldSetRevision}});
     // An async compile may still be polling these materials on the next frame.
     // Dispose the previous fleet before collecting programs for the new entry.
     traffic?.dispose?.();traffic=null;

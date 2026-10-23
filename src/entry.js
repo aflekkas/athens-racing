@@ -53,5 +53,5 @@ else {
   // The launch's session check starts now, alongside loading the game, not after it (src/accounts-client.js uses these answers).
   globalThis.__authPrefetch = { '/api/auth/config': prefetchAuthJSON('/api/auth/config'), '/api/auth/session': prefetchAuthJSON('/api/auth/session') };
   globalThis.__routeEntryPrefetch=import('./route-entry-prefetch.js').then(m=>m.prefetchDirectRace(new URLSearchParams(location.search))).catch(()=>null);
-  await import('./main.js');
+  await import('./game-entry.js');
 }

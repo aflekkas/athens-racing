@@ -72,6 +72,7 @@ async function runEntry(device, { maxTouchPoints = 0, platform = '', userAgent =
   try {
     if(entrySource==null)await copyFile(new URL('../src/entry.js', import.meta.url), resolve(dir, 'entry.js'));else await writeFile(resolve(dir,'entry.js'),entrySource);
     await copyFile(new URL('../src/device-gate.js', import.meta.url), resolve(dir, 'device-gate.js'));
+    await writeFile(resolve(dir,'game-entry.js'),"export * from './main.js';");
     await writeFile(resolve(dir, 'main.js'), 'globalThis.__gameImports = (globalThis.__gameImports || 0) + 1; export const title = true;');
     await writeFile(resolve(dir,'route-entry-prefetch.js'),"globalThis.__routeModuleImports++; export function prefetchDirectRace(){globalThis.__routePrefetchCalls++;return null;}");
     const requests=[];const document = { documentElement: { dataset: {} } };
@@ -110,9 +111,9 @@ test('entry.js is the only way in: index.html loads it and nothing else, and it 
   assert.deepEqual([...html.matchAll(/<script\b[^>]*\btype="module"[^>]*>/g)].map(m => m[0].match(/src="([^"]+)"/)?.[1]), ['./src/entry.js'], `index.html loads one module, the gate. ${LOCK}`);
   assert.doesNotMatch(html, /modulepreload|<link[^>]+(?:main|boot)\.js/, `nothing preloads the game for a device that may be blocked. ${LOCK}`);
   assert.deepEqual([...entry.matchAll(/^import .*$/gm)].map(m => m[0]), ["import { deviceBlockReason, readDevice, showDeviceGate } from './device-gate.js';"], `entry.js statically imports only the gate. ${LOCK}`);
-  assert.deepEqual([...entry.matchAll(/import\('([^']+)'\)/g)].map(m => m[1]), ['./route-entry-prefetch.js','./main.js'], LOCK);
+  assert.deepEqual([...entry.matchAll(/import\('([^']+)'\)/g)].map(m => m[1]), ['./route-entry-prefetch.js','./game-entry.js'], LOCK);
   assert.ok(entry.indexOf('else {')<entry.indexOf("import('./route-entry-prefetch.js')"),`route prefetch stays behind the desktop decision. ${LOCK}`);
-  assert.ok(entry.indexOf('showDeviceGate') < entry.indexOf("import('./main.js')"), `the gate decides before the game loads. ${LOCK}`);
+  assert.ok(entry.indexOf('showDeviceGate') < entry.indexOf("import('./game-entry.js')"), `the gate decides before the game loads. ${LOCK}`);
   assert.doesNotMatch(entry.slice(0,entry.indexOf('else {')) + gate, /location|localStorage|sessionStorage|URLSearchParams|cookie/, `no query flag, storage switch or cookie lifts the gate. ${LOCK}`);
   assert.doesNotMatch(gate, /^\s*import\b/m, `device-gate.js imports nothing: it is all a blocked device runs. ${LOCK}`);
 });
@@ -146,6 +147,7 @@ test('bundle: the page entry is the gate, the game is only a dynamic import, and
     await copyFile(new URL('../src/entry.js', import.meta.url), resolve(root, 'src/entry.js'));
     await copyFile(new URL('../src/device-gate.js', import.meta.url), resolve(root, 'src/device-gate.js'));
     await writeFile(resolve(root,'src/route-entry-prefetch.js'),'export function prefetchDirectRace(){return null;}');
+    await writeFile(resolve(root,'src/game-entry.js'),"export const ready=import('./main.js');");
     await writeFile(resolve(root, 'src/main.js'), 'export const wrong = "dev entry";');
     await writeFile(resolve(root, 'src/boot.js'), "import { menu } from './menu-shell.js'; globalThis.title = menu;");
     await writeFile(resolve(root, 'src/menu-shell.js'), 'export const menu = "title";');
@@ -160,7 +162,7 @@ test('bundle: the page entry is the gate, the game is only a dynamic import, and
     const gateInputs = [...closure('.deploy/assets/' + page)].flatMap(path => Object.keys(meta.outputs[path].inputs)).sort();
     assert.deepEqual(gateInputs, ['src/device-gate.js', 'src/entry.js'], `everything the gate loads statically is the gate itself (esbuild's empty runtime chunk aside). ${LOCK}`);
     const dynamic = imports(pageOutput, 'dynamic-import');
-    assert.deepEqual(dynamic.map(path=>meta.outputs[path].entryPoint).sort(),['src/boot.js','src/route-entry-prefetch.js'],LOCK);const game=dynamic.find(path=>meta.outputs[path].entryPoint==='src/boot.js');
+    assert.deepEqual(dynamic.map(path=>meta.outputs[path].entryPoint).sort(),['src/game-entry.js','src/route-entry-prefetch.js'],LOCK);const dispatcher=dynamic.find(path=>meta.outputs[path].entryPoint==='src/game-entry.js'),game=imports(meta.outputs[dispatcher],'dynamic-import').find(path=>meta.outputs[path].entryPoint==='src/boot.js');assert.ok(game,'dispatcher reaches the production menu dynamically');
     const initial = new Set(meta.initial);
     assert.ok(initial.has('/' + game.replace('.deploy/assets/', '')), 'the menu shell stays in the service worker core list');
     assert.ok(Object.entries(meta.outputs).filter(([, o]) => Object.keys(o.inputs).includes('src/menu-shell.js')).every(([path]) => initial.has('/' + path.replace('.deploy/assets/', ''))));

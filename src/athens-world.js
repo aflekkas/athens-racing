@@ -30,7 +30,7 @@ import {estimateSceneMemory} from './asset-metrics.js';
 import {createPost} from './post.js';
 import * as ENV from './env.js';
 const MiB=1024*1024,clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-export async function bootAthens(){
+export async function bootAthens({tileObserver=null}={}){
  const started=performance.now(),query=new URLSearchParams(location.search);
  if(query.get('map')!=='athens')throw Error('Athens requires its development map flag');
  // The central launch screen (src/ui/boot-screen.js) checks the session; signed out, the driver goes straight to the
@@ -49,20 +49,32 @@ export async function bootAthens(){
  loading.show('athens','FREE ROAM',{freeRoam:true,area});
  let scripted=false,driver=null,cameraHook=null,player=null,stopped=false,paused=false,towing=false,frameId,elapsed=0,lastSurfaceElapsed=0,surfaceVehicle=null,surfaceCorners=null,accumulator=0,last=performance.now(),lastTraffic=-10,lookBackA=0;
  let worldTraffic;const stats={frames:0,simulationSeconds:0,metres:0,holds:0,missingContacts:0,carHits:0,frameMs:[],cpuMs:[],initialDownloadBytes:0,initialDriveMs:0,maxEstimatedJSBytes:0,maxEstimatedGPUBytes:0};
- const session=await createWorldSession({renderer,scene,resources,progress:(...args)=>loading.progress(...args)});
+ const session=await createWorldSession({tileObserver,renderer,scene,resources,progress:(...args)=>loading.progress(...args)});
  const {stream,roads,barriers,obstacles,detail,props,trees,signs,marks,horizon,landmarks,plazas,lawns,sceneTiles,manifest}=session;
  let guidance=query.get('guidance')==='1'?createGuidanceDemo(scene,stream,roads):null;const offGuidance=session.subscribeTiles({activated:k=>guidance?.addCell(k),removed:k=>guidance?.removeCell(k)});
  const spec=CARS.find(c=>c.id===query.get('car'))||CARS.find(c=>c.id==='carrera_gts')||CARS[0];
  function place(v,p){v.reset(0,0,0);Object.assign(v,{x:p.x,y:p.y,z:p.z,yaw:p.yaw,vLong:0,vLat:0,w:0,_network:true});Object.assign(v,v.route.project(v.x,v.z));v.ground.referenceY=p.y;v.ground.begin(v);v.ground.resolve(v,1/240);v.syncWheels();}
- await stream.spawn(p=>{const route=new AthensRoute(p),veh=new Vehicle(spec,route),model=new CarModel(spec);veh.ground=new AthensGround(stream,route,barriers,obstacles);place(veh,p);scene.add(model.root);player={veh,model,spec};},{halfWidth:(spec.width||2)/2,halfLength:(spec.length||5)/2,timeoutMs:180000});
- // The free roam spawn picker (?map=athens&menu=1) sends the chosen point as ?spawn=x,z (Athens world metres): the car goes on the nearest safe road anchor there.
+ const requested=(query.get('spawn')||'').split(',').map(Number),directSpawn=requested.length===2&&requested.every(Number.isFinite);
+ function createPlayer(p,prepared=false){const route=prepared?session.route:new AthensRoute(p),veh=new Vehicle(spec,route),model=new CarModel(spec);try{veh.ground=prepared?session.ground:new AthensGround(stream,route,barriers,obstacles);place(veh,p);scene.add(model.root);player={veh,model,spec};}catch(error){try{model.root.removeFromParent();}catch{}throw error;}}
+ // The free roam spawn picker supplies Athens metres. Prepare its destination
+ // first; never construct the player or admit the unrelated default spawn there.
  async function spawnAt(x,z){towing=true;try{const p=await session.prepareSpawn({x,z},{car:spec});player.veh.route=session.route;player.veh.ground=session.ground;place(player.veh,p);}finally{towing=false;}}
- await spawnAt(player.veh.x,player.veh.z);
+ try{
+  if(directSpawn){
+   const p=await session.prepareSpawn({x:requested[0],z:requested[1]},{car:spec});
+   await stream.spawnAtRoute(p,[{pose:p,halfWidth:(spec.width||2)/2,halfLength:(spec.length||5)/2}],pose=>createPlayer(pose,true),{validatePose:session.safePose,timeoutMs:180000});
+  }else{
+   await stream.spawn(p=>createPlayer(p),{halfWidth:(spec.width||2)/2,halfLength:(spec.length||5)/2,timeoutMs:180000});
+   await spawnAt(player.veh.x,player.veh.z);
+  }
+ }catch(error){
+  for(const cleanup of [offGuidance,()=>guidance?.dispose(),()=>player?.model.root.removeFromParent(),()=>session.dispose(),()=>renderer.dispose()])try{cleanup();}catch{}throw error;
+ }
  stream.releaseSpawn();input.setCarSpec(spec);
  player.cockpit=new Cockpit(spec,player.model);player.cockpit.setVisible(false);
  const applyDriving=()=>{worldTraffic?.setOfflineDensityScale(resolveGraphics(settings).traffic);applyVehicleAids(player.veh,spec);player.veh.setManual(settings.transmission==='manual');applySteeringAssist(player.veh,input.drivingSource);};
  const offSettings=onSettings(applyDriving);applyDriving();
- {const chosen=(query.get('spawn')||(guidance?`${DEMO_ROUTE[0][0]},${DEMO_ROUTE[0][2]}`:'')).split(',').map(Number);if(chosen.length===2&&chosen.every(Number.isFinite))await spawnAt(chosen[0],chosen[1]);}
+ if(!directSpawn){const chosen=(query.get('spawn')||(guidance?`${DEMO_ROUTE[0][0]},${DEMO_ROUTE[0][2]}`:'')).split(',').map(Number);if(chosen.length===2&&chosen.every(Number.isFinite))await spawnAt(chosen[0],chosen[1]);}
  if(guidance&&!query.has('spawn')){const p=guidance.spawnPose();if(p)place(player.veh,p);}
  stats.initialDownloadBytes=stream.pool?.downloadedBytes||stream.metrics.loadedBytes;stats.initialDriveMs=performance.now()-started;
  loading.hide();document.body.classList.remove('menu-backdrop');document.body.classList.add('loaded','racing');document.getElementById('ui').replaceChildren();
