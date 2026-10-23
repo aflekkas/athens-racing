@@ -126,16 +126,73 @@ test('lane admission caches shifted lanes separately and checks the exact unshif
 });
 test('a visible car passes a parked vehicle using a spare lane without crossing into oncoming traffic',()=>{
  const e={id:'road',from:'a',to:'b',layer:0,flags:1,lanes:2,points:[[0,0,0],[0,0,1000]]},w=ribbonWorld([e]),t=trafficPool(new WorldTraffic(w,{}, {project:(x,z)=>({s:z,u:x})})),c=t.cars[0];t.spawnT=1e6;
- Object.assign(c,{active:true,offset:100,point:{edge:e.id},v:0,drv:{a:1.6,b:3,T:1.2,s0:2.4,vf:1},vehicle:{...edgePoint(e,100),vLong:0,halfL:2.2,halfW:.9},x:0,y:0,z:100});
- const player={...edgePoint(e,107),vLong:0,halfL:2.2,halfW:.9};
+ const pose=t.candidate(e,100,c);Object.assign(c,{active:true,offset:100,point:pose,v:0,drv:{a:1.6,b:3,T:1.2,s0:2.4,vf:1},vehicle:{...pose,vLong:0,halfL:2.2,halfW:.9},x:pose.x,y:0,z:100});
+ const player={...t.candidate(e,107,c),vLong:0,halfL:2.2,halfW:.9};
  for(let i=0;i<400;i++){t.update(.05,player,[player]);c.lastSeenAt=t.t;}
- assert.ok(c.vehicle.z>130,JSON.stringify(c.vehicle));assert.ok(c.laneShift>=2.2);assert.ok(c.active);
+ assert.ok(c.vehicle.z>130,JSON.stringify(c.vehicle));assert.ok(c.laneShift< -3);assert.ok(c.active);
 });
+test('a normal two-lane one-way road has distinct lane centres and room to pass in the other lane',()=>{
+ for(const reverse of [false,true])for(const police of [false,true]){
+  const z=s=>reverse?1000-s:s,e={id:'road',from:'a',to:'b',layer:0,flags:1,lanes:2,points:[[0,0,z(0)],[0,0,z(1000)]]},w=ribbonWorld([e]),t=trafficPool(new WorldTraffic(w,{}, {project:(x,z)=>({s:reverse?1000-z:z,u:x})})),c=t.cars[0];
+  // Canonical 3.2 m lanes, not the old test ribbon's unusually generous 3.4 m.
+  const contact=w.stream.contact;w.stream.contact=(x,z,o)=>Math.abs(x)<=3.2?contact(x,z,o):null;w.roads.width=()=>({left:3.2,right:3.2,width:6.4});
+  assert.equal(t.laneOffset(e,c),1.6,'one-way traffic belongs in a lane, not on its centre divider');
+  t.spawnT=1e6;const pose=t.candidate(e,100,c),parked={...t.candidate(e,107,c),vLong:0,halfL:2.2,halfW:.9};
+  Object.assign(c,{police,active:true,offset:100,point:pose,v:0,drv:{a:1.6,b:3,T:1.2,s0:2.4,vf:1},vehicle:{...pose,vLong:0,halfL:2.2,halfW:.9},x:pose.x,y:0,z:pose.z});if(police)t.hm={active:true,state:'chase'};
+  for(let i=0;i<400;i++){t.update(.05,parked,[parked]);c.lastSeenAt=t.t;}
+  assert.ok((reverse?1000-c.vehicle.z:c.vehicle.z)>130,'the NPC actually passes the parked car');assert.ok(c.active);assert.ok(c.laneShift< -3,'the pass uses the other marked lane');assert.ok(Math.abs(c.vehicle.x)+c.wid/2<=3.2,'the whole passing car stays on asphalt');
+ }
+});
+
+test('measured asymmetric road edges place each direction inside its own actual lane',()=>{
+ for(const reverse of [false,true])for(const flags of [0,1]){
+  const e={id:'road',from:'a',to:'b',layer:0,flags,lanes:flags?2:1,points:reverse?[[0,0,1000],[0,0,0]]:[[0,0,0],[0,0,1000]]},w=ribbonWorld([e]),t=new WorldTraffic(w,{},{}),c={len:4.4,wid:1.8};
+  const width=reverse?{left:3.6,right:2.8,width:6.4}:{left:2.8,right:3.6,width:6.4};w.roads.width=()=>width;
+  const u=t.laneOffset(e,c);assert.ok(Math.abs(u-(width.right-1.6))<1e-12);assert.ok(u-c.wid/2>=-width.left+.2);assert.ok(u+c.wid/2<=width.right-.2);
+  if(!flags)assert.ok(u-c.wid/2>(width.right-width.left)/2,'two-way traffic stays entirely on its own side');
+ }
+});
+
+test('explicit unequal directional lane counts retain their divider and never borrow the opposing lane',()=>{
+ const forward={id:'forward',from:'a',to:'b',layer:0,flags:0,lanes:2,surface:'asphalt',points:[[0,0,0],[0,0,1000]]},reverse={...forward,id:'reverse',from:'b',to:'a',lanes:1,points:[...forward.points].reverse()},w=ribbonWorld([forward,reverse]),t=trafficPool(new WorldTraffic(w,{},{}));
+ w.roads.width=()=>({left:4.8,right:4.8,width:9.6});
+ for(const e of [forward,reverse]){const c={...t.cars[0],offset:100,stoppedT:3,laneShift:0};assert.ok(Math.abs(t.laneOffset(e,c)-3.2)<1e-12,'both directions use the actual 3.2 m outer lane');c.vehicle=t.candidate(e,100,c);t.bypass(c,e,.1,[]);if(e===forward)assert.ok(Math.abs(c.bypassTarget+3.2)<1e-12,'two-lane direction can use its inner lane');else assert.equal(c.bypassTarget,undefined,'the single-lane direction cannot cross the off-centre divider');}
+ w.roads.width=()=>({left:3.2,right:3.2,width:6.4});w.roads.graph.revision++;assert.equal(t.laneOffset(reverse,t.cars[0]),null,'an undersized directional share cannot borrow opposing asphalt');
+});
+
+test('an occupied adjacent lane blocks passing even when its asphalt width is sufficient',()=>{
+ const e={id:'road',from:'a',to:'b',layer:0,flags:1,lanes:2,points:[[0,0,0],[0,0,1000]]},w=ribbonWorld([e]),t=trafficPool(new WorldTraffic(w,{}, {project:(x,z)=>({s:z,u:x})})),c=t.cars[0];
+ w.roads.width=()=>({left:3.2,right:3.2,width:6.4});t.spawnT=1e6;
+ const pose=t.candidate(e,100,c),parked={...t.candidate(e,107,c),vLong:0,halfL:2.2,halfW:.9},blocker={...t.candidate(e,103,{...c,laneShift:-3.2}),vLong:0,halfL:2.2,halfW:.9};
+ Object.assign(c,{active:true,offset:100,point:pose,v:0,drv:{a:1.6,b:3,T:1.2,s0:2.4,vf:1},vehicle:{...pose,vLong:0,halfL:2.2,halfW:.9},x:pose.x,y:0,z:pose.z});
+ for(let i=0;i<240;i++){t.update(.05,parked,[parked,blocker]);c.lastSeenAt=t.t;assert.equal(t.poseBlocked(c,c.vehicle,[parked,blocker]),false);}
+ assert.equal(c.laneShift||0,0);assert.ok(c.vehicle.z<parked.z-c.len/2-parked.halfL);assert.ok(c.active);
+});
+
+test('narrow asphalt cannot become a passing lane from a lane-count tag alone',()=>{
+ const e={id:'road',from:'a',to:'b',layer:0,flags:1,lanes:2,points:[[0,0,0],[0,0,1000]]},w=ribbonWorld([e]),t=trafficPool(new WorldTraffic(w,{}, {project:(x,z)=>({s:z,u:x})})),c=t.cars[0];
+ const contact=w.stream.contact;w.stream.contact=(x,z,o)=>Math.abs(x)<=1.6?contact(x,z,o):null;w.roads.width=()=>({left:1.6,right:1.6,width:3.2});t.spawnT=1e6;
+ assert.equal(t.laneOffset(e,c),0,'the measured carriageway fits only one safe lane');
+ const pose=t.candidate(e,100,c),parked={...t.candidate(e,107,c),vLong:0,halfL:2.2,halfW:.9};
+ Object.assign(c,{active:true,offset:100,point:pose,v:0,drv:{a:1.6,b:3,T:1.2,s0:2.4,vf:1},vehicle:{...pose,vLong:0,halfL:2.2,halfW:.9},x:pose.x,y:0,z:pose.z});
+ for(let i=0;i<240;i++){t.update(.05,parked,[parked]);c.lastSeenAt=t.t;}
+ assert.equal(c.laneShift||0,0);assert.ok(c.vehicle.z<parked.z-c.len/2-parked.halfL);assert.ok(c.active);
+});
+
+test('a stopped car on a single-lane two-way street cannot pass through the oncoming lane',()=>{
+ const e={id:'road',from:'a',to:'b',layer:0,flags:0,lanes:1,points:[[0,0,0],[0,0,1000]]},w=ribbonWorld([e]),t=trafficPool(new WorldTraffic(w,{}, {project:(x,z)=>({s:z,u:x})})),c=t.cars[0];
+ w.roads.width=()=>({left:3.2,right:3.2,width:6.4});t.spawnT=1e6;
+ const pose=t.candidate(e,100,c),parked={...t.candidate(e,107,c),vLong:0,halfL:2.2,halfW:.9},oncoming={...edgePoint(e,115),x:1.6,yaw:0,vLong:8,halfL:2.2,halfW:.9};
+ Object.assign(c,{active:true,offset:100,point:pose,v:0,drv:{a:1.6,b:3,T:1.2,s0:2.4,vf:1},vehicle:{...pose,vLong:0,halfL:2.2,halfW:.9},x:pose.x,y:0,z:100});
+ for(let i=0;i<240;i++){t.update(.05,parked,[parked,oncoming]);c.lastSeenAt=t.t;assert.ok(c.vehicle.x<0,'the NPC stays on its own side');}
+ assert.equal(c.laneShift||0,0);assert.ok(c.vehicle.z<parked.z-c.len/2-parked.halfL);assert.ok(c.active);
+});
+
 test('a spare lane near a junction needs a checked exit before cars fan out',()=>{
  const e={id:'road',from:'a',to:'b',layer:0,flags:1,lanes:3,points:[[0,0,0],[0,0,100]]},w=ribbonWorld([e]),t=trafficPool(new WorldTraffic(w,{},{})),c=t.cars[0];
  Object.assign(c,{offset:85,stoppedT:3,laneShift:0,vehicle:{...edgePoint(e,85),halfL:2.2,halfW:.9}});
  t.throughPaths=()=>[];t.bypass(c,e,.1,[]);assert.equal(c.laneShift,0);assert.equal(c.bypassTarget,undefined);
- const checked=[];t.throughPaths=(_e,car)=>{checked.push(car.laneShift);return [{}];};t.bypass(c,e,.1,[]);assert.deepEqual(checked,[2.25]);assert.ok(c.laneShift>0);
+ const checked=[];t.throughPaths=(_e,car)=>{checked.push(car.laneShift);return [{}];};t.bypass(c,e,.1,[]);assert.deepEqual(checked,[-3.4]);assert.ok(c.laneShift<0);
 });
 test('a blocked turn backs out continuously and checks cars behind before moving',()=>{
  const e={id:'road',from:'a',to:'b',layer:0,flags:1,lanes:2,points:[[0,0,0],[0,0,1000]]},w=ribbonWorld([e]),t=trafficPool(new WorldTraffic(w,{}, {project:(x,z)=>({s:z,u:x})})),c=t.cars[0],pose=edgePoint(e,105);

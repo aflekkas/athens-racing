@@ -37,8 +37,12 @@ export class WorldTraffic {
   const length=edgeLength(edge),widths=[.25,.5,.75].map(t=>this.session.roads.width(edgePoint(edge,length*t),{radius:12,bounded:true,connected:true})).filter(Boolean);
   if(widths.length!==3)return null;const width=widths.sort((a,b)=>a.width-b.width)[0],twoWay=!(edge.flags&1);
   if(width.width<(twoWay?2:1)*(c.wid+.4))return null;
-  const u=(width.right-width.left)/2+(twoWay?width.width/4:0);
-  if(this.laneCache.size>=4096)this.laneCache.delete(this.laneCache.keys().next().value);this.laneCache.set(key,{edge,revision,u,width});return u;
+  // The emitted lane count is directional; wider junction asphalt is not another lane.
+  const opposite=twoWay?[...(this.session.roads.graph.outgoing.get(edge.to)||[])].map(id=>this.session.roads.graph.edges.get(id)?.value).find(e=>e&&e.id!==edge.id&&e.to===edge.from&&e.layer===edge.layer&&e.surface===edge.surface&&!(e.flags&1)):null;
+  const share=twoWay?(edge.lanes>0&&opposite?.lanes>0?edge.lanes/(edge.lanes+opposite.lanes):.5):1,span=width.width*share,divider=width.right-span;
+  if(span<c.wid+.4)return null;
+  const lanes=Math.max(1,Math.min(Math.floor(edge.lanes)||1,Math.floor(span/(c.wid+.4)))),laneWidth=span/lanes,u=width.right-laneWidth/2;
+  if(this.laneCache.size>=4096)this.laneCache.delete(this.laneCache.keys().next().value);this.laneCache.set(key,{edge,revision,u,width,lanes,laneWidth,divider});return u;
  }
  candidate(edge,offset,c){const p=edgePoint(edge,offset),key=edge.id+':'+Math.floor(offset/2)+':'+c.wid+':'+c.len+':'+(c.laneShift||0)+':'+this.session.roads.graph.revision,cached=this.widthCache.get(key);if(cached?.failureUntil>this.t)return null;
   const reject=()=>{if(this.widthCache.size>=4096)this.widthCache.delete(this.widthCache.keys().next().value);this.widthCache.set(key,{failureUntil:this.t+1});return null;},base=this.laneOffset(edge,c);if(base==null)return reject();const u=base+(c.laneShift||0);
@@ -107,9 +111,9 @@ export class WorldTraffic {
  // within the same carriageway, checking the sweep and the passing corridor.
  bypass(c,edge,dt,actors){
   if(c.turn||c.bypassTarget==null&&c.stoppedT<2||edgeLength(edge)-c.offset<c.len+2)return;
-  if(c.bypassTarget==null){const base=this.laneOffset(edge,c),width=this.laneCache.get(edge.id+':'+c.wid)?.width;if(!width)return;
-   const middle=(width.right-width.left)/2;
-   for(const shift of [2.25,-2.25,3,-3]){const u=base+shift;if(u<-width.left+c.wid/2+.2||u>width.right-c.wid/2-.2||!(edge.flags&1)&&u<middle+c.wid/2+.2)continue;
+  if(c.bypassTarget==null){const base=this.laneOffset(edge,c),lane=this.laneCache.get(edge.id+':'+c.wid),width=lane?.width;if(!width)return;
+   const shifts=[...Array.from({length:lane.lanes-1},(_,i)=>-(i+1)*lane.laneWidth),2.25,-2.25,3,-3];
+   for(const shift of new Set(shifts)){const u=base+shift;if(u<-width.left+c.wid/2+.2||u>width.right-c.wid/2-.2||!(edge.flags&1)&&u<lane.divider+c.wid/2+.2)continue;
     const passing={...c,laneShift:shift},entry=edgeLength(edge)-Math.min(8,edgeLength(edge)*.4);if(c.offset+12>=entry&&!this.throughPaths(edge,passing).length)continue;
     let safe=true;for(const s of [c.offset,c.offset+6,c.offset+12]){const p=this.candidate(edge,s,passing);if(!p||this.poseBlocked(c,p,actors)){safe=false;break;}}
     if(safe){c.bypassTarget=shift;break;}
