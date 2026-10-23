@@ -334,3 +334,37 @@ test('grid snapshot canonical byte preflight matches Unicode and JSON scalar enc
   assert.equal(metrics.bytes,new TextEncoder().encode(canonical).length);assert.equal(metrics.codeUnits,canonical.length);assert.equal(canonicalJSON(body),canonical);
  }
 });
+
+test('release package owns authority before its first digest and returns only validated private records',async()=>{
+ const {validateOnlineRouteRelease}=await import('./online-route-release.mjs'),{onlineGridHash}=await import('../src/online-grid.js');
+ for(const duringDigest of [false,true]){
+  const f=await networkReleaseFixture(),original=structuredClone(f.proof);
+  const pending=validateOnlineRouteRelease(f.proof,{compiled:[f.compiled],manifest:f.manifest});
+  if(duringDigest){f.proof.routeGrids[0].body.poses[0].x=3;f.proof.routes[0].onlineGrid.url='/switched.json';f.compiled.routeHash='e'.repeat(64);f.manifest.tiles['0,0'].sha256='e'.repeat(64);}
+  const result=await pending;
+  assert.deepEqual(result.routeGrids,original.routeGrids);assert.deepEqual(result.routes,original.routes);assert.deepEqual(result.routeRoads,original.routeRoads);
+  assert.notEqual(result.routeGrids[0].body,f.proof.routeGrids[0].body);assert.notEqual(result.routes[0],f.proof.routes[0]);
+  assert.equal(Object.isFrozen(f.proof.routeGrids[0].body),false);assert.equal(Object.isFrozen(f.proof.routeRoads[0].body),false);
+  f.proof.routeGrids[0].body.poses[0].x=4;f.proof.routes[0].onlineGrid.url='/later.json';
+  assert.equal(await onlineGridHash(result.routeGrids[0].body),original.routeGrids[0].hash);assert.equal(result.routes[0].onlineGrid.url,original.routes[0].onlineGrid.url);
+  assert.ok(Object.isFrozen(result));assert.ok(Object.isFrozen(result.routeRoads[0]));assert.ok(Object.isFrozen(result.routeGrids[0]));
+ }
+});
+
+test('release snapshot reserves nested authority copies before cloning and adds no aggregate wire cap',async()=>{
+ const {snapshotJSONForAuthentication}=await import('../src/json-auth-snapshot.js'),{validateOnlineRouteRelease}=await import('./online-route-release.mjs'),f=await networkReleaseFixture();
+ const preflight=snapshotJSONForAuthentication(f.proof,{extraCopyCount:1}).metrics;
+ assert.equal(preflight.extraCopyBytes,preflight.callerObjectBytes);assert.equal(preflight.snapshotPhaseBytes,3*preflight.callerObjectBytes);
+ assert.throws(()=>snapshotJSONForAuthentication(f.proof,{extraCopyCount:1,maxCombinedBytes:preflight.authenticationBytes-1}),/budget/);
+ // A local package may exceed a single grid's 128 KiB; grid limits remain per body.
+ f.proof.routes[0].note='x'.repeat(140*1024);assert.ok((await validateOnlineRouteRelease(f.proof,{compiled:[f.compiled],manifest:f.manifest})).routes[0].note.length>128*1024);
+ const clone=globalThis.structuredClone,encode=TextEncoder.prototype.encode,encodeInto=TextEncoder.prototype.encodeInto;let clones=0,encodes=0,getters=0;
+ globalThis.structuredClone=(...args)=>{clones++;return clone(...args);};TextEncoder.prototype.encode=function(...args){encodes++;return encode.apply(this,args);};TextEncoder.prototype.encodeInto=function(...args){encodes++;return encodeInto.apply(this,args);};
+ try{
+  f.proof.routes[0].note='x'.repeat(1400*1024);
+  await assert.rejects(validateOnlineRouteRelease(f.proof,{compiled:[f.compiled],manifest:f.manifest}),/budget/);
+  delete f.proof.routes[0].note;Object.defineProperty(f.proof,'getter',{enumerable:true,get(){getters++;return 1;}});
+  await assert.rejects(validateOnlineRouteRelease(f.proof,{compiled:[f.compiled],manifest:f.manifest}),/unavailable/);
+  assert.equal(clones,0);assert.equal(encodes,0);assert.equal(getters,0);
+ }finally{globalThis.structuredClone=clone;TextEncoder.prototype.encode=encode;TextEncoder.prototype.encodeInto=encodeInto;}
+});
