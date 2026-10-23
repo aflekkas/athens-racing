@@ -59,9 +59,10 @@ It does not verify the exact named-area anchor through the menu.
   Tow preserved earned progress; onward native driving earned 59.791 m.
   Free-roam throttle moved 15.423 m with no car hits or visible race props.
 - **Automated checks:** focused route suite 6 passed / 0 failed; author replay
-  reproduced the committed proof byte-for-byte. Required exact-candidate clean
-  gates are queued separately and reported with the candidate SHA in the master
-  handoff; this file does not claim unrun checks passed.
+  reproduced the committed proof byte-for-byte. Exact corrected `538b9a59` clean
+  gates passed: npm 2,734 passed / 0 failed / 14 skipped (301 files), physics
+  1,323 passed / 0 failed, browser imports 373 modules, syntax 460 modules.
+  The later width-query fix is a separate candidate, not covered by these gates.
 - **Not tested:** online racing, bus garage envelope, rain/night, every car,
   physical GPU frame rate, or visual fidelity across all streets. Native automated
   driving is a local test, not a human lap or a public leaderboard submission.
@@ -245,8 +246,37 @@ archive; source files came from the exact commit.
 
 Follow-up `c09e969fe6d50621755e8fa4debd97c3f71df4fe` changes only the release
 fixture expectation to include Kifissia. Its focused release suite passed 8/8.
-Full exact-candidate verification of that correction remains queued behind
-server and terrain. Prior failures are not relabelled as passes. No runtime,
+Full exact-candidate verification of that correction completed on `538b9a59`
+as recorded below. Prior failures are not relabelled as passes. No runtime,
 route geometry, world edition or online capacity changed in this follow-up.
+
+
+### Corrected exact-candidate verification completed
+
+Exact `538b9a5992a290f72f137e543a89b73da3cc8599` was freshly archived into the
+single task temp. The same unchanged-lockfile dependency installation was
+symlinked; source files came only from that commit. All commands ran
+sequentially, `ASR_TEST_JOBS=2`:
+
+```text
+npm test → 301/301 files, 2,748 total; 2,734 passed, 0 failed, 14 skipped,
+           0 flaky, 594.0 seconds
+node --import ./tools/physics-test/register.mjs tools/physics-test/regress.mjs
+         → 1,323 passed, 0 failed
+node tools/check-browser-imports.mjs → 373 modules passed
+node tools/check-syntax.mjs → 460 modules passed
+```
+
+The owned gate terminal exited; FULL-GATE END went directly to parent, loader
+and terrain. The completed archive (~811 MB) was removed. Shared source/cache
+and small logs remain in the one task temp until loader/terrain release them.
+Disk was 145 GB / 73 GB used / 72 GB free / 51% before this run; the final
+cleanup reading is reported in the parent handoff.
+
+Later runtime width-query fix `5f1b60e4` and uncommitted Ekali authoring were
+excluded from this archive. Their game proof, final world/proof binding and
+new exact-candidate gates remain separate. See [the focused width source
+record](width-query/README.md); no release or complete scenery-fidelity claim
+is made by this independent Kifissia stage.
 
 </details>
