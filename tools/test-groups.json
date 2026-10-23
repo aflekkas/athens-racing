@@ -1,5 +1,6 @@
 {
   "unit": [
+    "tools/bundle-route-host.test.mjs",
     "tools/structure-domains/context-domain-plan.test.mjs",
     "tools/auth-prefetch.test.mjs",
     "tools/fleet-prewarm.test.mjs",
