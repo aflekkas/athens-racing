@@ -1,0 +1,36 @@
+{
+  "source": "079e89545891962a8ceb15919004dfefea97e86b",
+  "world": "80055f9208753e2d6fa8658b31c90216d22c650f7f33588ebd5178d1a6b804a1",
+  "rows": [
+    {
+      "edge": "osm:way:25371522:0-1:f:17:35",
+      "next": "osm:way:25371523:0-0:f:17:35",
+      "laneShift": -3.495691418321258,
+      "exitShift": -3.4957116637204577,
+      "length": 13.948706946671813,
+      "samples": 1001,
+      "retreatSteps": 464,
+      "through": [
+        {
+          "next": "osm:way:25371523:0-0:f:17:35",
+          "exitShift": -3.4957116637204577
+        }
+      ]
+    },
+    {
+      "edge": "osm:way:25371523:0-0:f:17:35",
+      "next": "osm:way:50825898:0-0:f:17:35",
+      "laneShift": -3.4957116637204577,
+      "exitShift": -3.503015459204553,
+      "length": 15.734068549099423,
+      "samples": 1001,
+      "retreatSteps": 500,
+      "through": [
+        {
+          "next": "osm:way:50825898:0-0:f:17:35",
+          "exitShift": -3.503015459204553
+        }
+      ]
+    }
+  ]
+}

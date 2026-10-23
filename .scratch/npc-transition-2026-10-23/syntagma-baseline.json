@@ -1,0 +1,831 @@
+{
+  "base": "http://127.0.0.1:43767",
+  "phase": "before",
+  "sourceCommit": "a117ed94",
+  "worldAssets": "published staging (read-only proxy)",
+  "rows": [
+    {
+      "audit": {
+        "failed": {
+          "osm:way:23216438:0-0:f:0:1:approach": 1878,
+          "osm:way:318678267:1-0:f:0:1:approach": 7534,
+          "osm:way:789798944:0-0:f:0:0:approach": 3937,
+          "osm:way:844542129:0-1:f:1:0:approach": 1882,
+          "osm:way:23182833:2-0:f:1:0:approach": 150,
+          "osm:way:23182796:2-0:f:1:0:approach": 3767,
+          "osm:way:909651171:0-0:f:0:0:approach": 1905,
+          "osm:way:299657353:0-0:f:1:0:approach": 1868,
+          "osm:way:219362015:3-0:f:0:0:approach": 1876,
+          "osm:way:601303882:6-1:f:0:-1:approach": 1875,
+          "osm:way:636473899:24-0:f:0:-2:approach": 1882,
+          "osm:way:1101347640:0-0:f:0:-1:approach": 1869,
+          "osm:way:1311640348:0-0:f:0:-2:approach": 1909,
+          "osm:way:23182806:0-1:f:0:-2:approach": 1,
+          "osm:way:10976972:2-0:f:-1:-1:approach": 712
+        },
+        "samples": [
+          {
+            "id": 22,
+            "edge": "osm:way:23216438:0-0:f:0:1",
+            "from": "osm:node:251109478",
+            "to": "osm:node:251135284",
+            "offset": 87.25423427066539,
+            "length": 95.25424362966137,
+            "turn": null,
+            "pos": [
+              216.45040830119743,
+              99.42909293771191,
+              874.7954758010139
+            ],
+            "stopped": 5.000050000000035,
+            "at": 16.783503333332728,
+            "carPosition": [
+              216.45040830119743,
+              99.42909293771191,
+              874.7954758010139
+            ]
+          },
+          {
+            "id": 14,
+            "edge": "osm:way:318678267:1-0:f:0:1",
+            "from": "osm:node:250691617",
+            "to": "osm:node:251133631",
+            "offset": 44.08619110227934,
+            "length": 52.08620406649567,
+            "turn": null,
+            "pos": [
+              123.76823470956337,
+              90.26930101443958,
+              519.2961494120972
+            ],
+            "stopped": 5.000050000000035,
+            "at": 17.516846666666023,
+            "carPosition": [
+              123.76823470956337,
+              90.26930101443958,
+              519.2961494120972
+            ]
+          },
+          {
+            "id": 23,
+            "edge": "osm:way:789798944:0-0:f:0:0",
+            "from": "osm:node:250691681",
+            "to": "osm:node:42240105",
+            "offset": 31.946069864142654,
+            "length": 39.94610037093683,
+            "turn": null,
+            "pos": [
+              385.8251944162115,
+              98.52372879011574,
+              415.24949066498925
+            ],
+            "stopped": 5.000050000000035,
+            "at": 21.99188666666578,
+            "carPosition": [
+              385.8251944162115,
+              98.52372879011574,
+              415.24949066498925
+            ]
+          },
+          {
+            "id": 13,
+            "edge": "osm:way:844542129:0-1:f:1:0",
+            "from": "portal:w844542129:0:65.765510",
+            "to": "osm:node:7878315755",
+            "offset": 24.145472742216906,
+            "length": 32.14548478356799,
+            "turn": null,
+            "pos": [
+              680.0715517256479,
+              103.10313790263324,
+              488.3260116206832
+            ],
+            "stopped": 5.000050000000035,
+            "at": 38.421223333337046,
+            "carPosition": [
+              680.0715517256479,
+              103.10313790263324,
+              488.3260116206832
+            ]
+          },
+          {
+            "id": 23,
+            "edge": "osm:way:23182796:2-0:f:1:0",
+            "from": "osm:node:2313405235",
+            "to": "osm:node:300401360",
+            "offset": 12.723509310473007,
+            "length": 20.723533518501725,
+            "turn": null,
+            "pos": [
+              608.7548050155274,
+              119.68847000113634,
+              93.27661103075337
+            ],
+            "stopped": 5.000050000000035,
+            "at": 53.20470666668219,
+            "carPosition": [
+              608.7548050155274,
+              119.68847000113634,
+              93.27661103075337
+            ]
+          },
+          {
+            "id": 13,
+            "edge": "osm:way:909651171:0-0:f:0:0",
+            "from": "osm:node:250691847",
+            "to": "portal:w909651171:0:17.115163",
+            "offset": 10.27742028137403,
+            "length": 17.129076350278336,
+            "turn": null,
+            "pos": [
+              507.7655742437093,
+              93.57152426461903,
+              454.0050582990909
+            ],
+            "stopped": 5.000050000000035,
+            "at": 75.61326000001328,
+            "carPosition": [
+              507.7655742437093,
+              93.57152426461903,
+              454.0050582990909
+            ]
+          },
+          {
+            "id": 19,
+            "edge": "osm:way:299657353:0-0:f:1:0",
+            "from": "osm:node:300401175",
+            "to": "osm:node:250691743",
+            "offset": 41.467810657133285,
+            "length": 49.46782994445284,
+            "turn": null,
+            "pos": [
+              798.9293553367165,
+              130.36973081982157,
+              97.85671846540292
+            ],
+            "stopped": 5.000050000000035,
+            "at": 98.2968233333254,
+            "carPosition": [
+              798.9293553367165,
+              130.36973081982157,
+              97.85671846540292
+            ]
+          },
+          {
+            "id": 16,
+            "edge": "osm:way:219362015:3-0:f:0:0",
+            "from": "osm:node:250706416",
+            "to": "osm:node:250706414",
+            "offset": 51.872645809637824,
+            "length": 59.87267086596793,
+            "turn": null,
+            "pos": [
+              244.37991599058026,
+              99.41674733875229,
+              293.1577066945879
+            ],
+            "stopped": 5.000050000000035,
+            "at": 136.05970333329012,
+            "carPosition": [
+              244.37991599058026,
+              99.41674733875229,
+              293.1577066945879
+            ]
+          },
+          {
+            "id": 22,
+            "edge": "osm:way:601303882:6-1:f:0:-1",
+            "from": "portal:w601303882:6:28.614555",
+            "to": "osm:node:250707871",
+            "offset": 51.8560304485294,
+            "length": 59.856054375260335,
+            "turn": null,
+            "pos": [
+              85.12942573157666,
+              89.87869817226664,
+              -483.23751760254555
+            ],
+            "stopped": 5.000050000000035,
+            "at": 155.87655999993828,
+            "carPosition": [
+              85.12942573157666,
+              89.87869817226664,
+              -483.23751760254555
+            ]
+          },
+          {
+            "id": 21,
+            "edge": "osm:way:636473899:24-0:f:0:-2",
+            "from": "osm:node:364104830",
+            "to": "osm:node:364104856",
+            "offset": 47.85241041621331,
+            "length": 55.852432999678086,
+            "turn": null,
+            "pos": [
+              383.427176537206,
+              97.60265642100053,
+              -591.1019305401791
+            ],
+            "stopped": 5.000050000000035,
+            "at": 164.65581666659673,
+            "carPosition": [
+              383.427176537206,
+              97.60265642100053,
+              -591.1019305401791
+            ]
+          },
+          {
+            "id": 19,
+            "edge": "osm:way:1101347640:0-0:f:0:-1",
+            "from": "osm:node:250700248",
+            "to": "osm:node:250707333",
+            "offset": 57.69142420036926,
+            "length": 65.69143684242172,
+            "turn": null,
+            "pos": [
+              11.16700769916732,
+              96.95658283944377,
+              -406.9600327337603
+            ],
+            "stopped": 5.000050000000035,
+            "at": 198.29365666656528,
+            "carPosition": [
+              11.16700769916732,
+              96.95658283944377,
+              -406.9600327337603
+            ]
+          },
+          {
+            "id": 16,
+            "edge": "osm:way:1311640348:0-0:f:0:-2",
+            "from": "osm:node:12141028503",
+            "to": "osm:node:12141028502",
+            "offset": 11.386366700208175,
+            "length": 18.9772979421701,
+            "turn": null,
+            "pos": [
+              297.33794558745103,
+              94.17187348907504,
+              -655.705175981876
+            ],
+            "stopped": 5.000050000000035,
+            "at": 216.90216999988124,
+            "carPosition": [
+              297.33794558745103,
+              94.17187348907504,
+              -655.705175981876
+            ]
+          }
+        ]
+      },
+      "area": "syntagma",
+      "build": "a117ed94",
+      "elapsed": 240.00000000008313,
+      "physicsSeconds": 240.00239999985965,
+      "distance": 1359.7748058627176,
+      "maxStopped": 2,
+      "maxClusters": 0,
+      "maxStop": 7.999999999999977,
+      "stoppedCarSeconds": 50.99999999999886,
+      "clusterSeconds": 0,
+      "contacts": 0,
+      "missingContacts": 0,
+      "holds": 0,
+      "samples": [
+        {
+          "elapsed": 10.000000000000076,
+          "physicsSeconds": 10.000099999999756,
+          "distance": 67.2630910714323,
+          "maxStopped": 0,
+          "maxClusters": 0,
+          "maxStop": 0,
+          "stoppedCarSeconds": 0,
+          "clusterSeconds": 0,
+          "active": 8,
+          "moving": 8,
+          "contacts": 0,
+          "missingContacts": 0,
+          "holds": 0,
+          "position": [
+            492.59788791613295,
+            92.91888069694764,
+            550.738066518819
+          ],
+          "speed": 8.027665189140071,
+          "state": "race"
+        },
+        {
+          "elapsed": 20.000000000000146,
+          "physicsSeconds": 20.00019999999922,
+          "distance": 144.82865903970452,
+          "maxStopped": 2,
+          "maxClusters": 0,
+          "maxStop": 7.999999999999977,
+          "stoppedCarSeconds": 5.499999999999991,
+          "clusterSeconds": 0,
+          "active": 5,
+          "moving": 2,
+          "contacts": 0,
+          "missingContacts": 0,
+          "holds": 0,
+          "position": [
+            504.6251779684152,
+            92.59149965266243,
+            474.11198190151094
+          ],
+          "speed": 7.2338746775418,
+          "state": "race"
+        },
+        {
+          "elapsed": 29.999999999999577,
+          "physicsSeconds": 30.000299999998685,
+          "distance": 214.51134809623017,
+          "maxStopped": 2,
+          "maxClusters": 0,
+          "maxStop": 7.999999999999977,
+          "stoppedCarSeconds": 10.916666666666794,
+          "clusterSeconds": 0,
+          "active": 8,
+          "moving": 7,
+          "contacts": 0,
+          "missingContacts": 0,
+          "holds": 0,
+          "position": [
+            511.2808382844049,
+            96.4865426436533,
+            404.75734741616503
+          ],
+          "speed": 6.52542317273427,
+          "state": "race"
+        },
+        {
+          "elapsed": 39.99999999999901,
+          "physicsSeconds": 40.00040000000497,
+          "distance": 282.6355162806389,
+          "maxStopped": 2,
+          "maxClusters": 0,
+          "maxStop": 7.999999999999977,
+          "stoppedCarSeconds": 13.583333333333593,
+          "clusterSeconds": 0,
+          "active": 8,
+          "moving": 7,
+          "contacts": 0,
+          "missingContacts": 0,
+          "holds": 0,
+          "position": [
+            511.5197326330379,
+            100.22352016386745,
+            337.68968669442194
+          ],
+          "speed": 6.936736361189932,
+          "state": "race"
+        },
+        {
+          "elapsed": 49.999999999998444,
+          "physicsSeconds": 50.00050000001296,
+          "distance": 351.025981900957,
+          "maxStopped": 2,
+          "maxClusters": 0,
+          "maxStop": 7.999999999999977,
+          "stoppedCarSeconds": 15.00000000000033,
+          "clusterSeconds": 0,
+          "active": 8,
+          "moving": 6,
+          "contacts": 0,
+          "missingContacts": 0,
+          "holds": 0,
+          "position": [
+            473.55569775633,
+            109.70704565761837,
+            280.84051836304633
+          ],
+          "speed": 6.629269606411319,
+          "state": "race"
+        },
+        {
+          "elapsed": 59.999999999997875,
+          "physicsSeconds": 60.00060000002095,
+          "distance": 421.71362449830093,
+          "maxStopped": 2,
+          "maxClusters": 0,
+          "maxStop": 7.999999999999977,
+          "stoppedCarSeconds": 21.00000000000057,
+          "clusterSeconds": 0,
+          "active": 8,
+          "moving": 8,
+          "contacts": 0,
+          "missingContacts": 0,
+          "holds": 0,
+          "position": [
+            434.25012459384243,
+            113.52701697105513,
+            222.088372991703
+          ],
+          "speed": 7.298361421867818,
+          "state": "race"
+        },
+        {
+          "elapsed": 69.99999999999731,
+          "physicsSeconds": 70.00070000001854,
+          "distance": 496.84244722948677,
+          "maxStopped": 2,
+          "maxClusters": 0,
+          "maxStop": 7.999999999999977,
+          "stoppedCarSeconds": 21.550000000000537,
+          "clusterSeconds": 0,
+          "active": 8,
+          "moving": 7,
+          "contacts": 0,
+          "missingContacts": 0,
+          "holds": 0,
+          "position": [
+            392.46864105923146,
+            110.50266222664148,
+            159.6492215791464
+          ],
+          "speed": 8.372129669605073,
+          "state": "race"
+        },
+        {
+          "elapsed": 79.99999999999675,
+          "physicsSeconds": 80.00080000000919,
+          "distance": 579.8597524324031,
+          "maxStopped": 2,
+          "maxClusters": 0,
+          "maxStop": 7.999999999999977,
+          "stoppedCarSeconds": 27.133333333333553,
+          "clusterSeconds": 0,
+          "active": 8,
+          "moving": 7,
+          "contacts": 0,
+          "missingContacts": 0,
+          "holds": 0,
+          "position": [
+            346.3026536208825,
+            98.21169270379042,
+            90.65230459022803
+          ],
+          "speed": 8.208858186040828,
+          "state": "race"
+        },
+        {
+          "elapsed": 89.99999999999618,
+          "physicsSeconds": 90.00089999999985,
+          "distance": 655.9047874401632,
+          "maxStopped": 2,
+          "maxClusters": 0,
+          "maxStop": 7.999999999999977,
+          "stoppedCarSeconds": 31.19999999999999,
+          "clusterSeconds": 0,
+          "active": 7,
+          "moving": 6,
+          "contacts": 0,
+          "missingContacts": 0,
+          "holds": 0,
+          "position": [
+            303.36533512081263,
+            98.78523324034757,
+            27.890422992340234
+          ],
+          "speed": 6.828731052937333,
+          "state": "race"
+        },
+        {
+          "elapsed": 99.99999999999561,
+          "physicsSeconds": 100.0009999999905,
+          "distance": 731.4148054342663,
+          "maxStopped": 2,
+          "maxClusters": 0,
+          "maxStop": 7.999999999999977,
+          "stoppedCarSeconds": 34.716666666666455,
+          "clusterSeconds": 0,
+          "active": 8,
+          "moving": 7,
+          "contacts": 0,
+          "missingContacts": 0,
+          "holds": 0,
+          "position": [
+            260.52999787486465,
+            96.43680837832626,
+            -34.28625679109661
+          ],
+          "speed": 8.119662345498437,
+          "state": "race"
+        },
+        {
+          "elapsed": 109.99999999999504,
+          "physicsSeconds": 110.00109999998115,
+          "distance": 806.9914074552516,
+          "maxStopped": 2,
+          "maxClusters": 0,
+          "maxStop": 7.999999999999977,
+          "stoppedCarSeconds": 35.999999999999716,
+          "clusterSeconds": 0,
+          "active": 8,
+          "moving": 6,
+          "contacts": 0,
+          "missingContacts": 0,
+          "holds": 0,
+          "position": [
+            218.370741780732,
+            97.65127770755768,
+            -97.0107134967335
+          ],
+          "speed": 7.05092668599148,
+          "state": "race"
+        },
+        {
+          "elapsed": 119.99999999999447,
+          "physicsSeconds": 120.0011999999718,
+          "distance": 875.2869447608103,
+          "maxStopped": 2,
+          "maxClusters": 0,
+          "maxStop": 7.999999999999977,
+          "stoppedCarSeconds": 35.999999999999716,
+          "clusterSeconds": 0,
+          "active": 8,
+          "moving": 5,
+          "contacts": 0,
+          "missingContacts": 0,
+          "holds": 0,
+          "position": [
+            180.3820677865936,
+            103.09968209591443,
+            -153.7658100914328
+          ],
+          "speed": 7.06667043374657,
+          "state": "race"
+        },
+        {
+          "elapsed": 129.9999999999956,
+          "physicsSeconds": 130.00129999996247,
+          "distance": 956.5883678159447,
+          "maxStopped": 2,
+          "maxClusters": 0,
+          "maxStop": 7.999999999999977,
+          "stoppedCarSeconds": 35.999999999999716,
+          "clusterSeconds": 0,
+          "active": 8,
+          "moving": 6,
+          "contacts": 0,
+          "missingContacts": 0,
+          "holds": 0,
+          "position": [
+            135.39776755127235,
+            91.96231677914977,
+            -221.48137572312154
+          ],
+          "speed": 8.334124701637837,
+          "state": "race"
+        },
+        {
+          "elapsed": 140.00000000000355,
+          "physicsSeconds": 140.00139999995312,
+          "distance": 1031.8839794166602,
+          "maxStopped": 2,
+          "maxClusters": 0,
+          "maxStop": 7.999999999999977,
+          "stoppedCarSeconds": 38.999999999999545,
+          "clusterSeconds": 0,
+          "active": 8,
+          "moving": 6,
+          "contacts": 0,
+          "missingContacts": 0,
+          "holds": 0,
+          "position": [
+            93.30912771291914,
+            92.17745619071295,
+            -283.83391689465196
+          ],
+          "speed": 6.5338744654012615,
+          "state": "race"
+        },
+        {
+          "elapsed": 150.0000000000115,
+          "physicsSeconds": 150.00149999994377,
+          "distance": 1100.6478188138087,
+          "maxStopped": 2,
+          "maxClusters": 0,
+          "maxStop": 7.999999999999977,
+          "stoppedCarSeconds": 38.999999999999545,
+          "clusterSeconds": 0,
+          "active": 8,
+          "moving": 7,
+          "contacts": 0,
+          "missingContacts": 0,
+          "holds": 0,
+          "position": [
+            55.06520521015229,
+            101.43458527826965,
+            -340.98168509863274
+          ],
+          "speed": 6.707133373213509,
+          "state": "race"
+        },
+        {
+          "elapsed": 160.00000000001947,
+          "physicsSeconds": 160.00159999993443,
+          "distance": 1177.2058304915224,
+          "maxStopped": 2,
+          "maxClusters": 0,
+          "maxStop": 7.999999999999977,
+          "stoppedCarSeconds": 41.999999999999375,
+          "clusterSeconds": 0,
+          "active": 8,
+          "moving": 6,
+          "contacts": 0,
+          "missingContacts": 0,
+          "holds": 0,
+          "position": [
+            12.660667571475107,
+            97.28523230076209,
+            -404.7199686225631
+          ],
+          "speed": 8.23594161341091,
+          "state": "race"
+        },
+        {
+          "elapsed": 170.00000000002743,
+          "physicsSeconds": 170.00169999992508,
+          "distance": 1256.8600464813555,
+          "maxStopped": 2,
+          "maxClusters": 0,
+          "maxStop": 7.999999999999977,
+          "stoppedCarSeconds": 44.999999999999204,
+          "clusterSeconds": 0,
+          "active": 8,
+          "moving": 7,
+          "contacts": 0,
+          "missingContacts": 0,
+          "holds": 0,
+          "position": [
+            -56.61942301211657,
+            94.21746691860113,
+            -436.5441692610379
+          ],
+          "speed": 7.870270441283108,
+          "state": "race"
+        },
+        {
+          "elapsed": 180.00000000003539,
+          "physicsSeconds": 180.00179999991573,
+          "distance": 1339.8308498648084,
+          "maxStopped": 2,
+          "maxClusters": 0,
+          "maxStop": 7.999999999999977,
+          "stoppedCarSeconds": 44.999999999999204,
+          "clusterSeconds": 0,
+          "active": 8,
+          "moving": 7,
+          "contacts": 0,
+          "missingContacts": 0,
+          "holds": 0,
+          "position": [
+            -129.919534847105,
+            81.26950763557329,
+            -465.53583509891786
+          ],
+          "speed": 8.422150590927615,
+          "state": "race"
+        },
+        {
+          "elapsed": 190.00000000004334,
+          "physicsSeconds": 190.00189999990639,
+          "distance": 1359.7748058627176,
+          "maxStopped": 2,
+          "maxClusters": 0,
+          "maxStop": 7.999999999999977,
+          "stoppedCarSeconds": 44.999999999999204,
+          "clusterSeconds": 0,
+          "active": 8,
+          "moving": 5,
+          "contacts": 0,
+          "missingContacts": 0,
+          "holds": 0,
+          "position": [
+            -137.08445054246627,
+            78.3763740546416,
+            -484.0539868163118
+          ],
+          "speed": 0,
+          "state": "race"
+        },
+        {
+          "elapsed": 200.0000000000513,
+          "physicsSeconds": 200.00199999989704,
+          "distance": 1359.7748058627176,
+          "maxStopped": 2,
+          "maxClusters": 0,
+          "maxStop": 7.999999999999977,
+          "stoppedCarSeconds": 46.71666666666577,
+          "clusterSeconds": 0,
+          "active": 8,
+          "moving": 5,
+          "contacts": 0,
+          "missingContacts": 0,
+          "holds": 0,
+          "position": [
+            -137.08445054246627,
+            78.3763740546416,
+            -484.0539868163118
+          ],
+          "speed": 0,
+          "state": "race"
+        },
+        {
+          "elapsed": 210.00000000005926,
+          "physicsSeconds": 210.0020999998877,
+          "distance": 1359.7748058627176,
+          "maxStopped": 2,
+          "maxClusters": 0,
+          "maxStop": 7.999999999999977,
+          "stoppedCarSeconds": 47.999999999999034,
+          "clusterSeconds": 0,
+          "active": 8,
+          "moving": 6,
+          "contacts": 0,
+          "missingContacts": 0,
+          "holds": 0,
+          "position": [
+            -137.08445054246627,
+            78.3763740546416,
+            -484.0539868163118
+          ],
+          "speed": 0,
+          "state": "race"
+        },
+        {
+          "elapsed": 220.00000000006722,
+          "physicsSeconds": 220.00219999987834,
+          "distance": 1359.7748058627176,
+          "maxStopped": 2,
+          "maxClusters": 0,
+          "maxStop": 7.999999999999977,
+          "stoppedCarSeconds": 50.99999999999886,
+          "clusterSeconds": 0,
+          "active": 6,
+          "moving": 2,
+          "contacts": 0,
+          "missingContacts": 0,
+          "holds": 0,
+          "position": [
+            -137.08445054246627,
+            78.3763740546416,
+            -484.0539868163118
+          ],
+          "speed": 0,
+          "state": "race"
+        },
+        {
+          "elapsed": 230.00000000007518,
+          "physicsSeconds": 230.002299999869,
+          "distance": 1359.7748058627176,
+          "maxStopped": 2,
+          "maxClusters": 0,
+          "maxStop": 7.999999999999977,
+          "stoppedCarSeconds": 50.99999999999886,
+          "clusterSeconds": 0,
+          "active": 8,
+          "moving": 8,
+          "contacts": 0,
+          "missingContacts": 0,
+          "holds": 0,
+          "position": [
+            -137.08445054246627,
+            78.3763740546416,
+            -484.0539868163118
+          ],
+          "speed": 0,
+          "state": "race"
+        },
+        {
+          "elapsed": 240.00000000008313,
+          "physicsSeconds": 240.00239999985965,
+          "distance": 1359.7748058627176,
+          "maxStopped": 2,
+          "maxClusters": 0,
+          "maxStop": 7.999999999999977,
+          "stoppedCarSeconds": 50.99999999999886,
+          "clusterSeconds": 0,
+          "active": 8,
+          "moving": 7,
+          "contacts": 0,
+          "missingContacts": 0,
+          "holds": 0,
+          "position": [
+            -137.08445054246627,
+            78.3763740546416,
+            -484.0539868163118
+          ],
+          "speed": 0,
+          "state": "race"
+        }
+      ],
+      "trafficSource": "WorldTraffic free roam"
+    }
+  ],
+  "errors": [],
+  "urls": [
+    "http://127.0.0.1:43767/?map=athens&spawn=481,617&simhook=1&car=corolla&cam=chase"
+  ]
+}
