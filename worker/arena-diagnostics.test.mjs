@@ -7,7 +7,7 @@ registerHooks({ resolve(specifier, context, next) {
   return next(specifier, context);
 } });
 const { GameArena } = await import('./index.mjs');
-const arena = () => Object.assign(Object.create(GameArena.prototype), { env: {}, instanceId: 'instance-test', startedAt: 123, core: { clients: new Set(), lobbies: new Map(), track: {} } });
+const arena = () => Object.assign(Object.create(GameArena.prototype), { env: {}, instanceId: 'instance-test', startedAt: 123, core: { prepareMessage: async () => true, clients: new Set(), lobbies: new Map(), track: {} } });
 test('arena health identifies the live incarnation without exposing connection tokens', async () => {
   const a = arena(), response = await a.fetch(new Request('https://race.test/health')), data = await response.json();
   assert.equal(response.status, 200); assert.equal(data.instanceId, 'instance-test'); assert.equal(data.startedAt, 123);
@@ -36,4 +36,13 @@ test('telemetry checkpoints the whole arena at most once per two seconds, while 
  now++;await a.webSocketMessage({},'{"type":"states"}');assert.equal(writes,2);
  now++;await a.webSocketMessage({},'{"type":"loaded"}');assert.equal(writes,3);
  now+=1000;await a.webSocketMessage({},'{"type":"ping"}');assert.equal(writes,3);
+});
+
+test('asynchronous recovery admission precedes mutation and a denial skips persistence', async () => {
+ const a=arena(), order=[];
+ a.core.clientData=()=>({finish:null});a.core.prepareMessage=async()=>{order.push('prepare');await Promise.resolve();return false;};
+ a.core.message=()=>assert.fail('denied preflight must not mutate core');a.attach=()=>assert.fail('denied preflight must not attach');a.persist=async()=>assert.fail('denied preflight must not persist');a.relay=()=>assert.fail('denied preflight must not relay');
+ await a.webSocketMessage({},'{"type":"recover"}');assert.deepEqual(order,['prepare']);
+ a.core.prepareMessage=async()=>{order.push('admitted');return true;};a.core.message=()=>order.push('message');a.attach=()=>order.push('attach');a.persist=async()=>order.push('persist');a.relay=()=>order.push('relay');
+ await a.webSocketMessage({},'{"type":"recover"}');assert.deepEqual(order,['prepare','admitted','message','attach','persist','relay']);
 });
