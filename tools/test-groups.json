@@ -287,7 +287,8 @@
     "tools/world-traffic-budget.test.mjs",
     "tools/terrain-lp.test.mjs",
     "tools/riviera-probe-geometry.test.mjs",
-    "tools/riviera-probe-binding.test.mjs"
+    "tools/riviera-probe-binding.test.mjs",
+    "tools/terrain-lp-components.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",
