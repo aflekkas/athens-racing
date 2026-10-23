@@ -1,6 +1,8 @@
 import { canonicalJSON, sha256 } from '../src/route-definition.js';
 import { ROUTE_HASH } from '../src/route-network.js';
 import { validateRouteRoads, routeRoadAuthority } from './route-roads.mjs';
+import { recoveryDataBytes } from './route-road-wire.mjs';
+export { recoveryDataBytes } from './route-road-wire.mjs';
 export const RECOVERY_ARTIFACT_BYTES = 2 * 1024 * 1024;
 const cellOf = pose => `${Math.floor(pose.x / 512)},${Math.floor(pose.z / 512)}`;
 const sidecarURL = (key, hash) => `/world/recovery/${key}.${hash}.json`;
@@ -17,17 +19,6 @@ export async function validateRecoveryManifest(body, { expectedHash, worldSetRev
   if (!Array.isArray(body.footprints) || !body.footprints.length || body.footprints.length > 64 || !body.footprints.every(p => Number.isFinite(p.halfWidth) && p.halfWidth > 0 && p.halfWidth <= 3 && Number.isFinite(p.halfLength) && p.halfLength > 0 && p.halfLength <= 12)) throw Error('Recovery manifest vehicle certificates unavailable');
   for (const p of body.footprints) Object.freeze(p); Object.freeze(body.footprints);
   Object.freeze(body.cells); return Object.freeze(body);
-}
-// Conservative retained-heap accounting, including object/array slots, strings,
-// and index overhead. Reject before retaining an oversized decoded structure.
-export function recoveryDataBytes(value, limit = Infinity) {
-  let bytes = 0;
-  const visit = v => {
-    bytes += typeof v === 'string' ? 48 + v.length * 2 : v && typeof v === 'object' ? 96 : 16;
-    if (bytes > limit) throw Error('Recovery decoded memory budget exceeded');
-    if (v && typeof v === 'object') for (const [key, child] of Object.entries(v)) { bytes += 48 + key.length * 2; visit(child); }
-  };
-  visit(value); return bytes;
 }
 // Scan untrusted JSON before allocation. This is conservative accounting, not
 // a measurement of V8 heap usage. Keep the request-time early rejection while
@@ -66,20 +57,22 @@ export const RECOVERY_MEMORY = Object.freeze({ cache: 16 * 1024 * 1024, decoded:
  * The compact body is server query data, never a replacement published artifact.
  * Source hashes are retained so callers can bind them to their full manifest. */
 export async function admitRecoverySidecar(raw, { expectedHash, worldSetRevision } = {}) {
-  let body, bytes;
+  let body, bytes, liveBufferBytes = 0, consumePacked = false;
   if (typeof raw === 'string' || raw instanceof Uint8Array) {
     bytes = typeof raw === 'string' ? new TextEncoder().encode(raw).length : raw.byteLength;
     if (bytes > RECOVERY_ARTIFACT_BYTES) throw Error('Recovery sidecar exceeds artifact budget');
     const text = typeof raw === 'string' ? raw : new TextDecoder().decode(raw);
     scanRecoveryJSON(text, RECOVERY_MEMORY.decoded); body = JSON.parse(text);
+    liveBufferBytes = text.length * 2 + (raw instanceof Uint8Array ? raw.byteLength : 0); consumePacked = true;
   } else { body = raw; bytes = new TextEncoder().encode(canonicalJSON(body)).length; }
   recoveryDataBytes(body, RECOVERY_MEMORY.decoded);
-  const proven = await validateRouteRoads(body, { expectedHash, worldSetRevision });
+  const memory = { liveBufferBytes };
+  const proven = await validateRouteRoads(body, { expectedHash, worldSetRevision, maxCombinedBytes: RECOVERY_MEMORY.decoded, liveBufferBytes, consumePacked, memoryStats: memory });
   const edges = Object.freeze(proven.edges.map(({ id, layer, surface, flags }) => Object.freeze({ id, layer, surface, flags })));
   const compact = Object.freeze({ anchors: proven.anchors, edges, sourceHashes: proven.sourceHashes });
   const decodedBytes = recoveryDataBytes({ anchors: proven.anchors, edges }) * 2;
   if (decodedBytes > RECOVERY_MEMORY.cache) throw Error('Recovery sidecar exceeds cache budget');
-  return Object.freeze({ body: compact, metrics: Object.freeze({ bytes, decodedBytes }) });
+  return Object.freeze({ body: compact, metrics: Object.freeze({ bytes, decodedBytes, memory: Object.freeze(memory) }) });
 }
 /** Fetch/parse admission is serial. Cached cells retain anchors and minimal edge
  * metadata only. Leased request snapshots survive LRU eviction; an incomplete

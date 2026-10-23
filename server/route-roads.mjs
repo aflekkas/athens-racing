@@ -1,3 +1,4 @@
+import { decodeRecoverySidecar, recoveryDataBytes, recoveryCanonicalSize, recoveryCanonicalBytes } from './route-road-wire.mjs';
 import { canonicalJSON } from '../src/route-definition.js';
 import { ROUTE_HASH } from '../src/route-network.js';
 import { recoveryRoadGroup } from '../src/world-road-group.js';
@@ -9,10 +10,29 @@ export const footprintCertified = (anchor, footprint) => recoveryFootprints(anch
 const freeze = value => { if (value && typeof value === 'object' && !Object.isFrozen(value)) { Object.values(value).forEach(freeze); Object.freeze(value); } return value; };
 // The release builder signs exact emitted edges and individually contact/obstacle
 // proven anchors. The request never contributes geometry or an unproved pose.
-export async function validateRouteRoads(body, { expectedHash, worldSetRevision } = {}) {
-  const encoded = new TextEncoder().encode(canonicalJSON(body));
+async function authenticateRouteRoads(body, { expectedHash, worldSetRevision, maxCombinedBytes, liveBufferBytes, memoryStats }) {
+  let size;
+  if (body?.schemaVersion === 2) {
+    size = recoveryCanonicalSize(body);
+    if (size.bytes > 2 * 1024 * 1024) throw Error('Invalid authoritative recovery artifact');
+    // Charge the output plus a conservative digest input copy. Neither is
+    // retained after this helper; token writing avoids a full UTF-16 copy.
+    const bytes = recoveryDataBytes(body) + liveBufferBytes + size.maxTokenCodeUnits * 2 + size.bytes * 2;
+    if (bytes > maxCombinedBytes) throw Error('Recovery authentication memory budget exceeded');
+    if (memoryStats) memoryStats.authenticationBytes = bytes;
+  }
+  const encoded = size ? recoveryCanonicalBytes(body, size) : new TextEncoder().encode(canonicalJSON(body));
   const digest = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', encoded)), v => v.toString(16).padStart(2, '0')).join('');
-  if (!body || body.schemaVersion !== 1 || body.worldId !== 'athens' || body.projectionId !== 'athens-v1' || !ROUTE_HASH.test(expectedHash || '') || body.worldSetRevision !== worldSetRevision || !ROUTE_HASH.test(worldSetRevision || '') || encoded.length > 2 * 1024 * 1024 || digest !== expectedHash) throw Error('Invalid authoritative recovery artifact');
+  if (!body || ![1, 2].includes(body.schemaVersion) || body.worldId !== 'athens' || body.projectionId !== 'athens-v1' || !ROUTE_HASH.test(expectedHash || '') || body.worldSetRevision !== worldSetRevision || !ROUTE_HASH.test(worldSetRevision || '') || encoded.length > 2 * 1024 * 1024 || digest !== expectedHash) throw Error('Invalid authoritative recovery artifact');
+}
+export async function validateRouteRoads(body, { expectedHash, worldSetRevision, maxCombinedBytes = 12 * 1024 * 1024, liveBufferBytes = 0, consumePacked = false, memoryStats = null } = {}) {
+  await authenticateRouteRoads(body, { expectedHash, worldSetRevision, maxCombinedBytes, liveBufferBytes, memoryStats });
+  // Authenticate the immutable packed representation before any expansion.
+  if (body.schemaVersion === 2) {
+    const decoded = decodeRecoverySidecar(body, { maxCombinedBytes, liveBufferBytes, consume: consumePacked });
+    body = decoded.body;
+    if (memoryStats) memoryStats.expansionBytes = decoded.metrics.peakBytes;
+  }
   if (!Array.isArray(body.edges) || !body.edges.length || !Array.isArray(body.anchors) || !body.anchors.length || !Array.isArray(body.sourceHashes) || !body.sourceHashes.length || !body.sourceHashes.every(([cell, hash]) => /^-?\d+,-?\d+$/.test(cell) && ROUTE_HASH.test(hash))) throw Error('Incomplete authoritative recovery artifact');
   const edges = new Map();
   for (const edge of body.edges) {

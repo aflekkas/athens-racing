@@ -198,3 +198,99 @@ test('preparse estimate reports the complete over-budget input and preserves str
   assert.equal(complete.estimatedDecodedBytes, RECOVERY_MEMORY.decoded + 260);
   assert.equal(complete.commas, n); assert.equal(complete.colons, 1);
 });
+
+test('v2 codec is an exact independent round trip and v1/v2 admission retain identical authority', async () => {
+  const { encodeRecoverySidecar, decodeRecoverySidecar, recoveryCanonicalSize, recoveryCanonicalBytes } = await import('./route-road-wire.mjs');
+  const { canonicalJSON } = await import('../src/route-definition.js');
+  const original = twoWayBody();
+  original.edges[0].name = '"\\\n😀\ud800'; original.edges[0].speedKph = 1e20;
+  original.anchors[0].footprints = [{ halfWidth: 1.1, halfLength: 6 }, { halfWidth: 1.5, halfLength: 3 }];
+  original.anchors[1].footprints = structuredClone(original.anchors[0].footprints);
+  const before = structuredClone(original), packed = encodeRecoverySidecar(original);
+  assert.deepEqual(original, before); assert.equal(packed.footprintSets.length, 1);
+  assert.deepEqual(decodeRecoverySidecar(packed).body, original);
+  assert.equal(canonicalJSON(decodeRecoverySidecar(packed).body), canonicalJSON(original));
+  const raw = canonicalJSON(packed), size = recoveryCanonicalSize(packed);
+  assert.equal(size.codeUnits, raw.length); assert.equal(size.bytes, Buffer.byteLength(raw));
+  assert.ok(size.maxTokenCodeUnits < size.codeUnits);
+  assert.deepEqual(recoveryCanonicalBytes(packed), new TextEncoder().encode(raw));
+  const v1 = await admitRecoverySidecar(canonicalJSON(original), { expectedHash: await sha256(original), worldSetRevision: revision });
+  const v2 = await admitRecoverySidecar(raw, { expectedHash: await sha256(packed), worldSetRevision: revision });
+  assert.deepEqual(v2.body, v1.body); assert.deepEqual(original, before);
+  const fromBytes = await admitRecoverySidecar(new TextEncoder().encode(raw), { expectedHash: await sha256(packed), worldSetRevision: revision });
+  assert.deepEqual(fromBytes.body, v1.body);
+  assert.equal(fromBytes.metrics.memory.liveBufferBytes, raw.length * 2 + Buffer.byteLength(raw));
+  assert.equal(v2.metrics.memory.liveBufferBytes, raw.length * 2);
+  assert.ok(v2.metrics.memory.authenticationBytes < RECOVERY_MEMORY.decoded);
+  assert.ok(v2.metrics.memory.expansionBytes < RECOVERY_MEMORY.decoded);
+  const objectResult = await admitRecoverySidecar(packed, { expectedHash: await sha256(packed), worldSetRevision: revision });
+  assert.deepEqual(objectResult.body, v1.body); assert.equal(packed.schemaVersion, 2);
+  assert.notStrictEqual(packed.edges, original.edges); // No mutable ownership shared with the builder.
+});
+
+test('v2 rejects malformed dictionaries tuples indices nulls unknown fields and invalid certificates', async () => {
+  const { encodeRecoverySidecar } = await import('./route-road-wire.mjs');
+  const base = twoWayBody(); base.anchors[0].footprints = [{ halfWidth: 1.1, halfLength: 6 }];
+  const packed = encodeRecoverySidecar(base), hash = await sha256(packed);
+  const altered = structuredClone(packed); altered.anchors[0].pop();
+  await assert.rejects(admitRecoverySidecar(JSON.stringify(altered), { expectedHash: hash, worldSetRevision: revision }), /Invalid authoritative recovery artifact/, 'authentication precedes tuple decoding');
+  for (const mutate of [
+    b => b.anchorFields.reverse(), b => b.anchorFields[0] = '__proto__', b => b.anchors[0].pop(), b => b.anchors[0].push(0),
+    b => b.anchors[0][0] = null, b => b.anchors[0][2] = null, b => b.anchors[0][1] = -1, b => b.anchors[0][1] = .5,
+    b => b.anchors[0][1] = 100, b => b.anchors[0][8] = 42, b => b.extra = true,
+    b => b.footprintSets.push(structuredClone(b.footprintSets[0])), b => b.footprintSets[0][0].extra = 1,
+    b => b.footprintSets[0][0].halfLength = 13, b => b.footprintSets.push([{ halfWidth: 1, halfLength: 1 }])
+  ]) {
+    const b = structuredClone(packed); mutate(b);
+    await assert.rejects(admitRecoverySidecar(JSON.stringify(b), { expectedHash: await sha256(b), worldSetRevision: revision }), /Invalid packed recovery artifact/);
+  }
+  for (const mutate of [b => b.extra = 1, b => b.anchors[0].extra = 1, b => b.anchors[0].roadId = null, b => b.anchors[0].footprints = null]) {
+    const b = structuredClone(base); mutate(b); assert.throws(() => encodeRecoverySidecar(b), /Invalid packed recovery artifact/);
+  }
+});
+
+test('v2 reuses unchanged geometry and road-group guards even with a newly authenticated hash', async () => {
+  const { encodeRecoverySidecar } = await import('./route-road-wire.mjs');
+  for (const mutate of [b => b.anchors[0][11] = 20, b => b.anchors[0][12] = Math.PI, b => b.anchors[0][8] = 'spoof', b => b.edges[1].flags = 1]) {
+    const b = structuredClone(encodeRecoverySidecar(twoWayBody())); mutate(b);
+    await assert.rejects(admitRecoverySidecar(JSON.stringify(b), { expectedHash: await sha256(b), worldSetRevision: revision }), /Recovery anchor/);
+  }
+});
+
+test('v2 phase accounting charges raw/hash buffers and rejects certificate expansion before allocation', async () => {
+  const { encodeRecoverySidecar, decodeRecoverySidecar, recoveryDataBytes } = await import('./route-road-wire.mjs');
+  const packed = encodeRecoverySidecar(twoWayBody()), liveBufferBytes = 512;
+  const full = decodeRecoverySidecar(packed, { liveBufferBytes });
+  assert.equal(full.metrics.peakBytes, recoveryDataBytes(packed) + recoveryDataBytes(full.body) + liveBufferBytes);
+  assert.throws(() => decodeRecoverySidecar(packed, { liveBufferBytes, maxCombinedBytes: full.metrics.peakBytes - 1 }), /combined expansion/);
+  const owned = structuredClone(packed), consumed = decodeRecoverySidecar(owned, { consume: true, liveBufferBytes });
+  assert.strictEqual(consumed.body, owned); assert.deepEqual(consumed.body, twoWayBody());
+  assert.ok(consumed.metrics.peakBytes < full.metrics.peakBytes);
+  const b = twoWayBody(); b.edges = [b.edges[0]]; b.edges[0].flags = 1;
+  b.anchors = Array.from({ length: 600 }, (_, i) => ({ ...b.anchors[0], roadId: undefined, offsetM: i / 10, z: 200 - i / 10, footprints: Array.from({ length: 64 }, () => ({ halfWidth: 1, halfLength: 2 })) }));
+  b.anchors.forEach(a => delete a.roadId);
+  const bomb = encodeRecoverySidecar(b), raw = JSON.stringify(bomb);
+  assert.equal(estimateRecoveryJSON(raw).exceedsDecodedLimit, false, 'small packed input is not sufficient proof');
+  await assert.rejects(admitRecoverySidecar(raw, { expectedHash: await sha256(bomb), worldSetRevision: revision }), /combined expansion memory budget/);
+  await assert.rejects(validateRouteRoads(packed, { expectedHash: await sha256(packed), worldSetRevision: revision, maxCombinedBytes: recoveryDataBytes(packed), liveBufferBytes: 1 }), /authentication memory budget/);
+});
+
+
+test('v2 consumes private tuples within live-buffer budget when complete second-form expansion would fail', async () => {
+  const { encodeRecoverySidecar, decodeRecoverySidecar, recoveryDataBytes } = await import('./route-road-wire.mjs');
+  const { canonicalJSON } = await import('../src/route-definition.js');
+  const id = 'legal-road-'.repeat(15), b = twoWayBody();
+  b.edges = [{ ...b.edges[0], id, flags: 1, points: [[100, 0, 20000], [100, 0, 0]] }];
+  b.anchors = Array.from({ length: 3500 }, (_, i) => ({ ...b.anchors[0], edgeId: id, offsetM: i * 4, z: 20000 - i * 4, footprints: [{ halfWidth: 1.1, halfLength: 6 }, { halfWidth: 1.5, halfLength: 3 }] }));
+  b.anchors.forEach(a => delete a.roadId);
+  const packed = encodeRecoverySidecar(b), raw = canonicalJSON(packed), hash = await sha256(packed), liveBufferBytes = raw.length * 2;
+  assert.equal(estimateRecoveryJSON(raw).exceedsDecodedLimit, false);
+  assert.ok(recoveryDataBytes(packed) + recoveryDataBytes(b) + liveBufferBytes > RECOVERY_MEMORY.decoded);
+  assert.throws(() => decodeRecoverySidecar(packed, { maxCombinedBytes: RECOVERY_MEMORY.decoded, liveBufferBytes }), /combined expansion/);
+  const result = await admitRecoverySidecar(raw, { expectedHash: hash, worldSetRevision: revision });
+  assert.deepEqual(result.body.anchors, b.anchors);
+  assert.equal(result.metrics.memory.liveBufferBytes, liveBufferBytes);
+  assert.ok(result.metrics.memory.expansionBytes <= RECOVERY_MEMORY.decoded);
+  assert.ok(result.metrics.memory.authenticationBytes <= RECOVERY_MEMORY.decoded);
+  assert.equal(packed.schemaVersion, 2); assert.equal(packed.anchors[0].length, 14);
+});
