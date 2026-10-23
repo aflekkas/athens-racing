@@ -36,7 +36,17 @@ function surfaceIndex(tris){
  * across layers. A second call is harmless. No source OSM cache is required. */
 export function conformMarkingSurfaces(pack){
  const m=pack.metadata;if(m.markingSurface?.version===1)return {...m.markingSurface,alreadyApplied:true};
- const roads=m.meshes.filter(mesh=>mesh.userData?.tileSurface==='asphalt').map(mesh=>{const asphalt=surfaceIndex(triangles(pack,mesh)),domain=surfaceIndex(m.meshes.filter(other=>other.attributes.position.array===mesh.attributes.position.array&&other.userData?.worldSurface).flatMap(other=>triangles(pack,other)));return {...asphalt,supports:domain.supports};}),paint=m.meshes.filter(mesh=>mesh.userData?.tileSurface==='marking');
+ const domains=new Map();
+ for(const mesh of m.meshes.filter(mesh=>mesh.userData?.tileSurface==='asphalt')){
+  const key=mesh.attributes.position.array+':'+JSON.stringify(mesh.userData?.terrainDecode||null);
+  if(!domains.has(key))domains.set(key,[]);domains.get(key).push(mesh);
+ }
+ // Draw chunks/material partitions of one position buffer are one physical
+ // surface, not competing layers. Distinct deck buffers stay separate.
+ const roads=[...domains.values()].map(meshes=>{
+  const position=meshes[0].attributes.position.array,asphalt=surfaceIndex(meshes.flatMap(mesh=>triangles(pack,mesh))),domain=surfaceIndex(m.meshes.filter(other=>other.attributes.position.array===position&&other.userData?.worldSurface).flatMap(other=>triangles(pack,other)));
+  return {...asphalt,supports:domain.supports};
+ }),paint=m.meshes.filter(mesh=>mesh.userData?.tileSurface==='marking');
  const report={version:1,meshes:paint.length,beforeTriangles:0,afterTriangles:0,beforeArea:0,afterArea:0,maxCorrection:0};
  const replacements=new Map();
  for(const mesh of paint){

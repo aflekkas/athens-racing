@@ -94,3 +94,9 @@ test('offline paint clips junction gaps and road edges without seeking another r
 test('offline paint keeps every draw and index within the original AWT mesh budget',()=>{
  const p=paintPack({repeat:17000}),variants=tileRenderVariants(p);conformMarkingSurfaces(p);const meshes=p.metadata.meshes.filter(m=>m.userData.tileSurface==='marking');assert.ok(meshes.length>1);for(const m of meshes){assert.ok(m.drawRange.count/3<=16384);assert.ok(p.arrays[m.index] instanceof Uint16Array);assert.ok(p.arrays[m.attributes.position.array].length/3<=65535);}assert.deepEqual(tileRenderVariants(p),variants);
 });
+
+test('asphalt draw chunks sharing a position domain are one surface, distinct deck buffers stay distinct',()=>{
+ const p=paintPack(),a=p.metadata.meshes[0];p.metadata.meshes.splice(1,0,{...a,drawRange:{start:6,count:6}});a.drawRange={start:0,count:6};
+ p.metadata.budgets.triangles=5;assert.doesNotThrow(()=>conformMarkingSurfaces(p));assert.ok(p.metadata.markingSurface.afterTriangles>1);
+ const bad=paintPack({deck:true});for(let i=1;i<bad.arrays[2].length;i+=3)bad.arrays[2][i]-=6;for(let i=1;i<bad.arrays[4].length;i+=3)bad.arrays[4][i]-=6;assert.throws(()=>conformMarkingSurfaces(bad),/ownership is 2/);
+});
