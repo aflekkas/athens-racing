@@ -1,4 +1,5 @@
-import {canonicalJSON,sha256} from './route-definition.js';
+import {sha256} from './route-definition.js';
+import {snapshotOnlineGrid} from './online-grid-snapshot.js';
 import {carOverlap} from './crash-contact.js';
 const HEX=/^[a-f0-9]{64}$/;
 const fail=()=>{throw Error('Online grid unavailable or release mismatch');};
@@ -15,10 +16,11 @@ export function onlineGridPose(body,slot,car=null){
 // The trusted release descriptor supplies expectedHash. Structural checks are
 // additional defenses, never a substitute for the offline physical proof.
 export async function validateOnlineGrid(body,compiled,{expectedHash,car=null}={}){
+ body=snapshotOnlineGrid(body).body;
  object(body,['schemaVersion','projectionId','routeId','routeHash','geometryHash','worldSetRevision','capacity','footprint','poses','approach','sourceHashes']);
  if(body.schemaVersion!==1||body.projectionId!=='athens-v1'||body.capacity!==8||body.routeId!==compiled?.id)fail();
  for(const key of ['routeHash','geometryHash','worldSetRevision'])if(!HEX.test(body[key]||'')||body[key]!==compiled[key])fail();
- if(!HEX.test(expectedHash||'')||new TextEncoder().encode(canonicalJSON(body)).length>128*1024||await onlineGridHash(body)!==expectedHash)fail();
+ if(!HEX.test(expectedHash||''))fail();
  object(body.footprint,['halfWidth','halfLength','clearanceM']);
  const footprint=body.footprint;number(footprint.halfWidth,.3,3);number(footprint.halfLength,.5,12);number(footprint.clearanceM,.1,2);
  if(!Array.isArray(body.poses)||body.poses.length!==8)fail();
@@ -44,5 +46,6 @@ export async function validateOnlineGrid(body,compiled,{expectedHash,car=null}={
   if(Math.abs(end)>.025)fail();
  }else if(body.poses.at(-1).s-footprint.halfLength<-(compiled.runIn?.slice(1).reduce((n,p,i)=>n+Math.hypot(...p.map((v,k)=>v-compiled.runIn[i][k])),0)||0))fail();
  if(body.sourceHashes!==undefined){if(!Array.isArray(body.sourceHashes)||body.sourceHashes.length>32||body.sourceHashes.some(p=>!Array.isArray(p)||p.length!==2||!/^[-\d]+,[-\d]+$/.test(p[0])||!HEX.test(p[1]||'')))fail();}
+ if(await onlineGridHash(body)!==expectedHash)fail();
  return freeze(body);
 }

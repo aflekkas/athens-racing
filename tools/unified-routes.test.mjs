@@ -81,7 +81,7 @@ async function certifiedGridFixture(){
 test('separate grid authentication preserves competitive geometry and supports eight full-length buses',async()=>{
  const {validateOnlineGrid,onlineGridPose}=await import('../src/online-grid.js'),{compiled,body,expectedHash}=await certifiedGridFixture(),original=JSON.stringify(compiled);
  const grid=await validateOnlineGrid(body,compiled,{expectedHash,car:{width:2.55,length:12}});
- assert.equal(grid,body);assert.ok(Object.isFrozen(grid.poses[0]));assert.equal(JSON.stringify(compiled),original);
+ assert.deepEqual(grid,body);assert.notEqual(grid,body);assert.equal(Object.isFrozen(body),false);assert.ok(Object.isFrozen(grid.poses[0]));assert.equal(JSON.stringify(compiled),original);
  for(let slot=0;slot<8;slot++)assert.equal(onlineGridPose(grid,slot,{width:2.55,length:12}).slot,slot);
  for(const slot of [-1,8,1.5,NaN])assert.throws(()=>onlineGridPose(grid,slot),/unavailable/);
  assert.throws(()=>onlineGridPose(grid,0,{width:2.55,length:12.5}),/footprint/);
@@ -130,7 +130,7 @@ async function networkReleaseFixture(){
 }
 test('client network entry authenticates exact geometry and all eight individually assigned poses',async()=>{
  const {loadNetworkRoute,assignedNetworkPose}=await import('../src/network-route-client.js'),f=await networkReleaseFixture(),reads=[],fetcher=async url=>{reads.push(url);return {ok:true,json:async()=>url==='/api/routes'?f.config:url===f.entry.url?f.compiled:f.body};};
- const result=await loadNetworkRoute(f.lobby,{fetcher,car:{width:2.55,length:12}});assert.equal(result.runtime.compiled,f.compiled);assert.equal(result.onlineGrid,f.body);assert.equal(result.runtime.frame(-99).z,99);assert.equal(assignedNetworkPose(f.lobby,result.onlineGrid,f.lobby.players[7]).s,-99);assert.equal(reads.length,3);assert.ok(reads.every(url=>!url.includes('/data/maps/')));
+ const result=await loadNetworkRoute(f.lobby,{fetcher,car:{width:2.55,length:12}});assert.equal(result.runtime.compiled,f.compiled);assert.deepEqual(result.onlineGrid,f.body);assert.notEqual(result.onlineGrid,f.body);assert.equal(result.runtime.frame(-99).z,99);assert.equal(assignedNetworkPose(f.lobby,result.onlineGrid,f.lobby.players[7]).s,-99);assert.equal(reads.length,3);assert.ok(reads.every(url=>!url.includes('/data/maps/')));
 });
 test('client rejects disabled/stale route, spoofed grid pose, duplicate slots and mixed reconnect identity',async()=>{
  const {loadNetworkRoute}=await import('../src/network-route-client.js');
@@ -295,4 +295,42 @@ test('offline proof byte reader bounds growth and shrink to the original handle 
   for(const mutation of ['grow','shrink']){await writeFile(path,original);let closed=0,reads=0;const openFile=async()=>{const file=await open(path,'r');let first=true;return{async stat(){const stat=await file.stat();if(first){first=false;await writeFile(path,mutation==='grow'?Buffer.concat([original,Buffer.from('x')]):original.subarray(0,4));}return stat;},read(...args){reads++;return file.read(...args);},async close(){closed++;await file.close();}};};await assert.rejects(readOnlineProofBytes(path,{openFile}),/proof package (?:changed|shrank)/);assert.equal(closed,1);assert.ok(reads<=2,'read stays bounded to advertised bytes plus one-byte probe');}
   for(const size of [0,-1,NaN,Infinity,1.5,Number.MAX_SAFE_INTEGER+1]){let reads=0,closed=0;await assert.rejects(readOnlineProofBytes(path,{openFile:async()=>({stat:async()=>({size,isFile:()=>true}),read(){reads++;throw Error('must not read');},async close(){closed++;}})}),/Invalid online proof package/);assert.equal(reads,0);assert.equal(closed,1);}
  }finally{await rm(dir,{recursive:true,force:true});}
+});
+
+// Native digest yields naturally: caller mutation must never change authenticated data.
+test('online grid owns an immutable pre-digest snapshot without freezing its caller',async()=>{
+ const {validateOnlineGrid,onlineGridHash}=await import('../src/online-grid.js'),f=await certifiedGridFixture(),before=structuredClone(f.body);
+ const pending=validateOnlineGrid(f.body,f.compiled,{expectedHash:f.expectedHash});
+ f.body.poses[0].x=3;f.body.footprint.halfWidth=1.4;f.body.approach.points[0][4]=6;
+ const accepted=await pending;
+ assert.deepEqual(accepted,before);assert.equal(await onlineGridHash(accepted),f.expectedHash);
+ assert.notEqual(accepted,f.body);assert.ok(Object.isFrozen(accepted.poses[0]));
+ assert.equal(Object.isFrozen(f.body),false);assert.equal(Object.isFrozen(f.body.poses[0]),false);
+ f.body.poses[0].x=4;assert.equal(accepted.poses[0].x,0);
+});
+
+test('grid snapshot rejects non-JSON and over-budget input before clone or encoding',async()=>{
+ const {snapshotOnlineGrid}=await import('../src/online-grid-snapshot.js'),f=await certifiedGridFixture();
+ const clone=globalThis.structuredClone,encode=TextEncoder.prototype.encode,encodeInto=TextEncoder.prototype.encodeInto;
+ let clones=0,encodes=0,getters=0;globalThis.structuredClone=(...args)=>{clones++;return clone(...args);};TextEncoder.prototype.encode=function(...args){encodes++;return encode.apply(this,args);};TextEncoder.prototype.encodeInto=function(...args){encodes++;return encodeInto.apply(this,args);};
+ try{
+  const getter={};Object.defineProperty(getter,'x',{get(){getters++;return 1;},enumerable:true});
+  const hidden={};Object.defineProperty(hidden,'x',{value:1});const symbol={[Symbol('x')]:1},cycle={};cycle.x=cycle;
+  for(const value of [getter,hidden,symbol,cycle,new Date(),{x:undefined},{x:()=>{}},{x:1n},{x:NaN},{x:Infinity},Array(2),Object.assign([],{extra:1})])assert.throws(()=>snapshotOnlineGrid(value),/unavailable/);
+  assert.throws(()=>snapshotOnlineGrid(f.body,{maxCombinedBytes:100}),/budget/);
+  assert.throws(()=>snapshotOnlineGrid({x:'x'.repeat(128*1024)}),/budget/);
+  assert.equal(clones,0);assert.equal(encodes,0);assert.equal(getters,0);
+ }finally{globalThis.structuredClone=clone;TextEncoder.prototype.encode=encode;TextEncoder.prototype.encodeInto=encodeInto;}
+ const {body,metrics}=snapshotOnlineGrid(f.body);assert.deepEqual(body,f.body);assert.equal(metrics.callerObjectBytes,metrics.snapshotBytes);
+ assert.equal(metrics.snapshotPhaseBytes,2*metrics.callerObjectBytes);
+ assert.equal(metrics.authenticationBytes,metrics.snapshotPhaseBytes+2*metrics.codeUnits+2*metrics.bytes);
+ assert.throws(()=>snapshotOnlineGrid(f.body,{maxCombinedBytes:metrics.authenticationBytes-1}),/budget/);
+ assert.deepEqual(snapshotOnlineGrid(f.body,{maxCombinedBytes:metrics.authenticationBytes}).body,body);
+});
+test('grid snapshot canonical byte preflight matches Unicode and JSON scalar encoding',async()=>{
+ const {snapshotOnlineGrid}=await import('../src/online-grid-snapshot.js'),{canonicalJSON}=await import('../src/route-definition.js');
+ for(const value of [{s:'a\"\\\n😀é中\ud800'},[null,true,false,-0,1e-7,1e30],Object.assign(Object.create(null),{x:2})]){
+  const {body,metrics}=snapshotOnlineGrid(value),canonical=canonicalJSON(value);
+  assert.equal(metrics.bytes,new TextEncoder().encode(canonical).length);assert.equal(metrics.codeUnits,canonical.length);assert.equal(canonicalJSON(body),canonical);
+ }
 });
