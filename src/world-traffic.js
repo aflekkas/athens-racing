@@ -86,7 +86,7 @@ export class WorldTraffic {
    // Runtime follows these line segments, not the ideal cubic. Check their
    // intervening footprints too, retaining the small knot array in the cache.
    if(valid)for(let i=1;i<points.length&&valid;i++){const start=points[i-1].s,span=points[i].s-start,steps=Math.ceil(span/.2);for(let j=1;j<steps;j++){const p=this.turnContact(turnPoint({points},start+span*j/steps),edge,next);if(!p||!this.session.safePose(p,{halfWidth:c.wid/2,halfLength:c.len/2})||this.closures?.safe(p,{halfWidth:c.wid/2,halfLength:c.len/2})===false){valid=false;break;}}}
-   if(valid&&length>.1){paths.push({from:edge.id,via:edge.to,next:next.id,entry,exit,exitShift,points,length,progress:0});break;}
+   if(valid&&length>.1){paths.push({from:edge.id,via:edge.to,next:next.id,entry,exit,exitShift,points,length,progress:0});}
    }
   }
   this.pathCache.set(key,{edge,revision,paths,until:this.t+1});return paths;
@@ -106,7 +106,7 @@ export class WorldTraffic {
    // The first car admitted owns the junction until its rear has left the
    // curve. Queued approaches cannot enter and mutually block one another.
    if(this.cars.some(q=>q!==c&&q.active&&q.turn?.via===edge.to&&!(q.stoppedT>2)))return null;
-   const paths=this.throughPaths(edge,c).filter(p=>{const b=p.points.at(-1);return !(c.avoidNext?.id===p.next&&c.avoidNext.until>this.t)&&!this.cars.some(q=>q!==c&&q.active&&(q.point.edge===p.next&&q.stoppedT>2||Math.abs(q.vehicle.y-b.y)<2.5&&Math.hypot(q.vehicle.x-b.x,q.vehicle.z-b.z)<c.len+4));});if(!paths.length){this.avoidEdges.set(edge.id,this.t+30);return null;}
+   const paths=this.throughPaths(edge,c).filter(p=>{const b=p.points.at(-1);return !(c.avoidNext?.id===p.next&&c.avoidNext.until>this.t)&&!this.cars.some(q=>q!==c&&q.active&&(q.point.edge===p.next&&q.stoppedT>2||Math.abs(q.vehicle.y-b.y)<2.5&&Math.hypot(q.vehicle.x-b.x,q.vehicle.z-b.z)<c.len+4));}).filter((p,i,paths)=>paths.findIndex(q=>q.next===p.next)===i);if(!paths.length){this.avoidEdges.set(edge.id,this.t+30);return null;}
    turn=c.police&&this.hm.active&&player?[...paths].sort((a,b)=>{const end=p=>this.session.roads.graph.edges.get(p.next).value.points.at(-1);return Math.hypot(end(a)[0]-player.x,end(a)[2]-player.z)-Math.hypot(end(b)[0]-player.x,end(b)[2]-player.z);})[0]:paths[Math.floor(this.pool.rng.next()*paths.length)];turn={...turn,progress:Math.max(0,c.offset-entry)};travel=Math.max(0,offset-entry);
   }
   if(!turn)return {p:this.candidate(edge,offset,c),offset,turn:null};

@@ -109,6 +109,16 @@ test('a legal same-direction lane survives turn lookahead, movement and retreat 
  }
 });
 
+test('an alternative directional lane remains available when the preferred lane fails lookahead',()=>{
+ const w=transitionWorld(),t=w.traffic,c=t.cars[0];for(const e of [w.incoming,w.outgoing,w.after])e.lanes=2;
+ w.roads.width=()=>({left:3.2,right:3.2,width:6.4});const contact=w.stream.contact;
+ w.stream.contact=(x,z,o)=>z>150&&x<0?null:contact(x,z,o);
+ assert.equal(t.turnPaths(w.incoming,c).length,2,'both lane mouths are supported');
+ const paths=t.throughPaths(w.incoming,c);assert.equal(paths.length,1);assert.equal(paths[0].exitShift,-3.2,'lookahead rejects the blocked right lane but retains the legal left lane');
+ Object.assign(c,{offset:91.9,point:t.candidate(w.incoming,91.9,c)});c.vehicle={...c.point};
+ assert.equal(t.advanceLane(c,w.incoming,.2).turn.exitShift,-3.2);
+});
+
 test('turn admission rejects an unsupported footprint between its cubic knots',()=>{
  const w=transitionWorld(),contact=w.stream.contact;
  w.stream.contact=(x,z,o)=>z>99.75&&z<99.95?null:contact(x,z,o);
@@ -248,7 +258,7 @@ test('curve admission checks the actual centre height and owner before the compl
  const a={id:'a',from:'n0',to:'n1',layer:0,flags:1,lanes:2,points:[[0,0,0],[0,0,100]]},b={...a,id:'b',from:'n1',to:'n2',points:[[0,0,100],[0,0,200]]},w=ribbonWorld([a,b]),t=trafficPool(new WorldTraffic(w,{},{})),c=t.cars[0],contact=w.stream.contact;
  w.stream.contact=(x,z,o)=>{const p=contact(x,z,o);return p&&{...p,y:Math.max(0,.4*Math.sin((z-92)/16*Math.PI)),surfaceId:z<100?'a-owner':'b-owner'};};
  const safe=w.safePose;w.safePose=(p,o)=>{const ground=w.stream.contact(p.x,p.z,{referenceY:p.y,layer:p.layer});return safe(p,o)&&Math.abs(p.y-ground.y)<1e-8&&p.surfaceId===ground.surfaceId;};
- const paths=t.turnPaths(a,c);assert.equal(paths.length,1);assert.ok(paths[0].points.some(p=>p.y>.3));assert.equal(paths[0].points.at(-1).surfaceId,'b-owner');
+ const paths=t.turnPaths(a,c);assert.equal(paths.length,2,'both declared outgoing lanes are supported');assert.ok(paths[0].points.some(p=>p.y>.3));assert.equal(paths[0].points.at(-1).surfaceId,'b-owner');
 });
 test('a legal bridge approach changes curve contact layer to its connected exit',()=>{
  const a={id:'approach',from:'a',to:'b',layer:0,flags:3,lanes:1,surface:'approach',points:[[0,6,0],[0,6,100]]},b={...a,id:'bridge',from:'b',to:'c',layer:1,surface:'deck',points:[[0,6,100],[0,6,200]]},out={...b,id:'after',from:'c',to:'d',points:[[0,6,200],[0,6,300]]},w=ribbonWorld([a,b,out]),t=trafficPool(new WorldTraffic(w,{},{})),c=t.cars[0];
