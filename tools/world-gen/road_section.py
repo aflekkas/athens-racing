@@ -206,6 +206,10 @@ def cross_section(tags, hints=None):
         edge = 'solid' if fast and width >= 6 else 'none'
         if klass.endswith('_link') and lanes < 2:
             edge = 'none'
+    # Explicit virtual/unmarked lanes override inferred longitudinal separators.
+    # OSM lane_markings excludes outer road-edge lines and independent crossings.
+    if tags.get('lane_markings') == 'no':
+        centre = lane = 'none'
     section['markings'] = dict(centre=centre, lane=lane, edge=edge, dash=list(dash_pattern(speed, klass)))
     section.update(parking=parking(tags), lit=None if 'lit' not in tags else tags['lit'] in ('yes', '24/7', 'automatic'),
                    maxspeed=speed)

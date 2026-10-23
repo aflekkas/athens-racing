@@ -1,0 +1,96 @@
+{
+  "kind": "own-synthetic-test-glyphs",
+  "notice": "Dimensions and shapes are explicit unit-test inputs, not Greek pavement standards or surveyed paint. No production activation.",
+  "glyphs": {
+    "through": [
+      [
+        -0.12,
+        -1
+      ],
+      [
+        0.12,
+        -1
+      ],
+      [
+        0.12,
+        0.4
+      ],
+      [
+        0.45,
+        0.4
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        -0.45,
+        0.4
+      ],
+      [
+        -0.12,
+        0.4
+      ]
+    ],
+    "left": [
+      [
+        1,
+        -0.12
+      ],
+      [
+        1,
+        0.12
+      ],
+      [
+        -0.4,
+        0.12
+      ],
+      [
+        -0.4,
+        0.45
+      ],
+      [
+        -1,
+        0
+      ],
+      [
+        -0.4,
+        -0.45
+      ],
+      [
+        -0.4,
+        -0.12
+      ]
+    ],
+    "right": [
+      [
+        -1,
+        0.12
+      ],
+      [
+        -1,
+        -0.12
+      ],
+      [
+        0.4,
+        -0.12
+      ],
+      [
+        0.4,
+        -0.45
+      ],
+      [
+        1,
+        0
+      ],
+      [
+        0.4,
+        0.45
+      ],
+      [
+        0.4,
+        0.12
+      ]
+    ]
+  }
+}

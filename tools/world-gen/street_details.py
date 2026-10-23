@@ -176,3 +176,33 @@ def ribbon_lateral(line, x, z, forward=True):
     dx,dz=b.x-a.x,b.y-a.y;length=math.hypot(dx,dz)
     if length<1e-9:raise ValueError('Ribbon reference has no tangent')
     return station,((x-center.x)*-dz+(z-center.y)*dx)/length*(1 if forward else -1)
+
+
+def prototype_lane_arrow(record, direction, lane_index, station, glyphs, cell, height,
+                         surface, exclusions, *, source_sha, owner, layer, synthetic=False):
+    """Synthetic-only geometry regression API; NEVER called by road_markings.
+
+    Whole glyph fit is decided globally before tile clipping. The caller must
+    provide its exact synthetic source owner/layer and explicit exclusion union.
+    No station, dimensions, material or placement evidence is inferred here.
+    """
+    from lane_indications import synthetic_arrow_polygons
+    if source_sha != record['source']['sourceSha256'] or owner not in record['source']['normalizedRoadIds'] or layer != 0:
+        raise ValueError('Arrow surface source/owner/layer mismatch')
+    if not hasattr(height,'tree') or not hasattr(height,'polygons'):
+        raise ValueError('Exact synthetic surface triangles required')
+    polygon,report=synthetic_arrow_polygons(record,direction,lane_index,station,glyphs,synthetic=synthetic)
+    if not surface.covers(polygon) or not polygon.intersection(exclusions).is_empty:
+        return ([],[]),dict(report,emitted=False,reason='whole glyph outside legal carriageway or inside exclusion',triangles=0,arrayBytes=0)
+    ox,oz=(v*512 for v in cell);ps=[];ix=[]
+    paint=polygon.intersection(box(ox,oz,ox+512,oz+512))
+    local=translate(paint,xoff=-height.ox,yoff=-height.oz)
+    cuts=[height.polygons[int(i)].intersection(local) for i in height.tree.query(local)]
+    cuts=[p for p in cuts if p.area>0]
+    if not local.is_empty and not unary_union(cuts).covers(local):
+        raise ValueError('Arrow support surface gap')
+    if any(a.intersection(b).area>0 for i,a in enumerate(cuts) for b in cuts[i+1:]):
+        raise ValueError('Ambiguous/multilayer arrow support surface')
+    paint_triangles(paint,ps,ix,ox,oz,height)
+    if len(ix)//3>16384:raise ValueError('Existing marking mesh triangle cap exceeded')
+    return (ps,ix),dict(report,emitted=bool(ix),triangles=len(ix)//3,arrayBytes=len(ps)*4+len(ix)*2)

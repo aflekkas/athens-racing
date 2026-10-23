@@ -171,6 +171,17 @@ class Surfaces(unittest.TestCase):
 
 
 class Markings(unittest.TestCase):
+    def test_explicit_unmarked_lanes_suppress_separators_not_independent_edges(self):
+        m=section(highway='primary',lanes='4',maxspeed='70',lane_markings='no')['markings']
+        self.assertEqual((m['centre'],m['lane'],m['edge']),('none','none','solid'))
+        one=section(highway='residential',oneway='yes',lanes='2',lane_markings='no')
+        self.assertEqual((one['lanes'],one['width']),(2,6.0));self.assertEqual(one['markings']['lane'],'none')
+    def test_tower_supplied_oneway_defaults_remain_unmarked_without_lane_count(self):
+        tags=dict(highway='residential',oneway='yes',sidewalk='both',surface='asphalt')
+        self.assertEqual(section(**tags),section(**tags,lane_markings='no'))
+    def test_yes_or_absent_lane_markings_preserve_existing_defaults(self):
+        for klass in CLASSES:
+            self.assertEqual(section(highway=klass),section(highway=klass,lane_markings='yes'))
     def test_two_lane_streets(self):
         self.assertEqual(section(highway='residential')['markings']['centre'], 'dashed')
         self.assertEqual(section(highway='residential', oneway='yes')['markings']['centre'], 'none')

@@ -18,3 +18,8 @@ test('bridge posts retain whole-source cadence across noding and cell boundaries
 import './bridge-guards.test.mjs';
 
 test('bounded inland source and DEM coverage fail closed and retain actual water masks',{skip:(!shapely||spawnSync(python,['-c','import rasterio']).status!==0)&&'world-gen dependencies unavailable'},()=>{const r=spawnSync(python,[fileURLToPath(new URL('./inland_test.py',import.meta.url))],{encoding:'utf8'});assert.equal(r.status,0,r.error?.message||r.stderr||r.stdout);});
+
+// Source records never authorize real pavement paint; geometry is synthetic-only.
+test('directional lane indications retain provenance and cannot activate real arrows',{skip:!shapely&&'shapely is not installed'},()=>{
+  const r=spawnSync(python,[fileURLToPath(new URL('./lane_indications_test.py',import.meta.url))],{encoding:'utf8'});assert.equal(r.status,0,r.error?.message||r.stderr||r.stdout);
+});

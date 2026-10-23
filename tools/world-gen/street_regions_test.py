@@ -242,5 +242,54 @@ class WestBakeCrashes(unittest.TestCase):
                 self.assertTrue(region.covers(point), 'sidewalk sample %s at station %d' % (side, station))
 
 
+
+class SyntheticLaneArrowPrototype(unittest.TestCase):
+    def setUp(self):
+        from lane_indications_test import parsed,FIXTURE
+        from shapely.geometry import box
+        self.record=parsed(dict(highway='primary',oneway='yes',lanes='3',**{'turn:lanes':'left|through|right'}),[[512,0],[512,80]])
+        self.glyphs=FIXTURE['glyphs'];self.surface=box(506,0,518,80);self.empty=Polygon()
+    def height(self,cell=(0,0),slope=False,missing=False,duplicate=False):
+        from surfaces import SurfaceHeight
+        base=cell[0]*512*.01 if slope else 0;rise=5.12 if slope else 0
+        p=[0,base,0,512,base+rise,0,512,base+rise,512,0,base,512];indices=[0,2,1,0,3,2]
+        if missing:indices=[0,3,2]
+        if duplicate:p+=p;indices+=[4,6,5,4,7,6]
+        return SurfaceHeight(dict(cell=list(cell),positions=p,triangles=indices))
+    def emit(self,cell=(0,0),**changes):
+        from street_details import prototype_lane_arrow
+        args=dict(record=self.record,direction=1,lane_index=1,station=40,glyphs=self.glyphs,cell=cell,height=self.height(cell),surface=self.surface,exclusions=self.empty,source_sha='a'*64,owner='w900:0',layer=0,synthetic=True)
+        args.update(changes);return prototype_lane_arrow(**args)
+    def test_whole_glyph_fits_then_tiles_clip_with_identical_seam_vertices(self):
+        a,ar=self.emit();b,br=self.emit((1,0))
+        self.assertTrue(ar['emitted'] and br['emitted']);self.assertFalse(ar['releaseEligible'])
+        left={(a[0][i+1],a[0][i+2]) for i in range(0,len(a[0]),3) if a[0][i]==512}
+        right={(b[0][i+1],b[0][i+2]) for i in range(0,len(b[0]),3) if b[0][i]==0}
+        self.assertEqual(left,right);self.assertTrue(left)
+        for (ps,ix),report in [( (a[0],a[1]),ar),((b[0],b[1]),br)]:
+            self.assertEqual(report['triangles'],len(ix)//3);self.assertEqual(report['arrayBytes'],len(ps)*4+len(ix)*2)
+    def test_junction_zebra_and_carriageway_gaps_omit_whole_glyph(self):
+        from shapely.geometry import box
+        for changes in [dict(exclusions=box(511.9,39.9,512.1,40.1)),dict(surface=self.surface.difference(box(511.9,39.9,512.1,40.1))),dict(surface=box(511.9,0,512.1,80))]:
+            mesh,report=self.emit(**changes);self.assertEqual(mesh,([],[]));self.assertFalse(report['emitted']);self.assertIn('whole glyph',report['reason'])
+    def test_wrong_source_owner_layer_missing_and_ambiguous_height_never_borrow(self):
+        for changes in [dict(source_sha='b'*64),dict(owner='w901:0'),dict(layer=1),dict(height=lambda x,z:0),dict(height=self.height(missing=True)),dict(height=self.height(duplicate=True))]:
+            with self.assertRaises(ValueError):self.emit(**changes)
+    def test_every_vertex_conforms_to_exact_affine_surface(self):
+        mesh,report=self.emit(height=self.height(slope=True))
+        self.assertTrue(report['emitted'])
+        for i in range(0,len(mesh[0]),3):self.assertAlmostEqual(mesh[0][i+1],mesh[0][i]*.01+.015,places=9)
+    def test_no_markings_does_not_remove_zebra_or_independent_edge_lines(self):
+        from shapely.geometry import box
+        tagged={'highway':'primary','oneway':'yes','lanes':'2','maxspeed':'70','lane_markings':'no'}
+        r=road('unmarked',[(-60,0),(60,0)],tagged,crossings=[(60,0,0,True)])
+        self.assertEqual({style for offset,style in line_offsets(r['section'],r['width'])},{'solid'})
+        # The crossing emitter is independent of longitudinal separator policy.
+        region=StreetRegions([r]);self.assertTrue(region.zebras)
+        ps,ix=road_markings([r],(-1,-1),lambda x,z:0,region)
+        bare=road('unmarked',[(-60,0),(60,0)],tagged)
+        _,base_ix=road_markings([bare],(-1,-1),lambda x,z:0,StreetRegions([bare]))
+        self.assertGreater(len(ix),len(base_ix))
+
 if __name__ == '__main__':
     unittest.main()

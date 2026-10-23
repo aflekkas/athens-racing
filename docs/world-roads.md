@@ -140,3 +140,48 @@ Neither `sidewalks.sqlite` nor `sections-*.sqlite` is shipped or committed; only
 Parking lanes, street lights and trees are not drawn. Sidewalks follow the street, not the building line, and run under buildings that stand on them.
 A footway mapped as a long separate path far from any street is ignored. Roundabout islands are not modelled. Class defaults apply everywhere, including
 rural streets without houses (OSM has too little sidewalk data to tell them apart).
+
+
+## Source lane indications and explicit unmarked lanes
+
+`lane_markings=no` suppresses inferred centre lines and between-lane separators.
+It does not change lane counts, carriageway width, access or topology. Outer road
+edge lines, independently mapped zebra crossings and regulatory kerb paint have
+separate evidence and remain independent. Untagged/`yes` defaults are unchanged.
+The actual Tower-adjacent one-way residential example already defaults to one
+lane and no longitudinal markings; the two-lane suppression regression is synthetic.
+
+`tools/world-gen/lane_indications.py` is a source-only API, never called by the
+ordinary generator. `parse_lane_indications(tags,source,expected)` retains exact
+way ID/version/timestamp, original source SHA, original node orientation/refs,
+projected point hash, raw tag hash, normalized source-road IDs and explicit lane
+counts. `expected` is the separately retained authenticated ingestion receipt;
+the helper checks equality and consistency but does not itself download or
+authenticate raw OSM bytes. Directional lists use left-to-right driving order;
+backward travel reverses the geometric tangent, not the meaning of left/right.
+Counts, direction or source conflicts, unsupported tokens/shared/reversible/
+conditional or per-lane access policies remain explicit unresolved records.
+Empty/none indications never become through arrows. All records remain
+`releaseEligible:false` and `paintEvidence:false`.
+
+Turn indications can be displayed on signs/signals or pavement. A `turn:lanes`
+tag alone never activates arrows. Real placement needs verified source-bound
+paint positions or a separately approved generic inference policy. The optional
+`synthetic_arrow_polygons` and `street_details.prototype_lane_arrow` APIs accept
+only explicit synthetic fixture receipts/templates/stations. They reject wrong
+source/owner/layer, unsolved structures, unpaintable surfaces, ambiguous/gapped
+height supports, and glyphs leaving their modelled lane or carriageway/exclusion
+footprint. Whole-glyph legality is checked before cell clipping; no partial
+illegal arrows are drawn. Surface conformance uses the existing paint path and
+15mm lift. No material/schema/runtime/draw-call or capacity changes are added;
+existing marking mesh limits and exact array accounting remain mandatory.
+
+Synthetic template dimensions are test inputs, not Greek road-marking standards.
+Existing `sections.py` recipe hashes include `road_section.py`, so a changed
+separator policy requires a fresh authenticated section build and ordinary world
+publication gates. No arrow generation callsite, source DB migration, real bake
+or public activation is part of this source-only change.
+
+Source semantics: [OSM lanes](https://wiki.openstreetmap.org/wiki/Lanes),
+[turn indications](https://wiki.openstreetmap.org/wiki/Key:turn),
+[lane markings](https://wiki.openstreetmap.org/wiki/Key:lane_markings).
