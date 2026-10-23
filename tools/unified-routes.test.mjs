@@ -227,3 +227,37 @@ test('cold entry retains its warmed requested grid and TT never prepares the def
  ctx.worldSession=null;runInNewContext(code+";prepareInitialEvent('quick');",ctx);assert.equal(resets,2,'legacy bootstrap contract remains explicit');
  assert.match(main,/eventId=Q.get\('routeEvent'\)\|\|Q.get\('event'\)/);assert.match(main,/retry:\(\)=>network\?multiplayer.retryMap\(\):loadUnifiedWorld\(compiled,\{eventId\}\)/);
 });
+
+async function surfaceTimingFixture(){
+ const {readFile}=await import('node:fs/promises'),{runInNewContext}=await import('node:vm'),THREE=await import('three'),{installCarSurface}=await import('../src/car-surface.js'),{RouteRivals}=await import('../src/route-rivals.js'),source=await readFile(new URL('../src/main.js',import.meta.url),'utf8');
+ const car=(id)=>{const root=new THREE.Group(),body=new THREE.Group();root.add(body);const model=installCarSurface({root,body,paint:new THREE.MeshStandardMaterial(),dims:{L:4,W:2,H:1.5},update(){}}),calls=[],updateSurface=model.updateSurface;model.updateSurface=(...args)=>{calls.push(args);return updateSurface(...args);};const c={id,model,calls,finish:null,front:null,ai:{controller:{}},veh:{x:0,y:0,z:0,s:0,u:0,yaw:0,halfW:1,halfL:2,spec:{},vLong:20,vLat:0,w:0,corners:Array.from({length:4},()=>({Fz:3500})),wheelSurf:['dirt','dirt','dirt','dirt'],damage:{},pose:{},place(root){root.position.set(this.x,this.y,this.z);},update(dt){this.x+=dt*this.vLong;this.s+=dt*this.vLong;this.updates=(this.updates||0)+1;}}};c.actor={veh:c.veh};return c;};
+ const player=car('player'),grid=[car('rival-ready'),car('rival-held')],blocked=new Set(),G={state:'race',t:0,raceT:0,postT:0,crashes:0,pFinish:null,ev:{r:{len:1000},def:{rules:{},traffic:0}},run:{}},multiplayer={active:false},settings={worldDetail:true};
+ const context={player,grid,G,multiplayer,settings,ground:{ready:v=>!blocked.has(v),begin(){}},worldSession:{props:{},stream:{origin:{x:0,z:0}},metrics:{holds:0,missingContacts:0}},routeRivals:new RouteRivals({}),traffic:{actors:[],cars:[],update(){},collide(){}},signals:{update(){}},towOffer:{recovering:false,hold:0},inMenu:()=>false,inFreeRoam:()=>false,tickWorldLife(){},updateRoadWeather(){},window:{},pilotDriver:null,input:{},hud:{message(){}},raceTiming(){},racerPair(){},aiField:[],aiInput:()=>({brake:0}),route:{},camera:{position:new THREE.Vector3()},DistanceDetail:class{update(){}},audio:{},console};
+ const code=source.slice(source.indexOf('function recordCarSurfaceStep('),source.indexOf('function racerCollide('))+source.slice(source.indexOf('function updateGrid('),source.indexOf('// ---- timing, positions'))+source.slice(source.indexOf('function stepUnified('),source.indexOf('function stepOnlineContacts('));
+ runInNewContext(code,context);return {...context,blocked,step:dt=>context.stepUnified(dt,false,1),sync:(c,dt=1)=>context.syncCar(c,dt),record:context.recordCarSurfaceStep,consume:context.consumeCarSurfaceStep};
+}
+
+test('executed unified physics and sync consume each car simulation slices once, independent of render dt',async()=>{
+ const f=await surfaceTimingFixture();for(let i=0;i<3;i++)f.step(.01);f.sync(f.player,1);assert.ok(Math.abs(f.player.model.surface.dirt.x-.03*20/230)<1e-12);assert.equal(f.player.calls.at(-1)[0],.03);assert.equal(f.player.veh.updates,3);
+ const dirt=f.player.model.surface.dirt.x;f.sync(f.player,5);assert.equal(f.player.calls.at(-1)[0],0);assert.equal(f.player.model.surface.dirt.x,dirt,'render-only repeats cannot add wear');
+ f.sync(f.grid[0],.001);assert.equal(f.grid[0].calls.at(-1)[0],.03,'rival clock is its successful physics time too');
+});
+
+test('actual unified player holds, pause and capture do not charge stale wheel speeds or skipped rivals',async()=>{
+ const f=await surfaceTimingFixture();f.blocked.add(f.grid[1].veh);f.step(.02);for(const c of [f.player,...f.grid])f.sync(c);
+ assert.equal(f.player.calls.at(-1)[0],.02);assert.equal(f.grid[0].calls.at(-1)[0],.02);assert.equal(f.grid[1].calls.at(-1)[0],0);assert.equal(f.grid[1].model.surface.dirt.x,0,'unready rival retains stale speed but has no elapsed physics');
+ const dirt=[f.player,...f.grid].map(c=>c.model.surface.dirt.x);f.blocked.add(f.player.veh);for(let i=0;i<80;i++)f.step(.1);for(const c of [f.player,...f.grid])f.sync(c,8);
+ assert.deepEqual([f.player,...f.grid].map(c=>c.model.surface.dirt.x),dirt,'player hold also skips rival simulation, even though simulate remains true');
+ f.blocked.clear();f.G.state='paused';f.step(.1);for(const c of [f.player,...f.grid]){f.sync(c,8);assert.equal(c.calls.at(-1)[0],0);}
+ f.G.state='race';f.towOffer.recovering=true;f.towOffer.hold=1;f.step(.1);f.sync(f.player);assert.equal(f.player.calls.at(-1)[0],0,'capture suspension steps are not driving wear');assert.equal(f.player.model.surface.dirt.x,dirt[0]);
+ f.towOffer.recovering=false;f.player.veh.vLong=20;f.step(.01);f.sync(f.player);assert.ok(f.player.model.surface.dirt.x>dirt[0],'normal driving resumes its own clock');
+});
+
+test('surface clock discards old reset identity and zero-time sync still applies detail and online visibility',async()=>{
+ const f=await surfaceTimingFixture();f.step(.01);f.player.veh.corners=Array.from({length:4},()=>({Fz:3500}));f.sync(f.player,1);assert.equal(f.player.calls.at(-1)[0],0);assert.equal(f.player.model.surface.dirt.x,0,'old pending contact history cannot cross Vehicle.reset');
+ f.settings.worldDetail=false;f.sync(f.player,1);assert.equal(f.player.model.surface.size.w,0);f.settings.worldDetail=true;f.multiplayer.active=true;f.sync(f.player,1);assert.equal(f.player.model.surface.size.w,0);f.multiplayer.active=false;f.sync(f.player,1);assert.equal(f.player.model.surface.size.w,1);assert.equal(f.player.calls.at(-1)[0],0);
+});
+
+test('a failed player physics slice cannot credit cosmetic elapsed time',async()=>{
+ const f=await surfaceTimingFixture();f.player.veh.update=()=>{throw Error('missing physical contact');};assert.throws(()=>f.step(.1),/missing physical contact/);assert.equal(f.worldSession.metrics.missingContacts,1);f.sync(f.player,1);assert.equal(f.player.calls.at(-1)[0],0);assert.equal(f.player.model.surface.dirt.x,0);
+});

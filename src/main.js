@@ -420,7 +420,7 @@ function stepUnified(dt,visual,frameDt){
  if(simulate&&['race','finished','onlineFinished'].includes(G.state)){
   if(!ground.ready(v,dt)){if(G.state==='race'){worldSession.metrics.holds++;G.streamInterrupted=true;G.bestSetupChanged=true;if(!G.roadLoading){hud.message('ROAD STILL LOADING',2);G.roadLoading=true;}}}
   else {G.roadLoading=false;const previous={x:v.x,y:v.y,z:v.z,yaw:v.yaw,halfL:v.halfL,...v.routeContact};ground.begin(v);
-   try{v.update(dt,G.state==='race'&&!captured?(pilotDriver?.(v,dt)||input):{throttle:0,brake:.5,steer:0,handbrake:false});if(v.wallHit>2.5&&G.t-(G.lastWorldCrash||-10)>.5){G.crashes++;G.lastWorldCrash=G.t;}v.wallHit=0;v.crashDv=0;}catch(error){Object.assign(v,previous,{vLong:0,vLat:0,w:0});worldSession.metrics.missingContacts++;throw error;}
+   try{v.update(dt,G.state==='race'&&!captured?(pilotDriver?.(v,dt)||input):{throttle:0,brake:.5,steer:0,handbrake:false});if(!captured)recordCarSurfaceStep(player,dt);if(v.wallHit>2.5&&G.t-(G.lastWorldCrash||-10)>.5){G.crashes++;G.lastWorldCrash=G.t;}v.wallHit=0;v.crashDv=0;}catch(error){Object.assign(v,previous,{vLong:0,vLat:0,w:0});worldSession.metrics.missingContacts++;throw error;}
    if(!online)routeRivals.update(dt,grid,v,{ready:p=>ground.ready(p,dt),safe:(p,o)=>worldSession.safePose(p,o),step:(c,h)=>updateGrid(h,[c]),now:G.raceT+G.postT+dt});
    traffic.crossedRed=G.state==='race'&&(G.ev.def.rules?.signals===true||inFreeRoam()&&G.ev.def.rules?.police===true)?signals.crossed(previous,{...v,...v.routeContact}):null;if(!online)traffic.update(dt,v,[v,...grid.filter(c=>!c.distant).map(c=>c.veh)]);else traffic.updateOnlineDriver?.(dt,{id:multiplayer.id,player:v,gridSlot:multiplayer.me?.gridSlot,crossedRed:traffic.crossedRed});const contacts=[],beforeTraffic=online?streamedSharedWorld.beforeCollide():null;traffic.collide({veh:v,kind:'player'},contacts,G.t);if(online)streamedSharedWorld.afterCollide(beforeTraffic);for(const c of grid.filter(c=>!c.distant)){traffic.collide(c.actor,contacts,G.t);racerPair(v,c.veh,true);}for(let i=0;i<grid.length;i++)for(let j=i+1;j<grid.length;j++)if(!grid[i].distant&&!grid[j].distant)racerPair(grid[i].veh,grid[j].veh,false);
    if(online){if(G.state==='race'&&!captured)stepOnlineContacts(v,dt);G.topSpeed=Math.max(G.topSpeed,v.kmh);}else if(G.state==='race'){G.raceT+=dt;G.topSpeed=Math.max(G.topSpeed,v.kmh);window.__ghostLap?.tick(dt);raceTiming(dt);}else if(G.state==='finished'){G.postT+=dt;G.finishedT+=dt;advanceRivalCourses(dt);updateFinishView();}
@@ -1368,6 +1368,7 @@ function updateGrid(dt, selection = grid) {
     v.subH = Math.hypot(v.x - player.veh.x, v.z - player.veh.z) > 150 ? 1 / 120 : 0;
     if(worldSession){if(!ground.ready(v,dt))continue;ground.begin(v);}
     v.update(dt, rin);
+    recordCarSurfaceStep(c,dt);
     if (v.spec.nitrous === true && !v.nitroOn) v.nitro = Math.min(1, v.nitro + dt * 0.012);
     // stop lines
     const f = v.s + G.dir * v.halfL;
@@ -1640,6 +1641,18 @@ function handlePeople() {
 }
 
 // ------------------------------------------------------------------ per-frame helpers
+// Cosmetic contact wear consumes only this car's completed physics slices.
+// Rendering, streamed holds and other cars' clocks cannot advance it.
+function recordCarSurfaceStep(c,dt){
+  const v=c.veh;let clock=c.surfaceClock;
+  if(!clock||clock.vehicle!==v||clock.corners!==v.corners)clock=c.surfaceClock={vehicle:v,corners:v.corners,pending:0};
+  if(Number.isFinite(dt)&&dt>0)clock.pending+=dt;
+}
+function consumeCarSurfaceStep(c){
+  const clock=c.surfaceClock;if(!clock)return 0;
+  const dt=clock.vehicle===c.veh&&clock.corners===c.veh.corners?clock.pending:0;
+  clock.pending=0;return dt;
+}
 function syncCar(c, dt) {
   const v = c.veh;
   v.place(c.model.root);
@@ -1669,7 +1682,8 @@ function syncCar(c, dt) {
   const impact = v.lastDamage && v.lastDamage.serial !== c.damageSerial ? v.lastDamage : null;
   if (multiplayer.active) c.model.setDamageSnapshot?.(v.damage);
   else for (const zone of ['front', 'rear', 'left', 'right']) c.model.setDamage?.(zone, v.damage?.[zone] || 0, impact?.zone === zone ? impact : undefined);
-  c.model.updateSurface?.(dt, v, settings.worldDetail !== false, multiplayer.active);
+  const surfaceDt=consumeCarSurfaceStep(c);
+  c.model.updateSurface?.(surfaceDt, v, settings.worldDetail !== false, multiplayer.active);
   if (!multiplayer.active && impact?.kind === 'wall' && c === player && impact.ebs > 3.3 && G.t - (c.damageSoundT ?? -1) > .18) {
     c.damageSoundT = G.t;
     audio.crash(impact.ebs > 10 ? 'heavy' : 'light', Math.min(1, (impact.ebs / 16) ** 2), { glass: impact.ebs > 7, metal: true });
@@ -2188,7 +2202,7 @@ function step(dt, draw = true, visual = true, frameDt = dt) {
       pv.dragMul = 1 - 0.32 * (G.draft || 0);
       const snapP = Q.has('nantrap') ? JSON.stringify({ x: pv.x, z: pv.z, s: pv.s, u: pv.u, yaw: pv.yaw, vL: pv.vLong, vLat: pv.vLat, w: pv.w, pin, ai: player.ai }) : '';
       const cpuPhysics = cpuMetrics.start();
-      if (G.pFinish === null) pv.update(dt, pin);
+      if (G.pFinish === null) { pv.update(dt, pin); if(!holdingRecovery)recordCarSurfaceStep(player,dt); }
       else { pv.vLong = pv.vLat = pv.w = 0; pv.syncWheels(); }
       cpuMetrics.end('playerPhysics', cpuPhysics);
       if (inFreeRoam() && route.closed) pv.s = route.wrap(pv.s); // untimed traffic stays in the same lap coordinates
