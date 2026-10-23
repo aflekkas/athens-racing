@@ -86,3 +86,14 @@ race and TT, rejects shortcut completion, and verifies catalogue/server/record
 and free-roam guidance behavior. Exact clean-candidate gates, browser driving,
 proof images, performance and remaining limits are recorded with the acceptance
 artifacts under [`.scratch/kifissia-kefalari/`](../../.scratch/kifissia-kefalari/README.md). The native race field and solo TT both completed two continuous laps with zero crashes, streaming holds or missing contacts. The existing scenery remains visibly too barren for leafy Kefalari; a separate shared vegetation/material pass is required.
+
+## Free-roam proof location correction
+
+The direct-coordinate free-roam harness requested `8059,-10553` and initially
+settled at `8093.714356,-10549.748651` on Artemidos, way 32084542, not the
+inspected 44 Deligianni viewpoint. Its throttle/no-race-props proof remains
+valid at the recorded snapped location. It does not prove an exact paired
+Deligianni scenery comparison or menu selection of the named-area anchor.
+The source record now includes the greenery agent's audited 10 generated/17
+mapped bodies within 80 m, generic height/roof handling limits, and the need
+for coordinated infill/physical reproof. No geometry changed in this correction.

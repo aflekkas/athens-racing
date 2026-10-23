@@ -23,15 +23,26 @@ not a claim that world geometry or scenery changed between the two frames.
 |---|---|---|
 | ![Lap two](native-lap-two.jpg) | ![Race finish](race-finished.jpg) | ![TT finish](tt-finished.jpg) |
 
-| Native start | Tow on asphalt | Driven onward after tow | Free roam |
+| Native start | Tow on asphalt | Driven onward after tow | Free roam: Artemidos |
 |---|---|---|---|
-| ![Start](provisional-start.jpg) | ![Tow](tow-on-road.jpg) | ![Rejoin](tow-rejoined.jpg) | ![Free roam](free-roam-kefalari.jpg) |
+| ![Start](provisional-start.jpg) | ![Tow](tow-on-road.jpg) | ![Rejoin](tow-rejoined.jpg) | ![Free roam on Artemidos](free-roam-kefalari.jpg) |
 
 Map: Kifissia / Kefalari · locked graphics look · chase · 1280×800 viewport,
 768×480 active render buffer · SwiftShader. Build: source baseline `a117ed94`
 plus this branch's route/proof/spawn/catalogue changes. The acceptance tuple is
 recorded in [race-proof.json](race-proof.json). The final combined release must
 rebuild the source-bound rival plan and rebind proofs to its final world.
+
+The free-roam harness requested world `8059,-10553` with the Kefalari area
+label. The recorded actual initial pose was `8093.714356,-10549.748651`,
+latitude 38.0747695742, longitude 23.8222410237: on **Artemidos**, OSM way
+32084542 (residential, one-way), 0.004640 m from its mapped centreline.
+The nearest Deligianni way 388932368 is 43.3165 m away. This source-coordinate
+result identifies the street; it does not establish bad map alignment.
+The pictured view is not the inspected 44 Deligianni Street View viewpoint.
+This direct-coordinate proof establishes free-roam behavior at the snapped
+location; the named spawn-area definition is covered separately by source tests.
+It does not verify the exact named-area anchor through the menu.
 
 ## How I tested it (required)
 
@@ -187,6 +198,9 @@ comparison. SwiftShader timing is not a hardware performance claim.
 
 ### Known limits and follow-ups
 
+- The actual free-roam comparison is on Artemidos, with no inspected matching
+  Street View viewpoint yet; nearby Deligianni references establish nearby
+  character, not an exact paired comparison.
 - Leafy residential character is visibly missing in the current world despite
   World detail On. The inspected Kokkinara/Levidou references have mature trees,
   fences and gardens. This stage does not claim faithful complete streetscape.

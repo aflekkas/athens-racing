@@ -121,3 +121,32 @@ not a motorway ramp. Exact terrain audit intersections are world
 `[6451.72,-6926.43]`, `[6224.83,-6984.31]`, `[5636.42,-5822.65]` respectively.
 Street View inspection of the actual approach profiles remains outstanding.
 Terrain/infrastructure owners received these facts; no geometry was changed.
+
+## Actual free-roam comparison location and building audit
+
+The acceptance harness requested world `8059,-10553`; its telemetry records an
+actual initial pose `8093.714356,-10549.748651`, geographic
+38.0747695742,23.8222410237. The greenery agent's source-coordinate audit puts
+this 0.004640 m from **Artemidos**, way 32084542, residential and one-way.
+The nearest Deligianni way 388932368 is 43.3165 m away. Thus the forward
+free-roam frame is Artemidos, not the inspected 44 Deligianni viewpoint above.
+This is a location correction, not evidence of map misalignment. A matched
+Artemidos Street View character inspection remains outstanding. The direct
+coordinate harness also differs from selecting the exact named-area anchor.
+
+The same authenticated-cell/current-OSM audit finds 27 rendered building bodies
+within 80 m: **10 generated infill and 17 mapped**. Generated infill heights
+are 12.8, 16, 19.2 and 22.4 m. Mapped bodies mostly use the generic 9.6 m
+fallback where source height/levels are absent; way 1086174094 is tagged
+`building=roof` but appears as a 9.6 m body. These are source/model facts,
+not surveyed real-world heights. Infill collision footprints occupy space
+that cannot safely receive trees. General infill eligibility/form and roof
+handling require an assigned generator owner and physical/world reproof;
+vegetation must not bypass the existing collision footprint. Authored Vas
+Psychiko and coastal recipes must remain protected.
+
+The audit is `.scratch/kefalari-greenery/building-source-audit.json` in the
+greenery agent's candidate, SHA-256
+`3f197d4472cb25b5e7c5f2392d045ce3128b44e03296a1f4edb654cf61df6e72`.
+This agent read and verified that report; no building, height, collision,
+route or spawn geometry was changed by this caption/source correction.
