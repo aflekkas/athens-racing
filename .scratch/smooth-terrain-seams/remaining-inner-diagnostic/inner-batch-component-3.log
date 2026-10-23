@@ -1,0 +1,80 @@
+/tmp/athens-terrain.uKVC/syntagma-component-e4b/tools/terrain-lp/model.py:127: OptimizeWarning: Unrecognized options detected: {'threads': 1}. These will be passed to HiGHS verbatim.
+  result=linprog(problem.objective,A_ub=matrix,b_ub=rhs,bounds=problem.bounds,method=method,options={'time_limit':seconds,'threads':1,'presolve':presolve,'disp':display})
+Running HiGHS 1.12.0 (git hash: 4f96ee8): Copyright (c) 2025 HiGHS under MIT licence terms
+LP has 150460 rows; 4445 cols; 541548 nonzeros
+Coefficient ranges:
+  Matrix  [2e-05, 1e+00]
+  Cost    [1e+00, 1e+00]
+  Bound   [8e-01, 8e-01]
+  RHS     [1e-03, 1e+00]
+Presolving model
+150460 rows, 4445 cols, 541548 nonzeros  0s
+118855 rows, 4445 cols, 444759 nonzeros  0s
+118855 rows, 4445 cols, 444759 nonzeros  0s
+Presolve reductions: rows 118855(-31605); columns 4445(-0); nonzeros 444759(-96789)
+Solving the presolved LP
+IPX model has 118855 rows, 5570 columns and 445884 nonzeros
+Input
+    Number of variables:                                5570
+    Number of free variables:                           0
+    Number of constraints:                              118855
+    Number of equality constraints:                     1125
+    Number of matrix entries:                           445884
+    Matrix range:                                       [2e-05, 1e+00]
+    RHS range:                                          [0e+00, 0e+00]
+    Objective range:                                    [1e+00, 1e+00]
+    Bounds range:                                       [1e-03, 1e+00]
+Preprocessing
+    Dualized model:                                     yes
+    Number of dense columns:                            0
+    Range of scaling factors:                           [1.00e+00, 4.00e+00]
+    Scaled cost norm:                                   1.19661
+    Scaled bounds norm:                                 1
+IPX version 1.0
+Interior point solve
+ Iter       primal obj         dual obj       pinf       dinf       gap     time
+   0   -4.86112208e-18   2.79324608e-21   7.50e-01   7.29e-01  4.86e-18       0s
+   1    3.20926238e+03  -1.64122944e+00   4.29e-02   1.49e-01  2.00e+00       0s
+   2    4.03409022e+02  -1.67142334e+00   4.91e-03   7.50e-03  2.01e+00       0s
+   3    4.45146140e+01  -1.81498898e+00   3.64e-04   2.13e-03  2.07e+00       0s
+   4    2.64276093e+00  -1.77269301e+00   2.16e-05   2.01e-05  3.08e+00       0s
+   5    2.59081377e-01  -1.24460847e+00   2.05e-06   7.37e-08  1.01e+00       0s
+ Constructing starting basis...
+   6    2.44385935e-02  -1.39409365e-01   1.84e-07   7.37e-14  1.55e-01       1s
+   7    7.35868466e-03  -2.90647954e-02   5.22e-08   1.21e-14  3.60e-02       1s
+   8    1.42362967e-03  -2.18657679e-02   3.74e-09   7.39e-15  2.31e-02       1s
+   9    1.12705730e-03  -1.89138227e-02   2.21e-09   5.19e-15  1.99e-02       3s
+  10    5.53531310e-04  -1.73916026e-02   1.49e-09   3.84e-15  1.78e-02       4s
+  11   -8.94048425e-04  -1.74586075e-02   1.24e-09   2.93e-15  1.64e-02       5s
+  12   -5.27972516e-03  -1.84939754e-02   7.95e-10   7.77e-16  1.31e-02       6s
+    Start  factorization  22: nonzeros in basis =     28387                   6s
+  13   -6.73876526e-03  -1.58563866e-02   6.09e-10   8.19e-17  9.02e-03       6s
+  14   -1.30973518e-02  -1.47081249e-02   1.03e-10   5.05e-17  1.59e-03       7s
+  15   -1.40306364e-02  -1.42038343e-02   1.26e-11   5.05e-17  1.71e-04       8s
+  16   -1.41590855e-02  -1.41786057e-02   9.08e-13   3.08e-17  1.92e-05       8s
+  17   -1.41687732e-02  -1.41720037e-02   1.57e-13   5.05e-17  3.19e-06       9s
+  18   -1.41713919e-02  -1.41716868e-02   1.56e-14   5.05e-17  2.91e-07       9s
+    Start  factorization  28: nonzeros in basis =     28408                  16s
+  19*  -1.41716785e-02  -1.41716824e-02   1.68e-15   5.05e-17  3.86e-09      16s
+  20*  -1.41716822e-02  -1.41716822e-02   5.71e-14   3.16e-17  4.37e-12      16s
+Running crossover as requested
+    Primal residual before push phase:                  8.94e-10
+    Dual residual before push phase:                    3.02e-12
+    Number of dual pushes required:                     4424
+Summary
+    Runtime:                                            19.32s
+    Status interior point solve:                        optimal
+    Status crossover:                                   time limit
+    objective value:                                    1.41716822e-02
+    interior solution primal residual (abs/rel):        1.41e-12 / 6.44e-13
+    interior solution dual residual (abs/rel):          1.00e-11 / 5.02e-12
+    interior solution objective gap (abs/rel):          4.71e-12 / 4.64e-12
+WARNING: Ipx: Stopped
+Ipx: IPM       optimal
+WARNING: Ipx: Crossover reached time limit
+Model status        : Time limit reached
+IPM       iterations: 20
+Crossover iterations: 1511
+Objective value     :  0.0000000000e+00
+HiGHS run time      :         20.03
+{"schema": "terrain-lp-component-1", "inputSHA256": "e85ca0c7de2cdc5f057d3e69828c41b45fea61d5bc03c595525b5e927ceaa281", "mode": "inner", "stage": "gradient", "facets": 16, "method": "highs-ipm", "presolve": true, "solverStatus": 1, "message": "Time limit reached. (HiGHS Status 13: model_status is Time limit reached; primal_status is None)", "forecast": {"componentId": "2016,12856", "nodes": 4444, "variables": 4445, "rows": 150460, "nonzeros": 541548, "forecastBytes": 478897383, "fullModelRows": 679034, "buildsMatrix": false}, "seconds": 21.21735980399535, "maxRSS": 240500736, "emittedCells": 0, "iterations": 20, "crossoverIterations": 1511, "componentId": "2016,12856", "fullRowCount": 679034, "partitionVersion": 1}

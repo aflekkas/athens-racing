@@ -181,3 +181,11 @@ Syntagma's measured251MiB. Every actual child will still be RSS-guarded1GiB with
 >=6GiB system availability and one solver worker; Node runtime helper threads
 are reported separately. CPU remains owned by the server until explicit handoff
 and a specific new grant.
+
+## Allocated remaining-INNER batch result
+
+Exact controller `4d12d98e` ran against frozen e4b/source e85 input and authenticated tool048b/saved915 certificate. The guarded sequence stopped after 69.6623 seconds with exit1 at the first nonoptimal component, `2016,12856`. Its 20-second HiGHS allowance expired in crossover (20 IPM iterations,1511 crossover iterations); SciPy returned status1 and no primal. Interior-log objective/residuals are not accepted certificates. No infeasibility conclusion follows.
+
+Saved Syntagma reverified, and three new components passed independent semantic primal/dual, exact Euclidean gradient and fixed-profile checks: `-32,960` G0.00030360019639725654; `992,-488` G0.02508041429618845; `1200,-72` G0.015712111643057407. Their dual gaps are below8.1e-11. Components `4576,-3504` and `7136,-10680` were never started; no complete bundle, full optimum, secondary solve, pack, default or field adoption exists.
+
+Sampled maximum RSS240615424B; minimum available21379915776B; all solvers one thread (Node has11 OS runtime/helper threads). Output200936B. Disk49%/75GB free before and after. All recorded supervisor/child PIDs absent after exit. Compact receipt, exact partial certificates and failed solver log are retained at `.scratch/smooth-terrain-seams/remaining-inner-diagnostic/`. Evidence-only changes; no runtime/world-gen edits or full-gate claim.
