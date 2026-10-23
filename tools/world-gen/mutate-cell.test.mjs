@@ -9,6 +9,7 @@ import {gzipSync,gunzipSync} from 'node:zlib';
 import {TILE_TABLES,tileTables} from '../../src/world-tile-format.js';
 import {encodeTile,packTiles} from './pack.mjs';
 import {repairCodeProof,repairPlanSha256,packFingerprint,buildingRowSha256,repairedSpool} from './repair-infill.mjs';
+import {sceneryProjectionCodeProof,openVerifiedSceneryCatalog,projectScenerySupport,SCENERY_PROJECTION_VERSION} from './scenery-projection.mjs';
 import {mutateOriginalCell,mutationCodeProof,mutationRecipeSha256,snapshotSceneryInvariants,assertSceneryInvariance,prepareMutationEncoding,mutationEncodingReservation} from './mutate-cell.mjs';
 const code=await mutationCodeProof(),infillCode=await repairCodeProof();
 const hash=b=>createHash('sha256').update(b).digest('hex'),bytes=j=>Buffer.from(JSON.stringify(j));
@@ -321,3 +322,25 @@ test('all input array branches reject enumerable, hidden and symbolic own extras
  }
  const native=protectedArgs();Object.defineProperty(native.source.cell,'extra',{value:123});await assert.rejects(mutateOriginalCell(native),/unexpected array own property/);
 });
+
+
+async function projectionStage(dir,{cell=[0,0],errors={}}={}){
+ const ordinary=sceneryStage(),value={...JSON.parse(ordinary.bytes),attribution:'OSM synthetic ODbL',cacheSha256:'a'.repeat(64),counts:{tree:1},errors:{},exclusionErrors:errors,extractor:'b'.repeat(64),limits:'Synthetic source',placementValidated:false,projection:{lat0:37.98,lon0:23.73,mlat:111320,mlon:87745.27512677578},source:{sha256:'c'.repeat(64)},version:1},data=bytes(value),path=join(dir,'scenery.json');await writeFile(path,data);
+ const source={sourcePath:path,sourceBytes:data.length,sourceSha256:hash(data),codeProof:sceneryProjectionCodeProof()},selection={cell,originXZ:cell.map(x=>x*512),tileMetres:512,selectorVersion:SCENERY_PROJECTION_VERSION,haloMetres:17};
+ const projected=projectScenerySupport(openVerifiedSceneryCatalog(source).catalog,selection);
+ return {stage:{codeSha256:code.scenery,projection:{source,selection,projectedSha256:projected.projectedSha256}},fullStage:{codeSha256:code.scenery,bytes:data,sha256:hash(data)}};
+}
+test('verified scenery projection matches full actual helper, raw invariance and ordinary packer',async()=>withTemp(async dir=>{
+ const {stage,fullStage}=await projectionStage(dir),base={guards:{codeSha256:code.guards,recipes:[]}},a=await mutateOriginalCell(args(fixture(),{...base,scenery:stage})),b=await mutateOriginalCell(args(fixture(),{...base,scenery:fullStage}));
+ assert.deepEqual(a.audit.stages.at(-1).report,b.audit.stages.at(-1).report);assert.deepEqual(a.spool.arrays,b.spool.arrays);assert.deepEqual(a.spool.tables,b.spool.tables);assert.equal(a.audit.stages.at(-1).dataHashes.sourceSha256,stage.projection.source.sourceSha256);assert.equal(a.audit.stages.at(-1).dataHashes.haloMetres,17);await packed(a,join(dir,'projected'));
+}));
+test('projection descriptor is snapshotted before assembler first await',async()=>withTemp(async dir=>{
+ const {stage}=await projectionStage(dir),a=args(fixture(),{guards:{codeSha256:code.guards,recipes:[]},scenery:stage}),expected=stage.projection.source.sourceSha256,pending=mutateOriginalCell(a);stage.projection.source.sourcePath='/does-not-exist';stage.projection.selection.cell[0]=99;stage.projection.projectedSha256='0'.repeat(64);const r=await pending;assert.equal(r.audit.stages.at(-1).dataHashes.sourceSha256,expected);assert.equal(r.audit.stages.at(-1).report.added,1);
+}));
+test('assembler rejects full/projection ambiguity, forged selection and reconstructed SHA drift',async()=>withTemp(async dir=>{
+ for(const alter of [s=>s.bytes=Buffer.from('{}'),s=>s.projection.projectedSha256='0'.repeat(64),s=>s.projection.source.catalogSha256='a'.repeat(64),s=>s.projection.selection.haloMetres=16]){const {stage}=await projectionStage(dir);alter(stage);await assert.rejects(mutateOriginalCell(args(fixture(),{guards:{codeSha256:code.guards,recipes:[]},scenery:stage})),/exclusive|reconstruction|unexpected|binding/);}
+ const {stage}=await projectionStage(dir,{cell:[1,0]});await assert.rejects(mutateOriginalCell(args(fixture(),{guards:{codeSha256:code.guards,recipes:[]},scenery:stage})),/cell\/origin substitution/);
+}));
+test('projected global exclusion errors cannot bypass assembler unchanged scenery policy',async()=>withTemp(async dir=>{
+ const {stage}=await projectionStage(dir,{errors:{distantUnresolved:1}});await assert.rejects(mutateOriginalCell(args(fixture(),{guards:{codeSha256:code.guards,recipes:[]},scenery:stage})),/complete explicit exclusion/);
+}));

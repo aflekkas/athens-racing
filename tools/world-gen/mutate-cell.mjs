@@ -13,6 +13,7 @@ import {TERRAIN_FIELDS,requireTerrainAcceptance} from './terrain-acceptance.mjs'
 import {terrainReliefField,refineTerrainRelief} from './terrain-relief.mjs';
 import {encodeTile} from './pack.mjs';
 import {applySceneryVegetation} from '../scenery-cell.mjs';
+import {verifyScenerySupport,consumeVerifiedScenerySupport} from './scenery-projection.mjs';
 import {assertVegetationClearance} from '../audit-world-vegetation.mjs';
 import {tileTables,validateWorldTile} from '../../src/world-tile-format.js';
 import {prepareTilePacket} from '../../src/world-tile-worker.js';
@@ -21,7 +22,7 @@ import {forecourtPlazas,insideLandmark} from '../../src/athens-landmarks.js';
 
 const MAX=64*1024*1024,WIRE_MAX=25*1024*1024;
 const modules={assembler:'./mutate-cell.mjs',infill:'./repair-infill.mjs',terrain:'./terrain-relief.mjs',paint:'./marking-surface.mjs',guards:'./bridge-guards.mjs',scenery:'../scenery-cell.mjs'};
-const dependencyFiles=['./pack.mjs','./infill.py','./model.py','./buildings.py','./terrain-acceptance.mjs','./areas/authored-guard-preservation.json','../audit-world-vegetation.mjs','../world-surface-audit.mjs','../world-bridge-audit.mjs','../world-roads-audit.mjs','../world-bore-audit.mjs','../../src/baked-geometry.js','../../src/world-tile-format.js','../../src/world-tile-worker.js','../../src/world-tile-buildings.js','../../src/world-tile-trees.js','../../src/world-tile-ground.js','../../src/world-tile-parking.js','../../src/world-tile-obstacles.js','../../src/vegetation-clearance.js','../../src/world-tile-psychiko.js','../../src/psychiko-building-data.js','../../src/world-tile-coast.js','../../src/coastal-dressing-data.js','../../src/athens-plazas.js','../../src/athens-landmarks.js','../../assets/athens/plazas.json'];
+const dependencyFiles=['./scenery-projection.mjs','./pack.mjs','./infill.py','./model.py','./buildings.py','./terrain-acceptance.mjs','./areas/authored-guard-preservation.json','../audit-world-vegetation.mjs','../world-surface-audit.mjs','../world-bridge-audit.mjs','../world-roads-audit.mjs','../world-bore-audit.mjs','../../src/baked-geometry.js','../../src/world-tile-format.js','../../src/world-tile-worker.js','../../src/world-tile-buildings.js','../../src/world-tile-trees.js','../../src/world-tile-ground.js','../../src/world-tile-parking.js','../../src/world-tile-obstacles.js','../../src/vegetation-clearance.js','../../src/world-tile-psychiko.js','../../src/psychiko-building-data.js','../../src/world-tile-coast.js','../../src/coastal-dressing-data.js','../../src/athens-plazas.js','../../src/athens-landmarks.js','../../assets/athens/plazas.json'];
 const typedPrototype=Object.getPrototypeOf(Uint8Array.prototype);
 const nativeSlots=Object.fromEntries(['buffer','byteOffset','byteLength','length'].map(k=>[k,Object.getOwnPropertyDescriptor(typedPrototype,k).get]));
 const backingLength=Object.getOwnPropertyDescriptor(ArrayBuffer.prototype,'byteLength').get;
@@ -228,15 +229,17 @@ async function sceneryExclusions(pack,entry,memory,code){
  const blocked=(x,z,r)=>plazas.some(q=>x>=q.x0-r&&x<=q.x1+r&&z>=q.z0-r&&z<=q.z1+r&&plazaDistance(q.p,x,z)<=r)||[-r,0,r].some(dx=>[-r,0,r].some(dz=>insideLandmark(x+dx,z+dz)));
  return {blocked,occupied,retainedBytes:prepared.bytes};
 }
-const STAGE_FIELDS={infill:['codeSha256','planBytes','planFileSha256','reviewedPlanSha256','sourcePath'],terrain:['codeSha256','fieldId','atlasBytes','atlasSha256','reportBytes','reportSha256'],paint:['codeSha256'],guards:['codeSha256','recipes'],scenery:['codeSha256','bytes','sha256']};
+const STAGE_FIELDS={infill:['codeSha256','planBytes','planFileSha256','reviewedPlanSha256','sourcePath'],terrain:['codeSha256','fieldId','atlasBytes','atlasSha256','reportBytes','reportSha256'],paint:['codeSha256'],guards:['codeSha256','recipes'],scenery:['codeSha256','bytes','sha256','projection']};
 function validateStageInputs(stages){
  keys(stages,['infill','terrain','paint','guards','scenery'],'stages');
  for(const name in stages)if(Object.hasOwn(stages,name)){
   const stage=stages[name];keys(stage,STAGE_FIELDS[name],name+' stage');
+  if(name==='scenery'&&Object.hasOwn(stage,'projection')&&(Object.hasOwn(stage,'bytes')||Object.hasOwn(stage,'sha256')))fail('scenery full source/projection are mutually exclusive');
   for(const key in stage)if(Object.hasOwn(stage,key)){
    const value=stage[key];if(key==='recipes'){
     if(!Array.isArray(value))fail('guard recipes must be declarative array');
     const count=denseArray(value);for(let i=0;i<count;i++){const d=Object.getOwnPropertyDescriptor(value,String(i));if(!d||!Object.hasOwn(d,'value'))fail('accessor/sparse guard recipes');const recipe=d.value;keys(recipe,['compiledBytes','sourcePlanBytes','compiledSha256','sourcePlanSha256'],'guard recipe');for(const field in recipe)if(Object.hasOwn(recipe,field)&&!(field.endsWith('Bytes')?nativeTypes.isUint8Array(recipe[field]):typeof recipe[field]==='string'))fail('declarative guard recipe field');}
+   }else if(key==='projection'){keys(value,['source','selection','projectedSha256'],'scenery projection');
    }else if(!(key.endsWith('Bytes')||key==='bytes'?nativeTypes.isUint8Array(value):typeof value==='string'))fail('declarative '+name+' stage field (callbacks forbidden)');
   }
  }
@@ -392,7 +395,14 @@ export async function mutateOriginalCell(input){
  if(stages.terrain){const s=stages.terrain,field=TERRAIN_FIELDS[s.fieldId];if(!field)fail('unknown terrain field');const atlas=pinnedJSON(s.atlasBytes,s.atlasSha256,'terrain atlas',memory),report=pinnedJSON(s.reportBytes,s.reportSha256,'terrain acceptance',memory);const accepted=requireTerrainAcceptance(scope.cells.length,{field,sourceRevision:source.revision,fieldSHA256:code.terrain,report});if(!field.geographyVerified||accepted.prototype)fail('terrain field lacks geographic/profile/protected/comfort release acceptance');if(atlas.revision!==source.revision)fail('terrain atlas source binding');const input=packFingerprint(pack),r=refineTerrainRelief(pack,terrainReliefField(atlas,{filter:field.id}));if(r.protected)fail('structurally protected terrain cell');run('terrain',input,r,{atlas:s.atlasSha256,acceptance:s.reportSha256});}
  if(stages.paint||stages.terrain){if(!stages.paint)fail('accepted terrain requires pinned paint stage');const input=packFingerprint(pack);run('paint',input,conformMarkingSurfaces(pack));}
  {const input=packFingerprint(pack),r=rebuildBridgeGuards(pack,proof);pack.metadata.budgets.triangles+=r.triangleDelta;validateWorldTile(pack,source);run('guards',input,r,{originalCompressed:entry.sha256,recipes:recipes.map(r=>r.recipeHash)});}
- if(stages.scenery){const s=stages.scenery,scenery=pinnedJSON(s.bytes,s.sha256,'scenery',memory),old=pack.metadata.extensions?.worldDetail?.vegetation;if(!old)fail('scenery vegetation schema');for(const index of Object.values(old))if(Number.isInteger(index)&&pack.arrays[index]?.byteLength&&Object.values(pack.metadata.tables).some(i=>overlap(pack.arrays[i],pack.arrays[index])))fail('scenery input aliases a physical array');const before=snapshotSceneryInvariants(pack),input=packFingerprint(pack),exclusions=await sceneryExclusions(pack,entry,memory,code);memory.prepared+=exclusions.retainedBytes;admitPinned(memory);const r=applySceneryVegetation(pack,scenery,exclusions),invariance=assertSceneryInvariance(before,pack,r);validateWorldTile(pack,source);run('scenery',input,{...r,invariance},{scenery:s.sha256});}
+ if(stages.scenery){const s=stages.scenery;let scenery,binding;
+  if(s.projection){
+   const retainedBytes=memory.inputCopies+memory.inputObjects+memory.parsedInputs+memory.sourceRetained+memory.proofRetained+memory.files+memory.prepared;
+   const verified=verifyScenerySupport({...s.projection,retainedBytes});
+   const support=consumeVerifiedScenerySupport(verified.token,{cell:pack.metadata.cell,originXZ:[pack.metadata.origin[0],pack.metadata.origin[2]],retainedBytes});
+   memory.files+=support.reservationBytes;admitPinned(memory);scenery=support.scenery;binding=support.binding;
+  }else{scenery=pinnedJSON(s.bytes,s.sha256,'scenery',memory);binding={scenery:s.sha256};}
+  const old=pack.metadata.extensions?.worldDetail?.vegetation;if(!old)fail('scenery vegetation schema');for(const index of Object.values(old))if(Number.isInteger(index)&&pack.arrays[index]?.byteLength&&Object.values(pack.metadata.tables).some(i=>overlap(pack.arrays[i],pack.arrays[index])))fail('scenery input aliases a physical array');const before=snapshotSceneryInvariants(pack),input=packFingerprint(pack),exclusions=await sceneryExclusions(pack,entry,memory,code);memory.prepared+=exclusions.retainedBytes;admitPinned(memory);const r=applySceneryVegetation(pack,scenery,exclusions),invariance=assertSceneryInvariance(before,pack,r);validateWorldTile(pack,source);run('scenery',input,{...r,invariance},binding);}
  const finalPhysicalFingerprint=packFingerprint(pack),lineage=freeze({schema:'cell-mutation-lineage-1',original:{...structuredClone(source),sha256:entry.sha256,entrySource:structuredClone(entry.source)},derived:{world:derived.world,revision:derived.revision},recipeSha256:derived.recipeSha256,assemblerSha256:code.assembler,codeProofSha256:digest(code),releaseScopeSha256:releaseScope.sha256,stages:structuredClone(reports)});
  pack.metadata.world=derived.world;pack.metadata.revision=derived.revision;pack.metadata.cellMutation=lineage;
  const encoding=prepareMutationEncoding(pack,{dependencies:entry.dependencies||[],retainedBytes:sourceMemory.retainedBytes+memory.inputCopies+memory.inputObjects+memory.parsedInputs+memory.files+memory.prepared+code.readReservationBytes+jsonMemory(code).heap});
