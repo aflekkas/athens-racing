@@ -96,6 +96,9 @@ export function addRoadGraph(lines,get,transform,region='penteli'){
    for(const reverse of line.oneway?[false]:[false,true]){
     const pp=reverse?[...points].reverse():points,src=reverse?to:from,dst=reverse?from:to,edge=`${region}:e:${line.id}:${serial}:${reverse?'r':'f'}`;
     tile.t.edges.push(id(edge),id(src),id(dst),tile.t.edgePoints.length/3,pp.length,text(line.name||(region==='penteli'?'Dionysou':'Megara Circuit')),1,line.speed||50,line.restricted?8:0,id('surface:roads'));for(const p of pp)tile.t.edgePoints.push(...local(p,cell));tile.t.edgeLayers.push(layer);
+    // Bind after physical contacts intern their labels, preserving every existing
+    // ID and every physical table byte when only graph metadata is corrected.
+    if(line.surface){tile.graphSurfaceBindings??=[];tile.graphSurfaceBindings.push({row:tile.t.edges.length-10,edgeId:edge,surface:line.surface});}
     const rec={id:edge,from:src,to:dst,tile};records.push(rec);for(const n of[src,dst]){if(!junctions.has(n))junctions.set(n,[]);junctions.get(n).push(rec);}
     if(!line.restricted&&!layer&&chain.length>=12){const j=Math.max(1,Math.floor(pp.length/2)),q=pp[j-1],r=pp[j],p=q.map((v,k)=>(v+r[k])/2),dx=r[0]-q[0],dz=r[2]-q[2],length=Math.hypot(dx,dz),lane=(line.width||6.8)/4;p[0]-=dz/length*lane;p[2]+=dx/length*lane;const yaw=Math.atan2(-dx,-dz);tile.t.anchors.push(id(`${region}:a:${edge}`),tile.t.anchorTransforms.length/4,id(edge),0,0);tile.t.anchorTransforms.push(...local(p,cell),yaw);}
    }chain=null;
@@ -112,6 +115,21 @@ export function addRoadGraph(lines,get,transform,region='penteli'){
  }
  for(const [via,edges]of junctions)for(const incoming of edges.filter(e=>e.to===via))for(const outgoing of edges.filter(e=>e.from===via)){if(incoming.from===outgoing.to)continue;const tile=incoming.tile,id=s=>intern(tile.ids,s);tile.t.turns.push(id(incoming.id),id(via),id(outgoing.id),0);}
  return {directedEdges:records.length,nodes:junctions.size,maxGrade};
+}
+/** Deferred source-role binding changes only graph surface words. The material
+ * must already exist on emitted physical contact triangles at the edge's layer. */
+export function bindRoadGraphSurfaces(tiles){
+ const edits=[],owners=new Set();
+ for(const tile of tiles.values())for(const binding of tile.graphSurfaceBindings||[]){
+  const {row,edgeId,surface}=binding,index=tile.ids.indexOf(surface),layer=tile.t.edgeLayers[row/10];
+  if(tile.ids[tile.t.edges[row]]!==edgeId||tile.ids[tile.t.edges[row+9]]!=='surface:roads')throw Error('Graph surface binding source changed: '+edgeId);
+  let physical=false;for(let i=0;i<tile.t.contactTriangles.length;i+=5)if(tile.t.contactTriangles[i+3]===index&&(tile.t.contactTriangles[i+4]&1)&&tile.t.contactLayers[i/5]===layer){physical=true;break;}
+  if(index<0||!physical)throw Error('Graph surface has no emitted physical contact: '+edgeId+' '+surface);
+  edits.push({tile,row,index});owners.add(tile);
+ }
+ for(const {tile,row,index}of edits)tile.t.edges[row+9]=index;
+ for(const tile of owners)delete tile.graphSurfaceBindings;
+ return {edges:edits.length,cells:owners.size};
 }
 export function addBuildingColliders(buildings,get,transform,height){
  let count=0;

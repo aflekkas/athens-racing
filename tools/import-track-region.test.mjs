@@ -5,7 +5,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {createHash} from 'node:crypto';
 import * as THREE from 'three';
-import {regionTransform,splitSegment,addAuthoredMeshes,addRails,addBarrierObstacles,addRoadGraph} from './world-gen/track-region-geometry.mjs';
+import {regionTransform,splitSegment,addAuthoredMeshes,addRails,addBarrierObstacles,addRoadGraph,bindRoadGraphSurfaces,addBuildingColliders} from './world-gen/track-region-geometry.mjs';
 import {checkSourceHashes,rejectDuplicateCells,regionBudgets} from './import-track-region.mjs';
 import {TILE_TABLES} from '../src/world-tile-format.js';
 const source={lat0:38.08,lon0:23.9,mlat:110997.96415769357,mlon:87737.04446643248};
@@ -97,4 +97,41 @@ test('cancelled regional preparation disposes its detached geometries, materials
 test('World detail Off defers regional downloads and root construction until enabled, retaining active cell masks',async()=>{
  const parent=new THREE.Group(),layer=new WorldRegionalScenery(parent),spec={kind:'penteli',projection:source};let builds=0;const build=layer.buildRoot;layer.buildRoot=function(...args){builds++;return build.apply(this,args);};
  try{setSetting('worldDetail',false);await layer.prepare(spec);layer.add('30,-23',spec);assert.equal(layer.root,null);assert.equal(layer.preparedRoot,null);assert.equal(builds,0);assert.equal(layer.cells.size,1);setSetting('worldDetail',true);await new Promise(r=>setImmediate(r));assert.equal(builds,1);assert.ok(layer.root);assert.equal(parent.children.length,1);}finally{layer.dispose();setSetting('worldDetail',true);}
+});
+
+
+function megaraSurfaceFixture({bind=false,restricted=false}={}){
+ const f=fixture(),transform=regionTransform(source,source),network={id:'way-70043222-0',name:'Source-backed approach',points:[[20,10,30],[40,10,30]],width:5,oneway:true,restricted,...(bind?{surface:'surface:megaraNetwork'}:{})};
+ addRoadGraph([network,{id:'raceway-70043234',points:[[20,10,90],[40,10,90]],width:11.5}],f.get,transform,'megara');
+ const group=new THREE.Group(),geometry=new THREE.PlaneGeometry(30,10);geometry.rotateX(-Math.PI/2);geometry.translate(30,10,30);group.add(new THREE.Mesh(geometry,new THREE.MeshBasicMaterial()));
+ addAuthoredMeshes(group,f.get,transform,{surface:'megaraNetwork',contacts:true,contactSurface:true});
+ addBarrierObstacles([{x:300,z:300,y:10,yaw:0,hl:2,hw:.5,kind:'tyre'}],f.get,transform);
+ addBuildingColliders([{id:7,p:[90,90,100,90,100,100,90,100],h:4}],f.get,transform,()=>10);
+ return {...f,tile:f.tiles.get('0,0')};
+}
+const tableBytes=(tile,name)=>Buffer.from(new globalThis[TILE_TABLES[name][0]](tile.t[name]).buffer);
+
+test('Megara access graph binds its emitted physical surface without changing geometry or physical table bytes',async()=>{
+ const {buildTileContactIndex,sampleTileContact}=await import('../src/world-tile-contact.js'),{routeSurfaceAllowed}=await import('../src/route-surface.js');
+ const old=megaraSurfaceFixture(),fixed=megaraSurfaceFixture({bind:true}),before=structuredClone(fixed.tile.t.edges),result=bindRoadGraphSurfaces(fixed.tiles);assert.deepEqual(result,{edges:1,cells:1});
+ assert.deepEqual(fixed.tile.ids,old.tile.ids,'deferred binding preserves all existing ID positions');assert.deepEqual(fixed.tile.strings,old.tile.strings);
+ for(const name of Object.keys(TILE_TABLES))if(name!=='edges')assert.deepEqual(tableBytes(fixed.tile,name),tableBytes(old.tile,name),name+' bytes unchanged');
+ assert.ok(fixed.tile.t.contactPositions.length&&fixed.tile.t.buildings.length&&fixed.tile.safetyRails.length);
+ assert.deepEqual(fixed.tile.safetyRails,old.tile.safetyRails);assert.deepEqual(fixed.tile.authored,old.tile.authored,'all authored vertices and attributes unchanged');
+ for(let i=0;i<before.length;i++)if(i!==9)assert.equal(fixed.tile.t.edges[i],before[i],'only the explicitly bound network surface word changes');
+ assert.equal(old.tile.ids[old.tile.t.edges[9]],'surface:roads');assert.equal(fixed.tile.ids[fixed.tile.t.edges[9]],'surface:megaraNetwork');
+ for(let i=10;i<fixed.tile.t.edges.length;i+=10)assert.equal(fixed.tile.ids[fixed.tile.t.edges[i+9]],'surface:roads','raceway defaults stay unchanged');
+ const contact=sampleTileContact(fixed.tile.t,buildTileContactIndex(fixed.tile.t),30,30,{requiredFlags:1,referenceY:10});assert.ok(contact);contact.surfaceId=fixed.tile.ids[contact.surface];
+ const edge=tile=>({id:tile.ids[tile.t.edges[0]],surface:tile.ids[tile.t.edges[9]],layer:tile.t.edgeLayers[0]}),allowed=tile=>{const e=edge(tile);return routeSurfaceAllowed(e,contact,{edges:new Map([[e.id,{value:e}]])});};
+ assert.equal(contact.surfaceId,'surface:megaraNetwork');assert.equal(allowed(old.tile),false,'negative control reproduces the actual source-label rejection');assert.equal(allowed(fixed.tile),true);
+ assert.deepEqual(bindRoadGraphSurfaces(fixed.tiles),{edges:0,cells:0});assert.deepEqual(bindRoadGraphSurfaces(old.tiles),{edges:0,cells:0},'untyped tracks retain their default behavior');geometryCleanup(old);geometryCleanup(fixed);
+});
+function geometryCleanup(f){for(const tile of f.tiles.values())tile.authored?.clear();}
+
+test('graph surface binding preserves one-way permissions and rejects absent, wrong-layer or non-road contacts atomically',()=>{
+ const f=megaraSurfaceFixture({bind:true,restricted:true}),before=f.tile.t.edges.slice();bindRoadGraphSurfaces(f.tiles);assert.equal(f.tile.t.edges[8],8,'asphalt contact flags never replace graph access restrictions');assert.equal(f.tile.t.edges.filter((_,i)=>i%10===0&&f.tile.ids[f.tile.t.edges[i]].startsWith('megara:e:way-')).length,1,'one-way direction remains a single source edge');
+ for(const corrupt of [f=>f.tile.graphSurfaceBindings[0].surface='surface:missing',f=>f.tile.t.edgeLayers[0]=1,f=>{for(let i=4;i<f.tile.t.contactTriangles.length;i+=5)f.tile.t.contactTriangles[i]=4;}]){
+  const bad=megaraSurfaceFixture({bind:true});corrupt(bad);const original=bad.tile.t.edges.slice();assert.throws(()=>bindRoadGraphSurfaces(bad.tiles),/no emitted physical contact/);assert.deepEqual(bad.tile.t.edges,original);
+ }
+ assert.equal(before[8],f.tile.t.edges[8]);
 });

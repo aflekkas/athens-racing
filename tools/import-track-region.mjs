@@ -19,7 +19,7 @@ import {WorldDetail} from '../src/world-detail.js';
 import {conformImportedRoads} from './world-gen/conform-imported-roads.mjs';
 import {buildScenery} from '../src/maps/penteli.js';
 import {buildScenery as buildMegaraScenery} from '../src/maps/megara.js';
-import {regionTransform,REGION_PROJECTION,addAuthoredMeshes,decorateAuthored,addBridgeAprons,addRails,addBarrierObstacles,addRoadGraph,addBuildingColliders,proveAnchors} from './world-gen/track-region-geometry.mjs';
+import {regionTransform,REGION_PROJECTION,addAuthoredMeshes,decorateAuthored,addBridgeAprons,addRails,addBarrierObstacles,addRoadGraph,bindRoadGraphSurfaces,addBuildingColliders,proveAnchors} from './world-gen/track-region-geometry.mjs';
 import {WorldTileBarriers} from '../src/world-tile-barriers.js';
 import {WorldTileObstacles,buildTileObstacleIndex} from '../src/world-tile-obstacles.js';
 import {WorldRoadGraph} from '../src/world-tile-graph.js';
@@ -171,7 +171,7 @@ async function importMegaraRegion({root,out,config,revision,baseline}){
  const context=JSON.parse(await readFile(resolve(root,'tools/maps/megara/raw/context.json'))),ways=new Map(context.map(w=>[w.id,w]));
  const points=Array.from({length:map.route.N},(_,i)=>map.route.point(i*map.route.step,0).toArray());
  const lines=[{id:'raceway-70043234',name:'Megara Circuit',points,width:11.5,oneway:false,speed:80}];
- for(const road of map.data.roadNetwork?.roads||[]){const evidence=ways.get(road.id),tags=evidence?.tags;if(!tags)throw Error('Missing Megara source access evidence: '+road.id);const access=tags.motorcar??tags.motor_vehicle??tags.vehicle??tags.access;const restricted=access!=null&&!['yes','permissive','designated'].includes(access)||Object.keys(tags).some(k=>k.endsWith(':conditional'));const roadPoints=[];for(let i=0;i<road.p.length;i+=2){const x=road.p[i],z=road.p[i+1];roadPoints.push([x,bake.network.height(x,z),z]);}lines.push({id:`way-${road.id}-${road.part||0}`,name:road.n||'Megara approach',points:roadPoints,width:road.w,oneway:!!road.oneway,restricted,speed:road.v});}
+ for(const road of map.data.roadNetwork?.roads||[]){const evidence=ways.get(road.id),tags=evidence?.tags;if(!tags)throw Error('Missing Megara source access evidence: '+road.id);const access=tags.motorcar??tags.motor_vehicle??tags.vehicle??tags.access;const restricted=access!=null&&!['yes','permissive','designated'].includes(access)||Object.keys(tags).some(k=>k.endsWith(':conditional'));const roadPoints=[];for(let i=0;i<road.p.length;i+=2){const x=road.p[i],z=road.p[i+1];roadPoints.push([x,bake.network.height(x,z),z]);}lines.push({id:`way-${road.id}-${road.part||0}`,name:road.n||'Megara approach',surface:'surface:megaraNetwork',points:roadPoints,width:road.w,oneway:!!road.oneway,restricted,speed:road.v});}
  // The physical timing gantry, stripe and grid belong to the later route job.
  scenery.group.getObjectByName('timing-start')?.removeFromParent();
  const report={schemaVersion:1,region:'megara',revision,sourceHashes:config.sourceHashes,inclusion:config.inclusion,projection:REGION_PROJECTION,elevation:config.elevation,sourceLength:map.route.length,sourceSamples:map.route.N,sceneParity:{tyreStacks:scenery.group.userData.tyreWalls?.length||0,barrierObstacles:scenery.obstacles.length,kerbRuns:map.route.kerbs.length,pavedAreas:map.data.circuit.pavedAreas.length,buildings:map.data.buildings.length}};
@@ -190,6 +190,7 @@ async function importMegaraRegion({root,out,config,revision,baseline}){
     report.sceneryTriangles=addAuthoredMeshes(scenery.group,get,transform,{surface:megaraSurface,include:m=>megaraVisible(m)&&!asphalt(m)});
     report.barriers=addBarrierObstacles(scenery.obstacles,get,transform,height);
     report.buildingColliders=addBuildingColliders(map.data.buildings,get,transform,height);
+    report.graphSurfaceBindings=bindRoadGraphSurfaces(tiles);
     report.anchors=proveAnchors(tiles,{buildIndex:buildTileContactIndex,sample:sampleTileContact,Barriers:WorldTileBarriers,buildObstacles:buildTileObstacleIndex,Obstacles:WorldTileObstacles});
     for(const tile of tiles.values()){tile.provenance={region:'megara',revision};tile.regionalScenery={kind:'megara',projection:map.data.proj,terrain:regionalTerrain};}
     if(baseline)rejectDuplicateCells({tiles:Object.fromEntries(tiles)},baseline);
