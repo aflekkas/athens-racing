@@ -35,7 +35,6 @@ import { cameraRelativeSource, cameraDirectionPan, syncAudioListener } from './a
 // PARALIAKI: race a rival down the real Athens Riviera coast road, Vouliagmeni -> the lake -> Limanakia -> Varkiza -> Lomvarda.
 // World built from OpenStreetMap data (see tools/). Menus boot without a world; direct race URLs load on demand.
 import * as THREE from 'three';
-import { LANE_W } from './map.js';
 import { getMap } from './map-catalog.js';
 import { menuMapContext, quickMapEvent, initialMapId } from './menu-map.js';
 import { waitForBootSession } from './boot-session.js';
