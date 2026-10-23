@@ -1,0 +1,179 @@
+{
+  "status": "Diagnostic complete; no pack/adoption/geographic acceptance",
+  "sourceCommit": "556aa6704a1dfa1ff83001550058e0549c3189b1",
+  "rssLimitBytes": 2684354560,
+  "minimumAvailableBytes": 6442450944,
+  "deadlineSeconds": 174,
+  "phases": [
+    {
+      "phase": "min-gradient-inner",
+      "command": [
+        "/tmp/athens-terrain.uKVC/scipy-venv/bin/python",
+        "/tmp/athens-terrain.uKVC/min-gradient-556/tools/terrain-lp/model.py",
+        "/tmp/athens-terrain.uKVC/min-gradient-input.json",
+        "--sha256",
+        "e85ca0c7de2cdc5f057d3e69828c41b45fea61d5bc03c595525b5e927ceaa281",
+        "--mode",
+        "inner",
+        "--solve",
+        "--seconds",
+        "50",
+        "--memory-bytes",
+        "2684354560",
+        "--output",
+        "/tmp/athens-terrain.uKVC/min-gradient-inner.json"
+      ],
+      "startedSeconds": 0.007727666990831494,
+      "rssPeak": 1018507264,
+      "minimumAvailable": 21380927488,
+      "maximumThreads": 1,
+      "ownedPID": 1242610,
+      "exitCode": 0,
+      "endedSeconds": 55.03875465499004
+    },
+    {
+      "phase": "min-gradient-outer",
+      "command": [
+        "/tmp/athens-terrain.uKVC/scipy-venv/bin/python",
+        "/tmp/athens-terrain.uKVC/min-gradient-556/tools/terrain-lp/model.py",
+        "/tmp/athens-terrain.uKVC/min-gradient-input.json",
+        "--sha256",
+        "e85ca0c7de2cdc5f057d3e69828c41b45fea61d5bc03c595525b5e927ceaa281",
+        "--mode",
+        "outer",
+        "--solve",
+        "--seconds",
+        "40",
+        "--memory-bytes",
+        "2684354560",
+        "--output",
+        "/tmp/athens-terrain.uKVC/min-gradient-outer.json"
+      ],
+      "startedSeconds": 55.0409707739891,
+      "rssPeak": 990035968,
+      "minimumAvailable": 21056053248,
+      "maximumThreads": 1,
+      "ownedPID": 1242764,
+      "exitCode": 0,
+      "endedSeconds": 99.14928178099217
+    }
+  ],
+  "emittedCells": 0,
+  "adopted": false,
+  "pin": {
+    "commit": "556aa6704a1dfa1ff83001550058e0549c3189b1",
+    "inputSHA256": "e85ca0c7de2cdc5f057d3e69828c41b45fea61d5bc03c595525b5e927ceaa281",
+    "toolReceiptSHA256": "048b493756127e3b5083601738b24838f1c5aa6519d9e3bed4d8e24269fa158d",
+    "sourceSHA256": {
+      "tools/terrain-lp/prepare.mjs": "10f10c456babf23106641cbecbb410003c8f5c6e7b1fbdbd8a843e65cddc99cc",
+      "tools/terrain-lp/verify.mjs": "acdaede9ca9ad9d49d3d4325a47c0f5ad0a522d9cb807509b176919674cf0481",
+      "tools/terrain-lp/model.py": "44549e4c5c1edfafdf20eb1047b360b3bb22d2793bedabfed0a6b3eb0cf0f10c"
+    }
+  },
+  "availableBefore": 22471950336,
+  "inner": {
+    "schema": "terrain-lp-certificate-1",
+    "inputSHA256": "e85ca0c7de2cdc5f057d3e69828c41b45fea61d5bc03c595525b5e927ceaa281",
+    "mode": "inner",
+    "stage": "gradient",
+    "facets": 16,
+    "solverStatus": 1,
+    "message": "Time limit reached. (HiGHS Status 13: model_status is Time limit reached; primal_status is None)",
+    "forecast": {
+      "nonzeroUpperBound": 2756510,
+      "nodes": 19470,
+      "variables": 19471,
+      "rows": 679034,
+      "gradientTriangles": 41898,
+      "facets": 16,
+      "forecastBytes": 1925232927,
+      "calibrationRSS": 959492096,
+      "buildsMatrix": false
+    },
+    "seconds": 53.48112515499815,
+    "maxRSS": 1018421248,
+    "emittedCells": 0
+  },
+  "outer": {
+    "schema": "terrain-lp-certificate-1",
+    "inputSHA256": "e85ca0c7de2cdc5f057d3e69828c41b45fea61d5bc03c595525b5e927ceaa281",
+    "mode": "outer",
+    "stage": "gradient",
+    "facets": 16,
+    "solverStatus": 1,
+    "message": "Time limit reached. (HiGHS Status 13: model_status is Time limit reached; primal_status is None)",
+    "forecast": {
+      "nonzeroUpperBound": 2756510,
+      "nodes": 19470,
+      "variables": 19471,
+      "rows": 679034,
+      "gradientTriangles": 41898,
+      "facets": 16,
+      "forecastBytes": 1925232927,
+      "calibrationRSS": 959492096,
+      "buildsMatrix": false
+    },
+    "seconds": 42.975675061985385,
+    "maxRSS": 989917184,
+    "emittedCells": 0
+  },
+  "secondarySkipped": "No independently verified inner primal optimum",
+  "seconds": 99.15145576099167,
+  "availableAfter": 22330847232,
+  "conclusion": "INCONCLUSIVE: both time-limited with no primal/certificate; neither feasibility nor infeasibility established",
+  "rootIdentityNote": "Root711e9fe3 has one whitespace-only normalization; actual run is exact556 isolated code, not root byte identity",
+  "symbolicCounts": {
+    "status": "SOURCE symbolic counts only; no SciPy/matrix/solve",
+    "fixedDeltaVariables": 58,
+    "freeDeltaVariables": 19412,
+    "rows": 679034,
+    "fixedOnlyRedundantRows": 14388,
+    "individualAmplitudeObstructions": [],
+    "individualAmplitudeNecessaryLowerBound": 0.2977290246013653,
+    "amplitudeAloneFeasibilityEstablished": false,
+    "note": "No singleton obstruction does not establish simultaneous amplitude/profile feasibility. Presolve counts/method execution log absent from exact556 run."
+  },
+  "components": {
+    "status": "SOURCE graph decomposition diagnosis only; no matrix/solve/acceptance",
+    "freeNodes": 19412,
+    "components": 7,
+    "largest": [
+      {
+        "freeNodes": 4488,
+        "chords": 910
+      },
+      {
+        "freeNodes": 4444,
+        "chords": 1125
+      },
+      {
+        "freeNodes": 4079,
+        "chords": 769
+      },
+      {
+        "freeNodes": 3274,
+        "chords": 578
+      },
+      {
+        "freeNodes": 1958,
+        "chords": 498
+      },
+      {
+        "freeNodes": 973,
+        "chords": 314
+      },
+      {
+        "freeNodes": 196,
+        "chords": 8
+      }
+    ],
+    "fixedOnlyComfortFailures": [],
+    "allConstraintsStayWithinOneFreeComponent": true,
+    "sharedVariable": "gradient bound G only; monotone component constraints",
+    "sourceCommit": "556aa6704a1dfa1ff83001550058e0549c3189b1",
+    "inputSHA256": "e85ca0c7de2cdc5f057d3e69828c41b45fea61d5bc03c595525b5e927ceaa281",
+    "emittedCells": 0
+  },
+  "controllerSHA256": "b1e4a63799e3e5c83578b3fefeb2682754b3b490148148c17e05c1fcb1f7bf61",
+  "diskBeforeAfter": "48% used;76GB free; other shared work may vary"
+}

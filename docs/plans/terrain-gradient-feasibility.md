@@ -113,3 +113,68 @@ An outer certificate can have a valid lower bound while failing the actual
 Euclidean primal check; that failure must remain visible. No emitted pack,
 release/default adoption, full source suite or actual-game proof is claimed by
 this source-only implementation.
+
+## Exact556 guarded minimum-gradient timeout
+
+The separately allocated diagnostic is **inconclusive**. Exact556 isolated
+source, input e85c and tool-receipt048b were authenticated. Inner50s and outer40s
+both returned HiGHS status1, time limit, `primal_status None`; neither produced
+primal values, a sparse dual certificate, a gradient optimum or a residual to
+verify. Independent real-input verification and secondary L1 were correctly
+skipped. This does not prove infeasibility. Total controller time99.15s; all
+owned processes exited. No pack/adoption/default or owner-bound change.
+
+Own-PID monitors measured peak RSS1,018,507,264B inner /990,035,968B outer,
+maximum1thread and minimum available21,056,053,248B; 2.5GiB/6GiB guards did not
+trip. The calibrated1.925GB forecast remained conservative for these **timed-out**
+runs; a timeout peak is not a complete-solve upper bound or production budget.
+The controller has an external180s deadline, its own174s deadline and guarded
+recorded direct-child handles; it never signals a discovered unrelated PID.
+Compact receipt and source are in `gradient-solve-timeout.json` / `proof-tools/`.
+
+### Source diagnosis before another allocation
+
+Pinned SciPy1.18.1 `_linprog.py` maps `method='highs'` to `solver=None`;
+`_linprog_highs.py` documents the default as simplex and defaults presolve=True.
+Exact556 used this path. It did not request verbose output, so actual presolve
+counts, chosen internal algorithm, iteration counts and degeneracy diagnostics
+were **not captured** and cannot be reconstructed from a timeout status.
+A later explicit method comparison must log these, not infer them.
+
+Symbolic reconstruction (no SciPy or stored matrix) finds58 fixed delta
+variables and14,388 rows redundant after fixed-zero substitution and G>=0.
+Eliminating these alone removes only~2% of679,034 rows. The objective charges
+only one shared G and leaves19,412 free corrections unpenalized; substantial
+primal degeneracy is a plausible performance cause, not an established runtime
+profile. Singleton amplitude bounds have no contradiction; their necessary
+amplitude maximum is0.297729m. That does **not** prove simultaneous feasibility
+under0.75m plus profile/protected constraints.
+
+The free-variable constraint graph has7 independent components (global G is
+the only shared variable), with free-node/chord counts:
+4488/910,4444/1125,4079/769,3274/578,1958/498,973/314,196/8.
+All chord/triangle/profile rows stay in one free component; fixed variables are
+constants, and no fixed-only comfort violation exists. Because every component
+is monotone in G, the whole minimum G equals the maximum of independently
+verified component minima; fixed-G L1 costs then add. This algebraic
+factorization needs source tests/certificate mappings before implementation,
+not a larger blind full-matrix time grant.
+
+A distinct amplitude-only diagnostic should first test all chords and declared
+profiles with the same0.75/support/protected bounds and no gradient requirement.
+A phase-I minmax sag objective can produce a verified feasible field (threshold
+0.5) or a lower-dual contradiction. Its actual gradients must still be reported;
+amplitude-only success cannot authorize a gradient field or pack. No such solve
+has run yet.
+
+For the gradient stage, propose bounded active-facet generation: retain every
+comfort/profile constraint, start with a finite subset of gradient facets, solve,
+then independently separate against **all**16-facet triangle rows. Add every
+violated row using stable full-model semantic IDs. Omitted dual multipliers are
+zero, so a verified lower bound remains valid; acceptance requires every omitted
+row and true Euclidean norm to pass. Cap iterations/active rows/time/memory and
+stop with remaining violations rather than claim convergence. Fixed-only and
+duplicate rows may be screened only by exact, audited equivalence. Use tiny
+positive/negative fixtures before considering explicit `highs-ipm` versus
+`highs-ds` with presolve/iteration logs. No follow-up solver or matrix allocation
+is authorized by this source diagnosis.
