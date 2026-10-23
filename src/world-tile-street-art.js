@@ -16,7 +16,7 @@ export const STREET_ART = Object.freeze({ marks: true, murals: true });
 export const ART_LIMITS = Object.freeze({ plates: 360, shops: 1300, walls: 520, marks: 1700 });
 const H24 = n => n & 0xffffff;
 const SHOP_STYLES = new Set([0, 1, 3, 4, 9, 10, 11]);
-/** Kerb run of one edge: its distance to a junction is under this, or a hash window says so, and the strip is yellow (no parking); at a bus stop it alternates red and white. */
+/** Yellow only beside actual graph junction approaches; bus-stop paint follows mapped stop rows. */
 const YELLOW_NEAR = 14, STRIP = 4, KERB_WIDTH = .32;
 
 function indexSegments(t) {
@@ -66,10 +66,11 @@ export function deriveStreetArt(t, m, infos, { ox = 0, oz = 0, propsRows = null,
   const pos = new Map(); for (let i = 0; i < t.nodes.length; i += 2) pos.set(t.nodes[i], t.nodes[i + 1]);
   const incident = new Map(), link = (node, e) => { (incident.get(node) || incident.set(node, []).get(node)).push(e); };
   for (let e = 0; e < E.length / 10; e++) { if ((E[e * 10 + 8] & 6) || (t.edgeLayers && t.edgeLayers[e] !== 0)) continue; link(E[e * 10 + 1], e); link(E[e * 10 + 2], e); }
+  const junctionNodes=new Set([...incident].filter(([node,edges])=>new Set(edges.map(e=>E[e*10+1]===node?E[e*10+2]:E[e*10+1])).size>=3).map(([node])=>node));
   const wallList = [...walls(infos)];
   for (const [node, edges] of incident) {
     if (plates.length >= ART_LIMITS.plates * 7) break;
-    const nb = new Set(edges.map(e => (E[e * 10 + 1] === node ? E[e * 10 + 2] : E[e * 10 + 1]))); if (nb.size < 3) continue;
+    if (!junctionNodes.has(node)) continue;
     const pi = pos.get(node); if (pi == null) continue;
     const nx0 = t.nodePositions[pi * 3], ny0 = t.nodePositions[pi * 3 + 1], nz0 = t.nodePositions[pi * 3 + 2];
     const named = edges.filter(e => strings[E[e * 10 + 5]]); if (!named.length) continue;
@@ -105,16 +106,21 @@ export function deriveStreetArt(t, m, infos, { ox = 0, oz = 0, propsRows = null,
       if (length < 12) continue;
       const at = s => { let acc = 0, k = 0; while (k < seg.length - 1 && acc + seg[k] < s) { acc += seg[k]; k++; } const a = first + k, l = seg[k] || 1, f = Math.min(1, Math.max(0, (s - acc) / l)); return { x: P[a * 3] + (P[a * 3 + 3] - P[a * 3]) * f, y: P[a * 3 + 1] + (P[a * 3 + 4] - P[a * 3 + 1]) * f, z: P[a * 3 + 2] + (P[a * 3 + 5] - P[a * 3 + 2]) * f, tx: (P[a * 3 + 3] - P[a * 3]) / l, tz: (P[a * 3 + 5] - P[a * 3 + 2]) / l }; };
       const kerb = s => { const p = at(s), w = asphalt.reach(p.x, p.z, -p.tz, p.tx, 9); return w < 1.2 ? null : { ...p, w, kx: p.x - p.tz * (w - KERB_WIDTH / 2 - .15), kz: p.z + p.tx * (w - KERB_WIDTH / 2 - .15) }; };
+      const paintKerb=E[o+7]<80,nearStart=junctionNodes.has(E[o+1]),nearEnd=junctionNodes.has(E[o+2]);
       let prev = null;
       for (let s = 0; s <= length + .01; s += STRIP) {
         const cur = kerb(Math.min(s, length));
-        if (prev && cur && Math.abs(prev.w - cur.w) < .8) {
-          const mid = (s - STRIP / 2), window = Math.floor(mid / 22);
+        if (paintKerb && prev && cur && Math.abs(prev.w - cur.w) < .8) {
+          const mid = (s - STRIP / 2);
           let colour = -1;
-          if (mid < YELLOW_NEAR || mid > length - YELLOW_NEAR || length < 2 * YELLOW_NEAR + 6) colour = 0; else if (hashN(id * 131 + window) % 100 < 20) colour = 0;
+          if (nearStart && mid < YELLOW_NEAR || nearEnd && mid > length - YELLOW_NEAR) colour = 0;
           const px = (prev.kx + cur.kx) / 2, pz = (prev.kz + cur.kz) / 2;
           for (let i = 0; i < stops.length; i += 2) if (Math.hypot(stops[i] - px, stops[i + 1] - pz) < 7.5 && (stops[i] - prev.x) * (-prev.tz) + (stops[i + 1] - prev.z) * prev.tx > 0) { colour = Math.floor(mid / 1.2) % 2 ? 2 : 1; break; }
-          if (colour >= 0 && fits(px,pz,Math.atan2(cur.kx-prev.kx,cur.kz-prev.kz),Math.hypot(cur.kx-prev.kx,cur.kz-prev.kz)/2,KERB_WIDTH/2)) marks.push(0, prev.kx, markY(prev.kx,prev.kz,prev.y), prev.kz, cur.kx, cur.kz, colour);
+          // A whole strip must border non-asphalt. A street mouth can be
+          // fully asphalt yet have no kerb, so containment alone is insufficient.
+          const nx=-cur.tz,nz=cur.tx,outer=KERB_WIDTH/2+.4;
+          let edge=true;for(let k=0;k<=4;k++){const u=k/4;if(asphalt.inside(prev.kx+(cur.kx-prev.kx)*u+nx*outer,prev.kz+(cur.kz-prev.kz)*u+nz*outer)){edge=false;break;}}
+          if (colour >= 0 && edge && fits(px,pz,Math.atan2(cur.kx-prev.kx,cur.kz-prev.kz),Math.hypot(cur.kx-prev.kx,cur.kz-prev.kz)/2,KERB_WIDTH/2)) marks.push(0, prev.kx, markY(prev.kx,prev.kz,prev.y), prev.kz, cur.kx, cur.kz, colour);
         }
         prev = cur;
       }
