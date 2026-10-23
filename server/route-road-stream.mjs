@@ -1,19 +1,32 @@
 import { canonicalJSON, sha256 } from '../src/route-definition.js';
 import { ROUTE_HASH } from '../src/route-network.js';
 import { validateRouteRoads, validateRecoveryRoadJSON, routeRoadAuthority } from './route-roads.mjs';
-import { recoveryDataBytes, recoveryUTF8Bytes, scanRecoveryJSON, snapshotRecoverySidecar } from './route-road-wire.mjs';
+import { recoveryDataBytes, recoveryUTF8Bytes, scanRecoveryJSON, snapshotRecoverySidecar, recoveryJSONDataBytes } from './route-road-wire.mjs';
 export { recoveryDataBytes } from './route-road-wire.mjs';
 export const RECOVERY_ARTIFACT_BYTES = 2 * 1024 * 1024;
 const cellOf = pose => `${Math.floor(pose.x / 512)},${Math.floor(pose.z / 512)}`;
 const sidecarURL = (key, hash) => `/world/recovery/${key}.${hash}.json`;
 export async function validateRecoveryManifest(body, { expectedHash, worldSetRevision, sourceHashes = null } = {}) {
-  // The authority root is also caller-owned until this private snapshot.
-  const snapshot = snapshotRecoverySidecar(body, { maxCombinedBytes: RECOVERY_MEMORY.decoded }); body = snapshot.body;
-  if (!body || body.schemaVersion !== 1 || body.worldId !== 'athens' || body.projectionId !== 'athens-v1' || body.worldSetRevision !== worldSetRevision || !ROUTE_HASH.test(worldSetRevision || '') || !ROUTE_HASH.test(expectedHash || '') || snapshot.metrics.bytes > RECOVERY_ARTIFACT_BYTES || await sha256(body) !== expectedHash || !body.cells || Array.isArray(body.cells) || !Object.keys(body.cells).length) throw Error('Invalid authoritative recovery manifest');
+  // Reserve both registry forms (including tuple strings) and a conservative
+  // Map index before allocating either private snapshot. No caller accessors.
+  let registryBytes = 0, registryIndexBytes = 0, expected = null;
   if (sourceHashes !== null) {
-    const expected = new Map(sourceHashes);
-    if (!Array.isArray(sourceHashes) || expected.size !== sourceHashes.length || expected.size !== Object.keys(body.cells).length || [...expected].some(([key, hash]) => !ROUTE_HASH.test(hash || '') || body.cells[key]?.sourceHash !== hash)) throw Error('Recovery manifest omits or changes published world cells');
+    registryBytes = recoveryJSONDataBytes(sourceHashes, RECOVERY_MEMORY.decoded / 2);
+    if (!Array.isArray(sourceHashes) || !sourceHashes.length) throw Error('Recovery manifest omits or changes published world cells');
+    registryIndexBytes = 96 + sourceHashes.length * 128;
   }
+  const registryLiveBytes = registryBytes * 2 + registryIndexBytes;
+  const snapshot = snapshotRecoverySidecar(body, { maxCombinedBytes: RECOVERY_MEMORY.decoded, liveBufferBytes: registryLiveBytes }); body = snapshot.body;
+  if (sourceHashes !== null) {
+    sourceHashes = structuredClone(sourceHashes);
+    expected = new Map();
+    for (const tuple of sourceHashes) {
+      if (!Array.isArray(tuple) || tuple.length !== 2 || typeof tuple[0] !== 'string' || !/^-?\d+,-?\d+$/.test(tuple[0]) || typeof tuple[1] !== 'string' || !ROUTE_HASH.test(tuple[1]) || expected.has(tuple[0])) throw Error('Recovery manifest omits or changes published world cells');
+      expected.set(tuple[0], tuple[1]);
+    }
+  }
+  if (!body || body.schemaVersion !== 1 || body.worldId !== 'athens' || body.projectionId !== 'athens-v1' || body.worldSetRevision !== worldSetRevision || !ROUTE_HASH.test(worldSetRevision || '') || !ROUTE_HASH.test(expectedHash || '') || snapshot.metrics.bytes > RECOVERY_ARTIFACT_BYTES || await sha256(body) !== expectedHash || !body.cells || Array.isArray(body.cells) || !Object.keys(body.cells).length) throw Error('Invalid authoritative recovery manifest');
+  if (expected !== null && (expected.size !== Object.keys(body.cells).length || [...expected].some(([key, hash]) => body.cells[key]?.sourceHash !== hash))) throw Error('Recovery manifest omits or changes published world cells');
   for (const [key, cell] of Object.entries(body.cells)) {
     if (!/^-?\d+,-?\d+$/.test(key) || !cell || !ROUTE_HASH.test(cell.sourceHash || '') || (cell.empty === true ? cell.hash !== undefined || cell.url !== undefined : !ROUTE_HASH.test(cell.hash || '') || cell.url !== sidecarURL(key, cell.hash))) throw Error('Invalid immutable recovery sidecar');
     Object.freeze(cell);

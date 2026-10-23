@@ -152,10 +152,9 @@ export function decodeRecoverySidecar(body, { maxCombinedBytes = Infinity, liveB
 /** Strict caller-object snapshot. Inspect data descriptors without invoking
  * getters; only ordinary JSON records/dense arrays and finite scalars qualify.
  * Budget original+clone+authentication BEFORE allocating the clone. */
-export function snapshotRecoverySidecar(value, { maxCombinedBytes = 12 * 1024 * 1024, liveBufferBytes = 0 } = {}) {
-  if (!Number.isFinite(maxCombinedBytes) || maxCombinedBytes <= 0 || maxCombinedBytes > 12 * 1024 * 1024 || !Number.isFinite(liveBufferBytes) || liveBufferBytes < 0) throw Error('Recovery snapshot memory budget exceeded');
+export function recoveryJSONDataBytes(value, limit = Infinity) {
   let dataBytes = 0; const active = new Set();
-  const add = bytes => { dataBytes += bytes; if (dataBytes * 2 + liveBufferBytes > maxCombinedBytes) throw Error('Recovery snapshot memory budget exceeded'); };
+  const add = bytes => { dataBytes += bytes; if (dataBytes > limit) throw Error('Recovery snapshot memory budget exceeded'); };
   const visit = v => {
     if (v === null || typeof v === 'boolean') { add(16); return; }
     if (typeof v === 'number') { if (!Number.isFinite(v)) throw Error('Recovery snapshot requires strict JSON'); add(16); return; }
@@ -175,7 +174,11 @@ export function snapshotRecoverySidecar(value, { maxCombinedBytes = 12 * 1024 * 
     }
     active.delete(v);
   };
-  visit(value);
+  visit(value); return dataBytes;
+}
+export function snapshotRecoverySidecar(value, { maxCombinedBytes = 12 * 1024 * 1024, liveBufferBytes = 0 } = {}) {
+  if (!Number.isFinite(maxCombinedBytes) || maxCombinedBytes <= 0 || maxCombinedBytes > 12 * 1024 * 1024 || !Number.isFinite(liveBufferBytes) || liveBufferBytes < 0) throw Error('Recovery snapshot memory budget exceeded');
+  const dataBytes = recoveryJSONDataBytes(value, (maxCombinedBytes - liveBufferBytes) / 2);
   const size = recoveryCanonicalSize(value);
   if (size.bytes > 2 * 1024 * 1024) throw Error('Recovery sidecar exceeds artifact budget');
   const canonicalBytes = (value?.schemaVersion === 2 ? size.maxTokenCodeUnits : size.codeUnits) * 2;

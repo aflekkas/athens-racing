@@ -500,3 +500,50 @@ test('recovery manifest caller mutation cannot replace authenticated cell descri
   assert.equal(Object.isFrozen(body),false);assert.equal(Object.isFrozen(body.cells['0,0']),false);assert.equal(Object.isFrozen(body.footprints[0]),false);
   body.canStillChange=true;assert.equal(body.canStillChange,true);
 });
+
+test('manifest expected registry is captured before natural digest yield in both mutation directions', async t => {
+  const body={schemaVersion:1,worldId:'athens',projectionId:'athens-v1',worldSetRevision:revision,footprints:[{halfWidth:1,halfLength:2}],cells:{'0,0':{sourceHash:source,empty:true}}},expectedHash=await sha256(body),wrong='c'.repeat(64);
+  await t.test('wrong registry cannot become authoritative after yield',async()=>{
+    const registry=[['0,0',wrong]],pending=validateRecoveryManifest(body,{expectedHash,worldSetRevision:revision,sourceHashes:registry});registry[0][1]=source;
+    await assert.rejects(pending,/omits or changes published world cells/);
+  });
+  await t.test('correct registry remains authoritative after caller mutation',async()=>{
+    const registry=[['0,0',source]],pending=validateRecoveryManifest(body,{expectedHash,worldSetRevision:revision,sourceHashes:registry});registry[0][1]=wrong;registry.push(['1,0',wrong]);
+    const result=await pending;assert.equal(result.cells['0,0'].sourceHash,source);assert.equal(Object.isFrozen(registry),false);assert.equal(Object.isFrozen(registry[0]),false);
+  });
+  await assert.rejects(validateRecoveryManifest(body,{expectedHash,worldSetRevision:revision,sourceHashes:[['0,0',wrong]]}),/omits or changes published world cells/);
+  assert.equal((await validateRecoveryManifest(body,{expectedHash,worldSetRevision:revision})).cells['0,0'].sourceHash,source);
+});
+
+test('expected registry requires unique exact JSON cell/hash tuples without invoking accessors', async () => {
+  const body={schemaVersion:1,worldId:'athens',projectionId:'athens-v1',worldSetRevision:revision,footprints:[{halfWidth:1,halfLength:2}],cells:{'0,0':{sourceHash:source,empty:true}}},expectedHash=await sha256(body);
+  for(const registry of [[['0,0',source,'extra']],[[1,source]],[['bad',source]],[['0,0','short']],[['0,0',source],['0,0',source]],[],['bad']])await assert.rejects(validateRecoveryManifest(body,{expectedHash,worldSetRevision:revision,sourceHashes:registry}),/omits or changes published world cells/);
+  let gets=0,clones=0,encodes=0,writes=0;const clone=structuredClone,Encoder=TextEncoder;
+  for(const slot of ['outer','hash']){
+    const registry=[['0,0',source]];
+    if(slot==='outer')Object.defineProperty(registry,'0',{enumerable:true,get(){gets++;return ['0,0',source]}});
+    else Object.defineProperty(registry[0],'1',{enumerable:true,get(){gets++;return source}});
+    globalThis.structuredClone=(...a)=>{clones++;return clone(...a)};globalThis.TextEncoder=class extends Encoder{encode(...a){encodes++;return super.encode(...a)}encodeInto(...a){writes++;return super.encodeInto(...a)}};
+    try{await assert.rejects(validateRecoveryManifest(body,{expectedHash,worldSetRevision:revision,sourceHashes:registry}),/strict JSON/);}finally{globalThis.structuredClone=clone;globalThis.TextEncoder=Encoder;}
+  }
+  assert.equal(gets,0);assert.equal(clones,0);assert.equal(encodes,0);assert.equal(writes,0);
+});
+
+test('manifest coverage retains every synthetic 72-cell registry entry captured before yield', async () => {
+  const registry=Array.from({length:72},(_,i)=>[`${i},0`,source]),cells=Object.fromEntries(registry.map(([key,sourceHash])=>[key,{sourceHash,empty:true}]));
+  const body={schemaVersion:1,worldId:'athens',projectionId:'athens-v1',worldSetRevision:revision,footprints:[{halfWidth:1,halfLength:2}],cells},expectedHash=await sha256(body),initial=structuredClone(registry);
+  const pending=validateRecoveryManifest(body,{expectedHash,worldSetRevision:revision,sourceHashes:registry});registry.splice(1);registry[0][1]='c'.repeat(64);
+  assert.equal(Object.keys((await pending).cells).length,72);
+  for(const wrong of [initial.slice(1),[...initial,['72,0',source]]])await assert.rejects(validateRecoveryManifest(body,{expectedHash,worldSetRevision:revision,sourceHashes:wrong}),/omits or changes published world cells/);
+});
+
+test('root and registry combined reservation rejects before either clone or hash buffer allocation', async t => {
+  const {recoveryJSONDataBytes,recoveryCanonicalSize}=await import('./route-road-wire.mjs');
+  const registry=Array.from({length:5000},(_,i)=>[`${i},0`,source]),body={schemaVersion:1,worldId:'athens',projectionId:'athens-v1',worldSetRevision:revision,footprints:[{halfWidth:1,halfLength:2}],cells:{'0,0':{sourceHash:source,empty:true}},sourceMetadata:'x'.repeat(1200000)};
+  const size=recoveryCanonicalSize(body),rootPhase=recoveryJSONDataBytes(body)*2+size.codeUnits*2+size.bytes*2,registryForms=recoveryJSONDataBytes(registry)*2,indexBytes=96+registry.length*128;
+  assert.ok(rootPhase<RECOVERY_MEMORY.decoded);assert.ok(registryForms+indexBytes<RECOVERY_MEMORY.decoded);assert.ok(rootPhase+registryForms+indexBytes>RECOVERY_MEMORY.decoded);
+  const expectedHash=await sha256(body),clone=structuredClone,Encoder=TextEncoder;let clones=0,encodes=0,writes=0;
+  globalThis.structuredClone=(...a)=>{clones++;return clone(...a)};globalThis.TextEncoder=class extends Encoder{encode(...a){encodes++;return super.encode(...a)}encodeInto(...a){writes++;return super.encodeInto(...a)}};
+  try{await assert.rejects(validateRecoveryManifest(body,{expectedHash,worldSetRevision:revision,sourceHashes:registry}),/memory budget/);assert.equal(clones,0);assert.equal(encodes,0);assert.equal(writes,0);}finally{globalThis.structuredClone=clone;globalThis.TextEncoder=Encoder;}
+  t.diagnostic(JSON.stringify({rootPhase,registryForms,indexBytes,combinedBytes:rootPhase+registryForms+indexBytes,limit:RECOVERY_MEMORY.decoded}));
+});
