@@ -1,3 +1,4 @@
+import {requireTerrainAcceptance} from './terrain-acceptance.mjs';
 import {readTerrainSource} from './refine-terrain.mjs';
 import {createHash} from 'node:crypto';
 import test from 'node:test';import assert from 'node:assert/strict';
@@ -42,4 +43,15 @@ test('shared source cache verifies bytes and hash without writes or network fall
  assert.equal(await readTerrainSource(entry,options),bytes);assert.equal(reads,1);
  await assert.rejects(readTerrainSource(entry,{...options,readFile:async()=>{throw Error('ENOENT');}}),/Read-only source cache missing/);
  await assert.rejects(readTerrainSource(entry,{...options,readFile:async()=>Buffer.from('corrupted tile')}),/Source integrity/);
+});
+
+test('prototype terrain cannot start a global bake even with a claimed acceptance report',()=>{
+ assert.deepEqual(requireTerrainAcceptance(27),{prototype:true});
+ assert.throws(()=>requireTerrainAcceptance(1748,{report:{passed:true}}),/Global terrain bake blocked/);
+ const field={schema:2,id:'future-verified-field',geographyVerified:true,maxPrototypeCells:27};
+ assert.throws(()=>requireTerrainAcceptance(1748,{field,sourceRevision:'source',fieldSHA256:'field',report:{passed:true}}),/exact-source\/exact-field/);
+ const report={schema:'terrain-geographic-acceptance-1',sourceRevision:'source',fieldSHA256:'field',fieldId:field.id,passed:true,hillProfiles:{passed:true,samples:1,locations:['lycabettus','penteli','valley','world-edge']},cityComfort:{passed:true,samples:1,maxSagLimit:.5},negativeControls:{passed:true,samples:1,rollerCoasterRejected:true},protectedRegions:{passed:true,samples:1,changedCells:0}};
+ assert.equal(requireTerrainAcceptance(1748,{field,sourceRevision:'source',fieldSHA256:'field',report}).prototype,false);
+ assert.throws(()=>requireTerrainAcceptance(1748,{field,sourceRevision:'source',fieldSHA256:'field',report:{...report,cityComfort:{...report.cityComfort,maxSagLimit:.6}}}),/cannot relax/);
+ assert.throws(()=>requireTerrainAcceptance(1748,{field,sourceRevision:'different',fieldSHA256:'field',report}),/exact-source/);
 });

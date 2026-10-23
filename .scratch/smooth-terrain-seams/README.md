@@ -1,5 +1,7 @@
 # Reduced terrain refinement: implementation and game proof
 
+> Continuation finding: the original binomial prototype would lower the Lycabettus peak sample by 25.84 m if applied globally. It is blocked from global baking/publication. This report verifies the reduced 27-cell candidate only; it does not establish whole-world geographic fidelity. See `hill-profile-proposed.json` and `docs/plans/terrain-ekali-world.md`.
+
 ## Summary (for the reviewer)
 Generated ground, asphalt, contacts and graph heights now share an offline smooth terrain correction. The verified local candidate covers 27 cells around Syntagma, Glyfada and the authored Psychiko edge. It is not the all-world fix or a published release.
 
