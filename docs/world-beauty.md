@@ -201,3 +201,13 @@ retains the small additional CPU rows; it is not byte-identical residency.
 Combined terrain publication must rerun clearance and hashes after moving bases.
 A source-only result or a higher count does not establish faithful street
 character: matched game views and measured budgets remain required.
+
+
+World detail Off releases this tree layer's owned GPU instance/geometry uploads
+and its lazy instance-colour arrays. Each tree geometry is constructed privately
+for this layer; materials are left intact. CPU geometry, placement rows, matrices,
+fade identities and capacities remain resident. On reuses the same mesh objects,
+rebuilds their colours and reuploads through Three's normal lifecycle. Regression
+coverage exercises Three's actual geometry/object disposal handlers over repeated
+On/Off/On cycles, alongside immutable placement/fade and unrelated-layer checks.
+This does not claim zero CPU residency while Off.

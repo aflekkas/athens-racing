@@ -105,3 +105,30 @@ test('actual source scenery respects holes, full crowns, paving, buildings, furn
  for(const options of [{blocked:()=>true},{occupied:[[103,100,2]]}]){const f=sourceSceneryFixture();assert.equal(applySceneryVegetation(f.pack,f.source,options).added,0);}
  const f=sourceSceneryFixture();f.source.clearanceEvidenceReady=false;assert.throws(()=>applySceneryVegetation(f.pack,f.source),/exclusion evidence/);
 });
+
+import {WebGLObjects} from 'three/src/renderers/webgl/WebGLObjects.js';
+import {WebGLGeometries} from 'three/src/renderers/webgl/WebGLGeometries.js';
+test('Off releases only owned instance/geometry uploads and On reuploads identical trees through Three lifecycle',()=>{
+ const trees=new AthensTrees(new THREE.Group()),other=new AthensTrees(new THREE.Group()),rows=[];
+ for(const [i,species]of Object.values(TREE).entries())rows.push(80+i*8,5,80,0,species*8+2);
+ rows.push(350,5,80,0,TREE.pine*8,360,5,80,0,TREE.oleander*8);
+ trees.addTile('0,0',{metadata:{origin:[0,0,0],extensions:{worldDetail:{streetTrees:0,coastalTreeCount:2}}},arrays:[Float32Array.from(rows)]});
+ const eye={position:{x:100,z:80}};trees.update(eye);
+ const owned=[...trees.meshes.values(),...trees.coastFar.values()].map(s=>s.mesh).concat(trees.shadow),cpuRows=trees.tiles.get('0,0'),fade=trees.fade;
+ const snapshot=()=>owned.map(m=>({mesh:m,geometry:m.geometry,matrices:Array.from(m.instanceMatrix.array),colours:m.instanceColor&&Array.from(m.instanceColor.array),count:m.count,fade:m.userData.vegetationFade,fadeData:Array.from(m.geometry.getAttribute('aVegetationFade').array)}));
+ const initial=snapshot(),uploaded=new Set(),info={render:{frame:1},memory:{geometries:0}},attributes={update:a=>uploaded.add(a),remove:a=>uploaded.delete(a)},gl={ARRAY_BUFFER:34962},bindings={releaseStatesOfGeometry:()=>{}};
+ const geometries=WebGLGeometries(gl,attributes,info,bindings),objects=WebGLObjects(gl,geometries,attributes,info);
+ const render=()=>{info.render.frame++;for(const m of owned)if(trees.group.visible&&m.visible&&m.count)objects.update(m);};render();const onGeometries=info.memory.geometries;assert(onGeometries>0);
+ let foreignDisposals=0,materialDisposals=0;
+ for(const {mesh}of other.meshes.values())mesh.geometry.addEventListener('dispose',()=>foreignDisposals++);
+ for(const m of owned)m.material.addEventListener('dispose',()=>materialDisposals++);
+ for(let cycle=0;cycle<3;cycle++){
+  const colours=owned.map(m=>m.instanceColor).filter(Boolean);assert(colours.length>0);assert(colours.every(a=>uploaded.has(a)));
+  trees.setEnabled(false);assert.equal(info.memory.geometries,0);assert.equal(uploaded.size,0,'real Three disposal handlers remove geometry, fade, matrix and colour uploads');assert(owned.every(m=>m.instanceColor===null));
+  assert.equal(trees.tiles.get('0,0'),cpuRows);assert.equal(trees.fade,fade);assert.equal(foreignDisposals,0);assert.equal(materialDisposals,0,'materials remain owned and reusable');
+  trees.setEnabled(false);assert.equal(info.memory.geometries,0,'repeated Off does not double-dispose');
+  trees.setEnabled(true);trees.update(eye);render();assert.equal(info.memory.geometries,onGeometries);
+  const restored=snapshot();for(let i=0;i<owned.length;i++){assert.equal(restored[i].mesh,initial[i].mesh);assert.equal(restored[i].geometry,initial[i].geometry);assert.equal(restored[i].fade,initial[i].fade);assert.deepEqual(restored[i].matrices,initial[i].matrices);assert.deepEqual(restored[i].colours,initial[i].colours);assert.equal(restored[i].count,initial[i].count);assert.deepEqual(restored[i].fadeData,initial[i].fadeData);}
+ }
+ trees.dispose();other.dispose();objects.dispose();
+});

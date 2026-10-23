@@ -137,7 +137,22 @@ export class AthensTrees {
   view(camera,origin){if(!this.forest)return;const d=camera.getWorldDirection(this._view??=new THREE.Vector3()),length=Math.hypot(d.x,d.z)||1,dx=d.x/length,dz=d.z/length;if(!this.viewDirection||dx*this.viewDirection.x+dz*this.viewDirection.z<.998){this.viewDirection={x:dx,z:dz};this.rebuild(camera.position.x+origin.x,camera.position.z+origin.z);}}
   setMountainForest(asset){this.forest=asset;const shrub=this.meshes.get(TREE.oleander).mesh;const fade=shrub.geometry.getAttribute('aVegetationFade');shrub.geometry=asset?this.mountainShrubGeometry:this.standardShrubGeometry;if(fade)shrub.geometry.setAttribute('aVegetationFade',fade);this.tris[TREE.oleander]=asset?this.maquisTriangles:treeTriangles(TREE.oleander);this.last.x=Infinity;}
   removeTile(key) { if (this.tiles.delete(key)) this.last.x = Infinity; }
-  setEnabled(on) { if (this.enabled === on) return; this.enabled = on; this.group.visible = on; this.last.x = Infinity; }
+  setEnabled(on) {
+    if (this.enabled === on) return;
+    this.enabled = on; this.group.visible = on; this.last.x = Infinity;
+    if (!on) {
+      // These instances/geometries are constructed privately by this layer.
+      // Keep CPU placement, matrices and fade state; only release owned GPU
+      // uploads and lazy colours. Dispose before clearing instanceColor so
+      // Three removes its old attribute buffer. The next render re-registers
+      // the same objects and rebuild() repopulates their colours/matrices.
+      const geometries = new Set([this.standardShrubGeometry, this.mountainShrubGeometry]);
+      for (const mesh of [...this.meshes.values(), ...this.coastFar.values()].map(slot => slot.mesh).concat(this.shadow)) {
+        geometries.add(mesh.geometry); mesh.dispose(); mesh.instanceColor = null;
+      }
+      for (const geometry of geometries) geometry.dispose();
+    }
+  }
   update(camera) {
     if (!this.enabled) return; const p = camera.position || camera;this.fade.update(p.x,p.z);
     if (Math.hypot(p.x - this.last.x, p.z - this.last.z) >= TREE_LIMITS.rebuildMetres) this.rebuild(p.x, p.z);
