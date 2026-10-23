@@ -71,3 +71,22 @@ test('map heading aligns world positions with the player and destination remains
     assert.ok(!calls.some(c => c[0] === 'fillRect'), 'no unexplained square flag');
   }
 });
+
+// The corner caption names the nearest listed place only within PLACE_LABEL_MAX_M (a UI heuristic, not a region boundary):
+// on Megara, ~25 km from the nearest listed place, it read PIRAEUS. Beyond the limit the corner is blank; nothing is inferred.
+test('the minimap names a nearby place, and stays blank rather than naming a remote one', async () => {
+  const { drawMapLabels, PLACE_LABEL_MAX_M } = await import('../src/world-minimap.js');
+  const { AREA_STARTS, ATHENS_DISTRICTS, athensFromLonLat } = await import('../src/spawn-spots.js');
+  const caption = (lon, lat) => {
+    const [x, z] = athensFromLonLat(lon, lat), calls = [];
+    const g = new Proxy({}, { get: (_, key) => key === 'measureText' ? () => ({ width: 40 }) : (...args) => calls.push([key, ...args]), set: () => true });
+    drawMapLabels(g, 300, 300, { x, z, yaw: 0 }, 1);
+    return calls.find(c => c[0] === 'fillText' && c[2] === 14 && c[3] === 14)?.[1] ?? null;
+  };
+  const megara = AREA_STARTS.find(s => s.id === 'megara');
+  assert.equal(caption(megara.lon, megara.lat), null, 'Megara: no PIRAEUS from 25 km away');
+  assert.equal(caption(23.778, 37.815), 'VOULIAGMENI', 'the Riviera start keeps its caption');
+  const syntagma = ATHENS_DISTRICTS.find(d => d.name === 'SYNTAGMA');
+  assert.equal(caption(syntagma.lon, syntagma.lat), 'SYNTAGMA');
+  assert.equal(PLACE_LABEL_MAX_M, 8000);
+});

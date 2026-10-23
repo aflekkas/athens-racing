@@ -93,6 +93,8 @@ export function drawWorldMapBase(g, st, radius, scale) {
   g.strokeStyle = '#657477'; g.lineWidth = 1.4 / scale; g.stroke(minor);
   g.strokeStyle = '#8e9999'; g.lineWidth = 2.2 / scale; g.stroke(major);
 }
+// A UI heuristic, not a surveyed boundary: every playable route today stays within 4.7 km of a listed place.
+export const PLACE_LABEL_MAX_M = 8000;
 const places = [...ATHENS_DISTRICTS, { name: 'VOULIAGMENI', lon: 23.778, lat: 37.815 }, { name: 'VARKIZA', lon: 23.801, lat: 37.82 }].map(p => ({ name: p.name, point: athensFromLonLat(p.lon, p.lat) }));
 const water = MAP_LABELS.filter(p => p.k === 'water').map(p => ({ name: p.t, point: athensFromAttica(p.x, p.y) }));
 export function mapScreenPoint(W, H, st, scale, x, z) {
@@ -101,8 +103,10 @@ export function mapScreenPoint(W, H, st, scale, x, z) {
 }
 export function drawMapLabels(g, W, H, st, scale) {
   g.save(); g.font = `${Math.round(W / 16)}px sans-serif`; g.textAlign = 'left'; g.textBaseline = 'top'; g.fillStyle = '#bcc8c8';
-  const nearest = places.reduce((a, b) => Math.hypot(a.point[0] - st.x, a.point[1] - st.z) < Math.hypot(b.point[0] - st.x, b.point[1] - st.z) ? a : b);
-  g.fillText(nearest.name, 14, 14);
+  const far = p => Math.hypot(p.point[0] - st.x, p.point[1] - st.z), nearest = places.reduce((a, b) => far(a) < far(b) ? a : b);
+  // A place name is only a caption for where you are: beyond PLACE_LABEL_MAX_M the corner stays blank rather than naming a
+  // remote one (Megara is ~25 km from Piraeus, the nearest listed place). The route name stays in the footer.
+  if (far(nearest) <= PLACE_LABEL_MAX_M) g.fillText(nearest.name, 14, 14);
   for (const p of water) {
     const [x, y] = mapScreenPoint(W, H, st, scale, ...p.point), width = g.measureText(p.name).width;
     if (x > 14 && x + width < W - 14 && y > 70 && y < H - 55) { g.fillStyle = '#88a8b5'; g.fillText(p.name, x, y); break; }
