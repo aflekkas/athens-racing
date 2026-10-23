@@ -1,0 +1,135 @@
+{
+  "pin": "92e6798668c11a45a077ccb767b97023dffbfae5",
+  "tree": "2759dcb8ff513637117ecd16f66aa107375a3332",
+  "started": 1792748114.3593192,
+  "lockSha256": "4c6ccf17d01774f8db1c7c924cb2438637691345d400f1b3adc9c73857c1d5e6",
+  "dependencies": {
+    "verified": 44,
+    "unsupportedOptionalOmissions": 51
+  },
+  "gates": [
+    {
+      "gate": "npm",
+      "command": [
+        "npm",
+        "test"
+      ],
+      "exitCode": 1,
+      "seconds": 668.2371492385864
+    },
+    {
+      "gate": "physics",
+      "command": [
+        "node",
+        "--import",
+        "./tools/physics-test/register.mjs",
+        "tools/physics-test/regress.mjs"
+      ],
+      "exitCode": 0,
+      "seconds": 173.13400077819824
+    },
+    {
+      "gate": "imports",
+      "command": [
+        "node",
+        "tools/check-browser-imports.mjs"
+      ],
+      "exitCode": 0,
+      "seconds": 0.5586302280426025
+    },
+    {
+      "gate": "syntax",
+      "command": [
+        "node",
+        "tools/check-syntax.mjs"
+      ],
+      "exitCode": 0,
+      "seconds": 18.628487825393677
+    }
+  ],
+  "environment": {
+    "ASR_TEST_JOBS": "2",
+    "BROWSER_SLOTS": "1",
+    "BROWSER_SLOT_WAIT": "180",
+    "WORLD_GEN_PYTHON": "/tmp/athens-highway.GIu3/venv/bin/python",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "TMPDIR": "/tmp/athens-greenery.98Rc",
+    "CHROME_BIN": "/home/dev/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome",
+    "PLAYWRIGHT_MODULE": "/home/dev/.cogenly/worktrees/athens-racing/t3-c67493c4/node_modules/playwright/index.mjs"
+  },
+  "completed": 1792748980.6141312,
+  "passed": false,
+  "results": {
+    "npm": {
+      "files": 317,
+      "tests": 2997,
+      "passed": 2978,
+      "failedFirstAttempt": 12,
+      "skipped": 7,
+      "flaky": 0,
+      "failedFiles": 9
+    },
+    "physics": {
+      "passed": 1323,
+      "failed": 0
+    },
+    "imports": {
+      "modules": 364
+    },
+    "syntax": {
+      "modules": 475
+    }
+  },
+  "failures": [
+    {
+      "file": "pov-owner-lock.test.mjs",
+      "finding": "POV evidence binding is stale: generated old cars hash 2978c18c versus current 8ef657c5. Parent accepted separate identical-render proof; frozen gate still fails."
+    },
+    {
+      "file": "vehicle-budgets.test.mjs",
+      "finding": "Retired-driver source regex matches substring in multiplayer.driverProgress."
+    },
+    {
+      "file": "tow-road-placement.test.mjs",
+      "finding": "Four extracted tow harness tests reference undefined worldSession."
+    },
+    {
+      "file": "bundle-browser.test.mjs",
+      "finding": "Production graph assertion expects src/maps/riviera.js lazy entry."
+    },
+    {
+      "file": "low-end-budget.test.mjs",
+      "finding": "Source assertion exposed a real low-end traffic density regression; parent and loader confirmed from frozen main.js and WorldTraffic. Parent owns separate correction."
+    },
+    {
+      "file": "owner-locked-desktop-only.test.mjs",
+      "finding": "Entry dynamic imports now include route-entry-prefetch.js before main.js."
+    },
+    {
+      "file": "police-online.test.mjs",
+      "finding": "Source assertion expects pursuit telemetry in main.js."
+    },
+    {
+      "file": "race-lifecycle.test.mjs",
+      "finding": "Extracted raceGap harness references undefined multiplayer."
+    },
+    {
+      "file": "remote-sync-sim.test.mjs",
+      "finding": "Extracted contact harness declares holdingRecovery twice."
+    }
+  ],
+  "diskBeforeAfter": "70G used / 75G available / 49%",
+  "ownBranchUnchanged": "7233d9d40a5475b6a189694fca5c1773e17c6240",
+  "cleanup": "Parent and loader finished all frozen archive reads. Removed only our owned 830MiB candidate archive after authorization. Four exact gate logs, reduced receipts, shared dependency link and source caches retained. No own browser/server/Worker/heavy processes remain.",
+  "sourceSpotChecks": {
+    "src/main.js": "a0eff5e41d53ae24c3944b01b076b5c6ffb71c413221d8b438333cd09dda311f",
+    "src/cars.js": "8ef657c549c0695ef2d551b256c56971bfe048e67a13054b4ac0567c1ab23f71",
+    "package-lock.json": "4c6ccf17d01774f8db1c7c924cb2438637691345d400f1b3adc9c73857c1d5e6",
+    "tools/test-groups.json": "09463f9860cb4eea799dd2e58bace2ccc7071cf1caa43164f492b2ad93e9969a"
+  },
+  "diskAfterArchiveCleanup": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/sda1       145G   69G   76G  48% /",
+  "followupFindings": {
+    "classification": "One real low-end traffic density regression, seven stale fixtures, one POV evidence binding failure; parent owns fixes. Frozen 92e npm remains RED.",
+    "povBindingCorrection": "Generated old src/cars.js hash 2978c18c94faf8cbc541e256d047e312f9f6d952b4bc78d671cc34653574d4ba versus current 8ef657c549c0695ef2d551b256c56971bfe048e67a13054b4ac0567c1ab23f71. Parent accepted full 77-render/231-pixel-check identical followup; not part of this frozen gate, no browser rerun here."
+  }
+}
