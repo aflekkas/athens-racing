@@ -65,7 +65,7 @@ async function main(){
   const props={time:0,byEdge,hold(p,ps){const r=byEdge.get(p.edge);if(!r||signalState(r.group,r.offset,this.time)==='G'||!ps.length)return false;const e=ps.at(-1),d=Math.hypot(e[0]-p.x,e[2]-p.z);return d<=STOP_OFF+.9&&d>STOP_OFF-3.5;}};
   // Match createWorldSession.safePose: a complete car may straddle legally
   // connected surface owners at a junction or tile portal.
-  const session={...world,props,safePose:(p,o)=>world.contacts.safe(p,{...o,connected:true})};
+  const session={...world,props,safePose:(p,o)=>world.contacts.safe({...p,edge:p.edgeId||p.edge},{...o,connected:true})};
   const glyStart=id==='glyfada'?world.roads.graph.nearest(gly.x,gly.z,{maxDistance:100}):null,glyPath=[];let glyLength=0;
   if(glyStart){let e=world.roads.graph.edges.get(glyStart.edge).value;for(let i=0;i<200&&glyLength<2000;i++){glyPath.push({e,start:glyLength});glyLength+=edgeLength(e);const last=edgePoint(e,edgeLength(e)),choices=[...(world.roads.graph.outgoing.get(e.to)||[])].map(id=>world.roads.graph.edges.get(id)?.value).filter(n=>n&&n.to!==e.from&&world.roads.graph.legal(e.id,n));choices.sort((a,b)=>{const score=n=>{const f=edgePoint(n,0);return f.tx*last.tx+f.tz*last.tz-(Math.hypot(f.x-gly.x,f.z-gly.z)>650?5:0);};return score(b)-score(a);});if(!choices.length)break;e=choices[0];}}
   for(const mode of ['parked','drive','quick']){

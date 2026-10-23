@@ -46,6 +46,19 @@ export class WorldTraffic {
   if(cached!==true){if(!this.session.safePose(p,{halfWidth:c.wid/2,halfLength:c.len/2})||this.closures?.safe(p,{halfWidth:c.wid/2,halfLength:c.len/2})===false)return reject();if(this.widthCache.size>=4096)this.widthCache.delete(this.widthCache.keys().next().value);this.widthCache.set(key,true);}
   for(const a of [-c.len/2,0,c.len/2])for(const b of [-c.wid/2,0,c.wid/2])if(!this.session.stream.contact(p.x-Math.sin(p.yaw)*a+Math.cos(p.yaw)*b,p.z-Math.cos(p.yaw)*a-Math.sin(p.yaw)*b,{referenceY:p.y,layer:edge.layer,requiredFlags:1}))return reject();return p;
  }
+ // The geometric midpoint need not be the physical edge of a deck or tunnel.
+ // Only the two legally joined road layers may supply a curve's live contact.
+ turnContact(p,from,to){
+  if(from.layer!==to.layer&&(!roadLayersConnect(from,to)||!this.session.roads.graph.legal(from.id,to)))return null;
+  const first=p.edgeId===to.id?to:from,other=first===from?to:from;
+  for(const edge of from.layer===to.layer?[first]:[first,other]){
+   const contact=this.session.stream.contact(p.x,p.z,{referenceY:p.y,layer:edge.layer,requiredFlags:1});
+   if(!contact||contact.layer!=null&&contact.layer!==edge.layer)continue;
+   if(from.layer!==to.layer&&contact.surfaceId!==edge.surface&&this.session.roads.connected?.(edge).get(contact.surfaceId)!==edge.layer)continue;
+   return {...p,y:contact.y,surfaceId:contact.surfaceId,layer:edge.layer,edgeId:edge.id};
+  }
+  return null;
+ }
  // Join the two lane centres with a checked curve before the graph node. An
  // instantaneous edge switch moves and rotates an entire car into the junction.
  turnPaths(edge,c){
@@ -57,7 +70,7 @@ export class WorldTraffic {
    const exit=Math.min(8,edgeLength(next)*.4),b=this.candidate(next,exit,{...c,laneShift:0});if(!b)continue;
    const reach=Math.max(2,Math.hypot(b.x-a.x,b.z-a.z)*.5),A={x:a.x-Math.sin(a.yaw)*reach,z:a.z-Math.cos(a.yaw)*reach},B={x:b.x+Math.sin(b.yaw)*reach,z:b.z+Math.cos(b.yaw)*reach},points=[];let length=0,valid=true;
    for(let i=0;i<=20;i++){const t=i/20,u=1-t,x=u*u*u*a.x+3*u*u*t*A.x+3*u*t*t*B.x+t*t*t*b.x,z=u*u*u*a.z+3*u*u*t*A.z+3*u*t*t*B.z+t*t*t*b.z,dx=3*u*u*(A.x-a.x)+6*u*t*(B.x-A.x)+3*t*t*(b.x-B.x),dz=3*u*u*(A.z-a.z)+6*u*t*(B.z-A.z)+3*t*t*(b.z-B.z),p={...a,x,z,y:a.y+(b.y-a.y)*t,yaw:Math.atan2(-dx,-dz),edgeId:i<10?edge.id:next.id,layer:i<10?a.layer:b.layer};
-    const contact=this.session.stream.contact(x,z,{referenceY:p.y,layer:p.layer,requiredFlags:1});if(!contact){valid=false;break;}p.y=contact.y;p.surfaceId=contact.surfaceId;
+    const contact=this.turnContact(p,edge,next);if(!contact){valid=false;break;}Object.assign(p,contact);
     if(!this.session.safePose(p,{halfWidth:c.wid/2,halfLength:c.len/2})||this.closures?.safe(p,{halfWidth:c.wid/2,halfLength:c.len/2})===false){valid=false;break;}
     if(i)length+=Math.hypot(x-points.at(-1).x,z-points.at(-1).z);points.push({...p,s:length});
    }
@@ -87,8 +100,7 @@ export class WorldTraffic {
   if(!this.session.roads.graph.edges.has(turn.next))return null;
   const progress=turn.progress+travel;
   if(progress>=turn.length){const next=this.session.roads.graph.edges.get(turn.next).value;offset=Math.min(edgeLength(next),turn.exit+progress-turn.length);return {p:this.candidate(next,offset,{...c,laneShift:0}),offset,turn:null,laneShift:0};}
-  const p=turnPoint(turn,progress);
-  const contact=this.session.stream.contact(p.x,p.z,{referenceY:p.y,layer:p.layer,requiredFlags:1});if(!contact)return null;p.y=contact.y;p.surfaceId=contact.surfaceId;
+  const p=this.turnContact(turnPoint(turn,progress),edge,this.session.roads.graph.edges.get(turn.next).value);if(!p)return null;
   return {p,offset:turn.entry+progress,turn:{...turn,progress}};
  }
  // A stopped vehicle must not pin every lane of a broad avenue. Move only
@@ -113,7 +125,7 @@ export class WorldTraffic {
   let p,offset=c.offset,turn=c.turn;
   if(turn&&turn.progress>0){const progress=Math.max(0,turn.progress-.7*dt);p=turnPoint(turn,progress);turn={...turn,progress};offset=turn.entry+progress;
   }else{turn=null;offset=Math.max(0,c.offset-.7*dt);p=this.candidate(edge,offset,c);}
-  if(p){const contact=this.session.stream.contact(p.x,p.z,{referenceY:p.y,layer:p.layer,requiredFlags:1});if(contact){p.y=contact.y;p.surfaceId=contact.surfaceId;}else p=null;}
+  if(p){if(turn){const next=this.session.roads.graph.edges.get(turn.next)?.value;p=next?this.turnContact(p,edge,next):p.layer===edge.layer?this.turnContact(p,edge,edge):null;}else{const contact=this.session.stream.contact(p.x,p.z,{referenceY:p.y,layer:p.layer,requiredFlags:1});if(contact){p.y=contact.y;p.surfaceId=contact.surfaceId;}else p=null;}}
   if(!p||this.poseBlocked(c,p,actors)||!this.session.safePose(p,{halfWidth:c.wid/2,halfLength:c.len/2})){this.stopBlocked(c);return true;}
   c.offset=offset;c.turn=turn;c.point=p;c.v=-.7;this.placeTraffic(c,p);
   if(!turn&&offset<=Math.max(0,c.yielding.target)){c.avoidNext={id:c.yielding.next,until:this.t+8};c.yielding=null;c.stoppedT=0;c.blockedAt=null;c.v=c.vehicle.vLong=0;}
