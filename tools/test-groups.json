@@ -1,5 +1,6 @@
 {
   "unit": [
+    "tools/bundle-world-assets.test.mjs",
     "tools/bundle-route-host.test.mjs",
     "tools/protected-world-manifest.test.mjs",
     "tools/world-tile-observation.test.mjs",

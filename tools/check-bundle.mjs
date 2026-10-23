@@ -52,6 +52,8 @@ const errors = [], results = [];
 let page, browser, primaryError;
 try {
   const expectedRoutes = bundleRouteExpectations(app.routeConfig, ['riviera', 'megara', 'penteli'].map(map => ({ map, id: routeDestinationForMap(map) })));
+  if(!app.worldAssets)throw Error('Bundle world transport was not prepared');
+  app.worldAssets.check();
   const { chromium } = process.env.PLAYWRIGHT_MODULE
     ? await import(pathToFileURL(process.env.PLAYWRIGHT_MODULE))
     : await import('playwright').catch(() => import('/tmp/pw/node_modules/playwright/index.mjs'));
@@ -78,7 +80,8 @@ try {
     await page.evaluate(map => { const menu = window.__flow.menu; menu.h.selectMap(map); menu.h.quickRace(); }, map);
     await page.waitForFunction(() => window.__flow.menu.screen === 'car', null, { timeout: 60000 });
     await page.evaluate(() => window.__flow.menu.confirmCar());
-    await page.waitForFunction(bundleRaceReady, expected, { timeout: 600000 });
+    await Promise.race([page.waitForFunction(bundleRaceReady, expected, { timeout: 600000 }),app.worldAssets.failure.then(error=>{throw error;})]);
+    app.worldAssets.check();
     // Let the real countdown and camera transition finish before rendering the capture.
     await page.evaluate(() => { window.__sim.step(90, 1 / 60); window.__sim.render(); });
     assert.equal(await page.evaluate(() => window.__game.state), 'race', map + ' must enter the race state');
@@ -114,6 +117,7 @@ try {
     assert.deepEqual(faultErrors, []);
     await faultContext.close();
   }
+  app.worldAssets.check();
   assert.deepEqual(errors, [], 'built client page errors');
   await context.close();
 } catch (error) {
@@ -124,6 +128,6 @@ try {
   try { await writeFile(resolve(out, 'failure.json'), JSON.stringify({ error: error.stack, state }, null, 2)); } catch (secondary) { try { console.error('Secondary bundle failure-report error:', secondary.message); } catch {} }
   throw error;
 } finally {
-  await closeBundleCheck(browser, app, () => writeFile(resolve(out, 'report.json'), JSON.stringify({ errors, results }, null, 2)), primaryError);
+  await closeBundleCheck(browser, app, () => writeFile(resolve(out, 'report.json'), JSON.stringify({ errors, results, worldTransport:app.worldAssets?.status() }, null, 2)), primaryError);
 }
 console.log(JSON.stringify({ pass: true, results, errors }));
