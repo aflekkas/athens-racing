@@ -676,3 +676,17 @@ actual player XYZ/stream.position/origin separately; Tower context cause remains
 unresolved. All wrappers/pins/owned browser/proxy/slot must close at the deadline.
 A final combined-world/source freeze still requires the full route recompile and
 native game proof; this intermediate candidate does not replace that release gate.
+
+### Scoped three-panorama offline follow-up
+
+The [three-position follow-up](../../.scratch/riviera-source-audit/three-reference-followup.md)
+links the unchanged exact requested/actual URLs, coordinates, pano IDs, image dates
+and3.206581720m/5.835073101m/8.350741533m snap distances. This scoped receipt
+covers only those three positions and makes no inspection claim for the other
+six. It separates visible arrows/medians/paint/guardrail/rock/vegetation from
+proposed shared source-driven game audits and lists the exact own-game paired
+proof still required. The9000m side/lane/carriageway ambiguity remains open.
+No numeric grade/height/dimension is adopted, no correction is claimed complete,
+and no new browser/reference requests or media files were created. Historical
+broader receipts elsewhere in this report are not expanded or reverified by
+this three-position follow-up.
