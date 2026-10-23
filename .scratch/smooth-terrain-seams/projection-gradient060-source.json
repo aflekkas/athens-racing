@@ -1,0 +1,113 @@
+{
+  "sourceRevision": "80055f9208753e2d6fa8658b31c90216d22c650f7f33588ebd5178d1a6b804a1",
+  "field": {
+    "schema": 3,
+    "id": "road-chord-bounded-experimental",
+    "geographyVerified": false,
+    "maxPrototypeCells": 5
+  },
+  "schema": 1,
+  "status": "approved source-only feasibility comparison; rejected, no emitted/physical acceptance",
+  "passed": false,
+  "constraints": 4202,
+  "changedNodes": 681,
+  "iterations": 120,
+  "maxPredictedSag": 0.5508283956727122,
+  "targetSag": 0.45,
+  "ownerSagLimit": 0.5,
+  "maxAdjustment": 0.75,
+  "adjustmentLimit": 0.75,
+  "maxGradient": 0.060869071450753764,
+  "gradientLimit": 0.06,
+  "supportLimitMetres": 32,
+  "failures": [
+    {
+      "id": "0,1:osm:way:1446401965:0-0:f:0:1:40",
+      "before": 0.7083468023365806,
+      "after": 0.45162327023000637
+    },
+    {
+      "id": "0,1:osm:way:1446401965:0-0:f:0:1:44",
+      "before": 0.9305979919920715,
+      "after": 0.4523998644729008
+    },
+    {
+      "id": "0,1:osm:way:1446401965:0-0:f:0:1:48",
+      "before": 1.0954580492027306,
+      "after": 0.451560052078803
+    },
+    {
+      "id": "0,1:osm:way:1446401965:0-0:f:0:1:60",
+      "before": 0.8538863526352141,
+      "after": 0.4510707826034013
+    },
+    {
+      "id": "0,1:osm:way:23182769:0-0:f:0:1:16",
+      "before": 0.5446399056135702,
+      "after": 0.49817822055228367
+    },
+    {
+      "id": "0,1:osm:way:23182769:0-0:f:0:1:20",
+      "before": 0.760614852032082,
+      "after": 0.5294938406000491
+    },
+    {
+      "id": "0,1:osm:way:23182769:0-0:f:0:1:24",
+      "before": 0.9325969792367339,
+      "after": 0.5508283956727122
+    },
+    {
+      "id": "0,1:osm:way:23182769:0-0:f:0:1:28",
+      "before": 1.0344434607944264,
+      "after": 0.5451844526009708
+    },
+    {
+      "id": "0,1:osm:way:23182769:0-0:f:0:1:32",
+      "before": 1.0555075738978792,
+      "after": 0.5459437285825942
+    },
+    {
+      "id": "0,1:osm:way:23182769:0-0:f:0:1:36",
+      "before": 1.0164267234734101,
+      "after": 0.5201316141067776
+    },
+    {
+      "id": "0,1:osm:way:23182769:0-0:f:0:1:40",
+      "before": 0.9464902219196445,
+      "after": 0.4800812278304736
+    },
+    {
+      "id": "0,1:osm:way:23182769:0-0:f:0:1:44",
+      "before": 0.8242129768301579,
+      "after": 0.4587391461499622
+    },
+    {
+      "id": "0,1:osm:way:23182769:0-0:f:0:1:48",
+      "before": 0.708735700741075,
+      "after": 0.46724388119476096
+    },
+    {
+      "id": "0,1:osm:way:23182769:0-0:f:0:1:60",
+      "before": 0.2895312191004081,
+      "after": 0.4637479960304317
+    }
+  ],
+  "solverFunctionSHA256": "6c9b12320637a100b17878486c13adca93cc47779b411fbca12c4c278cb57d12",
+  "emittedCells": 0,
+  "hillPoint": {
+    "before": 264.92119611855213,
+    "after": 264.92119611855213
+  },
+  "hillAxes": {
+    "eastWest": {
+      "peakBefore": 267.6959483074193,
+      "peakAfter": 267.6959483074193,
+      "maxAdjustment": 0.01591601152748765
+    },
+    "northSouth": {
+      "peakBefore": 264.92119611855213,
+      "peakAfter": 264.92119611855213,
+      "maxAdjustment": 0
+    }
+  }
+}

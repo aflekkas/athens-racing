@@ -1,4 +1,4 @@
-import {terrainNodeBasis,terrainChordTerms,solveTerrainComfort} from './terrain-comfort-project.mjs';
+import {terrainNodeBasis,terrainChordTerms,solveTerrainComfort,verifyTerrainComfortCertificate} from './terrain-comfort-project.mjs';
 import {composeExtension} from './compose-extension.mjs';
 import {requireTerrainAcceptance} from './terrain-acceptance.mjs';
 import {readTerrainSource} from './refine-terrain.mjs';
@@ -101,4 +101,14 @@ test('road projection never propagates beyond its explicit support bound',()=>{
  const c=projectionChord(),r=solveTerrainComfort([c],{maxSupportMetres:8});
  const seeds=terrainChordTerms(c);for(const k of Object.keys(r.values)){const[x,z]=k.split(',').map(Number);assert.ok(seeds.some(t=>Math.hypot(x-t.x,z-t.z)<=8.000001));}
  assert.equal(r.report.supportLimitMetres,8);assert.throws(()=>solveTerrainComfort([c],{maxSupportMetres:Infinity}),/Invalid/);
+});
+
+test('finite transport proves a necessary gradient bound without accepting a relaxed comfort limit',()=>{
+ const chord=projectionChord('certificate',0,0,1.6),observations=[{chord,sign:1,weight:1}],flows=[{from:'-16,0',to:'0,0',amount:.5},{from:'16,0',to:'0,0',amount:.5}],r=verifyTerrainComfortCertificate({observations,flows});
+ assert.equal(r.infeasible,true);assert.ok(Math.abs(r.required-1.1)<1e-12);assert.ok(Math.abs(r.upperBound-.8)<1e-12);assert.ok(Math.abs(r.necessaryGradient-.06875)<1e-12);
+ assert.equal(verifyTerrainComfortCertificate({observations:[{chord:projectionChord(),sign:1,weight:1}],flows}).infeasible,false);assert.throws(()=>verifyTerrainComfortCertificate({observations,flows},{maxSag:.6}),/Invalid/);
+});
+test('certificate verifier rejects missing mass and ignores claimed transport costs',()=>{
+ const observations=[{chord:projectionChord('certificate',0,0,1.6),sign:1,weight:1}],flows=[{from:'-16,0',to:'0,0',amount:.5,unitCost:0},{from:'16,0',to:'0,0',amount:.5,unitCost:0}];
+ assert.ok(Math.abs(verifyTerrainComfortCertificate({observations,flows}).upperBound-.8)<1e-12);assert.throws(()=>verifyTerrainComfortCertificate({observations,flows:flows.slice(1)}),/Unbalanced/);assert.throws(()=>verifyTerrainComfortCertificate({observations:[{...observations[0],weight:-1}],flows}),/Invalid/);
 });

@@ -55,3 +55,17 @@ export function solveTerrainComfort(chords,{allowed=()=>true,maxAdjustment=.75,m
  const report={schema:1,status:'linear proxy only; emitted/geographic acceptance required',passed:!!constraints.length&&maximum<=targetSag+1e-6&&adjustment<=maxAdjustment+1e-10&&gradient<=maxGradient+1e-6,constraints:constraints.length,changedNodes:Object.keys(values).length,iterations:Math.min(iterations+1,maxIterations),maxPredictedSag:maximum,targetSag,ownerSagLimit:.5,maxAdjustment:adjustment,adjustmentLimit:maxAdjustment,maxGradient:gradient,gradientLimit:maxGradient,supportLimitMetres:maxSupportMetres,failures:constraints.filter(c=>Math.abs(value(c))>targetSag+1e-6).slice(0,20).map(c=>({id:c.id,before:c.signedSag,after:value(c)}))};
  return {values,report,sample:(x,z)=>terrainNodeBasis(x,z).reduce((v,t)=>v+t.w*(values[t.key]||0),0)};
 }
+
+/** Verify a finite necessary-bound certificate, independently of the solver.
+ * For balanced transport pi, sum(q*delta) <= sum(pi*min(G*distance,2*A)).
+ * Positive combinations of chord inequalities require at least `required`.
+ * A strict deficit proves LINEAR infeasibility under those design bounds;
+ * no certificate proves feasibility, geography or emitted acceptance. */
+export function verifyTerrainComfortCertificate({observations,flows},{maxAdjustment=.75,maxGradient=.05,maxSag=.5}={}){
+ if(!Number.isFinite(maxAdjustment)||maxAdjustment<=0||!Number.isFinite(maxGradient)||maxGradient<=0||!(maxSag>0&&maxSag<=.5)||!observations?.length||!flows?.length)throw Error('Invalid comfort certificate');
+ const terms=new Map();let required=0;
+ for(const{chord,sign,weight}of observations){if(![1,-1].includes(sign)||!Number.isFinite(weight)||weight<=0||!Number.isFinite(chord?.signedSag))throw Error('Invalid certificate observation');required+=weight*(sign*chord.signedSag-maxSag);for(const t of terrainChordTerms(chord)){const q=-sign*weight*t.coefficient,n=terms.get(t.key);if(n)n.q+=q;else terms.set(t.key,{...t,q,balance:0});}}
+ let bound=0,distanceCost=0;for(const{from,to,amount}of flows){const a=terms.get(from),b=terms.get(to);if(!a||!b||a.q<=0||b.q>=0||!Number.isFinite(amount)||amount<=0)throw Error('Invalid certificate transport');const d=Math.hypot(a.x-b.x,a.z-b.z);bound+=amount*Math.min(maxGradient*d,2*maxAdjustment);distanceCost+=amount*d;a.balance+=amount;b.balance-=amount;}
+ const balanceError=Math.max(...[...terms.values()].map(n=>Math.abs(n.q-n.balance)));if(balanceError>1e-9)throw Error('Unbalanced certificate transport');const mass=[...terms.values()].reduce((n,t)=>n+Math.abs(t.q),0);
+ return {infeasible:required>bound+1e-8,required,upperBound:bound,balanceError,maxSag,maxAdjustment,maxGradient,necessaryGradient:required/distanceCost,necessaryAmplitude:required/mass};
+}
