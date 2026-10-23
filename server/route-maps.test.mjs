@@ -48,7 +48,8 @@ test('authoritative road snapshot authenticates all bytes and rejects duplicate/
   for (const change of [r => r.anchors[0].y = 12, r => r.anchors.push(r.anchors[0]), r => r.edges[0].flags |= 8, r => r.anchors[0].halfLength = 0]) {
     const { roads } = await catalogue(); change(roads); const expectedHash = await sha256(roads); await assert.rejects(validateRouteRoads(roads, { expectedHash, worldSetRevision: roads.worldSetRevision }));
   }
-  const { roads } = await catalogue(); assert.equal(await validateRouteRoads(roads, { expectedHash: await sha256(roads), worldSetRevision: roads.worldSetRevision }), roads);
+  const { roads } = await catalogue(), proven = await validateRouteRoads(roads, { expectedHash: await sha256(roads), worldSetRevision: roads.worldSetRevision });
+  assert.deepEqual(proven, roads); assert.notStrictEqual(proven, roads); assert.ok(Object.isFrozen(proven)); assert.equal(Object.isFrozen(roads), false);
   const authority = routeRoadAuthority(roads); assert.equal(authority.candidates({ x: 10000, y: 0, z: 10000 }, { halfWidth: 1, halfLength: 2 }).length, 0); assert.equal(authority.candidates({ x: 100, y: 0, z: 400 }, { halfWidth: 1.275, halfLength: 6 }).length, 0);
 });
 test('world recovery uses surveyed road anchors and never grants progress after waiting out the hold', async () => {

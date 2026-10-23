@@ -293,7 +293,7 @@ test('v2 phase accounting charges raw/hash buffers and rejects certificate expan
   const bomb = encodeRecoverySidecar(b), raw = JSON.stringify(bomb);
   assert.equal(estimateRecoveryJSON(raw).exceedsDecodedLimit, false, 'small packed input is not sufficient proof');
   await assert.rejects(admitRecoverySidecar(raw, { expectedHash: await sha256(bomb), worldSetRevision: revision }), /combined expansion memory budget/);
-  await assert.rejects(validateRouteRoads(packed, { expectedHash: await sha256(packed), worldSetRevision: revision, maxCombinedBytes: recoveryDataBytes(packed), liveBufferBytes: 1 }), /authentication memory budget/);
+  await assert.rejects(validateRouteRoads(packed, { expectedHash: await sha256(packed), worldSetRevision: revision, maxCombinedBytes: recoveryDataBytes(packed) * 2 + 1, liveBufferBytes: 1 }), /authentication memory budget/);
 });
 
 
@@ -422,7 +422,7 @@ test('v1 near-2MiB wire cells exceeding the live phase budget reject before any 
   for(const input of [body,small,new TextEncoder().encode(small)]){
     const result=await admitRecoverySidecar(input,{expectedHash:smallHash,worldSetRevision:revision});
     const live=typeof input==='string'?small.length*2:input instanceof Uint8Array?small.length*2+input.byteLength:0;
-    assert.equal(result.metrics.memory.authenticationBytes,smallData+live+smallSize.codeUnits*2+smallSize.bytes*2);
+    assert.equal(result.metrics.memory.authenticationBytes,smallData+live+(input===body?smallData:0)+smallSize.codeUnits*2+smallSize.bytes*2);
     assert.ok(result.metrics.memory.authenticationBytes<=RECOVERY_MEMORY.decoded);
   }
 });
@@ -431,4 +431,72 @@ test('v1 near-2MiB wire cells exceeding the live phase budget reject before any 
 test('allocation-free raw UTF-8 sizing agrees with actual encoding for scalar and surrogate cases', async () => {
   const { recoveryUTF8Bytes } = await import('./route-road-wire.mjs');
   for (const text of ['', 'ascii', 'éΩ中😀', '\ud800', '\udc00', 'x\ud800y\udc00z', '\ud800\udc00', '\u0000\n\"\\']) assert.equal(recoveryUTF8Bytes(text), new TextEncoder().encode(text).length);
+});
+
+test('natural WebCrypto binds caller-object admission and validation to a private pre-await snapshot', async t => {
+  const { encodeRecoverySidecar } = await import('./route-road-wire.mjs');
+  for (const version of [1,2]) for (const direct of [false,true]) await t.test(`v${version} ${direct ? 'validator' : 'admission'}`, async () => {
+    const x = await setup(), original = structuredClone(x.bodies.get(x.manifest.cells['0,0'].url));
+    const caller = version === 1 ? original : structuredClone(encodeRecoverySidecar(original)), hash = await sha256(caller);
+    // No digest stub, delayed promise, or test synchronization hook.
+    const pending = direct ? validateRouteRoads(caller,{expectedHash:hash,worldSetRevision:revision}) : admitRecoverySidecar(caller,{expectedHash:hash,worldSetRevision:revision});
+    if(version===1){caller.anchors[0].offsetM=60;caller.anchors[0].z=160;caller.anchors[0].footprints[0].halfLength=.5;}
+    else{caller.anchors[0][6]=60;caller.anchors[0][13]=160;caller.footprintSets[0][0].halfLength=.5;}
+    assert.notEqual(await sha256(caller),hash);
+    const result = await pending, anchors = direct ? result.anchors : result.body.anchors;
+    assert.equal(anchors[0].offsetM,50);assert.equal(anchors[0].z,150);assert.equal(anchors[0].footprints[0].halfLength,6);
+    assert.equal(Object.isFrozen(caller),false);assert.equal(Object.isFrozen(caller.anchors[0]),false);
+    caller.stillMutable=true;assert.equal(caller.stillMutable,true);
+  });
+});
+
+test('caller snapshots bill original clone and hash copies before cloning and preserve strict JSON data', async () => {
+  const { encodeRecoverySidecar, recoveryDataBytes, recoveryCanonicalSize } = await import('./route-road-wire.mjs');
+  for(const version of [1,2]){
+    const body=version===1?twoWayBody():structuredClone(encodeRecoverySidecar(twoWayBody()));body.edges[0].sourceMetadata='x'.repeat(1700000);
+    const size=recoveryCanonicalSize(body),data=recoveryDataBytes(body),canonical=(version===1?size.codeUnits:size.maxTokenCodeUnits)*2;
+    assert.ok(data+canonical+size.bytes*2<RECOVERY_MEMORY.decoded,'old unbilled caller-original path would fit');
+    assert.ok(data*2+canonical+size.bytes*2>RECOVERY_MEMORY.decoded,'both forms must be charged');
+    const hash=await sha256(body),clone=structuredClone,Encoder=TextEncoder;let clones=0,encodes=0,writes=0;
+    globalThis.structuredClone=(...a)=>{clones++;return clone(...a)};globalThis.TextEncoder=class extends Encoder{encode(...a){encodes++;return super.encode(...a)}encodeInto(...a){writes++;return super.encodeInto(...a)}};
+    try{await assert.rejects(admitRecoverySidecar(body,{expectedHash:hash,worldSetRevision:revision}),/memory budget/);assert.equal(clones,0);assert.equal(encodes,0);assert.equal(writes,0);}finally{globalThis.structuredClone=clone;globalThis.TextEncoder=Encoder;}
+    assert.equal(await sha256(body),hash);assert.equal(Object.isFrozen(body),false);
+  }
+  let getterCalls=0;
+  for(const mutate of [
+    b=>Object.defineProperty(b.edges[0],'bad',{enumerable:true,get(){getterCalls++;return 1}}),
+    b=>b.edges[0].bad=undefined,b=>b.edges[0].bad=()=>1,b=>b.edges[0].bad=NaN,b=>b.edges[0].bad=1n,
+    b=>b.edges[0].bad=new Date(),b=>b.edges[0].bad=new Map(),b=>b.edges[0].bad=Object.create({inherited:1}),
+    b=>b.edges[0].bad=b,b=>b.edges[0].bad=Array(2),b=>b.edges[0][Symbol('hidden')]=1,
+    b=>Object.defineProperty(b.edges[0],'hidden',{value:1})
+  ]){
+    const b=twoWayBody();mutate(b);await assert.rejects(admitRecoverySidecar(b,{expectedHash:'a'.repeat(64),worldSetRevision:revision}),/strict JSON/);
+  }
+  assert.equal(getterCalls,0,'strict preflight never invokes caller accessors');
+  const original=twoWayBody(),packed=encodeRecoverySidecar(original),callerBytes=recoveryDataBytes(packed),before=JSON.stringify(packed);
+  const result=await admitRecoverySidecar(packed,{expectedHash:await sha256(packed),worldSetRevision:revision});
+  assert.equal(result.metrics.memory.callerObjectBytes,callerBytes);assert.equal(result.metrics.memory.snapshotBytes,callerBytes);
+  assert.equal(result.metrics.memory.snapshotPhaseBytes,callerBytes*2);
+  assert.ok(result.metrics.memory.expansionBytes>=callerBytes+recoveryDataBytes(original));
+  assert.equal(JSON.stringify(packed),before);
+});
+
+test('private JSON admission entry accepts only immutable bounded text and guards before parsing', async () => {
+  const { validateRecoveryRoadJSON } = await import('./route-roads.mjs');
+  let parses=0;const parse=JSON.parse;JSON.parse=(...a)=>{parses++;return parse(...a)};
+  try{
+    await assert.rejects(validateRecoveryRoadJSON(twoWayBody()),TypeError);
+    await assert.rejects(validateRecoveryRoadJSON(' '.repeat(2*1024*1024+1)),/artifact budget/);
+    await assert.rejects(validateRecoveryRoadJSON('['+'0,'.repeat(110000)+'0]'),/decoded memory budget/);
+    assert.equal(parses,0);
+  }finally{JSON.parse=parse;}
+});
+
+test('recovery manifest caller mutation cannot replace authenticated cell descriptors during natural WebCrypto', async () => {
+  const old='c'.repeat(64),next='d'.repeat(64),body={schemaVersion:1,worldId:'athens',projectionId:'athens-v1',worldSetRevision:revision,footprints:[{halfWidth:1,halfLength:2}],cells:{'0,0':{sourceHash:source,hash:old,url:`/world/recovery/0,0.${old}.json`}}};
+  const expectedHash=await sha256(body),pending=validateRecoveryManifest(body,{expectedHash,worldSetRevision:revision,sourceHashes:[['0,0',source]]});
+  body.cells['0,0'].hash=next;body.cells['0,0'].url=`/world/recovery/0,0.${next}.json`;body.footprints[0].halfLength=3;
+  const admitted=await pending;assert.equal(admitted.cells['0,0'].hash,old);assert.equal(admitted.footprints[0].halfLength,2);assert.equal(await sha256(admitted),expectedHash);
+  assert.equal(Object.isFrozen(body),false);assert.equal(Object.isFrozen(body.cells['0,0']),false);assert.equal(Object.isFrozen(body.footprints[0]),false);
+  body.canStillChange=true;assert.equal(body.canStillChange,true);
 });

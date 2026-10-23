@@ -148,3 +148,60 @@ export function decodeRecoverySidecar(body, { maxCombinedBytes = Infinity, liveB
   if (consume) { expanded.schemaVersion = 1; delete expanded.anchorFields; delete expanded.footprintSets; }
   return { body: expanded, metrics: Object.freeze({ packedBytes, expandedBytes: recoveryDataBytes(expanded), peakBytes, liveBufferBytes, consumed: consume }) };
 }
+
+/** Strict caller-object snapshot. Inspect data descriptors without invoking
+ * getters; only ordinary JSON records/dense arrays and finite scalars qualify.
+ * Budget original+clone+authentication BEFORE allocating the clone. */
+export function snapshotRecoverySidecar(value, { maxCombinedBytes = 12 * 1024 * 1024, liveBufferBytes = 0 } = {}) {
+  if (!Number.isFinite(maxCombinedBytes) || maxCombinedBytes <= 0 || maxCombinedBytes > 12 * 1024 * 1024 || !Number.isFinite(liveBufferBytes) || liveBufferBytes < 0) throw Error('Recovery snapshot memory budget exceeded');
+  let dataBytes = 0; const active = new Set();
+  const add = bytes => { dataBytes += bytes; if (dataBytes * 2 + liveBufferBytes > maxCombinedBytes) throw Error('Recovery snapshot memory budget exceeded'); };
+  const visit = v => {
+    if (v === null || typeof v === 'boolean') { add(16); return; }
+    if (typeof v === 'number') { if (!Number.isFinite(v)) throw Error('Recovery snapshot requires strict JSON'); add(16); return; }
+    if (typeof v === 'string') { add(48 + v.length * 2); return; }
+    if (!v || typeof v !== 'object' || active.has(v)) throw Error('Recovery snapshot requires strict JSON');
+    const array = Array.isArray(v), proto = Object.getPrototypeOf(v);
+    if (array ? proto !== Array.prototype : proto !== Object.prototype && proto !== null) throw Error('Recovery snapshot requires strict JSON');
+    if (Object.getOwnPropertySymbols(v).length) throw Error('Recovery snapshot requires strict JSON');
+    const names = Object.getOwnPropertyNames(v);
+    if (array && names.length !== v.length + 1) throw Error('Recovery snapshot requires strict JSON');
+    add(96); active.add(v);
+    for (const key of names) {
+      if (array && key === 'length') continue;
+      const d = Object.getOwnPropertyDescriptor(v, key);
+      if (!d.enumerable || !Object.hasOwn(d, 'value') || array && (!/^(0|[1-9]\d*)$/.test(key) || Number(key) >= v.length)) throw Error('Recovery snapshot requires strict JSON');
+      add(48 + key.length * 2); visit(d.value);
+    }
+    active.delete(v);
+  };
+  visit(value);
+  const size = recoveryCanonicalSize(value);
+  if (size.bytes > 2 * 1024 * 1024) throw Error('Recovery sidecar exceeds artifact budget');
+  const canonicalBytes = (value?.schemaVersion === 2 ? size.maxTokenCodeUnits : size.codeUnits) * 2;
+  const authenticationBytes = dataBytes * 2 + liveBufferBytes + canonicalBytes + size.bytes * 2;
+  if (authenticationBytes > maxCombinedBytes) throw Error('Recovery authentication memory budget exceeded');
+  const body = structuredClone(value);
+  return { body, metrics: Object.freeze({ bytes: size.bytes, callerObjectBytes: dataBytes, snapshotBytes: dataBytes, snapshotPhaseBytes: dataBytes * 2 + liveBufferBytes, authenticationBytes }) };
+}
+
+// Scan untrusted JSON before allocation. This is conservative accounting, not
+// a measurement of V8 heap usage. Keep the request-time early rejection while
+// allowing offline audits to obtain every contribution without JSON.parse.
+export function scanRecoveryJSON(text, limit = Infinity) {
+  let quoted = false, escaped = false, stringStarts = 0, arrayOpens = 0, objectOpens = 0, commas = 0, colons = 0;
+  const stringStorageBytes = text.length * 2;
+  let estimatedDecodedBytes = stringStorageBytes;
+  for (const ch of text) {
+    if (quoted) { if (escaped) escaped = false; else if (ch === '\\') escaped = true; else if (ch === '"') quoted = false; }
+    else if (ch === '"') { quoted = true; stringStarts++; estimatedDecodedBytes += 96; }
+    else if ('[{,:'.includes(ch)) {
+      if (ch === '[') arrayOpens++; else if (ch === '{') objectOpens++; else if (ch === ',') commas++; else colons++;
+      estimatedDecodedBytes += 128;
+    }
+    if (estimatedDecodedBytes > limit) throw Error('Recovery decoded memory budget exceeded');
+  }
+  const structuralTokens = arrayOpens + objectOpens + commas + colons;
+  return Object.freeze({ codeUnits: text.length, stringStorageBytes, stringStarts, stringTokenBytes: stringStarts * 96,
+    arrayOpens, objectOpens, commas, colons, structuralTokens, structuralBytes: structuralTokens * 128, estimatedDecodedBytes });
+}

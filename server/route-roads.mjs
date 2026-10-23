@@ -1,4 +1,4 @@
-import { decodeRecoverySidecar, recoveryDataBytes, recoveryCanonicalSize, recoveryCanonicalBytes } from './route-road-wire.mjs';
+import { decodeRecoverySidecar, recoveryDataBytes, recoveryCanonicalSize, recoveryCanonicalBytes, snapshotRecoverySidecar, recoveryUTF8Bytes, scanRecoveryJSON } from './route-road-wire.mjs';
 import { canonicalJSON } from '../src/route-definition.js';
 import { ROUTE_HASH } from '../src/route-network.js';
 import { recoveryRoadGroup } from '../src/world-road-group.js';
@@ -10,25 +10,45 @@ export const footprintCertified = (anchor, footprint) => recoveryFootprints(anch
 const freeze = value => { if (value && typeof value === 'object' && !Object.isFrozen(value)) { Object.values(value).forEach(freeze); Object.freeze(value); } return value; };
 // The release builder signs exact emitted edges and individually contact/obstacle
 // proven anchors. The request never contributes geometry or an unproved pose.
-async function authenticateRouteRoads(body, { expectedHash, worldSetRevision, maxCombinedBytes, liveBufferBytes, memoryStats }) {
+async function authenticateRouteRoads(body, { expectedHash, worldSetRevision, maxCombinedBytes, liveBufferBytes, callerObjectBytes, memoryStats }) {
   const size = recoveryCanonicalSize(body);
   if (size.bytes > 2 * 1024 * 1024) throw Error('Invalid authoritative recovery artifact');
   // Every supported schema/input path charges retained raw buffers, canonical
   // UTF-16 (full V1 or one V2 token), UTF-8 output, and a digest input copy
   // BEFORE creating any canonical string or encoded buffer.
   const canonicalBytes = (body?.schemaVersion === 2 ? size.maxTokenCodeUnits : size.codeUnits) * 2;
-  const bytes = recoveryDataBytes(body) + liveBufferBytes + canonicalBytes + size.bytes * 2;
+  const bytes = recoveryDataBytes(body) + liveBufferBytes + callerObjectBytes + canonicalBytes + size.bytes * 2;
   if (bytes > maxCombinedBytes) throw Error('Recovery authentication memory budget exceeded');
   if (memoryStats) memoryStats.authenticationBytes = bytes;
   const encoded = body?.schemaVersion === 2 ? recoveryCanonicalBytes(body, size) : new TextEncoder().encode(canonicalJSON(body));
   const digest = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', encoded)), v => v.toString(16).padStart(2, '0')).join('');
   if (!body || ![1, 2].includes(body.schemaVersion) || body.worldId !== 'athens' || body.projectionId !== 'athens-v1' || !ROUTE_HASH.test(expectedHash || '') || body.worldSetRevision !== worldSetRevision || !ROUTE_HASH.test(worldSetRevision || '') || encoded.length > 2 * 1024 * 1024 || digest !== expectedHash) throw Error('Invalid authoritative recovery artifact');
 }
-export async function validateRouteRoads(body, { expectedHash, worldSetRevision, maxCombinedBytes = 12 * 1024 * 1024, liveBufferBytes = 0, consumePacked = false, memoryStats = null } = {}) {
-  await authenticateRouteRoads(body, { expectedHash, worldSetRevision, maxCombinedBytes, liveBufferBytes, memoryStats });
+// Public object API always takes ownership of a private snapshot before yielding.
+export async function validateRouteRoads(body, options = {}) {
+  const maxCombinedBytes = options.maxCombinedBytes ?? 12 * 1024 * 1024, liveBufferBytes = options.liveBufferBytes ?? 0;
+  const snapshot = snapshotRecoverySidecar(body, { maxCombinedBytes, liveBufferBytes });
+  if (options.memoryStats) Object.assign(options.memoryStats, snapshot.metrics);
+  return validateOwnedRouteRoads(snapshot.body, { ...options, maxCombinedBytes, liveBufferBytes, callerObjectBytes: snapshot.metrics.callerObjectBytes });
+}
+// Text is immutable and JSON.parse creates a private graph. No object ownership
+// bypass option is exposed, and caller-owned objects never enter this path.
+export async function validateRecoveryRoadJSON(text, options = {}) {
+  if (typeof text !== 'string') throw TypeError('Recovery JSON must be text');
+  const maxCombinedBytes = options.maxCombinedBytes ?? 12 * 1024 * 1024;
+  if (!Number.isFinite(maxCombinedBytes) || maxCombinedBytes <= 0 || maxCombinedBytes > 12 * 1024 * 1024) throw Error('Recovery decoded memory budget exceeded');
+  const liveBufferBytes = Math.max(options.liveBufferBytes ?? 0, text.length * 2);
+  if (!Number.isFinite(liveBufferBytes) || liveBufferBytes < 0) throw Error('Recovery decoded memory budget exceeded');
+  if (recoveryUTF8Bytes(text) > 2 * 1024 * 1024) throw Error('Recovery sidecar exceeds artifact budget');
+  scanRecoveryJSON(text, maxCombinedBytes);
+  return validateOwnedRouteRoads(JSON.parse(text), { ...options, maxCombinedBytes, liveBufferBytes, callerObjectBytes: 0 });
+}
+async function validateOwnedRouteRoads(body, { expectedHash, worldSetRevision, maxCombinedBytes = 12 * 1024 * 1024, liveBufferBytes = 0, callerObjectBytes = 0, memoryStats = null } = {}) {
+  recoveryDataBytes(body, maxCombinedBytes);
+  await authenticateRouteRoads(body, { expectedHash, worldSetRevision, maxCombinedBytes, liveBufferBytes, callerObjectBytes, memoryStats });
   // Authenticate the immutable packed representation before any expansion.
   if (body.schemaVersion === 2) {
-    const decoded = decodeRecoverySidecar(body, { maxCombinedBytes, liveBufferBytes, consume: consumePacked });
+    const decoded = decodeRecoverySidecar(body, { maxCombinedBytes, liveBufferBytes: liveBufferBytes + callerObjectBytes, consume: true });
     body = decoded.body;
     if (memoryStats) memoryStats.expansionBytes = decoded.metrics.peakBytes;
   }

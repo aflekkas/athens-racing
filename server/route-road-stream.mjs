@@ -1,13 +1,15 @@
 import { canonicalJSON, sha256 } from '../src/route-definition.js';
 import { ROUTE_HASH } from '../src/route-network.js';
-import { validateRouteRoads, routeRoadAuthority } from './route-roads.mjs';
-import { recoveryDataBytes, recoveryCanonicalSize, recoveryUTF8Bytes } from './route-road-wire.mjs';
+import { validateRouteRoads, validateRecoveryRoadJSON, routeRoadAuthority } from './route-roads.mjs';
+import { recoveryDataBytes, recoveryUTF8Bytes, scanRecoveryJSON, snapshotRecoverySidecar } from './route-road-wire.mjs';
 export { recoveryDataBytes } from './route-road-wire.mjs';
 export const RECOVERY_ARTIFACT_BYTES = 2 * 1024 * 1024;
 const cellOf = pose => `${Math.floor(pose.x / 512)},${Math.floor(pose.z / 512)}`;
 const sidecarURL = (key, hash) => `/world/recovery/${key}.${hash}.json`;
 export async function validateRecoveryManifest(body, { expectedHash, worldSetRevision, sourceHashes = null } = {}) {
-  if (!body || body.schemaVersion !== 1 || body.worldId !== 'athens' || body.projectionId !== 'athens-v1' || body.worldSetRevision !== worldSetRevision || !ROUTE_HASH.test(worldSetRevision || '') || !ROUTE_HASH.test(expectedHash || '') || new TextEncoder().encode(canonicalJSON(body)).length > RECOVERY_ARTIFACT_BYTES || await sha256(body) !== expectedHash || !body.cells || Array.isArray(body.cells) || !Object.keys(body.cells).length) throw Error('Invalid authoritative recovery manifest');
+  // The authority root is also caller-owned until this private snapshot.
+  const snapshot = snapshotRecoverySidecar(body, { maxCombinedBytes: RECOVERY_MEMORY.decoded }); body = snapshot.body;
+  if (!body || body.schemaVersion !== 1 || body.worldId !== 'athens' || body.projectionId !== 'athens-v1' || body.worldSetRevision !== worldSetRevision || !ROUTE_HASH.test(worldSetRevision || '') || !ROUTE_HASH.test(expectedHash || '') || snapshot.metrics.bytes > RECOVERY_ARTIFACT_BYTES || await sha256(body) !== expectedHash || !body.cells || Array.isArray(body.cells) || !Object.keys(body.cells).length) throw Error('Invalid authoritative recovery manifest');
   if (sourceHashes !== null) {
     const expected = new Map(sourceHashes);
     if (!Array.isArray(sourceHashes) || expected.size !== sourceHashes.length || expected.size !== Object.keys(body.cells).length || [...expected].some(([key, hash]) => !ROUTE_HASH.test(hash || '') || body.cells[key]?.sourceHash !== hash)) throw Error('Recovery manifest omits or changes published world cells');
@@ -19,26 +21,6 @@ export async function validateRecoveryManifest(body, { expectedHash, worldSetRev
   if (!Array.isArray(body.footprints) || !body.footprints.length || body.footprints.length > 64 || !body.footprints.every(p => Number.isFinite(p.halfWidth) && p.halfWidth > 0 && p.halfWidth <= 3 && Number.isFinite(p.halfLength) && p.halfLength > 0 && p.halfLength <= 12)) throw Error('Recovery manifest vehicle certificates unavailable');
   for (const p of body.footprints) Object.freeze(p); Object.freeze(body.footprints);
   Object.freeze(body.cells); return Object.freeze(body);
-}
-// Scan untrusted JSON before allocation. This is conservative accounting, not
-// a measurement of V8 heap usage. Keep the request-time early rejection while
-// allowing offline audits to obtain every contribution without JSON.parse.
-function scanRecoveryJSON(text, limit = Infinity) {
-  let quoted = false, escaped = false, stringStarts = 0, arrayOpens = 0, objectOpens = 0, commas = 0, colons = 0;
-  const stringStorageBytes = text.length * 2;
-  let estimatedDecodedBytes = stringStorageBytes;
-  for (const ch of text) {
-    if (quoted) { if (escaped) escaped = false; else if (ch === '\\') escaped = true; else if (ch === '"') quoted = false; }
-    else if (ch === '"') { quoted = true; stringStarts++; estimatedDecodedBytes += 96; }
-    else if ('[{,:'.includes(ch)) {
-      if (ch === '[') arrayOpens++; else if (ch === '{') objectOpens++; else if (ch === ',') commas++; else colons++;
-      estimatedDecodedBytes += 128;
-    }
-    if (estimatedDecodedBytes > limit) throw Error('Recovery decoded memory budget exceeded');
-  }
-  const structuralTokens = arrayOpens + objectOpens + commas + colons;
-  return Object.freeze({ codeUnits: text.length, stringStorageBytes, stringStarts, stringTokenBytes: stringStarts * 96,
-    arrayOpens, objectOpens, commas, colons, structuralTokens, structuralBytes: structuralTokens * 128, estimatedDecodedBytes });
 }
 /** Pure preparse accounting, including all tokens even when over budget.
  * Does not parse, authenticate, or admit the artifact. Quoted punctuation is
@@ -57,26 +39,18 @@ export const RECOVERY_MEMORY = Object.freeze({ cache: 16 * 1024 * 1024, decoded:
  * The compact body is server query data, never a replacement published artifact.
  * Source hashes are retained so callers can bind them to their full manifest. */
 export async function admitRecoverySidecar(raw, { expectedHash, worldSetRevision } = {}) {
-  let body, bytes, liveBufferBytes = 0, consumePacked = false;
-  if (typeof raw === 'string' || raw instanceof Uint8Array) {
+  let text, bytes, liveBufferBytes = 0;
+  const objectInput = typeof raw !== 'string' && !(raw instanceof Uint8Array);
+  if (!objectInput) {
     bytes = typeof raw === 'string' ? recoveryUTF8Bytes(raw) : raw.byteLength;
     if (bytes > RECOVERY_ARTIFACT_BYTES) throw Error('Recovery sidecar exceeds artifact budget');
-    const text = typeof raw === 'string' ? raw : new TextDecoder('utf-8', { fatal: true }).decode(raw);
-    scanRecoveryJSON(text, RECOVERY_MEMORY.decoded); body = JSON.parse(text);
-    liveBufferBytes = text.length * 2 + (raw instanceof Uint8Array ? raw.byteLength : 0); consumePacked = true;
-  } else {
-    body = raw;
-    // Caller-owned objects have no wire buffer to inspect. Count before any
-    // canonical serialization/encoding, including the authentication phase.
-    const decoded = recoveryDataBytes(body, RECOVERY_MEMORY.decoded), size = recoveryCanonicalSize(body);
-    bytes = size.bytes;
-    if (bytes > RECOVERY_ARTIFACT_BYTES) throw Error('Recovery sidecar exceeds artifact budget');
-    const tokenBytes = (body?.schemaVersion === 2 ? size.maxTokenCodeUnits : size.codeUnits) * 2;
-    if (decoded + tokenBytes + size.bytes * 2 > RECOVERY_MEMORY.decoded) throw Error('Recovery authentication memory budget exceeded');
+    text = typeof raw === 'string' ? raw : new TextDecoder('utf-8', { fatal: true }).decode(raw);
+    liveBufferBytes = text.length * 2 + (raw instanceof Uint8Array ? raw.byteLength : 0);
   }
-  recoveryDataBytes(body, RECOVERY_MEMORY.decoded);
   const memory = { liveBufferBytes };
-  const proven = await validateRouteRoads(body, { expectedHash, worldSetRevision, maxCombinedBytes: RECOVERY_MEMORY.decoded, liveBufferBytes, consumePacked, memoryStats: memory });
+  const options = { expectedHash, worldSetRevision, maxCombinedBytes: RECOVERY_MEMORY.decoded, liveBufferBytes, memoryStats: memory };
+  const proven = objectInput ? await validateRouteRoads(raw, options) : await validateRecoveryRoadJSON(text, options);
+  if (objectInput) bytes = memory.bytes;
   const edges = Object.freeze(proven.edges.map(({ id, layer, surface, flags }) => Object.freeze({ id, layer, surface, flags })));
   const compact = Object.freeze({ anchors: proven.anchors, edges, sourceHashes: proven.sourceHashes });
   const decodedBytes = recoveryDataBytes({ anchors: proven.anchors, edges }) * 2;
