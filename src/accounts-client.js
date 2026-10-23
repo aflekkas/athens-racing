@@ -108,7 +108,7 @@ export class AccountsClient {
             body: JSON.stringify(data),
           }),
     });
-    const b = await r.json();
+    const b = early ? r.body : await r.json();
     if (r.status === 401 && !path.includes("/google/")) {
       this.disconnect();
       this.error = "Your session expired. Sign in with Google to continue.";
@@ -148,6 +148,9 @@ export class AccountsClient {
       if (offlineAllowed(e, globalThis.navigator?.onLine !== false)) this.connectionLost();
       else this.error = e.message;
     } finally {
+      // Entry already drains the body. Drop any unused snapshot (providers[] or failed
+      // config) without another GET, waiting on it, or applying an unverified identity.
+      prefetched("/api/auth/session")?.catch(() => {});
       this.ready = true;
       this.onChange();
     }

@@ -131,7 +131,7 @@ test('no optimism for an expired hint or while the browser is offline: the launc
   } finally { if (nav) Object.defineProperty(globalThis, 'navigator', nav); else delete globalThis.navigator; }
 });
 test('the answers the page entry already asked for are used, not asked for again', async () => {
-  globalThis.__authPrefetch = { '/api/auth/config': Promise.resolve(ok(GOOGLE)), '/api/auth/session': Promise.resolve(ok(SESSION)) };
+  globalThis.__authPrefetch = { '/api/auth/config': Promise.resolve({ status: 200, ok: true, body: GOOGLE }), '/api/auth/session': Promise.resolve({ status: 200, ok: true, body: SESSION }) };
   const calls = [], l = launch({}, { calls });
   try {
     await settle(l);
