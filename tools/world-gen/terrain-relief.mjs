@@ -24,6 +24,10 @@ export function terrainReliefField(atlas){
   }
   return NaN;
  }
+ // Bounded memoization prevents an all-world pass retaining millions of keys.
+ // Eviction changes only work, never field values or cell iteration semantics.
+ const cacheLimit=atlas.cacheLimit??32768;
+ function remember(key,value){cache.set(key,value);if(cache.size>cacheLimit)cache.delete(cache.keys().next().value);}
  const original=(x,z)=>plane(x,z,node,spacing);
  function blend(x,z){
   let weight=1;
@@ -40,7 +44,7 @@ export function terrainReliefField(atlas){
  function lattice(x,z){
   const key=x+','+z;if(cache.has(key))return cache.get(key);
   let sum=0;const weight=blend(x,z);
-  if(!weight){cache.set(key,0);return 0;}
+  if(!weight){remember(key,0);return 0;}
   for(let j=0;j<9;j++)for(let i=0;i<9;i++){
    const h=original(x+(i-4)*32,z+(j-4)*32);
    if(!Number.isFinite(h))throw Error('Incomplete terrain atlas halo at '+key);
@@ -49,7 +53,7 @@ export function terrainReliefField(atlas){
   const height=original(x,z);
   // The sea datum and low shore stay fixed. Above 10 m, city terrain gets
   // the complete correction even when a neighbouring cell contains water.
-  const delta=(sum-height)*weight;cache.set(key,delta);return delta;
+  const delta=(sum-height)*weight;remember(key,delta);return delta;
  }
  const delta=(x,z)=>plane(x,z,lattice),target=(x,z)=>original(x,z)+delta(x,z);
  const scale=(x,z)=>{
@@ -63,7 +67,8 @@ export function terrainReliefField(atlas){
 export function terrainAtlasCell(pack){
  const t=tileTables(pack),m=pack.metadata;
  const ground=groundIndex(t);
- return {heights:Array.from({length:65*65},(_,i)=>Math.fround(ground.heightAt(i%65*8,Math.floor(i/65)*8))),protected:!t.fineSurface?.length||!m.extensions?.derivedBuildings||!!m.structures?.length||!!m.tunnelBores?.length||!!m.coastalLakes?.length};
+ const protectedReasons=[...(!t.fineSurface?.length?['no-generated-fine-surface']:[]),...(!m.extensions?.derivedBuildings?['authored-or-legacy']:[]),...(m.structures?.length?['structure-layer']:[]),...(m.tunnelBores?.length?['bore']:[]),...(m.coastalLakes?.length?['lake']:[])];
+ return {heights:Array.from({length:65*65},(_,i)=>Math.fround(ground.heightAt(i%65*8,Math.floor(i/65)*8))),protected:!!protectedReasons.length,protectedReasons};
 }
 export function refineTerrainRelief(pack,field){
  const m=pack.metadata,t=tileTables(pack),[ox,oz]=m.cell.map(n=>n*512),info=terrainAtlasCell(pack);

@@ -1,3 +1,5 @@
+import {readTerrainSource} from './refine-terrain.mjs';
+import {createHash} from 'node:crypto';
 import test from 'node:test';import assert from 'node:assert/strict';
 import {terrainReliefField,refineTerrainRelief,terrainAtlasCell} from './terrain-relief.mjs';
 import {auditTerrainSmoothness} from '../world-terrain-smoothness.mjs';
@@ -30,3 +32,14 @@ test('steeper refined terrain gets the existing kerb fade instead of exceeding s
  const g=terrainReliefField(atlas((x,z)=>200+x*.05));assert.ok(Math.abs(g.transform(0,200.12,0)-200.12)<1e-6);
 });
 test('a comfort report with no eligible road chords does not claim a pass',()=>{const r=auditTerrainSmoothness(tileTables(fixture()));assert.equal(r.passed,null);assert.equal(r.samples,0);});
+
+test('bounded lattice memoization gives identical terrain after eviction',()=>{const a=atlas((x,z)=>80+3*Math.cos(x/21)+2*Math.sin(z/24)),f=terrainReliefField({...a,cacheLimit:7}),g=terrainReliefField(a);for(let j=0;j<2;j++)for(let x=0;x<512;x+=13)assert.equal(f.delta(x,110+j),g.delta(x,110+j));});
+test('protected coverage records every independent reason without hiding topology',()=>{const p=fixture();p.metadata.structures=[{}];p.metadata.tunnelBores=[{}];p.metadata.coastalLakes=[{}];assert.deepEqual(terrainAtlasCell(p).protectedReasons,['structure-layer','bore','lake']);});
+
+test('shared source cache verifies bytes and hash without writes or network fallback',async()=>{
+ const bytes=Buffer.from('authenticated tile'),entry={bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex'),url:'https://example.invalid/tile'};
+ let reads=0;const options={cache:'/shared',readOnly:true,readFile:async path=>{reads++;assert.equal(path,'/shared/'+entry.sha256+'.bin.gz');return bytes;},writeFile:()=>{throw Error('must not write');},fetcher:()=>{throw Error('must not fetch');}};
+ assert.equal(await readTerrainSource(entry,options),bytes);assert.equal(reads,1);
+ await assert.rejects(readTerrainSource(entry,{...options,readFile:async()=>{throw Error('ENOENT');}}),/Read-only source cache missing/);
+ await assert.rejects(readTerrainSource(entry,{...options,readFile:async()=>Buffer.from('corrupted tile')}),/Source integrity/);
+});
