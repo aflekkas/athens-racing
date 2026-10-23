@@ -277,7 +277,8 @@
     "tools/setup-event-choice.test.mjs",
     "tools/world-traffic-online-police.test.mjs",
     "tools/infill.test.mjs",
-    "tools/worker-memory-probe.test.mjs"
+    "tools/worker-memory-probe.test.mjs",
+    "tools/infill-repair.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",

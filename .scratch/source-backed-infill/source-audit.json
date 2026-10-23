@@ -1,0 +1,272 @@
+{
+  "sourceBuildings": 2425,
+  "sourceGreen": 33,
+  "local": {
+    "80": {
+      "buildingCount": 20,
+      "footprintShare": 0.31429123648968815,
+      "kinds": {
+        "yes": 19,
+        "roof": 1
+      },
+      "heightTags": [],
+      "greenShare": 0.0,
+      "green": []
+    },
+    "150": {
+      "buildingCount": 58,
+      "footprintShare": 0.2468293251393938,
+      "kinds": {
+        "yes": 57,
+        "roof": 1
+      },
+      "heightTags": [],
+      "greenShare": 0.05941335366172137,
+      "green": [
+        {
+          "id": "119884594",
+          "tags": {
+            "leisure": "park",
+            "name": "\u0386\u03bb\u03c3\u03bf\u03c2 \u039a\u03b5\u03c6\u03b1\u03bb\u03b1\u03c1\u03af\u03bf\u03c5"
+          },
+          "m2": 3954.369814380625
+        },
+        {
+          "id": "1078578728",
+          "tags": {
+            "landuse": "grass"
+          },
+          "m2": 77.27115953718662
+        },
+        {
+          "id": "1078578730",
+          "tags": {
+            "landuse": "grass"
+          },
+          "m2": 161.29848286592699
+        }
+      ]
+    },
+    "300": {
+      "buildingCount": 194,
+      "footprintShare": 0.21841552591572982,
+      "kinds": {
+        "yes": 181,
+        "hotel": 3,
+        "roof": 6,
+        "service": 1,
+        "kiosk": 2,
+        "carport": 1
+      },
+      "heightTags": [
+        {
+          "id": "344073318",
+          "tags": {
+            "building": "hotel",
+            "building:levels": "4",
+            "roof:levels": "0",
+            "roof:shape": "flat"
+          }
+        }
+      ],
+      "greenShare": 0.10624992183447575,
+      "green": [
+        {
+          "id": "119884594",
+          "tags": {
+            "leisure": "park",
+            "name": "\u0386\u03bb\u03c3\u03bf\u03c2 \u039a\u03b5\u03c6\u03b1\u03bb\u03b1\u03c1\u03af\u03bf\u03c5"
+          },
+          "m2": 13081.173357945048
+        },
+        {
+          "id": "425513756",
+          "tags": {
+            "landuse": "forest"
+          },
+          "m2": 4233.360792279985
+        },
+        {
+          "id": "425513761",
+          "tags": {
+            "landuse": "forest"
+          },
+          "m2": 10392.184506068033
+        },
+        {
+          "id": "425513769",
+          "tags": {
+            "landuse": "grass"
+          },
+          "m2": 1805.74120768806
+        },
+        {
+          "id": "1078578726",
+          "tags": {
+            "landuse": "grass"
+          },
+          "m2": 155.83114993182176
+        },
+        {
+          "id": "1078578728",
+          "tags": {
+            "landuse": "grass"
+          },
+          "m2": 163.63337877050134
+        },
+        {
+          "id": "1078578730",
+          "tags": {
+            "landuse": "grass"
+          },
+          "m2": 161.29848286592699
+        }
+      ]
+    },
+    "600": {
+      "buildingCount": 813,
+      "footprintShare": 0.20076698076539576,
+      "kinds": {
+        "yes": 775,
+        "hotel": 4,
+        "apartments": 7,
+        "house": 2,
+        "roof": 14,
+        "carport": 7,
+        "service": 1,
+        "kiosk": 2,
+        "garage": 1
+      },
+      "heightTags": [
+        {
+          "id": "344073318",
+          "tags": {
+            "building": "hotel",
+            "building:levels": "4",
+            "roof:levels": "0",
+            "roof:shape": "flat"
+          }
+        }
+      ],
+      "greenShare": 0.05078926683116211,
+      "green": [
+        {
+          "id": "119884594",
+          "tags": {
+            "leisure": "park",
+            "name": "\u0386\u03bb\u03c3\u03bf\u03c2 \u039a\u03b5\u03c6\u03b1\u03bb\u03b1\u03c1\u03af\u03bf\u03c5"
+          },
+          "m2": 13081.173357945048
+        },
+        {
+          "id": "425513756",
+          "tags": {
+            "landuse": "forest"
+          },
+          "m2": 10723.64772797458
+        },
+        {
+          "id": "425513757",
+          "tags": {
+            "landuse": "forest"
+          },
+          "m2": 1238.310678373625
+        },
+        {
+          "id": "425513761",
+          "tags": {
+            "landuse": "forest"
+          },
+          "m2": 14976.27756803985
+        },
+        {
+          "id": "425513769",
+          "tags": {
+            "landuse": "grass"
+          },
+          "m2": 2072.445236625102
+        },
+        {
+          "id": "425513771",
+          "tags": {
+            "landuse": "grass"
+          },
+          "m2": 1832.6164908661708
+        },
+        {
+          "id": "425513783",
+          "tags": {
+            "landuse": "grass"
+          },
+          "m2": 11280.220858611747
+        },
+        {
+          "id": "1078578722",
+          "tags": {
+            "landuse": "grass"
+          },
+          "m2": 169.9121720203272
+        },
+        {
+          "id": "1078578724",
+          "tags": {
+            "landuse": "grass"
+          },
+          "m2": 159.701886474417
+        },
+        {
+          "id": "1078578726",
+          "tags": {
+            "landuse": "grass"
+          },
+          "m2": 155.83114993182176
+        },
+        {
+          "id": "1078578728",
+          "tags": {
+            "landuse": "grass"
+          },
+          "m2": 163.63337877050134
+        },
+        {
+          "id": "1078578730",
+          "tags": {
+            "landuse": "grass"
+          },
+          "m2": 161.29848286592699
+        },
+        {
+          "id": "1078587128",
+          "tags": {
+            "landuse": "grass"
+          },
+          "m2": 76.63709174549012
+        },
+        {
+          "id": "1092661319",
+          "tags": {
+            "landuse": "grass"
+          },
+          "m2": 235.48202982265775
+        },
+        {
+          "id": "1132669939",
+          "tags": {
+            "leisure": "park",
+            "name": "\u0394\u03b7\u03bc\u03bf\u03c4\u03b9\u03ba\u03cc \u03a0\u03ac\u03c1\u03ba\u03bf \"\u0391\u03bb\u03ad\u03be\u03b7\u03c2 \u03a3\u03c4\u03bf\u03c5\u03b4\u03af\u03c4\u03b7\u03c2\""
+          },
+          "m2": 1021.8912474106002
+        }
+      ]
+    }
+  },
+  "blocksAtSpawn": [
+    {
+      "id": "425513753",
+      "tags": {
+        "landuse": "residential"
+      },
+      "m2": 374165.34809881536
+    }
+  ]
+}

@@ -1,0 +1,148 @@
+{
+  "source": "/tmp/athens-greenery.98Rc/kefalari-core.osm",
+  "sourceBuildings": 2400,
+  "sourceGreenAreas": 34,
+  "seconds": 1.13,
+  "decisions": [
+    {
+      "id": "building:gen:8049:-10544:-175:13:8:0",
+      "oldHeight": 19.200000762939453,
+      "eligible": false,
+      "reason": "source-sparse",
+      "mappedCover": 0.236938,
+      "mappedBuildings": 56,
+      "explicitResidentialHeights": 0,
+      "storeys": [
+        4,
+        7
+      ],
+      "inferred": true
+    },
+    {
+      "id": "building:gen:8168:-10529:5:12:10:0",
+      "oldHeight": 12.800000190734863,
+      "eligible": false,
+      "reason": "source-sparse",
+      "mappedCover": 0.274243,
+      "mappedBuildings": 64,
+      "explicitResidentialHeights": 0,
+      "storeys": [
+        4,
+        7
+      ],
+      "inferred": true
+    },
+    {
+      "id": "building:gen:8049:-10544:-175:26:8:0",
+      "oldHeight": 16,
+      "eligible": false,
+      "reason": "source-sparse",
+      "mappedCover": 0.212485,
+      "mappedBuildings": 49,
+      "explicitResidentialHeights": 0,
+      "storeys": [
+        4,
+        7
+      ],
+      "inferred": true
+    },
+    {
+      "id": "building:gen:8049:-10544:-175:7:8:0",
+      "oldHeight": 16,
+      "eligible": false,
+      "reason": "source-sparse",
+      "mappedCover": 0.235658,
+      "mappedBuildings": 55,
+      "explicitResidentialHeights": 0,
+      "storeys": [
+        4,
+        7
+      ],
+      "inferred": true
+    },
+    {
+      "id": "building:gen:8168:-10529:5:11:15:0",
+      "oldHeight": 16,
+      "eligible": false,
+      "reason": "source-sparse",
+      "mappedCover": 0.277276,
+      "mappedBuildings": 66,
+      "explicitResidentialHeights": 0,
+      "storeys": [
+        4,
+        7
+      ],
+      "inferred": true
+    },
+    {
+      "id": "building:gen:8049:-10544:-175:8:13:0",
+      "oldHeight": 22.399999618530273,
+      "eligible": false,
+      "reason": "source-sparse",
+      "mappedCover": 0.229252,
+      "mappedBuildings": 49,
+      "explicitResidentialHeights": 0,
+      "storeys": [
+        4,
+        7
+      ],
+      "inferred": true
+    },
+    {
+      "id": "building:gen:8049:-10544:-175:16:16:0",
+      "oldHeight": 19.200000762939453,
+      "eligible": false,
+      "reason": "source-sparse",
+      "mappedCover": 0.215172,
+      "mappedBuildings": 52,
+      "explicitResidentialHeights": 0,
+      "storeys": [
+        4,
+        7
+      ],
+      "inferred": true
+    },
+    {
+      "id": "building:gen:8177:-10633:5:26:8:0",
+      "oldHeight": 19.200000762939453,
+      "eligible": false,
+      "reason": "source-sparse",
+      "mappedCover": 0.258945,
+      "mappedBuildings": 53,
+      "explicitResidentialHeights": 0,
+      "storeys": [
+        4,
+        7
+      ],
+      "inferred": true
+    },
+    {
+      "id": "building:gen:8168:-10529:5:28:14:0",
+      "oldHeight": 12.800000190734863,
+      "eligible": false,
+      "reason": "source-sparse",
+      "mappedCover": 0.270343,
+      "mappedBuildings": 66,
+      "explicitResidentialHeights": 0,
+      "storeys": [
+        4,
+        7
+      ],
+      "inferred": true
+    },
+    {
+      "id": "building:gen:8168:-10529:5:9:22:0",
+      "oldHeight": 12.800000190734863,
+      "eligible": false,
+      "reason": "source-sparse",
+      "mappedCover": 0.270513,
+      "mappedBuildings": 67,
+      "explicitResidentialHeights": 0,
+      "storeys": [
+        4,
+        7
+      ],
+      "inferred": true
+    }
+  ]
+}
