@@ -503,3 +503,65 @@ not recorded. Sparse local street appearance is observed; its cause is
 telemetry/source identities remain unchanged. The receipt labels this as a
 post-close correction, not a new live measurement or altered original telemetry.
 Generic Tower presence remains the only accepted observation.
+
+
+### CPU-only picking preparation and Tower-origin correction
+
+`tools/riviera-probe-geometry.mjs` creates separate CPU-only geometry wrappers
+from ordinary compact typed attributes/index; source arrays are shared read-only.
+It preserves matrixWorld, material side/groups, draw range, normalized attributes,
+visibility and camera layers. Interleaved attributes are wrapped explicitly;
+terrain positions use the same Float32 decode/residual contract. It never adds
+wrappers to the actual scene, uploads them, or disposes original buffers/materials.
+Each hit must project to the requested pixel and lie inside its actual triangle.
+Instanced/skinned/morph/custom vertex transforms and GPU-only attributes without
+CPU arrays are explicitly unsupported. Any eligible unsupported object prevents
+owner classification; it cannot be skipped into a horizon-owner claim.
+
+`node --test tools/riviera-probe-geometry.test.mjs`: **9pass/0fail**. The compact
+index negative control throws with native standard `Mesh.raycast`; the wrapper
+hits the same known triangle with exact projected pixel and unchanged source
+arrays. Other tests cover side/layer/visibility, draw ranges/material groups,
+interleaved/normalized layouts, terrain decode, unsupported fail-closed behavior,
+stale camera matrices and off-centre projection. This demonstrates diagnostic
+adapter coverage, **not a product raycast bug**: runtime physics uses its own
+contact query. `node --check tools/riviera-probe-geometry.mjs` also passes.
+No browser or heavy suite was started for this preparation.
+
+A relevant remaining adapter limitation is explicit: the actual `WorldTileScene`
+GPU upload path replaces attributes/index with `GLBufferAttribute` objects that
+have no CPU `.array`. Next picking requires exact read-only association of the
+rendered mesh with its active packet metadata/GPU upload descriptors and original
+arrays; terrain decoding must match the uploaded variant. The adapter refuses
+such objects until that provenance is established. No GPU reads/budget bypass or
+runtime edits have been introduced.
+
+**Correction:** the earlier interpretation that the Tower player/focus was2km
+away came from treating `stream.origin` as player position. That was invalid.
+`WorldTileStream.update` rebases each axis only beyond2048m. The source manifest
+initial spawn is cell4,25; its centre(2304,13056) establishes origin(2048,12800).
+A subsequent update at the Tower pano(-180.0094,10765.14494) rebases X to-512 but
+retains Z12800 because its2034.855m difference is below2048. A CPU test of the
+actual stream update reproduces the observed(-512,12800) with stream.position
+at the pano. This source sequence explains the coordinate-origin observation;
+it does not reconstruct the uncaptured live player pose or active-cell states.
+The prior Tower image remains generic presence only; sparse street appearance
+has no established cause and is not local-context/floor acceptance.
+
+The native free-world flow calls `session.prepareSpawn(queryPoint,{car})`, which
+teleports stream interest, obtains a safe nearby candidate through
+`worldRecoveryTarget`, commits the returned pose and places the player. Its
+candidate search is bounded to160m plus sampled slides/lane offsets; there is
+no source evidence here of a2km fallback. Public `__athens.goto(id,x,z)` instead
+loads interest at x,z and places the existing authenticated `stream.anchor(id)`;
+x,z are not an unchecked vehicle pose. No API was called in this CPU stage.
+
+The [preparation receipt](../../.scratch/riviera-source-audit/game/probe-preparation.json)
+records all9 Tower-neighbour manifest identities (9present; actual activity not
+recorded) and the next proof requirements. Before any context claim, collect
+actual player pose, stream.position and origin independently; requested/returned
+spawn identity; all9 active camera-neighbour cells and dependencies; exact native
+floor; and final camera matrices/projection. Any camera-centred stream interest
+via public APIs must be labeled diagnostic interest, never driving/spawn proof.
+No overall fidelity issue closes. Codex gpt-6.1-sol prepared these source-only
+tools/tests and corrected the evidence interpretation.

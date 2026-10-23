@@ -1,0 +1,169 @@
+{
+  "sourceCommit": "26e05b244b411d791ba89083b21d91c2c961eeca",
+  "worldSetRevision": "80055f9208753e2d6fa8658b31c90216d22c650f7f33588ebd5178d1a6b804a1",
+  "sourceOnly": true,
+  "browserLaunched": false,
+  "towerCameraNeighborhood": [
+    {
+      "key": "-2,20",
+      "manifestPresent": true,
+      "sha256": "4a8dc9370235def680329fcf5af5d513845e4c8c90229f27f0fc0796ec6f5dfa",
+      "bytes": 17174,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      },
+      "runtimeActive": "NOT RECORDED"
+    },
+    {
+      "key": "-2,21",
+      "manifestPresent": true,
+      "sha256": "42d946d5c2dd44f34a9a5d31311a5f1802c40053f558a13fe062e5d7c59e9a33",
+      "bytes": 29022,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      },
+      "runtimeActive": "NOT RECORDED"
+    },
+    {
+      "key": "-2,22",
+      "manifestPresent": true,
+      "sha256": "06adf9cb6076fdd83c7c38ce1d0745840a524378d6f250d6956f7f44e054c90f",
+      "bytes": 21498,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      },
+      "runtimeActive": "NOT RECORDED"
+    },
+    {
+      "key": "-1,20",
+      "manifestPresent": true,
+      "sha256": "d97cb5e32dd029f27b5f09e2f84b0d9a8cfc0f6fde0bb4d1479d5c4d20f74d9f",
+      "bytes": 226150,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      },
+      "runtimeActive": "NOT RECORDED"
+    },
+    {
+      "key": "-1,21",
+      "manifestPresent": true,
+      "sha256": "13ebbb53967d5fe7919e2c9d1f128298725d8feee757e619e18f0e134efe6e19",
+      "bytes": 144848,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      },
+      "runtimeActive": "NOT RECORDED"
+    },
+    {
+      "key": "-1,22",
+      "manifestPresent": true,
+      "sha256": "9f5abd20e0a5e9e24f1e77de939e03432c8d876e4dd56a1320c12e227d9e6868",
+      "bytes": 77310,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      },
+      "runtimeActive": "NOT RECORDED"
+    },
+    {
+      "key": "0,20",
+      "manifestPresent": true,
+      "sha256": "4d8f710bed5b086f0a445fd08845902aba49c86be509f7f9598a0b3aefb00a42",
+      "bytes": 93392,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      },
+      "runtimeActive": "NOT RECORDED"
+    },
+    {
+      "key": "0,21",
+      "manifestPresent": true,
+      "sha256": "3dbbd97340a22dfb4f5938d4659ef9d53bcc18d9d753abbc8468c63395ad8b52",
+      "bytes": 217154,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      },
+      "runtimeActive": "NOT RECORDED"
+    },
+    {
+      "key": "0,22",
+      "manifestPresent": true,
+      "sha256": "4f75ade3a725ba7e8b54c618e3def960545c753a1f36aeff69da67c3a6a39871",
+      "bytes": 240980,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      },
+      "runtimeActive": "NOT RECORDED"
+    }
+  ],
+  "originFinding": "WorldTileStream.update rebases only when axis distance>2048m. Exact cameraZ10765.14494 minus originZ12800=-2034.85506, so old origin may persist with player at camera. Actual player pose absent prior receipt;2km separation not established.",
+  "publicSpawnFlow": [
+    "athens-world: stream.spawn initial manifest location",
+    "spawnAt(initial player XYZ) -> session.prepareSpawn",
+    "spawnAt(query.spawn) -> session.prepareSpawn(point,{car})",
+    "selection.prepareSpawn -> stream.teleport(point) -> findSpawn via worldRecoveryTarget -> onCommit pose",
+    "athens-world place(player,returnedPose); normal player-based stream.update"
+  ],
+  "gotoLimits": "__athens.goto(id,x,z) teleports stream to x,z then places existing authenticated stream.anchor(id); supplied x,z are NOT a direct car pose; no unvalidated actor teleport for context proof.",
+  "nextCaptureRequirements": [
+    "record actual player XYZ/yaw, stream.position, origin independently",
+    "record query exact requested point and source anchor/grid result; no invented pose",
+    "cameraNeighborhoodReceipt requires all9manifest cells active plus dependencies; record hashes before any context claim",
+    "native road floor requery at exact panoXZ with unique layer/surface/source binding",
+    "verify camera position/quaternion/matrixWorld/projection after final render",
+    "static only; any public stream.teleport for camera-centered interest must be explicitly labeled diagnostic interest and not drive/spawn proof"
+  ],
+  "picker": {
+    "testCommand": "node --test tools/riviera-probe-geometry.test.mjs",
+    "pass": 9,
+    "fail": 0,
+    "negativeControl": "plain compact index standard Mesh.raycast throws getX; CPU wrapper resolves same triangle/projected pixel with source arrays unchanged",
+    "supported": "ordinary compact typed attrs/index, normalized attrs, interleaved arrays, terrain quantization/residual, exact material side/groups/drawrange/matrix/layers/visibility",
+    "unsupported": "GPU-only attributes lacking CPUarray, instanced/skinned/morph/custom shader vertex deformation; any eligible unsupported mesh blocks owner classification",
+    "actualRendererBlocker": "WorldTileScene GPU path replaces attributes/index with GLBufferAttribute lacking .array. Need audited exact tilepacket/gpuPlan\u2192render mesh binding before CPU copies can represent these. Do not infer tan owner from partial horizon hits. No runtime raycast bug established."
+  },
+  "originSourceUpdateSha256": "eb34114061a82fa97ec3ccd92544dcb4794d952a47169ccd2de1d17487017d65",
+  "sourceManifestSpawn": {
+    "cell": [
+      4,
+      25
+    ],
+    "anchor": "anchor:tow:osm:way:24826358:0-0:f:4:25"
+  },
+  "originReproduction": {
+    "firstStreamPosition": [
+      2304,
+      13056
+    ],
+    "firstOrigin": [
+      2048,
+      12800
+    ],
+    "secondStreamPosition": [
+      -180.00943192260831,
+      10765.144939999354
+    ],
+    "secondOrigin": [
+      -512,
+      12800
+    ],
+    "actualLivePlayerPoseRecorded": false
+  }
+}
