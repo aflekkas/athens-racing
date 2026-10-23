@@ -1,6 +1,7 @@
+import {readOriginalBytes,readOriginalJSON} from './strict-json-file.mjs';
 // Small, reproducible release trust package. Offline export proves the world;
 // routine builds authenticate that package against the active world registry.
-import {open,writeFile,mkdir} from 'node:fs/promises';
+import {writeFile,mkdir} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {canonicalJSON} from '../src/route-definition.js';
 import {validateOnlineGrid} from '../src/online-grid.js';
@@ -23,14 +24,9 @@ export async function validateOnlineRouteRelease(proof,{compiled,manifest}){
 }
 // The aggregate package has no new policy cap: each embedded proof retains its
 // existing limits. Bound this read to one regular file's advertised original bytes.
-export async function readOnlineProofBytes(path,{openFile=open}={}){
- const file=await openFile(path,'r');try{const before=await file.stat(),size=before.size;if(!before.isFile()||!Number.isSafeInteger(size)||size<1)throw Error('Invalid online proof package file');
-  const bytes=new Uint8Array(size);let offset=0;while(offset<size){const {bytesRead}=await file.read(bytes,offset,size-offset,offset);if(!bytesRead)throw Error('Online proof package shrank while reading');offset+=bytesRead;}
-  const extra=new Uint8Array(1);if((await file.read(extra,0,1,size)).bytesRead||(await file.stat()).size!==size)throw Error('Online proof package changed while reading');return bytes;
- }finally{await file.close();}
-}
+export const readOnlineProofBytes=(path,options)=>readOriginalBytes(path,{label:'Online proof package',...options});
 export async function readOnlineRouteRelease(root,{compiled,manifest,out,required=false}={}){
- let proof;try{proof=JSON.parse(new TextDecoder('utf-8',{fatal:true,ignoreBOM:true}).decode(await readOnlineProofBytes(resolve(root,'data/routes/online-release.json'))));}catch(error){if(error.code==='ENOENT'&&!required)return null;throw error;}
+ let proof;try{proof=await readOriginalJSON(resolve(root,'data/routes/online-release.json'),{label:'Online proof package'});}catch(error){if(error.code==='ENOENT'&&!required)return null;throw error;}
  // Stale optional proofs cannot enable multiplayer. An explicitly requested
  // online build fails visibly rather than publishing a partially usable fleet.
  let release;try{release=await validateOnlineRouteRelease(proof,{compiled,manifest});}catch(error){if(required)throw error;console.warn('Online release disabled: '+error.message);return null;}

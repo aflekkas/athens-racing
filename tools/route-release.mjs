@@ -1,3 +1,4 @@
+import {readOriginalJSON} from './strict-json-file.mjs';
 import {checkRivalPlan,rivalSourceHash} from './build-rival-plans.mjs';
 import {readFile,writeFile,rm} from 'node:fs/promises';
 import {resolve} from 'node:path';
@@ -44,28 +45,30 @@ export async function checkBuiltRouteRelease(root, environment = 'staging') {
   if (!['staging', 'production'].includes(environment)) return {checked: 0};
   const {revision} = await routeReleaseConfig(root, environment);
   const out = resolve(root, '.deploy/assets');
-  const index = JSON.parse(await readFile(resolve(out, 'data/routes/index.json'), 'utf8'));
-  const config = JSON.parse(await readFile(resolve(out, 'route-config.json'), 'utf8'));
-  const catalogue = JSON.parse(await readFile(resolve(root, '.deploy/catalogue.json'), 'utf8'));
+  const index = await readOriginalJSON(resolve(out, 'data/routes/index.json'));
+  const config = await readOriginalJSON(resolve(out, 'route-config.json'));
+  const catalogue = await readOriginalJSON(resolve(root, '.deploy/catalogue.json'));
   const entries = index.routes || [], enabled = config.routes || [], server = catalogue.routes || [];
   if (!entries.length || entries.length !== enabled.length || entries.length !== server.length) throw Error('Compiled route catalogue incomplete');
   const sourceHash=await rivalSourceHash(root);
   for (const entry of entries) {
     const counterpart = enabled.find(r => r.id === entry.id), backend = server.find(r => r.id === entry.id);
     if (!counterpart || !backend || !hex64.test(entry.routeHash || '') || entry.worldSetRevision !== revision || counterpart.worldSetRevision !== revision || backend.worldSetRevision !== revision || counterpart.routeHash !== entry.routeHash || backend.routeHash !== entry.routeHash) throw Error(`Compiled route/world release mismatch: ${entry.id}`);
-    const artifact = JSON.parse(await readFile(resolve(out, `data/routes/${entry.id}.${entry.routeHash}.json`), 'utf8'));
+    const artifact = await readOriginalJSON(resolve(out,`data/routes/${entry.id}.${entry.routeHash}.json`),{maxBytes:2*1024*1024,label:'Compiled route artifact'});
     if (artifact.worldSetRevision !== revision || artifact.routeHash !== entry.routeHash || artifact.geometryHash !== entry.geometryHash) throw Error(`Compiled route artifact/world release mismatch: ${entry.id}`);
     await checkRivalPlan(artifact,{sourceHash});
   }
   return {checked: entries.length, revision};
 }
 
+export const readRouteValidationRoot=root=>readOriginalJSON(resolve(root,'data/routes/validation/athens.inputs.json'),{maxBytes:8*1024*1024,label:'Route validation root'});
+
 // Keep regional proofs bounded while rebinding every sibling to the same release.
 export async function writeRouteProofs(root, source, manifest, directory) {
   const names=source.shards||[];if(!Array.isArray(names)||names.length>3||names.some(name=>!(/^[a-z][a-z0-9-]*\.inputs\.json$/).test(name)))throw Error('Invalid regional route proof siblings');
   const bound=rebindRouteShard(source,manifest),files=[];
   try {
-    for(const name of names){const extra=JSON.parse(await readFile(resolve(root,'data/routes/validation',name),'utf8'));if(extra.shards)throw Error('Nested route proof siblings');const regional=rebindRouteShard(extra,manifest);const file=resolve(directory,name);await writeFile(file,JSON.stringify(regional.shard));files.push(file);}
+    for(const name of names){const extra=await readOriginalJSON(resolve(root,'data/routes/validation',name),{maxBytes:8*1024*1024,label:'Regional route proof'});if(extra.shards)throw Error('Nested route proof siblings');const regional=rebindRouteShard(extra,manifest);const file=resolve(directory,name);await writeFile(file,JSON.stringify(regional.shard));files.push(file);}
     return {bound,cleanup:()=>Promise.all(files.map(file=>rm(file,{force:true})))};
   } catch(error){await Promise.all(files.map(file=>rm(file,{force:true})));throw error;}
 }

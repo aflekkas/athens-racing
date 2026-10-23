@@ -1,7 +1,7 @@
 import {readOnlineRouteRelease,bindOnlineRouteRelease} from './online-route-release.mjs';
 import {exportPsychikoDetail} from './export-psychiko-detail.mjs';
 import {buildRoutes} from './build-routes.mjs';
-import {activeRouteWorld, writeRouteProofs, selectRouteRelease, checkBuiltRouteRelease} from './route-release.mjs';
+import {activeRouteWorld, writeRouteProofs, readRouteValidationRoot, selectRouteRelease, checkBuiltRouteRelease} from './route-release.mjs';
 import {unifiedRouteConfig} from '../server/route-definitions.mjs';
 // An allowlist keeps server code, tools, credentials and scratch files off the CDN.
 import './check-browser-imports.mjs';
@@ -43,7 +43,7 @@ const buildEnvironment = process.env.ASR_BUILD_ENV || process.env.CLOUDFLARE_ENV
 // The bounded emitted graph/contact proof shard is source data; world cell bodies stay in R2.
 const routeIds=String(process.env.ASR_UNIFIED_ROUTES||'').split(',').filter(Boolean);
 let routeBuild={index:{routes:[]},server:{routes:[]}},onlineRelease=null;
-if(routeIds.length){const source=JSON.parse(await readFile(resolve(root,'data/routes/validation/athens.inputs.json'),'utf8')),{manifest}=await activeRouteWorld(root,buildEnvironment),proofs=await writeRouteProofs(root,source,manifest,resolve(root,'.deploy')),bound=proofs.bound,worldPath=resolve(root,'.deploy/route-world-set.json'),shardPath=resolve(root,'.deploy/route-inputs.json');await writeFile(worldPath,JSON.stringify(bound.world));await writeFile(shardPath,JSON.stringify(bound.shard));try{routeBuild=selectRouteRelease(await buildRoutes({world:worldPath,graph:shardPath,routes:resolve(root,'data/routes'),out:resolve(out,'data/routes')}),routeIds);await writeFile(resolve(out,'data/routes/index.json'),JSON.stringify(routeBuild.index));onlineRelease=await readOnlineRouteRelease(root,{compiled:routeBuild.server.routes,manifest,out:resolve(out,'data/routes'),required:process.env.ASR_UNIFIED_ONLINE==='1'});}finally{await rm(worldPath,{force:true});await rm(shardPath,{force:true});await proofs.cleanup();}}
+if(routeIds.length){const source=await readRouteValidationRoot(root),{manifest}=await activeRouteWorld(root,buildEnvironment),proofs=await writeRouteProofs(root,source,manifest,resolve(root,'.deploy')),bound=proofs.bound,worldPath=resolve(root,'.deploy/route-world-set.json'),shardPath=resolve(root,'.deploy/route-inputs.json');await writeFile(worldPath,JSON.stringify(bound.world));await writeFile(shardPath,JSON.stringify(bound.shard));try{routeBuild=selectRouteRelease(await buildRoutes({world:worldPath,graph:shardPath,routes:resolve(root,'data/routes'),out:resolve(out,'data/routes')}),routeIds);await writeFile(resolve(out,'data/routes/index.json'),JSON.stringify(routeBuild.index));onlineRelease=await readOnlineRouteRelease(root,{compiled:routeBuild.server.routes,manifest,out:resolve(out,'data/routes'),required:process.env.ASR_UNIFIED_ONLINE==='1'});}finally{await rm(worldPath,{force:true});await rm(shardPath,{force:true});await proofs.cleanup();}}
 // Validation evidence and authored definitions never become public cells or editable runtime inputs.
 await rm(resolve(out,'data/routes/validation'),{recursive:true,force:true});
 for(const name of await readdir(resolve(out,'data/routes')).catch(()=>[]))if(name.endsWith('.route.json')||name==='server-catalogue.json'||name==='online-release.json')await rm(resolve(out,'data/routes',name));
