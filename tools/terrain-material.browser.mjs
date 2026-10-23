@@ -9,6 +9,10 @@ import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {registerHooks} from 'node:module';
 import {chromium} from 'playwright';
+import {createProofDeadline} from './material-proof-deadline.mjs';
+import {finalizeMaterialProof,describeProofFailure} from './material-proof-cleanup.mjs';
+import {createPassiveTrace} from './material-proof-trace.mjs';
+import {createProofEgress,pinnedThreeReader,EGRESS_SIGNATURE,EGRESS_LAUNCH_ARGS,EGRESS_CONTEXT_OPTIONS} from './material-proof-egress.mjs';
 // BEGIN readiness protocol (also executed by source-only synthetic checks).
 async function prepareTerrainView(view){
     const a=__athens;a.menu.close?.();const wasPaused=a.paused;a.setPaused(true);
@@ -53,7 +57,9 @@ async function prepareTerrainView(view){
 const required=name=>{assert.ok(process.env[name],`${name} is required`);return process.env[name];};
 const root=resolve(required('TERRAIN_ROOT')),commit=required('TERRAIN_COMMIT'),gitRoot=resolve(process.env.TERRAIN_GIT_ROOT||root);
 const temp=resolve(required('TERRAIN_TEMP')),out=resolve(required('TERRAIN_OUT'));
+const target=process.env.TERRAIN_TARGET||'limestone';assert.ok(['limestone','asphalt'].includes(target));
 const phase=required('TERRAIN_PHASE');assert.ok(['before','after'].includes(phase));
+const diagnosticOnly=process.env.TERRAIN_DIAGNOSTIC_ONLY==='1';assert.ok(!diagnosticOnly||phase==='before','Diagnostic is never a candidate/baseline comparison');
 const manifestHash=required('TERRAIN_MANIFEST_SHA256'),worldRevision=required('TERRAIN_WORLD_REVISION');
 const cases=JSON.parse(await fs.readFile(required('TERRAIN_CASES'),'utf8'));
 assert.ok(Array.isArray(cases)&&cases.length>0&&cases.length<=4);
@@ -61,8 +67,10 @@ for(const c of cases){assert.ok(c.id&&c.camera?.position?.length===3&&c.camera?.
 const selectedIds=process.env.TERRAIN_CASE_IDS?.split(',');
 const selectedCases=selectedIds?cases.filter(c=>selectedIds.includes(c.id)):cases;
 assert.ok(selectedCases.length&&(!selectedIds||selectedCases.length===selectedIds.length),'Unknown or duplicate selected case');
-const hash=b=>createHash('sha256').update(b).digest('hex');
-const report={status:'preparing',phase,sourceRoot:root,sourceCommit:commit,sourceInjection:false,protocol:'paused-nine-fixed24-v1',selectedCases:selectedCases.map(c=>c.id),trafficPolicy:'Native offline traffic enabled; no notraffic URL consumer exists in athens-world.',worldRevision,manifestHash,casesHash:hash(JSON.stringify(cases)),sources:{},errors:[],consoleErrors:[],runs:[],limits:['static native camera/material proof, not surveyed terrain or driving performance','CPU packet-triangle picks exclude separate instanced vegetation; visible selected terrain must also be inspected in the fresh image']};
+if(diagnosticOnly)assert.ok(selectedCases.length===1&&(process.env.TERRAIN_CLASSES||'low,high').split(',').length===1,'Diagnostic requires one case and one class');
+let workDeadline=null;
+const hash=b=>{workDeadline?.check();const result=createHash('sha256').update(b).digest('hex');workDeadline?.check();return result;};
+const report={status:'preparing',phase,target,sourceRoot:root,sourceCommit:commit,sourceInjection:false,purpose:diagnosticOnly?'passive-startup-diagnostic-not-baseline':'material-proof',egressSignature:EGRESS_SIGNATURE,protocol:'paused-nine-fixed24-v1',selectedCases:selectedCases.map(c=>c.id),trafficPolicy:'Native offline traffic enabled; no notraffic URL consumer exists in athens-world.',worldRevision,manifestHash,casesHash:hash(JSON.stringify(cases)),sources:{},errors:[],consoleErrors:[],runs:[],limits:['static native camera/material proof, not surveyed terrain or driving performance','CPU packet-triangle picks exclude separate instanced vegetation; visible selected terrain must also be inspected in the fresh image']};
 // Verify every runtime module against Git objects before a server/browser exists.
 const tree=execFileSync('git',['ls-tree','-rz',commit,'src','index.html','style.css'],{cwd:gitRoot}).toString().split('\0').filter(Boolean).map(s=>{const [header,path]=s.split('\t');return{oid:header.split(' ')[2],path};});
 const blobs=execFileSync('git',['cat-file','--batch'],{cwd:gitRoot,input:tree.map(x=>x.oid).join('\n')+'\n',maxBuffer:32*1024*1024});
@@ -70,29 +78,48 @@ let cursor=0;
 for(const entry of tree){const end=blobs.indexOf(10,cursor),size=Number(blobs.subarray(cursor,end).toString().split(' ')[2]),body=blobs.subarray(end+1,end+1+size);cursor=end+size+2;const actual=await fs.readFile(resolve(root,entry.path));assert.ok(body.equals(actual),'Working source differs from pinned commit: '+entry.path);report.sources[entry.path]=hash(body);}
 const sharedWs=import.meta.resolve('ws');registerHooks({resolve(name,context,next){return name==='ws'?{url:sharedWs,shortCircuit:true}:next(name,context);}});
 const {start}=await import(pathToFileURL(required('TERRAIN_PROXY_HELPER')).href);
-let app,browser;
+let app,browser;const traces=[];
 await fs.mkdir(out,{recursive:true});
 try{await fs.access(resolve(out,`${phase}.json`));throw Error("Refusing to overwrite an existing phase receipt; use a fresh paired output folder");}catch(error){if(error.code!=="ENOENT")throw error;}
-const save=()=>fs.writeFile(resolve(out,`${phase}.json`),JSON.stringify(report,null,2));
+const save=async({cleanup=false}={})=>{
+ if(cleanup)workDeadline?.observe();else workDeadline?.check();
+ let text=JSON.stringify(report,null,2);
+ if(cleanup){const state=workDeadline?.observe();if(state?.hasPrimary)text=JSON.stringify(report,null,2);}else workDeadline?.check();
+ await fs.writeFile(resolve(out,`${phase}.json`),text);
+ if(cleanup)workDeadline?.observe();else workDeadline?.check();
+};
 const deadlineMs=Number(process.env.TERRAIN_DEADLINE_MS||240000);assert.ok(deadlineMs>0&&deadlineMs<=300000);
-let deadline;
+let deadline,primaryError,hasPrimary=false;
+const policies=[];
+const recordPrimary=error=>{if(!hasPrimary){hasPrimary=true;primaryError=error;report.status='failed';report.failure=describeProofFailure(error);}};
 try{
  app=await start({root,tmp:temp,releaseDir:null});
  for(const path of ['/','/src/athens-materials.js','/data/athens/manifest.json']){const response=await fetch(app.base+path,{signal:AbortSignal.timeout(15000)});assert.equal(response.status,200,'HTTP preflight '+path);const bytes=Buffer.from(await response.arrayBuffer());if(path.endsWith('manifest.json')){assert.equal(hash(bytes),manifestHash,'Exact world manifest pin');const manifest=JSON.parse(bytes);report.worldManifest={world:manifest.world,revision:manifest.revision,tiles:Object.keys(manifest.tiles||{}).length};assert.equal(manifest.revision,worldRevision);}console.log('HTTP_READY',path,bytes.length);}
  if(process.env.TERRAIN_PREFLIGHT==='1'){report.status='preflight-passed';}
  else{
-  browser=await chromium.launch({headless:true,executablePath:required('PLAYWRIGHT_EXECUTABLE_PATH'),args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader']});report.browserVersion=browser.version();deadline=setTimeout(()=>{report.deadlineExceeded=true;void browser?.close();},deadlineMs);deadline.unref();
+  const three=await pinnedThreeReader(resolve(import.meta.dirname,'../node_modules/three'));
+  browser=await chromium.launch({headless:true,executablePath:required('PLAYWRIGHT_EXECUTABLE_PATH'),args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader',...EGRESS_LAUNCH_ARGS]});report.browserVersion=browser.version();workDeadline=createProofDeadline({report,limitMs:deadlineMs,getPrimary:()=>({hasPrimary,primaryError}),recordPrimary,checkExisting:()=>{for(const policy of policies)policy.check();},beforeClose:()=>{for(const trace of traces)trace.beginCleanup('existing-deadline-close');},closeBrowser:()=>browser?.close()});
   for(const quality of (process.env.TERRAIN_CLASSES||'low,high').split(','))for(const view of selectedCases){
    const run={quality,case:view.id,camera:view.camera,frames:[],httpFailures:[]};report.runs.push(run);
-   const page=await browser.newPage({viewport:{width:1280,height:800},deviceScaleFactor:1});page.setDefaultTimeout(60000);
-   page.on('pageerror',e=>report.errors.push(String(e.stack||e)));
-   page.on('requestfailed',request=>{if(run.httpFailures.length<32)run.httpFailures.push({url:request.url(),error:request.failure()?.errorText});});
-   page.on('response',response=>{if(response.status()>=400&&run.httpFailures.length<32)run.httpFailures.push({url:response.url(),status:response.status()});});
-   page.on('console',m=>{if(m.type()==='error'){report.consoleErrors.push(m.text());if(/WebGLProgram|Shader Error|GL_INVALID/.test(m.text()))report.errors.push(m.text());}});
-   await page.route('https://cdn.jsdelivr.net/npm/three@0.170.0/**',async route=>route.fulfill({body:await fs.readFile(resolve(import.meta.dirname,'../node_modules/three',route.request().url().split('three@0.170.0/')[1])),contentType:'text/javascript'}));
+   const rawPage=await workDeadline.execute(()=>browser.newPage({viewport:{width:1280,height:800},deviceScaleFactor:1,...EGRESS_CONTEXT_OPTIONS}));
+   const egress=createProofEgress({localOrigin:app.base,readThree:three.load,dependency:three.dependency});run.egress=egress.report;policies.push(egress);
+   const trace=diagnosticOnly?createPassiveTrace({localOrigin:app.base,getFailure:()=>egress.report.firstCause}):null;
+   if(trace){run.trace=trace.report;traces.push(trace);await trace.attach(rawPage);}
+   const guardedPage=workDeadline.guardPage(egress.guardPage(rawPage)),page=trace?trace.wrapPage(guardedPage):guardedPage;page.setDefaultTimeout(60000);
+   page.on('pageerror',error=>{report.errors.push(egress.safeMessage(error.stack||error));egress.fail('PAGE_ERROR',page.url());});
+   page.on('requestfailed',request=>{if(egress.isExpectedBlock(request.url()))return;if(run.httpFailures.length<32)run.httpFailures.push({...egress.safeURL(request.url()),error:request.failure()?.errorText});egress.fail('REQUEST_FAILED',request.url());});
+   page.on('response',response=>{egress.observeResponse(response.url());if(response.status()>=400){if(run.httpFailures.length<32)run.httpFailures.push({...egress.safeURL(response.url()),status:response.status()});egress.fail('HTTP_FAILURE',response.url());}});
+   page.on('console',message=>{if(message.type()==='error'){
+    const text=message.text(),shader=/WebGLProgram|Shader Error|GL_INVALID/.test(text);
+    if(!shader&&/^Failed to load resource: net::ERR_BLOCKED_BY_CLIENT/.test(text)&&egress.isExpectedBlock(message.location().url))return;
+    report.consoleErrors.push(egress.safeMessage(text));if(shader)report.errors.push(egress.safeMessage(text));egress.fail(shader?'WEBGL_SHADER_ERROR':'CONSOLE_ERROR',message.location().url||page.url());
+   }});
+   await page.route('**/*',egress.handle);
+   await page.routeWebSocket('**/*',egress.socket);
    await page.addInitScript(quality=>{const raf=requestAnimationFrame;window.requestAnimationFrame=cb=>['frame','tick'].includes(cb.name)?0:raf(cb);localStorage.setItem('paraliaki.settings',JSON.stringify({perfClass:quality,renderScale:1,dynamicResolution:false,worldDetail:true,master:0}));},quality);
    await page.goto(app.base+`/?simhook&map=athens&spawn=${view.spawn.join(',')}&car=mini_jcw&cam=chase&fixedres`,{waitUntil:'domcontentloaded'});
    await page.waitForFunction(()=>window.__athens?.player?.veh);
+   if(diagnosticOnly){trace.mark('native-hook-observed-no-physics-or-photo');trace.beginCleanup('diagnostic-native-hook-end');await page.close();egress.check();continue;}
    run.readiness=await page.evaluate(prepareTerrainView,view);
    run.readiness.cacheFiles=[];
    const cacheRoots=JSON.parse(process.env.TERRAIN_CELL_CACHES||'[]');
@@ -137,11 +164,13 @@ try{
      picks.push(nearest);
     }return picks;
    },view.pickPixels);
-   assert.ok(run.picks.some(p=>p&&['coastalGround','coastalUrban','coastalDetail'].includes(p.surface)&&p.limestoneWeight>.8&&!p.foreground&&p.material.visible&&p.material.opacity===1),'An actual visible picked limestone triangle without unsupported foreground is required');
+   assert.ok(run.picks.some(p=>p&&(target==='asphalt'?p.surface==='asphalt'&&p.material.key.includes('athens-scan-asphalt_diff'):['coastalGround','coastalUrban','coastalDetail'].includes(p.surface)&&p.limestoneWeight>.8)&&!p.foreground&&p.material.visible&&p.material.opacity===1),'An actual visible picked '+target+' triangle without unsupported foreground is required');
+   let bodyCompletedSuccessfully=false;
    try{for(const detail of [true,false]){
-    const data=await page.evaluate(async detail=>{const{setSetting}=await import('/src/settings.js');const a=__athens,r=a.renderer;setSetting('worldDetail',detail);a.render(0);await r.compileAsync(a.scene,a.camera);a.render(0);const jpeg=r.domElement.toDataURL('image/jpeg',.9).split(',')[1],gl=r.getContext();
+    egress.assertCaptureReady();
+    const data=await page.evaluate(async ({detail,target})=>{const{setSetting}=await import('/src/settings.js');const a=__athens,r=a.renderer;setSetting('worldDetail',detail);a.render(0);await r.compileAsync(a.scene,a.camera);a.render(0);const jpeg=r.domElement.toDataURL('image/jpeg',.9).split(',')[1],gl=r.getContext();
      const digest=async text=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text)))).map(b=>b.toString(16).padStart(2,'0')).join('');
-     const effective=[];for(const program of r.info.programs.filter(p=>/athens-coastal|coastal-limestone/.test(p.cacheKey||''))){const vertex=gl.getShaderSource(program.vertexShader)||'',fragment=gl.getShaderSource(program.fragmentShader)||'';effective.push({cacheKey:program.cacheKey,vertexSHA256:await digest(vertex),fragmentSHA256:await digest(fragment),oldLimestonePhase:fragment.includes('p.y*2.1'),filteredLimestone:fragment.includes('coastFissure'),genericGroundFibres:fragment.includes('float fibre='),detailLookupDeclarations:(fragment.match(/texture2D\(detailMap/g)||[]).length});}const outputColorSpace=r.outputColorSpace;
+     const effective=[];for(const program of r.info.programs.filter(p=>target==='asphalt'?(p.cacheKey||'').includes('athens-scan-asphalt_diff'):/athens-coastal|coastal-limestone/.test(p.cacheKey||''))){const vertex=gl.getShaderSource(program.vertexShader)||'',fragment=gl.getShaderSource(program.fragmentShader)||'';effective.push({cacheKey:program.cacheKey,vertexSHA256:await digest(vertex),fragmentSHA256:await digest(fragment),asphaltSecondLayer:fragment.includes('asphaltUVB'),asphaltMacroFilter:fragment.includes('asphaltMacroKeep'),scanLookupDeclarations:(fragment.match(/texture2D\(scanMap/g)||[]).length,oldLimestonePhase:fragment.includes('p.y*2.1'),filteredLimestone:fragment.includes('coastFissure'),genericGroundFibres:fragment.includes('float fibre='),detailLookupDeclarations:(fragment.match(/texture2D\(detailMap/g)||[]).length});}const outputColorSpace=r.outputColorSpace;
      const resources={memory:{...r.info.memory},programs:r.info.programs.length,materials:new Set(),geometries:new Set(),textures:new Set()};a.scene.traverse(o=>{if(o.geometry)resources.geometries.add(o.geometry);for(const m of [].concat(o.material||[])){resources.materials.add(m);for(const t of Object.values(m))if(t?.isTexture)resources.textures.add(t);}});r.info.autoReset=false;const samples=[];for(let i=0;i<3;i++){r.info.reset();gl.finish();const start=performance.now();a.render(0);gl.finish();samples.push({ms:performance.now()-start,calls:r.info.render.calls,triangles:r.info.render.triangles});}r.info.autoReset=true;
      const list=r.renderLists.get(a.scene,0),cars=a.traffic,roots=new Map(cars.map(c=>[c.m.root,c]));
      const visible=o=>{for(let p=o;p;p=p.parent)if(!p.visible)return false;return true;};
@@ -156,34 +185,57 @@ try{
      }
      const traffic=cars.filter(c=>c.active||c.m.root.visible).map(c=>({id:c.id,type:c.type?.id,kind:c.kind,active:c.active,visible:visible(c.m.root),pose:c.vehicle?{x:c.vehicle.x,y:c.vehicle.y,z:c.vehicle.z,yaw:c.vehicle.yaw,vLong:c.vehicle.vLong}:null,edge:c.point?.edge??null,model:c.m.root.name,draws:draws.filter(d=>d.npcId===c.id).length,nominalTriangles:draws.filter(d=>d.npcId===c.id).reduce((n,d)=>n+d.nominalTriangles,0)}));
      const inventory={source:'native renderer.renderLists.get(scene,0), read-only after final fresh frame; nominal scene accounting excludes postprocess passes',nominalCalls:draws.reduce((n,d)=>n+d.passes,0),nominalTriangles:draws.reduce((n,d)=>n+d.nominalTriangles,0),draws,traffic};
-     return{jpeg,samples,inventory,effective,outputColorSpace,resources:{...resources,materials:resources.materials.size,geometries:resources.geometries.size,textures:resources.textures.size},unrunnable:r.info.programs.filter(p=>p.diagnostics?.runnable===false).map(p=>p.diagnostics),camera:{position:a.camera.position.toArray(),quaternion:a.camera.quaternion.toArray(),origin:{...a.stream.origin}}};},detail);
-    assert.deepEqual(data.unrunnable,[],'All full GPU shader programs must compile');const bytes=Buffer.from(data.jpeg,'base64');delete data.jpeg;assert.ok(bytes.length>20000,'Fresh nonempty game frame');const name=`${phase}-${quality}-${view.id}-${detail?'on':'off'}.jpg`;await fs.writeFile(resolve(out,name),bytes);run.frames.push({detail,file:name,sha256:hash(bytes),...data});console.log('PHOTO',resolve(out,name));await save();
-   }}finally{await page.evaluate(async()=>{const{setSetting}=await import('/src/settings.js');setSetting('worldDetail',true);});}
-   assert.deepEqual(report.errors,[]);await page.close();
+     return{jpeg,samples,inventory,effective,outputColorSpace,resources:{...resources,materials:resources.materials.size,geometries:resources.geometries.size,textures:resources.textures.size},unrunnable:r.info.programs.filter(p=>p.diagnostics?.runnable===false).map(p=>p.diagnostics),camera:{position:a.camera.position.toArray(),quaternion:a.camera.quaternion.toArray(),origin:{...a.stream.origin}}};},{detail,target});
+    egress.assertCaptureReady();
+    run.pendingFrame={detail,effective:data.effective,unrunnable:data.unrunnable,resources:data.resources};await save();
+    if(target==='asphalt'){
+     assert.ok(data.effective.length,'Actual asphalt GPU program inventory required');
+     for(const program of data.effective){
+      const candidate=program.cacheKey.includes('-periodic-v2:');
+      assert.equal(candidate,phase==='after','Pinned baseline/candidate asphalt program identity');
+      const layered=candidate&&program.cacheKey.includes('-periodic-v2:detail');
+      assert.equal(program.scanLookupDeclarations,layered?2:1,'Strict max two On / one Off existing scan lookups');
+      assert.equal(program.asphaltSecondLayer,layered);assert.equal(program.asphaltMacroFilter,layered);
+     }
+    }
+    assert.deepEqual(data.unrunnable,[],'All full GPU shader programs must compile');const bytes=Buffer.from(data.jpeg,'base64');delete data.jpeg;assert.ok(bytes.length>20000,'Fresh nonempty game frame');const name=`${phase}-${quality}-${view.id}-${detail?'on':'off'}.jpg`;await fs.writeFile(resolve(out,name),bytes);run.frames.push({detail,file:name,sha256:hash(bytes),...data});delete run.pendingFrame;console.log('PHOTO',resolve(out,name));await save();
+   }bodyCompletedSuccessfully=true;}finally{if(bodyCompletedSuccessfully){egress.check();await page.evaluate(async()=>{const{setSetting}=await import('/src/settings.js');setSetting('worldDetail',true);});egress.check();}}
+   egress.check();assert.deepEqual(run.httpFailures,[],'All unexpected HTTP/request failures remain fatal');assert.deepEqual(report.errors,[]);assert.equal(run.egress.REMOTE_BYTES,0);trace?.beginCleanup('normal-page-close');await page.close();egress.check();
   }
   // Fail if a concurrent change made the served runtime differ from the pin.
-  for(const [path,sha]of Object.entries(report.sources))assert.equal(hash(await fs.readFile(resolve(root,path))),sha,'Source changed during proof: '+path);
+  for(const [path,sha]of Object.entries(report.sources)){workDeadline.check();const bytes=await fs.readFile(resolve(root,path));workDeadline.check();assert.equal(hash(bytes),sha,'Source changed during proof: '+path);workDeadline.check();}
+  workDeadline.check();
   if(phase==='after'){
-   const before=JSON.parse(await fs.readFile(resolve(out,'before.json'),'utf8'));
-   for(const key of ['protocol','casesHash','worldRevision','manifestHash'])assert.equal(report[key],before[key],'Matched proof '+key);
-   assert.deepEqual(report.selectedCases,before.selectedCases,'Matched subset');
-   assert.equal(before.status,'passed','A fresh completed baseline is required');
-   assert.equal(report.runs.length,before.runs.length);
+   const checkedAssert=new Proxy(assert,{get(target,key){const value=Reflect.get(target,key);return typeof value==='function'?(...args)=>{workDeadline.check();const result=value.apply(target,args);workDeadline.check();return result;}:value;}});
+   workDeadline.check();const beforeBytes=await fs.readFile(resolve(out,'before.json'),'utf8');workDeadline.check();const before=JSON.parse(beforeBytes);workDeadline.check();
+   for(const key of ['egressSignature','target','protocol','casesHash','worldRevision','manifestHash'])checkedAssert.equal(report[key],before[key],'Matched proof '+key);
+   checkedAssert.deepEqual(report.selectedCases,before.selectedCases,'Matched subset');
+   checkedAssert.equal(before.status,'passed','A fresh completed baseline is required');
+   checkedAssert.equal(report.runs.length,before.runs.length);
    for(let i=0;i<report.runs.length;i++){
     const a=report.runs[i],b=before.runs[i];
-    assert.equal(a.case,b.case);assert.equal(a.quality,b.quality);
-    assert.deepEqual(a.runtime.active,b.runtime.active,'Exact admitted cells/identities must match for budgets');
+    checkedAssert.equal(a.case,b.case);checkedAssert.equal(a.quality,b.quality);
+    checkedAssert.equal(a.egress.REMOTE_BYTES,0);checkedAssert.equal(b.egress.REMOTE_BYTES,0);
+    checkedAssert.deepEqual(a.egress.fontFallbacks,b.egress.fontFallbacks,'Same deterministic local font fallback');
+    checkedAssert.deepEqual(a.egress.expectedFontBlocks,b.egress.expectedFontBlocks,'Same predeclared font blocks');
+    const ordered=files=>[...files].sort((x,y)=>x.relative.localeCompare(y.relative));checkedAssert.deepEqual(ordered(a.egress.threeLocalFiles),ordered(b.egress.threeLocalFiles),'Same actual read-only Three files and body pins');
+    checkedAssert.deepEqual(a.egress.dependency,b.egress.dependency,'Same dependency version/package pin');
+    checkedAssert.deepEqual(a.runtime.active,b.runtime.active,'Exact admitted cells/identities must match for budgets');
     for(let j=0;j<a.frames.length;j++){
      const af=a.frames[j],bf=b.frames[j];
-     assert.deepEqual(af.camera,bf.camera,'Matched camera/origin');
-     assert.equal(af.outputColorSpace,bf.outputColorSpace,'Same output color space');
-     for(const key of ['materials','geometries','textures'])assert.equal(af.resources[key],bf.resources[key],'No new '+key);
-     for(const key of ['calls','triangles'])assert.equal(af.samples[0][key],bf.samples[0][key],'No new rendered '+key);
+     checkedAssert.deepEqual(af.camera,bf.camera,'Matched camera/origin');
+     checkedAssert.equal(af.outputColorSpace,bf.outputColorSpace,'Same output color space');
+     for(const key of ['materials','geometries','textures'])checkedAssert.equal(af.resources[key],bf.resources[key],'No new '+key);
+     for(const key of ['calls','triangles'])for(let sample=0;sample<(target==='asphalt'?af.samples.length:1);sample++)checkedAssert.equal(af.samples[sample][key],bf.samples[sample][key],'No new rendered '+key);
+     if(target==='asphalt'){checkedAssert.deepEqual(af.resources.memory,bf.resources.memory,'Same uploaded geometry/texture counts');checkedAssert.deepEqual(af.inventory.traffic,bf.inventory.traffic,'Same native NPC state and submitted-view contribution');}
     }
    }
    report.comparison='matched cases, world, admitted cells, cameras and resource/draw counts; frame samples descriptive only';
   }
-  report.status='passed';
+  workDeadline.check();report.status=diagnosticOnly?'diagnostic-completed-not-baseline':'passed';workDeadline.check();
  }
-}catch(error){report.status='failed';report.failure=String(error.stack||error);throw error;}
-finally{clearTimeout(deadline);await browser?.close();await app?.close();await save();}
+}catch(error){if(!hasPrimary){hasPrimary=true;primaryError=error;report.status='failed';report.failure=describeProofFailure(error);}}
+finally{
+ clearTimeout(deadline);workDeadline?.beginCleanup();
+ await finalizeMaterialProof({report,hasPrimary,primaryError,browser,app,traces,save,admission:()=>workDeadline?.observe(),timerClose:()=>workDeadline?.timerClose(),recordPrimary,getPrimary:()=>({hasPrimary,primaryError})});
+}

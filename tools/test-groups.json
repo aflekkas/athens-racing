@@ -1,5 +1,9 @@
 {
   "unit": [
+    "tools/material-proof-cleanup.test.mjs",
+    "tools/material-proof-deadline.test.mjs",
+    "tools/material-proof-egress.test.mjs",
+    "tools/material-proof-trace.test.mjs",
     "tools/bundle-world-assets.test.mjs",
     "tools/bundle-route-host.test.mjs",
     "tools/protected-world-manifest.test.mjs",
