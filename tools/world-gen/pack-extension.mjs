@@ -12,6 +12,10 @@ const [out,python,...args]=process.argv.slice(2);if(!out||!python)throw Error('E
 const output=resolve(out),cells=join(output,'cells');await fs.mkdir(cells,{recursive:true});
 const stats=await fs.statfs('/');if((stats.blocks-stats.bfree)/(stats.blocks-stats.bfree+stats.bavail)>=.83)throw Error('Shared disk hard stop83%');
 const generator=spawn(python,[fileURLToPath(new URL('./build-extension.py',import.meta.url)),...args],{stdio:['ignore','pipe','pipe'],env:{...process.env,OMP_NUM_THREADS:'1',OPENBLAS_NUM_THREADS:'1'}});
+// A bounded CPU-window supervisor signals this process. Stop our recorded
+// generator child as well, so no Python bake survives the packer terminal.
+const stopGenerator=()=>{if(generator.exitCode===null)generator.kill('SIGTERM');};
+process.once('SIGTERM',stopGenerator);process.once('SIGINT',stopGenerator);
 const completed=new Promise((resolve,reject)=>{generator.once('error',reject);generator.once('exit',code=>code===0?resolve():reject(Error('Extension generator exit '+code)));});
 // Attach the rejection immediately even if packing fails first.
 completed.catch(()=>{});generator.stderr.pipe(process.stderr);
@@ -30,4 +34,4 @@ try{
  const manifest=validateWorldManifest({tileVersion:1,tileMetres:512,world,revision,projection:{lat0:37.98,lon0:23.73,mlat:111320,mlon:87745.27512677578},elevation:{source:'Copernicus GLO-30 DSM',datum:'EGM2008',verticalOffset:0},spawn:validatedSpawn,tiles:entries,renderVariants:[...variants.values()],developmentOnly:true,releaseReady:false,acceptance:{passed:false,reason:'Local source extension; common boundary, connectivity, route and game proof required'}});
  await fs.writeFile(join(output,'manifest.json'),JSON.stringify(manifest));await fs.writeFile(join(output,'physical-audit.json'),JSON.stringify({world,revision,cells:audits.length,audits},null,2));
  await fs.writeFile(join(cells,'entries.json'),JSON.stringify({...source,tiles:entries}));console.log(JSON.stringify({world,revision,cells:audits.length,compressedBytes:Object.values(entries).reduce((n,e)=>n+e.bytes,0),acceptance:false}));
-}catch(error){if(generator.exitCode===null)generator.kill('SIGTERM');await completed.catch(()=>{});throw error;}
+}catch(error){if(generator.exitCode===null)generator.kill('SIGTERM');await completed.catch(()=>{});throw error;}finally{process.removeListener('SIGTERM',stopGenerator);process.removeListener('SIGINT',stopGenerator);}
