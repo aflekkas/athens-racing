@@ -1,0 +1,188 @@
+{
+  "status": "source-bound offline preparation; no game job run",
+  "sourceProfileCommit": "88aba32e589f940cf6e94a5c7e777cae074982d7",
+  "referenceReceiptCommit": "b1fd7571cb46d48b31cc59787d698af08f4b03e2",
+  "worldSetRevision": "80055f9208753e2d6fa8658b31c90216d22c650f7f33588ebd5178d1a6b804a1",
+  "referenceReceiptSha256": "08fa1784dbc205cd30f4f8cc471e1db03a38507d26b801bdc1bdbfba9378b21f",
+  "viewport": [
+    1280,
+    800
+  ],
+  "gameCodeCommit": null,
+  "gameCodeCommitStatus": "must be selected/pinned explicitly before later browser job; no silent substitution",
+  "eyeHeightMeasured": false,
+  "sourceHeightAcceptance": false,
+  "views": [
+    {
+      "routeStationM": 500,
+      "panoId": "KBCcJcBthVSZMUEvOXBVXg",
+      "referenceDate": "February 2025",
+      "referenceHeadingDeg": 133.78,
+      "cameraWorldXZ": [
+        4701.523459205332,
+        19099.484095999986
+      ],
+      "cameraYawRad": -2.334901473318014,
+      "horizontalFovDeg": 90,
+      "verticalFovDegAt1280x800": 64.01076641616699,
+      "pitchDeg": 0,
+      "rollDeg": 0,
+      "cameraWorldY": null,
+      "eyeHeightAboveSourceContactAssumptionM": 2.5,
+      "eyeHeightSensitivityM": [
+        1.6,
+        2.5,
+        3.0
+      ],
+      "horizonAssumption": "level camera from requestedpitch0/URL90t; no recovered surveyed camera attitude or eye height",
+      "groundYStatus": "unresolved at actual panorama XZ; must query authenticated emitted contact before rendering; no substitution of requested route point Y",
+      "groundQueryHint": {
+        "layer": 0,
+        "surfaceId": "surface:w328525144:0",
+        "edgeId": "osm:way:328525144:0-0:f:9:37",
+        "referenceYOnly": 9.218378504689262
+      },
+      "cell": "9,37",
+      "cellEntry": {
+        "url": "https://staging.athensracing.com/world/cells/8056d040145d13b70920882d43e419c160e53a3b49bf8592f3ea603973529e3a.bin.gz",
+        "sha256": "8056d040145d13b70920882d43e419c160e53a3b49bf8592f3ea603973529e3a",
+        "bytes": 224844,
+        "decodedBytes": 4007374,
+        "residentBytes": 2626935,
+        "transientBytes": 8239592,
+        "dependencies": [],
+        "triangles": 26108,
+        "contactEligible": true,
+        "source": {
+          "regionId": "basin",
+          "world": "athens-east-development",
+          "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+        }
+      },
+      "sourceWorldSetRevision": "80055f9208753e2d6fa8658b31c90216d22c650f7f33588ebd5178d1a6b804a1",
+      "status": "offline camera specification only; not rendered or accepted",
+      "requiredProof": [
+        "pin exact source code commit before game run",
+        "verify source manifest/cell hashes and actualcontact atcameraXZ; failclosedifabsent",
+        "record actual camera world/local XYZ, quaternion, FOV and floating origin",
+        "fresh positive physics/visual/render step; loading opacity0",
+        "record actual selected car/playerpose separately; camera match is not legal-lane/driving proof",
+        "own-game JPG immediately sent to parent; no thirdpartyimage embedding"
+      ]
+    },
+    {
+      "routeStationM": 3000,
+      "panoId": "JUJPy3OJppeb4rjqL6VzgQ",
+      "referenceDate": "March 2026",
+      "referenceHeadingDeg": 29.84,
+      "cameraWorldXZ": [
+        5921.103812719877,
+        19612.37986399972
+      ],
+      "cameraYawRad": -0.520806248795108,
+      "horizontalFovDeg": 90,
+      "verticalFovDegAt1280x800": 64.01076641616699,
+      "pitchDeg": 0,
+      "rollDeg": 0,
+      "cameraWorldY": null,
+      "eyeHeightAboveSourceContactAssumptionM": 2.5,
+      "eyeHeightSensitivityM": [
+        1.6,
+        2.5,
+        3.0
+      ],
+      "horizonAssumption": "level camera from requestedpitch0/URL90t; no recovered surveyed camera attitude or eye height",
+      "groundYStatus": "unresolved at actual panorama XZ; must query authenticated emitted contact before rendering; no substitution of requested route point Y",
+      "groundQueryHint": {
+        "layer": 0,
+        "surfaceId": "surface:w87543250:0",
+        "edgeId": "osm:way:87543250:0-0:b:11:38",
+        "referenceYOnly": 17.53204910192853
+      },
+      "cell": "11,38",
+      "cellEntry": {
+        "url": "https://staging.athensracing.com/world/cells/0f9765cd7cd07194185cdab750b8b99339cc6436dff419bfa4817d73333c7194.bin.gz",
+        "sha256": "0f9765cd7cd07194185cdab750b8b99339cc6436dff419bfa4817d73333c7194",
+        "bytes": 112133,
+        "decodedBytes": 1674320,
+        "residentBytes": 966839,
+        "transientBytes": 3460773,
+        "dependencies": [],
+        "triangles": 10723,
+        "contactEligible": true,
+        "source": {
+          "regionId": "basin",
+          "world": "athens-east-development",
+          "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+        }
+      },
+      "sourceWorldSetRevision": "80055f9208753e2d6fa8658b31c90216d22c650f7f33588ebd5178d1a6b804a1",
+      "status": "offline camera specification only; not rendered or accepted",
+      "requiredProof": [
+        "pin exact source code commit before game run",
+        "verify source manifest/cell hashes and actualcontact atcameraXZ; failclosedifabsent",
+        "record actual camera world/local XYZ, quaternion, FOV and floating origin",
+        "fresh positive physics/visual/render step; loading opacity0",
+        "record actual selected car/playerpose separately; camera match is not legal-lane/driving proof",
+        "own-game JPG immediately sent to parent; no thirdpartyimage embedding"
+      ]
+    },
+    {
+      "routeStationM": 9000,
+      "panoId": "PhwxmbPlrawGmVRQNETblA",
+      "referenceDate": "April 2026",
+      "referenceHeadingDeg": 101.09,
+      "cameraWorldXZ": [
+        8878.321398625156,
+        18419.786439999953
+      ],
+      "cameraYawRad": -1.7643533408410679,
+      "horizontalFovDeg": 90,
+      "verticalFovDegAt1280x800": 64.01076641616699,
+      "pitchDeg": 0,
+      "rollDeg": 0,
+      "cameraWorldY": null,
+      "eyeHeightAboveSourceContactAssumptionM": 2.5,
+      "eyeHeightSensitivityM": [
+        1.6,
+        2.5,
+        3.0
+      ],
+      "horizonAssumption": "level camera from requestedpitch0/URL90t; no recovered surveyed camera attitude or eye height",
+      "groundYStatus": "unresolved at actual panorama XZ; must query authenticated emitted contact before rendering; no substitution of requested route point Y",
+      "groundQueryHint": {
+        "layer": 0,
+        "surfaceId": "surface:w483246714:0",
+        "edgeId": "osm:way:483246714:0-1:f:17:35",
+        "referenceYOnly": 16.38322978178234
+      },
+      "cell": "17,35",
+      "cellEntry": {
+        "url": "https://staging.athensracing.com/world/cells/a03232064c31a8f402dabcacd3e55fec6b3105e1743bc0de520ece14bb0708c6.bin.gz",
+        "sha256": "a03232064c31a8f402dabcacd3e55fec6b3105e1743bc0de520ece14bb0708c6",
+        "bytes": 229686,
+        "decodedBytes": 3741414,
+        "residentBytes": 2009793,
+        "transientBytes": 7712514,
+        "dependencies": [],
+        "triangles": 17112,
+        "contactEligible": true,
+        "source": {
+          "regionId": "basin",
+          "world": "athens-east-development",
+          "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+        }
+      },
+      "sourceWorldSetRevision": "80055f9208753e2d6fa8658b31c90216d22c650f7f33588ebd5178d1a6b804a1",
+      "status": "offline camera specification only; not rendered or accepted",
+      "requiredProof": [
+        "pin exact source code commit before game run",
+        "verify source manifest/cell hashes and actualcontact atcameraXZ; failclosedifabsent",
+        "record actual camera world/local XYZ, quaternion, FOV and floating origin",
+        "fresh positive physics/visual/render step; loading opacity0",
+        "record actual selected car/playerpose separately; camera match is not legal-lane/driving proof",
+        "own-game JPG immediately sent to parent; no thirdpartyimage embedding"
+      ]
+    }
+  ]
+}

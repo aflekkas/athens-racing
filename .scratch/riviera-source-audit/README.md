@@ -1,1 +1,1 @@
-Read-only source audit and exact numeric receipts. See [report](../../docs/reports/riviera-source-fidelity.md). No actual Street View or new game screenshots were captured.
+Read-only source audit and numeric receipts. See [report](../../docs/reports/riviera-source-fidelity.md). Nine selected Riviera panoramas plus one Tower construction view were actually inspected; no third-party captures were saved. Matched own-game views are prepared only, not yet rendered.

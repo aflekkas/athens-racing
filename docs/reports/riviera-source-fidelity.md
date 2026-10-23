@@ -222,3 +222,85 @@ a future game comparison must match actual panorama pose, not assume the
 requested centreline is the camera lane. No Tower panorama was inspected in
 this three-point turn. Full-nine coverage, current-day construction, exact
 geometry/height and matched own-game fidelity remain open.
+
+## Follow-up: remaining six targets and Tower candidate inspected
+
+A second parent-authorized native-preview reference turn on2026-10-23 visually
+rendered all remaining six prepared Riviera targets and the Tower candidate.
+It used one browser slot for less than four minutes. The tab and owned slot
+holder were closed before reporting; no proxy, browser, heavy gate or runtime
+edit was left active. No third-party captures were saved or committed.
+`streetview-six-and-tower.json` records actual URLs, snapped coordinates,
+headings, image dates and per-frame observations.
+
+Together with `streetview-three.json`, **all nine selected Riviera target
+panoramas have now actually rendered and been visually inspected**. This is
+nine sampled points, not continuous-route or full-area coverage, and not a
+matched game-fidelity claim. The earlier readiness/three-only statements are
+historical stages superseded by these receipts.
+
+| Target station m | Actual panorama coordinate | Heading | Capture date | Snap distance m | Panorama |
+|---|---|---:|---|---:|---|
+| 0 | 37.8125439,23.7819712 | 162.39° | Feb 2025 | 1.390 | [Inspect](https://www.google.com/maps/@?api=1&map_action=pano&pano=-Q86p3R6vM9U8uO3npin0g&heading=162.39&pitch=0&fov=90) |
+| 1500 | 37.8017592,23.7872164 | 214.62° | Mar 2026 | 7.170 | [Inspect](https://www.google.com/maps/@?api=1&map_action=pano&pano=-Q4LJP3zWncCJM9ywppwkw&heading=214.62&pitch=0&fov=90) |
+| 4500 | 37.8158149,23.8011240 | 18.69° | Mar 2026 | 2.241 | [Inspect](https://www.google.com/maps/@?api=1&map_action=pano&pano=dyhznTkriDfB7H8d84gN0g&heading=18.69&pitch=0&fov=90) |
+| 6000 | 37.8225767,23.8135329 | 80.60° | Feb 2025 | 5.507 | [Inspect](https://www.google.com/maps/@?api=1&map_action=pano&pano=WBFWEHcrZvP9lssSKhjphQ&heading=80.60&pitch=0&fov=90) |
+| 7500 | 37.8127206,23.8235521 | 148.16° | Apr 2026 | 10.570 | [Inspect](https://www.google.com/maps/@?api=1&map_action=pano&pano=9jBwfsGvezfQqXmYi4_J_w&heading=148.16&pitch=0&fov=90) |
+| 10337.229708621433 | 37.8205853,23.8376377 | 112.78° | Apr 2026 | 6.646 | [Inspect](https://www.google.com/maps/@?api=1&map_action=pano&pano=itnk5E8PZouJUWnxNq98LQ&heading=112.78&pitch=0&fov=90) |
+| Tower | 37.8832955,23.7279485 | 242.96° | Apr 2026 | 6.015 | [Inspect](https://www.google.com/maps/@?api=1&map_action=pano&pano=3oyte2cVix7kdzQXwFpi5g&heading=242.96&pitch=10&fov=90) |
+
+The visible frames show distinct streetscape classes:
+
+- **0:** Two same-direction lanes divided by dashed white line; Broad kerbed grassy central median with repeated palms; opposite carriageway left; Mature trees and pedestrian railing along waterfront right; Multi-storey frontage and parked cars beyond opposite carriageway.
+- **1500:** Double continuous white centre lines with dashed same-direction divider; Exposed rock cutting and low vegetation left; Metal guardrail right; unpaved shoulder and sea beyond; Street-light poles along visible section.
+- **4500:** Urban frontage, low commercial building on right and apartments left; Narrow kerbed central island planted with palms; Dashed white divider and parked vehicles along right kerb; Overhead utility wires and street-light poles visible.
+- **6000:** Three apparent same-direction lanes with dashed white dividers and solid white edge lines; Opposing carriageway separated by tree/grass strip and metal barriers; Right metal guardrail; open low vegetation/earth plot and scrub hill beyond; No measured lane widths or barrier clearance.
+- **7500:** Exposed rock cutting close left with narrow kerbed shoulder; Double continuous white centre lines, dashed lane divider and solid white edge; Metal guardrail and sea right; street lighting; Visible vehicle approaches the camera; capture travel direction must not be assumed from view heading.
+- **10337.229708621433:** Signal-controlled junction with channelising island, signs and white road markings; Blue bus-stop shelter and shrubs left; Side road, shrubs, low structures and hills to right; Utility poles, overhead wires and street lights visible.
+- **Tower:** Tall exposed construction body with repeated projecting floor/balcony edges; Vertical external hoist/scaffold-like equipment visible on facade; Crane right; site hoarding and concrete barriers foreground; Tree cover at lower levels; tower top cropped out of the frame.
+
+Station7500 snapped10.570m and visibly includes a vehicle approaching the
+camera. Heading is a viewing direction, not proof of the capture car's travel
+direction or a legal driving lane. As with the prior station9000, future game
+matching must use actual panorama cameraXZ and record player pose separately.
+No lane width, rock-face height, guardrail clearance or numerical road grade
+was measured from these images.
+
+The Tower frame is **April2026 construction evidence at that date**: exposed
+slabs/balcony edges, external hoist/scaffold-like vertical equipment, a crane,
+site hoarding and concrete barriers. Its upper part is cropped. No visible
+floor count or height is asserted, and this does not establish current-day
+completion, final facade or occupancy. The planned200m/50-storey primary
+references and OSM `ele=200` remain separate from the observed construction
+form. No numerical height was inferred from either that tag or the picture.
+
+## Offline preparation for three matched own-game baselines
+
+`matched-three-preparation.json` now pins the first three actual panorama
+cameraXZ/headings (stations500,3000,9000), source cell hashes and old immutable
+world80055f. It does **not** use the originally requested centreline point as
+the camera position. No game job was run in the reference chunk.
+
+The preparation specifies a1280×800 viewport,90° horizontal FOV and derived
+64.010766° vertical FOV. This follows the requested panorama FOV and is not
+lens calibration. Camera pitch0/roll0 is a level-horizon assumption, not a
+surveyed attitude. Eye height2.5m above emitted contact is an explicit
+assumption with1.6/2.5/3.0m sensitivity settings, not a measured Google camera
+height. Actual cameraY is deliberately unresolved until an authenticated
+source contact can be queried at the exact snapped cameraXZ. If it is absent,
+the view must fail closed; no substituted route-centre Y or invented drape.
+
+The later game job must explicitly pin its source code commit, bind actual
+world/cell/contact identity, record floating origin and actual camera world/
+localXYZ/quaternion/FOV, and render after a positive physics/visual step with
+loading opacity0. Actual car/player pose and motion are separate facts; a
+matched scenery camera is not proof of legal lane assignment or race driving.
+Each own-game JPG must be sent immediately with scenario/build/status metadata.
+This prepared baseline is source-bound development evidence, not acceptance of
+the final terrain or a photorealistic comparison. No image comparison is claimed
+until those real game views are captured and inspected.
+
+Checks:7/7new panorama metadata/URL/date bindings and9/9combined sampled-target
+coverage records;3/3prepared-camera projection/heading/FOV bindings. No full
+npm/physics/import/syntax gates were run for this documentation/numeric receipt
+update. No runtime, generator, building, source-world or catalogue changed.
