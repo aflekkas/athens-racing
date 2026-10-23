@@ -8,6 +8,9 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Coastal rock detail repeats more smoothly and stays calmer in distant views.
+- Lower graphics settings reduce offline civilian traffic without making active cars disappear when settings change.
+
 - Clearer driving-control tips for keyboard and controller.
 - Choose Race or Time Trial in event setup when both are available.
 - The track card hides map labels whenever its background blur is off.
