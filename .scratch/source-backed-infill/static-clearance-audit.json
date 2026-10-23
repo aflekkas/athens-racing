@@ -1,0 +1,81 @@
+{
+  "removedBodies": 10,
+  "retainedMappedBuildings": 399,
+  "visibleParkedBodies": 51,
+  "staticTrafficEnvelopeHalfWidthM": 0.95,
+  "staticCentrelineOnly": true,
+  "dynamicTrafficTested": false,
+  "parkingMappedOverlapIssues": [],
+  "rows": [
+    {
+      "id": "building:gen:8049:-10544:-175:13:8:0",
+      "retainedMappedWallGapM": 2.276,
+      "staticCentrelineCarEnvelopeGapM": 28.8465,
+      "parkedBodiesWithin20m": 0,
+      "closestParkingGapM": 25.998
+    },
+    {
+      "id": "building:gen:8168:-10529:5:12:10:0",
+      "retainedMappedWallGapM": 1.7665,
+      "staticCentrelineCarEnvelopeGapM": 34.5302,
+      "parkedBodiesWithin20m": 0,
+      "closestParkingGapM": 38.3814
+    },
+    {
+      "id": "building:gen:8049:-10544:-175:26:8:0",
+      "retainedMappedWallGapM": 1.575,
+      "staticCentrelineCarEnvelopeGapM": 6.0366,
+      "parkedBodiesWithin20m": 0,
+      "closestParkingGapM": 22.6827
+    },
+    {
+      "id": "building:gen:8049:-10544:-175:7:8:0",
+      "retainedMappedWallGapM": 2.0785,
+      "staticCentrelineCarEnvelopeGapM": 11.6379,
+      "parkedBodiesWithin20m": 0,
+      "closestParkingGapM": 30.8255
+    },
+    {
+      "id": "building:gen:8168:-10529:5:11:15:0",
+      "retainedMappedWallGapM": 3.0291,
+      "staticCentrelineCarEnvelopeGapM": 36.9418,
+      "parkedBodiesWithin20m": 0,
+      "closestParkingGapM": 41.3205
+    },
+    {
+      "id": "building:gen:8049:-10544:-175:8:13:0",
+      "retainedMappedWallGapM": 4.209,
+      "staticCentrelineCarEnvelopeGapM": 17.6593,
+      "parkedBodiesWithin20m": 0,
+      "closestParkingGapM": 43.0124
+    },
+    {
+      "id": "building:gen:8049:-10544:-175:16:16:0",
+      "retainedMappedWallGapM": 1.6,
+      "staticCentrelineCarEnvelopeGapM": 27.427,
+      "parkedBodiesWithin20m": 0,
+      "closestParkingGapM": 41.1988
+    },
+    {
+      "id": "building:gen:8177:-10633:5:26:8:0",
+      "retainedMappedWallGapM": 2.3235,
+      "staticCentrelineCarEnvelopeGapM": 3.9057,
+      "parkedBodiesWithin20m": 4,
+      "closestParkingGapM": 7.0561
+    },
+    {
+      "id": "building:gen:8168:-10529:5:28:14:0",
+      "retainedMappedWallGapM": 3.3767,
+      "staticCentrelineCarEnvelopeGapM": 4.2968,
+      "parkedBodiesWithin20m": 0,
+      "closestParkingGapM": 65.6799
+    },
+    {
+      "id": "building:gen:8168:-10529:5:9:22:0",
+      "retainedMappedWallGapM": 2.7553,
+      "staticCentrelineCarEnvelopeGapM": 30.904,
+      "parkedBodiesWithin20m": 0,
+      "closestParkingGapM": 40.7952
+    }
+  ]
+}

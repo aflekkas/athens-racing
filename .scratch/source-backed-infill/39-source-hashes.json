@@ -1,0 +1,399 @@
+{
+  "inputsFile": "/home/dev/.cogenly/worktrees/athens-racing/t3-beeeffd2/.scratch/kefalari-greenery/cell-audit.json",
+  "inputsSha256": "86d340176096d577d5aa60f536eb26184c121dee0a9a30d3e4e01c630754845d",
+  "cells": 39,
+  "passed": true,
+  "bytes": 10993992,
+  "rows": [
+    {
+      "cell": "-1,21",
+      "sha256": "13ebbb53967d5fe7919e2c9d1f128298725d8feee757e619e18f0e134efe6e19",
+      "bytes": 144848,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "12,-19",
+      "sha256": "1a528c0461d01420f346a4cb45c3d67309b3219e65610a13695eb397f8588aaa",
+      "bytes": 345234,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "12,-20",
+      "sha256": "06d1de6a400246e3085c034f6ef0bee48f8c073f798e80cadaf62053af0ad001",
+      "bytes": 380800,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "12,-21",
+      "sha256": "50183b2653af192b2e49a7c5af4b8a32f3ab4fb909cced0fc933f63d46600427",
+      "bytes": 272559,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "12,-22",
+      "sha256": "bfce8dd4a7912e42c49d10694b6ff94e1d5245c1e4f83369be6a23d4adfd900b",
+      "bytes": 314934,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "12,-23",
+      "sha256": "eedfedca6ad9b7e22deb71ec94a6ca9b9cde919a4a3c0bd1df0f570659b5bb85",
+      "bytes": 311226,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "12,-24",
+      "sha256": "6f5d2c15aa6e8f0d5330f66ccd7503036fb5a0c52ed4ce1421702b81a4c0fb41",
+      "bytes": 384630,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "13,-19",
+      "sha256": "1a110b0b2ebc77dfa69765502910e7921425ac5856bf5e5dbe4ec532b4655af6",
+      "bytes": 289090,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "13,-20",
+      "sha256": "4cda8192c4cbaf52c95fe4b22d4d1206118e044cb2488e2eca97e02422912e75",
+      "bytes": 306284,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "13,-21",
+      "sha256": "42d12f4ce3e412ad5ef6649af5d4b3ff01e0e639740e9c39a39800242263d2bf",
+      "bytes": 257674,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "13,-22",
+      "sha256": "6cc7df8be7d31166e266f8cf3594e788574c13acb65a1fca53b4c61dd09f72c4",
+      "bytes": 254352,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "13,-23",
+      "sha256": "d199bfc98f87c3107eda2f07fcec9b42544e6895a297f5c021b924572a109071",
+      "bytes": 263949,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "13,-24",
+      "sha256": "ba6786337be641bc4b81b48dd0fcf0d6df0718fd482cd5ffff99f000ae1ebfac",
+      "bytes": 282225,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "14,-19",
+      "sha256": "9d671f7efcbf249154c40fdb81b3929f0eba612e1ed9e441bcf29cc3c0781690",
+      "bytes": 182606,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "14,-20",
+      "sha256": "975eebbaab9e8ac1d39a5e6a1561f630ab482e593fbff58a77eb90193f8c3538",
+      "bytes": 384608,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "14,-21",
+      "sha256": "17ec3afbf07589a06a2217c3188a1c02bcaad35ef518b6279f174aed06c727c4",
+      "bytes": 257015,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "14,-22",
+      "sha256": "962ab0bee7ede7ef4d1ce4d1048212f297c607290e65fb518ab50543be7d942f",
+      "bytes": 244122,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "14,-23",
+      "sha256": "4a28c983620ddcdd08ffcf5dcc9079a41156531bbd424e0432802abf04be2db8",
+      "bytes": 280574,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "14,-24",
+      "sha256": "e33501dd56ae3dfb9d93e891a021e43575ad0ba37eb77bc32b31f7d5e0ed5b39",
+      "bytes": 366297,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "15,-19",
+      "sha256": "790c0533f82c10272eaabcdb4902ef4b5943cd40167668a4410a88c7c54add17",
+      "bytes": 125614,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "15,-20",
+      "sha256": "85957e3949007e1a7a79f46353f4b860631276da5990a304d244dd9f44170ac2",
+      "bytes": 295161,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "15,-21",
+      "sha256": "d3fc0efacc9ddeaba0fd3565ffa1127d0306e4d3081c7cca2876b35ca00d9b8d",
+      "bytes": 289767,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "15,-22",
+      "sha256": "5db2f4552ab2936d3398feca483249cb825857f9028f360a581df294210f5fc8",
+      "bytes": 254110,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "15,-23",
+      "sha256": "2c6f804d420a2c7f41228c6157dfac12e0555d3684373d19677ccb779a0d62ef",
+      "bytes": 290648,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "15,-24",
+      "sha256": "b099dd378c035ef7cd1b8380967a79fd08e0b6671b803db5b8d48330e0105f17",
+      "bytes": 292149,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "16,-19",
+      "sha256": "fa8acc004c66dbae39c1cf75f7ebabddebdb6a32ed70b4a2dca73fc6a4803339",
+      "bytes": 332146,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "16,-20",
+      "sha256": "a424987e27dbb3a2a271b3d4160903e64f9e4cecd75dd4fa0746a0cd0e71cc92",
+      "bytes": 229035,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "16,-21",
+      "sha256": "9100872e0d66a962a01997a72c1de4426c36dfa7ea7fde02cb82fe3b5cb4a239",
+      "bytes": 257221,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "16,-22",
+      "sha256": "2b7c9e15eba55b590266a15ed534adb7fcc78e247a5a31e676ba71d670a951fb",
+      "bytes": 235703,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "16,-23",
+      "sha256": "7c6f7f380fcfd54ae5da15f61ae4a554ae0066265abd5a4a265809e87f535b12",
+      "bytes": 275529,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "16,-24",
+      "sha256": "535ce16cd616f0181f156ba470ea312352f10fd1b9cc330ffd60dfbf9f11d163",
+      "bytes": 260916,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "17,-19",
+      "sha256": "9035d3377592acf0c628c1a7448bd869c579176fa74154db8f0ad0662e07e292",
+      "bytes": 285692,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "17,-20",
+      "sha256": "2faeaad578a7547fd1ed2c824a2f300d6d46a4c9f1d9f05a4c1ddfda4876d4a7",
+      "bytes": 167551,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "17,-21",
+      "sha256": "9e2337e3cd2934e7024d851fe2e972a1542c7a7ebf018472b23f8db2f6656e57",
+      "bytes": 251728,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "17,-22",
+      "sha256": "866efcfed4bfeccc46b3383f51e6e8ce6e5e70c2021ba80ba132ece6870eeb5f",
+      "bytes": 335744,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "17,-23",
+      "sha256": "100a9112f9c1597e611058ec446a7875384004e02a67dd3d3f09000ffe26d379",
+      "bytes": 374116,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "17,-24",
+      "sha256": "8ecb31317c614d9c0e8f1b9c9de12a862f30956125e02d4c15fd7dcf5cde09f8",
+      "bytes": 284743,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "3,24",
+      "sha256": "7193b447305780b52fb9a3093e2787ca285bd91139818dd211683ba0d4056bb2",
+      "bytes": 266165,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    },
+    {
+      "cell": "4,25",
+      "sha256": "5c0ac5562d35f3aec611412a71fc2b273ec90591048f5a9a9c71a1a79436782c",
+      "bytes": 367227,
+      "source": {
+        "regionId": "basin",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "world": "athens-east-development"
+      }
+    }
+  ]
+}
