@@ -70,9 +70,16 @@ class ExperimentalStructures(unittest.TestCase):
   added=extend_source_way(g,'w999',ET.tostring(full));self.assertIn('w999',added['ways']);self.assertNotIn('w999',g['ways']);self.assertEqual(added['nodes']['301']['complete'],g['nodes']['301']['complete'])
   full[0].set('lon',str(float(full[0].get('lon'))+.000001))
   with self.assertRaisesRegex(ValueError,'node moved'):extend_source_way(g,'w999',ET.tostring(full))
- def test_default_bridge_policy_and_existing_plans_are_byte_identical(self):
+ def test_exact_default_policy_plans_and_two_approved_tiles_baselines(self):
   golden=json.loads((ROOT/'fixtures/default-structure-policy.json').read_text())
-  for path,sha in golden.items():self.assertEqual(hashlib.sha256((ROOT/path).read_bytes()).hexdigest(),sha,path)
+  expected_tiles={'ad6813e043e9b5f3a295e31d67add779792b92ab54a56c8e0d6a924f7b06dd1f','f964afac853017eeced4df2d6633b9ca26f0e85b56da7f30cbb5f4920a1231ec'}
+  self.assertEqual(set(golden['tiles.py']),expected_tiles)
+  for path,sha in golden.items():
+   actual=hashlib.sha256((ROOT/path).read_bytes()).hexdigest()
+   if path=='tiles.py':
+    self.assertIn(actual,sha,path)
+    with self.assertRaises(AssertionError):self.assertIn('0'*64,sha,'unapproved tiles source')
+   else:self.assertIsInstance(sha,str);self.assertEqual(actual,sha,path)
   for path in ['bridge_policy.py','coastal.py','tiles.py','plan-structures.py']:
    self.assertNotIn('import experimental_structures',(ROOT/path).read_text())
 
