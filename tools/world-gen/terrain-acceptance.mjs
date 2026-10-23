@@ -1,6 +1,7 @@
 // Geographic evidence is an additional publication prerequisite. It never
 // replaces physical/contact guards or enables releaseReady on a local bake.
 export const TERRAIN_FIELD = Object.freeze({schema:1,id:'binomial-9x32m-prototype',geographyVerified:false,maxPrototypeCells:27});
+export const TERRAIN_FIELDS=Object.freeze({[TERRAIN_FIELD.id]:TERRAIN_FIELD,'quartic-9x32m-experimental':Object.freeze({schema:2,id:'quartic-9x32m-experimental',geographyVerified:false,maxPrototypeCells:27})});
 export function requireTerrainAcceptance(count,{field=TERRAIN_FIELD,sourceRevision,fieldSHA256,report}={}){
  if(count<=field.maxPrototypeCells)return {prototype:true};
  if(!field.geographyVerified)throw Error('Global terrain bake blocked: prototype field has not preserved actual hill profiles');

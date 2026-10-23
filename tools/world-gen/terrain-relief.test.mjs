@@ -55,3 +55,16 @@ test('prototype terrain cannot start a global bake even with a claimed acceptanc
  assert.throws(()=>requireTerrainAcceptance(1748,{field,sourceRevision:'source',fieldSHA256:'field',report:{...report,cityComfort:{...report.cityComfort,maxSagLimit:.6}}}),/cannot relax/);
  assert.throws(()=>requireTerrainAcceptance(1748,{field,sourceRevision:'different',fieldSHA256:'field',report}),/exact-source/);
 });
+
+test('experimental quartic field preserves quadratic broad terrain without enabling global publication',()=>{
+ const h=(x,z)=>300+.0001*x*x-.0002*z*z+.03*x,f=terrainReliefField(atlas(h),{filter:'quartic-9x32m-experimental'});
+ for(const[x,z]of[[0,0],[128,64],[500,100]])assert.ok(Math.abs(f.delta(x,z))<.0001);
+ assert.equal(f.descriptor.schema,2);assert.equal(f.descriptor.geographyVerified,false);
+ assert.throws(()=>requireTerrainAcceptance(1353,{field:f.descriptor,report:{passed:true}}),/Global terrain bake blocked/);
+ assert.throws(()=>terrainReliefField(atlas(h),{filter:'unknown'}),/Unknown terrain field/);
+});
+
+test('experimental negative taps cannot create a new valley or summit beyond the source range',()=>{
+ for(const sign of [-1,1]){const h=(x,z)=>100+sign*40*Math.exp(-(x*x+z*z)/6400),f=terrainReliefField(atlas(h),{filter:'quartic-9x32m-experimental'});for(let x=-400;x<=400;x+=8){const y=f.original(x,0)+f.delta(x,0);assert.ok(y>=60-.0001&&y<=140+.0001);}}
+ const a=atlas((x,z)=>100+4*Math.cos(x/20));a.protected=['1,0'];const f=terrainReliefField(a,{filter:'quartic-9x32m-experimental'});assert.equal(f.delta(512,100),0);assert.equal(f.delta(520,100),0);
+});

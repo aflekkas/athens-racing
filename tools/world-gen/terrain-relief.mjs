@@ -3,7 +3,11 @@
 // per-tile smoothing, vehicle-only height offsets or relaxed physical gates.
 import {groundIndex} from '../../src/world-tile-ground.js';
 import {tileTables} from '../../src/world-tile-format.js';
-const taps=[1,8,28,56,70,56,28,8,1];
+import {TERRAIN_FIELD,TERRAIN_FIELDS} from './terrain-acceptance.mjs';
+const kernels={'binomial-9x32m-prototype':[1,8,28,56,70,56,28,8,1],
+ // Weighted least-squares moment kernel: sum=256, moments2/4=0.
+ // Experimental only; polynomial invariants do not establish geography.
+ 'quartic-9x32m-experimental':[3,-8,-12,72,146,72,-12,-8,3]};
 const ease=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x);};
 const plane=(x,z,sample,spacing=8)=>{
  const ax=Math.floor(x/spacing)*spacing,az=Math.floor(z/spacing)*spacing,u=(x-ax)/spacing,v=(z-az)/spacing;
@@ -13,7 +17,8 @@ const plane=(x,z,sample,spacing=8)=>{
 /** The atlas is small (4225 heights/cell); retain it, never whole decoded cells.
  * Protected cells cover authored regions and structures. A global
  * 128 m transition keeps their original geometry and bridge clearances intact. */
-export function terrainReliefField(atlas){
+export function terrainReliefField(atlas,{filter=TERRAIN_FIELD.id}={}){
+ const descriptor=TERRAIN_FIELDS[filter],taps=kernels[filter];if(!descriptor||!taps)throw Error('Unknown terrain field '+filter);
  const spacing=atlas.spacing||16,n=512/spacing+1;
  const grids=new Map(Object.entries(atlas.grids)),protectedCells=new Set(atlas.protected||[]),cache=new Map();
  function node(x,z){
@@ -43,13 +48,16 @@ export function terrainReliefField(atlas){
  }
  function lattice(x,z){
   const key=x+','+z;if(cache.has(key))return cache.get(key);
-  let sum=0;const weight=blend(x,z);
+  let sum=0,minimum=Infinity,maximum=-Infinity;const weight=blend(x,z);
   if(!weight){remember(key,0);return 0;}
   for(let j=0;j<9;j++)for(let i=0;i<9;i++){
    const h=original(x+(i-4)*32,z+(j-4)*32);
    if(!Number.isFinite(h))throw Error('Incomplete terrain atlas halo at '+key);
-   sum+=h*taps[i]*taps[j]/65536;
+   sum+=h*taps[i]*taps[j]/65536;minimum=Math.min(minimum,h);maximum=Math.max(maximum,h);
   }
+  // Negative experimental coefficients must not invent a new local summit
+  // or valley beyond the sampled source range. Physical gates remain separate.
+  if(descriptor.schema===2)sum=Math.max(minimum,Math.min(maximum,sum));
   const height=original(x,z);
   // The sea datum and low shore stay fixed. Above 10 m, city terrain gets
   // the complete correction even when a neighbouring cell contains water.
@@ -61,7 +69,7 @@ export function terrainReliefField(atlas){
   const fade=g=>Math.max(0,Math.min(1,(.22-g)/.12));
   const old=fade(grade(original)),next=fade(grade(target));return Math.min(1,next/Math.max(.001,old));
  };
- return {delta,original,lattice,blend,transform:(x,y,z)=>{const d=delta(x,z);if(!blend(x,z))return y;return original(x,z)+d+(y-original(x,z))*scale(x,z);}};
+ return {descriptor,delta,original,lattice,blend,transform:(x,y,z)=>{const d=delta(x,z);if(!blend(x,z))return y;return original(x,z)+d+(y-original(x,z))*scale(x,z);}};
 }
 
 export function terrainAtlasCell(pack){
@@ -98,6 +106,6 @@ export function refineTerrainRelief(pack,field){
   if(Number.isFinite(oldBase)&&Number.isFinite(newBase))t.buildingHeights[i/2]+=newBase-oldBase;
  }
  for(let z=0;z<=32;z++)for(let x=0;x<=32;x++)t.coarseHeights[z*33+x]+=delta(x*16,z*16);
- m.terrainRelief={version:1,filter:'binomial-9x32m',atlasRevision:field.revision||null};
+ m.terrainRelief={version:field.descriptor?.schema||1,filter:field.descriptor?.id||'binomial-9x32m-prototype',geographyVerified:false,atlasRevision:field.revision||null};
  return {protected:false,vertices,maxAdjustment};
 }
