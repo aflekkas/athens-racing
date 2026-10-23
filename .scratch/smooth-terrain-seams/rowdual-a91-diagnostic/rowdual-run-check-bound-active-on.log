@@ -1,0 +1,1 @@
+{"name":"bound-active","mode":"on","rowOnlyCertificateAccepted":true,"fullKKT":false,"fullKKTNote":"Not certified by row-only contract; stationarity diagnostic and actual bound marginals remain visible","fullKKTStationarity":0,"exactLower":"-17/2","conservativeLower":-8.5,"exactGap":"0/1","objective":-8.5,"corruptionNegatives":6,"fieldAccepted":false}

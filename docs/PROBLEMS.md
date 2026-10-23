@@ -57,6 +57,8 @@ Difficulty: 🟢 good first fix · 🟡 medium · 🔴 deep / needs care.
 
 **In progress (2026-10-23, not published):** a 27-cell prototype passes physical/contact/seam checks and improves several urban roads, but its broader kernel lowers the hosted Lycabettus peak by about 26 m. Global baking is now blocked by an explicit geography-acceptance guard. A replacement tested on five cells preserves the hill better but fails unchanged Syntagma and Lycabettus comfort checks; it is rejected too. Neither prototype establishes full-world fidelity. All 3,647 authored Psychiko pieces must remain intact; the reduced candidate restores all 825 affected authored indices, with 2,822 in unchanged cells. See `.scratch/smooth-terrain-seams/README.md` and `docs/plans/terrain-ekali-world.md`.
 
+Source-model diagnostics remain separate from world acceptance: four of seven finite-facet components have independent primal/dual certificates; a later component timed out during crossover and the last two were not started. Tiny no-crossover exports failed full KKT checks. Two subsequent generic row-only checks passed, but resource monitoring stopped that run before terrain verification. The [crossover report](../.scratch/smooth-terrain-seams/crossover-tiny-diagnostic/README.md) and [row-only report](../.scratch/smooth-terrain-seams/rowdual-a91-diagnostic/README.md) retain the failures and limits. No terrain field was adopted.
+
 ### 5. Parked cars look chopped, and the roads have artefacts 🟡
 **What's wrong:**
 - Parked cars are cut off or chopped, and some render as flat slabs or look boxy up close.

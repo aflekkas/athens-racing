@@ -1,0 +1,68 @@
+{
+  "status": "SOURCE-READY ONLY; actual run needs a separate grant",
+  "codeSHA256": {
+    "/tmp/athens-terrain.uKVC/rowdual-tiny.py": "7fcf35eeb51d8f2285f9a7bd7b25fb066ca5bf9d3dd8a40a7ab1e49000cdf151",
+    "/tmp/athens-terrain.uKVC/rowdual-tiny-check.mjs": "3afb95aec196726f6d578a02f2907272a397a33611c9d6959cd87beca79f767a",
+    "/tmp/athens-terrain.uKVC/rowdual-tiny-supervisor.py": "35dd42bcc89db91d68fafd5952fb4731fa71ffa19e50b9c7e8eb3c6bae012ffe",
+    "/tmp/athens-terrain.uKVC/rowdual-supervisor-control.py": "7f919e1db71fcb6f0b81e14e170a4f64ee2f7c7228f9d490df79a6ccf9830b63",
+    "/tmp/athens-terrain.uKVC/test-rowdual-supervisor-control.py": "d1e82474da78edf764c6fcc47967f30e214a13ff75b8a39a3d2536c8ffe766af"
+  },
+  "expectedToolPins": {
+    "/tmp/athens-terrain.uKVC/syntagma-component-e4b/tools/terrain-lp/model.py": "3ff95a6b102cf17c23c793ad2a4fe6a414e9adc2a0b2471656df32354f9f70d1",
+    "/tmp/athens-terrain.uKVC/syntagma-component-e4b/tools/terrain-lp/verify.mjs": "acdaede9ca9ad9d49d3d4325a47c0f5ad0a522d9cb807509b176919674cf0481",
+    "/tmp/athens-terrain.uKVC/scipy-venv/lib/python3.12/site-packages/scipy/optimize/_linprog_highs.py": "32999bba42521a001d08bd9a1a02ca663b8b7eb93b6f799f37438e062484c89a",
+    "/tmp/athens-terrain.uKVC/scipy-venv/lib/python3.12/site-packages/scipy/optimize/_highspy/_highs_wrapper.py": "c15a943a0985bf716d84b93719d0b2f572e698373655ab0258614b4b2ab67303",
+    "/tmp/athens-terrain.uKVC/scipy-venv/lib/python3.12/site-packages/scipy/optimize/_highspy/_core.cpython-312-x86_64-linux-gnu.so": "33fb5a6a86b8fb914b26e69f8f046274b0b043d202511109365d3fde180c540d",
+    "/tmp/athens-terrain.uKVC/scipy-venv/lib/python3.12/site-packages/scipy/optimize/_highspy/_highs_options.cpython-312-x86_64-linux-gnu.so": "116ed72be9accceafcdeb58d5d02308e5023b9bc98118303a79d3bc24fe171d6"
+  },
+  "frozenAnalysisCommit": "e4b7bf2ea6a6f71f21806480f19591c87de083a4",
+  "historicalFailureCommit": "247d10adcf0892bb044010e8f23abaaaea012240",
+  "controls": {
+    "externalSeconds": 10,
+    "internalSeconds": 9,
+    "solverSeconds": 1,
+    "rssBytes": 536870912,
+    "outputBytes": 1048576,
+    "minimumAvailableBytes": 6442450944,
+    "threads": 1,
+    "stopFirst": true
+  },
+  "commands": {
+    "sourceOnly": [
+      "python3",
+      "/tmp/athens-terrain.uKVC/rowdual-tiny-supervisor.py",
+      "--manifest-sha",
+      "<fresh-manifest-SHA>"
+    ],
+    "actualNotAuthorized": [
+      "timeout",
+      "--signal=TERM",
+      "--kill-after=1s",
+      "10s",
+      "python3",
+      "/tmp/athens-terrain.uKVC/rowdual-tiny-supervisor.py",
+      "--manifest-sha",
+      "<fresh-manifest-SHA>",
+      "--run"
+    ]
+  },
+  "fakeChecks": {
+    "supervisor": 10,
+    "genericRowOnly": 10,
+    "actualSolves": 0,
+    "actualSciPyImports": 0,
+    "preexecutionCases": 14,
+    "markerExecutions": 0
+  },
+  "newFilesOnly": [
+    "rowdual-tiny.py",
+    "rowdual-tiny-check.mjs",
+    "rowdual-tiny-supervisor.py",
+    "rowdual-supervisor-control.py",
+    "test-rowdual-supervisor-control.py"
+  ],
+  "acceptedSourceEdits": 0,
+  "reviewRound": "FRESH review47 requested; review45 rejected previous preexecution binding",
+  "executionContract": "All eleven closure entries authenticated before dependency or fake-control execution; captured custom worker/control/model/verifier bytes executed, no path reread for those sources. Native numerical packages not imported by source-only modes.",
+  "preexecutionTestSourceSHA256": "8373f90c5e267b668440cd0e81c5765d7377d67823c448d69e73bce4082650bd"
+}

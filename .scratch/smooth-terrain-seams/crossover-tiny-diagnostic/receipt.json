@@ -1,0 +1,35 @@
+{
+  "classification": "FAILED export contract; no actual component or terrain adoption",
+  "counts": {
+    "passed": 2,
+    "failed": 1,
+    "inconclusive": 0
+  },
+  "skipped": [
+    "degenerate/scaled/flat-face pair",
+    "synthetic terrain pair",
+    "independent unchanged JS semantic verifier",
+    "corruption negatives"
+  ],
+  "ownedPIDs": [
+    1312604,
+    1312606
+  ],
+  "allOwnedPIDsAbsent": true,
+  "workerSeconds": 1.3149201289925259,
+  "workerMaxRSS": 75808768,
+  "supervisorFailure": "StopIteration reading VmRSS during child exit; no complete sampled RSS/elapsed receipt. Worker report completed before supervisor sampling failure. External terminal shell status0 is not test PASS.",
+  "sourceSHA256": {
+    "crossover-tiny.py": "fb39ae644db75770d86a10a8017fcd1811fd140a20524f775d4824c1b0b95100",
+    "crossover-tiny-supervisor.py": "1a5bb73074c597d461fb2806bc74342abc084cf2076dfadbd45b28f0011ca919",
+    "crossover-tiny-report.json": "ab84d613c26e84eba696b42b4509dd44b953fda533ca1c635b47e5b251cc0f01",
+    "crossover-source-audit.md": "7ae4dd8331ba05bf27f33d16f70f85b233fac8385aca2c494e419757f60584d6",
+    "crossover-fake-validation.py": "04d98815bf40e3206168961a3c0827181bc1d8c9aecff577c547832b42906260",
+    "crossover-fake-validation.json": "ed750332232489990924fb22199fb0768279787130051b7faeb26ef26dcf8954"
+  },
+  "diskBeforeAfter": "49%,75GB free",
+  "presolve": false,
+  "realIPMIterationsEach": 5,
+  "boundsExportFailure": "OFF all lower/upper marginals0 vs ON nonzero; stationarity residual3.0 vs0",
+  "limits": "Raw row-dual box lower value in report is ordinary floating arithmetic diagnostic, not independently rounded semantic dual certificate; failed KKT blocks acceptance. No inference from interior log alone; no wrapper patch or guessed bound dual."
+}

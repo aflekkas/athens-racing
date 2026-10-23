@@ -1,0 +1,1 @@
+{"name":"degenerate-scaled","mode":"on","rowOnlyCertificateAccepted":true,"fullKKT":false,"fullKKTNote":"Not certified by row-only contract; stationarity diagnostic and actual bound marginals remain visible","fullKKTStationarity":0,"exactLower":"1/1","conservativeLower":1,"exactGap":"0/1","objective":1,"corruptionNegatives":6,"fieldAccepted":false}

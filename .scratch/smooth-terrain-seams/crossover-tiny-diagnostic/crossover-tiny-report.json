@@ -1,0 +1,97 @@
+{
+  "status": "FAIL CLOSED",
+  "phases": [
+    {
+      "name": "active-nonzero-bounds",
+      "mode": "on",
+      "status": 0,
+      "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+      "nit": 5,
+      "crossover": 0,
+      "warnings": [
+        "Unrecognized options detected: {'threads': 1, 'run_crossover': 'on'}. These will be passed to HiGHS verbatim."
+      ],
+      "rowResidual": 0.0,
+      "boundResidual": 0.0,
+      "stationarity": 0.0,
+      "complementarity": 0.0,
+      "conservativeRowDualLower": -8.5,
+      "dualityGap": 0.0,
+      "objective": -8.5,
+      "primal": [
+        2.0,
+        -2.0,
+        0.5,
+        1.0
+      ],
+      "rowDual": [
+        -1.0
+      ],
+      "lowerDual": [
+        0.0,
+        3.0,
+        1.0,
+        0.0
+      ],
+      "upperDual": [
+        -3.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "active-nonzero-bounds",
+      "mode": "off",
+      "status": 0,
+      "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+      "nit": 5,
+      "crossover": 0,
+      "warnings": [
+        "Unrecognized options detected: {'threads': 1, 'run_crossover': 'off'}. These will be passed to HiGHS verbatim."
+      ],
+      "rowResidual": -4.725109192804666e-13,
+      "boundResidual": 0.0,
+      "stationarity": 3.0,
+      "complementarity": 4.725109192804653e-13,
+      "conservativeRowDualLower": -8.500000000000004,
+      "dualityGap": 4.716227408607665e-12,
+      "objective": -8.499999999995287,
+      "primal": [
+        1.9999999999995113,
+        -1.9999999999990754,
+        0.5,
+        1.0000000000009615
+      ],
+      "rowDual": [
+        -0.9999999999999972
+      ],
+      "lowerDual": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "upperDual": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  ],
+  "realComponents": 0,
+  "passed": 2,
+  "inconclusive": 0,
+  "failed": 1,
+  "option": {
+    "type": "HighsOptionType.kString",
+    "default": "on",
+    "roundtrip": "off",
+    "validated": true
+  },
+  "seconds": 1.3149201289925259,
+  "maxRSS": 75808768,
+  "error": "independent KKT/full rows/dual rejected",
+  "trace": "Traceback (most recent call last):\n  File \"/tmp/athens-terrain.uKVC/crossover-tiny.py\", line 36, in <module>\n    r=solve('active-nonzero-bounds',c,A,b,bounds,mode);check(abs(r.fun+8.5)<=1e-7,'analytic optimum')\n      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/athens-terrain.uKVC/crossover-tiny.py\", line 32, in solve\n    check(rowres<=1e-7 and boundres<=1e-8 and (y<=1e-8).all()and(lo>=-1e-8).all()and(up<=1e-8).all()and stat<=1e-7 and comp<=1e-7 and abs(gap)<=1e-6,'independent KKT/full rows/dual rejected')\n  File \"/tmp/athens-terrain.uKVC/crossover-tiny.py\", line 7, in check\n    if not ok:raise ValueError(msg)\n              ^^^^^^^^^^^^^^^^^^^^^\nValueError: independent KKT/full rows/dual rejected\n"
+}

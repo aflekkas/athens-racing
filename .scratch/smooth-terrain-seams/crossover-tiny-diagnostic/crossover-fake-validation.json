@@ -1,0 +1,36 @@
+{
+  "testsPassed": 8,
+  "realHiGHSImports": 0,
+  "realSolves": 0,
+  "scope": "Pinned check_option AST executed with fake option manager ONLY; not installed binary validation",
+  "results": [
+    {
+      "value": "on",
+      "acceptedByFakeControl": true
+    },
+    {
+      "value": "off",
+      "acceptedByFakeControl": true
+    },
+    {
+      "value": "choose",
+      "acceptedByFakeControl": true
+    },
+    {
+      "value": false,
+      "acceptedByFakeControl": false
+    },
+    {
+      "value": true,
+      "acceptedByFakeControl": false
+    },
+    {
+      "value": "invalid",
+      "acceptedByFakeControl": false
+    },
+    {
+      "value": 0,
+      "acceptedByFakeControl": false
+    }
+  ]
+}

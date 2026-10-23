@@ -1,0 +1,96 @@
+{
+  "runtimeInterpreter": "/tmp/athens-terrain.uKVC/scipy-venv/bin/python",
+  "installedPackages": [
+    {
+      "name": "scipy",
+      "installedVersion": "1.18.1",
+      "metadataPath": "/tmp/athens-terrain.uKVC/scipy-venv/lib/python3.12/site-packages/scipy-1.18.1.dist-info/METADATA",
+      "metadataSHA256": "6d1ebfbce110009e25e8249fea05e21c0449735144e9bd8df1a52931f957c1ea",
+      "packagePath": "/tmp/athens-terrain.uKVC/scipy-venv/lib/python3.12/site-packages/scipy",
+      "packageInitSHA256": "39ccae300a4739cc53719bd3b39ce3f8f66e736c6eb672006e338a4c5cc3dc76"
+    },
+    {
+      "name": "numpy",
+      "installedVersion": "2.5.4",
+      "metadataPath": "/tmp/athens-terrain.uKVC/scipy-venv/lib/python3.12/site-packages/numpy-2.5.4.dist-info/METADATA",
+      "metadataSHA256": "e2b909d6a37d76c2bc130f528d7fed0c517322bce16dc7846b6a6df30e200403",
+      "packagePath": "/tmp/athens-terrain.uKVC/scipy-venv/lib/python3.12/site-packages/numpy",
+      "packageInitSHA256": "09295a80660f17925ae23765ce8cbd7ff7ceae968d5f2f89349f1cb74c0b9e11"
+    }
+  ],
+  "packageLimit": "Versions/paths authenticated from installed distribution metadata after run without importing numerical packages; runtime module.__file__/__version__ not instrumented, not retroactively asserted. Full distribution closure was not frozen.",
+  "exports": [
+    {
+      "name": "bound-active",
+      "mode": "on",
+      "status": 0,
+      "iterations": 5,
+      "crossover": 0,
+      "warnings": [
+        "Unrecognized options detected: {'threads': 1, 'run_crossover': 'on'}. These will be passed to HiGHS verbatim."
+      ],
+      "lowerMarginals": [
+        0.0,
+        3.0,
+        1.0,
+        0.0
+      ],
+      "upperMarginals": [
+        -3.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "bound-active",
+      "mode": "off",
+      "status": 0,
+      "iterations": 5,
+      "crossover": 0,
+      "warnings": [
+        "Unrecognized options detected: {'threads': 1, 'run_crossover': 'off'}. These will be passed to HiGHS verbatim."
+      ],
+      "lowerMarginals": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "upperMarginals": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "degenerate-scaled",
+      "mode": "on",
+      "status": 0,
+      "iterations": 4,
+      "crossover": 0,
+      "warnings": [
+        "Unrecognized options detected: {'threads': 1, 'run_crossover': 'on'}. These will be passed to HiGHS verbatim."
+      ],
+      "lowerMarginals": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "upperMarginals": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  ],
+  "missingRSSInterpretation": "Exact triggering PID/state not recorded. Third checker eventually exit0, but guard failure does not prove a zombie/exit race; no hypothesis counted as established.",
+  "allRecordedPIDsAbsent": true,
+  "acceptedCases": 2,
+  "corruptionNegativesAccepted": 12,
+  "unadmittedCases": 1,
+  "notStartedCases": 5,
+  "semanticTerrainComplete": false,
+  "fieldAdopted": false
+}
