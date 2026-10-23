@@ -1,5 +1,6 @@
 {
   "unit": [
+    "tools/structure-domains/context-domain-plan.test.mjs",
     "tools/fleet-prewarm.test.mjs",
     "tools/frame-cap.test.mjs",
     "tools/cabin-floor.test.mjs",
