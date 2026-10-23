@@ -1,0 +1,2776 @@
+{
+  "status": "failed",
+  "phase": "before",
+  "sourceRoot": "/home/dev/.cogenly/worktrees/athens-racing/t3-41c48689",
+  "sourceCommit": "7949401225d46c633e237e0fcf08520886c3792a",
+  "sourceInjection": false,
+  "worldRevision": "80055f9208753e2d6fa8658b31c90216d22c650f7f33588ebd5178d1a6b804a1",
+  "manifestHash": "a6ea9d0c3981e5f3111b375f4ebb1f0e47785bd2a46e2acc2617671033510293",
+  "casesHash": "1ed8de1f414891265145f60bdeb2e7a50366c803b09cdd9cb9bab7f790abede6",
+  "sources": {
+    "index.html": "945d0963a9316e715d5fb915ca597444e4d0209bad4c021c0f628e9e072eda95",
+    "src/account-progress.js": "4091b09a0605c0aa37189856d4140105d632c908122964c7839a2a2739d5db86",
+    "src/accounts-client.js": "737af4242c4cc335d679831c34efc1ca2c35b45300d05dd568dd2d4b915b590b",
+    "src/airborne-dynamics.js": "e208073ba35aee7d6cf6ba36dd1ce55d3c7efa64bee3eadec9937f38e6603324",
+    "src/asset-codec-policy.js": "a54ced9ca37a973b784e4270c155817c4222930fbf4ba1772433daf3cf71fd11",
+    "src/asset-metrics.js": "f0926d7ad92d1d6c378e5229450ec58c4597dec785caa22e4979808be1a6d22e",
+    "src/athens-detail.js": "bff8480e4d1852e213467cbe0c844977b2f7aee750324adbc99d9fc87b9f2323",
+    "src/athens-free-roam.js": "42d734ac72256125a71d3d9c9b23799f8ade35ef0c568006b9bcf5d50d8c6be2",
+    "src/athens-ground.js": "225090cb682e89408a75679154bc17029925823c28370d81c9d4e26c326456b1",
+    "src/athens-horizon.js": "ee10ff771a7952f71dac9bef6be732482828a28210ded4cf431affbb2d447f89",
+    "src/athens-landmark-data.js": "28ba284064fde0857147d95b9c4047594b2053c7fa34acd71426f732d262cceb",
+    "src/athens-landmark-hide.js": "e4ee5a60ff8e968d3a327528ef4b74aa6ff951b00ef28271318a34c4c5bdefaa",
+    "src/athens-landmark-models.js": "f7a65fb5111fd2cd47eaae1d98e7513f77ffa1741947d2beff5cddaa1170cbb4",
+    "src/athens-landmarks.js": "7605a0f6533d807ca9fe0df484046b728dcc1a16c2a0a1c76f5e7c572b6bf9fe",
+    "src/athens-marks.js": "865da816fa0821d1db4d361dc824a22439c60a1ef07ae4dc03c3c15043888c6d",
+    "src/athens-materials.js": "8c3dda11d4e1a3e774cc52ea3eacde288fc5b2f20432530b34770ae485ee0245",
+    "src/athens-plazas.js": "e14a77cbfe46aa81753cd02fe9d55360fa3b8100d8bce6fb4fdc2d5f3eed892c",
+    "src/athens-props.js": "2bf2371301adc8e231bea911ec4d5635e21650068eb4fce60122886ba1ba2848",
+    "src/athens-quarters.js": "4d425409403b5f02c70d81a9a4843105804c77e798d12329f95fea9bbbe0149a",
+    "src/athens-signs.js": "67dec7557c0198bab8c1357a662f07ad19b87e67a55bcad64e7c0b9d11a186db",
+    "src/athens-trees.js": "0b867386768a44ad6d6007ef39492d780d1283fd4c879679851dd54592a010b2",
+    "src/athens-world.js": "31cab82a8af2c7daea1df73754262338acdfbe674fe82023a0263e7fd1f866a7",
+    "src/attica-map-data.js": "baf3b37f644fb1de47147db3f8a0ac9c39b286460fb9b38a866f4fad469bdd57",
+    "src/audio-cadence.js": "88f97c73442f8e55a08b0a41a06eefef05c3b318bc9fee6334159ee80eed6aa1",
+    "src/audio-listener.js": "caf1df259d1779ec685e5ae5c41187cb51c9eeeac148f427f41b1fda774c00c0",
+    "src/audio.js": "53dd343f70cdaeb6bc2406ca768c15333b2b90696559b12f0542de82749299f3",
+    "src/audio/contact-sound.js": "352fe79e178d9cde11bdb54c828da73d4fe0eab15f019d09f72017e1704265d1",
+    "src/audio/engine-lifecycle.js": "da7f5bb1527546772b736ab2d9c30342d7849af424cee43ef701e78513229758",
+    "src/audio/engine-profiles.js": "e07c77d40aa1a2b9f8e1f857805171864185b5d919819a437847b4468f5052bd",
+    "src/audio/engine-spatial.js": "fe28d129d4dcfcebf0dc807fdced8e2bc27770f7184751c699653d7d7d873a96",
+    "src/audio/engine-synth.js": "747c67ff50d0c5f556b20398ad2e80e3ab1074d0b1f352e148fa76b7a774c7c6",
+    "src/audio/robust.js": "2c626b98ce95931933b8c710e347bf8a18afdc7f9d099e8af0b056d1eb5d712d",
+    "src/baked-geometry.js": "f8ff434d07e51ddac2f4fa1148e9320b8ae4d7ce92dfc875ecbc2e3b7bd768f3",
+    "src/baked-realism.js": "e073ea5a260e5f5d7d9ed26e3655cca2e0187502d8f950ab9b1a2be147ab78cb",
+    "src/baked-world-data.js": "a670787bfda6b0efbb8d3c62f7b72b950dfe93e78ccf40582bf9d84c74ee6ecc",
+    "src/baked-world-pack.js": "cba134cc8736ca79b105e11e2c6196ead20d341e76ef0693c8962ed17a7f19d4",
+    "src/baked-world.js": "a77cf17807106a3d9593a5380e131c1200dad1925423f8a1353f74b13f28ac58",
+    "src/batch.js": "73ac4d46cab0d815bd3232f95b60360519bb9ef09145072b273ff2771f023f99",
+    "src/blackout.js": "9b8476c4f85f4aee7a1f240350932efe5374e556e140d0fbe66e7e48ec214526",
+    "src/boot-session.js": "081d388840e0f0b741055775c0eed221fed00f49ba741907fa9608f63e0e57e4",
+    "src/boot.js": "9ab363d92936477f3d93238e5fbb681fb8a6102d300a4dbc194795ff7db8a755",
+    "src/brand-badges.js": "2d8733e2dc0c3783030c331bbb33a5aaebf104ebfc34295e18867d0629cacd08",
+    "src/build-environment.js": "d1d711059abe0b520a04db5afb9acd40dbcb538c7f3e162a40a075fc8d6017ad",
+    "src/buildings.js": "c518abd13eed9de886bc521e143ed327ea0ada915f8b534758144a9419d82fe3",
+    "src/camera-views.js": "08676b60259d1b742b69315edb3579611884465b13f3a1eb4f705abbf823850a",
+    "src/camera-visibility.js": "b2ed63e47e851f25f417d27ff3ecd9463734e9552f0bccb1825a10d0a1f13be3",
+    "src/car-catalog.js": "03fc56b7315dab46ae3a25080558648669c42df258c2b7e0b7289bad743b7ba4",
+    "src/car-ids.js": "265067e86c68a75d12b5727b142b5ef7d806742edbe652968d31087a390172f9",
+    "src/car-performance.js": "f82ee589753d3d01bf81a8493e57b2fd05c13de28935b0777c279ff2c64e25f3",
+    "src/car-select.js": "2dd34f52d3c5cee33689548f46d12d9a37e20bc7409f3274304cd1a4ef0086cb",
+    "src/car-surface.js": "ac552fe23935d44f866162302d76c78d306e81bdc174cd6e49394d4fbd051929",
+    "src/cars.js": "8ef657c549c0695ef2d551b256c56971bfe048e67a13054b4ac0567c1ab23f71",
+    "src/character-presets.js": "ec426202d39bf5223e9f6a97ad103e28fa46b2b512939625646ca1ecb5fc935f",
+    "src/client-release.js": "4249f11d327bd1377186fe087e636b1479e5865f96df191256fe0081a4d79340",
+    "src/coastal-bore-data.js": "9e4689725ac0f3aa5d5270378f436a80f156a354eb6b2d1e534d4ba0a0429d97",
+    "src/coastal-dressing-data.js": "c5a019cef4aa0acdb385f746dd651c9baee43f35aa132c2a1e9b41cd7e02e656",
+    "src/cockpit-controls.js": "c4b50f4226a8152c64bc9f542f3a5c7deecbfe6d8cd889933aa4ec866c48045d",
+    "src/cockpit-handbrake.js": "bdb50c121c3092e5d80672cad689fd014547d8d3b8fc5b4bec7ab117ed0702fb",
+    "src/cockpit-rain.js": "214f792b01609a805034dcfa8121bbb58806c6af0a3e7efa5197c78830214dd7",
+    "src/cockpit-seating.js": "23d65abda77669a57df1662218050db3deeab37c20d3229475684c99e16c41f2",
+    "src/cockpit-structure.js": "e71e2842a6ac5b692e0d92681c42cc32f1476aaa8101a014ab26deb19c667f40",
+    "src/cockpit-telltales.js": "fe653d167559222c232b5d25ac059c95e5d792b3dc193af1b79af96ba01dd2dc",
+    "src/cockpit.js": "368cd3ea542c69bbad5a0288cd42d7b4b6b0fcae8f37958ed29779c5e80c3733",
+    "src/compressed-textures.js": "fdd36616af3c2355698d166d74323c06f57b0729ed3435b8664d38363225b02c",
+    "src/course.js": "c4663919049d86ca997ddf396ed88faeb08a5aa61142d5ecbfd69873fb348fe3",
+    "src/cpu-metrics.js": "2dab45d462e99c9596005c44ec6d712d8db7159e3912439e7eadd20d8ed3270c",
+    "src/crash-contact.js": "784983979e8a58791a782fa624466e4904c61542fc7b5ff3bcc925df3f89c8c3",
+    "src/damage-math.js": "1bcc730900ab5c48476b762ae2d87abd9094a782ac00ee3ea4da204adafe76aa",
+    "src/damage.js": "1f1d6570ca169b7fbb35db33025fbca2c0aa04f494daea81551a9aa99b75f091",
+    "src/device-gate.js": "7131bcb5747ab406a65cfd87b97da271f9099df6a9fe400b6702ac376ba2739a",
+    "src/drivable-corridor.js": "edda09fe041a72e64bf695a0701145cd15154053c1ee56016a1ef17b993e30f6",
+    "src/driver-appearance-data.js": "dddc321d021b1804904775c96c240ed577a01033b8461cb740483b78653c81e9",
+    "src/driver-name.js": "ac82ba9b616d382624a168b9c854bb6d284fbfad700a7078a60875cf8e756946",
+    "src/driving-aids.js": "573d92098226fa6944d34ae8a6f78d7725e4ead73dd48099a7564974a6a044f1",
+    "src/driving-feedback-model.js": "d13511e51aa7746684ff95099d667ead35a6395070117a0c2e2ab96dfbc3117e",
+    "src/driving-feedback.js": "03c8f404a7e5daefa91d248528b26c8893bd139363cbfdd1b0d98684b47b55cc",
+    "src/driving-guidance.js": "06599432e3c79ba33d30b1ab992d0fd8e27d545f219fab58083b1a6210fd00b2",
+    "src/driving-mode-view.js": "f255aa7fae5ea0c11cecf840164869d2c4bebe6fa9057f53f40e769f843796c8",
+    "src/driving-modes.js": "bc86a1cdab2c14a0b7e5028649840133fe2388b2332e4e568bff708941dd4643",
+    "src/driving-objectives.js": "9edc6231128e2e731d037d13924f1b07248ea4d3654d089f9058005b0b374c27",
+    "src/enabled-maps.js": "ce8b800a13ffbab7179b4114deb58beb32144faa8ac66cfc8972bca6a7380dd1",
+    "src/engine-abuse.js": "53e3d00e02c5c89c8788812b6cd258811ee0fe5b2260e4d749c7dbc89a18cf54",
+    "src/engine-hud.js": "d92e04a81fa22c94b14fc2a8363dbf823db6f06ba6520cd1c39a4565eca820cf",
+    "src/engine-recordings.js": "a0ae080c4ed198fa5a26e4b99b1d46ca8be3a8cb93de940f0447f5f915f55412",
+    "src/entry.js": "370d4dfbd6934ae8c6d7a281a240bba00337889a6ff3079045738f63bcf3883b",
+    "src/env.js": "e05f3a6981695106467294a7965a03019cc5bd327d3b2796b334da95a4dedea9",
+    "src/event-markers.js": "a2bd60c6d92f75c13637b393799d6d6875080e13c176d6bac943cedc62f12ffc",
+    "src/events.js": "4a92a81d9c9753d23e9cb2ba69145956a39427d8f57df4840615a605f6bb20d9",
+    "src/facade-atlas.js": "52c7f3caf1fa1176f376d40ffd2416c69996c2df9674d3287069e4658e66d414",
+    "src/far-cull.js": "11ce97be04117e798c5a440b71ef1df38b37f00fc6b70c6c5f3ba7412d49c740",
+    "src/finish-spectate.js": "483df4c10062105d4532499d5fa28dfa796d0053a22624180e35ca424c2314d2",
+    "src/fleet-cockpit.js": "3bd161715e346fef646f1d49f62f7d93e4d74af6331a3c5ee1545bbc5d3983a3",
+    "src/fleet-instruments.js": "204d4371da9ec3333de3e5472ea085e1a49839a2543ad6e536dea860d3a12928",
+    "src/fleet-interiors.js": "bc7666ecce3b65f748efcfbaf3491fa642509efaa0c2aa04b2933d53af85eb1c",
+    "src/fleet-prewarm.js": "633eb243d78965377316ae2b9a4b71e305354783e6a6c3a5ed89afa08df1a3a7",
+    "src/fleet-template-codec.js": "52421021da52675242929d968374eefc847beb6898de7c8d1ed2713e2f2c7cd4",
+    "src/frame-pacing.js": "2d13e4af2f32dec92e4f20ef075b0ecf667eb2bdced416b5c432fc043e6144a0",
+    "src/free-roam-entry.js": "4974bc495cc6b7b2bd5327be0537a01cfbe9076770c3d1b74fed726d6cb6201f",
+    "src/fx.js": "915ce58fa614bef61cc672b0608db7f34dccecd45f0ba417700417f58cbe5d07",
+    "src/gameplay-toast.js": "ceb6dafe2eab20401d24dd5dfbb37c534ffd02f40f2a8b8c8336229bc55462a2",
+    "src/gantry-legs.js": "6087989ede49581b23984b7dabe70a01fdfdaf668bbd63ef941aad7de6142f4c",
+    "src/generated-world-cache.js": "c881fc544d51c97c97313b34454747a9518a5eef4931b2b722661e14c013a665",
+    "src/ghost-lap-mode.js": "710d6d1ff38a4a19db12dc94e9710fceb2d7666c3aae73707e11f79b2516f7c0",
+    "src/ghost-lap.css": "13a8b0684d2d56cdbd3da6a6be52af85384b5fd82bfa408ac153101a36f784cc",
+    "src/ghost-lap.js": "8c46535643bb953903e10d515ba1ffd42ea02492eca9f2e7a32dc5d077e95b6f",
+    "src/glass-tint.js": "6099d0d9a65a23f0eca5c3710f7ada5cc42c584a0e49d4f2202cc6657a76cab7",
+    "src/graphics.js": "dd5824714159e61e1119f69b5affbdb0fae52ccbc89cf1db0d2bbe26e900ee8b",
+    "src/greek-caps.js": "c1536d441564e2e0f06416e03156689e603a5ebc510a481f0cfc1f52b046a4fd",
+    "src/ground.js": "4bc6085a84788be93791bbb116ae157e5dcdcf248e0fea85b1ad75f9ef94f211",
+    "src/hillside-cover-policy.js": "016fdf24eabb6bf8f8a373bdd68ae058ccfd4f3e8c8cac58a6846ebadbc19831",
+    "src/hillside-cover.js": "641dd542c396a0a87c76599774d624978d7e3d92efa14718234ce24b81b448fb",
+    "src/hud-sway.js": "611fc65e60b07491af7f38c535dcc14cacce551bb01b0ac305ad5aff1d45ffa9",
+    "src/hud.js": "6c42233e9d2afd320708c4d187130cfae71ba39bd54427fdd14998eeaf49b9b4",
+    "src/human-voice.js": "c56b66f2326c9f336131b6fd9cb7cda632a7b8126642d18a95866d8c4565f132",
+    "src/human.js": "716dadce0576a57477c846e17ddd346e658f1d83ebc1d02ae7d72e4160f93539",
+    "src/impact-ragdoll-view.js": "1fc5c86cf5ede29ff2796525a69d8847c38574740d1afac88d9b502158cae221",
+    "src/impact-ragdoll.js": "3637c71da837ae432672ed6a74cfdc6111e1d1721df874c45812bb9c928a94d4",
+    "src/imported-bridge-graph.js": "1796b6bd7f90662cfc30d7efa9f2825329c8796863041468e104ff4e4489589c",
+    "src/infill-streets.js": "16abd8f745117170bc6fc737df056e07dae1dc3464d5797c6bef2f8c80617c0a",
+    "src/input-labels.js": "6d28f2fb103a8d904530dff851ccc54ee6970e22141cbfabced5a34f9bc84325",
+    "src/input.css": "58827ca3e180fb2f87e722de6919049e98b448a65488a646d13e955e93729001",
+    "src/input.js": "4bfd2d218ec70426d1e4fdde97d3eafbda4ea7611b6b57904d4fce5a35885cf0",
+    "src/json-auth-snapshot.js": "6639fe927eb6e5b0b10b1a9cf4820e246dca2cf7394401836da6acd88f6228c7",
+    "src/lap-hud.js": "818a04e6229f90f85b0d8ab797d22e7f811c01dff2425f1fe354bbe6a4f7e6fe",
+    "src/leaderboard-records.js": "0b9e381e0abfaa2b85e293669b0b60dc937dd9048158b56957a274f1b79af6ed",
+    "src/leaderboard.js": "d34266a5f2d6b1a837d643e837261e30f6aaaaa2a42c9f025ee88ce95c15fa29",
+    "src/leaderboards-screen.js": "cc6a16454c2781802e673a934e9fb407e4b980be1edec2ea13d4d3731c85f62e",
+    "src/local-carriageways.js": "a46f7e87a7a5577427e21cf4176b1a0c8480b8360a2bc0e07f1e9eae1c0837bb",
+    "src/main.js": "b527aace5495d2afe8604315f71cf2961e677725c23af7e608a51415698540ac",
+    "src/manufacturers.js": "adc7eebd8810ebc0ae3da85a6dd680567712279aabf4176fbaef6fd3d05a99c0",
+    "src/map-catalog.js": "01617ee02042c727b2788ccfec7ad71039a36dba68bf8db0319b7b1adc778b26",
+    "src/map-select-camera.js": "b8f310fbe884b5e6ac38934a45238760ccce265a2e1ec51b900000cfd976daca",
+    "src/map-select-render.js": "c8210391b041156fc2bac34399fcf487c82fc7a79ab2972ef65e22f722085575",
+    "src/map-select.css": "3ad2f7e36cdf0cdec8167e1400a6577066c02f2c29746628bee345a9979642b8",
+    "src/map-select.js": "56f72f3be2a8e58d1209d1884bddf2fe6fd9c49be0535e3c2780142cb9b29f95",
+    "src/map-wheel.js": "3136bb593184a62ac458b2784568649089055d89609f5d9e5703f0e9cd34eeb1",
+    "src/map-world.js": "1edaf1d36ce91120f2dcf08e43e138b6a1719687f8e6e8f74481cc8f9b547545",
+    "src/map.js": "6c1f120ababa41fae37074bde841a7af4c3da7a0f6079ec7e5452cc234cbd0aa",
+    "src/maps/megara.js": "096bd7461891bcdbf71bb99106e6f0da33b1cea34a2f393d3d96137bd0f7bd47",
+    "src/maps/penteli-ground.js": "5d682785243b7acd94ad4a318ccc6d0b167acf8fc176d7a14951895683b8ea38",
+    "src/maps/penteli-roadside.js": "e80a01b64d1202c6d1f1b92daab80e65cbb989c2bf55b1148902b64b8bc46cd1",
+    "src/maps/penteli-surface.js": "71be01ed654f24d866c47ab1c95087b7abbde6a960573f8143dcc6d1ce744d2f",
+    "src/maps/penteli.js": "0472a5d3e99df60abccd2c2ecd399b5288f44df24734169502ffed2f6f28af5d",
+    "src/maps/psychiko-faros.js": "49e30965a13bc2439f8af30458034c5c7158b48ae9526888b4e5fd7388c97f0f",
+    "src/maps/psychiko-parked-cars.js": "01adb242570f9c74314e3c2e6fa75298ded9c5ba3aac91328eeb9d73535929c9",
+    "src/maps/psychiko-recognition.js": "53e9dc2bac773b763f6ecf64208e6397df7e744b6bacc4bf5b2f9b41a1fe366d",
+    "src/maps/psychiko-streets.js": "2ae934a3ed194e814a2338f6693ca3fb04e62c2a4b0f6ff33f21f5c4d13b29b4",
+    "src/maps/psychiko-streetscape.js": "974957ff2fd7eca54bd7481d7114d3d85428c3b24086614caa1137a3a8df6ae5",
+    "src/maps/psychiko.js": "9262171ff2e8378a676569f3263c3dc40fe59e4c9bcd2c26e963b108b79a14b7",
+    "src/maps/riviera-tunnels.js": "b36d65b9d08b4ed658e89823e4001efd05e298996b502a7bd1128617cf8f70c8",
+    "src/maps/riviera.js": "f53fe166eeb25360ce5ee72954aeeb5ddbe83b33d4b642ead6655371e62ee730",
+    "src/menu-backdrop.css": "72869b4d111c1c810d4e6c450d4a1623448ff7d6064144b178efb8a99bb7a646",
+    "src/menu-copy.js": "468ed2be4903de066d7fd866d1e0b9fd2ffd4f10ce177fb7054a162b8f6c0d1c",
+    "src/menu-map.js": "37c57cb6049b8e6825742ffc137b6a4445a05fd16302f084f2faea3636235d0f",
+    "src/menu.css": "fcaa1566f81df4265f00453771216edf6a24aee33d5058c647a9c4b2fc160192",
+    "src/menu.js": "1358ce84b82a217fc08ccc0ab38d0991b17ffbc8e06e587bdfd250b6b7ee85a0",
+    "src/meshopt-pack.js": "83cfbeb56142fab8436484457c09f4fd26f13d261ad4f91aef8689c56374a3ff",
+    "src/mirror-cadence.js": "0079c793064048483e8911d13ac40a9c0535c527877a8149c1798b5ff1acd2e2",
+    "src/mp-car-rules.js": "8eb25609438d72bddf5a2a13a94903d28d43a4a465e1b462df2ce062f9152fcb",
+    "src/mp-setup.js": "f2ea800a8a308a4a3c5868c5376c695ee376a3e58b5940eafd5c2c6f1bb2da18",
+    "src/mp-shared-world.js": "1f4402f7946efcc728de4ba14597ffbfb302c51cd85794cfe23e595ac28d633f",
+    "src/mp-world-policy.js": "2cbbf2c203e9a5357dd2ae09d6b8e096b4fe55bc8cb8e843320c23f9e7cbd7aa",
+    "src/mp-world-traffic.js": "a6f271814c0a4b0c3d448a1a36f98b5e0d9dc0490aab21dfb8ee6cf9476bfa71",
+    "src/multiplayer-contact.js": "8971a1c54cb6565b05d268bb31d732b22e4bd3943cc0d2c5cc59a4513d7e1353",
+    "src/multiplayer-protocol.js": "0253b312f012d907dad016674b1c6e7a9ac52de12d92776894b55b1b14fb24c1",
+    "src/multiplayer-state.js": "c70910da47649d690924b7b17a9bd49b7688854bf7c3d355dca40d6899ae94ed",
+    "src/multiplayer.css": "4356510cfa04b14731a61ccceb4efe7c1fb4e959a64a5b2340f1a9ca8f7a976b",
+    "src/multiplayer.js": "239fa967f6ce887768225febcf59a7250e69fdd773ea2d0faa3e53e36a0ba332",
+    "src/nature.js": "c1573c3277a4f2955e818015ef09667500ee077b695e887aa29598b61ba8a815",
+    "src/network-route-client.js": "b68f5bfd0f957aa2ae37129bffc76a9ff64f50da825da366999c40c8641c5cd2",
+    "src/network-track.js": "669a7129729afc96c5935d5154edb7946fffafbd0bda32e0aed86c2d77ef3eea",
+    "src/offline-cache.js": "865305714b7ee883e1bc82f0cf7d3cbdf01d629e54a24491631d32a0e68254ab",
+    "src/online-grid-snapshot.js": "109f999914a2c4b69fbda3cb4b66242731df15a7ab798a44d2099fff354aaadb",
+    "src/online-grid.js": "62e5f7217cb929aea4f69d6e5aacde4791b1a37d52bdafafc0edd66fbdf87d5a",
+    "src/penteli-houses.js": "c6677c6cdc9ef28192c78e9895102899d189f0463eb2dd669edd8209f13dd4fa",
+    "src/penteli-terrain.js": "f17f276ec461de4593136468aa1c664193454bb4adf1a37a5b9722799b942726",
+    "src/people-policy.js": "7f3570672dc272087534c348f193b9e815b9f90c75c94ad158a15e3a2135dc97",
+    "src/people.js": "e4a6576251e1fc1a24942950eab3417965bbcd1fd3504d62319a834e998ee817",
+    "src/perf-ceiling.js": "70528ae83e78350504f078a71101582481e193c20edbb80fc580778bedf8d889",
+    "src/perf-governor.js": "4e4c13908f2073b1642f0c74c07fbb011e3dad43105a0b9d632bcc8811fa78e8",
+    "src/perf-overlay.js": "4689055db232159bd941f46ee853a3e7b2f7455a2c0b35831c05a4c25ce5f976",
+    "src/personal-bests.js": "20ee753612fe9b1387d6012e4f51d980141415ba4c4a74cfe9b32e67acc3fa93",
+    "src/physics.js": "7616694ae14ae3c2051c0b072ab5bb542b16358559a883be443686c766b80df1",
+    "src/plate.js": "3adbf52b9e55c0f8b714c0d5fdf5983de767ea44d8794014473bf0dc5bbf134a",
+    "src/player-a160.js": "312834ff428d0083358e44a07d11b7a5c917db15f12276cef0b69334ce45cddd",
+    "src/player-aventador.js": "71711dc0e4d0136015136938183ec5f44027c865b7761c17c1ca8863c8b916c8",
+    "src/player-f348.js": "00b7042fcd254234ca0a3b5fa5ccdb533c7aace7fc73c69d09c524484058d0ff",
+    "src/player-fleet.js": "038b57fed9119714ceea8b351e74811d129e73d08762dfb95a88fd46a218cefc",
+    "src/player-huracan.js": "a9d1ff37924c79d5e9701ad8ae5d5389ccc87c1482447b5b8a03496fc792cfb4",
+    "src/player-mercedes.js": "3d65ab65602c22c100fbd49ad55ec8dfc8258b295808a3f80cb39371093ed1ee",
+    "src/player-original-surfaces.js": "7602495cf7992eb7f7ee4b05a1248a04342690e080dab9ae0327988891da9b7f",
+    "src/player-p928.js": "91b7c6ef3d3ceb373f81f87748805cd8e0657039beafa71a1cfb577b7afa9c5e",
+    "src/player-road-cars.js": "5bf3f4202679fd2fb958ddb850c25e8ad0abf800e8ba2c32e0929f21af8eb214",
+    "src/player-sports-surfaces.js": "1693a65d4632071dcc1f6cf446dd4e75ecde55f9510bae0678a0cc097503dab0",
+    "src/player-vehicle-details.js": "7c91bc813f191ccb5180e5fb0307920d814f6a9e60205e9eaac9d9b6a85d716d",
+    "src/police-hud.js": "b04a3a426e0dcd18318ce45d86dbe70043b3997a90ca002a8a73042f63bcdc6c",
+    "src/police-models.js": "3b8e020b6221643bc081d4549f4a4a77b5a591ba041c52a756dd75b09e7bc6b6",
+    "src/police-patrols.js": "e363d52b3a7fe180c9faa32772186fa3067061c713edf72ec81416b489e2f808",
+    "src/police-voice.js": "fd4982bb3c24607d9e7e5bb3d9b800bc75213507b2a5d85cd32ff81954a6197c",
+    "src/police.js": "5c0c02a6a0506bbfcc84c0efaf6f3392baea69caf7c766d8951574d9c27922af",
+    "src/post.js": "af3ba648a2823f9018965b1694f71d2fcb99c06287ed30fc20237578e1fad1ea",
+    "src/pov-camera.js": "90bd06daa680c2ce7f48c279b23eba83017450391f73d91b597fae80cca9b8d4",
+    "src/pov-visibility.js": "730bb7736d7ff28fd900ec624ced912f892a49a871738e706161ce4eef1950f5",
+    "src/psychiko-building-data.js": "3ed990c1a0ed4e6e58901bb6711dbb7d63b8f0e670e0364f01cc3a35d04cc222",
+    "src/race-lifecycle.js": "99ca3f42731d3b13dd623529ebe4fdf81535b578bbf034c01416fdf7a6ce3c58",
+    "src/race-setup.js": "c320eb25606c4b784588a16b509c3e3463cdb28ccd30c26568587e225250b618",
+    "src/racer-marker-layout.js": "936298d4f1451fce0159f12ab2128c0fec9bc8e0903f646ef50a8c9324124474",
+    "src/ragdoll-client.js": "b9b050b9b5badb16219beda74edc67a80549a87a633573b6da88caf5842f223b",
+    "src/ragdoll-snapshot.js": "e540636e03f2a145a6c9a304f72ed74b20609ee20b6b4304261a4d40bbb5a9e6",
+    "src/ragdoll-worker.js": "95045f5dc1cd49883f6e0c1e99224ed820a8c5ceb8595fd3e6125abaaa1fdc55",
+    "src/rain-overlays.js": "6bd268f8d9cdd934ee1a59dd8b3e66ad38493f8b2e852a09b66f779a849d8bb9",
+    "src/reconnect-history.js": "674c612e93f12d2d879b0a9e7796cdeae16fcb3ae7fef6c51374380c3fb08a5a",
+    "src/recovery-policy.js": "87ebbeb2865f22efbe5ad587d223e3e598f019bac0a6c0ed816b501746574741",
+    "src/recovery-prompt.css": "c556bdb6eaa4b0d6c17bf9d1089ecd02833bbfe5601ab39e05a124c79342a6a1",
+    "src/release-notes.js": "e0d1bb23ea45fecebead368aaf9553bf607f897347563979bb0e187831cc0f37",
+    "src/remote-timeline.js": "356c240d68e54a594d9eb96dcb7de392ea38e6c5d972bc9bbd48a3152a553290",
+    "src/remote-tyre-fx.js": "bb01b7d1a74118f9299d113563c739c400484364401b38475518b6e460dc9029",
+    "src/render-scale.js": "7bb8b6c01c63f6cbed13c5ea52ea940e2b11eb82b47e96f1d1d50cc4d5bd9722",
+    "src/result-share.js": "c5b630ccf2b77b0ea77a9f5dede4ed05a3daceb4e0b64e4ec79da824cdf6679f",
+    "src/rigid-pose.js": "d66986e84d040a1d8ef4253e00c286f4f1dc2c1b9f5543afc9a9b2ec47d94a66",
+    "src/rival-ai.js": "e31aa2197761abb345f3a161d32828efcff1cf2724a5e55da69ea89b98ecec2d",
+    "src/rival-plan.js": "4e23eec6d0dd0b6f4a7328d31e2f0ade1b985748b3f90fb9a8ac90669f0638a9",
+    "src/riviera-guardrail-mesh.js": "a08af3e2b36a12f6bec2e52199aad49e5f6dee5be287e7067a1a5aeb6aa63da6",
+    "src/riviera-guardrails.js": "b0ac82d33d28ad211d04eb9ece0c711e97753a99b6b9cb6a918ce466fbc34e02",
+    "src/riviera-landmarks.js": "fe0baa5e15d80f3fbaadc34aff36c36dbffe7aec5ccfa8e4ca8992a9e37a510a",
+    "src/road-asphalt.js": "a31a9494ea471a0fc5629bbef56869699e872996f946bbc5e505ffdb081dc3bc",
+    "src/road-cut.js": "03cecb081a11dc0b2e9da2e1c77d3f8d096f289109c5a2313cb92fad75cebe5b",
+    "src/road-elevation.js": "46957b10b8290fd931c7ede02b1708aba9b0ba282ad4190ae9850f977554ca75",
+    "src/road-graph.js": "18c7a3d1d49cd06bb696f99322a04093bb5e0f03d81c54f65e9ab3e6fca2cd1f",
+    "src/road-network-surface.js": "c5cacdb1a61463e8f1900f0244ee1fa3b44351590dc76d6cc16155c6010262fc",
+    "src/road-network.js": "d3bd4d3ad95162e198d043bc36bb113d1a44ef705897eacf4c2b8a8a5dbeff9f",
+    "src/road-rage-voice.js": "dbe59d63c4e0201203a795253816dfe35449f26835aa539e3661abd9af94f00c",
+    "src/road-recovery.js": "5f0994afb14ff7d776ca2f203a91982b6e339d9078581b4b90ea0e754758133b",
+    "src/road-sign-layout.js": "426076956f571d99d2393dfeb82c9be8ead33bca2b559503dcfdc875cc2199c4",
+    "src/road-signs.js": "9910185c240a5abe00a8b97237996f6bf1ec1697c324937f3a09e34ad0936184",
+    "src/road-terrain.js": "c20ba1b23c852170fb3167301ef74a72e639a991b37f77d5f1bc6e1b3cc842d7",
+    "src/road.js": "758c008f3f4a02efe94edd75b5aabcb568dcb477327e21b181cfea0cab052503",
+    "src/roadside.js": "42a2c5eafd4a4b9bbc5742cc53411ad772d62dc64ba2c1e55957b88639be615f",
+    "src/roadworks.js": "14816dff0350a4d1945b52cd3a13e928b9616e3155dc9edc52dc060573415898",
+    "src/roundabout-guidance.js": "55ba9556d935da4158441340c6b0e5e406de6a739e5894368a52b54d4461abba",
+    "src/roundabouts.js": "bec37903e8781388761717c52e6bfac76ff506ecd75135e72ef6d04c8635069b",
+    "src/route-closures.js": "633e8a009ce129edbf8a77c9f2530e3e94aa9e081a22ab8481fe6fa0d9234650",
+    "src/route-compile.js": "d02eecb8d344c20447819960648b043d6a4a08a28e47ff916729062701f83dd8",
+    "src/route-definition.js": "d124acb101abc44aac64aef4b64d56d94d35076bd82848902332dc0aeed2504b",
+    "src/route-entry-prefetch.js": "0644f84e984b69b934746e7cc75e57351f794f24f3eecbc5ed511280b41c036e",
+    "src/route-events.js": "cd01d478195fd9cc229b1a21675d67926e29dfb5485999ad57c580be1b34de3f",
+    "src/route-geometry.js": "32ed556841581f20e836cdd26c3e864a686b50dbdea6d849c4e27dc0d451aa34",
+    "src/route-guidance-data.js": "30eac54366e927f633c9199228041abd386fed1b50c7aa2e063ea1f998f8913e",
+    "src/route-guidance.js": "6cd4af352ebc59a57f14e4c721f1e016f5f8a32b1c794b9b4d13b1a6055a8a07",
+    "src/route-guidance/demo-route.js": "17470a903ffbd3c9ef438bbac10fd2d8e47e6421d7d216a923b3bacc3414c5bf",
+    "src/route-guidance/demo.js": "9de4ee0f92833a91a298322ca19e6f49a24b3545ae2899200a982d38376b43ca",
+    "src/route-guidance/index.js": "e00009cfd30d5c34c0fa64f648c35ebe57296fea79bcff550bc8d7349223a17f",
+    "src/route-guidance/legacy.js": "7b6f8ff465d8ace7362777cae638d1c1735cdb7a985ddd32fc6f58800673e877",
+    "src/route-guidance/minimap.js": "ec2153b5c4e78dfb744bb92bc65d63f5b54237317b49782e4b48b64961a141b9",
+    "src/route-guidance/paint.js": "bb92b7c6bacce7d0e6b1b7996a33411dbabbc67fa909d5bd5d5ee0055c2a4a73",
+    "src/route-guidance/route.js": "071eae2c6321c10542508213527e9548659c66cb996b700cd2ab150c7c047fcd",
+    "src/route-migrations.js": "ecd2ea2dae29ec37ec60fe376a1ce91981b35c3e835838bb41f1972394dbd27f",
+    "src/route-navigation.js": "cb82ad280c7c2c3b09e95608cfdf9baf25a3c485a56e5c7043725d9aabdd63b8",
+    "src/route-network-runtime.js": "15374f15443ce30d95e81a123a72f9c63e4927099e3c900be02496e395119e4b",
+    "src/route-network.js": "f486327d43b29bd95ad5d92211793e3d849a03b1104ac0fc4ef04fc0cda1be8b",
+    "src/route-rivals.js": "2ffa6a13de5ae55993ec8a5121fb7358a811326a2c9112a8db12a3dcb3ca5259",
+    "src/route-runtime.js": "ce2f3e8864fad31e03092cd3ae4250ec5ce2db722eda76e61ba9387d57c37755",
+    "src/route-stream-policy.js": "e74a6ebf29c49d1c1de65d8070b8cbed449c74977fa8eeb3435b3de055d98b7e",
+    "src/route-surface.js": "0c62a0ba643f3e68e2c4b5a19315b634d29d0b0e05e2ae9000337d3d12e88259",
+    "src/route-timing.js": "703671fe2e371f735a2e7fe4a0b1e22f1c82ba57e0d24c10da276ba05427c6a6",
+    "src/scenery.js": "38b96d0dc796f6cabb8a6dbf6989c57427e2b0e74674f66ea002ee84a525af98",
+    "src/seat-position.js": "9afe64048d6bdd68849c31ff4343bfa360094b656f70ae5f76cb7e974e0efe04",
+    "src/server-clock.js": "e3611ad505bb2a64b06e87fdb92fd913875507728b79db1c499354a9dc38d78b",
+    "src/service-worker.js": "b7fca1f03a5ce6d10cf20fe3550fdc28598afb39628dc5367fe8bd7dccafe597",
+    "src/session-transitions.js": "119b6172a39eaf8a7c3f9d7d893cf7d36ce53e488e6ad7bf44f2d4af2d5c8c51",
+    "src/settings.js": "37f1b8ff6fa53e74b7e929a92ee4c3cb98f0a3e82bfa392be2ce202b4c1ff027",
+    "src/shared-world-protocol.js": "3344838fd77ab40fe749b961c626033ab5782e0cb026c21b9950251cc7ac1597",
+    "src/sign-mount.js": "4676efc5186501422899c85c3b352c6e5c328dbf4d9d76ba4507260feffeb863",
+    "src/signal-plan.js": "4d5a03a7852f60c22f447257d0542f40a49ac01f37efd5407964ad898a7c058d",
+    "src/signals.js": "17dc37d1aca39ab9b69e56c344683e6e7ecee0cc6b3ce38e3d101176141142f5",
+    "src/sirens.js": "2002c7b338276bd6c048f6bded097cc122ca2637f0c31b61be9b52ae44e71452",
+    "src/spawn-select.js": "d7b1d02d0f5ad534d63fa8e6bc89528dc8d06fac61f318651e9c60fa998e2228",
+    "src/spawn-spots.js": "eeaa3bcc6f53360b23b64fa8b963f0a773631523c71d2e0766e0c165ea55adeb",
+    "src/speed-limit.js": "3bed4523bb7f79015fd0cf32d6732a3d2cd71368931499f6b878b07d6c90c0a4",
+    "src/speed-signs.js": "8ffab3e7b26c18b1cfdfb22c7e64ebb715a1520f667c21d79b00557f7cb2f25b",
+    "src/spray-can.js": "a5343b7cbb7a51221d22a70dfa5aa9cc5887dcb380a406792eb48934df1f4821",
+    "src/start-placement.js": "157c17a3599f2ce77d3628117eee69dd54f62b262092233e4eb45ce61cc25f25",
+    "src/steering-wheel.js": "866ca1f464b895861652f9f9d443ab17eb68f8229c0f2acbce899ba3aa62001b",
+    "src/street-life-data.js": "cda2b6cb5b239b213366809e4719902d8dd62e6bc78b95b1cc179f282f3b6527",
+    "src/street-life.js": "65319501a364d662d9388b866a682abe565c246e84616d26654d820e7da44b39",
+    "src/suspension-road-input.js": "397fcbd5ba69f318d4fbf12a2cc549f8e12f83d63437ff213679703078726944",
+    "src/terrain-contact.js": "76d2374878b365d8b0fb36ec4eac13f2092201f79bdef105cebe8d427753db84",
+    "src/terrain-layout.js": "33b1f03da5494525a8ef227ff393e8615b2158b5a5ce39de08c1e03dbef3694d",
+    "src/terrain-lod.js": "7273d46dc2bb0d3e2df0a91c9b370a9a389721010c217259ef96aae4cffe9561",
+    "src/terrain-refinement.js": "5103670d092c2e751a038fd7154c785161a0671c4911f6e259a4098495d79a80",
+    "src/terrain-seams.js": "7f18a05cd48742708ee6cc9fecc4db3e3a376f00000ea5e46660ef4b905bdb83",
+    "src/terrain-slope.js": "21049886e8ac11baadb111ad3c2a08528b24238ff5d2c62cb807ea9fa92988cd",
+    "src/terrain-surface.js": "d9c922ca2fe81f03eed3243736401caccb302f6a1ff0678c3a10bb43f61f62f1",
+    "src/terrain.js": "1b8a2b622075845e5c299fd853f835a2a31121251e6892e8b1649fa5f46768ef",
+    "src/tex.js": "ebe33461ae875e421ea081325a2e1c4b7786353b06747f6f4338fbd49289c2bc",
+    "src/texture-manifest.js": "72bacf45b593d21f4e4ce4c4fd19b2218c326ebe31175284a0a28d55e807744c",
+    "src/title-hero-studio.js": "fba4f69ec5e6fa3bf786b774ceece2e901004d2c80b11c4e627e15870f77594f",
+    "src/tow-heading.js": "65a145b83591ed31a440968edda8d97f50da6dc2973f6cadc33a450f02d958a4",
+    "src/tow-placement.js": "dbb3069b53cbcaafe70f6d6d9d70c045aba7b898e8ff7bfb4f53b1bb37d91b63",
+    "src/track-catalog.js": "f867bf3e8cf6662aad18b539c5b11cbd528b4554b054c81f8d3137d84063fe00",
+    "src/traffic-bike-models.js": "6ea725ec87a46827237ffa29847a653ba9a30cc042b6ca4dc48b07790e65e6dd",
+    "src/traffic-commercial-models.js": "a68baf71f18b185fcfad897d44a08cc889730f5dd1f0673d8057e808cc31b621",
+    "src/traffic-fleet-worker.js": "ba2577bf64c999e0e1622c6c7ab6f51e0cfbcb5ac3d437b2ec0647d75bea3a41",
+    "src/traffic-fleet.js": "558c3b4e49553ef25b37942b0937e9c0d167afdef979fff5e09230c6527e4366",
+    "src/traffic-passenger-models.js": "7d10c7595114bf448dc2a04fef6fd28735e4cc580db74e47f3381f9ff039e10d",
+    "src/traffic-passenger-shapes.js": "2a8f199519cee184f9bc6e05e579267cacb5af08d397371933557f1b1e98968b",
+    "src/traffic-proxies.js": "bf3880b7c18b6939cff65dad2c282348b950fb78cca9d477451ceeaa4f7115ab",
+    "src/traffic.js": "84c24bc726d96371b8461638e5f604262e6ebeb7a9771db6f027cc42c952a520",
+    "src/transmission.js": "55771afdb0c187ae28b42e09dd58f9db81a46415029527924be2ed68a91427a4",
+    "src/turntable-control.js": "f9017696e0503855d070f8bc5a7b69b95be577573652399dbb2498707cac40ac",
+    "src/tyre-dynamics.js": "675bbdab7286ffb838917eb3fa618a0d1ca90ada44523104b02bd77655b40f75",
+    "src/tyre-telemetry.js": "5eeca237fe2b8d793ff2a7daf1fc336dc3e520715e0b2ebdd3d89f805557a99c",
+    "src/tyre-walls.js": "0366fb0c2a6798878e558ce464a4b4bdbc2eb2697fdb02a6e82c34c6b4f10765",
+    "src/ui/account-loader.js": "d6251453cffc6facf309c5c292646c0b93ae22217609476b998ed4f316b64a9e",
+    "src/ui/account-screen.js": "2ce2e68fa732f280e3b73ec4dcef8948681ebde584e2a6e8b07969ad69bd67ea",
+    "src/ui/article-scroll.js": "992639549e6243065aea9ecef2b4a54166ee82d15108f00673af99f82346a4a5",
+    "src/ui/boot-screen.js": "69e2a1a7b571778a1de387333f9c7ca1119fce4a97de8d105f2f5e0300584eda",
+    "src/ui/components.js": "c70309937d21837b61fe3f510b073c418d2003b6fdd4c2b0a85750755d0949d7",
+    "src/ui/controls-panel.js": "bcca4c987e5843bec4d13cfaac08e7ff0316d18d85de8c01c439333dd247459e",
+    "src/ui/driving-hints.js": "75bd567ea3e08537f2fa294f0e156c5b45622d273b6e5f2928ce909a03f3504f",
+    "src/ui/finish-spectate.js": "17a71941f8c0fa1c78f5d6c096aedf090dee0e4765f3e2f7050ad9f8dc6783fb",
+    "src/ui/garage-thumbnails.js": "23f577150ebb18f9bdeebf9d71eba8e791a7e29ce95146bd4475116009d2fc66",
+    "src/ui/graphics-onboarding.js": "f6a92ef4e1e37032b15606084a0d5038d4c560ad2e7ae7c372fbb1169b575a2c",
+    "src/ui/headunit.css": "9eb9784401cbad2232dea36e9ee738c70bf5921200d247e099bb5d897087f77b",
+    "src/ui/hosts.js": "f3cd072fa3ee07059d82b5957fc619dc548d8f98afdb6491ac7bd1835e165ad5",
+    "src/ui/legal-links.js": "17b9d88ea3fac90c8785353a7ae24c6a4ad1c14a918102799a85707b7cb3d35a",
+    "src/ui/live-board.js": "a39cde75efb7d55d83cd4fa94160500022af7fe0e1f0d32ef5aa304b2de688eb",
+    "src/ui/loading-content.js": "3845781894725406dffc2d72ec52855a953cb4d908bdde076e87622158466982",
+    "src/ui/loading.js": "69b6b5fe5d171c49e89fa51b1daa2477e451ba02d37f098f231c99877de82a19",
+    "src/ui/lobby-setup.js": "14ed1ce547940425ea1625857bdf2b640805e866c4929175d63efd3a82590f31",
+    "src/ui/mp-loader.js": "27b815e2619139d7677389291ad2c373caf71efae64e217c38e29c0052f6b78d",
+    "src/ui/mp-screens.js": "eab273b86966e3b43f0295fddf0a7ecffc19218c634675db6865ff618317e561",
+    "src/ui/notice-style.js": "2f155fdd11180671a3f971c599ac390f10e43f1678805f7ecab95fd4d6b4edbc",
+    "src/ui/notification-queue.js": "30693f69bdf66b422b095ed5a893863f362fd37b87ff4013cd6c58c9a6b1f3f9",
+    "src/ui/notifications.css": "342666e1001c57f07bac0a0e1c55969ec93090843c90f0a0ecb54ed946e2ae00",
+    "src/ui/notifications.js": "3b018b935161baf546e6274264d12f071da1ae5ad73de7cdf36b66b498b9b90e",
+    "src/ui/objective-notice.js": "5da9c36b6bec1359eceedaf65d03827553ef719229128d27f7f24865dd5866a3",
+    "src/ui/release-screens.js": "baf551055bde1e6c93395c7c6c82fbc8721be447ceae96c40ca9adcfd7479244",
+    "src/ui/release.css": "052df586b29b3e4b765b27c6d71aaca7c007bb94e724b47747911cc9fcbc90ec",
+    "src/ui/settings-access.js": "6be076a3812507ee6f9479bbb0a267e12faeccf9125d482297adfddbb7697153",
+    "src/ui/telltales.js": "da47ae034e5edbf1919f6aca97bb414a2857d847964fb638d75c8fab0af1037c",
+    "src/ui/tip-schedule.js": "0aecfb9faea8b02c89d3afb2bf12170a8b7bd82b3b2caccb681eac64b8d339d0",
+    "src/ui/title-hero.js": "3e2d3a4765125392b344d4a9336d924327e64ba7d847c13d7af5c0c6e0e103fa",
+    "src/ui/ui.css": "7fe448f779c30eca6d8149654daf3e44e4164dc99ed0f3a07fa71bdb17b97e3b",
+    "src/ui/vehicle-framing.js": "7c773c6f2045e5bd3dba9057a86a50682d4319a8b02d209d9a6a5a6f9da31c63",
+    "src/unified-routes.js": "7cabb8e5abba655cb5125a76e85a02c9576f8f42f4c4391625b27185b1a9d5b5",
+    "src/util.js": "59b767bab8969e01580366f23986f4f686faf46d5e27f411b5f8d83e8c18e7f3",
+    "src/vegetation-clearance.js": "b1f6f3481b3f0f9d318cf63822dea4e1dbb8dce280e17cd6d4482e1441647a0c",
+    "src/vegetation-fade.js": "1a2f012de93ab441330299c8821647351c07a82e16f8133710617c554155c487",
+    "src/vegetation-forest.js": "1ab9bc3d7280c862a95c2df9fadaa65fc6034c6d9e1670c2a1524628f3ddf642",
+    "src/vehicle-budgets.js": "23126f4bd9d1324d46c42581ba97128b7b6296675988f88ba289018ba3c2c82a",
+    "src/vehicle-cabin-envelope.js": "a71de5d4d325a56b7f9dc0366c55de89c48a653c4a7248710fdb232fba5c29a9",
+    "src/vehicle-cabin.js": "db1818ef5d01828acaae910a1bdaacb79a5caa3e69e29c9ee5cbb45193fb452c",
+    "src/vehicle-camera.js": "12865245bdf8cb38a202a58cb1672e1801da92b372f3c9f7cea62aab973fd9f0",
+    "src/vehicle-distance.js": "d5475e30a260952fff9f97ae50576c028a39e7102b7371b8725f32cc0c46ea93",
+    "src/vehicle-lod.js": "cadccd7d836709d6b4a6219cf21d5640ebfa64cae4999c59d1da3bb2d47a8593",
+    "src/vehicle-mirrors.js": "f09cfde3b710c11239c4f9190dcf1fcf89a269c6d4ee4031d3d90e50c6ead9b3",
+    "src/vehicle-models.js": "38aed773a0668d1f25b861f729dd744d89b35a78381b6926f689253a22f6017a",
+    "src/vehicle-paint.js": "6e2f8f7a17352a9699f45bf2038f237c3d4d935df9889baf7a1066638e2ccdcd",
+    "src/vehicle-primitives.js": "29adf5b1361aed0bd08d30e8183f2768bcca5472933f5712b21b3f9da6580d14",
+    "src/vehicle-styling.js": "9063fab901404aaa69a670ff990958ed444776f80a38385518d49bfaf7234eef",
+    "src/vehicle-wheel.js": "8906057e03544025245e95fafa940637796e0dcfe2f5645059847000e807039c",
+    "src/voice-lines.js": "c01dcba3821df1b61d87491883ce6b40f1a4e3707586bfc85a7ba71537bc425d",
+    "src/voice.js": "1a7d446fc00141fc6a6cca9e26da157ecdede257587965e650bc39394da5abcd",
+    "src/weather-audio.js": "523c46edc9a9f6e10307f3f4ca75bd790751ca5edd05119b46b090ad304eefaa",
+    "src/weather.js": "73a9ce7dfa9bff6b19b686d101ea52a7a8f9c9fc2766bc928878eb20cba64946",
+    "src/wet-grip.js": "5e35768ff25125ae658a9b364c80196b34bcb84a5db0d9aaf4a89bf6a70f785f",
+    "src/wheel-ground.js": "8270b6d443231ef6ae1cf655f20fb0fcfd42b96504520e7797077f732feff044",
+    "src/world-art-direction.js": "b064afdd6b701f551e78ad0c163fe6fd8ce834d9a89d98a7335f801e99a5df52",
+    "src/world-context.js": "dccf533bed1a48814f43119bb07db8f1091622f9645d6f92317f1d83ef8fe1b4",
+    "src/world-detail-policy.js": "bc06c4202a8dbe2aac086d4ab3d606aa64f2b0f3fc719bf6fb57772f0235f65e",
+    "src/world-detail-state.js": "68b0bd6e470e6d0dc2da5d5468c34000bec0514c4b376ba66409c55a112d9416",
+    "src/world-detail.js": "3ec3124347d45038dabd6acc6624beff2f53e3e42213323927fb971e1893caab",
+    "src/world-download.js": "4c45caed60781bf49acf3abf5f88bdcbf20de8609760404717ad8814acb2a64c",
+    "src/world-life-runtime.js": "6a20efe185d20345d8f977620ab9cd282e7b26d24e36b23a539de4c248632840",
+    "src/world-life.js": "f84da162791f9af131f0d93e8dea4715bb5832d14691c6b24c4afc1aa7b84b6e",
+    "src/world-manifest.js": "157cf59d79e6f8892571babca1a22fe809d488e47b9f0d23faa7583f8880821a",
+    "src/world-minimap.js": "ce6d9c876e22d0adbb5a4831739b312705044b623515b65f1cdf75a876ac2297",
+    "src/world-prop-geometries.js": "716fd3368e57a315692ebcf5610adc51fb1f342f74fcfcc090bfefe3e564aaa4",
+    "src/world-psychiko-detail.js": "cdf578d3afc06e49a3623a9a5e748019b17a8b39758a123094d8219ae4919fd1",
+    "src/world-recovery.js": "80dab0526e8d8afc3f5f4fe8afa3b84055c1ec9060a4f0d62fa95a71df584785",
+    "src/world-regional-scenery.js": "4f8c1b1c6670c44d1e9df0cfac992ef2afa0538c56140f5af5780cc5bc6086c1",
+    "src/world-resource-usage.js": "99c4ba34c82fc37d5cfc270c1d5741769e804839eba3268cd03193bb61a5c8ba",
+    "src/world-road-group.js": "355fe48d84e9075da03d3e9e82cd5eb86fbde40358df89506adfa1304bf024b6",
+    "src/world-selection.js": "8b70bd88e0a89bf6ddc21e7836b38bff732522b53facd22dd2d9aa0329f14588",
+    "src/world-session.js": "4459bfd8bc18b539ff411fc26a7eea336faded0f9985afbad9d4306a873dbd10",
+    "src/world-signals.js": "a4a928ed5cc08bc2b44e957e9161e6035360ebd1167869310a0a025fbe1785e0",
+    "src/world-sounds.js": "9ffcc475fb902b4f22ad1f8e21e4e70c350155b9bd0529caf6df52c490d7a419",
+    "src/world-tile-asphalt.js": "5ad760f8a801812919b0777eb843233dc46e5b212ceedb4b33fb2d2ea57674b9",
+    "src/world-tile-barriers.js": "bc4a91740c7d4bb4de64ea64533f5d3cefdebab78d542e289c7e34144713f6d3",
+    "src/world-tile-buildings.js": "01ed8e7ef2eaf1f2e6429247db8a70773827bd192348379d14199e8baf71493d",
+    "src/world-tile-coast-bores.js": "0eda181e28d2d59227b88f5cf0684c9025e25261771716b4a91234d1571a46d2",
+    "src/world-tile-coast.js": "ad7793ff0f7f3803f62983bd2341e9f1d53f9e24a9d80110eb19e03de8485406",
+    "src/world-tile-codec.js": "862ca7bbab99c2de47153dfbb0d1c6321f43f1c92ebe58d8de0cd872f8487717",
+    "src/world-tile-contact.js": "e11c73c6b5c09601bb8afdee6111d241e730c5aee7a77d3b2770d1790573c362",
+    "src/world-tile-dressing.js": "cfc88fd3b540a52b48ed209a12d0ee789dda82c8e282c41a74c7991ba5473ef8",
+    "src/world-tile-flag.js": "32eaaca56230e75631e1c27a97913050f78f9554716c785ae804147bac88f843",
+    "src/world-tile-format.js": "56800180d50db23c63276cc4609d4f3d7dbebd4530bd2cc1961ff5ccb418662f",
+    "src/world-tile-gpu.js": "4532b04e0e44fe9091d52490eafdf33af634cca5768c835d6e0ace0c471cbfbf",
+    "src/world-tile-graph.js": "3aa22bdf99b0457642cb8831930b53c2b8e0984c73eaf4b6d5a32024a3dc9807",
+    "src/world-tile-ground.js": "697500fef1f8cb2f3e884bd7db0a7a0bf3d2667194be19dd71c48790af7b4061",
+    "src/world-tile-legacy.js": "c2d2cd84ce0453c8e615ca6d13751449d038738b387f1c071131c07814604c3d",
+    "src/world-tile-obstacles.js": "e3b6edda5f614dcdea075075594c34faeb2450e0dafc8a72f325c3592d821797",
+    "src/world-tile-parking.js": "77767451675ec29b36752546d63fbd26c0bda4326157688e8ff2ad98c7df769f",
+    "src/world-tile-psychiko.js": "dc36fcccec25f794125521cfc7732e3121e53dd8d54e717b0cd29ab263d29931",
+    "src/world-tile-roads.js": "1499ad4bb59dbd5ac43f63e5761f83193f543feafd99b2a0a4b567e67dd81422",
+    "src/world-tile-scene.js": "6e088bbf75623f7dca4ab753f18a55a91bab1bf78b16739ef53ca8fc0f8e0397",
+    "src/world-tile-stream.js": "78917443dc0f6596f2ad4e1b7a0bb85648c3b06cd8d2556b6e017ba7490fc400",
+    "src/world-tile-street-art.js": "bb26156d51c1ee38eede18edfb179c00ce41cc4a7b32d0d00df472e560df3c76",
+    "src/world-tile-surface-cache.js": "b64a4c237c2fcd6817c75cfd92aa52069260893ced1525db5ae3756d36891399",
+    "src/world-tile-trees.js": "0ce457d8f3a3467beb4a7a67343867956028414bf9a06913b61b5961a71d4c03",
+    "src/world-tile-worker.js": "79cc9cfa461b6277708708e9137565a18438ebbae77b62743e1b5edfec4babbf",
+    "src/world-traffic.js": "29c330cab8bf2f04ea274dfa3803ccb55e1e7e537ed5e491df938021d97828de",
+    "src/world-worker.js": "ccb8c5d90d5a1b2cc5cfaef54711caefc18b797ac7469fc9e6ff69637b25c6c7",
+    "style.css": "53333b789bfe3363e2514e52ea42e08378af436ac3f5cd56afba4be3a9cfc895"
+  },
+  "errors": [],
+  "consoleErrors": [],
+  "runs": [
+    {
+      "quality": "low",
+      "case": "500-surface",
+      "camera": {
+        "position": [
+          4701.523459205332,
+          11.756925763426436,
+          19099.484095999986
+        ],
+        "lookAt": [
+          4773.723637972022,
+          11.756925763426436,
+          19168.67321498598
+        ],
+        "fov": 64.0107664
+      },
+      "frames": [],
+      "httpFailures": [
+        {
+          "url": "http://127.0.0.1:34421/world/cells/4580b406031e72c1c450a821c3c919e73db75ce152e6c2a3ab0ca9d0885a6fe8.bin.gz",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:34421/world/cells/8787aa40013e51a225b55a56b11c824007ada2fdc1d76a76772e423c46246ad4.bin.gz",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:34421/world/cells/bfb75df53a9398c52ef2b645d41dfc62798d4f628753a31acf3d8f4ae94b547f.bin.gz",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:34421/world/cells/8056d040145d13b70920882d43e419c160e53a3b49bf8592f3ea603973529e3a.bin.gz",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:34421/world/cells/33352965f3b5f949e1f11da12886f37d82e1ae3c77a8a2f5e19b6731a959c0b2.bin.gz",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:34421/world/cells/3002a7597889865c7bae135821a012500cb85e236785febad5ea78d015ab19fd.bin.gz",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "http://127.0.0.1:34421/api/auth/session",
+          "error": "net::ERR_ABORTED"
+        }
+      ],
+      "readiness": {
+        "ready": true,
+        "history": [
+          {
+            "elapsedMs": 829,
+            "playerXYZ": [
+              4700.10934395296,
+              9.19763958225593,
+              19099.931063413722
+            ],
+            "speed": 0,
+            "streamPosition": {
+              "x": 4700.10934395296,
+              "z": 19099.931063413722
+            },
+            "origin": {
+              "x": 4608,
+              "z": 18944
+            },
+            "groundReady": true,
+            "simulationSeconds": 0.004166666666666667,
+            "holds": 0,
+            "missingContacts": 0,
+            "loading": {
+              "opacity": "1",
+              "display": "block"
+            },
+            "footprint": [
+              {
+                "x": 4700.2106806548045,
+                "z": 19096.497098777494,
+                "ready": true,
+                "contact": {
+                  "y": 9.24778029193794,
+                  "nx": 0.037989139556884766,
+                  "nz": -0.013636350631713867,
+                  "flags": 1,
+                  "layer": 0,
+                  "surface": 16,
+                  "surfaceId": "surface:w328525144:0",
+                  "tile": "9,37"
+                }
+              },
+              {
+                "x": 4699.147104328863,
+                "z": 19096.826776876398,
+                "ready": true,
+                "contact": {
+                  "y": 9.202880336310095,
+                  "nx": 0.037989139556884766,
+                  "nz": -0.013636350631713867,
+                  "flags": 1,
+                  "layer": 0,
+                  "surface": 16,
+                  "surfaceId": "surface:w328525144:0",
+                  "tile": "9,37"
+                }
+              },
+              {
+                "x": 4698.083528002921,
+                "z": 19097.156454975302,
+                "ready": true,
+                "contact": {
+                  "y": 9.157980380682252,
+                  "nx": 0.037989139556884766,
+                  "nz": -0.013636350631713867,
+                  "flags": 1,
+                  "layer": 0,
+                  "surface": 16,
+                  "surfaceId": "surface:w328525144:0",
+                  "tile": "9,37"
+                }
+              },
+              {
+                "x": 4701.172920278902,
+                "z": 19099.601385314818,
+                "ready": true,
+                "contact": {
+                  "y": 9.242008330537253,
+                  "nx": 0.037994980812072754,
+                  "nz": -0.013630509376525879,
+                  "flags": 1,
+                  "layer": 0,
+                  "surface": 16,
+                  "surfaceId": "surface:w328525144:0",
+                  "tile": "9,37"
+                }
+              },
+              {
+                "x": 4700.10934395296,
+                "z": 19099.931063413722,
+                "ready": true,
+                "contact": {
+                  "y": 9.197104088022584,
+                  "nx": 0.037994980812072754,
+                  "nz": -0.013630509376525879,
+                  "flags": 1,
+                  "layer": 0,
+                  "surface": 16,
+                  "surfaceId": "surface:w328525144:0",
+                  "tile": "9,37"
+                }
+              },
+              {
+                "x": 4699.045767627019,
+                "z": 19100.260741512626,
+                "ready": true,
+                "contact": {
+                  "y": 9.152203896365,
+                  "nx": 0.037989139556884766,
+                  "nz": -0.013636350631713867,
+                  "flags": 1,
+                  "layer": 0,
+                  "surface": 16,
+                  "surfaceId": "surface:w328525144:0",
+                  "tile": "9,37"
+                }
+              },
+              {
+                "x": 4702.1351599029995,
+                "z": 19102.70567185214,
+                "ready": true,
+                "contact": {
+                  "y": 9.236255599837039,
+                  "nx": 0.037994980812072754,
+                  "nz": -0.013630509376525879,
+                  "flags": 1,
+                  "layer": 0,
+                  "surface": 16,
+                  "surfaceId": "surface:w328525144:0",
+                  "tile": "9,37"
+                }
+              },
+              {
+                "x": 4701.071583577058,
+                "z": 19103.035349951046,
+                "ready": true,
+                "contact": {
+                  "y": 9.191351357322368,
+                  "nx": 0.037994980812072754,
+                  "nz": -0.013630509376525879,
+                  "flags": 1,
+                  "layer": 0,
+                  "surface": 16,
+                  "surfaceId": "surface:w328525144:0",
+                  "tile": "9,37"
+                }
+              },
+              {
+                "x": 4700.008007251116,
+                "z": 19103.36502804995,
+                "ready": true,
+                "contact": {
+                  "y": 9.1464471148077,
+                  "nx": 0.037994980812072754,
+                  "nz": -0.013630509376525879,
+                  "flags": 1,
+                  "layer": 0,
+                  "surface": 16,
+                  "surfaceId": "surface:w328525144:0",
+                  "tile": "9,37"
+                }
+              }
+            ],
+            "cells": [
+              {
+                "key": "8,36",
+                "entry": {
+                  "url": "/world/cells/4e7a847351793ebd994bcd2095cdba0e20340c3ae2a171251c6ce7f6d0ef2c70.bin.gz",
+                  "sha256": "4e7a847351793ebd994bcd2095cdba0e20340c3ae2a171251c6ce7f6d0ef2c70",
+                  "bytes": 172002,
+                  "decodedBytes": 2444773,
+                  "residentBytes": 1439804,
+                  "transientBytes": 5061548,
+                  "dependencies": [],
+                  "triangles": 15486,
+                  "contactEligible": true,
+                  "source": {
+                    "regionId": "basin",
+                    "world": "athens-east-development",
+                    "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+                  }
+                },
+                "priority": 11,
+                "pinned": false,
+                "state": "ready",
+                "hasPacket": true,
+                "hasBuild": true,
+                "hasHandle": false,
+                "attempts": 1,
+                "error": null,
+                "packet": {
+                  "world": "athens-east-development",
+                  "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+                  "cell": [
+                    8,
+                    36
+                  ],
+                  "origin": [
+                    4096,
+                    0,
+                    18432
+                  ]
+                }
+              },
+              {
+                "key": "8,37",
+                "entry": {
+                  "url": "/world/cells/cac0c58f978fb2e831b7195289e6f4b3e55d3ee9aad7124961758655149b9cba.bin.gz",
+                  "sha256": "cac0c58f978fb2e831b7195289e6f4b3e55d3ee9aad7124961758655149b9cba",
+                  "bytes": 28471,
+                  "decodedBytes": 661423,
+                  "residentBytes": 367049,
+                  "transientBytes": 1351317,
+                  "dependencies": [],
+                  "triangles": 3743,
+                  "contactEligible": true,
+                  "source": {
+                    "regionId": "basin",
+                    "world": "athens-east-development",
+                    "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+                  }
+                },
+                "priority": 11,
+                "pinned": false,
+                "state": "ready",
+                "hasPacket": true,
+                "hasBuild": false,
+                "hasHandle": false,
+                "attempts": 1,
+                "error": null,
+                "packet": {
+                  "world": "athens-east-development",
+                  "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+                  "cell": [
+                    8,
+                    37
+                  ],
+                  "origin": [
+                    4096,
+                    0,
+                    18944
+                  ]
+                }
+              },
+              {
+                "key": "8,38",
+                "entry": {
+                  "url": "/world/cells/54cfc308dfe9a7d35b495322f5f7b087779aeacd5d4e89c5cae9e4d1ea7f07fd.bin.gz",
+                  "sha256": "54cfc308dfe9a7d35b495322f5f7b087779aeacd5d4e89c5cae9e4d1ea7f07fd",
+                  "bytes": 15685,
+                  "decodedBytes": 528736,
+                  "residentBytes": 279892,
+                  "transientBytes": 1073157,
+                  "dependencies": [],
+                  "triangles": 2987,
+                  "contactEligible": true,
+                  "source": {
+                    "regionId": "basin",
+                    "world": "athens-east-development",
+                    "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+                  }
+                },
+                "priority": 11,
+                "pinned": false,
+                "state": "ready",
+                "hasPacket": true,
+                "hasBuild": false,
+                "hasHandle": false,
+                "attempts": 1,
+                "error": null,
+                "packet": {
+                  "world": "athens-east-development",
+                  "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+                  "cell": [
+                    8,
+                    38
+                  ],
+                  "origin": [
+                    4096,
+                    0,
+                    19456
+                  ]
+                }
+              },
+              {
+                "key": "9,36",
+                "entry": {
+                  "url": "/world/cells/0d1886f2ed44104f227ed18d932f6a6d7cd2a40186de68943654b023cc767898.bin.gz",
+                  "sha256": "0d1886f2ed44104f227ed18d932f6a6d7cd2a40186de68943654b023cc767898",
+                  "bytes": 240979,
+                  "decodedBytes": 3406060,
+                  "residentBytes": 2056239,
+                  "transientBytes": 7053099,
+                  "dependencies": [],
+                  "triangles": 23405,
+                  "contactEligible": true,
+                  "source": {
+                    "regionId": "basin",
+                    "world": "athens-east-development",
+                    "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+                  }
+                },
+                "priority": 11,
+                "pinned": false,
+                "state": "ready",
+                "hasPacket": true,
+                "hasBuild": false,
+                "hasHandle": false,
+                "attempts": 1,
+                "error": null,
+                "packet": {
+                  "world": "athens-east-development",
+                  "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+                  "cell": [
+                    9,
+                    36
+                  ],
+                  "origin": [
+                    4608,
+                    0,
+                    18432
+                  ]
+                }
+              },
+              {
+                "key": "9,37",
+                "entry": {
+                  "url": "/world/cells/8056d040145d13b70920882d43e419c160e53a3b49bf8592f3ea603973529e3a.bin.gz",
+                  "sha256": "8056d040145d13b70920882d43e419c160e53a3b49bf8592f3ea603973529e3a",
+                  "bytes": 224844,
+                  "decodedBytes": 4007374,
+                  "residentBytes": 2626935,
+                  "transientBytes": 8239592,
+                  "dependencies": [],
+                  "triangles": 26108,
+                  "contactEligible": true,
+                  "source": {
+                    "regionId": "basin",
+                    "world": "athens-east-development",
+                    "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+                  }
+                },
+                "priority": -0.5,
+                "pinned": false,
+                "state": "active",
+                "hasPacket": true,
+                "hasBuild": true,
+                "hasHandle": true,
+                "attempts": 1,
+                "error": null,
+                "packet": {
+                  "world": "athens-east-development",
+                  "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+                  "cell": [
+                    9,
+                    37
+                  ],
+                  "origin": [
+                    4608,
+                    0,
+                    18944
+                  ]
+                }
+              },
+              {
+                "key": "9,38",
+                "entry": {
+                  "url": "/world/cells/895342479667a107f59d620003174dfd66f6c821b04cbbd9d410d777c8a7c647.bin.gz",
+                  "sha256": "895342479667a107f59d620003174dfd66f6c821b04cbbd9d410d777c8a7c647",
+                  "bytes": 142615,
+                  "decodedBytes": 2083861,
+                  "residentBytes": 1150428,
+                  "transientBytes": 4310337,
+                  "dependencies": [],
+                  "triangles": 13677,
+                  "contactEligible": true,
+                  "source": {
+                    "regionId": "basin",
+                    "world": "athens-east-development",
+                    "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+                  }
+                },
+                "priority": 11,
+                "pinned": false,
+                "state": "ready",
+                "hasPacket": true,
+                "hasBuild": false,
+                "hasHandle": false,
+                "attempts": 1,
+                "error": null,
+                "packet": {
+                  "world": "athens-east-development",
+                  "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+                  "cell": [
+                    9,
+                    38
+                  ],
+                  "origin": [
+                    4608,
+                    0,
+                    19456
+                  ]
+                }
+              },
+              {
+                "key": "10,36",
+                "entry": {
+                  "url": "/world/cells/33352965f3b5f949e1f11da12886f37d82e1ae3c77a8a2f5e19b6731a959c0b2.bin.gz",
+                  "sha256": "33352965f3b5f949e1f11da12886f37d82e1ae3c77a8a2f5e19b6731a959c0b2",
+                  "bytes": 64241,
+                  "decodedBytes": 1091566,
+                  "residentBytes": 703619,
+                  "transientBytes": 2247373,
+                  "dependencies": [],
+                  "triangles": 6820,
+                  "contactEligible": true,
+                  "source": {
+                    "regionId": "basin",
+                    "world": "athens-east-development",
+                    "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+                  }
+                },
+                "priority": 11,
+                "pinned": false,
+                "state": "ready",
+                "hasPacket": true,
+                "hasBuild": false,
+                "hasHandle": false,
+                "attempts": 1,
+                "error": null,
+                "packet": {
+                  "world": "athens-east-development",
+                  "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+                  "cell": [
+                    10,
+                    36
+                  ],
+                  "origin": [
+                    5120,
+                    0,
+                    18432
+                  ]
+                }
+              },
+              {
+                "key": "10,37",
+                "entry": {
+                  "url": "/world/cells/2f6619d10a9cf2cd43d6bb1b78a6286112a8ea989bb56126f2e40d33f46f8c4c.bin.gz",
+                  "sha256": "2f6619d10a9cf2cd43d6bb1b78a6286112a8ea989bb56126f2e40d33f46f8c4c",
+                  "bytes": 23825,
+                  "decodedBytes": 524208,
+                  "residentBytes": 323277,
+                  "transientBytes": 1072241,
+                  "dependencies": [],
+                  "triangles": 2944,
+                  "contactEligible": true,
+                  "source": {
+                    "regionId": "basin",
+                    "world": "athens-east-development",
+                    "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+                  }
+                },
+                "priority": 11,
+                "pinned": false,
+                "state": "ready",
+                "hasPacket": true,
+                "hasBuild": false,
+                "hasHandle": false,
+                "attempts": 1,
+                "error": null,
+                "packet": {
+                  "world": "athens-east-development",
+                  "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+                  "cell": [
+                    10,
+                    37
+                  ],
+                  "origin": [
+                    5120,
+                    0,
+                    18944
+                  ]
+                }
+              },
+              {
+                "key": "10,38",
+                "entry": {
+                  "url": "/world/cells/3002a7597889865c7bae135821a012500cb85e236785febad5ea78d015ab19fd.bin.gz",
+                  "sha256": "3002a7597889865c7bae135821a012500cb85e236785febad5ea78d015ab19fd",
+                  "bytes": 87281,
+                  "decodedBytes": 1361666,
+                  "residentBytes": 797397,
+                  "transientBytes": 2810613,
+                  "dependencies": [],
+                  "triangles": 8391,
+                  "contactEligible": true,
+                  "source": {
+                    "regionId": "basin",
+                    "world": "athens-east-development",
+                    "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+                  }
+                },
+                "priority": 11,
+                "pinned": false,
+                "state": "ready",
+                "hasPacket": true,
+                "hasBuild": false,
+                "hasHandle": false,
+                "attempts": 1,
+                "error": null,
+                "packet": {
+                  "world": "athens-east-development",
+                  "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+                  "cell": [
+                    10,
+                    38
+                  ],
+                  "origin": [
+                    5120,
+                    0,
+                    19456
+                  ]
+                }
+              }
+            ],
+            "stream": {
+              "capBytes": 60893308,
+              "transientCap": 67108864,
+              "residentBytes": 29553514,
+              "reservedBytes": 0,
+              "transientBytes": 0,
+              "inflight": 0,
+              "metrics": {
+                "failures": 0,
+                "evictions": 0,
+                "loadedBytes": 3109043,
+                "maxActivationMs": 3.0999999940395355,
+                "activationStepMax": {
+                  "gpu-allocation": 1.199999988079071,
+                  "gpu-upload": 0.19999998807907104,
+                  "mesh": 2.0999999940395355,
+                  "graph": 0.4000000059604645,
+                  "adapter": 0.20000001788139343,
+                  "houses": 0.09999999403953552,
+                  "props": 0.6000000238418579,
+                  "trees": 3.0999999940395355,
+                  "signs": 0.30000001192092896,
+                  "marks": 0.19999998807907104,
+                  "landmarks": 0.09999999403953552,
+                  "plazas": 0,
+                  "lawns": 0,
+                  "commit": 0.30000001192092896
+                }
+              }
+            }
+          },
+          {
+            "elapsedMs": 3308.2999999821186,
+            "playerXYZ": [
+              4700.10934395296,
+              9.19763958225593,
+              19099.931063413722
+            ],
+            "speed": 0,
+            "streamPosition": {
+              "x": 4700.10934395296,
+              "z": 19099.931063413722
+            },
+            "origin": {
+              "x": 4608,
+              "z": 18944
+            },
+            "groundReady": true,
+            "simulationSeconds": 0.049999999999999996,
+            "holds": 0,
+            "missingContacts": 0,
+            "loading": {
+              "opacity": "0",
+              "display": "block"
+            },
+            "footprint": [
+              {
+                "x": 4700.2106806548045,
+                "z": 19096.497098777494,
+                "ready": true,
+                "contact": {
+                  "y": 9.24778029193794,
+                  "nx": 0.037989139556884766,
+                  "nz": -0.013636350631713867,
+                  "flags": 1,
+                  "layer": 0,
+                  "surface": 16,
+                  "surfaceId": "surface:w328525144:0",
+                  "tile": "9,37"
+                }
+              },
+              {
+                "x": 4699.147104328863,
+                "z": 19096.826776876398,
+                "ready": true,
+                "contact": {
+                  "y": 9.202880336310095,
+                  "nx": 0.037989139556884766,
+                  "nz": -0.013636350631713867,
+                  "flags": 1,
+                  "layer": 0,
+                  "surface": 16,
+                  "surfaceId": "surface:w328525144:0",
+                  "tile": "9,37"
+                }
+              },
+              {
+                "x": 4698.083528002921,
+                "z": 19097.156454975302,
+                "ready": true,
+                "contact": {
+                  "y": 9.157980380682252,
+                  "nx": 0.037989139556884766,
+                  "nz": -0.013636350631713867,
+                  "flags": 1,
+                  "layer": 0,
+                  "surface": 16,
+                  "surfaceId": "surface:w328525144:0",
+                  "tile": "9,37"
+                }
+              },
+              {
+                "x": 4701.172920278902,
+                "z": 19099.601385314818,
+                "ready": true,
+                "contact": {
+                  "y": 9.242008330537253,
+                  "nx": 0.037994980812072754,
+                  "nz": -0.013630509376525879,
+                  "flags": 1,
+                  "layer": 0,
+                  "surface": 16,
+                  "surfaceId": "surface:w328525144:0",
+                  "tile": "9,37"
+                }
+              },
+              {
+                "x": 4700.10934395296,
+                "z": 19099.931063413722,
+                "ready": true,
+                "contact": {
+                  "y": 9.197104088022584,
+                  "nx": 0.037994980812072754,
+                  "nz": -0.013630509376525879,
+                  "flags": 1,
+                  "layer": 0,
+                  "surface": 16,
+                  "surfaceId": "surface:w328525144:0",
+                  "tile": "9,37"
+                }
+              },
+              {
+                "x": 4699.045767627019,
+                "z": 19100.260741512626,
+                "ready": true,
+                "contact": {
+                  "y": 9.152203896365,
+                  "nx": 0.037989139556884766,
+                  "nz": -0.013636350631713867,
+                  "flags": 1,
+                  "layer": 0,
+                  "surface": 16,
+                  "surfaceId": "surface:w328525144:0",
+                  "tile": "9,37"
+                }
+              },
+              {
+                "x": 4702.1351599029995,
+                "z": 19102.70567185214,
+                "ready": true,
+                "contact": {
+                  "y": 9.236255599837039,
+                  "nx": 0.037994980812072754,
+                  "nz": -0.013630509376525879,
+                  "flags": 1,
+                  "layer": 0,
+                  "surface": 16,
+                  "surfaceId": "surface:w328525144:0",
+                  "tile": "9,37"
+                }
+              },
+              {
+                "x": 4701.071583577058,
+                "z": 19103.035349951046,
+                "ready": true,
+                "contact": {
+                  "y": 9.191351357322368,
+                  "nx": 0.037994980812072754,
+                  "nz": -0.013630509376525879,
+                  "flags": 1,
+                  "layer": 0,
+                  "surface": 16,
+                  "surfaceId": "surface:w328525144:0",
+                  "tile": "9,37"
+                }
+              },
+              {
+                "x": 4700.008007251116,
+                "z": 19103.36502804995,
+                "ready": true,
+                "contact": {
+                  "y": 9.1464471148077,
+                  "nx": 0.037994980812072754,
+                  "nz": -0.013630509376525879,
+                  "flags": 1,
+                  "layer": 0,
+                  "surface": 16,
+                  "surfaceId": "surface:w328525144:0",
+                  "tile": "9,37"
+                }
+              }
+            ],
+            "cells": [
+              {
+                "key": "8,36",
+                "entry": {
+                  "url": "/world/cells/4e7a847351793ebd994bcd2095cdba0e20340c3ae2a171251c6ce7f6d0ef2c70.bin.gz",
+                  "sha256": "4e7a847351793ebd994bcd2095cdba0e20340c3ae2a171251c6ce7f6d0ef2c70",
+                  "bytes": 172002,
+                  "decodedBytes": 2444773,
+                  "residentBytes": 1439804,
+                  "transientBytes": 5061548,
+                  "dependencies": [],
+                  "triangles": 15486,
+                  "contactEligible": true,
+                  "source": {
+                    "regionId": "basin",
+                    "world": "athens-east-development",
+                    "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+                  }
+                },
+                "priority": 11,
+                "pinned": false,
+                "state": "active",
+                "hasPacket": true,
+                "hasBuild": true,
+                "hasHandle": true,
+                "attempts": 1,
+                "error": null,
+                "packet": {
+                  "world": "athens-east-development",
+                  "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+                  "cell": [
+                    8,
+                    36
+                  ],
+                  "origin": [
+                    4096,
+                    0,
+                    18432
+                  ]
+                }
+              },
+              {
+                "key": "8,37",
+                "entry": {
+                  "url": "/world/cells/cac0c58f978fb2e831b7195289e6f4b3e55d3ee9aad7124961758655149b9cba.bin.gz",
+                  "sha256": "cac0c58f978fb2e831b7195289e6f4b3e55d3ee9aad7124961758655149b9cba",
+                  "bytes": 28471,
+                  "decodedBytes": 661423,
+                  "residentBytes": 367049,
+                  "transientBytes": 1351317,
+                  "dependencies": [],
+                  "triangles": 3743,
+                  "contactEligible": true,
+                  "source": {
+                    "regionId": "basin",
+                    "world": "athens-east-development",
+                    "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+                  }
+                },
+                "priority": 11,
+                "pinned": false,
+                "state": "active",
+                "hasPacket": true,
+                "hasBuild": true,
+                "hasHandle": true,
+                "attempts": 1,
+                "error": null,
+                "packet": {
+                  "world": "athens-east-development",
+                  "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+                  "cell": [
+                    8,
+                    37
+                  ],
+                  "origin": [
+                    4096,
+                    0,
+                    18944
+                  ]
+                }
+              },
+              {
+                "key": "8,38",
+                "entry": {
+                  "url": "/world/cells/54cfc308dfe9a7d35b495322f5f7b087779aeacd5d4e89c5cae9e4d1ea7f07fd.bin.gz",
+                  "sha256": "54cfc308dfe9a7d35b495322f5f7b087779aeacd5d4e89c5cae9e4d1ea7f07fd",
+                  "bytes": 15685,
+                  "decodedBytes": 528736,
+                  "residentBytes": 279892,
+                  "transientBytes": 1073157,
+                  "dependencies": [],
+                  "triangles": 2987,
+                  "contactEligible": true,
+                  "source": {
+                    "regionId": "basin",
+                    "world": "athens-east-development",
+                    "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+                  }
+                },
+                "priority": 11,
+                "pinned": false,
+                "state": "active",
+                "hasPacket": true,
+                "hasBuild": true,
+                "hasHandle": true,
+                "attempts": 1,
+                "error": null,
+                "packet": {
+                  "world": "athens-east-development",
+                  "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+                  "cell": [
+                    8,
+                    38
+                  ],
+                  "origin": [
+                    4096,
+                    0,
+                    19456
+                  ]
+                }
+              },
+              {
+                "key": "9,36",
+                "entry": {
+                  "url": "/world/cells/0d1886f2ed44104f227ed18d932f6a6d7cd2a40186de68943654b023cc767898.bin.gz",
+                  "sha256": "0d1886f2ed44104f227ed18d932f6a6d7cd2a40186de68943654b023cc767898",
+                  "bytes": 240979,
+                  "decodedBytes": 3406060,
+                  "residentBytes": 2056239,
+                  "transientBytes": 7053099,
+                  "dependencies": [],
+                  "triangles": 23405,
+                  "contactEligible": true,
+                  "source": {
+                    "regionId": "basin",
+                    "world": "athens-east-development",
+                    "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+                  }
+                },
+                "priority": 11,
+                "pinned": false,
+                "state": "active",
+                "hasPacket": true,
+                "hasBuild": true,
+                "hasHandle": true,
+                "attempts": 1,
+                "error": null,
+                "packet": {
+                  "world": "athens-east-development",
+                  "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+                  "cell": [
+                    9,
+                    36
+                  ],
+                  "origin": [
+                    4608,
+                    0,
+                    18432
+                  ]
+                }
+              },
+              {
+                "key": "9,37",
+                "entry": {
+                  "url": "/world/cells/8056d040145d13b70920882d43e419c160e53a3b49bf8592f3ea603973529e3a.bin.gz",
+                  "sha256": "8056d040145d13b70920882d43e419c160e53a3b49bf8592f3ea603973529e3a",
+                  "bytes": 224844,
+                  "decodedBytes": 4007374,
+                  "residentBytes": 2626935,
+                  "transientBytes": 8239592,
+                  "dependencies": [],
+                  "triangles": 26108,
+                  "contactEligible": true,
+                  "source": {
+                    "regionId": "basin",
+                    "world": "athens-east-development",
+                    "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+                  }
+                },
+                "priority": -0.5,
+                "pinned": false,
+                "state": "active",
+                "hasPacket": true,
+                "hasBuild": true,
+                "hasHandle": true,
+                "attempts": 1,
+                "error": null,
+                "packet": {
+                  "world": "athens-east-development",
+                  "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+                  "cell": [
+                    9,
+                    37
+                  ],
+                  "origin": [
+                    4608,
+                    0,
+                    18944
+                  ]
+                }
+              },
+              {
+                "key": "9,38",
+                "entry": {
+                  "url": "/world/cells/895342479667a107f59d620003174dfd66f6c821b04cbbd9d410d777c8a7c647.bin.gz",
+                  "sha256": "895342479667a107f59d620003174dfd66f6c821b04cbbd9d410d777c8a7c647",
+                  "bytes": 142615,
+                  "decodedBytes": 2083861,
+                  "residentBytes": 1150428,
+                  "transientBytes": 4310337,
+                  "dependencies": [],
+                  "triangles": 13677,
+                  "contactEligible": true,
+                  "source": {
+                    "regionId": "basin",
+                    "world": "athens-east-development",
+                    "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+                  }
+                },
+                "priority": 11,
+                "pinned": false,
+                "state": "active",
+                "hasPacket": true,
+                "hasBuild": true,
+                "hasHandle": true,
+                "attempts": 1,
+                "error": null,
+                "packet": {
+                  "world": "athens-east-development",
+                  "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+                  "cell": [
+                    9,
+                    38
+                  ],
+                  "origin": [
+                    4608,
+                    0,
+                    19456
+                  ]
+                }
+              },
+              {
+                "key": "10,36",
+                "entry": {
+                  "url": "/world/cells/33352965f3b5f949e1f11da12886f37d82e1ae3c77a8a2f5e19b6731a959c0b2.bin.gz",
+                  "sha256": "33352965f3b5f949e1f11da12886f37d82e1ae3c77a8a2f5e19b6731a959c0b2",
+                  "bytes": 64241,
+                  "decodedBytes": 1091566,
+                  "residentBytes": 703619,
+                  "transientBytes": 2247373,
+                  "dependencies": [],
+                  "triangles": 6820,
+                  "contactEligible": true,
+                  "source": {
+                    "regionId": "basin",
+                    "world": "athens-east-development",
+                    "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+                  }
+                },
+                "priority": 11,
+                "pinned": false,
+                "state": "ready",
+                "hasPacket": true,
+                "hasBuild": false,
+                "hasHandle": false,
+                "attempts": 1,
+                "error": null,
+                "packet": {
+                  "world": "athens-east-development",
+                  "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+                  "cell": [
+                    10,
+                    36
+                  ],
+                  "origin": [
+                    5120,
+                    0,
+                    18432
+                  ]
+                }
+              },
+              {
+                "key": "10,37",
+                "entry": {
+                  "url": "/world/cells/2f6619d10a9cf2cd43d6bb1b78a6286112a8ea989bb56126f2e40d33f46f8c4c.bin.gz",
+                  "sha256": "2f6619d10a9cf2cd43d6bb1b78a6286112a8ea989bb56126f2e40d33f46f8c4c",
+                  "bytes": 23825,
+                  "decodedBytes": 524208,
+                  "residentBytes": 323277,
+                  "transientBytes": 1072241,
+                  "dependencies": [],
+                  "triangles": 2944,
+                  "contactEligible": true,
+                  "source": {
+                    "regionId": "basin",
+                    "world": "athens-east-development",
+                    "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+                  }
+                },
+                "priority": 11,
+                "pinned": false,
+                "state": "ready",
+                "hasPacket": true,
+                "hasBuild": false,
+                "hasHandle": false,
+                "attempts": 1,
+                "error": null,
+                "packet": {
+                  "world": "athens-east-development",
+                  "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+                  "cell": [
+                    10,
+                    37
+                  ],
+                  "origin": [
+                    5120,
+                    0,
+                    18944
+                  ]
+                }
+              },
+              {
+                "key": "10,38",
+                "entry": {
+                  "url": "/world/cells/3002a7597889865c7bae135821a012500cb85e236785febad5ea78d015ab19fd.bin.gz",
+                  "sha256": "3002a7597889865c7bae135821a012500cb85e236785febad5ea78d015ab19fd",
+                  "bytes": 87281,
+                  "decodedBytes": 1361666,
+                  "residentBytes": 797397,
+                  "transientBytes": 2810613,
+                  "dependencies": [],
+                  "triangles": 8391,
+                  "contactEligible": true,
+                  "source": {
+                    "regionId": "basin",
+                    "world": "athens-east-development",
+                    "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+                  }
+                },
+                "priority": 11,
+                "pinned": false,
+                "state": "ready",
+                "hasPacket": true,
+                "hasBuild": false,
+                "hasHandle": false,
+                "attempts": 1,
+                "error": null,
+                "packet": {
+                  "world": "athens-east-development",
+                  "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+                  "cell": [
+                    10,
+                    38
+                  ],
+                  "origin": [
+                    5120,
+                    0,
+                    19456
+                  ]
+                }
+              }
+            ],
+            "stream": {
+              "capBytes": 60893308,
+              "transientCap": 67108864,
+              "residentBytes": 29553514,
+              "reservedBytes": 0,
+              "transientBytes": 0,
+              "inflight": 0,
+              "metrics": {
+                "failures": 0,
+                "evictions": 0,
+                "loadedBytes": 3109043,
+                "maxActivationMs": 3.0999999940395355,
+                "activationStepMax": {
+                  "gpu-allocation": 1.199999988079071,
+                  "gpu-upload": 0.19999998807907104,
+                  "mesh": 2.0999999940395355,
+                  "graph": 0.4000000059604645,
+                  "adapter": 0.20000001788139343,
+                  "houses": 0.09999999403953552,
+                  "props": 0.6000000238418579,
+                  "trees": 3.0999999940395355,
+                  "signs": 0.30000001192092896,
+                  "marks": 0.19999998807907104,
+                  "landmarks": 0.09999999403953552,
+                  "plazas": 0,
+                  "lawns": 0,
+                  "commit": 0.30000001192092896
+                }
+              }
+            }
+          }
+        ],
+        "last": {
+          "elapsedMs": 3651.2999999821186,
+          "playerXYZ": [
+            4700.10934395296,
+            9.19763958225593,
+            19099.931063413722
+          ],
+          "speed": 0,
+          "streamPosition": {
+            "x": 4700.10934395296,
+            "z": 19099.931063413722
+          },
+          "origin": {
+            "x": 4608,
+            "z": 18944
+          },
+          "groundReady": true,
+          "simulationSeconds": 0.08333333333333333,
+          "holds": 0,
+          "missingContacts": 0,
+          "loading": {
+            "opacity": "0",
+            "display": "block"
+          },
+          "footprint": [
+            {
+              "x": 4700.2106806548045,
+              "z": 19096.497098777494,
+              "ready": true,
+              "contact": {
+                "y": 9.24778029193794,
+                "nx": 0.037989139556884766,
+                "nz": -0.013636350631713867,
+                "flags": 1,
+                "layer": 0,
+                "surface": 16,
+                "surfaceId": "surface:w328525144:0",
+                "tile": "9,37"
+              }
+            },
+            {
+              "x": 4699.147104328863,
+              "z": 19096.826776876398,
+              "ready": true,
+              "contact": {
+                "y": 9.202880336310095,
+                "nx": 0.037989139556884766,
+                "nz": -0.013636350631713867,
+                "flags": 1,
+                "layer": 0,
+                "surface": 16,
+                "surfaceId": "surface:w328525144:0",
+                "tile": "9,37"
+              }
+            },
+            {
+              "x": 4698.083528002921,
+              "z": 19097.156454975302,
+              "ready": true,
+              "contact": {
+                "y": 9.157980380682252,
+                "nx": 0.037989139556884766,
+                "nz": -0.013636350631713867,
+                "flags": 1,
+                "layer": 0,
+                "surface": 16,
+                "surfaceId": "surface:w328525144:0",
+                "tile": "9,37"
+              }
+            },
+            {
+              "x": 4701.172920278902,
+              "z": 19099.601385314818,
+              "ready": true,
+              "contact": {
+                "y": 9.242008330537253,
+                "nx": 0.037994980812072754,
+                "nz": -0.013630509376525879,
+                "flags": 1,
+                "layer": 0,
+                "surface": 16,
+                "surfaceId": "surface:w328525144:0",
+                "tile": "9,37"
+              }
+            },
+            {
+              "x": 4700.10934395296,
+              "z": 19099.931063413722,
+              "ready": true,
+              "contact": {
+                "y": 9.197104088022584,
+                "nx": 0.037994980812072754,
+                "nz": -0.013630509376525879,
+                "flags": 1,
+                "layer": 0,
+                "surface": 16,
+                "surfaceId": "surface:w328525144:0",
+                "tile": "9,37"
+              }
+            },
+            {
+              "x": 4699.045767627019,
+              "z": 19100.260741512626,
+              "ready": true,
+              "contact": {
+                "y": 9.152203896365,
+                "nx": 0.037989139556884766,
+                "nz": -0.013636350631713867,
+                "flags": 1,
+                "layer": 0,
+                "surface": 16,
+                "surfaceId": "surface:w328525144:0",
+                "tile": "9,37"
+              }
+            },
+            {
+              "x": 4702.1351599029995,
+              "z": 19102.70567185214,
+              "ready": true,
+              "contact": {
+                "y": 9.236255599837039,
+                "nx": 0.037994980812072754,
+                "nz": -0.013630509376525879,
+                "flags": 1,
+                "layer": 0,
+                "surface": 16,
+                "surfaceId": "surface:w328525144:0",
+                "tile": "9,37"
+              }
+            },
+            {
+              "x": 4701.071583577058,
+              "z": 19103.035349951046,
+              "ready": true,
+              "contact": {
+                "y": 9.191351357322368,
+                "nx": 0.037994980812072754,
+                "nz": -0.013630509376525879,
+                "flags": 1,
+                "layer": 0,
+                "surface": 16,
+                "surfaceId": "surface:w328525144:0",
+                "tile": "9,37"
+              }
+            },
+            {
+              "x": 4700.008007251116,
+              "z": 19103.36502804995,
+              "ready": true,
+              "contact": {
+                "y": 9.1464471148077,
+                "nx": 0.037994980812072754,
+                "nz": -0.013630509376525879,
+                "flags": 1,
+                "layer": 0,
+                "surface": 16,
+                "surfaceId": "surface:w328525144:0",
+                "tile": "9,37"
+              }
+            }
+          ],
+          "cells": [
+            {
+              "key": "8,36",
+              "entry": {
+                "url": "/world/cells/4e7a847351793ebd994bcd2095cdba0e20340c3ae2a171251c6ce7f6d0ef2c70.bin.gz",
+                "sha256": "4e7a847351793ebd994bcd2095cdba0e20340c3ae2a171251c6ce7f6d0ef2c70",
+                "bytes": 172002,
+                "decodedBytes": 2444773,
+                "residentBytes": 1439804,
+                "transientBytes": 5061548,
+                "dependencies": [],
+                "triangles": 15486,
+                "contactEligible": true,
+                "source": {
+                  "regionId": "basin",
+                  "world": "athens-east-development",
+                  "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+                }
+              },
+              "priority": 11,
+              "pinned": false,
+              "state": "active",
+              "hasPacket": true,
+              "hasBuild": true,
+              "hasHandle": true,
+              "attempts": 1,
+              "error": null,
+              "packet": {
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+                "cell": [
+                  8,
+                  36
+                ],
+                "origin": [
+                  4096,
+                  0,
+                  18432
+                ]
+              }
+            },
+            {
+              "key": "8,37",
+              "entry": {
+                "url": "/world/cells/cac0c58f978fb2e831b7195289e6f4b3e55d3ee9aad7124961758655149b9cba.bin.gz",
+                "sha256": "cac0c58f978fb2e831b7195289e6f4b3e55d3ee9aad7124961758655149b9cba",
+                "bytes": 28471,
+                "decodedBytes": 661423,
+                "residentBytes": 367049,
+                "transientBytes": 1351317,
+                "dependencies": [],
+                "triangles": 3743,
+                "contactEligible": true,
+                "source": {
+                  "regionId": "basin",
+                  "world": "athens-east-development",
+                  "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+                }
+              },
+              "priority": 11,
+              "pinned": false,
+              "state": "active",
+              "hasPacket": true,
+              "hasBuild": true,
+              "hasHandle": true,
+              "attempts": 1,
+              "error": null,
+              "packet": {
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+                "cell": [
+                  8,
+                  37
+                ],
+                "origin": [
+                  4096,
+                  0,
+                  18944
+                ]
+              }
+            },
+            {
+              "key": "8,38",
+              "entry": {
+                "url": "/world/cells/54cfc308dfe9a7d35b495322f5f7b087779aeacd5d4e89c5cae9e4d1ea7f07fd.bin.gz",
+                "sha256": "54cfc308dfe9a7d35b495322f5f7b087779aeacd5d4e89c5cae9e4d1ea7f07fd",
+                "bytes": 15685,
+                "decodedBytes": 528736,
+                "residentBytes": 279892,
+                "transientBytes": 1073157,
+                "dependencies": [],
+                "triangles": 2987,
+                "contactEligible": true,
+                "source": {
+                  "regionId": "basin",
+                  "world": "athens-east-development",
+                  "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+                }
+              },
+              "priority": 11,
+              "pinned": false,
+              "state": "active",
+              "hasPacket": true,
+              "hasBuild": true,
+              "hasHandle": true,
+              "attempts": 1,
+              "error": null,
+              "packet": {
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+                "cell": [
+                  8,
+                  38
+                ],
+                "origin": [
+                  4096,
+                  0,
+                  19456
+                ]
+              }
+            },
+            {
+              "key": "9,36",
+              "entry": {
+                "url": "/world/cells/0d1886f2ed44104f227ed18d932f6a6d7cd2a40186de68943654b023cc767898.bin.gz",
+                "sha256": "0d1886f2ed44104f227ed18d932f6a6d7cd2a40186de68943654b023cc767898",
+                "bytes": 240979,
+                "decodedBytes": 3406060,
+                "residentBytes": 2056239,
+                "transientBytes": 7053099,
+                "dependencies": [],
+                "triangles": 23405,
+                "contactEligible": true,
+                "source": {
+                  "regionId": "basin",
+                  "world": "athens-east-development",
+                  "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+                }
+              },
+              "priority": 11,
+              "pinned": false,
+              "state": "active",
+              "hasPacket": true,
+              "hasBuild": true,
+              "hasHandle": true,
+              "attempts": 1,
+              "error": null,
+              "packet": {
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+                "cell": [
+                  9,
+                  36
+                ],
+                "origin": [
+                  4608,
+                  0,
+                  18432
+                ]
+              }
+            },
+            {
+              "key": "9,37",
+              "entry": {
+                "url": "/world/cells/8056d040145d13b70920882d43e419c160e53a3b49bf8592f3ea603973529e3a.bin.gz",
+                "sha256": "8056d040145d13b70920882d43e419c160e53a3b49bf8592f3ea603973529e3a",
+                "bytes": 224844,
+                "decodedBytes": 4007374,
+                "residentBytes": 2626935,
+                "transientBytes": 8239592,
+                "dependencies": [],
+                "triangles": 26108,
+                "contactEligible": true,
+                "source": {
+                  "regionId": "basin",
+                  "world": "athens-east-development",
+                  "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+                }
+              },
+              "priority": -0.5,
+              "pinned": false,
+              "state": "active",
+              "hasPacket": true,
+              "hasBuild": true,
+              "hasHandle": true,
+              "attempts": 1,
+              "error": null,
+              "packet": {
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+                "cell": [
+                  9,
+                  37
+                ],
+                "origin": [
+                  4608,
+                  0,
+                  18944
+                ]
+              }
+            },
+            {
+              "key": "9,38",
+              "entry": {
+                "url": "/world/cells/895342479667a107f59d620003174dfd66f6c821b04cbbd9d410d777c8a7c647.bin.gz",
+                "sha256": "895342479667a107f59d620003174dfd66f6c821b04cbbd9d410d777c8a7c647",
+                "bytes": 142615,
+                "decodedBytes": 2083861,
+                "residentBytes": 1150428,
+                "transientBytes": 4310337,
+                "dependencies": [],
+                "triangles": 13677,
+                "contactEligible": true,
+                "source": {
+                  "regionId": "basin",
+                  "world": "athens-east-development",
+                  "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+                }
+              },
+              "priority": 11,
+              "pinned": false,
+              "state": "active",
+              "hasPacket": true,
+              "hasBuild": true,
+              "hasHandle": true,
+              "attempts": 1,
+              "error": null,
+              "packet": {
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+                "cell": [
+                  9,
+                  38
+                ],
+                "origin": [
+                  4608,
+                  0,
+                  19456
+                ]
+              }
+            },
+            {
+              "key": "10,36",
+              "entry": {
+                "url": "/world/cells/33352965f3b5f949e1f11da12886f37d82e1ae3c77a8a2f5e19b6731a959c0b2.bin.gz",
+                "sha256": "33352965f3b5f949e1f11da12886f37d82e1ae3c77a8a2f5e19b6731a959c0b2",
+                "bytes": 64241,
+                "decodedBytes": 1091566,
+                "residentBytes": 703619,
+                "transientBytes": 2247373,
+                "dependencies": [],
+                "triangles": 6820,
+                "contactEligible": true,
+                "source": {
+                  "regionId": "basin",
+                  "world": "athens-east-development",
+                  "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+                }
+              },
+              "priority": 11,
+              "pinned": false,
+              "state": "active",
+              "hasPacket": true,
+              "hasBuild": true,
+              "hasHandle": true,
+              "attempts": 1,
+              "error": null,
+              "packet": {
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+                "cell": [
+                  10,
+                  36
+                ],
+                "origin": [
+                  5120,
+                  0,
+                  18432
+                ]
+              }
+            },
+            {
+              "key": "10,37",
+              "entry": {
+                "url": "/world/cells/2f6619d10a9cf2cd43d6bb1b78a6286112a8ea989bb56126f2e40d33f46f8c4c.bin.gz",
+                "sha256": "2f6619d10a9cf2cd43d6bb1b78a6286112a8ea989bb56126f2e40d33f46f8c4c",
+                "bytes": 23825,
+                "decodedBytes": 524208,
+                "residentBytes": 323277,
+                "transientBytes": 1072241,
+                "dependencies": [],
+                "triangles": 2944,
+                "contactEligible": true,
+                "source": {
+                  "regionId": "basin",
+                  "world": "athens-east-development",
+                  "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+                }
+              },
+              "priority": 11,
+              "pinned": false,
+              "state": "active",
+              "hasPacket": true,
+              "hasBuild": true,
+              "hasHandle": true,
+              "attempts": 1,
+              "error": null,
+              "packet": {
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+                "cell": [
+                  10,
+                  37
+                ],
+                "origin": [
+                  5120,
+                  0,
+                  18944
+                ]
+              }
+            },
+            {
+              "key": "10,38",
+              "entry": {
+                "url": "/world/cells/3002a7597889865c7bae135821a012500cb85e236785febad5ea78d015ab19fd.bin.gz",
+                "sha256": "3002a7597889865c7bae135821a012500cb85e236785febad5ea78d015ab19fd",
+                "bytes": 87281,
+                "decodedBytes": 1361666,
+                "residentBytes": 797397,
+                "transientBytes": 2810613,
+                "dependencies": [],
+                "triangles": 8391,
+                "contactEligible": true,
+                "source": {
+                  "regionId": "basin",
+                  "world": "athens-east-development",
+                  "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+                }
+              },
+              "priority": 11,
+              "pinned": false,
+              "state": "active",
+              "hasPacket": true,
+              "hasBuild": true,
+              "hasHandle": true,
+              "attempts": 1,
+              "error": null,
+              "packet": {
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+                "cell": [
+                  10,
+                  38
+                ],
+                "origin": [
+                  5120,
+                  0,
+                  19456
+                ]
+              }
+            }
+          ],
+          "stream": {
+            "capBytes": 60893308,
+            "transientCap": 67108864,
+            "residentBytes": 29553514,
+            "reservedBytes": 0,
+            "transientBytes": 0,
+            "inflight": 0,
+            "metrics": {
+              "failures": 0,
+              "evictions": 0,
+              "loadedBytes": 3109043,
+              "maxActivationMs": 3.0999999940395355,
+              "activationStepMax": {
+                "gpu-allocation": 1.199999988079071,
+                "gpu-upload": 0.5,
+                "mesh": 2.0999999940395355,
+                "graph": 0.4000000059604645,
+                "adapter": 0.20000001788139343,
+                "houses": 0.09999999403953552,
+                "props": 0.6000000238418579,
+                "trees": 3.0999999940395355,
+                "signs": 0.30000001192092896,
+                "marks": 0.19999998807907104,
+                "landmarks": 0.09999999403953552,
+                "plazas": 0.09999999403953552,
+                "lawns": 0,
+                "commit": 0.30000001192092896
+              }
+            }
+          }
+        },
+        "cacheFiles": [
+          {
+            "key": "8,36",
+            "sha256": "4e7a847351793ebd994bcd2095cdba0e20340c3ae2a171251c6ce7f6d0ef2c70",
+            "present": [
+              {
+                "path": "/tmp/athens-loaders.OfMh/cells/4e7a847351793ebd994bcd2095cdba0e20340c3ae2a171251c6ce7f6d0ef2c70.bin.gz",
+                "bytes": 172002
+              }
+            ],
+            "verification": "Presence only here; offline server verifies SHA256 before every served body. No cache write or download."
+          },
+          {
+            "key": "8,37",
+            "sha256": "cac0c58f978fb2e831b7195289e6f4b3e55d3ee9aad7124961758655149b9cba",
+            "present": [
+              {
+                "path": "/tmp/athens-loaders.OfMh/cells/cac0c58f978fb2e831b7195289e6f4b3e55d3ee9aad7124961758655149b9cba.bin.gz",
+                "bytes": 28471
+              }
+            ],
+            "verification": "Presence only here; offline server verifies SHA256 before every served body. No cache write or download."
+          },
+          {
+            "key": "8,38",
+            "sha256": "54cfc308dfe9a7d35b495322f5f7b087779aeacd5d4e89c5cae9e4d1ea7f07fd",
+            "present": [
+              {
+                "path": "/tmp/athens-loaders.OfMh/cells/54cfc308dfe9a7d35b495322f5f7b087779aeacd5d4e89c5cae9e4d1ea7f07fd.bin.gz",
+                "bytes": 15685
+              }
+            ],
+            "verification": "Presence only here; offline server verifies SHA256 before every served body. No cache write or download."
+          },
+          {
+            "key": "9,36",
+            "sha256": "0d1886f2ed44104f227ed18d932f6a6d7cd2a40186de68943654b023cc767898",
+            "present": [
+              {
+                "path": "/tmp/athens-loaders.OfMh/cells/0d1886f2ed44104f227ed18d932f6a6d7cd2a40186de68943654b023cc767898.bin.gz",
+                "bytes": 240979
+              }
+            ],
+            "verification": "Presence only here; offline server verifies SHA256 before every served body. No cache write or download."
+          },
+          {
+            "key": "9,37",
+            "sha256": "8056d040145d13b70920882d43e419c160e53a3b49bf8592f3ea603973529e3a",
+            "present": [
+              {
+                "path": "/tmp/athens-loaders.OfMh/cells/8056d040145d13b70920882d43e419c160e53a3b49bf8592f3ea603973529e3a.bin.gz",
+                "bytes": 224844
+              }
+            ],
+            "verification": "Presence only here; offline server verifies SHA256 before every served body. No cache write or download."
+          },
+          {
+            "key": "9,38",
+            "sha256": "895342479667a107f59d620003174dfd66f6c821b04cbbd9d410d777c8a7c647",
+            "present": [
+              {
+                "path": "/tmp/athens-loaders.OfMh/cells/895342479667a107f59d620003174dfd66f6c821b04cbbd9d410d777c8a7c647.bin.gz",
+                "bytes": 142615
+              }
+            ],
+            "verification": "Presence only here; offline server verifies SHA256 before every served body. No cache write or download."
+          },
+          {
+            "key": "10,36",
+            "sha256": "33352965f3b5f949e1f11da12886f37d82e1ae3c77a8a2f5e19b6731a959c0b2",
+            "present": [
+              {
+                "path": "/tmp/athens-loaders.OfMh/cells/33352965f3b5f949e1f11da12886f37d82e1ae3c77a8a2f5e19b6731a959c0b2.bin.gz",
+                "bytes": 64241
+              }
+            ],
+            "verification": "Presence only here; offline server verifies SHA256 before every served body. No cache write or download."
+          },
+          {
+            "key": "10,37",
+            "sha256": "2f6619d10a9cf2cd43d6bb1b78a6286112a8ea989bb56126f2e40d33f46f8c4c",
+            "present": [
+              {
+                "path": "/tmp/athens-loaders.OfMh/cells/2f6619d10a9cf2cd43d6bb1b78a6286112a8ea989bb56126f2e40d33f46f8c4c.bin.gz",
+                "bytes": 23825
+              }
+            ],
+            "verification": "Presence only here; offline server verifies SHA256 before every served body. No cache write or download."
+          },
+          {
+            "key": "10,38",
+            "sha256": "3002a7597889865c7bae135821a012500cb85e236785febad5ea78d015ab19fd",
+            "present": [
+              {
+                "path": "/tmp/athens-loaders.OfMh/cells/3002a7597889865c7bae135821a012500cb85e236785febad5ea78d015ab19fd.bin.gz",
+                "bytes": 87281
+              }
+            ],
+            "verification": "Presence only here; offline server verifies SHA256 before every served body. No cache write or download."
+          }
+        ]
+      },
+      "runtime": {
+        "world": "athens",
+        "revision": "80055f9208753e2d6fa8658b31c90216d22c650f7f33588ebd5178d1a6b804a1",
+        "playerXYZ": [
+          4700.10934395296,
+          9.19763958225593,
+          19099.931063413722
+        ],
+        "streamPosition": {
+          "x": 4700.10934395296,
+          "z": 19099.931063413722
+        },
+        "origin": {
+          "x": 4608,
+          "z": 18944
+        },
+        "groundReady": true,
+        "simulationSeconds": 0.08333333333333333,
+        "active": [
+          {
+            "key": "10,36",
+            "entry": {
+              "url": "/world/cells/33352965f3b5f949e1f11da12886f37d82e1ae3c77a8a2f5e19b6731a959c0b2.bin.gz",
+              "sha256": "33352965f3b5f949e1f11da12886f37d82e1ae3c77a8a2f5e19b6731a959c0b2",
+              "bytes": 64241,
+              "decodedBytes": 1091566,
+              "residentBytes": 703619,
+              "transientBytes": 2247373,
+              "dependencies": [],
+              "triangles": 6820,
+              "contactEligible": true,
+              "source": {
+                "regionId": "basin",
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+              }
+            },
+            "metadata": {
+              "world": "athens-east-development",
+              "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+              "cell": [
+                10,
+                36
+              ],
+              "origin": [
+                5120,
+                0,
+                18432
+              ]
+            }
+          },
+          {
+            "key": "10,37",
+            "entry": {
+              "url": "/world/cells/2f6619d10a9cf2cd43d6bb1b78a6286112a8ea989bb56126f2e40d33f46f8c4c.bin.gz",
+              "sha256": "2f6619d10a9cf2cd43d6bb1b78a6286112a8ea989bb56126f2e40d33f46f8c4c",
+              "bytes": 23825,
+              "decodedBytes": 524208,
+              "residentBytes": 323277,
+              "transientBytes": 1072241,
+              "dependencies": [],
+              "triangles": 2944,
+              "contactEligible": true,
+              "source": {
+                "regionId": "basin",
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+              }
+            },
+            "metadata": {
+              "world": "athens-east-development",
+              "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+              "cell": [
+                10,
+                37
+              ],
+              "origin": [
+                5120,
+                0,
+                18944
+              ]
+            }
+          },
+          {
+            "key": "10,38",
+            "entry": {
+              "url": "/world/cells/3002a7597889865c7bae135821a012500cb85e236785febad5ea78d015ab19fd.bin.gz",
+              "sha256": "3002a7597889865c7bae135821a012500cb85e236785febad5ea78d015ab19fd",
+              "bytes": 87281,
+              "decodedBytes": 1361666,
+              "residentBytes": 797397,
+              "transientBytes": 2810613,
+              "dependencies": [],
+              "triangles": 8391,
+              "contactEligible": true,
+              "source": {
+                "regionId": "basin",
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+              }
+            },
+            "metadata": {
+              "world": "athens-east-development",
+              "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+              "cell": [
+                10,
+                38
+              ],
+              "origin": [
+                5120,
+                0,
+                19456
+              ]
+            }
+          },
+          {
+            "key": "4,25",
+            "entry": {
+              "url": "/world/cells/5c0ac5562d35f3aec611412a71fc2b273ec90591048f5a9a9c71a1a79436782c.bin.gz",
+              "sha256": "5c0ac5562d35f3aec611412a71fc2b273ec90591048f5a9a9c71a1a79436782c",
+              "bytes": 367227,
+              "decodedBytes": 5074882,
+              "residentBytes": 3209093,
+              "transientBytes": 10516991,
+              "dependencies": [],
+              "triangles": 37686,
+              "contactEligible": true,
+              "source": {
+                "regionId": "basin",
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+              }
+            },
+            "metadata": {
+              "world": "athens-east-development",
+              "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+              "cell": [
+                4,
+                25
+              ],
+              "origin": [
+                2048,
+                0,
+                12800
+              ]
+            }
+          },
+          {
+            "key": "8,36",
+            "entry": {
+              "url": "/world/cells/4e7a847351793ebd994bcd2095cdba0e20340c3ae2a171251c6ce7f6d0ef2c70.bin.gz",
+              "sha256": "4e7a847351793ebd994bcd2095cdba0e20340c3ae2a171251c6ce7f6d0ef2c70",
+              "bytes": 172002,
+              "decodedBytes": 2444773,
+              "residentBytes": 1439804,
+              "transientBytes": 5061548,
+              "dependencies": [],
+              "triangles": 15486,
+              "contactEligible": true,
+              "source": {
+                "regionId": "basin",
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+              }
+            },
+            "metadata": {
+              "world": "athens-east-development",
+              "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+              "cell": [
+                8,
+                36
+              ],
+              "origin": [
+                4096,
+                0,
+                18432
+              ]
+            }
+          },
+          {
+            "key": "8,37",
+            "entry": {
+              "url": "/world/cells/cac0c58f978fb2e831b7195289e6f4b3e55d3ee9aad7124961758655149b9cba.bin.gz",
+              "sha256": "cac0c58f978fb2e831b7195289e6f4b3e55d3ee9aad7124961758655149b9cba",
+              "bytes": 28471,
+              "decodedBytes": 661423,
+              "residentBytes": 367049,
+              "transientBytes": 1351317,
+              "dependencies": [],
+              "triangles": 3743,
+              "contactEligible": true,
+              "source": {
+                "regionId": "basin",
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+              }
+            },
+            "metadata": {
+              "world": "athens-east-development",
+              "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+              "cell": [
+                8,
+                37
+              ],
+              "origin": [
+                4096,
+                0,
+                18944
+              ]
+            }
+          },
+          {
+            "key": "8,38",
+            "entry": {
+              "url": "/world/cells/54cfc308dfe9a7d35b495322f5f7b087779aeacd5d4e89c5cae9e4d1ea7f07fd.bin.gz",
+              "sha256": "54cfc308dfe9a7d35b495322f5f7b087779aeacd5d4e89c5cae9e4d1ea7f07fd",
+              "bytes": 15685,
+              "decodedBytes": 528736,
+              "residentBytes": 279892,
+              "transientBytes": 1073157,
+              "dependencies": [],
+              "triangles": 2987,
+              "contactEligible": true,
+              "source": {
+                "regionId": "basin",
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+              }
+            },
+            "metadata": {
+              "world": "athens-east-development",
+              "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+              "cell": [
+                8,
+                38
+              ],
+              "origin": [
+                4096,
+                0,
+                19456
+              ]
+            }
+          },
+          {
+            "key": "9,36",
+            "entry": {
+              "url": "/world/cells/0d1886f2ed44104f227ed18d932f6a6d7cd2a40186de68943654b023cc767898.bin.gz",
+              "sha256": "0d1886f2ed44104f227ed18d932f6a6d7cd2a40186de68943654b023cc767898",
+              "bytes": 240979,
+              "decodedBytes": 3406060,
+              "residentBytes": 2056239,
+              "transientBytes": 7053099,
+              "dependencies": [],
+              "triangles": 23405,
+              "contactEligible": true,
+              "source": {
+                "regionId": "basin",
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+              }
+            },
+            "metadata": {
+              "world": "athens-east-development",
+              "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+              "cell": [
+                9,
+                36
+              ],
+              "origin": [
+                4608,
+                0,
+                18432
+              ]
+            }
+          },
+          {
+            "key": "9,37",
+            "entry": {
+              "url": "/world/cells/8056d040145d13b70920882d43e419c160e53a3b49bf8592f3ea603973529e3a.bin.gz",
+              "sha256": "8056d040145d13b70920882d43e419c160e53a3b49bf8592f3ea603973529e3a",
+              "bytes": 224844,
+              "decodedBytes": 4007374,
+              "residentBytes": 2626935,
+              "transientBytes": 8239592,
+              "dependencies": [],
+              "triangles": 26108,
+              "contactEligible": true,
+              "source": {
+                "regionId": "basin",
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+              }
+            },
+            "metadata": {
+              "world": "athens-east-development",
+              "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+              "cell": [
+                9,
+                37
+              ],
+              "origin": [
+                4608,
+                0,
+                18944
+              ]
+            }
+          },
+          {
+            "key": "9,38",
+            "entry": {
+              "url": "/world/cells/895342479667a107f59d620003174dfd66f6c821b04cbbd9d410d777c8a7c647.bin.gz",
+              "sha256": "895342479667a107f59d620003174dfd66f6c821b04cbbd9d410d777c8a7c647",
+              "bytes": 142615,
+              "decodedBytes": 2083861,
+              "residentBytes": 1150428,
+              "transientBytes": 4310337,
+              "dependencies": [],
+              "triangles": 13677,
+              "contactEligible": true,
+              "source": {
+                "regionId": "basin",
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+              }
+            },
+            "metadata": {
+              "world": "athens-east-development",
+              "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+              "cell": [
+                9,
+                38
+              ],
+              "origin": [
+                4608,
+                0,
+                19456
+              ]
+            }
+          }
+        ]
+      },
+      "picks": [
+        {
+          "pixel": [
+            200,
+            330
+          ],
+          "key": "9,37",
+          "surface": "coastalGround",
+          "name": "probe",
+          "distance": 255.67508646857357,
+          "worldPoint": [
+            4952.839718165917,
+            34.707785019857766,
+            19140.510256948342
+          ],
+          "limestoneWeight": 0,
+          "triangle": 6289,
+          "material": {
+            "type": "MeshBasicMaterial",
+            "uuid": "c2f7d3ad-9a47-43f7-a7bc-76311739aa89",
+            "key": "athens-coastalGround-v1:detail",
+            "visible": true,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1
+          },
+          "foreground": {
+            "name": "athens-trees:1",
+            "type": "Mesh",
+            "distance": 51.316113887919514,
+            "unsupported": true
+          }
+        },
+        {
+          "pixel": [
+            300,
+            340
+          ],
+          "key": "9,37",
+          "surface": "coastalGround",
+          "name": "probe",
+          "distance": 229.75248548040634,
+          "worldPoint": [
+            4921.841063434131,
+            30.713757068344755,
+            19161.82987691725
+          ],
+          "limestoneWeight": 1,
+          "triangle": 5823,
+          "material": {
+            "type": "MeshBasicMaterial",
+            "uuid": "c2f7d3ad-9a47-43f7-a7bc-76311739aa89",
+            "key": "athens-coastalGround-v1:detail",
+            "visible": true,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1
+          }
+        },
+        {
+          "pixel": [
+            400,
+            350
+          ],
+          "key": "9,37",
+          "surface": "coastalGround",
+          "name": "probe",
+          "distance": 242.5612428093883,
+          "worldPoint": [
+            4923.836092406166,
+            29.453171208069378,
+            19194.877452842637
+          ],
+          "limestoneWeight": 1,
+          "triangle": 5875,
+          "material": {
+            "type": "MeshBasicMaterial",
+            "uuid": "c2f7d3ad-9a47-43f7-a7bc-76311739aa89",
+            "key": "athens-coastalGround-v1:detail",
+            "visible": true,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1
+          }
+        },
+        {
+          "pixel": [
+            180,
+            420
+          ],
+          "key": "9,37",
+          "surface": "coastalGround",
+          "name": "probe",
+          "distance": 48.97975538714507,
+          "worldPoint": [
+            4750.002179942603,
+            10.514440906036073,
+            19106.36059982398
+          ],
+          "limestoneWeight": 0,
+          "triangle": 1518,
+          "material": {
+            "type": "MeshBasicMaterial",
+            "uuid": "c2f7d3ad-9a47-43f7-a7bc-76311739aa89",
+            "key": "athens-coastalGround-v1:detail",
+            "visible": true,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1
+          },
+          "foreground": {
+            "name": "athens-coast-far:4",
+            "type": "Mesh",
+            "distance": 48.846036542539395,
+            "unsupported": true
+          }
+        },
+        {
+          "pixel": [
+            300,
+            420
+          ],
+          "key": "9,37",
+          "surface": "coastalGround",
+          "name": "probe",
+          "distance": 60.576327806201206,
+          "worldPoint": [
+            4759.788756861684,
+            10.08581491042458,
+            19115.972090663316
+          ],
+          "limestoneWeight": 0,
+          "triangle": 1594,
+          "material": {
+            "type": "MeshBasicMaterial",
+            "uuid": "c2f7d3ad-9a47-43f7-a7bc-76311739aa89",
+            "key": "athens-coastalGround-v1:detail",
+            "visible": true,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1
+          }
+        },
+        {
+          "pixel": [
+            400,
+            420
+          ],
+          "key": "9,37",
+          "surface": "asphalt",
+          "name": "probe",
+          "distance": 79.29540592218126,
+          "worldPoint": [
+            4774.362428063554,
+            9.43771204661465,
+            19130.738971839928
+          ],
+          "limestoneWeight": 0,
+          "triangle": 24356,
+          "material": {
+            "type": "MeshBasicMaterial",
+            "uuid": "a5acf709-96da-429b-92fd-c166f19ae31e",
+            "key": "athens-scan-asphalt_diff-4.1967-0-1-61x80",
+            "visible": true,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1
+          },
+          "foreground": {
+            "name": "athens-coast-far:4",
+            "type": "Mesh",
+            "distance": 58.322156852615876,
+            "unsupported": true
+          }
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "static native camera/material proof, not surveyed terrain or driving performance",
+    "CPU packet-triangle picks exclude separate instanced vegetation; visible selected terrain must also be inspected in the fresh image",
+    "Stopped on first failure in explicit full-scene compileAsync: existing PenteliHouses wrapper invoked the inherited onBeforeCompile without its material this context. No JPEG was saved and baseline is not accepted."
+  ],
+  "worldManifest": {
+    "world": "athens",
+    "revision": "80055f9208753e2d6fa8658b31c90216d22c650f7f33588ebd5178d1a6b804a1",
+    "tiles": 1748
+  },
+  "browserVersion": "156.0.8078.4",
+  "failure": "page.evaluate: TypeError: Cannot read properties of undefined (reading 'addEventListener')\n    at trackDetailMaterial (http://127.0.0.1:34421/src/athens-detail.js:13:126)\n    at material.onBeforeCompile (http://127.0.0.1:34421/src/athens-detail.js:290:5)\n    at PenteliHouses.material.onBeforeCompile (http://127.0.0.1:34421/src/penteli-houses.js:18:69)\n    at getProgram (https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js:30552:14)\n    at prepareMaterial (https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js:29795:5)\n    at https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js:29879:7\n    at InstancedMesh.traverse (https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js:7761:3)\n    at Group.traverse (https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js:7767:18)\n    at Group.traverse (https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js:7767:18)\n    at Scene.traverse (https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js:7767:18)\n    at /home/dev/.cogenly/worktrees/athens-racing/t3-d1bb19b7/tools/terrain-material.browser.mjs:121:27"
+}
