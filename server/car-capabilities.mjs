@@ -4,7 +4,7 @@ import { CAR_MODELS } from '../src/car-catalog.js';
 // Owner decision 2026-10-20 (docs/OWNER-DECISIONS.md): one car per model, its top trim. Specs of removed trims stay in the file for
 // background traffic only; players, lobbies and leaderboards know the kept cars alone.
 const PLAYABLE = new Set(CAR_MODELS.map(m => m.car));
-const SPEC_NUMBERS = ['power', 'mass', 'torque', 'vmax', 'grip', 'gripRear', 'brake', 'zeroTo100'];
+const SPEC_NUMBERS = ['power', 'mass', 'torque', 'vmax', 'grip', 'gripRear', 'brake', 'zeroTo100', 'width', 'length'];
 export function readCarCapabilities(source) {
   const literal = source.split('export const CARS = [')[1]?.split('\n];')[0];
   if (!literal) throw new Error('Missing playable car catalogue');
@@ -13,7 +13,7 @@ export function readCarCapabilities(source) {
   const specs = {};
   for (let i = 0; i < entries.length; i++) {
     const spec = {};
-    for (const [, key, value] of spans[i].matchAll(/\b(power|mass|torque|vmax|grip|gripRear|brake|zeroTo100)\s*:\s*(\d+(?:\.\d+)?)/g)) {
+    for (const [, key, value] of spans[i].matchAll(/\b(power|mass|torque|vmax|grip|gripRear|brake|zeroTo100|width|length)\s*:\s*(\d+(?:\.\d+)?)/g)) {
       if (SPEC_NUMBERS.includes(key) && spec[key] === undefined) spec[key] = +value;
     }
     const drive = spans[i].match(/\bdrive\s*:\s*["'](\w+)["']/);

@@ -83,7 +83,7 @@ export function canonicalEntries(entries, known) {
   return { entries: bounded, changed };
 }
 // Settings form independent boards: a clear/day run must not erase a rain/night PB.
-export const boardKey = e => e.routeId?competitiveRecordKey(e):JSON.stringify([e.mapId || 'riviera', e.version, e.eventId, e.car, e.traffic, ...(e.setup ? [null, null, e.setup] : [])]);
+export const boardKey = e => e.routeId?JSON.stringify([e.worldId,e.routeHash,e.geometryHash,e.worldSetRevision,competitiveRecordKey(e)]):JSON.stringify([e.mapId || 'riviera', e.version, e.eventId, e.car, e.traffic, ...(e.setup ? [null, null, e.setup] : [])]);
 export const filterEntries = (entries, filters = {}) => entries.filter(e => matchesRecord(e, filters)).sort((a, b) => a.time - b.time || a.at - b.at).slice(0, Math.max(1, Math.min(100, Number(filters.limit) || 50))).map(({ driverId, ...e }) => e);
 export function leaderboardFilters(params, known) {
   const out = Object.fromEntries(['routeId','edition','history','mapId', 'eventId', 'route', 'car', 'time','weather', 'tc', 'abs', 'steering', 'gearbox', 'limit'].filter(k => params.has(k)).map(k => [k, params.get(k)]));

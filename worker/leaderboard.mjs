@@ -37,7 +37,7 @@ export function createSqlLeaderboard(sql, maps, cars,{transactionSync=fn=>fn()}=
     return { saved: true, best: entry.time };
   };
   const list = (filters = {}) => {
-    if(filters.routeId){if(String(filters.history)==='true')return filterEntries(routeHistory([...sql.exec('SELECT entry FROM route_record_history')].map(r=>JSON.parse(r.entry)),filters.routeId,{edition:filters.edition}),{...filters,mapId:undefined,edition:undefined});const c=maps.routes?.get(filters.routeId);return c?filterEntries([...sql.exec('SELECT entry FROM times WHERE mapId = ? AND version = ? ORDER BY time, at','athens',routeEdition(c))].map(r=>JSON.parse(r.entry)).filter(e=>e.routeId===c.id),filters):[];}
+    if(filters.routeId){if(String(filters.history)==='true')return filterEntries(routeHistory([...sql.exec('SELECT entry FROM route_record_history')].map(r=>JSON.parse(r.entry)),filters.routeId,{edition:filters.edition}),{...filters,mapId:undefined,edition:undefined});const c=maps.routes?.get(filters.routeId);return c?filterEntries([...sql.exec('SELECT entry FROM times WHERE mapId = ? AND version = ? ORDER BY time, at','athens',routeEdition(c))].map(r=>JSON.parse(r.entry)).filter(e=>e.routeId===c.id&&e.routeHash===c.routeHash&&e.geometryHash===c.geometryHash&&e.worldSetRevision===c.worldSetRevision),filters):[];}
     const mapId = filters.mapId || 'riviera';
     // Apply JSON setup filters before limiting; legacy rows have no setup and only match unfiltered views.
     const rows = [...sql.exec('SELECT entry FROM times WHERE mapId = ? AND version = ? ORDER BY time, at', mapId, leaderboardVersion(mapId, maps.get(mapId)?.track.version || ''))];

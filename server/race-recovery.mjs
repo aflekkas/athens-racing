@@ -58,7 +58,7 @@ export function requestRecovery(driver, event, raceId, epoch, now, { route = nul
     return driver.recovery;
   }
   const pose = towPose(driver, event, route);if(!pose)return null;const {kind,s,u}=pose;
-  const recovery = { raceId, kind, s, u, ...(finite(pose.x) && finite(pose.z) ? { x: pose.x, z: pose.z, yaw: pose.yaw } : {}), ...(finite(pose.y) ? { y: pose.y } : {}),
+  const recovery = { raceId, kind, s, u, ...(finite(pose.x) && finite(pose.z) ? { x: pose.x, z: pose.z, yaw: pose.yaw } : {}), ...(finite(pose.y) ? { y: pose.y } : {}), ...(route?.isWorldRoute ? { layer: pose.layer, surfaceId: pose.surfaceId, edgeId: pose.edgeId } : {}),
     startedAt: now, until: now + (capture ? CAPTURE_RECOVERY_MS : RECOVERY_MS), motionEpoch: epoch };
   driver.recovery = recovery;
   const position = finite(pose.x) && finite(pose.z) ? { x: pose.x, z: pose.z,...(route?.isWorldRoute?{layer:pose.layer,surfaceId:pose.surfaceId,edgeId:pose.edgeId}:{}), ...(finite(pose.y) ? { y: pose.y } : {}) } : {};
@@ -74,7 +74,12 @@ export function requestRecovery(driver, event, raceId, epoch, now, { route = nul
     maxImpactEbs: 0, engHealth: 1, engineDamage: 0, coolantTemp: 90, engineStalled: false, drivetrainBroken: false,
     engineFailureReason: null, mechanicalOverrevRpm: 0, motionEpoch: epoch, recoveryUntil: recovery.until };
   driver.stateAt = now;
-  if (driver.course) towCourseTo(driver.course, { ...driver.state, kind }, now / 1000);
+  if (driver.course) {
+    // A later safe road is a placement, never newly earned course. Preserve
+    // existing rejoin debt even if the driver waits out the recovery hold.
+    if (route?.isWorldRoute) driver.course.rejoinLimit = Math.min(driver.course.rejoinLimit ?? Infinity, driver.course.validProgress + 2);
+    towCourseTo(driver.course, { ...driver.state, kind }, now / 1000);
+  }
   return recovery;
 }
 export function recoveryStateAllowed(driver, state, raceId, now, { route = null, event = null } = {}) {
@@ -84,7 +89,7 @@ export function recoveryStateAllowed(driver, state, raceId, now, { route = null,
   if (now < r.until) {
     const still = Math.abs(state.vLong) < .1 && Math.abs(state.vLat) < .1;
     // A car placed on a side street is held where the server put it.
-    if (r.kind === 'road' && finite(r.x)) return still && Math.hypot(state.x - r.x, state.z - r.z) <= 3;
+    if (r.kind === 'road' && finite(r.x)) return still && Math.hypot(state.x - r.x, state.z - r.z) <= 3 && (!route?.isWorldRoute || Math.abs(state.y - r.y) < .75 && state.layer === r.layer && state.surfaceId === r.surfaceId);
     // The production placement helper can retreat a few metres on a folded
     // hairpin to keep the first physics projection on the same road leg.
     const delta = (state.s - r.s) * (event?.dir || 1);

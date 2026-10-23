@@ -15,10 +15,11 @@ import { cleanupLegacyStorage } from './legacy-storage.mjs';
 import { rewriteShareMetadata } from './share-metadata.mjs';
 import catalogue from '../.deploy/catalogue.json';
 import { createGameCore } from '../server/core.mjs';
+import { installRouteMaps } from '../server/route-maps.mjs';
 import { createSqlLeaderboard } from './leaderboard.mjs';
 
 const maps = new Map(catalogue.maps.map(m => [m.id, { ...m, definitions: new Map(m.definitions) }]));
-maps.routes=new Map((catalogue.routes||[]).filter(c=>['staging','production'].includes(catalogue.routeConfig?.environment)&&catalogue.routeConfig.routes.some(r=>r.id===c.id)).map(c=>[c.id,c]));
+const routeMapsReady = installRouteMaps(maps, catalogue, { carSpecs: catalogue.carSpecs || {} });
 const cars = new Set(catalogue.cars);
 const nitrousCars = new Set(catalogue.nitrousCars || []);
 const carSpecs = catalogue.carSpecs || {};
@@ -43,7 +44,7 @@ export default {
     const world = await worldAssets(request, env, ctx);
     if (world) return world;
     const url = new URL(request.url);
-    if(url.pathname==='/api/routes')return json(catalogue.routeConfig||{environment:'production',routes:[]});
+    if (url.pathname === '/api/routes') { await routeMapsReady; return json(maps.routeConfig); }
     if (protectedPath(url.pathname)) { const auth = await authorizeGame(request, env); if (auth.response) return auth.response; }
     if (url.pathname === '/api/account/presence') return env.PRESENCE.get(env.PRESENCE.idFromName('friends-v1')).fetch(request);
     if (url.pathname.startsWith('/api/auth/') || url.pathname.startsWith('/api/account/')) return accounts(request, env);
@@ -66,12 +67,15 @@ export class GameArena extends DurableObject {
     this.instanceId = crypto.randomUUID();
     this.startedAt = Date.now();
     this.timer = null;
-    this.leaderboard = createSqlLeaderboard(ctx.storage.sql, maps, cars,{transactionSync:fn=>ctx.storage.transactionSync(fn)});
+    this.leaderboard = null;
     ctx.storage.sql.exec('CREATE TABLE IF NOT EXISTS post_limits (ip TEXT PRIMARY KEY, at INTEGER NOT NULL, count INTEGER NOT NULL)');
-    this.core = createGameCore({ maps, cars, carSpecs, nitrousCars, leaderboard: this.leaderboard });
+    this.core = null;
     // Auto-response avoids waking the object for optional idle keepalives.
     ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('keepalive', 'alive'));
     ctx.blockConcurrencyWhile(() => this.event('restore', async () => {
+      await routeMapsReady;
+      this.leaderboard = createSqlLeaderboard(ctx.storage.sql, maps, cars, { transactionSync: fn => ctx.storage.transactionSync(fn) });
+      this.core = createGameCore({ maps, cars, carSpecs, nitrousCars, leaderboard: this.leaderboard });
       await cleanupLegacyStorage(ctx.storage);
       const saved = await ctx.storage.get('arena');
       const sockets = new Map();

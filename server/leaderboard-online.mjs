@@ -10,8 +10,9 @@ export function captureRecordMeta(raw, previous, raceId) {
 }
 export function onlineLeaderboardResult(client, lobby, event) {
   const meta = client.state?.recordMeta;
-  return { driverId: client.identity?.userId || client.driverId || client.id, name: client.identity?.name || client.name, car: client.car, eventId: lobby.eventId, mapId: lobby.mapId, traffic: lobby.traffic, time: client.finish, source: 'online',
+  const tuple = event.routeId ? Object.fromEntries(['worldId', 'regionId', 'routeId', 'routeHash', 'geometryHash', 'edition', 'worldSetRevision'].map(k => [k, event[k]])) : {};
+  return { ...tuple, driverId: client.identity?.userId || client.driverId || client.id, name: client.identity?.name || client.name, car: client.car, eventId: lobby.eventId, mapId: event.routeId ? 'athens' : lobby.mapId, traffic: lobby.traffic, time: client.finish, source: 'online',
     ...(meta && !meta.changed ? { carName: meta.carName,
-      setup: { map: lobby.mapId, event: lobby.eventId, car: client.car, type: event.type, from: event.s0, to: event.s1, direction: event.dir, laps: event.laps || 1,
-        traffic: 0, rivals: 0, time: lobby.config?.time || 'afternoon', weather: lobby.config?.weather || 'clear', police: lobby.config?.police === true, tc: meta.tc, abs: meta.abs, steering: meta.steering, gearbox: meta.gearbox } } : {}) };
+      setup: { ...(event.routeId ? { worldId: event.worldId, routeId: event.routeId, geometryHash: event.geometryHash, edition: event.edition, policeLevel: lobby.config?.policeLevel || 'normal', busted: lobby.config?.busted !== false, signals: event.rules?.signals === true } : {}), map: event.routeId ? 'athens' : lobby.mapId, event: lobby.eventId, car: client.car, type: event.type, from: event.s0, to: event.s1, direction: event.dir, laps: event.laps || 1,
+        traffic: lobby.config?.traffic || 0, rivals: 0, time: lobby.config?.time || 'afternoon', weather: lobby.config?.weather || 'clear', police: lobby.config?.police === true, tc: meta.tc, abs: meta.abs, steering: meta.steering, gearbox: meta.gearbox } } : {}) };
 }

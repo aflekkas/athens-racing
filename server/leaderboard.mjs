@@ -22,7 +22,7 @@ export async function createLeaderboard(file, definitions, cars, version, maps) 
   if (migrated.changed) { entries = migrated.entries; await write(entries); }
   const validate = r => validResult(canonicalResult(r, cars), resultContext(r, definitions, version, maps).event, cars);
   const list = (filters = {}) => {
-    if(filters.routeId){if(String(filters.history)==='true')return filterEntries(routeHistory(history,filters.routeId,{edition:filters.edition}),{...filters,mapId:undefined,edition:undefined});const c=maps?.routes?.get(filters.routeId);return c?filterEntries(entries.filter(e=>e.routeId===c.id&&e.edition===routeEdition(c)),filters):[];}
+    if(filters.routeId){if(String(filters.history)==='true')return filterEntries(routeHistory(history,filters.routeId,{edition:filters.edition}),{...filters,mapId:undefined,edition:undefined});const c=maps?.routes?.get(filters.routeId);return c?filterEntries(entries.filter(e=>e.routeId===c.id&&e.edition===routeEdition(c)&&e.routeHash===c.routeHash&&e.geometryHash===c.geometryHash&&e.worldSetRevision===c.worldSetRevision),filters):[];}
     const mapId = filters.mapId || 'riviera';
     return filterEntries(entries.filter(e => (e.mapId || 'riviera') === mapId && e.version === leaderboardVersion(mapId, maps ? maps.get(mapId)?.track.version : version)), { ...filters, mapId });
   };

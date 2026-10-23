@@ -12,6 +12,7 @@ import { fileURLToPath } from 'node:url';
 import { WebSocketServer, WebSocket } from 'ws';
 import { MAPS } from '../src/map-catalog.js';
 import { resolveMap } from './map-definitions.mjs';
+import { installRouteMaps } from './route-maps.mjs';
 import { readCarCapabilities } from './car-capabilities.mjs';
 import { createGameCore } from './core.mjs';
 import { createLeaderboard } from './leaderboard.mjs';
@@ -32,7 +33,8 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
     catch (e) { if (def.id === 'riviera' || e.code !== 'ENOENT') throw e; console.warn(`Map ${def.id} unavailable: ${def.dataUrl}; skipping.`); continue; }
     maps.set(def.id, resolveMap(def, data));
   }
-  try{const built=JSON.parse(await readFile(resolve(root,'.deploy/catalogue.json'),'utf8')),enabled=new Set(['staging','production'].includes(built.routeConfig?.environment)?built.routeConfig.routes.map(r=>r.id):[]);maps.routes=new Map((built.routes||[]).filter(c=>enabled.has(c.id)).map(c=>[c.id,c]));}catch{maps.routes=new Map();}
+  let built; try { built = JSON.parse(await readFile(resolve(root, '.deploy/catalogue.json'), 'utf8')); } catch { built = {}; }
+  await installRouteMaps(maps, built, { carSpecs });
   const { track, definitions } = maps.get('riviera');
   const leaderboard = await createLeaderboard(resolve(dataDir, 'leaderboard.json'), definitions, CARS, track.version, maps);
   const core = createGameCore({ maps, cars: CARS, carSpecs, nitrousCars, leaderboard, countdownMs, raceLimitMs, reconnectGraceMs });
@@ -47,7 +49,7 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
       const path = decodeURIComponent(url.pathname);
       const json = (status, value) => { res.writeHead(status, { ...headers, 'Content-Type': 'application/json' }); res.end(JSON.stringify(value)); };
       const request = new Request(new URL(req.url, 'http://' + (req.headers.host || 'localhost')), { method: req.method, headers: req.headers, ...(!['GET', 'HEAD'].includes(req.method) ? { body: req, duplex: 'half' } : {}) });
-      if(path==='/api/routes'){let config;try{config=JSON.parse(await readFile(resolve(root,'route-config.json'),'utf8'));}catch{config={environment:'production',routes:[]};}json(200,config);return;}
+      if (path === '/api/routes') { json(200, maps.routeConfig); return; }
       if (/^\/api\/auth\/(config|session|logout|google\/(start|callback))$/.test(path) || path.startsWith('/api/account/') && accountEnv.ACCOUNTS) {
         const result = await accounts(request, accountEnv);
         res.writeHead(result.status, Object.fromEntries(result.headers)); res.end(Buffer.from(await result.arrayBuffer())); return;
