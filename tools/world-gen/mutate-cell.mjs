@@ -133,6 +133,67 @@ async function boundedFileBytes(path,expectedSize){
   return byteWindow(bytes,0,expectedSize);
  }finally{await handle.close();}
 }
+// This allowance pins the offline runtime; it is an ACCOUNTING ESTIMATE,
+// not a measured/proven native allocation bound or actual-cell admission.
+// Four histories cover two raw-file hashes, the private binding hash, and the
+// assembler's canonical policy-code binding hash. None earns GC release credit.
+export const INFILL_HASH_ACCOUNTING=Object.freeze({schema:'infill-stream-hash-1',node:'22.23.3',openssl:'3.5.8',platform:'linux',arch:'x64',slabBytes:65536,eofBytes:1,nativeContexts:4,nativeBytesEachEstimate:65536,descriptorHistoryEstimate:262144,readHistoryEachEstimate:2048,nativeAllocationProven:false,noGarbageCollectionCredit:true});
+const infillBatches=new WeakMap();
+function infillDataKeys(value,allowed,label){
+ if(!value||typeof value!=='object'||nativeTypes.isProxy(value)||Object.getPrototypeOf(value)!==Object.prototype)fail(label+' plain data required');
+ for(const key of Reflect.ownKeys(value)){const d=Object.getOwnPropertyDescriptor(value,key);if(typeof key!=='string'||!allowed.includes(key)||!Object.hasOwn(d,'value')||!d.enumerable)fail(label+' unexpected role/field/accessor');}
+}
+function infillBindingSnapshot(value){
+ const fields=['planSha256','sourceCellSha256','packSha256','sourceSha256','sourceRecordSha256','policyCodeSha256','world','revision','cell'];infillDataKeys(value,fields,'infill hash binding');
+ for(const key of fields.slice(0,6))validHash(value[key],'infill binding '+key);
+ for(const key of ['world','revision'])if(typeof value[key]!=='string'||!value[key]||value[key].length>256)fail('infill hash identity bound');
+ if(denseArray(value.cell)!==2||!value.cell.every(Number.isSafeInteger))fail('infill hash cell identity');
+ return {planSha256:value.planSha256,sourceCellSha256:value.sourceCellSha256,packSha256:value.packSha256,sourceSha256:value.sourceSha256,sourceRecordSha256:value.sourceRecordSha256,policyCodeSha256:value.policyCodeSha256,world:value.world,revision:value.revision,cell:[value.cell[0],value.cell[1]]};
+}
+const infillStatSame=(a,b)=>a.dev===b.dev&&a.ino===b.ino&&a.size===b.size&&a.mtimeNs===b.mtimeNs&&a.ctimeNs===b.ctimeNs;
+function infillHashAdmit(retained,reservation){if(!Number.isSafeInteger(retained)||retained<0||!Number.isSafeInteger(reservation)||reservation<0||retained+reservation>MAX)fail('infill streaming live workspace budget before allocation/open');}
+function infillHashRuntime(){const a=INFILL_HASH_ACCOUNTING;if(process.versions.node!==a.node||process.versions.openssl!==a.openssl||process.platform!==a.platform||process.arch!==a.arch)fail('infill hash accounting runtime requires review');}
+/** Internal declarative batch: source/record are SHA-only in repairBuildingTables.
+ * Both stats and the ORIGINAL independent volume guard precede every open.
+ * The returned report is not authority; only the private single-use batch is. */
+export async function sealInfillHashBatch(input,options={}){
+ infillDataKeys(options,['retainedBytes'],'infill hash options');const retainedBytes=options.retainedBytes??0,a=INFILL_HASH_ACCOUNTING;
+ const base=a.slabBytes+a.eofBytes+a.nativeContexts*a.nativeBytesEachEstimate+a.descriptorHistoryEstimate;infillHashAdmit(retainedBytes,base);infillHashRuntime();
+ infillDataKeys(input,['sourcePath','binding'],'infill hash batch');if(typeof input.sourcePath!=='string'||input.sourcePath.length>4096||!/[.](osm|pbf)$/i.test(input.sourcePath))fail('reviewed local infill source path required');
+ // All caller data is checked and copied before the first await. No body copy.
+ const binding=infillBindingSnapshot(input.binding),bindingText=canonical(binding),paths=[input.sourcePath,input.sourcePath.replace(/[.](osm|pbf)$/i,'.source.json')];
+ const observations=await Promise.allSettled(paths.map(path=>stat(path,{bigint:true})));
+ if(observations.some(r=>r.status!=='fulfilled'))fail('infill paired source stat failure (both roles checked)');
+ const stats=observations.map(r=>r.value);for(const info of stats)if(!info.isFile()||info.size<0n||info.size>BigInt(MAX))fail('infill source file byte budget');
+ const sizes=stats.map(s=>Number(s.size)),ioBytes=2*(sizes[0]+sizes[1]+2);
+ // Preserve the old 2x aggregate policy independently of smaller live buffers.
+ if(ioBytes>MAX)fail('infill paired source workspace budget before file read (independent I/O guard)');
+ if(stats[0].dev===stats[1].dev&&stats[0].ino===stats[1].ino)fail('infill source/record roles alias');
+ const reads=Math.ceil(sizes[0]/a.slabBytes)+Math.ceil(sizes[1]/a.slabBytes)+2,readHistory=reads*a.readHistoryEachEstimate,reservationBytes=base+readHistory;infillHashAdmit(retainedBytes,reservationBytes);
+ const accounting=freeze({...a,reservationBytes,plannedReadCalls:reads,readHistoryEstimate:readHistory,sourceBytes:sizes[0],sourceRecordBytes:sizes[1],independentSourceIOBytes:ioBytes,notActualAdmission:true});
+ const batch=Object.freeze(Object.create(null));infillBatches.set(batch,{binding,bindingText,paths,stats,sizes,retainedBytes,accounting});return Object.freeze({batch,accounting});
+}
+/** No caller-provided digest/descriptor can replace a sealed batch. One handle,
+ * one owned slab, fixed EOF scratch; every history stays billed after return. */
+export async function consumeInfillHashBatch(batch,binding,options={}){
+ const state=infillBatches.get(batch);if(!state)fail('opaque single-use infill hash batch required');
+ infillDataKeys(options,['retainedBytes'],'infill hash options');const retainedBytes=options.retainedBytes??0;infillHashAdmit(retainedBytes,state.accounting.reservationBytes);if(retainedBytes<state.retainedBytes)fail('infill hash retained history cannot shrink');
+ const expected=infillBindingSnapshot(binding);if(canonical(expected)!==state.bindingText)fail('infill hash source/plan/code/identity binding changed');infillBatches.delete(batch);infillHashRuntime();
+ const slab=Buffer.alloc(INFILL_HASH_ACCOUNTING.slabBytes),eof=Buffer.alloc(1),digests=[];let readCalls=0,reservationBytes=state.accounting.reservationBytes;
+ const read=(handle,buffer,length,position)=>{readCalls++;if(readCalls>state.accounting.plannedReadCalls){reservationBytes+=INFILL_HASH_ACCOUNTING.readHistoryEachEstimate;infillHashAdmit(retainedBytes,reservationBytes);}return handle.read(buffer,0,length,position);};
+ for(let role=0;role<2;role++){
+  const handle=await open(state.paths[role],'r');try{
+   const before=await handle.stat({bigint:true});if(!before.isFile()||!infillStatSame(state.stats[role],before))fail('infill file changed before bounded read');
+   const digest=createHash('sha256');let offset=0;
+   while(offset<state.sizes[role]){const wanted=Math.min(slab.length,state.sizes[role]-offset),{bytesRead}=await read(handle,slab,wanted,offset);if(!Number.isSafeInteger(bytesRead)||bytesRead<=0||bytesRead>wanted)fail('infill file changed during bounded read (early EOF/short read)');digest.update(byteWindow(slab,0,bytesRead));offset+=bytesRead;}
+   if((await read(handle,eof,1,offset)).bytesRead!==0)fail('infill file changed during bounded read (growth)');
+   const after=await handle.stat({bigint:true}),pathAfter=await stat(state.paths[role],{bigint:true});if(!infillStatSame(before,after)||!infillStatSame(before,pathAfter))fail('infill file changed during bounded read (descriptor/path)');
+   const actual=digest.digest('hex');if(actual!==(role===0?state.binding.sourceSha256:state.binding.sourceRecordSha256))fail('infill source identity mismatch ('+(role===0?'OSM':'record')+')');digests.push(actual);
+  }finally{await handle.close();}
+ }
+ const finalPair=await Promise.allSettled(state.paths.map(path=>stat(path,{bigint:true})));if(finalPair.some((r,i)=>r.status!=='fulfilled'||!infillStatSame(state.stats[i],r.value)))fail('infill paired source changed before digest seal');
+ return freeze({sourceSha256:digests[0],sourceRecordSha256:digests[1],bindingSha256:sha(state.bindingText),accounting:{...state.accounting,reservationBytes,actualReadCalls:readCalls,readHistoryEstimate:Math.max(readCalls,state.accounting.plannedReadCalls)*INFILL_HASH_ACCOUNTING.readHistoryEachEstimate}});
+}
 /** Pin .assembler and canonical digest(result) in derived.codeProofSha256; pin stage hashes too. */
 export async function mutationCodeProof({retainedBytes=0}={}){
  if(!Number.isSafeInteger(retainedBytes)||retainedBytes<0||retainedBytes>MAX)fail('code proof retained budget');
@@ -383,15 +444,14 @@ export async function mutateOriginalCell(input){
  if(!stages.guards)fail('original guard stage/code pin required');
  for(const [name,s]of Object.entries(stages))verifyStage(name,s,code);
  let pack=pack0;const reports=[];const run=(name,input,report,dataHashes={})=>reports.push({name,inputFingerprint:input,codeSha256:code[name],dataHashes,report});
- if(stages.infill){const s=stages.infill,plan=pinnedJSON(s.planBytes,s.planFileSha256,'infill plan',memory);if(repairPlanSha256(plan)!==s.reviewedPlanSha256)fail('reviewed canonical infill plan digest mismatch');if(typeof s.sourcePath!=='string'||!/[.](osm|pbf)$/i.test(s.sourcePath))fail('reviewed local source path required');const paths=[s.sourcePath,s.sourcePath.replace(/[.](osm|pbf)$/i,'.source.json')],sizes=[];for(const path of paths){const info=await stat(path);if(!info.isFile()||info.size>MAX)fail('infill source file byte budget');sizes.push(info.size);}
-  // The infill apply contract hashes these files; it does not parse OSM/JSON or
-  // invoke Python. Keep both exact raw buffers and read scratch reserved, plus
-  // code/provenance histories, BEFORE opening either source file.
-  memory.files+=2*(sizes[0]+sizes[1]+2);if(memory.inputCopies+memory.inputObjects+memory.parsedInputs+memory.sourceRetained+memory.proofRetained+memory.files>MAX)fail('infill paired source workspace budget before file read');
-  const sourceBytes=await boundedFileBytes(paths[0],sizes[0]),recordBytes=await boundedFileBytes(paths[1],sizes[1]);
+ if(stages.infill){const s=stages.infill,plan=pinnedJSON(s.planBytes,s.planFileSha256,'infill plan',memory);if(repairPlanSha256(plan)!==s.reviewedPlanSha256)fail('reviewed canonical infill plan digest mismatch');
+  const input=packFingerprint(pack),binding={planSha256:s.reviewedPlanSha256,sourceCellSha256:entry.sha256,packSha256:input,sourceSha256:plan.sourceSha256,sourceRecordSha256:plan.sourceRecordSha256,policyCodeSha256:digest(plan.code),world:source.world,revision:source.revision,cell:source.cell};
+  const retainedBytes=memory.inputCopies+memory.inputObjects+memory.parsedInputs+memory.sourceRetained+memory.proofRetained+memory.files+memory.prepared;
+  const sealed=await sealInfillHashBatch({sourcePath:s.sourcePath,binding},{retainedBytes});memory.files+=sealed.accounting.reservationBytes;admitPinned(memory);
+  const hashed=await consumeInfillHashBatch(sealed.batch,binding,{retainedBytes});memory.files+=hashed.accounting.reservationBytes-sealed.accounting.reservationBytes;admitPinned(memory);
   const infillFiles=['infill.py','model.py','buildings.py','repair-infill.mjs','../../src/psychiko-building-data.js','../../src/coastal-dressing-data.js'];
   const infillCode=Object.fromEntries(infillFiles.map(name=>{const label=relative(fileURLToPath(new URL('../../',import.meta.url)),fileURLToPath(new URL(name,import.meta.url)));const hash=code.dependencies[label];validHash(hash,'infill code proof');return [name,hash];}));
-  const input=packFingerprint(pack),r=repairBuildingTables(pack,plan,{planSha256:s.reviewedPlanSha256,sourceSha256:sha(sourceBytes),sourceRecordSha256:sha(recordBytes),sourceCellSha256:entry.sha256,code:infillCode});pack=r.pack;run('infill',input,r.audit,{planFile:s.planFileSha256,canonicalPlan:s.reviewedPlanSha256,source:plan.sourceSha256,sourceRecord:plan.sourceRecordSha256});}
+  const r=repairBuildingTables(pack,plan,{planSha256:s.reviewedPlanSha256,sourceSha256:hashed.sourceSha256,sourceRecordSha256:hashed.sourceRecordSha256,sourceCellSha256:entry.sha256,code:infillCode});pack=r.pack;run('infill',input,{...r.audit,sourceHashing:{bindingSha256:hashed.bindingSha256,...hashed.accounting}},{planFile:s.planFileSha256,canonicalPlan:s.reviewedPlanSha256,source:plan.sourceSha256,sourceRecord:plan.sourceRecordSha256});}
  if(stages.terrain){const s=stages.terrain,field=TERRAIN_FIELDS[s.fieldId];if(!field)fail('unknown terrain field');const atlas=pinnedJSON(s.atlasBytes,s.atlasSha256,'terrain atlas',memory),report=pinnedJSON(s.reportBytes,s.reportSha256,'terrain acceptance',memory);const accepted=requireTerrainAcceptance(scope.cells.length,{field,sourceRevision:source.revision,fieldSHA256:code.terrain,report});if(!field.geographyVerified||accepted.prototype)fail('terrain field lacks geographic/profile/protected/comfort release acceptance');if(atlas.revision!==source.revision)fail('terrain atlas source binding');const input=packFingerprint(pack),r=refineTerrainRelief(pack,terrainReliefField(atlas,{filter:field.id}));if(r.protected)fail('structurally protected terrain cell');run('terrain',input,r,{atlas:s.atlasSha256,acceptance:s.reportSha256});}
  if(stages.paint||stages.terrain){if(!stages.paint)fail('accepted terrain requires pinned paint stage');const input=packFingerprint(pack);run('paint',input,conformMarkingSurfaces(pack));}
  {const input=packFingerprint(pack),r=rebuildBridgeGuards(pack,proof);pack.metadata.budgets.triangles+=r.triangleDelta;validateWorldTile(pack,source);run('guards',input,r,{originalCompressed:entry.sha256,recipes:recipes.map(r=>r.recipeHash)});}

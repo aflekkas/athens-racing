@@ -1,16 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
-import {readFile,writeFile,mkdtemp,rm,truncate} from 'node:fs/promises';
+import {readFile,writeFile,mkdtemp,rm,truncate,rename} from 'node:fs/promises';
 import {join} from 'node:path';
 import {tmpdir} from 'node:os';
 import {Readable} from 'node:stream';
 import {gzipSync,gunzipSync} from 'node:zlib';
 import {TILE_TABLES,tileTables} from '../../src/world-tile-format.js';
 import {encodeTile,packTiles} from './pack.mjs';
-import {repairCodeProof,repairPlanSha256,packFingerprint,buildingRowSha256,repairedSpool} from './repair-infill.mjs';
+import {repairCodeProof,repairPlanSha256,packFingerprint,buildingRowSha256,repairedSpool,repairBuildingTables} from './repair-infill.mjs';
 import {sceneryProjectionCodeProof,openVerifiedSceneryCatalog,projectScenerySupport,SCENERY_PROJECTION_VERSION} from './scenery-projection.mjs';
-import {mutateOriginalCell,mutationCodeProof,mutationRecipeSha256,snapshotSceneryInvariants,assertSceneryInvariance,prepareMutationEncoding,mutationEncodingReservation} from './mutate-cell.mjs';
+import {mutateOriginalCell,mutationCodeProof,mutationRecipeSha256,snapshotSceneryInvariants,assertSceneryInvariance,prepareMutationEncoding,mutationEncodingReservation,sealInfillHashBatch,consumeInfillHashBatch,INFILL_HASH_ACCOUNTING} from './mutate-cell.mjs';
 const code=await mutationCodeProof(),infillCode=await repairCodeProof();
 const hash=b=>createHash('sha256').update(b).digest('hex'),bytes=j=>Buffer.from(JSON.stringify(j));
 const bridge=JSON.parse(await readFile(new URL('./fixtures/bridge-guards.json',import.meta.url)));
@@ -270,8 +270,8 @@ test('bounded infill source read detects growth after stat before allocating any
 
 
 test('infill growth during a read uses only the pre-admitted fixed buffer and aborts before repair',async t=>withTemp(async dir=>{
- const s=fixture(),stage=await infillStage(s,dir),a=args(s,{infill:stage,guards:{codeSha256:code.guards,recipes:[]}}),fsp=(await import('node:fs/promises')).default,{syncBuiltinESMExports}=await import('node:module'),original=fsp.open,sourceSize=(await import('node:fs/promises')).stat;const expected=(await sourceSize(stage.sourcePath)).size;let maximum=0;
- t.mock.method(fsp,'open',async(path,...rest)=>{const handle=await original(path,...rest);if(path===stage.sourcePath){const read=handle.read.bind(handle);t.mock.method(handle,'read',async(buffer,...rest)=>{maximum=Math.max(maximum,buffer.byteLength);await truncate(path,34*1024**2);return read(buffer,...rest);});}return handle;});syncBuiltinESMExports();try{await assert.rejects(mutateOriginalCell(a),/file changed during bounded read/);assert.equal(maximum,expected+1);}finally{t.mock.restoreAll();syncBuiltinESMExports();}
+ const s=fixture(),stage=await infillStage(s,dir),a=args(s,{infill:stage,guards:{codeSha256:code.guards,recipes:[]}}),fsp=(await import('node:fs/promises')).default,{syncBuiltinESMExports}=await import('node:module'),original=fsp.open,sourceSize=(await import('node:fs/promises')).stat;let maximum=0;
+ t.mock.method(fsp,'open',async(path,...rest)=>{const handle=await original(path,...rest);if(path===stage.sourcePath){const read=handle.read.bind(handle);t.mock.method(handle,'read',async(buffer,...rest)=>{maximum=Math.max(maximum,buffer.byteLength);await truncate(path,34*1024**2);return read(buffer,...rest);});}return handle;});syncBuiltinESMExports();try{await assert.rejects(mutateOriginalCell(a),/file changed during bounded read/);assert.equal(maximum,65536);}finally{t.mock.restoreAll();syncBuiltinESMExports();}
 }));
 
 
@@ -343,4 +343,83 @@ test('assembler rejects full/projection ambiguity, forged selection and reconstr
 }));
 test('projected global exclusion errors cannot bypass assembler unchanged scenery policy',async()=>withTemp(async dir=>{
  const {stage}=await projectionStage(dir,{errors:{distantUnresolved:1}});await assert.rejects(mutateOriginalCell(args(fixture(),{guards:{codeSha256:code.guards,recipes:[]},scenery:stage})),/complete explicit exclusion/);
+}));
+
+
+function hashBatchInput(s,stage){const p=JSON.parse(stage.planBytes);return {sourcePath:stage.sourcePath,binding:{planSha256:stage.reviewedPlanSha256,sourceCellSha256:s.entry.sha256,packSha256:packFingerprint(s.encoded.decoded),sourceSha256:p.sourceSha256,sourceRecordSha256:p.sourceRecordSha256,policyCodeSha256:repairPlanSha256(p.code),world:s.source.world,revision:s.source.revision,cell:[...s.source.cell]}};}
+async function withFsMock(t,install,run){const fsp=(await import('node:fs/promises')).default,{syncBuiltinESMExports}=await import('node:module');install(fsp);syncBuiltinESMExports();try{return await run();}finally{t.mock.restoreAll();syncBuiltinESMExports();}}
+test('streamed infill digests preserve full-buffer SHA parity and the SAME pure repair validator',async()=>withTemp(async dir=>{
+ const s=fixture(),stage=await infillStage(s,dir),input=hashBatchInput(s,stage),sealed=await sealInfillHashBatch(input),r=await consumeInfillHashBatch(sealed.batch,input.binding),source=await readFile(stage.sourcePath),record=await readFile(stage.sourcePath.replace(/[.](osm|pbf)$/i,'.source.json')),plan=JSON.parse(stage.planBytes);
+ assert.equal(r.sourceSha256,hash(source));assert.equal(r.sourceRecordSha256,hash(record));assert.equal(r.accounting.slabBytes,65536);assert.equal(r.accounting.nativeAllocationProven,false);assert.equal(r.accounting.notActualAdmission,true);assert.equal(r.accounting.node,process.versions.node);assert.equal(r.accounting.openssl,process.versions.openssl);assert.equal(r.accounting.independentSourceIOBytes,2*(source.length+record.length+2));
+ const common={planSha256:stage.reviewedPlanSha256,sourceCellSha256:s.entry.sha256,code:infillCode},a=repairBuildingTables(s.encoded.decoded,plan,{...common,sourceSha256:r.sourceSha256,sourceRecordSha256:r.sourceRecordSha256}),b=repairBuildingTables(s.encoded.decoded,plan,{...common,sourceSha256:hash(source),sourceRecordSha256:hash(record)});assert.deepEqual(a,b);await assert.rejects(consumeInfillHashBatch(sealed.batch,input.binding),/single-use/);
+}));
+test('68MiB sparse pair: BOTH statted, ZERO source opens/reads/raw copies/slab allocations',async t=>withTemp(async dir=>{
+ const s=fixture(),stage=await infillStage(s,dir),input=hashBatchInput(s,stage),paths=[stage.sourcePath,stage.sourcePath.replace(/[.](osm|pbf)$/i,'.source.json')];for(const path of paths)await truncate(path,34*1024**2);const seen=[],calls={open:0,read:0,copy:0,alloc:0};
+ await withFsMock(t,fsp=>{const stat=fsp.stat;t.mock.method(fsp,'stat',async(path,...rest)=>{seen.push(path);return stat(path,...rest);});t.mock.method(fsp,'open',()=>{calls.open++;throw Error('source opened');});t.mock.method(fsp,'readFile',()=>{calls.read++;throw Error('source copied');});t.mock.method(Buffer,'from',()=>{calls.copy++;throw Error('buffer copy');});t.mock.method(Buffer,'alloc',()=>{calls.alloc++;throw Error('slab allocated');});},async()=>{await assert.rejects(sealInfillHashBatch(input),/independent I\/O guard/);assert.deepEqual(seen.sort(),paths.sort());assert.deepEqual(calls,{open:0,read:0,copy:0,alloc:0});});
+}));
+test('paired stat errors are collected for BOTH roles before any open',async t=>withTemp(async dir=>{
+ const s=fixture(),stage=await infillStage(s,dir),input=hashBatchInput(s,stage),seen=[];await withFsMock(t,fsp=>{t.mock.method(fsp,'stat',async path=>{seen.push(path);throw Error('missing role');});t.mock.method(fsp,'open',()=>{throw Error('unexpected open');});},async()=>{await assert.rejects(sealInfillHashBatch(input),/paired source stat failure/);assert.equal(seen.length,2);assert.ok(seen.includes(stage.sourcePath));assert.ok(seen.some(p=>p.endsWith('.source.json')));});
+}));
+test('batch is private and caller paths/source/plan identities snapshot before first await',async()=>withTemp(async dir=>{
+ const s=fixture(),stage=await infillStage(s,dir),input=hashBatchInput(s,stage),expected=structuredClone(input.binding),pending=sealInfillHashBatch(input);input.sourcePath='/missing.osm';input.binding.sourceSha256='0'.repeat(64);input.binding.cell[0]=99;const sealed=await pending;
+ assert.throws(()=>{sealed.accounting.sourceBytes=0;},TypeError);await assert.rejects(consumeInfillHashBatch({},expected),/opaque/);const r=await consumeInfillHashBatch(sealed.batch,expected);assert.equal(r.sourceSha256,expected.sourceSha256);
+}));
+test('wrong role, source, reviewed plan/e16, physical cell and code bindings reject before open',async t=>withTemp(async dir=>{
+ const s=fixture(),stage=await infillStage(s,dir),input=hashBatchInput(s,stage);await assert.rejects(sealInfillHashBatch({...input,role:'record'}),/unexpected role/);
+ const sealed=await sealInfillHashBatch(input);await withFsMock(t,fsp=>{t.mock.method(fsp,'open',()=>{throw Error('unexpected binding open');});},async()=>{for(const change of [b=>b.planSha256='e'.repeat(64),b=>b.sourceSha256='0'.repeat(64),b=>b.sourceRecordSha256='0'.repeat(64),b=>b.sourceCellSha256='0'.repeat(64),b=>b.packSha256='0'.repeat(64),b=>b.policyCodeSha256='0'.repeat(64),b=>b.cell[0]++,b=>b.world='wrong']){const b=structuredClone(input.binding);change(b);await assert.rejects(consumeInfillHashBatch(sealed.batch,b),/binding changed/);}});
+ await consumeInfillHashBatch(sealed.batch,input.binding);
+}));
+test('source/record swapped bodies and changed pinned raw SHA reject without repair',async()=>withTemp(async dir=>{
+ const s=fixture(),stage=await infillStage(s,dir),input=hashBatchInput(s,stage),record=stage.sourcePath.replace(/[.](osm|pbf)$/i,'.source.json'),a=await readFile(stage.sourcePath),b=await readFile(record);await writeFile(stage.sourcePath,b);await writeFile(record,a);const sealed=await sealInfillHashBatch(input);await assert.rejects(consumeInfillHashBatch(sealed.batch,input.binding),/source identity mismatch \(OSM\)/);
+}));
+test('same-size path replacement after sealing rejects and closes the only open handle',async t=>withTemp(async dir=>{
+ const s=fixture(),stage=await infillStage(s,dir),input=hashBatchInput(s,stage),sealed=await sealInfillHashBatch(input),original=await readFile(stage.sourcePath),replacement=join(dir,'replacement');await writeFile(replacement,original);await rename(replacement,stage.sourcePath);let closed=0;
+ await withFsMock(t,fsp=>{const open=fsp.open;t.mock.method(fsp,'open',async(...a)=>{const h=await open(...a),close=h.close.bind(h);t.mock.method(h,'close',async()=>{closed++;return close();});return h;});},async()=>{await assert.rejects(consumeInfillHashBatch(sealed.batch,input.binding),/changed before bounded read/);assert.equal(closed,1);});
+}));
+test('growth and shrink after sealing fail before a source read',async t=>withTemp(async dir=>{
+ for(const delta of [1,-1]){const s=fixture(),stage=await infillStage(s,dir),input=hashBatchInput(s,stage),sealed=await sealInfillHashBatch(input),size=(await import('node:fs/promises')).stat;await truncate(stage.sourcePath,Number((await size(stage.sourcePath)).size)+delta);let reads=0;await withFsMock(t,fsp=>{const open=fsp.open;t.mock.method(fsp,'open',async(...a)=>{const h=await open(...a);t.mock.method(h,'read',()=>{reads++;throw Error('unexpected read');});return h;});},async()=>{await assert.rejects(consumeInfillHashBatch(sealed.batch,input.binding),/changed before bounded read/);assert.equal(reads,0);});}
+}));
+test('early EOF during streaming fails and every handle closes',async t=>withTemp(async dir=>{
+ const s=fixture(),stage=await infillStage(s,dir),input=hashBatchInput(s,stage),sealed=await sealInfillHashBatch(input);let closed=0;
+ await withFsMock(t,fsp=>{const open=fsp.open;t.mock.method(fsp,'open',async(...a)=>{const h=await open(...a),close=h.close.bind(h);t.mock.method(h,'read',async()=>({bytesRead:0}));t.mock.method(h,'close',async()=>{closed++;return close();});return h;});},async()=>{await assert.rejects(consumeInfillHashBatch(sealed.batch,input.binding),/early EOF/);assert.equal(closed,1);});
+}));
+test('growth at EOF and same-size content changes during read both reject',async t=>withTemp(async dir=>{
+ for(const change of ['grow','overwrite']){const s=fixture(),stage=await infillStage(s,dir),input=hashBatchInput(s,stage),sealed=await sealInfillHashBatch(input);let changed=false;
+ await withFsMock(t,fsp=>{const open=fsp.open;t.mock.method(fsp,'open',async(...a)=>{const h=await open(...a),read=h.read.bind(h);t.mock.method(h,'read',async(buffer,offset,length,position)=>{const result=await read(buffer,offset,length,position);if(!changed){changed=true;if(change==='grow')await truncate(stage.sourcePath,sealed.accounting.sourceBytes+1);else await writeFile(stage.sourcePath,Buffer.alloc(sealed.accounting.sourceBytes,32));}return result;});return h;});},async()=>{await assert.rejects(consumeInfillHashBatch(sealed.batch,input.binding),/changed during bounded read/);});}
+}));
+test('slab-boundary and short-read parity preserve bytes/order with actual extra histories billed',async t=>withTemp(async dir=>{
+ const s=fixture(),stage=await infillStage(s,dir),source=Buffer.alloc(65536*2+31);for(let i=0;i<source.length;i++)source[i]=i%251;await writeFile(stage.sourcePath,source);const input=hashBatchInput(s,stage);input.binding.sourceSha256=hash(source);const sealed=await sealInfillHashBatch(input);let active=0,maximum=0,maxReadBuffer=0;
+ await withFsMock(t,fsp=>{const open=fsp.open;t.mock.method(fsp,'open',async(...a)=>{active++;maximum=Math.max(maximum,active);const h=await open(...a),read=h.read.bind(h),close=h.close.bind(h);t.mock.method(h,'read',async(buffer,offset,length,position)=>{maxReadBuffer=Math.max(maxReadBuffer,buffer.length);return read(buffer,offset,Math.min(length,997),position);});t.mock.method(h,'close',async()=>{active--;return close();});return h;});},async()=>{const r=await consumeInfillHashBatch(sealed.batch,input.binding);assert.equal(r.sourceSha256,hash(source));assert.ok(r.accounting.actualReadCalls>r.accounting.plannedReadCalls);assert.ok(r.accounting.reservationBytes>sealed.accounting.reservationBytes);assert.equal(r.accounting.readHistoryEstimate,r.accounting.actualReadCalls*INFILL_HASH_ACCOUNTING.readHistoryEachEstimate);assert.equal(maximum,1);assert.equal(active,0);assert.equal(maxReadBuffer,65536);});
+}));
+test('combined retained budget rejects before stat/open/buffer allocation and cannot lose history',async t=>withTemp(async dir=>{
+ const s=fixture(),stage=await infillStage(s,dir),input=hashBatchInput(s,stage);let operations=0;await withFsMock(t,fsp=>{t.mock.method(fsp,'stat',()=>{operations++;throw Error('unexpected stat');});t.mock.method(fsp,'open',()=>{operations++;throw Error('unexpected open');});t.mock.method(Buffer,'alloc',()=>{operations++;throw Error('unexpected buffer');});},async()=>{await assert.rejects(sealInfillHashBatch(input,{retainedBytes:64*1024**2}),/live workspace budget before/);assert.equal(operations,0);});
+ const sealed=await sealInfillHashBatch(input,{retainedBytes:1024});await assert.rejects(consumeInfillHashBatch(sealed.batch,input.binding,{retainedBytes:0}),/history cannot shrink/);await consumeInfillHashBatch(sealed.batch,input.binding,{retainedBytes:1024});
+}));
+
+test('extra short-read history rejects BEFORE the first unreserved filesystem read',async t=>withTemp(async dir=>{
+ const s=fixture(),stage=await infillStage(s,dir),input=hashBatchInput(s,stage),probe=await sealInfillHashBatch(input),retainedBytes=64*1024**2-probe.accounting.reservationBytes,sealed=await sealInfillHashBatch(input,{retainedBytes});let reads=0,closed=0;
+ await withFsMock(t,fsp=>{const open=fsp.open;t.mock.method(fsp,'open',async(...a)=>{const h=await open(...a),read=h.read.bind(h),close=h.close.bind(h);t.mock.method(h,'read',async(buffer,offset,length,position)=>{reads++;return read(buffer,offset,Math.min(length,1),position);});t.mock.method(h,'close',async()=>{closed++;return close();});return h;});},async()=>{await assert.rejects(consumeInfillHashBatch(sealed.batch,input.binding,{retainedBytes}),/live workspace budget before/);assert.equal(reads,sealed.accounting.plannedReadCalls);assert.equal(closed,1);});
+}));
+test('second-role identity failure and between-role replacement close both handles',async t=>withTemp(async dir=>{
+ for(const change of ['sha','replace']){const s=fixture(),stage=await infillStage(s,dir),input=hashBatchInput(s,stage);if(change==='sha')input.binding.sourceRecordSha256='0'.repeat(64);const sealed=await sealInfillHashBatch(input),record=stage.sourcePath.replace(/[.](osm|pbf)$/i,'.source.json');let opens=0,closed=0;
+ await withFsMock(t,fsp=>{const open=fsp.open;t.mock.method(fsp,'open',async(...args)=>{opens++;if(opens===2&&change==='replace'){const b=await readFile(record),replacement=join(dir,'other-record');await writeFile(replacement,b);await rename(replacement,record);}const h=await open(...args),close=h.close.bind(h);t.mock.method(h,'close',async()=>{closed++;return close();});return h;});},async()=>{await assert.rejects(consumeInfillHashBatch(sealed.batch,input.binding),change==='sha'?/source identity mismatch \(record\)/:/changed before bounded read/);assert.equal(opens,2);assert.equal(closed,2);});}
+}));
+test('callback/array/property tricks reject before asynchronous source observation',async t=>withTemp(async dir=>{
+ const s=fixture(),stage=await infillStage(s,dir),input=hashBatchInput(s,stage);let callbacks=0,stats=0;
+ await withFsMock(t,fsp=>{t.mock.method(fsp,'stat',()=>{stats++;throw Error('unexpected stat');});},async()=>{
+ const getter={binding:input.binding};Object.defineProperty(getter,'sourcePath',{enumerable:true,get(){callbacks++;return stage.sourcePath;}});await assert.rejects(sealInfillHashBatch(getter),/accessor/);
+ const binding=structuredClone(input.binding);Object.defineProperty(binding.cell,'extra',{get(){callbacks++;return 1;}});await assert.rejects(sealInfillHashBatch({...input,binding}),/array.*property/);
+ const options={};Object.defineProperty(options,'retainedBytes',{enumerable:true,get(){callbacks++;return 0;}});await assert.rejects(sealInfillHashBatch(input,options),/accessor/);assert.equal(callbacks,0);assert.equal(stats,0);
+ });
+}));
+
+test('stream histories remain billed through EVERY later spool/codec/ordinary-packer phase',async()=>withTemp(async dir=>{
+ const s=fixture(),stage=await infillStage(s,dir),input=hashBatchInput(s,stage),sealed=await sealInfillHashBatch(input),hashed=await consumeInfillHashBatch(sealed.batch,input.binding),plain=mutationEncodingReservation(s.encoded.decoded),billed=mutationEncodingReservation(s.encoded.decoded,{retainedBytes:hashed.accounting.reservationBytes});
+ for(let i=0;i<plain.phases.length;i++)assert.equal(billed.phases[i].bytes-plain.phases[i].bytes,hashed.accounting.reservationBytes);
+ const stress=encodingStressFixture().pack,r=mutationEncodingReservation(stress,{retainedBytes:hashed.accounting.reservationBytes});assert.ok(r.phases.find(p=>p.phase==='ordinary-packer').bytes>64*1024**2);assert.throws(()=>prepareMutationEncoding(stress,{retainedBytes:hashed.accounting.reservationBytes}),error=>{assert.match(error.message,/budget before spool/);assert.deepEqual(error.allocationAttempts,{spool:0,stringify:0,parse:0,encode:0});return true;});
+}));
+
+test('first role changed while hashing second role fails final paired descriptor seal',async t=>withTemp(async dir=>{
+ const s=fixture(),stage=await infillStage(s,dir),input=hashBatchInput(s,stage),sealed=await sealInfillHashBatch(input);let opens=0,changed=false;
+ await withFsMock(t,fsp=>{const open=fsp.open;t.mock.method(fsp,'open',async(...args)=>{opens++;const h=await open(...args),read=h.read.bind(h);if(opens===2)t.mock.method(h,'read',async(...a)=>{const r=await read(...a);if(!changed){changed=true;await writeFile(stage.sourcePath,Buffer.alloc(sealed.accounting.sourceBytes,32));}return r;});return h;});},async()=>{await assert.rejects(consumeInfillHashBatch(sealed.batch,input.binding),/paired source changed before digest seal/);assert.equal(opens,2);});
 }));
