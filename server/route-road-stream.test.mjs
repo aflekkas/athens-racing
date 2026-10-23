@@ -294,3 +294,27 @@ test('v2 consumes private tuples within live-buffer budget when complete second-
   assert.ok(result.metrics.memory.authenticationBytes <= RECOVERY_MEMORY.decoded);
   assert.equal(packed.schemaVersion, 2); assert.equal(packed.anchors[0].length, 14);
 });
+
+test('caller object admission rejects live serialization overflow before any TextEncoder allocation', async t => {
+  const { encodeRecoverySidecar, recoveryDataBytes, recoveryCanonicalSize } = await import('./route-road-wire.mjs');
+  const NativeEncoder = globalThis.TextEncoder;
+  for (const version of [2, 1]) {
+    const body = version === 1 ? twoWayBody() : structuredClone(encodeRecoverySidecar(twoWayBody()));
+    body.edges[0].extra = Array(90000).fill(0); body.edges[0].sourceMetadata = 'x'.repeat(1500000);
+    const data = recoveryDataBytes(body), size = recoveryCanonicalSize(body);
+    assert.ok(data < RECOVERY_MEMORY.decoded); assert.ok(size.bytes < 2 * 1024 * 1024);
+    assert.ok(data + size.codeUnits * 2 + size.bytes > RECOVERY_MEMORY.decoded);
+    t.diagnostic(JSON.stringify({ version, objectBytes: data, wireBytes: size.bytes, legacySerializationLiveBytes: data + size.codeUnits * 2 + size.bytes, decodedLimitBytes: RECOVERY_MEMORY.decoded }));
+    let encodeCalls = 0, encodeIntoCalls = 0;
+    globalThis.TextEncoder = class extends NativeEncoder {
+      encode(...args) { encodeCalls++; return super.encode(...args); }
+      encodeInto(...args) { encodeIntoCalls++; return super.encodeInto(...args); }
+    };
+    try {
+      let failure; try { await admitRecoverySidecar(body, { expectedHash: 'a'.repeat(64), worldSetRevision: revision }); } catch (e) { failure = e; }
+      assert.equal(encodeCalls, 0, 'reject before full UTF-16/UTF-8 serialization');
+      assert.equal(encodeIntoCalls, 0, 'reject before token writer allocation/use');
+      assert.match(failure?.message || '', /memory budget/);
+    } finally { globalThis.TextEncoder = NativeEncoder; }
+  }
+});

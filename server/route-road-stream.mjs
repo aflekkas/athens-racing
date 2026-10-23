@@ -1,7 +1,7 @@
 import { canonicalJSON, sha256 } from '../src/route-definition.js';
 import { ROUTE_HASH } from '../src/route-network.js';
 import { validateRouteRoads, routeRoadAuthority } from './route-roads.mjs';
-import { recoveryDataBytes } from './route-road-wire.mjs';
+import { recoveryDataBytes, recoveryCanonicalSize } from './route-road-wire.mjs';
 export { recoveryDataBytes } from './route-road-wire.mjs';
 export const RECOVERY_ARTIFACT_BYTES = 2 * 1024 * 1024;
 const cellOf = pose => `${Math.floor(pose.x / 512)},${Math.floor(pose.z / 512)}`;
@@ -64,7 +64,16 @@ export async function admitRecoverySidecar(raw, { expectedHash, worldSetRevision
     const text = typeof raw === 'string' ? raw : new TextDecoder().decode(raw);
     scanRecoveryJSON(text, RECOVERY_MEMORY.decoded); body = JSON.parse(text);
     liveBufferBytes = text.length * 2 + (raw instanceof Uint8Array ? raw.byteLength : 0); consumePacked = true;
-  } else { body = raw; bytes = new TextEncoder().encode(canonicalJSON(body)).length; }
+  } else {
+    body = raw;
+    // Caller-owned objects have no wire buffer to inspect. Count before any
+    // canonical serialization/encoding, including the authentication phase.
+    const decoded = recoveryDataBytes(body, RECOVERY_MEMORY.decoded), size = recoveryCanonicalSize(body);
+    bytes = size.bytes;
+    if (bytes > RECOVERY_ARTIFACT_BYTES) throw Error('Recovery sidecar exceeds artifact budget');
+    const tokenBytes = (body?.schemaVersion === 2 ? size.maxTokenCodeUnits : size.codeUnits) * 2;
+    if (decoded + tokenBytes + size.bytes * 2 > RECOVERY_MEMORY.decoded) throw Error('Recovery authentication memory budget exceeded');
+  }
   recoveryDataBytes(body, RECOVERY_MEMORY.decoded);
   const memory = { liveBufferBytes };
   const proven = await validateRouteRoads(body, { expectedHash, worldSetRevision, maxCombinedBytes: RECOVERY_MEMORY.decoded, liveBufferBytes, consumePacked, memoryStats: memory });
