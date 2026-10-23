@@ -215,4 +215,24 @@ loading agent can finish the separately authenticated full-garage online proof;
 final cleanup and exact before/after disk figures are reported in the handoff.
 No other agent's files, process, cache or worktree was removed.
 
+## Exact clean-archive gate result, 2026-10-23
+
+Candidate `2d1bbb97dbc24853767759cb34fb1f94a2d6d109` was archived into the
+single task temp directory and checked sequentially with `ASR_TEST_JOBS=2`.
+Dependencies were the unchanged-lockfile task installation, symlinked into the
+archive; source files came from the exact commit.
+
+- `npm test`: 301/301 files, 2,748 tests; 2,733 passed, **1 failed**, 14 skipped,
+  zero flaky. The release test expected the old six-route activation list and
+  failed again on its isolated retry. This candidate is not green.
+- Physics regress: 1,323 passed, zero failed.
+- Browser imports: 373 modules passed.
+- Syntax: 460 modules passed.
+
+Follow-up `c09e969fe6d50621755e8fa4debd97c3f71df4fe` changes only the release
+fixture expectation to include Kifissia. Its focused release suite passed 8/8.
+Full exact-candidate verification of that correction remains queued behind
+server and terrain. Prior failures are not relabelled as passes. No runtime,
+route geometry, world edition or online capacity changed in this follow-up.
+
 </details>

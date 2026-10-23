@@ -44,7 +44,7 @@ change does not certify exact current paint, fences or every building facade.
 
 The Kifisias structural-source plan supplies concrete crossing audit leads at
 38.042113, 23.803505 (group `w26984266:0`, lower `w154259480:0` and
-`w154259484:0`), nearby ramp 38.042831, 23.801010 (`w23200519:0`), and
+`w154259484:0`), nearby Dionysou bridge 38.042831, 23.801010 (`w23200519:0`), and
 38.032288, 23.794236 (`w32067820:0`, lower `w361263590:0`, `w361263594:0`,
 `w98895975:0`, `w98895980:0`). These are source-plan facts from
 `tools/world-gen/areas/north.structures.json`, not a claim that every rendered

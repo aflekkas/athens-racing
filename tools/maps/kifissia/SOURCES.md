@@ -94,3 +94,30 @@ For an offline hash-named cache, give manifest entries relative URLs of
 Those local transport URLs are omitted from the proof. The tool uses the
 reviewed exact edge sequence; it never falls back to snapping, rebaking,
 uploading, changing the world or inventing a connector.
+
+## Kifisias crossing source audit, 2026-10-23
+
+A later bounded read of the official OSM API succeeded (HTTP 200). These are
+current way metadata, separately dated from the immutable emitted cells above;
+no claim is made that their current versions were used in those cells. Source
+URLs use `https://api.openstreetmap.org/api/0.6/way/ID`. Full response SHA-256s:
+
+| Way | Version / source timestamp | Observed tags | Response SHA-256 |
+|---|---|---|---|
+| 26984266 | 31 / 2026-08-26T13:53:54Z | Kifisias, primary, bridge=yes, layer=1, oneway=yes, lanes=2 | 013cebbea55ba2852e7f3c71426a920e9d9a436ce81d59a31d7292b32831f5b2 |
+| 154259484 | 46 / 2026-09-06T21:37:57Z | Attiki Odos, motorway, oneway=yes, lanes=3 | 0afc6ba03a51ee76f0f2de4d3a3c46f7c73cb6c7c5e5f16932413ff293c40d38 |
+| 154259480 | 43 / 2026-09-06T21:37:57Z | Attiki Odos, motorway, oneway=yes, lanes=3 | d0068768510d3497c746d2f0e4e81bb79d91c7bda526ac8edf4cbb4e631a7f0d |
+| 23200519 | 13 / 2024-06-06T08:14:47Z | Dionysou, residential, bridge=yes, layer=1, lanes=2 | 85196c86d729b3af863bf6d8d476f653e67f65fb47200bb5de0fb9934a7ec59f |
+| 32067820 | 24 / 2026-08-26T13:53:54Z | Kifisias, primary, bridge=yes, layer=1, oneway=yes, lanes=3 | e7aad81a559e9d7f47c70ce39bf94329891b71453404d796a59f33ded70d5e1d |
+| 87150957 | 26 / 2026-08-26T13:53:54Z | Kifisias, primary, bridge=yes, layer=1, oneway=yes, lanes=5 | 59a26687e20e27170c06fc66b93e2760d1ed5dc68204a11b18bf2d62bcc736ee |
+| 98895975 | 18 / 2024-08-05T18:43:36Z | Olympioniki Spyrou Loui, secondary, oneway=yes, lanes=2 | ac894d2ff8a5b1c12ac8f183ca42ea0596fda7f6601791141e25bd305d11e2a0 |
+
+The two Attiki Odos ways and lower Spyrou Loui way have no explicit `layer`,
+`bridge`, `tunnel`, `cutting` or `embankment` tags in these responses. Absence of
+a tag does not establish a flat or non-depressed approach. The source supports
+upper bridge ordering, but does not justify a uniform six-metre lower-road
+depression. The nearby `w23200519` crossing is **Dionysou residential bridge**,
+not a motorway ramp. Exact terrain audit intersections are world
+`[6451.72,-6926.43]`, `[6224.83,-6984.31]`, `[5636.42,-5822.65]` respectively.
+Street View inspection of the actual approach profiles remains outstanding.
+Terrain/infrastructure owners received these facts; no geometry was changed.
