@@ -1,0 +1,194 @@
+{
+  "build": "9a50165c",
+  "source": "a117ed94",
+  "repairCellSha256": "0755738973c38065af40edefc98f1600c1227db8387754fc11ea173e3343db59",
+  "report": [
+    {
+      "variant": "after",
+      "name": "glyfada-paint",
+      "marks": {
+        "triangles": 364,
+        "rows": 110,
+        "rebuilds": 9,
+        "ms": 7.5
+      },
+      "pixelRatio": 0.8,
+      "calls": 1,
+      "triangles": 1,
+      "camera": [
+        28,
+        27.19625807155011,
+        173
+      ],
+      "origin": {
+        "x": 2048,
+        "z": 12800
+      },
+      "loadingOpacity": "0",
+      "drive": {
+        "start": {
+          "x": 2325.382023720506,
+          "y": 16.61684823129154,
+          "z": 13057.061034589406
+        },
+        "end": {
+          "x": 2315.3612247464407,
+          "y": 16.95393321389985,
+          "z": 13119.831487419988
+        },
+        "holds": 0,
+        "missing": 0,
+        "metres": 63.56529058343977
+      }
+    },
+    {
+      "variant": "after",
+      "name": "glyfada-kerb",
+      "marks": {
+        "triangles": 364,
+        "rows": 110,
+        "rebuilds": 9,
+        "ms": 7.5
+      },
+      "pixelRatio": 0.8,
+      "calls": 1,
+      "triangles": 1,
+      "camera": [
+        265,
+        40.60604375234304,
+        275
+      ],
+      "origin": {
+        "x": 2048,
+        "z": 12800
+      },
+      "loadingOpacity": "0",
+      "drive": {
+        "start": {
+          "x": 2325.382023720506,
+          "y": 16.61684823129154,
+          "z": 13057.061034589406
+        },
+        "end": {
+          "x": 2315.3612247464407,
+          "y": 16.95393321389985,
+          "z": 13119.831487419988
+        },
+        "holds": 0,
+        "missing": 0,
+        "metres": 63.56529058343977
+      }
+    },
+    {
+      "variant": "after",
+      "name": "vouliagmeni-kerb",
+      "x": 3964.7287947885816,
+      "y": 24.15653421055661,
+      "z": 18508.676211686805,
+      "camera": [
+        1905,
+        48.149770936275274,
+        95
+      ],
+      "marks": {
+        "triangles": 172,
+        "rows": 50,
+        "rebuilds": 1,
+        "ms": 2.5999999940395355
+      },
+      "calls": 1,
+      "triangles": 1,
+      "loadingOpacity": "0"
+    }
+  ],
+  "errors": [],
+  "baselineCaptures": [
+    {
+      "path": "/home/dev/.cogenly/worktrees/athens-racing/t3-83f3d59d/.scratch/road-markings/glyfada-drive-before.jpg",
+      "start": {
+        "x": 2325.382023720506,
+        "y": 16.61684823129154,
+        "z": 13057.061034589406
+      },
+      "end": {
+        "x": 2315.3612246527155,
+        "y": 16.953933218366533,
+        "z": 13119.831486469695
+      },
+      "holds": 0,
+      "missing": 0,
+      "metres": 63.565289659805096
+    },
+    {
+      "path": "/home/dev/.cogenly/worktrees/athens-racing/t3-83f3d59d/.scratch/road-markings/glyfada-paint-before.jpg",
+      "marks": {
+        "triangles": 516,
+        "rows": 186,
+        "rebuilds": 9,
+        "ms": 5.200000002980232
+      },
+      "pixelRatio": 0.8,
+      "calls": 1,
+      "triangles": 1,
+      "camera": [
+        28,
+        27.19625807155011,
+        173
+      ],
+      "origin": {
+        "x": 2048,
+        "z": 12800
+      },
+      "loadingOpacity": "0"
+    },
+    {
+      "path": "/home/dev/.cogenly/worktrees/athens-racing/t3-83f3d59d/.scratch/road-markings/glyfada-kerb-before.jpg",
+      "marks": {
+        "triangles": 516,
+        "rows": 186,
+        "rebuilds": 9,
+        "ms": 5.200000002980232
+      },
+      "pixelRatio": 0.8,
+      "calls": 1,
+      "triangles": 1,
+      "camera": [
+        265,
+        40.60604375234304,
+        275
+      ],
+      "origin": {
+        "x": 2048,
+        "z": 12800
+      },
+      "loadingOpacity": "0"
+    },
+    {
+      "path": "/home/dev/.cogenly/worktrees/athens-racing/t3-83f3d59d/.scratch/road-markings/vouliagmeni-kerb-before.jpg",
+      "x": 3964.7287947885816,
+      "y": 24.15653421055661,
+      "z": 18508.676211686805,
+      "camera": [
+        1905,
+        48.149770936275274,
+        95
+      ],
+      "marks": {
+        "triangles": 288,
+        "rows": 108,
+        "rebuilds": 2,
+        "ms": 3.5
+      },
+      "calls": 1,
+      "triangles": 1,
+      "loadingOpacity": "0"
+    }
+  ],
+  "baselineBuild": "a117ed94",
+  "candidateBuild": "9a50165c3a64ade1e7bd0d09e925971d32238d1b",
+  "rendererCountersNote": "calls/triangles fields are the final post pass, not full-frame counts; per-cell mesh counts are documented separately.",
+  "fixtureGuardChecks": [
+    "World-set revision mismatch rejected, canonical descriptor hash regenerated",
+    "Per-cell source revision mismatch rejected, original immutable entry.source identity preserved"
+  ]
+}
