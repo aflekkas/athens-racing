@@ -304,3 +304,60 @@ Checks:7/7new panorama metadata/URL/date bindings and9/9combined sampled-target
 coverage records;3/3prepared-camera projection/heading/FOV bindings. No full
 npm/physics/import/syntax gates were run for this documentation/numeric receipt
 update. No runtime, generator, building, source-world or catalogue changed.
+
+## Static capture preflight: two road poses ready; third unmatched
+
+The parent granted a sourceMASTERf672 / immutable80055f static game turn.
+The road-floor preflight stopped **before any browser, proxy or slot launch**:
+station9000's exact snapped panoramaXZ has no authenticated road triangle in
+its owning cell. No JPG, shader-clean claim, game render or driving claim is
+made. Explicit ROUTE END/FULL CLOSED went to parent and terrain; the next
+terrain diagnostic owns CPU. No source-world/cell bytes were copied or changed.
+
+A subsequent approved small read-only diagnostic checked the full cached3×3
+physical neighborhood around that camera and the optional Tower camera:
+18/18packets were available, compressed SHA-verified, decoded and checked
+against exact source identities. Exhaustive physical contact/fine triangles
+were considered without CSR sampling or nearest-height/layer choice. All
+neighbor cells and source owners/hashes are in `camera-neighbor-diagnostic.json`.
+
+At station9000, actual worldXZ[8878.321398625156,18419.786439999953], only
+layer0terrain covers the point, Y17.153471852539m. The named terrain contact
+and anonymous fine entry are two representations of the same diagnostic
+height. No road covers it from any of the nine packets. Nearest layer0asphalt
+is **0.215469m** away inXZ on `surface:w483246714:0` in17,35, nearestXYZ
+[8878.279366058585,17.057942615917,18419.997769760754]. Its neighboring17,36
+clipped continuation ends12.21356m away atz18432. No terrain/coarse height or
+nearest-road Y was assigned as the camera floor.
+
+This does **not** classify a missing road or width defect. Google snapped the
+camera8.350742m from the requested model point; road side/lane/capture travel
+is unestablished. Current OSMway483246714v17/source2026-04-04 has one two-way
+4lane source with2forward+2backward, not a proven distinct carriageway for the
+camera. The frame heading is not capture-vehicle travel direction. The third
+camera stays in the audit as **reference camera unmatched**, with no widening,
+reprojection, route-centreY or layer fallback proposed.
+
+`static-camera-preflight.json` records these ready source floors for a later
+explicit grant; all eye heights remain assumptions, not surveyed measurements:
+
+| Static target | Exact authenticated road-floor Y m | Eye+2.5m Y m | Source surface |
+|---|---:|---:|---|
+| Riviera500 | 9.256925763426 | 11.756925763426 | surface:w328525144:0,layer0 |
+| Riviera3000 | 17.924224079641 | 20.424224079641 | surface:w87543250:0,layer0 |
+| Tower optional | 4.069209857572 | 6.569209857572 | surface:w174698180:0,layer0 |
+
+The Tower's exact April2026 cameraXZ[-180.009431922608,10765.144939999354]
+has one road-floor contact across its nine authenticated neighboring packets.
+It is prepared only as an optional current-model baseline after the two valid
+Riviera views; no matching200m height, facade or construction-state claim.
+
+Working codec/format/contact module SHA-256s match exact immutable master
+`f6721d1459d44c32ef2bddbb087bb5675c6b325a` and are recorded. The intended
+renderer target hashes are separately marked **unexecuted**; renderer source
+was not silently replaced and no browser ran. A later capture must re-pin its
+explicit build and verify the source-bound contacts at runtime. The numeric
+camera assumptions/FOV/metadata requirements above still apply. No full gate,
+source runtime edit, broad triangle runtime scan or physical guard change was
+made. Checks cover preflight3poses,18cached identities, two complete3×3
+neighborhoods and the retained blocked reference; actual game proof is pending.

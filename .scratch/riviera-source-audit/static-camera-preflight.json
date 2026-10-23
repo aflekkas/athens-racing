@@ -1,0 +1,289 @@
+{
+  "targetMasterSourceCommit": "f6721d1459d44c32ef2bddbb087bb5675c6b325a",
+  "sourceWorldSetRevision": "80055f9208753e2d6fa8658b31c90216d22c650f7f33588ebd5178d1a6b804a1",
+  "status": "static game capture attempt stopped before browser launch at third road-floor block; no images or rendering proof",
+  "browserLaunched": false,
+  "proxyLaunched": false,
+  "slotLaunched": false,
+  "sourceModuleWorkingBytes": [
+    {
+      "path": "src/world-tile-codec.js",
+      "sha256": "862ca7bbab99c2de47153dfbb0d1c6321f43f1c92ebe58d8de0cd872f8487717",
+      "matchesMaster": true
+    },
+    {
+      "path": "src/world-tile-format.js",
+      "sha256": "56800180d50db23c63276cc4609d4f3d7dbebd4530bd2cc1961ff5ccb418662f",
+      "matchesMaster": true
+    },
+    {
+      "path": "src/world-tile-contact.js",
+      "sha256": "e11c73c6b5c09601bb8afdee6111d241e730c5aee7a77d3b2770d1790573c362",
+      "matchesMaster": true
+    }
+  ],
+  "unexecutedRendererTargets": [
+    {
+      "path": "src/main.js",
+      "targetMasterBlobSha256": "b527aace5495d2afe8604315f71cf2961e677725c23af7e608a51415698540ac",
+      "executedInBrowser": false
+    },
+    {
+      "path": "src/athens-world.js",
+      "targetMasterBlobSha256": "31cab82a8af2c7daea1df73754262338acdfbe674fe82023a0263e7fd1f866a7",
+      "executedInBrowser": false
+    },
+    {
+      "path": "src/world-traffic.js",
+      "targetMasterBlobSha256": "29c330cab8bf2f04ea274dfa3803ccb55e1e7e537ed5e491df938021d97828de",
+      "executedInBrowser": false
+    }
+  ],
+  "method": "compressed cached bodies SHAchecked and decoded against exact source world/revision/cell; exhaustive roadcontact triangles; no routecentreY substitution",
+  "initialThreeRoadPreflight": [
+    {
+      "station": 500,
+      "cell": "9,37",
+      "hash": "8056d040145d13b70920882d43e419c160e53a3b49bf8592f3ea603973529e3a",
+      "pose": [
+        4701.523459205332,
+        19099.484095999986
+      ],
+      "hits": [
+        {
+          "y": 9.256925763426436,
+          "layer": 0,
+          "surface": "surface:w328525144:0",
+          "flags": 1
+        }
+      ],
+      "unique": true
+    },
+    {
+      "station": 3000,
+      "cell": "11,38",
+      "hash": "0f9765cd7cd07194185cdab750b8b99339cc6436dff419bfa4817d73333c7194",
+      "pose": [
+        5921.103812719877,
+        19612.37986399972
+      ],
+      "hits": [
+        {
+          "y": 17.924224079641334,
+          "layer": 0,
+          "surface": "surface:w87543250:0",
+          "flags": 1
+        }
+      ],
+      "unique": true
+    },
+    {
+      "station": 9000,
+      "cell": "17,35",
+      "hash": "a03232064c31a8f402dabcacd3e55fec6b3105e1743bc0de520ece14bb0708c6",
+      "pose": [
+        8878.321398625156,
+        18419.786439999953
+      ],
+      "hits": [],
+      "unique": false
+    }
+  ],
+  "readyForNextGrant": [
+    {
+      "routeStationM": 500,
+      "panoId": "KBCcJcBthVSZMUEvOXBVXg",
+      "referenceDate": "February 2025",
+      "referenceHeadingDeg": 133.78,
+      "cameraWorldXZ": [
+        4701.523459205332,
+        19099.484095999986
+      ],
+      "cameraYawRad": -2.334901473318014,
+      "horizontalFovDeg": 90,
+      "verticalFovDegAt1280x800": 64.01076641616699,
+      "pitchDeg": 0,
+      "rollDeg": 0,
+      "cameraWorldY": 11.756925763426436,
+      "eyeHeightAboveSourceContactAssumptionM": 2.5,
+      "eyeHeightSensitivityM": [
+        1.6,
+        2.5,
+        3.0
+      ],
+      "horizonAssumption": "level camera from requestedpitch0/URL90t; no recovered surveyed camera attitude or eye height",
+      "groundYStatus": "unresolved at actual panorama XZ; must query authenticated emitted contact before rendering; no substitution of requested route point Y",
+      "groundQueryHint": {
+        "layer": 0,
+        "surfaceId": "surface:w328525144:0",
+        "edgeId": "osm:way:328525144:0-0:f:9:37",
+        "referenceYOnly": 9.218378504689262
+      },
+      "cell": "9,37",
+      "cellEntry": {
+        "url": "https://staging.athensracing.com/world/cells/8056d040145d13b70920882d43e419c160e53a3b49bf8592f3ea603973529e3a.bin.gz",
+        "sha256": "8056d040145d13b70920882d43e419c160e53a3b49bf8592f3ea603973529e3a",
+        "bytes": 224844,
+        "decodedBytes": 4007374,
+        "residentBytes": 2626935,
+        "transientBytes": 8239592,
+        "dependencies": [],
+        "triangles": 26108,
+        "contactEligible": true,
+        "source": {
+          "regionId": "basin",
+          "world": "athens-east-development",
+          "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+        }
+      },
+      "sourceWorldSetRevision": "80055f9208753e2d6fa8658b31c90216d22c650f7f33588ebd5178d1a6b804a1",
+      "status": "authenticated road-floor preflight ready; not rendered",
+      "requiredProof": [
+        "pin exact source code commit before game run",
+        "verify source manifest/cell hashes and actualcontact atcameraXZ; failclosedifabsent",
+        "record actual camera world/local XYZ, quaternion, FOV and floating origin",
+        "fresh positive physics/visual/render step; loading opacity0",
+        "record actual selected car/playerpose separately; camera match is not legal-lane/driving proof",
+        "own-game JPG immediately sent to parent; no thirdpartyimage embedding"
+      ],
+      "authenticatedFloor": {
+        "y": 9.256925763426436,
+        "layer": 0,
+        "surface": "surface:w328525144:0",
+        "flags": 1
+      },
+      "roadContactCellSha256": "8056d040145d13b70920882d43e419c160e53a3b49bf8592f3ea603973529e3a",
+      "eyeHeightMeasured": false,
+      "gameCaptureStatus": "not launched; next explicit grant required"
+    },
+    {
+      "routeStationM": 3000,
+      "panoId": "JUJPy3OJppeb4rjqL6VzgQ",
+      "referenceDate": "March 2026",
+      "referenceHeadingDeg": 29.84,
+      "cameraWorldXZ": [
+        5921.103812719877,
+        19612.37986399972
+      ],
+      "cameraYawRad": -0.520806248795108,
+      "horizontalFovDeg": 90,
+      "verticalFovDegAt1280x800": 64.01076641616699,
+      "pitchDeg": 0,
+      "rollDeg": 0,
+      "cameraWorldY": 20.424224079641334,
+      "eyeHeightAboveSourceContactAssumptionM": 2.5,
+      "eyeHeightSensitivityM": [
+        1.6,
+        2.5,
+        3.0
+      ],
+      "horizonAssumption": "level camera from requestedpitch0/URL90t; no recovered surveyed camera attitude or eye height",
+      "groundYStatus": "unresolved at actual panorama XZ; must query authenticated emitted contact before rendering; no substitution of requested route point Y",
+      "groundQueryHint": {
+        "layer": 0,
+        "surfaceId": "surface:w87543250:0",
+        "edgeId": "osm:way:87543250:0-0:b:11:38",
+        "referenceYOnly": 17.53204910192853
+      },
+      "cell": "11,38",
+      "cellEntry": {
+        "url": "https://staging.athensracing.com/world/cells/0f9765cd7cd07194185cdab750b8b99339cc6436dff419bfa4817d73333c7194.bin.gz",
+        "sha256": "0f9765cd7cd07194185cdab750b8b99339cc6436dff419bfa4817d73333c7194",
+        "bytes": 112133,
+        "decodedBytes": 1674320,
+        "residentBytes": 966839,
+        "transientBytes": 3460773,
+        "dependencies": [],
+        "triangles": 10723,
+        "contactEligible": true,
+        "source": {
+          "regionId": "basin",
+          "world": "athens-east-development",
+          "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+        }
+      },
+      "sourceWorldSetRevision": "80055f9208753e2d6fa8658b31c90216d22c650f7f33588ebd5178d1a6b804a1",
+      "status": "authenticated road-floor preflight ready; not rendered",
+      "requiredProof": [
+        "pin exact source code commit before game run",
+        "verify source manifest/cell hashes and actualcontact atcameraXZ; failclosedifabsent",
+        "record actual camera world/local XYZ, quaternion, FOV and floating origin",
+        "fresh positive physics/visual/render step; loading opacity0",
+        "record actual selected car/playerpose separately; camera match is not legal-lane/driving proof",
+        "own-game JPG immediately sent to parent; no thirdpartyimage embedding"
+      ],
+      "authenticatedFloor": {
+        "y": 17.924224079641334,
+        "layer": 0,
+        "surface": "surface:w87543250:0",
+        "flags": 1
+      },
+      "roadContactCellSha256": "0f9765cd7cd07194185cdab750b8b99339cc6436dff419bfa4817d73333c7194",
+      "eyeHeightMeasured": false,
+      "gameCaptureStatus": "not launched; next explicit grant required"
+    },
+    {
+      "id": "tower-optional",
+      "status": "authenticated road-floor preflight ready; not rendered",
+      "sourceCell": {
+        "key": "-1,21",
+        "sha256": "13ebbb53967d5fe7919e2c9d1f128298725d8feee757e619e18f0e134efe6e19",
+        "source": {
+          "regionId": "basin",
+          "world": "athens-east-development",
+          "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+        },
+        "inDomain": true,
+        "contactTriangles": 0,
+        "fineTriangles": 14563
+      },
+      "cameraWorldXYZ": [
+        -180.00943192260834,
+        6.56920985757241,
+        10765.144939999354
+      ],
+      "authenticatedFloor": {
+        "cell": "-1,21",
+        "layer": 0,
+        "surface": "surface:w174698180:0",
+        "flags": 1,
+        "type": "fine",
+        "x": -180.00943192260831,
+        "y": 4.06920985757241,
+        "z": 10765.144939999354,
+        "distance": 0,
+        "inDomain": true
+      },
+      "reference": {
+        "lat": 37.8832955,
+        "lon": 23.7279485,
+        "worldX": -180.00943192260834,
+        "worldZ": 10765.144939999354,
+        "headingDeg": 242.96,
+        "urlTiltDeg": 100.0,
+        "requestedPitchDeg": 10,
+        "panoId": "3oyte2cVix7kdzQXwFpi5g",
+        "imageCaptureDate": "Apr 2026",
+        "label": "Elliniko, Decentralized Administration of Attica",
+        "credit": "Google Street View",
+        "actualURL": "https://www.google.com/maps/@37.8832955,23.7279485,6a,90y,242.96h,100t/data=!3m7!1e1!3m5!1s3oyte2cVix7kdzQXwFpi5g!2e0!6shttps:%2F%2Fstreetviewpixels-pa.clients6.google.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D-10%26panoid%3D3oyte2cVix7kdzQXwFpi5g%26yaw%3D242.96!7i16384!8i8192?entry=ttu&g_ep=EgoyMDI2MTAxOS4wIKXMDSoASAFQAw%3D%3D",
+        "panoURL": "https://www.google.com/maps/@?api=1&map_action=pano&pano=3oyte2cVix7kdzQXwFpi5g&heading=242.96&pitch=10&fov=90",
+        "requestedToObservedDistanceM": 6.015238053563457,
+        "localAlongRouteOffsetM": 0.4144346303465558,
+        "localRightOfRouteOffsetM": -6.000944323871653
+      },
+      "eyeHeightAboveSourceContactAssumptionM": 2.5,
+      "eyeHeightMeasured": false,
+      "headingDeg": 242.96,
+      "pitchDeg": 10,
+      "horizontalFovDeg": 90,
+      "sourceTowerCellSha256": "13ebbb53967d5fe7919e2c9d1f128298725d8feee757e619e18f0e134efe6e19",
+      "sourceTowerGeometry": "generic seven-corner160m extrusion; current source model baseline, no matchingheight/finishedarchitecture claim",
+      "gameCaptureStatus": "not launched; optional only after two valid Riviera views within later grant"
+    }
+  ],
+  "blockedReferenceCameraId": "riviera9000",
+  "blockedCameraRetained": true,
+  "thirdCameraTerrainDiagnosticOnly": true,
+  "noRoadGapOrWidthDefectClassified": true
+}

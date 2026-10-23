@@ -1,0 +1,615 @@
+{
+  "masterSourceCommit": "f6721d1459d44c32ef2bddbb087bb5675c6b325a",
+  "worldSetRevision": "80055f9208753e2d6fa8658b31c90216d22c650f7f33588ebd5178d1a6b804a1",
+  "sourceHashes": [
+    {
+      "path": "src/world-tile-codec.js",
+      "sha256": "862ca7bbab99c2de47153dfbb0d1c6321f43f1c92ebe58d8de0cd872f8487717",
+      "matchesMaster": true
+    },
+    {
+      "path": "src/world-tile-format.js",
+      "sha256": "56800180d50db23c63276cc4609d4f3d7dbebd4530bd2cc1961ff5ccb418662f",
+      "matchesMaster": true
+    },
+    {
+      "path": "src/world-tile-contact.js",
+      "sha256": "e11c73c6b5c09601bb8afdee6111d241e730c5aee7a77d3b2770d1790573c362",
+      "matchesMaster": true
+    }
+  ],
+  "method": "exhaustive cached3x3 physical contact and fine triangle XZ enumeration; no CSR sampling or height/layer selection; nearest layer0road triangle projection; no source/guard edits",
+  "results": [
+    {
+      "id": "riviera9000",
+      "worldXZ": [
+        8878.321398625156,
+        18419.786439999953
+      ],
+      "cells": [
+        {
+          "key": "16,34",
+          "sha256": "df497f229450ddfc897894261df166fadaf097a39568745a4e287db951de77ca",
+          "source": {
+            "regionId": "basin",
+            "world": "athens-east-development",
+            "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+          },
+          "inDomain": false,
+          "contactTriangles": 0,
+          "fineTriangles": 6204
+        },
+        {
+          "key": "16,35",
+          "sha256": "85571e66e5b03bac41bdbda6fb110b3c72ed7ae4fcf3011844de645cf42aa1d5",
+          "source": {
+            "regionId": "basin",
+            "world": "athens-east-development",
+            "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+          },
+          "inDomain": false,
+          "contactTriangles": 0,
+          "fineTriangles": 9918
+        },
+        {
+          "key": "16,36",
+          "sha256": "92e3aace0d154b5eb1cfe54e02ca7c451ddf36a7f5dcf2f54407a685ee1c22d1",
+          "source": {
+            "regionId": "basin",
+            "world": "athens-east-development",
+            "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+          },
+          "inDomain": false,
+          "contactTriangles": 0,
+          "fineTriangles": 6442
+        },
+        {
+          "key": "17,34",
+          "sha256": "d50bc47c106702d28fc41e8d6bcc0a2327f0a79747f40f10dc1c5e4f56f94a48",
+          "source": {
+            "regionId": "basin",
+            "world": "athens-east-development",
+            "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+          },
+          "inDomain": false,
+          "contactTriangles": 0,
+          "fineTriangles": 5008
+        },
+        {
+          "key": "17,35",
+          "sha256": "a03232064c31a8f402dabcacd3e55fec6b3105e1743bc0de520ece14bb0708c6",
+          "source": {
+            "regionId": "basin",
+            "world": "athens-east-development",
+            "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+          },
+          "inDomain": true,
+          "contactTriangles": 9023,
+          "fineTriangles": 9023
+        },
+        {
+          "key": "17,36",
+          "sha256": "794b24101d06d2c96c6332817a5c4481f38a6af7c66fd189944b71432781b5bb",
+          "source": {
+            "regionId": "basin",
+            "world": "athens-east-development",
+            "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+          },
+          "inDomain": false,
+          "contactTriangles": 11357,
+          "fineTriangles": 11357
+        },
+        {
+          "key": "18,34",
+          "sha256": "9070ebc5ddf1a73efc4b643a4eaa36a62910f63289a2f4d72e4d1c5d483abc18",
+          "source": {
+            "regionId": "basin",
+            "world": "athens-east-development",
+            "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+          },
+          "inDomain": false,
+          "contactTriangles": 0,
+          "fineTriangles": 12684
+        },
+        {
+          "key": "18,35",
+          "sha256": "f6fcea2ef6150fdfc1bd2a6b6a75594ce13867a8297b1d0291682317f0fa4efb",
+          "source": {
+            "regionId": "basin",
+            "world": "athens-east-development",
+            "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+          },
+          "inDomain": false,
+          "contactTriangles": 0,
+          "fineTriangles": 4978
+        },
+        {
+          "key": "18,36",
+          "sha256": "0dfbe60e0bc1ab12a574c7c7890c09b3bdada6a6a088a0599731ccf3d93db29c",
+          "source": {
+            "regionId": "basin",
+            "world": "athens-east-development",
+            "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+          },
+          "inDomain": false,
+          "contactTriangles": 0,
+          "fineTriangles": 2944
+        }
+      ],
+      "allNeighborPacketsPresent": true,
+      "hits": [
+        {
+          "cell": "17,35",
+          "layer": 0,
+          "surface": "terrain:17:35",
+          "flags": 2,
+          "type": "contact",
+          "x": 8878.321398625156,
+          "y": 17.153471852538726,
+          "z": 18419.786439999953,
+          "distance": 0,
+          "inDomain": true
+        },
+        {
+          "cell": "17,35",
+          "layer": 0,
+          "surface": "terrain:anonymous",
+          "flags": 2,
+          "type": "fine",
+          "x": 8878.321398625156,
+          "y": 17.153471852538726,
+          "z": 18419.786439999953,
+          "distance": 0,
+          "inDomain": true
+        }
+      ],
+      "roadHits": [],
+      "terrainHits": [
+        {
+          "cell": "17,35",
+          "layer": 0,
+          "surface": "terrain:17:35",
+          "flags": 2,
+          "type": "contact",
+          "x": 8878.321398625156,
+          "y": 17.153471852538726,
+          "z": 18419.786439999953,
+          "distance": 0,
+          "inDomain": true
+        },
+        {
+          "cell": "17,35",
+          "layer": 0,
+          "surface": "terrain:anonymous",
+          "flags": 2,
+          "type": "fine",
+          "x": 8878.321398625156,
+          "y": 17.153471852538726,
+          "z": 18419.786439999953,
+          "distance": 0,
+          "inDomain": true
+        }
+      ],
+      "nearestLayer0RoadSurfaces": [
+        {
+          "cell": "17,35",
+          "layer": 0,
+          "surface": "surface:w483246714:0",
+          "flags": 1,
+          "type": "contact",
+          "x": 8878.279366058585,
+          "y": 17.05794261591692,
+          "z": 18419.997769760754,
+          "distance": 0.2154692656817248,
+          "inDomain": true,
+          "currentOSMSource": {
+            "wayId": 483246714,
+            "url": "https://api.openstreetmap.org/api/0.6/way/483246714/full",
+            "status": 200,
+            "readAtUTC": "2026-10-23T09:39:02.088717+00:00",
+            "responseSha256": "224865705a42e6a8934c31d87d711c716f891614e3945554b29d0b2b15934147",
+            "version": 17,
+            "sourceTimestamp": "2026-04-04T22:22:59Z",
+            "tags": {
+              "highway": "primary",
+              "int_name": "Athinon - Souniou",
+              "lanes": "4",
+              "lanes:backward": "2",
+              "lanes:forward": "2",
+              "lit": "yes",
+              "maxspeed": "50",
+              "name": "\u0391\u03b8\u03ae\u03bd\u03ce\u03bd - \u03a3\u03bf\u03c5\u03bd\u03af\u03bf\u03c5",
+              "oneway": "no",
+              "ref": "\u0395\u039f91",
+              "smoothness": "excellent",
+              "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+              "surface": "asphalt"
+            },
+            "nodeClosureComplete": true
+          }
+        },
+        {
+          "cell": "17,36",
+          "layer": 0,
+          "surface": "surface:w483246714:0",
+          "flags": 1,
+          "type": "contact",
+          "x": 8878.321398625156,
+          "y": 16.34249016254101,
+          "z": 18432,
+          "distance": 12.213560000047437,
+          "inDomain": false,
+          "currentOSMSource": {
+            "wayId": 483246714,
+            "url": "https://api.openstreetmap.org/api/0.6/way/483246714/full",
+            "status": 200,
+            "readAtUTC": "2026-10-23T09:39:02.088717+00:00",
+            "responseSha256": "224865705a42e6a8934c31d87d711c716f891614e3945554b29d0b2b15934147",
+            "version": 17,
+            "sourceTimestamp": "2026-04-04T22:22:59Z",
+            "tags": {
+              "highway": "primary",
+              "int_name": "Athinon - Souniou",
+              "lanes": "4",
+              "lanes:backward": "2",
+              "lanes:forward": "2",
+              "lit": "yes",
+              "maxspeed": "50",
+              "name": "\u0391\u03b8\u03ae\u03bd\u03ce\u03bd - \u03a3\u03bf\u03c5\u03bd\u03af\u03bf\u03c5",
+              "oneway": "no",
+              "ref": "\u0395\u039f91",
+              "smoothness": "excellent",
+              "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+              "surface": "asphalt"
+            },
+            "nodeClosureComplete": true
+          }
+        },
+        {
+          "cell": "17,36",
+          "layer": 0,
+          "surface": "surface:w25371522:0",
+          "flags": 1,
+          "type": "contact",
+          "x": 8912,
+          "y": 13.771026611328125,
+          "z": 18440,
+          "distance": 39.27895363220839,
+          "inDomain": false,
+          "currentOSMSource": null
+        },
+        {
+          "cell": "17,35",
+          "layer": 0,
+          "surface": "surface:w172988027:0",
+          "flags": 1,
+          "type": "contact",
+          "x": 8918.600006103516,
+          "y": 14.189074516296387,
+          "z": 18428.779998779297,
+          "distance": 41.27045335240827,
+          "inDomain": true,
+          "currentOSMSource": null
+        },
+        {
+          "cell": "17,36",
+          "layer": 0,
+          "surface": "surface:w172988027:0",
+          "flags": 1,
+          "type": "contact",
+          "x": 8920.720001220703,
+          "y": 13.482911109924316,
+          "z": 18439.28000020981,
+          "distance": 46.665194649871836,
+          "inDomain": false,
+          "currentOSMSource": null
+        },
+        {
+          "cell": "17,36",
+          "layer": 0,
+          "surface": "surface:w1460049315:0",
+          "flags": 1,
+          "type": "contact",
+          "x": 8800,
+          "y": 20.128000259399414,
+          "z": 18448,
+          "distance": 83.24810178302465,
+          "inDomain": false,
+          "currentOSMSource": null
+        }
+      ],
+      "coarseTerrainDiagnostic": {
+        "cell": "17,35",
+        "y": 17.09120335084112,
+        "type": "canonical coarse terrain fallback calculated for diagnostic only; NOT assigned camera floor"
+      },
+      "cameraFloorAssigned": false,
+      "referenceContext": {
+        "actualPanoId": "PhwxmbPlrawGmVRQNETblA",
+        "captureDate": "April2026",
+        "actualLat": 37.814533,
+        "actualLon": 23.8311829,
+        "headingDeg": 101.09,
+        "snapDistanceFromRequestedRoutePointM": 8.350741532990826,
+        "roadDirectionSource": "OSMway483246714v17:oneway=no,lanes4,forward2,backward2; same way carries both directions",
+        "actualCaptureVehicleDirection": "not established",
+        "actualCarriagewayOrLane": "not established",
+        "geometryClassification": "unmatched reference camera; no road gap/width defect inferred",
+        "floorSelection": "none; terrain candidate not substituted for required road camera floor"
+      }
+    },
+    {
+      "id": "tower",
+      "worldXZ": [
+        -180.00943192260834,
+        10765.144939999354
+      ],
+      "cells": [
+        {
+          "key": "-2,20",
+          "sha256": "4a8dc9370235def680329fcf5af5d513845e4c8c90229f27f0fc0796ec6f5dfa",
+          "source": {
+            "regionId": "basin",
+            "world": "athens-east-development",
+            "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+          },
+          "inDomain": false,
+          "contactTriangles": 0,
+          "fineTriangles": 2944
+        },
+        {
+          "key": "-2,21",
+          "sha256": "42d946d5c2dd44f34a9a5d31311a5f1802c40053f558a13fe062e5d7c59e9a33",
+          "source": {
+            "regionId": "basin",
+            "world": "athens-east-development",
+            "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+          },
+          "inDomain": false,
+          "contactTriangles": 0,
+          "fineTriangles": 4012
+        },
+        {
+          "key": "-2,22",
+          "sha256": "06adf9cb6076fdd83c7c38ce1d0745840a524378d6f250d6956f7f44e054c90f",
+          "source": {
+            "regionId": "basin",
+            "world": "athens-east-development",
+            "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+          },
+          "inDomain": false,
+          "contactTriangles": 0,
+          "fineTriangles": 3407
+        },
+        {
+          "key": "-1,20",
+          "sha256": "d97cb5e32dd029f27b5f09e2f84b0d9a8cfc0f6fde0bb4d1479d5c4d20f74d9f",
+          "source": {
+            "regionId": "basin",
+            "world": "athens-east-development",
+            "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+          },
+          "inDomain": false,
+          "contactTriangles": 0,
+          "fineTriangles": 20985
+        },
+        {
+          "key": "-1,21",
+          "sha256": "13ebbb53967d5fe7919e2c9d1f128298725d8feee757e619e18f0e134efe6e19",
+          "source": {
+            "regionId": "basin",
+            "world": "athens-east-development",
+            "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+          },
+          "inDomain": true,
+          "contactTriangles": 0,
+          "fineTriangles": 14563
+        },
+        {
+          "key": "-1,22",
+          "sha256": "9f5abd20e0a5e9e24f1e77de939e03432c8d876e4dd56a1320c12e227d9e6868",
+          "source": {
+            "regionId": "basin",
+            "world": "athens-east-development",
+            "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+          },
+          "inDomain": false,
+          "contactTriangles": 0,
+          "fineTriangles": 8077
+        },
+        {
+          "key": "0,20",
+          "sha256": "4d8f710bed5b086f0a445fd08845902aba49c86be509f7f9598a0b3aefb00a42",
+          "source": {
+            "regionId": "basin",
+            "world": "athens-east-development",
+            "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+          },
+          "inDomain": false,
+          "contactTriangles": 0,
+          "fineTriangles": 8858
+        },
+        {
+          "key": "0,21",
+          "sha256": "3dbbd97340a22dfb4f5938d4659ef9d53bcc18d9d753abbc8468c63395ad8b52",
+          "source": {
+            "regionId": "basin",
+            "world": "athens-east-development",
+            "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+          },
+          "inDomain": false,
+          "contactTriangles": 0,
+          "fineTriangles": 18178
+        },
+        {
+          "key": "0,22",
+          "sha256": "4f75ade3a725ba7e8b54c618e3def960545c753a1f36aeff69da67c3a6a39871",
+          "source": {
+            "regionId": "basin",
+            "world": "athens-east-development",
+            "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+          },
+          "inDomain": false,
+          "contactTriangles": 0,
+          "fineTriangles": 20523
+        }
+      ],
+      "allNeighborPacketsPresent": true,
+      "hits": [
+        {
+          "cell": "-1,21",
+          "layer": 0,
+          "surface": "surface:w174698180:0",
+          "flags": 1,
+          "type": "fine",
+          "x": -180.00943192260831,
+          "y": 4.06920985757241,
+          "z": 10765.144939999354,
+          "distance": 0,
+          "inDomain": true
+        }
+      ],
+      "roadHits": [
+        {
+          "cell": "-1,21",
+          "layer": 0,
+          "surface": "surface:w174698180:0",
+          "flags": 1,
+          "type": "fine",
+          "x": -180.00943192260831,
+          "y": 4.06920985757241,
+          "z": 10765.144939999354,
+          "distance": 0,
+          "inDomain": true
+        }
+      ],
+      "terrainHits": [],
+      "nearestLayer0RoadSurfaces": [
+        {
+          "cell": "-1,21",
+          "layer": 0,
+          "surface": "surface:w174698180:0",
+          "flags": 1,
+          "type": "fine",
+          "x": -180.00943192260831,
+          "y": 4.06920985757241,
+          "z": 10765.144939999354,
+          "distance": 0,
+          "inDomain": true,
+          "currentOSMSource": {
+            "wayId": 174698180,
+            "url": "https://api.openstreetmap.org/api/0.6/way/174698180",
+            "status": 200,
+            "readAtUTC": "2026-10-23T09:41:39.545082+00:00",
+            "responseSha256": "4b86caefa34c7fd3b89d80225b42ad8207d343a22831fabf823d7bd4020b6eb6",
+            "version": 6,
+            "sourceTimestamp": "2026-06-23T07:00:04Z",
+            "tags": {
+              "highway": "residential",
+              "lane_markings": "no",
+              "oneway": "yes",
+              "sidewalk": "both",
+              "surface": "asphalt"
+            }
+          }
+        },
+        {
+          "cell": "-1,20",
+          "layer": 0,
+          "surface": "surface:w174698180:0",
+          "flags": 1,
+          "type": "fine",
+          "x": -183.55999755859375,
+          "y": 4.283247947692871,
+          "z": 10752,
+          "distance": 13.616018651649522,
+          "inDomain": false,
+          "currentOSMSource": {
+            "wayId": 174698180,
+            "url": "https://api.openstreetmap.org/api/0.6/way/174698180",
+            "status": 200,
+            "readAtUTC": "2026-10-23T09:41:39.545082+00:00",
+            "responseSha256": "4b86caefa34c7fd3b89d80225b42ad8207d343a22831fabf823d7bd4020b6eb6",
+            "version": 6,
+            "sourceTimestamp": "2026-06-23T07:00:04Z",
+            "tags": {
+              "highway": "residential",
+              "lane_markings": "no",
+              "oneway": "yes",
+              "sidewalk": "both",
+              "surface": "asphalt"
+            }
+          }
+        },
+        {
+          "cell": "-1,21",
+          "layer": 0,
+          "surface": "surface:w656794393:0",
+          "flags": 1,
+          "type": "fine",
+          "x": -163.56624563302114,
+          "y": 4.696391125616909,
+          "z": 10756.600827964301,
+          "distance": 18.53052146653196,
+          "inDomain": true,
+          "currentOSMSource": null
+        },
+        {
+          "cell": "-1,20",
+          "layer": 0,
+          "surface": "surface:w656794393:0",
+          "flags": 1,
+          "type": "fine",
+          "x": -165.94000244140625,
+          "y": 4.741901397705078,
+          "z": 10752,
+          "distance": 19.25456552387368,
+          "inDomain": false,
+          "currentOSMSource": null
+        },
+        {
+          "cell": "-1,20",
+          "layer": 0,
+          "surface": "surface:w793233914:0",
+          "flags": 1,
+          "type": "fine",
+          "x": -149.90449437716774,
+          "y": 5.474006999345688,
+          "z": 10749.597627152174,
+          "distance": 33.882535344672625,
+          "inDomain": false,
+          "currentOSMSource": null
+        },
+        {
+          "cell": "-1,21",
+          "layer": 0,
+          "surface": "surface:w793233914:0",
+          "flags": 1,
+          "type": "fine",
+          "x": -148.67999267578125,
+          "y": 5.470603942871094,
+          "z": 10752,
+          "distance": 33.97533239141679,
+          "inDomain": true,
+          "currentOSMSource": null
+        }
+      ],
+      "coarseTerrainDiagnostic": {
+        "cell": "-1,21",
+        "y": 4.068545229967627,
+        "type": "canonical coarse terrain fallback calculated for diagnostic only; NOT assigned camera floor"
+      },
+      "cameraFloorAssigned": false,
+      "referenceContext": {
+        "actualPanoId": "3oyte2cVix7kdzQXwFpi5g",
+        "captureDate": "April2026",
+        "actualLat": 37.8832955,
+        "actualLon": 23.7279485,
+        "headingDeg": 242.96,
+        "requestedPitchDeg": 10,
+        "sourceCellTowerId": "building:w1480412293:0",
+        "scope": "generic current-model source baseline only; not height/construction fidelity"
+      }
+    }
+  ]
+}
