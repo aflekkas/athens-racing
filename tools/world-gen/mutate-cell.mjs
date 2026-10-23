@@ -39,7 +39,14 @@ const digest=v=>sha(canonical(v));
 const arrayDigest=a=>digest([a.constructor.name,a.length,sha(new Uint8Array(a.buffer,a.byteOffset,a.byteLength))]);
 const validHash=(h,label)=>{if(!/^[a-f0-9]{64}$/.test(h||''))fail(label+' SHA required');};
 const freeze=v=>{if(v&&typeof v==='object'&&!Object.isFrozen(v)){if(Array.isArray(v)){for(let i=0;i<v.length;i++)freeze(v[i]);}else for(const k in v)if(Object.hasOwn(v,k))freeze(v[k]);Object.freeze(v);}return v;};
-function keys(v,allowed,label){if(!v||typeof v!=='object'||Array.isArray(v)||Object.keys(v).some(k=>!allowed.includes(k)))fail('unsupported '+label);}
+function keys(v,allowed,label){
+ if(!v||typeof v!=='object'||Array.isArray(v)||![Object.prototype,null].includes(Object.getPrototypeOf(v)))fail('unsupported '+label+' (callbacks forbidden)');
+ for(const k of allowed){const d=Object.getOwnPropertyDescriptor(v,k);if(d&&!Object.hasOwn(d,'value'))fail('accessor '+label);}
+ for(const k in v)if(Object.hasOwn(v,k)){
+  const d=Object.getOwnPropertyDescriptor(v,k);if(!Object.hasOwn(d,'value'))fail('accessor '+label);
+  if(!allowed.includes(k))fail('unsupported '+label+' (callbacks and undeclared fields forbidden)');
+ }
+}
 // Scan authenticated UTF-8 bytes without a Buffer copy, string or parsed tree.
 // Token bounds deliberately overcount keys as both strings and properties;
 // decoded UTF-16 length cannot exceed the source byte count (including escapes).
@@ -181,10 +188,20 @@ async function sceneryExclusions(pack,entry,memory,code){
  const blocked=(x,z,r)=>plazas.some(q=>x>=q.x0-r&&x<=q.x1+r&&z>=q.z0-r&&z<=q.z1+r&&plazaDistance(q.p,x,z)<=r)||[-r,0,r].some(dx=>[-r,0,r].some(dz=>insideLandmark(x+dx,z+dz)));
  return {blocked,occupied,retainedBytes:prepared.bytes};
 }
-function verifyStage(name,stage,code){
- const allowed={infill:['codeSha256','planBytes','planFileSha256','reviewedPlanSha256','sourcePath'],terrain:['codeSha256','fieldId','atlasBytes','atlasSha256','reportBytes','reportSha256'],paint:['codeSha256'],guards:['codeSha256','recipes'],scenery:['codeSha256','bytes','sha256']};
- keys(stage,allowed[name],name+' stage');if(stage.codeSha256!==code[name])fail(name+' code hash mismatch');
+const STAGE_FIELDS={infill:['codeSha256','planBytes','planFileSha256','reviewedPlanSha256','sourcePath'],terrain:['codeSha256','fieldId','atlasBytes','atlasSha256','reportBytes','reportSha256'],paint:['codeSha256'],guards:['codeSha256','recipes'],scenery:['codeSha256','bytes','sha256']};
+function validateStageInputs(stages){
+ keys(stages,['infill','terrain','paint','guards','scenery'],'stages');
+ for(const name in stages)if(Object.hasOwn(stages,name)){
+  const stage=stages[name];keys(stage,STAGE_FIELDS[name],name+' stage');
+  for(const key in stage)if(Object.hasOwn(stage,key)){
+   const value=stage[key];if(key==='recipes'){
+    if(!Array.isArray(value))fail('guard recipes must be declarative array');
+    for(let i=0;i<value.length;i++){const d=Object.getOwnPropertyDescriptor(value,String(i));if(!d||!Object.hasOwn(d,'value'))fail('accessor/sparse guard recipes');const recipe=d.value;keys(recipe,['compiledBytes','sourcePlanBytes','compiledSha256','sourcePlanSha256'],'guard recipe');for(const field in recipe)if(Object.hasOwn(recipe,field)&&!(field.endsWith('Bytes')?recipe[field] instanceof Uint8Array:typeof recipe[field]==='string'))fail('declarative guard recipe field');}
+   }else if(!(key.endsWith('Bytes')||key==='bytes'?value instanceof Uint8Array:typeof value==='string'))fail('declarative '+name+' stage field (callbacks forbidden)');
+  }
+ }
 }
+function verifyStage(name,stage,code){keys(stage,STAGE_FIELDS[name],name+' stage');if(stage.codeSha256!==code[name])fail(name+' code hash mismatch');}
 function actualIdentity(pack,expected){same([pack.metadata.world,pack.metadata.revision,pack.metadata.cell],[expected.world,expected.revision,expected.cell],'actual packet identity');}
 function binaryInputBytes(value){if(ArrayBuffer.isView(value))return Math.max(value.buffer.byteLength,value.byteLength,8192);let n=0;if(value&&typeof value==='object')for(const k in value)if(Object.hasOwn(value,k))n+=binaryInputBytes(value[k]);return n;}
 // V8 workspace reservation, not a claim about measured RSS or immediate GC.
@@ -201,7 +218,7 @@ function jsonMemory(value,active=new Set(),inputBytes=false){
  if(!value||typeof value!=='object'||!Array.isArray(value)&&![Object.prototype,null].includes(Object.getPrototypeOf(value)))fail('encoding metadata must be plain JSON data');
  if(active.has(value))fail('cyclic encoding metadata');active.add(value);
  let chars=2,heap=128;
- if(Array.isArray(value)){for(let i=0;i<value.length;i++){const part=jsonMemory(value[i],active,inputBytes);chars+=part.chars+1;heap+=part.heap+8;}}
+ if(Array.isArray(value)){for(let i=0;i<value.length;i++){const d=Object.getOwnPropertyDescriptor(value,String(i));if(!d||!Object.hasOwn(d,'value'))fail('encoding metadata array accessor/sparse data');const part=jsonMemory(d.value,active,inputBytes);chars+=part.chars+1;heap+=part.heap+8;if(heap>MAX)fail('input snapshot workspace budget');}}
  else for(const key in value)if(Object.hasOwn(value,key)){const d=Object.getOwnPropertyDescriptor(value,key);if(!Object.hasOwn(d,'value'))fail('encoding metadata accessor');const part=jsonMemory(d.value,active,inputBytes);chars+=key.length*6+4+part.chars;heap+=192+key.length*4+part.heap;}
  active.delete(value);return {chars,heap};
 }
@@ -277,10 +294,17 @@ export function prepareMutationEncoding(pack,{dependencies=[],retainedBytes=0}={
  * mutationRecipeSha256(args), computed before invocation.
  * guards recipes carry compiledBytes/sourcePlanBytes and both SHA pins.
  */
-export async function mutateOriginalCell({compressedBytes,entry,source,derived,stages={},protectedSources=null,releaseScope}){
+export async function mutateOriginalCell(input){
+ keys(input,['compressedBytes','entry','source','derived','stages','protectedSources','releaseScope'],'mutation inputs');
+ let {compressedBytes,entry,source,derived,stages={},protectedSources=null,releaseScope}=input;
+ validateStageInputs(stages);
+ // Validate descriptors and measure before any recursive byte walk, map, clone
+ // or canonical ordering. In particular, array getters must never be invoked.
+ const inputShape={entry,source,derived:derived??null,stages,protectedSources,releaseScope},inputObjects=2*jsonMemory(inputShape,new Set(),true).heap;
  if(!(compressedBytes instanceof Uint8Array)||compressedBytes.byteLength>WIRE_MAX)fail('original compressed byte budget');
+ for(const key of ['bytes','sha256']){const d=entry&&Object.getOwnPropertyDescriptor(entry,key);if(d&&!Object.hasOwn(d,'value'))fail('accessor original entry');}
  if(!entry||compressedBytes.byteLength!==entry.bytes||sha(compressedBytes)!==entry.sha256)fail('original compressed hash/size mismatch');
- order(stages);const inputShape={entry,source,derived:derived??null,stages,protectedSources,releaseScope};const memory={parsedInputs:reservePinnedInputs({stages,protectedSources,releaseScope}),files:0,prepared:0,inputCopies:2*binaryInputBytes({compressedBytes,stages,protectedSources,releaseScope}),inputObjects:2*jsonMemory(inputShape,new Set(),true).heap};admitPinned(memory);
+ const memory={parsedInputs:reservePinnedInputs({stages,protectedSources,releaseScope}),files:0,prepared:0,inputCopies:2*binaryInputBytes({compressedBytes,stages,protectedSources,releaseScope}),inputObjects};admitPinned(memory);
  // Snapshot inputs before the first await: later caller writes cannot alter a seal.
  compressedBytes=Buffer.from(compressedBytes);entry=structuredClone(entry);source=structuredClone(source);derived=structuredClone(derived);stages=structuredClone(stages);protectedSources=structuredClone(protectedSources);releaseScope=structuredClone(releaseScope);
  const sourceMemory=authenticate(compressedBytes,entry,source,memory);memory.sourceRetained=sourceMemory.retainedBytes;admitPinned(memory);keys(stages,['infill','terrain','paint','guards','scenery'],'stages');
