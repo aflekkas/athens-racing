@@ -1,0 +1,37 @@
+{
+  "sourceCommit": "4eaaf41ea7e244922952cdcc288d2689c6ad5c73",
+  "workingSourceFiles": 414,
+  "allWorkingBytesMatchCommit": true,
+  "sourceSetSha256": "a218f9ca471d3417205b4e9d6acd5b79c2ede58c9825a2604c2c0d852317020b",
+  "modifiedSincePrior53ca": [
+    {
+      "path": "index.html",
+      "sha256": "945d0963a9316e715d5fb915ca597444e4d0209bad4c021c0f628e9e072eda95"
+    },
+    {
+      "path": "src/athens-world.js",
+      "sha256": "31cab82a8af2c7daea1df73754262338acdfbe674fe82023a0263e7fd1f866a7"
+    },
+    {
+      "path": "src/main.js",
+      "sha256": "b527aace5495d2afe8604315f71cf2961e677725c23af7e608a51415698540ac"
+    },
+    {
+      "path": "src/world-traffic.js",
+      "sha256": "29c330cab8bf2f04ea274dfa3803ccb55e1e7e537ed5e491df938021d97828de"
+    }
+  ],
+  "worldSetRevision": "80055f9208753e2d6fa8658b31c90216d22c650f7f33588ebd5178d1a6b804a1",
+  "originalWorldManifestSha256": "762bcff49ca15103bbdbe0e3b8f8d95e66fe96e4cb19cb7bfb6177777b7fb7b7",
+  "localTransportManifestSha256": "a6ea9d0c3981e5f3111b375f4ebb1f0e47785bd2a46e2acc2617671033510293",
+  "transportChange": "cellURLs only remapped to local hash-checking GET server; source entry identities/sizes/hashes/revision unchanged",
+  "shaderErrorObservation": "renderer.info.programs diagnostics.runnable===false count0 at each captured frame; err DOM empty; no windowerror after listeners attached at capture setup",
+  "startupErrorCoverage": "initial connection refused before server ready was fixture startup; HTTP200verified before retry; browser-wide startup pageerror history not exported",
+  "sourceInjection": false,
+  "sceneReplacement": false,
+  "nativeHook": "__athens.setCameraHook,step(1/240),render(1/60)",
+  "viewType": "static reference camera; no driving, lane, grade, metricheight or finalterrain acceptance",
+  "eyeHeightAssumptionM": 2.5,
+  "sensitivitiesCaptured": false,
+  "optionalTowerCaptured": false
+}

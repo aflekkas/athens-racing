@@ -1,0 +1,280 @@
+{
+  "status": "three actual own-game static baselines captured; qualitative fidelity defects remain open",
+  "views": [
+    {
+      "station": 500,
+      "image": "static-500.jpg",
+      "imageSha256": "1c2dc44ad686d34cf52dd5a148658757afe9b09d6aad45760b6ca749af035b39",
+      "imageBytes": 135342,
+      "status": "static diagnostic baseline; not accepted geographic/terrain fidelity",
+      "sourceCommit": "4eaaf41ea7e244922952cdcc288d2689c6ad5c73",
+      "worldSetRevision": "80055f9208753e2d6fa8658b31c90216d22c650f7f33588ebd5178d1a6b804a1",
+      "reference": {
+        "lat": 37.8084272,
+        "lon": 23.7835815,
+        "headingDeg": 133.78,
+        "panoId": "KBCcJcBthVSZMUEvOXBVXg",
+        "label": "20 Leof. Poseidonos, Vouliagmeni",
+        "imageCaptureDate": "February 2025",
+        "credit": "Google Street View",
+        "panoURL": "https://www.google.com/maps/@?api=1&map_action=pano&pano=KBCcJcBthVSZMUEvOXBVXg&heading=133.78&pitch=0&fov=90",
+        "worldX": 4701.523459205332,
+        "worldZ": 19099.484095999986,
+        "requestedToObservedDistanceM": 3.2065817200824567,
+        "localAlongRouteOffsetM": 3.1682103972234157,
+        "localRightOfRouteOffsetM": 0.49457982823040103
+      },
+      "cameraWorldXYZ": [
+        4701.523459205332,
+        11.756925763426436,
+        19099.484095999986
+      ],
+      "cameraWorldXZHeldConstantByNativeHook": true,
+      "cameraLocalXYZAtVerification": [
+        93.52345920533207,
+        11.756925763426436,
+        155.48409599998558
+      ],
+      "cameraQuaternionAtVerification": [
+        0,
+        -0.9197530075677776,
+        0,
+        0.3924976497636994
+      ],
+      "originAtVerification": {
+        "x": 4608,
+        "z": 18944
+      },
+      "headingDeg": 133.78,
+      "pitchDeg": 0,
+      "horizontalFovDeg": 90,
+      "verticalFovDeg": 64.0107664,
+      "viewport": [
+        1280,
+        800
+      ],
+      "nativeRuntimeFloor": {
+        "y": 9.256925763426436,
+        "surfaceId": "surface:w328525144:0",
+        "flags": 1,
+        "layer": 0,
+        "supportType": "road"
+      },
+      "assumedEyeHeightM": 2.5,
+      "eyeHeightMeasured": false,
+      "positivePhysicsStepSeconds": 0.004166666666666667,
+      "positiveRenderStepSeconds": 0.016666666666666666,
+      "loadingOpacityAtVerification": "0",
+      "unrunnableShaderProgramsAtVerification": 0,
+      "observedWindowErrorsAfterCaptureSetup": [],
+      "browserWideStartupPageerrorExported": false,
+      "playerPoseAtVerificationOnly": [
+        4700.109329447577,
+        9.197639669274519,
+        19099.931016617822
+      ],
+      "selectedCar": "mini_jcw",
+      "playerPoseNotAtomicWithJPG": true,
+      "driveClaim": false,
+      "staticCameraDoesNotImplyStationaryPlayer": true,
+      "limits": [
+        "no surveyed cameraheight/attitude,grade,width,height or lane assignment",
+        "reference image and game differ in lighting/time/weather; qualitative only",
+        "2.5m eye assumption only;1.6/3m sensitivities not captured"
+      ]
+    },
+    {
+      "station": 3000,
+      "image": "static-3000.jpg",
+      "imageSha256": "66599889e435d25dd1598ab25019d0df74edd08b283c114359aeb2a15502f9e0",
+      "imageBytes": 118957,
+      "status": "static diagnostic baseline; not accepted geographic/terrain fidelity",
+      "sourceCommit": "4eaaf41ea7e244922952cdcc288d2689c6ad5c73",
+      "worldSetRevision": "80055f9208753e2d6fa8658b31c90216d22c650f7f33588ebd5178d1a6b804a1",
+      "reference": {
+        "lat": 37.8038198,
+        "lon": 23.7974806,
+        "headingDeg": 29.84,
+        "panoId": "JUJPy3OJppeb4rjqL6VzgQ",
+        "label": "Leof. Poseidonos, Vari",
+        "imageCaptureDate": "March 2026",
+        "credit": "Google Street View",
+        "panoURL": "https://www.google.com/maps/@?api=1&map_action=pano&pano=JUJPy3OJppeb4rjqL6VzgQ&heading=29.84&pitch=0&fov=90",
+        "worldX": 5921.103812719877,
+        "worldZ": 19612.37986399972,
+        "requestedToObservedDistanceM": 5.835073101356891,
+        "localAlongRouteOffsetM": -4.876068028511676,
+        "localRightOfRouteOffsetM": 3.205002134087431
+      },
+      "cameraWorldXYZ": [
+        5921.103812719877,
+        20.424224079641334,
+        19612.37986399972
+      ],
+      "cameraWorldXZHeldConstantByNativeHook": true,
+      "cameraLocalXYZAtVerification": [
+        289.10381271987717,
+        20.424224079641334,
+        156.3798639997185
+      ],
+      "cameraQuaternionAtVerification": [
+        0,
+        -0.2574701063703538,
+        0,
+        0.9662862641710471
+      ],
+      "originAtVerification": {
+        "x": 5632,
+        "z": 19456
+      },
+      "headingDeg": 29.84,
+      "pitchDeg": 0,
+      "horizontalFovDeg": 90,
+      "verticalFovDeg": 64.0107664,
+      "viewport": [
+        1280,
+        800
+      ],
+      "nativeRuntimeFloor": {
+        "y": 17.924224079641334,
+        "surfaceId": "surface:w87543250:0",
+        "flags": 1,
+        "layer": 0,
+        "supportType": "road"
+      },
+      "assumedEyeHeightM": 2.5,
+      "eyeHeightMeasured": false,
+      "positivePhysicsStepSeconds": 0.004166666666666667,
+      "positiveRenderStepSeconds": 0.016666666666666666,
+      "loadingOpacityAtVerification": "0",
+      "unrunnableShaderProgramsAtVerification": 0,
+      "observedWindowErrorsAfterCaptureSetup": [],
+      "browserWideStartupPageerrorExported": false,
+      "playerPoseAtVerificationOnly": [
+        5921.2387791962665,
+        17.95325012790531,
+        19612.485585811002
+      ],
+      "selectedCar": "mini_jcw",
+      "playerPoseNotAtomicWithJPG": true,
+      "driveClaim": false,
+      "staticCameraDoesNotImplyStationaryPlayer": true,
+      "limits": [
+        "no surveyed cameraheight/attitude,grade,width,height or lane assignment",
+        "reference image and game differ in lighting/time/weather; qualitative only",
+        "2.5m eye assumption only;1.6/3m sensitivities not captured"
+      ],
+      "visibleUnclassifiedArtifact": {
+        "description": "tan/brown polygon interrupts right-side asphalt beyond near centre curve",
+        "parentApproximatePixel": [
+          710,
+          474
+        ],
+        "futurePickTargets": [
+          [
+            700,
+            475
+          ],
+          [
+            720,
+            480
+          ]
+        ],
+        "cause": "unclassified; no live pick performed",
+        "scope": "inherited visible baseline artifact; not accepted fidelity",
+        "reasonDeferred": "request arrived after navigation to9000; no extra navigation or deadline extension"
+      }
+    },
+    {
+      "station": 9000,
+      "image": "static-9000-terrain.jpg",
+      "imageSha256": "bcfce7d61d241e765f30fe732b6a067dc57ed8a1ae8b67e8e1c4864828d4f574",
+      "imageBytes": 109534,
+      "status": "static diagnostic baseline; not accepted geographic/terrain fidelity",
+      "sourceCommit": "4eaaf41ea7e244922952cdcc288d2689c6ad5c73",
+      "worldSetRevision": "80055f9208753e2d6fa8658b31c90216d22c650f7f33588ebd5178d1a6b804a1",
+      "reference": {
+        "lat": 37.814533,
+        "lon": 23.8311829,
+        "headingDeg": 101.09,
+        "panoId": "PhwxmbPlrawGmVRQNETblA",
+        "label": "EO91, Decentralized Administration of Attica",
+        "imageCaptureDate": "April 2026",
+        "credit": "Google Street View",
+        "panoURL": "https://www.google.com/maps/@?api=1&map_action=pano&pano=PhwxmbPlrawGmVRQNETblA&heading=101.09&pitch=0&fov=90",
+        "worldX": 8878.321398625156,
+        "worldZ": 18419.786439999953,
+        "requestedToObservedDistanceM": 8.350741532990826,
+        "localAlongRouteOffsetM": -4.199303770953297,
+        "localRightOfRouteOffsetM": -7.2180836785171305
+      },
+      "cameraWorldXYZ": [
+        8878.321398625156,
+        19.653471852538726,
+        18419.786439999953
+      ],
+      "cameraWorldXZHeldConstantByNativeHook": true,
+      "cameraLocalXYZAtVerification": [
+        174.32139862515578,
+        19.653471852538726,
+        499.78643999995256
+      ],
+      "cameraQuaternionAtVerification": [
+        0,
+        -0.7721239200139367,
+        0,
+        0.6354719916269417
+      ],
+      "originAtVerification": {
+        "x": 8704,
+        "z": 17920
+      },
+      "headingDeg": 101.09,
+      "pitchDeg": 0,
+      "horizontalFovDeg": 90,
+      "verticalFovDeg": 64.0107664,
+      "viewport": [
+        1280,
+        800
+      ],
+      "nativeRuntimeFloor": {
+        "y": 17.153471852538726,
+        "surfaceId": "terrain:17:35",
+        "flags": 2,
+        "layer": 0,
+        "supportType": "exact physical terrain"
+      },
+      "assumedEyeHeightM": 2.5,
+      "eyeHeightMeasured": false,
+      "positivePhysicsStepSeconds": 0.004166666666666667,
+      "positiveRenderStepSeconds": 0.016666666666666666,
+      "loadingOpacityAtVerification": "0",
+      "unrunnableShaderProgramsAtVerification": 0,
+      "observedWindowErrorsAfterCaptureSetup": [],
+      "browserWideStartupPageerrorExported": false,
+      "playerPoseAtVerificationOnly": [
+        8877.67361650521,
+        16.894120552896652,
+        18422.99573591786
+      ],
+      "selectedCar": "mini_jcw",
+      "playerPoseNotAtomicWithJPG": true,
+      "driveClaim": false,
+      "staticCameraDoesNotImplyStationaryPlayer": true,
+      "limits": [
+        "no surveyed cameraheight/attitude,grade,width,height or lane assignment",
+        "reference image and game differ in lighting/time/weather; qualitative only",
+        "2.5m eye assumption only;1.6/3m sensitivities not captured"
+      ],
+      "nearestAsphaltNotUsed": {
+        "xzDistanceM": 0.2154692656817248,
+        "nearestY": 17.05794261591692,
+        "note": "exact terrainY used only for static camera per corrected parent policy; no driving or guard change"
+      }
+    }
+  ],
+  "optionalTowerCaptured": false,
+  "sensitivityCaptured": false,
+  "cleanup": "native previewtab plus ownproxy/slot closed at deadline boundary; no browser/server/heavy remains",
+  "startupFixtureIssue": "first navigate raced server startup and returned connection refused; HTTP200 verified before successfulretry; no product failure inferred"
+}

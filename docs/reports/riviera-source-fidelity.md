@@ -361,3 +361,81 @@ camera assumptions/FOV/metadata requirements above still apply. No full gate,
 source runtime edit, broad triangle runtime scan or physical guard change was
 made. Checks cover preflight3poses,18cached identities, two complete3×3
 neighborhoods and the retained blocked reference; actual game proof is pending.
+
+## Actual own-game static baseline capture — master4eaaf41e / world80055f
+
+The parent corrected the camera policy: a unique authenticated physical
+terrain contact at exact panoramaXZ is valid for a **static reference camera**.
+It does not assert safe vehicle placement or waive road/layer guards. Therefore
+station9000 now has a terrain-supported static view, while its actual driving
+lane remains unestablished. No nearest-asphalt or route-centreY substitution
+was made. This supersedes only the earlier static-camera road-floor block.
+
+Three real game views were captured using the production native free-world
+renderer and existing `__athens.setCameraHook`, followed by a positive1/240s
+physics step and1/60s native render. No source injection, draw-call stub,
+replacement scene or collision/geometry/guard change was used. The local
+GET-only server supplied valid local auth metadata and hash-checked source
+cells; only manifest cellURLs were remapped for transport. No public API writes.
+
+Exact build is`4eaaf41ea7e244922952cdcc288d2689c6ad5c73`, sourceworld80055f.
+All414served working source/index/style files match that commit's blobs;
+SHA-256source-set digest
+`a218f9ca471d3417205b4e9d6acd5b79c2ede58c9825a2604c2c0d852317020b`.
+The full source/transport manifest hashes are in `game/source-receipt.json`.
+No full archive or cell copy was created for this turn; the existing task
+fixture was reused and only the changed native files restored from the pin.
+
+| View | Actual own-game baseline | Exact floorY m | CameraY m | Heading | Support |
+|---|---|---:|---:|---:|---|
+| 500 / Feb2025 reference | ![Station500](../../.scratch/riviera-source-audit/game/static-500.jpg) | 9.256925763426 | 11.756925763426 | 133.78° | layer0road,w328525144:0 |
+| 3000 / Mar2026 reference | ![Station3000](../../.scratch/riviera-source-audit/game/static-3000.jpg) | 17.924224079641 | 20.424224079641 | 29.84° | layer0road,w87543250:0 |
+| 9000 / Apr2026 reference | ![Station9000 terrain-supported](../../.scratch/riviera-source-audit/game/static-9000-terrain.jpg) | 17.153471852539 | 19.653471852539 | 101.09° | layer0physicalterrain,17:35 |
+
+All use assumed eyeheight2.5m, pitch0, horizontalFOV90°/verticalFOV64.0107664°,
+1280×800. This is not surveyed camera attitude or height. The native camera
+hook fixes actual panoramaworldXZ, independently from the safe snapped MINI
+player pose. PlayerXYZ/floating origin/quaternion recorded at verification are
+not atomic with the subsequent JPG; the camera's worldXYZ/heading remain fixed
+by the hook each rendered frame. HUDs show the native player's motion/reverse
+gear; these are **static camera diagnostics**, not stationary-vehicle or
+controlled driving proof. No timed race, contact comfort or spawn acceptance.
+
+At each verified frame: loading opacity0, unrunnable shader programs0, error
+DOM empty and no windowerrors observed after capture setup. A browser-wide
+startup pageerror export was not collected, so strict clean-console/pageerror
+coverage for the entire navigation is not claimed. Initial connection-refused
+navigation raced local server startup; HTTP200 was verified before retry.
+No product defect is inferred from that setup race.
+
+Qualitative comparison to the inspected dated reference frames shows remaining
+limits rather than closing fidelity:
+
+- **500:** the reference shows prominent foreground directional arrows and
+  grassy planted strips with frontage/bus-stop context; the game view has
+  sparse painted direction detail and largely pale island surfaces. Exact
+  marker placement/width is not measured from the differently lit frames.
+- **3000:** the game retains a conspicuous tan/brown polygon interrupting the
+  right-side asphalt nearpixel710,474. This is an **inherited visible artifact,
+  unclassified and not accepted fidelity**. No live ray/object pick was made:
+  the request arrived after navigation to9000, and extra navigation/deadline
+  extension was forbidden. The next authorized diagnostic should inspect
+  700,475 and720,480 for object/material/triangle/contact/source ownership.
+  No cause, layer inversion or terrain widening is inferred from appearance.
+- **9000:** the reference shows a close exposed rock face and metal roadside
+  guardrail; the game shows a broad simplified slope, pale sidewalk and white
+  post/rail form. These are visible form/material differences in this baseline,
+  not metric dimension or grade findings. The game has distant portal-like
+  openings not visible in that reference field; their geographic existence
+  is not determined by this comparison alone.
+
+Each JPG path and exact camera/floor/eye/build/reference metadata was sent
+immediately and shown inline in the parent chat. Optional Tower and1.6/3m eye
+sensitivities were deferred at the deadline. Browser tab and owned proxy/slot
+were closed; no subsequent game job ran. Third-party references were not saved
+or embedded. Only our own three compact JPGs are retained. Full suite gates
+were not run for this evidence-only commit; runtime/source world unchanged.
+Checks:3runtime exactcontactYmatches,3loading-hidden/positive-render snapshots,
+3shaderdiagnostic zeros at verification,414/414source blobs match, metadata and
+image hashes recorded. Fidelity/clean-startup-error export/Tower game view and
+unclassified brown-polygon diagnosis remain open. No overall issue closure.
