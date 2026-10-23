@@ -7,16 +7,24 @@ import {canonicalJSON} from '../src/route-definition.js';
 import {snapshotJSONForAuthentication} from '../src/json-auth-snapshot.js';
 import {validateOnlineGrid} from '../src/online-grid.js';
 import {validateRecoveryManifest} from '../server/route-road-stream.mjs';
-import {recoveryWorldRegistry,assertRecoveryCoverage} from './build-world-recovery.mjs';
+import {assertRecoveryCoverage} from './build-world-recovery.mjs';
 export async function validateOnlineRouteRelease(proof,{compiled,manifest}){
  // Snapshot ALL caller-owned release authority synchronously. No aggregate
- // wire cap is introduced. Reserve a third complete graph for retained nested
- // validator results while the original and private package remain live.
- const context=snapshotJSONForAuthentication({proof,registry:recoveryWorldRegistry(manifest),compiled:compiled.map(c=>({id:c.id,routeHash:c.routeHash,geometryHash:c.geometryHash,worldSetRevision:c.worldSetRevision,startPose:c.startPose,runIn:c.runIn||[]}))},{extraCopyCount:1}).body;
- proof=context.proof;compiled=context.compiled;const registry=context.registry,revision=registry.worldSetRevision,sources=new Map(registry.sourceHashes);
+ // wire cap is introduced. Inspect selected ORIGINAL fields before deriving
+ // registry/projection arrays, then reserve all simultaneous private copies.
+ const selection={fields:{
+  proof:true,
+  compiled:{array:{fields:{id:true,routeHash:true,geometryHash:true,worldSetRevision:true,startPose:true,runIn:true}}},
+  manifest:{fields:{revision:true,tiles:{record:{fields:{sha256:true}}}}}
+ }};
+ // Four complete selected graphs reserve caller, capture, retained nested
+ // validation results, and registry/key scratch without raising the 12 MiB cap.
+ const context=snapshotJSONForAuthentication({proof,compiled,manifest},{selection,extraCopyCount:2}).body;
+ proof=context.proof;compiled=context.compiled;manifest=context.manifest;
+ const registry=proof.recoveryWorld,revision=manifest.revision,keys=Object.keys(manifest.tiles).sort((a,b)=>a.localeCompare(b));
+ if(!registry||Object.keys(registry).length!==2||registry.worldSetRevision!==revision||!Array.isArray(registry.sourceHashes)||registry.sourceHashes.length!==keys.length||registry.sourceHashes.some((p,i)=>!Array.isArray(p)||p.length!==2||p[0]!==keys[i]||p[1]!==manifest.tiles[keys[i]].sha256))throw Error('Online release active world mismatch');
 
  if(proof?.schemaVersion!==1||!Array.isArray(proof.routes)||proof.routes.length!==compiled.length||!Array.isArray(proof.routeGrids)||proof.routeGrids.length!==compiled.length||!Array.isArray(proof.routeRoads)||proof.routeRoads.length!==1)throw Error('Incomplete online release proof package');
- if(canonicalJSON(proof.recoveryWorld)!==canonicalJSON(registry))throw Error('Online release active world mismatch');
  const roads=proof.routeRoads[0],roadBody=await validateRecoveryManifest(roads.body,{expectedHash:roads.hash,worldSetRevision:revision,sourceHashes:registry.sourceHashes});assertRecoveryCoverage(roadBody,registry);
  const ids=new Set(),gridHashes=new Set(),entries=[],grids=[];
  for(const c of compiled){
@@ -24,7 +32,7 @@ export async function validateOnlineRouteRelease(proof,{compiled,manifest}){
   const entry=proof.routes.find(e=>e.id===c.id),grid=proof.routeGrids.find(g=>g.hash===entry?.onlineGrid?.hash),descriptor=entry?.onlineGrid,recovery=entry?.recovery;
   if(!entry||ids.has(entry.id)||entry.routeHash!==c.routeHash||descriptor?.schemaVersion!==1||descriptor.capacity!==8||descriptor.url!==`/data/routes/${c.id}.online-grid.${descriptor.hash}.json`||!grid||gridHashes.has(grid.hash))throw Error('Online grid release descriptor mismatch: '+c.id);
   if(recovery?.schemaVersion!==1||recovery.streamed!==true||recovery.hash!==roads.hash||recovery.url!==`/world/recovery/manifest.${roads.hash}.json`)throw Error('Online recovery release descriptor mismatch');
-  const body=await validateOnlineGrid(grid.body,c,{expectedHash:grid.hash});for(const [key,hash]of body.sourceHashes||[])if(sources.get(key)!==hash)throw Error('Online grid source cell changed: '+key);
+  const body=await validateOnlineGrid(grid.body,c,{expectedHash:grid.hash});for(const [key,hash]of body.sourceHashes||[])if(manifest.tiles[key]?.sha256!==hash)throw Error('Online grid source cell changed: '+key);
   ids.add(c.id);gridHashes.add(grid.hash);entries.push(entry);grids.push(Object.freeze({hash:grid.hash,body}));
  }
  return Object.freeze({routes:Object.freeze(entries),routeGrids:Object.freeze(grids),routeRoads:Object.freeze([Object.freeze({hash:roads.hash,body:roadBody})]),recoveryWorld:registry});

@@ -323,7 +323,7 @@ test('grid snapshot rejects non-JSON and over-budget input before clone or encod
  }finally{globalThis.structuredClone=clone;TextEncoder.prototype.encode=encode;TextEncoder.prototype.encodeInto=encodeInto;}
  const {body,metrics}=snapshotOnlineGrid(f.body);assert.deepEqual(body,f.body);assert.equal(metrics.callerObjectBytes,metrics.snapshotBytes);
  assert.equal(metrics.snapshotPhaseBytes,2*metrics.callerObjectBytes);
- assert.equal(metrics.authenticationBytes,metrics.snapshotPhaseBytes+2*metrics.codeUnits+2*metrics.bytes);
+ assert.equal(metrics.authenticationBytes,metrics.snapshotPhaseBytes+2*metrics.codeUnits+2*metrics.bytes+metrics.scratchBytes);
  assert.throws(()=>snapshotOnlineGrid(f.body,{maxCombinedBytes:metrics.authenticationBytes-1}),/budget/);
  assert.deepEqual(snapshotOnlineGrid(f.body,{maxCombinedBytes:metrics.authenticationBytes}).body,body);
 });
@@ -367,4 +367,32 @@ test('release snapshot reserves nested authority copies before cloning and adds 
   await assert.rejects(validateOnlineRouteRelease(f.proof,{compiled:[f.compiled],manifest:f.manifest}),/unavailable/);
   assert.equal(clones,0);assert.equal(encodes,0);assert.equal(getters,0);
  }finally{globalThis.structuredClone=clone;TextEncoder.prototype.encode=encode;TextEncoder.prototype.encodeInto=encodeInto;}
+});
+
+test('release inspects original compiled and world descriptors without getters or early projection',async()=>{
+ const {validateOnlineRouteRelease}=await import('./online-route-release.mjs');
+ for(const change of [f=>[f.compiled,'routeHash'],f=>[f.compiled,'runIn'],f=>[f.manifest,'revision'],f=>[f.manifest,'tiles'],f=>[f.manifest.tiles['0,0'],'sha256']]){
+  const f=await networkReleaseFixture(),[target,key]=change(f),value=target[key];let getters=0;
+  Object.defineProperty(target,key,{enumerable:true,configurable:true,get(){getters++;return value;}});
+  await assert.rejects(validateOnlineRouteRelease(f.proof,{compiled:[f.compiled],manifest:f.manifest}),/unavailable/);assert.equal(getters,0,key);
+ }
+});
+
+test('over-budget original 20000-route input creates zero projected records or registry entries',async()=>{
+ const {validateOnlineRouteRelease}=await import('./online-route-release.mjs');
+ const f=await networkReleaseFixture(),compiled=Array.from({length:20000},()=>f.compiled),map=Array.prototype.map,entries=Object.entries,clone=globalThis.structuredClone;
+ let projections=0,registryEntries=0,clones=0;
+ Array.prototype.map=function(callback,...rest){if(this===compiled)return map.call(this,(...args)=>{projections++;return callback(...args);},...rest);return map.call(this,callback,...rest);};
+ Object.entries=function(value){if(value===f.manifest.tiles)registryEntries++;return entries(value);};globalThis.structuredClone=(...args)=>{clones++;return clone(...args);};
+ try{await assert.rejects(validateOnlineRouteRelease(f.proof,{compiled,manifest:f.manifest}),/budget/);assert.equal(projections,0);assert.equal(registryEntries,0);assert.equal(clones,0);}
+ finally{Array.prototype.map=map;Object.entries=entries;globalThis.structuredClone=clone;}
+});
+
+test('actual grid validator preserves its exact 128 KiB canonical boundary',async()=>{
+ const {validateOnlineGrid,onlineGridHash}=await import('../src/online-grid.js'),{canonicalJSON}=await import('../src/route-definition.js'),f=await certifiedGridFixture();
+ const pad=128*1024-new TextEncoder().encode(canonicalJSON(f.body)).length;
+ f.body.routeId+='x'.repeat(pad);f.compiled.id=f.body.routeId;assert.equal(new TextEncoder().encode(canonicalJSON(f.body)).length,128*1024);
+ const accepted=await validateOnlineGrid(f.body,f.compiled,{expectedHash:await onlineGridHash(f.body)});assert.equal(accepted.routeId,f.compiled.id);
+ f.body.routeId+='x';f.compiled.id=f.body.routeId;const expectedHash=await onlineGridHash(f.body),clone=globalThis.structuredClone;let clones=0;globalThis.structuredClone=(...args)=>{clones++;return clone(...args);};
+ try{await assert.rejects(validateOnlineGrid(f.body,f.compiled,{expectedHash}),/budget/);assert.equal(clones,0);}finally{globalThis.structuredClone=clone;}
 });
