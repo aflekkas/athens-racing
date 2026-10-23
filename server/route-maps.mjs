@@ -43,11 +43,11 @@ export async function installRouteMaps(maps, catalogue, { carSpecs = {}, loadRoa
         if (roadBody.worldSetRevision !== c.worldSetRevision) throw Error('Recovery world release mismatch');
         const geometry = new RouteNetworkRuntime(c, onlineGrid), identity = routeNetworkIdentity(c, descriptor.hash);
         const definitions = new Map();
-        for (const e of c.definition.events.filter(e => e.enabled && e.type === 'sprint' && !e.reverse)) {
+        for (const e of c.definition.events.filter(e => e.enabled && ['sprint', 'timetrial'].includes(e.type) && !e.reverse)) {
           const def = routeEvent(c, e.id), resolved = resolveEvent(def, { route: geometry, marks: [] });
-          definitions.set(e.id, { ...def, ...resolved, mapId: c.id, routeKey: `${resolved.s0}>${resolved.s1}`, traffic: e.trafficLevel > 0, trafficLevel: e.trafficLevel });
+          definitions.set(e.id, { ...def, ...resolved, ...(e.type === 'timetrial' ? { rivals: 0, rivalCount: 0 } : {}), mapId: c.id, routeKey: `${resolved.s0}>${resolved.s1}`, traffic: e.trafficLevel > 0, trafficLevel: e.trafficLevel });
         }
-        if (!definitions.size) throw Error('No supported online race');
+        if (!definitions.size) throw Error('No supported online timed event');
         const free = { ...freeRoam(c.id), worldId: 'athens', routeId: c.id, routeHash: c.routeHash, geometryHash: c.geometryHash, worldSetRevision: c.worldSetRevision, s0: 0, s1: c.lengthM, dir: 1, len: c.lengthM, laps: 1, closed: geometry.closed, sectors: [], routeKey: null, free: true, save: false, traffic: c.definition.trafficLevel > 0, trafficLevel: c.definition.trafficLevel, conditions: { time: c.definition.timeOfDay, weather: c.definition.weather } };
         definitions.set(free.id, free);
         const spec = car => carSpecs instanceof Map ? carSpecs.get(car) : carSpecs[car];

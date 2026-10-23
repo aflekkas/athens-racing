@@ -33,7 +33,7 @@ const OPAQUE_MAX_KEYS = 32;
 // keeps trafficLevel/conditions/police next to the resolved route).
 export function defaultConfig(def = {}) {
   return {
-    rivals: MP_RIVALS_DEFAULT,
+    rivals: def.type === 'timetrial' ? 0 : MP_RIVALS_DEFAULT,
     traffic: typeof def.trafficLevel === 'number' ? def.trafficLevel : (def.traffic ? 1 : 0),
     time: def.conditions?.time || 'afternoon',
     weather: def.conditions?.weather || 'clear',
@@ -52,11 +52,11 @@ const isWeather = v => WEATHERS.some(([id]) => id === v);
 export function sanitizeConfig(input, def = {}) {
   if (input === undefined) return { config: null };
   if (!input || typeof input !== 'object' || Array.isArray(input)) return { error: 'Invalid lobby setup.' };
-  void def;
   const out = {};
   if (input.rivals !== undefined) {
     const n = Math.round(Number(input.rivals));
     if (!Number.isFinite(n) || n < MP_RIVALS_MIN || n > MP_RIVALS_MAX) return { error: `AI rivals must be 0-${MP_RIVALS_MAX}.` };
+    if (def.type === 'timetrial' && n !== 0) return { error: 'Time Trial has no AI rivals.' };
     out.rivals = n;
   }
   if (input.traffic !== undefined) {
@@ -210,9 +210,9 @@ export function clearTelemetryFields() { telemetryFields.clear(); }
 export const isObjectiveMode = (type) => isDrivingMode(type);
 
 // Both the Node server and Worker reject removed modes, including legacy catalogues.
-export function assertModeAllowed(eventDef, routeClosed) {
+export function assertModeAllowed(eventDef, routeClosed, { authenticatedRoute = false } = {}) {
   void routeClosed;
-  if (!['sprint', 'free'].includes(eventDef?.type)) return 'Mode unavailable. Choose Quick Race or Free Roam.';
+  if (!['sprint', 'free'].includes(eventDef?.type) && !(authenticatedRoute && eventDef?.type === 'timetrial')) return 'Mode unavailable. Choose Quick Race or Free Roam.';
   return null;
 }
 

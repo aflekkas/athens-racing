@@ -85,7 +85,7 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
   const lobbies = new Map(), clients = new Set(), sessions = new Map();
   const lobbyEvent = l => maps.get(l.mapId).definitions.get(l.eventId);
   // Removed modes stay unavailable even when a legacy catalogue is supplied.
-  const onlineEvent = (id, mapId = defaultMapId) => ['sprint', 'free'].includes(maps.get(mapId)?.definitions.get(id)?.type);
+  const onlineEvent = (id, mapId = defaultMapId) => { const map = maps.get(mapId), type = map?.definitions.get(id)?.type; return ['sprint', 'free'].includes(type) || type === 'timetrial' && !!map?.routeIdentity; };
   const options = (mapId = defaultMapId) => [...maps.get(mapId).definitions.values()].filter(e => onlineEvent(e.id, mapId)).map(({ id, name, type, s0, s1, dir, len, routeKey }) => ({ id, name, type, mapId, s0, s1, dir, len, routeKey }));
   const catalogue = () => [...maps].filter(([id]) => mapEnabled(id)).map(([id, m]) => ({ id, name: m.name, track: m.track, events: options(id), trips: m.trips || { taxi: null, getaway: null } }));
   const uniqueName = (l, name, id) => {
@@ -204,7 +204,7 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
           return;
         }
         if (m.type === 'leave') { leave(c); send(ws, { type: 'left' }); return; }
-        if (['create', 'options'].includes(m.type) && m.mode !== undefined && !['sprint', 'free'].includes(m.mode)) return error('Mode unavailable. Choose Quick Race or Free Roam.');
+        if (['create', 'options'].includes(m.type) && m.mode !== undefined && !['sprint', 'free'].includes(m.mode) && !(m.mode === 'timetrial' && maps.get(m.mapId || l?.mapId || defaultMapId)?.routeIdentity)) return error('Mode unavailable. Choose Quick Race or Free Roam.');
         if (m.type === 'create' || m.type === 'join') {
           // A second click or a retried message for the lobby the driver is already in is the same request: answer with the lobby, not an error toast.
           if (l && m.type === 'join' && String(m.code ?? '').trim().toUpperCase() === l.code) { publish(l); return; }
@@ -220,7 +220,7 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
             const defs = maps.get(mapId).definitions;
             const wantedEvent = m.eventId ?? options(mapId)[0]?.id;
             if (wantedEvent === undefined || !defs.has(wantedEvent)) return error('Unknown race route for this map.');
-            const modeBlock = assertModeAllowed(defs.get(wantedEvent), maps.get(mapId).closed === true);
+            const modeBlock = assertModeAllowed(defs.get(wantedEvent), maps.get(mapId).closed === true, { authenticatedRoute: !!maps.get(mapId).routeIdentity });
             if (modeBlock) return error(modeBlock);
             if (!mapEnabled(mapId)) return error('Map unavailable.');
             if (lobbies.size >= 64) return error('Lobby limit reached. Join an existing lobby.');
@@ -293,7 +293,7 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
           const defs = maps.get(mapId).definitions;
           const eventId = m.eventId ?? (mapId === l.mapId ? l.eventId : options(mapId)[0]?.id);
           if (eventId === undefined || !defs.has(eventId)) return error('Unknown race route for this map.');
-          const modeBlock = assertModeAllowed(defs.get(eventId), maps.get(mapId).closed === true);
+          const modeBlock = assertModeAllowed(defs.get(eventId), maps.get(mapId).closed === true, { authenticatedRoute: !!maps.get(mapId).routeIdentity });
           if (modeBlock) return error(modeBlock);
           if (!mapEnabled(mapId)) return error('Map unavailable.');
           // Car rules and the Advanced per-car override resolve to one effective
@@ -322,7 +322,7 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
           }
           const incoming = { ...(m.config || {}) };
           if (m.traffic !== undefined && incoming.traffic === undefined) incoming.traffic = m.traffic === true ? 1 : 0;
-          const cfg = sanitizeConfig(incoming);
+          const cfg = sanitizeConfig(incoming, defs.get(eventId));
           if (cfg.error) return error(cfg.error);
           if (rulesChanged) {
             l.carRules = nextRules; l.advancedCars = nextAdvanced; l.allowedCars = effective;
@@ -335,6 +335,7 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
           // to Megara ("why is there traffic on Megara"). What the host sets in this same message still wins.
           const trackDefaults = mapChanged ? (({ traffic, time, weather, police, reverse }) => ({ traffic, time, weather, police, reverse }))(defaultConfig(defs.get(eventId))) : {};
           const nextConfig = { ...prevConfig, ...trackDefaults, ...cfg.config };
+          if (defs.get(eventId).type === 'timetrial') nextConfig.rivals = 0;
           if (!canReverse(mapId)) nextConfig.reverse = false;
           const raceChanged = mapChanged || eventChanged || configInvalidates(prevConfig, nextConfig);
           if (mapChanged) for (const p of l.players.values()) p.loaded = false;
@@ -539,7 +540,7 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
           rememberRecoveryRoad(c, event, l.raceId, maps.get(l.mapId).geometry);
           // Objective modes never take the crossing finish; reversed runs keep
           // their time but stay off the leaderboard.
-          if (c.finish === null && event.type === 'sprint' && courseComplete(c.course) && (s.s - event.s1) * event.dir >= 0 && Math.abs(s.u) < 30) {
+          if (c.finish === null && (event.type === 'sprint' || event.type === 'timetrial' && !!routeMap?.routeIdentity) && courseComplete(c.course) && (s.s - event.s1) * event.dir >= 0 && Math.abs(s.u) < 30) {
             c.finish = Math.max(0, (c.course.finishedAt ?? now / 1000) - l.startAt / 1000); l.racers.get(c.id).finish = c.finish; publish(l);
             if (!l.config?.reverse && canSaveResults(c.identity)) leaderboard.submit(onlineLeaderboardResult(c, l, event)).catch(e => { if (!e.status) console.error('Leaderboard save failed:', e.message); });
             if ([...l.players.values()].every(p => p.finish !== null || p.dnf)) results(l);

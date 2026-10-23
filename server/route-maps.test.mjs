@@ -16,8 +16,9 @@ async function bindRoads(build, roads) {
   build.recoveryWorld = { worldSetRevision: roads.worldSetRevision, sourceHashes: roads.sourceHashes };
   build.routeRoads = [{ hash: rootHash, body: manifest }]; build.roadArtifacts = { [url]: roads };
 }
-async function catalogue() {
-  const f = fixture(), c = await compileRoute(f.definition, f.graph, f.contacts);
+async function catalogue({ timetrial = false } = {}) {
+  const f = fixture(); if (timetrial) f.definition.events = [{ id: 'only-tt', type: 'timetrial', enabled: true, rivals: 0 }];
+  const c = await compileRoute(f.definition, f.graph, f.contacts);
   const grid = { schemaVersion: 1, projectionId: 'athens-v1', routeId: c.id, routeHash: c.routeHash, geometryHash: c.geometryHash, worldSetRevision: c.worldSetRevision, capacity: 8, footprint: { halfWidth: 1.1, halfLength: 2.8, clearanceM: .2 }, poses: Array.from({ length: 8 }, (_, slot) => ({ slot, s: -8 * (slot + 1), x: 100, y: 0, z: 400 + 8 * (slot + 1), yaw: 0, edgeId: 'a', layer: 0, surfaceId: 'road-a' })), approach: { points: [], occurrences: [] } };
   const anchors = [100, 104, 108, 112].map(offsetM => { const p = edgePoint(f.graph.edges.get('a').value, offsetM); return { edgeId: 'a', offsetM, x: p.x, y: p.y, z: p.z, yaw: p.yaw, layer: 0, surfaceId: 'road-a', leftM: 4, rightM: 3, halfWidth: 1.1, halfLength: 2.8 }; });
   const roads = { schemaVersion: 1, projectionId: 'athens-v1', worldId: 'athens', worldSetRevision: c.worldSetRevision, sourceHashes: [['0,0', 'b'.repeat(64)]], edges: [...f.graph.edges.values()].map(e => e.value), anchors };
@@ -115,4 +116,12 @@ test('activation cannot resurrect a persisted legacy lobby or its ready state',a
  const maps=new Map([['riviera',{id:'riviera',track:{version:'legacy'},definitions:new Map([['quick',{id:'quick',mapId:'riviera',type:'sprint',s0:0,s1:100,dir:1,len:100}]])}]]),opts={maps,cars:new Set(['mini']),carSpecs:{mini:{width:2,length:4}},leaderboard:{submit:async()=>{}}};
  let core=createGameCore(opts);const ws={readyState:1,messages:[],send(s){this.messages.push(JSON.parse(s));},close(){}};core.connect(ws,'test',{protocol:MULTIPLAYER_PROTOCOL});core.message(ws,JSON.stringify({type:'create'}));core.message(ws,JSON.stringify({type:'ready',ready:true,version:'legacy'}));const saved=structuredClone(core.exportState());assert.equal(saved.sessions[0].ready,true);
  await installRouteMaps(maps,build,{carSpecs:opts.carSpecs});core=createGameCore(opts);core.restore(saved);assert.equal(core.lobbies.size,0);assert.equal([...core.sessions.values()][0].ready,false);assert.equal([...core.sessions.values()][0].state,null);assert.equal(core.track.version,maps.get(c.id).track.version);
+});
+
+test('TT-only authenticated routes activate atomically with eight human slots and unchanged TT edition', async()=>{
+ const {c,build}=await catalogue({timetrial:true}), maps=new Map();await installRouteMaps(maps,build,{carSpecs:{mini:{width:2,length:4}}});
+ assert.equal(maps.routeConfig.onlineAvailable,true);assert.ok(maps.onlineMapIds.has(c.id));const map=maps.get(c.id),event=map.definitions.get('only-tt');
+ assert.equal(event.type,'timetrial');assert.equal(event.rivals,0);assert.equal(event.rivalCount,0);assert.equal(event.routeHash,c.routeHash);assert.equal(event.geometryHash,c.geometryHash);
+ assert.equal(new Set(Array.from({length:8},(_,slot)=>JSON.stringify(map.gridPose(slot,'mini')))).size,8);
+ const invalid=await catalogue({timetrial:true});invalid.build.routeGrids[0].body.poses.pop();const blocked=new Map();await installRouteMaps(blocked,invalid.build);assert.equal(blocked.routeConfig.onlineAvailable,false);assert.equal(blocked.onlineMapIds.size,0);
 });

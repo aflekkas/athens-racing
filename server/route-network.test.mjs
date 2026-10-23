@@ -12,8 +12,9 @@ import { createGameCore } from './core.mjs';
 import { onlineLeaderboardResult } from './leaderboard-online.mjs';
 import { resultContext, validResult, boardKey } from './leaderboard-policy.mjs';
 const socket = () => ({ readyState: 1, messages: [], send(bytes) { this.messages.push(JSON.parse(bytes)); }, close() { this.readyState = 3; } });
-async function setup(t, { circuit = false } = {}) {
+async function setup(t, { circuit = false, timetrial = false } = {}) {
   const f = fixture();
+  if (timetrial) f.definition.events = [{ id: 'fixture-tt', type: 'timetrial', enabled: true, rivals: 0 }];
   if (!circuit) {
     f.contacts.eligible = key => ['0,0', '1,0', '0,1'].includes(key);
     for (const { value: edge } of f.graph.edges.values()) if (edge.layer === 0) for (const p of edge.points) p[1] = (500 - p[2]) * .03 + p[0] * .005;
@@ -38,7 +39,7 @@ async function setup(t, { circuit = false } = {}) {
   let core = createGameCore(opts); const a = socket(), b = socket();
   const send = (ws, message) => core.message(ws, JSON.stringify(message));
   for (const [i, ws] of [a, b].entries()) core.connect(ws, String(i), { protocol: MULTIPLAYER_PROTOCOL });
-  send(a, { type: 'create', mapId: c.id, eventId: event.id }); const lobby = [...core.lobbies.values()][0];
+  send(a, { type: 'create', mapId: c.id, eventId: event.id, ...(timetrial ? { mode: 'timetrial' } : {}) }); const lobby = [...core.lobbies.values()][0];
   assert.ok(lobby, JSON.stringify(a.messages)); send(b, { type: 'join', code: lobby.code });
   const packet = message => ({ mapId: c.id, routeIdentity, generation: lobby.generation, raceId: lobby.raceId, ...message });
   const ready = () => { for (const ws of [a, b]) send(ws, packet({ type: 'ready', ready: true, version: map.track.version })); send(a, { type: 'start' }); core.tick(); };
@@ -135,3 +136,13 @@ test('state batches count real wire packets once while the eighty-message guard 
   x.advance(1100); assert.equal(await x.core.prepareMessage(x.a, JSON.stringify({ ...packet, motionEpoch: 2 })), true);
   x.send(x.a, { ...packet, motionEpoch: 2, mapId: 'spoof' }); assert.equal(held, false); assert.equal(releases, 2);
  });
+
+test('authenticated online Time Trial keeps its edition, zero AI rivals and continuous timed human finishes', async t => {
+ const x=await setup(t,{timetrial:true});assert.equal(x.lobby.config.rivals,0);assert.equal(x.core.publicLobby(x.lobby).mode,'timetrial');
+ assert.ok(x.a.messages.find(m=>m.type==='hello').maps.find(m=>m.id===x.c.id).events.some(e=>e.type==='timetrial'));
+ x.send(x.a,{type:'options',mode:'timetrial',config:{rivals:2}});assert.equal(x.lobby.config.rivals,0);assert.match(x.a.messages.at(-1).message,/no AI rivals/);
+ x.ready();for(let s=-8;s<=x.event.s1+5;s+=2.5){x.advance();for(const ws of [x.a,x.b])x.send(ws,x.packet({type:'state',state:x.pose(s)}));}
+ assert.equal(x.lobby.status,'results');assert.equal(x.submitted.length,2);
+ for(const record of x.submitted){assert.equal(record.source,'online');assert.equal(record.setup.type,'timetrial');assert.equal(record.setup.rivals,0);assert.equal(record.eventId,'fixture-tt');assert.equal(record.edition,x.event.edition);assert.equal(record.routeHash,x.c.routeHash);assert.ok(validResult(record,resultContext(record,new Map(),'',x.maps).event,new Set(['mini'])));}
+ const before=x.submitted.length;x.advance();x.send(x.a,x.packet({type:'state',state:x.pose(x.event.s1+6)}));assert.equal(x.submitted.length,before);
+});
