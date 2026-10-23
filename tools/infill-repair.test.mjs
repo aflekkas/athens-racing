@@ -116,9 +116,34 @@ for(const [name,body]of [
  ['empty relevant building multipolygon','<relation id="10"><tag k="type" v="multipolygon"/><tag k="building" v="yes"/></relation>'],
  ['relevant building relation with an empty child relation','<relation id="11"><tag k="type" v="multipolygon"/></relation><relation id="10"><member type="relation" ref="11" role="outer"/><tag k="type" v="multipolygon"/><tag k="building" v="yes"/></relation>'],
 ])test('source assembly rejects '+name+' without provenance closure hints',{skip:!ready&&'set WORLD_GEN_PYTHON to world-gen venv'},async()=>{
- await assert.rejects(sourcePlanForXml('<osm version="0.6">'+body+'</osm>'),/Unassembled relevant source areas/);
+ await assert.rejects(sourcePlanForXml('<osm version="0.6">'+body+'</osm>'),/Unassembled relevant source areas|Nested relevant source relations are unsupported/);
 });
 test('assembled relevant relation remains usable beside an unrelated empty relation',{skip:!ready&&'set WORLD_GEN_PYTHON to world-gen venv'},async()=>{
  const source='<osm version="0.6"><node id="1" lat="37.979" lon="23.731"/><node id="2" lat="37.979" lon="23.7311"/><node id="3" lat="37.9791" lon="23.7311"/><node id="4" lat="37.9791" lon="23.731"/><way id="1"><nd ref="1"/><nd ref="2"/><nd ref="3"/><nd ref="4"/><nd ref="1"/></way><relation id="10"><member type="way" ref="1" role="outer"/><tag k="type" v="multipolygon"/><tag k="building" v="yes"/></relation><relation id="11"><tag k="type" v="multipolygon"/></relation></osm>';
  const plan=await sourcePlanForXml(source);assert.equal(plan.remove.length,1);assert.equal(plan.remove[0].decision.reason,'source-sparse');
+});
+
+const validOuterWay='<node id="1" lat="37.979" lon="23.731"/><node id="2" lat="37.979" lon="23.7311"/><node id="3" lat="37.9791" lon="23.7311"/><node id="4" lat="37.9791" lon="23.731"/><way id="1"><nd ref="1"/><nd ref="2"/><nd ref="3"/><nd ref="4"/><nd ref="1"/></way>';
+const relevantWithNested=(child,role)=>'<osm version="0.6">'+validOuterWay+child+'<relation id="10"><member type="way" ref="1" role="outer"/><member type="relation" ref="11" role="'+role+'"/><tag k="type" v="multipolygon"/><tag k="building" v="yes"/></relation></osm>';
+test('valid outer building way plus empty untagged inner relation fails closed',{skip:!ready&&'set WORLD_GEN_PYTHON to world-gen venv'},async()=>{
+ const source=relevantWithNested('<relation id="11"><tag k="type" v="multipolygon"/></relation>','inner');
+ await assert.rejects(sourcePlanForXml(source),/Nested relevant source relations are unsupported/);
+});
+
+test('nested source members are outside deletion scope for every role and child state',{skip:!ready&&'set WORLD_GEN_PYTHON to world-gen venv'},async()=>{
+ const children={
+  missing:'',
+  empty:'<relation id="11"><tag k="type" v="multipolygon"/></relation>',
+  invalid:'<way id="2"><nd ref="1"/><nd ref="2"/></way><relation id="11"><member type="way" ref="2" role="outer"/><tag k="type" v="multipolygon"/></relation>',
+  valid:'<relation id="11"><member type="way" ref="1" role="outer"/><tag k="type" v="multipolygon"/></relation>',
+ };
+ for(const [state,child]of Object.entries(children))for(const role of ['inner','outer','','label','invalid']){
+  await assert.rejects(sourcePlanForXml(relevantWithNested(child,role)),/Nested relevant source relations are unsupported/,state+' child with '+JSON.stringify(role)+' role');
+ }
+});
+test('unrelated nested and missing-member relations do not block an assembled relevant area',{skip:!ready&&'set WORLD_GEN_PYTHON to world-gen venv'},async()=>{
+ for(const child of ['', '<relation id="21"><tag k="type" v="multipolygon"/></relation>']){
+  const source='<osm version="0.6">'+validOuterWay+'<relation id="10"><member type="way" ref="1" role="outer"/><tag k="type" v="multipolygon"/><tag k="building" v="yes"/></relation>'+child+'<relation id="20"><member type="way" ref="1" role="outer"/><member type="relation" ref="21" role="inner"/><tag k="type" v="multipolygon"/></relation></osm>';
+  const plan=await sourcePlanForXml(source);assert.equal(plan.remove.length,1);assert.equal(plan.remove[0].decision.reason,'source-sparse');
+ }
 });

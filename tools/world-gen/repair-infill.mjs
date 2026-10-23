@@ -88,6 +88,11 @@ class SourceAudit(osmium.SimpleHandler):
    # Every relevant relation must yield geometry, even when the provenance
    # record omits unresolved-member hints or all members exist but are empty.
    expected.add('r'+str(relation.id))
+   # This deletion primitive supports way-member areas only. An emitted parent
+   # polygon does not prove that a nested inner/outer member was incorporated.
+   # Reject relation members regardless of role, existence, tags or geometry.
+   if any(member.type == 'r' for member in relation.members):
+    raise ValueError('Nested relevant source relations are unsupported: '+str(relation.id))
    if str(relation.id) in unresolved:
     raise ValueError('Incomplete relevant source relation '+str(relation.id))
 SourceAudit().apply_file(sys.argv[2])
