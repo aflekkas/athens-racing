@@ -1,0 +1,34 @@
+{
+  "status": "SOURCE_PREPARED_NOT_RUNTIME_TESTED",
+  "observedCurrentMaster": "f1e05e1d9b06123685c7b2d2ebea80e2a5a36624",
+  "parentNamedBase": "0bf025e423fbc67b91bdeaddda4ee906cf4b80a3",
+  "files": {
+    "budget-browser.mjs": "ecbf368b4d1f2e34242dc0c0e12788e4034742ed81d27b5a1f0c69837af3b7ec",
+    "glyfada-readiness.mjs": "01e991b7d230b7d9723548853ce8ef4243d0828380f14b6c97785b80934d15fb",
+    "local-server.mjs": "feebc7eed8effe38557df3263bd6cfaa0126b3ad7440666cd5b3a7d98d1b842b",
+    "readiness-policy.mjs": "b91a68ff0eb12228521141368f646826053fa39b2edc4015887e2558aec83aad",
+    "readiness-policy.test.mjs": "4c1dff34f8753656163c44cb940ba80443239644585745cefd9fa922aa398fd0"
+  },
+  "pureTests": {
+    "pass": 14,
+    "fail": 0
+  },
+  "syntax": "all4modulesPASS",
+  "cacheBodiesRead": false,
+  "decoded": false,
+  "browserStarted": false,
+  "serverStarted": false,
+  "network": false,
+  "command": "PROOF_ROOT=/home/dev/.cogenly/worktrees/athens-racing/t3-41c48689 PROOF_SHA=<ALLOCATED_FULL_SHA> PROOF_MODE=glyfada-readiness CACHE_ONLY=1 CHROME_BIN=/tmp/athens-ui-fixes.Nxho/browsers/chromium-1248/chrome-linux64/chrome BROWSER_SLOTS=1 BROWSER_SLOT_WAIT=1 bash tools/browser-slot.sh node /tmp/athens-ui-fixes.Nxho/budget-browser.mjs",
+  "previousRunnerSHA": "2d10e752539eede428cd614b07006ff4495e179fe0d18a2417d127e0a2778b78",
+  "grantInstrumentation": "Added before-simulation JPG/JSON + helper SHA/own spawned PID receipt required by explicit grant; other4helperpins unchanged",
+  "previousRunHelpers": {
+    "budget-browser.mjs": "ecbf368b4d1f2e34242dc0c0e12788e4034742ed81d27b5a1f0c69837af3b7ec",
+    "glyfada-readiness.mjs": "7d6071e6b7134a4b566a04ec78222e294f84c7143cddcdbf36699d2093e4a23e",
+    "local-server.mjs": "e48b7267eafde0a66606edd0bdba238d46f8848551f88ba4ecff29c76e0b1c4a",
+    "readiness-policy.mjs": "e2ce6a9b9258c3d6b11b0f5934335cd99b1e92751a376168201562fec717d4fb",
+    "readiness-policy.test.mjs": "63f6feabdf03e4f09d5ecc8ffe775982d1680172a8c41add623a9f408959f800"
+  },
+  "protocol": "Shared first-cause abort on cache miss/bad identity/HTTP>=400/pageerror/unapproved external/deadline; race in-flight phases and immediately close OWN browser. Guard every individual1/240physics step, render, activateFrame, sample and screenshot; no postabort failure screenshot. Expected fonts abort locally and are recorded separately from unapproved attempts; actualremoteBytes must0. Readonly URL-key cache then original1748contentSHA cells then route41contentSHA cells; SHA+rawsize verified before serve in future allocated run; corruptfirsthitfails without fallback/copy/fetch.",
+  "grantStatus": "SOURCE_ONLY; future retry NOT ALLOCATED"
+}
