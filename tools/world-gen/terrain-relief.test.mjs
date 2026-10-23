@@ -112,3 +112,18 @@ test('certificate verifier rejects missing mass and ignores claimed transport co
  const observations=[{chord:projectionChord('certificate',0,0,1.6),sign:1,weight:1}],flows=[{from:'-16,0',to:'0,0',amount:.5,unitCost:0},{from:'16,0',to:'0,0',amount:.5,unitCost:0}];
  assert.ok(Math.abs(verifyTerrainComfortCertificate({observations,flows}).upperBound-.8)<1e-12);assert.throws(()=>verifyTerrainComfortCertificate({observations,flows:flows.slice(1)}),/Unbalanced/);assert.throws(()=>verifyTerrainComfortCertificate({observations:[{...observations[0],weight:-1}],flows}),/Invalid/);
 });
+
+function regionalManifestFixture(m){const bytes=Buffer.from(JSON.stringify(m));return {bytes,sha256:createHash('sha256').update(bytes).digest('hex'),url:'/world/manifests/derived.json'};}
+function regionalRepairFixture(){
+ const projection={lat0:37.98,lon0:23.73,mlat:111320,mlon:87745.27512677578},old={regionId:'megara',world:'megara',revision:'old'},next={...old,revision:'repaired'},tile={url:'https://example.invalid/original',sha256:'a'.repeat(64),bytes:1,decodedBytes:1,triangles:1,dependencies:[],source:old},base={tileVersion:1,tileMetres:512,world:'athens',revision:'composed-old',projection,spawn:{cell:[0,0],anchor:'original-anchor'},sourceIdentities:[old],regions:[{id:'megara',sourceWorld:'megara',sourceRevision:'old'}],tiles:{'0,0':tile,'1,0':{...tile,sha256:'b'.repeat(64)}}},repair={...base,world:'megara',revision:'repaired',sourceIdentities:[old,next],tiles:{'0,0':{...tile,url:'/world/original'},'1,0':{...tile,sha256:'c'.repeat(64),source:next}}};return {base,repair};
+}
+test('explicit regional repair composition preserves mixed authentic packet sources and untouched entries',()=>{
+ const{base,repair}=regionalRepairFixture(),r=composeExtension(base,repair,{regionId:'megara',preservePacketSources:true,regionalManifest:regionalManifestFixture(repair)});assert.strictEqual(r.manifest.tiles['0,0'],base.tiles['0,0']);assert.equal(r.manifest.tiles['1,0'].source.revision,'repaired');assert.equal(r.manifest.sourceIdentities.length,2);assert.equal(r.manifest.regions[0].sourceRevision,'repaired');assert.equal(r.manifest.regions[0].manifestSha256,regionalManifestFixture(repair).sha256);assert.equal(r.manifest.releaseReady,false);assert.equal(r.manifest.acceptance.passed,false);assert.notEqual(r.manifest.revision,repair.revision);assert.throws(()=>composeExtension(base,repair,{regionId:'megara'}),/identity mismatch/);
+});
+test('regional repair composition rejects undeclared source identities and unchanged-byte relabeling',()=>{
+ const{base,repair}=regionalRepairFixture();repair.tiles['1,0'].source={...repair.tiles['1,0'].source,revision:'unlisted'};assert.throws(()=>composeExtension(base,repair,{regionId:'megara',preservePacketSources:true,regionalManifest:regionalManifestFixture(repair)}),/Undeclared|provenance/);repair.tiles['1,0'].source=repair.sourceIdentities[1];repair.tiles['0,0'].source=repair.sourceIdentities[1];assert.throws(()=>composeExtension(base,repair,{regionId:'megara',preservePacketSources:true,regionalManifest:regionalManifestFixture(repair)}),/Unchanged packet source/);
+});
+
+test('regional descriptor replacement requires the exact authenticated manifest bytes',()=>{
+ const{base,repair}=regionalRepairFixture(),binding=regionalManifestFixture(repair);assert.throws(()=>composeExtension(base,repair,{regionId:'megara',preservePacketSources:true,regionalManifest:{...binding,sha256:'f'.repeat(64)}}),/byte binding/);assert.throws(()=>composeExtension(base,repair,{regionId:'megara',preservePacketSources:true}),/byte binding/);
+});
