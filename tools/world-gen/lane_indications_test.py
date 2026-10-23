@@ -87,6 +87,12 @@ class SyntheticGeometry(unittest.TestCase):
         a,_=self.glyph(parsed(self.tags));b,_=self.glyph(parsed({**self.tags,'oneway':'-1'},[[0,80],[0,0]]),-1)
         self.assertLess(a.symmetric_difference(b).area,1e-10);self.assertGreater(a.centroid.x,0)
         _,report=self.glyph(parsed(self.tags));self.assertFalse(report['releaseEligible']);self.assertFalse(report['paintEvidence'])
+    def test_two_way_groups_have_separate_lane_centres_and_opposite_tangents(self):
+        from shapely.affinity import rotate
+        record=parsed(dict(highway='primary',lanes='4',**{'lanes:forward':'2','lanes:backward':'2','turn:lanes:forward':'through|through','turn:lanes:backward':'through|through'}))
+        forward,_=self.glyph(record,1);backward,_=self.glyph(record,-1)
+        self.assertLess(forward.centroid.x,0);self.assertGreater(backward.centroid.x,0)
+        self.assertLess(rotate(forward,180,origin=(0,40)).symmetric_difference(backward).area,1e-10)
     def test_combination_glyph_is_union_and_has_explicit_template_hash(self):
         a,_=self.glyph(parsed({**self.tags,'turn:lanes':'left;through|through|through'}));left,_=self.glyph(parsed(self.tags));through,report=self.glyph(parsed({**self.tags,'turn:lanes':'through|through|through'}))
         self.assertLess(a.symmetric_difference(left.union(through)).area,1e-10);self.assertEqual(report['templateSha256'],digest(FIXTURE['glyphs']))
