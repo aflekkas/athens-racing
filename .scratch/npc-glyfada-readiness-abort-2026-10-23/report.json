@@ -1,0 +1,160 @@
+{
+  "ownPids": [
+    1305930,
+    1305958
+  ],
+  "helperHashes": {
+    "budget-browser.mjs": "ecbf368b4d1f2e34242dc0c0e12788e4034742ed81d27b5a1f0c69837af3b7ec",
+    "glyfada-readiness.mjs": "01e991b7d230b7d9723548853ce8ef4243d0828380f14b6c97785b80934d15fb",
+    "local-server.mjs": "feebc7eed8effe38557df3263bd6cfaa0126b3ad7440666cd5b3a7d98d1b842b",
+    "readiness-policy.mjs": "b91a68ff0eb12228521141368f646826053fa39b2edc4015887e2558aec83aad",
+    "readiness-policy.test.mjs": "4c1dff34f8753656163c44cb940ba80443239644585745cefd9fa922aa398fd0"
+  },
+  "source": "6f81c532fd35e07768b32ba35704ddbec6ea9eb1",
+  "tree": "cad5db6700263ba4874eab4327dbbc5ae87926aa",
+  "root": "/home/dev/.cogenly/worktrees/athens-racing/t3-41c48689",
+  "status": "FAILED_READINESS",
+  "keyHashes": {
+    "index.html": "945d0963a9316e715d5fb915ca597444e4d0209bad4c021c0f628e9e072eda95",
+    "src/athens-world.js": "31cab82a8af2c7daea1df73754262338acdfbe674fe82023a0263e7fd1f866a7",
+    "src/world-session.js": "4459bfd8bc18b539ff411fc26a7eea336faded0f9985afbad9d4306a873dbd10",
+    "src/world-selection.js": "8b70bd88e0a89bf6ddc21e7836b38bff732522b53facd22dd2d9aa0329f14588",
+    "src/world-tile-stream.js": "78917443dc0f6596f2ad4e1b7a0bb85648c3b06cd8d2556b6e017ba7490fc400",
+    "src/world-tile-roads.js": "1499ad4bb59dbd5ac43f63e5761f83193f543feafd99b2a0a4b567e67dd81422",
+    "src/world-tile-graph.js": "3aa22bdf99b0457642cb8831930b53c2b8e0984c73eaf4b6d5a32024a3dc9807",
+    "src/athens-ground.js": "225090cb682e89408a75679154bc17029925823c28370d81c9d4e26c326456b1",
+    "src/world-recovery.js": "80dab0526e8d8afc3f5f4fe8afa3b84055c1ec9060a4f0d62fa95a71df584785",
+    "src/world-traffic.js": "29c330cab8bf2f04ea274dfa3803ccb55e1e7e537ed5e491df938021d97828de",
+    "src/physics.js": "7616694ae14ae3c2051c0b072ab5bb542b16358559a883be443686c766b80df1",
+    "src/settings.js": "37f1b8ff6fa53e74b7e929a92ee4c3cb98f0a3e82bfa392be2ce202b4c1ff027",
+    "src/graphics.js": "dd5824714159e61e1119f69b5affbdb0fae52ccbc89cf1db0d2bbe26e900ee8b"
+  },
+  "served": {
+    "/": {
+      "sha256": "945d0963a9316e715d5fb915ca597444e4d0209bad4c021c0f628e9e072eda95",
+      "bytes": 12277,
+      "gitBlob": "51f2be14e0f4cdcd500742f416f5daf97217276d"
+    },
+    "/src/ui/ui.css": {
+      "sha256": "7fe448f779c30eca6d8149654daf3e44e4164dc99ed0f3a07fa71bdb17b97e3b",
+      "bytes": 135906,
+      "gitBlob": "44584917a216ced41f6ca5ad38d6be13e4aa1418"
+    },
+    "/style.css": {
+      "sha256": "53333b789bfe3363e2514e52ea42e08378af436ac3f5cd56afba4be3a9cfc895",
+      "bytes": 21428,
+      "gitBlob": "0aeaa69c2a4791ab3baf6b5a614826f564c0c7ad"
+    },
+    "/src/multiplayer.css": {
+      "sha256": "4356510cfa04b14731a61ccceb4efe7c1fb4e959a64a5b2340f1a9ca8f7a976b",
+      "bytes": 3580,
+      "gitBlob": "b8d759bdc1ca0aea6f685637b8de44f8aca1a971"
+    },
+    "/src/menu.css": {
+      "sha256": "fcaa1566f81df4265f00453771216edf6a24aee33d5058c647a9c4b2fc160192",
+      "bytes": 13089,
+      "gitBlob": "ad6fdc310e2d80e8822c051c371b82eca2ad6b60"
+    },
+    "/src/menu-backdrop.css": {
+      "sha256": "72869b4d111c1c810d4e6c450d4a1623448ff7d6064144b178efb8a99bb7a646",
+      "bytes": 458,
+      "gitBlob": "df38606b5ba46f4d2439bb177e0278321eac3187"
+    },
+    "/src/ui/headunit.css": {
+      "sha256": "9eb9784401cbad2232dea36e9ee738c70bf5921200d247e099bb5d897087f77b",
+      "bytes": 5763,
+      "gitBlob": "0125f969ddf2a006749d445d3f7d2303277c3486"
+    },
+    "/src/ui/release.css": {
+      "sha256": "052df586b29b3e4b765b27c6d71aaca7c007bb94e724b47747911cc9fcbc90ec",
+      "bytes": 402,
+      "gitBlob": "32b6559d24da099eec59a79c8f8e9ba7486bed4c"
+    },
+    "/src/entry.js": {
+      "sha256": "370d4dfbd6934ae8c6d7a281a240bba00337889a6ff3079045738f63bcf3883b",
+      "bytes": 1120,
+      "gitBlob": "efbd77c164bd03dc735908b5c710fc17ddabea97"
+    },
+    "/assets/icon.svg": {
+      "sha256": "de94bbc07869ca1b0c807af58104a57e45cf068e7c6968ff9862ba7c06c7c4f8",
+      "bytes": 417,
+      "gitBlob": "0732776c7ea67d21088b7ccd37f04e2bc6053221"
+    },
+    "/assets/icons/sprite.svg": {
+      "sha256": "4bc12f297ee1ab8cdcfbfca85ada3d5846bff92508814c42cd2e328c7f6dd66a",
+      "bytes": 18855,
+      "gitBlob": "7ef2b91b50920b1a41f176c70e3c5bbb3ed5a2a1"
+    },
+    "/assets/maps/attica.svg": {
+      "sha256": "94f7b459aee149458c8d078fd30ca2825888fefffa1c209dd894881f3a2647d1",
+      "bytes": 130649,
+      "gitBlob": "12000898885a9224ee3548ed189a656aa9181413"
+    },
+    "/src/device-gate.js": {
+      "sha256": "7131bcb5747ab406a65cfd87b97da271f9099df6a9fe400b6702ac376ba2739a",
+      "bytes": 2658,
+      "gitBlob": "654aedd051677657c7d2e3f30b7a922f9dce275d"
+    },
+    "/src/route-entry-prefetch.js": {
+      "sha256": "0644f84e984b69b934746e7cc75e57351f794f24f3eecbc5ed511280b41c036e",
+      "bytes": 1136,
+      "gitBlob": "da4413dad730e573f62ecc2c4ffabb1f1a3f7e8a"
+    },
+    "/src/main.js": {
+      "sha256": "b527aace5495d2afe8604315f71cf2961e677725c23af7e608a51415698540ac",
+      "bytes": 212203,
+      "gitBlob": "3e011833adf3f71d2da9e67456d814fe28935047"
+    }
+  },
+  "misses": [],
+  "externalBlocked": [],
+  "expectedFontBlocks": [
+    "https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;1,600;1,700;1,800;1,900&family=Barlow:wght@300;400;500;600;700&display=swap"
+  ],
+  "errors": [],
+  "samples": [],
+  "limits": "Readiness only, max3 accepted seconds; graph legality does not prove footprint-safe driving or broad NPC flow.",
+  "url": "http://127.0.0.1:44153/?map=athens&spawn=2325,13057&simhook=1&car=corolla&cam=cockpit",
+  "abort": {
+    "reason": "HTTP 503 http://127.0.0.1:44153/api/auth/session",
+    "atMs": 1097.170977
+  },
+  "error": "HTTP 503 http://127.0.0.1:44153/api/auth/session",
+  "commandTrace": [
+    {
+      "event": "BEGIN",
+      "label": "navigation"
+    },
+    {
+      "event": "END",
+      "label": "navigation"
+    },
+    {
+      "event": "BEGIN",
+      "label": "native boot"
+    },
+    {
+      "event": "ABORT",
+      "reason": "HTTP 503 http://127.0.0.1:44153/api/auth/session"
+    }
+  ],
+  "remoteBytes": 0,
+  "closeErrors": [],
+  "wallMs": 1294.941001,
+  "postCloseHead": "6f81c532fd35e07768b32ba35704ddbec6ea9eb1",
+  "postCloseKeysMatch": {
+    "index.html": true,
+    "src/athens-world.js": true,
+    "src/world-session.js": true,
+    "src/world-selection.js": true,
+    "src/world-tile-stream.js": true,
+    "src/world-tile-roads.js": true,
+    "src/world-tile-graph.js": true,
+    "src/athens-ground.js": true,
+    "src/world-recovery.js": true,
+    "src/world-traffic.js": true,
+    "src/physics.js": true,
+    "src/settings.js": true,
+    "src/graphics.js": true
+  }
+}
