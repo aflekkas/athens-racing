@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "reason": "Explicit owner/parent 2026-10-23 contract: preserve these authenticated imported Penteli source cells byte-for-byte; this does not authorize any unknown source family or missing Athens plan.",
+  "manifestSha256": "2790fa21d0c16271f5e4a097101ba1414ca8a949f8805c416b4b8dfbc68dc718",
+  "cells": [
+    {
+      "cell": [
+        30,
+        -23
+      ],
+      "world": "penteli",
+      "revision": "ca072bb07e9a1385dfc2fd729dfceb5da7185b53f8df5a688ed24ce2438f1b34",
+      "sha256": "d4437f2149560c9ef634480079c6b160ca97bb977bf3816e95a5ef7cbc3c6a61",
+      "bridgeSources": [
+        124519741
+      ],
+      "guardFingerprint": "308d06f2e5a6be31a091095a9103a03ee3a18dcab85ca289d37bf2a91a968ca4"
+    },
+    {
+      "cell": [
+        33,
+        -21
+      ],
+      "world": "penteli",
+      "revision": "ca072bb07e9a1385dfc2fd729dfceb5da7185b53f8df5a688ed24ce2438f1b34",
+      "sha256": "b4e4176c6459001762f098e7a7ed5699a7b83893b10fb328a6c5e8fa2e93751f",
+      "bridgeSources": [
+        127528596
+      ],
+      "guardFingerprint": "45d5e2efbccb9a53e12e9c07a3e6f64d00325c3d6aa1316e9a0926de9d4adefb"
+    },
+    {
+      "cell": [
+        34,
+        -21
+      ],
+      "world": "penteli",
+      "revision": "ca072bb07e9a1385dfc2fd729dfceb5da7185b53f8df5a688ed24ce2438f1b34",
+      "sha256": "964bbb12088762cb7d616decf049fa77683508bb603a43894d1de9875fd6866f",
+      "bridgeSources": [
+        127528596
+      ],
+      "guardFingerprint": "2772d8b9b9d8fab0ac88385bc4263669e28f6dd65ef7a35b84bdcd23947c96df"
+    }
+  ]
+}

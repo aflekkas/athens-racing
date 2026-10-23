@@ -13,3 +13,6 @@ test('bounded official OSM sources retain node order, close restrictions and rej
 test('bridge posts retain whole-source cadence across noding and cell boundaries',{skip:!shapely&&'shapely is not installed'},()=>{
   const r=spawnSync(python,[fileURLToPath(new URL('./bridge_context_test.py',import.meta.url))],{encoding:'utf8'});assert.equal(r.status,0,r.error?.message||r.stderr||r.stdout);
 });
+
+// Pure offline guard proof fixtures run even when the optional Python suite is unavailable.
+import './bridge-guards.test.mjs';
