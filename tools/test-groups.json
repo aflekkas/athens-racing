@@ -1,5 +1,6 @@
 {
   "unit": [
+    "tools/world-tile-index-shape.test.mjs",
     "tools/material-proof-cleanup.test.mjs",
     "tools/material-proof-deadline.test.mjs",
     "tools/material-proof-egress.test.mjs",
