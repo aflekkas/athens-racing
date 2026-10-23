@@ -116,3 +116,13 @@ test('duplicate escaped keys and invalid far feature schemas are never omitted t
 test('compact full-support roundtrip keeps original byte SHA and order exactly',()=>withSource(full({areas:[area('garden',polygon(0,0,512))],exclusions:[area('inside',polygon(200,200,10))]}),source=>{
  const {catalog}=openVerifiedSceneryCatalog(source),p=projectScenerySupport(catalog,selection);assert.equal(p.projectedSha256,source.sourceSha256);assert.equal(p.projectedBytes.length,source.sourceBytes);
 }));
+
+test('source-ID UTF16 equality preserves escaped/Unicode duplicate last-wins semantics',()=>{
+ const id='garden:δ:🌳',s=full({points:[point(40,40,8,{kind:2,source:id})],areas:[area(id,polygon(0,0,200)),area(id,polygon(9000,9000,100))]});equivalent(s);
+ const raw=JSON.stringify(s),at=raw.lastIndexOf(id),escaped=raw.slice(0,at)+raw.slice(at).replace(id,'garden:\\u03b4:\\ud83c\\udf33');withSource(escaped,source=>{const r=projected(source);assert.equal(r.consumed.scenery.areas.length,2);assert.equal(applySceneryVegetation(fixture(),r.consumed.scenery).reject.greenAreaBoundary,1);});
+ withSource(raw.replace('garden:δ:🌳','garden:\\ud800'),source=>assert.throws(()=>openVerifiedSceneryCatalog(source),/unpaired/));
+});
+
+test('consume reserves all overlapping histories before any projected JSON parse',()=>withSource(full(),source=>{
+ const p=projectScenerySupport(openVerifiedSceneryCatalog(source).catalog,selection),v=verifyScenerySupport({source,selection,projectedSha256:p.projectedSha256});let calls=0;const parse=JSON.parse;JSON.parse=(...args)=>{calls++;return parse(...args);};try{assert.throws(()=>consumeVerifiedScenerySupport(v.token,{cell:[0,0],originXZ:[0,0],retainedBytes:64*1024**2}),/BEFORE allocation/);assert.equal(calls,0);}finally{JSON.parse=parse;}assert.equal(consumeVerifiedScenerySupport(v.token,{cell:[0,0],originXZ:[0,0]}).scenery.points.length,1);
+}));

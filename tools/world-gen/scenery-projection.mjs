@@ -15,6 +15,7 @@ const POLICY_ABI={scenery:'0d85be480a23a412a6673632311845bfe811ae1888fc12fb77f0c
 const DATUM={lat0:37.98,lon0:23.73,mlat:111320,mlon:87745.27512677578};
 const ROOT=['areas','attribution','cacheSha256','clearanceEvidenceReady','counts','errors','exclusionErrors','exclusions','extractor','limits','placementValidated','points','projection','source','version'];
 const FEATURE=['areas','points','exclusions'];
+const GEOMETRY_TYPES=['Polygon','MultiPolygon'],GEOMETRY_FIELDS=['type','coordinates'],POINT_FIELDS=['id','inference','source','tags','x','z','kind','seed'],AREA_FIELDS=['source','tags','geometry'];
 const REQUIRED_KEYS=[...ROOT,'source','tags','geometry','id','inference','x','z','kind','seed','type','coordinates'].filter((v,i,a)=>a.indexOf(v)===i);
 const catalogs=new WeakMap(),verified=new WeakMap();
 const typed=Object.getPrototypeOf(Uint8Array.prototype);
@@ -82,7 +83,7 @@ const bits=new DataView(new ArrayBuffer(8));
 function up(x){if(x===Infinity)return x;if(x===0)return Number.MIN_VALUE;bits.setFloat64(0,x);let hi=bits.getUint32(0),lo=bits.getUint32(4);if(x>0){lo=(lo+1)>>>0;if(lo===0)hi=(hi+1)>>>0;}else{if(lo===0)hi=(hi-1)>>>0;lo=(lo-1)>>>0;}bits.setUint32(0,hi);bits.setUint32(4,lo);return bits.getFloat64(0);}
 const down=x=>-up(-x);
 class Reader{
- constructor(fd,size,budget){this.fd=fd;this.size=size;this.pos=0;this.start=-1;this.count=0;this.budget=budget;budget.add(2*SLAB+8192+Math.ceil(size/SLAB)*32+33*64*32+33*8+2048+256*(512+32+128),'stream slabs/chunk hashes/string scratch');this.buf=Buffer.alloc(SLAB);this.scratch=Buffer.alloc(SLAB);this.str=Buffer.alloc(8192);this.chunks=Buffer.alloc(Math.ceil(size/SLAB)*32);this.full=createHash('sha256');this.heap=128;this.tokens=0;this.numericTokens=0;this.nlo=0;this.nhi=0;this.coords=new Float64Array(8*10);this.keyHashes=Buffer.alloc(33*64*32);this.objectLevel=0;this.keyBytes=Buffer.alloc(256*512);this.keyDigests=Buffer.alloc(256*32);this.keyLengths=new Uint16Array(256);this.keyNames=new Array(256);this.keyCount=0;this.lastKey=-1;}
+ constructor(fd,size,budget){this.fd=fd;this.size=size;this.pos=0;this.start=-1;this.count=0;this.budget=budget;budget.add(2*SLAB+8192+16384+32+Math.ceil(size/SLAB)*32+33*64*32+33*8+2048+256*(512+32+128),'stream slabs/chunk hashes/string scratch');this.buf=Buffer.alloc(SLAB);this.scratch=Buffer.alloc(SLAB);this.str=Buffer.alloc(8192);this.scalar16=Buffer.alloc(16384);this.sourceDigest=Buffer.alloc(32);this.strLength=0;this.scalarUnits=0;this.scalarPending=false;this.chunks=Buffer.alloc(Math.ceil(size/SLAB)*32);this.full=createHash('sha256');this.heap=128;this.tokens=0;this.numericTokens=0;this.nlo=0;this.nhi=0;this.coords=new Float64Array(8*10);this.keyHashes=Buffer.alloc(33*64*32);this.objectLevel=0;this.keyBytes=Buffer.alloc(256*512);this.keyDigests=Buffer.alloc(256*32);this.keyLengths=new Uint16Array(256);this.keyNames=new Array(256);this.keyCount=0;this.lastKey=-1;}
  peek(){if(this.pos>=this.size)return -1;if(this.pos<this.start||this.pos>=this.start+this.count){this.start=this.pos;this.count=Math.min(SLAB,this.size-this.pos);exactRead(this.fd,this.buf,this.count,this.pos);const chunk=this.buf.subarray(0,this.count);this.full.update(chunk);createHash('sha256').update(chunk).digest().copy(this.chunks,Math.floor(this.pos/SLAB)*32);}return this.buf[this.pos-this.start];}
  get(){const c=this.peek();if(c<0)die('unexpected EOF');this.pos++;return c;}
  ws(){for(;;){const c=this.peek();if(c!==32&&c!==9&&c!==10&&c!==13)return;this.pos++;}}
@@ -95,10 +96,19 @@ class Reader{
  // Validate omitted scalar UTF8 without constructing a string. Only object
  // keys and source IDs need decoding; no omitted geometry tree is constructed.
  for(let i=0;i<n;i++){const c=this.str[i];if(c<128)continue;let count,min,max;if(c>=0xc2&&c<=0xdf){count=1;min=0x80;max=0xbf;}else if(c>=0xe0&&c<=0xef){count=2;min=c===0xe0?0xa0:0x80;max=c===0xed?0x9f:0xbf;}else if(c>=0xf0&&c<=0xf4){count=3;min=c===0xf0?0x90:0x80;max=c===0xf4?0x8f:0xbf;}else die('invalid UTF8');if(i+count>=n||this.str[i+1]<min||this.str[i+1]>max)die('invalid UTF8');for(let j=2;j<=count;j++)if(this.str[i+j]<0x80||this.str[i+j]>0xbf)die('invalid UTF8');i+=count;}
- this.heap+=328+4*(n+1);this.tokens++;if(!decode)return null;
+ this.strLength=n;this.heap+=328+4*(n+1);this.tokens++;if(!decode)return null;
  if(keyToken){if(n>512)die('key token bound');for(let k=0;k<this.keyCount;k++)if(this.keyLengths[k]===n){let equal=true;for(let i=0;i<n;i++)if(this.str[i]!==this.keyBytes[k*512+i]){equal=false;break;}if(equal){this.lastKey=k;return this.keyNames[k];}}if(this.keyCount>=256)die('distinct key capacity');}
  this.budget.add(768+20*n,'decoded scalar history');const text=new TextDecoder('utf-8',{fatal:true}).decode(this.str.subarray(0,n));let value;try{value=JSON.parse('"'+text+'"');}catch{die('JSON string');}for(let i=0;i<value.length;i++){const c=value.charCodeAt(i);if(c>=0xd800&&c<=0xdbff){const d=value.charCodeAt(++i);if(!(d>=0xdc00&&d<=0xdfff))die('unpaired scalar surrogate');}else if(c>=0xdc00&&c<=0xdfff)die('unpaired scalar surrogate');}if(keyToken){const k=this.keyCount++;this.keyLengths[k]=n;this.str.copy(this.keyBytes,k*512,0,n);this.keyNames[k]=value;this.budget.add(512,'new key hash history');createHash('sha256').update(value,'utf16le').digest().copy(this.keyDigests,k*32);this.lastKey=k;}return value;
  }
+ appendScalar(u){if(this.scalarUnits>=8192)die('decoded scalar capacity');if(this.scalarPending){if(u<0xdc00||u>0xdfff)die('unpaired scalar surrogate');this.scalarPending=false;}else if(u>=0xd800&&u<=0xdbff)this.scalarPending=true;else if(u>=0xdc00&&u<=0xdfff)die('unpaired scalar surrogate');this.scalar16.writeUInt16LE(u,this.scalarUnits++*2);}
+ scalar(){
+ this.string(false);const n=this.strLength;this.scalarUnits=0;this.scalarPending=false;
+ for(let i=0;i<n;i++){let c=this.str[i];if(c===92){c=this.str[++i];if(c===117){c=0;for(let j=0;j<4;j++){const h=this.str[++i];c=c*16+(h<=57?h-48:h<=70?h-55:h-87);}}else if(c===98)c=8;else if(c===102)c=12;else if(c===110)c=10;else if(c===114)c=13;else if(c===116)c=9;this.appendScalar(c);}
+ else if(c<128)this.appendScalar(c);else{let extra;if(c<0xe0){extra=1;c&=31;}else if(c<0xf0){extra=2;c&=15;}else{extra=3;c&=7;}for(let j=0;j<extra;j++)c=c*64+(this.str[++i]&63);if(c>65535){c-=65536;this.appendScalar(0xd800+(c>>10));this.appendScalar(0xdc00+(c&1023));}else this.appendScalar(c);}}
+ if(this.scalarPending)die('unpaired scalar surrogate');return this.scalarUnits;
+ }
+ sourceID(){const n=this.scalar();if(!n||n>512)die('source ID bound');createHash('sha256').update(this.scalar16.subarray(0,n*2)).digest().copy(this.sourceDigest);}
+ geometryType(){const n=this.scalar();for(const name of GEOMETRY_TYPES){if(n!==name.length)continue;let equal=true;for(let i=0;i<n;i++)if(this.scalar16.readUInt16LE(i*2)!==name.charCodeAt(i)){equal=false;break;}if(equal)return name;}die('geometry type');}
  number(){
  this.ws();let negative=false;if(this.peek()===45){negative=true;this.get();}let lo=0,hi=0,digits=0,frac=0,exponent=0;
  const digit=()=>{const d=this.get()-48;if(++digits>64)die('numeric token bound');lo=Math.max(0,down(lo*10));lo=Math.max(0,down(lo+d));hi=up(up(hi*10)+d);};
@@ -128,16 +138,16 @@ function coordinates(r,bbox,depth=0){
  let count=0,level=-1;for(;;){const child=coordinates(r,bbox,depth+1),ca=(depth+1)*10;if(level!==-1&&level!==child)die('mixed geometry nesting');level=child;if(count===0)for(let j=0;j<4;j++)c[at+j]=c[ca+j];for(let j=0;j<4;j++)c[at+4+j]=c[ca+4+j];if(++count>65536)die('geometry count');r.ws();const b=r.get();if(b===93)break;if(b!==44)die('geometry delimiter');}
  if(level===0){if(count<4)die('short ring');for(let j=0;j<4;j++)if(c[at+j]!==c[at+4+j])die('unclosed ring');}return level+1;
 }
-function geometry(r,bbox){let type,level;const seen=r.object(k=>{if(k==='type')type=r.string(true);else if(k==='coordinates')level=coordinates(r,bbox);else die('geometry schema');});required(seen,['type','coordinates']);if(type!=='Polygon'&&type!=='MultiPolygon'||level!==(type==='Polygon'?2:3))die('geometry type/nesting');}
-function feature(r,kind,bbox){let source='';const seen=r.object(k=>{
- if(k==='source'){source=r.string(true);if(!source||source.length>512)die('source ID bound');}
+function geometry(r,bbox){let type,level;const seen=r.object(k=>{if(k==='type')type=r.geometryType();else if(k==='coordinates')level=coordinates(r,bbox);else die('geometry schema');});required(seen,GEOMETRY_FIELDS);if(type!=='Polygon'&&type!=='MultiPolygon'||level!==(type==='Polygon'?2:3))die('geometry type/nesting');}
+function feature(r,kind,bbox){const seen=r.object(k=>{
+ if(k==='source'){r.sourceID();}
  else if(k==='tags')tags(r);
  else if(k==='geometry'&&kind!==1)geometry(r,bbox);
  else if((k==='id'||k==='inference')&&kind===1)r.string();
  else if((k==='x'||k==='z')&&kind===1){r.number();if(Math.max(Math.abs(r.nlo),Math.abs(r.nhi))>1e9)die('point datum range');const i=k==='x'?0:1;bbox[i]=r.nlo;bbox[i+2]=r.nhi;}
  else if((k==='kind'||k==='seed')&&kind===1){const before=r.pos;r.number();const integer=Math.round((r.nlo+r.nhi)/2);if(r.pos-before>10||integer<0||integer>(k==='kind'?2:4294967295)||r.nlo>integer||r.nhi<integer||r.nhi-r.nlo>0.0001)die('point integer schema');}
  else die('feature schema '+k);
- });required(seen,kind===1?['id','inference','source','tags','x','z','kind','seed']:['source','tags','geometry']);return source;
+ });required(seen,kind===1?POINT_FIELDS:AREA_FIELDS);return r.sourceDigest;
 }
 const catalogFixed=ROWS*9*8+ROWS*64+FIELDS*24+8192+65536;
 export function openVerifiedSceneryCatalog(source,options={}){
@@ -149,9 +159,9 @@ export function openVerifiedSceneryCatalog(source,options={}){
  reader.object(key=>{
  if(!ROOT.includes(key))die('root schema '+key);if(fieldKeys.length>=FIELDS)die('root field bound');const field=fieldKeys.length;fieldKeys.push(key);reader.ws();globalSpans[field*3]=reader.pos;
  if(FEATURE.includes(key))reader.array(ordinal=>{
- if(rows>=ROWS)die('catalog row capacity');budget.add(2048,'feature scalar/hash history');reader.ws();const start=reader.pos,heap=reader.heap,bbox=[Infinity,Infinity,-Infinity,-Infinity],kind=FEATURE.indexOf(key),id=feature(reader,kind,bbox),end=reader.pos;if(end-start>262144)die('feature byte bound');
+ if(rows>=ROWS)die('catalog row capacity');budget.add(1536,'feature scalar/hash history');reader.ws();const start=reader.pos,heap=reader.heap,bbox=[Infinity,Infinity,-Infinity,-Infinity],kind=FEATURE.indexOf(key),id=feature(reader,kind,bbox),end=reader.pos;if(end-start>262144)die('feature byte bound');
  const at=rows*9;index[at]=start;index[at+1]=end;for(let i=0;i<4;i++)index[at+2+i]=bbox[i];index[at+6]=kind;index[at+7]=ordinal;index[at+8]=reader.heap-heap;
- createHash('sha256').update(id).digest().copy(hashes,rows*64);reader.rangeHash(start,end).copy(hashes,rows*64+32);rows++;
+ id.copy(hashes,rows*64);budget.add(512+Math.ceil((end-start)/SLAB)*256,'record hash scratch/history');reader.rangeHash(start,end).copy(hashes,rows*64+32);rows++;
  });else{const h=reader.heap;reader.value();const n=reader.pos-globalSpans[field*3];if(n>65536||globalsBytes+n>65536)die('global metadata bound');globalsBytes+=n;globalsHeap+=reader.heap-h;}
  globalSpans[field*3+1]=reader.pos;globalSpans[field*3+2]=FEATURE.indexOf(key);
  });
