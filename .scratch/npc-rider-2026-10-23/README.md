@@ -1,5 +1,7 @@
 ## Summary (for the reviewer)
 
+Follow-up: the later driverless recovery guard now has [eight-second own-game before/after proof](../npc-rider-recovery-2026-10-23/README.md). Statements below about that proof being pending describe the initial b0 stage. Full final-candidate gates remain queued.
+
 WorldTraffic now throws a motorbike rider after a substantial physical collision and draws the detached body in absolute world coordinates. Snapshot replay uses the same physical seed and does not restart each time a packet replaces its object.
 
 Source stage: `b0ee5b8c8878c1e34e6f61e2606abf28a2e1e9ef`. This report records a local fixture proof, not staging/production parity or a multiplayer browser proof. Parent owns tracker and changelog consolidation.
