@@ -16,7 +16,7 @@
   --hu-red: #ff3b2f;
   --hu-lit: #e9eef2; --hu-lit-fg: #061018;
   /* menu surfaces: flat and opaque enough to read on any backdrop. One level per box; rows inside a surface are unboxed. */
-  --ui-surface: rgba(12, 17, 23, .9); --ui-surface-hi: rgba(22, 29, 37, .94); --ui-well: rgba(255,255,255,.045); --ui-row-focus: rgba(255,255,255,.065);
+  --ui-surface: rgba(12, 17, 23, .9); --ui-surface-solid: rgb(12, 17, 23); --ui-surface-hi: rgba(22, 29, 37, .94); --ui-well: rgba(255,255,255,.045); --ui-row-focus: rgba(255,255,255,.065);
   --ui-line: rgba(190, 215, 235, .09); --ui-line-2: rgba(190, 215, 235, .17);
   --tt-red: #ff453a; --tt-amber: #ffb21a; --tt-green: #38e07b; --tt-blue: #4a9dff; --tt-white: #e8eef2; --hud: #bff4ff;
   --hu-shadow: 0 1.2rem 3rem rgba(0,0,0,.45);
@@ -102,17 +102,18 @@ html { font-size: clamp(12px, calc(5px + .6vmin + .4vw), 22px); }
 .panel { position: relative; background: var(--ui-surface); -webkit-backdrop-filter: var(--hu-blur); backdrop-filter: var(--hu-blur); border: 1px solid var(--ui-line); border-radius: var(--r-4);
   padding: var(--s-5); min-width: 0; }
 /* a panel floating over a live full-screen scene (the track map): translucent glass over the blurred scene and one soft
-   shadow; otherwise exactly a panel. Opaque surface wherever blur is unavailable or unwanted. */
+   shadow; otherwise exactly a panel. Opaque surface wherever blur is unavailable or unwanted: without the blur, crisp map
+   labels and pins showed through the 90% panel tint and ran into the card's own text. */
 .panel--float { background: rgba(9, 13, 18, .7); -webkit-backdrop-filter: blur(16px) saturate(1.2); backdrop-filter: blur(16px) saturate(1.2); border-color: rgba(190, 215, 235, .12);
   box-shadow: 0 1.4rem 3.2rem rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.05); }
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .panel--float { background: var(--ui-surface); } }
-@media (prefers-reduced-transparency: reduce) { .panel--float { background: var(--ui-surface); -webkit-backdrop-filter: none; backdrop-filter: none; } }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .panel--float { background: var(--ui-surface-solid); } }
+@media (prefers-reduced-transparency: reduce) { .panel--float { background: var(--ui-surface-solid); -webkit-backdrop-filter: none; backdrop-filter: none; } }
 /* a floating panel over a scene that is moving (the track map mid-pan or mid-flight): the live blur would be re-run on every
    composited frame, so it is swapped for a near-opaque tint while the scene moves and fades back to glass when it rests */
 .panel--float { transition: background-color .2s ease; }
-.panel--float.panel--moving { -webkit-backdrop-filter: none; backdrop-filter: none; background-color: rgba(9, 13, 18, .94); }
+.panel--float.panel--moving { -webkit-backdrop-filter: none; backdrop-filter: none; background-color: var(--ui-surface-solid); }
 @media (prefers-reduced-motion: reduce) { .panel--float { transition: none; } }
-:root[data-ui-backdrop=tint] .panel--float { background: var(--ui-surface); -webkit-backdrop-filter: none; backdrop-filter: none; }
+:root[data-ui-backdrop=tint] .panel--float { background: var(--ui-surface-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
 .panel__head { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); margin: 0 0 var(--s-3); }
 .panel__title { margin: 0; display: flex; align-items: center; gap: var(--s-2); font-family: var(--f-cond); font-weight: 600; font-size: var(--t-xs); letter-spacing: var(--track-kick); color: var(--c-text-3); text-transform: uppercase; }
 .panel__title .ico { color: var(--c-text-2); }

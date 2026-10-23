@@ -279,7 +279,8 @@
     "tools/infill.test.mjs",
     "tools/worker-memory-probe.test.mjs",
     "tools/infill-repair.test.mjs",
-    "tools/world-traffic-riders.test.mjs"
+    "tools/world-traffic-riders.test.mjs",
+    "tools/float-panel-fallback.test.mjs"
   ],
   "physics": [
     "tools/finish-flow.test.mjs",
