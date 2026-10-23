@@ -1,10 +1,22 @@
 ## Summary
 
-Source candidate only: coastal limestone strata now repeat at3.2m (160cycles per512m cell), fissures converge to average coverage when unresolved, and existing fine noise adds restrained chips/pits (at most±6%). Palette, scrub pockets, classification and geometry are unchanged. **Not visually accepted yet:** actual-game matched captures, full GPU compilation and measured budgets await a coordinated browser grant.
+Source candidate only: coastal limestone strata now repeat at3.2m (160cycles per512m cell), fissures converge to average coverage when unresolved, and existing fine noise adds restrained chips/pits (at most±6%). Palette, scrub pockets, classification and geometry are unchanged. **Baseline captured; candidate not visually accepted yet.** Fresh actual-game baseline and full GPU compilation now pass; matched candidate captures and resource comparison await integration and a separate browser grant.
 
 ## Proof it works
 
-The first fresh baseline browser attempt failed its nine-cell/contact readiness guard before any pick/photo; [failed receipt](before-readiness-failed.json). No new photos have been captured. The older Riviera static images are diagnostic references only. Their tan polygon and tower/stream-context defects are not attributed to this material change.
+Fresh baseline source36c020b87be7d762e87858b904561b9c2a676e8a (house hook fixed; limestone still original) passed6/6 fixed case/class runs and12/12 fresh On/Off frames. [Full baseline telemetry](before.json), [source/world/camera tuple](baseline-receipt.json). Every run required9 surrounding active cells, authenticated entry/packet identities, ground.ready, loading opacity0, positive physics, visible packet-triangle limestone picks without detected foreground, and complete scene compileAsync including hidden/empty materials. Zero page/shader/console errors. All415 JS/CSS/index files matched pinned committed bytes before and after the job. Camera and cases were unchanged; no production source substitution or network download. Browser/proxy fully closed, exit0.
+
+| Baseline case | Low detail On | Low detail Off | High detail On | High detail Off |
+|---|---|---|---|---|
+|500surface|![](before-low-500-surface-on.jpg)|![](before-low-500-surface-off.jpg)|![](before-high-500-surface-on.jpg)|![](before-high-500-surface-off.jpg)|
+|9000near|![](before-low-9000-seam-near-on.jpg)|![](before-low-9000-seam-near-off.jpg)|![](before-high-9000-seam-near-on.jpg)|![](before-high-9000-seam-near-off.jpg)|
+|9000far|![](before-low-9000-seam-far-on.jpg)|![](before-low-9000-seam-far-off.jpg)|![](before-high-9000-seam-far-on.jpg)|![](before-high-9000-seam-far-off.jpg)|
+
+Effective coastal vertex/fragment GPU shader hashes, cache keys, original phase presence, generic-ground fibres, lookup declarations, and `srgb` output are recorded per frame. Existing detail/plain and framebuffer layout variants are preserved; this is not a shader-count reduction claim. Whole-frame draw/triangle totals include post passes because renderer.info.autoReset was disabled during measurement, then restored. Actual sample counts and memory are in the report; three samples are descriptive only. The station500 Low/High totals differ and must not be compared as a performance improvement. Matching candidate resource/draw checks remain pending.
+
+Historical failed attempts, both stopped before any photograph:
+
+The first fresh baseline browser attempt failed its nine-cell/contact readiness guard before any pick/photo; [failed receipt](before-readiness-failed.json). Neither failed attempt captured a photograph. The older Riviera static images remain diagnostic references only. Their tan polygon and tower/stream-context defects are not attributed to this material change.
 
 ## How I tested it
 
