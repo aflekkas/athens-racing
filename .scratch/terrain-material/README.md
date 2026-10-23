@@ -4,7 +4,7 @@ Source candidate only: coastal limestone strata now repeat at3.2m (160cycles per
 
 ## Proof it works
 
-No new photos have been captured. The older Riviera static images are diagnostic references only. Their tan polygon and tower/stream-context defects are not attributed to this material change.
+The first fresh baseline browser attempt failed its nine-cell/contact readiness guard before any pick/photo; [failed receipt](before-readiness-failed.json). No new photos have been captured. The older Riviera static images are diagnostic references only. Their tan polygon and tower/stream-context defects are not attributed to this material change.
 
 ## How I tested it
 
@@ -12,7 +12,17 @@ No new photos have been captured. The older Riviera static images are diagnostic
 - Combined focused fixture using read-only current-master dependencies and only this owned material candidate:34passed/0failed. This retains the newer ground/noise/Off implementation without editing or committing those files.
 - Negative controls restore the actual old2.1rad/m phase or the old unfiltered fissure expression using test-only module-loader transforms: each selected regression fails its intended assertion (seam discontinuity1; unresolved phase variation1).
 - Material tests execute the scalar GLSL emitted by the real material, sweep1024 border phases and independently supersample4096 phases for unresolved coverage. All three complete Three Basic shader sources are expanded, and Off removes all limestone code/uniforms. This is source validation, **not a claim of GPU compilation**.
-- Syntax checks pass for the material and new browser harness. No browser, GPU job, full suite, archive, download or new asset was launched.
+- Syntax checks pass for the material and new browser harness. No full suite, archive, download or new asset was launched. A later baseline-only browser job stopped before capture; see the diagnostic follow-up below.
+
+## Baseline readiness diagnostic follow-up
+
+Baseline-only job against exact7b0aec800e3e874d0a5afbd62fe32f727824512f source and immutable world80055 stopped before any capture/pick. Original manifest SHA762bcff49ca15103bbdbe0e3b8f8d95e66fe96e4cb19cb7bfb6177777b7fb7b7; exact URL-only rewritten bytes SHAa6ea9d0c3981e5f3111b375f4ebb1f0e47785bd2a46e2acc2617671033510293. [Fixed camera cases](cases.json), hash1ed8de1f414891265145f60bdeb2e7a50366c803b09cdd9cb9bab7f790abede6. Existing source fixture/cache was read-only and had no network fallback. Browser/proxy fully closed, exit1, proxyPID1256175; no replacement launched.
+
+Source diagnosis: the proof harness froze native `tick` and called public step/render, but omitted `stream.activateFrame()`. Native tick and advance explicitly activate before stepping; step/render do not. Loaded packets transition to `ready`, and only activation commits them to `active`. This proves a missing native lifecycle operation in the harness; the failed run omitted per-cell telemetry, so actual failed-run states cannot be claimed. Proof-only fix adds that operation without relaxing readiness. A bounded twelve-snapshot history now retains cell entry/source/state/packet/build/handle/error, actual playerXYZ, stream.position/origin, ground readiness footprint/contact samples, loading state, admission usage, HTTP failures and read-only cache presence on success or failure, saved before assertions. Camera layers restore in finally; detail is restored after captures. Full JS/CSS/index source verification uses the explicitly selected Git root.
+
+Read-only single-cell audit independently rehashed/decompressed existing9,37 cached body and sampled actual physical contacts using current production decoder/contact code. At the500 camera point, roadY9.2569257634, flags1/layer0, source `surface:w328525144:0`; this matches the prior static diagnostic. It is not a live readiness/driving result. [Contact/source receipt](500-contact-audit.json). All nine surrounding500 entries are in the manifest, reserved total9.293MiB; this alone does not establish runtime admission.
+
+No new browser grant has been used after this diagnosis; source1206 remains unintegrated pending a successful fresh baseline.
 
 ## How to try it
 

@@ -1,0 +1,66 @@
+{
+  "mode": "Read-only single cached-cell contact audit; no browser/Vehicle update or driving acceptance",
+  "cachePath": "/tmp/athens-loaders.OfMh/cells/8056d040145d13b70920882d43e419c160e53a3b49bf8592f3ea603973529e3a.bin.gz",
+  "sha256": "8056d040145d13b70920882d43e419c160e53a3b49bf8592f3ea603973529e3a",
+  "entry": {
+    "url": "https://staging.athensracing.com/world/cells/8056d040145d13b70920882d43e419c160e53a3b49bf8592f3ea603973529e3a.bin.gz",
+    "sha256": "8056d040145d13b70920882d43e419c160e53a3b49bf8592f3ea603973529e3a",
+    "bytes": 224844,
+    "decodedBytes": 4007374,
+    "residentBytes": 2626935,
+    "transientBytes": 8239592,
+    "dependencies": [],
+    "triangles": 26108,
+    "contactEligible": true,
+    "source": {
+      "regionId": "basin",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+    }
+  },
+  "metadata": {
+    "world": "athens-east-development",
+    "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+    "cell": [
+      9,
+      37
+    ],
+    "origin": [
+      4608,
+      0,
+      18944
+    ]
+  },
+  "samples": [
+    {
+      "label": "500camera",
+      "x": 4701.523459205332,
+      "z": 19099.484095999986,
+      "referenceY": 9.256925763426436,
+      "sample": {
+        "y": 9.256925763426436,
+        "nx": 0.037994980812072754,
+        "nz": -0.013630509376525879,
+        "flags": 1,
+        "layer": 0,
+        "surface": 16,
+        "surfaceId": "surface:w328525144:0"
+      }
+    },
+    {
+      "label": "priorStaticPlayerDiagnostic",
+      "x": 4700.109329447577,
+      "z": 19099.931016617822,
+      "referenceY": 9.197639669274519,
+      "sample": {
+        "y": 9.19710417474276,
+        "nx": 0.037994980812072754,
+        "nz": -0.013630509376525879,
+        "flags": 1,
+        "layer": 0,
+        "surface": 16,
+        "surfaceId": "surface:w328525144:0"
+      }
+    }
+  ]
+}
