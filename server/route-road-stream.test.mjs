@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { sha256 } from '../src/route-definition.js';
-import { validateRecoveryManifest, createStreamedRoadAuthority } from './route-road-stream.mjs';
+import { validateRecoveryManifest, createStreamedRoadAuthority, admitRecoverySidecar } from './route-road-stream.mjs';
 import { validateRouteRoads, routeRoadAuthority } from './route-roads.mjs';
 const revision = 'a'.repeat(64), source = 'b'.repeat(64);
 async function setup({ maxEntries } = {}) {
@@ -102,4 +102,14 @@ test('dense JSON expansion and decoded cache budgets reject before retaining geo
   const tiny = createStreamedRoadAuthority(x.manifest, async url => structuredClone(x.bodies.get(url)), { maxDecodedBytes: 256 });
   await assert.rejects(tiny.prepare(x.pose, { halfWidth: 1, halfLength: 2 }), /cache budget/);
   assert.equal(tiny.stats().decodedBytes, 0); assert.equal(tiny.stats().pending, 0); assert.equal(tiny.stats().leases, 0);
+});
+
+test('offline admission is the exact immutable compact server path with byte and decoded metrics', async () => {
+  const { canonicalJSON } = await import('../src/route-definition.js'), x = await setup(), descriptor = x.manifest.cells['0,0'], raw = canonicalJSON(x.bodies.get(descriptor.url));
+  const result = await admitRecoverySidecar(new TextEncoder().encode(raw), { expectedHash: descriptor.hash, worldSetRevision: revision });
+  assert.equal(result.body.anchors.length, 1); assert.equal(result.body.edges[0].id, '0,0'); assert.equal(result.body.edges[0].points, undefined);
+  assert.deepEqual(result.body.sourceHashes, [['0,0', source]]); assert.equal(result.metrics.bytes, Buffer.byteLength(raw)); assert.ok(result.metrics.decodedBytes > 0);
+  assert.ok(Object.isFrozen(result) && Object.isFrozen(result.body) && Object.isFrozen(result.body.edges[0]) && Object.isFrozen(result.metrics));
+  for (const body of [raw.replace('road','dirt'), ' '.repeat(2*1024*1024+1), '['+'0,'.repeat(110000)+'0]']) await assert.rejects(admitRecoverySidecar(body, { expectedHash: descriptor.hash, worldSetRevision: revision }));
+  await assert.rejects(admitRecoverySidecar(raw, { expectedHash: descriptor.hash, worldSetRevision: 'c'.repeat(64) }));
 });

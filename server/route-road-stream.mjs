@@ -41,6 +41,25 @@ function admitJSON(text) {
   }
 }
 export const RECOVERY_MEMORY = Object.freeze({ cache: 16 * 1024 * 1024, decoded: 12 * 1024 * 1024, context: 2 * 1024 * 1024, contexts: 2 });
+/** Pure admission shared by the offline release audit and request-time loader.
+ * The compact body is server query data, never a replacement published artifact.
+ * Source hashes are retained so callers can bind them to their full manifest. */
+export async function admitRecoverySidecar(raw, { expectedHash, worldSetRevision } = {}) {
+  let body, bytes;
+  if (typeof raw === 'string' || raw instanceof Uint8Array) {
+    bytes = typeof raw === 'string' ? new TextEncoder().encode(raw).length : raw.byteLength;
+    if (bytes > RECOVERY_ARTIFACT_BYTES) throw Error('Recovery sidecar exceeds artifact budget');
+    const text = typeof raw === 'string' ? raw : new TextDecoder().decode(raw);
+    admitJSON(text); body = JSON.parse(text);
+  } else { body = raw; bytes = new TextEncoder().encode(canonicalJSON(body)).length; }
+  recoveryDataBytes(body, RECOVERY_MEMORY.decoded);
+  const proven = await validateRouteRoads(body, { expectedHash, worldSetRevision });
+  const edges = Object.freeze(proven.edges.map(({ id, layer, surface, flags }) => Object.freeze({ id, layer, surface, flags })));
+  const compact = Object.freeze({ anchors: proven.anchors, edges, sourceHashes: proven.sourceHashes });
+  const decodedBytes = recoveryDataBytes({ anchors: proven.anchors, edges }) * 2;
+  if (decodedBytes > RECOVERY_MEMORY.cache) throw Error('Recovery sidecar exceeds cache budget');
+  return Object.freeze({ body: compact, metrics: Object.freeze({ bytes, decodedBytes }) });
+}
 /** Fetch/parse admission is serial. Cached cells retain anchors and minimal edge
  * metadata only. Leased request snapshots survive LRU eviction; an incomplete
  * or over-budget snapshot never becomes eligible for recovery. */
@@ -61,21 +80,12 @@ export function createStreamedRoadAuthority(manifest, loadArtifact, { maxBytes =
       parsing++; peakParsing = Math.max(peakParsing, parsing);
       try {
         const descriptor = manifest.cells[key], raw = await loadArtifact(descriptor.url, RECOVERY_ARTIFACT_BYTES);
-        let body, size;
-        if (typeof raw === 'string' || raw instanceof Uint8Array) {
-          size = typeof raw === 'string' ? new TextEncoder().encode(raw).length : raw.byteLength;
-          if (size > RECOVERY_ARTIFACT_BYTES) throw Error('Recovery sidecar exceeds artifact budget');
-          const text = typeof raw === 'string' ? raw : new TextDecoder().decode(raw);
-          admitJSON(text); body = JSON.parse(text);
-        } else { body = raw; size = new TextEncoder().encode(canonicalJSON(body)).length; }
-        recoveryDataBytes(body, RECOVERY_MEMORY.decoded);
-        const proven = await validateRouteRoads(body, { expectedHash: descriptor.hash, worldSetRevision: manifest.worldSetRevision });
+        const { body: proven, metrics } = await admitRecoverySidecar(raw, { expectedHash: descriptor.hash, worldSetRevision: manifest.worldSetRevision });
         const source = new Map(proven.sourceHashes);
         if (source.get(key) !== descriptor.sourceHash || proven.sourceHashes.some(([cell, hash]) => manifest.cells[cell]?.sourceHash !== hash)) throw Error('Recovery sidecar source drift');
-        const edges = proven.edges.map(({ id, layer, surface, flags }) => ({ id, layer, surface, flags }));
-        const retained = { anchors: proven.anchors, edges }, decoded = recoveryDataBytes(retained) * 2;
+        const { bytes: size, decodedBytes: decoded } = metrics, edges = proven.edges;
         if (size > maxBytes || decoded > maxDecodedBytes) throw Error('Recovery sidecar exceeds cache budget');
-        const value = { authority: routeRoadAuthority(retained), edges, size, decoded };
+        const value = { authority: routeRoadAuthority(proven), edges, size, decoded };
         cache.set(key, value); bytes += size; decodedBytes += decoded;
         while (bytes > maxBytes || decodedBytes > maxDecodedBytes || cache.size > maxEntries) { const oldest = cache.keys().next().value, item = cache.get(oldest); bytes -= item.size; decodedBytes -= item.decoded; cache.delete(oldest); }
         return value;
