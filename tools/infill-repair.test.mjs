@@ -82,6 +82,14 @@ test('read-only source plan validates complete context and source/hash proof bef
   await assert.rejects(applyReviewedInfillRepair(pack,plan,{reviewedPlanSha256:repairPlanSha256(plan),sourcePath,sourceCellSha256}),/source identity mismatch/);
   await writeFile(sourcePath,source);sourceRecord.bounds=[23.73,37.979,23.731,37.98];await writeFile(join(root,'source.source.json'),JSON.stringify(sourceRecord));
   await assert.rejects(makeInfillRepairPlan(pack,{sourcePath,expectedSourceSha256:sourceSha,sourceCellSha256,ids,python}),/full candidate context/);
+  for(const [bad,unresolved,error] of [
+   ['<osm version="0.6"><node id="1" lat="37.98" lon="23.73"/><node id="2" lat="37.98" lon="23.731"/><way id="1"><nd ref="1"/><nd ref="2"/><tag k="building" v="yes"/></way></osm>',[],/Unclosed source area/],
+   ['<osm version="0.6"><relation id="9"><member type="way" ref="999" role="outer"/><tag k="type" v="multipolygon"/><tag k="building" v="yes"/></relation></osm>',[{relation:'9'}],/Incomplete relevant source relation/],
+  ]){
+   const badSha=digest(bad);await writeFile(sourcePath,bad);await writeFile(join(root,'source.source.json'),JSON.stringify({sha256:badSha,bounds:[23.72,37.97,23.74,37.99],missingWayNodes:[],unresolvedRelationMembers:unresolved}));
+   await assert.rejects(makeInfillRepairPlan(pack,{sourcePath,expectedSourceSha256:badSha,sourceCellSha256,ids,python}),error);
+  }
+
  }finally{await rm(root,{recursive:true,force:true});}
 });
 

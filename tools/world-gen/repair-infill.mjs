@@ -57,7 +57,7 @@ export async function makeInfillRepairPlan(pack,{sourcePath,expectedSourceSha256
  if(recordPath===sourcePath)fail('expected bounded .osm/.pbf source');
  const recordBytes=await readFile(recordPath),record=JSON.parse(recordBytes);
  if(hash(source)!==expectedSourceSha256||record.sha256!==expectedSourceSha256)fail('snapshot/source record hash mismatch');
- if(!Array.isArray(record.bounds)||record.bounds.length!==4||!record.bounds.every(Number.isFinite)||record.missingWayNodes?.length)fail('source bounds/way closure');
+ if(!Array.isArray(record.bounds)||record.bounds.length!==4||!record.bounds.every(Number.isFinite)||!Array.isArray(record.missingWayNodes)||record.missingWayNodes.length||record.bounds[0]>=record.bounds[2]||record.bounds[1]>=record.bounds[3])fail('source bounds/way closure');
  if(!Array.isArray(ids)||!ids.length||new Set(ids).size!==ids.length)fail('unique explicit generated IDs required');
  const t=tileTables(pack),rows=[];
  for(const id of ids){
@@ -70,8 +70,39 @@ export async function makeInfillRepairPlan(pack,{sourcePath,expectedSourceSha256
   rows.push({...v,ring,rowSha256:buildingRowSha256(pack,v.row)});
  }
  // The Python side independently evaluates source evidence using the exact current policy.
- const script=`import sys,json\nfrom shapely.geometry import Polygon,box\nsys.path.insert(0,sys.argv[1])\nfrom infill import SourceContext,CONTEXT_M\nc=SourceContext.from_osm(sys.argv[2]);request=json.load(sys.stdin);bounds=box(*request['bounds']);result=[]\nfor row in request['rows']:\n p=Polygon(row['ring'])\n if not bounds.covers(p.centroid.buffer(CONTEXT_M)):raise ValueError('Source does not cover full candidate context')\n decision=c.decision(p)\n if decision['eligible']:raise ValueError('Source supports keeping generated lot '+row['id'])\n result.append(dict(id=row['id'],row=row['row'],rowSha256=row['rowSha256'],decision=decision))\nprint(json.dumps(result))`;
- const result=spawnSync(python,['-c',script,fileURLToPath(new URL('.',import.meta.url)),sourcePath],{input:JSON.stringify({rows,bounds:projectedBounds(record.bounds)}),encoding:'utf8',maxBuffer:2*1024*1024,timeout:30000,env:{...process.env,OMP_NUM_THREADS:'1',OPENBLAS_NUM_THREADS:'1'}});
+ const script=`import sys,json,osmium
+from shapely.geometry import Polygon,box
+sys.path.insert(0,sys.argv[1])
+from infill import SourceContext,CONTEXT_M,green_tags
+request=json.load(sys.stdin)
+unresolved=set(request['unresolvedRelations']);expected=set()
+def relevant(tags):
+ return tags.get('building') not in (None,'no') or green_tags(tags)
+class SourceAudit(osmium.SimpleHandler):
+ def way(self,way):
+  if relevant(dict(way.tags)):
+   if not way.is_closed():raise ValueError('Unclosed source area '+str(way.id))
+   expected.add('w'+str(way.id))
+ def relation(self,relation):
+  if relevant(dict(relation.tags)) and str(relation.id) in unresolved:
+   raise ValueError('Incomplete relevant source relation '+str(relation.id))
+SourceAudit().apply_file(sys.argv[2])
+class StrictContext(SourceContext):
+ def __init__(self,rows):
+  rows=list(rows)
+  if any(g.is_empty or not g.is_valid or g.geom_type not in ('Polygon','MultiPolygon') for _,g,_ in rows):
+   raise ValueError('Invalid source context geometry')
+  if expected.difference(i for i,_,_ in rows):raise ValueError('Unassembled relevant source areas')
+  super().__init__(rows)
+c=StrictContext.from_osm(sys.argv[2]);bounds=box(*request['bounds']);result=[]
+for row in request['rows']:
+ p=Polygon(row['ring'])
+ if not bounds.covers(p.centroid.buffer(CONTEXT_M)):raise ValueError('Source does not cover full candidate context')
+ decision=c.decision(p)
+ if decision['eligible']:raise ValueError('Source supports keeping generated lot '+row['id'])
+ result.append(dict(id=row['id'],row=row['row'],rowSha256=row['rowSha256'],decision=decision))
+print(json.dumps(result))`;
+ const result=spawnSync(python,['-c',script,fileURLToPath(new URL('.',import.meta.url)),sourcePath],{input:JSON.stringify({rows,bounds:projectedBounds(record.bounds),unresolvedRelations:[...new Set((record.unresolvedRelationMembers||[]).map(r=>String(r.relation)))]}),encoding:'utf8',maxBuffer:2*1024*1024,timeout:30000,env:{...process.env,OMP_NUM_THREADS:'1',OPENBLAS_NUM_THREADS:'1'}});
  if(result.status!==0)fail('source policy evaluation failed: '+(result.error?.message||result.stderr));
  const remove=JSON.parse(result.stdout);
  return {schema:1,operation:'remove-unsupported-generated-buildings',world:pack.metadata.world,revision:pack.metadata.revision,cell:pack.metadata.cell,packSha256:packFingerprint(pack),sourceCellSha256,sourceSha256:expectedSourceSha256,sourceRecordSha256:hash(recordBytes),code:await repairCodeProof(),remove};
