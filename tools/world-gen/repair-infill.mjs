@@ -84,8 +84,12 @@ class SourceAudit(osmium.SimpleHandler):
    if not way.is_closed():raise ValueError('Unclosed source area '+str(way.id))
    expected.add('w'+str(way.id))
  def relation(self,relation):
-  if relevant(dict(relation.tags)) and str(relation.id) in unresolved:
-   raise ValueError('Incomplete relevant source relation '+str(relation.id))
+  if relevant(dict(relation.tags)):
+   # Every relevant relation must yield geometry, even when the provenance
+   # record omits unresolved-member hints or all members exist but are empty.
+   expected.add('r'+str(relation.id))
+   if str(relation.id) in unresolved:
+    raise ValueError('Incomplete relevant source relation '+str(relation.id))
 SourceAudit().apply_file(sys.argv[2])
 class StrictContext(SourceContext):
  def __init__(self,rows):

@@ -101,3 +101,24 @@ test('post-packer audit rejects invisible colliders and generated body resurrect
  assert.throws(()=>auditRepairedPacket(out,packet,plan.remove.map(r=>r.id)),/collider\/visible parking/);
  assert.throws(()=>auditRepairedPacket(out,{...original,obstacleIndex:buildTileObstacleIndex(tileTables(original))},plan.remove.map(r=>r.id)),/authoritative table changed|reappeared/);
 });
+
+async function sourcePlanForXml(source){
+ const root=await mkdtemp(join(tmpdir(),'infill-relation-'));
+ try{
+  const sourcePath=join(root,'source.osm'),sourceSha=digest(source),encoded=fixture();
+  await writeFile(sourcePath,source);
+  // Deliberately no unresolved-member hints: assembly must be checked independently.
+  await writeFile(join(root,'source.source.json'),JSON.stringify({sha256:sourceSha,bounds:[23.72,37.97,23.74,37.99],missingWayNodes:[]}));
+  return await makeInfillRepairPlan(encoded.decoded,{sourcePath,expectedSourceSha256:sourceSha,sourceCellSha256:digest(encoded.bytes),ids:[encoded.decoded.metadata.ids[1]],python});
+ }finally{await rm(root,{recursive:true,force:true});}
+}
+for(const [name,body]of [
+ ['empty relevant building multipolygon','<relation id="10"><tag k="type" v="multipolygon"/><tag k="building" v="yes"/></relation>'],
+ ['relevant building relation with an empty child relation','<relation id="11"><tag k="type" v="multipolygon"/></relation><relation id="10"><member type="relation" ref="11" role="outer"/><tag k="type" v="multipolygon"/><tag k="building" v="yes"/></relation>'],
+])test('source assembly rejects '+name+' without provenance closure hints',{skip:!ready&&'set WORLD_GEN_PYTHON to world-gen venv'},async()=>{
+ await assert.rejects(sourcePlanForXml('<osm version="0.6">'+body+'</osm>'),/Unassembled relevant source areas/);
+});
+test('assembled relevant relation remains usable beside an unrelated empty relation',{skip:!ready&&'set WORLD_GEN_PYTHON to world-gen venv'},async()=>{
+ const source='<osm version="0.6"><node id="1" lat="37.979" lon="23.731"/><node id="2" lat="37.979" lon="23.7311"/><node id="3" lat="37.9791" lon="23.7311"/><node id="4" lat="37.9791" lon="23.731"/><way id="1"><nd ref="1"/><nd ref="2"/><nd ref="3"/><nd ref="4"/><nd ref="1"/></way><relation id="10"><member type="way" ref="1" role="outer"/><tag k="type" v="multipolygon"/><tag k="building" v="yes"/></relation><relation id="11"><tag k="type" v="multipolygon"/></relation></osm>';
+ const plan=await sourcePlanForXml(source);assert.equal(plan.remove.length,1);assert.equal(plan.remove[0].decision.reason,'source-sparse');
+});
