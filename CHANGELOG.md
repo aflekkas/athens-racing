@@ -8,6 +8,10 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 
 ## Unreleased
 
+- Clearer driving-control tips for keyboard and controller.
+- Choose Race or Time Trial in event setup when both are available.
+- The track card hides map labels whenever its background blur is off.
+
 - Add the Kifissia–Kefalari street circuit and Kefalari free-roam start, with separate race and time-trial records.
 
 - Shrubs and tree crowns stay clear of the roads, and roadside greenery fades in smoothly as you drive.
