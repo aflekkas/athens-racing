@@ -1,5 +1,6 @@
 import { canonicalJSON } from '../src/route-definition.js';
 import { ROUTE_HASH } from '../src/route-network.js';
+import { recoveryRoadGroup } from '../src/world-road-group.js';
 import { routeSurfaceAllowed } from '../src/route-surface.js';
 import { projectEdge, edgeLength } from '../src/route-geometry.js';
 const finite = Number.isFinite;
@@ -15,13 +16,14 @@ export async function validateRouteRoads(body, { expectedHash, worldSetRevision 
   if (!Array.isArray(body.edges) || !body.edges.length || !Array.isArray(body.anchors) || !body.anchors.length || !Array.isArray(body.sourceHashes) || !body.sourceHashes.length || !body.sourceHashes.every(([cell, hash]) => /^-?\d+,-?\d+$/.test(cell) && ROUTE_HASH.test(hash))) throw Error('Incomplete authoritative recovery artifact');
   const edges = new Map();
   for (const edge of body.edges) {
-    if (typeof edge.id !== 'string' || edges.has(edge.id) || edge.flags & 8 || !Number.isInteger(edge.layer) || typeof edge.surface !== 'string' || !Array.isArray(edge.points) || edge.points.length < 2 || !edge.points.every(p => p.length === 3 && p.every(finite))) throw Error('Invalid emitted recovery edge');
+    if (typeof edge.id !== 'string' || !edge.id || typeof edge.from !== 'string' || !edge.from || typeof edge.to !== 'string' || !edge.to || edges.has(edge.id) || edge.flags & 8 || !Number.isInteger(edge.layer) || typeof edge.surface !== 'string' || !Array.isArray(edge.points) || edge.points.length < 2 || !edge.points.every(p => p.length === 3 && p.every(finite))) throw Error('Invalid emitted recovery edge');
     edges.set(edge.id, edge);
   }
   const graph = { edges: new Map([...edges].map(([id, value]) => [id, { value }])) };
   const seen = new Set();
   for (const a of body.anchors) {
-    const e = edges.get(a.edgeId), key = canonicalJSON([a.edgeId, a.offsetM]);
+    const e = edges.get(a.edgeId), group = e && recoveryRoadGroup(graph, e), key = canonicalJSON([a.edgeId, a.offsetM]);
+    if ((group ? a.roadId !== group.roadId : a.roadId !== undefined)) throw Error('Recovery anchor road group differs from emitted reverse edges');
     if (!e || seen.has(key) || !['x', 'y', 'z', 'yaw', 'offsetM', 'leftM', 'rightM', 'halfWidth', 'halfLength'].every(k => finite(a[k])) || a.offsetM < 0 || a.offsetM > edgeLength(e) + .025 || a.halfWidth <= 0 || a.halfLength <= 0 || a.leftM < a.halfWidth + .15 || a.rightM < a.halfWidth + .15 || a.layer !== e.layer || typeof a.surfaceId !== 'string') throw Error('Invalid proven recovery anchor');
     if (!Array.isArray(recoveryFootprints(a)) || !recoveryFootprints(a).length || recoveryFootprints(a).length > 64 || !recoveryFootprints(a).every(p => finite(p.halfWidth) && p.halfWidth > 0 && p.halfWidth <= 3 && finite(p.halfLength) && p.halfLength > 0 && p.halfLength <= 12 && a.leftM >= p.halfWidth + .15 && a.rightM >= p.halfWidth + .15)) throw Error('Invalid certified recovery footprint');
     const q = projectEdge(e, a.x, a.z);

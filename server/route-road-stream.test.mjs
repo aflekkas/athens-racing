@@ -76,7 +76,7 @@ test('nine near-2MiB cells retain the complete safety set under a constrained he
   const { canonicalJSON } = await import('../src/route-definition.js'), cells = {}, descriptors = new Map();
   // An emitted shard may carry long source metadata. It must not remain in the
   // decoded cache after validation. All nine candidates are within the query.
-  const make = key => ({ schemaVersion: 1, worldId: 'athens', projectionId: 'athens-v1', worldSetRevision: revision, sourceHashes: [[key, source]], edges: [{ id: key, layer: 0, flags: 1, surface: 'road', points: [[500, 0, 400], [500, 0, 600]], sourceMetadata: 'x'.repeat(1940000) }], anchors: [{ edgeId: key, offsetM: 100, x: 500, y: 0, z: 500, yaw: -Math.PI, layer: 0, surfaceId: 'road', leftM: 4, rightM: 4, halfWidth: 1.1, halfLength: 6 }] });
+  const make = key => ({ schemaVersion: 1, worldId: 'athens', projectionId: 'athens-v1', worldSetRevision: revision, sourceHashes: [[key, source]], edges: [{ id: key, from: 'a', to: 'b', layer: 0, flags: 1, surface: 'road', points: [[500, 0, 400], [500, 0, 600]], sourceMetadata: 'x'.repeat(1940000) }], anchors: [{ edgeId: key, offsetM: 100, x: 500, y: 0, z: 500, yaw: -Math.PI, layer: 0, surfaceId: 'road', leftM: 4, rightM: 4, halfWidth: 1.1, halfLength: 6 }] });
   for (let x = -1; x <= 1; x++) for (let z = -1; z <= 1; z++) {
     const key = `${x},${z}`, body = make(key), hash = await sha256(body), url = `/world/recovery/${key}.${hash}.json`;
     cells[key] = { sourceHash: source, hash, url }; descriptors.set(url, key);
@@ -112,4 +112,43 @@ test('offline admission is the exact immutable compact server path with byte and
   assert.ok(Object.isFrozen(result) && Object.isFrozen(result.body) && Object.isFrozen(result.body.edges[0]) && Object.isFrozen(result.metrics));
   for (const body of [raw.replace('road','dirt'), ' '.repeat(2*1024*1024+1), '['+'0,'.repeat(110000)+'0]']) await assert.rejects(admitRecoverySidecar(body, { expectedHash: descriptor.hash, worldSetRevision: revision }));
   await assert.rejects(admitRecoverySidecar(raw, { expectedHash: descriptor.hash, worldSetRevision: 'c'.repeat(64) }));
+});
+
+const twoWayBody = () => ({ schemaVersion: 1, worldId: 'athens', projectionId: 'athens-v1', worldSetRevision: revision, sourceHashes: [['0,0', source]], edges: [
+  { id: 'forward', from: 'north', to: 'south', layer: 0, surface: 'road', flags: 1, points: [[100, 0, 200], [100, 0, 0]] },
+  { id: 'reverse', from: 'south', to: 'north', layer: 0, surface: 'road', flags: 1, points: [[100, 0, 0], [100, 0, 200]] }
+], anchors: [
+  { edgeId: 'forward', roadId: 'forward|reverse', offsetM: 100, x: 101, y: 0, z: 100, yaw: 0, layer: 0, surfaceId: 'road', leftM: 4, rightM: 4, halfWidth: 1.1, halfLength: 6 },
+  { edgeId: 'reverse', roadId: 'forward|reverse', offsetM: 100, x: 99, y: 0, z: 100, yaw: -Math.PI, layer: 0, surfaceId: 'road', leftM: 4, rightM: 4, halfWidth: 1.1, halfLength: 6 }
+] });
+test('authenticated streamed twin groups preserve remembered heading before nearer opposite lane distance', async () => {
+  const { planWorldTow } = await import('../src/tow-placement.js'), body = twoWayBody(), hash = await sha256(body), url = `/world/recovery/0,0.${hash}.json`;
+  const manifest = { worldSetRevision: revision, cells: { '0,0': { sourceHash: source, hash, url } } };
+  const authority = createStreamedRoadAuthority(manifest, async () => JSON.stringify(body)), pose = { x: 98, y: 0, z: 100, yaw: -Math.PI, towHeading: 0 };
+  const context = await authority.prepare(pose, { halfWidth: 1, halfLength: 2 });
+  const target = candidates => planWorldTow({ pose, route: null, course: null, roadCandidates: candidates });
+  assert.equal(target(context.candidates.map(({ roadId, ...p }) => p)).edgeId, 'reverse', 'reproduces old lost-group defect');
+  assert.equal(target(context.candidates).edgeId, 'forward'); context.release();
+  const oneWay = twoWayBody(); oneWay.edges.pop(); oneWay.anchors.pop(); delete oneWay.anchors[0].roadId;
+  const admitted = await admitRecoverySidecar(JSON.stringify(oneWay), { expectedHash: await sha256(oneWay), worldSetRevision: revision });
+  assert.equal(target(admitted.body.anchors).edgeId, 'forward', 'remembered heading cannot reverse a legal one-way');
+});
+test('road groups require exact authoritative reverse membership and reject omitted/spoofed/one-way groups', async () => {
+  for (const mutate of [
+    b => { b.anchors[0].roadId = 'forward|unrelated'; },
+    b => { delete b.anchors[0].roadId; },
+    b => { b.edges[1].from = 'other-road'; },
+    b => { b.edges[1].surface = 'bridge'; },
+    b => { b.edges[1].layer = 1; },
+    b => { b.edges[1].flags |= 8; },
+    b => { b.edges.pop(); b.anchors.pop(); },
+    b => { b.edges[0].from = ''; }
+  ]) {
+    const body = twoWayBody(); mutate(body);
+    await assert.rejects(admitRecoverySidecar(JSON.stringify(body), { expectedHash: await sha256(body), worldSetRevision: revision }));
+  }
+  const body = twoWayBody(), hash = await sha256(body), url = `/world/recovery/0,0.${hash}.json`;
+  const authority = createStreamedRoadAuthority({ worldSetRevision: revision, cells: { '0,0': { sourceHash: 'c'.repeat(64), hash, url } } }, async () => JSON.stringify(body));
+  await assert.rejects(authority.prepare({ x: 100, y: 0, z: 100 }, { halfWidth: 1, halfLength: 2 }), /source drift/);
+  assert.equal(authority.stats().entries, 0); assert.equal(authority.stats().leases, 0);
 });
