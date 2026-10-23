@@ -47,3 +47,12 @@ test('authored preservation is an exact three-cell binding, never an ID/world fa
  for(const v of registry.cells){assert.equal(v.world,'penteli');assert.match(v.revision,/^[a-f0-9]{64}$/);assert.match(v.sha256,/^[a-f0-9]{64}$/);assert.match(v.guardFingerprint,/^[a-f0-9]{64}$/);assert.ok(v.bridgeSources.every(Number.isSafeInteger));}
  const unknown=source({world:'penteli'});await assert.rejects(prepareBridgeGuardRepair(unknown.args,[recipe()]),/matches 0/);
 });
+
+test('unlisted native guards without OSM structures or rails cannot become no-ops',async()=>{
+ const s=source({world:'penteli'});s.pack.metadata.structures=[];s.pack.metadata.rails=[];
+ const {tables,...metadata}=s.pack.metadata;const columns=Object.fromEntries(Object.entries(tables).map(([name,i])=>[name,Array.from(s.pack.arrays[i])]));
+ const views=s.pack.arrays.slice(0,4).map(a=>({type:a.constructor.name,data:Array.from(a)}));const {bytes}=encodeTile({metadata,arrays:views,tables:columns});
+ const entry={...s.args.entry,bytes:bytes.length,sha256:digest(bytes)};
+ await assert.rejects(prepareBridgeGuardRepair({...s.args,compressedBytes:bytes,entry},[]),/unlisted guard mesh/);
+ assert.throws(()=>planBridgeGuardRepair(s.pack.metadata,[],entry.sha256),/unlisted guard mesh/);
+});

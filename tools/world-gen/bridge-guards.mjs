@@ -79,7 +79,7 @@ export async function prepareBridgeGuardRepair({compressedBytes,entry,world,revi
   const token=Object.freeze({kind:'sealed-bridge-guard-proof',mode:'preserve-authored',sourceSha256:entry.sha256});proofs.set(token,{authored:true,used:false,sourceSha256:entry.sha256,identity:{world,revision,cell},wholeHash:wholeHash(p)});return token;
  }
  const token=Object.freeze({kind:'sealed-bridge-guard-proof',mode:m.rails?.length?'repair':'no-guards',sourceSha256:entry.sha256});
- if(!(m.rails?.length)){if(m.structures?.length&&guardMeshes({metadata:m}).length)fail('OSM guard mesh without rails');proofs.set(token,{noop:true,used:false,sourceSha256:entry.sha256,identity:{world,revision,cell},noopSignature:canonical({structures:m.structures,rails:m.rails,meshes:guardMeshes({metadata:m})})});return token;}
+ if(!(m.rails?.length)){if(guardMeshes({metadata:m}).length)fail('unlisted guard mesh without rails');proofs.set(token,{noop:true,used:false,sourceSha256:entry.sha256,identity:{world,revision,cell},noopSignature:canonical({structures:m.structures,rails:m.rails,meshes:guardMeshes({metadata:m})})});return token;}
  if(!m.structures?.length||!m.rails?.length)fail('guard geometry without supported source structures');
  const p=await decodeTilePack(raw.buffer.slice(raw.byteOffset,raw.byteOffset+raw.byteLength),entry.decodedBytes);validateWorldTile(p);const l=layout(p),match=matchPlan(p,sourceRecipes);
  const state={used:false,sourceSha256:entry.sha256,identity:{world,revision,cell},physicalHash:physicalHash(p),guardHash:bridgeGuardSourceFingerprint(p),match,postsBefore:m.rails.length,guardMeshesBefore:l.guards.length,trianglesBefore:l.ix.length/3,arrayBytesBefore:l.pos.byteLength+l.ix.byteLength};proofs.set(token,state);return token;
@@ -109,7 +109,7 @@ function post(P,I,r,at){
 export function planBridgeGuardRepair(metadata,sourceRecipes,sourceSha256=null){
  const m=metadata,guards=guardMeshes({metadata:m}).filter(v=>v.material===15);
  const native=authored.cells.find(v=>v.world===m.world&&v.revision===m.revision&&equal(v.cell,m.cell));if(native&&sourceSha256!==native.sha256)fail('authored metadata source SHA mismatch');if(native)return {required:false,preserveOriginal:true,expectedSourceSha256:native.sha256,reason:'explicit authored source preservation',postsBefore:null,postsAfter:null,guardMeshesBefore:guardMeshes({metadata:m}).length,guardMeshesAfter:guardMeshes({metadata:m}).length,triangleDelta:0,arrayBytesDelta:0,recipeHash:null};
- if(!m.rails?.length){if(guards.length)fail('guard mesh without rails');return {required:false,postsBefore:0,postsAfter:0,guardMeshesBefore:0,guardMeshesAfter:0,triangleDelta:0,arrayBytesDelta:0,recipeHash:null};}
+ if(!m.rails?.length){if(guardMeshes({metadata:m}).length)fail('unlisted guard mesh without rails');return {required:false,postsBefore:0,postsAfter:0,guardMeshesBefore:0,guardMeshesAfter:0,triangleDelta:0,arrayBytesDelta:0,recipeHash:null};}
  const match=matchPlan({metadata:m},sourceRecipes),p=m.views[guards[0]?.attributes.position.array],ix=m.views[guards[0]?.index];
  if(!p||!ix||p.type!=='Float32Array'||!['Uint16Array','Uint32Array'].includes(ix.type)||p.length!==m.rails.length*48||ix.length!==m.rails.length*48)fail('metadata has unknown original guard layout');
  let postsAfter=0;for(const [x,z]of stations(match.rings,m.origin))for(const r of m.rails){const dx=r[3]-r[0],dz=r[5]-r[2],length=Math.hypot(dx,dz),f=((x-r[0])*dx+(z-r[2])*dz)/(length*length);if(f< -1e-8||f>1+1e-8||Math.abs((x-r[0])*dz-(z-r[2])*dx)/length>1e-7)continue;postsAfter++;break;}
