@@ -9,7 +9,7 @@ import {gzipSync,gunzipSync} from 'node:zlib';
 import {TILE_TABLES,tileTables} from '../../src/world-tile-format.js';
 import {encodeTile,packTiles} from './pack.mjs';
 import {repairCodeProof,repairPlanSha256,packFingerprint,buildingRowSha256,repairedSpool} from './repair-infill.mjs';
-import {mutateOriginalCell,mutationCodeProof,mutationRecipeSha256,snapshotSceneryInvariants,assertSceneryInvariance} from './mutate-cell.mjs';
+import {mutateOriginalCell,mutationCodeProof,mutationRecipeSha256,snapshotSceneryInvariants,assertSceneryInvariance,prepareMutationEncoding,mutationEncodingReservation} from './mutate-cell.mjs';
 const code=await mutationCodeProof(),infillCode=await repairCodeProof();
 const hash=b=>createHash('sha256').update(b).digest('hex'),bytes=j=>Buffer.from(JSON.stringify(j));
 const bridge=JSON.parse(await readFile(new URL('./fixtures/bridge-guards.json',import.meta.url)));
@@ -149,4 +149,56 @@ test('a genuinely different ordinary encoded body cannot reuse the expected bind
 
 test('exact ordinary JSON encode path rejects signed-zero physical bit loss, while preservation stays exact',async()=>{
  const s=fixture(),p=s.encoded.decoded;tileTables(p).finePositions[0]=-0;const e=encodeTile(repairedSpool(p));s.compressedBytes=e.bytes;s.entry={...s.entry,sha256:hash(e.bytes),bytes:e.bytes.length};assert.ok(Object.is(tileTables(e.decoded).finePositions[0],-0));await assert.rejects(mutateOriginalCell(args(s)),/JSON spool changes authoritative array bytes/);const kept=await mutateOriginalCell(args(s,{}));assert.deepEqual(kept.compressedBytes,e.bytes);
+});
+
+
+function encodingStressFixture(){
+ const s=fixture(),p=s.encoded.decoded;p.arrays.push(new Float32Array(300000).fill(1.234567));
+ const e=encodeTile(repairedSpool(p));return {pack:e.decoded,source:{...s,compressedBytes:e.bytes,entry:{...s.entry,sha256:hash(e.bytes),bytes:e.bytes.length}}};
+}
+
+test('300000-float review control rejects BEFORE spool Array.from, JSON stringify/parse or encoder allocation',t=>{
+ const {pack}=encodingStressFixture(),calls={arrayFrom:0,stringify:0,parse:0};
+ t.mock.method(Array,'from',()=>{calls.arrayFrom++;throw Error('unexpected spool allocation');});
+ t.mock.method(JSON,'stringify',()=>{calls.stringify++;throw Error('unexpected serialized allocation');});
+ t.mock.method(JSON,'parse',()=>{calls.parse++;throw Error('unexpected parsed allocation');});
+ let rejected;try{prepareMutationEncoding(pack);}catch(error){rejected=error;}
+ assert.match(rejected?.message||'',/encoding workspace budget before spool/);
+ assert.ok(rejected.memoryReservation.peakBytes>64*1024**2);
+ assert.deepEqual(rejected.allocationAttempts,{spool:0,stringify:0,parse:0,encode:0});
+ assert.deepEqual(calls,{arrayFrom:0,stringify:0,parse:0});
+});
+
+test('full original-cell pipeline blocks the same compressible payload before expected encoding',async()=>{
+ const {source}=encodingStressFixture();await assert.rejects(mutateOriginalCell(args(source)),error=>{
+  assert.match(error.message,/encoding workspace budget before spool/);
+  assert.deepEqual(error.allocationAttempts,{spool:0,stringify:0,parse:0,encode:0});
+  assert.ok(error.memoryReservation.parsedJSBytes>0);
+  assert.ok(error.memoryReservation.serializedUTF16Bytes>0);
+  assert.ok(error.memoryReservation.codecBytes>0);
+  assert.ok(error.memoryReservation.peakBytes>error.memoryReservation.limitBytes);return true;
+ });
+});
+
+test('small encoding admits every phase with simultaneous raw, numeric, UTF16, parser and codec reservations',()=>{
+ const p=fixture().encoded.decoded;p.metadata.encodingProbe='Ελληνικά \\ " \n \u0000 🙂';
+ const r=prepareMutationEncoding(p,{retainedBytes:4096}),m=r.bindingPeak.reservation;
+ assert.ok(JSON.stringify(r.spool).length<=m.jsonChars);
+ assert.ok(m.rawBytes>=4096+m.rawArrayBytes);
+ assert.ok(m.spoolJSBytes>=m.elements*64);assert.ok(m.parsedJSBytes>=m.elements*64);
+ assert.equal(m.stringWorkingBytes,m.serializedUTF16Bytes*3);
+ assert.ok(m.phases.find(p=>p.phase==='encode').bytes>=m.rawBytes+m.spoolJSBytes+m.serializedUTF16Bytes+m.parsedJSBytes+m.codecBytes);
+ assert.ok(m.phases.find(p=>p.phase==='ordinary-packer').bytes>m.phases.find(p=>p.phase==='encode').bytes,'no GC credit between the two encoder passes');
+ assert.equal(r.bindingPeak.conservativeAdditionalTransientBytes,m.peakBytes);
+ assert.equal(r.bindingPeak.jsonCopyBytesEstimate,m.parsedJSBytes);
+ assert.ok(m.phases.every(p=>p.bytes<=64*1024**2));assert.equal(m.noGarbageCollectionCredit,true);
+ assert.deepEqual(r.bindingPeak.allocationAttempts,{spool:1,stringify:1,parse:1,encode:1});
+ const exhausted=mutationEncodingReservation(p,{retainedBytes:64*1024**2});assert.ok(exhausted.peakBytes>exhausted.limitBytes);
+ assert.throws(()=>prepareMutationEncoding(p,{retainedBytes:64*1024**2}),/encoding workspace budget before spool/);
+});
+
+
+test('allocation-free JSON bound covers wire numeric extremes and escaped UTF16 metadata',()=>{
+ const p=fixture().encoded.decoded;p.arrays.push(new Float32Array([-3.4028234663852886e38,3.4028234663852886e38,-1e20,1e20,-.0000000001,1.234567,0]),new Uint32Array([0,4294967295]),new Int8Array([-128,127]));p.metadata.numericProbe=-.0000012345678901234567;p.metadata.escapeProbe='\u0000\n\\" Ελληνικά 🙂';
+ const reservation=mutationEncodingReservation(p),serialized=JSON.stringify(repairedSpool(p));assert.ok(serialized.length<=reservation.jsonChars);assert.ok(serialized.length*2<=reservation.serializedUTF16Bytes);
 });
