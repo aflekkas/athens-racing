@@ -7,7 +7,7 @@ import { pathToFileURL } from 'node:url';
 import { gzipSync } from 'node:zlib';
 import { createHash } from 'node:crypto';
 export async function serveBundle(root = resolve('.deploy/assets'), options = {}) {
-  const app = await createGameServer({ root, ...options });
+  const app = await createGameServer({ root, ...options, builtCataloguePath: options.builtCataloguePath === undefined ? resolve(root, '..', 'catalogue.json') : options.builtCataloguePath });
   const listeners = app.server.listeners('request'); app.server.removeAllListeners('request');
   const compressed = new Map();
   app.server.on('request', async (req, res) => {

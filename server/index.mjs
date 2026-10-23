@@ -22,7 +22,23 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.bin': 'application/octet-stream', '.jpg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.mp3': 'audio/mpeg', '.wav': 'audio/wav', '.ogg': 'audio/ogg', '.svg': 'image/svg+xml', '.txt': 'text/plain; charset=utf-8' };
 
-export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLimitMs = 600000, reconnectGraceMs = 90000, accountEnv = process.env, dataDir = resolve(root, '.data') } = {}) {
+// The public asset root and the private build catalogue are separate paths.
+// Native development may omit a build; an explicitly selected build must exist
+// and parse successfully rather than silently publishing an empty route list.
+export async function readBuiltCatalogue(root, builtCataloguePath, read = readFile) {
+  const explicit = builtCataloguePath !== undefined;
+  try {
+    if (explicit && (typeof builtCataloguePath !== 'string' || !builtCataloguePath || builtCataloguePath.includes('\0'))) throw Error('Invalid catalogue path');
+    const value = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(await read(explicit ? builtCataloguePath : resolve(root, '.deploy/catalogue.json'))));
+    if (explicit && (!value || typeof value !== 'object' || Array.isArray(value) || !value.routeConfig || typeof value.routeConfig !== 'object' || Array.isArray(value.routeConfig) || !Array.isArray(value.routeConfig.routes) || !Array.isArray(value.routes))) throw Error('Invalid catalogue structure');
+    return value;
+  } catch (cause) {
+    if (explicit) throw Error('Built route catalogue unavailable or malformed', { cause });
+    return {};
+  }
+}
+
+export async function createGameServer({ root = ROOT, builtCataloguePath, countdownMs = 4000, raceLimitMs = 600000, reconnectGraceMs = 90000, accountEnv = process.env, dataDir = resolve(root, '.data') } = {}) {
   const catalogue = await readFile(resolve(root, 'src/cars.js'), 'utf8').catch(() => readFile(resolve(ROOT, 'src/cars.js'), 'utf8'));
   const capabilities = readCarCapabilities(catalogue);
   const CARS = new Set(capabilities.cars), nitrousCars = new Set(capabilities.nitrousCars), carSpecs = capabilities.specs || {};
@@ -33,7 +49,7 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
     catch (e) { if (def.id === 'riviera' || e.code !== 'ENOENT') throw e; console.warn(`Map ${def.id} unavailable: ${def.dataUrl}; skipping.`); continue; }
     maps.set(def.id, resolveMap(def, data));
   }
-  let built; try { built = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(await readFile(resolve(root, '.deploy/catalogue.json')))); } catch { built = {}; }
+  const built = await readBuiltCatalogue(root, builtCataloguePath);
   await installRouteMaps(maps, built, { carSpecs, loadRoadArtifact: async (url, maxBytes) => {
     if (!/^\/world\/recovery\/-?\d+,-?\d+\.[a-f0-9]{64}\.json$/.test(url) || !Number.isSafeInteger(maxBytes) || maxBytes < 1 || maxBytes > 2 * 1024 * 1024) throw Error('Recovery asset unavailable or too large');
     // One open handle binds stat/read to the same file, even across renames.
@@ -123,7 +139,7 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
   const tick = setInterval(() => { core.tick(); for (const [ip, limit] of postLimits) if (Date.now() - limit.at > 60000) postLimits.delete(ip); }, RELAY_MS);
   const heartbeat = setInterval(() => { for (const c of clients) { if (!c.alive) c.ws.terminate(); else { c.alive = false; c.ws.ping(); } } }, 15000);
   const close = async () => { clearInterval(tick); clearInterval(heartbeat); for (const c of clients) c.ws.terminate(); await new Promise(r => wss.close(r)); await new Promise(r => server.close(r)); await leaderboard.flush(); };
-  return { server, close, lobbies, track, leaderboard };
+  return { server, close, lobbies, track, leaderboard, routeConfig: maps.routeConfig };
 }
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const app = await createGameServer();
