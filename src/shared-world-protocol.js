@@ -46,7 +46,7 @@ export const validCarRow=row=>validLegacyCarRow(row)||validWorldCarRow(row);
 export function validWorldConeRow(row){return Array.isArray(row)&&row.length===18&&integers(row)&&validLegacyConeRow(row.slice(0,10))&&Math.abs(row[10])<=1e7&&Math.abs(row[11])<=1e6&&Math.abs(row[12])<=1e7&&Math.abs(row[13])<=16&&Math.abs(row[14])<=20000&&Math.abs(row[15])<=20000&&row[16]>=0&&row[16]<=1&&row[17]===0;}
 export const validConeRow=row=>validLegacyConeRow(row)||validWorldConeRow(row);
 export function packWorldCar(traffic,c){
- const row=packCar(traffic.pool||traffic,c).slice(0,24),v=c.vehicle||c.veh||c,point=c.point||v;row[1]=row[2]=0;row[5]=quantize(v.yaw,1000);
+ const row=packCar(traffic.pool||traffic,c).slice(0,24),v=c.vehicle||c.veh||c,point=c.point||v;row[1]=row[2]=0;row[5]=quantize(v.yaw,1000);if(c.crashed)row[CAR.FLAGS]|=1;
  if(c.rider)row.push(...['x','z','y','yaw','vx','vz','vy','age'].map(k=>quantize(c.rider[k])));else row.push(...Array(8).fill(0));
  row.push(quantize(v.x),quantize(v.y),quantize(v.z),point.layer??v.layer??0,quantize(-Math.sin(v.yaw)*v.vLong+Math.cos(v.yaw)*(v.vLat||0)),quantize(-Math.cos(v.yaw)*v.vLong-Math.sin(v.yaw)*(v.vLat||0)),(v.air?0:1)|(c.rider?2:0),0);return row;
 }

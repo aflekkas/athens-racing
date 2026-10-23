@@ -96,3 +96,16 @@ test('streamed host promotion refuses an unproved local footprint and guest impa
  f.traffic.session.safePose=()=>false;assert.equal(applyWorldTrafficCar(f.traffic,r,{promote:true}),null);assert.equal(f.c.active,false);f.traffic.session.safePose=()=>true;applyWorldTrafficCar(f.traffic,r);
  const world=new StreamedSharedWorld(f.mp,()=>({traffic:f.traffic,player:{veh:{}},remotes:[]}));world.configure();const before=world.beforeCollide();f.c.vehicle.vLong=5;world.afterCollide(before);assert.equal(f.sent.length,1);assert.equal(f.sent[0].type,'world-contact');assert.equal(f.sent[0].body.length,9);assert.ok(Math.abs(f.sent[0].body[3])+Math.abs(f.sent[0].body[4])>0);assert.equal(world.stats.contactsSent,1);
 });
+
+
+test('physical crashed state survives actual packing and replica intake without legacy crash changes',async()=>{
+ const {packWorldCar,packCar,validWorldCarRow}=await import('../src/shared-world-protocol.js'),{applyWorldTrafficCar}=await import('../src/mp-world-traffic.js'),f=streamedFixture(),r=[...row(),...Array(8).fill(0),1000,30000,2000,1,0,0,1,0];applyWorldTrafficCar(f.traffic,r);f.c.crash=null;f.c.crashed=true;
+ const packed=packWorldCar(f.traffic,f.c);assert.equal(packed[13]&1,1);assert.ok(validWorldCarRow(packed));assert.equal(packCar(f.traffic.pool,f.c)[13]&1,0,'legacy protocol still uses its legacy crash body');
+ f.c.crashed=false;applyWorldTrafficCar(f.traffic,packed);assert.equal(f.c.crashed,true);assert.equal(packWorldCar(f.traffic,f.c)[13]&1,1,'host promotion/repack retains physical crash state');
+});
+
+test('accepted host NPC contacts eject riders after the matching impulse and damage; replicas never eject',async()=>{
+ const {StreamedSharedWorld,applyWorldTrafficCar}=await import('../src/mp-world-traffic.js'),f=streamedFixture(),r=[...row(),...Array(8).fill(0),1000,30000,2000,1,0,0,1,0];applyWorldTrafficCar(f.traffic,r);const world=new StreamedSharedWorld(f.mp,()=>({traffic:f.traffic,player:{veh:{}},remotes:[]}));world.configure();let ejections=0;
+ f.traffic.ejectRider=(c,dv)=>{ejections++;assert.equal(c,f.c);assert.equal(dv,12);assert.equal(c.crashed,true);assert.equal(c.dz.front,.52);assert.ok(c.vehicle.vLong!==0||c.vehicle.vLat!==0,'ejection sees post-contact velocity');};
+ const packet={kind:'car',body:[0,10,-20,300,400,1000,1200,0,1200]};world.acceptContact(packet);assert.equal(ejections,0);assert.equal(world.stats.contactsReceived,0);world.authority=true;world.acceptContact(packet);assert.equal(ejections,1);assert.equal(world.stats.contactsReceived,1);
+});
