@@ -1,6 +1,6 @@
 ## Summary
 
-Source candidate only: coastal limestone strata now repeat at3.2m (160cycles per512m cell), fissures converge to average coverage when unresolved, and existing fine noise adds restrained chips/pits (at most±6%). Palette, scrub pockets, classification and geometry are unchanged. **Baseline captured; candidate not visually accepted yet.** Fresh actual-game baseline and full GPU compilation now pass; matched candidate captures and resource comparison await integration and a separate browser grant.
+Source candidate only: coastal limestone strata now repeat at3.2m (160cycles per512m cell), fissures converge to average coverage when unresolved, and existing fine noise adds restrained chips/pits (at most±6%). Palette, scrub pockets, classification and geometry are unchanged. **Candidate captures complete; paired budget check FAILED.** Fresh actual-game before/after capture, readiness and full GPU compilation pass. High/station500 draw-count variance remains unresolved; no overall performance or final acceptance is claimed.
 
 ## Proof it works
 
@@ -12,7 +12,19 @@ Fresh baseline source36c020b87be7d762e87858b904561b9c2a676e8a (house hook fixed;
 |9000near|![](before-low-9000-seam-near-on.jpg)|![](before-low-9000-seam-near-off.jpg)|![](before-high-9000-seam-near-on.jpg)|![](before-high-9000-seam-near-off.jpg)|
 |9000far|![](before-low-9000-seam-far-on.jpg)|![](before-low-9000-seam-far-off.jpg)|![](before-high-9000-seam-far-on.jpg)|![](before-high-9000-seam-far-off.jpg)|
 
-Effective coastal vertex/fragment GPU shader hashes, cache keys, original phase presence, generic-ground fibres, lookup declarations, and `srgb` output are recorded per frame. Existing detail/plain and framebuffer layout variants are preserved; this is not a shader-count reduction claim. Whole-frame draw/triangle totals include post passes because renderer.info.autoReset was disabled during measurement, then restored. Actual sample counts and memory are in the report; three samples are descriptive only. The station500 Low/High totals differ and must not be compared as a performance improvement. Matching candidate resource/draw checks remain pending.
+Effective coastal vertex/fragment GPU shader hashes, cache keys, original phase presence, generic-ground fibres, lookup declarations, and `srgb` output are recorded per frame. Existing detail/plain and framebuffer layout variants are preserved; this is not a shader-count reduction claim. Whole-frame draw/triangle totals include post passes because renderer.info.autoReset was disabled during measurement, then restored. Actual sample counts and memory are in the report; three samples are descriptive only. The station500 Low/High totals differ and must not be compared as a performance improvement. Matching candidate resource/draw checks later failed at High500; see the candidate comparison below.
+
+Matched candidate source547630c70b9d7bc4a497cceeaffeb0015d2eb4cd changed only src/athens-materials.js relative to baseline runtime. All6/6 actual-game cases and12/12 fresh candidate captures passed the same readiness, visible limestone pick and full-scene compilation guards; zero page/shader/console errors. [Candidate telemetry](after.json), [honest paired comparison](comparison.json).
+
+| Case | Before Low On | Candidate Low On | Before High On | Candidate High On |
+|---|---|---|---|---|
+|500surface|![](before-low-500-surface-on.jpg)|![](after-low-500-surface-on.jpg)|![](before-high-500-surface-on.jpg)|![](after-high-500-surface-on.jpg)|
+|9000near|![](before-low-9000-seam-near-on.jpg)|![](after-low-9000-seam-near-on.jpg)|![](before-high-9000-seam-near-on.jpg)|![](after-high-9000-seam-near-on.jpg)|
+|9000far|![](before-low-9000-seam-far-on.jpg)|![](after-low-9000-seam-far-on.jpg)|![](before-high-9000-seam-far-on.jpg)|![](after-high-9000-seam-far-on.jpg)|
+
+Candidate Off frames: [Low500](after-low-500-surface-off.jpg), [Low9000near](after-low-9000-seam-near-off.jpg), [Low9000far](after-low-9000-seam-far-off.jpg), [High500](after-high-500-surface-off.jpg), [High9000near](after-high-9000-seam-near-off.jpg), [High9000far](after-high-9000-seam-far-off.jpg).
+
+The strict paired comparison failed High500:71draws versus53baseline On,51versus33Off;798additional triangles in each state. Actual source/world/cases/camera/admitted entries/playerXYZ and scene material/geometry/texture counts match. GPU-uploaded geometries80versus67On (74versus61Off), total programs102versus98On (114versus110Off), while coastal program counts9/14match. The cause is unestablished; no traffic or material attribution is claimed. Other five case/class pairs match draw/triangle/resource counts exactly. Readiness simulation duration differed, so this is not a fully synchronized dynamics experiment. No threshold changed, traffic forced or automatic retry launched. Original after.json remains statusfailed; browser/proxy fully closed, exit1, proxyPID1268312. Source/capture validity is separate from unresolved budget acceptance. Camera tuple remains99ae6bb078a05b69aa1ef3fbe6ed41cf8a8525a04ce4577d4f5c974b74d0c81d.
 
 Historical failed attempts, both stopped before any photograph:
 

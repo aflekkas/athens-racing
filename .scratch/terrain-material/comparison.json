@@ -1,0 +1,768 @@
+{
+  "status": "paired-budget-check-failed",
+  "baselineCommit": "36c020b87be7d762e87858b904561b9c2a676e8a",
+  "candidateCommit": "547630c70b9d7bc4a497cceeaffeb0015d2eb4cd",
+  "sourceSetSHA256": "677a4fe16a337156450dd0902f8b0d0c320c759391a71a06ff384764ba7592fe",
+  "caseSHA256": "1ed8de1f414891265145f60bdeb2e7a50366c803b09cdd9cb9bab7f790abede6",
+  "cameraSetSHA256": "99ae6bb078a05b69aa1ef3fbe6ed41cf8a8525a04ce4577d4f5c974b74d0c81d",
+  "manifestSHA256": "a6ea9d0c3981e5f3111b375f4ebb1f0e47785bd2a46e2acc2617671033510293",
+  "worldRevision": "80055f9208753e2d6fa8658b31c90216d22c650f7f33588ebd5178d1a6b804a1",
+  "captureRuns": 6,
+  "freshCandidateFrames": 12,
+  "pageShaderErrors": [],
+  "consoleErrors": [],
+  "firstFailure": "AssertionError [ERR_ASSERTION]: No new rendered calls\n\n71 !== 53\n\n    at file:///home/dev/.cogenly/worktrees/athens-racing/t3-d1bb19b7/tools/terrain-material.browser.mjs:145:52",
+  "budgetVarianceCause": "Not established. No automatic retry, traffic force, threshold relaxation or material/source substitution.",
+  "ownedNodeProxyPID": 1268312,
+  "browserSlotTicket": 291,
+  "terminal": "agent-ae7e38a5-409a-455b-8ec3-a697a0b2f2dc",
+  "exitCode": 1,
+  "closed": true,
+  "rows": [
+    {
+      "quality": "low",
+      "case": "500-surface",
+      "sameActiveEntries": true,
+      "samePlayerXYZ": true,
+      "beforeSimulationSeconds": 0.0875,
+      "afterSimulationSeconds": 0.07083333333333333,
+      "frames": [
+        {
+          "detail": true,
+          "beforeImage": "before-low-500-surface-on.jpg",
+          "afterImage": "after-low-500-surface-on.jpg",
+          "sameCamera": true,
+          "sameOutputColorSpace": true,
+          "sameSceneResources": true,
+          "beforeGPUMemory": {
+            "geometries": 80,
+            "textures": 11
+          },
+          "afterGPUMemory": {
+            "geometries": 80,
+            "textures": 11
+          },
+          "beforePrograms": 102,
+          "afterPrograms": 102,
+          "beforeCoastalPrograms": 9,
+          "afterCoastalPrograms": 9,
+          "drawDifferences": {},
+          "beforeSamples": [
+            {
+              "ms": 4.299999982118607,
+              "calls": 71,
+              "triangles": 85303
+            },
+            {
+              "ms": 4.200000017881393,
+              "calls": 71,
+              "triangles": 85303
+            },
+            {
+              "ms": 3.699999988079071,
+              "calls": 71,
+              "triangles": 85303
+            }
+          ],
+          "afterSamples": [
+            {
+              "ms": 4.5,
+              "calls": 71,
+              "triangles": 85303
+            },
+            {
+              "ms": 3.4000000059604645,
+              "calls": 71,
+              "triangles": 85303
+            },
+            {
+              "ms": 2.5,
+              "calls": 71,
+              "triangles": 85303
+            }
+          ]
+        },
+        {
+          "detail": false,
+          "beforeImage": "before-low-500-surface-off.jpg",
+          "afterImage": "after-low-500-surface-off.jpg",
+          "sameCamera": true,
+          "sameOutputColorSpace": true,
+          "sameSceneResources": true,
+          "beforeGPUMemory": {
+            "geometries": 74,
+            "textures": 10
+          },
+          "afterGPUMemory": {
+            "geometries": 74,
+            "textures": 10
+          },
+          "beforePrograms": 114,
+          "afterPrograms": 114,
+          "beforeCoastalPrograms": 14,
+          "afterCoastalPrograms": 14,
+          "drawDifferences": {},
+          "beforeSamples": [
+            {
+              "ms": 3.4000000059604645,
+              "calls": 51,
+              "triangles": 46572
+            },
+            {
+              "ms": 1.5999999940395355,
+              "calls": 51,
+              "triangles": 46572
+            },
+            {
+              "ms": 1,
+              "calls": 51,
+              "triangles": 46572
+            }
+          ],
+          "afterSamples": [
+            {
+              "ms": 3.5999999940395355,
+              "calls": 51,
+              "triangles": 46572
+            },
+            {
+              "ms": 1.9000000059604645,
+              "calls": 51,
+              "triangles": 46572
+            },
+            {
+              "ms": 1.399999976158142,
+              "calls": 51,
+              "triangles": 46572
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "quality": "low",
+      "case": "9000-seam-near",
+      "sameActiveEntries": true,
+      "samePlayerXYZ": true,
+      "beforeSimulationSeconds": 0.07083333333333333,
+      "afterSimulationSeconds": 0.06249999999999999,
+      "frames": [
+        {
+          "detail": true,
+          "beforeImage": "before-low-9000-seam-near-on.jpg",
+          "afterImage": "after-low-9000-seam-near-on.jpg",
+          "sameCamera": true,
+          "sameOutputColorSpace": true,
+          "sameSceneResources": true,
+          "beforeGPUMemory": {
+            "geometries": 59,
+            "textures": 11
+          },
+          "afterGPUMemory": {
+            "geometries": 59,
+            "textures": 11
+          },
+          "beforePrograms": 93,
+          "afterPrograms": 93,
+          "beforeCoastalPrograms": 8,
+          "afterCoastalPrograms": 8,
+          "drawDifferences": {},
+          "beforeSamples": [
+            {
+              "ms": 3,
+              "calls": 45,
+              "triangles": 97920
+            },
+            {
+              "ms": 1.0999999940395355,
+              "calls": 45,
+              "triangles": 97920
+            },
+            {
+              "ms": 1.2000000178813934,
+              "calls": 45,
+              "triangles": 97920
+            }
+          ],
+          "afterSamples": [
+            {
+              "ms": 4.199999988079071,
+              "calls": 45,
+              "triangles": 97920
+            },
+            {
+              "ms": 1.899999976158142,
+              "calls": 45,
+              "triangles": 97920
+            },
+            {
+              "ms": 1.2000000178813934,
+              "calls": 45,
+              "triangles": 97920
+            }
+          ]
+        },
+        {
+          "detail": false,
+          "beforeImage": "before-low-9000-seam-near-off.jpg",
+          "afterImage": "after-low-9000-seam-near-off.jpg",
+          "sameCamera": true,
+          "sameOutputColorSpace": true,
+          "sameSceneResources": true,
+          "beforeGPUMemory": {
+            "geometries": 56,
+            "textures": 10
+          },
+          "afterGPUMemory": {
+            "geometries": 56,
+            "textures": 10
+          },
+          "beforePrograms": 103,
+          "afterPrograms": 103,
+          "beforeCoastalPrograms": 11,
+          "afterCoastalPrograms": 11,
+          "drawDifferences": {},
+          "beforeSamples": [
+            {
+              "ms": 2.5,
+              "calls": 32,
+              "triangles": 62102
+            },
+            {
+              "ms": 1,
+              "calls": 32,
+              "triangles": 62102
+            },
+            {
+              "ms": 0.9000000059604645,
+              "calls": 32,
+              "triangles": 62102
+            }
+          ],
+          "afterSamples": [
+            {
+              "ms": 3.0999999940395355,
+              "calls": 32,
+              "triangles": 62102
+            },
+            {
+              "ms": 1.4000000059604645,
+              "calls": 32,
+              "triangles": 62102
+            },
+            {
+              "ms": 1.2999999821186066,
+              "calls": 32,
+              "triangles": 62102
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "quality": "low",
+      "case": "9000-seam-far",
+      "sameActiveEntries": true,
+      "samePlayerXYZ": true,
+      "beforeSimulationSeconds": 0.05833333333333333,
+      "afterSimulationSeconds": 0.06249999999999999,
+      "frames": [
+        {
+          "detail": true,
+          "beforeImage": "before-low-9000-seam-far-on.jpg",
+          "afterImage": "after-low-9000-seam-far-on.jpg",
+          "sameCamera": true,
+          "sameOutputColorSpace": true,
+          "sameSceneResources": true,
+          "beforeGPUMemory": {
+            "geometries": 130,
+            "textures": 15
+          },
+          "afterGPUMemory": {
+            "geometries": 130,
+            "textures": 15
+          },
+          "beforePrograms": 104,
+          "afterPrograms": 104,
+          "beforeCoastalPrograms": 8,
+          "afterCoastalPrograms": 8,
+          "drawDifferences": {},
+          "beforeSamples": [
+            {
+              "ms": 5.5,
+              "calls": 121,
+              "triangles": 102244
+            },
+            {
+              "ms": 3.2999999821186066,
+              "calls": 121,
+              "triangles": 102244
+            },
+            {
+              "ms": 2.2000000178813934,
+              "calls": 121,
+              "triangles": 102244
+            }
+          ],
+          "afterSamples": [
+            {
+              "ms": 6.799999982118607,
+              "calls": 121,
+              "triangles": 102244
+            },
+            {
+              "ms": 4.200000017881393,
+              "calls": 121,
+              "triangles": 102244
+            },
+            {
+              "ms": 4,
+              "calls": 121,
+              "triangles": 102244
+            }
+          ]
+        },
+        {
+          "detail": false,
+          "beforeImage": "before-low-9000-seam-far-off.jpg",
+          "afterImage": "after-low-9000-seam-far-off.jpg",
+          "sameCamera": true,
+          "sameOutputColorSpace": true,
+          "sameSceneResources": true,
+          "beforeGPUMemory": {
+            "geometries": 127,
+            "textures": 14
+          },
+          "afterGPUMemory": {
+            "geometries": 127,
+            "textures": 14
+          },
+          "beforePrograms": 114,
+          "afterPrograms": 114,
+          "beforeCoastalPrograms": 11,
+          "afterCoastalPrograms": 11,
+          "drawDifferences": {},
+          "beforeSamples": [
+            {
+              "ms": 4.4000000059604645,
+              "calls": 108,
+              "triangles": 66426
+            },
+            {
+              "ms": 2.699999988079071,
+              "calls": 108,
+              "triangles": 66426
+            },
+            {
+              "ms": 2.0999999940395355,
+              "calls": 108,
+              "triangles": 66426
+            }
+          ],
+          "afterSamples": [
+            {
+              "ms": 4.4000000059604645,
+              "calls": 108,
+              "triangles": 66426
+            },
+            {
+              "ms": 2,
+              "calls": 108,
+              "triangles": 66426
+            },
+            {
+              "ms": 1.5,
+              "calls": 108,
+              "triangles": 66426
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "quality": "high",
+      "case": "500-surface",
+      "sameActiveEntries": true,
+      "samePlayerXYZ": true,
+      "beforeSimulationSeconds": 0.05416666666666666,
+      "afterSimulationSeconds": 0.04583333333333333,
+      "frames": [
+        {
+          "detail": true,
+          "beforeImage": "before-high-500-surface-on.jpg",
+          "afterImage": "after-high-500-surface-on.jpg",
+          "sameCamera": true,
+          "sameOutputColorSpace": true,
+          "sameSceneResources": true,
+          "beforeGPUMemory": {
+            "geometries": 67,
+            "textures": 11
+          },
+          "afterGPUMemory": {
+            "geometries": 80,
+            "textures": 11
+          },
+          "beforePrograms": 98,
+          "afterPrograms": 102,
+          "beforeCoastalPrograms": 9,
+          "afterCoastalPrograms": 9,
+          "drawDifferences": {
+            "calls": {
+              "before": 53,
+              "after": 71
+            },
+            "triangles": {
+              "before": 84505,
+              "after": 85303
+            }
+          },
+          "beforeSamples": [
+            {
+              "ms": 3.699999988079071,
+              "calls": 53,
+              "triangles": 84505
+            },
+            {
+              "ms": 2,
+              "calls": 53,
+              "triangles": 84505
+            },
+            {
+              "ms": 1.300000011920929,
+              "calls": 53,
+              "triangles": 84505
+            }
+          ],
+          "afterSamples": [
+            {
+              "ms": 4,
+              "calls": 71,
+              "triangles": 85303
+            },
+            {
+              "ms": 2.5,
+              "calls": 71,
+              "triangles": 85303
+            },
+            {
+              "ms": 1.7000000178813934,
+              "calls": 71,
+              "triangles": 85303
+            }
+          ]
+        },
+        {
+          "detail": false,
+          "beforeImage": "before-high-500-surface-off.jpg",
+          "afterImage": "after-high-500-surface-off.jpg",
+          "sameCamera": true,
+          "sameOutputColorSpace": true,
+          "sameSceneResources": true,
+          "beforeGPUMemory": {
+            "geometries": 61,
+            "textures": 10
+          },
+          "afterGPUMemory": {
+            "geometries": 74,
+            "textures": 10
+          },
+          "beforePrograms": 110,
+          "afterPrograms": 114,
+          "beforeCoastalPrograms": 14,
+          "afterCoastalPrograms": 14,
+          "drawDifferences": {
+            "calls": {
+              "before": 33,
+              "after": 51
+            },
+            "triangles": {
+              "before": 45774,
+              "after": 46572
+            }
+          },
+          "beforeSamples": [
+            {
+              "ms": 2.7000000178813934,
+              "calls": 33,
+              "triangles": 45774
+            },
+            {
+              "ms": 1.0999999940395355,
+              "calls": 33,
+              "triangles": 45774
+            },
+            {
+              "ms": 1.300000011920929,
+              "calls": 33,
+              "triangles": 45774
+            }
+          ],
+          "afterSamples": [
+            {
+              "ms": 3.4000000059604645,
+              "calls": 51,
+              "triangles": 46572
+            },
+            {
+              "ms": 1.300000011920929,
+              "calls": 51,
+              "triangles": 46572
+            },
+            {
+              "ms": 0.9000000059604645,
+              "calls": 51,
+              "triangles": 46572
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "quality": "high",
+      "case": "9000-seam-near",
+      "sameActiveEntries": true,
+      "samePlayerXYZ": true,
+      "beforeSimulationSeconds": 0.0875,
+      "afterSimulationSeconds": 0.06666666666666667,
+      "frames": [
+        {
+          "detail": true,
+          "beforeImage": "before-high-9000-seam-near-on.jpg",
+          "afterImage": "after-high-9000-seam-near-on.jpg",
+          "sameCamera": true,
+          "sameOutputColorSpace": true,
+          "sameSceneResources": true,
+          "beforeGPUMemory": {
+            "geometries": 59,
+            "textures": 11
+          },
+          "afterGPUMemory": {
+            "geometries": 59,
+            "textures": 11
+          },
+          "beforePrograms": 93,
+          "afterPrograms": 93,
+          "beforeCoastalPrograms": 8,
+          "afterCoastalPrograms": 8,
+          "drawDifferences": {},
+          "beforeSamples": [
+            {
+              "ms": 3.4000000059604645,
+              "calls": 45,
+              "triangles": 97920
+            },
+            {
+              "ms": 1.7000000178813934,
+              "calls": 45,
+              "triangles": 97920
+            },
+            {
+              "ms": 1.2999999821186066,
+              "calls": 45,
+              "triangles": 97920
+            }
+          ],
+          "afterSamples": [
+            {
+              "ms": 2.800000011920929,
+              "calls": 45,
+              "triangles": 97920
+            },
+            {
+              "ms": 1.199999988079071,
+              "calls": 45,
+              "triangles": 97920
+            },
+            {
+              "ms": 1.100000023841858,
+              "calls": 45,
+              "triangles": 97920
+            }
+          ]
+        },
+        {
+          "detail": false,
+          "beforeImage": "before-high-9000-seam-near-off.jpg",
+          "afterImage": "after-high-9000-seam-near-off.jpg",
+          "sameCamera": true,
+          "sameOutputColorSpace": true,
+          "sameSceneResources": true,
+          "beforeGPUMemory": {
+            "geometries": 56,
+            "textures": 10
+          },
+          "afterGPUMemory": {
+            "geometries": 56,
+            "textures": 10
+          },
+          "beforePrograms": 103,
+          "afterPrograms": 103,
+          "beforeCoastalPrograms": 11,
+          "afterCoastalPrograms": 11,
+          "drawDifferences": {},
+          "beforeSamples": [
+            {
+              "ms": 2.600000023841858,
+              "calls": 32,
+              "triangles": 62102
+            },
+            {
+              "ms": 0.7999999821186066,
+              "calls": 32,
+              "triangles": 62102
+            },
+            {
+              "ms": 0.9000000059604645,
+              "calls": 32,
+              "triangles": 62102
+            }
+          ],
+          "afterSamples": [
+            {
+              "ms": 3,
+              "calls": 32,
+              "triangles": 62102
+            },
+            {
+              "ms": 1.300000011920929,
+              "calls": 32,
+              "triangles": 62102
+            },
+            {
+              "ms": 1,
+              "calls": 32,
+              "triangles": 62102
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "quality": "high",
+      "case": "9000-seam-far",
+      "sameActiveEntries": true,
+      "samePlayerXYZ": true,
+      "beforeSimulationSeconds": 0.06249999999999999,
+      "afterSimulationSeconds": 0.075,
+      "frames": [
+        {
+          "detail": true,
+          "beforeImage": "before-high-9000-seam-far-on.jpg",
+          "afterImage": "after-high-9000-seam-far-on.jpg",
+          "sameCamera": true,
+          "sameOutputColorSpace": true,
+          "sameSceneResources": true,
+          "beforeGPUMemory": {
+            "geometries": 130,
+            "textures": 15
+          },
+          "afterGPUMemory": {
+            "geometries": 130,
+            "textures": 15
+          },
+          "beforePrograms": 104,
+          "afterPrograms": 104,
+          "beforeCoastalPrograms": 8,
+          "afterCoastalPrograms": 8,
+          "drawDifferences": {},
+          "beforeSamples": [
+            {
+              "ms": 4.700000017881393,
+              "calls": 121,
+              "triangles": 102244
+            },
+            {
+              "ms": 2.2999999821186066,
+              "calls": 121,
+              "triangles": 102244
+            },
+            {
+              "ms": 2,
+              "calls": 121,
+              "triangles": 102244
+            }
+          ],
+          "afterSamples": [
+            {
+              "ms": 7.4000000059604645,
+              "calls": 121,
+              "triangles": 102244
+            },
+            {
+              "ms": 4.5999999940395355,
+              "calls": 121,
+              "triangles": 102244
+            },
+            {
+              "ms": 5.200000017881393,
+              "calls": 121,
+              "triangles": 102244
+            }
+          ]
+        },
+        {
+          "detail": false,
+          "beforeImage": "before-high-9000-seam-far-off.jpg",
+          "afterImage": "after-high-9000-seam-far-off.jpg",
+          "sameCamera": true,
+          "sameOutputColorSpace": true,
+          "sameSceneResources": true,
+          "beforeGPUMemory": {
+            "geometries": 127,
+            "textures": 14
+          },
+          "afterGPUMemory": {
+            "geometries": 127,
+            "textures": 14
+          },
+          "beforePrograms": 114,
+          "afterPrograms": 114,
+          "beforeCoastalPrograms": 11,
+          "afterCoastalPrograms": 11,
+          "drawDifferences": {},
+          "beforeSamples": [
+            {
+              "ms": 3.899999976158142,
+              "calls": 108,
+              "triangles": 66426
+            },
+            {
+              "ms": 2,
+              "calls": 108,
+              "triangles": 66426
+            },
+            {
+              "ms": 1.5999999940395355,
+              "calls": 108,
+              "triangles": 66426
+            }
+          ],
+          "afterSamples": [
+            {
+              "ms": 6.300000011920929,
+              "calls": 108,
+              "triangles": 66426
+            },
+            {
+              "ms": 3.199999988079071,
+              "calls": 108,
+              "triangles": 66426
+            },
+            {
+              "ms": 2.7000000178813934,
+              "calls": 108,
+              "triangles": 66426
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "All images are fresh actual game captures with guarded visible limestone picks; root visual review still required.",
+    "Five case/class draw and triangle pairs match exactly; High500 has18additional draws and798triangles in both detail states.",
+    "GPU memory geometry/program differences occur at High500; coastal program counts match. Cause is not established.",
+    "Three synchronized frame samples are descriptive only, not a benchmark.",
+    "This failed budget receipt is not an overall material-performance PASS."
+  ]
+}
