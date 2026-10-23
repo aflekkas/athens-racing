@@ -47,7 +47,7 @@ export async function bootAthens(){
  const post=createPost(renderer,scene,camera);
  const area=pickedAthensArea(query);
  loading.show('athens','FREE ROAM',{freeRoam:true,area});
- let scripted=false,driver=null,cameraHook=null,player=null,stopped=false,paused=false,towing=false,frameId,elapsed=0,accumulator=0,last=performance.now(),lastTraffic=-10,lookBackA=0;
+ let scripted=false,driver=null,cameraHook=null,player=null,stopped=false,paused=false,towing=false,frameId,elapsed=0,lastSurfaceElapsed=0,accumulator=0,last=performance.now(),lastTraffic=-10,lookBackA=0;
  let worldTraffic;const stats={frames:0,simulationSeconds:0,metres:0,holds:0,missingContacts:0,carHits:0,frameMs:[],cpuMs:[],initialDownloadBytes:0,initialDriveMs:0,maxEstimatedJSBytes:0,maxEstimatedGPUBytes:0};
  const session=await createWorldSession({renderer,scene,resources,progress:(...args)=>loading.progress(...args)});
  const {stream,roads,barriers,obstacles,detail,props,trees,signs,marks,horizon,landmarks,plazas,lawns,sceneTiles,manifest}=session;
@@ -114,7 +114,9 @@ export async function bootAthens(){
  }
  function render(dt){
   const v=player.veh,o=stream.origin;v.place(player.model.root);player.model.root.position.x-=o.x;player.model.root.position.z-=o.z;player.model.update(dt,v.vLong,v.steer,input.state.brake>.2,v.pose,v.corners,v.w);
-  player.model.setDamageSnapshot?.(v.damage);player.model.updateSurface?.(dt,v,settings.worldDetail!==false,false);worldTraffic.sync();
+  // Pauses and stream holds still render with the last loaded wheel contacts.
+  const surfaceDt=Math.max(0,elapsed-lastSurfaceElapsed);lastSurfaceElapsed=elapsed;
+  player.model.setDamageSnapshot?.(v.damage);player.model.updateSurface?.(surfaceDt,v,settings.worldDetail!==false,false);worldTraffic.sync();
   const fx=-Math.sin(v.yaw),fz=-Math.cos(v.yaw),cock=cam==='cockpit';
   document.body.dataset.cameraView=cam;
   player.cockpit.setVisible(cock);player.cockpit.update(dt,{vehicle:v,ignition:true,manual:v.manual,rpm:v.rpm,redline:spec.redline,gear:v.gear,gearLabel:String(v.gear),kmh:v.kmh,steerInput:input.state.steer,handbrake:input.state.handbrake});

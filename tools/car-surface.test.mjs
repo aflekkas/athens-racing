@@ -1,6 +1,7 @@
 // node --import ./tools/damage-test-register.mjs --test tools/car-surface.test.mjs
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import * as THREE from 'three';
 import { installCarSurface, CAR_SURFACE_BYTES } from '../src/car-surface.js';
 import { installDamageSystem } from '../src/damage.js';
@@ -96,4 +97,46 @@ test('mixed snapshots trim only repaired zones even when total damage increases'
   car.setDamageSnapshot({left:.1,rear:.2,right:.6});
   assert.ok(Math.abs(car.surface.scuffs[2].w-.14)<1e-12);assert.deepEqual(car.surface.scuffs[1].toArray(),rear);
   assert.deepEqual(car.surface.dirt.toArray(),dirt);assert.equal(car.surface.scuffs[3].w,0);car.disposeDamage();
+});
+
+test('standalone wear consumes successful simulation time once across paused and held renders', () => {
+  const {car,v}=fixture(),source=readFileSync(new URL('../src/athens-world.js',import.meta.url),'utf8');
+  const declaration=source.match(/ let scripted=false[^\n]+/)[0];
+  const stepAt=source.indexOf(' function step(dt,drive){'),renderAt=source.indexOf(' function render(dt){');
+  const cameraAt=source.indexOf('  const fx=-Math.sin(v.yaw)',renderAt);
+  assert.ok(stepAt>=0&&renderAt>stepAt&&cameraAt>renderAt);
+  // Execute the production step and the render work before camera/HUD drawing.
+  // Only the unrelated renderer, traffic and physics internals are stubbed.
+  let ready=true;
+  v.ground={footprint:()=>[],ready:()=>ready,begin(){}};
+  v.update=dt=>{v.x+=v.vLong*dt;};
+  car.update=()=>{};
+  const state={player:{veh:v,model:car},stream:{origin:{x:0,z:0},update(){}},
+    worldTraffic:{actors:[],update(){},collide(){},sync(){}},barriers:{resolve(){}},
+    stats:{holds:0,metres:0,carHits:0,missingContacts:0},settings:{worldDetail:true},
+    input:{state:{brake:0}},account:{blocked:false}};
+  const runtime=Function('f',`const {stream,worldTraffic,barriers,stats,settings,input,account}=f;
+    ${declaration} player=f.player;
+    ${source.slice(stepAt,renderAt)}
+    ${source.slice(renderAt,cameraAt)} }
+    return {step,render,setPaused:value=>paused=value,setTowing:value=>towing=value};`)(state);
+  const dirt=()=>car.surface.dirt.toArray();
+  try {
+    runtime.step(.05);runtime.render(.05);
+    const first=dirt();assert.ok(first.every(n=>Math.abs(n-20*.05/230)<1e-12));
+    for(const block of [
+      value=>runtime.setPaused(value),value=>runtime.setTowing(value),
+      value=>{state.account.blocked=value;},value=>{ready=!value;}
+    ]){
+      block(true);
+      for(let i=0;i<5;i++){runtime.step(.1);runtime.render(.1);}
+      assert.deepEqual(dirt(),first,'stale loaded-wheel data cannot accumulate wear while simulation is blocked');
+      block(false);
+    }
+    assert.equal(state.stats.holds,5);
+    runtime.step(.04);runtime.render(.001);
+    const resumed=dirt();assert.ok(resumed.every(n=>Math.abs(n-20*.09/230)<1e-12));
+    runtime.render(10);runtime.render(0);
+    assert.deepEqual(dirt(),resumed,'additional renders cannot consume simulation time twice');
+  } finally {car.disposeDamage();}
 });
