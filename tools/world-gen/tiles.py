@@ -49,11 +49,11 @@ EXCLUDED={e['id'] for e in [*COAST_EXCLUSIONS,*STRUCTURE_EXCLUSIONS,*STEEP_EXCLU
 EXCLUSION_REASONS={e['id']:e['reason'] for e in [*COAST_EXCLUSIONS,*STRUCTURE_EXCLUSIONS,*STEEP_EXCLUSIONS]}
 
 class Field:
- def __init__(self,db,source,cell,dems,coastal=False,bridge_tags=None,sections=None,extent=None,strict=True,plan=None,bounds=None,overrides=None):
+ def __init__(self,db,source,cell,dems,coastal=False,bridge_tags=None,sections=None,extent=None,strict=True,plan=None,bounds=None,overrides=None,inland=None):
   self.overrides=overrides
   self.excluded={};self.excluded_here={}
   self.cell=cell;self.dem=Elevation(dems);ox,oz=cell[0]*512,cell[1]*512;self.ox=ox;self.oz=oz;halo=512 if coastal else ROAD_QUERY_HALO
-  self.roads=[];self.byid={};self.land=[];self.coast=Coast(source,cell,bounds) if coastal else None
+  self.roads=[];self.byid={};self.land=[];self.coast=inland if inland is not None else Coast(source,cell,bounds) if coastal else None
   for row,data in db.execute('SELECT r.rowid,r.data FROM spatial s CROSS JOIN roads r ON r.rowid=s.rowid WHERE s.minx<=? AND s.maxx>=? AND s.minz<=? AND s.maxz>=? ORDER BY r.id',(bounds[2] if bounds else ox+512+halo,bounds[0] if bounds else ox-halo,bounds[3] if bounds else oz+512+halo,bounds[1] if bounds else oz-halo)):
    r=tunnels.apply(json.loads(data))
    if coastal:
@@ -188,7 +188,7 @@ def cell_rows(source,kinds,bounds):
  sql=' UNION ALL '.join(f"SELECT o.id AS id,o.data AS data FROM {s}.spatial s CROSS JOIN {s}.objects o ON o.rowid=s.rowid WHERE {kinds} AND s.minx<=? AND s.maxx>=? AND s.minz<=? AND s.maxz>=?" for s in schemas)
  return source.execute(f'SELECT id,data FROM ({sql}) ORDER BY id',tuple(v for _ in schemas for v in (minx,maxx,minz,maxz))).fetchall()
 
-def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=False,vegetation=None,osm=None,sections=None,extent=None,plan=None,details=None,street_nodes=None,overrides=None):
+def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=False,vegetation=None,osm=None,sections=None,extent=None,plan=None,details=None,street_nodes=None,overrides=None,inland=None):
  db=sqlite3.connect(f'file:{dbpath}?mode=ro',uri=True);source=sqlite3.connect(f'file:{sourcepath}?mode=ro',uri=True)
  attach_generated(source,sourcepath)
  sectiondb=sqlite3.connect(f'file:{sections}?mode=ro',uri=True) if sections else None
@@ -202,7 +202,7 @@ def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=F
    extra=road_extras(parsed)
    if extra:lit_parking[identifier]=extra
   raw.close()
- field=Field(db,source,cell,dems,coastal,bridge_tags,sectiondb,extent,plan=plan,overrides=overrides)
+ field=Field(db,source,cell,dems,coastal,bridge_tags,sectiondb,extent,plan=plan,overrides=overrides,inland=inland)
  # Parks (OSM leisure=park) are not in the landuse table; the vegetation cache holds their polygons.
  field.land.extend(park_areas(vegetation,field.ox,field.oz));field.landtree=STRtree([p for p,t in field.land])
  # Surfaces within 96 m of the cell decide everything inside it (reach, fillets and ramps are all < 40 m): a
@@ -461,6 +461,7 @@ def bake(dbpath,sourcepath,graphpath,turnpath,cell,dems,world,revision,coastal=F
  arrays[road_position if render_p is not p else render_position]['data']=t['contactPositions'];t['finePositions']=t['contactPositions']
  if render_p is p:arrays[shared_colour]['data']=arrays[shared_colour]['data']+[0]*(len(t['contactPositions'])-len(p))
  metadata=dict(tileVersion=1,world=world,revision=revision,cell=list(cell),origin=[ox,0,oz],ids=ids,strings=strings,palette=palette,meshes=meshes,terrain=dict(coarseSize=33,spacing=16),budgets=dict(triangles=triangles,buildingTriangles=maxbuilding),developmentOnly=True,releaseReady=False,structures=structure_records,rails=rails,safetyRails=bore_walls+coast_rails,tunnelBores=bore_records,roadSections=road_sections,extensions=extensions)
+ if inland is not None:metadata['inlandSurface']={**inland.evidence,'waterMasks':inland.water_masks(cell)}
  field.dem.close();db.close();source.close()
  return dict(metadata=metadata,tables=t,arrays=arrays,dependencies=sorted(dependencies)),validation
 

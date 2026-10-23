@@ -41,22 +41,27 @@ def prepare(cache, source, dems, bounds, cells):
     sections(paths['profiles'],paths['source'],paths['sidewalks'],paths['sections'])
     vegetation(source,paths['vegetation'])
     details(paths['source'],paths['clean'],paths['details'])
-    street_nodes([source],paths['street-nodes'])
+    if paths['street-nodes'].exists():
+        db=sqlite3.connect(f'file:{paths["street-nodes"]}?mode=ro',uri=True);meta=json.loads(db.execute('SELECT value FROM metadata').fetchone()[0]);db.close()
+        if paths['street-nodes'].with_suffix('.sha256').read_text().strip()!=sha(paths['street-nodes']) or meta['codeSha256']!=sha(Path(__file__).with_name('street_nodes.py')) or meta['inputs']!=[dict(path=source.name,sha256=sha(source))]:raise ValueError('Street-node cache integrity/input mismatch')
+    else:street_nodes([source],paths['street-nodes'])
     return paths
 
 
-def structure_plan(paths,dems,cells):
+def structure_plan(paths,dems,cells,source_bounds):
     import areas
     import tiles
     from tiles import Field
     from shapely.geometry import mapping
     extent=areas.extent(cells);a,b,c,d=extent.bounds
+    from inland import VerifiedInland
+    clean=sqlite3.connect(f'file:{paths["clean"]}?mode=ro',uri=True);inland=VerifiedInland(clean,dems,extent,source_bounds);clean.close()
     raw=sqlite3.connect(f'file:{paths["source"]}?mode=ro',uri=True)
     tags={i:json.loads(t).get('bridge') for i,t in raw.execute("SELECT id,tags FROM features WHERE kind='road'")};raw.close()
     excluded={};history=[]
     for iteration in range(1,10):
         db=sqlite3.connect(f'file:{paths["profiles"]}?mode=ro',uri=True);source=sqlite3.connect(f'file:{paths["clean"]}?mode=ro',uri=True);sections=sqlite3.connect(f'file:{paths["sections"]}?mode=ro',uri=True)
-        f=Field(db,source,(0,0),dems,True,tags,sections,extent,strict=False,bounds=(a-512,b-512,c+512,d+512))
+        f=Field(db,source,(0,0),dems,True,tags,sections,extent,strict=False,bounds=(a-512,b-512,c+512,d+512),inland=inland)
         failed=list(f.structures.failed)
         for group in f.structures.groups:
             centre,samples=f.clearance(group);least=min([centre,*samples])
@@ -71,29 +76,31 @@ def structure_plan(paths,dems,cells):
                 reason='deck group '+group['id']+' cannot be lifted safely: '+group['reason'];excluded[road]=reason;tiles.EXCLUDED.add(road);tiles.EXCLUSION_REASONS[road]=reason
     else:raise ValueError('Structure plan did not converge')
     excluded.update(dropped)
-    return dict(groups=groups,unresolved=unresolved,excluded=dict(sorted(excluded.items())),report=dict(rounds=history)),extent
+    return dict(groups=groups,unresolved=unresolved,excluded=dict(sorted(excluded.items())),report=dict(rounds=history)),extent,inland
 
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--cache',type=Path,required=True);parser.add_argument('--source',type=Path,required=True);parser.add_argument('--dem',type=Path,action='append',required=True);parser.add_argument('--bounds',nargs=4,type=float,required=True);parser.add_argument('--cells',type=Path,required=True);parser.add_argument('--world',default='athens-ekali-development');parser.add_argument('--prepare-only',action='store_true')
+    parser.add_argument('--cache',type=Path,required=True);parser.add_argument('--source',type=Path,required=True);parser.add_argument('--dem',type=Path,action='append',required=True);parser.add_argument('--bounds',nargs=4,type=float,required=True);parser.add_argument('--cells',type=Path,required=True);parser.add_argument('--emit-cells',help='Bounded diagnostic subset; full cells file still owns source/structure extent');parser.add_argument('--world',default='athens-ekali-development');parser.add_argument('--prepare-only',action='store_true')
     args=parser.parse_args();args.cache.mkdir(parents=True,exist_ok=True)
     cells=json.loads(args.cells.read_text());cells=cells.get('cells') if isinstance(cells,dict) else cells
     if not cells or len(cells)>64 or len({tuple(c) for c in cells})!=len(cells) or any(len(c)!=2 or any(type(n)!=int for n in c) for c in cells):raise ValueError('Expected unique bounded explicit cell set (max64)')
     from ingest import sha,encode
     with contextlib.redirect_stdout(sys.stderr):
         paths=prepare(args.cache,args.source,args.dem,args.bounds,cells)
-        plan,extent=structure_plan(paths,args.dem,cells)
-    inputs=dict(source=sha(args.source),sourceRecord=sha(args.source.with_suffix('.source.json')),dem=[dict(path=p.name,sha256=sha(p)) for p in args.dem],cells=cells,world=args.world,code={p.name:sha(p) for p in sorted(Path(__file__).parent.glob('*.py'))},caches={k:sha(v) for k,v in paths.items()},structurePlan=plan)
+        plan,extent,inland=structure_plan(paths,args.dem,cells,args.bounds)
+    inputs=dict(source=sha(args.source),sourceRecord=sha(args.source.with_suffix('.source.json')),dem=[dict(path=p.name,sha256=sha(p)) for p in args.dem],cells=cells,world=args.world,code={p.name:sha(p) for p in sorted(Path(__file__).parent.glob('*.py'))},caches={k:sha(v) for k,v in paths.items()},structurePlan=plan,inland=inland.evidence)
     revision=hashlib.sha256(encode(inputs).encode()).hexdigest();record=dict(revision=revision,inputs=inputs,acceptance=False)
     (args.cache/'extension-inputs.json').write_text(json.dumps(record,indent=2)+'\n');(args.cache/'extension-structures.json').write_text(json.dumps(plan,indent=2)+'\n')
     if args.prepare_only:return
     from tiles import bake
-    for cell in cells:
+    emitted=[list(map(int,key.split(','))) for key in args.emit_cells.split(';')] if args.emit_cells else cells
+    if not emitted or any(cell not in cells for cell in emitted) or len({tuple(c) for c in emitted})!=len(emitted):raise ValueError('Emit subset outside explicit extension extent')
+    for cell in emitted:
         usage=shutil.disk_usage('/')
         if usage.used/(usage.used+usage.free)>=.83:raise ValueError('Shared disk hard stop at83%')
         started=time.monotonic()
-        tile,audit=bake(paths['profiles'],paths['clean'],paths['graph'],paths['turns'],tuple(cell),args.dem,args.world,revision,True,paths['vegetation'],paths['source'],paths['sections'],extent,plan,paths['details'],paths['street-nodes'])
+        tile,audit=bake(paths['profiles'],paths['clean'],paths['graph'],paths['turns'],tuple(cell),args.dem,args.world,revision,True,paths['vegetation'],paths['source'],paths['sections'],extent,plan,paths['details'],paths['street-nodes'],inland=inland)
         print(encode(tile),flush=True)
         print(encode(dict(cell=cell,seconds=time.monotonic()-started,**audit)),file=sys.stderr,flush=True)
 
