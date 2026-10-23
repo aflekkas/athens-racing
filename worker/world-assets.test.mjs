@@ -16,3 +16,42 @@ test('recovery JSON has immutable bounded hash-verified bytes and the correct co
  const rejected=await worldAssets(new Request('https://x/world/'+key),tampered,null,null);assert.equal(rejected.status,502);assert.equal(rejected.headers.get('Cache-Control'),'no-store');
  const oversized={...env,ATHENS_WORLD:{async get(){return{body:bytes,size:2*1024*1024+1};}}};assert.equal((await worldAssets(new Request('https://x/world/'+key),oversized,null,null)).status,413);
 });
+
+test('v2 recovery cells serve original packed bytes through GET cache HEAD and conditional requests', async () => {
+ const { encodeRecoverySidecar } = await import('../server/route-road-wire.mjs');
+ const { sha256 } = await import('../src/route-definition.js');
+ const packed = encodeRecoverySidecar({ schemaVersion:1, worldId:'athens', projectionId:'athens-v1', worldSetRevision:'c'.repeat(64), sourceHashes:[['0,0','d'.repeat(64)]], edges:[{id:'road',from:'a',to:'b',flags:1,layer:0,surface:'road',points:[[0,0,0],[0,0,10]]}], anchors:[{edgeId:'road',offsetM:5,x:0,y:0,z:5,yaw:-Math.PI,layer:0,surfaceId:'road',leftM:4,rightM:4,halfWidth:1,halfLength:2,footprints:[{halfWidth:1,halfLength:2}]}] });
+ const key = `recovery/0,0.${await sha256(packed)}.json`, bytes = new TextEncoder().encode(JSON.stringify(packed,null,1));
+ let reads = 0; const saved = new Map(), wait = [], cache = {async match(r){return saved.get(r.url)?.clone()},async put(r,s){saved.set(r.url,s)}}, ctx = {waitUntil(p){wait.push(p)}}, env = {ATHENS_WORLD_MANIFEST:manifest,ATHENS_WORLD:{async get(k){reads++;assert.equal(k,key);return{body:bytes,size:bytes.length,httpEtag:'"packed"'}}}};
+ const request = method => new Request('https://x/world/'+key+'?noise='+method,{method});
+ const response = await worldAssets(request('GET'),env,ctx,cache);
+ assert.equal(response.status,200); assert.equal(response.headers.get('Content-Type'),'application/json'); assert.equal(response.headers.get('Content-Length'),String(bytes.length));
+ assert.deepEqual(new Uint8Array(await response.arrayBuffer()),bytes,'no tuple expansion or canonical reserialization'); await Promise.all(wait);
+ const cached = await worldAssets(request('GET'),env,ctx,cache); assert.deepEqual(new Uint8Array(await cached.arrayBuffer()),bytes); assert.equal(reads,1);
+ const head = await worldAssets(request('HEAD'),env,ctx,cache); assert.equal(head.status,200); assert.equal(await head.text(),''); assert.equal(head.headers.get('Content-Length'),String(bytes.length));
+ assert.equal((await worldAssets(new Request('https://x/world/'+key,{headers:{'If-None-Match':'"packed"'}}),env,ctx,cache)).status,304); assert.equal(reads,1);
+});
+
+test('recovery asset schema gate permits v1 manifests and supported cells only and never caches rejection', async () => {
+ const {sha256,canonicalJSON} = await import('../src/route-definition.js');
+ const base = {schemaVersion:2,worldId:'athens',projectionId:'athens-v1',worldSetRevision:'c'.repeat(64),anchorFields:[],footprintSets:[],anchors:[]};
+ const cases = [
+  ['manifest', base, 502], ['0,0', {...base,schemaVersion:3},502], ['0,0',{...base,schemaVersion:'2'},502],
+  ['0,0',{...base,schemaVersion:0},502], ['0,0',{...base,worldId:'other'},502], ['0,0',{...base,projectionId:'other'},502],
+  ['0,0',{...base,worldSetRevision:'short'},502], ['manifest',{...base,schemaVersion:1},200]
+ ];
+ for (const [cell,body,status] of cases) {
+  const bytes = new TextEncoder().encode(canonicalJSON(body)), key = `recovery/${cell}.${await sha256(body)}.json`; let puts = 0;
+  const env={ATHENS_WORLD_MANIFEST:manifest,ATHENS_WORLD:{async get(){return{body:bytes,size:bytes.length,httpEtag:'"schema"'}}}};
+  const response = await worldAssets(new Request('https://x/world/'+key),env,{waitUntil(p){return p}},{async match(){},async put(){puts++}});
+  assert.equal(response.status,status);
+  if(status===502){assert.equal(response.headers.get('Cache-Control'),'no-store');assert.equal(puts,0);}
+ }
+ const hash = await sha256(base), tampered = new TextEncoder().encode(canonicalJSON({...base,anchors:[[99]]})), path = `https://x/world/recovery/0,0.${hash}.json`;
+ let puts=0; const cache={async match(){},async put(){puts++}}, ctx={waitUntil(p){return p}}, env={ATHENS_WORLD_MANIFEST:manifest,ATHENS_WORLD:{async get(){return{body:tampered,size:tampered.length}}}};
+ assert.equal((await worldAssets(new Request(path),env,ctx,cache)).status,502);assert.equal(puts,0);
+ const tooBig = new Uint8Array(2*1024*1024+1), oversized={...env,ATHENS_WORLD:{async get(){return{body:tooBig,size:tooBig.length}}}};
+ assert.equal((await worldAssets(new Request(path),oversized,ctx,cache)).status,413);
+ const lying={...env,ATHENS_WORLD:{async get(){return{body:tooBig,size:1}}}};
+ assert.equal((await worldAssets(new Request(path),lying,ctx,cache)).status,413);assert.equal(puts,0);
+});

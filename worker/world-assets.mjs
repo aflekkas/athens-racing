@@ -23,7 +23,8 @@ export async function worldAssets(request,env,ctx,cache=globalThis.caches?.defau
    const reader = new Response(body).body.getReader(), chunks = []; let length = 0;
    for (;;) { const { done, value } = await reader.read(); if (done) break; length += value.byteLength; if (length > 2 * 1024 * 1024) { await reader.cancel(); return new Response('Recovery artifact too large', { status: 413, headers: noStore }); } chunks.push(value); }
    const bytes = new Uint8Array(length); let at = 0; for (const chunk of chunks) { bytes.set(chunk, at); at += chunk.length; }
-   try { const parsed = JSON.parse(new TextDecoder().decode(bytes)), hash = key.match(/\.([a-f0-9]{64})\.json$/)?.[1]; if (parsed.schemaVersion !== 1 || parsed.worldId !== 'athens' || parsed.projectionId !== 'athens-v1' || !/^[a-f0-9]{64}$/.test(parsed.worldSetRevision || '') || await sha256(parsed) !== hash) throw Error('hash'); } catch { return new Response('Recovery artifact hash mismatch', { status: 502, headers: noStore }); }
+   // Authenticate packed bytes without decoding cells; recovery roots stay v1.
+   try { const parsed = JSON.parse(new TextDecoder().decode(bytes)), hash = key.match(/\.([a-f0-9]{64})\.json$/)?.[1]; if (!(key.startsWith('recovery/manifest.') ? parsed.schemaVersion === 1 : [1, 2].includes(parsed.schemaVersion)) || parsed.worldId !== 'athens' || parsed.projectionId !== 'athens-v1' || !/^[a-f0-9]{64}$/.test(parsed.worldSetRevision || '') || await sha256(parsed) !== hash) throw Error('hash'); } catch { return new Response('Recovery artifact hash mismatch', { status: 502, headers: noStore }); }
    body = bytes;
   }
   const headers=new Headers({'Content-Type':key.endsWith('.json')?'application/json':'application/octet-stream','Cache-Control':'public, max-age=31536000, immutable','X-Content-Type-Options':'nosniff','ETag':object.httpEtag,'Content-Length':String(object.size)});
