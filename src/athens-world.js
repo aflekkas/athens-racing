@@ -60,7 +60,7 @@ export async function bootAthens(){
  await spawnAt(player.veh.x,player.veh.z);
  stream.releaseSpawn();input.setCarSpec(spec);
  player.cockpit=new Cockpit(spec,player.model);player.cockpit.setVisible(false);
- const applyDriving=()=>{applyVehicleAids(player.veh,spec);player.veh.setManual(settings.transmission==='manual');applySteeringAssist(player.veh,input.drivingSource);};
+ const applyDriving=()=>{worldTraffic?.setOfflineDensityScale(resolveGraphics(settings).traffic);applyVehicleAids(player.veh,spec);player.veh.setManual(settings.transmission==='manual');applySteeringAssist(player.veh,input.drivingSource);};
  const offSettings=onSettings(applyDriving);applyDriving();
  {const chosen=(query.get('spawn')||(guidance?`${DEMO_ROUTE[0][0]},${DEMO_ROUTE[0][2]}`:'')).split(',').map(Number);if(chosen.length===2&&chosen.every(Number.isFinite))await spawnAt(chosen[0],chosen[1]);}
  if(guidance&&!query.has('spawn')){const p=guidance.spawnPose();if(p)place(player.veh,p);}
@@ -101,7 +101,7 @@ export async function bootAthens(){
   return {js,gpu,heap,sharedJS,tileJS,tileGPU,renderTargetsAndSkyAllowance:targets,resources,streamReserved:stream.residentBytes+stream.reservedBytes,transient:stream.transientBytes};
  }
  async function tow(){if(towing)return;towing=true;try{const v=player.veh,p=worldRecoveryTarget(session,v,{route:null,halfWidth:v.halfW,halfLength:v.halfL,actors:worldTraffic?.actors||[]});if(!p)throw Error('No safe loaded road');await stream.teleport(p,()=>place(v,p),{validatePose:session.safePose});}finally{towing=false;}}
- worldTraffic=new WorldTraffic(session,scene,player.veh.route);worldTraffic.configure({type:'free',traffic:1,rules:{police:false}});
+ worldTraffic=new WorldTraffic(session,scene,player.veh.route);worldTraffic.setOfflineDensityScale(resolveGraphics(settings).traffic);worldTraffic.configure({type:'free',traffic:1,rules:{police:false}});
  function syncSurfaceClock(v){
   if(surfaceVehicle!==v||surfaceCorners!==v.corners){surfaceVehicle=v;surfaceCorners=v.corners;lastSurfaceElapsed=elapsed;}
  }

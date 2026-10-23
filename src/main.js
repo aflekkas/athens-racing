@@ -293,7 +293,7 @@ setDrawDistance(+Q.get('draw') || GFX.drawDistance, R.horizon, GFX.detail);
 // weaker performance classes cap traffic and pedestrian draw ranges (graphics.js PERFORMANCE); high keeps the full range
 // The performance class's CPU budget: offline traffic density, pedestrian count, traffic AI rate, HUD redraw rates. Online the server
 // owns the shared traffic, so only the HUD rates apply there.
-const applyCpuBudget = () => { G.trafficTier = GFX.traffic; if (people) people.budgetMul = GFX.walkers; hud?.setRates(GFX.hud); };
+const applyCpuBudget = () => { traffic?.setOfflineDensityScale?.(resolveGraphics(settings).traffic); G.trafficTier = GFX.traffic; if (people) people.budgetMul = GFX.walkers; hud?.setRates(GFX.hud); };
 // Weaker classes draw the instanced props in coarser chunks (batch.js mergeInstancedCells): fewer draw calls, same look.
 PARKED_CELL.scale = GFX.chunkScale >= 3 ? 2 : 1; CHUNK_SCALE.value = GFX.chunkScale;
 const consolidateWorld = (w) => { if (w && GFX.chunkScale > 1) mergeInstancedCells(w.group, 400 * GFX.chunkScale, { lod: w.lod }); };
@@ -358,6 +358,7 @@ async function loadUnifiedWorld(compiled,{eventId=Q.get('routeEvent')||Q.get('ev
     const routeReady=worldSession.prepareRoute(compiled,{cars:network?multiplayer.lobby.players.map(p=>CARS.find(c=>c.id===p.car)).filter(Boolean):[CARS[G.carIdx]],runtime:pendingRoute,onlineGrid:network?.onlineGrid||null});await Promise.resolve();
     // Traffic is optional during entry; its models/programs warm in countdown.
     traffic=new WorldTraffic(worldSession,scene,pendingRoute,network?{poolSize:66,policePoolSize:8,focusProvider:onlineTrafficFoci}:{});
+    traffic.setOfflineDensityScale(resolveGraphics(settings).traffic);
     validateRivalPlan(compiled,{required:!['localhost','127.0.0.1','[::1]'].includes(location.hostname)});
     pendingRoute.requireRivalPlan=!!compiled.rivalPlan;
     const linesReady=carPrograms;

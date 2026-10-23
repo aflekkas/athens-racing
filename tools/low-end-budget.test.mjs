@@ -3,6 +3,8 @@
 // work, and the per-frame DOM / canvas work is cached. High keeps everything it had.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {runInNewContext} from 'node:vm';
+import {WorldTraffic} from '../src/world-traffic.js';
 import { readFileSync } from 'node:fs';
 import { PERFORMANCE, PERF_CLASSES, RENDER, resolveGraphics, cpuProbe, cpuCap, CPU_PROBE_LIMITS } from '../src/graphics.js';
 import { PerfGovernor } from '../src/perf-governor.js';
@@ -32,7 +34,8 @@ test('the CPU budget never touches the look: every class resolves to the one REN
     assert.equal(g.traffic, PERFORMANCE[perfClass].traffic); assert.equal(g.walkers, PERFORMANCE[perfClass].walkers); assert.equal(g.hud, PERFORMANCE[perfClass].hud); assert.equal(g.trafficHz, PERFORMANCE[perfClass].trafficHz);
   }
   const main = src('src/main.js');
-  assert.match(main, /traffic\.density = \(s\) => base\(s\) \* \(G\.trafficMul \?\? 1\) \* \(multiplayer\.active \? 1 : G\.trafficTier \?\? 1\)/, 'offline only: online traffic is the server\'s');
+  const hooks=densityHarness({standalone:false});assert.equal(hooks.traffic.offlineDensityScale,PERFORMANCE.potato.traffic,'initial race traffic consumes current graphics density');
+  hooks.settings.perfClass='high';hooks.applyBudget();assert.equal(hooks.traffic.offlineDensityScale,1);hooks.settings.perfClass='low';hooks.applyBudget();assert.equal(hooks.traffic.offlineDensityScale,PERFORMANCE.low.traffic,'live class changes reach real traffic setter');
   assert.match(main, /if \(!multiplayer\.active\) \{ G\.trafficAcc/, 'the traffic AI rate applies offline only');
   assert.equal(RENDER.shadow, null); assert.equal(RENDER.ao, 0);
 });
@@ -119,4 +122,27 @@ test('per-frame DOM probes are cached: setCarSpec, notifications', () => {
   assert.ok(calls.nitrous <= 6, `300 frames, ${calls.nitrous} DOM syncs (one per second + changes)`); assert.ok(calls.nitrous >= 1);
   const before = calls.nitrous; Input.prototype.setCarSpec.call(fake, { nitrous: false }); assert.equal(calls.nitrous, before + 1, 'a car change syncs at once');
   const notifications = src('src/ui/notifications.js'); assert.match(notifications, /if\(!this\.dirty&&time<\(this\.nextProbe\|\|0\)\)return;this\.nextProbe=time\+50/);
+});
+
+
+function densityHarness({standalone=false,source=src(standalone?'src/athens-world.js':'src/main.js')}={}){
+ // Keep the real configuration/graphics/setter; geometry warmup is unrelated to this hook.
+ class DeferredTraffic extends WorldTraffic{configure(def){return super.configure(def,{deferFleet:true});}}
+ let callback;const context={WorldTraffic:DeferredTraffic,resolveGraphics,settings:{perfClass:'potato',transmission:'manual'},GFX:resolveGraphics({perfClass:'high'}),gfx:resolveGraphics({perfClass:'high'}),G:{},traffic:null,worldTraffic:undefined,worldSession:{},session:{},scene:{},pendingRoute:{},network:null,player:{veh:{route:{},setManual(value){this.manual=value;}}},spec:{},input:{drivingSource:'keyboard'},people:{},hud:{setRates(){}},applyVehicleAids(){context.aids=(context.aids||0)+1;},applySteeringAssist(){context.steering=(context.steering||0)+1;},onSettings(fn){callback=fn;return()=>{};}};
+ const lines=source.split('\n');
+ if(standalone){const index=lines.findIndex(line=>line.includes('const applyDriving='));assert.ok(index>=0);const initial=lines.find(line=>line.includes('worldTraffic=new WorldTraffic('));assert.ok(initial);runInNewContext(lines.slice(index,index+2).join('\n')+'\n'+initial,context);context.applyBudget=()=>callback();context.traffic=context.worldTraffic;}
+ else{const start=source.indexOf('traffic=new WorldTraffic('),end=source.indexOf('validateRivalPlan(',start);assert.ok(start>=0&&end>start);const budget=lines.find(line=>line.startsWith('const applyCpuBudget ='));assert.ok(budget);runInNewContext(source.slice(start,end)+budget+';globalThis.applyBudget=applyCpuBudget;',context);}
+ return context;
+}
+
+test('standalone initial and settings hooks resolve fresh CPU density without changing driving aids',()=>{
+ const f=densityHarness({standalone:true});assert.equal(f.traffic.offlineDensityScale,PERFORMANCE.potato.traffic,'first hook runs before traffic exists, constructor hook must apply current preference');assert.equal(f.aids,1);assert.equal(f.steering,1);assert.equal(f.player.veh.manual,true);
+ f.settings.perfClass='high';f.settings.transmission='auto';f.applyBudget();assert.equal(f.traffic.offlineDensityScale,1);assert.equal(f.player.veh.manual,false);assert.equal(f.aids,2);assert.equal(f.steering,2);
+ f.settings.perfClass='low';f.applyBudget();assert.equal(f.traffic.offlineDensityScale,PERFORMANCE.low.traffic);assert.equal(f.gfx.traffic,1,'startup graphics snapshot intentionally stayed High');
+ for(const [standalone,source]of [[false,src('src/main.js')],[true,src('src/athens-world.js')]]){const old=source.replaceAll(/(?:traffic|worldTraffic)\?\.setOfflineDensityScale\?\.\(resolveGraphics\(settings\)\.traffic\);|(?:traffic|worldTraffic)\?\.setOfflineDensityScale\(resolveGraphics\(settings\)\.traffic\);|(?:traffic|worldTraffic)\.setOfflineDensityScale\(resolveGraphics\(settings\)\.traffic\);/g,'');const prior=densityHarness({standalone,source:old});assert.throws(()=>assert.equal(prior.traffic.offlineDensityScale,PERFORMANCE.potato.traffic),'negative control reproduces old missing hook');}
+});
+
+test('graphics hooks never change online civilian admission or hide the existing fleet',()=>{
+ for(const standalone of [false,true]){const f=densityHarness({standalone}),t=f.traffic,active=Array.from({length:4},()=>({active:true,police:false,m:{root:{visible:true}}}));let attempts=0;t.cars=active;t.pool={pickFree(){attempts++;return null;}};t.level=1;t.spawn({x:0,z:0},[]);assert.equal(attempts,0,'offline Potato stops replenishment beyond three civilians');
+ t.onlineAuthority=true;t.onlineTargets=new Map([['driver',{vehicle:{x:0,z:0}}]]);t.spawn({x:0,z:0},[]);assert.equal(attempts,1,'same scaled traffic still uses the full online target');f.settings.perfClass='high';f.applyBudget();f.settings.perfClass='potato';f.applyBudget();t.spawn({x:0,z:0},[]);assert.equal(attempts,2,'online admission ignores live graphics changes');assert.equal(t.cars,active);assert.ok(active.every(c=>c.active&&c.m.root.visible),'graphics never hides or trims an active actor');}
 });
