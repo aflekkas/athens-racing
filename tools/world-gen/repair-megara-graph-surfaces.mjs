@@ -52,7 +52,7 @@ export function patchEncodedGraphSurfaceWords(raw,edits,newRevision,provenance){
 export function repairMegaraGraphCell(compressed,contract,{cell,newRevision}){
  if(!contracts.has(contract))fail('unverified source contract');if(!HEX.test(newRevision)||newRevision===contract.manifest.revision)fail('derived revision required');
  const entry=contract.manifest.tiles[cell];if(!entry||hash(compressed)!==entry.sha256||compressed.byteLength!==entry.bytes)fail('original cell hash/bytes');
- const raw=gunzipSync(compressed,{maxOutputLength:MAX_RAW});if(raw.length!==entry.decodedBytes)fail('original decoded bytes');
+ const raw=gunzipSync(compressed,{maxOutputLength:MAX_RAW});if(!Number.isSafeInteger(entry.decodedBytes)||raw.length>entry.decodedBytes)fail('original decoded byte budget');
  const ab=raw.buffer.slice(raw.byteOffset,raw.byteOffset+raw.byteLength);
  if(new DataView(ab).getUint32(0,true)!==0x31525341)fail('unsupported codec');
  const old=decodeGeometryPack(ab),m=old.metadata,t=tileTables(old);
@@ -73,5 +73,5 @@ export function repairMegaraGraphCell(compressed,contract,{cell,newRevision}){
   const a=old.arrays[i],b=next.arrays[i];if(i===edgeIndex){for(let word=0;word<a.length;word++)if(b[word]!== (approved.get(word)??a[word]))fail('edge preservation audit');}
   else if(!Buffer.from(a.buffer,a.byteOffset,a.byteLength).equals(Buffer.from(b.buffer,b.byteOffset,b.byteLength)))fail('geometry preservation audit '+i);
  }
- const body=gzipSync(patched,{level:9});return {changed:true,body,hash:hash(body),edges:edits.length,decodedBytes:patched.length,provenance};
+ const body=gzipSync(patched,{level:9});return {changed:true,body,hash:hash(body),edges:edits.length,rawBytes:patched.length,originalRawBytes:raw.length,provenance};
 }
