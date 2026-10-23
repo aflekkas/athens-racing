@@ -65,3 +65,32 @@ test('every emitted mark corner stays on asphalt at the kerb',()=>{
  const asphalt=asphaltIndex(t),p=marks.position.array;assert.ok(marks.stats.triangles>0);
  for(let i=0;i<marks.stats.triangles*9;i+=3)assert.ok(asphalt.inside(p[i],p[i+2]),'no paving spill');marks.dispose();
 });
+
+import {conformMarkingSurfaces} from './world-gen/marking-surface.mjs';
+import {tileRenderVariants} from '../src/world-tile-gpu.js';
+function paintPack({deck=false,gap=false,repeat=1}={}){
+ const arrays=[],meshes=[];
+ const add=(P,I,surface,worldSurface=true)=>{const p=arrays.push(Float32Array.from(P))-1,i=arrays.push(Uint16Array.from(I))-1;meshes.push({attributes:{position:{array:p,itemSize:3,normalized:false}},index:i,drawRange:{start:0,count:I.length},material:surface==='marking'?11:1,layers:1,userData:{tileSurface:surface,worldSurface,owner:'fixture'}});};
+ const ground=[0,0,0,10,2,0,20,0,0,0,0,4,10,2,4,20,0,4],index=[0,3,1,1,3,4,1,4,2,2,4,5];
+ add(ground,index,'asphalt');if(deck)add(ground.map((v,i)=>i%3===1?v+6:v),index,'asphalt');
+ if(gap){meshes[0].userData.tileSurface='ground';add(ground,[0,3,1,1,3,4],'asphalt');meshes.at(-1).attributes.position.array=0;}
+ const lift=deck?6.015:.015,P=[0,lift,1,20,lift,1,0,lift,2],I=Array.from({length:repeat*3},(_,i)=>i%3);add(P,I,'marking',false);
+ return {arrays,metadata:{cell:[0,0],meshes,budgets:{triangles:meshes.reduce((n,m)=>n+m.drawRange.count/3,0),buildingTriangles:40}}};
+}
+test('offline paint follows every rendered road plane, preserving area and contacts',()=>{
+ const p=paintPack(),road=p.arrays[0].slice(),before=tileRenderVariants(p),r=conformMarkingSurfaces(p),m=p.metadata.meshes.find(m=>m.userData.tileSurface==='marking'),P=p.arrays[m.attributes.position.array];
+ assert.ok(r.maxCorrection>1.9);assert.ok(r.afterTriangles>r.beforeTriangles);assert.ok(Math.abs(r.beforeArea-r.afterArea)<1e-6);assert.deepEqual(p.arrays[0],road);
+ for(let i=0;i<P.length;i+=3)assert.ok(Math.abs(P[i+1]-(Math.min(P[i],20-P[i])*.2+.015))<1e-5);
+ assert.deepEqual(tileRenderVariants(p),before);assert.equal(m.userData.owner,'fixture');assert.equal(conformMarkingSurfaces(p).alreadyApplied,true);
+ assert.equal(p.metadata.budgets.triangles,p.metadata.meshes.reduce((n,m)=>n+m.drawRange.count/3,0));
+});
+test('offline paint keeps its elevated surface at a multilayer crossing and rejects uncertain ownership',()=>{
+ const p=paintPack({deck:true});conformMarkingSurfaces(p);const m=p.metadata.meshes.at(-1),P=p.arrays[m.attributes.position.array];assert.ok(Math.min(...P.filter((_,i)=>i%3===1))>6);
+ const bad=paintPack();for(let i=1;i<bad.arrays[2].length;i+=3)bad.arrays[2][i]=3;assert.throws(()=>conformMarkingSurfaces(bad),/ownership is 0/);
+});
+test('offline paint clips junction gaps and road edges without seeking another road',()=>{
+ const p=paintPack({gap:true}),r=conformMarkingSurfaces(p),m=p.metadata.meshes.at(-1),P=p.arrays[m.attributes.position.array];assert.ok(r.afterArea<r.beforeArea);for(let i=0;i<P.length;i+=3){assert.ok(P[i]<=10+1e-6);assert.ok(P[i+2]>=1-1e-6&&P[i+2]<=2+1e-6);}
+});
+test('offline paint keeps every draw and index within the original AWT mesh budget',()=>{
+ const p=paintPack({repeat:17000}),variants=tileRenderVariants(p);conformMarkingSurfaces(p);const meshes=p.metadata.meshes.filter(m=>m.userData.tileSurface==='marking');assert.ok(meshes.length>1);for(const m of meshes){assert.ok(m.drawRange.count/3<=16384);assert.ok(p.arrays[m.index] instanceof Uint16Array);assert.ok(p.arrays[m.attributes.position.array].length/3<=65535);}assert.deepEqual(tileRenderVariants(p),variants);
+});

@@ -9,6 +9,7 @@ from collections import defaultdict
 from shapely.geometry import Point,Polygon,box
 from shapely.ops import unary_union,substring
 from shapely import constrained_delaunay_triangles,set_precision
+from shapely.affinity import translate
 
 
 KERB_WIDTH = .6  # 10 cm rise with headroom for longitudinal road grade.
@@ -61,7 +62,18 @@ PAINT=.065  # half-width: 13 cm lines
 
 
 def paint_triangles(paint,ps,ix,ox,oz,height,lift=.015):
+    # A long solid ribbon used to become a flat triangle between endpoint
+    # heights, burying or floating paint over the road's intervening bends.
+    # Split against the exact emitted surface planes before triangulation.
+    pieces=[]
     for polygon in polygons(paint):
+        if hasattr(height,'tree') and hasattr(height,'polygons'):
+            local=translate(polygon,xoff=-height.ox,yoff=-height.oz)
+            for face in sorted(int(i) for i in height.tree.query(local)):
+                cut=local.intersection(height.polygons[face])
+                pieces.extend(translate(p,xoff=height.ox,yoff=height.oz) for p in polygons(cut))
+        else:pieces.append(polygon)  # flat/analytic unit-test fields
+    for polygon in pieces:
         for tri in constrained_delaunay_triangles(polygon).geoms:
             points=list(tri.exterior.coords)[:-1]
             if (points[1][0]-points[0][0])*(points[2][1]-points[0][1])-(points[1][1]-points[0][1])*(points[2][0]-points[0][0])>0:points.reverse()

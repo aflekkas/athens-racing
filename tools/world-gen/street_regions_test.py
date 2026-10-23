@@ -156,6 +156,19 @@ class Lines(unittest.TestCase):
         self.assertEqual(len([1 for u, s in lines if s == 'solid' and abs(u) < .2]), 2)
         self.assertEqual(len([1 for u, s in lines if s == 'dashed']), 2)
 
+    def test_solid_paint_follows_emitted_planes_between_its_endpoints(self):
+        from surfaces import SurfaceHeight
+        # The road rises two metres in the middle, despite equal end heights.
+        surface=SurfaceHeight(dict(cell=(0,0),positions=[0,0,0,10,2,0,20,0,0,0,0,4,10,2,4,20,0,4],triangles=[0,3,1,1,3,4,1,4,2,2,4,5]))
+        from street_details import paint_triangles
+        ps=[];ix=[];paint_triangles(Polygon([(0,1),(20,1),(20,2),(0,2)]),ps,ix,0,0,surface)
+        self.assertGreater(len(ix),6)
+        for i in range(0,len(ix),3):
+            tri=[ps[v*3:v*3+3] for v in ix[i:i+3]]
+            for weights in ((1/3,1/3,1/3),(.1,.2,.7),(.5,.5,0)):
+                x,y,z=[sum(p[k]*w for p,w in zip(tri,weights)) for k in range(3)]
+                self.assertAlmostEqual(y,surface(x,z)+.015,places=6)
+
     def test_markings_stay_on_the_carriageway(self):
         roads = [road('a', [(-100, 0), (100, 0)], {'highway': 'primary', 'lanes': '4', 'oneway': 'yes'})]; r = StreetRegions(roads)
         points, indices = road_markings(roads, (0, 0), lambda x, z: 0., r)
