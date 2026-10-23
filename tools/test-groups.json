@@ -1,5 +1,6 @@
 {
   "unit": [
+    "tools/protected-world-manifest.test.mjs",
     "tools/world-tile-observation.test.mjs",
     "tools/athens-direct-spawn.test.mjs",
     "tools/game-entry.test.mjs",
