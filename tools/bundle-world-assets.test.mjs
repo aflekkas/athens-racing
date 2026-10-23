@@ -560,3 +560,66 @@ for(const [label,value]of falsyCases)test('write error event '+label+' records p
  const v=await bridgeCase({sinkHook:({sink,calls})=>{sink.writeHead=function(status,headers){calls.push({op:'headers',status,headers});this.headersSent=true;this.emit('error',value);};}});
  const first=await v.app.failure;assert.equal(first instanceof Error,true);assert.equal(Object.is(first.cause,value),true);assert.equal(v.status.firstFailurePresent,true);assert.equal(v.calls.some(c=>c.op==='body'),false);assert.equal(v.status.prepared,false);
 });
+
+// Immutable enrichment transport: opaque raw JSON identity is URL-hash based.
+const enrichmentBytes=bytes('{"sourceMapSha256":"'+'c'.repeat(64)+'","notAWorld":true}');
+const enrichmentSHA=hash(enrichmentBytes),enrichmentKey='manifests/'+enrichmentSHA+'.json';
+function enrichmentFixture({body=enrichmentBytes,spec,fixtureOptions={}}={}) {
+ const digest=hash(body),key='manifests/'+digest+'.json';
+ const f=fixture({...fixtureOptions,tweak:m=>{fixtureOptions.tweak?.(m);m.enrichments=[spec??{kind:'psychiko-streetscape-v1',url:'/world/'+key,sourceMapSha256:'c'.repeat(64),bounds:[0,0,1,1]}];}});
+ f.documents.set(key,body);return {f,key,body,digest};
+}
+test('immutable enrichment is admitted lazily, not parsed/recurred/cached, with actual verified length and ETag',async()=>{
+ // Deliberately not world-definition data: transport must not interpret this JSON.
+ const {f,key,body,digest}=enrichmentFixture(),io=fake(f),app=await prepareBundleWorldAssets(f.source,{fetcher:io.fetcher});
+ try{assert.equal(io.calls.length,2);assert.equal(app.status().objects,4);const before=app.status().metadataBytes;
+ for(let n=1;n<=2;n++){const response=await app.handle(req('/world/'+key));assert.equal(response.status,200);assert.equal(response.headers.get('content-type'),'application/json');assert.equal(response.headers.get('etag'),'"'+digest+'"');assert.equal(response.headers.get('content-length'),String(body.length));assert.deepEqual(new Uint8Array(await response.arrayBuffer()),body);assert.equal(app.status().metadataBytes,before+n*body.length);assert.equal(app.status().enrichmentReads,n);assert.equal(app.status().enrichmentBytes,n*body.length);}
+ assert.equal(io.calls.length,4);
+ }finally{await app.close();}assert.equal(app.status().cleanupConfirmed,true);
+});
+test('exact authenticated basin enrichment descriptor shape prepares without fetching its body',async()=>{
+ const spec=JSON.parse(readFileSync(new URL('./fixtures/bundle-world-basin-enrichment.json',import.meta.url),'utf8'));
+ assert.deepEqual(Object.keys(spec).sort(),['bounds','kind','sourceMapSha256','url']);assert.equal(spec.url,'/world/manifests/fe491cb8ace63cbed0644e4ca9f2c341bc32c7939878f680fe99876cd43de699.json');assert.equal(spec.kind,'psychiko-streetscape-v1');
+ const f=fixture({tweak:m=>m.enrichments=[spec]}),io=fake(f),app=await prepareBundleWorldAssets(f.source,{fetcher:io.fetcher});try{assert.equal(io.calls.length,2);assert.equal(app.status().objects,4);assert.equal(app.status().enrichmentReads,0);}finally{await app.close();}
+});
+for(const [label,url]of [
+ ['absolute','https://staging.athensracing.com/world/'+enrichmentKey],['foreign','https://evil.test/world/'+enrichmentKey],['protocol-relative','//evil.test/world/'+enrichmentKey],['query','/world/'+enrichmentKey+'?q=1'],['fragment','/world/'+enrichmentKey+'#x'],['encoded','/world/manifests/%61'+'a'.repeat(63)+'.json'],['dot','/world/../world/'+enrichmentKey],['backslash','/world/\\'+enrichmentKey],['uppercase','/world/manifests/'+'A'.repeat(64)+'.json'],['cells','/world/cells/'+enrichmentSHA+'.bin.gz'],['recovery','/world/recovery/manifest.'+enrichmentSHA+'.json'],['extra-suffix','/world/'+enrichmentKey+'/other']]) {
+ test('immutable enrichment rejects '+label+' URL before any enrichment fetch',async()=>{const f=fixture({tweak:m=>m.enrichments=[{url}]}),io=fake(f);await assert.rejects(prepareBundleWorldAssets(f.source,{fetcher:io.fetcher}));assert.equal(io.calls.length,2);});
+}
+test('immutable enrichment rejects range descriptor even when null',async()=>{const {f}=enrichmentFixture({spec:{url:'/world/'+enrichmentKey,range:null}});await assert.rejects(prepareBundleWorldAssets(f.source,{fetcher:fake(f).fetcher}),/descriptor/);});
+test('immutable enrichment wrong raw hash is fatal with confirmed owned cleanup',async()=>{
+ const {f,key}=enrichmentFixture(),app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f,({key:k})=>k===key?new Response(bytes('wrong')):undefined).fetcher});
+ await assert.rejects(app.handle(req('/world/'+key)),/raw SHA/);await app.close();assert.equal(app.status().firstFailurePresent,true);assert.equal(app.status().cleanupConfirmed,true);assert.equal(app.status().enrichmentReads,0);assert.equal(app.status().enrichmentBytes,5);
+});
+test('immutable enrichment accepts absent advertised length and reports authenticated actual length',async()=>{
+ const {f,key,body}=enrichmentFixture(),app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f,({key:k})=>k===key?new Response(body):undefined).fetcher});try{const r=await app.handle(req('/world/'+key));assert.equal(r.headers.get('content-length'),String(body.length));assert.deepEqual(new Uint8Array(await r.arrayBuffer()),body);}finally{await app.close();}
+});
+test('immutable enrichment uses unchanged cumulative metadata cap across repeated uncached reads',async()=>{
+ const {f,key,body}=enrichmentFixture(),base=f.rootBytes.length+f.documents.get(f.regionalKey).length,app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f).fetcher,limits:{metadataBytes:base+body.length}});
+ await app.handle(req('/world/'+key));assert.equal(app.status().metadataBytes,base+body.length);await assert.rejects(app.handle(req('/world/'+key)),/metadata cap/);await app.close();assert.equal(app.status().enrichmentReads,1);assert.equal(app.status().cleanupConfirmed,true);
+});
+test('immutable enrichment enforces per-object cap without a guessed declared descriptor length',async()=>{
+ const body=bytes('x'.repeat(1025)),{f,key}=enrichmentFixture({body}),app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f).fetcher,limits:{objectBytes:1024}});await assert.rejects(app.handle(req('/world/'+key)),/upstream length/);await app.close();assert.equal(app.status().enrichmentReads,0);
+});
+test('immutable enrichment received chunks charge metadata before cap failure even without Content-Length',async()=>{
+ const {f,key,body}=enrichmentFixture(),base=f.rootBytes.length+f.documents.get(f.regionalKey).length,app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f,({key:k})=>k===key?new Response(body):undefined).fetcher,limits:{metadataBytes:base+body.length-1}});await assert.rejects(app.handle(req('/world/'+key)),/metadata cap/);assert.equal(app.status().metadataBytes,base+body.length);await app.close();assert.equal(app.status().enrichmentReads,0);
+});
+test('immutable enrichment shares cumulative upstream bound',async()=>{
+ const {f,key,body}=enrichmentFixture(),base=f.rootBytes.length+f.documents.get(f.regionalKey).length,app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f).fetcher,limits:{upstreamBytes:base+body.length-1}});await assert.rejects(app.handle(req('/world/'+key)),/body byte limit/);await app.close();
+});
+test('immutable enrichment shares cumulative downstream and request bounds',async()=>{
+ const {f,key,body}=enrichmentFixture(),app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f).fetcher,limits:{downstreamBytes:body.length,requests:2}});await app.handle(req('/world/'+key));await assert.rejects(app.handle(req('/world/'+key)),/downstream byte cap/);await app.close();
+ const b=await prepareBundleWorldAssets(f.source,{fetcher:fake(f).fetcher,limits:{requests:1}});await b.handle(req('/world/'+key));await assert.rejects(b.handle(req('/world/'+key)),/request cap/);await b.close();
+});
+test('immutable enrichment original request deadline follows body read and release cleanup',async()=>{
+ let clock=0,released=0;const {f,key,body}=enrichmentFixture(),app=await prepareBundleWorldAssets(f.source,{now:()=>clock,fetcher:fake(f,({key:k})=>k===key?{status:200,redirected:false,url:'',headers:new Headers(),body:{getReader(){return{async read(){clock=10001;return{done:false,value:body};},cancel(){},releaseLock(){released++;}};}}}:undefined).fetcher});await assert.rejects(app.handle(req('/world/'+key)),/deadline/);assert.equal(released,1);await app.close();assert.equal(app.status().cleanupConfirmed,true);
+});
+test('immutable enrichment falsy releaseLock cleanup remains failure, original raw value retained',async()=>{
+ let reads=0;const {f,key,body}=enrichmentFixture(),app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f,({key:k})=>k===key?{status:200,redirected:false,url:'',headers:new Headers(),body:{getReader(){return{async read(){return reads++?{done:true}:{done:false,value:body};},cancel(){},releaseLock(){throw false;}};}}}:undefined).fetcher});await assert.rejects(app.handle(req('/world/'+key)));let caught=false;try{await app.close();}catch(e){caught=true;assert.equal(e,false);}assert.equal(caught,true);assert.equal(app.status().cleanupConfirmed,false);assert.equal(app.status().cleanupFailed,true);
+});
+test('immutable enrichment unlisted hash never fetches and does not recurse into body references',async()=>{
+ const {f,key}=enrichmentFixture(),io=fake(f),app=await prepareBundleWorldAssets(f.source,{fetcher:io.fetcher});try{assert.equal((await app.handle(req('/world/manifests/'+'e'.repeat(64)+'.json'))).status,404);assert.equal(io.calls.length,2);await app.handle(req('/world/'+key));assert.equal(io.calls.length,3);}finally{await app.close();}
+});
+test('immutable enrichment concurrent requests remain serialized by existing queue',async()=>{
+ const {f,key}=enrichmentFixture();let active=0,peak=0;const io=fake(f,({key:k,body})=>k===key?(async()=>{active++;peak=Math.max(peak,active);await Promise.resolve();active--;return new Response(body);})():undefined),app=await prepareBundleWorldAssets(f.source,{fetcher:io.fetcher});try{const responses=await Promise.all([app.handle(req('/world/'+key)),app.handle(req('/world/'+key))]);assert.equal(responses.length,2);assert.equal(peak,1);assert.equal(app.status().enrichmentReads,2);}finally{await app.close();}
+});

@@ -99,7 +99,7 @@ async function observeOwnedResponseClose(res,{until,now}) {
 }
 export async function prepareBundleWorldAssets(value, {fetcher=fetch, signal, limits:overrides={}, now=()=>performance.now()} = {}) {
   const source=sourceDescriptor(value), limits=lowerLimits(overrides), born=now(), deadline=born+limits.lifetimeMs;
-  let hasFirstFailure=false,firstFailure,hasCleanupFailure=false,cleanupFailure, cleanupConfirmed=false, closed=false, active=0, pending=0, upstreamBytes=0, downstreamBytes=0, metadataBytes=0, requests=0;
+  let hasFirstFailure=false,firstFailure,hasCleanupFailure=false,cleanupFailure, cleanupConfirmed=false, closed=false, active=0, pending=0, upstreamBytes=0, downstreamBytes=0, metadataBytes=0, requests=0, enrichmentReads=0, enrichmentBytes=0;
   let sequence=Promise.resolve(), resolveFailure;
   const failure=new Promise(resolve=>{resolveFailure=resolve;});
   const objects=new Map(), metadata=new Map(), controllers=new Set(), cancellations=new Set(), fetches=new Set(), forwards=new Set(), phases=new WeakMap();
@@ -234,13 +234,16 @@ export async function prepareBundleWorldAssets(value, {fetcher=fetch, signal, li
         const {value:chunk,done}=await bounded(reader.read());if(done)break;
         if (!(chunk instanceof Uint8Array)) fail('body chunk type');
         length+=chunk.byteLength;upstreamBytes+=chunk.byteLength;
+        // Immutable enrichment JSON is opaque, lazy and never a regional manifest.
+        // Charge every received byte cumulatively, including a failed transfer.
+        if(expected.enrichment){metadataBytes+=chunk.byteLength;enrichmentBytes+=chunk.byteLength;if(metadataBytes>limits.metadataBytes)fail('metadata cap');}
         if (length>expected.cap || upstreamBytes>limits.upstreamBytes || expected.bytes!=null&&length>expected.bytes) fail('body byte limit');
         if(chunks.length>=4096)fail('body chunk cap');chunks.push(chunk);
       }
       if (!length || expected.bytes!=null&&length!==expected.bytes || declared!==null&&length!==Number(declared)) fail('body length');
       const bytes=new Uint8Array(length);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.byteLength;}
       if (digest(bytes)!==expected.sha256) fail('raw SHA mismatch');
-      check(end);return bytes;
+      check(end);if(expected.enrichment)enrichmentReads++;return bytes;
     } catch(error) {latch(error);cleanupAttempt(()=>controller.abort(error));cleanupAttempt(()=>{if(!reader&&response?.body&&!response.body.locked)reader=response.body.getReader();});cancel(reader);throw firstFailure;}
     finally {let failed=false;for(const operation of [()=>clearTimeout(timer),()=>combined?.removeEventListener('abort',abortListener),()=>reader?.releaseLock()])if(!cleanupAttempt(operation))failed=true;controllers.delete(controller);active--;if(failed)throw firstFailure;}
   }
@@ -267,7 +270,15 @@ export async function prepareBundleWorldAssets(value, {fetcher=fetch, signal, li
     // outside this immutable transport; reject external/unbounded alternate URLs.
     if(m.enrichments!=null) {
       if(!Array.isArray(m.enrichments)||m.enrichments.length>16)fail('enrichment inventory');
-      for(const e of m.enrichments)if(typeof e.url!=='string'||e.url.length>256||!/^\/data\/[a-zA-Z0-9_/-]+\.json$/.test(e.url)||e.url.includes('/../')||e.url.includes('/./'))fail('unsupported enrichment URL');
+      for(const e of m.enrichments) {
+        if(!plain(e)||Object.hasOwn(e,'range'))fail('unsupported enrichment descriptor');
+        if(typeof e.url==='string'&&e.url.startsWith('/world/')) {
+          const key=address(e.url,source.origin,manifestKey);
+          // URL content hash authenticates raw JSON; descriptor supplies no length.
+          // No eager read, semantic recursion, parse or metadata-cache admission.
+          admit(key,{sha256:manifestKey.exec(key)[1],cap:limits.objectBytes,enrichment:true});
+        } else if(typeof e.url!=='string'||e.url.length>256||!/^\/data\/[a-zA-Z0-9_/-]+\.json$/.test(e.url)||e.url.includes('/../')||e.url.includes('/./'))fail('unsupported enrichment URL');
+      }
     }
     if(m.regionalAssets!=null&&(!Array.isArray(m.regionalAssets)||m.regionalAssets.length>64))fail('regional asset inventory');
     const list=[...Object.values(m.tiles),...(m.regionalAssets||[])];
@@ -325,7 +336,11 @@ export async function prepareBundleWorldAssets(value, {fetcher=fetch, signal, li
     if(!bytes) {
       if(pending>=limits.pending)throw latch(Error('Bundle world: pending request cap'));
       pending++;
-      const work=sequence.then(()=>read(key,expected,until,requestSignal));
+      const work=sequence.then(()=>{
+        const bounded=expected.enrichment?{...expected,cap:Math.min(expected.cap,limits.metadataBytes-metadataBytes)}:expected;
+        if(bounded.cap<1)fail('metadata cap');
+        return read(key,bounded,until,requestSignal);
+      });
       sequence=work.catch(()=>{});
       try{bytes=await work;}finally{pending--;}
     }
@@ -335,7 +350,7 @@ export async function prepareBundleWorldAssets(value, {fetcher=fetch, signal, li
   return Object.freeze({
     source, failure, beginRequest, recordFailure, closeFailedResponse,
     check(){try{check();}catch(error){throw recordFailure(error,'guard');}},
-    status(){return Object.freeze({prepared:!closed&&!hasFirstFailure,closed,cleanupConfirmed,fetches:fetches.size,firstFailure:hasFirstFailure?safeErrorText(firstFailure,256):null,firstFailurePresent:hasFirstFailure,objects:objects.size,metadataBytes,upstreamBytes,downstreamBytes,requests,pending,active,cleanupFailed:hasCleanupFailure,forwarding:forwards.size,secondaryFailures:[...secondaryFailures],secondaryOverflow,responseCleanupPending,responseCleanupUncertain});},
+    status(){return Object.freeze({prepared:!closed&&!hasFirstFailure,closed,cleanupConfirmed,fetches:fetches.size,firstFailure:hasFirstFailure?safeErrorText(firstFailure,256):null,firstFailurePresent:hasFirstFailure,objects:objects.size,metadataBytes,enrichmentReads,enrichmentBytes,upstreamBytes,downstreamBytes,requests,pending,active,cleanupFailed:hasCleanupFailure,forwarding:forwards.size,secondaryFailures:[...secondaryFailures],secondaryOverflow,responseCleanupPending,responseCleanupUncertain});},
     async handle(request,phase) {
       try {
         if(phase===undefined)phase=beginRequest(request.signal);
