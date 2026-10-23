@@ -287,3 +287,12 @@ test('offline online-proof reader rejects malformed original UTF8 before parsing
   await writeFile(path,Buffer.concat([Buffer.from([0xef,0xbb,0xbf]),raw]));await assert.rejects(readOnlineRouteRelease(dir,{compiled:[f.compiled],manifest:f.manifest,out,required:true}),SyntaxError,'do not silently broaden the old JSON reader to accept a BOM');
  }finally{await rm(dir,{recursive:true,force:true});}
 });
+
+test('offline proof byte reader bounds growth and shrink to the original handle and always closes it',async()=>{
+ const {mkdtemp,writeFile,open,rm}=await import('node:fs/promises'),{join}=await import('node:path'),{tmpdir}=await import('node:os'),{readOnlineProofBytes}=await import('./online-route-release.mjs'),dir=await mkdtemp(join(tmpdir(),'athens-proof-bytes-')),path=join(dir,'proof.json'),original=Buffer.from('{"literal":"\ufffd"}');
+ try{
+  await writeFile(path,original);assert.deepEqual(Buffer.from(await readOnlineProofBytes(path)),original,'returns original valid bytes without replacement or serialization');
+  for(const mutation of ['grow','shrink']){await writeFile(path,original);let closed=0,reads=0;const openFile=async()=>{const file=await open(path,'r');let first=true;return{async stat(){const stat=await file.stat();if(first){first=false;await writeFile(path,mutation==='grow'?Buffer.concat([original,Buffer.from('x')]):original.subarray(0,4));}return stat;},read(...args){reads++;return file.read(...args);},async close(){closed++;await file.close();}};};await assert.rejects(readOnlineProofBytes(path,{openFile}),/proof package (?:changed|shrank)/);assert.equal(closed,1);assert.ok(reads<=2,'read stays bounded to advertised bytes plus one-byte probe');}
+  for(const size of [0,-1,NaN,Infinity,1.5,Number.MAX_SAFE_INTEGER+1]){let reads=0,closed=0;await assert.rejects(readOnlineProofBytes(path,{openFile:async()=>({stat:async()=>({size,isFile:()=>true}),read(){reads++;throw Error('must not read');},async close(){closed++;}})}),/Invalid online proof package/);assert.equal(reads,0);assert.equal(closed,1);}
+ }finally{await rm(dir,{recursive:true,force:true});}
+});
