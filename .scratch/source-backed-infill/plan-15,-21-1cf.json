@@ -1,0 +1,194 @@
+{
+  "schema": 1,
+  "operation": "remove-unsupported-generated-buildings",
+  "world": "athens-east-development",
+  "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+  "cell": [
+    15,
+    -21
+  ],
+  "packSha256": "ec19495d2f018395139928e0c8218650f167d4340696320f14623a0996c18217",
+  "sourceCellSha256": "d3fc0efacc9ddeaba0fd3565ffa1127d0306e4d3081c7cca2876b35ca00d9b8d",
+  "sourceSha256": "dc8befa257f20b2091256e580000df2075455fec135cbf224cec81a1c4961fdd",
+  "sourceRecordSha256": "24afe113cc4958c5b5427550811698482e698fecabcc3f1f81217aa4db4df8d7",
+  "code": {
+    "infill.py": "d44025a1a6e37b8e3ac70477c0e5aac1fc695cc864519c1ce448a23ef684926a",
+    "model.py": "2564b867f1f1529abac370daf8d0901a4837aac00cbab853c4f740c909f88959",
+    "buildings.py": "8545ba7f3fb88e28b717fbf204370ef6a2ece0443237168c763e5d06a0b62e63",
+    "repair-infill.mjs": "979aa0f38999a0b1d3e1250351d157af3371f4d00812ad35a3946fcc3ffcd635",
+    "../../src/psychiko-building-data.js": "3ed990c1a0ed4e6e58901bb6711dbb7d63b8f0e670e0364f01cc3a35d04cc222",
+    "../../src/coastal-dressing-data.js": "c5a019cef4aa0acdb385f746dd651c9baee43f35aa132c2a1e9b41cd7e02e656"
+  },
+  "remove": [
+    {
+      "id": "building:gen:8049:-10544:-175:13:8:0",
+      "row": 107,
+      "rowSha256": "831b51255888e990a199401660cc77f584f12b0516a3cd108e9454e8be119b00",
+      "decision": {
+        "eligible": false,
+        "reason": "source-sparse",
+        "mappedCover": 0.236938,
+        "mappedBuildings": 56,
+        "explicitResidentialHeights": 0,
+        "storeys": [
+          4,
+          7
+        ],
+        "inferred": true
+      }
+    },
+    {
+      "id": "building:gen:8168:-10529:5:12:10:0",
+      "row": 133,
+      "rowSha256": "5be72ac921a94f68bce064c77f355898dbac89781a4600f4cf6da96bf9828dfa",
+      "decision": {
+        "eligible": false,
+        "reason": "source-sparse",
+        "mappedCover": 0.274243,
+        "mappedBuildings": 64,
+        "explicitResidentialHeights": 0,
+        "storeys": [
+          4,
+          7
+        ],
+        "inferred": true
+      }
+    },
+    {
+      "id": "building:gen:8049:-10544:-175:26:8:0",
+      "row": 109,
+      "rowSha256": "fe647fd3bb6a5d7c3eb06557bce1d34e39e6e417c5d083a1bed23a1c07b63b1a",
+      "decision": {
+        "eligible": false,
+        "reason": "source-sparse",
+        "mappedCover": 0.212485,
+        "mappedBuildings": 49,
+        "explicitResidentialHeights": 0,
+        "storeys": [
+          4,
+          7
+        ],
+        "inferred": true
+      }
+    },
+    {
+      "id": "building:gen:8049:-10544:-175:7:8:0",
+      "row": 110,
+      "rowSha256": "b72894fe62739fb1fe68e1980b9e7682b99869db808beeaa0b190fde955614ce",
+      "decision": {
+        "eligible": false,
+        "reason": "source-sparse",
+        "mappedCover": 0.235658,
+        "mappedBuildings": 55,
+        "explicitResidentialHeights": 0,
+        "storeys": [
+          4,
+          7
+        ],
+        "inferred": true
+      }
+    },
+    {
+      "id": "building:gen:8168:-10529:5:11:15:0",
+      "row": 132,
+      "rowSha256": "0231ef600af36739463b07b3db4f60907a42f82cdf0bf37bcea6597611987c0d",
+      "decision": {
+        "eligible": false,
+        "reason": "source-sparse",
+        "mappedCover": 0.277276,
+        "mappedBuildings": 66,
+        "explicitResidentialHeights": 0,
+        "storeys": [
+          4,
+          7
+        ],
+        "inferred": true
+      }
+    },
+    {
+      "id": "building:gen:8049:-10544:-175:8:13:0",
+      "row": 111,
+      "rowSha256": "b8f433e5c94992ff591ebe58c2255199758ec8137bec89dfe40acb02361b55c2",
+      "decision": {
+        "eligible": false,
+        "reason": "source-sparse",
+        "mappedCover": 0.229252,
+        "mappedBuildings": 49,
+        "explicitResidentialHeights": 0,
+        "storeys": [
+          4,
+          7
+        ],
+        "inferred": true
+      }
+    },
+    {
+      "id": "building:gen:8049:-10544:-175:16:16:0",
+      "row": 108,
+      "rowSha256": "69c6d98d32c20226aedd65a455e3a52bc0ccef019f6270c95cf0ce1ed2de0570",
+      "decision": {
+        "eligible": false,
+        "reason": "source-sparse",
+        "mappedCover": 0.215172,
+        "mappedBuildings": 52,
+        "explicitResidentialHeights": 0,
+        "storeys": [
+          4,
+          7
+        ],
+        "inferred": true
+      }
+    },
+    {
+      "id": "building:gen:8177:-10633:5:26:8:0",
+      "row": 143,
+      "rowSha256": "b57ef3e012f59bd7c45889087ffaae1da77ddbb6383d92ab6ef7dabc156a238d",
+      "decision": {
+        "eligible": false,
+        "reason": "source-sparse",
+        "mappedCover": 0.258945,
+        "mappedBuildings": 53,
+        "explicitResidentialHeights": 0,
+        "storeys": [
+          4,
+          7
+        ],
+        "inferred": true
+      }
+    },
+    {
+      "id": "building:gen:8168:-10529:5:28:14:0",
+      "row": 137,
+      "rowSha256": "4453537a84b44dcc37fa5c0c239a01ef1f6c66760eb7bd6e3801e1ea54425872",
+      "decision": {
+        "eligible": false,
+        "reason": "source-sparse",
+        "mappedCover": 0.270343,
+        "mappedBuildings": 66,
+        "explicitResidentialHeights": 0,
+        "storeys": [
+          4,
+          7
+        ],
+        "inferred": true
+      }
+    },
+    {
+      "id": "building:gen:8168:-10529:5:9:22:0",
+      "row": 138,
+      "rowSha256": "4667abd65a315e0f451b5239265a35cc5d40f0f42ae4593db5a496856e770abb",
+      "decision": {
+        "eligible": false,
+        "reason": "source-sparse",
+        "mappedCover": 0.270513,
+        "mappedBuildings": 67,
+        "explicitResidentialHeights": 0,
+        "storeys": [
+          4,
+          7
+        ],
+        "inferred": true
+      }
+    }
+  ]
+}

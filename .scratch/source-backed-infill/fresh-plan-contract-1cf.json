@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "status": "fresh-plan-candidate",
+  "generatedBy": "actual makeInfillRepairPlan under approved 1cf3eb8d code",
+  "sourceManifestSha256": "2790fa21d0c16271f5e4a097101ba1414ca8a949f8805c416b4b8dfbc68dc718",
+  "fixtureCells": 39,
+  "fixtureBytes": 10993992,
+  "fixtureHashesPassed": true,
+  "historicalPlanSha256": "c710e57fc49ea6ad9748c564a778719a99991a402983fe8b373619c02446e607",
+  "freshPlanSha256": "e16d3e96ccb502a27adfe8b1095974402cff31963176adecf316441e7f4cb177",
+  "sourceCellSha256": "d3fc0efacc9ddeaba0fd3565ffa1127d0306e4d3081c7cca2876b35ca00d9b8d",
+  "sourceSnapshotSha256": "dc8befa257f20b2091256e580000df2075455fec135cbf224cec81a1c4961fdd",
+  "sourceRecordSha256": "24afe113cc4958c5b5427550811698482e698fecabcc3f1f81217aa4db4df8d7",
+  "packSha256": "ec19495d2f018395139928e0c8218650f167d4340696320f14623a0996c18217",
+  "nativeIdentity": {
+    "world": "athens-east-development",
+    "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+    "cell": [
+      15,
+      -21
+    ]
+  },
+  "changedCode": [
+    "repair-infill.mjs"
+  ],
+  "repairCodeSha256": "979aa0f38999a0b1d3e1250351d157af3371f4d00812ad35a3946fcc3ffcd635",
+  "comparedRows": 10,
+  "exactIdsRowsAndDecisionsMatch": true,
+  "allOtherPlanFieldsMatch": true,
+  "physicalMutation": false,
+  "packing": false,
+  "browser": false,
+  "fullGates": false,
+  "requiredOrder": "Apply this exact original-cell infill plan BEFORE terrain mutation; terrain changes invalidate the original pack fingerprint. Scenery follows the final physical base.",
+  "historicalArtifactsUnchanged": true,
+  "mappedRoofHeightRepair": false
+}
