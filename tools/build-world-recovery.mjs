@@ -1,3 +1,4 @@
+import {encodeRecoverySidecar} from '../server/route-road-wire.mjs';
 import {admitRecoverySidecar} from '../server/route-road-stream.mjs';
 import {recoveryRoadGroup,recoveryRoadTwins} from '../src/world-road-group.js';
 // Offline recovery authority. Every active cell is read and hash verified; only
@@ -79,7 +80,7 @@ export async function buildWorldRecovery({world,cells,out,profiles,readWorld=rea
   for(const k of keys)if(!sample.tiles.has(k))throw Error('Incomplete recovery neighborhood: '+key+' missing '+k);
   const body=proveRecoveryCell(key,sample,profiles);
   if(!body)root.cells[key]={sourceHash,empty:true};
-  else {const text=canonicalJSON(body),hash=await sha256(body),name=`${key}.${hash}.json`;const metrics=await admitRecoveryCell(text,{key,manifest,hash});maxSidecarBytes=Math.max(maxSidecarBytes,metrics.bytes);maxDecodedBytes=Math.max(maxDecodedBytes,metrics.decodedBytes);admittedCells++;await writeFile(resolve(out,name),text);root.cells[key]={sourceHash,hash,url:'/world/recovery/'+name};totalBytes+=Buffer.byteLength(text);anchorCount+=body.anchors.length;for(const a of body.anchors)certificates.push(...a.footprints);}
+  else {const packed=encodeRecoverySidecar(body),text=canonicalJSON(packed),hash=await sha256(packed),name=`${key}.${hash}.json`;const metrics=await admitRecoveryCell(text,{key,manifest,hash});maxSidecarBytes=Math.max(maxSidecarBytes,metrics.bytes);maxDecodedBytes=Math.max(maxDecodedBytes,metrics.decodedBytes);admittedCells++;await writeFile(resolve(out,name),text);root.cells[key]={sourceHash,hash,url:'/world/recovery/'+name};totalBytes+=Buffer.byteLength(text);anchorCount+=body.anchors.length;for(const a of body.anchors)certificates.push(...a.footprints);}
   sample.roads.graph.dispose();sample.tiles.clear();onCell({key,cells:Object.keys(root.cells).length,totalBytes,anchorCount});
  }
  root.footprints=paretoFootprints(certificates);if(!root.footprints.length)throw Error('World has no certified recovery vehicle');assertRecoveryCoverage(root,recoveryWorld);
