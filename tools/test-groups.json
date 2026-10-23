@@ -324,6 +324,7 @@
     "tools/world-tests.test.mjs",
     "tools/world-tests-psychiko.test.mjs",
     "tools/world-gen/pack.test.mjs",
-    "tools/world-gen/conformance.test.mjs"
+    "tools/world-gen/conformance.test.mjs",
+    "tools/world-gen/mutate-cell.test.mjs"
   ]
 }
