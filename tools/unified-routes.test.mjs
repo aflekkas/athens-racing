@@ -275,3 +275,15 @@ test('recovery builder publishes authenticated packed tuples while preserving ev
   await assert.rejects(admitRecoverySidecar(raw,{expectedHash:await sha256(original),worldSetRevision:revision}),/Invalid authoritative/);await assert.rejects(admitRecoverySidecar(raw,{expectedHash:descriptor.hash,worldSetRevision:'d'.repeat(64)}),/Invalid authoritative/);
  }finally{await rm(dir,{recursive:true,force:true});}
 });
+
+test('offline online-proof reader rejects malformed original UTF8 before parsing or authenticating normalized roots',async()=>{
+ const {mkdtemp,mkdir,writeFile,rm}=await import('node:fs/promises'),{join}=await import('node:path'),{tmpdir}=await import('node:os'),{readOnlineRouteRelease}=await import('./online-route-release.mjs'),{canonicalJSON,sha256}=await import('../src/route-definition.js'),f=await networkReleaseFixture(),dir=await mkdtemp(join(tmpdir(),'athens-release-utf8-'));
+ try{
+  const roads=f.proof.routeRoads[0];roads.body.utf8Probe='\ufffd';roads.hash=await sha256(roads.body);Object.assign(f.proof.routes[0].recovery,{hash:roads.hash,url:`/world/recovery/manifest.${roads.hash}.json`});
+  const path=join(dir,'data/routes/online-release.json'),out=join(dir,'out'),raw=Buffer.from(canonicalJSON(f.proof)),at=raw.indexOf(Buffer.from('\ufffd'));assert.ok(at>0);await mkdir(join(dir,'data/routes'),{recursive:true});await writeFile(path,raw);
+  const valid=await readOnlineRouteRelease(dir,{compiled:[f.compiled],manifest:f.manifest,out,required:true});assert.equal(valid.routeRoads[0].hash,roads.hash);assert.equal(valid.routeRoads[0].body.utf8Probe,'\ufffd','properly encoded replacement character is valid data');
+  const malformed=Buffer.concat([raw.subarray(0,at),Buffer.from([0x80]),raw.subarray(at+3)]);assert.equal(malformed.toString('utf8'),raw.toString('utf8'),'negative control: replacing decoder normalizes malformed bytes to the authenticated root');await writeFile(path,malformed);
+  const parse=JSON.parse;let parses=0;JSON.parse=(...args)=>{parses++;return parse(...args);};try{for(const required of [true,false])await assert.rejects(readOnlineRouteRelease(dir,{compiled:[f.compiled],manifest:f.manifest,out,required}),error=>error.code==='ERR_ENCODING_INVALID_ENCODED_DATA');assert.equal(parses,0,'original byte decoding rejects before JSON or root authentication');}finally{JSON.parse=parse;}
+  await writeFile(path,Buffer.concat([Buffer.from([0xef,0xbb,0xbf]),raw]));await assert.rejects(readOnlineRouteRelease(dir,{compiled:[f.compiled],manifest:f.manifest,out,required:true}),SyntaxError,'do not silently broaden the old JSON reader to accept a BOM');
+ }finally{await rm(dir,{recursive:true,force:true});}
+});

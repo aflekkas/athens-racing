@@ -22,7 +22,7 @@ export async function validateOnlineRouteRelease(proof,{compiled,manifest}){
  return {routes:entries,routeGrids:proof.routeGrids,routeRoads:proof.routeRoads,recoveryWorld:registry};
 }
 export async function readOnlineRouteRelease(root,{compiled,manifest,out,required=false}={}){
- let proof;try{proof=JSON.parse(await readFile(resolve(root,'data/routes/online-release.json'),'utf8'));}catch(error){if(error.code==='ENOENT'&&!required)return null;throw error;}
+ let proof;try{proof=JSON.parse(new TextDecoder('utf-8',{fatal:true,ignoreBOM:true}).decode(await readFile(resolve(root,'data/routes/online-release.json'))));}catch(error){if(error.code==='ENOENT'&&!required)return null;throw error;}
  // Stale optional proofs cannot enable multiplayer. An explicitly requested
  // online build fails visibly rather than publishing a partially usable fleet.
  let release;try{release=await validateOnlineRouteRelease(proof,{compiled,manifest});}catch(error){if(required)throw error;console.warn('Online release disabled: '+error.message);return null;}
