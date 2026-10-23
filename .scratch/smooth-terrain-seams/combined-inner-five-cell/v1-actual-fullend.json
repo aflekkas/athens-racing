@@ -1,0 +1,62 @@
+{
+  "status": "V1 ONLY PASS actual terminal exit0; no V2 grant consumed",
+  "terminalId": "agent-47231f95-4703-441b-b08f-12b605e358d1",
+  "terminalExitCode": 0,
+  "terminalTimedOut": false,
+  "controllerSeconds": 18.110041893989546,
+  "finalStdout": {
+    "stage": "v1",
+    "status": "SAVED FOUR REFRESHED ONLY",
+    "manifestSHA256": "13d37b0b281ba62514628fbaca09c8d74358a7ae458ec61f4445f2e793b29a44",
+    "receiptSHA256": "27f457aa6f4b4f4f085ee0bb592907a37799b4a53a18d840c1c344bd9c84e123",
+    "savedFourRefreshed": true,
+    "completeModelVerified": false,
+    "cleanupConfirmed": true,
+    "allOwnedChildrenReaped": true,
+    "mixedProvenance": {
+      "4576,-3504": {
+        "producerRunStatus": "FAILED_RESOURCE",
+        "producerResourceRunPassed": false,
+        "mathProvenance": "generation-resource-failed; independently-verified-candidate"
+      }
+    },
+    "adopted": false,
+    "emittedCells": 0,
+    "acceptanceRequiresActualExit0": true
+  },
+  "finalStdoutSHA256": "521cf309a7280d1d4b869e8172f1bf40e3044427125e9f60e369a549c92d49fe",
+  "canonicalProvisionalReceiptSHA256": "27f457aa6f4b4f4f085ee0bb592907a37799b4a53a18d840c1c344bd9c84e123",
+  "savedFourReports": {
+    "saved-0.json": "af1438a89261c78e8f0748175b0f8ea558d7a1f52cd97efad96ccf8fdc43a3f4",
+    "saved-1.json": "8faa75081fc4ff7eecc1dc105d5cb58f0faec37e361fb885333af3cb61ccc050",
+    "saved-2.json": "07f9d5a582497db46e81db51b483f7a1348a2ae91c169ed730675a843c5e2c6e",
+    "saved-3.json": "44a2f5d87cbdf698dcbecd4b64afece8f362ccb6f0c682526763ee7c96cbdd2b"
+  },
+  "pinsAfter": 54,
+  "ownedPIDsAbsent": {
+    "1461845": true,
+    "1461848": true,
+    "1461872": true,
+    "1461953": true,
+    "1461962": true,
+    "1461971": true
+  },
+  "allOwnedChildrenReaped": true,
+  "minimumObservedAvailableBytes": 21112664064,
+  "maximumSampledLiveRSSBytes": 159395840,
+  "kernelLargestReapedChildPeakBytes": 158973952,
+  "resourceScope": "isolated Linux RUSAGE_CHILDREN largest reaped child, partial live samples; not continuous/process-tree/128-client",
+  "settlementObserved": false,
+  "primaryFailure": null,
+  "secondaryFailures": [],
+  "provisionalReceiptCaveat": "Canonical snapshot precedes final receipt-FD closure; final stdout+actual exit0+process absence are separate completion evidence. Root alone may mint external observation.",
+  "externalV1ObservationMinted": false,
+  "completeModelVerified": false,
+  "bundleConstructed": false,
+  "producer4576": "FAILED_RESOURCE unchanged",
+  "adopted": false,
+  "emittedCells": 0,
+  "diskBeforeAfter": "145G total;74G used;72G available;51%",
+  "retainedOutputBytes": 139861,
+  "cleanup": "All four own Node handles reaped exit0; controller and launcher absent. No browser/server or remaining own runtime."
+}

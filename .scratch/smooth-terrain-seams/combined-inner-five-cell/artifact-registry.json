@@ -1,0 +1,394 @@
+{
+  "schema": "terrain-five-cell-evidence-references-1",
+  "sourceCommit": "e4b7bf2ea6a6f71f21806480f19591c87de083a4",
+  "scope": "Pinned original five-cell INNER16 finite-facet model ONLY",
+  "pins": {
+    "components.py": {
+      "path": "/tmp/athens-terrain.uKVC/syntagma-component-e4b/tools/terrain-lp/components.py",
+      "bytes": 8425,
+      "sha256": "43cb9ec215e41dfcfe223eda56e644575335888c09884f8e56a9e876357d2c0e",
+      "git": {
+        "commit": "e4b7bf2ea6a6f71f21806480f19591c87de083a4",
+        "path": "tools/terrain-lp/components.py",
+        "blob": "3ab1397af4372a263406ac36bc848aa1c2754f11"
+      }
+    },
+    "model.py": {
+      "path": "/tmp/athens-terrain.uKVC/syntagma-component-e4b/tools/terrain-lp/model.py",
+      "bytes": 10398,
+      "sha256": "3ff95a6b102cf17c23c793ad2a4fe6a414e9adc2a0b2471656df32354f9f70d1",
+      "git": {
+        "commit": "e4b7bf2ea6a6f71f21806480f19591c87de083a4",
+        "path": "tools/terrain-lp/model.py",
+        "blob": "eeed1072a0b32a670b5e55baa2dc52b62e110421"
+      }
+    },
+    "components.mjs": {
+      "path": "/tmp/athens-terrain.uKVC/syntagma-component-e4b/tools/terrain-lp/components.mjs",
+      "bytes": 9972,
+      "sha256": "5377780622fe0201c561579ef36e7dc79c3ebc4fc56f79d41a7c20cfe0fbb305",
+      "git": {
+        "commit": "e4b7bf2ea6a6f71f21806480f19591c87de083a4",
+        "path": "tools/terrain-lp/components.mjs",
+        "blob": "c86f4823673e277524cf01be4bd3c5c4dd49fad6"
+      }
+    },
+    "verify.mjs": {
+      "path": "/tmp/athens-terrain.uKVC/syntagma-component-e4b/tools/terrain-lp/verify.mjs",
+      "bytes": 9322,
+      "sha256": "acdaede9ca9ad9d49d3d4325a47c0f5ad0a522d9cb807509b176919674cf0481",
+      "git": {
+        "commit": "e4b7bf2ea6a6f71f21806480f19591c87de083a4",
+        "path": "tools/terrain-lp/verify.mjs",
+        "blob": "0cf300a3052a60b0993fd623749c0d057e10308d"
+      }
+    },
+    "native0": {
+      "path": "/tmp/athens-terrain.uKVC/scipy-venv/lib/python3.12/site-packages/numpy/__init__.py",
+      "bytes": 25220,
+      "sha256": "09295a80660f17925ae23765ce8cbd7ff7ceae968d5f2f89349f1cb74c0b9e11"
+    },
+    "native1": {
+      "path": "/tmp/athens-terrain.uKVC/scipy-venv/lib/python3.12/site-packages/scipy/__init__.py",
+      "bytes": 4193,
+      "sha256": "39ccae300a4739cc53719bd3b39ce3f8f66e736c6eb672006e338a4c5cc3dc76"
+    },
+    "native2": {
+      "path": "/tmp/athens-terrain.uKVC/scipy-venv/lib/python3.12/site-packages/scipy/optimize/_linprog.py",
+      "bytes": 30240,
+      "sha256": "66633d0193e4482a54f38f4890f15d0437aea9eacc6c2ac3b41746b81c72513d"
+    },
+    "native3": {
+      "path": "/tmp/athens-terrain.uKVC/scipy-venv/lib/python3.12/site-packages/scipy/optimize/_linprog_highs.py",
+      "bytes": 17145,
+      "sha256": "32999bba42521a001d08bd9a1a02ca663b8b7eb93b6f799f37438e062484c89a"
+    },
+    "native4": {
+      "path": "/tmp/athens-terrain.uKVC/scipy-venv/lib/python3.12/site-packages/scipy/optimize/_highspy/_highs_wrapper.py",
+      "bytes": 11294,
+      "sha256": "c15a943a0985bf716d84b93719d0b2f572e698373655ab0258614b4b2ab67303"
+    },
+    "native5": {
+      "path": "/tmp/athens-terrain.uKVC/scipy-venv/lib/python3.12/site-packages/scipy/optimize/_highspy/_core.cpython-312-x86_64-linux-gnu.so",
+      "bytes": 6755920,
+      "sha256": "33fb5a6a86b8fb914b26e69f8f046274b0b043d202511109365d3fde180c540d"
+    },
+    "native6": {
+      "path": "/tmp/athens-terrain.uKVC/scipy-venv/lib/python3.12/site-packages/scipy/optimize/_highspy/_highs_options.cpython-312-x86_64-linux-gnu.so",
+      "bytes": 400104,
+      "sha256": "116ed72be9accceafcdeb58d5d02308e5023b9bc98118303a79d3bc24fe171d6"
+    },
+    "native7": {
+      "path": "/tmp/athens-terrain.uKVC/scipy-venv/lib/python3.12/site-packages/numpy/_core/_multiarray_umath.cpython-312-x86_64-linux-gnu.so",
+      "bytes": 10637297,
+      "sha256": "b185dfe64b07180bedc7c15fb2735b0d0f4f4e09eb9c15bd8e67f74568aebcbf"
+    },
+    "native8": {
+      "path": "/tmp/athens-terrain.uKVC/scipy-venv/pyvenv.cfg",
+      "bytes": 174,
+      "sha256": "5018c30b04500c741f10765469c9cec9319145613c2bedc5f28ecaac99b1348b"
+    },
+    "executable0": {
+      "path": "/usr/bin/python3.12",
+      "bytes": 8020928,
+      "sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f"
+    },
+    "executable1": {
+      "path": "/usr/bin/node",
+      "bytes": 124827920,
+      "sha256": "fde6a4bf8d0562f7751d1a2d6cb9b417c4cfe107bbcb0aa3e9a24e125e348f48"
+    },
+    "executable2": {
+      "path": "/usr/bin/python3.12",
+      "bytes": 8020928,
+      "sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f"
+    },
+    "ordinaryController": {
+      "path": "/tmp/athens-terrain.uKVC/ordinary-controller-v2/ordinary-one-component-v1.py",
+      "bytes": 31562,
+      "sha256": "ac599f4674da3903f58c651e075a52957aacfd82487d9df650f1156dc4b44357"
+    },
+    "ordinaryTest": {
+      "path": "/tmp/athens-terrain.uKVC/ordinary-controller-v2/ordinary-one-component-v1.test.py",
+      "bytes": 24898,
+      "sha256": "81f21d88758df9dc78a369b354464cd2f2ffe679ea546804a536f1fb00f45e4f"
+    },
+    "ordinaryEntry": {
+      "path": "/tmp/athens-terrain.uKVC/ordinary-controller-v2/entry-bootstrap.py",
+      "bytes": 2304,
+      "sha256": "444dbb5faf6a136cba92b1309bf5e4f592a9e0c24a361da4cf8262416812af42"
+    },
+    "saved:-32,608": {
+      "path": "/tmp/athens-terrain.uKVC/syntagma-e4b-result.json",
+      "bytes": 114239,
+      "sha256": "915062513c75851e76dfa73bdddfa0731c17c2d7d0a50ef031120ef46ccaca82",
+      "git": {
+        "commit": "9c10c0c358d0e6b490f18a8efca7caf2e05b68e4",
+        "path": ".scratch/smooth-terrain-seams/syntagma-inner-certificate.json",
+        "blob": "d3c1fc3b17ea44bb475cef16d29bb2f81a7dd080"
+      }
+    },
+    "saved:-32,960": {
+      "path": "/tmp/athens-terrain.uKVC/inner-batch-component-0.json",
+      "bytes": 8513,
+      "sha256": "f7b828abd4b5242fada93307a2bca315d053bd87e5433a7c091eb04d7d6ee409",
+      "git": {
+        "commit": "9c10c0c358d0e6b490f18a8efca7caf2e05b68e4",
+        "path": ".scratch/smooth-terrain-seams/remaining-inner-diagnostic/inner-batch-component-0.json",
+        "blob": "9c204e2e2ef3b69b52f5a13b027ed529d2eadb0f"
+      }
+    },
+    "saved:992,-488": {
+      "path": "/tmp/athens-terrain.uKVC/inner-batch-component-1.json",
+      "bytes": 71488,
+      "sha256": "e3eabfd358260d8029254822c20f68748f3a5f90f63b68cf18cc97925569a1c0",
+      "git": {
+        "commit": "9c10c0c358d0e6b490f18a8efca7caf2e05b68e4",
+        "path": ".scratch/smooth-terrain-seams/remaining-inner-diagnostic/inner-batch-component-1.json",
+        "blob": "9461ab99dadbbe7f43a977287fd813ed3d9ebfed"
+      }
+    },
+    "saved:1200,-72": {
+      "path": "/tmp/athens-terrain.uKVC/inner-batch-component-2.json",
+      "bytes": 36173,
+      "sha256": "4d0f5f35bdfa4d8d8fae0f2dd9b70145dcb800888abfa5bb58b1e4e0bf439e0c",
+      "git": {
+        "commit": "9c10c0c358d0e6b490f18a8efca7caf2e05b68e4",
+        "path": ".scratch/smooth-terrain-seams/remaining-inner-diagnostic/inner-batch-component-2.json",
+        "blob": "bce03b85304d09a7591e4cf309ef6cfecc8e53f7"
+      }
+    },
+    "input": {
+      "path": "/tmp/athens-terrain.uKVC/min-gradient-input.json",
+      "bytes": 2987095,
+      "sha256": "e85ca0c7de2cdc5f057d3e69828c41b45fea61d5bc03c595525b5e927ceaa281"
+    },
+    "toolReceipt": {
+      "path": "/tmp/athens-terrain.uKVC/scipy-tool-receipt.json",
+      "bytes": 65758,
+      "sha256": "048b493756127e3b5083601738b24838f1c5aa6519d9e3bed4d8e24269fa158d"
+    },
+    "failed20s": {
+      "path": "/tmp/athens-terrain.uKVC/inner-batch-component-3.json",
+      "bytes": 46180,
+      "sha256": "5f07b4703fea50e240d4b9b9863b9364eb203a137aeefd7451cb32e07e26c262"
+    },
+    "ordinaryManifest": {
+      "path": "/tmp/athens-terrain.uKVC/ordinary-controller-v2/manifest.json",
+      "bytes": 7306,
+      "sha256": "53798b5956e49c6a9860c890a6d805633dc2701d4c67098f474f4f4c220a13ab"
+    },
+    "cert4576": {
+      "path": "/tmp/athens-terrain.uKVC/ordinary-crossover-on-v1/4576_m3504/certificate.json",
+      "bytes": 95247,
+      "sha256": "964bd875c50c877eaa1189ec8b1341fdaa17588265ec54c2a26ad388b0055ed7"
+    },
+    "producerReceipt": {
+      "path": "/tmp/athens-terrain.uKVC/ordinary-crossover-on-v1/4576_m3504/receipt.json",
+      "bytes": 30361,
+      "sha256": "6a9737425506f872df3135be8c5723dbf7487ae10dc8008719bcbb461a971d86"
+    },
+    "producerFullend": {
+      "path": "/tmp/athens-terrain.uKVC/ordinary-controller-v2/actual-4576-fullend.json",
+      "bytes": 3047,
+      "sha256": "287bf8b52da9f7faf3aba92c4522bbb61bb39f2e4e662ab9d014985f3a32f365"
+    },
+    "verifyOnlyHelper": {
+      "path": "/tmp/athens-terrain.uKVC/independent-component-verify-v2/independent-component-verify-v1.py",
+      "bytes": 9693,
+      "sha256": "8c7ff45d489f99ffb803d4b68949327059c39b755c6594c6a4d217b478991077"
+    },
+    "verifyOnlyEntry": {
+      "path": "/tmp/athens-terrain.uKVC/independent-component-verify-v2/entry-bootstrap.py",
+      "bytes": 3870,
+      "sha256": "8d9ceb1c24b479bf664489505f441ab34be87d233da77c596157fead4f688031"
+    },
+    "verifyOnlyTest": {
+      "path": "/tmp/athens-terrain.uKVC/independent-component-verify-v2/independent-component-verify-v1.test.py",
+      "bytes": 19099,
+      "sha256": "77e4b6cc7182895dffd2b13ae1434b7761bb7e3dd5c20d9dae4714c627d8df05"
+    },
+    "cert2016": {
+      "path": "/tmp/athens-terrain.uKVC/ordinary-crossover-on-v1/2016_12856/certificate.json",
+      "bytes": 161591,
+      "sha256": "dd5a2ff3e232cdb05f7e4fb463a331f411481739c076748b5e0caec31d61f1a6"
+    },
+    "cert7136": {
+      "path": "/tmp/athens-terrain.uKVC/ordinary-crossover-on-v1/7136_m10680/certificate.json",
+      "bytes": 152066,
+      "sha256": "64a239d933869926f03324bab5822cba26d8539cffcf5cd30f84d13f18978c29"
+    },
+    "2016-receipt": {
+      "path": "/tmp/athens-terrain.uKVC/ordinary-crossover-on-v1/2016_12856/receipt.json",
+      "bytes": 64679,
+      "sha256": "f0d5e10aa819c9c33d3c3656d3323693662da05c1f3202399e687c39ac7ae1f8"
+    },
+    "2016-exit": {
+      "path": "/tmp/athens-terrain.uKVC/ordinary-controller-v2/actual-2016-fullend.json",
+      "bytes": 3846,
+      "sha256": "fb91425a11bb9c37979c0923c4c41fe9cef3ea8ef3ae4edfae0eec74318315a9"
+    },
+    "4576-math-receipt": {
+      "path": "/tmp/athens-terrain.uKVC/ordinary-independent-verification-v1/4576_m3504/receipt.json",
+      "bytes": 34384,
+      "sha256": "27ee20711dff0450a429ecd319bc8973232c1e8f86541a128ad4bd1c98f2277b"
+    },
+    "4576-math-exit": {
+      "path": "/tmp/athens-terrain.uKVC/independent-component-verify-v2/actual-verification-fullend.json",
+      "bytes": 4143,
+      "sha256": "3f7b7db7731e4220a983214a3bb70fd811c535d5eb3dea5fc04a98f786a38eaa"
+    },
+    "7136-receipt": {
+      "path": "/tmp/athens-terrain.uKVC/ordinary-crossover-on-v1/7136_m10680/receipt.json",
+      "bytes": 64689,
+      "sha256": "d22bb33ad3aebfe5094b751e0af54336dfb22d1a77c700487685fa37c247edae"
+    },
+    "7136-exit": {
+      "path": "/tmp/athens-terrain.uKVC/ordinary-controller-v2/actual-7136-fullend.json",
+      "bytes": 6925,
+      "sha256": "d747391d6016d44a71b86be60010d8c4f795c39596f7dcd0c0592d2143b89d0d"
+    },
+    "helper": {
+      "path": "/tmp/athens-terrain.uKVC/combined-verification-source-v5/combined-verify.py",
+      "bytes": 24814,
+      "sha256": "2f9ef815d2cfb06d048afa8a3434070d3f26346c8160822550acc2b29740f3b8"
+    },
+    "entry": {
+      "path": "/tmp/athens-terrain.uKVC/combined-verification-source-v5/entry-bootstrap.py",
+      "bytes": 6326,
+      "sha256": "8bc8ff7e39cd8a8d5f08d358d95cfa88d91f0f24e60ee926fada4600c290de62"
+    },
+    "test": {
+      "path": "/tmp/athens-terrain.uKVC/combined-verification-source-v5/combined-verify.test.py",
+      "bytes": 28436,
+      "sha256": "621d422fcd107514727a6e98c2f3ecf2db36dc59eac54f82176b160a2bef72df"
+    },
+    "terminalExitPolicy": {
+      "path": "/tmp/athens-terrain.uKVC/combined-verification-source-v5/terminal-exit-policy.py",
+      "bytes": 9364,
+      "sha256": "12a4874a5a8472cc57a5e93bd2bc1a3eed57c54ee4b584ea1bb54d9f29370df4"
+    },
+    "linuxRusageHeader": {
+      "path": "/usr/include/x86_64-linux-gnu/bits/types/struct_rusage.h",
+      "bytes": 4121,
+      "sha256": "1f6c38afa7d5397789aaff400b4704db7bff67cd0050f01d95d2aea50d26e2ef"
+    },
+    "linuxRusageMan": {
+      "path": "/usr/share/man/man2/getrusage.2.gz",
+      "bytes": 2869,
+      "sha256": "7c7168eed8b1e1c58954cd899e6c05f6a4a38525bbda17fa6937f959c8243d65"
+    },
+    "stdlibSubprocess": {
+      "path": "/usr/lib/python3.12/subprocess.py",
+      "bytes": 88725,
+      "sha256": "baa9f9138d8d20df6284f67e7d2e790f847f65e2c5370de322d54cccd737f2d9"
+    },
+    "resourceExtension": {
+      "path": "/usr/lib/python3.12/lib-dynload/resource.cpython-312-x86_64-linux-gnu.so",
+      "bytes": 19432,
+      "sha256": "c8cc35580b497bf128cf8bb0e25efc36573a4f21a1c6877a91737fcd52e24907"
+    },
+    "terminalPolicyTest": {
+      "path": "/tmp/athens-terrain.uKVC/combined-verification-source-v5/terminal-exit-policy.test.py",
+      "bytes": 10083,
+      "sha256": "4ead109c9f4a247501cb9b0536e1f0d0335481a9dcb1e937721caa6d942402b2"
+    },
+    "nativeUnitPlan": {
+      "path": "/tmp/athens-terrain.uKVC/combined-verification-source-v4/native-unit-plan.json",
+      "bytes": 1954,
+      "sha256": "490eee12ced9b7e33218da6164513a4d75566cddbe9fa3e7645d4f2e6ee677b5"
+    },
+    "nativeUnitRunner": {
+      "path": "/tmp/athens-terrain.uKVC/combined-verification-source-v4/native-exit-unit.py",
+      "bytes": 4883,
+      "sha256": "d3e42389961cd182cfa3c2b1e276bf750a749b5ddf384933a05f0c3131e87043"
+    },
+    "nativeUnitReceipt": {
+      "path": "/tmp/athens-terrain.uKVC/combined-verification-source-v4/native-exit-unit-once/receipt.json",
+      "bytes": 3458,
+      "sha256": "146464339e1fc91c1cbb107c8cae9f8d543fea4c23d0e4c11028e322f2e80e26"
+    },
+    "postphaseDeadlineTest": {
+      "path": "/tmp/athens-terrain.uKVC/combined-verification-source-v5/postphase-deadline.test.py",
+      "bytes": 11203,
+      "sha256": "681b10b33ca68cd06de7a32a101ba59687d0a4aee7bc482a3c0b0cee310bc45e"
+    }
+  },
+  "certificateNames": {
+    "-32,608": "saved:-32,608",
+    "-32,960": "saved:-32,960",
+    "992,-488": "saved:992,-488",
+    "1200,-72": "saved:1200,-72",
+    "2016,12856": "cert2016",
+    "4576,-3504": "cert4576",
+    "7136,-10680": "cert7136"
+  },
+  "savedFour": [
+    "-32,608",
+    "-32,960",
+    "992,-488",
+    "1200,-72"
+  ],
+  "actualArtifacts": {
+    "/tmp/athens-terrain.uKVC/review117-actual-v1-launch.json": {
+      "path": "/tmp/athens-terrain.uKVC/review117-actual-v1-launch.json",
+      "bytes": 7302,
+      "sha256": "3ff9bae13f2d27774e994da986b648238b8146a6c9018607f7dae5e0c9bc193c"
+    },
+    "/tmp/athens-terrain.uKVC/review117-actual-v2-launch.json": {
+      "path": "/tmp/athens-terrain.uKVC/review117-actual-v2-launch.json",
+      "bytes": 7314,
+      "sha256": "19abeed89f110fd4e745756f675bba7b14145b5a28f85ef157fef1f8b9525ed3"
+    },
+    "/tmp/athens-terrain.uKVC/combined-verification-confirmed-exit-v1/v1/receipt.json": {
+      "path": "/tmp/athens-terrain.uKVC/combined-verification-confirmed-exit-v1/v1/receipt.json",
+      "bytes": 136062,
+      "sha256": "27f457aa6f4b4f4f085ee0bb592907a37799b4a53a18d840c1c344bd9c84e123"
+    },
+    "/tmp/athens-terrain.uKVC/combined-verification-confirmed-exit-v1/v2/receipt.json": {
+      "path": "/tmp/athens-terrain.uKVC/combined-verification-confirmed-exit-v1/v2/receipt.json",
+      "bytes": 570711,
+      "sha256": "98f2f5e152e29367ffa26dbcbb3bf588f0993ff1c266cfe2066b6023111d7d3c"
+    },
+    "/tmp/athens-terrain.uKVC/combined-verification-confirmed-exit-v1/v2/bundle.json": {
+      "path": "/tmp/athens-terrain.uKVC/combined-verification-confirmed-exit-v1/v2/bundle.json",
+      "bytes": 441909,
+      "sha256": "fac3b79c2a41e06487b4df287d320bb3dd81d23bd7fc5b695012dc68a1c88ed9"
+    },
+    "/tmp/athens-terrain.uKVC/combined-verification-confirmed-exit-v1/v2/full-decomposition.json": {
+      "path": "/tmp/athens-terrain.uKVC/combined-verification-confirmed-exit-v1/v2/full-decomposition.json",
+      "bytes": 318566,
+      "sha256": "a1db0ee911e8dad8f40b72f97bd392919447c48f1102ca1c5c6f30c907bbd670"
+    },
+    "/tmp/athens-terrain.uKVC/combined-verification-confirmed-exit-v1/v1-clean-exit-observation.json": {
+      "path": "/tmp/athens-terrain.uKVC/combined-verification-confirmed-exit-v1/v1-clean-exit-observation.json",
+      "bytes": 2767,
+      "sha256": "b7ca273c27adf2cb97493b6bca79373855bfca5a4f489b623dfa8d232c489bbb"
+    },
+    "/tmp/athens-master.PDhi/terrain-v1-app-terminal-record.json": {
+      "path": "/tmp/athens-master.PDhi/terrain-v1-app-terminal-record.json",
+      "bytes": 1485,
+      "sha256": "d24f63265f21ab8e961468f5397663990da72240a1ecd067358fc8d4a7a482b2"
+    },
+    "/tmp/athens-master.PDhi/terrain-v2-app-terminal-record.json": {
+      "path": "/tmp/athens-master.PDhi/terrain-v2-app-terminal-record.json",
+      "bytes": 1297,
+      "sha256": "94709fc2b232b6b86551e857b437a458e13d04db5c146950e9473d9747f0e17b"
+    },
+    "/tmp/athens-master.PDhi/terrain-v2-reviewed117-bound-argv.json": {
+      "path": "/tmp/athens-master.PDhi/terrain-v2-reviewed117-bound-argv.json",
+      "bytes": 7590,
+      "sha256": "478756c01196e413d74f4a27a4797a04c572533163b1ec6a0df51b974ffae4a0"
+    }
+  },
+  "rawInputsOrCertificatesCopied": false,
+  "retention": "Temporary artifact references are host-local, not a portable replay bundle; retain originals until parent archives or releases them. Git source references are durable.",
+  "mixedProvenance": {
+    "4576,-3504": {
+      "producerRunStatus": "FAILED_RESOURCE",
+      "producerResourceRunPassed": false,
+      "mathProvenance": "generation-resource-failed; independently-verified-candidate"
+    }
+  },
+  "fullNumericalDistributionClosureFrozen": false
+}

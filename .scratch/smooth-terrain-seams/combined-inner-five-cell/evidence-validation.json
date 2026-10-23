@@ -1,0 +1,52 @@
+{
+  "schema": "terrain-evidence-only-validation-1",
+  "checks": {
+    "jsonSyntax": 6,
+    "pinnedReferences": 64,
+    "exactCopiedReceipts": 2,
+    "durableGitReferenceHashes": 8,
+    "crossReceiptScopeAssertions": 10
+  },
+  "failed": 0,
+  "numericalImports": 0,
+  "rawInputOrCertificateJSONDecode": 0,
+  "newNodeVerifierRuns": 0,
+  "newSolverRuns": 0,
+  "newBrowserOrGeometryJobs": 0,
+  "releaseSuitesRun": false,
+  "reason": "User explicitly authorized source/evidence-only commit; full suites not allocated and not claimed.",
+  "files": {
+    "review117-source-manifest.json": {
+      "bytes": 15387,
+      "sha256": "13d37b0b281ba62514628fbaca09c8d74358a7ae458ec61f4445f2e793b29a44"
+    },
+    "tool-provenance-summary.json": {
+      "bytes": 9720,
+      "sha256": "9ce56a5679b014b8f5bf22678766012890d5e752feadd5c169acde1d5e1f2d91"
+    },
+    "README.md": {
+      "bytes": 9221,
+      "sha256": "ed00c42ae420d2c70b0ebca9f192cc27859ee6541d4094a1696413428c37ee5e"
+    },
+    "result-summary.json": {
+      "bytes": 1670,
+      "sha256": "3b45ba021f68272717f20316658511e92a7daeacfec80e48dc9e64b26affc321"
+    },
+    "v1-actual-fullend.json": {
+      "bytes": 2731,
+      "sha256": "6122727a1ccc1a4560363fdfe43e0849b1b97e1656281b587a7f9586cd80930d"
+    },
+    "v2-actual-fullend.json": {
+      "bytes": 3668,
+      "sha256": "e6646cd0ade88d4bc1d68970f0df3ca4f2bafa55487c9a2c9f0902b9d9a01d02"
+    },
+    "artifact-registry.json": {
+      "bytes": 17759,
+      "sha256": "b731382324adfb69e87273f5d2e3a57ee7fdc8a96951cb33f9f360bfaa52f0a6"
+    },
+    "next-stage-proposal.md": {
+      "bytes": 7676,
+      "sha256": "89fd1464e7c1fbf4570ca1f09a45fcbd5263b8e83ec8522193ca1f75eb2c0b4b"
+    }
+  }
+}
