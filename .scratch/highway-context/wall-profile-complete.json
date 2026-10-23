@@ -1,0 +1,721 @@
+{
+  "schemaVersion": 1,
+  "scope": "Complete finite source-only model-support preflight, not surveyed real wall height/geography",
+  "licence": "OpenStreetMap contributors / ODbL 1.0",
+  "diagnosticComplete": true,
+  "releaseEligible": false,
+  "fullWallCertificates": 0,
+  "certifiedLength": 0,
+  "unprocessedLength": 0,
+  "meshEmitted": false,
+  "compilerClearanceWasNotReached": true,
+  "oldPartialExpandedPrefixDeepEqual": {
+    "pass": 1233,
+    "fail": 0
+  },
+  "spans": 1746,
+  "diagnosticRows": 31428,
+  "diagnosticCandidates": 31873,
+  "reasonHistogram": {
+    "zero-height": 1721,
+    "unsupported": 25
+  },
+  "reasonLengths": {
+    "zero-height": 1573.3260758260544,
+    "unsupported": 13.910951772737292
+  },
+  "walls": {
+    "w475170425": {
+      "processedLength": 352.6134091289688,
+      "spanCount": 403,
+      "reasons": {
+        "zero-height": 403
+      },
+      "reasonLengths": {
+        "zero-height": 352.6134091289688
+      },
+      "firstFailure": {
+        "from": 0,
+        "to": 1.6228282441539141,
+        "a": [
+          6511.4803473552665,
+          -6978.316840000438
+        ],
+        "b": [
+          6511.399621702142,
+          -6976.69602080048
+        ],
+        "support": {
+          "status": "zero-height",
+          "top": {
+            "status": "unique",
+            "support": {
+              "sourceSha256": "bb0b97a287b61ff9aff6b1f878033a3a3e4feb754b598de99567444a2f855433",
+              "table": "fineTriangles",
+              "triangle": 3661,
+              "owner": "terrain:12:-14",
+              "layer": 0
+            },
+            "heights": [
+              194.77903061184492,
+              194.61457093984916
+            ],
+            "candidates": [
+              {
+                "sourceSha256": "bb0b97a287b61ff9aff6b1f878033a3a3e4feb754b598de99567444a2f855433",
+                "table": "fineTriangles",
+                "triangle": 3661,
+                "owner": "terrain:12:-14",
+                "layer": 0
+              }
+            ]
+          },
+          "bottom": {
+            "status": "unique",
+            "support": {
+              "sourceSha256": "bb0b97a287b61ff9aff6b1f878033a3a3e4feb754b598de99567444a2f855433",
+              "table": "fineTriangles",
+              "triangle": 3661,
+              "owner": "terrain:12:-14",
+              "layer": 0
+            },
+            "heights": [
+              194.77903061184492,
+              194.61457093984916
+            ],
+            "candidates": [
+              {
+                "sourceSha256": "bb0b97a287b61ff9aff6b1f878033a3a3e4feb754b598de99567444a2f855433",
+                "table": "fineTriangles",
+                "triangle": 3661,
+                "owner": "terrain:12:-14",
+                "layer": 0
+              }
+            ]
+          },
+          "delta": [
+            0,
+            0
+          ]
+        }
+      },
+      "firstAmbiguity": null,
+      "totalLength": 352.6134091289688,
+      "unprocessedLength": 0,
+      "fullWallStatus": "rejected",
+      "certifiedLength": 0
+    },
+    "w475170431": {
+      "processedLength": 1095.4579636616415,
+      "spanCount": 1169,
+      "reasons": {
+        "zero-height": 1144,
+        "unsupported": 25
+      },
+      "reasonLengths": {
+        "zero-height": 1081.5470118889043,
+        "unsupported": 13.910951772737292
+      },
+      "firstFailure": {
+        "from": 0,
+        "to": 1.8567120845372935,
+        "a": [
+          6642.2910035145,
+          -6885.832184000126
+        ],
+        "b": [
+          6643.847019726747,
+          -6884.819172000153
+        ],
+        "support": {
+          "status": "zero-height",
+          "top": {
+            "status": "unique",
+            "support": {
+              "sourceSha256": "bb0b97a287b61ff9aff6b1f878033a3a3e4feb754b598de99567444a2f855433",
+              "table": "fineTriangles",
+              "triangle": 19130,
+              "owner": "terrain:12:-14",
+              "layer": 0
+            },
+            "heights": [
+              194.93271575787935,
+              194.85102826823942
+            ],
+            "candidates": [
+              {
+                "sourceSha256": "bb0b97a287b61ff9aff6b1f878033a3a3e4feb754b598de99567444a2f855433",
+                "table": "fineTriangles",
+                "triangle": 19130,
+                "owner": "terrain:12:-14",
+                "layer": 0
+              }
+            ]
+          },
+          "bottom": {
+            "status": "unique",
+            "support": {
+              "sourceSha256": "bb0b97a287b61ff9aff6b1f878033a3a3e4feb754b598de99567444a2f855433",
+              "table": "fineTriangles",
+              "triangle": 19130,
+              "owner": "terrain:12:-14",
+              "layer": 0
+            },
+            "heights": [
+              194.93271575787935,
+              194.85102826823942
+            ],
+            "candidates": [
+              {
+                "sourceSha256": "bb0b97a287b61ff9aff6b1f878033a3a3e4feb754b598de99567444a2f855433",
+                "table": "fineTriangles",
+                "triangle": 19130,
+                "owner": "terrain:12:-14",
+                "layer": 0
+              }
+            ]
+          },
+          "delta": [
+            0,
+            0
+          ]
+        }
+      },
+      "firstAmbiguity": {
+        "from": 299.6945420971687,
+        "to": 299.93716214513256,
+        "a": [
+          6914.593857819622,
+          -6765.263116251305
+        ],
+        "b": [
+          6914.820007324219,
+          -6765.1752476605325
+        ],
+        "support": {
+          "status": "unsupported",
+          "top": {
+            "status": "ambiguous-owner",
+            "candidates": [
+              {
+                "sourceSha256": "57fdc3f135b722d11f0c41a91fd03006c0adf2c617cf5573c318783e1cda24a6",
+                "table": "fineTriangles",
+                "triangle": 2413,
+                "owner": "terrain:13:-14",
+                "layer": 0
+              },
+              {
+                "sourceSha256": "57fdc3f135b722d11f0c41a91fd03006c0adf2c617cf5573c318783e1cda24a6",
+                "table": "contactTriangles",
+                "triangle": 358,
+                "owner": "terrain:13:-14",
+                "layer": 1
+              }
+            ]
+          },
+          "bottom": {
+            "status": "ambiguous-owner",
+            "candidates": [
+              {
+                "sourceSha256": "57fdc3f135b722d11f0c41a91fd03006c0adf2c617cf5573c318783e1cda24a6",
+                "table": "fineTriangles",
+                "triangle": 2413,
+                "owner": "terrain:13:-14",
+                "layer": 0
+              },
+              {
+                "sourceSha256": "57fdc3f135b722d11f0c41a91fd03006c0adf2c617cf5573c318783e1cda24a6",
+                "table": "contactTriangles",
+                "triangle": 358,
+                "owner": "terrain:13:-14",
+                "layer": 1
+              }
+            ]
+          }
+        }
+      },
+      "totalLength": 1095.4579636616415,
+      "unprocessedLength": 0,
+      "fullWallStatus": "rejected",
+      "certifiedLength": 0
+    },
+    "w440936123": {
+      "processedLength": 139.16565480817957,
+      "spanCount": 174,
+      "reasons": {
+        "zero-height": 174
+      },
+      "reasonLengths": {
+        "zero-height": 139.16565480817957
+      },
+      "firstFailure": {
+        "from": 0,
+        "to": 1.996572259122483,
+        "a": [
+          5764.487271146048,
+          -5728.883424000067
+        ],
+        "b": [
+          5762.758307724858,
+          -5729.881916000077
+        ],
+        "support": {
+          "status": "zero-height",
+          "top": {
+            "status": "unique",
+            "support": {
+              "sourceSha256": "dcd1ca04db51d3a236af09720152c269fe915b48fed752a5efa056fd12282b1e",
+              "table": "fineTriangles",
+              "triangle": 26514,
+              "owner": "surface:w479395556:1",
+              "layer": 0
+            },
+            "heights": [
+              176.74742885121688,
+              176.64495553220888
+            ],
+            "candidates": [
+              {
+                "sourceSha256": "dcd1ca04db51d3a236af09720152c269fe915b48fed752a5efa056fd12282b1e",
+                "table": "fineTriangles",
+                "triangle": 26514,
+                "owner": "surface:w479395556:1",
+                "layer": 0
+              }
+            ]
+          },
+          "bottom": {
+            "status": "unique",
+            "support": {
+              "sourceSha256": "dcd1ca04db51d3a236af09720152c269fe915b48fed752a5efa056fd12282b1e",
+              "table": "fineTriangles",
+              "triangle": 26514,
+              "owner": "surface:w479395556:1",
+              "layer": 0
+            },
+            "heights": [
+              176.74742885121688,
+              176.64495553220888
+            ],
+            "candidates": [
+              {
+                "sourceSha256": "dcd1ca04db51d3a236af09720152c269fe915b48fed752a5efa056fd12282b1e",
+                "table": "fineTriangles",
+                "triangle": 26514,
+                "owner": "surface:w479395556:1",
+                "layer": 0
+              }
+            ]
+          },
+          "delta": [
+            0,
+            0
+          ]
+        }
+      },
+      "firstAmbiguity": null,
+      "totalLength": 139.16565480817957,
+      "unprocessedLength": 0,
+      "fullWallStatus": "rejected",
+      "certifiedLength": 0
+    }
+  },
+  "resources": {
+    "status": "complete",
+    "releaseEligible": false,
+    "readBytes": 5058943,
+    "decodedCells": [
+      {
+        "cell": "11,-12",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "sha256": "dcd1ca04db51d3a236af09720152c269fe915b48fed752a5efa056fd12282b1e",
+        "decodedBytes": 1233195,
+        "verticalDegenerate": 0
+      },
+      {
+        "cell": "12,-14",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "sha256": "bb0b97a287b61ff9aff6b1f878033a3a3e4feb754b598de99567444a2f855433",
+        "decodedBytes": 1400783,
+        "verticalDegenerate": 0
+      },
+      {
+        "cell": "13,-14",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "sha256": "57fdc3f135b722d11f0c41a91fd03006c0adf2c617cf5573c318783e1cda24a6",
+        "decodedBytes": 1157129,
+        "verticalDegenerate": 0
+      },
+      {
+        "cell": "14,-14",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "sha256": "a79c1a9e37df739be24e84c64b91842aeb504a2cf4d6ffbabf89a20f896f7cdb",
+        "decodedBytes": 1029192,
+        "verticalDegenerate": 0
+      },
+      {
+        "cell": "14,-13",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+        "sha256": "cadf681776930a3500bce5de87de191da2a21f3cb563af45bc2c96b607005385",
+        "decodedBytes": 1057582,
+        "verticalDegenerate": 0
+      }
+    ],
+    "outputBytes": 6552381,
+    "totalSpans": 1746,
+    "candidateTriangles": 39644,
+    "elapsedMs": 3940.748845,
+    "maxRSSKiB": 227804,
+    "heapBytes": 98648768,
+    "resourceReceiptReserveBytes": 65536
+  },
+  "inputs": {
+    "releaseEligible": false,
+    "modelDerivedNotSurveyed": true,
+    "manifest": {
+      "path": "/tmp/athens-loaders.OfMh/original-world.json",
+      "sha256": "2790fa21d0c16271f5e4a097101ba1414ca8a949f8805c416b4b8dfbc68dc718",
+      "world": "athens",
+      "revision": "80055f9208753e2d6fa8658b31c90216d22c650f7f33588ebd5178d1a6b804a1"
+    },
+    "modules": {
+      "/tmp/athens-highway.GIu3/wall-profile-preflight-dedup.mjs": "6ac7d7b7c9ac776b0ca347a406100d283b96a0949ea142135416bd53571bf106",
+      "/tmp/athens-highway.GIu3/wall-profile-core.mjs": "14eef96a07742f4ed045e07dd5ac1a474ca4ba88fd71789587d84a9da548c286",
+      "/tmp/athens-highway.GIu3/wall-profile-source.py": "c758b6695a808c3878bb69f80bace1f858574e561a288ac1e78d1381ae8479e4",
+      "/tmp/athens-highway.GIu3/wall-receipt-dictionary.mjs": "dcde6e1a2a04c434ed886da94dbd3641178ac2438427cf2380febe025a8aeb38",
+      "/home/dev/.cogenly/worktrees/athens-racing/t3-83f3d59d/tools/world-gen/context-surfaces.mjs": "3aab9cea775737546cbb84ab8b055430fa66f3c368c361e27e819b0cbfe38024",
+      "/home/dev/.cogenly/worktrees/athens-racing/t3-83f3d59d/tools/world-gen/model.py": "0460e6b4d68bae37d13e78cd7efc21e97ad34e0b5a3b85e5e2e79ed58c1450bd",
+      "/home/dev/.cogenly/worktrees/athens-racing/t3-83f3d59d/tools/world-gen/structure_context.py": "4ab91ac5034b129ea7f9b7a589bff84b4b7fba0dd68e52fbcfbe3027dc7ae807",
+      "/home/dev/.cogenly/worktrees/athens-racing/t3-83f3d59d/src/world-tile-codec.js": "862ca7bbab99c2de47153dfbb0d1c6321f43f1c92ebe58d8de0cd872f8487717",
+      "/home/dev/.cogenly/worktrees/athens-racing/t3-83f3d59d/src/world-tile-format.js": "56800180d50db23c63276cc4609d4f3d7dbebd4530bd2cc1961ff5ccb418662f"
+    },
+    "sources": [
+      {
+        "path": "/tmp/athens-highway.GIu3/interchange.osm",
+        "sha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+        "bytes": 1205992
+      },
+      {
+        "path": "/tmp/athens-highway.GIu3/rizariou.osm",
+        "sha256": "597390672623764e783168febae4fbabc172ea5399e02e58432c37594365d4e9",
+        "bytes": 648891
+      }
+    ],
+    "licence": "OpenStreetMap contributors / ODbL 1.0",
+    "retainedSide": "left",
+    "lowerSide": "right",
+    "wayOrientation": "original-node-order",
+    "projectedLeftNormal": "(dz,-dx)/length",
+    "semantics": "https://wiki.openstreetmap.org/w/index.php?title=Tag:barrier%3Dretaining_wall&oldid=2961172",
+    "diagnosticOffsetsMetres": [
+      0.25,
+      0.5,
+      1
+    ],
+    "offsetsNeverCertificateHeights": true,
+    "cells": [
+      {
+        "cell": "11,-12",
+        "entry": {
+          "bytes": 485676,
+          "contactEligible": true,
+          "decodedBytes": 6662964,
+          "dependencies": [],
+          "residentBytes": 3966158,
+          "sha256": "dcd1ca04db51d3a236af09720152c269fe915b48fed752a5efa056fd12282b1e",
+          "source": {
+            "regionId": "basin",
+            "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+            "world": "athens-east-development"
+          },
+          "transientBytes": 13811604,
+          "triangles": 40283,
+          "url": "https://staging.athensracing.com/world/cells/dcd1ca04db51d3a236af09720152c269fe915b48fed752a5efa056fd12282b1e.bin.gz"
+        },
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      },
+      {
+        "cell": "12,-14",
+        "entry": {
+          "bytes": 564744,
+          "contactEligible": true,
+          "decodedBytes": 7551589,
+          "dependencies": [],
+          "residentBytes": 4068044,
+          "sha256": "bb0b97a287b61ff9aff6b1f878033a3a3e4feb754b598de99567444a2f855433",
+          "source": {
+            "regionId": "basin",
+            "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+            "world": "athens-east-development"
+          },
+          "transientBytes": 15667922,
+          "triangles": 44104,
+          "url": "https://staging.athensracing.com/world/cells/bb0b97a287b61ff9aff6b1f878033a3a3e4feb754b598de99567444a2f855433.bin.gz"
+        },
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      },
+      {
+        "cell": "13,-14",
+        "entry": {
+          "bytes": 453033,
+          "contactEligible": true,
+          "decodedBytes": 6232189,
+          "dependencies": [],
+          "residentBytes": 3746708,
+          "sha256": "57fdc3f135b722d11f0c41a91fd03006c0adf2c617cf5573c318783e1cda24a6",
+          "source": {
+            "regionId": "basin",
+            "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+            "world": "athens-east-development"
+          },
+          "transientBytes": 12917411,
+          "triangles": 38306,
+          "url": "https://staging.athensracing.com/world/cells/57fdc3f135b722d11f0c41a91fd03006c0adf2c617cf5573c318783e1cda24a6.bin.gz"
+        },
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      },
+      {
+        "cell": "14,-14",
+        "entry": {
+          "bytes": 391571,
+          "contactEligible": true,
+          "decodedBytes": 5519985,
+          "dependencies": [],
+          "residentBytes": 3871757,
+          "sha256": "a79c1a9e37df739be24e84c64b91842aeb504a2cf4d6ffbabf89a20f896f7cdb",
+          "source": {
+            "regionId": "basin",
+            "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+            "world": "athens-east-development"
+          },
+          "transientBytes": 11431541,
+          "triangles": 41882,
+          "url": "https://staging.athensracing.com/world/cells/a79c1a9e37df739be24e84c64b91842aeb504a2cf4d6ffbabf89a20f896f7cdb.bin.gz"
+        },
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      },
+      {
+        "cell": "14,-13",
+        "entry": {
+          "bytes": 417406,
+          "contactEligible": true,
+          "decodedBytes": 5722481,
+          "dependencies": [],
+          "residentBytes": 3258959,
+          "sha256": "cadf681776930a3500bce5de87de191da2a21f3cb563af45bc2c96b607005385",
+          "source": {
+            "regionId": "basin",
+            "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+            "world": "athens-east-development"
+          },
+          "transientBytes": 11862368,
+          "triangles": 33878,
+          "url": "https://staging.athensracing.com/world/cells/cadf681776930a3500bce5de87de191da2a21f3cb563af45bc2c96b607005385.bin.gz"
+        },
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      }
+    ],
+    "walls": [
+      {
+        "record": {
+          "id": "w475170425",
+          "kind": "retaining_wall",
+          "version": 5,
+          "timestamp": "2022-03-23T15:12:08Z",
+          "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+          "tags": {
+            "barrier": "retaining_wall"
+          },
+          "refs": [
+            4689624749,
+            8622612760,
+            4689624748,
+            800140483,
+            4689624751,
+            2251392256,
+            8622612761,
+            2251392543,
+            2542055400,
+            5898510547,
+            2251392546,
+            2251392545,
+            2251392542,
+            4689624752
+          ],
+          "geometrySha256": "9834d00fd7dd1692cdad0a2fd373caff08c68411c07585768ec5715b9a828183",
+          "recordSha256": "f515c0cf2aebac345a325304b38566cd442189023f02a1633e6d00433ae60195"
+        },
+        "nodeRefs": [
+          "4689624749",
+          "8622612760",
+          "4689624748",
+          "800140483",
+          "4689624751",
+          "2251392256",
+          "8622612761",
+          "2251392543",
+          "2542055400",
+          "5898510547",
+          "2251392546",
+          "2251392545",
+          "2251392542",
+          "4689624752"
+        ],
+        "length": 352.6134091289688
+      },
+      {
+        "record": {
+          "id": "w475170431",
+          "kind": "retaining_wall",
+          "version": 4,
+          "timestamp": "2024-04-12T06:05:06Z",
+          "sourceSha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+          "tags": {
+            "barrier": "retaining_wall",
+            "source": "Bing (2017-02-16)"
+          },
+          "refs": [
+            4689624754,
+            4689624755,
+            4689624756,
+            4689624757,
+            4689624758,
+            4689624773,
+            4689624772,
+            4689624771,
+            4689624770,
+            4532594229,
+            4689624776,
+            4689624780,
+            4532594222,
+            11811065068,
+            4689624832,
+            4689624793,
+            4689624786,
+            985921430,
+            4689624785,
+            4689624792,
+            4689624797,
+            4689624796,
+            4689624790,
+            4689624791,
+            4689624806,
+            8923647928,
+            4689624808,
+            4689624807,
+            4689624812,
+            4689624813,
+            4689624814,
+            4689624818,
+            8923647927,
+            8923647926,
+            8923647929,
+            8923647925,
+            8923647924,
+            8923647923
+          ],
+          "geometrySha256": "3403d19780c0632fb18126821dc93a0af4d25e626249581e393a620517c1e5d6",
+          "recordSha256": "5e39636de0dfa3dfeab379c9d5499f2eb6b21adaefc8e5d7267109fa3d55bc50"
+        },
+        "nodeRefs": [
+          "4689624754",
+          "4689624755",
+          "4689624756",
+          "4689624757",
+          "4689624758",
+          "4689624773",
+          "4689624772",
+          "4689624771",
+          "4689624770",
+          "4532594229",
+          "4689624776",
+          "4689624780",
+          "4532594222",
+          "11811065068",
+          "4689624832",
+          "4689624793",
+          "4689624786",
+          "985921430",
+          "4689624785",
+          "4689624792",
+          "4689624797",
+          "4689624796",
+          "4689624790",
+          "4689624791",
+          "4689624806",
+          "8923647928",
+          "4689624808",
+          "4689624807",
+          "4689624812",
+          "4689624813",
+          "4689624814",
+          "4689624818",
+          "8923647927",
+          "8923647926",
+          "8923647929",
+          "8923647925",
+          "8923647924",
+          "8923647923"
+        ],
+        "length": 1095.4579636616415
+      },
+      {
+        "record": {
+          "id": "w440936123",
+          "kind": "retaining_wall",
+          "version": 1,
+          "timestamp": "2016-09-06T11:25:17Z",
+          "sourceSha256": "597390672623764e783168febae4fbabc172ea5399e02e58432c37594365d4e9",
+          "tags": {
+            "barrier": "retaining_wall"
+          },
+          "refs": [
+            4386995671,
+            4386995672,
+            4386995673,
+            4386925079
+          ],
+          "geometrySha256": "ece88e5d8868b2064a77a8ee75624b9416b9a935654110a0ac89f50e1499a8ae",
+          "recordSha256": "96af02968311ceb30b83b18e794a9501047faffe665fadc990d196dea60772b1"
+        },
+        "nodeRefs": [
+          "4386995671",
+          "4386995672",
+          "4386995673",
+          "4386925079"
+        ],
+        "length": 139.16565480817957
+      }
+    ]
+  },
+  "receiptFiles": {
+    "inputs.json": {
+      "bytes": 10901,
+      "sha256": "60a299ebd21cb606998dd352d5a5a14ec5ae168ce727139d3ff13f4dd589d500"
+    },
+    "samples.jsonl": {
+      "bytes": 6530600,
+      "sha256": "567a4806353062b7802a0928f3dde427e352bfffa7bf9ce64098597f8535b7ac"
+    },
+    "wall-results.json": {
+      "bytes": 5903,
+      "sha256": "77d7fe30f329dc42ad6e0b81687e73441fb75401ee7e32c1bbb7d7414bd7b406"
+    },
+    "resources.json": {
+      "bytes": 1848,
+      "sha256": "cc59a2cba3eb3d772947a614f5d98110648a423bf4caa4608d473e638c1d40b2"
+    }
+  },
+  "launchPid": 1273813,
+  "runtimeOrPolicyChanges": false
+}
