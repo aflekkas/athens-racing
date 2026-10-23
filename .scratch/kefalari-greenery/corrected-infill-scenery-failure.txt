@@ -1,0 +1,9 @@
+file:///tmp/athens-greenery.98Rc/candidate/tools/world-gen/pack.mjs:75
+    if (identity && identity!==nextIdentity) throw new Error('Mixed world/revision');
+                                                   ^
+
+Error: Mixed world/revision
+    at packTiles (file:///tmp/athens-greenery.98Rc/candidate/tools/world-gen/pack.mjs:75:52)
+    at async file:///tmp/athens-greenery.98Rc/candidate/tools/build-scenery-candidate.mjs:40:1
+
+Node.js v22.23.3

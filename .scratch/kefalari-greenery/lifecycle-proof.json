@@ -1,0 +1,468 @@
+{
+  "passed": true,
+  "build": "b4df99f41ec8cfdf4a0539babeca60d325059ab3",
+  "sceneryArtifact": "b0fdb4dfc11c71cc8363551226be18618fff8733c6563b2cc309b173f90bb4eb",
+  "diagnosticCamera": "Rotated towards actual mapped forest for GPU lifecycle proof; does not replace forward street-character views.",
+  "position": [
+    7813.321524258876,
+    309.47597116786403,
+    -10885.097191297435
+  ],
+  "camera": [
+    127.80706852789079,
+    311.22597116786403,
+    377.9277302487953
+  ],
+  "uploadedTreeGeometries": 6,
+  "rows": [
+    {
+      "phase": "on-0",
+      "on": true,
+      "visible": true,
+      "geometryMemory": 165,
+      "textures": 16,
+      "render": {
+        "frame": 95,
+        "calls": 79,
+        "triangles": 204082,
+        "points": 0,
+        "lines": 0
+      },
+      "inventory": {
+        "js": 123995886,
+        "gpu": 79321473,
+        "heap": 123995886,
+        "sharedJS": 34972499,
+        "tileJS": 13331672,
+        "tileGPU": 7091758,
+        "renderTargetsAndSkyAllowance": 37257216,
+        "resources": {
+          "jsBytes": 536870912,
+          "gpuBytes": 402653184,
+          "stream": {
+            "capBytes": 268435456,
+            "transientBytes": 201326592,
+            "concurrency": 2
+          }
+        },
+        "streamReserved": 26016232,
+        "transient": 0
+      },
+      "colorBytes": 10440,
+      "cpuRecords": 340,
+      "trees": {
+        "instances": 26,
+        "distant": 0,
+        "drawCalls": 6,
+        "triangles": 1654,
+        "rebuilds": 4
+      },
+      "meshIds": [
+        "d2568111-d744-4167-8651-959ec1e7698b",
+        "d94c894e-83b6-4a19-a480-bc3f06adca64",
+        "300bb465-7f2b-42d8-bc5a-2c8a9527e871",
+        "1abba7ef-c3ae-45b8-b4d0-e1992d64b543",
+        "9ab89e1f-0c8b-429b-899d-c008d50eb8f8",
+        "177ad911-16d4-4909-ba91-ff0455ec1bf6",
+        "4a3b467b-7499-4523-a35b-fdd28b39dc90",
+        "57f5e0f9-384c-4619-a90a-cbeb98ca0b6e"
+      ],
+      "geometryIds": [
+        "443a312a-64bc-4172-a559-462980fe79e9",
+        "5f8be290-3103-48e4-af8a-a76287f551f9",
+        "ca39800a-06d7-4111-a767-2603a8278374",
+        "e78e21c6-1b3a-4cd5-a9a4-5c9bee2cfebf",
+        "1bb24b30-7d96-4815-8c60-62fbc9c24c20",
+        "9c2dab2d-1f52-4071-9a1c-df58e007ecf7",
+        "a09e0e80-3064-4129-a6d7-791920c521c8",
+        "f7390cb7-c991-40ca-b4f9-e0a679c0c4c1"
+      ],
+      "placementFadeHash": "58aaf35731ed9b7e2d94d0ae89698e74e2be2cdb07b5571191503d8bebc761a6"
+    },
+    {
+      "phase": "off-1",
+      "on": false,
+      "visible": false,
+      "geometryMemory": 159,
+      "textures": 15,
+      "render": {
+        "frame": 97,
+        "calls": 63,
+        "triangles": 164078,
+        "points": 0,
+        "lines": 0
+      },
+      "inventory": {
+        "js": 86022585,
+        "gpu": 79223652,
+        "heap": 86022585,
+        "sharedJS": 34874678,
+        "tileJS": 13331672,
+        "tileGPU": 7091758,
+        "renderTargetsAndSkyAllowance": 37257216,
+        "resources": {
+          "jsBytes": 536870912,
+          "gpuBytes": 402653184,
+          "stream": {
+            "capBytes": 268435456,
+            "transientBytes": 201326592,
+            "concurrency": 2
+          }
+        },
+        "streamReserved": 26016232,
+        "transient": 0
+      },
+      "colorBytes": 0,
+      "cpuRecords": 340,
+      "trees": {
+        "instances": 26,
+        "distant": 0,
+        "drawCalls": 6,
+        "triangles": 1654,
+        "rebuilds": 4
+      },
+      "meshIds": [
+        "d2568111-d744-4167-8651-959ec1e7698b",
+        "d94c894e-83b6-4a19-a480-bc3f06adca64",
+        "300bb465-7f2b-42d8-bc5a-2c8a9527e871",
+        "1abba7ef-c3ae-45b8-b4d0-e1992d64b543",
+        "9ab89e1f-0c8b-429b-899d-c008d50eb8f8",
+        "177ad911-16d4-4909-ba91-ff0455ec1bf6",
+        "4a3b467b-7499-4523-a35b-fdd28b39dc90",
+        "57f5e0f9-384c-4619-a90a-cbeb98ca0b6e"
+      ],
+      "geometryIds": [
+        "443a312a-64bc-4172-a559-462980fe79e9",
+        "5f8be290-3103-48e4-af8a-a76287f551f9",
+        "ca39800a-06d7-4111-a767-2603a8278374",
+        "e78e21c6-1b3a-4cd5-a9a4-5c9bee2cfebf",
+        "1bb24b30-7d96-4815-8c60-62fbc9c24c20",
+        "9c2dab2d-1f52-4071-9a1c-df58e007ecf7",
+        "a09e0e80-3064-4129-a6d7-791920c521c8",
+        "f7390cb7-c991-40ca-b4f9-e0a679c0c4c1"
+      ],
+      "placementFadeHash": "ba5391211a4775b36da8194a505d139d8463f37078dab9ebcb451edd2ec5d25e"
+    },
+    {
+      "phase": "on-1",
+      "on": true,
+      "visible": true,
+      "geometryMemory": 165,
+      "textures": 16,
+      "render": {
+        "frame": 99,
+        "calls": 79,
+        "triangles": 204082,
+        "points": 0,
+        "lines": 0
+      },
+      "inventory": {
+        "js": 86022585,
+        "gpu": 79321473,
+        "heap": 86022585,
+        "sharedJS": 34972499,
+        "tileJS": 13331672,
+        "tileGPU": 7091758,
+        "renderTargetsAndSkyAllowance": 37257216,
+        "resources": {
+          "jsBytes": 536870912,
+          "gpuBytes": 402653184,
+          "stream": {
+            "capBytes": 268435456,
+            "transientBytes": 201326592,
+            "concurrency": 2
+          }
+        },
+        "streamReserved": 26016232,
+        "transient": 0
+      },
+      "colorBytes": 10440,
+      "cpuRecords": 340,
+      "trees": {
+        "instances": 26,
+        "distant": 0,
+        "drawCalls": 6,
+        "triangles": 1654,
+        "rebuilds": 5
+      },
+      "meshIds": [
+        "d2568111-d744-4167-8651-959ec1e7698b",
+        "d94c894e-83b6-4a19-a480-bc3f06adca64",
+        "300bb465-7f2b-42d8-bc5a-2c8a9527e871",
+        "1abba7ef-c3ae-45b8-b4d0-e1992d64b543",
+        "9ab89e1f-0c8b-429b-899d-c008d50eb8f8",
+        "177ad911-16d4-4909-ba91-ff0455ec1bf6",
+        "4a3b467b-7499-4523-a35b-fdd28b39dc90",
+        "57f5e0f9-384c-4619-a90a-cbeb98ca0b6e"
+      ],
+      "geometryIds": [
+        "443a312a-64bc-4172-a559-462980fe79e9",
+        "5f8be290-3103-48e4-af8a-a76287f551f9",
+        "ca39800a-06d7-4111-a767-2603a8278374",
+        "e78e21c6-1b3a-4cd5-a9a4-5c9bee2cfebf",
+        "1bb24b30-7d96-4815-8c60-62fbc9c24c20",
+        "9c2dab2d-1f52-4071-9a1c-df58e007ecf7",
+        "a09e0e80-3064-4129-a6d7-791920c521c8",
+        "f7390cb7-c991-40ca-b4f9-e0a679c0c4c1"
+      ],
+      "placementFadeHash": "58aaf35731ed9b7e2d94d0ae89698e74e2be2cdb07b5571191503d8bebc761a6"
+    },
+    {
+      "phase": "off-2",
+      "on": false,
+      "visible": false,
+      "geometryMemory": 159,
+      "textures": 15,
+      "render": {
+        "frame": 101,
+        "calls": 63,
+        "triangles": 164078,
+        "points": 0,
+        "lines": 0
+      },
+      "inventory": {
+        "js": 115926825,
+        "gpu": 79223652,
+        "heap": 115926825,
+        "sharedJS": 34874678,
+        "tileJS": 13331672,
+        "tileGPU": 7091758,
+        "renderTargetsAndSkyAllowance": 37257216,
+        "resources": {
+          "jsBytes": 536870912,
+          "gpuBytes": 402653184,
+          "stream": {
+            "capBytes": 268435456,
+            "transientBytes": 201326592,
+            "concurrency": 2
+          }
+        },
+        "streamReserved": 26016232,
+        "transient": 0
+      },
+      "colorBytes": 0,
+      "cpuRecords": 340,
+      "trees": {
+        "instances": 26,
+        "distant": 0,
+        "drawCalls": 6,
+        "triangles": 1654,
+        "rebuilds": 5
+      },
+      "meshIds": [
+        "d2568111-d744-4167-8651-959ec1e7698b",
+        "d94c894e-83b6-4a19-a480-bc3f06adca64",
+        "300bb465-7f2b-42d8-bc5a-2c8a9527e871",
+        "1abba7ef-c3ae-45b8-b4d0-e1992d64b543",
+        "9ab89e1f-0c8b-429b-899d-c008d50eb8f8",
+        "177ad911-16d4-4909-ba91-ff0455ec1bf6",
+        "4a3b467b-7499-4523-a35b-fdd28b39dc90",
+        "57f5e0f9-384c-4619-a90a-cbeb98ca0b6e"
+      ],
+      "geometryIds": [
+        "443a312a-64bc-4172-a559-462980fe79e9",
+        "5f8be290-3103-48e4-af8a-a76287f551f9",
+        "ca39800a-06d7-4111-a767-2603a8278374",
+        "e78e21c6-1b3a-4cd5-a9a4-5c9bee2cfebf",
+        "1bb24b30-7d96-4815-8c60-62fbc9c24c20",
+        "9c2dab2d-1f52-4071-9a1c-df58e007ecf7",
+        "a09e0e80-3064-4129-a6d7-791920c521c8",
+        "f7390cb7-c991-40ca-b4f9-e0a679c0c4c1"
+      ],
+      "placementFadeHash": "ba5391211a4775b36da8194a505d139d8463f37078dab9ebcb451edd2ec5d25e"
+    },
+    {
+      "phase": "on-2",
+      "on": true,
+      "visible": true,
+      "geometryMemory": 165,
+      "textures": 16,
+      "render": {
+        "frame": 103,
+        "calls": 79,
+        "triangles": 204082,
+        "points": 0,
+        "lines": 0
+      },
+      "inventory": {
+        "js": 115926825,
+        "gpu": 79321473,
+        "heap": 115926825,
+        "sharedJS": 34972499,
+        "tileJS": 13331672,
+        "tileGPU": 7091758,
+        "renderTargetsAndSkyAllowance": 37257216,
+        "resources": {
+          "jsBytes": 536870912,
+          "gpuBytes": 402653184,
+          "stream": {
+            "capBytes": 268435456,
+            "transientBytes": 201326592,
+            "concurrency": 2
+          }
+        },
+        "streamReserved": 26016232,
+        "transient": 0
+      },
+      "colorBytes": 10440,
+      "cpuRecords": 340,
+      "trees": {
+        "instances": 26,
+        "distant": 0,
+        "drawCalls": 6,
+        "triangles": 1654,
+        "rebuilds": 6
+      },
+      "meshIds": [
+        "d2568111-d744-4167-8651-959ec1e7698b",
+        "d94c894e-83b6-4a19-a480-bc3f06adca64",
+        "300bb465-7f2b-42d8-bc5a-2c8a9527e871",
+        "1abba7ef-c3ae-45b8-b4d0-e1992d64b543",
+        "9ab89e1f-0c8b-429b-899d-c008d50eb8f8",
+        "177ad911-16d4-4909-ba91-ff0455ec1bf6",
+        "4a3b467b-7499-4523-a35b-fdd28b39dc90",
+        "57f5e0f9-384c-4619-a90a-cbeb98ca0b6e"
+      ],
+      "geometryIds": [
+        "443a312a-64bc-4172-a559-462980fe79e9",
+        "5f8be290-3103-48e4-af8a-a76287f551f9",
+        "ca39800a-06d7-4111-a767-2603a8278374",
+        "e78e21c6-1b3a-4cd5-a9a4-5c9bee2cfebf",
+        "1bb24b30-7d96-4815-8c60-62fbc9c24c20",
+        "9c2dab2d-1f52-4071-9a1c-df58e007ecf7",
+        "a09e0e80-3064-4129-a6d7-791920c521c8",
+        "f7390cb7-c991-40ca-b4f9-e0a679c0c4c1"
+      ],
+      "placementFadeHash": "58aaf35731ed9b7e2d94d0ae89698e74e2be2cdb07b5571191503d8bebc761a6"
+    },
+    {
+      "phase": "off-3",
+      "on": false,
+      "visible": false,
+      "geometryMemory": 159,
+      "textures": 15,
+      "render": {
+        "frame": 105,
+        "calls": 63,
+        "triangles": 164078,
+        "points": 0,
+        "lines": 0
+      },
+      "inventory": {
+        "js": 115926825,
+        "gpu": 79223652,
+        "heap": 115926825,
+        "sharedJS": 34874678,
+        "tileJS": 13331672,
+        "tileGPU": 7091758,
+        "renderTargetsAndSkyAllowance": 37257216,
+        "resources": {
+          "jsBytes": 536870912,
+          "gpuBytes": 402653184,
+          "stream": {
+            "capBytes": 268435456,
+            "transientBytes": 201326592,
+            "concurrency": 2
+          }
+        },
+        "streamReserved": 26016232,
+        "transient": 0
+      },
+      "colorBytes": 0,
+      "cpuRecords": 340,
+      "trees": {
+        "instances": 26,
+        "distant": 0,
+        "drawCalls": 6,
+        "triangles": 1654,
+        "rebuilds": 6
+      },
+      "meshIds": [
+        "d2568111-d744-4167-8651-959ec1e7698b",
+        "d94c894e-83b6-4a19-a480-bc3f06adca64",
+        "300bb465-7f2b-42d8-bc5a-2c8a9527e871",
+        "1abba7ef-c3ae-45b8-b4d0-e1992d64b543",
+        "9ab89e1f-0c8b-429b-899d-c008d50eb8f8",
+        "177ad911-16d4-4909-ba91-ff0455ec1bf6",
+        "4a3b467b-7499-4523-a35b-fdd28b39dc90",
+        "57f5e0f9-384c-4619-a90a-cbeb98ca0b6e"
+      ],
+      "geometryIds": [
+        "443a312a-64bc-4172-a559-462980fe79e9",
+        "5f8be290-3103-48e4-af8a-a76287f551f9",
+        "ca39800a-06d7-4111-a767-2603a8278374",
+        "e78e21c6-1b3a-4cd5-a9a4-5c9bee2cfebf",
+        "1bb24b30-7d96-4815-8c60-62fbc9c24c20",
+        "9c2dab2d-1f52-4071-9a1c-df58e007ecf7",
+        "a09e0e80-3064-4129-a6d7-791920c521c8",
+        "f7390cb7-c991-40ca-b4f9-e0a679c0c4c1"
+      ],
+      "placementFadeHash": "ba5391211a4775b36da8194a505d139d8463f37078dab9ebcb451edd2ec5d25e"
+    },
+    {
+      "phase": "on-3",
+      "on": true,
+      "visible": true,
+      "geometryMemory": 165,
+      "textures": 16,
+      "render": {
+        "frame": 107,
+        "calls": 79,
+        "triangles": 204082,
+        "points": 0,
+        "lines": 0
+      },
+      "inventory": {
+        "js": 121204133,
+        "gpu": 79321473,
+        "heap": 121204133,
+        "sharedJS": 34972499,
+        "tileJS": 13331672,
+        "tileGPU": 7091758,
+        "renderTargetsAndSkyAllowance": 37257216,
+        "resources": {
+          "jsBytes": 536870912,
+          "gpuBytes": 402653184,
+          "stream": {
+            "capBytes": 268435456,
+            "transientBytes": 201326592,
+            "concurrency": 2
+          }
+        },
+        "streamReserved": 26016232,
+        "transient": 0
+      },
+      "colorBytes": 10440,
+      "cpuRecords": 340,
+      "trees": {
+        "instances": 26,
+        "distant": 0,
+        "drawCalls": 6,
+        "triangles": 1654,
+        "rebuilds": 7
+      },
+      "meshIds": [
+        "d2568111-d744-4167-8651-959ec1e7698b",
+        "d94c894e-83b6-4a19-a480-bc3f06adca64",
+        "300bb465-7f2b-42d8-bc5a-2c8a9527e871",
+        "1abba7ef-c3ae-45b8-b4d0-e1992d64b543",
+        "9ab89e1f-0c8b-429b-899d-c008d50eb8f8",
+        "177ad911-16d4-4909-ba91-ff0455ec1bf6",
+        "4a3b467b-7499-4523-a35b-fdd28b39dc90",
+        "57f5e0f9-384c-4619-a90a-cbeb98ca0b6e"
+      ],
+      "geometryIds": [
+        "443a312a-64bc-4172-a559-462980fe79e9",
+        "5f8be290-3103-48e4-af8a-a76287f551f9",
+        "ca39800a-06d7-4111-a767-2603a8278374",
+        "e78e21c6-1b3a-4cd5-a9a4-5c9bee2cfebf",
+        "1bb24b30-7d96-4815-8c60-62fbc9c24c20",
+        "9c2dab2d-1f52-4071-9a1c-df58e007ecf7",
+        "a09e0e80-3064-4129-a6d7-791920c521c8",
+        "f7390cb7-c991-40ca-b4f9-e0a679c0c4c1"
+      ],
+      "placementFadeHash": "58aaf35731ed9b7e2d94d0ae89698e74e2be2cdb07b5571191503d8bebc761a6"
+    }
+  ],
+  "errors": []
+}
