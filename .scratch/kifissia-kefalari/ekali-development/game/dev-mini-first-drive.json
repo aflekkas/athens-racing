@@ -1,0 +1,69 @@
+{
+  "status": "DEV initial native driving only; full acceptance pending",
+  "sourceCommit": "53cae786431f79c67f6383a38f12de9474fe3601",
+  "routeId": "ekali-circuit",
+  "eventId": "ekali-race",
+  "car": "mini_jcw",
+  "geometryHash": "5303e77f5e67e9245cb949da3828e138c31420247034c436a6cd7a03e128523c",
+  "routeHash": "6a98332bdff9b863fb172bef001fdd85c02070cb442f2907bd151c1f76ef283b",
+  "worldSetRevision": "358325da4b458b4b15c2f419aed0c204da91e714f4a011991cbecbdb23d2e3a8",
+  "nativeRaceSeconds": 13.8333333333336,
+  "startS": -8.000070082250204,
+  "s": 148.9328290687813,
+  "pose": {
+    "x": 9533.316536084425,
+    "y": 339.4877148728639,
+    "z": -14827.500928966583,
+    "u": -0.25136178706747586
+  },
+  "speedKmh": 53.338151234201995,
+  "lap": 1,
+  "requiredLaps": 2,
+  "done": false,
+  "crashes": 0,
+  "holds": 0,
+  "missingContacts": 0,
+  "loadingOpacity": "0",
+  "camera": {
+    "mode": "cockpit",
+    "localPosition": [
+      316.80591853640254,
+      340.7008934904245,
+      20.47041018004778
+    ],
+    "quaternion": [
+      -0.04221424741058468,
+      -0.17318313687628747,
+      0.022085768566660266,
+      0.9837366401858106
+    ]
+  },
+  "rivals": [
+    {
+      "car": "z4",
+      "s": 139.31277691334208,
+      "finish": null
+    },
+    {
+      "car": "gr_yaris",
+      "s": 128.47546304790012,
+      "finish": null
+    }
+  ],
+  "pageErrors": [],
+  "fixtureConsoleLimits": [
+    "local websocket404/reconnect noise",
+    "initial incomplete auth config response blocked native menu; fixture fetch response corrected and native menu.hide used"
+  ],
+  "freshPositivePhysicsRender": true,
+  "image": "dev-mini-first-drive.jpg",
+  "terrainComfortAccepted": false,
+  "pending": [
+    "three cars continuous two-lap race and rival finishes",
+    "solo TT two laps",
+    "tow and onward rejoin",
+    "free roam no race props",
+    "source/current streetscape character",
+    "final world/contact proof regeneration"
+  ]
+}
