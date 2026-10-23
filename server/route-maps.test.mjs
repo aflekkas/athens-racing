@@ -30,7 +30,11 @@ async function catalogue({ timetrial = false } = {}) {
 }
 test('trusted build binds route/grid/road artifacts; the compiled geometry remains unchanged', async () => {
   const { c, build, grid } = await catalogue(), before = JSON.stringify(c), maps = new Map(); await installRouteMaps(maps, build, { carSpecs: { mini: { width: 2, length: 4 }, bus: { width: 2.55, length: 12 } } });
-  assert.ok(maps.has(c.id)); const map = maps.get(c.id); assert.equal(map.geometry.isWorldRoute, true); assert.equal(maps.routeConfig.routes[0].url, `/data/routes/${c.id}.${c.routeHash}.json`); assert.equal(map.track.version, c.routeHash + ':' + build.routeConfig.routes[0].onlineGrid.hash); assert.equal(map.gridPose(7, 'mini'), grid.poses[7]); assert.throws(() => map.gridPose(7, 'bus')); assert.equal(map.supportsCar('bus'), false);
+  assert.ok(maps.has(c.id)); const map = maps.get(c.id); assert.equal(map.geometry.isWorldRoute, true); assert.equal(maps.routeConfig.routes[0].url, `/data/routes/${c.id}.${c.routeHash}.json`); assert.equal(map.track.version, c.routeHash + ':' + build.routeConfig.routes[0].onlineGrid.hash); const pose = map.gridPose(7, 'mini'), expectedPose = { ...grid.poses[7] };
+  assert.deepEqual(pose, expectedPose); assert.notStrictEqual(pose, grid.poses[7]);
+  assert.ok(Object.isFrozen(pose)); assert.equal(Object.isFrozen(grid.poses[7]), false);
+  grid.poses[7].x += 10; grid.poses[7].s -= 1;
+  assert.deepEqual(map.gridPose(7, 'mini'), expectedPose); assert.notDeepEqual(grid.poses[7], expectedPose); assert.throws(() => map.gridPose(7, 'bus')); assert.equal(map.supportsCar('bus'), false);
   assert.equal(JSON.stringify(c), before); const event = [...map.definitions.values()][0]; assert.equal(event.s0, 0); assert.equal(event.len, c.lengthM); assert.equal(event.mapId, c.id);
 });
 test('unknown/stale routes, spoofed descriptors, changed artifact bytes and incomplete eight-slot grids fail closed', async () => {
