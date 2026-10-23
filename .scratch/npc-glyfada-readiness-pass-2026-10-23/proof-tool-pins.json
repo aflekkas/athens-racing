@@ -1,0 +1,108 @@
+{
+  "status": "SOURCE_PREPARED_NOT_RUNTIME_TESTED",
+  "observedCurrentMaster": "d5f476f84d32365103111b17572804d03d84f5bd",
+  "parentNamedBase": "0bf025e423fbc67b91bdeaddda4ee906cf4b80a3",
+  "files": {
+    "budget-browser.mjs": "ecbf368b4d1f2e34242dc0c0e12788e4034742ed81d27b5a1f0c69837af3b7ec",
+    "glyfada-readiness.mjs": "2ade37326d67fbb16b9fa304bf0b4cdb0a366a23c947e01190a73e77ab18d0d9",
+    "local-server.mjs": "3edc89bb809d8a671186ec9c62b32bcd7f0a88a84f34054b8156a9f7d1e36129",
+    "readiness-policy.mjs": "b91a68ff0eb12228521141368f646826053fa39b2edc4015887e2558aec83aad",
+    "readiness-policy.test.mjs": "4c1dff34f8753656163c44cb940ba80443239644585745cefd9fa922aa398fd0",
+    "signed-out-fixture.mjs": "c13c109439b346ef23a25a3c702f3020c7b57650e185a5bf781be495b8165c69",
+    "signed-out-fixture.test.mjs": "f1621c1a2f6bfb776f8ce339d605335341dd11d90f7c17ce6fc401ec3afc114c",
+    "account-response-tap.mjs": "ea33138a3a7f47b9a5d9fb2ee0e5c74fd60b716b4397e5e549ddc5442da07649",
+    "account-response-tap.test.mjs": "13b59cfd534cd10ffa7f457224b803c4d1a2565ca4bc8c750bf52a295b1e50a7",
+    "account-response-native-http-unit.mjs": "357d6aef92a21b45fa99dd74778de334bc192d13c1aedd385e75318eb99c6cfd"
+  },
+  "pureTests": {
+    "abortCachePass": 14,
+    "realSignedOutFixturePass": 6,
+    "publicResponseTapPass": 15,
+    "totalPass": 35,
+    "fail": 0,
+    "skip": 0
+  },
+  "syntax": "all10tasklocalmodulesPASS",
+  "cacheBodiesRead": false,
+  "decoded": false,
+  "browserStarted": false,
+  "serverStarted": false,
+  "network": false,
+  "command": "PROOF_ROOT=/home/dev/.cogenly/worktrees/athens-racing/t3-41c48689 PROOF_SHA=<ALLOCATED_FULL_SHA> PROOF_MODE=glyfada-readiness CACHE_ONLY=1 CHROME_BIN=/tmp/athens-ui-fixes.Nxho/browsers/chromium-1248/chrome-linux64/chrome BROWSER_SLOTS=1 BROWSER_SLOT_WAIT=1 bash tools/browser-slot.sh node /tmp/athens-ui-fixes.Nxho/budget-browser.mjs",
+  "previousRunnerSHA": "2d10e752539eede428cd614b07006ff4495e179fe0d18a2417d127e0a2778b78",
+  "grantInstrumentation": "Added before-simulation JPG/JSON + helper SHA/own spawned PID receipt required by explicit grant; other4helperpins unchanged",
+  "previousRunHelpers": {
+    "budget-browser.mjs": "ecbf368b4d1f2e34242dc0c0e12788e4034742ed81d27b5a1f0c69837af3b7ec",
+    "glyfada-readiness.mjs": "7d6071e6b7134a4b566a04ec78222e294f84c7143cddcdbf36699d2093e4a23e",
+    "local-server.mjs": "e48b7267eafde0a66606edd0bdba238d46f8848551f88ba4ecff29c76e0b1c4a",
+    "readiness-policy.mjs": "e2ce6a9b9258c3d6b11b0f5934335cd99b1e92751a376168201562fec717d4fb",
+    "readiness-policy.test.mjs": "63f6feabdf03e4f09d5ecc8ffe775982d1680172a8c41add623a9f408959f800"
+  },
+  "protocol": "Shared first-cause abort on cache miss/bad identity/HTTP>=400/pageerror/unapproved external/deadline; race in-flight phases and immediately close OWN browser. Guard every individual1/240physics step, render, activateFrame, sample and screenshot; no postabort failure screenshot. Expected fonts abort locally and are recorded separately from unapproved attempts; actualremoteBytes must0. Readonly URL-key cache then original1748contentSHA cells then route41contentSHA cells; SHA+rawsize verified before serve in future allocated run; corruptfirsthitfails without fallback/copy/fetch.",
+  "grantStatus": "SOURCE_UNIT_READY; gameplay retry NOT ALLOCATED",
+  "previousAbortfixHelpers": {
+    "budget-browser.mjs": "ecbf368b4d1f2e34242dc0c0e12788e4034742ed81d27b5a1f0c69837af3b7ec",
+    "glyfada-readiness.mjs": "01e991b7d230b7d9723548853ce8ef4243d0828380f14b6c97785b80934d15fb",
+    "local-server.mjs": "feebc7eed8effe38557df3263bd6cfaa0126b3ad7440666cd5b3a7d98d1b842b",
+    "readiness-policy.mjs": "b91a68ff0eb12228521141368f646826053fa39b2edc4015887e2558aec83aad",
+    "readiness-policy.test.mjs": "4c1dff34f8753656163c44cb940ba80443239644585745cefd9fa922aa398fd0"
+  },
+  "accountSources": {
+    "server/accounts-stub.mjs": {
+      "sha256": "bd0c83bc384bbf5a62dedb8b42e87af755ec78f8155bcfe837b34c4ca1db3c7f",
+      "gitBlob": "88963112844ebc4cfbd313227b9c43f43caa2cab"
+    },
+    "worker/accounts.mjs": {
+      "sha256": "0a2b7dd3622ffee78a90bbc0c188d45b29cdc883207dadb433c4133b55603a1d",
+      "gitBlob": "fd2ad3aaffe28cd91c9758ddf08e5e49929f8918"
+    },
+    "migrations/0001_accounts.sql": {
+      "sha256": "cc9a907ebc367380af91587fa43212bf813e4f3289460a759be18007f79d5cd1",
+      "gitBlob": "44bfb0c66ee5aae0938e8babe513b9962c3dab9c"
+    },
+    "server/index.mjs": {
+      "sha256": "0e07e11ffdc35317c25e29e72a5a0ac94aadbe8c54a86cd964c45d3a4247403b",
+      "gitBlob": "8fabbb93653e0c6f4b99b8984a79d376e3cade3c"
+    }
+  },
+  "fixtureProtocol": "Existing accountsDatabase() only: real node:sqlite :memory: + migration, PRAGMAquery_onlyON, explicit accountEnv has ONLYACCOUNTS and random32byteSESSION_SECRET keptmemoryonly; no inheritedenv/provider/OAuth/login/fabricatedHTTP. Actualworker config/session contracttested; missingDB/secret503negative. OwnHTTPclose awaited beforeSQLiteclose inALLfinallypaths/startupfailure; assertusers0/sessions0/writes0. Helper accountEnv defaultundefined preserves othercallers. No browser/server launched underSOURCEONLY grant.",
+  "previousSignedoutHelpers": {
+    "budget-browser.mjs": "ecbf368b4d1f2e34242dc0c0e12788e4034742ed81d27b5a1f0c69837af3b7ec",
+    "glyfada-readiness.mjs": "ac52aafff8958d68bbf2539e85f86da126454dc815f3db2bb883b5da1c22598b",
+    "local-server.mjs": "04525ae11edc4543835685a11fa9e568d05dd0f123221eb8f7aa830ee3b8c442",
+    "readiness-policy.mjs": "b91a68ff0eb12228521141368f646826053fa39b2edc4015887e2558aec83aad",
+    "readiness-policy.test.mjs": "4c1dff34f8753656163c44cb940ba80443239644585745cefd9fa922aa398fd0",
+    "signed-out-fixture.mjs": "c13c109439b346ef23a25a3c702f3020c7b57650e185a5bf781be495b8165c69",
+    "signed-out-fixture.test.mjs": "f1621c1a2f6bfb776f8ce339d605335341dd11d90f7c17ce6fc401ec3afc114c"
+  },
+  "bodyCaptureProtocol": "NODE_REAL_ACCOUNT_RESPONSE_WRITE_END: only existingauth/config+session, private<=16384B checkedbeforecopy, exactoriginalwrite/end args/this/returns/backpressure/callbacks/header/status unchanged. FatalUTF8+JSONparse afterend/nativefinish, strictsignedout200applicationJSON schemas; receiptpublicbody+rawSHA/size/status/type. Noadditionalfetch/mock/login/session/HTTPstatusexemption; CDPstatusonly no response.json. Abort cancels capture/listeners and prevents any postabortphoto/physics; realSQLite strictfinallyunchanged.",
+  "previousNodeCaptureHelpers": {
+    "budget-browser.mjs": "ecbf368b4d1f2e34242dc0c0e12788e4034742ed81d27b5a1f0c69837af3b7ec",
+    "glyfada-readiness.mjs": "2294c9b02c93cc7380874fad9e86363293a525ed19fc2dadbf349bdb3e3aa13f",
+    "local-server.mjs": "3edc89bb809d8a671186ec9c62b32bcd7f0a88a84f34054b8156a9f7d1e36129",
+    "readiness-policy.mjs": "b91a68ff0eb12228521141368f646826053fa39b2edc4015887e2558aec83aad",
+    "readiness-policy.test.mjs": "4c1dff34f8753656163c44cb940ba80443239644585745cefd9fa922aa398fd0",
+    "signed-out-fixture.mjs": "c13c109439b346ef23a25a3c702f3020c7b57650e185a5bf781be495b8165c69",
+    "signed-out-fixture.test.mjs": "f1621c1a2f6bfb776f8ce339d605335341dd11d90f7c17ce6fc401ec3afc114c",
+    "account-response-tap.mjs": "fc2ffbe085f021b1dc5c4fbf00c40f0de5208403346d2c8a7813ae5e4c42fd9c",
+    "account-response-tap.test.mjs": "4560aa221f8b59fc4b970869efedcf87418b91b7e68d39ecf1df7db0c5ae0700"
+  },
+  "nativeHTTPUnit": {
+    "receipt": "/tmp/athens-ui-fixes.Nxho/account-response-native-http-unit.json",
+    "receiptSHA256": "8a8c60d27a66a85ceb13ef77ece2a910f279435045e078f3423a849daae9845a",
+    "pass": true,
+    "elapsedMs": 150.05165499999998,
+    "ownPID": 1316472,
+    "port": 40789,
+    "requests": 2,
+    "externalRequests": 0,
+    "worldRequests": 0,
+    "httpClosed": true,
+    "ownedSocketsRemaining": 0,
+    "sqliteClosed": true,
+    "source": "d5f476f84d32365103111b17572804d03d84f5bd",
+    "serverSourceSHA256": "0e07e11ffdc35317c25e29e72a5a0ac94aadbe8c54a86cd964c45d3a4247403b",
+    "serverPatternSHA256": "ae068642f7d84c5fd975b10552c2d9d3f4c2a76c0c5e6a9c15b7593fcbcd12a5"
+  },
+  "writeHeadProtocol": "ExactnativewriteHeadargs/this/return/exceptions forwarded unchanged; effectiveactualserializedstatus+singlecontenttype capturedafterwriteHead, includingdirectobject/statusMessage/flatarray/setHeaderoverride/implicithead. Noheaderorstatusmutation, strict200JSONschemas unchanged; browserproofrequiresNODE_NATIVE_SERIALIZED_WRITEHEAD+observednativeheadcall. Freshfutureoutputglyfada-readiness-writehead; allpriorFAILEDimmutable."
+}
