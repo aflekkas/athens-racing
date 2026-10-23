@@ -1,0 +1,247 @@
+{
+  "sourcePin": "7949401225d46c633e237e0fcf08520886c3792a",
+  "status": "local complete Megara-domain proof only; no catalogue activation",
+  "acceptance": false,
+  "online": false,
+  "worldSetRevision": "dbba5e7757713362698d528451b6d16af5fe85c6dfe9fcd1b4966cd3658291d0",
+  "regionManifestSHA256": "e5d178575c905005feb31e3ccca62f4db0d5940545d96162a2f19ad28628935a",
+  "routeHash": "f0de0761bd3eb074dc024b5e2d3e427f6e6d2550f1c5d510c4d3dc4f9f5bb06b",
+  "geometryHash": "c98600b1c6b8d798fbc39fe2bd42d716f64bb06891e83b63d144740f185161a6",
+  "gridHash": "909c994a578b64e91d31d9dd8afa55b0cf6dc8805e4618801ce54e8c1150ca69",
+  "recoveryHash": "483cafbbe6e0f0a7d4a5cd9f2115d06b832ea4db455fba22f58cd4a7644a0ed3",
+  "cells": 72,
+  "emptyCells": 68,
+  "admittedCells": 4,
+  "totalBytes": 1355664,
+  "anchors": 3898,
+  "admission": {
+    "cells": 4,
+    "maxSidecarBytes": 895383,
+    "maxDecodedBytes": 12013000
+  },
+  "neighborhoods": 72,
+  "neighborMemberships": 550,
+  "schemaVersion": 1,
+  "scope": "complete local 72-cell Megara fixture only; source/admission evidence, not deployment approval",
+  "measurementType": "conservative production admission accounting; NOT measured heap/RSS/Worker capacity",
+  "finalWorldRebindPending": true,
+  "runtimeProofs": {
+    "WorkerHeap": false,
+    "twoClientBrowser": false,
+    "physical74Cars256Cones": false,
+    "coldPlayableWithin8Seconds": false,
+    "fullCombinedCandidateGates": false
+  },
+  "worldFileSHA256": "47718e4a77c7c8a7778e377a07f54a67ca6321dffaef749f2b28b3f14a9ccb2e",
+  "compiledFileSHA256": "61764f13fcf9f3e481d9c76a1b81a893f3f1b2e69774b605201df32a5d223ebe",
+  "rootFileSHA256": "483cafbbe6e0f0a7d4a5cd9f2115d06b832ea4db455fba22f58cd4a7644a0ed3",
+  "rootFileBytes": 8323,
+  "gridFileSHA256": "909c994a578b64e91d31d9dd8afa55b0cf6dc8805e4618801ce54e8c1150ca69",
+  "regionRevision": "1758324e3a101a07be5e70ad96cc0d12cbe32dc8c0839039fe3ed9a0b2b4752e",
+  "metadataRepairPriorAudit": {
+    "manifestSHA256": "e5d178575c905005feb31e3ccca62f4db0d5940545d96162a2f19ad28628935a",
+    "auditFileSHA256": "64e0d26f281a5a0fd14eea14085a8d8559e33ea353f6e945197488804a728ccc",
+    "cells": 72,
+    "changedCells": 5,
+    "changedSurfaceWords": 186,
+    "physicalArraysByteIdentical": true,
+    "note": "Prior source-bound byte audit retained unchanged; this run hash-verified emitted packets, did not rerun repair or rebake"
+  },
+  "sidecars": [
+    {
+      "cell": "-63,-2",
+      "sha256": "46a0808f5d49f9c563206545e0c204b85f20b3e0475c0976a1147c4e71e6a5fd",
+      "url": "/world/recovery/-63,-2.46a0808f5d49f9c563206545e0c204b85f20b3e0475c0976a1147c4e71e6a5fd.json",
+      "wireBytes": 398025,
+      "anchors": 897,
+      "byteAdmission": {
+        "bytes": 398025,
+        "decodedBytes": 3606404,
+        "memory": {
+          "liveBufferBytes": 1194075,
+          "authenticationBytes": 4199377,
+          "expansionBytes": 3915821
+        }
+      }
+    },
+    {
+      "cell": "-64,-1",
+      "sha256": "9eb8f9a71f5322647f53055c7b3e1d0c4e0bc8df9d5846cc2e9345d41c444a26",
+      "url": "/world/recovery/-64,-1.9eb8f9a71f5322647f53055c7b3e1d0c4e0bc8df9d5846cc2e9345d41c444a26.json",
+      "wireBytes": 41342,
+      "anchors": 131,
+      "byteAdmission": {
+        "bytes": 41342,
+        "decodedBytes": 515580,
+        "memory": {
+          "liveBufferBytes": 124026,
+          "authenticationBytes": 433446,
+          "expansionBytes": 420854
+        }
+      }
+    },
+    {
+      "cell": "-64,-2",
+      "sha256": "7d34c29ee67f22234f7cde776206b02d6a6af5139cedbf48a17123467ccea2bb",
+      "url": "/world/recovery/-64,-2.7d34c29ee67f22234f7cde776206b02d6a6af5139cedbf48a17123467ccea2bb.json",
+      "wireBytes": 895383,
+      "anchors": 2834,
+      "byteAdmission": {
+        "bytes": 895383,
+        "decodedBytes": 12013000,
+        "memory": {
+          "liveBufferBytes": 2686149,
+          "authenticationBytes": 9287803,
+          "expansionBytes": 9496549
+        }
+      }
+    },
+    {
+      "cell": "-65,-1",
+      "sha256": "a38fe30298400b753485dab7527996524d714c27aa8cd3912cac0a98041df8c8",
+      "url": "/world/recovery/-65,-1.a38fe30298400b753485dab7527996524d714c27aa8cd3912cac0a98041df8c8.json",
+      "wireBytes": 12591,
+      "anchors": 36,
+      "byteAdmission": {
+        "bytes": 12591,
+        "decodedBytes": 143784,
+        "memory": {
+          "liveBufferBytes": 37773,
+          "authenticationBytes": 133511,
+          "expansionBytes": 128661
+        }
+      }
+    }
+  ],
+  "savedDenseCell": {
+    "originalV1SHA256": "b3bddb9a8a76e4120b2ab6b01ddd44ae5097be63c0b8b3d0c4a2c359505a5a87",
+    "sourcePin": "7949401225d46c633e237e0fcf08520886c3792a",
+    "hash": "7d34c29ee67f22234f7cde776206b02d6a6af5139cedbf48a17123467ccea2bb",
+    "anchors": 2834,
+    "edges": 100,
+    "points": 1926,
+    "certificates": 4570,
+    "metrics": {
+      "bytes": 895383,
+      "decodedBytes": 12013000,
+      "memory": {
+        "liveBufferBytes": 1790766,
+        "authenticationBytes": 8392420,
+        "expansionBytes": 8601166
+      }
+    }
+  },
+  "neighborhoodSummary": {
+    "centres": 72,
+    "memberships": 550,
+    "sizeHistogram": {
+      "4": 4,
+      "6": 26,
+      "9": 42
+    },
+    "worst": {
+      "key": "-64,-1",
+      "members": [
+        "-63,-1",
+        "-63,-2",
+        "-63,0",
+        "-64,-1",
+        "-64,-2",
+        "-64,0",
+        "-65,-1",
+        "-65,-2",
+        "-65,0"
+      ],
+      "nonempty": [
+        "-63,-2",
+        "-64,-1",
+        "-64,-2",
+        "-65,-1"
+      ],
+      "bytes": 1347341,
+      "anchors": 3898
+    }
+  },
+  "limits": {
+    "wireBytes": 2097152,
+    "admissionPhaseBytes": 12582912,
+    "compactCacheBytes": 16777216,
+    "contexts": 2,
+    "contextBytesEach": 2097152,
+    "notes": "Limits unchanged; artifact admission does not prove complete context retention, eviction, real Worker heap or enforcement"
+  },
+  "sourceModules": {
+    "server/route-road-stream.mjs": {
+      "sha256": "60bcae3b7396620a63c0e9bfb03e9207cfe003e14c42946c5964b60b7b962808",
+      "gitBlob": "74f65d0b3e108653255feb90c5c0c06c7996f97f"
+    },
+    "server/route-road-wire.mjs": {
+      "sha256": "5adea726ef34ee84a7aea8259f15905b40478615072370c69a3134d6a700a166",
+      "gitBlob": "3e83d0d147d858987f66124c9a911760e387622a"
+    },
+    "server/route-roads.mjs": {
+      "sha256": "e60e212d29e25802f29f48edc3ad6791186b204cd2b72bb8a087d8042fccef91",
+      "gitBlob": "994799d4f5046fd4d832a7cfa69b2a945b64386f"
+    },
+    "src/online-grid.js": {
+      "sha256": "62e5f7217cb929aea4f69d6e5aacde4791b1a37d52bdafafc0edd66fbdf87d5a",
+      "gitBlob": "8e9694c05ee7c9750454d36a9fc713b7a1637f81"
+    },
+    "src/json-auth-snapshot.js": {
+      "sha256": "6639fe927eb6e5b0b10b1a9cf4820e246dca2cf7394401836da6acd88f6228c7",
+      "gitBlob": "e007f869c760c38d59d0fc1530532584c5ca0997"
+    },
+    "src/world-tile-roads.js": {
+      "sha256": "1499ad4bb59dbd5ac43f63e5761f83193f543feafd99b2a0a4b567e67dd81422",
+      "gitBlob": "a18889bf7bd275090b563a064beb1f0c6aec252c"
+    },
+    "src/route-compile.js": {
+      "sha256": "d02eecb8d344c20447819960648b043d6a4a08a28e47ff916729062701f83dd8",
+      "gitBlob": "18803126e1dbae5f5b84364f1290bdc646c0b050"
+    },
+    "tools/build-world-recovery.mjs": {
+      "sha256": "bf3069fafa8631c24fd93d9f75278fbf55105a5d550d886eec4fae7bff0f4fa2",
+      "gitBlob": "9db80679275ae15c8a5040104a5783e40b9f0d14"
+    },
+    "tools/build-online-grids.mjs": {
+      "sha256": "2b4e8a57958318d7ba14da44625e4cad19e53150859641edc5cc2128266809a1",
+      "gitBlob": "3a1627f76387edcc3a9195ac7ef066fb6cd41742"
+    },
+    "tools/emitted-route-world.mjs": {
+      "sha256": "3fcb51d2c3c891b1d6b05e5b0e8b9347ace23a6d3924e54bd62c0cfed2200e5a",
+      "gitBlob": "959175a4fb59bab83c1daa07d1c0d427f69843f7"
+    }
+  },
+  "reproducer": {
+    "file": "reproduce.mjs",
+    "sha256": "7b26a574adf4939e35ce3666d905ce623ac8820f0b72014b9c63f1da0af9ea51",
+    "originalPath": "/tmp/athens-loaders.OfMh/run-megara72-v2.mjs",
+    "sourceExportPin": "7949401225d46c633e237e0fcf08520886c3792a",
+    "command": "timeout --signal=TERM --kill-after=3s 295s node /tmp/athens-loaders.OfMh/run-megara72-v2.mjs",
+    "terminalHardTimeoutMs": 300000,
+    "originalLogSHA256": "463386bf01f9402a32b6230cb099c1bd4c47a222548d86a77898ed0918a2ce6b",
+    "exitCode": 0,
+    "ownedShellPID": 1262812,
+    "startUTCFromPIDFile": "2026-10-23T11:20:03.286577+00:00",
+    "endUTCFromExitFile": "2026-10-23T11:20:30.235202+00:00",
+    "wallSecondsFromFileTimestamps": 26.948626,
+    "timingScope": "whole offline allocated job, including input hash checks and file IO; not game loading or CPU time"
+  },
+  "isolatedWorkerPreparedOnly": {
+    "catalogueSHA256": "23ff743d7696bab0b42122dfe07d47d5a3ba4c6c3f9fb7b402087adfa9e6ae98",
+    "sourceManifestSHA256": "432cf86e6bd52bbac54ce1596dee4e0f6e5cdedb15d0cfbba59ed774a9ffdcee",
+    "configurationSHA256": "39505791e6cf4c37e4431657a709ea4467ef94d5b6472fa877c5fab01b0c8e68",
+    "legacyMaps": 4,
+    "legacyDefinitionsPerMap": 2,
+    "cars": 31,
+    "carSpecs": 31,
+    "nitrous": 1,
+    "runtimeExecutedAtReceiptCapture": false,
+    "note": "Separate temporary fixture retained untouched; no binaries or catalogue copied here"
+  },
+  "durableFiles": {
+    "coverage.json": "a49b64ed0bf8c4408d858424c5bdb2966a29845bb11b350dfc250738f904c2a5",
+    "neighborhoods.json": "4d8fc80953a7223f4da97bf0b7406bc9186f67c53813b4afd0dc9475ffc332ab",
+    "reproduce.mjs": "7b26a574adf4939e35ce3666d905ce623ac8820f0b72014b9c63f1da0af9ea51"
+  }
+}
