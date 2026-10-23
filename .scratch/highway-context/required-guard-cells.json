@@ -1,0 +1,2187 @@
+{
+  "mode": "authenticated metadata-only planning; each repair still requires sealed physical source proof",
+  "manifestSha256": "2790fa21d0c16271f5e4a097101ba1414ca8a949f8805c416b4b8dfbc68dc718",
+  "sourcePlan": {
+    "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+    "area": "east",
+    "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+  },
+  "structureCells": 98,
+  "required": 63,
+  "noops": 35,
+  "failures": 0,
+  "rows": [
+    {
+      "cell": "-1,-10",
+      "sha256": "f7d27b2ba5cf049e52e11d8c5273ac1fe8167fa12f4433d5f0607a78a837ec1c",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 59006,
+      "required": true,
+      "postsBefore": 263,
+      "postsAfter": 242,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 4208,
+      "trianglesAfter": 3998,
+      "triangleDelta": -210,
+      "arrayBytesBefore": 75744,
+      "arrayBytesAfter": 72468,
+      "arrayBytesDelta": -3276,
+      "recipeHash": "5ba0051f0318a8d2be2afdc69ff34e5e57a9764c7cffe2b9bcfc56d6cdf0e83e",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "-1,-11",
+      "sha256": "ea6c1162a4e08d9ba5cff15044b2cdf36acab09fb351721b0b16f545383e75ec",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 56785,
+      "required": true,
+      "postsBefore": 104,
+      "postsAfter": 103,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 1664,
+      "trianglesAfter": 1654,
+      "triangleDelta": -10,
+      "arrayBytesBefore": 29952,
+      "arrayBytesAfter": 29796,
+      "arrayBytesDelta": -156,
+      "recipeHash": "a5e9c44d1756745ba365c698d09021a7600b8aa27b19511eaa47634c7ede1c95",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "-1,-19",
+      "sha256": "9ee537f3b470f70dc526da1bd822cfd4343d407a7d1b64deb64e6daf7f8334e0",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 37643,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "-1,-9",
+      "sha256": "7ce24c2c5fa3012e1218456ccac40301264adddf8f7bf53a11619ef984f6d291",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 50691,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "-10,7",
+      "sha256": "e33f192af9f5066482132097b65a2d57647aaa855d3d79ece4c93f1093253d34",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 41337,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "-11,7",
+      "sha256": "08de8b89cd48e54ea48d6668852db48e2c6c2ab8c36bc2dd21c6c1f32be59753",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 43940,
+      "required": true,
+      "postsBefore": 153,
+      "postsAfter": 128,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 2448,
+      "trianglesAfter": 2198,
+      "triangleDelta": -250,
+      "arrayBytesBefore": 44064,
+      "arrayBytesAfter": 40164,
+      "arrayBytesDelta": -3900,
+      "recipeHash": "e1c5b1a19ffd58e64d66c240c254647c3b3ef369163d1e0e274d4562c944c70f",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "-12,7",
+      "sha256": "6aae01836a5d5d05598446cf3d2a8651015310cb0ad30f5a8fe4d070a3efc0c7",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 35716,
+      "required": true,
+      "postsBefore": 109,
+      "postsAfter": 105,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 1744,
+      "trianglesAfter": 1704,
+      "triangleDelta": -40,
+      "arrayBytesBefore": 31392,
+      "arrayBytesAfter": 30768,
+      "arrayBytesDelta": -624,
+      "recipeHash": "e1c5b1a19ffd58e64d66c240c254647c3b3ef369163d1e0e274d4562c944c70f",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "-13,7",
+      "sha256": "9f0035ea39aea92dc5247b38d43168eb75fa3a988e074a7c9a7cc003679163c7",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 60718,
+      "required": true,
+      "postsBefore": 70,
+      "postsAfter": 64,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 1120,
+      "trianglesAfter": 1060,
+      "triangleDelta": -60,
+      "arrayBytesBefore": 20160,
+      "arrayBytesAfter": 19224,
+      "arrayBytesDelta": -936,
+      "recipeHash": "bd46cdd6cc2f3863f6863e8be5fb1d6854e8d3f8a69f2e94dbf03f1808ce5a03",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "-16,9",
+      "sha256": "2a7f6d5877704d8b832c281081b30a127ba58dad3ff8cb9628f0e809ae948638",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 58300,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "-17,8",
+      "sha256": "2ef85f9386ef38e901b5a40a98f20e2b9497d0bb4009716eaa3441422e7db802",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 10130,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "-17,9",
+      "sha256": "7dbcd640f1080f391440a72fc9cf0b50a8b3b42a18fbd6338d0178779427f519",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 72899,
+      "required": true,
+      "postsBefore": 256,
+      "postsAfter": 229,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 4096,
+      "trianglesAfter": 3826,
+      "triangleDelta": -270,
+      "arrayBytesBefore": 73728,
+      "arrayBytesAfter": 69516,
+      "arrayBytesDelta": -4212,
+      "recipeHash": "528a6dc59102cf6d99ee80bde2b8112a168dccf1b35ba3dd14b8a66c3ae56685",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "-2,-7",
+      "sha256": "80803b8fb670b01a1e4619768c197048e3cfc3be8e91ad03f59d65c6f820ee62",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 48214,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "-2,-8",
+      "sha256": "6af507d4a03898db91a5cb0010a94768870acdce2e807786fd758e2eaff1afd2",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 59810,
+      "required": true,
+      "postsBefore": 318,
+      "postsAfter": 297,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 5088,
+      "trianglesAfter": 4878,
+      "triangleDelta": -210,
+      "arrayBytesBefore": 91584,
+      "arrayBytesAfter": 88308,
+      "arrayBytesDelta": -3276,
+      "recipeHash": "d69bdcb25d649d1d391f114d4e43407e7070964042cbadfe8acecda9ee375f57",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "-2,-9",
+      "sha256": "051d5769f2ccabb022bde5d31e51acdf0884892f60da760fd073b032e79a050c",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 55979,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "-20,6",
+      "sha256": "93ff3c9352d98742612f89a20d4e3f77359721f0d20ec33b3b98eded8d55cc34",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 32993,
+      "required": true,
+      "postsBefore": 64,
+      "postsAfter": 55,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 1024,
+      "trianglesAfter": 934,
+      "triangleDelta": -90,
+      "arrayBytesBefore": 18432,
+      "arrayBytesAfter": 17028,
+      "arrayBytesDelta": -1404,
+      "recipeHash": "e58c95da99052e03ae73b80d3f002c42b1331f3632a63097ce90303b4e48d07e",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "-21,2",
+      "sha256": "acb7ec87f0c06a03a1103345a430fc94a6387e0cdab4f8fbb03c49f6954490ee",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 28050,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "-21,3",
+      "sha256": "18f5a67f5cc4dc3afe5d651f049d0ec158d3656e69677c861e86423fabf0931b",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 42363,
+      "required": true,
+      "postsBefore": 218,
+      "postsAfter": 177,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 3488,
+      "trianglesAfter": 3078,
+      "triangleDelta": -410,
+      "arrayBytesBefore": 62784,
+      "arrayBytesAfter": 56388,
+      "arrayBytesDelta": -6396,
+      "recipeHash": "c4537cc265637de833bf780809605875e48a0d1ae9eddbc172770d17122c4dfb",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "-22,1",
+      "sha256": "8fc6fdf4506f0e70d1eaed5f056b9c992f81bfa4fd821bfcedf74548483f8291",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 7535,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "-22,2",
+      "sha256": "5a5671b426e81f1c065e85b3ab1bfbe458411e8382ff669e2aded85d7b87da16",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 23420,
+      "required": true,
+      "postsBefore": 234,
+      "postsAfter": 210,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 3744,
+      "trianglesAfter": 3504,
+      "triangleDelta": -240,
+      "arrayBytesBefore": 67392,
+      "arrayBytesAfter": 63648,
+      "arrayBytesDelta": -3744,
+      "recipeHash": "9443e4d62daeac9b3a1d504ecdc8e31bf2fdac537e02451f09b684a0b0796304",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "-26,3",
+      "sha256": "775f25d0a4927f545ce97de511bc84098ee394f502b832bc2bd0f166cbf0292d",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 38122,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "-27,2",
+      "sha256": "e93b48317ee389c3c043deedca4ba62173cd4d3548b0aca67b7a19f96d587563",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 29100,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "-27,3",
+      "sha256": "61fa6f92cca6e2fb21011965101b572b0f6dfb10807a11dbaca1a84a1a41ed9a",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 48043,
+      "required": true,
+      "postsBefore": 134,
+      "postsAfter": 111,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 2144,
+      "trianglesAfter": 1914,
+      "triangleDelta": -230,
+      "arrayBytesBefore": 38592,
+      "arrayBytesAfter": 35004,
+      "arrayBytesDelta": -3588,
+      "recipeHash": "4c447285a969d5698053d8294bfbbc0aa66dc5e6a030d04920d76749f8288672",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "-3,-7",
+      "sha256": "9d21e58707d5608cdf4ec9df3b1465ca2e1552236f2f41761df0fb1d2980c69c",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 42672,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "-3,-8",
+      "sha256": "87b1577217b3fc67bb7e782da210f86b20bc3140de4d5cbb01e94ce657d57692",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 56409,
+      "required": true,
+      "postsBefore": 29,
+      "postsAfter": 29,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 464,
+      "trianglesAfter": 464,
+      "triangleDelta": 0,
+      "arrayBytesBefore": 8352,
+      "arrayBytesAfter": 8352,
+      "arrayBytesDelta": 0,
+      "recipeHash": "d69bdcb25d649d1d391f114d4e43407e7070964042cbadfe8acecda9ee375f57",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "-3,1",
+      "sha256": "be4b5d8cea2325d1b572586658a04968e80da54c47c1f98b872066bc444e1783",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 45351,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "-3,2",
+      "sha256": "4c67d25e11f99b554ba14fb3869f20ba1a9226d0f57a11dc6e5ee699312da9d2",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 36739,
+      "required": true,
+      "postsBefore": 131,
+      "postsAfter": 114,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 2096,
+      "trianglesAfter": 1926,
+      "triangleDelta": -170,
+      "arrayBytesBefore": 37728,
+      "arrayBytesAfter": 35076,
+      "arrayBytesDelta": -2652,
+      "recipeHash": "4c4d09f2419c7b7db9181cfbafc82c2f606da776041df1ba7e53ef4dee67c0cc",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "-3,3",
+      "sha256": "6b88da42a68bddb533f63b4c02e7d4f7626b7581bb199d6e4d95f0ee6aa21ff8",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 55204,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "-6,-4",
+      "sha256": "42d5f1c6d53dea74cda152b885e4eeaa67361b34cada71e0187cfa7682b43ac3",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 26293,
+      "required": true,
+      "postsBefore": 42,
+      "postsAfter": 40,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 672,
+      "trianglesAfter": 652,
+      "triangleDelta": -20,
+      "arrayBytesBefore": 12096,
+      "arrayBytesAfter": 11784,
+      "arrayBytesDelta": -312,
+      "recipeHash": "65e5db7090eef36561305cdb676031cbee96c615a4af609a895eddf3923291ff",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "-6,10",
+      "sha256": "35285898c1cf16859416299ab93c5249b19b6eceb8db78d9fa6109a986c0b2a2",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 40311,
+      "required": true,
+      "postsBefore": 5,
+      "postsAfter": 4,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 80,
+      "trianglesAfter": 70,
+      "triangleDelta": -10,
+      "arrayBytesBefore": 1440,
+      "arrayBytesAfter": 1284,
+      "arrayBytesDelta": -156,
+      "recipeHash": "69baced7d8e7d3a2c1b261bdb6f23f99fb46e75bab1d3ce34d55eba8ac637b12",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "-6,9",
+      "sha256": "8f91a9df29c4156b5f66bb0d4ba054d2f540cf5d5c17fd6eb4add93a1241fd16",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 37842,
+      "required": true,
+      "postsBefore": 17,
+      "postsAfter": 14,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 272,
+      "trianglesAfter": 242,
+      "triangleDelta": -30,
+      "arrayBytesBefore": 4896,
+      "arrayBytesAfter": 4428,
+      "arrayBytesDelta": -468,
+      "recipeHash": "69baced7d8e7d3a2c1b261bdb6f23f99fb46e75bab1d3ce34d55eba8ac637b12",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "-7,-3",
+      "sha256": "ad19ec390ebe4b3f17972a47fd0f0c066e7af250340cd71de1703da0be2223e5",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 27165,
+      "required": true,
+      "postsBefore": 118,
+      "postsAfter": 106,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 1888,
+      "trianglesAfter": 1768,
+      "triangleDelta": -120,
+      "arrayBytesBefore": 33984,
+      "arrayBytesAfter": 32112,
+      "arrayBytesDelta": -1872,
+      "recipeHash": "97db04509cc4ed9a3279511758cb1de2a6fa74ed045f3b8210eb8ee5d09dd42e",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "-7,-4",
+      "sha256": "d0398fc4a9158d91bc5dda4c25a0cb6e73413b6ec64de7b11abe976980f47b74",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 66528,
+      "required": true,
+      "postsBefore": 279,
+      "postsAfter": 264,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 4464,
+      "trianglesAfter": 4314,
+      "triangleDelta": -150,
+      "arrayBytesBefore": 80352,
+      "arrayBytesAfter": 78012,
+      "arrayBytesDelta": -2340,
+      "recipeHash": "0412805432d79de62f1fc9c2846de584da1a56e56c8ab5e36b079f9ee0edff39",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "-7,-5",
+      "sha256": "bff3cc087e3bf19a1251f43efcdae25f0d78686316ab62ee5bc2c127dc3be479",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 69441,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "-7,10",
+      "sha256": "7b55918b92d232c7b2205399c528d9a3b5832d161eaec2f2004d4bd5dcfbac7b",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 48364,
+      "required": true,
+      "postsBefore": 207,
+      "postsAfter": 165,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 3312,
+      "trianglesAfter": 2892,
+      "triangleDelta": -420,
+      "arrayBytesBefore": 59616,
+      "arrayBytesAfter": 53064,
+      "arrayBytesDelta": -6552,
+      "recipeHash": "404d3afa52f074e9a7371fde798a649cba6cb4d41cf9c512b5d37b0e5bd37d5a",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "-7,8",
+      "sha256": "b5e3e37f7d8152ffcf9c0e6a17673c1ae048483fb0fb7b9e06cf8c6417cfcd02",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 29661,
+      "required": true,
+      "postsBefore": 321,
+      "postsAfter": 263,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 5136,
+      "trianglesAfter": 4556,
+      "triangleDelta": -580,
+      "arrayBytesBefore": 92448,
+      "arrayBytesAfter": 83400,
+      "arrayBytesDelta": -9048,
+      "recipeHash": "26dda6d5edfab6aef09f0c521b65db9ef18346b85b2524d2771d4051cee7e179",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "-7,9",
+      "sha256": "a17b02c50a5f00eac97dc16cb0f62f6a5d85ff04406bad7252c28587429449a8",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 42333,
+      "required": true,
+      "postsBefore": 426,
+      "postsAfter": 351,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 6816,
+      "trianglesAfter": 6066,
+      "triangleDelta": -750,
+      "arrayBytesBefore": 122688,
+      "arrayBytesAfter": 110988,
+      "arrayBytesDelta": -11700,
+      "recipeHash": "f16a8dff7be899e5de48f18e95d13d66388057c5a1eab6d0aac11c5376f4ca65",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "-8,-2",
+      "sha256": "b80fb1c33cc93df1e3d56fbcbc1f89059f1b7ab4d0f6739cda7a9cf14bd6d851",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 30656,
+      "required": true,
+      "postsBefore": 87,
+      "postsAfter": 78,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 1392,
+      "trianglesAfter": 1302,
+      "triangleDelta": -90,
+      "arrayBytesBefore": 25056,
+      "arrayBytesAfter": 23652,
+      "arrayBytesDelta": -1404,
+      "recipeHash": "cf8e8b6e1e70095165384c8a0c2bd1c94b73ff693f89ce856382f5c4645b5a75",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "-8,-3",
+      "sha256": "10f8114e28bbbc55ff4055f531e6070af1db4bf8381819de268f12780cc5011b",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 65501,
+      "required": true,
+      "postsBefore": 217,
+      "postsAfter": 212,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 3472,
+      "trianglesAfter": 3422,
+      "triangleDelta": -50,
+      "arrayBytesBefore": 62496,
+      "arrayBytesAfter": 61716,
+      "arrayBytesDelta": -780,
+      "recipeHash": "cf8e8b6e1e70095165384c8a0c2bd1c94b73ff693f89ce856382f5c4645b5a75",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "-8,8",
+      "sha256": "90281527de004cbc5b49587b42e53104bd02587f69fcd94a84e3f7b547ce2185",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 31962,
+      "required": true,
+      "postsBefore": 20,
+      "postsAfter": 17,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 320,
+      "trianglesAfter": 290,
+      "triangleDelta": -30,
+      "arrayBytesBefore": 5760,
+      "arrayBytesAfter": 5292,
+      "arrayBytesDelta": -468,
+      "recipeHash": "26dda6d5edfab6aef09f0c521b65db9ef18346b85b2524d2771d4051cee7e179",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "0,-13",
+      "sha256": "b2adf018b25cad4a84e0d305149ee78f3bf5bfb5693dc0a0557d7f3254ff93ac",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 50216,
+      "required": true,
+      "postsBefore": 102,
+      "postsAfter": 77,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 1632,
+      "trianglesAfter": 1382,
+      "triangleDelta": -250,
+      "arrayBytesBefore": 29376,
+      "arrayBytesAfter": 25476,
+      "arrayBytesDelta": -3900,
+      "recipeHash": "ab59b2369f71535689e48cff3c4248e1c125c2fb082c830077beb4a996dd9dd6",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "0,-19",
+      "sha256": "37e174a181d5489faf12300c40f612c5eafa3f2d7dcc2d1bba50c96a2bc6277a",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 48753,
+      "required": true,
+      "postsBefore": 230,
+      "postsAfter": 214,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 3680,
+      "trianglesAfter": 3520,
+      "triangleDelta": -160,
+      "arrayBytesBefore": 66240,
+      "arrayBytesAfter": 63744,
+      "arrayBytesDelta": -2496,
+      "recipeHash": "2c4e0d9031c02986bbe3660db0b1752091b3b83a8a3af12243bdf9a978e69e88",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "10,-11",
+      "sha256": "2c795e0563fe58d35ddd2233ce24a978cee92e9cc3260049593c3b34f44bab8c",
+      "world": "athens-east-development",
+      "revision": "5a6a3b3def63c8510dd5d2c06b4a15760a9779f7a41780d64cb2ee00575d7352",
+      "sourceTriangles": 44142,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "10,-12",
+      "sha256": "6b28ac859db7464ea2a13c18a0ded9204cb1d70de1d238e7f891b26e48c89018",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 27438,
+      "required": true,
+      "postsBefore": 66,
+      "postsAfter": 59,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 1056,
+      "trianglesAfter": 986,
+      "triangleDelta": -70,
+      "arrayBytesBefore": 19008,
+      "arrayBytesAfter": 17916,
+      "arrayBytesDelta": -1092,
+      "recipeHash": "a5561437dfa164e91722898b31172d5f9e86f254b2ff35feb51f76b9f563bf67",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "10,-14",
+      "sha256": "05c91aaeab59e0ad4a69b0119a4b0d3f82d62e596e8eb7b6cbc36b988a56a22b",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 25048,
+      "required": true,
+      "postsBefore": 13,
+      "postsAfter": 13,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 208,
+      "trianglesAfter": 208,
+      "triangleDelta": 0,
+      "arrayBytesBefore": 3744,
+      "arrayBytesAfter": 3744,
+      "arrayBytesDelta": 0,
+      "recipeHash": "62e741679db6cad1c83189f6ad06bc94c2b919a1fce5868a4f906ac5155aebf3",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "10,-15",
+      "sha256": "4d664de2efd5c93a6359b4674aafd440b3861f57bed3e0d670d0cf60d28c11da",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 37012,
+      "required": true,
+      "postsBefore": 129,
+      "postsAfter": 103,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 2064,
+      "trianglesAfter": 1804,
+      "triangleDelta": -260,
+      "arrayBytesBefore": 37152,
+      "arrayBytesAfter": 33096,
+      "arrayBytesDelta": -4056,
+      "recipeHash": "62e741679db6cad1c83189f6ad06bc94c2b919a1fce5868a4f906ac5155aebf3",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "10,-25",
+      "sha256": "1ae15890bb581301863fafce3f5f8eaaa1598df9604092869af124e5c815a77a",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 40643,
+      "required": true,
+      "postsBefore": 249,
+      "postsAfter": 229,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 3984,
+      "trianglesAfter": 3784,
+      "triangleDelta": -200,
+      "arrayBytesBefore": 71712,
+      "arrayBytesAfter": 68592,
+      "arrayBytesDelta": -3120,
+      "recipeHash": "22da97726a2d520bdec1888b6360b9ca2c797a2f7f53beb9d8c8e050c17435e1",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "10,-26",
+      "sha256": "1aa96f76c7d3a8c37bb737980b74b5f1ff528284a00a18ce5a92b2ced727c65a",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 34136,
+      "required": true,
+      "postsBefore": 123,
+      "postsAfter": 92,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 1968,
+      "trianglesAfter": 1658,
+      "triangleDelta": -310,
+      "arrayBytesBefore": 35424,
+      "arrayBytesAfter": 30588,
+      "arrayBytesDelta": -4836,
+      "recipeHash": "22da97726a2d520bdec1888b6360b9ca2c797a2f7f53beb9d8c8e050c17435e1",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "10,1",
+      "sha256": "c5778b9d1020a6eba673d7216a8c509568c0f488a0c2c904b74acc046e30a8a0",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 11897,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "10,2",
+      "sha256": "e52216e7d7f59eea338a0c7dc0c7d3f05312f1632bab3d2483a6bc75bd6d2549",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 8850,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "10,3",
+      "sha256": "97945a82352d96b2ac81ae427593e1347cb178b4e530b96ce49360760d2ae64d",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 14628,
+      "required": true,
+      "postsBefore": 205,
+      "postsAfter": 162,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 3280,
+      "trianglesAfter": 2850,
+      "triangleDelta": -430,
+      "arrayBytesBefore": 59040,
+      "arrayBytesAfter": 52332,
+      "arrayBytesDelta": -6708,
+      "recipeHash": "f41e3fc638e799166a4be09a833adcb4a95372ceb7fdc7d9c3adc3ddbbaa0d3f",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "11,-12",
+      "sha256": "dcd1ca04db51d3a236af09720152c269fe915b48fed752a5efa056fd12282b1e",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 40283,
+      "required": true,
+      "postsBefore": 109,
+      "postsAfter": 101,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 1744,
+      "trianglesAfter": 1664,
+      "triangleDelta": -80,
+      "arrayBytesBefore": 31392,
+      "arrayBytesAfter": 30144,
+      "arrayBytesDelta": -1248,
+      "recipeHash": "a5561437dfa164e91722898b31172d5f9e86f254b2ff35feb51f76b9f563bf67",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "11,-14",
+      "sha256": "8c608ddea49e9ba2384fd3a17661098e9cfc770ba7961964f20689ceeff86a7e",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 41107,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "11,-15",
+      "sha256": "4d640c7edba966acf2259c5be6c5d97e123adebce3b55a2195deb61dc1a39435",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 36429,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "11,-25",
+      "sha256": "1e1b61d0e31ed93384921713d5846c93d345fc785086c7f35c35e3aa74acca94",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 38887,
+      "required": true,
+      "postsBefore": 1,
+      "postsAfter": 0,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 16,
+      "trianglesAfter": 6,
+      "triangleDelta": -10,
+      "arrayBytesBefore": 288,
+      "arrayBytesAfter": 132,
+      "arrayBytesDelta": -156,
+      "recipeHash": "93ff2b4ba48cf1c4ba1c18ad69bd2473499bdf2f59870a5381af3c95fdaf0bb5",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "11,-26",
+      "sha256": "244bb8bf4b25ee8deff1d4eae0882fb89e9e2409e8025d54df88dd18927577a7",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 44114,
+      "required": true,
+      "postsBefore": 154,
+      "postsAfter": 141,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 2464,
+      "trianglesAfter": 2334,
+      "triangleDelta": -130,
+      "arrayBytesBefore": 44352,
+      "arrayBytesAfter": 42324,
+      "arrayBytesDelta": -2028,
+      "recipeHash": "22da97726a2d520bdec1888b6360b9ca2c797a2f7f53beb9d8c8e050c17435e1",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "11,0",
+      "sha256": "5f262ac85a2d867fadef7f7b2bf7123ee1799b5cf004f8af4e061be618c80293",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 23008,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "11,1",
+      "sha256": "f0adf3e595f8d1a83cc4ceeb1bca24689abf42c4dd33a016862ae8d77ee4e6c1",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 9032,
+      "required": true,
+      "postsBefore": 111,
+      "postsAfter": 91,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 1776,
+      "trianglesAfter": 1576,
+      "triangleDelta": -200,
+      "arrayBytesBefore": 31968,
+      "arrayBytesAfter": 28848,
+      "arrayBytesDelta": -3120,
+      "recipeHash": "5abfd352a15bdabfe1df5bfd526b0dfad931f6ea7395ac20be5e48c1745e6865",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "12,-1",
+      "sha256": "ba02e9ec5a0afc0a4a29b3773dfaf53f445532e46144d298d83d702afcdc99fa",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 3568,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "12,-13",
+      "sha256": "ba4dbbbc2f832f2fc0f22850ac806224c19d91cd1926c5788d48f823d45756e3",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 27548,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "12,-14",
+      "sha256": "bb0b97a287b61ff9aff6b1f878033a3a3e4feb754b598de99567444a2f855433",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 44104,
+      "required": true,
+      "postsBefore": 386,
+      "postsAfter": 316,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 6176,
+      "trianglesAfter": 5476,
+      "triangleDelta": -700,
+      "arrayBytesBefore": 111168,
+      "arrayBytesAfter": 100248,
+      "arrayBytesDelta": -10920,
+      "recipeHash": "ea106aeac9040280a4762413fd8bcb4cdac7956d9372e5318292357150376030",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "12,-15",
+      "sha256": "2d7c0d9bef8df9a4951fa400469fc44fe1ab8bc7a06d8d0f3aa6605aaa2cfa2d",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 29070,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "12,-26",
+      "sha256": "ef08797e5c4883546da7186dac00d5befba221cadc8139fa9de276d65027274d",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 38892,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "12,0",
+      "sha256": "35823e9a8d664b8ffe85abc76afd223c7581032bf46962c8a10390f28d8b00f2",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 12819,
+      "required": true,
+      "postsBefore": 195,
+      "postsAfter": 168,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 3120,
+      "trianglesAfter": 2850,
+      "triangleDelta": -270,
+      "arrayBytesBefore": 56160,
+      "arrayBytesAfter": 51948,
+      "arrayBytesDelta": -4212,
+      "recipeHash": "5abfd352a15bdabfe1df5bfd526b0dfad931f6ea7395ac20be5e48c1745e6865",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "13,-1",
+      "sha256": "c3c7529c4f2c3366a414e22e3a2610963099e7b8442752ff4256f942778bbada",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 11021,
+      "required": true,
+      "postsBefore": 73,
+      "postsAfter": 67,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 1168,
+      "trianglesAfter": 1108,
+      "triangleDelta": -60,
+      "arrayBytesBefore": 21024,
+      "arrayBytesAfter": 20088,
+      "arrayBytesDelta": -936,
+      "recipeHash": "f98fcc1ccae58dedf5018877021613271d1e81b7c96403d094914d0ec20535df",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "13,-13",
+      "sha256": "ce962f838775e53555ec213de9bb4de0d640c3e927b41f2cc6cb194ed48f85ea",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 28221,
+      "required": true,
+      "postsBefore": 27,
+      "postsAfter": 23,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 432,
+      "trianglesAfter": 392,
+      "triangleDelta": -40,
+      "arrayBytesBefore": 7776,
+      "arrayBytesAfter": 7152,
+      "arrayBytesDelta": -624,
+      "recipeHash": "71b78d1839e93f29d53d834107e5afca32482a890e2ffd0f4b4807fdd60929b4",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "13,-14",
+      "sha256": "57fdc3f135b722d11f0c41a91fd03006c0adf2c617cf5573c318783e1cda24a6",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 38306,
+      "required": true,
+      "postsBefore": 252,
+      "postsAfter": 189,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 4032,
+      "trianglesAfter": 3402,
+      "triangleDelta": -630,
+      "arrayBytesBefore": 72576,
+      "arrayBytesAfter": 62748,
+      "arrayBytesDelta": -9828,
+      "recipeHash": "71b78d1839e93f29d53d834107e5afca32482a890e2ffd0f4b4807fdd60929b4",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "13,-2",
+      "sha256": "84e95374afbab944f5569468af52a84ff7bb1ecc581cbc078663fd40e8643d11",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 14726,
+      "required": true,
+      "postsBefore": 209,
+      "postsAfter": 196,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 3344,
+      "trianglesAfter": 3214,
+      "triangleDelta": -130,
+      "arrayBytesBefore": 60192,
+      "arrayBytesAfter": 58164,
+      "arrayBytesDelta": -2028,
+      "recipeHash": "f98fcc1ccae58dedf5018877021613271d1e81b7c96403d094914d0ec20535df",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "14,-13",
+      "sha256": "cadf681776930a3500bce5de87de191da2a21f3cb563af45bc2c96b607005385",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 33878,
+      "required": true,
+      "postsBefore": 170,
+      "postsAfter": 123,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 2720,
+      "trianglesAfter": 2250,
+      "triangleDelta": -470,
+      "arrayBytesBefore": 48960,
+      "arrayBytesAfter": 41628,
+      "arrayBytesDelta": -7332,
+      "recipeHash": "bff461bba411084ad07ed63ff1443941b265bc3a4c160b35d6e174117d6d30db",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "14,-2",
+      "sha256": "11db5352db51b6cc967d2f96ddccb9ed56a45a6b12edd1d8271281e6d1ceb3e9",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 9324,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "15,-13",
+      "sha256": "d4b1de8138c784d55517aa2b95eaca14170de26e503d57d6d5b01959df5d487c",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 34034,
+      "required": true,
+      "postsBefore": 9,
+      "postsAfter": 8,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 144,
+      "trianglesAfter": 134,
+      "triangleDelta": -10,
+      "arrayBytesBefore": 2592,
+      "arrayBytesAfter": 2436,
+      "arrayBytesDelta": -156,
+      "recipeHash": "bff461bba411084ad07ed63ff1443941b265bc3a4c160b35d6e174117d6d30db",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "2,-16",
+      "sha256": "e4a85425e8ab7cb1cddd7eaf9538ca6a60750954400260255ce02b06e2e62ea1",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 52772,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "2,-17",
+      "sha256": "f34c2f525265d888bb521bf76fded25e7b3672afb051c9f64b18acc56387d3ea",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 45506,
+      "required": true,
+      "postsBefore": 230,
+      "postsAfter": 214,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 3680,
+      "trianglesAfter": 3520,
+      "triangleDelta": -160,
+      "arrayBytesBefore": 66240,
+      "arrayBytesAfter": 63744,
+      "arrayBytesDelta": -2496,
+      "recipeHash": "4f4f92b69e3e684e163d329175d6119ab93e5c6ac88da89d8d9889bdd310769a",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "2,16",
+      "sha256": "d6e56941b63990489333d37d4075ee6a070c66ec694f2da62c6931f150d1ec32",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 39438,
+      "required": true,
+      "postsBefore": 156,
+      "postsAfter": 138,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 2496,
+      "trianglesAfter": 2316,
+      "triangleDelta": -180,
+      "arrayBytesBefore": 44928,
+      "arrayBytesAfter": 42120,
+      "arrayBytesDelta": -2808,
+      "recipeHash": "13c82f4f24d7232acf2fdd0ed9b516a21dcad984396897e5dd81b4cc318ded33",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "3,-13",
+      "sha256": "dd4693387b1475291c3bf438a24f4ade4cd9ad18c1e74640ed9e3277dd57714c",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 59868,
+      "required": true,
+      "postsBefore": 88,
+      "postsAfter": 70,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 1408,
+      "trianglesAfter": 1228,
+      "triangleDelta": -180,
+      "arrayBytesBefore": 25344,
+      "arrayBytesAfter": 22536,
+      "arrayBytesDelta": -2808,
+      "recipeHash": "e4ee871151bba8b285549a514a5eb23c7dc2415c3f062ea10611fe4b28e1c1a4",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "3,-14",
+      "sha256": "c1be22d64c5140d73888c93b67e7a84bcc588d14606fec096940444fdf55086e",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 69719,
+      "required": true,
+      "postsBefore": 100,
+      "postsAfter": 62,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 1600,
+      "trianglesAfter": 1220,
+      "triangleDelta": -380,
+      "arrayBytesBefore": 28800,
+      "arrayBytesAfter": 22872,
+      "arrayBytesDelta": -5928,
+      "recipeHash": "e4ee871151bba8b285549a514a5eb23c7dc2415c3f062ea10611fe4b28e1c1a4",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "3,16",
+      "sha256": "4083e546bb4f1fd1a8414c9a82e5027539403b24b08ed38fea432c540ccb5ea4",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 46681,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "3,19",
+      "sha256": "0fab08673749f58881e7c0e63de37f496342d41cbd50c25f6c15ca1a95a3303d",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 47261,
+      "required": true,
+      "postsBefore": 139,
+      "postsAfter": 129,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 2224,
+      "trianglesAfter": 2124,
+      "triangleDelta": -100,
+      "arrayBytesBefore": 40032,
+      "arrayBytesAfter": 38472,
+      "arrayBytesDelta": -1560,
+      "recipeHash": "604454a385951ece1e2bcf14973a562986bc42948c349b07102cd2f09d64b2bd",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "3,20",
+      "sha256": "b1f78129ab0a445e848f89a33d04545732d83b0f34e530da7f40c8d40cca05bc",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 40273,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "30,-23",
+      "sha256": "d4437f2149560c9ef634480079c6b160ca97bb977bf3816e95a5ef7cbc3c6a61",
+      "world": "penteli",
+      "revision": "ca072bb07e9a1385dfc2fd729dfceb5da7185b53f8df5a688ed24ce2438f1b34",
+      "sourceTriangles": 142587,
+      "required": false,
+      "preserveOriginal": true,
+      "expectedSourceSha256": "d4437f2149560c9ef634480079c6b160ca97bb977bf3816e95a5ef7cbc3c6a61",
+      "reason": "explicit authored source preservation",
+      "postsBefore": null,
+      "postsAfter": null,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "33,-21",
+      "sha256": "b4e4176c6459001762f098e7a7ed5699a7b83893b10fb328a6c5e8fa2e93751f",
+      "world": "penteli",
+      "revision": "ca072bb07e9a1385dfc2fd729dfceb5da7185b53f8df5a688ed24ce2438f1b34",
+      "sourceTriangles": 102885,
+      "required": false,
+      "preserveOriginal": true,
+      "expectedSourceSha256": "b4e4176c6459001762f098e7a7ed5699a7b83893b10fb328a6c5e8fa2e93751f",
+      "reason": "explicit authored source preservation",
+      "postsBefore": null,
+      "postsAfter": null,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "34,-21",
+      "sha256": "964bbb12088762cb7d616decf049fa77683508bb603a43894d1de9875fd6866f",
+      "world": "penteli",
+      "revision": "ca072bb07e9a1385dfc2fd729dfceb5da7185b53f8df5a688ed24ce2438f1b34",
+      "sourceTriangles": 63678,
+      "required": false,
+      "preserveOriginal": true,
+      "expectedSourceSha256": "964bbb12088762cb7d616decf049fa77683508bb603a43894d1de9875fd6866f",
+      "reason": "explicit authored source preservation",
+      "postsBefore": null,
+      "postsAfter": null,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "4,-13",
+      "sha256": "f679ebd21d262fee505c4efd9dc45cb54b5680e42fe86d3d87fcc5d1def8f813",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 67113,
+      "required": true,
+      "postsBefore": 125,
+      "postsAfter": 98,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 2000,
+      "trianglesAfter": 1730,
+      "triangleDelta": -270,
+      "arrayBytesBefore": 36000,
+      "arrayBytesAfter": 31788,
+      "arrayBytesDelta": -4212,
+      "recipeHash": "1c97af9513be4a1397b0491acd722a8d43788db95160c911e16907b93de23f70",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "4,-14",
+      "sha256": "60c01282002bc278db699baecd017358c87b05a89eb5473bfce89978e4e76cf7",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 61754,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "4,-15",
+      "sha256": "f49bfd80db66abf8269dd1ee36efac4bd2dfac3af21d0ceaf0f84bf1fdcd9076",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 63589,
+      "required": true,
+      "postsBefore": 26,
+      "postsAfter": 26,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 416,
+      "trianglesAfter": 416,
+      "triangleDelta": 0,
+      "arrayBytesBefore": 7488,
+      "arrayBytesAfter": 7488,
+      "arrayBytesDelta": 0,
+      "recipeHash": "a46eeffc44efb86cf8fdc4100612271931c52a95c053f15640d5c130ec3a1910",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "4,-18",
+      "sha256": "a8faa5b490e0a7c7c9a8f409d32161198d3646345b8eda01937be84a66c16574",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 46542,
+      "required": true,
+      "postsBefore": 124,
+      "postsAfter": 106,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 1984,
+      "trianglesAfter": 1804,
+      "triangleDelta": -180,
+      "arrayBytesBefore": 35712,
+      "arrayBytesAfter": 32904,
+      "arrayBytesDelta": -2808,
+      "recipeHash": "e3fc71c74cdf82929a12dcbc916e2187c5cf93a8583797d084ff3932e55a565a",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "5,-14",
+      "sha256": "3505f11e4f7706a77726a7200831175fc579f6115177e4a3b4c4271f3c62f3ec",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 54331,
+      "required": true,
+      "postsBefore": 83,
+      "postsAfter": 73,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 1328,
+      "trianglesAfter": 1228,
+      "triangleDelta": -100,
+      "arrayBytesBefore": 23904,
+      "arrayBytesAfter": 22344,
+      "arrayBytesDelta": -1560,
+      "recipeHash": "a46eeffc44efb86cf8fdc4100612271931c52a95c053f15640d5c130ec3a1910",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "5,-15",
+      "sha256": "5d29114b5049bfc823282274e16f8f8c30efe753962feb4439cdc6ad4f90bffd",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 56672,
+      "required": true,
+      "postsBefore": 90,
+      "postsAfter": 80,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 1440,
+      "trianglesAfter": 1340,
+      "triangleDelta": -100,
+      "arrayBytesBefore": 25920,
+      "arrayBytesAfter": 24360,
+      "arrayBytesDelta": -1560,
+      "recipeHash": "f969b30442a54b75c4078e89aeb93713a755d38ed2ceede998110d42ea2a2e0f",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "6,-17",
+      "sha256": "dd5e3b49d1cbba237a10eef03f99d62c62b66b685606d4e61238e56d7c9f60cd",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 51196,
+      "required": true,
+      "postsBefore": 5,
+      "postsAfter": 4,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 80,
+      "trianglesAfter": 70,
+      "triangleDelta": -10,
+      "arrayBytesBefore": 1440,
+      "arrayBytesAfter": 1284,
+      "arrayBytesDelta": -156,
+      "recipeHash": "3915d85b1e99aeeed7b5765c544dd1abf3bdb931364ba37c687f6357aa7cada1",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "6,29",
+      "sha256": "20217672a12c6fa2b668437b51e30fad885642550d0cbd1ee589bd9c833bab94",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 35478,
+      "required": true,
+      "postsBefore": 23,
+      "postsAfter": 20,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 368,
+      "trianglesAfter": 338,
+      "triangleDelta": -30,
+      "arrayBytesBefore": 6624,
+      "arrayBytesAfter": 6156,
+      "arrayBytesDelta": -468,
+      "recipeHash": "e143dca6b7cdcebc36d20e534e9d43693eeec003db595104b5f4c64e371e4976",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "7,-14",
+      "sha256": "79c9efb8dfd58fd998a8544474988e4869c74a5c4af58cf4bc5c2f94cc50709e",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 57193,
+      "required": true,
+      "postsBefore": 17,
+      "postsAfter": 17,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 272,
+      "trianglesAfter": 272,
+      "triangleDelta": 0,
+      "arrayBytesBefore": 4896,
+      "arrayBytesAfter": 4896,
+      "arrayBytesDelta": 0,
+      "recipeHash": "3e315521c874c487df019ec9f21b4e38e97d8cfeffc28432553b7e5a96744adc",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "7,-15",
+      "sha256": "7d9f2af6d32cd02ae7f874d561d424bc70c7bc73e482992e4a51e90c9470af3e",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 50639,
+      "required": true,
+      "postsBefore": 129,
+      "postsAfter": 108,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 2064,
+      "trianglesAfter": 1854,
+      "triangleDelta": -210,
+      "arrayBytesBefore": 37152,
+      "arrayBytesAfter": 33876,
+      "arrayBytesDelta": -3276,
+      "recipeHash": "3e315521c874c487df019ec9f21b4e38e97d8cfeffc28432553b7e5a96744adc",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "7,-17",
+      "sha256": "55d328c73c70d61dc4aca67006eae3c376db95a57e4c90b259528a45f93fec2c",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 52445,
+      "required": true,
+      "postsBefore": 324,
+      "postsAfter": 256,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 5184,
+      "trianglesAfter": 4504,
+      "triangleDelta": -680,
+      "arrayBytesBefore": 93312,
+      "arrayBytesAfter": 82704,
+      "arrayBytesDelta": -10608,
+      "recipeHash": "2f8021aa9593ee58d3cee54926e650d13b183f314dbd2da249f754471b989712",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "7,-18",
+      "sha256": "ceb6fe00086a075b1d215515e3b8918c791f3f4b384f24116dfb778fc7e4c869",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 48730,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "7,2",
+      "sha256": "9223134a024e11559e0004a1e4c2af0612caf5ad38a3b842d5eac3e28bd8ee96",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 29975,
+      "required": true,
+      "postsBefore": 74,
+      "postsAfter": 73,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 1184,
+      "trianglesAfter": 1174,
+      "triangleDelta": -10,
+      "arrayBytesBefore": 21312,
+      "arrayBytesAfter": 21156,
+      "arrayBytesDelta": -156,
+      "recipeHash": "9171a8db6177229c57dee35e6e0ff264eb83ce47220078eda6349ab75ff3059b",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "7,29",
+      "sha256": "3773fc3520011dc1d976dad5f93727fcb113071c83697cddcb43e480312589fe",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 42201,
+      "required": true,
+      "postsBefore": 204,
+      "postsAfter": 179,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 3264,
+      "trianglesAfter": 3014,
+      "triangleDelta": -250,
+      "arrayBytesBefore": 58752,
+      "arrayBytesAfter": 54852,
+      "arrayBytesDelta": -3900,
+      "recipeHash": "e143dca6b7cdcebc36d20e534e9d43693eeec003db595104b5f4c64e371e4976",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "7,30",
+      "sha256": "fb2e56719008109d1ca85fab5ec1f23f85aeee7aa57c6db8e64cc1434d973ac9",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 36839,
+      "required": false,
+      "postsBefore": 0,
+      "postsAfter": 0,
+      "guardMeshesBefore": 0,
+      "guardMeshesAfter": 0,
+      "triangleDelta": 0,
+      "arrayBytesDelta": 0,
+      "recipeHash": null
+    },
+    {
+      "cell": "8,2",
+      "sha256": "9929e82f2550dc5030095967d35bff7beb30f79d3d27d2ebcc3024b31d9b81e7",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 21900,
+      "required": true,
+      "postsBefore": 148,
+      "postsAfter": 134,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 2368,
+      "trianglesAfter": 2228,
+      "triangleDelta": -140,
+      "arrayBytesBefore": 42624,
+      "arrayBytesAfter": 40440,
+      "arrayBytesDelta": -2184,
+      "recipeHash": "9171a8db6177229c57dee35e6e0ff264eb83ce47220078eda6349ab75ff3059b",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    },
+    {
+      "cell": "9,3",
+      "sha256": "c974b70c772d479a753dc415b286cf088be53dc8c507bf5d0a9f5861030330cb",
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "sourceTriangles": 15795,
+      "required": true,
+      "postsBefore": 193,
+      "postsAfter": 159,
+      "guardMeshesBefore": 1,
+      "guardMeshesAfter": 1,
+      "trianglesBefore": 3088,
+      "trianglesAfter": 2748,
+      "triangleDelta": -340,
+      "arrayBytesBefore": 55584,
+      "arrayBytesAfter": 50280,
+      "arrayBytesDelta": -5304,
+      "recipeHash": "f41e3fc638e799166a4be09a833adcb4a95372ceb7fdc7d9c3adc3ddbbaa0d3f",
+      "sourcePlans": [
+        {
+          "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+          "area": "east",
+          "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+        }
+      ]
+    }
+  ]
+}

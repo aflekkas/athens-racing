@@ -1,0 +1,84 @@
+[
+  {
+    "cell": "12,-14",
+    "originalSHA": "bb0b97a287b61ff9aff6b1f878033a3a3e4feb754b598de99567444a2f855433",
+    "before": {
+      "bytes": 564744,
+      "triangles": 44104
+    },
+    "changed": true,
+    "sourceSha256": "bb0b97a287b61ff9aff6b1f878033a3a3e4feb754b598de99567444a2f855433",
+    "recipeHash": "ea106aeac9040280a4762413fd8bcb4cdac7956d9372e5318292357150376030",
+    "sourcePlans": [
+      {
+        "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+        "area": "east",
+        "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+      }
+    ],
+    "postsBefore": 386,
+    "postsAfter": 316,
+    "guardMeshesBefore": 1,
+    "guardMeshesAfter": 1,
+    "trianglesBefore": 6176,
+    "trianglesAfter": 5476,
+    "triangleDelta": -700,
+    "arrayBytesBefore": 111168,
+    "arrayBytesAfter": 100248,
+    "arrayBytesDelta": -10920,
+    "allPhysicalTablesBitExact": true,
+    "railsBitExact": true,
+    "pythonSourcePostsBitExact": true,
+    "packed": {
+      "url": "./12--14-aa90a3e0833faf719c4ec46796cc40d6174b6baad9b1da6c34f58a60b6a18d80.bin.gz",
+      "sha256": "aa90a3e0833faf719c4ec46796cc40d6174b6baad9b1da6c34f58a60b6a18d80",
+      "bytes": 562278,
+      "decodedBytes": 7494523,
+      "residentBytes": 3940800,
+      "transientBytes": 15551324,
+      "dependencies": [],
+      "triangles": 43404
+    }
+  },
+  {
+    "cell": "11,-12",
+    "originalSHA": "dcd1ca04db51d3a236af09720152c269fe915b48fed752a5efa056fd12282b1e",
+    "before": {
+      "bytes": 485676,
+      "triangles": 40283
+    },
+    "changed": true,
+    "sourceSha256": "dcd1ca04db51d3a236af09720152c269fe915b48fed752a5efa056fd12282b1e",
+    "recipeHash": "a5561437dfa164e91722898b31172d5f9e86f254b2ff35feb51f76b9f563bf67",
+    "sourcePlans": [
+      {
+        "sourcePlanSha256": "b2376e6a61fb6412fd63f39cf4f17195fcf5be2f445c9571f6bac5c28519aa08",
+        "area": "east",
+        "recipeHash": "ab222eef7481cdff7bd47ec84d7282868929619ec2b3925cbbdb178f966320ce"
+      }
+    ],
+    "postsBefore": 109,
+    "postsAfter": 101,
+    "guardMeshesBefore": 1,
+    "guardMeshesAfter": 1,
+    "trianglesBefore": 1744,
+    "trianglesAfter": 1664,
+    "triangleDelta": -80,
+    "arrayBytesBefore": 31392,
+    "arrayBytesAfter": 30144,
+    "arrayBytesDelta": -1248,
+    "allPhysicalTablesBitExact": true,
+    "railsBitExact": true,
+    "pythonSourcePostsBitExact": true,
+    "packed": {
+      "url": "./11--12-04967b5e0058bef98c21022a08ca8434452c9bf09886d116a84ef63a1da4b311.bin.gz",
+      "sha256": "04967b5e0058bef98c21022a08ca8434452c9bf09886d116a84ef63a1da4b311",
+      "bytes": 485895,
+      "decodedBytes": 6656943,
+      "residentBytes": 3855867,
+      "transientBytes": 13799781,
+      "dependencies": [],
+      "triangles": 40203
+    }
+  }
+]

@@ -1,0 +1,169 @@
+{
+  "reports": [
+    {
+      "name": "kifisias-a6",
+      "x": 6451.7223,
+      "z": -6926.4289,
+      "contact": {
+        "y": 184.7513064323538,
+        "nx": 0.07046239012172434,
+        "nz": 0.007805622395680498,
+        "flags": 1,
+        "layer": 0,
+        "surface": 8,
+        "surfaceId": "surface:w154259484:0",
+        "tile": "12,-14"
+      },
+      "player": {
+        "x": 6451.247738119277,
+        "y": 190.7108226509886,
+        "z": -6926.729037049123
+      },
+      "inventory": {
+        "js": 122877461,
+        "gpu": 77508863,
+        "heap": 122877461,
+        "sharedJS": 35221955,
+        "tileJS": 24231266,
+        "tileGPU": 12402492,
+        "renderTargetsAndSkyAllowance": 29884416,
+        "resources": {
+          "jsBytes": 268435456,
+          "gpuBytes": 201326592,
+          "stream": {
+            "capBytes": 67108864,
+            "transientBytes": 67108864,
+            "concurrency": 2
+          }
+        },
+        "streamReserved": 46984641,
+        "transient": 0
+      },
+      "file": "/home/dev/.cogenly/worktrees/athens-racing/t3-83f3d59d/.scratch/highway-context/kifisias-a6-before.jpg"
+    },
+    {
+      "name": "dionysou-a6",
+      "x": 6224.8311,
+      "z": -6984.3117,
+      "contact": {
+        "y": 182.59139982352596,
+        "nx": -0.03211798584261671,
+        "nz": 0.08579834527254457,
+        "flags": 1,
+        "layer": 0,
+        "surface": 9,
+        "surfaceId": "surface:w154259480:0",
+        "tile": "12,-14"
+      },
+      "player": {
+        "x": 6226.807375521221,
+        "y": 188.62861768963114,
+        "z": -6983.289107722475
+      },
+      "inventory": {
+        "js": 155050288,
+        "gpu": 77558066,
+        "heap": 155050288,
+        "sharedJS": 35228315,
+        "tileJS": 24215488,
+        "tileGPU": 12445335,
+        "renderTargetsAndSkyAllowance": 29884416,
+        "resources": {
+          "jsBytes": 268435456,
+          "gpuBytes": 201326592,
+          "stream": {
+            "capBytes": 67108864,
+            "transientBytes": 67108864,
+            "concurrency": 2
+          }
+        },
+        "streamReserved": 47102187,
+        "transient": 0
+      },
+      "file": "/home/dev/.cogenly/worktrees/athens-racing/t3-83f3d59d/.scratch/highway-context/dionysou-a6-before.jpg"
+    },
+    {
+      "name": "post-detail",
+      "phase": "before",
+      "camera": {
+        "position": [
+          66,
+          194.2,
+          197.5
+        ],
+        "origin": {
+          "x": 6144,
+          "z": -7168
+        },
+        "target": [
+          6218,
+          191.6,
+          -6961.5
+        ]
+      },
+      "file": "/home/dev/.cogenly/worktrees/athens-racing/t3-83f3d59d/.scratch/highway-context/dionysou-posts-before.jpg"
+    },
+    {
+      "name": "native-drive",
+      "phase": "before",
+      "drive": {
+        "start": {
+          "x": 6226.807375521221,
+          "y": 188.62861768963114,
+          "z": -6983.289107722475
+        },
+        "end": {
+          "x": 6265.674103400973,
+          "y": 192.82391167796555,
+          "z": -7058.412400376
+        },
+        "distance": 84.58209996911785,
+        "holds": 0,
+        "missing": 0
+      },
+      "file": "/home/dev/.cogenly/worktrees/athens-racing/t3-83f3d59d/.scratch/highway-context/dionysou-drive-before.jpg"
+    },
+    {
+      "name": "kifisias-rizariou",
+      "x": 5636.4236,
+      "z": -5822.6525,
+      "contact": {
+        "y": 167.64084053399444,
+        "nx": 0.051412128047948244,
+        "nz": 0.031698098761448884,
+        "flags": 1,
+        "layer": 0,
+        "surface": 12,
+        "surfaceId": "surface:w98895975:0",
+        "tile": "11,-12"
+      },
+      "player": {
+        "x": 5637.915472141803,
+        "y": 167.66199028199117,
+        "z": -5824.737797153368
+      },
+      "inventory": {
+        "js": 132685954,
+        "gpu": 76363905,
+        "heap": 132685954,
+        "sharedJS": 35232635,
+        "tileJS": 21975757,
+        "tileGPU": 11246854,
+        "renderTargetsAndSkyAllowance": 29884416,
+        "resources": {
+          "jsBytes": 268435456,
+          "gpuBytes": 201326592,
+          "stream": {
+            "capBytes": 67108864,
+            "transientBytes": 67108864,
+            "concurrency": 2
+          }
+        },
+        "streamReserved": 42698926,
+        "transient": 0
+      },
+      "file": "/home/dev/.cogenly/worktrees/athens-racing/t3-83f3d59d/.scratch/highway-context/kifisias-rizariou-before.jpg"
+    }
+  ],
+  "errors": []
+}

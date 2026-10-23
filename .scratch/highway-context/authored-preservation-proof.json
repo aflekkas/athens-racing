@@ -1,0 +1,47 @@
+[
+  {
+    "cell": [
+      30,
+      -23
+    ],
+    "sha256": "d4437f2149560c9ef634480079c6b160ca97bb977bf3816e95a5ef7cbc3c6a61",
+    "changed": false,
+    "preserveOriginal": true,
+    "sourceSha256": "d4437f2149560c9ef634480079c6b160ca97bb977bf3816e95a5ef7cbc3c6a61",
+    "triangleDelta": 0,
+    "arrayBytesDelta": 0,
+    "recipeHash": null,
+    "reason": "explicit authored source preservation",
+    "changedIdentityRejected": true
+  },
+  {
+    "cell": [
+      33,
+      -21
+    ],
+    "sha256": "b4e4176c6459001762f098e7a7ed5699a7b83893b10fb328a6c5e8fa2e93751f",
+    "changed": false,
+    "preserveOriginal": true,
+    "sourceSha256": "b4e4176c6459001762f098e7a7ed5699a7b83893b10fb328a6c5e8fa2e93751f",
+    "triangleDelta": 0,
+    "arrayBytesDelta": 0,
+    "recipeHash": null,
+    "reason": "explicit authored source preservation",
+    "changedIdentityRejected": true
+  },
+  {
+    "cell": [
+      34,
+      -21
+    ],
+    "sha256": "964bbb12088762cb7d616decf049fa77683508bb603a43894d1de9875fd6866f",
+    "changed": false,
+    "preserveOriginal": true,
+    "sourceSha256": "964bbb12088762cb7d616decf049fa77683508bb603a43894d1de9875fd6866f",
+    "triangleDelta": 0,
+    "arrayBytesDelta": 0,
+    "recipeHash": null,
+    "reason": "explicit authored source preservation",
+    "changedIdentityRejected": true
+  }
+]

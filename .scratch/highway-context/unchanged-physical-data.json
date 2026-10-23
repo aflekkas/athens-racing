@@ -1,0 +1,16 @@
+[
+  {
+    "cell": "12,-14",
+    "allPhysicalTablesBitIdentical": true,
+    "collisionRailsBitIdentical": true,
+    "allBeamVerticesBitIdentical": true,
+    "remainingPostPairsWithinHalfMetre": 0
+  },
+  {
+    "cell": "11,-12",
+    "allPhysicalTablesBitIdentical": true,
+    "collisionRailsBitIdentical": true,
+    "allBeamVerticesBitIdentical": true,
+    "remainingPostPairsWithinHalfMetre": 0
+  }
+]

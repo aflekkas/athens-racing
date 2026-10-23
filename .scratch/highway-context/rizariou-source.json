@@ -1,0 +1,239 @@
+{
+  "url": "https://api.openstreetmap.org/api/0.6/map?bbox=23.7915,38.0303,23.7970,38.0340",
+  "readDate": "2026-10-23",
+  "httpStatus": 200,
+  "sha256": "597390672623764e783168febae4fbabc172ea5399e02e58432c37594365d4e9",
+  "licence": "OpenStreetMap contributors, ODbL 1.0",
+  "records": [
+    {
+      "id": "w32067820",
+      "version": 24,
+      "timestamp": "2026-08-26T13:53:54Z",
+      "tags": {
+        "bridge": "yes",
+        "dual_carriageway": "yes",
+        "expressway": "yes",
+        "highway": "primary",
+        "int_name": "Kifisias",
+        "lanes": "3",
+        "layer": "1",
+        "lit": "yes",
+        "name": "Κηφισίας",
+        "name:ca": "Avinguda Kifissias",
+        "name:el": "Κηφισίας",
+        "name:fr": "Avenue Kifissias",
+        "name:prefix": "Λεωφόρος",
+        "oneway": "yes",
+        "ref": "ΕΟ83",
+        "smoothness": "excellent",
+        "source:ref": "Ministerial Decision Γ25871/1963 (ΦΕΚ Β 319/23.07.1963)",
+        "surface": "asphalt",
+        "wikidata": "Q785707",
+        "wikipedia": "el:Λεωφόρος Κηφισίας"
+      },
+      "points": [
+        [
+          5636.484463791265,
+          -5836.151376000704
+        ],
+        [
+          5624.349292241258,
+          -5818.674136000535
+        ]
+      ]
+    },
+    {
+      "id": "w87150957",
+      "version": 26,
+      "timestamp": "2026-08-26T13:53:54Z",
+      "tags": {
+        "bridge": "yes",
+        "destination:lanes": "Κηφησιά;Kifisia;Αττική Οδός;Attiki Odos|Κηφησιά;Kifisia;Αττική Οδός;Attiki Odos|Παράδεισος;Άγιος Θωμάς|Χαλάνδρι;Ηράκλειο;Ο.Α.Κ.Α.|Χαλάνδρι;Ηράκλειο;Ο.Α.Κ.Α.",
+        "dual_carriageway": "yes",
+        "expressway": "yes",
+        "highway": "primary",
+        "int_name": "Kifisias",
+        "lanes": "5",
+        "layer": "1",
+        "lit": "yes",
+        "maxspeed": "70",
+        "name": "Κηφισίας",
+        "name:prefix": "Λεωφόρος",
+        "oneway": "yes",
+        "placement": "middle_of:2",
+        "ref": "ΕΟ83",
+        "sidewalk": "no",
+        "smoothness": "excellent",
+        "source": "Bing (2016-09-06)",
+        "source:ref": "Ministerial Decision Γ25871/1963 (ΦΕΚ Β 319/23.07.1963)",
+        "surface": "asphalt",
+        "turn:lanes": "through|through|through|right|right",
+        "wikidata": "Q785707",
+        "wikipedia": "el:Λεωφόρος Κηφισίας"
+      },
+      "points": [
+        [
+          5635.879021392673,
+          -5810.647964000075
+        ],
+        [
+          5648.040516525214,
+          -5828.091808000645
+        ]
+      ]
+    },
+    {
+      "id": "w98895975",
+      "version": 18,
+      "timestamp": "2024-08-05T18:43:36Z",
+      "tags": {
+        "dual_carriageway": "yes",
+        "highway": "secondary",
+        "int_name": "Olympioniki Spyrou Loui",
+        "lanes": "2",
+        "lit": "yes",
+        "maxspeed": "50",
+        "name": "Ολυμπιονίκη Σπύρου Λούη",
+        "oneway": "yes",
+        "smoothness": "excellent",
+        "surface": "asphalt"
+      },
+      "points": [
+        [
+          5638.406085316553,
+          -5824.395984000168
+        ],
+        [
+          5625.586500620352,
+          -5833.56875200058
+        ],
+        [
+          5615.565990200986,
+          -5840.748892000644
+        ]
+      ]
+    },
+    {
+      "id": "w98895980",
+      "version": 11,
+      "timestamp": "2024-08-05T18:43:36Z",
+      "tags": {
+        "dual_carriageway": "yes",
+        "highway": "secondary",
+        "int_name": "Rizareiou",
+        "lit": "yes",
+        "name": "Ριζαρείου",
+        "oneway": "yes",
+        "smoothness": "excellent",
+        "surface": "asphalt"
+      },
+      "points": [
+        [
+          5635.791276117768,
+          -5815.768684000594
+        ],
+        [
+          5677.119300702255,
+          -5785.868131999993
+        ],
+        [
+          5689.859914650854,
+          -5776.873476000081
+        ]
+      ]
+    },
+    {
+      "id": "w440928885",
+      "version": 5,
+      "timestamp": "2020-02-19T11:05:28Z",
+      "tags": {
+        "layer": "1",
+        "man_made": "bridge"
+      },
+      "points": [
+        [
+          5630.587981302732,
+          -5840.259084000458
+        ],
+        [
+          5623.752624370281,
+          -5830.46292400067
+        ],
+        [
+          5618.417711642576,
+          -5822.815240000679
+        ],
+        [
+          5620.865804818542,
+          -5821.11204400055
+        ],
+        [
+          5624.349292241258,
+          -5818.674136000535
+        ],
+        [
+          5631.316267086067,
+          -5813.8205839999755
+        ],
+        [
+          5635.879021392673,
+          -5810.647964000075
+        ],
+        [
+          5646.80330814612,
+          -5803.033676000475
+        ],
+        [
+          5658.973577806276,
+          -5820.477520000253
+        ],
+        [
+          5648.040516525214,
+          -5828.091808000645
+        ],
+        [
+          5643.495311273838,
+          -5831.253296000415
+        ],
+        [
+          5636.484463791265,
+          -5836.151376000704
+        ],
+        [
+          5633.079947116151,
+          -5838.522492000729
+        ],
+        [
+          5630.587981302732,
+          -5840.259084000458
+        ]
+      ]
+    },
+    {
+      "id": "w440936123",
+      "version": 1,
+      "timestamp": "2016-09-06T11:25:17Z",
+      "tags": {
+        "barrier": "retaining_wall"
+      },
+      "points": [
+        [
+          5764.487271146048,
+          -5728.883424000067
+        ],
+        [
+          5724.721112458677,
+          -5751.8487400003005
+        ],
+        [
+          5685.832406522541,
+          -5776.283480000305
+        ],
+        [
+          5646.80330814612,
+          -5803.033676000475
+        ]
+      ]
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+[
+  {
+    "cell": "12,-14",
+    "before": {
+      "bytes": 564744,
+      "triangles": 44104,
+      "guardTriangles": 6176,
+      "posts": 386
+    },
+    "after": {
+      "guardTriangles": 5476,
+      "posts": 316,
+      "url": "./12--14-c2620384e22fa3cddac4362e12c1a1d95d6f412dc8470dc7be5e767904b61fdd.bin.gz",
+      "sha256": "c2620384e22fa3cddac4362e12c1a1d95d6f412dc8470dc7be5e767904b61fdd",
+      "bytes": 562215,
+      "decodedBytes": 7494404,
+      "residentBytes": 3940783,
+      "transientBytes": 15551023,
+      "dependencies": [],
+      "triangles": 43404
+    },
+    "collisionRailsSha256": "bf7eaedeb93c93c8cf8c4ed1eb002de8f17da47e291044ca1486493f984f354f"
+  },
+  {
+    "cell": "11,-12",
+    "before": {
+      "bytes": 485676,
+      "triangles": 40283,
+      "guardTriangles": 1744,
+      "posts": 109
+    },
+    "after": {
+      "guardTriangles": 1664,
+      "posts": 101,
+      "url": "./11--12-9cf07a4b2bbfd399bfb1a16ab45409298e9630f736c1208d8b4dbcd392e391c1.bin.gz",
+      "sha256": "9cf07a4b2bbfd399bfb1a16ab45409298e9630f736c1208d8b4dbcd392e391c1",
+      "bytes": 486817,
+      "decodedBytes": 6657849,
+      "residentBytes": 3855862,
+      "transientBytes": 13802515,
+      "dependencies": [],
+      "triangles": 40203
+    },
+    "collisionRailsSha256": "57d889c637c0937ac013ca1b000f8aa1612ab4c544d69d79e9dbf82e755dca14"
+  }
+]
