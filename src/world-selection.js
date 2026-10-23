@@ -1,5 +1,8 @@
 import {RouteRuntime} from './route-runtime.js';
 import {planRouteInterest} from './route-stream-policy.js';
+// Loading has no driving frame to protect. Keep the screen responsive with a
+// four-millisecond slice, then restore the caller's driving budget on every exit.
+export const ROUTE_LOADING_ACTIVATION_MS=4;
 /** Selection lifetime shared by the real streamed session and the headless cancellation fixtures. */
 export function createWorldSelection({stream,manifest,makeGround,safePose,prepareEnrichments=async()=>{},progress=()=>{},onCommit=()=>{},onPlan=()=>{},metrics={},findSpawn,listeners=new Set(),signal,waitFrame=()=>new Promise(r=>requestAnimationFrame(r)),now=()=>performance.now()}){
  let route=null,ground=null,controller=null,token=0,disposed=false,pendingRouteId=null,plan=null;const releases=[],drivingActivationMs=stream.activationMs;
@@ -11,9 +14,8 @@ export function createWorldSelection({stream,manifest,makeGround,safePose,prepar
   subscribeTiles(listener){assertAlive();listeners.add(listener);for(const [k,t]of stream.tiles)if(t.state==='active')listener.activated?.(k);return()=>listeners.delete(listener);},
   async prepareRoute(compiled,{cars=[],runtime,signal:external}={}){
    const job=begin(external);pendingRouteId=compiled.id;
-   // Leave headroom for the final indivisible step within the 3 ms frame target.
-   // The driving slice is restored on success, abort and supersession.
-   if(Number.isFinite(drivingActivationMs))stream.activationMs=Math.max(drivingActivationMs,1);
+   // The driving slice is restored on success, failure, abort and supersession.
+   if(Number.isFinite(drivingActivationMs))stream.activationMs=Math.max(drivingActivationMs,ROUTE_LOADING_ACTIVATION_MS);
    try{
     if(compiled.worldSetRevision!==manifest.revision)throw Error('Route and world release differ');
     if(runtime&&(!(runtime instanceof RouteRuntime)||runtime.compiled!==compiled))throw Error('Route geometry release mismatch');

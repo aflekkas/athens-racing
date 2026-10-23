@@ -7,7 +7,7 @@ import {WorldTraffic} from './world-traffic.js';
 import {RouteGuidance} from './route-guidance.js';
 import {createLegacyGuidance} from './route-guidance/legacy.js';
 import {createWorldSession} from './world-session.js';
-import {loadUnifiedRoute,loadUnifiedRouteCatalogue} from './unified-routes.js';
+import {loadUnifiedRoute,loadUnifiedRouteCatalogue,loadRaceRoute} from './unified-routes.js';
 import {routeEvent} from './route-events.js';
 import {RouteNavigation,returnRoutePoints} from './route-navigation.js';
 import {buildRouteGuidanceData} from './route-guidance-data.js';
@@ -323,7 +323,7 @@ async function boot() {
   if (SKIP_MENU && !multiplayer.pendingCode) await waitForBootSession(multiplayer);
   if (multiplayer.active) await multiplayer.syncLobby();
   else if (SKIP_MENU && !multiplayer.pendingCode) {
-    if(Q.get('routes')==='1')G.unifiedCompiled=await loadUnifiedRoute(Q);
+    if(Q.get('event')!=='free')G.unifiedCompiled=Q.get('routes')==='1'?await loadUnifiedRoute(Q):await loadRaceRoute({mapId:initialMapId(Q),routeId:Q.get('route'),eventId:Q.get('event')});
     if(G.unifiedCompiled&&Q.has('car')){const i=CARS.findIndex(c=>c.id===canonicalCarId(Q.get('car')));if(i>=0)G.carIdx=i;}
     await switchMap(G.unifiedCompiled?'athens':initialMapId(Q), Q.get('event') === 'free' ? 'FREE ROAM' : 'QUICK RACE');
     prepareEvent(Q.get('routeEvent') || Q.get('event') || 'quick'); resetRace();
@@ -509,6 +509,10 @@ function bindMapWeather() {
 /** Menu/lobby contract: await switchMap(id), then prepare/start the selected event. */
 async function switchMap(id = 'riviera', context = 'QUICK RACE') {
   if (mapSwitch) { await mapSwitch; return switchMap(id, context); }
+  if(!multiplayer.active&&id!=='athens'&&context!=='FREE ROAM'){
+    const compiled=await loadRaceRoute({mapId:id});
+    G.unifiedCompiled=compiled;return loadUnifiedWorld(compiled);
+  }
   if (world && map?.id === id) return map;
   if(worldSession&&id!=='athens'){guidanceTilesOff?.();routeGuidance?.dispose();worldSession.dispose();const url=new URL(location.href);url.search='?menu=1&map='+encodeURIComponent(id);location.assign(url);throw Error('Leaving route pilot');}
   if(id==='athens'&&G.unifiedCompiled){if(worldSession&&map?.route?.compiled.routeHash===G.unifiedCompiled.routeHash)return map;return loadUnifiedWorld(G.unifiedCompiled);}
@@ -1238,13 +1242,21 @@ let soloStart = 0;
 async function startEvent(id, opts = {}) {
   if (multiplayer.active) { multiplayer.open(); return; }
   const token = ++soloStart;
-  const def = mapEvent(id); if (!def) return;
-  const car = def.car || opts.car;
-  const idx = car == null ? G.carIdx : typeof car === 'number' ? clamp(Math.floor(car), 0, CARS.length - 1) : Math.max(0, CARS.findIndex(c => c.id === canonicalCarId(car)));
-  const mapId = def.mapId || selectedMapId;
   menu?.hide();
   try {
-    await switchMap(mapId, def.type === 'free' ? 'FREE ROAM' : def.quick || def.id === 'quick' ? 'QUICK RACE' : def.name);
+    let def;
+    const requested = typeof id === 'object' ? id : null;
+    if (requested?.type !== 'free' && id !== 'free' && (!worldSession || requested && requested.routeId !== G.unifiedCompiled.id)) {
+      const compiled = await loadRaceRoute({ mapId: requested?.mapId || selectedMapId, routeId: requested?.routeId, eventId: requested?.id || id });
+      if (token !== soloStart || multiplayer.active) return;
+      G.unifiedCompiled = compiled;
+      await loadUnifiedWorld(compiled, { eventId: requested?.id || id });
+      def = mapEvent(requested?.id || id) || mapEvent('quick');
+    } else def = mapEvent(id);
+    if (!def || token !== soloStart || multiplayer.active) return;
+    const car = def.car || opts.car;
+    const idx = car == null ? G.carIdx : typeof car === 'number' ? clamp(Math.floor(car), 0, CARS.length - 1) : Math.max(0, CARS.findIndex(c => c.id === canonicalCarId(car)));
+    await switchMap(def.mapId || selectedMapId, def.type === 'free' ? 'FREE ROAM' : def.quick || def.id === 'quick' ? 'QUICK RACE' : def.name);
     if (token !== soloStart || multiplayer.active) return;
     if(worldSession){G.routePreparing=true;G.state='loading';loading.show('athens',G.unifiedCompiled.definition.name);loading.setRoute(G.unifiedCompiled);route=await worldSession.prepareRoute(G.unifiedCompiled,{cars:[CARS[idx]]});ground=worldSession.ground;ground.closures=routeClosures;traffic.route=route;signals.route=route;routeRivals=new RouteRivals(route);map.route=route;player.veh.route=route;player.veh.ground=ground;routeNavigation=new RouteNavigation(route);hud.setRoute(G.unifiedCompiled);loading.hide();}
     G.pendingEvent = def; restart(idx);

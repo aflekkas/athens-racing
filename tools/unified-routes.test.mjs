@@ -43,3 +43,15 @@ test('normal Quick Race opens the map with enabled routes without URL parameters
   await Menu.prototype.openQuickRace.call(menu);assert.equal(menu.screen,'maps');assert.equal(menu.data.mode,'quick');
  } finally {globalThis.document=priorDocument;globalThis.window=priorWindow;globalThis.fetch=priorFetch;}
 });
+
+test('compatibility race URLs resolve only enabled Athens routes, including descent and future catalogue ids',async()=>{
+ const {loadRaceRoute,raceRouteQuery}=await import('../src/unified-routes.js');
+ const entries=['riviera-coast','psychiko-faros','penteli-hill','penteli-descent','megara-club','kifissia-kefalari'].map(id=>({id,routeHash:id,geometryHash:'geometry-'+id,worldSetRevision:'release',url:'/'+id+'.json'}));
+ const reads=[],fetcher=async url=>{reads.push(url);return {ok:true,json:async()=>url==='/api/routes'?{environment:'production',routes:entries}:entries.find(e=>e.url===url)};};
+ for(const [mapId,id]of Object.entries({riviera:'riviera-coast',psychiko:'psychiko-faros',penteli:'penteli-hill',megara:'megara-club'}))assert.equal((await loadRaceRoute({mapId},{fetcher})).id,id);
+ assert.equal((await loadRaceRoute({mapId:'penteli',eventId:'penteli-descent-tt'},{fetcher})).id,'penteli-descent');
+ assert.equal((await loadRaceRoute({routeId:'kifissia-kefalari'},{fetcher})).id,'kifissia-kefalari');
+ assert.equal(raceRouteQuery({routeId:'future-route'}).get('route'),'future-route');
+ await assert.rejects(loadRaceRoute({routeId:'disabled-route'},{fetcher}),/not enabled/);
+ assert.ok(reads.every(url=>!url.includes('/data/maps/')&&!url.includes('/data/map.json')),'race resolution never downloads authored whole-map inputs');
+});

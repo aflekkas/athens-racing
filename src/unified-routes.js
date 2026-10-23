@@ -2,6 +2,16 @@
 export const LEGACY_ROUTE_DESTINATIONS=Object.freeze({riviera:'riviera-coast',psychiko:'psychiko-faros',penteli:'penteli-hill',megara:'megara-club'});
 export const routeDestinationForMap=mapId=>Object.hasOwn(LEGACY_ROUTE_DESTINATIONS,mapId)?LEGACY_ROUTE_DESTINATIONS[mapId]:null;
 const artifacts=new WeakMap();
+// Compatibility URLs resolve to a released route; the enabled backend entry,
+// never a query parameter, still owns geometry authorization.
+export function raceRouteQuery({mapId='riviera',routeId,eventId}={}){
+ const id=routeId||(eventId==='penteli-descent-tt'?'penteli-descent':routeDestinationForMap(mapId))||mapId;
+ return new URLSearchParams({routes:'1',route:id});
+}
+export async function loadRaceRoute(selection,options){
+ return loadUnifiedRoute(raceRouteQuery(selection),options);
+}
+
 export async function loadUnifiedRoute(query,{fetcher=fetch}={}){
  if(query.get('routes')!=='1')return null;
  const r=await fetcher('/api/routes',{cache:'no-store'});if(!r.ok)throw Error('Routes unavailable');const config=await r.json();
