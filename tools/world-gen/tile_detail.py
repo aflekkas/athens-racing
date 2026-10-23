@@ -42,14 +42,14 @@ def foam_mesh(water,ox,oz,width=6.):
 
 
 def park_areas(path,ox,oz):
- """OSM leisure=park polygons (the vegetation cache's `areas`) that touch the cell, as (geometry, tags) land records."""
+ """Actual cached green-area geometry and OSM tags touching this cell."""
  if not path:return []
  from shapely import wkb
  from shapely.geometry import box
  db=sqlite3.connect(f'file:{path}?mode=ro',uri=True);cell=box(ox,oz,ox+512,oz+512);out=[]
- for blob, in db.execute('SELECT geometry FROM areas'):
+ for blob,tags in db.execute('SELECT geometry,tags FROM areas'):
   g=wkb.loads(blob)
-  if g.intersects(cell):out.append((g,{'leisure':'park'}))
+  if g.intersects(cell):out.append((g,json.loads(tags) or {'leisure':'park'}))
  db.close();return out
 
 

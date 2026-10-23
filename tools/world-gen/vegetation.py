@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Optional OSM vegetation provenance. Data only; never enables tree rendering.
 
-Explicit trees, sampled tree rows, and park placement candidates stay distinct.
-Park samples are not claims of surveyed trees and must undergo road/building
+Explicit trees, sampled tree rows, and green-area placement candidates stay distinct.
+Area samples are not claims of surveyed trees and must undergo road/building
 exclusion and the owner's appearance decision before any renderer uses them.
 """
 import argparse,hashlib,json,math,os,sqlite3,time
@@ -16,12 +16,41 @@ from ingest import sha,encode
 
 
 def candidates(geometry,spacing=20):
-    """World-aligned park candidates; preserve holes and concave boundaries."""
+    """World-aligned area candidates; preserve holes and concave boundaries."""
     prepare(geometry);a,b,c,d=geometry.bounds
     for iz in range(math.ceil(b/spacing),math.floor(d/spacing)+1):
         for ix in range(math.ceil(a/spacing),math.floor(c/spacing)+1):
             x,z=ix*spacing,iz*spacing
             if geometry.contains(Point(x,z)):yield x,z
+
+
+def area_kind(tags):
+    """Source classes only; residential styling never establishes garden cover."""
+    if tags.get('leisure') in ('park','garden'):return tags.get('leisure')
+    if tags.get('natural')=='wood' or tags.get('landuse')=='forest':return 'wood'
+    return None
+
+
+def incomplete_green_relations(source):
+    """Reject partial source relations, including a missing inner ring.
+
+    Area assembly can otherwise emit the outer shell of an incomplete extract.
+    Retain only IDs referenced by relevant relations, rather than every way.
+    Nested relations are conservatively unsupported, not silently flattened.
+    """
+    relations={};wanted=set();found=set()
+    class Relations(osmium.SimpleHandler):
+        def relation(self,relation):
+            if not area_kind(dict(relation.tags)):return
+            members=[(m.type,m.ref) for m in relation.members]
+            relations[relation.id]=members
+            wanted.update(ref for kind,ref in members if kind=='w')
+    class Ways(osmium.SimpleHandler):
+        def way(self,way):
+            if way.id in wanted:found.add(way.id)
+    Relations().apply_file(str(source));Ways().apply_file(str(source))
+    return {identifier for identifier,members in relations.items()
+            if not members or any(kind!='w' or ref not in found for kind,ref in members)}
 
 
 def extract(pbf,output):
@@ -34,7 +63,9 @@ def extract(pbf,output):
     tmp=output.with_suffix('.partial.sqlite');index=output.with_suffix('.locations.idx')
     if tmp.exists() or index.exists():raise ValueError('Inspect incomplete vegetation cache before retrying')
     db=sqlite3.connect(tmp);db.executescript('PRAGMA cache_size=-16384; CREATE TABLE points(id TEXT PRIMARY KEY,source TEXT,kind TEXT,x REAL,z REAL,seed INTEGER,tags TEXT); CREATE INDEX source ON points(source); CREATE TABLE areas(id TEXT PRIMARY KEY,geometry BLOB,tags TEXT); CREATE TABLE metadata(value TEXT);')
-    counts={'tree':0,'tree_row':0,'park_candidate':0,'park_areas':0};errors={};factory=osmium.geom.GeoJSONFactory()
+    counts={'tree':0,'tree_row':0,'park_candidate':0,'park_areas':0,'garden_areas':0,'wood_areas':0};errors={};factory=osmium.geom.GeoJSONFactory()
+    incomplete=incomplete_green_relations(pbf)
+    if incomplete:errors['incompleteGreenRelation']=len(incomplete)
     def error(reason):errors[reason]=errors.get(reason,0)+1
     def point(identifier,source,kind,x,z,tags):
         seed=int.from_bytes(hashlib.sha256(identifier.encode()).digest()[:4],'little')
@@ -53,16 +84,19 @@ def extract(pbf,output):
             for i in range(n+1):
                 p=line.interpolate(line.length*i/n);point(key+':row:'+str(i),key,'tree_row',p.x,p.y,tags)
         def area(self,area):
-            if area.tags.get('leisure')!='park':return
-            tags=dict(area.tags);key='osm:'+('way:' if area.from_way() else 'relation:')+str(area.orig_id())
+            tags=dict(area.tags);kind=area_kind(tags)
+            if kind is None:return
+            if not area.from_way() and area.orig_id() in incomplete:return
+            key='osm:'+('way:' if area.from_way() else 'relation:')+str(area.orig_id())
             try:g=transform(lambda x,y,z=None:project(x,y),shape(json.loads(factory.create_multipolygon(area))))
-            except (RuntimeError,ValueError):error('invalidPark');return
-            if not g.is_valid or g.is_empty:error('invalidPark');return
-            db.execute('INSERT INTO areas VALUES(?,?,?)',(key,g.wkb,encode(tags)));counts['park_areas']+=1
+            except (RuntimeError,ValueError):error('invalidGreenArea');return
+            if not g.is_valid or g.is_empty:error('invalidGreenArea');return
+            db.execute('INSERT INTO areas VALUES(?,?,?)',(key,g.wkb,encode(tags)));counts[kind+'_areas']+=1
+            # Keep legacy packet kind 2; actual source class remains in tags.
             for x,z in candidates(g):point(f'{key}:candidate:{int(x)}:{int(z)}',key,'park_candidate',x,z,tags)
     try:Handler().apply_file(str(pbf),locations=True,idx='sparse_file_array,'+str(index))
     finally:index.unlink(missing_ok=True)
-    # A park relation and a tagged member can overlap. Keep source provenance,
+    # A green relation and a tagged member can overlap. Keep source provenance,
     # but runtime placement must deduplicate coordinates after exclusion.
     result={'inputs':fingerprint,'counts':counts,'errors':errors,'renderEnabled':False,'placementValidated':False}
     db.execute('INSERT INTO metadata VALUES(?)',(encode(result),));db.commit();db.close();tmp.replace(output)

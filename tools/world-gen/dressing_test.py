@@ -10,7 +10,7 @@ class GroundClasses(unittest.TestCase):
  def test_each_osm_class_lands_in_its_own_ground_class(self):
   g=lambda landuse='',natural='',leisure='',h=30,slope=.1,coast=1e9:ground_category(h,slope,landuse,natural,coast,leisure)
   self.assertEqual(g('commercial'),'urban');self.assertEqual(g('industrial'),'urban')
-  self.assertEqual(g('residential'),'urban');self.assertEqual(g(),'earth')  # residual block ground is courtyard paving; open land stays earth
+  self.assertEqual(g('residential'),'urban');self.assertEqual(g(),'earth')  # residential urban is a styling default, not surveyed paving
   self.assertEqual(g(leisure='park'),'grass');self.assertEqual(g('grass'),'grass');self.assertEqual(g(natural='grassland'),'grass')
   self.assertEqual(g(natural='scrub'),'scrub');self.assertEqual(g(natural='heath'),'scrub')
   self.assertEqual(g('forest'),'forest');self.assertEqual(g(natural='wood'),'forest')
@@ -54,7 +54,6 @@ class Foam(unittest.TestCase):
   for i in range(0,len(ix),3):
    a,b,c=(ps[ix[i+k]*3:ix[i+k]*3+3] for k in range(3));cross=(b[2]-a[2])*(c[0]-a[0])-(b[0]-a[0])*(c[2]-a[2])
    self.assertLess(cross*-1,0.0001) if False else self.assertNotEqual(cross,0)
-if __name__=='__main__':unittest.main()
 
 
 class CourtyardGround(unittest.TestCase):
@@ -67,3 +66,31 @@ class CourtyardGround(unittest.TestCase):
         self.assertEqual(set(classes),{'urban','grass'})
         self.assertEqual(ground_colour(0,0,20,.05,landuse='residential',leisure='garden')[0],'grass')
         self.assertEqual(ground_colour(0,0,20,.05)[0],'earth')
+
+
+class SourceGreenAreas(unittest.TestCase):
+ def test_lookup_preserves_tags_and_holes_without_relabelling_wood_as_park(self):
+  garden=Polygon([(10,10),(200,10),(200,200),(10,200)],holes=[[(50,50),(80,50),(80,80),(50,80)]])
+  records=[('garden',garden,{'leisure':'garden','name':'source garden'}),('wood',box(300,300,400,400),{'natural':'wood'}),('forest',box(500,500,600,600),{'landuse':'forest'})]
+  with tempfile.TemporaryDirectory() as d:
+   path=os.path.join(d,'veg.sqlite');db=sqlite3.connect(path);db.execute('CREATE TABLE areas(id TEXT PRIMARY KEY,geometry BLOB,tags TEXT)')
+   db.executemany('INSERT INTO areas VALUES(?,?,?)',[(key,g.wkb,json.dumps(tags)) for key,g,tags in records]);db.commit();db.close()
+   found=park_areas(path,0,0)
+   self.assertEqual([tags for g,tags in found],[tags for key,g,tags in records])
+   self.assertTrue(found[0][0].equals(garden));self.assertEqual(len(found[0][0].interiors),1)
+   self.assertEqual([ground_category(30,.1,tags.get('landuse',''),tags.get('natural',''),1e9,tags.get('leisure','')) for g,tags in found],['grass','forest','forest'])
+ def test_partial_green_relation_is_rejected_even_when_outer_way_exists(self):
+  from vegetation import incomplete_green_relations
+  xml="""<osm version="0.6"><node id="1" lat="38.07" lon="23.81"/><node id="2" lat="38.071" lon="23.81"/><node id="3" lat="38.071" lon="23.811"/><way id="10"><nd ref="1"/><nd ref="2"/><nd ref="3"/><nd ref="1"/></way><relation id="20"><member type="way" ref="10" role="outer"/><tag k="type" v="multipolygon"/><tag k="leisure" v="garden"/></relation><relation id="21"><member type="way" ref="10" role="outer"/><member type="way" ref="99" role="inner"/><tag k="type" v="multipolygon"/><tag k="natural" v="wood"/></relation><relation id="22"><member type="relation" ref="20" role="outer"/><tag k="type" v="multipolygon"/><tag k="landuse" v="forest"/></relation></osm>"""
+  with tempfile.TemporaryDirectory() as d:
+   path=os.path.join(d,'source.osm')
+   with open(path,'w') as f:f.write(xml)
+   self.assertEqual(incomplete_green_relations(path),{21,22})
+ def test_area_candidates_preserve_holes_and_source_classes(self):
+  from vegetation import candidates,area_kind
+  garden=Polygon([(0,0),(100,0),(100,100),(0,100)],holes=[[(20,20),(80,20),(80,80),(20,80)]])
+  from shapely.geometry import Point
+  self.assertTrue(all(garden.contains(Point(x,z)) for x,z in candidates(garden)))
+  self.assertEqual([area_kind(t) for t in [{'leisure':'garden'},{'natural':'wood'},{'landuse':'forest'},{'leisure':'park'},{'landuse':'residential'},{'leisure':'pitch'},{'landuse':'grass'}]],['garden','wood','wood','park',None,None,None])
+
+if __name__=='__main__':unittest.main()
