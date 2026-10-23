@@ -1,6 +1,6 @@
 // Local unpublished scenery reducer; ordinary packTiles owns every new descriptor.
 // Usage: node tools/build-scenery-candidate.mjs SCENERY_JSON WORLD_JSON CELLS_DIR OUTPUT_DIR
-import {readFile,writeFile,mkdir,rename} from 'node:fs/promises';
+import {readFile,writeFile,mkdir,symlink} from 'node:fs/promises';
 import {Readable} from 'node:stream';
 import {resolve,basename} from 'node:path';
 import {createHash} from 'node:crypto';
@@ -44,7 +44,7 @@ await packTiles(Readable.from(inputs()),resolve(outDir,'cells'),{onTile:async({k
  if(packet.bytes>row.reservation)throw Error('Original resident reservation exceeded '+key);
  row.candidateSha256=entry.sha256;row.accounting={before:{wire:old.bytes,decoded:old.decodedBytes,transient:old.transientBytes,resident:old.residentBytes},after:{wire:entry.bytes,decoded:entry.decodedBytes,transient:entry.transientBytes,resident:entry.residentBytes}};
  row.accounting.delta=Object.fromEntries(Object.keys(row.accounting.after).map(k=>[k,row.accounting.after[k]-row.accounting.before[k]]));
- await rename(resolve(outDir,'cells',basename(entry.url)),resolve(outDir,'cells',entry.sha256+'.bin.gz'));
+ await symlink(basename(entry.url),resolve(outDir,'cells',entry.sha256+'.bin.gz'));
  world.tiles[key]={...old,...entry,url:'/world/cells/'+entry.sha256+'.bin.gz'};
 }});
 const cap=64*1024*1024;let worst2x2={bytes:0,cells:[]};
