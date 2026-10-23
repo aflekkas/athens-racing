@@ -86,3 +86,10 @@ test('authority handover retains accepted snapshot target slots and protects car
  const c=t.cars[0];Object.assign(c,{visibilityTracked:true,lastSeenAt:0,blockedAt:0});t.t=30;f.host.x=1000;f.a.x=c.vehicle.x;f.a.z=c.vehicle.z;
  assert.equal(t.retireUnseen(c,[f.host]),false,'the host cannot remove a car in a remote driver camera range');assert.equal(c.active,true);
 });
+
+test('replica police lights follow shared siren or chase flags while local heat is idle',()=>{
+ const f=fixture(),t=f.t,c=t.cars[0],lights=[];t.cars=[c];c.m.root.position={set(){}};c.m.root.rotation={set(){}};c.m.setStrobe=enabled=>lights.push(enabled);
+ t.updateOnlineDriver(0,{id:'host',player:f.host,gridSlot:0});assert.equal(t.hm.state,'idle');
+ c.cop={target:1,siren:true,chase:true};t.sync();c.cop={target:1,siren:false,chase:true};t.sync();c.cop={target:1,siren:false,chase:false};t.sync();
+ assert.deepEqual(lights,[true,true,false]);assert.equal(f.advances,0);
+});
