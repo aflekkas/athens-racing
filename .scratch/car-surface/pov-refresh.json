@@ -1,0 +1,27 @@
+{
+  "status": "passed",
+  "sourceRoot": "/home/dev/.cogenly/worktrees/athens-racing/t3-41c48689",
+  "sourceCommit": "aa3e513916d73973560e4168817e17fbe841484e",
+  "tool": "tools/pov-camera-mask.mjs (unchanged parent source)",
+  "toolSHA256": "1f38e3f0b8e4603e91e321ff0d708d6615596ef6f9845b6b4223d4f3525c126f",
+  "fixture": "Exact copied parent src/tools/badge assets, own task temp output; shared dependency target and old PNG fallback read-only",
+  "browserExecutable": "/home/dev/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome",
+  "browserSlotTicket": 282,
+  "terminal": "agent-ba6c9de4-3e15-45a6-9da9-869aa644d15e",
+  "exitCode": 0,
+  "cars": 77,
+  "renderedMaskComparisons": 231,
+  "changedMaskPixels": 0,
+  "changedPNGFiles": [],
+  "auditIdentical": true,
+  "geometryFlags": [],
+  "loggedPageErrors": [],
+  "changedSourceHashes": {
+    "src/cars.js": {
+      "old": "2978c18c94faf8cbc541e256d047e312f9f6d952b4bc78d671cc34653574d4ba",
+      "new": "8ef657c549c0695ef2d551b256c56971bfe048e67a13054b4ac0567c1ab23f71"
+    }
+  },
+  "cleanup": "Chrome and fixture HTTP server closed by original tool finally; no replacement queued",
+  "limits": "Rendered isolated CarModel/Cockpit ID-mask fixture, not an own-game driving proof. Existing soft window-opening warnings preserved. Initial prerequisite-only attempt lacked badge KTX2; failed before server/browser and was corrected using exact parent asset, without source edits."
+}

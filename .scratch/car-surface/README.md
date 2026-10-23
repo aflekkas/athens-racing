@@ -42,6 +42,16 @@ Six seconds of real physics drove 10.708m with 5,760 loaded dirt-wheel contacts,
 SURFACE_ROOT=/home/dev/.cogenly/worktrees/athens-racing/t3-41c48689 SURFACE_PROXY_HELPER=/tmp/athens-ui-fixes.Nxho/local-server.mjs ASR_SURFACE_TEMP=/tmp/athens-car-surface.4wM2 SURFACE_OUT=/home/dev/.cogenly/worktrees/athens-racing/t3-d1bb19b7/.scratch/car-surface ASR_SURFACE_COMMIT=aa3e513916d73973560e4168817e17fbe841484e CHROME_BIN=/home/dev/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome BROWSER_SLOTS=1 bash tools/browser-slot.sh node tools/car-surface-clock.browser.mjs
 ```
 
+## Rendered cockpit guard refresh
+
+The required original `tools/pov-camera-mask.mjs` rendered all77 production CarModel/Cockpit entries against exact copied parent `aa3e513916d73973560e4168817e17fbe841484e` source in an isolated 5MiB fixture. **77/77 audits passed, zero geometry flags, 231/231 rendered masks retained identical pixels, no changed PNG files.** The audit JSON is identical; only the generated `src/cars.js` source hash changed after the car-surface import/install. No manual hash patch, owner-rule change or product-code edit. [Refresh telemetry](pov-refresh.json). This isolated mask fixture is guard evidence, separate from the actual-game clock/appearance proof above. Original fallback PNGs remain reused.
+
+```sh
+# In the exact parent-source fixture inside the owned task temp:
+PLAYWRIGHT_EXECUTABLE_PATH=/home/dev/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome BROWSER_SLOTS=1 timeout --signal=TERM --kill-after=10s 300s bash /home/dev/.cogenly/worktrees/athens-racing/t3-d1bb19b7/tools/browser-slot.sh node tools/pov-camera-mask.mjs
+# exit0; browser/server closed in original tool finally
+```
+
 ## How to try it (2 minutes)
 
 1. Free Roam → Psychiko → GR Yaris; use chase camera and World detail On.
