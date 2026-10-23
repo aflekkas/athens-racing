@@ -67,3 +67,47 @@ test('five Hz full-fleet relay measures bounded free-plan message and CPU cost f
   console.log(JSON.stringify({ sharedWorldBench: true, simulatedSeconds: 60, players: 8, cars: rows.length, cones: cones.length, inboundPerSecond: inbound / 60, outboundPerSecond: outputs / 60, outboundBytesPerSecond: bytes / 60, measuredCpuMsPerFrame: elapsed / 300 }));
   assert.ok(inbound / 60 <= 30); assert.ok(elapsed / 300 < 10);
 });
+
+const identity = Object.freeze({ worldId: 'athens', projectionId: 'athens-v1', routeId: 'fixture-race', routeHash: 'a'.repeat(64), geometryHash: 'b'.repeat(64), worldSetRevision: 'c'.repeat(64), onlineGridHash: 'd'.repeat(64) });
+const physicalRow = id => [...row(id), ...Array(8).fill(0), 100000 + id * 300, 1200, -50000, 1, 1200, 0, 1, 0];
+const physicalCone = id => [id, 10000, 300, 0, 0, 0, 0, 0, 0, 0, 100000, 1200, -50000, 1, 0, 0, 1, 0];
+function worldRoom() { const l = room(); l.mapId = 'fixture-race'; l.routeIdentity = identity; for (const p of l.players.values()) p.state = { s: 0, u: 0, x: 1000, y: 12, z: -500, layer: 1 }; return l; }
+const physicalPackets = (l, now, rows = [physicalRow(0)], cones = [physicalCone(0)]) => worldPackets({ raceId: l.raceId, generation: l.generation, seq: 0, at: now, mapId: l.mapId, routeIdentity: l.routeIdentity }, rows, cones);
+
+test('authenticated world rows retain physical off-course poses and tuple through relay, late delivery and host change', () => {
+ const l = worldRoom(), relay = createSharedWorldRelay(deliver), now = Date.now(), batch = physicalPackets(l, now);
+ for (const packet of batch) relay.frame(l.players.get('p0'), l, packet, now);
+ assert.ok(l.sharedWorld); assert.equal(l.sharedWorld.rows[0][32], 100000); assert.deepEqual(l.players.get('p0').ws, l.players.get('p2').ws);
+ const late = []; relay.deliver(late, l); assert.ok(late.length); assert.ok(late.every(p => p.mapId === l.mapId && p.routeIdentity.routeHash === identity.routeHash));
+ l.players.get('p0').connected = false; for (const packet of physicalPackets(l, now + 1000)) relay.frame(l.players.get('p1'), l, packet, now + 1000); assert.equal(l.sharedWorld.owner, 'p1');
+ l.routeIdentity = { ...identity, worldSetRevision: 'e'.repeat(64) }; const stale = []; relay.deliver(stale, l); assert.equal(stale.length, 0);
+});
+test('world relay rejects stale tuples, legacy coordinate rows, invalid physical variants and stale generations before changing cache', () => {
+ const l = worldRoom(), relay = createSharedWorldRelay(deliver), now = Date.now(), host = l.players.get('p0'), packet = physicalPackets(l, now)[0];
+ for (const bad of [{ ...packet, routeIdentity: { ...identity, onlineGridHash: 'e'.repeat(64) } }, { ...packet, mapId: 'riviera' }, { ...packet, generation: 0 }, { ...packet, rows: [row(0)] }, { ...packet, cones: [physicalCone(0).slice(0, 10)] }, { ...packet, rows: [physicalRow(0).map((v, i) => i === 39 ? 1 : v)] }]) assert.equal(relay.frame(host, l, bad, now), false);
+ assert.equal(l.sharedWorld, undefined); assert.equal(relay.frame(host, l, packet, now), true);
+ const legacy = room(), oldRelay = createSharedWorldRelay(deliver); assert.equal(oldRelay.frame(legacy.players.get('p0'), legacy, { ...packet, routeIdentity: undefined, mapId: undefined }, now), false);
+});
+test('world traffic and displaced-cone contacts use physical proximity and reject bridge decks with matching route stations', () => {
+ const l = worldRoom(), relay = createSharedWorldRelay(deliver), now = Date.now(), guest = l.players.get('p1'), host = l.players.get('p0');
+ for (const packet of physicalPackets(l, now)) relay.frame(host, l, packet, now);
+ const contact = { type: 'world-contact', raceId: l.raceId, generation: l.generation, mapId: l.mapId, routeIdentity: identity, at: now, nonce: 0, kind: 'car', body: [0, 5, 1, 200, 0, 50, 300, 1, 600] };
+ assert.equal(relay.contact(guest, l, contact, now), true); assert.deepEqual(host.ws.at(-1).routeIdentity, identity);
+ for (const [nonce, state] of [[1, { layer: 0 }], [2, { y: 0 }], [3, { x: 1200 }]]) { const before = guest.state; guest.state = { ...before, ...state }; assert.equal(relay.contact(guest, l, { ...contact, nonce }, now), false); guest.state = before; }
+ assert.equal(relay.contact(guest, l, { ...contact, nonce: 4, kind: 'cone', body: physicalCone(0) }, now), true);
+ assert.equal(relay.contact(guest, l, { ...contact, nonce: 5, kind: 'cone', body: physicalCone(0).slice(0, 10) }, now), false);
+ assert.equal(relay.contact(guest, l, { ...contact, nonce: 6, kind: 'cone', body: physicalCone(0).map((v, i) => i === 13 ? 0 : v) }, now), false);
+});
+
+test('physical full-fleet relay keeps every actor within the sustained thirty-packet budget for eight drivers',async()=>{
+ const {WORLD_IDS,worldFrameIntervalMs}=await import('../src/shared-world-protocol.js'),l=worldRoom();for(let i=3;i<8;i++)l.players.set('p'+i,{...l.players.get('p1'),id:'p'+i,ws:[]});
+ const rows=Array.from({length:WORLD_IDS},(_,id)=>physicalRow(id)),cones=Array.from({length:256},(_,id)=>physicalCone(id));let outputs=0,bytes=0;
+ const relay=createSharedWorldRelay((ws,data)=>{outputs++;bytes+=typeof data==='string'?Buffer.byteLength(data):Buffer.byteLength(JSON.stringify(data));}),start=Date.now(),batch=physicalPackets(l,start,rows,cones),interval=worldFrameIntervalMs(batch.length+1),cpu=performance.now();let inbound=0;
+ for(let seq=0;seq<100;seq++){const now=start+seq*interval;for(const p of worldPackets({raceId:l.raceId,generation:l.generation,owner:l.host,seq,at:now,now,mapId:l.mapId,routeIdentity:identity},rows,cones)){inbound++;relay.frame(l.players.get('p0'),l,p,now);}}
+ assert.equal(l.sharedWorld.seq,99);assert.equal(l.sharedWorld.rows.length,74);assert.equal(l.sharedWorld.cones.length,256);assert.ok(inbound*1000/(100*interval)<=30+1e-8);assert.ok(l.worldRelayBudget.credits>=0);
+ console.log(JSON.stringify({physicalWorldBench:true,players:8,cars:74,cones:256,parts:batch.length,intervalMs:interval,inboundPerSecond:inbound*1000/(100*interval),outboundBytesPerSecond:bytes*1000/(100*interval),measuredCpuMsPerFrame:(performance.now()-cpu)/100,outputs}));
+ // A host that sends every120ms cannot bypass the room's sustained part budget.
+ const fast=worldRoom(),guarded=createSharedWorldRelay(()=>{});let accepted=0,parts=0;
+ for(let seq=0;seq<100;seq++){const now=start+seq*120;for(const p of worldPackets({raceId:fast.raceId,generation:fast.generation,seq,at:now,mapId:fast.mapId,routeIdentity:identity},rows,cones))if(guarded.frame(fast.players.get('p0'),fast,p,now)){accepted++;parts+=fast.sharedWorld?worldPackets({...fast.sharedWorld,now},rows,cones).length:0;}}
+ assert.ok(accepted<100);assert.ok(parts<=30+30*99*.12+1e-6);
+});

@@ -119,3 +119,8 @@ test('authenticated world free roam accepts distant roads without course station
   assert.equal(x.core.clientData(x.a).state.x, state.x); assert.equal(x.core.clientData(x.a).finish, null); assert.equal(x.submitted.length, 0);
   const before = x.core.clientData(x.a).state; x.advance(); x.send(x.a, x.packet({ type: 'state', state: { ...state, x: state.x + 10000 } })); assert.deepEqual(x.core.clientData(x.a).state, before);
 });
+test('state batches count real wire packets once while the eighty-message guard stays strict', async t => {
+ const x=await setup(t);x.ready();x.advance(1100);const packet=x.packet({type:'states',states:[x.pose(-8),x.pose(-8)]});
+ for(let i=0;i<80;i++)x.send(x.a,packet);assert.equal(x.a.readyState,1);assert.equal(x.core.clientData(x.a).messages,80);
+ x.send(x.a,packet);assert.equal(x.a.readyState,3);assert.equal(x.core.clientData(x.a).messages,81);
+});

@@ -149,14 +149,14 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
   const bind = (initial, ws, ip) => {
     let c = initial;
     handlers.set(ws, { pong: () => { c.alive = true; },
-    message: bytes => {
+    message: (bytes, internalBatchSample = false) => {
       if (c.ws !== ws) return;
       // Hibernated sockets from a prior release have no protocol (version 0).
       // Reject them before parsing or executing a resume/state/lobby packet.
       if (protocolVersion(c.protocol) !== MULTIPLAYER_PROTOCOL) {
         reload(ws); leave(c); clients.delete(c); sessions.delete(c.token); c.connected = false; return;
       }
-      const now = Date.now(); if (now - c.window > 1000) { c.window = now; c.messages = 0; } if (++c.messages > 80) { ws.close(1008, 'Rate limit'); return; }
+      const now = Date.now(); if (now - c.window > 1000) { c.window = now; c.messages = 0; } if (!internalBatchSample && ++c.messages > 80) { ws.close(1008, 'Rate limit'); return; }
       const error = (message, extra = {}) => send(ws, { type: 'error', message, ...extra });
       const hostRate = (l, action) => {
         l.hostActions ||= {};
@@ -175,7 +175,7 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
         if (m.type === 'states') {
           if (c.lobby && !routePacketMatches(maps.get(c.lobby.mapId), m)) return error('Route identity mismatch.');
           if (!Array.isArray(m.states) || !m.states.length || m.states.length > 2) return error('Invalid state batch.');
-          for (const state of m.states) handlers.get(ws).message(JSON.stringify({ type: 'state', raceId: m.raceId, generation: m.generation, mapId: m.mapId, routeIdentity: m.routeIdentity, state }));
+          for (const state of m.states) handlers.get(ws).message(JSON.stringify({ type: 'state', raceId: m.raceId, generation: m.generation, mapId: m.mapId, routeIdentity: m.routeIdentity, state }), true);
           return;
         }
         if (m.type === 'resume') {
