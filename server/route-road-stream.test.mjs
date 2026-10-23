@@ -336,3 +336,46 @@ test('recovery v1/v2 require fatal UTF-8 while valid replacement characters reta
     assert.throws(() => estimateRecoveryJSON(malformed),TypeError);
   }
 });
+
+test('production Node recovery loader preserves file bytes and rejects UTF-8 before admission with bounded race-safe reads', async t => {
+  const fs = (await import('node:fs/promises')).default, { registerHooks, syncBuiltinESMExports } = await import('node:module');
+  const { join } = await import('node:path'), { tmpdir } = await import('node:os');
+  const { canonicalJSON } = await import('../src/route-definition.js'), { encodeRecoverySidecar } = await import('./route-road-wire.mjs');
+  const root = await fs.mkdtemp(join(process.env.ATHENS_TEST_TMPDIR || tmpdir(), 'athens-node-recovery-'));
+  t.after(async () => { await fs.rm(root,{recursive:true,force:true}); delete globalThis.__athensNodeRecoveryProbe; });
+  await fs.mkdir(join(root,'.deploy'),{recursive:true}); await fs.mkdir(join(root,'world/recovery'),{recursive:true});
+  await fs.writeFile(join(root,'.deploy/catalogue.json'),'{}');
+  const hooks=registerHooks({resolve(specifier,context,next){
+    if(context.parentURL?.endsWith('/server/index.mjs') && specifier==='../src/map-catalog.js')return{url:'data:text/javascript,export const MAPS=[]',shortCircuit:true};
+    if(context.parentURL?.endsWith('/server/index.mjs') && specifier==='./route-maps.mjs')return{url:'data:text/javascript,export async function installRouteMaps(m,c,o){globalThis.__athensNodeRecoveryProbe={load:o.loadRoadArtifact,catalogue:c};throw Error("node-loader-captured")}',shortCircuit:true};
+    return next(specifier,context);
+  }}); t.after(()=>hooks.deregister());
+  const {createGameServer}=await import('./index.mjs');
+  await assert.rejects(createGameServer({root}),/node-loader-captured/); // Stop before HTTP/timer creation.
+  const load=globalThis.__athensNodeRecoveryProbe.load, body=twoWayBody(); body.edges[0].name='���';
+  const packed=encodeRecoverySidecar(body), text=canonicalJSON(packed), bytes=Buffer.from(text), hash=await sha256(packed), url=`/world/recovery/0,0.${hash}.json`, file=join(root,'.'+url), cap=2*1024*1024;
+  const malformed=Buffer.from(bytes), marker=malformed.indexOf(Buffer.from('���')); malformed.set([255,255,255],marker); malformed.set(Buffer.from('      '),marker+3);
+  const replacement=JSON.parse(new TextDecoder().decode(malformed)), replacementHash=await sha256(replacement), badURL=`/world/recovery/0,0.${replacementHash}.json`, badFile=join(root,'.'+badURL);
+  await fs.writeFile(badFile,malformed);
+  let admissions=0,parses=0;const parse=JSON.parse;JSON.parse=(...args)=>{parses++;return parse(...args);};
+  try{await assert.rejects((async()=>{const raw=await load(badURL,cap);admissions++;return admitRecoverySidecar(raw,{expectedHash:replacementHash,worldSetRevision:revision});})(),TypeError);}finally{JSON.parse=parse;}
+  assert.equal(admissions,0);assert.equal(parses,0);
+  await fs.writeFile(file,bytes);const loaded=await load(url,cap);assert.ok(loaded instanceof Uint8Array);assert.deepEqual(loaded,new Uint8Array(bytes));
+  assert.deepEqual((await admitRecoverySidecar(loaded,{expectedHash:hash,worldSetRevision:revision})).body.anchors,body.anchors);
+  const tampered=Buffer.from(bytes);tampered[bytes.indexOf(Buffer.from('forward'))]=120;await fs.writeFile(file,tampered);
+  await assert.rejects(admitRecoverySidecar(await load(url,cap),{expectedHash:hash,worldSetRevision:revision}),/Invalid authoritative recovery artifact/);
+  const nativeOpen=fs.open, NativeArray=globalThis.Uint8Array;let reads=0,allocations=0,closes=0;
+  fs.open=async()=>({async stat(){return{isFile:()=>true,size:cap+1}},async read(){reads++;throw Error('must not read')},async close(){closes++}});syncBuiltinESMExports();
+  globalThis.Uint8Array=new Proxy(NativeArray,{construct(target,args){allocations++;return Reflect.construct(target,args);}});
+  try{await assert.rejects(load(url,cap),/unavailable or too large/);assert.equal(allocations,0);assert.equal(reads,0);assert.equal(closes,1);}finally{globalThis.Uint8Array=NativeArray;fs.open=nativeOpen;syncBuiltinESMExports();}
+  for(const change of ['grow','shrink']){
+    await fs.writeFile(file,bytes);
+    fs.open=async(...args)=>{const handle=await nativeOpen(...args), stat=handle.stat.bind(handle);handle.stat=async()=>{const info=await stat();handle.stat=stat;if(change==='grow')await fs.appendFile(file,'x');else await fs.truncate(file,1);return info;};return handle;};syncBuiltinESMExports();
+    try{await assert.rejects(load(url,cap),/size mismatch|too large/);}finally{fs.open=nativeOpen;syncBuiltinESMExports();}
+  }
+  for(const path of ['/world/recovery/manifest.'+hash+'.json','/world/recovery/0,0.short.json','/world/recovery/../outside.json'])await assert.rejects(load(path,cap),/unavailable/);
+  // Catalogue embeds recovery roots. Invalid UTF-8 must never normalize into
+  // an apparently authenticated manifest before installRouteMaps receives it.
+  await fs.writeFile(join(root,'.deploy/catalogue.json'),Buffer.concat([Buffer.from('{"recoveryRootName":"'),Buffer.from([255]),Buffer.from('"}')]));
+  await assert.rejects(createGameServer({root}),/node-loader-captured/);assert.deepEqual(globalThis.__athensNodeRecoveryProbe.catalogue,{});
+});

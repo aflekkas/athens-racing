@@ -5,7 +5,7 @@ import { leaderboardFilters } from './leaderboard-policy.mjs';
 import { legalPage } from '../worker/legal-pages.mjs';
 import { connectionProtocol, AUTH_CLOSE_CODE, RELAY_MS } from '../src/multiplayer-protocol.js';
 import http from 'node:http';
-import { readFile, stat } from 'node:fs/promises';
+import { readFile, stat, open } from 'node:fs/promises';
 import { createReadStream } from 'node:fs';
 import { resolve, extname, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -33,11 +33,25 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
     catch (e) { if (def.id === 'riviera' || e.code !== 'ENOENT') throw e; console.warn(`Map ${def.id} unavailable: ${def.dataUrl}; skipping.`); continue; }
     maps.set(def.id, resolveMap(def, data));
   }
-  let built; try { built = JSON.parse(await readFile(resolve(root, '.deploy/catalogue.json'), 'utf8')); } catch { built = {}; }
+  let built; try { built = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(await readFile(resolve(root, '.deploy/catalogue.json')))); } catch { built = {}; }
   await installRouteMaps(maps, built, { carSpecs, loadRoadArtifact: async (url, maxBytes) => {
-    const file = resolve(root, '.' + url);
-    if (!(await stat(file)).isFile() || (await stat(file)).size > maxBytes) throw Error('Recovery asset unavailable or too large');
-    return readFile(file, 'utf8');
+    if (!/^\/world\/recovery\/-?\d+,-?\d+\.[a-f0-9]{64}\.json$/.test(url) || !Number.isSafeInteger(maxBytes) || maxBytes < 1 || maxBytes > 2 * 1024 * 1024) throw Error('Recovery asset unavailable or too large');
+    // One open handle binds stat/read to the same file, even across renames.
+    const file = await open(resolve(root, '.' + url), 'r');
+    try {
+      const info = await file.stat();
+      if (!info.isFile() || !Number.isSafeInteger(info.size) || info.size < 1 || info.size > maxBytes) throw Error('Recovery asset unavailable or too large');
+      const bytes = new Uint8Array(info.size); let length = 0;
+      while (length < bytes.length) {
+        const { bytesRead } = await file.read(bytes, length, bytes.length - length, length);
+        if (!bytesRead) throw Error('Recovery asset size mismatch');
+        length += bytesRead;
+      }
+      // A bounded one-byte probe catches growth after the advertised-size stat.
+      if ((await file.read(new Uint8Array(1), 0, 1, length)).bytesRead || (await file.stat()).size !== info.size) throw Error('Recovery asset size mismatch');
+      new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+      return bytes;
+    } finally { await file.close(); }
   } });
   const { track: legacyTrack, definitions } = maps.get('riviera');
   const leaderboard = await createLeaderboard(resolve(dataDir, 'leaderboard.json'), definitions, CARS, legacyTrack.version, maps);
