@@ -1,4 +1,4 @@
-import {recoveryRoadGroup} from '../src/world-road-group.js';
+import {recoveryRoadGroup,recoveryRoadTwins} from '../src/world-road-group.js';
 // Offline recovery authority. Every active cell is read and hash verified; only
 // actual contact/obstacle proven discrete poses become server recovery anchors.
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
@@ -52,7 +52,7 @@ export function proveRecoveryCell(key,world,profiles,{spacingM=4,onEdge=()=>{}}=
     seen.add(identity);const first=compatible[0];anchors.push({edgeId:id,...(group?{roadId:group.roadId}:{}),offsetM:projected.offsetM,x:p.x,y:p.y,z:p.z,yaw:p.yaw,layer:p.layer,surfaceId:p.surfaceId,leftM:p.leftM,rightM:p.rightM,halfWidth:first.halfWidth,halfLength:first.halfLength,footprints:compatible});used=true;
    }
   }
-  if(used){edges.set(edge.id,edge);if(group){const twin=edgeValue(world.roads.graph,group.twinId);edges.set(twin.id,twin);}}onEdge({edge:id,anchors:anchors.length});
+  if(used){const pending=[edge];for(let j=0;j<pending.length;j++){const e=pending[j];if(edges.has(e.id))continue;edges.set(e.id,e);for(const twin of recoveryRoadTwins(world.roads.graph,e))if(!edges.has(twin.id))pending.push(twin);}}onEdge({edge:id,anchors:anchors.length});
  }
  // A graph edge crossing a cell without any samples is still a road-bearing
  // cell. Never disguise failed/missing certification as no-drivable content.
