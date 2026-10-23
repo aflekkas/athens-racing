@@ -455,8 +455,10 @@ layer0 road contact `surface:w174698180:0`, Y4.06920985757241, plus an explicitl
 assumed2.5m eye height. A positive1/240s physics and1/60s render step preceded the
 capture; loading opacity0, post-setup window errors empty and shader diagnostic
 failures0 were observed. This is **presence only**: surrounding street detail is
-incomplete and the stream/player origin was(-512,12800), about2km from the
-static camera. It does not establish matched context, architecture/height,
+visually sparse. The floating origin was(-512,12800); it is **not** the player
+position. See the explicit post-close interpretation correction below.
+The capture did not export player XYZ/stream.position/active-cell inventory,
+so it does not establish loaded local context, architecture/height,
 current construction or completed occupancy. Startup-wide pageerror history
 was not exported. No measured camera height or metric height claim is made.
 
@@ -486,3 +488,18 @@ no owned browser/server/heavy process remains. The initial readiness curl
 raced server startup and failed; subsequent HTTP200 and native navigation
 succeeded. No product failure is inferred. Disk was49% before and after.
 No full gates were run for this evidence-only addition; runtime/world unchanged.
+
+
+### Post-close interpretation correction: Tower floating origin
+
+The earlier inference that the player/stream focus was about2km from the Tower
+camera is **retracted**. `WorldTileStream.update` retains a floating origin until
+the player coordinate differs by more than2048m on that axis. The recorded origin
+(-512,12800) and exact camera(-180.00943192260831,6.56920985757241,
+10765.144939999354) therefore do not establish a distant player or stream focus.
+Actual player XYZ, stream.position and camera-neighbour active-cell states were
+not recorded. Sparse local street appearance is observed; its cause is
+**UNRESOLVED**, with no streaming causal claim. All original numeric capture
+telemetry/source identities remain unchanged. The receipt labels this as a
+post-close correction, not a new live measurement or altered original telemetry.
+Generic Tower presence remains the only accepted observation.

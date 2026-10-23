@@ -56,11 +56,12 @@
       "err": ""
     },
     "image": "static-tower.jpg",
-    "status": "generic model presence baseline only; street context incompletely streamed/camera focus differs from player focus; no height/architecture/current construction acceptance",
+    "status": "generic model presence baseline only; sparse local street detail observed but nine-cell activity/player distance were not recorded; context coverage/cause unresolved; no height/architecture/current construction acceptance",
     "pngSavedBeforeJPEG": true,
     "encodingIssue": "first two encoders unavailable; premature JPG-ready message corrected after installed sharp completed and JPEG metadata decoded",
     "imageBytes": 97213,
-    "imageSha256": "e4d44f05aea6155e0cc768d14cd19bb7638d921682adcb7d7fe5f5668bd93ff5"
+    "imageSha256": "e4d44f05aea6155e0cc768d14cd19bb7638d921682adcb7d7fe5f5668bd93ff5",
+    "originInterpretationCorrection": "stream.origin is a floating coordinate origin with2048m hysteresis, NOT player position/stream focus; no2km displacement established"
   },
   "station3000": {
     "cameraWorldXYZ": [
@@ -594,5 +595,11 @@
   "disk": {
     "before": "49%,70G used/76G available",
     "after": "49%,70G used/75G available"
+  },
+  "postCloseInterpretationCorrection": {
+    "originalInterpretation": "generic model presence baseline only; street context incompletely streamed/camera focus differs from player focus; no height/architecture/current construction acceptance",
+    "correction": "The2km player/stream-focus inference from floating origin alone is retracted. WorldTileStream origin has2048m per-axis hysteresis. Actual playerXYZ,stream.position and nine-neighbour activecell states were not recorded. Sparse context appearance observed; cause UNRESOLVED.",
+    "telemetryUnchanged": true,
+    "preservedEvidence": "All original runtime origin/contact/camera values and source identities unchanged; this is a post-close interpretation correction, not newly observed live telemetry."
   }
 }
