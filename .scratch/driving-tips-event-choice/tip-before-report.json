@@ -1,0 +1,41 @@
+{
+  "label": "before",
+  "variants": [
+    {
+      "variant": "kb-1280x800",
+      "manual": false,
+      "path": "main loop",
+      "card": {
+        "shown": true,
+        "queued": true,
+        "laneMode": "corner",
+        "box": [
+          28,
+          112,
+          220,
+          196
+        ],
+        "viewport": [
+          1280,
+          800
+        ],
+        "rows": [],
+        "srText": null,
+        "overflowX": false,
+        "overlaps": 0
+      },
+      "shot": "/tmp/athens-drivetips.755x/shots/before-tip-kb-1280x800.jpg",
+      "afterHide": {
+        "card": {
+          "shown": false,
+          "queued": false,
+          "laneMode": "corner"
+        },
+        "enabled": false,
+        "stored": "{\"guest\":{},\"GR-6952\":{\"controls\":true,\"lastAt\":1792739116281,\"strip\":false}}"
+      }
+    }
+  ],
+  "errors": [],
+  "raceEntry": "countdown finished"
+}

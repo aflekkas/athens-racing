@@ -1,0 +1,44 @@
+{
+  "label": "after-single",
+  "route": "penteli-descent",
+  "steps": [
+    {
+      "step": "picker",
+      "at": "2026-10-23T07:08:23.714Z",
+      "card": "penteli-descent",
+      "shot": "/tmp/athens-drivetips.755x/shots/after-single-1-picker.jpg"
+    },
+    {
+      "step": "setup-default",
+      "at": "2026-10-23T07:09:35.331Z",
+      "screen": "setup",
+      "def": {
+        "id": "penteli-descent-tt",
+        "type": "timetrial",
+        "laps": 1
+      },
+      "event": null,
+      "rivals": null,
+      "laps": null,
+      "format": "DISTANCE9.9 KM | FORMATTIME TRIAL | REGIONPENTELI",
+      "kick": "BACKTIME TRIAL · PENTELI DESCENT TT",
+      "shot": "/tmp/athens-drivetips.755x/shots/after-single-2-setup-default.jpg"
+    },
+    {
+      "step": "free-session-setup",
+      "at": "2026-10-23T07:09:35.340Z",
+      "screen": "setup",
+      "title": "SESSION SETUP",
+      "eventRow": false
+    }
+  ],
+  "errors": [],
+  "boards": [
+    {
+      "mapId": "athens",
+      "routeId": "penteli-descent",
+      "eventId": "penteli-descent-tt",
+      "limit": "3"
+    }
+  ]
+}

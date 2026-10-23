@@ -1,0 +1,445 @@
+{
+  "label": "after",
+  "variants": [
+    {
+      "variant": "kb-1280x800",
+      "manual": false,
+      "path": "main loop",
+      "card": {
+        "shown": true,
+        "queued": true,
+        "laneMode": "corner",
+        "box": [
+          28,
+          112,
+          220,
+          299
+        ],
+        "viewport": [
+          1280,
+          800
+        ],
+        "rows": [
+          {
+            "keys": [
+              "L"
+            ],
+            "label": "MANUAL / AUTO"
+          },
+          {
+            "keys": [
+              "E",
+              "Q"
+            ],
+            "label": "PADDLE UP / DOWN"
+          },
+          {
+            "keys": [
+              "SPACE"
+            ],
+            "label": "HANDBRAKE"
+          },
+          {
+            "keys": [
+              "X"
+            ],
+            "label": "TC / ESC"
+          },
+          {
+            "keys": [
+              "C"
+            ],
+            "label": "POV / OUTSIDE"
+          },
+          {
+            "keys": [
+              "P"
+            ],
+            "label": "VIEW POSITION"
+          },
+          {
+            "keys": [
+              "B"
+            ],
+            "label": "LOOK BACK"
+          },
+          {
+            "keys": [
+              "R / T"
+            ],
+            "label": "TOW"
+          },
+          {
+            "keys": [
+              "M"
+            ],
+            "label": "BIG MAP"
+          },
+          {
+            "keys": [
+              "ico-mouse"
+            ],
+            "label": "HOLD TO LOOK"
+          }
+        ],
+        "srText": "L: MANUAL / AUTO. E / Q: PADDLE UP / DOWN. SPACE: HANDBRAKE. X: TC / ESC. C: POV / OUTSIDE. P: VIEW POSITION. B: LOOK BACK. R / T: TOW. M: BIG MAP. MOUSE BUTTON: HOLD TO LOOK.",
+        "overflowX": false,
+        "overlaps": 0
+      },
+      "shot": "/tmp/athens-drivetips.755x/shots/after-tip-kb-1280x800.jpg",
+      "afterHide": {
+        "card": {
+          "shown": false,
+          "queued": false,
+          "laneMode": "corner"
+        },
+        "enabled": false,
+        "stored": "{\"guest\":{},\"GR-2372\":{\"controls\":true,\"lastAt\":1792741323467,\"strip\":false}}"
+      }
+    },
+    {
+      "variant": "kb-1280x720",
+      "manual": false,
+      "path": "drivingHints.update",
+      "card": {
+        "shown": true,
+        "queued": true,
+        "laneMode": "corner",
+        "box": [
+          28,
+          112,
+          220,
+          299
+        ],
+        "viewport": [
+          1280,
+          720
+        ],
+        "rows": [
+          {
+            "keys": [
+              "L"
+            ],
+            "label": "MANUAL / AUTO"
+          },
+          {
+            "keys": [
+              "E",
+              "Q"
+            ],
+            "label": "PADDLE UP / DOWN"
+          },
+          {
+            "keys": [
+              "SPACE"
+            ],
+            "label": "HANDBRAKE"
+          },
+          {
+            "keys": [
+              "X"
+            ],
+            "label": "TC / ESC"
+          },
+          {
+            "keys": [
+              "C"
+            ],
+            "label": "POV / OUTSIDE"
+          },
+          {
+            "keys": [
+              "P"
+            ],
+            "label": "VIEW POSITION"
+          },
+          {
+            "keys": [
+              "B"
+            ],
+            "label": "LOOK BACK"
+          },
+          {
+            "keys": [
+              "R / T"
+            ],
+            "label": "TOW"
+          },
+          {
+            "keys": [
+              "M"
+            ],
+            "label": "BIG MAP"
+          },
+          {
+            "keys": [
+              "ico-mouse"
+            ],
+            "label": "HOLD TO LOOK"
+          }
+        ],
+        "srText": "L: MANUAL / AUTO. E / Q: PADDLE UP / DOWN. SPACE: HANDBRAKE. X: TC / ESC. C: POV / OUTSIDE. P: VIEW POSITION. B: LOOK BACK. R / T: TOW. M: BIG MAP. MOUSE BUTTON: HOLD TO LOOK.",
+        "overflowX": false,
+        "overlaps": 0
+      },
+      "shot": "/tmp/athens-drivetips.755x/shots/after-tip-kb-1280x720.jpg"
+    },
+    {
+      "variant": "kb-1920x1080",
+      "manual": false,
+      "path": "drivingHints.update",
+      "card": {
+        "shown": true,
+        "queued": true,
+        "laneMode": "corner",
+        "box": [
+          28,
+          144,
+          300,
+          299
+        ],
+        "viewport": [
+          1920,
+          1080
+        ],
+        "rows": [
+          {
+            "keys": [
+              "L"
+            ],
+            "label": "MANUAL / AUTO"
+          },
+          {
+            "keys": [
+              "E",
+              "Q"
+            ],
+            "label": "PADDLE UP / DOWN"
+          },
+          {
+            "keys": [
+              "SPACE"
+            ],
+            "label": "HANDBRAKE"
+          },
+          {
+            "keys": [
+              "X"
+            ],
+            "label": "TC / ESC"
+          },
+          {
+            "keys": [
+              "C"
+            ],
+            "label": "POV / OUTSIDE"
+          },
+          {
+            "keys": [
+              "P"
+            ],
+            "label": "VIEW POSITION"
+          },
+          {
+            "keys": [
+              "B"
+            ],
+            "label": "LOOK BACK"
+          },
+          {
+            "keys": [
+              "R / T"
+            ],
+            "label": "TOW"
+          },
+          {
+            "keys": [
+              "M"
+            ],
+            "label": "BIG MAP"
+          },
+          {
+            "keys": [
+              "ico-mouse"
+            ],
+            "label": "HOLD TO LOOK"
+          }
+        ],
+        "srText": "L: MANUAL / AUTO. E / Q: PADDLE UP / DOWN. SPACE: HANDBRAKE. X: TC / ESC. C: POV / OUTSIDE. P: VIEW POSITION. B: LOOK BACK. R / T: TOW. M: BIG MAP. MOUSE BUTTON: HOLD TO LOOK.",
+        "overflowX": false,
+        "overlaps": 0
+      },
+      "shot": "/tmp/athens-drivetips.755x/shots/after-tip-kb-1920x1080.jpg"
+    },
+    {
+      "variant": "kb-1280x800-rebind",
+      "manual": false,
+      "path": "drivingHints.update",
+      "card": {
+        "shown": true,
+        "queued": true,
+        "laneMode": "corner",
+        "box": [
+          28,
+          112,
+          220,
+          299
+        ],
+        "viewport": [
+          1280,
+          800
+        ],
+        "rows": [
+          {
+            "keys": [
+              "L"
+            ],
+            "label": "MANUAL / AUTO"
+          },
+          {
+            "keys": [
+              "E",
+              "Q"
+            ],
+            "label": "PADDLE UP / DOWN"
+          },
+          {
+            "keys": [
+              "SPACE"
+            ],
+            "label": "HANDBRAKE"
+          },
+          {
+            "keys": [
+              "X"
+            ],
+            "label": "TC / ESC"
+          },
+          {
+            "keys": [
+              "V"
+            ],
+            "label": "POV / OUTSIDE"
+          },
+          {
+            "keys": [
+              "P"
+            ],
+            "label": "VIEW POSITION"
+          },
+          {
+            "keys": [
+              "N"
+            ],
+            "label": "LOOK BACK"
+          },
+          {
+            "keys": [
+              "R / T"
+            ],
+            "label": "TOW"
+          },
+          {
+            "keys": [
+              "M"
+            ],
+            "label": "BIG MAP"
+          },
+          {
+            "keys": [
+              "ico-mouse"
+            ],
+            "label": "HOLD TO LOOK"
+          }
+        ],
+        "srText": "L: MANUAL / AUTO. E / Q: PADDLE UP / DOWN. SPACE: HANDBRAKE. X: TC / ESC. V: POV / OUTSIDE. P: VIEW POSITION. N: LOOK BACK. R / T: TOW. M: BIG MAP. MOUSE BUTTON: HOLD TO LOOK.",
+        "overflowX": false,
+        "overlaps": 0
+      },
+      "shot": "/tmp/athens-drivetips.755x/shots/after-tip-kb-1280x800-rebind.jpg"
+    },
+    {
+      "variant": "pad-1280x800-rebind",
+      "manual": false,
+      "path": "drivingHints.update",
+      "card": {
+        "shown": true,
+        "queued": true,
+        "laneMode": "corner",
+        "box": [
+          28,
+          112,
+          220,
+          278
+        ],
+        "viewport": [
+          1280,
+          800
+        ],
+        "rows": [
+          {
+            "keys": [
+              "LS"
+            ],
+            "label": "MANUAL / AUTO"
+          },
+          {
+            "keys": [
+              "RB",
+              "LB"
+            ],
+            "label": "PADDLE UP / DOWN"
+          },
+          {
+            "keys": [
+              "A"
+            ],
+            "label": "HANDBRAKE"
+          },
+          {
+            "keys": [
+              "D"
+            ],
+            "label": "TC / ESC"
+          },
+          {
+            "keys": [
+              "Y"
+            ],
+            "label": "POV / OUTSIDE"
+          },
+          {
+            "keys": [
+              "VIEW"
+            ],
+            "label": "VIEW POSITION"
+          },
+          {
+            "keys": [
+              "Y"
+            ],
+            "label": "LOOK BACK"
+          },
+          {
+            "keys": [
+              "UNBOUND"
+            ],
+            "label": "TOW"
+          },
+          {
+            "keys": [
+              "UNBOUND"
+            ],
+            "label": "BIG MAP"
+          }
+        ],
+        "srText": "LS: MANUAL / AUTO. RB / LB: PADDLE UP / DOWN. A: HANDBRAKE. D LEFT: TC / ESC. Y: POV / OUTSIDE. VIEW: VIEW POSITION. Y: LOOK BACK. UNBOUND: TOW. UNBOUND: BIG MAP.",
+        "overflowX": false,
+        "overlaps": 0
+      },
+      "shot": "/tmp/athens-drivetips.755x/shots/after-tip-pad-1280x800-rebind.jpg"
+    }
+  ],
+  "errors": [],
+  "raceEntry": "countdown finished"
+}
