@@ -15,7 +15,8 @@ import { button, setProgress, esc } from './components.js';
 
 const TIPS = [
   'Running a red light adds a time penalty. The SEAT’s nitrous bottle refills while waiting at a red.',
-  () => 'Stuck off the road? ' + bindingLabel(input.bindings, 'tow', document.body.dataset.input === 'gamepad' ? 'gamepad' : 'keyboard') + ' to be towed back onto it.',
+  // No binding on this device (the controller's tow is unbound by default; it tows from the tow prompt): no tip, never "UNBOUND".
+  () => { const key = bindingLabel(input.bindings, 'tow', document.body.dataset.input === 'gamepad' ? 'gamepad' : 'keyboard'); return key === 'UNBOUND' ? '' : 'Stuck off the road? ' + key + ' to be towed back onto it.'; },
   () => bindingLabel(input.bindings, 'camera') + ' toggles POV and outside; ' + bindingLabel(input.bindings, 'cameraPosition') + ' cycles view position.',
   'Change AI rivals, traffic, time of day and weather in the race setup before every Quick Race.',
   'Pavements and dirt lay-bys are drivable. Kerbs and humps will unsettle the car.',
@@ -291,8 +292,9 @@ class LoadingScreen {
   }
   nextTip() {
     const t = $('ldTip'); if (!t) return;
-    this.tipIdx = (this.tipIdx + 1) % this.tips.length;
-    t.classList.remove('in'); void t.offsetWidth; const tip = this.tips[this.tipIdx]; t.innerHTML = esc(typeof tip === 'function' ? tip() : tip); t.classList.add('in');
+    let text = '';
+    for (let i = 0; i < this.tips.length && !text; i++) { this.tipIdx = (this.tipIdx + 1) % this.tips.length; const tip = this.tips[this.tipIdx]; text = typeof tip === 'function' ? tip() : tip; } // an empty tip is skipped
+    t.classList.remove('in'); void t.offsetWidth; t.innerHTML = esc(text); t.classList.add('in');
   }
   hide() {
     const el = this.el; if (!el) return;

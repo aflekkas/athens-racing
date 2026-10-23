@@ -14,7 +14,7 @@ const rows = html => [...html.matchAll(/<span><span class="driving-controls__key
 test('the strip is one key-cap group and one action label per row, for keyboard and controller', () => {
   const kb = rows(controlsStrip({ device: 'keyboard' })), pad = rows(controlsStrip({ device: 'gamepad' }));
   assert.equal(kb.length, 10, 'nine bindings plus the mouse look row');
-  assert.equal(pad.length, 9, 'no mouse row on a controller');
+  assert.equal(pad.length, 7, 'no mouse row on a controller, and no rows for its unbound TOW and BIG MAP');
   for (const r of [...kb, ...pad]) { assert.ok(r.keys.length >= 1 && r.keys.every(Boolean), `keys for ${r.label}`); assert.ok(r.label.trim(), 'label'); }
   assert.deepEqual(kb.slice(0, 3).map(r => [r.keys, r.label]), [[['L'], 'MANUAL / AUTO'], [['E', 'Q'], 'PADDLE UP / DOWN'], [['SPACE'], 'HANDBRAKE']]);
   assert.deepEqual(rows(controlsStrip({ device: 'keyboard', manual: true }))[1].label, 'SHIFT UP / DOWN');
@@ -62,4 +62,45 @@ test('the notice card renders a body under its title and keeps the text for scre
   const css = readFileSync(new URL('../src/ui/ui.css', import.meta.url), 'utf8');
   assert.match(css, /\.race-notice \.driving-controls \{ display: grid; grid-template-columns: max-content minmax\(0, 1fr\);/);
   assert.match(css, /\.race-notice \.driving-controls > span \{ display: contents; \}/);
+});
+
+// Unbound actions (the controller's TOW and BIG MAP by default; controller towing is the tow prompt's D-pad down, A) have no row
+// and no tip: never an UNBOUND key cap or "UNBOUND returns you to the road". A custom binding brings them straight back.
+test('fully unbound actions have no row; a custom controller binding brings TOW and BIG MAP back; keyboard keeps both', () => {
+  const pad = rows(controlsStrip({ device: 'gamepad' })), kb = rows(controlsStrip({ device: 'keyboard' }));
+  assert.ok(!pad.some(r => r.label === 'TOW' || r.label === 'BIG MAP'));
+  assert.doesNotMatch(controlsStrip({ device: 'gamepad' }) + controlsText({ device: 'gamepad' }), /UNBOUND/);
+  assert.deepEqual(kb.filter(r => ['TOW', 'BIG MAP'].includes(r.label)).map(r => [r.keys, r.label]), [[['R / T'], 'TOW'], [['M'], 'BIG MAP']]);
+  const was = { tow: input.bindings.gamepad.tow, map: input.bindings.gamepad.map };
+  input.bindings.gamepad.tow = ['b2']; input.bindings.gamepad.map = ['b8'];
+  try {
+    const bound = rows(controlsStrip({ device: 'gamepad' }));
+    assert.deepEqual(bound.filter(r => ['TOW', 'BIG MAP'].includes(r.label)).map(r => [r.keys, r.label]), [[['X'], 'TOW'], [['VIEW'], 'BIG MAP']]);
+    assert.match(controlsText({ device: 'gamepad' }), /X: TOW\. VIEW: BIG MAP\./);
+  } finally { Object.assign(input.bindings.gamepad, was); }
+  const shift = input.bindings.gamepad.shiftDown; input.bindings.gamepad.shiftDown = [];
+  try { assert.deepEqual(rows(controlsStrip({ device: 'gamepad' }))[1].keys, ['RB', 'UNBOUND'], 'a row with one bound key stays'); }
+  finally { input.bindings.gamepad.shiftDown = shift; }
+});
+
+function nextTip(device) {
+  const posts = [], post = notifications.post, now = Date.now;let t = now() + 1e9;
+  for (const k of Object.keys(drivingHints.saved)) delete drivingHints.saved[k];
+  Object.assign(drivingHints.saved, { controls: true, manual: true, handbrake: true, camera: true, cameraPosition: true });
+  notifications.post = value => { posts.push(value);return value.id; };Date.now = () => t;
+  try {
+    drivingHints.lastState = 'menu';drivingHints.update({ state: 'race', device, manual: false });
+    t += 11000;drivingHints.update({ state: 'race', device, manual: false });
+  } finally { notifications.post = post;Date.now = now; }
+  return posts.find(p => p.id.startsWith('tip:'));
+}
+test('a progressive tip whose key is unbound is skipped, not shown as UNBOUND; bound again, it returns', () => {
+  const pad = nextTip('gamepad');
+  assert.equal(pad.id, 'tip:lookBack', 'the unbound controller TOW tip is skipped');
+  assert.equal(drivingHints.saved.tow, undefined, 'and not marked seen, so binding TOW later still teaches it');
+  assert.doesNotMatch(pad.text, /UNBOUND/);
+  const was = input.bindings.gamepad.tow;input.bindings.gamepad.tow = ['b2'];
+  try { const tip = nextTip('gamepad');assert.equal(tip.id, 'tip:tow');assert.equal(tip.text, 'X returns you to the road.'); }
+  finally { input.bindings.gamepad.tow = was; }
+  assert.equal(nextTip('keyboard').text, 'R / T returns you to the road.', 'keyboard unchanged');
 });

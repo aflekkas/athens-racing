@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { loading, errorCode, FAILURES } from '../src/ui/loading.js';
+import { loading, errorCode, FAILURES, FREE_ROAM_TIPS } from '../src/ui/loading.js';
+import { input } from '../src/input.js';
 
 test('completed loading stops intercepting immediately; a new map cancels the old hide', t => {
   t.mock.timers.enable({ apis: ['setTimeout', 'setInterval'] });
@@ -166,3 +167,23 @@ test('a new load never inherits the previous load’s note or failure', t => wit
   assert.equal(dom.ids.ldNote.hidden, true); assert.equal(dom.ids.ldNote.textContent, '');
   assert.equal(dom.ids.ldIssue.hidden, true); assert.equal(dom.ids.lstat.textContent, 'LOADING MAP DATA');
 }));
+
+// The rotating tip names the live tow binding; with none on this device (the controller's tow is unbound by default, it tows
+// from the tow prompt) the tip is skipped, never "Stuck off the road? UNBOUND …". A custom binding brings it back.
+test('the loading tow tip is skipped while tow is unbound on the device, and returns once bound', () => {
+  const tip = { innerHTML: '', offsetWidth: 0, classList: { add() {}, remove() {} } }, previous = globalThis.document, tips = loading.tips, idx = loading.tipIdx;
+  globalThis.document = { getElementById: id => id === 'ldTip' ? tip : null, body: { dataset: { input: 'gamepad' } } };
+  const cycle = () => { loading.tipIdx = -1; return Array.from({ length: loading.tips.length * 2 }, () => { loading.nextTip(); return tip.innerHTML; }); };
+  const was = input.bindings.gamepad.tow;
+  try {
+    loading.tips = [...FREE_ROAM_TIPS];
+    const unbound = cycle();
+    assert.ok(unbound.every(Boolean), 'an empty tip is never shown');
+    assert.ok(!unbound.some(t => /UNBOUND|Stuck off the road/.test(t)), unbound.join(' | '));
+    assert.equal(new Set(unbound).size, loading.tips.length - 1, 'the other tips keep rotating');
+    input.bindings.gamepad.tow = ['b2'];
+    assert.ok(cycle().includes('Stuck off the road? X to be towed back onto it.'));
+    input.bindings.gamepad.tow = was;globalThis.document.body.dataset.input = 'keyboard';
+    assert.ok(cycle().includes('Stuck off the road? R / T to be towed back onto it.'), 'keyboard unchanged');
+  } finally { input.bindings.gamepad.tow = was;loading.tips = tips;loading.tipIdx = idx;globalThis.document = previous; }
+});
