@@ -1,3 +1,4 @@
+import {freeRoamEntryQuery} from './free-roam-entry.js';
 import {RouteRuntime} from './route-runtime.js';
 import {worldRecoveryTarget} from './world-recovery.js';
 import {RouteRivals} from './route-rivals.js';
@@ -117,7 +118,9 @@ import { aidSpec, applyVehicleAids, toggleTractionControl } from './driving-aids
 
 import { towCondition, recoveryHeld, TOW_PROMPT_SECONDS, TOW_PROMPT_COOLDOWN } from './recovery-policy.js';
 export let gameReady;
-if(new URLSearchParams(location.search).get('map')==='athens'&&!new URLSearchParams(location.search).has('menu')&&new URLSearchParams(location.search).get('routes')!=='1'){
+const freeEntry=freeRoamEntryQuery(new URLSearchParams(location.search));
+if(freeEntry){
+  history.replaceState(null,'','?'+freeEntry);
   gameReady=importWithUpdate(()=>import('./athens-world.js')).then(m=>m.bootAthens());
 }else{
 const recoveryStyle = document.createElement('link'); recoveryStyle.rel = 'stylesheet'; recoveryStyle.href = new URL('./recovery-prompt.css', import.meta.url).href; document.head.append(recoveryStyle);
@@ -1241,6 +1244,12 @@ function onFlowSettings(s, key) {
 let soloStart = 0;
 async function startEvent(id, opts = {}) {
   if (multiplayer.active) { multiplayer.open(); return; }
+  if(id==='free'||typeof id==='object'&&id?.type==='free'){
+    const selection=typeof id==='object'?id:{type:'free',mapId:selectedMapId};
+    const params=freeRoamEntryQuery(new URLSearchParams(location.search),selection);
+    const spec=typeof opts.car==='number'?CARS[opts.car]:CARS.find(c=>c.id===opts.car)||CARS[G.carIdx];
+    if(spec)params.set('car',spec.id);location.assign('?'+params);return;
+  }
   const token = ++soloStart;
   menu?.hide();
   try {
@@ -1755,6 +1764,7 @@ function syncCar(c, dt) {
   const impact = v.lastDamage && v.lastDamage.serial !== c.damageSerial ? v.lastDamage : null;
   if (multiplayer.active) c.model.setDamageSnapshot?.(v.damage);
   else for (const zone of ['front', 'rear', 'left', 'right']) c.model.setDamage?.(zone, v.damage?.[zone] || 0, impact?.zone === zone ? impact : undefined);
+  c.model.updateSurface?.(dt, v, settings.worldDetail !== false, multiplayer.active);
   if (!multiplayer.active && impact?.kind === 'wall' && c === player && impact.ebs > 3.3 && G.t - (c.damageSoundT ?? -1) > .18) {
     c.damageSoundT = G.t;
     audio.crash(impact.ebs > 10 ? 'heavy' : 'light', Math.min(1, (impact.ebs / 16) ** 2), { glass: impact.ebs > 7, metal: true });

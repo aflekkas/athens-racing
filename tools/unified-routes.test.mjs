@@ -55,3 +55,68 @@ test('compatibility race URLs resolve only enabled Athens routes, including desc
  await assert.rejects(loadRaceRoute({routeId:'disabled-route'},{fetcher}),/not enabled/);
  assert.ok(reads.every(url=>!url.includes('/data/maps/')&&!url.includes('/data/map.json')),'race resolution never downloads authored whole-map inputs');
 });
+
+test('all compatibility free-roam launches enter one Athens world with geographic spawn preserved',async()=>{
+ const {freeRoamEntryQuery}=await import('../src/free-roam-entry.js'),{MAP_PROJECTIONS,athensFromLonLat}=await import('../src/spawn-spots.js');
+ for(const [mapId,p]of Object.entries(MAP_PROJECTIONS)){
+  const q=freeRoamEntryQuery(new URLSearchParams(`map=${mapId}&event=free&spawn=120,-80&car=mini&guest=1&route=old&routeEvent=old&setup=1&s=500`));
+  assert.equal(q.get('map'),'athens');assert.equal(q.get('car'),'mini');assert.equal(q.get('guest'),'1');
+  const expected=athensFromLonLat(p.lon0+120/p.mlon,p.lat0+80/p.mlat),actual=q.get('spawn').split(',').map(Number);
+  assert.ok(Math.hypot(actual[0]-expected[0],actual[1]-expected[1])<.08,mapId);
+  for(const key of ['event','route','routeEvent','routes','setup','menu','s'])assert.equal(q.has(key),false,key);
+  const named=freeRoamEntryQuery(new URLSearchParams(`map=${mapId}&event=free`));assert.equal(named.get('spawn').split(',').length,2);
+ }
+ const selected=freeRoamEntryQuery(new URLSearchParams('menu=1&routes=1&route=old'),{type:'free',mapId:'athens',spawn:{x:123,z:-456,name:'MY STREET'}});
+ assert.equal(selected.get('spawn'),'123,-456');assert.equal(selected.get('spawnArea'),'MY STREET');assert.equal(selected.has('menu'),false);
+ for(const query of ['menu=1&map=athens','routes=1&map=athens','map=megara&event=megara-race',''])assert.equal(freeRoamEntryQuery(new URLSearchParams(query)),null,query);
+ assert.throws(()=>freeRoamEntryQuery(new URLSearchParams('event=free&map=unknown')),/unavailable/);
+});
+
+async function certifiedGridFixture(){
+ const {onlineGridHash}=await import('../src/online-grid.js');
+ const compiled={id:'test-grid',routeHash:'a'.repeat(64),geometryHash:'b'.repeat(64),worldSetRevision:'c'.repeat(64),startPose:{x:0,y:0,z:0},runIn:[[0,0,80],[0,0,0]]};
+ const body={schemaVersion:1,projectionId:'athens-v1',routeId:compiled.id,routeHash:compiled.routeHash,geometryHash:compiled.geometryHash,worldSetRevision:compiled.worldSetRevision,capacity:8,footprint:{halfWidth:1.3,halfLength:6,clearanceM:.2},poses:Array.from({length:8},(_,slot)=>({slot,s:-8-13*slot,x:0,y:0,z:8+13*slot,yaw:0,edgeId:'approach',layer:0,surfaceId:'asphalt'})),approach:{points:[[0,0,120,-120,5,5],[0,0,0,0,5,5]],occurrences:[{edgeId:'approach',layer:0,surfaceId:'asphalt',s0:-120,s1:0}]}};
+ return {compiled,body,expectedHash:await onlineGridHash(body)};
+}
+test('separate grid authentication preserves competitive geometry and supports eight full-length buses',async()=>{
+ const {validateOnlineGrid,onlineGridPose}=await import('../src/online-grid.js'),{compiled,body,expectedHash}=await certifiedGridFixture(),original=JSON.stringify(compiled);
+ const grid=await validateOnlineGrid(body,compiled,{expectedHash,car:{width:2.55,length:12}});
+ assert.equal(grid,body);assert.ok(Object.isFrozen(grid.poses[0]));assert.equal(JSON.stringify(compiled),original);
+ for(let slot=0;slot<8;slot++)assert.equal(onlineGridPose(grid,slot,{width:2.55,length:12}).slot,slot);
+ for(const slot of [-1,8,1.5,NaN])assert.throws(()=>onlineGridPose(grid,slot),/unavailable/);
+ assert.throws(()=>onlineGridPose(grid,0,{width:2.55,length:12.5}),/footprint/);
+});
+test('grid hash, tuple, slots, approach and clearance all fail closed independently',async()=>{
+ const {validateOnlineGrid,onlineGridHash}=await import('../src/online-grid.js'),f=await certifiedGridFixture();
+ await assert.rejects(validateOnlineGrid(f.body,f.compiled,{expectedHash:'f'.repeat(64)}),/mismatch/);
+ await assert.rejects(validateOnlineGrid(f.body,f.compiled),/mismatch/);
+ for(const mutate of [b=>{b.routeHash='d'.repeat(64);},b=>{b.worldSetRevision='d'.repeat(64);},b=>{b.capacity=3;},b=>{b.poses[7].slot=6;},b=>{b.poses[7].z=b.poses[6].z;},b=>{b.footprint.clearanceM=0;},b=>{b.approach.points[1][0]=1;},b=>{b.approach.points[0][3]=-119;},b=>{b.poses[0].layer=.5;},b=>{b.poses[0].yaw=Infinity;},b=>{b.clientGeometry=[];}]){
+  const body=structuredClone(f.body);mutate(body);
+  let hash;try{hash=await onlineGridHash(body);}catch{continue;}
+  await assert.rejects(validateOnlineGrid(body,f.compiled,{expectedHash:hash}),/unavailable|mismatch/);
+ }
+});
+
+test('recovery registry rejects omitted, substituted and mixed-world cells including empty cells',async()=>{
+ const {recoveryWorldRegistry,assertRecoveryCoverage}=await import('./build-world-recovery.mjs');
+ const manifest={revision:'a'.repeat(64),tiles:{'0,0':{sha256:'b'.repeat(64)},'1,0':{sha256:'c'.repeat(64)}}},registry=recoveryWorldRegistry(manifest),root={worldSetRevision:manifest.revision,cells:{'0,0':{sourceHash:'b'.repeat(64),hash:'d'.repeat(64)},'1,0':{sourceHash:'c'.repeat(64),empty:true}}};
+ assert.doesNotThrow(()=>assertRecoveryCoverage(root,registry));
+ for(const edit of [r=>delete r.cells['1,0'],r=>r.cells['1,0'].sourceHash='f'.repeat(64),r=>r.cells['2,0']={sourceHash:'e'.repeat(64),empty:true},r=>r.worldSetRevision='e'.repeat(64)]){const bad=structuredClone(root);edit(bad);assert.throws(()=>assertRecoveryCoverage(bad,registry),/complete active world/);}
+ assert.throws(()=>recoveryWorldRegistry({...manifest,tiles:{'bad':manifest.tiles['0,0']}}),/Invalid recovery source/);
+});
+test('recovery certificates preserve incomparable vehicle envelopes without combining dimensions',async()=>{
+ const {paretoFootprints}=await import('./build-world-recovery.mjs'),wide={halfWidth:1.5,halfLength:2},long={halfWidth:1,halfLength:6};
+ assert.deepEqual(paretoFootprints([wide,long,{halfWidth:.8,halfLength:1},wide]),[long,wide]);
+ assert.equal(paretoFootprints([wide,long]).some(p=>p.halfWidth>=1.4&&p.halfLength>=5),false);
+});
+test('recovery survey certifies each vehicle against actual contact safety and fails closed on unsurveyable roads',async()=>{
+ const {proveRecoveryCell}=await import('./build-world-recovery.mjs');
+ const edge={id:'test-road',from:'n0',to:'n1',flags:1,layer:0,surface:'surface:road',points:[[20,0,20],[60,0,20]]},packet={roadGraph:{edges:[edge]}},small={halfWidth:1,halfLength:2},bus={halfWidth:1.3,halfLength:6},calls=[];
+ const graph={edges:new Map([[edge.id,{value:edge}]]),outgoing:new Map()},world={tiles:new Map([['0,0',{packet}]]),manifest:{revision:'a'.repeat(64),tiles:{'0,0':{sha256:'b'.repeat(64)}}},roads:{graph},contacts:{contact:()=>({y:0,layer:0,surfaceId:edge.surface}),width:()=>({left:3,right:3}),safe:(p,o)=>{calls.push(o);return o.halfLength<=2;}}};
+ const body=proveRecoveryCell('0,0',world,[small,bus]);assert.equal(body.anchors.length,11);assert.equal(body.edges.length,1);assert.deepEqual(body.sourceHashes,[['0,0','b'.repeat(64)]]);
+ for(const a of body.anchors)assert.deepEqual(a.footprints,[small]);assert.ok(calls.some(p=>p.halfLength===6));
+ world.contacts.safe=()=>false;assert.throws(()=>proveRecoveryCell('0,0',world,[small,bus]),/roads but no certified/);
+ world.contacts.contact=()=>null;assert.throws(()=>proveRecoveryCell('0,0',world,[small]),/roads but no certified/);
+ packet.roadGraph.edges=[];assert.equal(proveRecoveryCell('0,0',world,[small]),null);
+ assert.throws(()=>proveRecoveryCell('0,0',world,[small],{spacingM:8}),/at most four/);
+});
