@@ -96,6 +96,8 @@ Difficulty: 🟢 good first fix · 🟡 medium · 🔴 deep / needs care.
 - 🟡 **Riviera diagnostic visuals remain unresolved.** Three source-bound static game views and a generic Tower presence view are recorded. A tan polygon in the station-3000 view is unclassified; partial horizon raycast hits cannot identify it. The Tower floating origin alone does not establish distant player or streaming focus. Sparse context needs actual player, stream-position and active-cell telemetry.
 - 🟡 **Coastal limestone detail has a nonperiodic stratum phase.** The existing shader resets its phase at 512 m cell boundaries and leaves narrow fissures unfiltered. A source-only periodic/filtering candidate passes regressions, but its first fresh browser baseline failed readiness before any photograph. The candidate remains unintegrated pending valid matched visual and GPU proof.
 
+- 🟡 **House material compilation drops its receiver.** Fresh coastal baseline readiness passes, but full-scene compilation calls the instanced-house parent shader hook without its material receiver and throws before a photograph. A narrow binding correction passes 22 focused material/scenery checks and the old hook fails its regression. Actual GPU recompilation and matched material proof remain pending.
+
 ## Lessons from releases (read before touching the world or deploys)
 
 - **World rebakes upload to the staging bucket only.** Before production points at a new world manifest, copy every file it depends on to the production bucket. Guard `a8eaa73` now blocks a production deploy whose manifest is missing.

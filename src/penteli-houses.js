@@ -15,7 +15,7 @@ export class PenteliHouses {
    for(const x of [-3,0,3]){quad([x-.65,.8,6],[x+.65,.8,6],[x+.65,.8,7.2],[x-.65,.8,7.2],2);quad([x-.1,0,6.5],[x+.1,0,6.5],[x+.1,.8,6.5],[x-.1,.8,6.5],2);}
    g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('aFacade',new THREE.Uint16BufferAttribute(facades,2));g.setAttribute('aPart',new THREE.Float32BufferAttribute(parts,1));g.setAttribute('iKind',new THREE.InstancedBufferAttribute(new Float32Array(192),1));
    const material=athensMaterial('building',[1,1,1],false),before=material.onBeforeCompile;
-   material.side=THREE.DoubleSide;material.onBeforeCompile=shader=>{before(shader);
+   material.side=THREE.DoubleSide;material.onBeforeCompile=function(shader,renderer){before.call(this,shader,renderer);
     shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nattribute float aPart;attribute float iKind;varying float vPart;varying vec2 vAwning;')
      .replace('#include <begin_vertex>','#include <begin_vertex>\nvPart=aPart;vAwning=position.xz;transformed.y=min(transformed.y,3.4)+max(0.,transformed.y-3.4)*.45;if(aPart>.5&&iKind<.5||aPart>.5&&iKind>1.5)transformed=vec3(0.);if(iKind>1.5)transformed.y=min(transformed.y,3.4);')
      .replace('vFacW=position;vFacW.y=transformed.y;','if(iKind>1.5){vFac.z=6.;vFacB.y=0.;}else if(iKind>.5&&!roofV)vFac.z=4.;vFacW=(instanceMatrix*vec4(transformed,1.)).xyz;')

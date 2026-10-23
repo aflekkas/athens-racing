@@ -35,3 +35,19 @@ test('distant mountain canopy uses one bounded batch, follows its terrain, and c
  for(let i=0;i<mesh.count;i++){mesh.getMatrixAt(i,m);assert.ok(Math.abs(m.elements[13]-(100+m.elements[12]*.2-.7))<.001);}
  layer.setEnabled(false);assert.equal(layer.group.visible,false);layer.setEnabled(true);layer.setMountainForest(null);layer.rebuild(0,0);assert.equal(mesh.count,0);layer.dispose();assert.equal(root.children.length,0);
 });
+
+// Chained hooks must preserve Three's material receiver, including a whole-scene
+// compile while the instance batch is empty or hidden.
+test('infill compile hook preserves its material receiver across detail changes',async()=>{
+ const {settings,setSetting}=await import('../src/settings.js'),old=settings.worldDetail;
+ const layer=new PenteliHouses(new THREE.Group()),material=layer.models[0].mesh.material;
+ try{
+  for(const detail of [true,false,true]){
+   setSetting('worldDetail',detail);
+   const shader={uniforms:{},vertexShader:THREE.ShaderLib.basic.vertexShader,fragmentShader:THREE.ShaderLib.basic.fragmentShader};
+   assert.doesNotThrow(()=>material.onBeforeCompile(shader,{}));
+   assert.match(shader.vertexShader,/attribute float iKind/);
+   assert.match(shader.fragmentShader,/vPart/);
+  }
+ }finally{layer.dispose();setSetting('worldDetail',old);}
+});
