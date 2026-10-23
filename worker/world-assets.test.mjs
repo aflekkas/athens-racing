@@ -72,3 +72,47 @@ test('recovery asset bytes reject malformed UTF-8 before cache while correctly e
   const bad=await worldAssets(request(),envFor(malformed),ctx,cache); assert.equal(bad.status,502); assert.equal(bad.headers.get('Cache-Control'),'no-store'); assert.equal(puts,1,'bad bytes never cached');
  }
 });
+
+test('production Worker R2 recovery loader preserves bounded bytes and rejects malformed UTF-8 before admission', async t => {
+ const {registerHooks} = await import('node:module'), {canonicalJSON,sha256} = await import('../src/route-definition.js');
+ const {encodeRecoverySidecar} = await import('../server/route-road-wire.mjs'), {admitRecoverySidecar} = await import('../server/route-road-stream.mjs');
+ const hooks = registerHooks({resolve(specifier,context,next){
+  if(specifier==='cloudflare:workers')return{url:'data:text/javascript,export class DurableObject {}',shortCircuit:true};
+  if(specifier==='../.deploy/catalogue.json')return{url:'data:text/javascript,export default {maps:[],cars:[],carSpecs:{}}',shortCircuit:true};
+  if(specifier==='../server/route-maps.mjs')return{url:'data:text/javascript,export async function installRouteMaps(m,c,o){globalThis.__athensRecoveryLoaderProbe=o.loadRoadArtifact;m.routeConfig={online:false,routes:[]}}',shortCircuit:true};
+  return next(specifier,context);
+ }});
+ t.after(()=>{hooks.deregister();delete globalThis.__athensRecoveryLoaderProbe;});
+ const {default:worker} = await import('./index.mjs');
+ let current, reads=0, textCalls=0, cancelled=0;
+ const env={ATHENS_WORLD:{async get(key){reads++;assert.match(key,/^recovery\/0,0\.[a-f0-9]{64}\.json$/);return current;}}};
+ assert.equal((await worker.fetch(new Request('https://staging.athensracing.com/api/routes'),env,{})).status,200);
+ const load = globalThis.__athensRecoveryLoaderProbe; assert.equal(typeof load,'function');
+ const original={schemaVersion:1,worldId:'athens',projectionId:'athens-v1',worldSetRevision:'c'.repeat(64),sourceHashes:[['0,0','d'.repeat(64)]],edges:[{id:'road',from:'a',to:'b',flags:1,layer:0,surface:'road',points:[[0,0,0],[0,0,10]],name:'���'}],anchors:[{edgeId:'road',offsetM:5,x:0,y:0,z:5,yaw:-Math.PI,layer:0,surfaceId:'road',leftM:4,rightM:4,halfWidth:1,halfLength:2}]};
+ const packed=encodeRecoverySidecar(original), text=canonicalJSON(packed), bytes=Buffer.from(text), hash=await sha256(packed), url=`/world/recovery/0,0.${hash}.json`, limit=2*1024*1024;
+ const object=(raw,size=raw.length)=>({size,body:new ReadableStream({start(c){c.enqueue(raw);c.close();},cancel(){cancelled++;}}),async text(){textCalls++;return new TextDecoder().decode(raw);}});
+ const malformed=Buffer.from(bytes), marker=malformed.indexOf(Buffer.from('���'));assert.ok(marker>=0);malformed.set([255,255,255],marker);malformed.set(Buffer.from(' '.repeat(6)),marker+3);
+ // Three invalid bytes plus spaces normalize to a different name; construct the
+ // matching canonical replacement hash explicitly, as an attacker can do.
+ const validReplacement=JSON.parse(new TextDecoder().decode(malformed)), replacementHash=await sha256(validReplacement), badURL=`/world/recovery/0,0.${replacementHash}.json`;
+ assert.throws(()=>new TextDecoder('utf-8',{fatal:true}).decode(malformed),TypeError);
+ let admissions=0, parses=0; const parse=JSON.parse;
+ current=object(malformed); JSON.parse=(...args)=>{parses++;return parse(...args);};
+ try{await assert.rejects((async()=>{const raw=await load(badURL,limit);admissions++;return admitRecoverySidecar(raw,{expectedHash:replacementHash,worldSetRevision:original.worldSetRevision});})(),TypeError);}finally{JSON.parse=parse;}
+ assert.equal(admissions,0);assert.equal(parses,0);assert.equal(textCalls,0);
+ current=object(bytes);const loaded=await load(url,limit);assert.ok(loaded instanceof Uint8Array);assert.deepEqual(loaded,new Uint8Array(bytes));
+ const admitted=await admitRecoverySidecar(loaded,{expectedHash:hash,worldSetRevision:original.worldSetRevision});assert.equal(admitted.body.anchors.length,1);
+ const tampered=Buffer.from(bytes);tampered[bytes.indexOf(Buffer.from('road'))]=120;current=object(tampered);
+ await assert.rejects(admitRecoverySidecar(await load(url,limit),{expectedHash:hash,worldSetRevision:original.worldSetRevision}),/Invalid authoritative recovery artifact/);
+ for(const size of [0,-1,1.5,NaN,Infinity,limit+1]){current=object(bytes,size);await assert.rejects(load(url,limit),/unavailable or too large/);}
+ current=object(bytes,1);await assert.rejects(load(url,limit),/too large|size mismatch/);
+ current=object(bytes,bytes.length+1);await assert.rejects(load(url,limit),/size mismatch/);
+ current={size:1,body:new ReadableStream({pull(c){c.enqueue(bytes);},cancel(){cancelled++;}})};
+ await assert.rejects(load(url,limit),/too large/);assert.equal(cancelled,1,'overflow cancels the owned reader');
+ current={size:bytes.length,body:new ReadableStream({start(c){c.enqueue(bytes.subarray(0,marker+1));c.enqueue(bytes.subarray(marker+1));c.close();}})};
+ assert.deepEqual(await load(url,limit),new Uint8Array(bytes),'multibyte codepoint split across chunks stays valid');
+ const beforeReads=reads;
+ for(const path of ['/world/recovery/manifest.'+hash+'.json','/world/recovery/0,0.short.json','https://evil/recovery/0,0.'+hash+'.json'])await assert.rejects(load(path,limit),/unavailable/);
+ assert.equal(reads,beforeReads,'invalid immutable descriptor never reaches R2');
+ current=null;await assert.rejects(load(url,limit),/unavailable/);assert.ok(reads>1);assert.equal(textCalls,0);
+});

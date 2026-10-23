@@ -21,9 +21,22 @@ import { createSqlLeaderboard } from './leaderboard.mjs';
 const maps = new Map(catalogue.maps.map(m => [m.id, { ...m, definitions: new Map(m.definitions) }]));
 let routeMapsReady;
 const prepareRouteMaps = env => routeMapsReady ||= installRouteMaps(maps, catalogue, { carSpecs: catalogue.carSpecs || {}, loadRoadArtifact: async (url, maxBytes) => {
+  if (!/^\/world\/recovery\/-?\d+,-?\d+\.[a-f0-9]{64}\.json$/.test(url) || !Number.isSafeInteger(maxBytes) || maxBytes < 1 || maxBytes > 2 * 1024 * 1024) throw Error('Recovery asset unavailable or too large');
   const object = await env.ATHENS_WORLD?.get(url.slice('/world/'.length));
-  if (!object || object.size > maxBytes) throw Error('Recovery asset unavailable or too large');
-  return object.text();
+  if (!object || !Number.isSafeInteger(object.size) || object.size < 1 || object.size > maxBytes || !object.body) throw Error('Recovery asset unavailable or too large');
+  // Allocate only the advertised, bounded size; never call R2's replacement
+  // text decoder. Exact admission receives the original authenticated bytes.
+  const bytes = new Uint8Array(object.size), reader = new Response(object.body).body.getReader(); let length = 0;
+  try {
+    for (;;) {
+      const { done, value } = await reader.read(); if (done) break;
+      if (length + value.byteLength > bytes.length) { await reader.cancel(); throw Error('Recovery asset unavailable or too large'); }
+      bytes.set(value, length); length += value.byteLength;
+    }
+  } finally { reader.releaseLock(); }
+  if (length !== bytes.length) throw Error('Recovery asset size mismatch');
+  new TextDecoder('utf-8', { fatal: true }).decode(bytes); // Reject before JSON/admission; do not normalize bytes.
+  return bytes;
 } });
 const cars = new Set(catalogue.cars);
 const nitrousCars = new Set(catalogue.nitrousCars || []);
