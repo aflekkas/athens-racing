@@ -20,12 +20,12 @@
         "z": -6983.289107722475
       },
       "inventory": {
-        "js": 131963010,
-        "gpu": 77504303,
-        "heap": 131963010,
+        "js": 95306476,
+        "gpu": 76408462,
+        "heap": 95306476,
         "sharedJS": 35228315,
-        "tileJS": 24220350,
-        "tileGPU": 12391572,
+        "tileJS": 21787696,
+        "tileGPU": 11295731,
         "renderTargetsAndSkyAllowance": 29884416,
         "resources": {
           "jsBytes": 268435456,
@@ -36,10 +36,11 @@
             "concurrency": 2
           }
         },
-        "streamReserved": 46857397,
+        "streamReserved": 42252864,
         "transient": 0
       },
-      "file": "/home/dev/.cogenly/worktrees/athens-racing/t3-83f3d59d/.scratch/highway-context/dionysou-a6-after.jpg"
+      "file": "/home/dev/.cogenly/worktrees/athens-racing/t3-83f3d59d/.scratch/highway-context/dionysou-a6-after.jpg",
+      "imageSha256": "c682aa7490790345ee074283e9c644b9a78cf2a9d7018f7412b982397b46ae59"
     },
     {
       "name": "post-detail",
@@ -60,15 +61,41 @@
           -6961.5
         ]
       },
-      "file": "/home/dev/.cogenly/worktrees/athens-racing/t3-83f3d59d/.scratch/highway-context/dionysou-posts-after.jpg"
+      "file": "/home/dev/.cogenly/worktrees/athens-racing/t3-83f3d59d/.scratch/highway-context/dionysou-posts-after.jpg",
+      "imageSha256": "42bc3934ed275d865d046f6f724346d5c7c9eb2f5ce667e8357b535a6047eaf7"
+    },
+    {
+      "name": "native-drive",
+      "phase": "after",
+      "drive": {
+        "start": {
+          "x": 6226.807375521221,
+          "y": 188.62861768963114,
+          "z": -6983.289107722475
+        },
+        "end": {
+          "x": 6265.674102949572,
+          "y": 192.82391165164944,
+          "z": -7058.4123997234965
+        },
+        "distance": 84.58209918215871,
+        "holds": 0,
+        "missing": 0
+      },
+      "renderEvery": 60,
+      "paceMs": 0,
+      "file": "/home/dev/.cogenly/worktrees/athens-racing/t3-83f3d59d/.scratch/highway-context/dionysou-drive-after.jpg",
+      "imageSha256": "c6c183080c62efa0605cbc2d37f17bf9c143ec3ba607546b43dd3e3a1dd41c88"
     }
   ],
   "errors": [],
-  "status": "Static matched pair captured; native12s afterdrive INTERRUPTED by52s deadline, not a drive pass",
-  "runtime": "6a336191947fad205a4d1d35818a996296717f29",
+  "status": "VERIFIED static pair and completed native12s drive",
+  "runtime": "4b0714b275b1ee3eb9ab2ccc093795f1762f5738 (runtime identical to6a336191)",
   "guardHelper": "af7080be2ed323f732d22cb924dfb21bb180a038",
   "fixtureRevision": "4f9cc7c4f6fe04d5cf01f2ef880d18fe1399422d781386eca23c4bd6247f74f5",
   "browserClosed": true,
   "serverClosed": true,
-  "sourceContextActivated": false
+  "sourceContextActivated": false,
+  "priorAttempt": "The previous52s bounded attempt captured static views but interrupted its drive; superseded by this85s successful retry.",
+  "capture": "Chromium1248 SwiftShader1280x800 Low renderScale.8/worlddetailOn, native240Hz advance12s renderEvery60 paceMs0; baseline renderEvery10 paceMs20. No timing/performance claim. No teleport during drive."
 }

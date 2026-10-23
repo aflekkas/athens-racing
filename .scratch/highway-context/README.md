@@ -1,3 +1,50 @@
+# Highway guards and source-only context — acceptance still open
+
+## Summary
+
+Bridge posts now follow a continuous four-metre source-outline cadence. The strict offline helper authenticates the original source plan/cell and preserves rails, beams and physical tables. The new highway-context/three-level prototype remains source-only, with no runtime or publication callsite and hard releaseEligible:false.
+
+## Proof it works
+
+| Before | After |
+|---|---|
+| ![Guard detail before](dionysou-posts-before.jpg) | ![Guard detail after](dionysou-posts-after.jpg) |
+| ![Native drive before](dionysou-drive-before.jpg) | ![Native drive after](dionysou-drive-after.jpg) |
+
+Athens · Dionysou/A6 · Chromium1248/SwiftShader1280×800 · Low/renderScale.8/world detailOn · local runtime4b0714b (runtime unchanged from6a) with strict two-cell fixture4f9cc7c4. Original baseline world80055f92. These are our own game captures; no source-context geometry is activated.
+
+## How I tested it
+
+- Actual native12s drive from the same spawn: before84.582100m, after84.582099m, both0holds/0missing. After0pageerrors. Loading hidden for the matched static cameras. No teleport during driving.
+- Native240Hz physics; retry renders every60substeps with pace0, baseline every10/pace20. This is functional proof, not startup/frame-time measurement.
+- Current focused context12/12 wrappers pass0skip (10Node +7Python context/ingest +10Python experimental cases). Earlier combined guard+context27/27 wrappers passed before the two added union-edge cases. Both strict repair cells pass authoritative packTiles.
+- Exact integrated-master npm/physics/import/syntax gates remain pending in parent's allocated greenery slot. Old component full-suite allocation was superseded; no duplicate archive was run.
+- Not tested: real three-level geometry, actual mapped-wall profiles/piers, full63-cell guard repair, Low/High timing comparison or published combined-world driving.
+
+## How to try it
+
+1. Use the authenticated two-cell local fixture documented in after-game-proof.json; normal public data has not been updated by this branch.
+2. Open Athens at spawn6224.8311,-6984.3117, then inspect the bridge post cadence from camera6210,194.2,-6970.5 looking6218,191.6,-6961.5.
+3. Drive forward. The inherited pale tongue is a physical deck-shoulder face, still open; it is not a claimed guard repair.
+
+## Risk and rollback
+
+- A source-plan/cell mismatch deliberately fails closed. Actual wider repair needs the parent's ordered source proof→terrain→paint→guard→packer pipeline and exact accounting.
+- Revert source commits or discard unpublished repair artifacts; no push, upload or deployment was performed.
+
+<details>
+<summary>How it was done</summary>
+
+Codex gpt-6.1-sol used Node, Python/Shapely/osmium, the existing AWT codec/packer, Cogenly terminals and repo browser-slot Playwright workflow. Source files/API are listed in tools/world-gen/bridge-guards.md and tools/world-gen/structure-context.md. The shared test manifest adds only context.test.mjs; parent unions independent registrations.
+
+Strict final two-cell costs:12,-14 posts386→316, total44104→43404tri, compressed564744→562278B;11,-12 posts109→101,40283→40203tri,485676→485895B. One guard draw record per cell unchanged. These are packer budgets, not measured frame times. The earlier provisional table below is historical and superseded by strict-repair-proof.json.
+
+Live picking at four tongue pixels used actual rendered camera matrices and active tile packets. Original mesh6 faces200/206 match exact physical contacttri328/340, ownerterrain:12:-14 flags2 layer1. It is deck shoulder; source footprint/ownership cause remains unproved. No physical geometry was changed to hide it.
+
+Proposed parent tracker entry: “Bridge post cadence and strict authenticated offline guard repair implemented; two-cell native proof passes. Wider63-cell application, inherited deck-shoulder tongue, mapped supports/walls/abutments and source-faithful Kifisias profile/three-level ring remain open. Experimental context is release-ineligible.” Parent owns docs/PROBLEMS.md and CHANGELOG consolidation.
+
+Cleanup: removed own superseded812MiB archive and intermediate projection dumps; all owned browsers/proxies closed. Task temp190MiB includes169MiB shared venv retained read-only until master explicitly releases it. Initial disk145G/74Gused/71Gavail52%; after bounded proof145G/70Gused/75Gavail49%. No other agent's files/cache were deleted.
+
 # Highway context — work in progress
 
 Marking stage report and own-game proof were committed separately as `61f4e7076eb5649eacadd83b94c52409e7d8c23b`.
@@ -15,7 +62,7 @@ Provisional repair-only local proof fixtures use the exact new source post helpe
 
 Compressed bytes do not universally decrease; more uniform post spacing changes coordinate compression. Runtime draw counts remain one guard mesh per cell. Recomputed reservations are packer estimates, not measured GPU performance.
 
-The clean exact `6a336191` archive passes focused `area.test.mjs` (3/3 wrappers), browser imports (373 modules) and syntax (460 modules). Full npm/physics runs and actual matched game proof are **pending shared slots**. The first syntax invocation had a 30-second harness timeout; the 60-second retry completed successfully in 22.5 seconds. This candidate is not yet accepted as complete.
+The clean exact `6a336191` archive passes focused `area.test.mjs` (3/3 wrappers), browser imports (373 modules) and syntax (460 modules). At that stage full npm/physics and matched game proof were pending. Current matched proof below supersedes the old pending visual status. The first syntax invocation had a 30-second harness timeout; the 60-second retry completed successfully in 22.5 seconds. This candidate is not yet accepted as complete.
 
 ## Crossing source and emitted audit
 
@@ -58,10 +105,10 @@ All three requested Google pano links returned “No Street View imagery availab
 
 ## Outstanding acceptance
 
-- Native AFTER driving proof remains open. The [matched static after record](after-game-proof.json) has two ready/loading-hidden frames; the52s bounded browser deadline interrupted the12s native drive, so it is not a drive pass. [Guard detail after](dionysou-posts-after.jpg), [Dionysou overview after](dionysou-a6-after.jpg). Both frames inherit an [unclassified pale tongue](inherited-tongue-audit.json) near the far rail.
+- Guard native afterdrive is now verified by [the completed retry](after-game-proof.json):84.582099m,0holds/0missing/0pageerrors. The initial52s interrupted attempt is explicitly superseded. The inherited pale tongue is now [classified deck shoulder](inherited-tongue-audit.json), still unfixed.
 - Actual Street View snapped location/date/approach inspection in the coordinated browser slot.
 - Final source/imagery comparison and concrete owner policy question only if the faithful repair needs locked stacked structures.
-- Clean npm and physics gates in the coordinated CPU slot.
+- Exact integrated-master four-command gates via greenery after review9; parent superseded all component branch full-suite runs. No duplicate component archive will be created.
 - Broader supports, abutments, medians/barriers and geographic-profile work remain open. Correct layer order and safe 5.5 m clearance do not establish a source-faithful uniform six-metre ground depression.
 
 Codex gpt-6.1-sol; Cogenly terminal, Python/Shapely and Node. No push/upload/deployment. Task temp `/tmp/athens-highway.GIu3` is active; its pinned Python venv is read-shared with terrain for the bounded Ekali bake and must be retained until handback. Initial disk: 145G total, 74G used, 71G available, 52%. Removed the superseded own clean archive (~810MiB); active task temp now187MiB, primarily the read-shared pinned venv plus reduced proof fixtures. Current disk145G total,73G used,73G available,51%. All owned browsers/proxies and bounded repair jobs are closed. Final cleanup awaits remaining gates/after capture and terrain venv handback.
@@ -71,3 +118,5 @@ Codex gpt-6.1-sol; Cogenly terminal, Python/Shapely and Node. No push/upload/dep
 `3c3554b3` adds [the context API](../../tools/world-gen/structure-context.md), separate source extraction tables, exact-cell triangle certificates, mapped wall clipping, and an explicit experimental three-level scalar feasibility solver. Every result is releaseEligible:false; ordinary policy/plans and runtime stay unchanged. Focused wrapper10/10PASS,0skip (8Node +7Python source/context/ingest +10Python experimental tests). Full exact-candidate gates queued, not yet passed.
 
 [Bounded actual source approach audit](experimental-real-approaches.json):44ways,156consecutive source-node segments,22roundabout pieces,10junction boundaries,0unresolved crop endpoints, cells12,-14and13,-14. Endpoint source API hashes/versions retained. This completes top-ring adjacency only: not lower-road crossing coverage, boundary-height certification or real three-level feasibility. OSM API bbox can miss a long crossing way with no vertex inside; w154259480 needs separately pinned full-way source before lower-level scope certification. Synthetic feasible/infeasible certificates are tests, not measured elevations or game proof.
+
+</details>

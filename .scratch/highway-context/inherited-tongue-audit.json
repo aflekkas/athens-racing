@@ -1,13 +1,371 @@
 {
-  "status": "UNCLASSIFIED inherited artifact; present in both matched before/after guard detail frames",
-  "pixelApprox": [
-    650,
-    455
+  "status": "CLASSIFIED inherited DECK SHOULDER geometry; not fixed",
+  "sourceSha256": "bb0b97a287b61ff9aff6b1f878033a3a3e4feb754b598de99567444a2f855433",
+  "cell": [
+    12,
+    -14
   ],
+  "origin": [
+    6144,
+    0,
+    -7168
+  ],
+  "camera": {
+    "position": [
+      66,
+      194.2,
+      197.5
+    ],
+    "fov": 62,
+    "aspect": 1.6,
+    "matrixWorld": [
+      -0.7474093186836597,
+      0,
+      0.6643638388299198,
+      0,
+      0.1402170012712895,
+      0.9774742877085105,
+      0.15774412643020067,
+      0,
+      -0.6493985701395675,
+      0.21105453529535897,
+      -0.7305733914070134,
+      0,
+      66,
+      194.2,
+      197.5,
+      1
+    ],
+    "projection": [
+      1.0401746764690738,
+      0,
+      0,
+      0,
+      0,
+      1.664279482350518,
+      0,
+      0,
+      0,
+      0,
+      -1.0005884083553986,
+      -1,
+      0,
+      0,
+      -0.5001471020888497,
+      0
+    ],
+    "origin": {
+      "x": 6144,
+      "z": -7168
+    }
+  },
+  "livePicks": [
+    {
+      "pixel": [
+        668,
+        438
+      ],
+      "nearest": {
+        "name": "tile:12,-14/6",
+        "material": 8,
+        "palette": [
+          0.386429433787049,
+          0.4019777798321958,
+          0.39675523072562685
+        ],
+        "userData": {
+          "worldSurface": true
+        },
+        "triangle": 206,
+        "distance": 11.217567385116546,
+        "hit": [
+          72.82511603658115,
+          191.2140829590141,
+          205.8866506157812
+        ],
+        "vertices": [
+          [
+            72,
+            191.2137908935547,
+            205.6199951171875
+          ],
+          [
+            73.4000015258789,
+            191.22361755371094,
+            206.16000366210938
+          ],
+          [
+            72,
+            191.19461059570312,
+            205.44000244140625
+          ]
+        ],
+        "screen": [
+          [
+            697.9329147152936,
+            450.71394472565254
+          ],
+          [
+            652.5983556808619,
+            428.62363585455864
+          ],
+          [
+            690.9423454730363,
+            454.377112511222
+          ]
+        ]
+      }
+    },
+    {
+      "pixel": [
+        680,
+        446
+      ],
+      "nearest": {
+        "name": "tile:12,-14/6",
+        "material": 8,
+        "palette": [
+          0.386429433787049,
+          0.4019777798321958,
+          0.39675523072562685
+        ],
+        "userData": {
+          "worldSurface": true
+        },
+        "triangle": 206,
+        "distance": 10.794567925571014,
+        "hit": [
+          72.39386769694971,
+          191.20519524067228,
+          205.66531058975576
+        ],
+        "vertices": [
+          [
+            72,
+            191.2137908935547,
+            205.6199951171875
+          ],
+          [
+            73.4000015258789,
+            191.22361755371094,
+            206.16000366210938
+          ],
+          [
+            72,
+            191.19461059570312,
+            205.44000244140625
+          ]
+        ],
+        "screen": [
+          [
+            697.9329147152936,
+            450.71394472565254
+          ],
+          [
+            652.5983556808619,
+            428.62363585455864
+          ],
+          [
+            690.9423454730363,
+            454.377112511222
+          ]
+        ]
+      }
+    },
+    {
+      "pixel": [
+        693,
+        454
+      ],
+      "nearest": {
+        "name": "tile:12,-14/6",
+        "material": 8,
+        "palette": [
+          0.386429433787049,
+          0.4019777798321958,
+          0.39675523072562685
+        ],
+        "userData": {
+          "worldSurface": true
+        },
+        "triangle": 200,
+        "distance": 10.406257362410077,
+        "hit": [
+          71.98171987709449,
+          191.19793905117024,
+          205.46849105315417
+        ],
+        "vertices": [
+          [
+            72,
+            191.2137908935547,
+            205.6199951171875
+          ],
+          [
+            72,
+            191.19461059570312,
+            205.44000244140625
+          ],
+          [
+            70.9800033569336,
+            191.1533966064453,
+            204.89999389648438
+          ]
+        ],
+        "screen": [
+          [
+            697.9329147152936,
+            450.71394472565254
+          ],
+          [
+            690.9423454730363,
+            454.377112511222
+          ],
+          [
+            725.6365037917581,
+            479.7707026957007
+          ]
+        ]
+      }
+    },
+    {
+      "pixel": [
+        709,
+        466
+      ],
+      "nearest": {
+        "name": "tile:12,-14/6",
+        "material": 8,
+        "palette": [
+          0.386429433787049,
+          0.4019777798321958,
+          0.39675523072562685
+        ],
+        "userData": {
+          "worldSurface": true
+        },
+        "triangle": 200,
+        "distance": 9.917250890736405,
+        "hit": [
+          71.47805628910051,
+          191.17678940211792,
+          205.1943461193341
+        ],
+        "vertices": [
+          [
+            72,
+            191.2137908935547,
+            205.6199951171875
+          ],
+          [
+            72,
+            191.19461059570312,
+            205.44000244140625
+          ],
+          [
+            70.9800033569336,
+            191.1533966064453,
+            204.89999389648438
+          ]
+        ],
+        "screen": [
+          [
+            697.9329147152936,
+            450.71394472565254
+          ],
+          [
+            690.9423454730363,
+            454.377112511222
+          ],
+          [
+            725.6365037917581,
+            479.7707026957007
+          ]
+        ]
+      }
+    }
+  ],
+  "sourceFaces": [
+    {
+      "face": 200,
+      "vertices": [
+        [
+          72,
+          191.2137908935547,
+          205.6199951171875
+        ],
+        [
+          72,
+          191.19461059570312,
+          205.44000244140625
+        ],
+        [
+          70.9800033569336,
+          191.1533966064453,
+          204.89999389648438
+        ]
+      ],
+      "contacts": [
+        {
+          "triangle": 328,
+          "owner": "terrain:12:-14",
+          "flags": 2,
+          "layer": 1
+        }
+      ],
+      "material": 8,
+      "palette": [
+        0.386429433787049,
+        0.4019777798321958,
+        0.39675523072562685
+      ],
+      "userData": {
+        "worldSurface": true
+      }
+    },
+    {
+      "face": 206,
+      "vertices": [
+        [
+          72,
+          191.2137908935547,
+          205.6199951171875
+        ],
+        [
+          73.4000015258789,
+          191.22361755371094,
+          206.16000366210938
+        ],
+        [
+          72,
+          191.19461059570312,
+          205.44000244140625
+        ]
+      ],
+      "contacts": [
+        {
+          "triangle": 340,
+          "owner": "terrain:12:-14",
+          "flags": 2,
+          "layer": 1
+        }
+      ],
+      "material": 8,
+      "palette": [
+        0.386429433787049,
+        0.4019777798321958,
+        0.39675523072562685
+      ],
+      "userData": {
+        "worldSurface": true
+      }
+    }
+  ],
+  "classification": "Mesh6 material8 PAVEMENT, ownerless deck shoulder emitted at tiles.py mesh(dp,deck_shoulder,8). Exact original physical contacttri328/340 ownerterrain:12:-14 flags2 layer1. No guard/beam/rail/roadpaint role.",
+  "preservation": "The original hosted source has exact same picked vertex coordinates; guard-only repair preserves this buffer and physical contact tables.",
+  "causeLimit": "Why source asphalt/platform ownership leaves this narrow shoulder tongue is not yet proved. No centroid/noding/height cause asserted. Large cuts/geographic profiles remain open.",
   "evidence": [
     "dionysou-posts-before.jpg",
     "dionysou-posts-after.jpg"
-  ],
-  "attempt": "Read-only offline original-cell/neighbor mesh and generated-runtime-mark projections with camera/FOV62 did not uniquely identify a corresponding pale triangle. No geometry cause, fix or regression assertion.",
-  "next": "Use actual rendered camera/object/packet picking in an allocated browser retry; large earth cuts and geographic profile remain open."
+  ]
 }
