@@ -1,0 +1,9 @@
+{
+  "node": "v22.23.3",
+  "actualClass": "http.ServerResponse",
+  "serverCreated": false,
+  "socketCreated": false,
+  "status": 200,
+  "getHeaderContentType": null,
+  "serializedNativeHeaderHasContentType": true
+}
