@@ -63,3 +63,8 @@ test('actual initial-spawn to Tower stream focus reproduces observed origin with
  const s=new WorldTileStream(manifest,{load:()=>{throw Error('must not load')},concurrency:0,pinSpawn:false,nearRing:0});
  try{s.update({x:2304,z:13056});assert.deepEqual(s.origin,{x:2048,z:12800});s.update({x:-180.00943192260831,z:10765.144939999354});assert.deepEqual(s.origin,{x:-512,z:12800});assert.equal(s.position.z,10765.144939999354);assert.equal(s.tiles.size,0);}finally{s.dispose();}
 });
+
+test('material-hidden triangles are excluded; transparency/discard/displacement fail closed',()=>{
+ const f=fixture();f.mesh.material.visible=false;assert.equal(pick(f).hits.length,0);f.mesh.material.visible=true;
+ for(const change of [m=>m.transparent=true,m=>m.alphaTest=.5,m=>m.displacementMap={}]){const a=fixture();change(a.mesh.material);const r=pick(a);assert.equal(r.complete,false);assert.deepEqual(r.hits,[]);}
+});

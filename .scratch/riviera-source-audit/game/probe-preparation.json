@@ -165,5 +165,30 @@
       12800
     ],
     "actualLivePlayerPoseRecorded": false
+  },
+  "gpuBindingPreparation": {
+    "status": "CPU-only synthetic native-upload parity verified; no browser/live tan owner claim",
+    "runtimeSourcePin": "7b0aec800e3e874d0a5afbd62fe32f727824512f",
+    "sourceFiles": [
+      {
+        "path": "src/world-tile-scene.js",
+        "sha256": "6e088bbf75623f7dca4ab753f18a55a91bab1bf78b16739ef53ca8fc0f8e0397"
+      },
+      {
+        "path": "src/world-tile-gpu.js",
+        "sha256": "4532b04e0e44fe9091d52490eafdf33af634cca5768c835d6e0ace0c471cbfbf"
+      },
+      {
+        "path": "src/terrain-layout.js",
+        "sha256": "33b1f03da5494525a8ef227ff393e8615b2158b5a5ce39de08c1e03dbef3694d"
+      }
+    ],
+    "tests": {
+      "command": "node --test tools/riviera-probe-binding.test.mjs tools/riviera-probe-geometry.test.mjs",
+      "pass": 17,
+      "fail": 0
+    },
+    "integrityLimit": "Cell compressed SHA is authenticated by manifest/native fetch path; binding independently hashes exact active CPU views and maps native upload descriptors/GL layouts. No GPU readback or new compressed-source fetch is performed.",
+    "requiredBeforeAfterPick": "assertStable plus await assertArrayBytesUnchanged; save binding receipts alongside final camera matrices/projected triangle/pixel/contact receipt; unsupported scene eligibility blocks classification."
   }
 }

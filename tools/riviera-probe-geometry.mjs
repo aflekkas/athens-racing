@@ -20,11 +20,13 @@ function visible(object) {
 }
 
 /** Shares source typed arrays read-only; owns only new CPU wrapper objects. */
-export function wrapProbeMesh(source) {
+export function wrapProbeMesh(source, {geometry = source.geometry} = {}) {
   if (!source.isMesh || source.isInstancedMesh || source.isSkinnedMesh) throw Error('non-ordinary mesh unsupported');
-  const old = source.geometry;
+  const old = geometry;
   if (!old || Object.values(old.morphAttributes || {}).some(a => a.length)) throw Error('missing/morph geometry unsupported');
   if ((Array.isArray(source.material) ? source.material : [source.material]).some(m => m?.isShaderMaterial) && !source.userData.terrainDecode) throw Error('custom shader vertex transform unsupported');
+  const materials=Array.isArray(source.material)?source.material:[source.material];
+  if(materials.some(m=>m?.transparent||m?.opacity<1||m?.alphaTest>0||m?.alphaMap||m?.displacementMap||m?.clippingPlanes?.length))throw Error('fragment transparency/discard or vertex displacement unsupported');
   const g = new THREE.BufferGeometry();
   try {
     for (const [name, a] of Object.entries(old.attributes)) g.setAttribute(name, attribute(a, name));
@@ -55,7 +57,7 @@ export function wrapProbeMesh(source) {
 }
 
 /** Fail closed: unsupported eligible meshes prevent any owner classification. */
-export function pickProbeMeshes({objects, camera, pixel, viewport, origin = {x: 0, z: 0}}) {
+export function pickProbeMeshes({objects, camera, pixel, viewport, origin = {x: 0, z: 0}, wrapMesh = wrapProbeMesh}) {
   const expected = new THREE.Matrix4().compose(camera.position, camera.quaternion, camera.scale);
   if (camera.parent) expected.premultiply(camera.parent.matrixWorld);
   if (expected.elements.some((v, i) => Math.abs(v - camera.matrixWorld.elements[i]) > 1e-6)) throw Error('camera matrixWorld stale');
@@ -66,7 +68,7 @@ export function pickProbeMeshes({objects, camera, pixel, viewport, origin = {x: 
     if (!visible(source) || !source.layers.test(camera.layers)) continue;
     let wrapper;
     try {
-      wrapper = wrapProbeMesh(source);
+      wrapper = wrapMesh(source);
       for (const hit of ray.intersectObject(wrapper.proxy, false)) {
         const projected = hit.point.clone().project(camera);
         const projectedPixel = [(projected.x + 1) * viewport[0] / 2, (1 - projected.y) * viewport[1] / 2];
@@ -78,6 +80,7 @@ export function pickProbeMeshes({objects, camera, pixel, viewport, origin = {x: 
         if (!barycentric || Math.min(...barycentric.toArray()) < -1e-6) throw Error('hit outside source triangle');
         const world = p => [p.x + origin.x, p.y, p.z + origin.z];
         const material = Array.isArray(source.material) ? source.material[hit.face.materialIndex] : source.material;
+        if(material.visible===false)continue;
         candidates.push({source, distance: hit.distance, faceIndex: hit.faceIndex, materialIndex: hit.face.materialIndex,
           materialSide: material.side, worldXYZ: world(hit.point), vertices: vertices.map(world), projectedPixel, projectionErrorPx});
       }

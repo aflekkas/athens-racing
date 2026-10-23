@@ -565,3 +565,60 @@ floor; and final camera matrices/projection. Any camera-centred stream interest
 via public APIs must be labeled diagnostic interest, never driving/spawn proof.
 No overall fidelity issue closes. Codex gpt-6.1-sol prepared these source-only
 tools/tests and corrected the evidence interpretation.
+
+### Active-packet to GPU-render binding preparation
+
+`tools/riviera-probe-binding.mjs` now supplies the source-only bridge for native
+GPU-only tile attributes. It requires the current active stream tile, exact
+handle/root/mesh sequence, source cell SHA and source/world revision tuple.
+It recomputes `tileGPUPlan` and checks the current plan, typed-array layouts,
+shared attribute/buffer identities and actual GL types/item sizes/counts. CPU
+wrappers read the original packet array views, retaining their byte offsets and
+normalization; index layouts and the exact terrain decode/residual are retained.
+No GPU reads/writes, uploads, actual buffer disposal, scene edits or actors occur.
+
+Receipts include the manifest source SHA, source/world identity, active generation,
+root/mesh UUIDs, matrixWorld, material sides/state, layers, groups and draw ranges,
+array offsets/lengths/SHA256 and upload binding descriptors. Both stale identity
+checks and before/after array digest audits are required. This is a native
+ownership/upload-plan binding: the compressed source integrity is supplied by
+the authenticated manifest and existing worker fetch path. It does not pretend
+to independently rehash absent compressed bytes or read back hardware GPU state.
+
+The synthetic fixtures exercise **actual `WorldTileScene.prepare`**, with its
+normal upload generator and real `GLBufferAttribute` objects, against a recording
+CPU GL test double. They compare every uploaded byte to its exact typed-array
+view, including nonzero source array offsets, shared indices and quantized terrain,
+then pick a known triangle and verify projected pixel/vertices. They also confirm
+that the diagnostic leaves actual source arrays and GPU bindings unchanged.
+Negatives reject SHA/world/cell/revision/plan mismatches, GL layouts and aliases,
+stale packets/handles/generation, transforms/materials/layers/groups/draw ranges,
+replaced arrays and in-place content changes. An unsupported foreground prevents
+classification despite a valid farther triangle. Transparent/discard/displacement
+materials are explicitly unsupported; material-hidden triangles are excluded.
+This remains diagnostic preparation, not a runtime raycasting defect or live
+polygon diagnosis.
+
+Focused checks:
+
+```text
+node --test tools/riviera-probe-binding.test.mjs tools/riviera-probe-geometry.test.mjs
+  =>17pass/0fail (including10geometry/context and7binding cases)
+node --check tools/riviera-probe-binding.mjs =>PASS
+node --check tools/riviera-probe-binding.test.mjs =>PASS
+node --check tools/riviera-probe-geometry.mjs =>PASS
+```
+
+An intermediate negative test correctly rejected a stale root matrix but expected
+a different error label; the fixture now updates that matrix before testing the
+separate origin-layout mismatch. No physical/runtime guard was changed.
+Runtime upload/terrain source files are byte-identical to the pinned7b0aec source;
+their SHA256 values are in the preparation receipt. No full suite or browser was
+started while the car baseline owned resources. Next authorized live picking
+must bind all applicable active tile meshes, retain unsupported non-tile foreground
+as a blocking result, hash-check arrays before/after and verify final camera
+matrix plus exact hit triangle projection. Only a complete hit may be queried
+at its exact world XYZ for physical surface/contact ownership. No nearest-source
+guess or unsupported-to-horizon fallback is allowed. Tower context still requires
+actual player/stream positions and all9 camera-neighbour active cells; cause
+remains unresolved. All work here was by Codex gpt-6.1-sol with Node/Three.js.
