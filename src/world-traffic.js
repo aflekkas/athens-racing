@@ -60,11 +60,11 @@ export class WorldTraffic {
   for(const c of units){if(c.targetId==null)c.targetId=targets.find(t=>t.gridSlot===c.cop?.target)?.id??null;}
   for(const c of units)if(!this.onlineTargets.has(c.targetId)){c.targetId=null;c.cop={...c.cop,chase:false,siren:false,target:null};}
   const rank=t=>t.state==='pursuit'?3:t.state==='cooldown'?2:t.state==='warning'?1:0;
-  const want=t=>t.state==='idle'?1:t.state==='warning'?1:Math.min(this.tuning.maxChasers,1+t.level);
+  const want=t=>t.state==='idle'||t.state==='warning'?2:Math.min(this.tuning.maxUnits,1+t.level);
   // Give every live driver a patrol before adding reinforcements to a chase.
   for(const t of targets)for(const c of assigned(t.id).slice(want(t)))c.targetId=null;
   const order=()=>[...targets].sort((a,b)=>assigned(a.id).length-assigned(b.id).length||rank(b)-rank(a)||String(a.id).localeCompare(String(b.id)));
-  for(const c of units.filter(c=>!c.targetId)){const t=order().find(t=>assigned(t.id).length<want(t))||order()[0];if(t)c.targetId=t.id;}
+  for(const c of units.filter(c=>!c.targetId)){const t=order().find(t=>assigned(t.id).length<want(t));if(t)c.targetId=t.id;}
   for(const c of units){const t=this.onlineTargets.get(c.targetId);c.cop={...c.cop,target:t?.gridSlot??null,chase:!!t&&t.state!=='idle',siren:!!t&&t.state!=='idle'};}
   this.pendingCopFocus=this.policeEnabled?order().find(t=>assigned(t.id).length<want(t))||null:null;
  }

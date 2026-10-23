@@ -93,3 +93,9 @@ test('replica police lights follow shared siren or chase flags while local heat 
  c.cop={target:1,siren:true,chase:true};t.sync();c.cop={target:1,siren:false,chase:true};t.sync();c.cop={target:1,siren:false,chase:false};t.sync();
  assert.deepEqual(lights,[true,true,false]);assert.equal(f.advances,0);
 });
+
+test('available patrols cover all eight drivers before any driver receives a second unit',()=>{
+ const f=fixture(),t=f.t;f.members.splice(0,f.members.length,...Array.from({length:8},(_,gridSlot)=>({id:gridSlot?'p'+gridSlot:'host',gridSlot,loaded:true,connected:true})));
+ f.rows=f.members.map(m=>({id:m.id,gridSlot:m.gridSlot,accepted:true,vehicle:vehicle(m.gridSlot*200),pursuit:0}));t.updateOnlineAuthority(.1,f.context);
+ assert.equal(new Set(t.cars.filter(c=>c.active&&c.police).map(c=>c.targetId)).size,8);assert.ok(t.cars.filter(c=>c.police).every(c=>c.active));
+});
