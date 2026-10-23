@@ -48,10 +48,25 @@ const copyBytes=value=>{const v=viewSlots(value,true),copy=Buffer.alloc(v.byteLe
 const sha=b=>createHash('sha256').update(typeof b==='string'?b:byteView(b)).digest('hex');
 const fail=s=>{throw Error('Cell mutation: '+s);};
 const canonical=v=>JSON.stringify(order(v));
+function denseArray(value){
+ if(nativeTypes.isProxy(value)||!Array.isArray(value)||Object.getPrototypeOf(value)!==Array.prototype)fail('array must be plain dense data');
+ const length=Object.getOwnPropertyDescriptor(value,'length');
+ if(!length||!Object.hasOwn(length,'value')||length.enumerable||!Number.isSafeInteger(length.value)||length.value<0)fail('array length descriptor');
+ // Admit the dense index/key scan before materializing its own-key list. This
+ // is validation scratch, never a copy of the caller's element values.
+ if(128+length.value*256>MAX)fail('declarative array descriptor workspace budget before copy');
+ const names=Reflect.ownKeys(value);
+ if(names.length!==length.value+1||names[length.value]!=='length')fail('unexpected array own property/accessor/symbol/hidden field');
+ for(let i=0;i<length.value;i++){
+  if(names[i]!==String(i))fail('array must have only dense indices and length');
+  const d=Object.getOwnPropertyDescriptor(value,names[i]);if(!d||!Object.hasOwn(d,'value')||!d.enumerable)fail('array indexed accessor/hidden field');
+ }
+ return length.value;
+}
 function order(v){
  if(nativeTypes.isProxy(v))fail('proxy stage input forbidden');
  if(ArrayBuffer.isView(v)){const slots=viewSlots(v,true);return {bytes:slots.byteLength,sha256:sha(v)};}
- if(Array.isArray(v))return v.map(order);
+ if(Array.isArray(v)){denseArray(v);return v.map(order);}
  if(v&&typeof v==='object'){
   if(Object.getPrototypeOf(v)!==Object.prototype&&Object.getPrototypeOf(v)!==null)fail('stage input must be plain data');
   const out=Object.create(null);for(const k of Object.keys(v).sort()){if(!Object.hasOwn(Object.getOwnPropertyDescriptor(v,k),'value'))fail('accessor stage input');out[k]=order(v[k]);}return out;
@@ -221,7 +236,7 @@ function validateStageInputs(stages){
   for(const key in stage)if(Object.hasOwn(stage,key)){
    const value=stage[key];if(key==='recipes'){
     if(!Array.isArray(value))fail('guard recipes must be declarative array');
-    for(let i=0;i<value.length;i++){const d=Object.getOwnPropertyDescriptor(value,String(i));if(!d||!Object.hasOwn(d,'value'))fail('accessor/sparse guard recipes');const recipe=d.value;keys(recipe,['compiledBytes','sourcePlanBytes','compiledSha256','sourcePlanSha256'],'guard recipe');for(const field in recipe)if(Object.hasOwn(recipe,field)&&!(field.endsWith('Bytes')?nativeTypes.isUint8Array(recipe[field]):typeof recipe[field]==='string'))fail('declarative guard recipe field');}
+    const count=denseArray(value);for(let i=0;i<count;i++){const d=Object.getOwnPropertyDescriptor(value,String(i));if(!d||!Object.hasOwn(d,'value'))fail('accessor/sparse guard recipes');const recipe=d.value;keys(recipe,['compiledBytes','sourcePlanBytes','compiledSha256','sourcePlanSha256'],'guard recipe');for(const field in recipe)if(Object.hasOwn(recipe,field)&&!(field.endsWith('Bytes')?nativeTypes.isUint8Array(recipe[field]):typeof recipe[field]==='string'))fail('declarative guard recipe field');}
    }else if(!(key.endsWith('Bytes')||key==='bytes'?nativeTypes.isUint8Array(value):typeof value==='string'))fail('declarative '+name+' stage field (callbacks forbidden)');
   }
  }
@@ -254,7 +269,7 @@ function jsonMemory(value,active=new Set(),inputBytes=false){
  if(!value||typeof value!=='object'||nativeTypes.isProxy(value)||!Array.isArray(value)&&![Object.prototype,null].includes(Object.getPrototypeOf(value)))fail('encoding metadata must be plain JSON data');
  if(active.has(value))fail('cyclic encoding metadata');active.add(value);
  let chars=2,heap=128;
- if(Array.isArray(value)){for(let i=0;i<value.length;i++){const d=Object.getOwnPropertyDescriptor(value,String(i));if(!d||!Object.hasOwn(d,'value'))fail('encoding metadata array accessor/sparse data');const part=jsonMemory(d.value,active,inputBytes);chars+=part.chars+1;heap+=part.heap+8;if(heap>MAX)fail('input snapshot workspace budget');}}
+ if(Array.isArray(value)){const count=denseArray(value);for(let i=0;i<count;i++){const d=Object.getOwnPropertyDescriptor(value,String(i));if(!d||!Object.hasOwn(d,'value'))fail('encoding metadata array accessor/sparse data');const part=jsonMemory(d.value,active,inputBytes);chars+=part.chars+1;heap+=part.heap+8;if(heap>MAX)fail('input snapshot workspace budget');}}
  else for(const key in value)if(Object.hasOwn(value,key)){const d=Object.getOwnPropertyDescriptor(value,key);if(!Object.hasOwn(d,'value'))fail('encoding metadata accessor');const part=jsonMemory(d.value,active,inputBytes);chars+=key.length*6+4+part.chars;heap+=192+key.length*4+part.heap;}
  active.delete(value);return {chars,heap};
 }

@@ -306,3 +306,18 @@ test('backing alias accounting counts originals once and clones once per actual 
  const s=fixture(),a=args(s,{}),originalScope=a.releaseScope.bytes,backing=new ArrayBuffer(4096),compressed=new Uint8Array(backing,0,s.compressedBytes.length),scopeBytes=new Uint8Array(backing,2048,originalScope.length);compressed.set(s.compressedBytes);scopeBytes.set(originalScope);a.compressedBytes=compressed;a.releaseScope={bytes:scopeBytes,sha256:hash(scopeBytes)};a.entry.certificateBytes=[new Uint8Array(backing,3600,2),new Uint8Array(backing,3602,2)];
  const result=await mutateOriginalCell(a);assert.equal(result.kind,'preserved');assert.deepEqual(result.compressedBytes,Buffer.from(s.compressedBytes));assert.deepEqual(result.audit.inputBackingReservation,{originalBytes:4096,cloneBytes:8192,compressedCopyBytes:s.compressedBytes.length,totalBytes:12288+s.compressedBytes.length});
 });
+
+
+test('array custom getter and 40MiB data property reject before any traversal, clone or copy on preserved and mutating paths',async t=>{
+ for(const mutate of [false,true])for(const getter of [false,true]){const a=args(fixture(),mutate?{paint:{codeSha256:code.paint},guards:{codeSha256:code.guards,recipes:[]}}:{});let invoked=0,clones=0,copies=0,values=0;Object.defineProperty(a.source.cell,'extra',getter?{enumerable:true,get(){invoked++;throw Error('array extra getter invoked');}}:{enumerable:true,value:'x'.repeat(40*1024**2)});
+  t.mock.method(globalThis,'structuredClone',()=>{clones++;throw Error('unexpected clone');});t.mock.method(Buffer,'alloc',()=>{copies++;throw Error('unexpected compressed copy');});t.mock.method(Object,'values',()=>{values++;throw Error('unexpected values traversal');});try{await assert.rejects(mutateOriginalCell(a),/unexpected array own property/);assert.deepEqual({invoked,clones,copies,values},{invoked:0,clones:0,copies:0,values:0});}finally{t.mock.restoreAll();}
+ }
+});
+
+test('all input array branches reject enumerable, hidden and symbolic own extras without invoking accessors',async t=>{
+ const targets=[a=>a.source.cell,a=>a.entry.cell=[0,0],a=>a.entry.certificateBytes=[new Uint8Array(2)],a=>a.entry.certificates=[[new Uint8Array(2)]],a=>(a.entry.certificates=[[new Uint8Array(2)]])[0],a=>a.stages.guards.recipes,a=>(a.releaseScope.certificateVectors=[[]])[0],a=>(a.protectedSources={manifests:[]}).manifests];
+ for(const target of targets)for(const mode of ['enumerable','hidden','symbol','indexedHidden']){const a=args(),array=target(a);let invoked=0,clones=0;if(mode==='indexedHidden'){if(!array.length)array.push(0);Object.defineProperty(array,'0',{enumerable:false});}else Object.defineProperty(array,mode==='symbol'?Symbol('unexpected'):'extra',{enumerable:mode==='enumerable',get(){invoked++;throw Error('array extra accessor invoked');}});
+  t.mock.method(globalThis,'structuredClone',()=>{clones++;throw Error('unexpected clone');});try{await assert.rejects(mutateOriginalCell(a),/array.*property|array indexed accessor\/hidden/);assert.equal(invoked,0);assert.equal(clones,0);}finally{t.mock.restoreAll();}
+ }
+ const native=protectedArgs();Object.defineProperty(native.source.cell,'extra',{value:123});await assert.rejects(mutateOriginalCell(native),/unexpected array own property/);
+});
