@@ -23,7 +23,8 @@ import { fmtDist } from '../settings.js';
 const { esc, icon } = C;
 export const MP_SCREENS = ['mp', 'mpHost', 'mpLobby', 'mpCars', 'mpResults'];
 export const isMpScreen = (s) => MP_SCREENS.includes(s);
-const MODES = [['sprint', 'QUICK RACE', 'flag'], ['free', 'FREE ROAM', 'car']];
+const MODES = [['sprint', 'QUICK RACE', 'flag'], ['timetrial', 'TIME TRIAL', 'timer'], ['free', 'FREE ROAM', 'car']];
+export function onlineModesForMap(mp,mapId){const events=mp?.maps?.find(m=>m.id===mapId)?.events||mp?.events?.filter(e=>e.mapId===mapId)||[];return events.length?MODES.filter(([id])=>events.some(e=>e.type===id)):MODES.filter(([id])=>id!=='timetrial');}
 const MAX_DRIVERS = 8;
 const weatherIcon = (v) => (v === 'rain' ? 'cloud-rain' : v === 'overcast' ? 'cloud' : 'sun');
 const timeIcon = (v) => (v === 'night' ? 'moon' : v === 'sunset' || v === 'dawn' ? 'sunrise' : 'sun');
@@ -144,7 +145,7 @@ export function renderMp(menu, mp) {
 export function renderHost(menu, mp) {
   const live = netState(mp) === 'live', maps = mp?.maps || [];
   const map = maps.some((m) => m.id === form.map) ? form.map : maps.some((m) => m.id === mp?.mapId) ? mp.mapId : maps[0]?.id;
-  form.map = map || form.map;
+  form.map = map || form.map;const modes=onlineModesForMap(mp,form.map);if(!modes.some(([id])=>id===form.mode))form.mode=modes[0]?.[0]||'sprint';
   const A = { 'data-scope': 'mpHost' }, car = carOf(mp, showroomCar(mp));
   const tracks = maps.length ? maps.map((m) => {
     const cat = MAPS.find((x) => x.id === m.id);
@@ -153,7 +154,7 @@ export function renderHost(menu, mp) {
   }).join('') : C.emptyState({ busy: !live, icon: 'triangle-alert', title: live ? 'NO TRACKS AVAILABLE' : 'CONNECTING TO THE LOBBY SERVER', text: 'Tracks load from the lobby server.' });
   const fields = [
     C.textField({ name: 'name', label: 'LOBBY NAME', value: form.name, placeholder: (driverName.get() || 'MY') + '’S RACE', maxlength: 28, inputAttrs: { enterkeyhint: 'done' } }),
-    C.segmented({ key: 'mode', label: 'MODE', icon: 'flag', value: form.mode, options: MODES, attrs: A }),
+    C.segmented({ key: 'mode', label: 'MODE', icon: 'flag', value: form.mode, options: modes, attrs: A }),
     C.segmented({ key: 'private', label: 'WHO CAN JOIN', icon: 'lock', value: String(form.private), type: 'bool', options: [['false', 'ANYONE'], ['true', 'INVITE ONLY']], attrs: A,
       note: form.private ? 'Only drivers with the code or invite link can join.' : 'Anyone can find it in the list.' }),
     C.listRow({ icon: 'car', title: esc(car?.name || 'CHOOSE CAR'), desc: 'Change car', act: 'mpCar', fid: 'car', disabled: !mp?.canChangeCar }),
@@ -177,7 +178,7 @@ export function renderLobby(menu, mp) {
     const garageCars = (mp.cars || []).filter(inGarage), allowedSet = new Set(mp.allowedCars), garage = garageCars.length, allowed = garageCars.filter((c) => allowedSet.has(c.id)).length;
     session = [
       C.select({ key: 'mapId', label: 'TRACK', icon: 'map', value: mapV, options: (mp.maps.length ? mp.maps : [{ id: mapV, name: mapName(mp, mapV) }]).map((m) => [m.id, esc(m.name)]), attrs: { ...A, ...(mp.preparing ? { 'aria-disabled': 'true' } : {}) } }),
-      C.segmented({ key: 'mode', label: 'MODE', icon: 'flag', value: modeV, options: MODES, attrs: A }),
+      C.segmented({ key: 'mode', label: 'MODE', icon: 'flag', value: modeV, options: onlineModesForMap(mp,mapV), attrs: A }),
       C.select({ key: 'time', label: 'TIME OF DAY', icon: timeIcon(time), value: time, options: TIMES, attrs: A }),
       C.segmented({ key: 'weather', label: 'WEATHER', icon: weatherIcon(weather), value: weather, options: WEATHERS.map(([v, t]) => [v, t, weatherIcon(v)]), attrs: A }),
       C.segmented({ key: 'traffic', label: 'TRAFFIC', icon: 'traffic-cone', value: traffic, type: 'num', options: TRAFFIC, attrs: A }),
@@ -340,7 +341,7 @@ export function openEntry(menu, entry = 'join', draft = null) {
   const mp = window.__multiplayer; if (!mp) return;
   if (mp.lobby) { openRoom(menu); return; }
   if (draft?.mapId) form.map = draft.mapId;
-  if (draft?.mode) form.mode = draft.mode === 'free' ? 'free' : 'sprint';
+  if (draft?.mode) form.mode = MODES.some(([id])=>id===draft.mode)?draft.mode:'sprint';
   mp.open(draft ? { ...draft, entry } : { entry });
   if (mp.pendingCode && !form.code) form.code = String(mp.pendingCode).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
   if (entry === 'host') { if (menu.screen === 'mpHost') return; if (menu.screen !== 'mp') menu.show('mp', {}, !!menu.screen); menu.show('mpHost', {}, true); return; }

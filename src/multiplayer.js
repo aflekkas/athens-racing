@@ -401,7 +401,7 @@ export class Multiplayer {
   renderEvents(mapId) {
     const select = this.$('mp-event'), previous = select.value;
     select.replaceChildren();
-    for (const e of this.events.filter(e => (e.mapId || 'riviera') === mapId && ['sprint', 'free'].includes(e.type))) {
+    for (const e of this.events.filter(e => (e.mapId || 'riviera') === mapId && ['sprint', 'timetrial', 'free'].includes(e.type))) {
       const option = document.createElement('option'); option.value = e.id;
       option.textContent = describeMode(e.type);
       select.append(option);
@@ -499,7 +499,7 @@ export class Multiplayer {
     this.board.hidden = l.status === 'waiting';
   }
   roomHelpText() {
-    const l = this.lobby, mode = String(l.mode || l.event?.type || 'sprint').toUpperCase(), eventName = l.event?.name || '';
+    const l = this.lobby, mode = (l.mode||l.event?.type)==='timetrial'?'TIME TRIAL':String(l.mode||l.event?.type||'sprint').toUpperCase(), eventName = l.event?.name || '';
     const message = l.status === 'waiting' ? 'Shared traffic off. The host starts when everyone is ready and loaded.' : l.status === 'results' ? `${this.objectiveMode ? 'Round' : 'Race'} complete. The host can prepare a rematch.` : this.me?.finish !== null ? 'You finished. Waiting for the other drivers; the race ends after ten minutes.' : 'Race in progress. Close this panel to keep driving.';
     const details = [this.maps.find(m => m.id === (l.mapId || 'riviera'))?.name, eventName];
     if (eventName.trim().toUpperCase() !== mode) details.push(mode);

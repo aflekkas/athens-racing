@@ -167,3 +167,9 @@ test('the lobby names the change-car action, adds no hint repeating it, and expl
     assert.match(locked, /mpCar[^]*?disabled|disabled[^]*?mpCar/);
   }
 });
+
+test('authenticated TT-only routes offer time trial with human drivers and preserve separate multiplayer flow',async()=>{
+ const {onlineModesForMap}=await import('../src/ui/mp-screens.js'),{describeMode}=await import('../src/mp-setup.js'),mp=fakeMp();mp.maps=[{id:'penteli-descent',name:'PENTELI DESCENT',events:[{id:'penteli-descent-tt',type:'timetrial'},{id:'free:penteli-descent',type:'free'}]}];mp.events=mp.maps[0].events.map(e=>({...e,mapId:'penteli-descent'}));mp.mapId='penteli-descent';form.map='penteli-descent';form.mode='sprint';
+ assert.deepEqual(onlineModesForMap(mp,'penteli-descent').map(([id])=>id),['timetrial','free']);assert.equal(describeMode('timetrial'),'TIME TRIAL');const host=renderHost(menu,mp);assert.equal(form.mode,'timetrial');assert.match(host,/TIME TRIAL/);assert.doesNotMatch(host,/AI RIVALS|QUICK RACE/);
+ mp.lobby.mapId='penteli-descent';mp.lobby.mode='timetrial';mp.lobby.event={type:'timetrial'};const lobby=renderLobby(menu,mp);assert.match(lobby,/TIME TRIAL/);assert.doesNotMatch(lobby,/AI RIVALS/);
+});

@@ -16,18 +16,18 @@ try{
   const context=await browser.newContext({viewport:{width:1280,height:720},serviceWorkers:'block'});
   try{
    const page=await context.newPage(),errors=[];page.on('pageerror',error=>errors.push(error.message));
-   // Keep race drawing out of timing; preparation still yields through real rAF.
-   await page.addInitScript(()=>{const raf=requestAnimationFrame;window.requestAnimationFrame=cb=>cb.name==='frame'?0:raf(cb);});
-   await page.goto(`${variant.url}/?routes=1&route=${route}&simhook&guest=1&quality=low`,{waitUntil:'domcontentloaded'});
+   await page.goto(`${variant.url}/?routes=1&route=${route}&simhook&guest=1&quality=low&car=mini_jcw`,{waitUntil:'domcontentloaded'});
    await page.waitForFunction(()=>window.__routePilot&&!window.__routePilot.G.routePreparing,null,{timeout:120000});
-   const data=await page.evaluate(()=>({navigationToReadyMs:performance.now(),metrics:window.__worldSession.metrics,stream:window.__worldSession.stream.metrics,programs:window.__routePilot.renderer.info.programs.length,upload:window.__worldSession.sceneTiles.uploadMetrics,warmup:window.__worldSession.sceneTiles.warmupMetrics,state:window.__routePilot.G.state}));
-   assert.deepEqual(errors,[]);assert.equal(data.state,'countdown');
-   const sample={variant:variant.label,run:run+1,route,...data,errors};samples.push(sample);console.log(JSON.stringify(sample));
+   const preparationObservedAtMs=await page.evaluate(()=>performance.now());
+   await page.waitForFunction(()=>window.__routePilot?.G.state==='race'&&!window.__routePilot.G.routePreparing&&!document.querySelector('#loading[aria-busy=true]'),null,{timeout:30000});
+   const data=await page.evaluate(()=>{const p=window.__routePilot,marks=name=>performance.getEntriesByName(name).at(-1)?.startTime??null;return{navigationStartUTC:new Date(performance.timeOrigin).toISOString(),playableObservedAtMs:performance.now(),selectionStartedAtMs:marks('athens-route-selection'),routeReadyAtMs:marks('athens-route-ready'),playableAtMs:marks('athens-playable'),metrics:window.__worldSession.metrics,stream:window.__worldSession.stream.metrics,programs:p.renderer.info.programs.length,upload:window.__worldSession.sceneTiles.uploadMetrics,warmup:window.__worldSession.sceneTiles.warmupMetrics,state:p.G.state,stationBeforeDrive:p.player.veh.s};});
+   await page.evaluate(()=>window.__routePilot.setDriver(()=>({throttle:1,brake:0,steer:0,handbrake:false})));await page.waitForTimeout(1000);
+   const driven=await page.evaluate(()=>({state:window.__routePilot.G.state,station:window.__routePilot.player.veh.s,kmh:window.__routePilot.player.veh.kmh}));
+   assert.deepEqual(errors,[]);assert.equal(data.state,'race');assert.equal(driven.state,'race');assert.ok(driven.station>data.stationBeforeDrive+.5,'real rendered frames must move the car');
+   const sample={variant:variant.label,run:run+1,route,preparationObservedAtMs,...data,driven,errors};samples.push(sample);console.log(JSON.stringify(sample));
    await writeFile(resolve(out,'samples.json'),JSON.stringify(samples,null,2));
    if(run===0){
-    await page.evaluate(()=>{const p=window.__routePilot;for(let i=0;i<90;i++)p.step(1/60,false,true,1/60);p.step(1/60,true,true,1/60);});
-    await page.waitForTimeout(300); // allow the loading fade to leave the rendered game
-    await page.screenshot({path:resolve(out,`${variant.label}-${route}.jpg`),type:'jpeg',quality:85});
+    const picture=resolve(out,`${variant.label}-${route}.jpg`);await page.screenshot({path:picture,type:'jpeg',quality:85});console.log('SCREENSHOT '+picture);
    }
   }finally{await context.close();}
  }

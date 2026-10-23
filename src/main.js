@@ -342,7 +342,7 @@ async function boot() {
 async function loadUnifiedWorld(compiled,{eventId=Q.get('routeEvent'),network=null}={}) {
   if(!network&&!G.onlineGrid&&worldSession&&map?.route?.compiled?.routeHash===compiled.routeHash&&worldSession.manifest.revision===compiled.worldSetRevision){if(eventId&&map.events.some(e=>e.id===eventId)&&G.ev?.def.id!==eventId){prepareEvent(map.events.find(e=>e.id===eventId));resetUnifiedRace();}return map;}
   loading.show('athens', compiled.definition.name); loading.setRoute?.(compiled); G.state='loading';G.routePreparing=true;
-  const started=performance.now(),entryPhases={},stamp=name=>{entryPhases[name]=performance.now()-started;};
+  performance.mark('athens-route-selection');const started=performance.now(),entryPhases={},stamp=name=>{entryPhases[name]=performance.now()-started;};
   try {
     if(!sky){sky=ENV.createSky();scene.add(sky);const baked=ENV.bakeSky(renderer,sky);probeSeed=baked.cube;scene.environment=baked.env;setCarEnv(baked.env);({sun}=ENV.createLights(scene));}
     const sessionReady=worldSession?Promise.resolve(worldSession):createWorldSession({renderer,scene,resources:GFX.resources,progress:lstat,worldDefinition:{manifestURL:'/data/athens/manifest.json',regionId:compiled.regionId,worldSetRevision:compiled.worldSetRevision}});
@@ -382,7 +382,7 @@ async function loadUnifiedWorld(compiled,{eventId=Q.get('routeEvent'),network=nu
     worldSession.metrics.selectionToCountdownMs=performance.now()-started;worldSession.metrics.initialWorldBytes=worldSession.stream.pool?.downloadedBytes??worldSession.stream.metrics.loadedBytes;window.__worldSession=worldSession;
     if(Q.has('simhook'))window.__sim={get player(){return player;},get route(){return route;},get ground(){return ground;},get traffic(){return traffic;},get signals(){return signals;},get cars(){return[player,...grid,...remoteCars.values()];},scene,renderer,camera,canvas,keys,G,input,look,cameraBlend,towOffer,step:(n=1,dt=1/60)=>{for(let i=0;i<n;i++)step(dt,false);},render};
     if(Q.has('simhook'))window.__routePilot={get player(){return player;},get route(){return route;},get run(){return G.run;},get rivals(){return grid;},get traffic(){return traffic;},get closures(){return routeClosures;},get guidance(){return guidanceData;},get visuals(){return routeGuidance?.stats;},session:worldSession,G,scene,renderer,camera,input,step:(dt=1/60,draw=false,visual=true,frameDt=dt)=>step(dt,draw,visual,frameDt),restart:()=>startEvent(G.ev.def),start:def=>startEvent(def),tow:()=>towUnified(),setDriver:fn=>{pilotDriver=fn;}};
-    addEventListener('pagehide',()=>{guidanceTilesOff?.();routeGuidance?.dispose();worldSession?.dispose();},{once:true});G.routePreparing=false;loading.hide();return map;
+    addEventListener('pagehide',()=>{guidanceTilesOff?.();routeGuidance?.dispose();worldSession?.dispose();},{once:true});G.routePreparing=false;loading.hide();performance.mark('athens-route-ready');return map;
   } catch(error){loading.fail({code:errorCode(error),retry:()=>loadUnifiedWorld(compiled)});throw error;}
 }
 function resetUnifiedRace(){
@@ -408,7 +408,7 @@ function stepUnified(dt,visual,frameDt){
  if(visual){worldSession.setInterest({player:v,actors:[...routeRivals.interests(grid,v),...traffic.actors],routeCursor:{s:v.s},freeRoam:inFreeRoam()});worldSession.update(frameDt);worldSession.activateFrame();}
  if(simulate||online){if(!online){tickWorldLife(dt,{running:true});updateRoadWeather(dt);}signals.update();}
  if(simulate&&!online&&G.state==='countdown'){
-  G.countT+=dt;const n=Math.min(3,Math.floor(G.countT/.4));if(n!==G.countShown){G.countShown=n;hud.count(n<3?String(3-n):'GO!',n===3);audio.beep(n===3);if(n===3){G.state='race';G.raceT=0;G.run.start({field:grid.length+1,grid:grid.map(c=>({id:c.drv.id,name:c.name,car:c.spec.id}))});document.body.classList.remove('counting');document.body.classList.add('racing');}}
+  G.countT+=dt;const n=Math.min(3,Math.floor(G.countT/.4));if(n!==G.countShown){G.countShown=n;hud.count(n<3?String(3-n):'GO!',n===3);audio.beep(n===3);if(n===3){G.state='race';G.goAt=performance.now();performance.mark('athens-playable');G.raceT=0;G.run.start({field:grid.length+1,grid:grid.map(c=>({id:c.drv.id,name:c.name,car:c.spec.id}))});document.body.classList.remove('counting');document.body.classList.add('racing');}}
   v.rpm=damp(v.rpm,v.spec.idle+input.throttle*v.spec.redline*.7,6,dt);
  }
  if(simulate&&['race','finished','onlineFinished'].includes(G.state)){
@@ -2587,6 +2587,7 @@ function onlineMembers(members) {
     if (p.paint && p.paint !== c.model.paintColor) setPaint(c.model, p.paint);
     c.networkName = p.name; c.model.root.visible = ['countdown', 'race'].includes(multiplayer.lobby.status);
   }
+  if(worldSession)document.querySelector('#posBox .of').textContent='/'+(multiplayer.lobby?.players.length||1);
   const first = members[0];
   if (first && remoteCars.get(first.id) !== rival) { const old = rival; rival = remoteCars.get(first.id); if (![...remoteCars.values()].includes(old)) disposeCar(old); }
   $('rivalName').textContent = first?.name || 'WAITING';

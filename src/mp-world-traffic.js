@@ -28,7 +28,7 @@ export class StreamedSharedWorld{
  }
  update(dt){const r=this.configure(),l=this.mp.lobby,tr=this.traffic;if(!this.key||!tr||!['countdown','race'].includes(l.status))return;
   if(!tr.pool){tr.warmFleet(()=>this.traffic===tr&&this.mp.active).catch(e=>console.warn('Online fleet preparation',e));return;}
-  const authority=worldOwner(l)===this.mp.id;if(authority&&!this.authority&&this.frame)this.apply(this.frame,true);this.authority=authority;
+  const authority=worldOwner(l)===this.mp.id;if(Number.isFinite(l.startAt))tr.t=(this.mp.now()-l.startAt)/1000-(authority?dt:0);if(authority&&!this.authority&&this.frame)this.apply(this.frame,true);this.authority=authority;
   if(authority){const remotes=r.remotes.filter(x=>x.member?.loaded&&x.member.connected!==false&&!x.member.dnf),actors=[r.player.veh,...remotes.map(x=>x.car.veh)];tr.disabled=!(l.config.traffic>0);if(tr.updateOnlineAuthority)tr.updateOnlineAuthority(dt,{lobby:l,id:this.mp.id,player:r.player.veh,actors,peers:this.mp.peers});else tr.update(dt,r.player.veh,actors);
    if(this.mp.connected&&this.mp.now()-this.lastSent>=this.intervalMs)this.publish();
   }else if(this.frame)this.apply(this.frame);else for(const c of tr.cars){c.active=false;c.m.root.visible=false;}
