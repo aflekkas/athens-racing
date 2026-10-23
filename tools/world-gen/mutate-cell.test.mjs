@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
-import {readFile,writeFile,mkdtemp,rm} from 'node:fs/promises';
+import {readFile,writeFile,mkdtemp,rm,truncate} from 'node:fs/promises';
 import {join} from 'node:path';
 import {tmpdir} from 'node:os';
 import {Readable} from 'node:stream';
@@ -240,3 +240,35 @@ test('all pinned stage byte channels authenticate and reserve before copying or 
  for(const stage of stages){const a=args(fixture(),stage);let copies=0,strings=0,parses=0;t.mock.method(Buffer,'from',()=>{copies++;throw Error('unexpected copy');});t.mock.method(Buffer.prototype,'toString',()=>{strings++;throw Error('unexpected conversion');});t.mock.method(JSON,'parse',()=>{parses++;throw Error('unexpected parse');});try{await assert.rejects(mutateOriginalCell(a),/pinned JSON.*budget before/);assert.deepEqual({copies,strings,parses},{copies:0,strings:0,parses:0});}finally{t.mock.restoreAll();}}
  const bad=args(fixture(),{scenery:{bytes:payload,sha256:'0'.repeat(64)}});await assert.rejects(mutateOriginalCell(bad),/byte hash mismatch/);
 });
+
+
+function metadataPaddingFixture(count){
+ const s=fixture(),raw=gunzipSync(s.compressedBytes),oldStart=raw.readUInt32LE(8),m=JSON.parse(raw.subarray(12,12+raw.readUInt32LE(4)));m.padding=Array(count).fill(0);
+ const meta=bytes(m),start=Math.ceil((12+meta.length)/4)*4,out=Buffer.alloc(start+raw.length-oldStart);out.writeUInt32LE(0x31525341,0);out.writeUInt32LE(meta.length,4);out.writeUInt32LE(start,8);meta.copy(out,12);raw.copy(out,start,oldStart);s.compressedBytes=gzipSync(out);s.entry={...s.entry,sha256:hash(s.compressedBytes),bytes:s.compressedBytes.length};return s;
+}
+
+test('original ASR metadata rejects numeric expansion before its first parse or decoder on preserved and mutating paths',async t=>{
+ for(const mutate of [false,true]){const s=metadataPaddingFixture(1000000),a=args(s,mutate?{paint:{codeSha256:code.paint},guards:{codeSha256:code.guards,recipes:[]}}:{});let parses=0,decodes=0;t.mock.method(JSON,'parse',()=>{parses++;throw Error('unexpected original parse');});t.mock.method(TextDecoder.prototype,'decode',()=>{decodes++;throw Error('unexpected original decoder');});try{await assert.rejects(mutateOriginalCell(a),/original metadata.*budget before/);assert.deepEqual({parses,decodes},{parses:0,decodes:0});}finally{t.mock.restoreAll();}}
+});
+
+test('original metadata histories and pinned scopes share one live budget before either JSON parse',async t=>{
+ const a=args(metadataPaddingFixture(100000),{}),body=JSON.parse(a.releaseScope.bytes);body.padding=Array(60000).fill(0);const b=bytes(body);a.releaseScope={bytes:b,sha256:hash(b)};pin(a);let parses=0,decodes=0;t.mock.method(JSON,'parse',()=>{parses++;throw Error('unexpected combined parse');});t.mock.method(TextDecoder.prototype,'decode',()=>{decodes++;throw Error('unexpected combined decoder');});try{await assert.rejects(mutateOriginalCell(a),/live workspace budget before/);assert.deepEqual({parses,decodes},{parses:0,decodes:0});}finally{t.mock.restoreAll();}
+ assert.equal((await mutateOriginalCell(args(metadataPaddingFixture(200),{}))).kind,'preserved');assert.equal((await mutateOriginalCell(args(metadataPaddingFixture(200)))).kind,'mutated');
+});
+
+test('paired infill source files are admitted cumulatively before either is opened or read',async t=>withTemp(async dir=>{
+ const s=fixture(),stage=await infillStage(s,dir),record=stage.sourcePath.replace(/[.](osm|pbf)$/i,'.source.json');await truncate(stage.sourcePath,34*1024**2);await truncate(record,34*1024**2);
+ const a=args(s,{infill:stage,guards:{codeSha256:code.guards,recipes:[]}}),fsp=(await import('node:fs/promises')).default,{syncBuiltinESMExports}=await import('node:module'),original=fsp.open;let sourceOpens=0;
+ t.mock.method(fsp,'open',async(path,...rest)=>{if(path===stage.sourcePath||path===record){sourceOpens++;throw Error('unexpected source open');}return original(path,...rest);});syncBuiltinESMExports();try{await assert.rejects(mutateOriginalCell(a),/paired source workspace budget before file read/);assert.equal(sourceOpens,0);}finally{t.mock.restoreAll();syncBuiltinESMExports();}
+}));
+
+test('bounded infill source read detects growth after stat before allocating any growing file buffer',async t=>withTemp(async dir=>{
+ const s=fixture(),stage=await infillStage(s,dir),a=args(s,{infill:stage,guards:{codeSha256:code.guards,recipes:[]}}),fsp=(await import('node:fs/promises')).default,{syncBuiltinESMExports}=await import('node:module'),original=fsp.open;let sourceOpens=0;
+ t.mock.method(fsp,'open',async(path,...rest)=>{if(path===stage.sourcePath){sourceOpens++;await truncate(path,34*1024**2);}return original(path,...rest);});syncBuiltinESMExports();try{await assert.rejects(mutateOriginalCell(a),/file changed before bounded read/);assert.equal(sourceOpens,1);}finally{t.mock.restoreAll();syncBuiltinESMExports();}
+}));
+
+
+test('infill growth during a read uses only the pre-admitted fixed buffer and aborts before repair',async t=>withTemp(async dir=>{
+ const s=fixture(),stage=await infillStage(s,dir),a=args(s,{infill:stage,guards:{codeSha256:code.guards,recipes:[]}}),fsp=(await import('node:fs/promises')).default,{syncBuiltinESMExports}=await import('node:module'),original=fsp.open,sourceSize=(await import('node:fs/promises')).stat;const expected=(await sourceSize(stage.sourcePath)).size;let maximum=0;
+ t.mock.method(fsp,'open',async(path,...rest)=>{const handle=await original(path,...rest);if(path===stage.sourcePath){const read=handle.read.bind(handle);t.mock.method(handle,'read',async(buffer,...rest)=>{maximum=Math.max(maximum,buffer.byteLength);await truncate(path,34*1024**2);return read(buffer,...rest);});}return handle;});syncBuiltinESMExports();try{await assert.rejects(mutateOriginalCell(a),/file changed during bounded read/);assert.equal(maximum,expected+1);}finally{t.mock.restoreAll();syncBuiltinESMExports();}
+}));

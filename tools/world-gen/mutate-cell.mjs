@@ -1,11 +1,11 @@
 // Source-only, one ORIGINAL cell at a time. No fetch, writes, manifest or readiness.
 // Stage inputs are reviewed bytes/paths + SHA pins, never executable callbacks.
 import {createHash} from 'node:crypto';
-import {readFile,stat} from 'node:fs/promises';
+import {open,stat} from 'node:fs/promises';
 import {gunzipSync} from 'node:zlib';
 import {fileURLToPath} from 'node:url';
 import {relative} from 'node:path';
-import {decodePinnedSourceCell,applyReviewedInfillRepair,repairPlanSha256,packFingerprint,repairedSpool,auditRepairedPacket} from './repair-infill.mjs';
+import {decodePinnedSourceCell,repairBuildingTables,repairPlanSha256,packFingerprint,repairedSpool,auditRepairedPacket} from './repair-infill.mjs';
 import {readBridgeGuardRecipe,prepareBridgeGuardRepair,rebuildBridgeGuards} from './bridge-guards.mjs';
 import {conformMarkingSurfaces} from './marking-surface.mjs';
 import {TERRAIN_FIELDS,requireTerrainAcceptance} from './terrain-acceptance.mjs';
@@ -43,14 +43,14 @@ function keys(v,allowed,label){if(!v||typeof v!=='object'||Array.isArray(v)||Obj
 // Scan authenticated UTF-8 bytes without a Buffer copy, string or parsed tree.
 // Token bounds deliberately overcount keys as both strings and properties;
 // decoded UTF-16 length cannot exceed the source byte count (including escapes).
-function pinnedJSONHeap(bytes){
+function pinnedJSONHeap(bytes,label='pinned JSON'){
  let heap=128;
  for(let i=0;i<bytes.length;){const c=bytes[i++];
   if(c===34){const start=i;let closed=false;while(i<bytes.length){const b=bytes[i++];if(b===92){i++;continue;}if(b===34){closed=true;break;}}if(!closed)fail('invalid pinned JSON string');heap+=328+4*(i-start);}
   else if(c===91||c===123)heap+=136;
   else if(c===93||c===125||c===44||c===58||c===32||c===9||c===10||c===13)continue;
   else {heap+=72;while(i<bytes.length&&bytes[i]!==44&&bytes[i]!==93&&bytes[i]!==125&&bytes[i]!==32&&bytes[i]!==9&&bytes[i]!==10&&bytes[i]!==13&&bytes[i]!==58)i++;}
-  if(heap>MAX)fail('pinned JSON workspace budget before input copy/UTF8/parse');
+  if(heap>MAX)fail(label+' workspace budget before input copy/UTF8/parse');
  }return heap;
 }
 function reservePinnedInputs(value){
@@ -67,7 +67,7 @@ function reservePinnedInputs(value){
   n+=reservePinnedInputs(value[k]);if(n>MAX)fail('pinned JSON workspace budget before input copy/UTF8/parse');
  }return n;
 }
-function admitPinned(memory){if(!memory||memory.inputCopies+memory.inputObjects+memory.parsedInputs+(memory.sourceRetained||0)+(memory.proofRetained||0)>MAX)fail('pinned JSON live workspace budget before input copy/UTF8/parse');}
+function admitPinned(memory){if(!memory||memory.inputCopies+memory.inputObjects+memory.parsedInputs+(memory.sourceRetained||0)+(memory.proofRetained||0)+(memory.files||0)+(memory.prepared||0)>MAX)fail('pinned JSON live workspace budget before input copy/UTF8/parse');}
 function pinnedJSON(bytes,hash,label,memory){
  validHash(hash,label);if(!(bytes instanceof Uint8Array)||bytes.byteLength>MAX||sha(bytes)!==hash)fail(label+' byte hash mismatch');
  const heap=pinnedJSONHeap(bytes);admitPinned(memory);if(4*(heap+7*bytes.byteLength)>memory.parsedInputs)fail('pinned JSON missing preparse reservation');
@@ -75,10 +75,20 @@ function pinnedJSON(bytes,hash,label,memory){
  const text=Buffer.from(bytes.buffer,bytes.byteOffset,bytes.byteLength).toString('utf8');
  const value=JSON.parse(text);if(jsonMemory(value).heap>heap)fail('pinned JSON heap bound');return value;
 }
+
+async function boundedFileBytes(path,expectedSize){
+ const handle=await open(path,'r');try{
+  const before=await handle.stat();if(!before.isFile()||before.size!==expectedSize)fail('file changed before bounded read');
+  const bytes=Buffer.alloc(expectedSize+1);let offset=0;
+  while(offset<bytes.length){const {bytesRead}=await handle.read(bytes,offset,bytes.length-offset,offset);if(!bytesRead)break;offset+=bytesRead;}
+  const after=await handle.stat();if(offset!==expectedSize||after.size!==expectedSize||before.ino!==after.ino||before.dev!==after.dev||before.mtimeMs!==after.mtimeMs||before.ctimeMs!==after.ctimeMs)fail('file changed during bounded read');
+  return bytes.subarray(0,expectedSize);
+ }finally{await handle.close();}
+}
 /** Pin .assembler and canonical digest(result) in derived.codeProofSha256; pin stage hashes too. */
 export async function mutationCodeProof({retainedBytes=0}={}){
  if(!Number.isSafeInteger(retainedBytes)||retainedBytes<0||retainedBytes>MAX)fail('code proof retained budget');
- let codeReadBytes=0;async function readCode(url){const info=await stat(url);if(!info.isFile()||retainedBytes+4*(codeReadBytes+Math.max(info.size,8192))+1024*1024>MAX)fail('code proof workspace budget');codeReadBytes+=Math.max(info.size,8192);const b=await readFile(url);if(b.byteLength!==info.size)fail('code proof changed while reading');return b;}
+ let codeReadBytes=0;async function readCode(url){const info=await stat(url);if(!info.isFile()||retainedBytes+4*(codeReadBytes+Math.max(info.size,8192))+1024*1024>MAX)fail('code proof workspace budget');codeReadBytes+=Math.max(info.size,8192);const b=await boundedFileBytes(url,info.size);if(b.byteLength!==info.size)fail('code proof changed while reading');return b;}
  const code=Object.fromEntries(await Promise.all(Object.entries(modules).map(async([name,path])=>[name,sha(await readCode(new URL(path,import.meta.url)))])));
  const pending=[...Object.values(modules),...dependencyFiles,'../../package-lock.json'].map(p=>new URL(p,import.meta.url)),seen=new Set(),dependencies={},root=fileURLToPath(new URL('../../',import.meta.url));
  while(pending.length){const url=pending.pop();if(seen.has(url.href))continue;seen.add(url.href);const label=relative(root,fileURLToPath(url));if(label.startsWith('..'))fail('code dependency outside repository');const b=await readCode(url);dependencies[label]=sha(b);
@@ -90,22 +100,30 @@ export async function mutationCodeProof({retainedBytes=0}={}){
 export function mutationRecipeSha256({source,derived,stages={},protectedSources=null,releaseScope}){
  return digest({schema:1,source,derived:{world:derived.world,revision:derived.revision,assemblerSha256:derived.assemblerSha256,codeProofSha256:derived.codeProofSha256},stages,protectedSources,releaseScope});
 }
-function authenticate(bytes,entry,source){
+function authenticate(bytes,entry,source,memory){
  if(!(bytes instanceof Uint8Array)||!entry||bytes.byteLength!==entry.bytes||sha(bytes)!==entry.sha256)fail('original compressed hash/size mismatch');
  if(!Number.isSafeInteger(entry.decodedBytes)||entry.decodedBytes<12||entry.decodedBytes>MAX||entry.bytes>WIRE_MAX)fail('original decode budget');
  if(!source||typeof source.world!=='string'||!source.world||typeof source.revision!=='string'||!source.revision||!Array.isArray(source.cell)||source.cell.length!==2||!source.cell.every(Number.isSafeInteger))fail('original source identity');
  if(!entry.source||typeof entry.source.regionId!=='string'||!entry.source.regionId)fail('pinned entry.source required');
  same([entry.source.world,entry.source.revision],[source.world,source.revision],'entry source identity mismatch');
  // decodePinnedSourceCell is intentionally used only AFTER this bounded envelope check.
+ // Reserve inflater chunks + flattened output before the bounded inflate.
+ memory.sourceRetained=3*Math.max(entry.decodedBytes,65536);admitPinned(memory);
  const raw=gunzipSync(bytes,{maxOutputLength:entry.decodedBytes});
  if(raw.length<12||raw.readUInt32LE(0)!==0x31525341)fail('original ASR1 header');
  const size=raw.readUInt32LE(4),start=raw.readUInt32LE(8);
  if(size>raw.length-12||start<12+size||start>raw.length||start%4)fail('original codec header');
- const m=JSON.parse(raw.subarray(12,12+size));if(m.version!==1||!Array.isArray(m.views))fail('original codec format');
+ const segment=raw.subarray(12,12+size),metadataHeap=pinnedJSONHeap(segment,'original metadata');
+ // Authentication, direct decoder, guard header, guarded codec envelope and
+ // geometry decoder: at most five parses. Reserve six complete histories,
+ // including canonical proof copies, strings and inflater/array-copy scratch.
+ const retainedBytes=15*Math.max(raw.buffer.byteLength,raw.length,65536)+6*(metadataHeap+6*size);
+ memory.sourceRetained=retainedBytes;admitPinned(memory);
+ const m=JSON.parse(segment);if(jsonMemory(m).heap>metadataHeap)fail('original metadata heap bound');if(m.version!==1||!Array.isArray(m.views))fail('original codec format');
  const types={Int8Array:1,Uint8Array:1,Uint8ClampedArray:1,Int16Array:2,Uint16Array:2,Int32Array:4,Uint32Array:4,Float32Array:4,Float64Array:8};let allocation=0;
  for(const v of m.views){const width=types[v.type],length=v.length*width;if(!width||!Number.isSafeInteger(v.length)||v.length<0||!Number.isSafeInteger(v.offset)||v.offset<0||v.offset%width||start+v.offset+length>raw.length||!Number.isSafeInteger(length)||(allocation+=length)>entry.decodedBytes)fail('original codec decoded budget/views');}
  same([m.world,m.revision,m.cell],[source.world,source.revision,source.cell],'original header source identity');
- return {inflatedBytes:raw.length,inflatedBackingBytes:Math.max(raw.buffer.byteLength,65536),arrayBytes:allocation,metadataBytes:size,guardDecode:!!m.rails?.length};
+ return {retainedBytes,metadataHeap,inflatedBytes:raw.length,inflatedBackingBytes:Math.max(raw.buffer.byteLength,65536),arrayBytes:allocation,metadataBytes:size,guardDecode:!!m.rails?.length};
 }
 function scopeOf(input,entry,source,memory){
  const scope=pinnedJSON(input?.bytes,input?.sha256,'release scope',memory);
@@ -152,10 +170,14 @@ export function assertSceneryInvariance(before,pack,{added=0}={}){
  const scrub=v=>Object.fromEntries(Object.entries(v).filter(([k])=>!['positionHeight','kind','seed'].includes(k)));
  same(scrub(v),scrub(old),'scenery vegetation metadata drift');return {allOriginalArraysByteExact:true,allLogicalTablesByteExact:true,allOtherMetadataExact:true,privateAppendedArrays:added?3:0};
 }
-async function sceneryExclusions(pack,entry){
+async function sceneryExclusions(pack,entry,memory,code){
  const prepared=prepareTilePacket(structuredClone(pack),{...pack.metadata,entry:{...entry,triangles:pack.metadata.budgets.triangles,decodedBytes:MAX,residentBytes:MAX}}),d=prepared.metadata.extensions?.worldDetail,occupied=[];
  for(const [index,stride,pad]of [[d?.parking,5,3],[d?.props?.rows,5,2],[d?.signals?.rows,6,2]])if(index!=null){const a=prepared.arrays[index];for(let i=0;i<a.length;i+=stride)occupied.push([a[i],a[i+2],pad]);}
- const plazas=[...parsePlazas(JSON.parse(await readFile(new URL('../../assets/athens/plazas.json',import.meta.url)))),...forecourtPlazas()];
+ const path=new URL('../../assets/athens/plazas.json',import.meta.url),info=await stat(path);if(!info.isFile()||info.size>MAX)fail('plaza source byte budget');
+ memory.files+=2*(info.size+1);admitPinned(memory);const bytes=await boundedFileBytes(path,info.size);if(sha(bytes)!==code.dependencies['assets/athens/plazas.json'])fail('plaza source proof changed');
+ const heap=pinnedJSONHeap(bytes);memory.parsedInputs+=4*(heap+7*bytes.length);admitPinned(memory);
+ const parsed=JSON.parse(bytes.toString('utf8'));if(jsonMemory(parsed).heap>heap)fail('plaza source heap bound');
+ const plazas=[...parsePlazas(parsed),...forecourtPlazas()];
  const blocked=(x,z,r)=>plazas.some(q=>x>=q.x0-r&&x<=q.x1+r&&z>=q.z0-r&&z<=q.z1+r&&plazaDistance(q.p,x,z)<=r)||[-r,0,r].some(dx=>[-r,0,r].some(dz=>insideLandmark(x+dx,z+dz)));
  return {blocked,occupied,retainedBytes:prepared.bytes};
 }
@@ -261,7 +283,7 @@ export async function mutateOriginalCell({compressedBytes,entry,source,derived,s
  order(stages);const inputShape={entry,source,derived:derived??null,stages,protectedSources,releaseScope};const memory={parsedInputs:reservePinnedInputs({stages,protectedSources,releaseScope}),files:0,prepared:0,inputCopies:2*binaryInputBytes({compressedBytes,stages,protectedSources,releaseScope}),inputObjects:2*jsonMemory(inputShape,new Set(),true).heap};admitPinned(memory);
  // Snapshot inputs before the first await: later caller writes cannot alter a seal.
  compressedBytes=Buffer.from(compressedBytes);entry=structuredClone(entry);source=structuredClone(source);derived=structuredClone(derived);stages=structuredClone(stages);protectedSources=structuredClone(protectedSources);releaseScope=structuredClone(releaseScope);
- const sourceMemory=authenticate(compressedBytes,entry,source);memory.sourceRetained=sourceMemory.inflatedBackingBytes*3+sourceMemory.arrayBytes*(sourceMemory.guardDecode?2:1)+sourceMemory.metadataBytes*6;admitPinned(memory);keys(stages,['infill','terrain','paint','guards','scenery'],'stages');
+ const sourceMemory=authenticate(compressedBytes,entry,source,memory);memory.sourceRetained=sourceMemory.retainedBytes;admitPinned(memory);keys(stages,['infill','terrain','paint','guards','scenery'],'stages');
  const scope=scopeOf(releaseScope,entry,source,memory),pack0=decodePinnedSourceCell(compressedBytes,entry,source),inputFingerprint=packFingerprint(pack0),requested=Object.keys(stages).length>0;if(entry.triangles!==pack0.metadata.budgets.triangles)fail('original entry triangle mismatch');
  if(protectedBinding(protectedSources,entry,source,scope,memory)){
   if(requested)fail('protected native mutation requested');
@@ -276,20 +298,28 @@ export async function mutateOriginalCell({compressedBytes,entry,source,derived,s
   return {kind:'preserved',compressedBytes,entry,audit:freeze({kind:'preserved',sourceSha256:entry.sha256,inputFingerprint,guard:report,identityUnchanged:true})};
  }
  if(!requested)return {kind:'preserved',compressedBytes,entry,audit:freeze({kind:'preserved',sourceSha256:entry.sha256,inputFingerprint,identityUnchanged:true})};
- const code=await mutationCodeProof({retainedBytes:memory.sourceRetained+memory.inputCopies+memory.inputObjects+memory.parsedInputs});memory.proofRetained=code.readReservationBytes+jsonMemory(code).heap;admitPinned(memory);if(!derived||derived.assemblerSha256!==code.assembler||derived.codeProofSha256!==digest(code))fail('assembler/dependency code hash mismatch');
+ const code=await mutationCodeProof({retainedBytes:memory.sourceRetained+memory.inputCopies+memory.inputObjects+memory.parsedInputs+memory.files+memory.prepared});memory.proofRetained=code.readReservationBytes+jsonMemory(code).heap;admitPinned(memory);if(!derived||derived.assemblerSha256!==code.assembler||derived.codeProofSha256!==digest(code))fail('assembler/dependency code hash mismatch');
  if(typeof derived.world!=='string'||!derived.world||typeof derived.revision!=='string'||!derived.revision||derived.world===source.world&&derived.revision===source.revision)fail('new actual derived identity required');
  if(derived.recipeSha256!==mutationRecipeSha256({source,derived,stages,protectedSources,releaseScope}))fail('predeclared assembly recipe hash mismatch');
  if(!stages.guards)fail('original guard stage/code pin required');
  for(const [name,s]of Object.entries(stages))verifyStage(name,s,code);
  let pack=pack0;const reports=[];const run=(name,input,report,dataHashes={})=>reports.push({name,inputFingerprint:input,codeSha256:code[name],dataHashes,report});
- if(stages.infill){const s=stages.infill,plan=pinnedJSON(s.planBytes,s.planFileSha256,'infill plan',memory);if(repairPlanSha256(plan)!==s.reviewedPlanSha256)fail('reviewed canonical infill plan digest mismatch');if(typeof s.sourcePath!=='string'||!/[.](osm|pbf)$/i.test(s.sourcePath))fail('reviewed local source path required');for(const path of [s.sourcePath,s.sourcePath.replace(/[.](osm|pbf)$/i,'.source.json')]){const info=await stat(path);if(!info.isFile()||info.size>MAX)fail('infill source file byte budget');memory.files+=info.size;}const input=packFingerprint(pack),r=await applyReviewedInfillRepair(pack,plan,{reviewedPlanSha256:s.reviewedPlanSha256,sourcePath:s.sourcePath,sourceCellSha256:entry.sha256});pack=r.pack;run('infill',input,r.audit,{planFile:s.planFileSha256,canonicalPlan:s.reviewedPlanSha256,source:plan.sourceSha256,sourceRecord:plan.sourceRecordSha256});}
+ if(stages.infill){const s=stages.infill,plan=pinnedJSON(s.planBytes,s.planFileSha256,'infill plan',memory);if(repairPlanSha256(plan)!==s.reviewedPlanSha256)fail('reviewed canonical infill plan digest mismatch');if(typeof s.sourcePath!=='string'||!/[.](osm|pbf)$/i.test(s.sourcePath))fail('reviewed local source path required');const paths=[s.sourcePath,s.sourcePath.replace(/[.](osm|pbf)$/i,'.source.json')],sizes=[];for(const path of paths){const info=await stat(path);if(!info.isFile()||info.size>MAX)fail('infill source file byte budget');sizes.push(info.size);}
+  // The infill apply contract hashes these files; it does not parse OSM/JSON or
+  // invoke Python. Keep both exact raw buffers and read scratch reserved, plus
+  // code/provenance histories, BEFORE opening either source file.
+  memory.files+=2*(sizes[0]+sizes[1]+2);if(memory.inputCopies+memory.inputObjects+memory.parsedInputs+memory.sourceRetained+memory.proofRetained+memory.files>MAX)fail('infill paired source workspace budget before file read');
+  const sourceBytes=await boundedFileBytes(paths[0],sizes[0]),recordBytes=await boundedFileBytes(paths[1],sizes[1]);
+  const infillFiles=['infill.py','model.py','buildings.py','repair-infill.mjs','../../src/psychiko-building-data.js','../../src/coastal-dressing-data.js'];
+  const infillCode=Object.fromEntries(infillFiles.map(name=>{const label=relative(fileURLToPath(new URL('../../',import.meta.url)),fileURLToPath(new URL(name,import.meta.url)));const hash=code.dependencies[label];validHash(hash,'infill code proof');return [name,hash];}));
+  const input=packFingerprint(pack),r=repairBuildingTables(pack,plan,{planSha256:s.reviewedPlanSha256,sourceSha256:sha(sourceBytes),sourceRecordSha256:sha(recordBytes),sourceCellSha256:entry.sha256,code:infillCode});pack=r.pack;run('infill',input,r.audit,{planFile:s.planFileSha256,canonicalPlan:s.reviewedPlanSha256,source:plan.sourceSha256,sourceRecord:plan.sourceRecordSha256});}
  if(stages.terrain){const s=stages.terrain,field=TERRAIN_FIELDS[s.fieldId];if(!field)fail('unknown terrain field');const atlas=pinnedJSON(s.atlasBytes,s.atlasSha256,'terrain atlas',memory),report=pinnedJSON(s.reportBytes,s.reportSha256,'terrain acceptance',memory);const accepted=requireTerrainAcceptance(scope.cells.length,{field,sourceRevision:source.revision,fieldSHA256:code.terrain,report});if(!field.geographyVerified||accepted.prototype)fail('terrain field lacks geographic/profile/protected/comfort release acceptance');if(atlas.revision!==source.revision)fail('terrain atlas source binding');const input=packFingerprint(pack),r=refineTerrainRelief(pack,terrainReliefField(atlas,{filter:field.id}));if(r.protected)fail('structurally protected terrain cell');run('terrain',input,r,{atlas:s.atlasSha256,acceptance:s.reportSha256});}
  if(stages.paint||stages.terrain){if(!stages.paint)fail('accepted terrain requires pinned paint stage');const input=packFingerprint(pack);run('paint',input,conformMarkingSurfaces(pack));}
  {const input=packFingerprint(pack),r=rebuildBridgeGuards(pack,proof);pack.metadata.budgets.triangles+=r.triangleDelta;validateWorldTile(pack,source);run('guards',input,r,{originalCompressed:entry.sha256,recipes:recipes.map(r=>r.recipeHash)});}
- if(stages.scenery){const s=stages.scenery,scenery=pinnedJSON(s.bytes,s.sha256,'scenery',memory),old=pack.metadata.extensions?.worldDetail?.vegetation;if(!old)fail('scenery vegetation schema');for(const index of Object.values(old))if(Number.isInteger(index)&&pack.arrays[index]?.byteLength&&Object.values(pack.metadata.tables).some(i=>overlap(pack.arrays[i],pack.arrays[index])))fail('scenery input aliases a physical array');const before=snapshotSceneryInvariants(pack),input=packFingerprint(pack),exclusions=await sceneryExclusions(pack,entry);memory.prepared+=exclusions.retainedBytes;const r=applySceneryVegetation(pack,scenery,exclusions),invariance=assertSceneryInvariance(before,pack,r);validateWorldTile(pack,source);run('scenery',input,{...r,invariance},{scenery:s.sha256});}
+ if(stages.scenery){const s=stages.scenery,scenery=pinnedJSON(s.bytes,s.sha256,'scenery',memory),old=pack.metadata.extensions?.worldDetail?.vegetation;if(!old)fail('scenery vegetation schema');for(const index of Object.values(old))if(Number.isInteger(index)&&pack.arrays[index]?.byteLength&&Object.values(pack.metadata.tables).some(i=>overlap(pack.arrays[i],pack.arrays[index])))fail('scenery input aliases a physical array');const before=snapshotSceneryInvariants(pack),input=packFingerprint(pack),exclusions=await sceneryExclusions(pack,entry,memory,code);memory.prepared+=exclusions.retainedBytes;admitPinned(memory);const r=applySceneryVegetation(pack,scenery,exclusions),invariance=assertSceneryInvariance(before,pack,r);validateWorldTile(pack,source);run('scenery',input,{...r,invariance},{scenery:s.sha256});}
  const finalPhysicalFingerprint=packFingerprint(pack),lineage=freeze({schema:'cell-mutation-lineage-1',original:{...structuredClone(source),sha256:entry.sha256,entrySource:structuredClone(entry.source)},derived:{world:derived.world,revision:derived.revision},recipeSha256:derived.recipeSha256,assemblerSha256:code.assembler,codeProofSha256:digest(code),releaseScopeSha256:releaseScope.sha256,stages:structuredClone(reports)});
  pack.metadata.world=derived.world;pack.metadata.revision=derived.revision;pack.metadata.cellMutation=lineage;
- const encoding=prepareMutationEncoding(pack,{dependencies:entry.dependencies||[],retainedBytes:sourceMemory.inflatedBackingBytes*3+sourceMemory.arrayBytes*(sourceMemory.guardDecode?2:1)+sourceMemory.metadataBytes*6+memory.inputCopies+memory.inputObjects+memory.parsedInputs+memory.files+memory.prepared+code.readReservationBytes+jsonMemory(code).heap});
+ const encoding=prepareMutationEncoding(pack,{dependencies:entry.dependencies||[],retainedBytes:sourceMemory.retainedBytes+memory.inputCopies+memory.inputObjects+memory.parsedInputs+memory.files+memory.prepared+code.readReservationBytes+jsonMemory(code).heap});
  const {spool,expected,bindingPeak}=encoding;
  const audit=freeze({kind:'mutated',sourceSha256:entry.sha256,inputFingerprint,finalPhysicalFingerprint,lineage,stages:reports,encodedBinding:expected,extraEncodingLifetime:bindingPeak,globalSeamsAndBudgetsAccepted:false,gameProof:false});
  let used=false;return {kind:'mutated',spool,audit,assertPacked(result){
