@@ -1,0 +1,1003 @@
+{
+  "status": "actual original-source seam checks; not geographic or publication acceptance",
+  "sourceRevision": "12935f07f7dceacdfbf96d7a9de8fa10ae88f49fcf673fb08c6c8dfe5cb0cc31",
+  "comparisonFrame": "Only metadata.world normalized to composed athens for cross-source comparison; exact source identity validated first; geometry and tolerances unchanged",
+  "edges": 33,
+  "changedToOriginal": 3,
+  "samples": 75798,
+  "maxDelta": 0.0000192722829979175,
+  "failures": [],
+  "pairs": [
+    {
+      "a": "16,-26",
+      "b": "17,-26",
+      "original": [
+        false,
+        false
+      ],
+      "samples": 2335,
+      "maxDelta": 0.000008924064616167016,
+      "missing": 0,
+      "worst": {
+        "station": 343,
+        "referenceY": 361.82708740234375,
+        "heights": [
+          360.50492348430635,
+          360.50493240837096
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 14,
+      "maxTransitionDelta": 0.0000047200745711961645,
+      "layerTransitions": 0,
+      "maxLayerTransitionDelta": 0,
+      "layerBoundarySamples": 0,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "17,-26",
+      "b": "17,-27",
+      "original": [
+        false,
+        false
+      ],
+      "samples": 2264,
+      "maxDelta": 0.000009180641200146056,
+      "missing": 0,
+      "worst": {
+        "station": 233,
+        "referenceY": 355.6484375,
+        "heights": [
+          357.59471621978764,
+          357.59470703914644
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 8,
+      "maxTransitionDelta": 0.00000510602444592223,
+      "layerTransitions": 0,
+      "maxLayerTransitionDelta": 0,
+      "layerBoundarySamples": 0,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "17,-25",
+      "b": "17,-26",
+      "original": [
+        true,
+        false
+      ],
+      "samples": 2208,
+      "maxDelta": 0.000008366527595171647,
+      "missing": 0,
+      "worst": {
+        "station": 273,
+        "referenceY": 421.5497741699219,
+        "heights": [
+          422.3924366435814,
+          422.392445010109
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 8,
+      "maxTransitionDelta": 0.000004357200907634251,
+      "layerTransitions": 0,
+      "maxLayerTransitionDelta": 0,
+      "layerBoundarySamples": 0,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "16,-27",
+      "b": "17,-27",
+      "original": [
+        false,
+        false
+      ],
+      "samples": 2249,
+      "maxDelta": 0.00000648241029921337,
+      "missing": 0,
+      "worst": {
+        "station": 420.30999755859375,
+        "referenceY": 319.01300048828125,
+        "heights": [
+          319.50016459187884,
+          319.50017107428914
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 10,
+      "maxTransitionDelta": 0.0000036698498320220097,
+      "layerTransitions": 0,
+      "maxLayerTransitionDelta": 0,
+      "layerBoundarySamples": 0,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "17,-27",
+      "b": "18,-27",
+      "original": [
+        false,
+        false
+      ],
+      "samples": 2390,
+      "maxDelta": 0.000007116471522294887,
+      "missing": 0,
+      "worst": {
+        "station": 123.79999923706055,
+        "referenceY": 334.9225769042969,
+        "heights": [
+          336.0937312479173,
+          336.0937383643888
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 16,
+      "maxTransitionDelta": 0.000003639990040937846,
+      "layerTransitions": 0,
+      "maxLayerTransitionDelta": 0,
+      "layerBoundarySamples": 0,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "17,-27",
+      "b": "17,-28",
+      "original": [
+        false,
+        false
+      ],
+      "samples": 2246,
+      "maxDelta": 0.000007142593233311345,
+      "missing": 0,
+      "worst": {
+        "station": 200.33999633789062,
+        "referenceY": 313.58349609375,
+        "heights": [
+          313.917499359028,
+          313.91749221643477
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 8,
+      "maxTransitionDelta": 0.000004420859909259889,
+      "layerTransitions": 0,
+      "maxLayerTransitionDelta": 0,
+      "layerBoundarySamples": 0,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "16,-28",
+      "b": "17,-28",
+      "original": [
+        false,
+        false
+      ],
+      "samples": 2156,
+      "maxDelta": 0.000006613654988996132,
+      "missing": 0,
+      "worst": {
+        "station": 408.55999755859375,
+        "referenceY": 301.934326171875,
+        "heights": [
+          302.07365079643586,
+          302.07365741009085
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 4,
+      "maxTransitionDelta": 0.000003848363007818989,
+      "layerTransitions": 0,
+      "maxLayerTransitionDelta": 0,
+      "layerBoundarySamples": 0,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "17,-28",
+      "b": "18,-28",
+      "original": [
+        false,
+        false
+      ],
+      "samples": 2213,
+      "maxDelta": 0.000007261571568051295,
+      "missing": 0,
+      "worst": {
+        "station": 318.8399963378906,
+        "referenceY": 325.89984130859375,
+        "heights": [
+          325.86050969974957,
+          325.86051696132114
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 6,
+      "maxTransitionDelta": 0.000004258637545717647,
+      "layerTransitions": 0,
+      "maxLayerTransitionDelta": 0,
+      "layerBoundarySamples": 0,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "17,-28",
+      "b": "17,-29",
+      "original": [
+        false,
+        false
+      ],
+      "samples": 2230,
+      "maxDelta": 0.000007606285862493678,
+      "missing": 0,
+      "worst": {
+        "station": 43.28000068664551,
+        "referenceY": 308.3981018066406,
+        "heights": [
+          308.74389020484267,
+          308.7438825985568
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 8,
+      "maxTransitionDelta": 0.000003839439159492031,
+      "layerTransitions": 0,
+      "maxLayerTransitionDelta": 0,
+      "layerBoundarySamples": 0,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "16,-29",
+      "b": "17,-29",
+      "original": [
+        false,
+        false
+      ],
+      "samples": 2197,
+      "maxDelta": 0.000004231041771163291,
+      "missing": 0,
+      "worst": {
+        "station": 488.9499969482422,
+        "referenceY": 307.3334045410156,
+        "heights": [
+          307.4146776428573,
+          307.4146818738991
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 10,
+      "maxTransitionDelta": 0.0000027774183308793,
+      "layerTransitions": 0,
+      "maxLayerTransitionDelta": 0,
+      "layerBoundarySamples": 0,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "17,-29",
+      "b": "18,-29",
+      "original": [
+        false,
+        false
+      ],
+      "samples": 2246,
+      "maxDelta": 0.000007168416402691946,
+      "missing": 0,
+      "worst": {
+        "station": 259.8500061035156,
+        "referenceY": 323.3638916015625,
+        "heights": [
+          323.4558221140321,
+          323.4558292824485
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 8,
+      "maxTransitionDelta": 0.0000037143838653719286,
+      "layerTransitions": 0,
+      "maxLayerTransitionDelta": 0,
+      "layerBoundarySamples": 0,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "17,-29",
+      "b": "17,-30",
+      "original": [
+        false,
+        false
+      ],
+      "samples": 2175,
+      "maxDelta": 0.000008384421619211935,
+      "missing": 0,
+      "worst": {
+        "station": 215.6999969482422,
+        "referenceY": 313.52557373046875,
+        "heights": [
+          313.91045025112993,
+          313.9104418667083
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 6,
+      "maxTransitionDelta": 0.000004878720631040778,
+      "layerTransitions": 0,
+      "maxLayerTransitionDelta": 0,
+      "layerBoundarySamples": 0,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "17,-30",
+      "b": "18,-30",
+      "original": [
+        false,
+        false
+      ],
+      "samples": 2330,
+      "maxDelta": 0.000007338005502788292,
+      "missing": 0,
+      "worst": {
+        "station": 310.00999450683594,
+        "referenceY": 315.00384521484375,
+        "heights": [
+          315.27640505999557,
+          315.27639772199007
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 12,
+      "maxTransitionDelta": 0.000003170441232214216,
+      "layerTransitions": 0,
+      "maxLayerTransitionDelta": 0,
+      "layerBoundarySamples": 0,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "18,-30",
+      "b": "19,-30",
+      "original": [
+        false,
+        false
+      ],
+      "samples": 2315,
+      "maxDelta": 0.0000192722829979175,
+      "missing": 0,
+      "worst": {
+        "station": 22.25,
+        "referenceY": 319.0036926269531,
+        "heights": [
+          319.73106614024846,
+          319.73104686796546
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 10,
+      "maxTransitionDelta": 0.0000038502789152516925,
+      "layerTransitions": 0,
+      "maxLayerTransitionDelta": 0,
+      "layerBoundarySamples": 0,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "18,-30",
+      "b": "18,-31",
+      "original": [
+        false,
+        false
+      ],
+      "samples": 2331,
+      "maxDelta": 0.000008915122919006535,
+      "missing": 0,
+      "worst": {
+        "station": 273,
+        "referenceY": 316.41412353515625,
+        "heights": [
+          316.4679258676159,
+          316.467916952493
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 10,
+      "maxTransitionDelta": 0.000005522396065771318,
+      "layerTransitions": 0,
+      "maxLayerTransitionDelta": 0,
+      "layerBoundarySamples": 0,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "18,-29",
+      "b": "18,-30",
+      "original": [
+        false,
+        false
+      ],
+      "samples": 2272,
+      "maxDelta": 0.000007777615792292636,
+      "missing": 0,
+      "worst": {
+        "station": 32.27000045776367,
+        "referenceY": 323.9856872558594,
+        "heights": [
+          324.0677682647705,
+          324.0677604871547
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 8,
+      "maxTransitionDelta": 0.000004267236647592654,
+      "layerTransitions": 0,
+      "maxLayerTransitionDelta": 0,
+      "layerBoundarySamples": 0,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "18,-29",
+      "b": "19,-29",
+      "original": [
+        false,
+        false
+      ],
+      "samples": 2250,
+      "maxDelta": 0.000008278205825718032,
+      "missing": 0,
+      "worst": {
+        "station": 215.9199981689453,
+        "referenceY": 353.9981689453125,
+        "heights": [
+          353.9635885326031,
+          353.96359681080895
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 7,
+      "maxTransitionDelta": 0.000004061793276832759,
+      "layerTransitions": 0,
+      "maxLayerTransitionDelta": 0,
+      "layerBoundarySamples": 0,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "18,-28",
+      "b": "18,-29",
+      "original": [
+        false,
+        false
+      ],
+      "samples": 2205,
+      "maxDelta": 0.000007527269701768091,
+      "missing": 0,
+      "worst": {
+        "station": 345,
+        "referenceY": 336.22515869140625,
+        "heights": [
+          336.8366369191431,
+          336.8366444464128
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 6,
+      "maxTransitionDelta": 0.000004295889482364146,
+      "layerTransitions": 0,
+      "maxLayerTransitionDelta": 0,
+      "layerBoundarySamples": 0,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "16,-30",
+      "b": "17,-30",
+      "original": [
+        false,
+        false
+      ],
+      "samples": 2528,
+      "maxDelta": 0.000010139801759123657,
+      "missing": 0,
+      "worst": {
+        "station": 323,
+        "referenceY": 293.60784912109375,
+        "heights": [
+          293.6667890115361,
+          293.66679915133784
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 14,
+      "maxTransitionDelta": 0.000005255549922367209,
+      "layerTransitions": 5,
+      "maxLayerTransitionDelta": 0.000025230165647371905,
+      "layerBoundarySamples": 10,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "17,-30",
+      "b": "17,-31",
+      "original": [
+        false,
+        false
+      ],
+      "samples": 2799,
+      "maxDelta": 0.000007442718526817771,
+      "missing": 0,
+      "worst": {
+        "station": 240.7300033569336,
+        "referenceY": 296.1734313964844,
+        "heights": [
+          296.3240605414621,
+          296.32405309874355
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 18,
+      "maxTransitionDelta": 0.000004543799434486573,
+      "layerTransitions": 4,
+      "maxLayerTransitionDelta": 0.47230158844905645,
+      "layerBoundarySamples": 8,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "15,-26",
+      "b": "16,-26",
+      "original": [
+        true,
+        false
+      ],
+      "samples": 2244,
+      "maxDelta": 0.000008010835699678864,
+      "missing": 0,
+      "worst": {
+        "station": 282.3399963378906,
+        "referenceY": 304.1541748046875,
+        "heights": [
+          304.4647563626719,
+          304.4647483518362
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 10,
+      "maxTransitionDelta": 0.000005392383343405527,
+      "layerTransitions": 0,
+      "maxLayerTransitionDelta": 0,
+      "layerBoundarySamples": 0,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "16,-26",
+      "b": "16,-27",
+      "original": [
+        false,
+        false
+      ],
+      "samples": 2594,
+      "maxDelta": 0.000008499185241817031,
+      "missing": 0,
+      "worst": {
+        "station": 509,
+        "referenceY": 331.3351745605469,
+        "heights": [
+          332.5539747046439,
+          332.55396620545866
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 14,
+      "maxTransitionDelta": 0.000004761063621572248,
+      "layerTransitions": 0,
+      "maxLayerTransitionDelta": 0,
+      "layerBoundarySamples": 0,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "16,-25",
+      "b": "16,-26",
+      "original": [
+        true,
+        false
+      ],
+      "samples": 2423,
+      "maxDelta": 0.000005841701636200014,
+      "missing": 0,
+      "worst": {
+        "station": 490.9499969482422,
+        "referenceY": 364.8228759765625,
+        "heights": [
+          364.99574577012856,
+          364.99573992842693
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 22,
+      "maxTransitionDelta": 0.000004129314845613408,
+      "layerTransitions": 0,
+      "maxLayerTransitionDelta": 0,
+      "layerBoundarySamples": 0,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "17,-31",
+      "b": "18,-31",
+      "original": [
+        false,
+        false
+      ],
+      "samples": 2120,
+      "maxDelta": 0.0000035279274470667588,
+      "missing": 0,
+      "worst": {
+        "station": 122,
+        "referenceY": 284.66583251953125,
+        "heights": [
+          284.66583118137356,
+          284.665834709301
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 4,
+      "maxTransitionDelta": 0.0000013683238648809493,
+      "layerTransitions": 0,
+      "maxLayerTransitionDelta": 0,
+      "layerBoundarySamples": 0,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "18,-31",
+      "b": "19,-31",
+      "original": [
+        false,
+        false
+      ],
+      "samples": 2263,
+      "maxDelta": 0.00000842115576915603,
+      "missing": 0,
+      "worst": {
+        "station": 32.5,
+        "referenceY": 326.1149597167969,
+        "heights": [
+          326.18076669863274,
+          326.1807751197885
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 5,
+      "maxTransitionDelta": 0.000004946059448229789,
+      "layerTransitions": 0,
+      "maxLayerTransitionDelta": 0,
+      "layerBoundarySamples": 0,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "19,-30",
+      "b": "19,-31",
+      "original": [
+        false,
+        false
+      ],
+      "samples": 2326,
+      "maxDelta": 0.00000751797676912247,
+      "missing": 0,
+      "worst": {
+        "station": 210.49000549316406,
+        "referenceY": 326.0303955078125,
+        "heights": [
+          326.21644959749347,
+          326.2164420795167
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 11,
+      "maxTransitionDelta": 0.000003856038063076994,
+      "layerTransitions": 0,
+      "maxLayerTransitionDelta": 0,
+      "layerBoundarySamples": 0,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "16,-29",
+      "b": "16,-30",
+      "original": [
+        false,
+        false
+      ],
+      "samples": 2386,
+      "maxDelta": 0.000006149579292014096,
+      "missing": 0,
+      "worst": {
+        "station": 380,
+        "referenceY": 294.2996826171875,
+        "heights": [
+          294.2996829090957,
+          294.29968905867497
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 19,
+      "maxTransitionDelta": 0.00000309920164909272,
+      "layerTransitions": 3,
+      "maxLayerTransitionDelta": 0.00000208789811040333,
+      "layerBoundarySamples": 6,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "19,-29",
+      "b": "19,-30",
+      "original": [
+        false,
+        false
+      ],
+      "samples": 2309,
+      "maxDelta": 0.000007940134651107655,
+      "missing": 0,
+      "worst": {
+        "station": 77,
+        "referenceY": 343.1880187988281,
+        "heights": [
+          343.79828579728894,
+          343.7982778571543
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 10,
+      "maxTransitionDelta": 0.000004652155951134773,
+      "layerTransitions": 0,
+      "maxLayerTransitionDelta": 0,
+      "layerBoundarySamples": 0,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "16,-28",
+      "b": "16,-29",
+      "original": [
+        false,
+        false
+      ],
+      "samples": 2199,
+      "maxDelta": 0.000007593349266699079,
+      "missing": 0,
+      "worst": {
+        "station": 1.7100000381469727,
+        "referenceY": 285.2944641113281,
+        "heights": [
+          285.3215447153087,
+          285.32155230865794
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 8,
+      "maxTransitionDelta": 0.0000043903187929572596,
+      "layerTransitions": 0,
+      "maxLayerTransitionDelta": 0,
+      "layerBoundarySamples": 0,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "19,-28",
+      "b": "19,-29",
+      "original": [
+        false,
+        false
+      ],
+      "samples": 2281,
+      "maxDelta": 0.000007549396229933336,
+      "missing": 0,
+      "worst": {
+        "station": 297.5,
+        "referenceY": 370.1927185058594,
+        "heights": [
+          371.2243852054421,
+          371.22439275483833
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 6,
+      "maxTransitionDelta": 0.00000451754374353186,
+      "layerTransitions": 0,
+      "maxLayerTransitionDelta": 0,
+      "layerBoundarySamples": 0,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "16,-27",
+      "b": "16,-28",
+      "original": [
+        false,
+        false
+      ],
+      "samples": 2269,
+      "maxDelta": 0.000005933461011409236,
+      "missing": 0,
+      "worst": {
+        "station": 423.3300018310547,
+        "referenceY": 300.34967041015625,
+        "heights": [
+          300.5398895633568,
+          300.53988362989577
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 10,
+      "maxTransitionDelta": 0.00000320869037295779,
+      "layerTransitions": 0,
+      "maxLayerTransitionDelta": 0,
+      "layerBoundarySamples": 0,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "18,-28",
+      "b": "19,-28",
+      "original": [
+        false,
+        false
+      ],
+      "samples": 2222,
+      "maxDelta": 0.00000497472331062454,
+      "missing": 0,
+      "worst": {
+        "station": 502,
+        "referenceY": 363.99432373046875,
+        "heights": [
+          363.9943300591012,
+          363.99432508437786
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 8,
+      "maxTransitionDelta": 0.0000027907966568818665,
+      "layerTransitions": 0,
+      "maxLayerTransitionDelta": 0,
+      "layerBoundarySamples": 0,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    },
+    {
+      "a": "18,-27",
+      "b": "18,-28",
+      "original": [
+        false,
+        false
+      ],
+      "samples": 2223,
+      "maxDelta": 0.000007196242393092689,
+      "missing": 0,
+      "worst": {
+        "station": 249,
+        "referenceY": 352.1111755371094,
+        "heights": [
+          352.61597153951556,
+          352.61597873575795
+        ],
+        "flags": [
+          2,
+          2
+        ]
+      },
+      "transitionSamples": 6,
+      "maxTransitionDelta": 0.0000035963825553153583,
+      "layerTransitions": 0,
+      "maxLayerTransitionDelta": 0,
+      "layerBoundarySamples": 0,
+      "maxLayerBoundaryDelta": 0,
+      "failures": []
+    }
+  ],
+  "passed": true
+}

@@ -1,0 +1,129 @@
+{
+  "status": "descriptor and decoded source mesh accounting; no browser performance acceptance",
+  "sourceRevision": "12935f07f7dceacdfbf96d7a9de8fa10ae88f49fcf673fb08c6c8dfe5cb0cc31",
+  "composedRevision": "358325da4b458b4b15c2f419aed0c204da91e714f4a011991cbecbdb23d2e3a8",
+  "sourceCells": 20,
+  "composedCells": 1766,
+  "sourceDrawRecords": 158,
+  "sourceBuildingPieces": 1608,
+  "sourceStructureCells": 4,
+  "sourceStructureGroups": [
+    {
+      "id": "w15631655:0",
+      "bridgeSources": [
+        "w15631655:0",
+        "w15631710:0"
+      ],
+      "upper": [
+        "w15631655:0",
+        "w15631703:0",
+        "w15631710:0",
+        "w172988013:0",
+        "w216909382:0",
+        "w653444448:0"
+      ],
+      "lower": [
+        "w939189515:0",
+        "w939189516:0"
+      ],
+      "centre": [
+        8825.31366285518,
+        -15443.82907297551
+      ]
+    }
+  ],
+  "sourceTriangles": 500771,
+  "composedCompressedBytes": 458671360,
+  "worst2x2ResidentBytes": 30407222,
+  "worst2x2": [
+    "-10,-10",
+    "-9,-10",
+    "-10,-9",
+    "-9,-9"
+  ],
+  "residentLimit": 67108864,
+  "residentPassed": true,
+  "sourceStructureObservations": [
+    {
+      "cell": "17,-30",
+      "bridgeSources": [
+        "w15631655:0",
+        "w15631710:0"
+      ],
+      "clearance": 5.471480637582317,
+      "clearanceSamples": 51,
+      "id": "w15631655:0",
+      "kind": "osm-bridge-guarded",
+      "layer": 1,
+      "roads": [
+        "w15631655:0",
+        "w15631703:0",
+        "w15631710:0",
+        "w172988013:0",
+        "w216909382:0",
+        "w653444448:0"
+      ],
+      "shoulderMetres": 0.25
+    },
+    {
+      "cell": "17,-31",
+      "bridgeSources": [
+        "w15631655:0",
+        "w15631710:0"
+      ],
+      "clearance": 5.471480637582317,
+      "clearanceSamples": 51,
+      "id": "w15631655:0",
+      "kind": "osm-bridge-guarded",
+      "layer": 1,
+      "roads": [
+        "w15631655:0",
+        "w15631703:0",
+        "w15631710:0",
+        "w172988013:0",
+        "w216909382:0",
+        "w653444448:0"
+      ],
+      "shoulderMetres": 0.25
+    },
+    {
+      "cell": "16,-30",
+      "bridgeSources": [
+        "w15631655:0",
+        "w15631710:0"
+      ],
+      "clearance": 5.471480637582317,
+      "clearanceSamples": 51,
+      "id": "w15631655:0",
+      "kind": "osm-bridge-guarded",
+      "layer": 1,
+      "roads": [
+        "w15631655:0",
+        "w15631703:0",
+        "w15631710:0",
+        "w172988013:0",
+        "w216909382:0",
+        "w653444448:0"
+      ],
+      "shoulderMetres": 0.25
+    },
+    {
+      "cell": "16,-29",
+      "approachOnly": true,
+      "bridgeSources": [
+        "w15631655:0",
+        "w15631710:0"
+      ],
+      "clearance": null,
+      "clearanceSamples": 0,
+      "id": "w15631655:0",
+      "kind": "osm-bridge-guarded",
+      "layer": 1,
+      "roads": [
+        "w216909382:0",
+        "w653444448:0"
+      ],
+      "shoulderMetres": 0.25
+    }
+  ]
+}
