@@ -87,3 +87,12 @@ test('physical snapshot boundary preserves the actual world rider seed and deter
  a.t.syncRiders();b.t.onlineDriver={id:'guest',player:{},gridSlot:1};b.t.syncRiders();assert.deepEqual(b.c.riderBody.p,a.c.riderBody.p);
  const body=b.c.riderBody;applyWorldTrafficCar(b.t,row);b.t.syncRiders();assert.equal(b.c.riderBody,body,'real adapter object replacement must not respawn the body');a.t.disposeRiders();b.t.disposeRiders();
 });
+
+test('an ejected bike stays a visible stationary wreck instead of rejoining without its rider',()=>{
+ const {t,c}=fixture(),edge={id:'bike-road',points:[[9000,24,18100],[9000,24,17900]]};t.t=5;t.session.safePose=()=>true;t.route={project:()=>({s:0,u:0})};
+ Object.assign(c,{crashed:true,recoveryT:5,contactAt:-10,v:0});Object.assign(c.vehicle,{vLong:0,vLat:0});t.ejectRider(c,5);c.rider.age=LIFE;
+ t.candidate=()=>({...c.vehicle});t.poseBlocked=()=>false;t.recover(c,edge,.1,[]);
+ assert.equal(c.crashed,true,'a bike with an ejected driver cannot resume autonomous driving');assert.equal(c.active,true,'a visible wreck must remain present');assert.equal(c.vehicle.vLong,0);
+ c.visibilityTracked=true;c.lastSeenAt=0;c.recoveryT=9;t.t=20;assert.equal(t.retireUnseen(c,[{...c.vehicle}]),false,'nearby witnesses protect the bike');
+ assert.equal(t.retireUnseen(c,[]),true,'existing unseen-wreck retirement still works');assert.equal(c.active,false);
+});

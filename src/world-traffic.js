@@ -297,7 +297,9 @@ export class WorldTraffic {
   if(c.turn||c.yielding){c.offset=projectEdge(edge,c.vehicle.x,c.vehicle.z).offsetM;c.turn=null;c.yielding=null;}
   c.recoveryT=(c.recoveryT||0)+dt;if(this.retireUnseen(c,actors))return;c.v*=Math.exp(-dt*3);
   const v=c.vehicle;v.vLong=c.v;v.vLat=0;v.w=0;
-  if(c.recoveryT<4||this.t-(c.contactAt??-Infinity)<.5||c.v>.5)return;
+  // A thrown rider cannot pilot the bike back into traffic. Keep the wreck
+  // present until the existing visibility-aware retirement can recycle it.
+  if(c.rider||c.recoveryT<4||this.t-(c.contactAt??-Infinity)<.5||c.v>.5)return;
   const offset=projectEdge(edge,v.x,v.z).offsetM,p=this.candidate(edge,offset,c);if(!p)return;
   const dx=p.x-v.x,dz=p.z-v.z,d=Math.hypot(dx,dz),angle=Math.atan2(Math.sin(p.yaw-v.yaw),Math.cos(p.yaw-v.yaw));
   if(d>8||Math.abs(p.y-v.y)>1)return;
