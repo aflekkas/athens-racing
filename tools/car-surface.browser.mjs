@@ -41,6 +41,7 @@ try {
     report.status = 'preflight-passed';
   } else {
     browser = await chromium.launch({ headless: true, executablePath: process.env.CHROME_BIN, args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+    report.browserVersion = browser.version();
     for (const quality of (process.env.SURFACE_CLASSES || 'low,high').split(',')) {
       const run = { quality, intermediateSceneDraws: sparse ? 'omitted during drive only; all camera layers restored before captures and GPU measurements; not driving-render performance proof' : 'normal', capture: 'Actual parent free roam; matched world render pose and camera; actual Vehicle/AthensGround driving, staged existing Ground._hit impulse; live world data via authenticated read-only proxy' }; report.runs.push(run);
       const page = await browser.newPage({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
@@ -81,7 +82,7 @@ try {
         const gl = r.getContext(), debug = gl.getExtension('WEBGL_debug_renderer_info');
         const materials = new Set(), geometries = new Set(), textures = new Set();
         m.root.traverse(o => { if (o.geometry) geometries.add(o.geometry); for (const material of [].concat(o.material || [])) { materials.add(material); for (const value of Object.values(material)) if (value?.isTexture) textures.add(value); } });
-        return { perfClass: settings.perfClass, drawingBuffer: [gl.drawingBufferWidth, gl.drawingBufferHeight], gpu: debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER), dirt: m.surface.dirt.toArray(), scuffs: m.surface.scuffs.map(p => p.toArray()), enabled: m.surface.size.w, paintVersion: m.paint.version, shaderKey: m.paint.customProgramCacheKey(), carMaterials: materials.size, carGeometries: geometries.size, carTextures: textures.size, programs: r.info.programs.length, surfacePrograms: r.info.programs.filter(p => p.cacheKey?.includes('car-surface-v1')).length, drawCalls: r.info.render.calls, memory: { ...r.info.memory }, uniformBytes: m.surface.bytes, shaderAddedBytes: m.surface.shaderBytes, damage: { ...a.player.veh.damage }, resources: a.inventory().resources };
+        return { perfClass: settings.perfClass, drawingBuffer: [gl.drawingBufferWidth, gl.drawingBufferHeight], gpu: debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER), dirt: m.surface.dirt.toArray(), scuffs: m.surface.scuffs.map(p => p.toArray()), enabled: m.surface.size.w, paintVersion: m.paint.version, shaderKey: m.paint.customProgramCacheKey(), carMaterials: materials.size, carGeometries: geometries.size, carTextures: textures.size, programs: r.info.programs.length, surfacePrograms: r.info.programs.filter(p => p.cacheKey?.includes('car-surface-v1')).length, surfaceProgramKeys: r.info.programs.filter(p => p.cacheKey?.includes('car-surface-v1')).map(p => p.cacheKey), drawCalls: r.info.render.calls, memory: { ...r.info.memory }, uniformBytes: m.surface.bytes, shaderAddedBytes: m.surface.shaderBytes, damage: { ...a.player.veh.damage }, resources: a.inventory().resources };
       });
       // Match the player's render pose only; physics/contact measurements retain
       // their actual driven coordinates. Capture and render share one evaluation.
@@ -175,6 +176,8 @@ try {
       });
       console.log('LAYER_COMPARISON', JSON.stringify(run.comparison)); await save();
       assert.equal(run.comparison.hiddenChanges, 0); assert.ok(run.comparison.wearChanges > 100);
+      assert.equal(run.comparison.timing[0].drawCalls, run.comparison.timing[1].drawCalls);
+      assert.equal(run.comparison.timing[0].programs, run.comparison.timing[1].programs);
       await page.evaluate(async () => { await __athens.tow(); __athens.render(0); });
       await shot('repaired'); run.repaired = await metrics(); await save();
       assert.deepEqual(run.repaired.dirt, [0, 0, 0, 0]); assert.ok(run.repaired.scuffs.every(p => p[3] === 0)); assert.ok(Object.values(run.repaired.damage).every(n => n === 0));
