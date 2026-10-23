@@ -22,9 +22,9 @@ function recoveryHarness(route, v, options={}) {
   const safe={s:options.safe??v.s,u:0},towOffer={safe},player={veh:v};
   const multiplayer={active:!!options.online,connected:true,retired:false,lobby:{raceId:'test',event:{dir}},recover:async()=>options.served??{s:options.serverS??safe.s,u:0,until:250},now:()=>0,stateSender:{discontinuity(){}}};
   const ground=options.ground||{network:null,walls:()=>null},traffic=options.traffic||{cars:[],point(){}},grid=options.grid||[];
-  const api=Function('G','multiplayer','towOffer','route','ground','traffic','grid','planTow','towHeading','RoadIndex','routeTowAdapter','courseTowLimits','towCourseTo','clamp','beginCameraBlend','syncCar','updateCamera','player','look','closeTowOffer','TOW_PROMPT_COOLDOWN','controls','document','sessionTransitions','inFreeRoam','hud','notifications','blackout','audio',
+  const api=Function('worldSession','towUnified','G','multiplayer','towOffer','route','ground','traffic','grid','planTow','towHeading','RoadIndex','routeTowAdapter','courseTowLimits','towCourseTo','clamp','beginCameraBlend','syncCar','updateCamera','player','look','closeTowOffer','TOW_PROMPT_COOLDOWN','controls','document','sessionTransitions','inFreeRoam','hud','notifications','blackout','audio',
     section('// Tow, reset and automatic recovery put', 'function stuckCheck(')+section('function tow(', 'function resetCar(')+'return {tow,backOnRoad};')(
-    G,multiplayer,towOffer,route,ground,traffic,grid,planTow,towHeading,RoadIndex,routeTowAdapter,courseTowLimits,towCourseTo,clamp,()=>{},()=>{},()=>{},player,{},()=>{},20,{releaseMouseLook(){}},{body:{classList:{add(){},remove(){}}}},{after(ms,fn){callbacks.push(fn);}},()=>!!options.free,{message(){}},{dismiss(){}},()=>{},{recovery(){G.recoverySounds=(G.recoverySounds||0)+1;}});
+    options.worldSession??null,options.towUnified??(()=>{throw Error('unexpected unified recovery');}),G,multiplayer,towOffer,route,ground,traffic,grid,planTow,towHeading,RoadIndex,routeTowAdapter,courseTowLimits,towCourseTo,clamp,()=>{},()=>{},()=>{},player,{},()=>{},20,{releaseMouseLook(){}},{body:{classList:{add(){},remove(){}}}},{after(ms,fn){callbacks.push(fn);}},()=>!!options.free,{message(){}},{dismiss(){}},()=>{},{recovery(){G.recoverySounds=(G.recoverySounds||0)+1;}});
   return {G,towOffer,...api,async flush(){while(callbacks.length)await callbacks.shift()(()=>true);}};
 }
 for(const def of MAPS)test(`${def.id}: real T/R paths put off-road cars on the nearest road, in free roam and in a race`,async t=>{
@@ -85,4 +85,8 @@ for(const def of MAPS)test(`${def.id}: real T/R paths put off-road cars on the n
     h.tow(v,{automatic:true});assert.equal(h.G.towing,false,'rearm rejects an immediate repeat');
   }
   t.diagnostic(`${samples} production tow/reset samples (${streets} onto side streets), plus latest-pose, MP and invalid-anchor cases`);
+});
+
+test('tow entry delegates a streamed session to unified recovery before any legacy planner',async()=>{
+ const calls=[],h=recoveryHarness({}, {}, {worldSession:{},towUnified:options=>{calls.push(options);return 'unified';}});assert.equal(h.tow({}, {capture:true,reset:true}),'unified');assert.deepEqual(calls,[{capture:true}]);await h.flush();assert.equal(calls.length,1);
 });

@@ -45,9 +45,15 @@ for(const spec of CARS)test(`${spec.id}: owner-locked geometry and empty-cabin p
 test('traffic and police factories obey the same occupant and glass rules',()=>{
  for(const type of TRAFFIC_TYPES)for(const low of [false,true]){const car=trafficModel(type,'#718293',new RNG(7),{low});occupants(car,!!type.scooter||!!type.moto);glass(car);geometry(car);if(!type.scooter&&!type.moto){const cabin=car.body.getObjectByName('traffic-cabin-lod');assert.ok(cabin,locked);assert.ok(triangles(cabin)<=500,locked);}const n=triangles(car.root,0,{excludeCabin:true}),limit=low?299:(type.bus||type.truck?5000:4000);assert.ok(n<=limit,`${type.id} traffic ${low?'far':'near'}: ${n} > ${limit}. ${locked}`);car.disposeDamage?.();}
 });
+const retiredDriverRig=/\bnew\s+Driver\w*\b|\bbindDriverToCar\b|(?<![\w$])(?:player|c)\s*(?:\?\.|\.)\s*driver\b/;
+test('retired rig guard matches complete identifiers, never multiplayer progress telemetry',()=>{
+ for(const source of ['new Driver()', 'new DriverRig()', 'bindDriverToCar(car)', 'player.driver.update()', 'c.driver', 'player?.driver'])assert.match(source,retiredDriverRig);
+ for(const source of ['multiplayer.driverProgress(member)', 'player.driverProgress()', 'c.driverName', 'driverProgress(c)'])assert.doesNotMatch(source,retiredDriverRig);
+});
+
 test('no retired driver rig or hand animation can return through the application',()=>{
  const main=readFileSync(new URL('../src/main.js',import.meta.url),'utf8');
- assert.doesNotMatch(main,/new Driver|bindDriverToCar|player\.driver|c\.driver/,locked);
+ assert.doesNotMatch(main,retiredDriverRig,locked);
  for(const f of ['driver.js','driver-seating.js','character-driver.js'])assert.equal(existsSync(new URL('../src/'+f,import.meta.url)),false,locked);
  assert.ok(Object.values(GLASS_TINT).every(t=>t.opacity>=.12&&t.opacity<=.28),locked);
  const hero=readFileSync(new URL('../src/title-hero-studio.js',import.meta.url),'utf8');

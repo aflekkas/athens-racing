@@ -104,7 +104,8 @@ test('production solo HUD position and gap follow current validated progress thr
   const player = { veh: { s: 900 } }, G = { pFinish: null, run: { course: { validProgress: 100 } } };
   const grid = [{ name: 'AI', finish: null, veh: { s: 950 }, course: { validProgress: 90 } }];
   const element = {};
-  const api = Function('player','G','grid','EV','courseProgress','$', earnedSource + rankSource + 'return {racePosition,raceGap};')(player,G,grid,EV,courseProgress,()=>element);
+  const multiplayer={active:false};const networkState=v=>({pose:v});
+  const api = Function('multiplayer','networkState','player','G','grid','EV','courseProgress','$', earnedSource + rankSource + 'return {racePosition,raceGap};')(multiplayer,networkState,player,G,grid,EV,courseProgress,()=>element);
   assert.deepEqual(api.raceGap(), {pos:1,gap:-10,gapUnit:'m'});
   // An unvalidated AI station jump remains behind; a legal pass then changes both.
   grid[0].veh.s = 12000; assert.equal(api.racePosition(),1);
@@ -112,4 +113,5 @@ test('production solo HUD position and gap follow current validated progress thr
   G.run.course.validProgress=50; assert.deepEqual(api.raceGap(), {pos:2,gap:70,gapUnit:'m'});
   assert.equal(element.textContent,'AI');
   G.pFinish=30;grid[0].finish=29;assert.deepEqual(api.raceGap(),{pos:2,gap:1,gapUnit:'s'});
+  multiplayer.active=true;multiplayer.telemetry=state=>{assert.equal(state.pose,player.veh);return{pos:3,gap:12,gapUnit:'m'};};assert.equal(api.racePosition(),3);assert.deepEqual(api.raceGap(),{pos:3,gap:12,gapUnit:'m'},'online HUD uses authoritative telemetry instead of local course stations');
 });

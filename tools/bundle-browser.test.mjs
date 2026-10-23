@@ -74,7 +74,10 @@ test('real production graph keeps worlds, simulation and screens lazy and maps p
     const initial = new Set(meta.initial.map(path => resolve(out, '.' + path)));
     const eager = Object.entries(meta.outputs).filter(([path]) => initial.has(resolve(root, path))).flatMap(([, output]) => Object.keys(output.inputs));
     for (const file of ['src/main.js', 'src/map-world.js', 'src/car-select.js', 'src/cars.js', 'src/ui/mp-screens.js', 'src/ui/account-screen.js', 'src/maps/riviera.js', 'src/maps/megara.js', 'src/maps/penteli.js', 'src/maps/psychiko.js']) assert.ok(!eager.includes(file), `${file} must not be in the initial menu`);
-    for (const file of ['src/maps/riviera.js', 'src/maps/megara.js', 'src/maps/penteli.js', 'src/maps/psychiko.js', 'src/ui/account-screen.js', 'src/ui/mp-screens.js']) assert.ok(Object.values(meta.outputs).some(output => output.entryPoint === file), `${file} needs a lazy entry`);
+    const retired=['src/map-world.js','src/maps/riviera.js','src/maps/megara.js','src/maps/penteli.js','src/maps/psychiko.js'];
+    const rejectLegacy=inputs=>{for(const file of retired)assert.ok(!inputs.includes(file),`${file} is an authored build input, never a runtime loader`);};
+    rejectLegacy(Object.keys(meta.inputs));for(const file of retired)assert.throws(()=>rejectLegacy([...Object.keys(meta.inputs),file]),/never a runtime loader/,'a lazy legacy loader is still forbidden');
+    for(const file of ['src/athens-world.js','src/ui/account-screen.js','src/ui/mp-screens.js'])assert.ok(Object.values(meta.outputs).some(output=>output.entryPoint===file),`${file} needs a lazy entry`);
     assert.ok(Object.keys(meta.inputs).some(path => path.includes('node_modules/three/')), 'three.js and used addons are bundled');
     for (const [path] of Object.entries(meta.outputs)) {
       const text = await readFile(resolve(root, path), 'utf8');

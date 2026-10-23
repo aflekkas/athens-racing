@@ -120,10 +120,11 @@ test('the shallowest axis the cars are closing along is the contact normal, even
 // ---- the production wiring in main.js, executed as written (only the world around it is stubbed)
 import { readFileSync } from 'node:fs';
 import { receiveRemoteSnapshot, remoteContactPose } from '../src/remote-timeline.js';
+import { recoveryHeld } from '../src/recovery-policy.js';
 import { containOnlineVehicle } from '../src/multiplayer-contact.js';
 const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
-const contactBlock = main.slice(main.indexOf("        multiplayer.contacts ||= new Map();"), main.indexOf("        containOnlineVehicle(pv, route);"));
-function wiring({ peerAge = 0, moving = false, member = {}, peer = true } = {}) {
+const contactBlock=main.slice(main.indexOf('function stepOnlineContacts('),main.indexOf('function drawUnifiedFrame('));
+function wiring({ peerAge = 0, moving = false, member = {}, peer = true, towing=false,hold=0 } = {}) {
   const sent = [], state = (t, v) => ({ x: 0, y: 0, z: -3.5 - (v ? v * t / 1000 : 0), s: 3.5, u: 0, yaw: 0, vLong: v, vLat: 0, steer: 0, rpm: 900, gear: 1, sampleTime: t, motionEpoch: 1 });
   const peers = new Map(), at = 100000 - peerAge;
   if (peer) for (const t of moving ? [0, 50, 100] : [0]) receiveRemoteSnapshot(peers, { now: at + t, players: [{ id: 'them', stateAt: at + t, state: state(t, moving ? 2 : 0) }] }, { receivedAt: at + t });
@@ -131,12 +132,13 @@ function wiring({ peerAge = 0, moving = false, member = {}, peer = true } = {}) 
   const coordinator = new ContactCoordinator({ send: e => sent.push(e), serverNow: () => 100000 });
   const pv = { x: 0, y: 0, z: moving ? -1.5 : 0, yaw: 0, vLong: 20, vLat: 0, halfW: .9, halfL: 2.2, m: 1500, hcg: .5, s: 0, u: 0, impactDynamics() {}, addDamage() {} };
   const car = { veh: { x: 0, y: 0, z: -3.5, yaw: 0, vLong: 0, vLat: 0, halfW: .9, halfL: 2.2, m: 1500, hcg: .5 } };
-  const run = Function('multiplayer', 'contactCoordinator', 'G', 'pv', 'remoteCars', 'remoteContactPose', 'holdingRecovery', 'dt', 'playerImpactVoice', 'performance', contactBlock.replace(/G\.state === 'race'/, 'true'));
-  run(multiplayer, coordinator, { simNow: 100000 }, pv, new Map([['them', car]]), remoteContactPose, false, 1 / 60, () => {}, { now: () => 100000 });
+  const run=Function('multiplayer','contactCoordinator','G','remoteCars','remoteContactPose','recoveryHeld','towOffer','playerImpactVoice','performance',contactBlock+';return stepOnlineContacts;')(multiplayer,coordinator,{state:'race',t:0,simNow:100000,towing},new Map([['them',car]]),remoteContactPose,recoveryHeld,{recovering:hold>0,hold},()=>{},{now:()=>100000});
+  run(pv,1/60);
   return { hits: multiplayer.lastContacts, sent, pv, multiplayer };
 }
 test('main.js contact wiring: silent parked cars are solid, stale moving cars and absent or unloaded cars are ghosts', () => {
   assert.ok(contactBlock.includes('contactCoordinator.step(') && contactBlock.includes('remoteContactPose('), 'the block under test is the production one');
+  assert.equal(wiring({towing:true}).hits.length,0,'an active tow cannot create a contact');assert.equal(wiring({hold:1}).hits.length,0,'a recovery hold cannot create a contact');
   const parked = wiring({ peerAge: 600000 });
   assert.equal(parked.hits.length, 1, 'a car that parked ten minutes ago is still there'); assert.equal(parked.sent.length, 1, 'and the hit is reported to its driver once'); assert.ok(parked.pv.vLong < 11);
   assert.equal(wiring({ moving: true, peerAge: 60 }).hits.length, 1, 'a live moving car');

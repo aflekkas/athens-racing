@@ -67,17 +67,18 @@ test('showDeviceGate marks the document, which is what reveals the gate and hide
 
 // ---------------------------------------------------------------- phones never reach the game
 // Run the real entry.js with a stand-in main.js, under each device. A blocked device must not import the game at all.
-async function runEntry(device, { maxTouchPoints = 0, platform = '', userAgent = '', userAgentData } = {}) {
+async function runEntry(device, { maxTouchPoints = 0, platform = '', userAgent = '', userAgentData, entrySource } = {}) {
   const dir = await mkdtemp(resolve(tmpdir(), 'asr-entry-'));
   try {
-    await copyFile(new URL('../src/entry.js', import.meta.url), resolve(dir, 'entry.js'));
+    if(entrySource==null)await copyFile(new URL('../src/entry.js', import.meta.url), resolve(dir, 'entry.js'));else await writeFile(resolve(dir,'entry.js'),entrySource);
     await copyFile(new URL('../src/device-gate.js', import.meta.url), resolve(dir, 'device-gate.js'));
     await writeFile(resolve(dir, 'main.js'), 'globalThis.__gameImports = (globalThis.__gameImports || 0) + 1; export const title = true;');
-    const document = { documentElement: { dataset: {} } };
-    const saved = Object.fromEntries(['document', 'matchMedia', '__gameImports'].map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)])), navigator = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
-    Object.assign(globalThis, { document, matchMedia: query => ({ matches: query === '(pointer: coarse)' ? device.coarse : query === '(any-pointer: fine)' ? device.anyFine : false }), __gameImports: 0 });
+    await writeFile(resolve(dir,'route-entry-prefetch.js'),"globalThis.__routeModuleImports++; export function prefetchDirectRace(){globalThis.__routePrefetchCalls++;return null;}");
+    const requests=[];const document = { documentElement: { dataset: {} } };
+    const saved = Object.fromEntries(['document','matchMedia','__gameImports','__routeModuleImports','__routePrefetchCalls','__routeEntryPrefetch','__authPrefetch','fetch','location'].map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)])), navigator = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+    Object.assign(globalThis, {__routeModuleImports:0,__routePrefetchCalls:0,location:{search:'?event=megara-tt'},fetch:path=>{requests.push(path);return Promise.resolve({ok:true});}, document, matchMedia: query => ({ matches: query === '(pointer: coarse)' ? device.coarse : query === '(any-pointer: fine)' ? device.anyFine : false }), __gameImports: 0 });
     Object.defineProperty(globalThis, 'navigator', { value: { userAgent, platform, maxTouchPoints, userAgentData }, configurable: true });
-    try { await import(pathToFileURL(resolve(dir, 'entry.js')).href); return { imports: globalThis.__gameImports, dataset: { ...document.documentElement.dataset } }; }
+    try { await import(pathToFileURL(resolve(dir, 'entry.js')).href);await globalThis.__routeEntryPrefetch;return {imports:globalThis.__gameImports,prefetchImports:globalThis.__routeModuleImports,prefetchCalls:globalThis.__routePrefetchCalls,requests,dataset:{...document.documentElement.dataset}}; }
     finally { for (const [key, descriptor] of Object.entries(saved)) descriptor ? Object.defineProperty(globalThis, key, descriptor) : delete globalThis[key]; Object.defineProperty(globalThis, 'navigator', navigator); }
   } finally { await rm(dir, { recursive: true, force: true }); }
 }
@@ -89,7 +90,7 @@ test('entry.js: a phone, an iPad and a touch-only tablet stop at the gate and ne
     ['Android tablet', { coarse: true, anyFine: false }, { userAgent: ANDROID_TABLET, maxTouchPoints: 10 }],
   ]) {
     const result = await runEntry(device, extra);
-    assert.equal(result.imports, 0, `${name} must not load the game. ${LOCK}`);
+    assert.equal(result.imports, 0, `${name} must not load the game. ${LOCK}`);assert.equal(result.prefetchImports,0,`${name} must not import route prefetch. ${LOCK}`);assert.equal(result.prefetchCalls,0);assert.deepEqual(result.requests,[],`${name} makes no auth/route requests. ${LOCK}`);
     assert.equal(result.dataset.device, 'blocked', `${name} must see the gate. ${LOCK}`);
   }
 });
@@ -100,7 +101,7 @@ test('entry.js: a desktop and a touchscreen laptop go straight on to the game, w
     ['Mac', { coarse: false, anyFine: true }, { userAgent: MAC, platform: 'MacIntel' }],
   ]) {
     const result = await runEntry(device, extra);
-    assert.equal(result.imports, 1, `${name} loads the game. ${LOCK}`);
+    assert.equal(result.imports, 1, `${name} loads the game. ${LOCK}`);assert.equal(result.prefetchImports,1);assert.equal(result.prefetchCalls,1);assert.deepEqual(result.requests,['/api/auth/config','/api/auth/session']);
     assert.equal(result.dataset.device, undefined, `${name} sees no gate. ${LOCK}`);
   }
 });
@@ -109,9 +110,10 @@ test('entry.js is the only way in: index.html loads it and nothing else, and it 
   assert.deepEqual([...html.matchAll(/<script\b[^>]*\btype="module"[^>]*>/g)].map(m => m[0].match(/src="([^"]+)"/)?.[1]), ['./src/entry.js'], `index.html loads one module, the gate. ${LOCK}`);
   assert.doesNotMatch(html, /modulepreload|<link[^>]+(?:main|boot)\.js/, `nothing preloads the game for a device that may be blocked. ${LOCK}`);
   assert.deepEqual([...entry.matchAll(/^import .*$/gm)].map(m => m[0]), ["import { deviceBlockReason, readDevice, showDeviceGate } from './device-gate.js';"], `entry.js statically imports only the gate. ${LOCK}`);
-  assert.deepEqual([...entry.matchAll(/import\('([^']+)'\)/g)].map(m => m[1]), ['./main.js'], LOCK);
+  assert.deepEqual([...entry.matchAll(/import\('([^']+)'\)/g)].map(m => m[1]), ['./route-entry-prefetch.js','./main.js'], LOCK);
+  assert.ok(entry.indexOf('else {')<entry.indexOf("import('./route-entry-prefetch.js')"),`route prefetch stays behind the desktop decision. ${LOCK}`);
   assert.ok(entry.indexOf('showDeviceGate') < entry.indexOf("import('./main.js')"), `the gate decides before the game loads. ${LOCK}`);
-  assert.doesNotMatch(entry + gate, /location|localStorage|sessionStorage|URLSearchParams|cookie/, `no query flag, storage switch or cookie lifts the gate. ${LOCK}`);
+  assert.doesNotMatch(entry.slice(0,entry.indexOf('else {')) + gate, /location|localStorage|sessionStorage|URLSearchParams|cookie/, `no query flag, storage switch or cookie lifts the gate. ${LOCK}`);
   assert.doesNotMatch(gate, /^\s*import\b/m, `device-gate.js imports nothing: it is all a blocked device runs. ${LOCK}`);
 });
 
@@ -143,6 +145,7 @@ test('bundle: the page entry is the gate, the game is only a dynamic import, and
     await writeFile(resolve(root, 'package.json'), '{"type":"module"}');
     await copyFile(new URL('../src/entry.js', import.meta.url), resolve(root, 'src/entry.js'));
     await copyFile(new URL('../src/device-gate.js', import.meta.url), resolve(root, 'src/device-gate.js'));
+    await writeFile(resolve(root,'src/route-entry-prefetch.js'),'export function prefetchDirectRace(){return null;}');
     await writeFile(resolve(root, 'src/main.js'), 'export const wrong = "dev entry";');
     await writeFile(resolve(root, 'src/boot.js'), "import { menu } from './menu-shell.js'; globalThis.title = menu;");
     await writeFile(resolve(root, 'src/menu-shell.js'), 'export const menu = "title";');
@@ -157,9 +160,9 @@ test('bundle: the page entry is the gate, the game is only a dynamic import, and
     const gateInputs = [...closure('.deploy/assets/' + page)].flatMap(path => Object.keys(meta.outputs[path].inputs)).sort();
     assert.deepEqual(gateInputs, ['src/device-gate.js', 'src/entry.js'], `everything the gate loads statically is the gate itself (esbuild's empty runtime chunk aside). ${LOCK}`);
     const dynamic = imports(pageOutput, 'dynamic-import');
-    assert.equal(dynamic.length, 1, LOCK); assert.equal(meta.outputs[dynamic[0]].entryPoint, 'src/boot.js', 'the bundle enters the game through boot.js');
+    assert.deepEqual(dynamic.map(path=>meta.outputs[path].entryPoint).sort(),['src/boot.js','src/route-entry-prefetch.js'],LOCK);const game=dynamic.find(path=>meta.outputs[path].entryPoint==='src/boot.js');
     const initial = new Set(meta.initial);
-    assert.ok(initial.has('/' + dynamic[0].replace('.deploy/assets/', '')), 'the menu shell stays in the service worker core list');
+    assert.ok(initial.has('/' + game.replace('.deploy/assets/', '')), 'the menu shell stays in the service worker core list');
     assert.ok(Object.entries(meta.outputs).filter(([, o]) => Object.keys(o.inputs).includes('src/menu-shell.js')).every(([path]) => initial.has('/' + path.replace('.deploy/assets/', ''))));
   } finally { await rm(root, { recursive: true, force: true }); }
 });
@@ -202,3 +205,5 @@ test('narrow desktop windows keep their layouts: the 860, 900, 1000 and 1100 px 
   const phone = queries.filter(q => /max-width:\s*(?:[1-6]\d{2}|7[0-2]\d)px|max-height:\s*(?:[1-4]\d{2}|500)px|pointer:\s*coarse|orientation:\s*portrait|hover:\s*none/.test(q.replace(/any-pointer/g, '')));
   assert.deepEqual(phone, [], `no phone-width, short-landscape, coarse-pointer or portrait query returns. ${LOCK}`);
 });
+
+test('desktop gate fixture catches eager route-prefetch imports on a blocked phone',async()=>{const entry=await read('src/entry.js'),result=await runEntry({coarse:true,anyFine:false},{userAgent:IPHONE,platform:'iPhone',maxTouchPoints:5,entrySource:"import './route-entry-prefetch.js';\n"+entry});assert.equal(result.imports,0);assert.equal(result.prefetchImports,1,'negative control crosses the gate without starting main');assert.throws(()=>assert.equal(result.prefetchImports,0));});

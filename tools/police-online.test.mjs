@@ -112,7 +112,10 @@ test('main and the shared world wire it: the judge runs online, the world author
   assert.ok(start.indexOf('startOnlinePolice(lobby)') > start.indexOf('onlineWait()'), 'configured after onlineWait (which resets police)');
   assert.match(main, /function startOnlinePolice\(lobby\) \{ police\?\.configureOnline\(lobby, multiplayer\.me\?\.gridSlot \?\? 0\); \}/);
   assert.match(main, /if \(police\) for \(const e of police\.update\(/, 'the judge runs online too');
-  assert.match(main, /pursuit: police\?\.online \? police\.pursuitCode\(\) : 0/, 'the code rides the state telemetry');
+  const telemetry=main.split('\n').find(line=>line.startsWith('const networkState ='));
+  assert.ok(telemetry,'test executes production networkState');
+  const sample=({streamed,online=true,legacy=true,trafficCode=9})=>{const v={spec:{name:'test'}},state=Function('worldSession','multiplayer','traffic','police','settings','steeringAssistChoice','activeInputDevice','input','spectatorState','player',telemetry+';return networkState;')(streamed?{}:null,{active:online},{pursuitCode:()=>trafficCode},{online:legacy,pursuitCode:()=>5},{},()=>false,()=>'',{brake:0},()=>({}),{model:{}});return state(v).pursuit;};
+  assert.equal(sample({streamed:true}),9,'streamed driver judge rides state telemetry');assert.equal(sample({streamed:false}),5,'legacy online judge still rides telemetry');assert.equal(sample({streamed:false,legacy:false}),0,'disabled legacy police sends no pursuit');assert.equal(sample({streamed:true,online:false,legacy:false}),0,'offline traffic heat never rides online state');
   const shared = readFileSync(new URL('../src/mp-shared-world.js', import.meta.url), 'utf8');
   assert.match(shared, /tr\.police\.dispatch\(dt,/);
 });
