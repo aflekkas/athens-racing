@@ -13,7 +13,7 @@ export class WorldSignals {
    const edge=this.session.roads.graph.edges.get(rec.edge)?.value;if(!edge)continue;
    const point=edgePoint(edge,Math.max(0,edgeLength(edge)-STOP_OFF));
    const q=this.route.project(point.x,point.z,{referenceY:point.y,layer:edge.layer});
-   if(q.edgeId!==edge.id||q.distance>1)continue;
+   if(!this.route.isFreeWorldRoute&&(q.edgeId!==edge.id||q.distance>1))continue;
    this.J.push({i:rec.edge,sF:q.s,sO:q.s,s:q.s,rec,point,edge});
   }
   this.J.sort((a,b)=>a.sF-b.sF);}

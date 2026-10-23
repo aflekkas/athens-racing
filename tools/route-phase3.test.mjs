@@ -153,3 +153,7 @@ test('rendered traffic beyond the old distance cutoff remains visible until it i
  for(let i=0;i<25;i++)t.update(.1,player,[]);
  assert.equal(c.active,false);
 });
+
+test('free-world red crossing uses every loaded physical head rather than a competitive route projection',()=>{
+ const {signals,session}=signalFixture();signals.route={isFreeWorldRoute:true,project:()=>({s:0,u:10000})};signals.update();assert.equal(signals.J.length,1);const a={x:100,y:0,z:112,yaw:0,halfL:0,layer:0,surfaceId:'road-a'},b={...a,z:106};assert.ok(signals.crossed(a,b));assert.equal(signals.crossed({...a,layer:1},{...b,layer:1}),null);session.props.time=10;signals.update();assert.equal(signals.crossed(a,b),null);
+});

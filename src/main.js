@@ -358,7 +358,7 @@ async function loadUnifiedWorld(compiled,{eventId=Q.get('routeEvent'),network=nu
     const pendingRoute=network?.runtime||(route?.compiled===compiled&&!route.onlineGrid?route:new RouteRuntime(compiled));
     const routeReady=worldSession.prepareRoute(compiled,{cars:network?multiplayer.lobby.players.map(p=>CARS.find(c=>c.id===p.car)).filter(Boolean):[CARS[G.carIdx]],runtime:pendingRoute,onlineGrid:network?.onlineGrid||null});await Promise.resolve();
     // Traffic is optional during entry; its models/programs warm in countdown.
-    traffic=new WorldTraffic(worldSession,scene,pendingRoute,network?{poolSize:66,policePoolSize:8}:{});
+    traffic=new WorldTraffic(worldSession,scene,pendingRoute,network?{poolSize:66,policePoolSize:8,focusProvider:onlineTrafficFoci}:{});
     validateRivalPlan(compiled,{required:!['localhost','127.0.0.1','[::1]'].includes(location.hostname)});
     pendingRoute.requireRivalPlan=!!compiled.rivalPlan;
     const linesReady=carPrograms;
@@ -416,7 +416,7 @@ function stepUnified(dt,visual,frameDt){
   else {G.roadLoading=false;const previous={x:v.x,y:v.y,z:v.z,yaw:v.yaw,halfL:v.halfL,...v.routeContact};ground.begin(v);
    try{v.update(dt,G.state==='race'&&!captured?(pilotDriver?.(v,dt)||input):{throttle:0,brake:.5,steer:0,handbrake:false});if(v.wallHit>2.5&&G.t-(G.lastWorldCrash||-10)>.5){G.crashes++;G.lastWorldCrash=G.t;}v.wallHit=0;v.crashDv=0;}catch(error){Object.assign(v,previous,{vLong:0,vLat:0,w:0});worldSession.metrics.missingContacts++;throw error;}
    if(!online)routeRivals.update(dt,grid,v,{ready:p=>ground.ready(p,dt),safe:(p,o)=>worldSession.safePose(p,o),step:(c,h)=>updateGrid(h,[c]),now:G.raceT+G.postT+dt});
-   traffic.crossedRed=G.state==='race'&&G.ev.def.rules?.signals===true?signals.crossed(previous,{...v,...v.routeContact}):null;if(!online)traffic.update(dt,v,[v,...grid.filter(c=>!c.distant).map(c=>c.veh)]);const contacts=[],beforeTraffic=online?streamedSharedWorld.beforeCollide():null;traffic.collide({veh:v,kind:'player'},contacts,G.t);if(online)streamedSharedWorld.afterCollide(beforeTraffic);for(const c of grid.filter(c=>!c.distant)){traffic.collide(c.actor,contacts,G.t);racerPair(v,c.veh,true);}for(let i=0;i<grid.length;i++)for(let j=i+1;j<grid.length;j++)if(!grid[i].distant&&!grid[j].distant)racerPair(grid[i].veh,grid[j].veh,false);
+   traffic.crossedRed=G.state==='race'&&(G.ev.def.rules?.signals===true||inFreeRoam()&&G.ev.def.rules?.police===true)?signals.crossed(previous,{...v,...v.routeContact}):null;if(!online)traffic.update(dt,v,[v,...grid.filter(c=>!c.distant).map(c=>c.veh)]);else traffic.updateOnlineDriver?.(dt,{id:multiplayer.id,player:v,gridSlot:multiplayer.me?.gridSlot,crossedRed:traffic.crossedRed});const contacts=[],beforeTraffic=online?streamedSharedWorld.beforeCollide():null;traffic.collide({veh:v,kind:'player'},contacts,G.t);if(online)streamedSharedWorld.afterCollide(beforeTraffic);for(const c of grid.filter(c=>!c.distant)){traffic.collide(c.actor,contacts,G.t);racerPair(v,c.veh,true);}for(let i=0;i<grid.length;i++)for(let j=i+1;j<grid.length;j++)if(!grid[i].distant&&!grid[j].distant)racerPair(grid[i].veh,grid[j].veh,false);
    if(online){if(G.state==='race'&&!captured)stepOnlineContacts(v,dt);G.topSpeed=Math.max(G.topSpeed,v.kmh);}else if(G.state==='race'){G.raceT+=dt;G.topSpeed=Math.max(G.topSpeed,v.kmh);window.__ghostLap?.tick(dt);raceTiming(dt);}else if(G.state==='finished'){G.postT+=dt;G.finishedT+=dt;advanceRivalCourses(dt);updateFinishView();}
   }
  }
@@ -2550,8 +2550,12 @@ function updateRacerMarkers() {
   _markerItems.length = n;
   racerMarkers.update(_markerItems);
 }
-const networkState = v => ({layer:v.routeContact?.layer??v.layer,surfaceId:v.routeContact?.surfaceId??v.surfaceId, recordMeta: { tc: settings.aids, abs: settings.abs, steering: steeringAssistChoice(settings.steeringAssist, activeInputDevice()), gearbox: v.manual ? 'manual' : 'auto', carName: v.spec.name },  ...Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear', 'nitro', 'reverse'].map(k => [k, v[k]])), nitro: v.spec.nitrous === true ? v.nitro : 0, braking: input.brake > .3, damage: { ...v.damage }, ...spectatorState(v), paint: player.model.paintColor, pursuit: police?.online ? police.pursuitCode() : 0 });
+const networkState = v => ({layer:v.routeContact?.layer??v.layer,surfaceId:v.routeContact?.surfaceId??v.surfaceId, recordMeta: { tc: settings.aids, abs: settings.abs, steering: steeringAssistChoice(settings.steeringAssist, activeInputDevice()), gearbox: v.manual ? 'manual' : 'auto', carName: v.spec.name },  ...Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear', 'nitro', 'reverse'].map(k => [k, v[k]])), nitro: v.spec.nitrous === true ? v.nitro : 0, braking: input.brake > .3, damage: { ...v.damage }, ...spectatorState(v), paint: player.model.paintColor, pursuit: worldSession&&multiplayer.active?(traffic?.pursuitCode?.()??0):police?.online?police.pursuitCode():0 });
 function clearDriveInput() { controls.clear(); closeTowOffer(TOW_PROMPT_COOLDOWN); }
+function onlineTrafficFoci(){
+ const lobby=multiplayer.lobby;if(!lobby)return [];
+ return lobby.players.filter(p=>p.loaded&&p.connected!==false&&!p.dnf&&(p.id===multiplayer.id||multiplayer.peers.get(p.id)?.state)).map(p=>({id:p.id,vehicle:p.id===multiplayer.id?player?.veh:remoteCars.get(p.id)?.veh,accepted:true,gridSlot:p.gridSlot,pursuit:p.id===multiplayer.id?(traffic?.pursuitCode?.()??0):(multiplayer.peers.get(p.id)?.state?.pursuit??0),local:p.id===multiplayer.id})).filter(p=>p.vehicle);
+}
 function placeOnlineVehicle(v,member){
  const p=assignedNetworkPose(multiplayer.lobby,G.onlineGrid,member,v.spec);v.route=route;v.ground=ground;v.reset(p.s,0,0);const q=route.project(p.x,p.z,{hint:p.s,referenceY:p.y,layer:p.layer});
  Object.assign(v,{x:p.x,y:p.y,z:p.z,yaw:p.yaw,s:q.s,u:q.u,vLong:0,vLat:0,w:0,_network:true});ground.begin(v);ground.resolve(v,1/240);v.syncWheels();
@@ -2611,7 +2615,7 @@ const multiplayer = new Multiplayer(CARS, {
     try { localStorage.setItem('paraliaki.lastPlayedMap', lobby.mapId); } catch {}
     if (!world || mapSwitch || !multiplayer.loaded) return;
     if (!resumeState) { applyDriving(); }
-    if(worldSession){route=lobby.event.type==='free'?new AthensRoute({...G.unifiedCompiled.startPose}):G.networkRuntime;ground.route=route;player.veh.route=route;if(rival)rival.veh.route=route;map.route=route;}
+    if(worldSession){route=lobby.event.type==='free'?Object.assign(new AthensRoute({...G.unifiedCompiled.startPose}),{isFreeWorldRoute:true}):G.networkRuntime;ground.route=route;player.veh.route=route;if(rival)rival.veh.route=route;map.route=route;}
     beginCameraBlend();
     window.__flow?.prepareEvent({ ...lobby.event, id: lobby.eventId, from: lobby.event.s0, to: lobby.event.s1, traffic: lobby.config.traffic || 0, police: lobby.config.police === true, rules: { ...lobby.event.rules, police: lobby.config.police === true, policeLevel: lobby.config.policeLevel || 'normal', busted: lobby.config.busted !== false }, conditions: { time: lobby.config.time, weather: lobby.config.weather } });
     onlineWait(); G.bestSetup = bestSetup(); G.bestSetupChanged = false; G.result = null; G.resultPhoto = null; G.resultPhotoPending = false; onlineMembers(lobby.players.filter(p => p.id !== id));
@@ -2633,7 +2637,7 @@ const multiplayer = new Multiplayer(CARS, {
       const peer = peers.get(id); if (!peer) continue;
       const member = multiplayer.lobby.players.find(p => p.id === id);
       const p = applyRemotePose(peer, c.veh, performance.now(), member?.finish != null || !!member?.dnf), v = c.veh;
-      applySpectatorState(v, p);
+      applySpectatorState(v, p);if(Number.isInteger(p.layer)&&typeof p.surfaceId==='string')v.routeContact={layer:p.layer,surfaceId:p.surfaceId};
       if(p.paint && p.paint !== c.model.paintColor)setPaint(c.model,p.paint);
       c.lastBrake = p.braking === true; c.model.root.visible = member?.connected !== false || performance.now() - peer.at < 3000;
       syncCar(c, dt);

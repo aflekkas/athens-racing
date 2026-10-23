@@ -1,6 +1,6 @@
 // Bounded, offline reader for already emitted AWT cells. Never changes their identity.
 import {readFile} from 'node:fs/promises';
-import {resolve,dirname} from 'node:path';
+import {resolve,dirname,delimiter,sep} from 'node:path';
 import {createHash} from 'node:crypto';
 import {gunzipSync} from 'node:zlib';
 import {decodeTilePack} from '../src/world-tile-codec.js';
@@ -13,6 +13,18 @@ import {parkedBoxes} from '../src/world-tile-parking.js';
 import {cellKey} from '../src/route-geometry.js';
 import {routeSurfaceAllowed} from '../src/route-surface.js';
 
+export async function readEmittedCellBytes(entry,{world,cells,key='unknown'}){
+  let bytes;const directories=Array.isArray(cells)?cells:String(cells||dirname(world)).split(delimiter);
+  // Layered immutable caches share unchanged source cells without copying.
+  // A corrupt higher-priority hash never falls back to a different cache.
+  for(const directory of directories){const base=resolve(directory),names=[entry.sha256+'.bin.gz'];if(!/^(?:https?:|\/)/.test(entry.url)&&resolve(base,entry.url).startsWith(base+sep))names.push(entry.url);
+    for(const name of new Set(names)){try{bytes=await readFile(resolve(base,name));break;}catch(error){if(error.code!=='ENOENT')throw error;}}if(bytes)break;
+  }
+  if(!bytes)return null;
+  if(bytes.length!==entry.bytes||createHash('sha256').update(bytes).digest('hex')!==entry.sha256)throw Error('Cell hash mismatch: '+key);
+  return bytes;
+}
+
 export async function readEmittedRouteWorld({world,cells,keys}) {
   if(keys.size>128)throw Error('Route audit exceeds 128 cells');
   const manifest=JSON.parse(await readFile(world,'utf8')),tiles=new Map(),barriers=new WorldTileBarriers(),obstacles=new WorldTileObstacles();
@@ -20,8 +32,7 @@ export async function readEmittedRouteWorld({world,cells,keys}) {
   const roads=new WorldTileRoads(stream);
   for(const key of [...keys].sort()) {
     const e=manifest.tiles[key];if(!e)continue;
-    let bytes;try{bytes=await readFile(resolve(cells||dirname(world),/^(?:https?:|\/world\/)/.test(e.url)?e.sha256+'.bin.gz':e.url));}catch(error){if(error.code==='ENOENT')continue;throw error;}
-    if(bytes.length!==e.bytes||createHash('sha256').update(bytes).digest('hex')!==e.sha256)throw Error('Cell hash mismatch: '+key);
+    const bytes=await readEmittedCellBytes(e,{world,cells,key});if(!bytes)continue;
     const raw=gunzipSync(bytes,{maxOutputLength:e.decodedBytes}),packet=await decodeTilePack(raw.buffer.slice(raw.byteOffset,raw.byteOffset+raw.length),e.decodedBytes);
     packet.tables=validateWorldTile(packet,{world:e.source?.world||manifest.world,revision:e.source?.revision||manifest.revision,cell:key.split(',').map(Number)}).tables;
     packet.contactIndex=buildTileContactIndex(packet.tables);const parking=packet.metadata.extensions?.worldDetail?.parking;
