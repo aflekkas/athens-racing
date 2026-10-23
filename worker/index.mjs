@@ -154,7 +154,7 @@ export class GameArena extends DurableObject {
       if (path === '/api/account/live') {
         return json(arenaAccountStatus(this.core, url));
       }
-      if (request.method === 'GET' && path === '/health') return json({ instanceId: this.instanceId, startedAt: this.startedAt, ok: true, transport: 'durable-object', clients: this.core.clients.size, lobbies: this.core.lobbies.size, track: this.core.track, maps: catalogue.maps.map(({ id, track }) => ({ id, track })) });
+      if (request.method === 'GET' && path === '/health') return json({ instanceId: this.instanceId, startedAt: this.startedAt, ok: true, transport: 'durable-object', clients: this.core.clients.size, lobbies: this.core.lobbies.size, track: this.core.track, maps: [...maps].filter(([id]) => !maps.onlineMapIds || maps.onlineMapIds.has(id)).map(([id, map]) => ({ id, track: map.track })) });
       if (request.method === 'GET' && path === '/api/lobbies') return json(this.core.discover().lobbies);
       if (path === '/api/leaderboard') {
         if (request.method === 'GET') return json(this.leaderboard.list(leaderboardFilters(url.searchParams, cars)));

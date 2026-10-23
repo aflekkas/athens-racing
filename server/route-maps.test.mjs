@@ -96,3 +96,23 @@ test('free roam and off-course race recoveries on distant surveyed roads return 
   const recovery=requestRecovery(driver,event,'race',1,1100,{route});assert.ok(recovery);assert.equal(recovery.kind,'road');assert.ok(Number.isFinite(recovery.s)&&Number.isFinite(recovery.u));assert.equal(recovery.u,0);if(driver.course)assert.equal(driver.course.reached,0);
  }
 });
+
+test('online activation replaces legacy offerings atomically and failed proof sets offer no partial release',async()=>{
+ const {createGameCore}=await import('./core.mjs'),{MULTIPLAYER_PROTOCOL}=await import('../src/multiplayer-protocol.js');
+ const legacy={id:'riviera',track:{version:'legacy'},definitions:new Map([['quick',{id:'quick',mapId:'riviera',type:'sprint',s0:0,s1:100,dir:1,len:100}]])};
+ for(const invalid of [false,true]){
+  const {c,build}=await catalogue(),maps=new Map([['riviera',legacy]]);if(invalid)build.routeConfig.routes.push({...build.routeConfig.routes[0],id:'missing-route'});await installRouteMaps(maps,build,{carSpecs:{mini:{width:2,length:4}}});
+  const core=createGameCore({maps,cars:new Set(['mini']),carSpecs:{mini:{width:2,length:4}},leaderboard:{submit:async()=>{}}}),ws={readyState:1,messages:[],send(s){this.messages.push(JSON.parse(s));},close(){}};core.connect(ws,'test',{protocol:MULTIPLAYER_PROTOCOL});
+  const hello=ws.messages[0];assert.deepEqual(hello.maps.map(m=>m.id),invalid?[]:[c.id]);assert.ok(hello.events.every(e=>e.mapId!=='riviera'));
+  core.message(ws,JSON.stringify({type:'create',mapId:'riviera'}));assert.equal(core.lobbies.size,0);
+  core.message(ws,JSON.stringify({type:'create'}));assert.equal(core.lobbies.size,invalid?0:1);if(!invalid)assert.equal([...core.lobbies.values()][0].mapId,c.id);
+ }
+ const x=await catalogue();x.build.routeConfig.online=false;const maps=new Map([['riviera',legacy]]);await installRouteMaps(maps,x.build);assert.equal(maps.onlineMapIds,null);assert.equal(maps.get('riviera'),legacy);assert.equal(maps.has(x.c.id),false);
+});
+
+test('activation cannot resurrect a persisted legacy lobby or its ready state',async()=>{
+ const {createGameCore}=await import('./core.mjs'),{MULTIPLAYER_PROTOCOL}=await import('../src/multiplayer-protocol.js'),{c,build}=await catalogue();
+ const maps=new Map([['riviera',{id:'riviera',track:{version:'legacy'},definitions:new Map([['quick',{id:'quick',mapId:'riviera',type:'sprint',s0:0,s1:100,dir:1,len:100}]])}]]),opts={maps,cars:new Set(['mini']),carSpecs:{mini:{width:2,length:4}},leaderboard:{submit:async()=>{}}};
+ let core=createGameCore(opts);const ws={readyState:1,messages:[],send(s){this.messages.push(JSON.parse(s));},close(){}};core.connect(ws,'test',{protocol:MULTIPLAYER_PROTOCOL});core.message(ws,JSON.stringify({type:'create'}));core.message(ws,JSON.stringify({type:'ready',ready:true,version:'legacy'}));const saved=structuredClone(core.exportState());assert.equal(saved.sessions[0].ready,true);
+ await installRouteMaps(maps,build,{carSpecs:opts.carSpecs});core=createGameCore(opts);core.restore(saved);assert.equal(core.lobbies.size,0);assert.equal([...core.sessions.values()][0].ready,false);assert.equal([...core.sessions.values()][0].state,null);assert.equal(core.track.version,maps.get(c.id).track.version);
+});

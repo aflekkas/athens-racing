@@ -77,15 +77,16 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
     if (trail.list.length > 6) trail.list.shift();
   };
   const takeTrail = (c, raceId) => { const trail = trails.get(c); trails.delete(c); return trail?.raceId === raceId && trail.list.length > 1 ? trail.list.slice(0, -1) : null; };
-  const track = maps.get('riviera').track;
-  const mapEnabled = id => maps.get(id)?.routeIdentity ? maps.routeConfig?.online === true : isMapEnabled(id);
+  const defaultMapId = maps.onlineMapIds?.values().next().value || 'riviera';
+  const track = maps.get(defaultMapId).track;
+  const mapEnabled = id => maps.onlineMapIds ? maps.onlineMapIds.has(id) : maps.get(id)?.routeIdentity ? maps.routeConfig?.online === true : isMapEnabled(id);
   const mapSupportsCar = (mapId, car) => { const map = maps.get(mapId); if (!map?.routeIdentity) return true; try { map.gridPose(0, car); const spec = specOf(car); return Number.isFinite(spec?.width) && Number.isFinite(spec?.length) && map.supportsCar?.(car) !== false; } catch { return false; } };
   const eligibleForMap = (mapId, ids) => ids.filter(car => mapSupportsCar(mapId, car));
   const lobbies = new Map(), clients = new Set(), sessions = new Map();
   const lobbyEvent = l => maps.get(l.mapId).definitions.get(l.eventId);
   // Removed modes stay unavailable even when a legacy catalogue is supplied.
-  const onlineEvent = (id, mapId = 'riviera') => ['sprint', 'free'].includes(maps.get(mapId)?.definitions.get(id)?.type);
-  const options = (mapId = 'riviera') => [...maps.get(mapId).definitions.values()].filter(e => onlineEvent(e.id, mapId)).map(({ id, name, type, s0, s1, dir, len, routeKey }) => ({ id, name, type, mapId, s0, s1, dir, len, routeKey }));
+  const onlineEvent = (id, mapId = defaultMapId) => ['sprint', 'free'].includes(maps.get(mapId)?.definitions.get(id)?.type);
+  const options = (mapId = defaultMapId) => [...maps.get(mapId).definitions.values()].filter(e => onlineEvent(e.id, mapId)).map(({ id, name, type, s0, s1, dir, len, routeKey }) => ({ id, name, type, mapId, s0, s1, dir, len, routeKey }));
   const catalogue = () => [...maps].filter(([id]) => mapEnabled(id)).map(([id, m]) => ({ id, name: m.name, track: m.track, events: options(id), trips: m.trips || { taxi: null, getaway: null } }));
   const uniqueName = (l, name, id) => {
     const used = new Set([...l.players.values()].filter(p => p.id !== id).map(p => p.name.toUpperCase()));
@@ -142,7 +143,7 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
     if ([...clients].filter(c => c.ip === ip).length >= 24) { ws.close(1013, 'Too many connections'); return; }
     const defaultName = 'GR-' + (1000 + Math.floor(Math.random() * 9000));
     let c = { ws, ip, identity: connection.identity, protocol, build: clean(connection.build, null, 80), token: randomHex(32), connected: true, touched: Date.now(), id: randomUUID(), name: defaultName, car: 'mini', ready: false, finish: null, state: null, lobby: null, alive: true, messages: 0, window: Date.now(), plate: defaultName };
-    sessions.set(c.token, c); clients.add(c); send(ws, { type: 'hello', protocol: MULTIPLAYER_PROTOCOL, features: { stateBatching: true, wreckDnf: true }, id: c.id, token: c.token, now: Date.now(), track, maps: catalogue(), events: [...maps.keys()].flatMap(options) }); send(ws, discover());
+    sessions.set(c.token, c); clients.add(c); send(ws, { type: 'hello', protocol: MULTIPLAYER_PROTOCOL, features: { stateBatching: true, wreckDnf: true }, id: c.id, token: c.token, now: Date.now(), track, maps: catalogue(), events: [...maps.keys()].filter(mapEnabled).flatMap(options) }); send(ws, discover());
     bind(c, ws, ip); return true;
   };
   const bind = (initial, ws, ip) => {
@@ -215,7 +216,7 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
           let dest;
           if (m.type === 'create') {
             if (m.mapId !== undefined && !maps.has(m.mapId)) return error(maps.routeIssues?.get(m.mapId) || 'Unknown map.');
-            const mapId = m.mapId || 'riviera';
+            const mapId = m.mapId || defaultMapId;
             const defs = maps.get(mapId).definitions;
             const wantedEvent = m.eventId ?? options(mapId)[0]?.id;
             if (wantedEvent === undefined || !defs.has(wantedEvent)) return error('Unknown race route for this map.');
@@ -620,7 +621,7 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
     }
     const byId = new Map([...sessions.values()].map(c => [c.id, c]));
     for (const data of saved?.lobbies || []) {
-      if (!maps.has(data.mapId) || !onlineEvent(data.eventId, data.mapId) || maps.get(data.mapId).routeIdentity && !sameRouteIdentity(data.routeIdentity, maps.get(data.mapId).routeIdentity)) {
+      if (!maps.has(data.mapId) || !mapEnabled(data.mapId) || !onlineEvent(data.eventId, data.mapId) || maps.get(data.mapId).routeIdentity && !sameRouteIdentity(data.routeIdentity, maps.get(data.mapId).routeIdentity)) {
         for (const id of data.playerIds || []) { const c = byId.get(id); if (c) { c.loaded = false; c.ready = false; c.state = null; c.courseCursor = null; c.recovery = null; } }
         continue;
       }

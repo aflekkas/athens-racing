@@ -11,7 +11,7 @@ const immutableURL = (id, kind, hash) => `/data/routes/${id}.${kind}.${hash}.jso
 // leaderboard courses. Public JSON is derived from that same allow-list.
 export async function installRouteMaps(maps, catalogue, { carSpecs = {}, loadRoadArtifact = null } = {}) {
   const config = catalogue?.routeConfig || {}, release = ['staging', 'production'].includes(config.environment);
-  const routes = new Map(), publicRoutes = [], issues = new Map(), roadAuthorities = new Map();
+  const routes = new Map(), publicRoutes = [], issues = new Map(), roadAuthorities = new Map(), onlineMaps = new Map();
   let activeWorldRevision = null;
   for (const entry of release && Array.isArray(config.routes) ? config.routes : []) {
     const c = catalogue.routes?.find(c => c.id === entry.id);
@@ -65,13 +65,20 @@ export async function installRouteMaps(maps, catalogue, { carSpecs = {}, loadRoa
         geometry.contactAt = authority.contactAt;
         const track = { start: 0, finish: c.lengthM, version: `${c.routeHash}:${descriptor.hash}`, routeIdentity: identity };
         const map = { id: c.id, name: c.definition.name, track, routeIdentity: identity, geometry, closed: geometry.closed, definitions, onlineGrid, prepareRecovery: async driver => { await authority.ensure(driver.state); return authority.readyFor(driver.state); }, supportsCar: car => { const f = footprint({ car }); try { onlineGridPose(onlineGrid, 0, spec(car)); } catch { return false; } return roadBody.footprints.some(p => p.halfWidth >= f.halfWidth && p.halfLength >= f.halfLength); }, gridPose: (slot, car) => onlineGridPose(onlineGrid, slot, spec(car)), trips: { taxi: null, getaway: null } };
-        maps.set(c.id, map); exposed.onlineGrid = descriptor; exposed.recovery = recovery;
+        onlineMaps.set(c.id, map); exposed.onlineGrid = descriptor; exposed.recovery = recovery;
       } catch (error) { issues.set(c.id, error.message); exposed.onlineUnsupported = error.message; }
     }
     publicRoutes.push(exposed);
   }
+  // Activation is atomic: one missing tuple/grid/world proof prevents every
+  // streamed offering. Legacy geometry remains only for historical records.
+  const requestedOnline = config.online === true;
+  const onlineAvailable = requestedOnline && release && onlineMaps.size > 0 && onlineMaps.size === config.routes.length && issues.size === 0;
+  maps.onlineMapIds = requestedOnline ? new Set() : null;
+  if (onlineAvailable) for (const [id, map] of onlineMaps) { maps.set(id, map); maps.onlineMapIds.add(id); }
+  else if (requestedOnline) for (const entry of config.routes || []) if (!issues.has(entry.id)) issues.set(entry.id, 'Online release incomplete: every enabled route needs matching world, recovery and eight-slot grid proofs');
   maps.routes = routes; maps.routeIssues = issues;
-  maps.routeConfig = { environment: release ? config.environment : 'production', world: config.world === true, online: config.online === true, routes: publicRoutes };
+  maps.routeConfig = { environment: release ? config.environment : 'production', world: config.world === true, online: requestedOnline, onlineAvailable, routes: publicRoutes };
   return maps.routeConfig;
 }
 export function routePacketMatches(map, message) {

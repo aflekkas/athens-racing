@@ -39,10 +39,10 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
     if (!(await stat(file)).isFile() || (await stat(file)).size > maxBytes) throw Error('Recovery asset unavailable or too large');
     return readFile(file, 'utf8');
   } });
-  const { track, definitions } = maps.get('riviera');
-  const leaderboard = await createLeaderboard(resolve(dataDir, 'leaderboard.json'), definitions, CARS, track.version, maps);
+  const { track: legacyTrack, definitions } = maps.get('riviera');
+  const leaderboard = await createLeaderboard(resolve(dataDir, 'leaderboard.json'), definitions, CARS, legacyTrack.version, maps);
   const core = createGameCore({ maps, cars: CARS, carSpecs, nitrousCars, leaderboard, countdownMs, raceLimitMs, reconnectGraceMs });
-  const { clients, lobbies, discover } = core;
+  const { clients, lobbies, discover, track } = core;
   const postLimits = new Map();
   const server = http.createServer(async (req, res) => {
     const headers = { 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'no-cache' };
