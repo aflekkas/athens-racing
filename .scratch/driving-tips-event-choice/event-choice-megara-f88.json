@@ -1,0 +1,115 @@
+{
+  "label": "after",
+  "route": "megara-club",
+  "steps": [
+    {
+      "step": "picker",
+      "at": "2026-10-23T08:08:49.903Z",
+      "card": "megara-club",
+      "shot": "/tmp/athens-drivetips.755x/shots/after-1-picker.jpg"
+    },
+    {
+      "step": "setup-default",
+      "at": "2026-10-23T08:09:11.551Z",
+      "screen": "setup",
+      "def": {
+        "id": "megara-race",
+        "type": "sprint",
+        "laps": 3
+      },
+      "event": {
+        "value": "megara-race",
+        "options": [
+          "RACE",
+          "TIME TRIAL"
+        ]
+      },
+      "rivals": "2",
+      "laps": null,
+      "format": "DISTANCE6.0 KM | FORMATCIRCUIT · 3 LAPS | REGIONMEGARA",
+      "kick": "BACKSPRINT · MEGARA CIRCUIT",
+      "shot": "/tmp/athens-drivetips.755x/shots/after-2-setup-default.jpg"
+    },
+    {
+      "step": "setup-tt",
+      "at": "2026-10-23T08:09:13.019Z",
+      "screen": "setup",
+      "def": {
+        "id": "megara-tt",
+        "type": "timetrial",
+        "laps": 3
+      },
+      "event": {
+        "value": "megara-tt",
+        "options": [
+          "RACE",
+          "TIME TRIAL"
+        ]
+      },
+      "rivals": null,
+      "laps": "3",
+      "format": "DISTANCE6.0 KM | FORMATTIME TRIAL · 3 LAPS | REGIONMEGARA",
+      "kick": "BACKTIME TRIAL · MEGARA CIRCUIT",
+      "shot": "/tmp/athens-drivetips.755x/shots/after-3-setup-timetrial.jpg"
+    },
+    {
+      "step": "back-path",
+      "at": "2026-10-23T08:09:21.770Z",
+      "screens": [
+        "car",
+        "setup"
+      ]
+    },
+    {
+      "step": "setup-after-back",
+      "at": "2026-10-23T08:09:22.282Z",
+      "screen": "setup",
+      "def": {
+        "id": "megara-tt",
+        "type": "timetrial",
+        "laps": 3
+      },
+      "event": {
+        "value": "megara-tt",
+        "options": [
+          "RACE",
+          "TIME TRIAL"
+        ]
+      },
+      "rivals": null,
+      "laps": "3",
+      "format": "DISTANCE6.0 KM | FORMATTIME TRIAL · 3 LAPS | REGIONMEGARA",
+      "kick": "BACKTIME TRIAL · MEGARA CIRCUIT"
+    },
+    {
+      "step": "race-tt",
+      "at": "2026-10-23T08:09:57.010Z",
+      "state": "countdown",
+      "id": "megara-tt",
+      "baseId": "megara-tt",
+      "type": "timetrial",
+      "laps": 3,
+      "rivalCount": null,
+      "rivalsOnGrid": 0,
+      "hudLap": "LAP 1/30:00.00",
+      "shot": "/tmp/athens-drivetips.755x/shots/after-4-race-timetrial.jpg"
+    }
+  ],
+  "errors": [
+    "TypeError: Cannot read properties of undefined (reading 'menu')"
+  ],
+  "boards": [
+    {
+      "mapId": "athens",
+      "routeId": "megara-club",
+      "eventId": "megara-race",
+      "limit": "3"
+    },
+    {
+      "mapId": "athens",
+      "routeId": "megara-club",
+      "eventId": "megara-tt",
+      "limit": "3"
+    }
+  ]
+}

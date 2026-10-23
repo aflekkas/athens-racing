@@ -1,0 +1,328 @@
+{
+  "label": "after",
+  "variants": [
+    {
+      "variant": "pad-1280x800",
+      "manual": false,
+      "path": "drivingHints.update",
+      "card": {
+        "shown": true,
+        "queued": true,
+        "laneMode": "corner",
+        "box": [
+          28,
+          112,
+          220,
+          278
+        ],
+        "viewport": [
+          1280,
+          800
+        ],
+        "rows": [
+          {
+            "keys": [
+              "LS"
+            ],
+            "label": "MANUAL / AUTO"
+          },
+          {
+            "keys": [
+              "RB",
+              "LB"
+            ],
+            "label": "PADDLE UP / DOWN"
+          },
+          {
+            "keys": [
+              "A"
+            ],
+            "label": "HANDBRAKE"
+          },
+          {
+            "keys": [
+              "D"
+            ],
+            "label": "TC / ESC"
+          },
+          {
+            "keys": [
+              "Y"
+            ],
+            "label": "POV / OUTSIDE"
+          },
+          {
+            "keys": [
+              "VIEW"
+            ],
+            "label": "VIEW POSITION"
+          },
+          {
+            "keys": [
+              "RS"
+            ],
+            "label": "LOOK BACK"
+          },
+          {
+            "keys": [
+              "UNBOUND"
+            ],
+            "label": "TOW"
+          },
+          {
+            "keys": [
+              "UNBOUND"
+            ],
+            "label": "BIG MAP"
+          }
+        ],
+        "srText": "LS: MANUAL / AUTO. RB / LB: PADDLE UP / DOWN. A: HANDBRAKE. D LEFT: TC / ESC. Y: POV / OUTSIDE. VIEW: VIEW POSITION. RS: LOOK BACK. UNBOUND: TOW. UNBOUND: BIG MAP.",
+        "overflowX": false,
+        "overlaps": 0
+      },
+      "afterShot": {
+        "shown": true,
+        "queued": true,
+        "laneMode": "corner",
+        "box": [
+          28,
+          116,
+          220,
+          278
+        ],
+        "viewport": [
+          1280,
+          800
+        ],
+        "rows": [
+          {
+            "keys": [
+              "LS"
+            ],
+            "label": "MANUAL / AUTO"
+          },
+          {
+            "keys": [
+              "RB",
+              "LB"
+            ],
+            "label": "PADDLE UP / DOWN"
+          },
+          {
+            "keys": [
+              "A"
+            ],
+            "label": "HANDBRAKE"
+          },
+          {
+            "keys": [
+              "D"
+            ],
+            "label": "TC / ESC"
+          },
+          {
+            "keys": [
+              "Y"
+            ],
+            "label": "POV / OUTSIDE"
+          },
+          {
+            "keys": [
+              "VIEW"
+            ],
+            "label": "VIEW POSITION"
+          },
+          {
+            "keys": [
+              "RS"
+            ],
+            "label": "LOOK BACK"
+          },
+          {
+            "keys": [
+              "UNBOUND"
+            ],
+            "label": "TOW"
+          },
+          {
+            "keys": [
+              "UNBOUND"
+            ],
+            "label": "BIG MAP"
+          }
+        ],
+        "srText": "LS: MANUAL / AUTO. RB / LB: PADDLE UP / DOWN. A: HANDBRAKE. D LEFT: TC / ESC. Y: POV / OUTSIDE. VIEW: VIEW POSITION. RS: LOOK BACK. UNBOUND: TOW. UNBOUND: BIG MAP.",
+        "overflowX": false,
+        "overlaps": 0
+      },
+      "shot": "/tmp/athens-drivetips.755x/shots/after-tip-pad-1280x800.jpg",
+      "afterHide": {
+        "card": {
+          "shown": false,
+          "queued": false,
+          "laneMode": "corner"
+        },
+        "enabled": false,
+        "stored": "{\"guest\":{},\"GR-7998\":{\"controls\":true,\"lastAt\":1792742912276,\"strip\":false}}"
+      }
+    },
+    {
+      "variant": "pad-1280x720",
+      "manual": false,
+      "path": "drivingHints.update",
+      "card": {
+        "shown": true,
+        "queued": true,
+        "laneMode": "corner",
+        "box": [
+          28,
+          112,
+          220,
+          278
+        ],
+        "viewport": [
+          1280,
+          720
+        ],
+        "rows": [
+          {
+            "keys": [
+              "LS"
+            ],
+            "label": "MANUAL / AUTO"
+          },
+          {
+            "keys": [
+              "RB",
+              "LB"
+            ],
+            "label": "PADDLE UP / DOWN"
+          },
+          {
+            "keys": [
+              "A"
+            ],
+            "label": "HANDBRAKE"
+          },
+          {
+            "keys": [
+              "D"
+            ],
+            "label": "TC / ESC"
+          },
+          {
+            "keys": [
+              "Y"
+            ],
+            "label": "POV / OUTSIDE"
+          },
+          {
+            "keys": [
+              "VIEW"
+            ],
+            "label": "VIEW POSITION"
+          },
+          {
+            "keys": [
+              "RS"
+            ],
+            "label": "LOOK BACK"
+          },
+          {
+            "keys": [
+              "UNBOUND"
+            ],
+            "label": "TOW"
+          },
+          {
+            "keys": [
+              "UNBOUND"
+            ],
+            "label": "BIG MAP"
+          }
+        ],
+        "srText": "LS: MANUAL / AUTO. RB / LB: PADDLE UP / DOWN. A: HANDBRAKE. D LEFT: TC / ESC. Y: POV / OUTSIDE. VIEW: VIEW POSITION. RS: LOOK BACK. UNBOUND: TOW. UNBOUND: BIG MAP.",
+        "overflowX": false,
+        "overlaps": 0
+      },
+      "afterShot": {
+        "shown": true,
+        "queued": true,
+        "laneMode": "corner",
+        "box": [
+          28,
+          116,
+          220,
+          278
+        ],
+        "viewport": [
+          1280,
+          720
+        ],
+        "rows": [
+          {
+            "keys": [
+              "LS"
+            ],
+            "label": "MANUAL / AUTO"
+          },
+          {
+            "keys": [
+              "RB",
+              "LB"
+            ],
+            "label": "PADDLE UP / DOWN"
+          },
+          {
+            "keys": [
+              "A"
+            ],
+            "label": "HANDBRAKE"
+          },
+          {
+            "keys": [
+              "D"
+            ],
+            "label": "TC / ESC"
+          },
+          {
+            "keys": [
+              "Y"
+            ],
+            "label": "POV / OUTSIDE"
+          },
+          {
+            "keys": [
+              "VIEW"
+            ],
+            "label": "VIEW POSITION"
+          },
+          {
+            "keys": [
+              "RS"
+            ],
+            "label": "LOOK BACK"
+          },
+          {
+            "keys": [
+              "UNBOUND"
+            ],
+            "label": "TOW"
+          },
+          {
+            "keys": [
+              "UNBOUND"
+            ],
+            "label": "BIG MAP"
+          }
+        ],
+        "srText": "LS: MANUAL / AUTO. RB / LB: PADDLE UP / DOWN. A: HANDBRAKE. D LEFT: TC / ESC. Y: POV / OUTSIDE. VIEW: VIEW POSITION. RS: LOOK BACK. UNBOUND: TOW. UNBOUND: BIG MAP.",
+        "overflowX": false,
+        "overlaps": 0
+      },
+      "shot": "/tmp/athens-drivetips.755x/shots/after-tip-pad-1280x720.jpg"
+    }
+  ],
+  "errors": [],
+  "raceEntry": "countdown finished"
+}

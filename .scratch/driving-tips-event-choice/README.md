@@ -34,7 +34,18 @@ shown tip on screen while SwiftShader screenshots (its normal 6 s would expire m
 server answers `/api/*` offline except `/api/routes`; `/api/auth/config` is `{providers:[], required:false}`. The route
 catalogue, compiled routes and world cells are read-only GETs from our staging site (test input only, not a production claim).
 
+## Added on candidate f88cce4c (08:07–08:10 UTC, one bounded slot)
+
+| File | What it shows |
+|---|---|
+| `after-tip-pad-1280x800.jpg`, `after-tip-pad-1280x720.jpg` | controller tip, verified in the image (re-measured after the screenshot: still shown): LS, RB / LB, A, D-pad left, Y, VIEW, RS; TOW and BIG MAP have no default controller binding and read UNBOUND; no mouse row |
+| `after-1-picker-f88.jpg` | picker with the opaque no-blur card (potato). Not a matched framing: the camera finished its flight to Megara, so no label sits under the card here |
+| `after-4-race-timetrial-f88.jpg` | the time trial started from Race Setup: `megara-tt`, timetrial, 3 laps, 0 rivals on the grid, HUD LAP 1/3 |
+
+`event-choice-megara-f88.json`: RACE default (2 rivals) → TIME TRIAL (no rivals, 3 laps) → CHOOSE CAR → Back → Back
+(screens `car`, `setup`) keeps TIME TRIAL → time trial on track. `tip-controller-report-f88.json`: controller DOM rows.
+
 ## Not yet proven
-- controller (gamepad) tip screenshot; 720 baseline;
-- event flow past setup: CHOOSE CAR → Back (twice: the first Back opens the garage) keeps TIME TRIAL, then starting the time
-  trial and the race and checking laps / rivals on track (covered by `tools/setup-event-choice.test.mjs`, not yet in a browser).
+- starting the RACE again after the time trial in the browser (the harness's quit-to-title step failed: `__flow` was
+  undefined there; covered by `tools/setup-event-choice.test.mjs`);
+- a matched picker frame with a label under the card (before: `after-1-picker.jpg`); 720 baseline.

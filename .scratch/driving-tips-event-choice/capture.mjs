@@ -49,8 +49,8 @@ try{
   await page.evaluate(()=>{const n=window.__notifications.queue.items.get('tip:controls');if(n){n.remaining=1e9;n.staleAt=Infinity;}});
   await page.waitForTimeout(700);
   const card=await tipCard(page),shot=resolve(out,`${label}-tip-${variant}.jpg`);
-  await page.screenshot({path:shot,type:'jpeg',quality:84,timeout:180000});
-  const row={variant,...info,card,shot};
+  let afterShot;for(let attempt=0;attempt<3;attempt++){await page.screenshot({path:shot,type:'jpeg',quality:84,timeout:180000});afterShot=await tipCard(page);if(afterShot.shown)break;console.log('RETRY-SHOT',variant,JSON.stringify(afterShot),await page.evaluate(()=>({body:document.body.className,lane:document.getElementById('notification-lane')?.hidden,items:[...window.__notifications.queue.items.keys()]})));await page.waitForTimeout(800);}
+  const row={variant,...info,card,afterShot,shot};
   if(card.shown&&index===0){ // HIDE TIPS: the real button
    await page.click(`${SEL} button`,{timeout:15000});await page.waitForTimeout(600);
    row.afterHide={card:await tipCard(page),enabled:await page.evaluate(async()=>(await import('/src/ui/driving-hints.js')).drivingHints.enabled),stored:await page.evaluate(()=>localStorage.getItem('paraliaki.drivingTips.v2'))};
