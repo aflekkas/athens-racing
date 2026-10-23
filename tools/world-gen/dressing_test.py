@@ -79,6 +79,24 @@ class SourceGreenAreas(unittest.TestCase):
    self.assertEqual([tags for g,tags in found],[tags for key,g,tags in records])
    self.assertTrue(found[0][0].equals(garden));self.assertEqual(len(found[0][0].interiors),1)
    self.assertEqual([ground_category(30,.1,tags.get('landuse',''),tags.get('natural',''),1e9,tags.get('leisure','')) for g,tags in found],['grass','forest','forest'])
+ def test_scenery_reduction_is_deterministic_and_authenticates_cache_source(self):
+  from scenery import reduce_scenery
+  from model import PROJECTION
+  from ingest import sha
+  from pathlib import Path
+  with tempfile.TemporaryDirectory() as d:
+   path=Path(d)/'vegetation.sqlite';source=Path(d)/'source.json'
+   db=sqlite3.connect(path);db.executescript('CREATE TABLE areas(id TEXT,geometry BLOB,tags TEXT); CREATE TABLE points(id TEXT,source TEXT,kind TEXT,x REAL,z REAL,seed INTEGER,tags TEXT); CREATE TABLE metadata(value TEXT);')
+   garden=Polygon([(0,0),(100,0),(100,100),(0,100)],holes=[[(20,20),(40,20),(40,40),(20,40)]])
+   db.execute('INSERT INTO areas VALUES(?,?,?)',('osm:way:1',garden.wkb,json.dumps({'leisure':'garden'})))
+   db.execute('INSERT INTO points VALUES(?,?,?,?,?,?,?)',('osm:way:1:candidate:60:60','osm:way:1','park_candidate',60,60,7,'{"leisure":"garden"}'))
+   db.execute('INSERT INTO metadata VALUES(?)',(json.dumps({'inputs':{'pbfSha256':'source-hash','projection':PROJECTION,'codeSha256':'code-hash'},'counts':{'garden_areas':1},'errors':{}}),));db.commit();db.close()
+   path.with_suffix('.sha256').write_text(sha(path))
+   source.write_text(json.dumps({'sha256':'source-hash','bytes':100,'bounds':[23,38,24,39],'attribution':'OSM contributors','responses':[],'missingWayNodes':[],'wholeWays':True,'restrictionClosureComplete':True,'unresolvedRelationMembers':[{'ref':'missing'}]}))
+   a=reduce_scenery(path,source);self.assertEqual(a,reduce_scenery(path,source));self.assertFalse(a['placementValidated']);self.assertEqual(a['source']['unresolvedRelationMembers'],1)
+   self.assertEqual(a['areas'][0]['tags'],{'leisure':'garden'});self.assertEqual(len(a['areas'][0]['geometry']['coordinates']),2);self.assertEqual(a['points'][0]['inference'],'sampled-green-area')
+   record=json.loads(source.read_text());record['sha256']='wrong';source.write_text(json.dumps(record))
+   with self.assertRaisesRegex(ValueError,'hash mismatch'):reduce_scenery(path,source)
  @unittest.skipUnless(importlib.util.find_spec('osmium'),'osmium is not installed')
  def test_partial_green_relation_is_rejected_even_when_outer_way_exists(self):
   from vegetation import incomplete_green_relations

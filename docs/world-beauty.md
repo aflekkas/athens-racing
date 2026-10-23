@@ -153,12 +153,51 @@ and gardens exclude the entire crown square in absolute world coordinates.
 
 These are deterministic inferred planting sites from the existing road,
 terrain and building data, **not surveyed tree locations or an exact recreation
-of Kefalari gardens**. The OSM vegetation cache currently includes parks but
-omits garden/woodland area ingestion; this change does not claim to fill that
-source-data gap. No coordinates or street names select the rule.
+of Kefalari gardens**. The first bounded runtime stage conservatively excludes
+all urban-styled triangles. That style is a residential-ground default, **not
+evidence of surveyed paving**. No coordinates or street names select the rule.
 
 Caps remain 700 derived rows per cell (14,000 bytes), 420 detailed trees in
 view and the existing species pools/ranges. There are no new models, textures,
 colliders, physical arrays or wire records. World detail Off hides the tree
 layer through the existing switch. A combined terrain/scenery publication
 must rerun full crown clearance after moving any vegetation bases.
+
+
+## Actual green-area source reduction
+
+`tools/world-gen/vegetation.py` now retains OSM `leisure=garden`,
+`natural=wood` and `landuse=forest` alongside parks. `park_areas()` keeps the
+actual tags and geometry, including holes; it does not relabel woodland as a
+park. Incomplete green relations and unsupported nested relations are rejected.
+The old empty-tag park cache fallback remains compatible. This does not infer
+private gardens from the coarse residential material.
+
+`tools/world-gen/scenery.py CACHE SOURCE_RECORD OUTPUT --osm-source OSM` checks
+the source/cache fingerprints and complete way-node record. It reduces actual
+area geometry, explicit tree nodes, sampled tree rows and inferred area-grid
+sites, preserving their different provenance. Explicit source buildings,
+footpaths, paving, water, pools, pitches and parking provide exclusions. Path
+widths without an OSM width use a conservative two-metre exclusion. Unresolved
+relation members and extraction errors remain visible in the report; a bounded
+snapshot is not a complete regional survey.
+
+`tools/build-scenery-candidate.mjs SCENERY WORLD CELLS OUTPUT_DIR` creates only a
+local unpublished candidate. It adds at most the existing 96 baked rows per
+cell, preserves existing rows, follows actual fine ground, and enforces full
+crown clearance against every drivable layer, explicit non-terrain surfaces,
+source exclusions, buildings, authored Psychiko reservations, plaza/forecourt
+outlines and parked cars/furniture. Area candidates require their entire crown
+inside the actual source polygon and outside its holes. Original physical
+tables, parking and obstacle hashes, original resident reservations and the
+64 MiB combined 2×2/concurrent-transient limits are mandatory gates. New wire,
+decoded and transient descriptors use the authoritative packer formula. Shared empty wire arrays are never replaced;
+new vegetation views are appended. The existing authoritative packer supplies lossless byte-plane compression.
+
+The renderer uses its existing pools, species, models and World detail switch.
+There are no added textures, draw batches or colliders. On-screen triangle and
+instance counts can rise within those pools. Off hides the trees but still
+retains the small additional CPU rows; it is not byte-identical residency.
+Combined terrain publication must rerun clearance and hashes after moving bases.
+A source-only result or a higher count does not establish faithful street
+character: matched game views and measured budgets remain required.

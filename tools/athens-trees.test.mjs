@@ -73,7 +73,35 @@ test('setback planting survives full shoulders, follows ground, and respects bui
  assert.equal(deriveStreetTrees(t,[],()=>false,{blocked:()=>true}).length,0,'authored ownership can exclude the whole planting envelope');
  const walls=[[[0,70],[200,70],[200,91],[0,91]],[[0,109],[200,109],[200,130],[0,130]]];assert.equal(deriveStreetTrees(t,walls).length,0,'no space for a full crown between road and building');
  t.fineSurface=new Uint32Array([1,1]);assert.equal(deriveStreetTrees(t,[],()=>false,{landSurfaceIds:new Set([2])}).length,0,'mapped paving is not planting land');
- assert.equal(deriveStreetTrees(t,[],()=>false,{landSurfaceIds:new Set([1]),pavedGroundTriangles:new Uint8Array([1,1])}).length,0,'urban paving remains excluded even when the source surface ID is terrain');
+ assert.equal(deriveStreetTrees(t,[],()=>false,{landSurfaceIds:new Set([1]),pavedGroundTriangles:new Uint8Array([1,1])}).length,0,'first-stage urban styling mask remains conservative even for terrain IDs');
  t.finePositions.fill(-1);assert.equal(deriveStreetTrees(t,[]).length,0,'missing ground does not fall back to road height');
  t.edgeLayers.fill(1);assert.equal(deriveStreetTrees(t,[]).length,0);
+});
+
+import {applySceneryVegetation,geometryBlocks,geometryContainsCrown} from './scenery-cell.mjs';
+function sourceSceneryFixture(){
+ const arrays=[],tables={};const add=(key,array)=>{tables[key]=arrays.push(array)-1;};
+ add('finePositions',new Float32Array([0,10,0,512,10,0,512,10,512,0,10,512]));add('fineTriangles',new Uint32Array([0,1,2,0,2,3]));add('fineSurface',new Uint32Array([1,1]));add('fineFlags',new Uint8Array(2));
+ add('contactPositions',new Float32Array());add('contactTriangles',new Uint32Array());add('buildings',new Uint32Array());add('buildingCorners',new Float32Array());
+ const vegetation={positionHeight:arrays.push(new Float32Array())-1,kind:arrays.push(new Uint8Array())-1,seed:arrays.push(new Uint32Array())-1};
+ const pack={metadata:{ids:['','terrain:land'],tables,origin:[0,0,0],extensions:{worldDetail:{vegetation}}},arrays};
+ const geometry={type:'Polygon',coordinates:[[[0,0],[512,0],[512,512],[0,512],[0,0]]]};
+ const source={clearanceEvidenceReady:true,exclusionErrors:{},areas:[{source:'osm:way:1',geometry}],exclusions:[],points:[{id:'osm:way:1:candidate:100:100',source:'osm:way:1',inference:'sampled-green-area',kind:2,x:100,z:100,seed:1,tags:{leisure:'garden'}}]};
+ return {pack,source};
+}
+test('actual source scenery respects holes, full crowns, paving, buildings, furniture, ground and authored reservations',()=>{
+ const holed={type:'Polygon',coordinates:[[[0,0],[200,0],[200,200],[0,200]],[[90,90],[110,90],[110,110],[90,110]]]};
+ assert.equal(geometryBlocks(holed,100,100,2),false);assert.equal(geometryBlocks(holed,100,100,11),true);assert.equal(geometryContainsCrown(holed,85,100,6),false);
+ const {pack,source}=sourceSceneryFixture();pack.metadata.tables.ribbons=pack.metadata.extensions.worldDetail.vegetation.seed;const sharedPhysical=pack.arrays[pack.metadata.tables.ribbons];const result=applySceneryVegetation(pack,source);assert.equal(pack.arrays[pack.metadata.tables.ribbons],sharedPhysical);assert.equal(sharedPhysical.length,0,'deduplicated physical empty view stays untouched');assert.equal(result.added,1);assert.equal(pack.arrays[pack.metadata.extensions.worldDetail.vegetation.positionHeight][1],10);assert.equal(applySceneryVegetation(pack,source).added,0,'same mapped source is not doubled');
+ const cases=[
+  ({source})=>source.exclusions.push({geometry:{type:'Polygon',coordinates:[[[103,80],[120,80],[120,120],[103,120]]]}}),
+  ({source})=>source.areas[0].geometry=holed,
+  ({pack})=>{pack.arrays[pack.metadata.tables.fineSurface].fill(2);pack.metadata.ids.push('footway:known');},
+  ({pack})=>{pack.arrays[pack.metadata.tables.buildings]=new Uint32Array([1,0,4,0]);pack.arrays[pack.metadata.tables.buildingCorners]=new Float32Array([103,80,120,80,120,120,103,120]);},
+  ({pack})=>pack.arrays[pack.metadata.tables.finePositions].fill(-1),
+  ({pack})=>{pack.arrays[pack.metadata.tables.contactPositions]=new Float32Array([95,40,95,105,40,95,100,40,105]);pack.arrays[pack.metadata.tables.contactTriangles]=new Uint32Array([0,1,2,1,1]);},
+ ];
+ for(const mutate of cases){const f=sourceSceneryFixture();mutate(f);assert.equal(applySceneryVegetation(f.pack,f.source).added,0);}
+ for(const options of [{blocked:()=>true},{occupied:[[103,100,2]]}]){const f=sourceSceneryFixture();assert.equal(applySceneryVegetation(f.pack,f.source,options).added,0);}
+ const f=sourceSceneryFixture();f.source.clearanceEvidenceReady=false;assert.throws(()=>applySceneryVegetation(f.pack,f.source),/exclusion evidence/);
 });
