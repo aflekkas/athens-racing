@@ -1,0 +1,127 @@
+{
+  "scope": "three representative reference-only panoramas; no own-game pair/terrain acceptance; other six uninspected",
+  "inspectionDateUTC": "2026-10-23",
+  "method": "Cogenly native preview status/open,navigate,snapshot visual inspection; one browser slot; <=3minute grant; tab and owned slot holder closed",
+  "thirdPartyMediaCommitted": false,
+  "thirdPartyCapturesSaved": false,
+  "runtimeEdits": false,
+  "panoramas": [
+    {
+      "routeStationM": 500,
+      "requested": {
+        "lat": 37.80845009907049,
+        "lon": 23.783559330325804,
+        "worldX": 4699.578175043402,
+        "worldZ": 19096.934971472445,
+        "headingDeg": 133.77941522131323,
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=37.8084501,23.7835593&heading=133.78&pitch=0&fov=90",
+        "sourceEdgeId": "osm:way:328525144:0-0:f:9:37"
+      },
+      "observed": {
+        "lat": 37.8084272,
+        "lon": 23.7835815,
+        "headingDeg": 133.78,
+        "panoId": "KBCcJcBthVSZMUEvOXBVXg",
+        "label": "20 Leof. Poseidonos, Vouliagmeni",
+        "imageCaptureDate": "February 2025",
+        "credit": "Google Street View",
+        "panoURL": "https://www.google.com/maps/@?api=1&map_action=pano&pano=KBCcJcBthVSZMUEvOXBVXg&heading=133.78&pitch=0&fov=90",
+        "worldX": 4701.523459205332,
+        "worldZ": 19099.484095999986,
+        "requestedToObservedDistanceM": 3.2065817200824567,
+        "localAlongRouteOffsetM": 3.1682103972234157,
+        "localRightOfRouteOffsetM": 0.49457982823040103
+      },
+      "status": "real panorama visually rendered and inspected",
+      "visibleObservations": [
+        "White directional arrows: left-turn indication in left lane and through arrows in adjacent lanes",
+        "Dashed white lane dividers",
+        "Low grassy raised median to left; kerbed planted strip to right separates frontage/service lane",
+        "Bus-stop shelter, parked cars and bollards on right frontage; traffic lights ahead"
+      ],
+      "limits": [
+        "Exact arrow metric placement/size not measured",
+        "Paint/median observations apply only to this visible frame"
+      ],
+      "capturesSaved": false
+    },
+    {
+      "routeStationM": 3000,
+      "requested": {
+        "lat": 37.80387212083716,
+        "lon": 23.797476571328918,
+        "worldX": 5920.750315867239,
+        "worldZ": 19606.55550840675,
+        "headingDeg": 29.843427007187927,
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=37.8038721,23.7974766&heading=29.84&pitch=0&fov=90",
+        "sourceEdgeId": "osm:way:87543250:0-0:b:11:38"
+      },
+      "observed": {
+        "lat": 37.8038198,
+        "lon": 23.7974806,
+        "headingDeg": 29.84,
+        "panoId": "JUJPy3OJppeb4rjqL6VzgQ",
+        "label": "Leof. Poseidonos, Vari",
+        "imageCaptureDate": "March 2026",
+        "credit": "Google Street View",
+        "panoURL": "https://www.google.com/maps/@?api=1&map_action=pano&pano=JUJPy3OJppeb4rjqL6VzgQ&heading=29.84&pitch=0&fov=90",
+        "worldX": 5921.103812719877,
+        "worldZ": 19612.37986399972,
+        "requestedToObservedDistanceM": 5.835073101356891,
+        "localAlongRouteOffsetM": -4.876068028511676,
+        "localRightOfRouteOffsetM": 3.205002134087431
+      },
+      "status": "real panorama visually rendered and inspected",
+      "visibleObservations": [
+        "Double continuous white centre lines and dashed same-direction lane divider",
+        "White edge line; no raised central divider visible in this frame",
+        "Grassy rocky hillside on left; shrubs and trees at right edge; open water in distance"
+      ],
+      "limits": [
+        "Visual profile not a numerical grade measurement",
+        "Roadside form beyond visible field not established"
+      ],
+      "capturesSaved": false
+    },
+    {
+      "routeStationM": 9000,
+      "requested": {
+        "lat": 37.81446211595438,
+        "lon": 23.831214048397744,
+        "worldX": 8881.054523354875,
+        "worldZ": 18427.67725195834,
+        "headingDeg": 101.08534482396078,
+        "url": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=37.8144621,23.8312140&heading=101.09&pitch=0&fov=90",
+        "sourceEdgeId": "osm:way:483246714:0-1:f:17:35"
+      },
+      "observed": {
+        "lat": 37.814533,
+        "lon": 23.8311829,
+        "headingDeg": 101.09,
+        "panoId": "PhwxmbPlrawGmVRQNETblA",
+        "label": "EO91, Decentralized Administration of Attica",
+        "imageCaptureDate": "April 2026",
+        "credit": "Google Street View",
+        "panoURL": "https://www.google.com/maps/@?api=1&map_action=pano&pano=PhwxmbPlrawGmVRQNETblA&heading=101.09&pitch=0&fov=90",
+        "worldX": 8878.321398625156,
+        "worldZ": 18419.786439999953,
+        "requestedToObservedDistanceM": 8.350741532990826,
+        "localAlongRouteOffsetM": -4.199303770953297,
+        "localRightOfRouteOffsetM": -7.2180836785171305
+      },
+      "status": "real panorama visually rendered and inspected",
+      "visibleObservations": [
+        "Tall exposed rock cutting immediately left",
+        "White edge line, dashed same-direction divider and double continuous white centre lines",
+        "Metal roadside guardrail right; sea and scrub-covered land visible",
+        "Street-light poles and triangular warning signs visible"
+      ],
+      "limits": [
+        "Snap is about8m from requested model point",
+        "Same driving lane/carriageway not established; camera heading may look against capture vehicle travel",
+        "Numerical gradient, rock-face dimensions and guardrail clearance not measured"
+      ],
+      "capturesSaved": false
+    }
+  ]
+}

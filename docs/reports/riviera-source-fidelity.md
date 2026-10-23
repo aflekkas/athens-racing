@@ -150,3 +150,75 @@ place-specific visual defect; source/runtime remained frozen during gates.
   Tasktemp source/fixture101MB stays shared until loader/terrain release. Disk49%
   before this stage; final disk reading recorded in handoff. Revert this report
   commit to roll back; no production asset/world/catalogue was changed.
+
+## Follow-up: three representative panoramas actually inspected
+
+On2026-10-23 a separate parent-authorized single-slot reference-only turn opened
+three real Google Street View panoramas using native Cogenly preview. All three
+visually rendered without a sign-in block. The browser tab and owned slot
+holder were closed inside the <=3minute grant; no proxy or browser remains.
+No screenshots were saved, committed or embedded in reports. Google imagery
+was viewed for reference only. The original nine-point readiness record above
+is superseded **only for these three points**; the other six are uninspected.
+Exact requested/actual coordinates, heading, panoID, date, source edge and
+snapping offsets are recorded in `streetview-three.json` beside the prior
+numeric receipts.
+
+### Station500 — February 2025
+
+[Actual panorama](https://www.google.com/maps/@?api=1&map_action=pano&pano=KBCcJcBthVSZMUEvOXBVXg&heading=133.78&pitch=0&fov=90), Google Street View, 20 Leof. Poseidonos, Vouliagmeni.
+Actual coordinate **37.8084272,23.7835815**, heading133.78°,
+pano`KBCcJcBthVSZMUEvOXBVXg`. The requested point snapped3.207m;
+local tangent offsets are3.168m along and
+0.495m to the route's right. These are coordinate
+comparisons, not surveyed road/camera elevations or lane assignments.
+
+- White directional arrows: left-turn indication in left lane and through arrows in adjacent lanes.
+- Dashed white lane dividers.
+- Low grassy raised median to left; kerbed planted strip to right separates frontage/service lane.
+- Bus-stop shelter, parked cars and bollards on right frontage; traffic lights ahead.
+
+Exact arrow metric placement/size not measured Paint/median observations apply only to this visible frame.
+
+### Station3000 — March 2026
+
+[Actual panorama](https://www.google.com/maps/@?api=1&map_action=pano&pano=JUJPy3OJppeb4rjqL6VzgQ&heading=29.84&pitch=0&fov=90), Google Street View, Leof. Poseidonos, Vari.
+Actual coordinate **37.8038198,23.7974806**, heading29.84°,
+pano`JUJPy3OJppeb4rjqL6VzgQ`. The requested point snapped5.835m;
+local tangent offsets are-4.876m along and
+3.205m to the route's right. These are coordinate
+comparisons, not surveyed road/camera elevations or lane assignments.
+
+- Double continuous white centre lines and dashed same-direction lane divider.
+- White edge line; no raised central divider visible in this frame.
+- Grassy rocky hillside on left; shrubs and trees at right edge; open water in distance.
+
+Visual profile not a numerical grade measurement Roadside form beyond visible field not established.
+
+### Station9000 — April 2026
+
+[Actual panorama](https://www.google.com/maps/@?api=1&map_action=pano&pano=PhwxmbPlrawGmVRQNETblA&heading=101.09&pitch=0&fov=90), Google Street View, EO91, Decentralized Administration of Attica.
+Actual coordinate **37.8145330,23.8311829**, heading101.09°,
+pano`PhwxmbPlrawGmVRQNETblA`. The requested point snapped8.351m;
+local tangent offsets are-4.199m along and
+-7.218m to the route's right. These are coordinate
+comparisons, not surveyed road/camera elevations or lane assignments.
+
+- Tall exposed rock cutting immediately left.
+- White edge line, dashed same-direction divider and double continuous white centre lines.
+- Metal roadside guardrail right; sea and scrub-covered land visible.
+- Street-light poles and triangular warning signs visible.
+
+Snap is about8m from requested model point Same driving lane/carriageway not established; camera heading may look against capture vehicle travel Numerical gradient, rock-face dimensions and guardrail clearance not measured.
+
+The station500 view supplies direct visual support for directional arrows in
+the reviewed source-tag vicinity. It does not by itself prove exact arrow
+placement or a final-world emitted regression. Infrastructure owns any shared
+procedural implementation. The two profile-hotspot views establish roadside
+character and reference coverage, but do not validate -9.73%/-8.17% source
+snapshot grades. Image perspective/camera attitude is insufficient for that.
+At station9000 the ~8m snap could change the road-side or driving-lane view;
+a future game comparison must match actual panorama pose, not assume the
+requested centreline is the camera lane. No Tower panorama was inspected in
+this three-point turn. Full-nine coverage, current-day construction, exact
+geometry/height and matched own-game fidelity remain open.
