@@ -66,7 +66,7 @@ test('loaded, ready, single/batch motion and recovery reject spoofed map/tuple b
 });
 for (const circuit of [false, true]) test(`server world course finishes every split and ${circuit ? 'two continuous laps' : '3D sprint'} exactly once`, async t => {
   const x = await setup(t, { circuit }); x.ready();
-  for (let s = 0; s <= x.event.s1 + 5; s += 2.5) { x.advance(); x.send(x.a, x.packet({ type: 'state', state: x.pose(s) })); }
+  for (let s = -8; s <= x.event.s1 + 5; s += 2.5) { x.advance(); x.send(x.a, x.packet({ type: 'state', state: x.pose(s) })); }
   const driver = x.core.clientData(x.a); assert.ok(driver.finish > 0); assert.equal(driver.course.markTimes.filter(Number.isFinite).length, x.event.sectors.length); assert.equal(x.submitted.length, 1);
   assert.ok(driver.course.reached >= x.event.s1); assert.equal(x.submitted[0].routeId, x.c.id); assert.equal(x.submitted[0].mapId, 'athens'); assert.equal(x.submitted[0].setup.traffic, x.lobby.config.traffic);
   const record = onlineLeaderboardResult(driver, x.lobby, x.event); assert.ok(validResult(record, resultContext(record, new Map(), '', x.maps).event, new Set(['mini'])));

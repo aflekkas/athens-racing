@@ -18,7 +18,7 @@ async function catalogue() {
 }
 test('trusted build binds route/grid/road artifacts; the compiled geometry remains unchanged', async () => {
   const { c, build, grid } = await catalogue(), before = JSON.stringify(c), maps = new Map(); await installRouteMaps(maps, build, { carSpecs: { mini: { width: 2, length: 4 }, bus: { width: 2.55, length: 12 } } });
-  assert.ok(maps.has(c.id)); const map = maps.get(c.id); assert.equal(map.geometry.isWorldRoute, true); assert.equal(map.track.version, c.routeHash + ':' + build.routeConfig.routes[0].onlineGrid.hash); assert.equal(map.gridPose(7, 'mini'), grid.poses[7]); assert.throws(() => map.gridPose(7, 'bus')); assert.equal(map.supportsCar('bus'), false);
+  assert.ok(maps.has(c.id)); const map = maps.get(c.id); assert.equal(map.geometry.isWorldRoute, true); assert.equal(maps.routeConfig.routes[0].url, `/data/routes/${c.id}.${c.routeHash}.json`); assert.equal(map.track.version, c.routeHash + ':' + build.routeConfig.routes[0].onlineGrid.hash); assert.equal(map.gridPose(7, 'mini'), grid.poses[7]); assert.throws(() => map.gridPose(7, 'bus')); assert.equal(map.supportsCar('bus'), false);
   assert.equal(JSON.stringify(c), before); const event = [...map.definitions.values()][0]; assert.equal(event.s0, 0); assert.equal(event.len, c.lengthM); assert.equal(event.mapId, c.id);
 });
 test('unknown/stale routes, spoofed descriptors, changed artifact bytes and incomplete eight-slot grids fail closed', async () => {
@@ -50,4 +50,25 @@ test('world recovery uses surveyed road anchors and never grants progress after 
   assert.equal(recoveryStateAllowed(driver, { ...driver.state, y: 12, layer: 1 }, 'race', 1150, { route, event }), false);
   observeCourse(driver.course, { ...stateAt(12), motionEpoch: 1 }, 10, { route }); assert.equal(driver.course.reached, earned);
   driver.state = { ...stateAt(0), x: 10000, z: 10000 }; driver.recovery = null; assert.equal(requestRecovery(driver, event, 'race', 2, 20000, { route }), null);
+});
+
+test('separate online approach projects the eighth slot beyond eighty metres without changing competitive geometry', async () => {
+  const { c, grid, build, roads } = await catalogue(), original = JSON.stringify(c);
+  const { RouteRuntime } = await import('../src/route-runtime.js');
+  const { RouteNetworkRuntime } = await import('../src/route-network-runtime.js');
+  grid.approach = { points: [[100, 0, 560, -160, 4, 3], [100, 0, 400, 0, 4, 3]], occurrences: [{ edgeId: 'approach', layer: 0, surfaceId: 'entry', s0: -160, s1: 0 }] };
+  grid.poses = grid.poses.map((p, i) => ({ ...p, s: -16 * (i + 1), z: 400 + 16 * (i + 1), edgeId: 'approach', surfaceId: 'entry' }));
+  roads.edges.push({ id: 'approach', from: 'entry', to: 'start', points: [[100, 0, 560], [100, 0, 400]], surface: 'entry', layer: 0, flags: 1 });
+  const gridHash = await sha256(grid), roadHash = await sha256(roads), entry = build.routeConfig.routes[0];
+  entry.onlineGrid.hash = gridHash; entry.onlineGrid.url = `/data/routes/${c.id}.online-grid.${gridHash}.json`; build.routeGrids = [{ hash: gridHash, body: grid }];
+  entry.recovery.hash = roadHash; entry.recovery.url = `/data/routes/${c.id}.recovery.${roadHash}.json`; build.routeRoads = [{ hash: roadHash, body: roads }];
+  const maps = new Map(); await installRouteMaps(maps, build, { carSpecs: { mini: { width: 2, length: 4 } } });
+  const runtime = maps.get(c.id).geometry, core = new RouteRuntime(c), last = grid.poses[7];
+  assert.ok(runtime instanceof RouteNetworkRuntime); assert.equal(runtime.compiled, c); assert.equal(JSON.stringify(c), original);
+  const q = runtime.project(last.x, last.z, { hint: last.s, layer: last.layer, referenceY: last.y }); assert.equal(q.s, -128); assert.equal(q.edgeId, 'approach');
+  assert.equal(runtime.validatePose(last), true); assert.equal(runtime.frame(-128).z, last.z);
+  for (const s of [0, 10, 400, 900, c.lengthM]) assert.deepEqual(runtime.frame(s), core.frame(s));
+  const event = [...maps.get(c.id).definitions.values()][0], course = buildCourse(event, runtime); course.previous = { ...last, u: 0 };
+  let time = 0; for (let s = last.s; s <= 8; s += 4) { const f = runtime.frame(s); observeCourse(course, { ...runtime.point(s), s, u: 0, yaw: f.yaw, layer: f.layer, surfaceId: f.surfaceId }, time += .2, { route: runtime }); }
+  assert.ok(course.reached >= 7.9); assert.equal(course.finishedAt, null);
 });

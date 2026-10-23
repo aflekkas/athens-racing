@@ -498,10 +498,17 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
           if (s.damage !== undefined && (!s.damage || zones.some(k => !Number.isFinite(s.damage[k]) || s.damage[k] < 0 || s.damage[k] > 1))) return;
           if (Math.abs(s.x) > 100000 || Math.abs(s.z) > 100000 || Math.abs(s.y) > 10000 || Math.abs(s.u) > 500 || s.s < Math.min(event.s0, event.s1) - 500 || s.s > Math.max(event.s0, event.s1) + 500 || Math.abs(s.vLong) > 150 || Math.abs(s.vLat) > 150 || s.rpm < 0 || s.rpm > 20000 || s.gear < 1 || s.gear > 10) return;
           // Client physics with bounded progress; the server owns race timing/results.
-          const prevS = c.state?.s ?? event.s0;
+          const prevS = c.state?.s ?? (routeMap?.routeIdentity ? routeMap.gridPose(c.gridSlot, c.car).s : event.s0);
           const elapsed = Math.max(0, (now - Math.max(c.stateAt ?? Math.max(l.startAt, c.enteredAt || 0), c.recovery?.raceId === l.raceId ? c.recovery.until : l.startAt)) / 1000);
           const courseEnabled = !isObjectiveMode(event.type) && event.type !== 'free';
-          if (courseEnabled && c.course?.raceId !== l.raceId) c.course = { ...buildCourse(event, maps.get(l.mapId).geometry), raceId: l.raceId };
+          if (courseEnabled && c.course?.raceId !== l.raceId) {
+            c.course = { ...buildCourse(event, maps.get(l.mapId).geometry), raceId: l.raceId };
+            if (routeMap?.routeIdentity) {
+              const pose = routeMap.gridPose(c.gridSlot, c.car);
+              const projected = routeMap.geometry.project(pose.x, pose.z, { hint: pose.s, referenceY: pose.y, layer: pose.layer, maxTravel: 8 });
+              c.course.previous = { ...pose, u: projected.u };
+            }
+          }
           const recovered = c.recovery?.raceId === l.raceId && now <= c.recovery.until;
           const previousPose = c.state || c.course?.previous;
           const discontinuous = Math.abs(s.s - prevS) > 30 + 150 * (courseEnabled ? Math.min(5, elapsed) : elapsed) || !recovered && previousPose && Math.hypot(s.x - previousPose.x, s.z - previousPose.z) > 15 + 150 * (courseEnabled ? Math.min(5, elapsed) : elapsed);

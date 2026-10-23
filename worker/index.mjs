@@ -19,7 +19,8 @@ import { installRouteMaps } from '../server/route-maps.mjs';
 import { createSqlLeaderboard } from './leaderboard.mjs';
 
 const maps = new Map(catalogue.maps.map(m => [m.id, { ...m, definitions: new Map(m.definitions) }]));
-const routeMapsReady = installRouteMaps(maps, catalogue, { carSpecs: catalogue.carSpecs || {} });
+let routeMapsReady;
+const prepareRouteMaps = () => routeMapsReady ||= installRouteMaps(maps, catalogue, { carSpecs: catalogue.carSpecs || {} });
 const cars = new Set(catalogue.cars);
 const nitrousCars = new Set(catalogue.nitrousCars || []);
 const carSpecs = catalogue.carSpecs || {};
@@ -44,7 +45,7 @@ export default {
     const world = await worldAssets(request, env, ctx);
     if (world) return world;
     const url = new URL(request.url);
-    if (url.pathname === '/api/routes') { await routeMapsReady; return json(maps.routeConfig); }
+    if (url.pathname === '/api/routes') { await prepareRouteMaps(); return json(maps.routeConfig); }
     if (protectedPath(url.pathname)) { const auth = await authorizeGame(request, env); if (auth.response) return auth.response; }
     if (url.pathname === '/api/account/presence') return env.PRESENCE.get(env.PRESENCE.idFromName('friends-v1')).fetch(request);
     if (url.pathname.startsWith('/api/auth/') || url.pathname.startsWith('/api/account/')) return accounts(request, env);
@@ -73,7 +74,7 @@ export class GameArena extends DurableObject {
     // Auto-response avoids waking the object for optional idle keepalives.
     ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('keepalive', 'alive'));
     ctx.blockConcurrencyWhile(() => this.event('restore', async () => {
-      await routeMapsReady;
+      await prepareRouteMaps();
       this.leaderboard = createSqlLeaderboard(ctx.storage.sql, maps, cars, { transactionSync: fn => ctx.storage.transactionSync(fn) });
       this.core = createGameCore({ maps, cars, carSpecs, nitrousCars, leaderboard: this.leaderboard });
       await cleanupLegacyStorage(ctx.storage);
