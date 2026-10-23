@@ -12,18 +12,20 @@ export function createWorldSelection({stream,manifest,makeGround,safePose,prepar
  const emit=(phase,text)=>{const required=plan?.requiredCells||[],active=required.filter(k=>stream.tiles.get(k)?.state==='active'),loaded=required.reduce((n,k)=>n+(stream.tiles.get(k)?.packet?manifest.tiles[k].bytes:0),0);progress(text,0,{worldId:'athens',routeId:pendingRouteId||route?.compiled.id,selectionToken:token,requiredCells:required,activeCells:active,loadedBytes:loaded,totalBytes:plan?.totalBytes||0,phase});};
  const selection={get route(){return route;},get ground(){return ground;},get token(){return token;},get listenerCount(){return listeners.size;},releasePins,
   subscribeTiles(listener){assertAlive();listeners.add(listener);for(const [k,t]of stream.tiles)if(t.state==='active')listener.activated?.(k);return()=>listeners.delete(listener);},
-  async prepareRoute(compiled,{cars=[],runtime,signal:external}={}){
+  async prepareRoute(compiled,{cars=[],runtime,onlineGrid=null,signal:external}={}){
    const job=begin(external);pendingRouteId=compiled.id;
    // The driving slice is restored on success, failure, abort and supersession.
    if(Number.isFinite(drivingActivationMs))stream.activationMs=Math.max(drivingActivationMs,ROUTE_LOADING_ACTIVATION_MS);
    try{
     if(compiled.worldSetRevision!==manifest.revision)throw Error('Route and world release differ');
     if(runtime&&(!(runtime instanceof RouteRuntime)||runtime.compiled!==compiled))throw Error('Route geometry release mismatch');
+    const grid=onlineGrid?.poses||compiled.grid;
+    if(onlineGrid&&runtime?.onlineGrid!==onlineGrid)throw Error('Online grid runtime mismatch');
     const footprint={halfWidth:Math.max(1.1,...cars.map(c=>(c.width||2.2)/2)),halfLength:Math.max(2.8,...cars.map(c=>(c.length||5.6)/2)),connected:true};
-    if(route?.compiled.routeHash===compiled.routeHash&&plan?.requiredCells?.every(k=>stream.tiles.get(k)?.state==='active')&&compiled.grid.every(p=>safePose({...p,edge:p.edgeId},footprint))){
+    if(route?.compiled.routeHash===compiled.routeHash&&(route.onlineGrid||null)===onlineGrid&&plan?.requiredCells?.every(k=>stream.tiles.get(k)?.state==='active')&&grid.every(p=>safePose({...p,edge:p.edgeId},footprint))){
      for(const key of plan.requiredCells)releases.push(stream.pin('route-start',key));job.check();pendingRouteId=null;onCommit(route,ground);emit('warm','Preparing roads');Object.assign(metrics,{entryMs:0,initialWorldBytes:stream.pool?.downloadedBytes??stream.metrics.loadedBytes,mandatoryBytes:plan.totalBytes});return route;
     }
-    const prepared=runtime||new RouteRuntime(compiled),preparedGround=makeGround(prepared);plan=planRouteInterest({route:prepared,manifest,phase:'prepare',capBytes:stream.capBytes,transientBytes:stream.transientCap,sharedBytes:512*1024,generation:job.generation});onPlan(plan);
+    const prepared=runtime||new RouteRuntime(compiled),preparedGround=makeGround(prepared);plan=planRouteInterest({route:prepared,manifest,phase:'prepare',gridPoses:grid,capBytes:stream.capBytes,transientBytes:stream.transientCap,sharedBytes:512*1024,generation:job.generation});onPlan(plan);
     for(const key of plan.requiredCells)releases.push(stream.pin('route-start',key));const previous=stream.position;
     if(previous&&stream.entry(`${Math.floor(previous.x/512)},${Math.floor(previous.z/512)}`))releases.push(stream.pin('previous-safe',`${Math.floor(previous.x/512)},${Math.floor(previous.z/512)}`));
     const start=now();emit('route','Preparing race');
@@ -37,8 +39,8 @@ export function createWorldSelection({stream,manifest,makeGround,safePose,prepar
      for(const k of plan.requiredCells){const t=stream.tiles.get(k);if(t?.state==='failed'&&t.attempts>=3)throw t.error;}
      emit(stream.inflight?'download':'activate',stream.inflight?'Loading start area':'Preparing roads');await waitFrame();
     }
-    job.check();await stream.spawnAtRoute(compiled.startPose,cars.map((c,i)=>({pose:compiled.grid[i]||compiled.startPose,halfWidth:(c.width||2.2)/2,halfLength:(c.length||5.6)/2})),()=>{},{signal:job.local.signal,validatePose:safePose});job.check();
-    for(const p of compiled.grid)if(!safePose({...p,edge:p.edgeId},footprint))throw Error('Route grid no longer safe');
+    job.check();await stream.spawnAtRoute(compiled.startPose,cars.map((c,i)=>({pose:grid[i]||compiled.startPose,halfWidth:(c.width||2.2)/2,halfLength:(c.length||5.6)/2})),()=>{},{signal:job.local.signal,validatePose:safePose});job.check();
+    for(const p of grid)if(!safePose({...p,edge:p.edgeId},footprint))throw Error('Route grid no longer safe');
     route=prepared;ground=preparedGround;pendingRouteId=null;onCommit(route,ground);emit('warm','Preparing roads');Object.assign(metrics,{entryMs:now()-start,initialWorldBytes:stream.pool?.downloadedBytes??stream.metrics.loadedBytes,mandatoryBytes:plan.totalBytes});return route;
    }catch(error){if(job.generation===token){releasePins();pendingRouteId=null;emit('failed','Preparing race');}throw error;}finally{if(job.generation===token&&Number.isFinite(drivingActivationMs))stream.activationMs=drivingActivationMs;job.finish();}
   },

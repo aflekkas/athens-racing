@@ -1,0 +1,326 @@
+[
+  {
+    "label": "before",
+    "run": 0,
+    "route": "megara-club",
+    "navigationToReadyMs": 14491.29999999702,
+    "selectionToCountdownMs": 13062.90000000596,
+    "entryPhases": {
+      "sessionReady": 4156.9000000059605,
+      "roadsReady": 12670,
+      "raceReady": 13027,
+      "shadersReady": 13056.70000000298
+    },
+    "entryMs": 8500.59999999404,
+    "initialWorldBytes": 5502421,
+    "programs": 44,
+    "upload": {
+      "calls": 864,
+      "maxBytes": 32768,
+      "maxCallMs": 0.699999988079071,
+      "liveBuffers": 348
+    },
+    "warmup": {
+      "maxCompileCallMs": 15.200000002980232,
+      "maxWaitMs": 2225.2999999970198
+    },
+    "errors": []
+  },
+  {
+    "label": "before",
+    "run": 0,
+    "route": "penteli-hill",
+    "navigationToReadyMs": 28961,
+    "selectionToCountdownMs": 28080.60000000894,
+    "entryPhases": {
+      "sessionReady": 1759.6000000089407,
+      "roadsReady": 27058.10000000894,
+      "raceReady": 28006.60000000894,
+      "shadersReady": 28061.5
+    },
+    "entryMs": 25271.5,
+    "initialWorldBytes": 7812039,
+    "programs": 41,
+    "upload": {
+      "calls": 842,
+      "maxBytes": 32768,
+      "maxCallMs": 4.199999988079071,
+      "liveBuffers": 176
+    },
+    "warmup": {
+      "maxCompileCallMs": 92.79999999701977,
+      "maxWaitMs": 6305.4000000059605
+    },
+    "errors": []
+  },
+  {
+    "label": "after",
+    "run": 0,
+    "route": "megara-club",
+    "navigationToReadyMs": 18628,
+    "selectionToCountdownMs": 16866.39999999106,
+    "entryPhases": {
+      "sessionReady": 9275.70000000298,
+      "roadsReady": 16437.70000000298,
+      "raceReady": 16842.79999999702,
+      "shadersReady": 16860.09999999404
+    },
+    "entryMs": 7143.5,
+    "initialWorldBytes": 5502421,
+    "programs": 44,
+    "upload": {
+      "calls": 570,
+      "maxBytes": 65536,
+      "maxCallMs": 51.8999999910593,
+      "liveBuffers": 348
+    },
+    "warmup": {
+      "maxCompileCallMs": 25.299999997019768,
+      "maxWaitMs": 2274.5
+    },
+    "errors": []
+  },
+  {
+    "label": "after",
+    "run": 0,
+    "route": "penteli-hill",
+    "navigationToReadyMs": 9275.89999999106,
+    "selectionToCountdownMs": 8348.79999999702,
+    "entryPhases": {
+      "sessionReady": 2821.7999999970198,
+      "roadsReady": 7887.9000000059605,
+      "raceReady": 8323.20000000298,
+      "shadersReady": 8342.60000000894
+    },
+    "entryMs": 5053.100000008941,
+    "initialWorldBytes": 7812039,
+    "programs": 41,
+    "upload": {
+      "calls": 494,
+      "maxBytes": 65536,
+      "maxCallMs": 113.29999999701977,
+      "liveBuffers": 176
+    },
+    "warmup": {
+      "maxCompileCallMs": 109.79999999701977,
+      "maxWaitMs": 1635.1000000089407
+    },
+    "errors": []
+  },
+  {
+    "label": "after",
+    "run": 1,
+    "route": "megara-club",
+    "navigationToReadyMs": 8825.70000000298,
+    "selectionToCountdownMs": 8082.199999988079,
+    "entryPhases": {
+      "sessionReady": 3096.3999999910593,
+      "roadsReady": 7714,
+      "raceReady": 8060.0999999940395,
+      "shadersReady": 8076.899999991059
+    },
+    "entryMs": 4607.100000008941,
+    "initialWorldBytes": 5502421,
+    "programs": 44,
+    "upload": {
+      "calls": 570,
+      "maxBytes": 65536,
+      "maxCallMs": 40.5,
+      "liveBuffers": 348
+    },
+    "warmup": {
+      "maxCompileCallMs": 19.599999994039536,
+      "maxWaitMs": 1684.199999988079
+    },
+    "errors": []
+  },
+  {
+    "label": "after",
+    "run": 1,
+    "route": "penteli-hill",
+    "navigationToReadyMs": 8550.90000000596,
+    "selectionToCountdownMs": 7875.5,
+    "entryPhases": {
+      "sessionReady": 1145.7000000029802,
+      "roadsReady": 7457.4000000059605,
+      "raceReady": 7852.29999999702,
+      "shadersReady": 7870.600000008941
+    },
+    "entryMs": 6300.29999999702,
+    "initialWorldBytes": 7812039,
+    "programs": 41,
+    "upload": {
+      "calls": 494,
+      "maxBytes": 65536,
+      "maxCallMs": 0.10000000894069672,
+      "liveBuffers": 176
+    },
+    "warmup": {
+      "maxCompileCallMs": 15.799999997019768,
+      "maxWaitMs": 1859.5
+    },
+    "errors": []
+  },
+  {
+    "label": "before",
+    "run": 1,
+    "route": "megara-club",
+    "navigationToReadyMs": 10862.199999988079,
+    "selectionToCountdownMs": 10147.79999999702,
+    "entryPhases": {
+      "sessionReady": 1354.9000000059605,
+      "roadsReady": 9666.40000000596,
+      "raceReady": 10111.40000000596,
+      "shadersReady": 10135.70000000298
+    },
+    "entryMs": 8298.70000000298,
+    "initialWorldBytes": 5502421,
+    "programs": 44,
+    "upload": {
+      "calls": 864,
+      "maxBytes": 32768,
+      "maxCallMs": 0.29999999701976776,
+      "liveBuffers": 348
+    },
+    "warmup": {
+      "maxCompileCallMs": 33.900000005960464,
+      "maxWaitMs": 2238.2999999970198
+    },
+    "errors": []
+  },
+  {
+    "label": "before",
+    "run": 1,
+    "route": "penteli-hill",
+    "navigationToReadyMs": 11834.09999999404,
+    "selectionToCountdownMs": 10988.29999999702,
+    "entryPhases": {
+      "sessionReady": 1423.2999999970198,
+      "roadsReady": 10452.39999999106,
+      "raceReady": 10957.89999999106,
+      "shadersReady": 10982
+    },
+    "entryMs": 8997.5,
+    "initialWorldBytes": 7812039,
+    "programs": 41,
+    "upload": {
+      "calls": 842,
+      "maxBytes": 32768,
+      "maxCallMs": 0.7999999970197678,
+      "liveBuffers": 176
+    },
+    "warmup": {
+      "maxCompileCallMs": 70,
+      "maxWaitMs": 1956.4000000059605
+    },
+    "errors": []
+  },
+  {
+    "label": "before",
+    "run": 2,
+    "route": "megara-club",
+    "navigationToReadyMs": 10449.699999988079,
+    "selectionToCountdownMs": 9644.5,
+    "entryPhases": {
+      "sessionReady": 2802.2000000029802,
+      "roadsReady": 9253.5,
+      "raceReady": 9618.20000000298,
+      "shadersReady": 9637.20000000298
+    },
+    "entryMs": 6427.4000000059605,
+    "initialWorldBytes": 5502421,
+    "programs": 44,
+    "upload": {
+      "calls": 864,
+      "maxBytes": 32768,
+      "maxCallMs": 1.5999999940395355,
+      "liveBuffers": 348
+    },
+    "warmup": {
+      "maxCompileCallMs": 16.400000005960464,
+      "maxWaitMs": 1945
+    },
+    "errors": []
+  },
+  {
+    "label": "before",
+    "run": 2,
+    "route": "penteli-hill",
+    "navigationToReadyMs": 10871.70000000298,
+    "selectionToCountdownMs": 10142.5,
+    "entryPhases": {
+      "sessionReady": 3127.0999999940395,
+      "roadsReady": 9704.20000000298,
+      "raceReady": 10117.20000000298,
+      "shadersReady": 10136.70000000298
+    },
+    "entryMs": 6561.20000000298,
+    "initialWorldBytes": 7812039,
+    "programs": 41,
+    "upload": {
+      "calls": 842,
+      "maxBytes": 32768,
+      "maxCallMs": 1.5,
+      "liveBuffers": 176
+    },
+    "warmup": {
+      "maxCompileCallMs": 31.600000008940697,
+      "maxWaitMs": 1648.0999999940395
+    },
+    "errors": []
+  },
+  {
+    "label": "after",
+    "run": 2,
+    "route": "megara-club",
+    "navigationToReadyMs": 8580.59999999404,
+    "selectionToCountdownMs": 7925.100000008941,
+    "entryPhases": {
+      "sessionReady": 1198.4000000059605,
+      "roadsReady": 7539.29999999702,
+      "raceReady": 7900.9000000059605,
+      "shadersReady": 7919.4000000059605
+    },
+    "entryMs": 6310.79999999702,
+    "initialWorldBytes": 5502421,
+    "programs": 44,
+    "upload": {
+      "calls": 570,
+      "maxBytes": 65536,
+      "maxCallMs": 46.79999999701977,
+      "liveBuffers": 348
+    },
+    "warmup": {
+      "maxCompileCallMs": 16.099999994039536,
+      "maxWaitMs": 1638.699999988079
+    },
+    "errors": []
+  },
+  {
+    "label": "after",
+    "run": 2,
+    "route": "penteli-hill",
+    "navigationToReadyMs": 8754.300000011921,
+    "selectionToCountdownMs": 8074.699999988079,
+    "entryPhases": {
+      "sessionReady": 2963.8999999910593,
+      "roadsReady": 7674.29999999702,
+      "raceReady": 8049.199999988079,
+      "shadersReady": 8069.199999988079
+    },
+    "entryMs": 4693.70000000298,
+    "initialWorldBytes": 7812039,
+    "programs": 41,
+    "upload": {
+      "calls": 494,
+      "maxBytes": 65536,
+      "maxCallMs": 0.20000000298023224,
+      "liveBuffers": 176
+    },
+    "warmup": {
+      "maxCompileCallMs": 27.400000005960464,
+      "maxWaitMs": 1633
+    },
+    "errors": []
+  }
+]

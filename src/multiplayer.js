@@ -1,3 +1,5 @@
+import {sameRouteIdentity,validRouteIdentity} from './route-network.js';
+import {networkLobbyIdentity} from './network-route-client.js';
 import { FinishSpectator } from './finish-spectate.js';
 import { icon } from './ui/components.js';
 import { ReconnectHistory, reconnectDelay } from './reconnect-history.js';
@@ -16,6 +18,8 @@ import { defaultCarRules, describeRules } from './mp-car-rules.js';
 import { describeMode, configFromLobby } from './mp-setup.js';
 import { getPlayableMaps } from './enabled-maps.js';
 
+const ROUTE_PACKETS=new Set(['loaded','ready','state','states','recover','resume','contact','dnf','world','world-frame','world-contact']);
+const ROUTE_RECEIVED=new Set(['world','world-frame','world-contact','contact','recovered','snapshot']);
 const LOADED_RETRY_MS = 4000; // how long a driver may stay LOADING in a lobby before the client says so again
 // The tow screen is black while this request is out; the server answers (or denies) within a round trip.
 export const RECOVERY_TIMEOUT_MS = 3500;
@@ -28,7 +32,7 @@ export class Multiplayer {
     this.token = null; try { this.token = sessionStorage.getItem('paraliaki.session'); } catch {}
     this.connected = false; this.reconnectAttempt = 0; this.reconnectHistory = new ReconnectHistory(); this.resumeCount = 0; this.events = []; this.resumeState = null; this.spectateIndex = 0; this.spectateAt = 0;
     this.loaded = false; this.mapId = null; this.preparing = null; this.failedMap = null; this.pendingResume = false;
-    this.maps = []; this.trackVersion = null; this.pendingCode = new URLSearchParams(location.search).get('lobby');
+    this.maps = []; this.trackVersion = null; this.routeIdentity=null; this.resumeRoute=null; try{this.resumeRoute=JSON.parse(sessionStorage.getItem('paraliaki.route-session')||'null');}catch{} this.pendingCode = new URLSearchParams(location.search).get('lobby');
     this.stateBatching = false; this.finishSent = null; this.wreckedRace = null; this.wreckSent = false;
     this.stateSender = new StateSender(packet => {
       this.reconnectHistory.record(packet);
@@ -174,7 +178,7 @@ export class Multiplayer {
     this.send({ type: 'to-lobby' }); return true;
   }
   transferHost(id) { this.send({ type: 'transfer', to: id }); }
-  get versionMismatch() { return this.loaded && this.mapId === (this.lobby?.mapId || 'riviera') && !!this.lobby?.track?.version && this.trackVersion !== this.lobby.track.version; }
+  get versionMismatch() { if(this.lobby?.routeIdentity)return !sameRouteIdentity(this.routeIdentity,this.lobby.routeIdentity)||this.trackVersion!==this.lobby.track?.version;return this.loaded && this.mapId === (this.lobby?.mapId || 'riviera') && !!this.lobby?.track?.version && this.trackVersion !== this.lobby.track.version; }
   get worldReady() { return this.loaded && !this.preparing && !this.versionMismatch && (!this.lobby || this.mapId === (this.lobby.mapId || 'riviera')); }
   get me() { return this.lobby?.players.find(p => p.id === this.id); }
   get wrecked() { return !!this.lobby?.raceId && (this.me?.dnf === 'wrecked' || this.wreckedRace === this.lobby.raceId); }
@@ -242,7 +246,16 @@ export class Multiplayer {
   }
   hidePanel() { if (this.panel.contains(document.activeElement) || document.activeElement === this.button) document.activeElement.blur(); this.panel.hidden = true; this.hooks.clearInput(); this.hooks.panelClosed?.(); }
   close() { this.hidePanel(); }
-  send(data) { if (this.reloadRequired) return; if (this.ws?.readyState === WebSocket.OPEN) { try { this.ws.send(JSON.stringify(data)); } catch { this.retryConnection(this.ws); } } else this.status('Multiplayer is offline. Reconnecting…'); }
+  send(data) {
+    if(this.reloadRequired)return;
+    if(ROUTE_PACKETS.has(data.type)){
+      const binding=data.type==='resume'?(this.lobby?.routeIdentity?{mapId:this.lobby.mapId,routeIdentity:this.lobby.routeIdentity}:this.resumeRoute):this.routeIdentity?{mapId:this.mapId,routeIdentity:this.routeIdentity}:null;
+      if(binding?.routeIdentity){if(!validRouteIdentity(binding.routeIdentity))return;data={...data,...binding};}
+      else if(this.lobby?.routeIdentity)return;
+      if(['state','states'].includes(data.type)&&this.lobby?.routeIdentity&&!sameRouteIdentity(data.routeIdentity,this.lobby.routeIdentity))return;
+    }
+    if(this.ws?.readyState===WebSocket.OPEN){try{this.ws.send(JSON.stringify(data));}catch{this.retryConnection(this.ws);}}else this.status('Multiplayer is offline. Reconnecting…');
+  }
   action(type, extra) {
     const name = driverName.get();
     this.send({ type, name, ...this.hooks.appearance?.(), driverId: driverId(), car: this.$('mp-car').value, ...(type === 'create' ? { mapId: this.$('mp-create-map').value || 'riviera' } : {}), ...extra });
@@ -300,6 +313,7 @@ export class Multiplayer {
       if (this.ws !== ws || this.reloadRequired) return;
       if (e.data === 'alive') return;
       const m = JSON.parse(e.data);
+      if(ROUTE_RECEIVED.has(m.type)&&this.lobby?.routeIdentity&&(m.mapId!==this.lobby.mapId||!sameRouteIdentity(m.routeIdentity,this.lobby.routeIdentity)))return;
       if (Number.isFinite(m.now)) this.offset = (this.serverClock ||= new ServerClock()).observe(m.now, Date.now(), m.type === 'pong' ? m.sent : null);
       if (m.type === 'reload' && m.reason === 'update') { this.requireReload(); return; }
       if (m.type === 'hello') {
@@ -307,7 +321,7 @@ export class Multiplayer {
         // 20 Hz samples, two per message: the arena still takes at most 10 messages/s/player (docs/multiplayer-cost.md).
         this.stateBatching = STATE_BATCHING && m.features?.stateBatching === true;
         if (!this.loaded) this.trackVersion = m.track.version;
-        this.maps = getPlayableMaps(m.maps || [{ id: 'riviera', name: MAPS[0].name, track: m.track, events: m.events || [] }]);
+        this.maps = (m.maps || [{ id: 'riviera', name: MAPS[0].name, track: m.track, events: m.events || [] }]).map(map=>({...map,routeIdentity:map.routeIdentity||map.track?.routeIdentity})).filter(map=>validRouteIdentity(map.routeIdentity)&&map.id===map.routeIdentity.routeId||getPlayableMaps([map]).length);
         this.events = m.events || this.maps.flatMap(map => (map.events || []).map(e => ({ ...e, mapId: map.id })));
         for (const id of ['mp-create-map', 'mp-map']) { this.$(id).replaceChildren(); for (const map of this.maps) { const option = document.createElement('option'); option.value = map.id; option.textContent = map.name; this.$(id).append(option); } }
         if (this.maps.some(map => map.id === this.mapId)) this.$('mp-create-map').value = this.mapId;
@@ -332,8 +346,10 @@ export class Multiplayer {
       else if (m.type === 'error') { this.creating = false; if (this.$) this.$('mp-create').disabled = false; this.status(m.message); this.panel.hidden = false; }
       else if (m.type === 'left' || m.type === 'kicked') { this.left(); this.panel.hidden = false; if (m.message || m.reason) this.status(m.message || m.reason); if (m.type === 'kicked') { this.kickCooldown = { lobbyCode: m.lobbyCode, until: m.until }; this.hooks.kicked?.(m); } }
       else if (m.type === 'lobby') {
+        if(m.lobby?.routeIdentity){try{networkLobbyIdentity(m.lobby);}catch(error){this.status(error.message);return;}}
         this.creating = false; if (this.$) this.$('mp-create').disabled = false;
         const joined = !this.lobby, previousCar = this.me?.car, previousBalance = JSON.stringify(this.me?.balance || null), previousRace = this.lobby?.raceId, previousMembers = this.lobby?.players; this.lobby = m.lobby; this.syncSessionControls();
+        if(m.lobby.routeIdentity){this.resumeRoute={mapId:m.lobby.mapId,routeIdentity:m.lobby.routeIdentity};try{sessionStorage.setItem('paraliaki.route-session',JSON.stringify(this.resumeRoute));}catch{}}
         if (previousRace !== m.lobby.raceId) { this.reconnectHistory?.clear(); this.peers.clear(); this.cancelRecovery(); this.selection?.reset(m.lobby.raceId); this.retiredRace = null; }
         for (const member of m.lobby.players) {
           const prior = previousMembers?.find(p => p.id === member.id), peer = this.peers.get(member.id);
@@ -397,14 +413,14 @@ export class Multiplayer {
     if (!this.loaded || !this.lobby) return Promise.resolve();
     if (this.preparing) return this.preparing;
     const mapId = this.lobby.mapId || 'riviera';
-    if (this.mapId !== mapId) {
-      if (this.failedMap === mapId) return Promise.resolve();
+    if (this.mapId !== mapId || this.lobby.routeIdentity&&!sameRouteIdentity(this.routeIdentity,this.lobby.routeIdentity)) {
+      const failureKey=mapId+':'+(this.lobby.track?.version||'');if(this.failedMap===failureKey)return Promise.resolve();
       this.panel.hidden = false; this.hooks.clearInput(); this.status('Loading the lobby track…');
-      this.preparing = Promise.resolve().then(() => this.hooks.mapChanged(mapId)).then(() => {
+      this.preparing = Promise.resolve().then(() => this.hooks.mapChanged(mapId,this.lobby)).then(() => {
         this.preparing = null; this.failedMap = null;
         return this.syncLobby(); // membership or the selected map may have changed during loading
       }, error => {
-        this.preparing = null; this.failedMap = mapId;
+        this.preparing = null; this.failedMap = failureKey;
         this.status('Could not load the lobby track. Choose another track or leave the lobby.');
         console.warn('Multiplayer track loading failed:', error);
         if (this.lobby) this.renderRoom();

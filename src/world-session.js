@@ -34,7 +34,8 @@ export async function createWorldSession({renderer,scene,resources,progress=()=>
  // gate shader preparation on uploads rather than delaying contact admission.
  const startsRegional=['penteli','megara'].includes(worldDefinition.regionId),texturesReady=loadAthensTextures(renderer,{penteli:startsRegional});texturesReady.catch(()=>{});
  const manifestURL=new URL(worldDefinition.manifestURL||'/data/athens/manifest.json',globalThis.location?.href||'http://localhost/');
- const manifest=worldDefinition.manifest||(await loadWorldDefinition(manifestURL,{signal})).manifest;validateWorldDefinition({...worldDefinition,manifest});
+ let prefetched=null;try{const early=await globalThis.__routeEntryPrefetch;if(early?.manifestURL===manifestURL.href){const candidate=(await early.world)?.manifest;if(candidate&&candidate.revision===worldDefinition.worldSetRevision)prefetched=candidate;}}catch{}
+ const manifest=worldDefinition.manifest||prefetched||(await loadWorldDefinition(manifestURL,{signal})).manifest;validateWorldDefinition({...worldDefinition,manifest});
  let stream,roads,route=null,ground=null,interest=null,plan=null,selection=null,disposed=false,inventoryFrames=0,plannedRoute=null,plannedS=-Infinity,planAge=0;const tileListeners=new Set(),enrichments=new Map(),enrichmentLoads=new Map();
  const detailRoot=new THREE.Group();scene.add(detailRoot);
  const houses=new PenteliHouses(detailRoot,{enabled:settings.worldDetail!==false});
@@ -99,9 +100,9 @@ export async function createWorldSession({renderer,scene,resources,progress=()=>
  prepareRoute:(compiled,options)=>selection.prepareRoute(compiled,options),
  prepareSpawn:(point,options)=>selection.prepareSpawn(point,options),
  setInterest(next){interest=next;},
- update(dt){if(!interest?.player||disposed)return;const p=interest.player;
-  if(route?.isWorldRoute){const cursorS=interest.routeCursor?.s??p.s;if(cursorS>40)selection.releasePins();planAge+=dt;if(plannedRoute!==route||Math.abs(cursorS-plannedS)>=16||planAge>=.5){plan=planRouteInterest({route,manifest,cursorS,speedMps:Math.abs(p.vLong||0),p95FetchDecodeSeconds:stream.metrics.p95FetchDecodeSeconds||1,player:{...p,footprint:ground.footprint(p,.5)},actors:interest.actors||[],capBytes:stream.capBytes,transientBytes:stream.transientCap,generation:selection.token});plannedRoute=route;plannedS=cursorS;planAge=0;}}
-  const fx=-Math.sin(p.yaw),fz=-Math.cos(p.yaw);stream.update({x:p.x,z:p.z,vx:fx*(p.vLong||0),vz:fz*(p.vLong||0),contacts:ground?.footprint(p,.5)||[],interest:(interest.actors||[]).filter(a=>Math.hypot(a.x-p.x,a.z-p.z)<=500),routeInterest:route?.isWorldRoute?plan?.routeInterest:[]});
+ update(dt){if(!interest?.player||disposed)return;const p=interest.player;if(interest.freeRoam)selection.releasePins();
+  if(route?.isWorldRoute&&!interest.freeRoam){const cursorS=interest.routeCursor?.s??p.s;if(cursorS>40)selection.releasePins();planAge+=dt;if(plannedRoute!==route||Math.abs(cursorS-plannedS)>=16||planAge>=.5){plan=planRouteInterest({route,manifest,cursorS,speedMps:Math.abs(p.vLong||0),p95FetchDecodeSeconds:stream.metrics.p95FetchDecodeSeconds||1,player:{...p,footprint:ground.footprint(p,.5)},actors:interest.actors||[],capBytes:stream.capBytes,transientBytes:stream.transientCap,generation:selection.token});plannedRoute=route;plannedS=cursorS;planAge=0;}}
+  const fx=-Math.sin(p.yaw),fz=-Math.cos(p.yaw);stream.update({x:p.x,z:p.z,vx:fx*(p.vLong||0),vz:fz*(p.vLong||0),contacts:ground?.footprint(p,.5)||[],interest:(interest.actors||[]).filter(a=>Math.hypot(a.x-p.x,a.z-p.z)<=500),routeInterest:route?.isWorldRoute&&!interest.freeRoam?plan?.routeInterest:[]});
   if(++inventoryFrames%120===0)inventory();
   for(const e of enrichments.values())e.update(p);detail.update({position:p});SEA_TIME.value=session.time+=dt;props.update({position:p},session.time);trees.update({position:p});houses.update({position:p});signs.update({position:p});marks.update({position:p});
  },

@@ -27,7 +27,7 @@ export function assertRecoveryCoverage(manifest,registry){
 export function recoveryNeighborhood(key,manifest){
  const [x,z]=key.split(',').map(Number),keys=new Set();for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++){const k=`${x+dx},${z+dz}`;if(manifest.tiles[k])keys.add(k);}return keys;
 }
-export function proveRecoveryCell(key,world,profiles,{spacingM=4}={}){
+export function proveRecoveryCell(key,world,profiles,{spacingM=4,onEdge=()=>{}}={}){
  if(!(spacingM>0&&spacingM<=4))throw Error('Recovery sampling must be at most four metres');
  const packet=world.tiles.get(key)?.packet;if(!packet)throw Error('Missing recovery owner: '+key);
  const ids=new Set((packet.roadGraph||readGraphShard(packet)).edges.filter(e=>!(e.flags&8)).map(e=>e.id));
@@ -51,7 +51,7 @@ export function proveRecoveryCell(key,world,profiles,{spacingM=4}={}){
     seen.add(identity);const first=compatible[0];anchors.push({edgeId:id,offsetM:projected.offsetM,x:p.x,y:p.y,z:p.z,yaw:p.yaw,layer:p.layer,surfaceId:p.surfaceId,leftM:p.leftM,rightM:p.rightM,halfWidth:first.halfWidth,halfLength:first.halfLength,footprints:compatible});used=true;
    }
   }
-  if(used)edges.push(edge);
+  if(used)edges.push(edge);onEdge({edge:id,anchors:anchors.length});
  }
  // A graph edge crossing a cell without any samples is still a road-bearing
  // cell. Never disguise failed/missing certification as no-drivable content.

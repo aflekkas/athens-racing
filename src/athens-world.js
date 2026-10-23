@@ -114,7 +114,7 @@ export async function bootAthens(){
  }
  function render(dt){
   const v=player.veh,o=stream.origin;v.place(player.model.root);player.model.root.position.x-=o.x;player.model.root.position.z-=o.z;player.model.update(dt,v.vLong,v.steer,input.state.brake>.2,v.pose,v.corners,v.w);
-  player.model.setDamageSnapshot?.(v.damage);worldTraffic.sync();
+  player.model.setDamageSnapshot?.(v.damage);player.model.updateSurface?.(dt,v,settings.worldDetail!==false,false);worldTraffic.sync();
   const fx=-Math.sin(v.yaw),fz=-Math.cos(v.yaw),cock=cam==='cockpit';
   document.body.dataset.cameraView=cam;
   player.cockpit.setVisible(cock);player.cockpit.update(dt,{vehicle:v,ignition:true,manual:v.manual,rpm:v.rpm,redline:spec.redline,gear:v.gear,gearLabel:String(v.gear),kmh:v.kmh,steerInput:input.state.steer,handbrake:input.state.handbrake});

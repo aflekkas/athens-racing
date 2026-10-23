@@ -79,3 +79,20 @@ test('full physical fleet and all displaced cones fit bounded packets and thirty
  const packets=worldPackets({raceId:'r'.repeat(36),generation:123,owner:'p'.repeat(36),seq:12345,at:1792750000000,now:1792750000000,mapId:routeIdentity.routeId,routeIdentity},rows,cones);
  assert.ok(packets.length>8&&packets.length<=24);assert.ok(packets.every(validWorldPart));assert.ok(packets.every(p=>Buffer.byteLength(JSON.stringify(p))<=3700));assert.equal(packets.flatMap(p=>p.rows).length,74);assert.equal(packets.flatMap(p=>p.cones).length,256);assert.ok(packets.length*1000/worldFrameIntervalMs(packets.length)<=30+1e-8);
 });
+
+function streamedFixture(){
+ const hash='a'.repeat(64),routeIdentity={worldId:'athens',routeId:'test-route',routeHash:hash,geometryHash:hash,worldSetRevision:hash,projectionId:'athens-v1',onlineGridHash:hash},c={id:0,active:false,len:4,wid:2,mass:1200,m:{root:{visible:false},setDamageSnapshot(z){this.damage=z;}},indL:{},indR:{},flash:{},type:{}},traffic={cars:[c],t:0,route:{project:(x,z)=>({s:-z,u:x})},session:{roads:{graph:{nearest:()=>({edge:'actual-road',offsetM:20})}},safePose:()=>true},pool:{cones:[],initDrive(c){c.drv={};},carBody(c){return{vs:c.v||0,vu:0,phi:0,w:0};},damageCar(c,zone,dv){c.dz||={};c.dz[zone]=(c.dz[zone]||0)+dv/100;}},update(){this.updates=(this.updates||0)+1;},warmFleet(){throw Error('unexpected warm');}};
+ let now=100000;const lobby={mapId:'test-route',routeIdentity,raceId:'r',generation:1,status:'race',host:'host',config:{traffic:1},players:[{id:'host',loaded:true,connected:true},{id:'guest',loaded:true,connected:true}]},sent=[],mp={id:'guest',lobby,active:true,connected:true,peers:new Map(),now:()=>now,send:p=>sent.push(p)};
+ return{traffic,c,mp,lobby,sent,advance:ms=>now+=ms,routeIdentity};
+}
+test('streamed replicas keep actual world pose and deck without running private NPC simulation',async()=>{
+ const {StreamedSharedWorld}=await import('../src/mp-world-traffic.js'),f=streamedFixture(),world=new StreamedSharedWorld(f.mp,()=>({traffic:f.traffic,player:{veh:{x:10,y:300,z:20}},remotes:[]})),r=[...row(),...Array(8).fill(0),-3245678,30546,-1091750,2,1200,100,1,0];
+ for(const p of worldPackets({raceId:'r',generation:1,owner:'host',seq:0,at:100000,mapId:f.lobby.mapId,routeIdentity:f.routeIdentity},[r],[]))world.receive(p);
+ f.advance(100);world.update(.1);assert.equal(f.traffic.updates,undefined);assert.equal(f.c.vehicle.x,-32455.579999999998);assert.equal(f.c.vehicle.y,305.46);assert.equal(f.c.point.layer,2);assert.equal(f.c.m.damage.front,.4);assert.equal(f.c.vehicle.yaw,.2);
+ f.lobby.host='guest';world.update(.1);assert.equal(f.traffic.updates,1);assert.ok(f.sent.some(p=>p.type==='world-frame'&&p.routeIdentity===f.routeIdentity));
+});
+test('streamed host promotion refuses an unproved local footprint and guest impacts use physical deltas',async()=>{
+ const {StreamedSharedWorld,applyWorldTrafficCar}=await import('../src/mp-world-traffic.js'),f=streamedFixture(),r=[...row(),...Array(8).fill(0),1000,30000,2000,1,0,0,1,0];
+ f.traffic.session.safePose=()=>false;assert.equal(applyWorldTrafficCar(f.traffic,r,{promote:true}),null);assert.equal(f.c.active,false);f.traffic.session.safePose=()=>true;applyWorldTrafficCar(f.traffic,r);
+ const world=new StreamedSharedWorld(f.mp,()=>({traffic:f.traffic,player:{veh:{}},remotes:[]}));world.configure();const before=world.beforeCollide();f.c.vehicle.vLong=5;world.afterCollide(before);assert.equal(f.sent.length,1);assert.equal(f.sent[0].type,'world-contact');assert.equal(f.sent[0].body.length,9);assert.ok(Math.abs(f.sent[0].body[3])+Math.abs(f.sent[0].body[4])>0);assert.equal(world.stats.contactsSent,1);
+});

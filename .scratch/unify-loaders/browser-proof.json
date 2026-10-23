@@ -1,0 +1,50 @@
+[
+  {
+    "variant": "before",
+    "map": "megara",
+    "routeId": "megara-club",
+    "worldId": "athens",
+    "state": "race",
+    "beforeS": -8.000005102501063,
+    "afterS": 14.644081806588945,
+    "kmh": 49.57580946003275,
+    "errors": [],
+    "legacyMapRequests": 0
+  },
+  {
+    "variant": "before",
+    "map": "penteli",
+    "routeId": "penteli-hill",
+    "worldId": "athens",
+    "state": "race",
+    "beforeS": -7.999999938762997,
+    "afterS": 12.189087299044926,
+    "kmh": 46.99068099891565,
+    "errors": [],
+    "legacyMapRequests": 0
+  },
+  {
+    "variant": "after",
+    "map": "megara",
+    "routeId": "megara-club",
+    "worldId": "athens",
+    "state": "race",
+    "beforeS": -8.000005102501063,
+    "afterS": 14.644081806588945,
+    "kmh": 49.57580946003275,
+    "errors": [],
+    "legacyMapRequests": 0
+  },
+  {
+    "variant": "after",
+    "map": "penteli",
+    "routeId": "penteli-hill",
+    "worldId": "athens",
+    "state": "race",
+    "beforeS": -7.999999938762997,
+    "afterS": 12.189087299044926,
+    "kmh": 46.99068099891565,
+    "errors": [],
+    "legacyMapRequests": 0
+  }
+]

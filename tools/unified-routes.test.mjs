@@ -120,3 +120,33 @@ test('recovery survey certifies each vehicle against actual contact safety and f
  packet.roadGraph.edges=[];assert.equal(proveRecoveryCell('0,0',world,[small]),null);
  assert.throws(()=>proveRecoveryCell('0,0',world,[small],{spacingM:8}),/at most four/);
 });
+
+async function networkReleaseFixture(){
+ const f=await certifiedGridFixture();Object.assign(f.compiled,{schemaVersion:1,worldId:'athens',lengthM:100,definition:{kind:'sprint',name:'TEST GRID'},points:[[0,0,0,0,5,5],[0,0,-100,100,5,5]],occurrences:[{edgeId:'course',layer:0,surfaceId:'asphalt',s0:0,s1:100}],grid:f.body.poses.slice(0,3)});
+ const {routeNetworkIdentity}=await import('../src/route-network.js'),{sha256}=await import('../src/route-definition.js');const identity=routeNetworkIdentity(f.compiled,f.expectedHash),onlineGrid={schemaVersion:1,capacity:8,hash:f.expectedHash,url:`/data/routes/${f.compiled.id}.online-grid.${f.expectedHash}.json`},entry={id:f.compiled.id,routeHash:f.compiled.routeHash,geometryHash:f.compiled.geometryHash,worldSetRevision:f.compiled.worldSetRevision,url:`/data/routes/${f.compiled.id}.${f.compiled.routeHash}.json`,onlineGrid},lobby={mapId:f.compiled.id,routeIdentity:identity,track:{routeIdentity:identity,version:`${f.compiled.routeHash}:${f.expectedHash}`},players:f.body.poses.map((gridPose,id)=>({id:String(id),gridSlot:id,gridPose}))},manifest={revision:f.compiled.worldSetRevision,tiles:{'0,0':{sha256:'d'.repeat(64)}}},root={schemaVersion:1,worldId:'athens',projectionId:'athens-v1',worldSetRevision:manifest.revision,footprints:[{halfWidth:1.3,halfLength:6}],cells:{'0,0':{sourceHash:'d'.repeat(64),empty:true}}},rootHash=await sha256(root),recovery={schemaVersion:1,streamed:true,hash:rootHash,url:`/world/recovery/manifest.${rootHash}.json`};
+ const proof={schemaVersion:1,recoveryWorld:{worldSetRevision:manifest.revision,sourceHashes:[['0,0','d'.repeat(64)]]},routeRoads:[{hash:rootHash,body:root}],routeGrids:[{hash:f.expectedHash,body:f.body}],routes:[{id:f.compiled.id,routeHash:f.compiled.routeHash,onlineGrid,recovery}]};
+ return {...f,entry,lobby,manifest,proof,config:{environment:'staging',online:true,routes:[entry]}};
+}
+test('client network entry authenticates exact geometry and all eight individually assigned poses',async()=>{
+ const {loadNetworkRoute,assignedNetworkPose}=await import('../src/network-route-client.js'),f=await networkReleaseFixture(),reads=[],fetcher=async url=>{reads.push(url);return {ok:true,json:async()=>url==='/api/routes'?f.config:url===f.entry.url?f.compiled:f.body};};
+ const result=await loadNetworkRoute(f.lobby,{fetcher,car:{width:2.55,length:12}});assert.equal(result.runtime.compiled,f.compiled);assert.equal(result.onlineGrid,f.body);assert.equal(result.runtime.frame(-99).z,99);assert.equal(assignedNetworkPose(f.lobby,result.onlineGrid,f.lobby.players[7]).s,-99);assert.equal(reads.length,3);assert.ok(reads.every(url=>!url.includes('/data/maps/')));
+});
+test('client rejects disabled/stale route, spoofed grid pose, duplicate slots and mixed reconnect identity',async()=>{
+ const {loadNetworkRoute}=await import('../src/network-route-client.js');
+ for(const mutate of [f=>f.config.online=false,f=>f.config.routes=[],f=>f.entry.onlineGrid.hash='e'.repeat(64),f=>f.lobby.players[7].gridPose={...f.lobby.players[7].gridPose,yaw:1},f=>f.lobby.players[7].gridSlot=6,f=>f.lobby.routeIdentity={...f.lobby.routeIdentity,worldSetRevision:'e'.repeat(64)},f=>f.compiled.geometryHash='e'.repeat(64)]){
+  const f=await networkReleaseFixture();mutate(f);const fetcher=async url=>({ok:true,json:async()=>url==='/api/routes'?f.config:url===f.entry.url?f.compiled:f.body});await assert.rejects(loadNetworkRoute(f.lobby,{fetcher}),/release|capacity|pose|slot/);
+ }
+});
+test('build package binds the full active world, every grid and one shared recovery root before online enable',async()=>{
+ const {validateOnlineRouteRelease,bindOnlineRouteRelease}=await import('./online-route-release.mjs'),f=await networkReleaseFixture();
+ const release=await validateOnlineRouteRelease(f.proof,{compiled:[f.compiled],manifest:f.manifest});assert.equal(bindOnlineRouteRelease(f.config,release).online,false);assert.equal(bindOnlineRouteRelease(f.config,release,{enable:true}).online,true);assert.throws(()=>bindOnlineRouteRelease(f.config,null,{enable:true}),/unavailable/);
+ for(const mutate of [p=>p.recoveryWorld.sourceHashes=[],p=>p.routeGrids=[],p=>p.routes[0].routeHash='f'.repeat(64),p=>p.routes[0].recovery.hash='f'.repeat(64),p=>p.routeRoads[0].body.cells['1,0']={sourceHash:'e'.repeat(64),empty:true}]){const proof=structuredClone(f.proof);mutate(proof);await assert.rejects(validateOnlineRouteRelease(proof,{compiled:[f.compiled],manifest:f.manifest}),/Incomplete|mismatch|manifest/);}
+ await assert.rejects(validateOnlineRouteRelease(f.proof,{compiled:[f.compiled],manifest:{...f.manifest,tiles:{...f.manifest.tiles,'1,0':{sha256:'e'.repeat(64)}}}}),/active world/);
+});
+
+test('desktop direct race metadata overlaps chunk startup while idle menu/free/lobby performs no prefetch',async()=>{
+ const {prefetchDirectRace}=await import('../src/route-entry-prefetch.js');let routeReads=0,worldReads=0;const entry={id:'megara-club',routeHash:'a',geometryHash:'b',worldSetRevision:'c',url:'/route.json'},fetcher=async url=>{routeReads++;return{ok:true,json:async()=>url==='/api/routes'?{environment:'staging',routes:[entry]}:entry};},worldLoader=async()=>{worldReads++;return{manifest:{revision:'c'}};};
+ for(const query of ['menu=1&map=megara','map=athens','event=free','event=free:penteli','lobby=ABCDEF','map=megara',''])assert.equal(prefetchDirectRace(new URLSearchParams(query),{fetcher,worldLoader}),null,query);
+ assert.equal(routeReads,0);assert.equal(worldReads,0);const early=prefetchDirectRace(new URLSearchParams('map=megara&event=megara-race'),{fetcher,worldLoader,baseURL:'https://game.test/'});assert.equal(routeReads,1);assert.equal(worldReads,1);assert.equal((await early.route).id,'megara-club');assert.equal((await early.world).manifest.revision,'c');assert.equal(early.manifestURL,'https://game.test/data/athens/manifest.json');
+ const {freeRoamEntryQuery}=await import('../src/free-roam-entry.js');assert.equal(freeRoamEntryQuery(new URLSearchParams('event=free:penteli')).get('map'),'athens');
+});

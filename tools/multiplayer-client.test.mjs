@@ -384,3 +384,12 @@ test('a driver the lobby still lists as loading keeps reporting it is loaded unt
   clock.mock.mockImplementation(() => 14500); m.update(1 / 60, state()); assert.equal(sent.length, 2, 'again after four seconds');
   m.lobby.players[0].loaded = true; clock.mock.mockImplementation(() => 30000); m.update(1 / 60, state()); assert.equal(sent.length, 2, 'silent once the lobby agrees');
 });
+
+test('route motion/control packets carry the loaded immutable tuple and reject a stale race binding',()=>{
+ const prior=globalThis.WebSocket;globalThis.WebSocket={OPEN:1};try{
+ const hash='a'.repeat(64),identity={worldId:'athens',routeId:'test-route',routeHash:hash,geometryHash:hash,worldSetRevision:hash,projectionId:'athens-v1',onlineGridHash:hash},packets=[],mp=Object.create(Multiplayer.prototype);Object.assign(mp,{mapId:'test-route',routeIdentity:identity,lobby:{mapId:'test-route',routeIdentity:identity},ws:{readyState:1,send:s=>packets.push(JSON.parse(s))},status(){}});
+ for(const type of ['loaded','ready','state','states','recover','contact','dnf','world-frame','world-contact'])mp.send({type,raceId:'race',generation:3});assert.equal(packets.length,9);for(const packet of packets){assert.equal(packet.mapId,'test-route');assert.deepEqual(packet.routeIdentity,identity);}
+ mp.lobby.routeIdentity={...identity,onlineGridHash:'b'.repeat(64)};mp.send({type:'state',raceId:'race'});mp.send({type:'states',raceId:'race'});assert.equal(packets.length,9);
+ mp.lobby=null;mp.routeIdentity=null;mp.resumeRoute={mapId:'test-route',routeIdentity:identity};mp.send({type:'resume',token:'opaque'});assert.deepEqual(packets.at(-1).routeIdentity,identity);
+ }finally{globalThis.WebSocket=prior;}
+});

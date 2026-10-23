@@ -1,3 +1,4 @@
+import {readOnlineRouteRelease,bindOnlineRouteRelease} from './online-route-release.mjs';
 import {exportPsychikoDetail} from './export-psychiko-detail.mjs';
 import {buildRoutes} from './build-routes.mjs';
 import {activeRouteWorld, writeRouteProofs, selectRouteRelease, checkBuiltRouteRelease} from './route-release.mjs';
@@ -41,12 +42,13 @@ await exportPsychikoDetail(root,out);
 const buildEnvironment = process.env.ASR_BUILD_ENV || process.env.CLOUDFLARE_ENV || 'staging';
 // The bounded emitted graph/contact proof shard is source data; world cell bodies stay in R2.
 const routeIds=String(process.env.ASR_UNIFIED_ROUTES||'').split(',').filter(Boolean);
-let routeBuild={index:{routes:[]},server:{routes:[]}};
-if(routeIds.length){const source=JSON.parse(await readFile(resolve(root,'data/routes/validation/athens.inputs.json'),'utf8')),{manifest}=await activeRouteWorld(root,buildEnvironment),proofs=await writeRouteProofs(root,source,manifest,resolve(root,'.deploy')),bound=proofs.bound,worldPath=resolve(root,'.deploy/route-world-set.json'),shardPath=resolve(root,'.deploy/route-inputs.json');await writeFile(worldPath,JSON.stringify(bound.world));await writeFile(shardPath,JSON.stringify(bound.shard));try{routeBuild=selectRouteRelease(await buildRoutes({world:worldPath,graph:shardPath,routes:resolve(root,'data/routes'),out:resolve(out,'data/routes')}),routeIds);await writeFile(resolve(out,'data/routes/index.json'),JSON.stringify(routeBuild.index));}finally{await rm(worldPath,{force:true});await rm(shardPath,{force:true});await proofs.cleanup();}}
+let routeBuild={index:{routes:[]},server:{routes:[]}},onlineRelease=null;
+if(routeIds.length){const source=JSON.parse(await readFile(resolve(root,'data/routes/validation/athens.inputs.json'),'utf8')),{manifest}=await activeRouteWorld(root,buildEnvironment),proofs=await writeRouteProofs(root,source,manifest,resolve(root,'.deploy')),bound=proofs.bound,worldPath=resolve(root,'.deploy/route-world-set.json'),shardPath=resolve(root,'.deploy/route-inputs.json');await writeFile(worldPath,JSON.stringify(bound.world));await writeFile(shardPath,JSON.stringify(bound.shard));try{routeBuild=selectRouteRelease(await buildRoutes({world:worldPath,graph:shardPath,routes:resolve(root,'data/routes'),out:resolve(out,'data/routes')}),routeIds);await writeFile(resolve(out,'data/routes/index.json'),JSON.stringify(routeBuild.index));onlineRelease=await readOnlineRouteRelease(root,{compiled:routeBuild.server.routes,manifest,out:resolve(out,'data/routes'),required:process.env.ASR_UNIFIED_ONLINE==='1'});}finally{await rm(worldPath,{force:true});await rm(shardPath,{force:true});await proofs.cleanup();}}
 // Validation evidence and authored definitions never become public cells or editable runtime inputs.
 await rm(resolve(out,'data/routes/validation'),{recursive:true,force:true});
-for(const name of await readdir(resolve(out,'data/routes')).catch(()=>[]))if(name.endsWith('.route.json')||name==='server-catalogue.json')await rm(resolve(out,'data/routes',name));
-const routeConfig=unifiedRouteConfig({environment:buildEnvironment,enabled:routeIds.join(','),routes:routeBuild.index.routes});routeConfig.routes=routeConfig.routes.map(r=>({...r,url:routeBuild.index.routes.find(x=>x.id===r.id).url}));
+for(const name of await readdir(resolve(out,'data/routes')).catch(()=>[]))if(name.endsWith('.route.json')||name==='server-catalogue.json'||name==='online-release.json')await rm(resolve(out,'data/routes',name));
+let routeConfig=unifiedRouteConfig({environment:buildEnvironment,enabled:routeIds.join(','),routes:routeBuild.index.routes});routeConfig.routes=routeConfig.routes.map(r=>({...r,url:routeBuild.index.routes.find(x=>x.id===r.id).url}));
+routeConfig=bindOnlineRouteRelease(routeConfig,onlineRelease,{enable:process.env.ASR_UNIFIED_ONLINE==='1'});
 await writeFile(resolve(out,'route-config.json'),JSON.stringify(routeConfig));
 const indexPath = resolve(out, 'index.html');
 await writeFile(indexPath, (await readFile(indexPath, 'utf8')).replace('</head>', `<meta name="asr-environment" content="${buildEnvironment === 'production' ? 'production' : 'staging'}">\n</head>`));
@@ -82,6 +84,6 @@ if (count > 20000) throw new Error(`Cloudflare free-tier asset count exceeds 200
 if (largest.size > 25 * 1024 * 1024) throw new Error(`Cloudflare asset exceeds 25 MiB after packaging: ${largest.path}`);
 const catalogue = await readFile(resolve(root, 'src/cars.js'), 'utf8');
 const { cars, nitrousCars, specs: carSpecs } = readCarCapabilities(catalogue);
-await writeFile(resolve(root, '.deploy/catalogue.json'), JSON.stringify({ maps, cars, nitrousCars, carSpecs, routeConfig, routes:routeBuild.server.routes }));
+await writeFile(resolve(root, '.deploy/catalogue.json'), JSON.stringify({ maps, cars, nitrousCars, carSpecs, routeConfig, routes:routeBuild.server.routes,...(onlineRelease?{routeGrids:onlineRelease.routeGrids,routeRoads:onlineRelease.routeRoads,recoveryWorld:onlineRelease.recoveryWorld}:{}) }));
 if(routeIds.length)await checkBuiltRouteRelease(root,buildEnvironment);
 console.log(JSON.stringify({ assets: count, bytes, largest, release: { version: version.version, sha: version.sha, build: release.build, files: Object.keys(release.files).length, copies: release.copies, swBytes }, maps: maps.map(m => ({ id: m.id, version: m.track.version, events: m.definitions.length })) }, null, 2));

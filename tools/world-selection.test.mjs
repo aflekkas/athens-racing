@@ -35,3 +35,10 @@ test('failed preparation restores the driving slice and never commits a stale ro
  await assert.rejects(f.session.prepareRoute({...f.compiled,worldSetRevision:'stale-world'}),/release differ/);
  assert.equal(f.stream.activationMs,.75);assert.equal(f.session.route,previous);assert.equal(f.commits,1);assert.equal(f.pins.size,0);f.session.dispose();
 });
+
+test('online start admission pins the separately proven eighth slot and refuses an unrelated runtime',async()=>{
+ const f=await fixtureSession(),runtime=new RouteRuntime(f.compiled),poses=Array.from({length:8},(_,slot)=>({...f.compiled.grid[0],slot,s:-8-slot*16,x:100,z:500+slot*16})),onlineGrid={poses};runtime.onlineGrid=onlineGrid;
+ let used;f.stream.spawnAtRoute=async(start,cars)=>{used=cars;};
+ const cars=Array.from({length:8},()=>({width:2.5,length:12}));await f.session.prepareRoute(f.compiled,{runtime,onlineGrid,cars});assert.equal(used.length,8);assert.equal(used[7].pose,poses[7]);assert.equal(f.session.route,runtime);assert.equal(f.stream.activationMs,.75);
+ await assert.rejects(f.session.prepareRoute(f.compiled,{runtime:new RouteRuntime(f.compiled),onlineGrid,cars}),/grid runtime mismatch/);f.session.dispose();
+});

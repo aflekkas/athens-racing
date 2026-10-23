@@ -3,7 +3,7 @@ import {AREA_STARTS,AREA_NAMES,MAP_PROJECTIONS,athensFromLonLat} from './spawn-s
 // Compatibility launch coordinates are converted once. Free roam then owns only
 // the published Athens scene/contacts, never an authored whole-map runtime.
 export function freeRoamEntryQuery(query,selection=null){
- if(!selection&&(query.has('menu')||query.get('event')!=='free'&&query.get('map')!=='athens'||query.get('routes')==='1'))return null;
+ if(!selection&&(query.has('menu')||query.get('event')!=='free'&&!query.get('event')?.startsWith('free:')&&query.get('map')!=='athens'||query.get('routes')==='1'))return null;
  const params=new URLSearchParams(query),mapId=selection?.mapId||query.get('map')||initialMapId(query);
  const pair=(query.get('spawn')||'').split(',').map(Number),spawn=selection?.spawn;
  let point=spawn&&[spawn.x,spawn.z].every(Number.isFinite)?[spawn.x,spawn.z]:pair.length===2&&pair.every(Number.isFinite)?pair:null;
