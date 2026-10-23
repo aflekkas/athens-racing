@@ -1,0 +1,443 @@
+{
+  "schemaVersion": 1,
+  "scope": "Source-only model-support preflight; not surveyed height/geography or mesh acceptance",
+  "licence": "OpenStreetMap contributors / ODbL1.0",
+  "osmSources": [
+    {
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=23.7985,38.0400,23.8070,38.0450",
+      "sha256": "11ed0ac0fe35f6eb0f2bdc24cd23fc4ab33855f145f499cb28fd9d51efbffb44",
+      "readDate": "2026-10-23"
+    },
+    {
+      "url": "https://api.openstreetmap.org/api/0.6/map?bbox=23.7915,38.0303,23.7970,38.0340",
+      "sha256": "597390672623764e783168febae4fbabc172ea5399e02e58432c37594365d4e9",
+      "readDate": "2026-10-23"
+    }
+  ],
+  "partialRun": {
+    "status": "incomplete-receipt-cap",
+    "releaseEligible": false,
+    "fullWallCertificates": [],
+    "sampledSpans": 1233,
+    "walls": {
+      "w475170425": {
+        "spans": 403,
+        "processedLength": 352.6134091289688,
+        "statusCounts": {
+          "zero-height": 403
+        },
+        "statusLengths": {
+          "zero-height": 352.6134091289688
+        },
+        "sideFailures": {
+          "top:unique": 403,
+          "bottom:unique": 403
+        },
+        "firstFailure": {
+          "from": 0,
+          "to": 1.6228282441539141,
+          "a": [
+            6511.4803473552665,
+            -6978.316840000438
+          ],
+          "b": [
+            6511.399621702142,
+            -6976.69602080048
+          ],
+          "support": {
+            "status": "zero-height",
+            "top": {
+              "status": "unique",
+              "support": {
+                "sourceSha256": "bb0b97a287b61ff9aff6b1f878033a3a3e4feb754b598de99567444a2f855433",
+                "table": "fineTriangles",
+                "triangle": 3661,
+                "owner": "terrain:12:-14",
+                "layer": 0
+              },
+              "heights": [
+                194.77903061184492,
+                194.61457093984916
+              ],
+              "candidates": [
+                {
+                  "sourceSha256": "bb0b97a287b61ff9aff6b1f878033a3a3e4feb754b598de99567444a2f855433",
+                  "table": "fineTriangles",
+                  "triangle": 3661,
+                  "owner": "terrain:12:-14",
+                  "layer": 0
+                }
+              ]
+            },
+            "bottom": {
+              "status": "unique",
+              "support": {
+                "sourceSha256": "bb0b97a287b61ff9aff6b1f878033a3a3e4feb754b598de99567444a2f855433",
+                "table": "fineTriangles",
+                "triangle": 3661,
+                "owner": "terrain:12:-14",
+                "layer": 0
+              },
+              "heights": [
+                194.77903061184492,
+                194.61457093984916
+              ],
+              "candidates": [
+                {
+                  "sourceSha256": "bb0b97a287b61ff9aff6b1f878033a3a3e4feb754b598de99567444a2f855433",
+                  "table": "fineTriangles",
+                  "triangle": 3661,
+                  "owner": "terrain:12:-14",
+                  "layer": 0
+                }
+              ]
+            },
+            "delta": [
+              0,
+              0
+            ]
+          }
+        },
+        "lastTo": 352.6134091289688,
+        "diagnosticRows": 7254,
+        "totalWallLength": 352.6134091289688,
+        "unprocessedLength": 0
+      },
+      "w475170431": {
+        "spans": 830,
+        "processedLength": 771.2207161098615,
+        "statusCounts": {
+          "zero-height": 805,
+          "unsupported": 25
+        },
+        "statusLengths": {
+          "zero-height": 757.3097643371242,
+          "unsupported": 13.910951772737292
+        },
+        "sideFailures": {
+          "top:unique": 805,
+          "bottom:unique": 805,
+          "top:ambiguous-owner": 25,
+          "bottom:ambiguous-owner": 25
+        },
+        "firstFailure": {
+          "from": 0,
+          "to": 1.8567120845372935,
+          "a": [
+            6642.2910035145,
+            -6885.832184000126
+          ],
+          "b": [
+            6643.847019726747,
+            -6884.819172000153
+          ],
+          "support": {
+            "status": "zero-height",
+            "top": {
+              "status": "unique",
+              "support": {
+                "sourceSha256": "bb0b97a287b61ff9aff6b1f878033a3a3e4feb754b598de99567444a2f855433",
+                "table": "fineTriangles",
+                "triangle": 19130,
+                "owner": "terrain:12:-14",
+                "layer": 0
+              },
+              "heights": [
+                194.93271575787935,
+                194.85102826823942
+              ],
+              "candidates": [
+                {
+                  "sourceSha256": "bb0b97a287b61ff9aff6b1f878033a3a3e4feb754b598de99567444a2f855433",
+                  "table": "fineTriangles",
+                  "triangle": 19130,
+                  "owner": "terrain:12:-14",
+                  "layer": 0
+                }
+              ]
+            },
+            "bottom": {
+              "status": "unique",
+              "support": {
+                "sourceSha256": "bb0b97a287b61ff9aff6b1f878033a3a3e4feb754b598de99567444a2f855433",
+                "table": "fineTriangles",
+                "triangle": 19130,
+                "owner": "terrain:12:-14",
+                "layer": 0
+              },
+              "heights": [
+                194.93271575787935,
+                194.85102826823942
+              ],
+              "candidates": [
+                {
+                  "sourceSha256": "bb0b97a287b61ff9aff6b1f878033a3a3e4feb754b598de99567444a2f855433",
+                  "table": "fineTriangles",
+                  "triangle": 19130,
+                  "owner": "terrain:12:-14",
+                  "layer": 0
+                }
+              ]
+            },
+            "delta": [
+              0,
+              0
+            ]
+          }
+        },
+        "lastTo": 771.2207161098615,
+        "diagnosticRows": 14940,
+        "totalWallLength": 1095.4579636616415,
+        "unprocessedLength": 324.23724755178
+      },
+      "w440936123": {
+        "spans": 0,
+        "totalWallLength": 139.16565480817957,
+        "unprocessedLength": 139.16565480817957,
+        "status": "not-reached"
+      }
+    },
+    "resource": {
+      "status": "incomplete",
+      "releaseEligible": false,
+      "readBytes": 5058943,
+      "decodedCells": [
+        {
+          "cell": "11,-12",
+          "world": "athens-east-development",
+          "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+          "sha256": "dcd1ca04db51d3a236af09720152c269fe915b48fed752a5efa056fd12282b1e",
+          "decodedBytes": 1233195,
+          "verticalDegenerate": 0
+        },
+        {
+          "cell": "12,-14",
+          "world": "athens-east-development",
+          "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+          "sha256": "bb0b97a287b61ff9aff6b1f878033a3a3e4feb754b598de99567444a2f855433",
+          "decodedBytes": 1400783,
+          "verticalDegenerate": 0
+        },
+        {
+          "cell": "13,-14",
+          "world": "athens-east-development",
+          "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+          "sha256": "57fdc3f135b722d11f0c41a91fd03006c0adf2c617cf5573c318783e1cda24a6",
+          "decodedBytes": 1157129,
+          "verticalDegenerate": 0
+        },
+        {
+          "cell": "14,-14",
+          "world": "athens-east-development",
+          "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+          "sha256": "a79c1a9e37df739be24e84c64b91842aeb504a2cf4d6ffbabf89a20f896f7cdb",
+          "decodedBytes": 1029192,
+          "verticalDegenerate": 0
+        },
+        {
+          "cell": "14,-13",
+          "world": "athens-east-development",
+          "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+          "sha256": "cadf681776930a3500bce5de87de191da2a21f3cb563af45bc2c96b607005385",
+          "decodedBytes": 1057582,
+          "verticalDegenerate": 0
+        }
+      ],
+      "outputBytes": 8388266,
+      "error": "Error: 8MiB sample/receipt reserve cap\n    at file:///tmp/athens-highway.GIu3/wall-profile-preflight.mjs:59:114",
+      "elapsedMs": 2841.0108880000003,
+      "maxRSSKiB": 219968,
+      "heapBytes": 105654384
+    },
+    "launchPid": "1257183",
+    "firstAmbiguousSpan": {
+      "way": "w475170431",
+      "from": 299.6945420971687,
+      "to": 299.93716214513256,
+      "a": [
+        6914.593857819622,
+        -6765.263116251305
+      ],
+      "b": [
+        6914.820007324219,
+        -6765.1752476605325
+      ],
+      "support": {
+        "status": "unsupported",
+        "top": {
+          "status": "ambiguous-owner",
+          "candidates": [
+            {
+              "sourceSha256": "57fdc3f135b722d11f0c41a91fd03006c0adf2c617cf5573c318783e1cda24a6",
+              "table": "fineTriangles",
+              "triangle": 2413,
+              "owner": "terrain:13:-14",
+              "layer": 0
+            },
+            {
+              "sourceSha256": "57fdc3f135b722d11f0c41a91fd03006c0adf2c617cf5573c318783e1cda24a6",
+              "table": "contactTriangles",
+              "triangle": 358,
+              "owner": "terrain:13:-14",
+              "layer": 1
+            }
+          ]
+        },
+        "bottom": {
+          "status": "ambiguous-owner",
+          "candidates": [
+            {
+              "sourceSha256": "57fdc3f135b722d11f0c41a91fd03006c0adf2c617cf5573c318783e1cda24a6",
+              "table": "fineTriangles",
+              "triangle": 2413,
+              "owner": "terrain:13:-14",
+              "layer": 0
+            },
+            {
+              "sourceSha256": "57fdc3f135b722d11f0c41a91fd03006c0adf2c617cf5573c318783e1cda24a6",
+              "table": "contactTriangles",
+              "triangle": 358,
+              "owner": "terrain:13:-14",
+              "layer": 1
+            }
+          ]
+        }
+      }
+    },
+    "ambiguousDomains": [
+      {
+        "side": "top",
+        "sourceSha256": "57fdc3f135b722d11f0c41a91fd03006c0adf2c617cf5573c318783e1cda24a6",
+        "table": "fineTriangles",
+        "owner": "terrain:13:-14",
+        "layer": 0,
+        "candidateOccurrences": 25
+      },
+      {
+        "side": "top",
+        "sourceSha256": "57fdc3f135b722d11f0c41a91fd03006c0adf2c617cf5573c318783e1cda24a6",
+        "table": "contactTriangles",
+        "owner": "terrain:13:-14",
+        "layer": 1,
+        "candidateOccurrences": 8
+      },
+      {
+        "side": "bottom",
+        "sourceSha256": "57fdc3f135b722d11f0c41a91fd03006c0adf2c617cf5573c318783e1cda24a6",
+        "table": "fineTriangles",
+        "owner": "terrain:13:-14",
+        "layer": 0,
+        "candidateOccurrences": 25
+      },
+      {
+        "side": "bottom",
+        "sourceSha256": "57fdc3f135b722d11f0c41a91fd03006c0adf2c617cf5573c318783e1cda24a6",
+        "table": "contactTriangles",
+        "owner": "terrain:13:-14",
+        "layer": 1,
+        "candidateOccurrences": 8
+      },
+      {
+        "side": "top",
+        "sourceSha256": "57fdc3f135b722d11f0c41a91fd03006c0adf2c617cf5573c318783e1cda24a6",
+        "table": "contactTriangles",
+        "owner": "surface:w84950807:0",
+        "layer": 1,
+        "candidateOccurrences": 9
+      },
+      {
+        "side": "bottom",
+        "sourceSha256": "57fdc3f135b722d11f0c41a91fd03006c0adf2c617cf5573c318783e1cda24a6",
+        "table": "contactTriangles",
+        "owner": "surface:w84950807:0",
+        "layer": 1,
+        "candidateOccurrences": 9
+      },
+      {
+        "side": "top",
+        "sourceSha256": "57fdc3f135b722d11f0c41a91fd03006c0adf2c617cf5573c318783e1cda24a6",
+        "table": "contactTriangles",
+        "owner": "surface:w84950802:0",
+        "layer": 1,
+        "candidateOccurrences": 8
+      },
+      {
+        "side": "bottom",
+        "sourceSha256": "57fdc3f135b722d11f0c41a91fd03006c0adf2c617cf5573c318783e1cda24a6",
+        "table": "contactTriangles",
+        "owner": "surface:w84950802:0",
+        "layer": 1,
+        "candidateOccurrences": 8
+      }
+    ]
+  },
+  "receiptComparison": {
+    "schemaVersion": 1,
+    "kind": "lossless-wall-receipt-comparison",
+    "releaseEligible": false,
+    "originalExpandedSha256": "11154cf4ce2951fe22c5e8c2e7a0783b010c715c34f57d638c75f8fa1e8a2253",
+    "dictionarySha256": "68514b5f7cf80a7bd0b788cb6cb546e1e5ba386237663cdbd4963e7e73ab7b89",
+    "originalBytes": 8375860,
+    "dictionaryBytes": 4604854,
+    "rows": 1233,
+    "diagnosticRows": 22194,
+    "diagnosticCandidates": 22639,
+    "roundtripPass": 1233,
+    "roundtripFail": 0,
+    "sourceDictionaryCount": 4,
+    "ownerDictionaryCount": 21,
+    "triangleDictionaryCount": 1002,
+    "actualCellRerun": false,
+    "allOriginalNumericAndCandidateRecordsPreserved": true
+  },
+  "dedupPrep": {
+    "files": {
+      "wall-profile-preflight-dedup.mjs": {
+        "sha256": "6ac7d7b7c9ac776b0ca347a406100d283b96a0949ea142135416bd53571bf106",
+        "bytes": 10309
+      },
+      "wall-profile-core.mjs": {
+        "sha256": "14eef96a07742f4ed045e07dd5ac1a474ca4ba88fd71789587d84a9da548c286",
+        "bytes": 5271
+      },
+      "wall-profile-source.py": {
+        "sha256": "c758b6695a808c3878bb69f80bace1f858574e561a288ac1e78d1381ae8479e4",
+        "bytes": 1767
+      },
+      "wall-profile-core.test.mjs": {
+        "sha256": "f0cc06d9e8725dab1c93e8ab3233749e2bed1fdf71e134f309eff3d731e44b79",
+        "bytes": 5577
+      },
+      "wall-receipt-dictionary.mjs": {
+        "sha256": "dcde6e1a2a04c434ed886da94dbd3641178ac2438427cf2380febe025a8aeb38",
+        "bytes": 3519
+      },
+      "wall-receipt-dictionary.test.mjs": {
+        "sha256": "f89aa098c0689d0967ad56d314345869f9af6e7d4b13f72268b887fd6fed4b4f",
+        "bytes": 5838
+      }
+    },
+    "bundleSha256": "6e61a2c154e70e0e686c9f0f073d5d46c721fcdb93f842385828b233567c08bf",
+    "geometryAndSamplingSourceUnchanged": true,
+    "tests": {
+      "geometryPass": 14,
+      "dictionaryPass": 7,
+      "roundtripRowsPass": 1233,
+      "fail": 0,
+      "skip": 0
+    },
+    "actualCellRerun": false,
+    "resourceCaps": {
+      "outerSeconds": 180,
+      "internalSeconds": 175,
+      "nodeHeapMiB": 512,
+      "rssMiB": 768,
+      "sampleMiB": 8,
+      "totalReceiptMiB": 10,
+      "spanCap": 10000,
+      "resourceReceiptReserveBytes": 65536
+    }
+  },
+  "noActualCellRerun": true,
+  "noMeshOrPolicyChange": true
+}
