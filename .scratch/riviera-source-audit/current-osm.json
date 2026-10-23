@@ -1,0 +1,998 @@
+{
+  "license": "ODbL1.0; OpenStreetMap contributors",
+  "scope": "current selected whole-way geometry/tags; not historical emitted extraction date or complete route turn restrictions",
+  "ways": [
+    {
+      "wayId": 1480412293,
+      "url": "https://api.openstreetmap.org/api/0.6/way/1480412293/full",
+      "status": 200,
+      "readAtUTC": "2026-10-23T09:38:58.841860+00:00",
+      "responseSha256": "7ab058ab2b6acf8fab42c963d0bb08156d65f5144220178acff845479de29617",
+      "version": 2,
+      "sourceTimestamp": "2026-06-28T14:09:16Z",
+      "tags": {
+        "building": "construction",
+        "building:levels": "50",
+        "construction": "residential",
+        "ele": "200",
+        "name": "Riviera Tower"
+      },
+      "nodes": [
+        {
+          "id": "13577992400",
+          "lat": 37.8827288,
+          "lon": 23.7270336
+        },
+        {
+          "id": "13972319561",
+          "lat": 37.8827072,
+          "lon": 23.7269777
+        },
+        {
+          "id": "13972319560",
+          "lat": 37.8826816,
+          "lon": 23.7269936
+        },
+        {
+          "id": "13972319557",
+          "lat": 37.8826472,
+          "lon": 23.7269047
+        },
+        {
+          "id": "13972319558",
+          "lat": 37.8826183,
+          "lon": 23.7269227
+        },
+        {
+          "id": "13972319559",
+          "lat": 37.8825695,
+          "lon": 23.7267965
+        },
+        {
+          "id": "13972319556",
+          "lat": 37.8826005,
+          "lon": 23.7267772
+        },
+        {
+          "id": "13972319555",
+          "lat": 37.882567,
+          "lon": 23.7266903
+        },
+        {
+          "id": "13578024201",
+          "lat": 37.8826102,
+          "lon": 23.7266635
+        },
+        {
+          "id": "13972319554",
+          "lat": 37.8825775,
+          "lon": 23.726579
+        },
+        {
+          "id": "13972319553",
+          "lat": 37.8826163,
+          "lon": 23.7265549
+        },
+        {
+          "id": "13972319552",
+          "lat": 37.882601,
+          "lon": 23.7265152
+        },
+        {
+          "id": "13972319545",
+          "lat": 37.8826799,
+          "lon": 23.7264664
+        },
+        {
+          "id": "13972319550",
+          "lat": 37.8826921,
+          "lon": 23.726498
+        },
+        {
+          "id": "13972319551",
+          "lat": 37.8827672,
+          "lon": 23.7264515
+        },
+        {
+          "id": "13972319544",
+          "lat": 37.8827547,
+          "lon": 23.7264191
+        },
+        {
+          "id": "13972319575",
+          "lat": 37.8828646,
+          "lon": 23.7263511
+        },
+        {
+          "id": "13972319574",
+          "lat": 37.882876,
+          "lon": 23.7263807
+        },
+        {
+          "id": "13578024202",
+          "lat": 37.8829105,
+          "lon": 23.7263594
+        },
+        {
+          "id": "13972319573",
+          "lat": 37.8829483,
+          "lon": 23.7264576
+        },
+        {
+          "id": "13972319572",
+          "lat": 37.8829913,
+          "lon": 23.726431
+        },
+        {
+          "id": "13972319571",
+          "lat": 37.8830264,
+          "lon": 23.726522
+        },
+        {
+          "id": "13972319570",
+          "lat": 37.8830652,
+          "lon": 23.7264979
+        },
+        {
+          "id": "13972319569",
+          "lat": 37.8831133,
+          "lon": 23.7266229
+        },
+        {
+          "id": "13972319568",
+          "lat": 37.8830815,
+          "lon": 23.7266426
+        },
+        {
+          "id": "13972319567",
+          "lat": 37.8831115,
+          "lon": 23.7267201
+        },
+        {
+          "id": "13972319566",
+          "lat": 37.8830793,
+          "lon": 23.7267401
+        },
+        {
+          "id": "13972319565",
+          "lat": 37.8831027,
+          "lon": 23.7268007
+        },
+        {
+          "id": "13578024203",
+          "lat": 37.8830624,
+          "lon": 23.7268256
+        },
+        {
+          "id": "13972319564",
+          "lat": 37.8830805,
+          "lon": 23.7268724
+        },
+        {
+          "id": "13972319546",
+          "lat": 37.882976,
+          "lon": 23.7269371
+        },
+        {
+          "id": "13972319549",
+          "lat": 37.8829606,
+          "lon": 23.7268971
+        },
+        {
+          "id": "13972319548",
+          "lat": 37.8828824,
+          "lon": 23.7269455
+        },
+        {
+          "id": "13972319547",
+          "lat": 37.8828957,
+          "lon": 23.7269799
+        },
+        {
+          "id": "13972319563",
+          "lat": 37.8827883,
+          "lon": 23.7270464
+        },
+        {
+          "id": "13972319562",
+          "lat": 37.8827728,
+          "lon": 23.7270063
+        },
+        {
+          "id": "13577992400",
+          "lat": 37.8827288,
+          "lon": 23.7270336
+        }
+      ],
+      "nodeClosureComplete": true
+    },
+    {
+      "wayId": 459160388,
+      "url": "https://api.openstreetmap.org/api/0.6/way/459160388/full",
+      "status": 200,
+      "readAtUTC": "2026-10-23T09:38:59.324405+00:00",
+      "responseSha256": "576f146c74357c5eddae224aa796cb0d29ad55df33b71a755b8805f6d93309b4",
+      "version": 19,
+      "sourceTimestamp": "2025-06-24T23:39:51Z",
+      "tags": {
+        "dual_carriageway": "yes",
+        "highway": "primary",
+        "int_name": "Poseidonos",
+        "lanes": "2",
+        "lit": "yes",
+        "maxspeed": "50",
+        "name": "\u03a0\u03bf\u03c3\u03b5\u03b9\u03b4\u03ce\u03bd\u03bf\u03c2",
+        "name:prefix": "\u039b\u03b5\u03c9\u03c6\u03cc\u03c1\u03bf\u03c2",
+        "oneway": "yes",
+        "ref": "\u0395\u039f91",
+        "sidewalk": "right",
+        "smoothness": "excellent",
+        "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+        "surface": "asphalt",
+        "wikidata": "Q7233015",
+        "wikipedia": "el:\u039b\u03b5\u03c9\u03c6\u03cc\u03c1\u03bf\u03c2 \u03a0\u03bf\u03c3\u03b5\u03b9\u03b4\u03ce\u03bd\u03bf\u03c2"
+      },
+      "nodes": [
+        {
+          "id": "7542589901",
+          "lat": 37.8127172,
+          "lon": 23.7818855
+        },
+        {
+          "id": "2188923450",
+          "lat": 37.8124426,
+          "lon": 23.7819961
+        },
+        {
+          "id": "3354699093",
+          "lat": 37.8121561,
+          "lon": 23.7820698
+        },
+        {
+          "id": "360324727",
+          "lat": 37.8119708,
+          "lon": 23.7821089
+        },
+        {
+          "id": "7542589937",
+          "lat": 37.8118132,
+          "lon": 23.7821306
+        },
+        {
+          "id": "360324728",
+          "lat": 37.8116343,
+          "lon": 23.7821477
+        },
+        {
+          "id": "4992745770",
+          "lat": 37.8112861,
+          "lon": 23.7821534
+        },
+        {
+          "id": "4992745763",
+          "lat": 37.8103316,
+          "lon": 23.7821449
+        },
+        {
+          "id": "1854123509",
+          "lat": 37.8102075,
+          "lon": 23.7821489
+        },
+        {
+          "id": "4550711419",
+          "lat": 37.8099665,
+          "lon": 23.7821674
+        }
+      ],
+      "nodeClosureComplete": true
+    },
+    {
+      "wayId": 328525144,
+      "url": "https://api.openstreetmap.org/api/0.6/way/328525144/full",
+      "status": 200,
+      "readAtUTC": "2026-10-23T09:38:59.806049+00:00",
+      "responseSha256": "9de8dd41be65b8e3992497e80e92e0b586ec230f9ef7a42c9acde45d447bfb29",
+      "version": 19,
+      "sourceTimestamp": "2025-06-24T23:39:51Z",
+      "tags": {
+        "dual_carriageway": "yes",
+        "highway": "primary",
+        "int_name": "Poseidonos",
+        "lanes": "3",
+        "lit": "yes",
+        "maxspeed": "50",
+        "name": "\u03a0\u03bf\u03c3\u03b5\u03b9\u03b4\u03ce\u03bd\u03bf\u03c2",
+        "name:prefix": "\u039b\u03b5\u03c9\u03c6\u03cc\u03c1\u03bf\u03c2",
+        "oneway": "yes",
+        "ref": "\u0395\u039f91",
+        "smoothness": "excellent",
+        "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+        "surface": "asphalt",
+        "turn:lanes": "left|through|through"
+      },
+      "nodes": [
+        {
+          "id": "1854123553",
+          "lat": 37.808511,
+          "lon": 23.7834787
+        },
+        {
+          "id": "1854123543",
+          "lat": 37.8082712,
+          "lon": 23.7837962
+        }
+      ],
+      "nodeClosureComplete": true
+    },
+    {
+      "wayId": 924494889,
+      "url": "https://api.openstreetmap.org/api/0.6/way/924494889/full",
+      "status": 200,
+      "readAtUTC": "2026-10-23T09:39:00.288460+00:00",
+      "responseSha256": "7a363034f524e88603c87791e16fe7bd20420eca58091115b08c92c0c50ee17c",
+      "version": 3,
+      "sourceTimestamp": "2026-04-04T22:22:59Z",
+      "tags": {
+        "highway": "primary",
+        "int_name": "Poseidonos",
+        "lanes": "4",
+        "lanes:backward": "2",
+        "lanes:forward": "2",
+        "lit": "yes",
+        "maxspeed": "50",
+        "name": "\u03a0\u03bf\u03c3\u03b5\u03b9\u03b4\u03ce\u03bd\u03bf\u03c2",
+        "name:prefix": "\u039b\u03b5\u03c9\u03c6\u03cc\u03c1\u03bf\u03c2",
+        "oneway": "no",
+        "ref": "\u0395\u039f91",
+        "smoothness": "excellent",
+        "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+        "surface": "asphalt"
+      },
+      "nodes": [
+        {
+          "id": "360326963",
+          "lat": 37.8013869,
+          "lon": 23.786882
+        },
+        {
+          "id": "13706864322",
+          "lat": 37.801474,
+          "lon": 23.7869954
+        },
+        {
+          "id": "8383855649",
+          "lat": 37.8014805,
+          "lon": 23.7870039
+        },
+        {
+          "id": "360326966",
+          "lat": 37.8015303,
+          "lon": 23.7870708
+        },
+        {
+          "id": "360326968",
+          "lat": 37.8016167,
+          "lon": 23.7871698
+        },
+        {
+          "id": "1018456440",
+          "lat": 37.8016929,
+          "lon": 23.7872415
+        },
+        {
+          "id": "360326971",
+          "lat": 37.8017563,
+          "lon": 23.7872807
+        },
+        {
+          "id": "1018456225",
+          "lat": 37.8018214,
+          "lon": 23.787307
+        },
+        {
+          "id": "360326973",
+          "lat": 37.8018917,
+          "lon": 23.7873213
+        },
+        {
+          "id": "1018456293",
+          "lat": 37.8019725,
+          "lon": 23.7873288
+        },
+        {
+          "id": "360326975",
+          "lat": 37.8020523,
+          "lon": 23.7873242
+        },
+        {
+          "id": "1018456484",
+          "lat": 37.8021184,
+          "lon": 23.7873105
+        },
+        {
+          "id": "360326976",
+          "lat": 37.8022373,
+          "lon": 23.7872704
+        },
+        {
+          "id": "1018456650",
+          "lat": 37.8024121,
+          "lon": 23.7872037
+        },
+        {
+          "id": "360326978",
+          "lat": 37.8025563,
+          "lon": 23.787136
+        },
+        {
+          "id": "3353530193",
+          "lat": 37.8026114,
+          "lon": 23.7871035
+        },
+        {
+          "id": "360326979",
+          "lat": 37.8026584,
+          "lon": 23.7870729
+        },
+        {
+          "id": "3353528996",
+          "lat": 37.8027026,
+          "lon": 23.7870407
+        },
+        {
+          "id": "360326981",
+          "lat": 37.8027372,
+          "lon": 23.7870072
+        },
+        {
+          "id": "3353530293",
+          "lat": 37.8027648,
+          "lon": 23.7869746
+        },
+        {
+          "id": "1018456719",
+          "lat": 37.802793,
+          "lon": 23.7869382
+        },
+        {
+          "id": "360326982",
+          "lat": 37.8028272,
+          "lon": 23.7868767
+        },
+        {
+          "id": "1018456258",
+          "lat": 37.8028515,
+          "lon": 23.786819
+        },
+        {
+          "id": "360326983",
+          "lat": 37.8028681,
+          "lon": 23.7867357
+        },
+        {
+          "id": "1018456353",
+          "lat": 37.8028712,
+          "lon": 23.7866591
+        },
+        {
+          "id": "360326984",
+          "lat": 37.8028671,
+          "lon": 23.7865818
+        },
+        {
+          "id": "1018456233",
+          "lat": 37.8028513,
+          "lon": 23.7865084
+        }
+      ],
+      "nodeClosureComplete": true
+    },
+    {
+      "wayId": 87543250,
+      "url": "https://api.openstreetmap.org/api/0.6/way/87543250/full",
+      "status": 200,
+      "readAtUTC": "2026-10-23T09:39:00.773662+00:00",
+      "responseSha256": "bdeaf280be0ed9bd3a26fa3b93d2ac279df7ed95554061814f05cb21f222f9c0",
+      "version": 17,
+      "sourceTimestamp": "2026-04-04T22:22:59Z",
+      "tags": {
+        "highway": "primary",
+        "int_name": "Poseidonos",
+        "lanes": "4",
+        "lanes:backward": "2",
+        "lanes:forward": "2",
+        "lit": "yes",
+        "maxspeed": "50",
+        "name": "\u03a0\u03bf\u03c3\u03b5\u03b9\u03b4\u03ce\u03bd\u03bf\u03c2",
+        "name:prefix": "\u039b\u03b5\u03c9\u03c6\u03cc\u03c1\u03bf\u03c2",
+        "oneway": "no",
+        "ref": "\u0395\u039f91",
+        "smoothness": "excellent",
+        "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+        "surface": "asphalt"
+      },
+      "nodes": [
+        {
+          "id": "1018456723",
+          "lat": 37.8041008,
+          "lon": 23.7976791
+        },
+        {
+          "id": "360327873",
+          "lat": 37.8039589,
+          "lon": 23.7975396
+        },
+        {
+          "id": "1018456288",
+          "lat": 37.8038699,
+          "lon": 23.7974752
+        },
+        {
+          "id": "360327875",
+          "lat": 37.8037676,
+          "lon": 23.7973952
+        },
+        {
+          "id": "360327876",
+          "lat": 37.8036634,
+          "lon": 23.797344
+        },
+        {
+          "id": "1018456376",
+          "lat": 37.8035563,
+          "lon": 23.7973162
+        },
+        {
+          "id": "360327878",
+          "lat": 37.8034539,
+          "lon": 23.7972977
+        },
+        {
+          "id": "360327880",
+          "lat": 37.8033403,
+          "lon": 23.7972982
+        },
+        {
+          "id": "360327883",
+          "lat": 37.8031374,
+          "lon": 23.7973136
+        },
+        {
+          "id": "360327885",
+          "lat": 37.8022627,
+          "lon": 23.7974902
+        },
+        {
+          "id": "360327887",
+          "lat": 37.80211,
+          "lon": 23.7975132
+        },
+        {
+          "id": "1018456713",
+          "lat": 37.8019705,
+          "lon": 23.7975145
+        },
+        {
+          "id": "360327888",
+          "lat": 37.8018694,
+          "lon": 23.7975075
+        },
+        {
+          "id": "1018456254",
+          "lat": 37.8017408,
+          "lon": 23.797478
+        },
+        {
+          "id": "360327890",
+          "lat": 37.8016224,
+          "lon": 23.7974289
+        },
+        {
+          "id": "360327891",
+          "lat": 37.8015128,
+          "lon": 23.7973462
+        },
+        {
+          "id": "360327894",
+          "lat": 37.8014177,
+          "lon": 23.7972576
+        },
+        {
+          "id": "360327897",
+          "lat": 37.8013177,
+          "lon": 23.797124
+        },
+        {
+          "id": "7542619383",
+          "lat": 37.8013,
+          "lon": 23.7970939
+        }
+      ],
+      "nodeClosureComplete": true
+    },
+    {
+      "wayId": 1268971815,
+      "url": "https://api.openstreetmap.org/api/0.6/way/1268971815/full",
+      "status": 200,
+      "readAtUTC": "2026-10-23T09:39:01.254570+00:00",
+      "responseSha256": "918621f8ba87520a8c13e2b1df32d1adf76734a146ae5aaf7a40eb400471c997",
+      "version": 2,
+      "sourceTimestamp": "2025-06-24T23:39:51Z",
+      "tags": {
+        "highway": "primary",
+        "int_name": "Poseidonos",
+        "lanes": "2",
+        "lit": "yes",
+        "maxspeed": "50",
+        "name": "\u03a0\u03bf\u03c3\u03b5\u03b9\u03b4\u03ce\u03bd\u03bf\u03c2",
+        "name:prefix": "\u039b\u03b5\u03c9\u03c6\u03cc\u03c1\u03bf\u03c2",
+        "oneway": "yes",
+        "ref": "\u0395\u039f91",
+        "smoothness": "excellent",
+        "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+        "surface": "asphalt"
+      },
+      "nodes": [
+        {
+          "id": "7531737430",
+          "lat": 37.8158033,
+          "lon": 23.8011034
+        },
+        {
+          "id": "2188923663",
+          "lat": 37.8162552,
+          "lon": 23.8012973
+        }
+      ],
+      "nodeClosureComplete": true
+    },
+    {
+      "wayId": 656858082,
+      "url": "https://api.openstreetmap.org/api/0.6/way/656858082/full",
+      "status": 200,
+      "readAtUTC": "2026-10-23T09:39:01.736615+00:00",
+      "responseSha256": "033b631f05ac3078660574cafd8cb91941374706b57b18183bf1df50da43ef7e",
+      "version": 8,
+      "sourceTimestamp": "2025-06-24T23:39:51Z",
+      "tags": {
+        "highway": "primary",
+        "int_name": "Athinon - Souniou",
+        "lanes": "3",
+        "lit": "yes",
+        "maxspeed": "50",
+        "name": "\u0391\u03b8\u03ae\u03bd\u03ce\u03bd - \u03a3\u03bf\u03c5\u03bd\u03af\u03bf\u03c5",
+        "name:prefix": "\u039b\u03b5\u03c9\u03c6\u03cc\u03c1\u03bf\u03c2",
+        "oneway": "yes",
+        "ref": "\u0395\u039f91",
+        "smoothness": "excellent",
+        "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+        "surface": "asphalt"
+      },
+      "nodes": [
+        {
+          "id": "3353951693",
+          "lat": 37.8215101,
+          "lon": 23.8057121
+        },
+        {
+          "id": "9047271871",
+          "lat": 37.8218039,
+          "lon": 23.8079637
+        },
+        {
+          "id": "2786680715",
+          "lat": 37.8223936,
+          "lon": 23.8124822
+        },
+        {
+          "id": "276542908",
+          "lat": 37.822682,
+          "lon": 23.8146923
+        }
+      ],
+      "nodeClosureComplete": true
+    },
+    {
+      "wayId": 1264763697,
+      "url": "https://api.openstreetmap.org/api/0.6/way/1264763697/full",
+      "status": 200,
+      "readAtUTC": "2026-10-23T09:39:01.914355+00:00",
+      "responseSha256": "8c9e63e66bb44d29c5d8784b81b17e0d2a490e155198881733753c805966c316",
+      "version": 4,
+      "sourceTimestamp": "2026-04-04T22:22:59Z",
+      "tags": {
+        "highway": "primary",
+        "int_name": "Athinon - Souniou",
+        "lanes": "4",
+        "lanes:backward": "2",
+        "lanes:forward": "2",
+        "lit": "yes",
+        "maxspeed": "50",
+        "name": "\u0391\u03b8\u03ae\u03bd\u03ce\u03bd - \u03a3\u03bf\u03c5\u03bd\u03af\u03bf\u03c5",
+        "oneway": "no",
+        "ref": "\u0395\u039f91",
+        "smoothness": "excellent",
+        "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+        "surface": "asphalt"
+      },
+      "nodes": [
+        {
+          "id": "276542802",
+          "lat": 37.8133057,
+          "lon": 23.822964
+        },
+        {
+          "id": "2786689991",
+          "lat": 37.8128703,
+          "lon": 23.823296
+        },
+        {
+          "id": "7965782220",
+          "lat": 37.8126129,
+          "lon": 23.8234988
+        },
+        {
+          "id": "276542799",
+          "lat": 37.8124932,
+          "lon": 23.8236222
+        },
+        {
+          "id": "7965782221",
+          "lat": 37.8123843,
+          "lon": 23.823734
+        },
+        {
+          "id": "7543521232",
+          "lat": 37.8121329,
+          "lon": 23.8239859
+        },
+        {
+          "id": "276542798",
+          "lat": 37.8118718,
+          "lon": 23.8243131
+        },
+        {
+          "id": "3353951893",
+          "lat": 37.8116355,
+          "lon": 23.8246821
+        },
+        {
+          "id": "276542797",
+          "lat": 37.8114015,
+          "lon": 23.8251043
+        },
+        {
+          "id": "276542795",
+          "lat": 37.8105847,
+          "lon": 23.8266826
+        },
+        {
+          "id": "3353951795",
+          "lat": 37.8105064,
+          "lon": 23.8268588
+        },
+        {
+          "id": "3353873899",
+          "lat": 37.810451,
+          "lon": 23.8270108
+        },
+        {
+          "id": "276542794",
+          "lat": 37.810406,
+          "lon": 23.827166
+        },
+        {
+          "id": "3353951694",
+          "lat": 37.8103721,
+          "lon": 23.8273136
+        },
+        {
+          "id": "276542793",
+          "lat": 37.8103455,
+          "lon": 23.8275
+        },
+        {
+          "id": "3353873898",
+          "lat": 37.81033,
+          "lon": 23.8277167
+        },
+        {
+          "id": "4697677022",
+          "lat": 37.8102289,
+          "lon": 23.8292205
+        }
+      ],
+      "nodeClosureComplete": true
+    },
+    {
+      "wayId": 483246714,
+      "url": "https://api.openstreetmap.org/api/0.6/way/483246714/full",
+      "status": 200,
+      "readAtUTC": "2026-10-23T09:39:02.088717+00:00",
+      "responseSha256": "224865705a42e6a8934c31d87d711c716f891614e3945554b29d0b2b15934147",
+      "version": 17,
+      "sourceTimestamp": "2026-04-04T22:22:59Z",
+      "tags": {
+        "highway": "primary",
+        "int_name": "Athinon - Souniou",
+        "lanes": "4",
+        "lanes:backward": "2",
+        "lanes:forward": "2",
+        "lit": "yes",
+        "maxspeed": "50",
+        "name": "\u0391\u03b8\u03ae\u03bd\u03ce\u03bd - \u03a3\u03bf\u03c5\u03bd\u03af\u03bf\u03c5",
+        "oneway": "no",
+        "ref": "\u0395\u039f91",
+        "smoothness": "excellent",
+        "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+        "surface": "asphalt"
+      },
+      "nodes": [
+        {
+          "id": "3353951896",
+          "lat": 37.8142748,
+          "lon": 23.8302169
+        },
+        {
+          "id": "3353951997",
+          "lat": 37.8143172,
+          "lon": 23.8302462
+        },
+        {
+          "id": "276542766",
+          "lat": 37.8143569,
+          "lon": 23.8302811
+        },
+        {
+          "id": "10121786199",
+          "lat": 37.8143933,
+          "lon": 23.8303212
+        },
+        {
+          "id": "3353951998",
+          "lat": 37.8144261,
+          "lon": 23.8303661
+        },
+        {
+          "id": "276542765",
+          "lat": 37.8144549,
+          "lon": 23.8304152
+        },
+        {
+          "id": "10121786200",
+          "lat": 37.8144794,
+          "lon": 23.8304679
+        },
+        {
+          "id": "276542764",
+          "lat": 37.8144992,
+          "lon": 23.8305237
+        },
+        {
+          "id": "3353951901",
+          "lat": 37.8145141,
+          "lon": 23.8305819
+        },
+        {
+          "id": "10121786201",
+          "lat": 37.8145239,
+          "lon": 23.8306417
+        },
+        {
+          "id": "10121770145",
+          "lat": 37.8145286,
+          "lon": 23.8307026
+        },
+        {
+          "id": "3353952095",
+          "lat": 37.8145281,
+          "lon": 23.8307638
+        },
+        {
+          "id": "276542763",
+          "lat": 37.8145223,
+          "lon": 23.8308245
+        },
+        {
+          "id": "13706864324",
+          "lat": 37.8144341,
+          "lon": 23.8313954
+        },
+        {
+          "id": "276542713",
+          "lat": 37.8143982,
+          "lon": 23.831628
+        }
+      ],
+      "nodeClosureComplete": true
+    },
+    {
+      "wayId": 328367783,
+      "url": "https://api.openstreetmap.org/api/0.6/way/328367783/full",
+      "status": 200,
+      "readAtUTC": "2026-10-23T09:39:02.573082+00:00",
+      "responseSha256": "a811c09e3874845dca7d8ba49b59cdae0d1a4deedd31bd264c212f5222ebb2a1",
+      "version": 24,
+      "sourceTimestamp": "2025-06-24T23:39:51Z",
+      "tags": {
+        "highway": "primary",
+        "int_name": "Athinon - Souniou",
+        "lanes": "4",
+        "lanes:backward": "2",
+        "lanes:forward": "2",
+        "lit": "yes",
+        "maxspeed": "50",
+        "name": "\u0391\u03b8\u03ae\u03bd\u03ce\u03bd - \u03a3\u03bf\u03c5\u03bd\u03af\u03bf\u03c5",
+        "oneway": "no",
+        "ref": "\u0395\u039f91",
+        "smoothness": "excellent",
+        "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+        "surface": "asphalt",
+        "turn:lanes:backward": "through|through"
+      },
+      "nodes": [
+        {
+          "id": "276542678",
+          "lat": 37.8204274,
+          "lon": 23.837955
+        },
+        {
+          "id": "8580513946",
+          "lat": 37.8204646,
+          "lon": 23.837839
+        },
+        {
+          "id": "3351897893",
+          "lat": 37.8204856,
+          "lon": 23.8377681
+        },
+        {
+          "id": "7965729468",
+          "lat": 37.8205363,
+          "lon": 23.8376149
+        }
+      ],
+      "nodeClosureComplete": true
+    },
+    {
+      "wayId": 977816178,
+      "url": "https://api.openstreetmap.org/api/0.6/way/977816178",
+      "status": 200,
+      "readAtUTC": "2026-10-23T09:41:38.882065+00:00",
+      "responseSha256": "532d8fe2071a21c17f4b30edf96889c2d468ecc9e33823a73c46c5eb04186bbe",
+      "version": 2,
+      "sourceTimestamp": "2022-04-20T13:59:46Z",
+      "tags": {
+        "highway": "service"
+      }
+    },
+    {
+      "wayId": 798390901,
+      "url": "https://api.openstreetmap.org/api/0.6/way/798390901",
+      "status": 200,
+      "readAtUTC": "2026-10-23T09:41:39.210879+00:00",
+      "responseSha256": "3334c5f99cc31e7c5e9390e2fc44139ac0b58c674e23f62fdaac5ad2cebd1c6c",
+      "version": 2,
+      "sourceTimestamp": "2020-05-21T13:28:49Z",
+      "tags": {
+        "highway": "service"
+      }
+    },
+    {
+      "wayId": 174698180,
+      "url": "https://api.openstreetmap.org/api/0.6/way/174698180",
+      "status": 200,
+      "readAtUTC": "2026-10-23T09:41:39.545082+00:00",
+      "responseSha256": "4b86caefa34c7fd3b89d80225b42ad8207d343a22831fabf823d7bd4020b6eb6",
+      "version": 6,
+      "sourceTimestamp": "2026-06-23T07:00:04Z",
+      "tags": {
+        "highway": "residential",
+        "lane_markings": "no",
+        "oneway": "yes",
+        "sidewalk": "both",
+        "surface": "asphalt"
+      }
+    }
+  ]
+}

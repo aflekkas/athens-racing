@@ -1,0 +1,940 @@
+{
+  "status": "read-only source profile/reference readiness; not field or visual fidelity acceptance",
+  "routeDefinitionSha256": "704b8b212a63eb11957fbdda8f0412ef92711ee1a45b9584e7bc97726be556dc",
+  "worldSetRevision": "80055f9208753e2d6fa8658b31c90216d22c650f7f33588ebd5178d1a6b804a1",
+  "geometryHash": "f6769329091422b4f6e7cebb34bf06e31a032ac13801982cb7b091544f0f8a6a",
+  "lengthM": 10337.229708621433,
+  "sampleCount": 9,
+  "samples": [
+    {
+      "s": 0,
+      "x": 4559.08205608306,
+      "y": 5.941346669182819,
+      "z": 18642.00139762574,
+      "tx": 0.30250509021672767,
+      "tz": 0.9531477694423722,
+      "rx": -0.9531477694423722,
+      "rz": 0.30250509021672767,
+      "yaw": -2.834272863199187,
+      "grade": 0.00097832041255456,
+      "bank": 0,
+      "mapped": true,
+      "leftM": 3.501947695676453,
+      "rightM": 3.4927055561714986,
+      "layer": 0,
+      "surfaceId": "surface:w459160388:0",
+      "edgeId": "osm:way:459160388:0-0:f:8:36",
+      "occurrence": 0,
+      "lat": 37.81253681820314,
+      "lon": 23.78195814873788,
+      "heading": 162.39187304977315,
+      "cell": "8,36",
+      "streetViewURL": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=37.8125368,23.7819581&heading=162.39&pitch=0&fov=90",
+      "referenceStatus": "ready to inspect; panorama coverage/date not verified",
+      "currentOSMWayVersion": 19,
+      "currentOSMGeometryDistanceM": 0.0002690202212667948,
+      "currentOSMSourceTimestamp": "2025-06-24T23:39:51Z",
+      "sourceTags": {
+        "dual_carriageway": "yes",
+        "highway": "primary",
+        "int_name": "Poseidonos",
+        "lanes": "2",
+        "lit": "yes",
+        "maxspeed": "50",
+        "name": "\u03a0\u03bf\u03c3\u03b5\u03b9\u03b4\u03ce\u03bd\u03bf\u03c2",
+        "name:prefix": "\u039b\u03b5\u03c9\u03c6\u03cc\u03c1\u03bf\u03c2",
+        "oneway": "yes",
+        "ref": "\u0395\u039f91",
+        "sidewalk": "right",
+        "smoothness": "excellent",
+        "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+        "surface": "asphalt",
+        "wikidata": "Q7233015",
+        "wikipedia": "el:\u039b\u03b5\u03c9\u03c6\u03cc\u03c1\u03bf\u03c2 \u03a0\u03bf\u03c3\u03b5\u03b9\u03b4\u03ce\u03bd\u03bf\u03c2"
+      },
+      "cellEntry": {
+        "url": "https://staging.athensracing.com/world/cells/4e7a847351793ebd994bcd2095cdba0e20340c3ae2a171251c6ce7f6d0ef2c70.bin.gz",
+        "sha256": "4e7a847351793ebd994bcd2095cdba0e20340c3ae2a171251c6ce7f6d0ef2c70",
+        "bytes": 172002,
+        "decodedBytes": 2444773,
+        "residentBytes": 1439804,
+        "transientBytes": 5061548,
+        "dependencies": [],
+        "triangles": 15486,
+        "contactEligible": true,
+        "source": {
+          "regionId": "basin",
+          "world": "athens-east-development",
+          "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+        }
+      }
+    },
+    {
+      "s": 500,
+      "x": 4699.578175043402,
+      "y": 9.218378504689262,
+      "z": 19096.934971472445,
+      "tx": 0.7220088492876655,
+      "tz": 0.6918838208473306,
+      "rx": -0.6918838208473306,
+      "rz": 0.7220088492876655,
+      "yaw": -2.3348912670045348,
+      "grade": 0.01730471178227212,
+      "bank": 0,
+      "mapped": true,
+      "leftM": 12.388849640023244,
+      "rightM": 8.573366127208336,
+      "layer": 0,
+      "surfaceId": "surface:w328525144:0",
+      "edgeId": "osm:way:328525144:0-0:f:9:37",
+      "occurrence": 26,
+      "lat": 37.80845009907049,
+      "lon": 23.783559330325804,
+      "heading": 133.77941522131323,
+      "cell": "9,37",
+      "streetViewURL": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=37.8084501,23.7835593&heading=133.78&pitch=0&fov=90",
+      "referenceStatus": "ready to inspect; panorama coverage/date not verified",
+      "currentOSMWayVersion": 19,
+      "currentOSMGeometryDistanceM": 0.00022606670952999734,
+      "currentOSMSourceTimestamp": "2025-06-24T23:39:51Z",
+      "sourceTags": {
+        "dual_carriageway": "yes",
+        "highway": "primary",
+        "int_name": "Poseidonos",
+        "lanes": "3",
+        "lit": "yes",
+        "maxspeed": "50",
+        "name": "\u03a0\u03bf\u03c3\u03b5\u03b9\u03b4\u03ce\u03bd\u03bf\u03c2",
+        "name:prefix": "\u039b\u03b5\u03c9\u03c6\u03cc\u03c1\u03bf\u03c2",
+        "oneway": "yes",
+        "ref": "\u0395\u039f91",
+        "smoothness": "excellent",
+        "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+        "surface": "asphalt",
+        "turn:lanes": "left|through|through"
+      },
+      "cellEntry": {
+        "url": "https://staging.athensracing.com/world/cells/8056d040145d13b70920882d43e419c160e53a3b49bf8592f3ea603973529e3a.bin.gz",
+        "sha256": "8056d040145d13b70920882d43e419c160e53a3b49bf8592f3ea603973529e3a",
+        "bytes": 224844,
+        "decodedBytes": 4007374,
+        "residentBytes": 2626935,
+        "transientBytes": 8239592,
+        "dependencies": [],
+        "triangles": 26108,
+        "contactEligible": true,
+        "source": {
+          "regionId": "basin",
+          "world": "athens-east-development",
+          "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+        }
+      }
+    },
+    {
+      "s": 1500,
+      "x": 5022.821196875642,
+      "y": 15.732158309600766,
+      "z": 19848.538829376048,
+      "tx": -0.5680762687523242,
+      "tz": 0.8229759126975935,
+      "rx": -0.8229759126975935,
+      "rz": -0.5680762687523242,
+      "yaw": 2.537426219839309,
+      "grade": 0.00457920137437066,
+      "bank": 0,
+      "mapped": true,
+      "leftM": 7.032828092829736,
+      "rightM": 6.97531177239665,
+      "layer": 0,
+      "surfaceId": "surface:w924494889:0",
+      "edgeId": "osm:way:924494889:0-0:b:9:38",
+      "occurrence": 53,
+      "lat": 37.80169835762328,
+      "lon": 23.787243209843705,
+      "heading": 214.616186777373,
+      "cell": "9,38",
+      "streetViewURL": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=37.8016984,23.7872432&heading=214.62&pitch=0&fov=90",
+      "referenceStatus": "ready to inspect; panorama coverage/date not verified",
+      "currentOSMWayVersion": 3,
+      "currentOSMGeometryDistanceM": 0.1312968620364676,
+      "currentOSMSourceTimestamp": "2026-04-04T22:22:59Z",
+      "sourceTags": {
+        "highway": "primary",
+        "int_name": "Poseidonos",
+        "lanes": "4",
+        "lanes:backward": "2",
+        "lanes:forward": "2",
+        "lit": "yes",
+        "maxspeed": "50",
+        "name": "\u03a0\u03bf\u03c3\u03b5\u03b9\u03b4\u03ce\u03bd\u03bf\u03c2",
+        "name:prefix": "\u039b\u03b5\u03c9\u03c6\u03cc\u03c1\u03bf\u03c2",
+        "oneway": "no",
+        "ref": "\u0395\u039f91",
+        "smoothness": "excellent",
+        "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+        "surface": "asphalt"
+      },
+      "cellEntry": {
+        "url": "https://staging.athensracing.com/world/cells/895342479667a107f59d620003174dfd66f6c821b04cbbd9d410d777c8a7c647.bin.gz",
+        "sha256": "895342479667a107f59d620003174dfd66f6c821b04cbbd9d410d777c8a7c647",
+        "bytes": 142615,
+        "decodedBytes": 2083861,
+        "residentBytes": 1150428,
+        "transientBytes": 4310337,
+        "dependencies": [],
+        "triangles": 13677,
+        "contactEligible": true,
+        "source": {
+          "regionId": "basin",
+          "world": "athens-east-development",
+          "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+        }
+      }
+    },
+    {
+      "s": 3000,
+      "x": 5920.750315867239,
+      "y": 17.53204910192853,
+      "z": 19606.55550840675,
+      "tx": 0.49763153605807253,
+      "tz": -0.8673885255872845,
+      "rx": 0.8673885255872845,
+      "rz": 0.49763153605807253,
+      "yaw": -0.5208660613540266,
+      "grade": -0.09727888208928141,
+      "bank": 0,
+      "mapped": true,
+      "leftM": 6.9998272046937275,
+      "rightM": 7.011953563025746,
+      "layer": 0,
+      "surfaceId": "surface:w87543250:0",
+      "edgeId": "osm:way:87543250:0-0:b:11:38",
+      "occurrence": 94,
+      "lat": 37.80387212083716,
+      "lon": 23.797476571328918,
+      "heading": 29.843427007187927,
+      "cell": "11,38",
+      "streetViewURL": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=37.8038721,23.7974766&heading=29.84&pitch=0&fov=90",
+      "referenceStatus": "ready to inspect; panorama coverage/date not verified",
+      "currentOSMWayVersion": 17,
+      "currentOSMGeometryDistanceM": 0.017961779609162464,
+      "currentOSMSourceTimestamp": "2026-04-04T22:22:59Z",
+      "sourceTags": {
+        "highway": "primary",
+        "int_name": "Poseidonos",
+        "lanes": "4",
+        "lanes:backward": "2",
+        "lanes:forward": "2",
+        "lit": "yes",
+        "maxspeed": "50",
+        "name": "\u03a0\u03bf\u03c3\u03b5\u03b9\u03b4\u03ce\u03bd\u03bf\u03c2",
+        "name:prefix": "\u039b\u03b5\u03c9\u03c6\u03cc\u03c1\u03bf\u03c2",
+        "oneway": "no",
+        "ref": "\u0395\u039f91",
+        "smoothness": "excellent",
+        "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+        "surface": "asphalt"
+      },
+      "cellEntry": {
+        "url": "https://staging.athensracing.com/world/cells/0f9765cd7cd07194185cdab750b8b99339cc6436dff419bfa4817d73333c7194.bin.gz",
+        "sha256": "0f9765cd7cd07194185cdab750b8b99339cc6436dff419bfa4817d73333c7194",
+        "bytes": 112133,
+        "decodedBytes": 1674320,
+        "residentBytes": 966839,
+        "transientBytes": 3460773,
+        "dependencies": [],
+        "triangles": 10723,
+        "contactEligible": true,
+        "source": {
+          "regionId": "basin",
+          "world": "athens-east-development",
+          "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+        }
+      }
+    },
+    {
+      "s": 4500,
+      "x": 6240.149873811718,
+      "y": 6.225666778278702,
+      "z": 18274.938757164182,
+      "tx": 0.3203876686599976,
+      "tz": -0.9472865151423889,
+      "rx": 0.9472865151423889,
+      "rz": 0.3203876686599976,
+      "yaw": -0.32613870017725066,
+      "grade": 0.00039105948476028115,
+      "bank": 0,
+      "mapped": true,
+      "leftM": 11.212639336272611,
+      "rightM": 4.652056050633535,
+      "layer": 0,
+      "surfaceId": "surface:w1268971815:0",
+      "edgeId": "osm:way:1268971815:0-0:f:12:35",
+      "occurrence": 130,
+      "lat": 37.81583418292163,
+      "lon": 23.80111664833002,
+      "heading": 18.686371056039036,
+      "cell": "12,35",
+      "streetViewURL": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=37.8158342,23.8011166&heading=18.69&pitch=0&fov=90",
+      "referenceStatus": "ready to inspect; panorama coverage/date not verified",
+      "currentOSMWayVersion": 2,
+      "currentOSMGeometryDistanceM": 0.00023509926271532926,
+      "currentOSMSourceTimestamp": "2025-06-24T23:39:51Z",
+      "sourceTags": {
+        "highway": "primary",
+        "int_name": "Poseidonos",
+        "lanes": "2",
+        "lit": "yes",
+        "maxspeed": "50",
+        "name": "\u03a0\u03bf\u03c3\u03b5\u03b9\u03b4\u03ce\u03bd\u03bf\u03c2",
+        "name:prefix": "\u039b\u03b5\u03c9\u03c6\u03cc\u03c1\u03bf\u03c2",
+        "oneway": "yes",
+        "ref": "\u0395\u039f91",
+        "smoothness": "excellent",
+        "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+        "surface": "asphalt"
+      },
+      "cellEntry": {
+        "url": "https://staging.athensracing.com/world/cells/c2f5b917b8946f75f8aed5f7be43af7e6a31ff5bee97071afb80ccf2eda63bd3.bin.gz",
+        "sha256": "c2f5b917b8946f75f8aed5f7be43af7e6a31ff5bee97071afb80ccf2eda63bd3",
+        "bytes": 174324,
+        "decodedBytes": 2480717,
+        "residentBytes": 1621952,
+        "transientBytes": 5135758,
+        "dependencies": [],
+        "triangles": 16645,
+        "contactEligible": true,
+        "source": {
+          "regionId": "basin",
+          "world": "athens-east-development",
+          "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+        }
+      }
+    },
+    {
+      "s": 6000,
+      "x": 7328.278038163754,
+      "y": 5.455147106823025,
+      "z": 17529.703210335734,
+      "tx": 0.9865623429542003,
+      "tz": -0.16338526085519134,
+      "rx": 0.16338526085519134,
+      "rz": 0.9865623429542003,
+      "yaw": -1.406675271105113,
+      "grade": 0.00013495553253278967,
+      "bank": 0,
+      "mapped": true,
+      "leftM": 5.255680310965854,
+      "rightM": 5.242378499161825,
+      "layer": 0,
+      "surfaceId": "surface:w656858082:1",
+      "edgeId": "osm:way:656858082:1-1:f:14:34",
+      "occurrence": 187,
+      "lat": 37.82252871711879,
+      "lon": 23.813517637018926,
+      "heading": 80.59655617974386,
+      "cell": "14,34",
+      "streetViewURL": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=37.8225287,23.8135176&heading=80.60&pitch=0&fov=90",
+      "referenceStatus": "ready to inspect; panorama coverage/date not verified",
+      "currentOSMWayVersion": 8,
+      "currentOSMGeometryDistanceM": 0.0001146893725649063,
+      "currentOSMSourceTimestamp": "2025-06-24T23:39:51Z",
+      "sourceTags": {
+        "highway": "primary",
+        "int_name": "Athinon - Souniou",
+        "lanes": "3",
+        "lit": "yes",
+        "maxspeed": "50",
+        "name": "\u0391\u03b8\u03ae\u03bd\u03ce\u03bd - \u03a3\u03bf\u03c5\u03bd\u03af\u03bf\u03c5",
+        "name:prefix": "\u039b\u03b5\u03c9\u03c6\u03cc\u03c1\u03bf\u03c2",
+        "oneway": "yes",
+        "ref": "\u0395\u039f91",
+        "smoothness": "excellent",
+        "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+        "surface": "asphalt"
+      },
+      "cellEntry": {
+        "url": "https://staging.athensracing.com/world/cells/6d993a67ff256bbffeb254bcb5e576bdd8184f0e7c9fad62f20591d017d947aa.bin.gz",
+        "sha256": "6d993a67ff256bbffeb254bcb5e576bdd8184f0e7c9fad62f20591d017d947aa",
+        "bytes": 170532,
+        "decodedBytes": 2538302,
+        "residentBytes": 1504299,
+        "transientBytes": 5247136,
+        "dependencies": [],
+        "triangles": 16538,
+        "contactEligible": true,
+        "source": {
+          "regionId": "basin",
+          "world": "athens-east-development",
+          "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+        }
+      }
+    },
+    {
+      "s": 7500,
+      "x": 8198.749723710327,
+      "y": 14.720846567529714,
+      "z": 18624.951541336308,
+      "tx": 0.5275243493665263,
+      "tz": 0.8495399112610443,
+      "rx": -0.8495399112610443,
+      "rz": 0.5275243493665263,
+      "yaw": -2.585908841251149,
+      "grade": -0.019047377382097955,
+      "bank": 0,
+      "mapped": true,
+      "leftM": 7.012365310774633,
+      "rightM": 7.003259224745731,
+      "layer": 0,
+      "surfaceId": "surface:w1264763697:0",
+      "edgeId": "osm:way:1264763697:0-1:f:16:36",
+      "occurrence": 229,
+      "lat": 37.81268997896751,
+      "lon": 23.823438076430495,
+      "heading": 148.1616628092561,
+      "cell": "16,36",
+      "streetViewURL": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=37.8126900,23.8234381&heading=148.16&pitch=0&fov=90",
+      "referenceStatus": "ready to inspect; panorama coverage/date not verified",
+      "currentOSMWayVersion": 4,
+      "currentOSMGeometryDistanceM": 0.0003961082890763785,
+      "currentOSMSourceTimestamp": "2026-04-04T22:22:59Z",
+      "sourceTags": {
+        "highway": "primary",
+        "int_name": "Athinon - Souniou",
+        "lanes": "4",
+        "lanes:backward": "2",
+        "lanes:forward": "2",
+        "lit": "yes",
+        "maxspeed": "50",
+        "name": "\u0391\u03b8\u03ae\u03bd\u03ce\u03bd - \u03a3\u03bf\u03c5\u03bd\u03af\u03bf\u03c5",
+        "oneway": "no",
+        "ref": "\u0395\u039f91",
+        "smoothness": "excellent",
+        "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+        "surface": "asphalt"
+      },
+      "cellEntry": {
+        "url": "https://staging.athensracing.com/world/cells/92e3aace0d154b5eb1cfe54e02ca7c451ddf36a7f5dcf2f54407a685ee1c22d1.bin.gz",
+        "sha256": "92e3aace0d154b5eb1cfe54e02ca7c451ddf36a7f5dcf2f54407a685ee1c22d1",
+        "bytes": 122254,
+        "decodedBytes": 1829755,
+        "residentBytes": 983282,
+        "transientBytes": 3781764,
+        "dependencies": [],
+        "triangles": 13111,
+        "contactEligible": true,
+        "source": {
+          "regionId": "basin",
+          "world": "athens-east-development",
+          "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+        }
+      }
+    },
+    {
+      "s": 9000,
+      "x": 8881.054523354875,
+      "y": 16.38322978178234,
+      "z": 18427.67725195834,
+      "tx": 0.981341875367116,
+      "tz": 0.19227096413902767,
+      "rx": -0.19227096413902767,
+      "rz": 0.981341875367116,
+      "yaw": -1.764272092691923,
+      "grade": -0.08173163146780546,
+      "bank": 0,
+      "mapped": true,
+      "leftM": 6.997766081389699,
+      "rightM": 6.99804424696173,
+      "layer": 0,
+      "surfaceId": "surface:w483246714:0",
+      "edgeId": "osm:way:483246714:0-1:f:17:35",
+      "occurrence": 249,
+      "lat": 37.81446211595438,
+      "lon": 23.831214048397744,
+      "heading": 101.08534482396078,
+      "cell": "17,35",
+      "streetViewURL": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=37.8144621,23.8312140&heading=101.09&pitch=0&fov=90",
+      "referenceStatus": "ready to inspect; panorama coverage/date not verified",
+      "currentOSMWayVersion": 17,
+      "currentOSMGeometryDistanceM": 0.00017278187370777792,
+      "currentOSMSourceTimestamp": "2026-04-04T22:22:59Z",
+      "sourceTags": {
+        "highway": "primary",
+        "int_name": "Athinon - Souniou",
+        "lanes": "4",
+        "lanes:backward": "2",
+        "lanes:forward": "2",
+        "lit": "yes",
+        "maxspeed": "50",
+        "name": "\u0391\u03b8\u03ae\u03bd\u03ce\u03bd - \u03a3\u03bf\u03c5\u03bd\u03af\u03bf\u03c5",
+        "oneway": "no",
+        "ref": "\u0395\u039f91",
+        "smoothness": "excellent",
+        "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+        "surface": "asphalt"
+      },
+      "cellEntry": {
+        "url": "https://staging.athensracing.com/world/cells/a03232064c31a8f402dabcacd3e55fec6b3105e1743bc0de520ece14bb0708c6.bin.gz",
+        "sha256": "a03232064c31a8f402dabcacd3e55fec6b3105e1743bc0de520ece14bb0708c6",
+        "bytes": 229686,
+        "decodedBytes": 3741414,
+        "residentBytes": 2009793,
+        "transientBytes": 7712514,
+        "dependencies": [],
+        "triangles": 17112,
+        "contactEligible": true,
+        "source": {
+          "regionId": "basin",
+          "world": "athens-east-development",
+          "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+        }
+      }
+    },
+    {
+      "s": 10337.229708621433,
+      "x": 9445.438439113877,
+      "y": 3.4050172323712786,
+      "z": 17752.64950344271,
+      "tx": 0.9220239669530113,
+      "tz": 0.38713279939089684,
+      "rx": -0.38713279939089684,
+      "rz": 0.9220239669530113,
+      "yaw": -1.968316200490755,
+      "grade": 0.012335107104836075,
+      "bank": 0,
+      "mapped": true,
+      "leftM": 7.010804229819716,
+      "rightM": 7.20890493281294,
+      "layer": 0,
+      "surfaceId": "surface:w328367783:0",
+      "edgeId": "osm:way:328367783:0-0:b:18:34",
+      "occurrence": 270,
+      "lat": 37.82052596565359,
+      "lon": 23.8376461202665,
+      "heading": 112.77621103534625,
+      "cell": "18,34",
+      "streetViewURL": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=37.8205260,23.8376461&heading=112.78&pitch=0&fov=90",
+      "referenceStatus": "ready to inspect; panorama coverage/date not verified",
+      "currentOSMWayVersion": 24,
+      "currentOSMGeometryDistanceM": 0.00023741246384380893,
+      "currentOSMSourceTimestamp": "2025-06-24T23:39:51Z",
+      "sourceTags": {
+        "highway": "primary",
+        "int_name": "Athinon - Souniou",
+        "lanes": "4",
+        "lanes:backward": "2",
+        "lanes:forward": "2",
+        "lit": "yes",
+        "maxspeed": "50",
+        "name": "\u0391\u03b8\u03ae\u03bd\u03ce\u03bd - \u03a3\u03bf\u03c5\u03bd\u03af\u03bf\u03c5",
+        "oneway": "no",
+        "ref": "\u0395\u039f91",
+        "smoothness": "excellent",
+        "source:ref": "Ministerial Decision \u039325871/1963 (\u03a6\u0395\u039a \u0392 319/23.07.1963)",
+        "surface": "asphalt",
+        "turn:lanes:backward": "through|through"
+      },
+      "cellEntry": {
+        "url": "https://staging.athensracing.com/world/cells/9070ebc5ddf1a73efc4b643a4eaa36a62910f63289a2f4d72e4d1c5d483abc18.bin.gz",
+        "sha256": "9070ebc5ddf1a73efc4b643a4eaa36a62910f63289a2f4d72e4d1c5d483abc18",
+        "bytes": 137338,
+        "decodedBytes": 2135083,
+        "residentBytes": 1303875,
+        "transientBytes": 4407504,
+        "dependencies": [],
+        "triangles": 13727,
+        "contactEligible": true,
+        "source": {
+          "regionId": "basin",
+          "world": "athens-east-development",
+          "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+        }
+      }
+    }
+  ],
+  "tower": {
+    "cell": "-1,21",
+    "entry": {
+      "url": "https://staging.athensracing.com/world/cells/13ebbb53967d5fe7919e2c9d1f128298725d8feee757e619e18f0e134efe6e19.bin.gz",
+      "sha256": "13ebbb53967d5fe7919e2c9d1f128298725d8feee757e619e18f0e134efe6e19",
+      "bytes": 144848,
+      "decodedBytes": 2303920,
+      "residentBytes": 1380325,
+      "transientBytes": 4752688,
+      "dependencies": [],
+      "triangles": 15101,
+      "contactEligible": true,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      }
+    },
+    "id": "building:w1480412293:0",
+    "baseM": 4.610027313232422,
+    "extrusionM": 160,
+    "roofYM": 164.61002731323242,
+    "centroidMeanWorld": [
+      -289.16842869349887,
+      10814.120999472481
+    ],
+    "centroidMeanGeo": {
+      "lat": 37.882855542584686,
+      "lon": 23.726704455843628
+    },
+    "nominal": {
+      "lon": 23.7268556,
+      "lat": 37.882775,
+      "x": -275.90624310863797,
+      "z": 10823.086999999396
+    },
+    "nominalDistanceM": 16.008583070837954,
+    "footprint": [
+      [
+        -300.177001953125,
+        10845.072998046875
+      ],
+      [
+        -281.0919952392578,
+        10845.962997436523
+      ],
+      [
+        -260.2879943847656,
+        10828.230003356934
+      ],
+      [
+        -274.4320068359375,
+        10789.078998565674
+      ],
+      [
+        -280.72300720214844,
+        10786.606998443604
+      ],
+      [
+        -307.2929992675781,
+        10790.782001495361
+      ],
+      [
+        -320.1739959716797,
+        10813.112998962402
+      ]
+    ],
+    "footprintGeo": [
+      {
+        "lat": 37.88257749732261,
+        "lon": 23.726578995261917
+      },
+      {
+        "lat": 37.882569502358635,
+        "lon": 23.726796499927396
+      },
+      {
+        "lat": 37.88272879982611,
+        "lon": 23.72703359532455
+      },
+      {
+        "lat": 37.88308049767727,
+        "lon": 23.726872401318026
+      },
+      {
+        "lat": 37.88310270393062,
+        "lon": 23.726800705145703
+      },
+      {
+        "lat": 37.88306519941165,
+        "lon": 23.72649789690871
+      },
+      {
+        "lat": 37.88286459756591,
+        "lon": 23.72635109701908
+      }
+    ],
+    "footprintAreaM2": 2451.611069114646,
+    "boundsM": [
+      -320.1739959716797,
+      10786.606998443604,
+      -260.2879943847656,
+      10845.962997436523
+    ],
+    "nearestRouteSample": {
+      "distance": 9207.673120334375,
+      "s": 0,
+      "x": 4559.08205608306,
+      "z": 18642.00139762574,
+      "lat": 37.81253681820314,
+      "lon": 23.78195814873788
+    },
+    "metadataFeatureTimestamp": null,
+    "currentOSM": {
+      "wayId": 1480412293,
+      "version": 2,
+      "sourceTimestamp": "2026-06-28T14:09:16Z",
+      "responseSha256": "7ab058ab2b6acf8fab42c963d0bb08156d65f5144220178acff845479de29617",
+      "distinctVertices": 36,
+      "areaM2": 2475.0914076308254,
+      "tags": {
+        "building": "construction",
+        "building:levels": "50",
+        "construction": "residential",
+        "ele": "200",
+        "name": "Riviera Tower"
+      },
+      "footprintWorld": [
+        [
+          -260.28758413622666,
+          10828.229983999383
+        ],
+        [
+          -265.19254501577433,
+          10830.634495999797
+        ],
+        [
+          -263.7973951411648,
+          10833.48428799988
+        ],
+        [
+          -271.597950100067,
+          10837.313695999545
+        ],
+        [
+          -270.0185351477201,
+          10840.530843999964
+        ],
+        [
+          -281.09198886875515,
+          10845.96325999938
+        ],
+        [
+          -282.7854726785411,
+          10842.512339999392
+        ],
+        [
+          -290.41053708700935,
+          10846.241559999467
+        ],
+        [
+          -292.76211046045506,
+          10841.43253599943
+        ],
+        [
+          -300.1765862086519,
+          10845.072700000046
+        ],
+        [
+          -302.29124733929234,
+          10840.753483999402
+        ],
+        [
+          -305.7747347616966,
+          10842.456679999532
+        ],
+        [
+          -310.0567041880454,
+          10833.673531999719
+        ],
+        [
+          -307.28395349405696,
+          10832.315427999667
+        ],
+        [
+          -311.36410878743783,
+          10823.95529599926
+        ],
+        [
+          -314.20705570141274,
+          10825.346795999701
+        ],
+        [
+          -320.1737344102441,
+          10813.1127279999
+        ],
+        [
+          -317.5764742663779,
+          10811.843679999307
+        ],
+        [
+          -319.44544862659785,
+          10808.003139999511
+        ],
+        [
+          -310.8288626091442,
+          10803.795243999379
+        ],
+        [
+          -313.1628869273595,
+          10799.008483999598
+        ],
+        [
+          -305.1780668910317,
+          10795.101151999814
+        ],
+        [
+          -307.29272802167213,
+          10790.781935999961
+        ],
+        [
+          -296.32456863077283,
+          10785.427443999875
+        ],
+        [
+          -294.5959867105259,
+          10788.967419999322
+        ],
+        [
+          -287.79572788822446,
+          10785.627819999845
+        ],
+        [
+          -286.04082238575535,
+          10789.21232399981
+        ],
+        [
+          -280.72345871328025,
+          10786.607435999427
+        ],
+        [
+          -278.5386013623415,
+          10791.093631999649
+        ],
+        [
+          -274.43212248642675,
+          10789.078739999832
+        ],
+        [
+          -268.75500318578025,
+          10800.711679999727
+        ],
+        [
+          -272.26481419103015,
+          10802.426007999988
+        ],
+        [
+          -268.0179428748305,
+          10811.131231999681
+        ],
+        [
+          -264.99950541042165,
+          10809.650675999781
+        ],
+        [
+          -259.16444461457166,
+          10821.606443999495
+        ],
+        [
+          -262.683030147125,
+          10823.331903999884
+        ]
+      ]
+    },
+    "footprintCurrentAreaDeltaPercent": -0.948665509636875,
+    "heightInference": "160m is consistent with generic50levels*3.2m; not proof of the historical extraction tags",
+    "plannedDesign": {
+      "heightM": 200,
+      "storeys": 50,
+      "sources": [
+        "https://theellinikon.com.gr/en/our-news/progress-of-works/riviera-tower-green-skyscraper",
+        "https://www.ttaengineers.com/projects/BUILDINGS/RIVIERA-TOWER-in-ELLINIKON/"
+      ],
+      "currentConstructionClaim": false
+    },
+    "referenceCandidates": [
+      {
+        "edgeId": "osm:way:977816178:0-0:b:-1:21",
+        "flags": 0,
+        "layer": 0,
+        "distance": 31.642682457744026,
+        "x": -317.01800537109375,
+        "y": 5.152500629425049,
+        "z": 10829.1429977417,
+        "lat": 37.88272059829553,
+        "lon": 23.7263870646606,
+        "lookAtTowerHeading": 61.65767759349433,
+        "streetViewURL": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=37.8827206,23.7263871&heading=61.66&pitch=10&fov=90",
+        "status": "nearest emitted drivable reference candidate only; real public access/panorama coverage/date unverified",
+        "currentOSMSource": {
+          "wayId": 977816178,
+          "url": "https://api.openstreetmap.org/api/0.6/way/977816178",
+          "status": 200,
+          "readAtUTC": "2026-10-23T09:41:38.882065+00:00",
+          "responseSha256": "532d8fe2071a21c17f4b30edf96889c2d468ecc9e33823a73c46c5eb04186bbe",
+          "version": 2,
+          "sourceTimestamp": "2022-04-20T13:59:46Z",
+          "tags": {
+            "highway": "service"
+          }
+        }
+      },
+      {
+        "edgeId": "osm:way:798390901:1-0:b:-1:21",
+        "flags": 0,
+        "layer": 0,
+        "distance": 85.75820770144881,
+        "x": -309.16200256347656,
+        "y": 3.2801687717437744,
+        "z": 10897.516006469727,
+        "lat": 37.88210639591745,
+        "lon": 23.72647659657894,
+        "lookAtTowerHeading": 13.481942419250743,
+        "streetViewURL": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=37.8821064,23.7264766&heading=13.48&pitch=10&fov=90",
+        "status": "nearest emitted drivable reference candidate only; real public access/panorama coverage/date unverified",
+        "currentOSMSource": {
+          "wayId": 798390901,
+          "url": "https://api.openstreetmap.org/api/0.6/way/798390901",
+          "status": 200,
+          "readAtUTC": "2026-10-23T09:41:39.210879+00:00",
+          "responseSha256": "3334c5f99cc31e7c5e9390e2fc44139ac0b58c674e23f62fdaac5ad2cebd1c6c",
+          "version": 2,
+          "sourceTimestamp": "2020-05-21T13:28:49Z",
+          "tags": {
+            "highway": "service"
+          }
+        }
+      },
+      {
+        "edgeId": "osm:way:174698180:0-1:f:-1:21",
+        "flags": 1,
+        "layer": 0,
+        "distance": 119.9063994010555,
+        "x": -182.3683274671962,
+        "y": 4.142417336254761,
+        "z": 10759.611523274512,
+        "lat": 37.8833452073008,
+        "lon": 23.72792161655196,
+        "lookAtTowerHeading": 242.96078501905444,
+        "streetViewURL": "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=37.8833452,23.7279216&heading=242.96&pitch=10&fov=90",
+        "status": "nearest emitted drivable reference candidate only; real public access/panorama coverage/date unverified",
+        "currentOSMSource": {
+          "wayId": 174698180,
+          "url": "https://api.openstreetmap.org/api/0.6/way/174698180",
+          "status": 200,
+          "readAtUTC": "2026-10-23T09:41:39.545082+00:00",
+          "responseSha256": "4b86caefa34c7fd3b89d80225b42ad8207d343a22831fabf823d7bd4020b6eb6",
+          "version": 6,
+          "sourceTimestamp": "2026-06-23T07:00:04Z",
+          "tags": {
+            "highway": "residential",
+            "lane_markings": "no",
+            "oneway": "yes",
+            "sidewalk": "both",
+            "surface": "asphalt"
+          }
+        }
+      }
+    ],
+    "cellBodyVerifiedNow": true
+  },
+  "provenance": {
+    "auditCommit": "1487a17651ed16de93fd07c9483b98e5a7bfebc7",
+    "sourceWorldFile": "tasktemp/world-local.json (transport-only local overlay of80055f source)",
+    "rootQueryProof": "data/routes/validation/athens.inputs.json",
+    "rootProofSha256": "67a82bc988f77370af49b3f3e76e24a2b99d3228c006c664986b0f611193d010",
+    "projection": {
+      "originLat": 37.98,
+      "originLon": 23.73,
+      "scaleMPerDegree": 111320,
+      "x": "east, cosine at origin latitude",
+      "z": "south"
+    },
+    "headingFormula": "(-yawRad*180/PI+360)%360; panorama degrees clockwise from north"
+  }
+}
