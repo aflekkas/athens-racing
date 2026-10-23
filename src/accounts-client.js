@@ -65,14 +65,20 @@ export class AccountsClient {
   setSession(s) {
     clearTimeout(this.sessionTimer);
     this.user = s.user; this.csrf = s.csrf; this.remember(s);
+    const generation = this.sessionGeneration = (this.sessionGeneration || 0) + 1;
     if (s.user && Number.isFinite(s.expires)) {
-      this.sessionTimer = setTimeout(() => {
-        if (s.expires > Date.now()) { void this.revalidate(); return; }
-        this.disconnect();
-        this.error = "Your session expired. Sign in with Google to continue.";
-        this.onChange();
-      }, Math.max(0, Math.min(2147483647, s.expires - Date.now())));
-      this.sessionTimer?.unref?.();
+      const arm = () => {
+        this.sessionTimer = setTimeout(() => {
+          if (generation !== this.sessionGeneration) return;
+          // Timers can fire early or be capped below a long session's deadline.
+          if (s.expires > Date.now()) { arm(); return; }
+          this.disconnect();
+          this.error = "Your session expired. Sign in with Google to continue.";
+          this.onChange();
+        }, Math.max(0, Math.min(2147483647, s.expires - Date.now())));
+        this.sessionTimer?.unref?.();
+      };
+      arm();
     }
   }
   connectionLost() {
@@ -227,6 +233,7 @@ export class AccountsClient {
     };
   }
   disconnect() {
+    this.sessionGeneration = (this.sessionGeneration || 0) + 1;
     clearTimeout(this.sessionTimer);
     this.user = null; this.remember(null);
     clearTimeout(this.retry);
