@@ -107,5 +107,25 @@ test('physical crashed state survives actual packing and replica intake without 
 test('accepted host NPC contacts eject riders after the matching impulse and damage; replicas never eject',async()=>{
  const {StreamedSharedWorld,applyWorldTrafficCar}=await import('../src/mp-world-traffic.js'),f=streamedFixture(),r=[...row(),...Array(8).fill(0),1000,30000,2000,1,0,0,1,0];applyWorldTrafficCar(f.traffic,r);const world=new StreamedSharedWorld(f.mp,()=>({traffic:f.traffic,player:{veh:{}},remotes:[]}));world.configure();let ejections=0;
  f.traffic.ejectRider=(c,dv)=>{ejections++;assert.equal(c,f.c);assert.equal(dv,12);assert.equal(c.crashed,true);assert.equal(c.dz.front,.52);assert.ok(c.vehicle.vLong!==0||c.vehicle.vLat!==0,'ejection sees post-contact velocity');};
- const packet={kind:'car',body:[0,10,-20,300,400,1000,1200,0,1200]};world.acceptContact(packet);assert.equal(ejections,0);assert.equal(world.stats.contactsReceived,0);world.authority=true;world.acceptContact(packet);assert.equal(ejections,1);assert.equal(world.stats.contactsReceived,1);
+ const packet={kind:'car',body:[0,10,-20,300,400,1000,1200,0,1200]};world.acceptContact(packet);assert.equal(ejections,0);assert.equal(world.stats.contactsReceived,0);f.lobby.host='guest';world.acceptContact(packet);assert.equal(ejections,1);assert.equal(world.stats.contactsReceived,1);
+});
+
+
+test('streamed authority follows elected host return before contact and collision entrypoints',async()=>{
+ const {StreamedSharedWorld,applyWorldTrafficCar}=await import('../src/mp-world-traffic.js'),{WorldTraffic}=await import('../src/world-traffic.js'),f=streamedFixture();
+ const world=new StreamedSharedWorld(f.mp,()=>({traffic:f.traffic,player:{veh:{}},remotes:[]}));
+ f.traffic.onlineDriver={id:'guest',gridSlot:1};f.traffic.sounds=[];f.traffic.ejectRider=WorldTraffic.prototype.ejectRider;f.c.type={id:'police_moto',moto:true};
+ applyWorldTrafficCar(f.traffic,[...row(),...Array(8).fill(0),1000,30000,2000,1,0,0,1,0]);
+ f.lobby.players[0].loaded=false;world.update(.1);assert.equal(world.authority,true);assert.equal(f.traffic.onlineAuthority,true);assert.equal(f.traffic.ejectRider(f.c,5),true);f.c.rider=null;
+ f.lobby.players[0].loaded=true;const before=world.beforeCollide();assert.ok(before instanceof Map);assert.equal(world.authority,false);assert.equal(f.traffic.onlineAuthority,false);assert.equal(f.traffic.ejectRider(f.c,5),false,'demoted host cannot eject privately');
+ const pose={...f.c.vehicle},received=world.stats.contactsReceived;world.acceptContact({kind:'car',body:[0,10,-20,300,400,1000,1200,0,1200]});assert.deepEqual(f.c.vehicle,pose);assert.equal(world.stats.contactsReceived,received);assert.equal(f.c.rider,null);
+ f.lobby.players[0].connected=false;world.configure();assert.equal(f.traffic.onlineAuthority,true);f.mp.connected=false;world.configure();assert.equal(f.traffic.onlineAuthority,false,'disconnect revokes authority before membership catches up');
+});
+
+test('streamed configure clears old fleet authority across generation, replacement, reset and disposal',async()=>{
+ const {StreamedSharedWorld}=await import('../src/mp-world-traffic.js'),f=streamedFixture();let current=f.traffic;const world=new StreamedSharedWorld(f.mp,()=>({traffic:current,player:{veh:{}},remotes:[]}));f.lobby.host='guest';world.configure();assert.equal(current.onlineAuthority,true);
+ const old=current;current={...old,onlineAuthority:false};world.configure();assert.equal(old.onlineAuthority,false);assert.equal(current.onlineAuthority,true);
+ f.lobby.generation++;f.lobby.status='waiting';world.configure();assert.equal(current.onlineAuthority,false);f.lobby.status='race';world.configure();assert.equal(current.onlineAuthority,true);
+ world.reset();assert.equal(current.onlineAuthority,false);assert.equal(world.authority,false);world.configure();assert.equal(current.onlineAuthority,true);
+ world.dispose();assert.equal(current.onlineAuthority,false);world.configure();world.update(.1);assert.equal(current.onlineAuthority,false);assert.equal(world.authority,false);
 });

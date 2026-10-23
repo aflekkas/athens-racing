@@ -381,7 +381,7 @@ async function loadUnifiedWorld(compiled,{eventId=Q.get('routeEvent')||Q.get('ev
     worldSession.metrics.selectionToCountdownMs=performance.now()-started;worldSession.metrics.initialWorldBytes=worldSession.stream.pool?.downloadedBytes??worldSession.stream.metrics.loadedBytes;window.__worldSession=worldSession;
     if(Q.has('simhook'))window.__sim={get player(){return player;},get route(){return route;},get ground(){return ground;},get traffic(){return traffic;},get signals(){return signals;},get cars(){return[player,...grid,...remoteCars.values()];},scene,renderer,camera,canvas,keys,G,input,look,cameraBlend,towOffer,step:(n=1,dt=1/60)=>{for(let i=0;i<n;i++)step(dt,false);},render};
     if(Q.has('simhook'))window.__routePilot={get player(){return player;},get route(){return route;},get run(){return G.run;},get rivals(){return grid;},get traffic(){return traffic;},get closures(){return routeClosures;},get guidance(){return guidanceData;},get visuals(){return routeGuidance?.stats;},session:worldSession,G,scene,renderer,camera,input,step:(dt=1/60,draw=false,visual=true,frameDt=dt)=>step(dt,draw,visual,frameDt),restart:()=>startEvent(G.ev.def),start:def=>startEvent(def),tow:()=>towUnified(),setDriver:fn=>{pilotDriver=fn;}};
-    addEventListener('pagehide',()=>{guidanceTilesOff?.();routeGuidance?.dispose();worldSession?.dispose();},{once:true});G.routePreparing=false;loading.hide();performance.mark('athens-route-ready');return map;
+    addEventListener('pagehide',()=>{guidanceTilesOff?.();routeGuidance?.dispose();streamedSharedWorld.dispose();worldSession?.dispose();},{once:true});G.routePreparing=false;loading.hide();performance.mark('athens-route-ready');return map;
   } catch(error){loading.fail({code:errorCode(error),retry:()=>network?multiplayer.retryMap():loadUnifiedWorld(compiled,{eventId})});throw error;}
 }
 // Loading already positions and warms the requested grid. Keep that same grid
@@ -1248,7 +1248,7 @@ function openSettings() {
 }
 
 function quitToMenu(screen = 'title') {
-  if(worldSession){guidanceTilesOff?.();routeGuidance?.dispose();worldSession.dispose();const url=new URL(location.href);url.search='?menu=1';location.assign(url);return;}
+  if(worldSession){guidanceTilesOff?.();routeGuidance?.dispose();streamedSharedWorld.dispose();worldSession.dispose();const url=new URL(location.href);url.search='?menu=1';location.assign(url);return;}
   if (multiplayer.active) return;
   soloStart++;
   if (!world) { sessionTransitions.cancel(); showTitle(); return; }
