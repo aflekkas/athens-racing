@@ -12,6 +12,7 @@ The newest section is the version `tools/prepare-deploy.mjs` stamps into the bui
 - Lower graphics settings reduce offline civilian traffic without making active cars disappear when settings change.
 
 - Clearer driving-control tips for keyboard and controller.
+- Pause-menu driving tips reflect a changed control binding.
 - Choose Race or Time Trial in event setup when both are available.
 - The track card hides map labels whenever its background blur is off.
 
