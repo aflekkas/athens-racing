@@ -1,0 +1,3795 @@
+{
+  "status": "matched-high500-pair-passed",
+  "originalFailure": "Original ../after.json stays FAILED and immutable; old +18 calls/+798 triangles cause UNKNOWN. This fresh protocol does not retrospectively attribute the delta.",
+  "protocol": "paused-nine-fixed24-v1",
+  "proofHarnessCommit": "cb5a8fa01381406395c33589197fd4f1da54c865",
+  "casesHash": "1ed8de1f414891265145f60bdeb2e7a50366c803b09cdd9cb9bab7f790abede6",
+  "selectedCases": [
+    "500-surface"
+  ],
+  "manifestHash": "a6ea9d0c3981e5f3111b375f4ebb1f0e47785bd2a46e2acc2617671033510293",
+  "worldRevision": "80055f9208753e2d6fa8658b31c90216d22c650f7f33588ebd5178d1a6b804a1",
+  "sourceCountExplanation": "415 JS/CSS/index files were pinned in the prior proof; the complete 416-file fixture also includes src/audio/README.md. No runtime module omitted/substituted. Both new jobs verify all416 against Git.",
+  "sourceFixtureReceipt": "../variance-source-fixtures.json",
+  "trafficPolicy": "Native offline traffic enabled; no notraffic URL consumer exists in athens-world.",
+  "limits": [
+    "Only High500 repeated under fixed24-step protocol; original other five pairs unchanged.",
+    "Native NPC22 gla active and hierarchy-visible but outside selected view, zero scene-list draws. Original variance cannot be assigned to an NPC without old inventory.",
+    "Static matched camera appearance, not driving render performance or surveyed geometry proof.",
+    "Three gl.finish frame samples are descriptive, not a benchmark or improvement claim.",
+    "Native render list contains two zero-instance rows On; nominal list totals differ from submitted GPU calls. Whole-frame renderer.info includes one postprocess fullscreen triangle.",
+    "Full combined archive gates remain parent-owned and pending."
+  ],
+  "phases": {
+    "before": {
+      "commit": "36c020b87be7d762e87858b904561b9c2a676e8a",
+      "sourceSetSHA256": "cbc51f37d79c048c7e794d7c1be8d3aa48f68b7303fced76d3b0556304fff84a",
+      "rawReceiptSHA256": "ea652064aa8ac45bbd833250f5a54034e32796c4b6f04bff36890340ec156524",
+      "browserVersion": "156.0.8078.4",
+      "runtime": {
+        "world": "athens",
+        "revision": "80055f9208753e2d6fa8658b31c90216d22c650f7f33588ebd5178d1a6b804a1",
+        "playerXYZ": [
+          4700.10934395296,
+          9.19763958225593,
+          19099.931063413722
+        ],
+        "streamPosition": {
+          "x": 4700.10934395296,
+          "z": 19099.931063413722
+        },
+        "origin": {
+          "x": 4608,
+          "z": 18944
+        },
+        "groundReady": true,
+        "simulationSeconds": 0.09999999999999999,
+        "active": [
+          {
+            "key": "10,36",
+            "entry": {
+              "url": "/world/cells/33352965f3b5f949e1f11da12886f37d82e1ae3c77a8a2f5e19b6731a959c0b2.bin.gz",
+              "sha256": "33352965f3b5f949e1f11da12886f37d82e1ae3c77a8a2f5e19b6731a959c0b2",
+              "bytes": 64241,
+              "decodedBytes": 1091566,
+              "residentBytes": 703619,
+              "transientBytes": 2247373,
+              "dependencies": [],
+              "triangles": 6820,
+              "contactEligible": true,
+              "source": {
+                "regionId": "basin",
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+              }
+            },
+            "metadata": {
+              "world": "athens-east-development",
+              "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+              "cell": [
+                10,
+                36
+              ],
+              "origin": [
+                5120,
+                0,
+                18432
+              ]
+            }
+          },
+          {
+            "key": "10,37",
+            "entry": {
+              "url": "/world/cells/2f6619d10a9cf2cd43d6bb1b78a6286112a8ea989bb56126f2e40d33f46f8c4c.bin.gz",
+              "sha256": "2f6619d10a9cf2cd43d6bb1b78a6286112a8ea989bb56126f2e40d33f46f8c4c",
+              "bytes": 23825,
+              "decodedBytes": 524208,
+              "residentBytes": 323277,
+              "transientBytes": 1072241,
+              "dependencies": [],
+              "triangles": 2944,
+              "contactEligible": true,
+              "source": {
+                "regionId": "basin",
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+              }
+            },
+            "metadata": {
+              "world": "athens-east-development",
+              "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+              "cell": [
+                10,
+                37
+              ],
+              "origin": [
+                5120,
+                0,
+                18944
+              ]
+            }
+          },
+          {
+            "key": "10,38",
+            "entry": {
+              "url": "/world/cells/3002a7597889865c7bae135821a012500cb85e236785febad5ea78d015ab19fd.bin.gz",
+              "sha256": "3002a7597889865c7bae135821a012500cb85e236785febad5ea78d015ab19fd",
+              "bytes": 87281,
+              "decodedBytes": 1361666,
+              "residentBytes": 797397,
+              "transientBytes": 2810613,
+              "dependencies": [],
+              "triangles": 8391,
+              "contactEligible": true,
+              "source": {
+                "regionId": "basin",
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+              }
+            },
+            "metadata": {
+              "world": "athens-east-development",
+              "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+              "cell": [
+                10,
+                38
+              ],
+              "origin": [
+                5120,
+                0,
+                19456
+              ]
+            }
+          },
+          {
+            "key": "4,25",
+            "entry": {
+              "url": "/world/cells/5c0ac5562d35f3aec611412a71fc2b273ec90591048f5a9a9c71a1a79436782c.bin.gz",
+              "sha256": "5c0ac5562d35f3aec611412a71fc2b273ec90591048f5a9a9c71a1a79436782c",
+              "bytes": 367227,
+              "decodedBytes": 5074882,
+              "residentBytes": 3209093,
+              "transientBytes": 10516991,
+              "dependencies": [],
+              "triangles": 37686,
+              "contactEligible": true,
+              "source": {
+                "regionId": "basin",
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+              }
+            },
+            "metadata": {
+              "world": "athens-east-development",
+              "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+              "cell": [
+                4,
+                25
+              ],
+              "origin": [
+                2048,
+                0,
+                12800
+              ]
+            }
+          },
+          {
+            "key": "8,36",
+            "entry": {
+              "url": "/world/cells/4e7a847351793ebd994bcd2095cdba0e20340c3ae2a171251c6ce7f6d0ef2c70.bin.gz",
+              "sha256": "4e7a847351793ebd994bcd2095cdba0e20340c3ae2a171251c6ce7f6d0ef2c70",
+              "bytes": 172002,
+              "decodedBytes": 2444773,
+              "residentBytes": 1439804,
+              "transientBytes": 5061548,
+              "dependencies": [],
+              "triangles": 15486,
+              "contactEligible": true,
+              "source": {
+                "regionId": "basin",
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+              }
+            },
+            "metadata": {
+              "world": "athens-east-development",
+              "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+              "cell": [
+                8,
+                36
+              ],
+              "origin": [
+                4096,
+                0,
+                18432
+              ]
+            }
+          },
+          {
+            "key": "8,37",
+            "entry": {
+              "url": "/world/cells/cac0c58f978fb2e831b7195289e6f4b3e55d3ee9aad7124961758655149b9cba.bin.gz",
+              "sha256": "cac0c58f978fb2e831b7195289e6f4b3e55d3ee9aad7124961758655149b9cba",
+              "bytes": 28471,
+              "decodedBytes": 661423,
+              "residentBytes": 367049,
+              "transientBytes": 1351317,
+              "dependencies": [],
+              "triangles": 3743,
+              "contactEligible": true,
+              "source": {
+                "regionId": "basin",
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+              }
+            },
+            "metadata": {
+              "world": "athens-east-development",
+              "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+              "cell": [
+                8,
+                37
+              ],
+              "origin": [
+                4096,
+                0,
+                18944
+              ]
+            }
+          },
+          {
+            "key": "8,38",
+            "entry": {
+              "url": "/world/cells/54cfc308dfe9a7d35b495322f5f7b087779aeacd5d4e89c5cae9e4d1ea7f07fd.bin.gz",
+              "sha256": "54cfc308dfe9a7d35b495322f5f7b087779aeacd5d4e89c5cae9e4d1ea7f07fd",
+              "bytes": 15685,
+              "decodedBytes": 528736,
+              "residentBytes": 279892,
+              "transientBytes": 1073157,
+              "dependencies": [],
+              "triangles": 2987,
+              "contactEligible": true,
+              "source": {
+                "regionId": "basin",
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+              }
+            },
+            "metadata": {
+              "world": "athens-east-development",
+              "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+              "cell": [
+                8,
+                38
+              ],
+              "origin": [
+                4096,
+                0,
+                19456
+              ]
+            }
+          },
+          {
+            "key": "9,36",
+            "entry": {
+              "url": "/world/cells/0d1886f2ed44104f227ed18d932f6a6d7cd2a40186de68943654b023cc767898.bin.gz",
+              "sha256": "0d1886f2ed44104f227ed18d932f6a6d7cd2a40186de68943654b023cc767898",
+              "bytes": 240979,
+              "decodedBytes": 3406060,
+              "residentBytes": 2056239,
+              "transientBytes": 7053099,
+              "dependencies": [],
+              "triangles": 23405,
+              "contactEligible": true,
+              "source": {
+                "regionId": "basin",
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+              }
+            },
+            "metadata": {
+              "world": "athens-east-development",
+              "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+              "cell": [
+                9,
+                36
+              ],
+              "origin": [
+                4608,
+                0,
+                18432
+              ]
+            }
+          },
+          {
+            "key": "9,37",
+            "entry": {
+              "url": "/world/cells/8056d040145d13b70920882d43e419c160e53a3b49bf8592f3ea603973529e3a.bin.gz",
+              "sha256": "8056d040145d13b70920882d43e419c160e53a3b49bf8592f3ea603973529e3a",
+              "bytes": 224844,
+              "decodedBytes": 4007374,
+              "residentBytes": 2626935,
+              "transientBytes": 8239592,
+              "dependencies": [],
+              "triangles": 26108,
+              "contactEligible": true,
+              "source": {
+                "regionId": "basin",
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+              }
+            },
+            "metadata": {
+              "world": "athens-east-development",
+              "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+              "cell": [
+                9,
+                37
+              ],
+              "origin": [
+                4608,
+                0,
+                18944
+              ]
+            }
+          },
+          {
+            "key": "9,38",
+            "entry": {
+              "url": "/world/cells/895342479667a107f59d620003174dfd66f6c821b04cbbd9d410d777c8a7c647.bin.gz",
+              "sha256": "895342479667a107f59d620003174dfd66f6c821b04cbbd9d410d777c8a7c647",
+              "bytes": 142615,
+              "decodedBytes": 2083861,
+              "residentBytes": 1150428,
+              "transientBytes": 4310337,
+              "dependencies": [],
+              "triangles": 13677,
+              "contactEligible": true,
+              "source": {
+                "regionId": "basin",
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+              }
+            },
+            "metadata": {
+              "world": "athens-east-development",
+              "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+              "cell": [
+                9,
+                38
+              ],
+              "origin": [
+                4608,
+                0,
+                19456
+              ]
+            }
+          }
+        ]
+      },
+      "warmupElapsed": 0,
+      "physicsSteps": 24,
+      "physicsDt": 0.004166666666666667,
+      "readinessMs": 4850.200000017881,
+      "picks": [
+        {
+          "pixel": [
+            200,
+            330
+          ],
+          "key": "9,37",
+          "surface": "coastalGround",
+          "name": "probe",
+          "distance": 255.67508646857357,
+          "worldPoint": [
+            4952.839718165917,
+            34.707785019857766,
+            19140.510256948342
+          ],
+          "limestoneWeight": 0,
+          "triangle": 6289,
+          "material": {
+            "type": "MeshBasicMaterial",
+            "uuid": "78f6346c-59a5-4fcd-bb32-c8a582e85025",
+            "key": "athens-coastalGround-v1:detail",
+            "visible": true,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1
+          },
+          "foreground": {
+            "name": "athens-trees:1",
+            "type": "Mesh",
+            "distance": 51.316113887919514,
+            "unsupported": true
+          }
+        },
+        {
+          "pixel": [
+            300,
+            340
+          ],
+          "key": "9,37",
+          "surface": "coastalGround",
+          "name": "probe",
+          "distance": 229.75248548040634,
+          "worldPoint": [
+            4921.841063434131,
+            30.713757068344755,
+            19161.82987691725
+          ],
+          "limestoneWeight": 1,
+          "triangle": 5823,
+          "material": {
+            "type": "MeshBasicMaterial",
+            "uuid": "78f6346c-59a5-4fcd-bb32-c8a582e85025",
+            "key": "athens-coastalGround-v1:detail",
+            "visible": true,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1
+          }
+        },
+        {
+          "pixel": [
+            400,
+            350
+          ],
+          "key": "9,37",
+          "surface": "coastalGround",
+          "name": "probe",
+          "distance": 242.5612428093883,
+          "worldPoint": [
+            4923.836092406166,
+            29.453171208069378,
+            19194.877452842637
+          ],
+          "limestoneWeight": 1,
+          "triangle": 5875,
+          "material": {
+            "type": "MeshBasicMaterial",
+            "uuid": "78f6346c-59a5-4fcd-bb32-c8a582e85025",
+            "key": "athens-coastalGround-v1:detail",
+            "visible": true,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1
+          }
+        },
+        {
+          "pixel": [
+            180,
+            420
+          ],
+          "key": "9,37",
+          "surface": "coastalGround",
+          "name": "probe",
+          "distance": 48.97975538714507,
+          "worldPoint": [
+            4750.002179942603,
+            10.514440906036073,
+            19106.36059982398
+          ],
+          "limestoneWeight": 0,
+          "triangle": 1518,
+          "material": {
+            "type": "MeshBasicMaterial",
+            "uuid": "78f6346c-59a5-4fcd-bb32-c8a582e85025",
+            "key": "athens-coastalGround-v1:detail",
+            "visible": true,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1
+          },
+          "foreground": {
+            "name": "athens-coast-far:4",
+            "type": "Mesh",
+            "distance": 48.846036542539395,
+            "unsupported": true
+          }
+        },
+        {
+          "pixel": [
+            300,
+            420
+          ],
+          "key": "9,37",
+          "surface": "coastalGround",
+          "name": "probe",
+          "distance": 60.576327806201206,
+          "worldPoint": [
+            4759.788756861684,
+            10.08581491042458,
+            19115.972090663316
+          ],
+          "limestoneWeight": 0,
+          "triangle": 1594,
+          "material": {
+            "type": "MeshBasicMaterial",
+            "uuid": "78f6346c-59a5-4fcd-bb32-c8a582e85025",
+            "key": "athens-coastalGround-v1:detail",
+            "visible": true,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1
+          }
+        },
+        {
+          "pixel": [
+            400,
+            420
+          ],
+          "key": "9,37",
+          "surface": "asphalt",
+          "name": "probe",
+          "distance": 79.29540592218126,
+          "worldPoint": [
+            4774.362428063554,
+            9.43771204661465,
+            19130.738971839928
+          ],
+          "limestoneWeight": 0,
+          "triangle": 24356,
+          "material": {
+            "type": "MeshBasicMaterial",
+            "uuid": "e1158240-7e73-429d-a75d-886eaaa63f90",
+            "key": "athens-scan-asphalt_diff-4.1967-0-1-61x80",
+            "visible": true,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1
+          },
+          "foreground": {
+            "name": "athens-coast-far:4",
+            "type": "Mesh",
+            "distance": 58.322156852615876,
+            "unsupported": true
+          }
+        }
+      ],
+      "frames": [
+        {
+          "detail": true,
+          "file": "before-high-500-surface-on.jpg",
+          "sha256": "58d739a35a3c3224c4f57a2e5c1277288509863866a6ceb49bb064bd582d713d",
+          "samples": [
+            {
+              "ms": 7.200000017881393,
+              "calls": 53,
+              "triangles": 84505
+            },
+            {
+              "ms": 5.700000017881393,
+              "calls": 53,
+              "triangles": 84505
+            },
+            {
+              "ms": 5.199999988079071,
+              "calls": 53,
+              "triangles": 84505
+            }
+          ],
+          "resources": {
+            "memory": {
+              "geometries": 67,
+              "textures": 11
+            },
+            "programs": 98,
+            "materials": 650,
+            "geometries": 967,
+            "textures": 27
+          },
+          "effective": [
+            {
+              "cacheKey": "basic,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,2,0,0,0,2,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalUrban-v1:detail",
+              "vertexSHA256": "44d46c526c5a5188692398faeb773120651d877c6887e9c0c9369683840ecb5f",
+              "fragmentSHA256": "fdfffb03d71f13b1141eab5ff0a3cd39fb5e5022e7093d7ff5dc5257c4b54f1b",
+              "oldLimestonePhase": true,
+              "filteredLimestone": false,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,2,0,0,0,2,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalGround-v1:detail",
+              "vertexSHA256": "c44ecbda14f4584428ed26bd499899a942cd1e1ddf122f4b67aa1986ebb9eb68",
+              "fragmentSHA256": "6eb6434b5eb4cc0bfea849fcdf711395be5e724b83b4c9f86f447f5bf6205e88",
+              "oldLimestonePhase": true,
+              "filteredLimestone": false,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,2,0,0,0,2,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,coastal-limestone:detail",
+              "vertexSHA256": "cc206f8941c03576ce65ec1f1ce3c1f0d4450594a19ba2f09e46e3f0fc658557",
+              "fragmentSHA256": "b42cca8d6aa9580c35a0100e2a1480939eec96737f709a327a5f8d7cef4e81e9",
+              "oldLimestonePhase": true,
+              "filteredLimestone": false,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalUrban-v1:detail",
+              "vertexSHA256": "44d46c526c5a5188692398faeb773120651d877c6887e9c0c9369683840ecb5f",
+              "fragmentSHA256": "fdfffb03d71f13b1141eab5ff0a3cd39fb5e5022e7093d7ff5dc5257c4b54f1b",
+              "oldLimestonePhase": true,
+              "filteredLimestone": false,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalGround-v1:detail",
+              "vertexSHA256": "c44ecbda14f4584428ed26bd499899a942cd1e1ddf122f4b67aa1986ebb9eb68",
+              "fragmentSHA256": "6eb6434b5eb4cc0bfea849fcdf711395be5e724b83b4c9f86f447f5bf6205e88",
+              "oldLimestonePhase": true,
+              "filteredLimestone": false,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,coastal-limestone:detail",
+              "vertexSHA256": "cc206f8941c03576ce65ec1f1ce3c1f0d4450594a19ba2f09e46e3f0fc658557",
+              "fragmentSHA256": "b42cca8d6aa9580c35a0100e2a1480939eec96737f709a327a5f8d7cef4e81e9",
+              "oldLimestonePhase": true,
+              "filteredLimestone": false,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalGround-v1:detail",
+              "vertexSHA256": "c44ecbda14f4584428ed26bd499899a942cd1e1ddf122f4b67aa1986ebb9eb68",
+              "fragmentSHA256": "0560eacb85666746d406a2e58288264f362820aa34e15adec14e71df533d954d",
+              "oldLimestonePhase": true,
+              "filteredLimestone": false,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalUrban-v1:detail",
+              "vertexSHA256": "44d46c526c5a5188692398faeb773120651d877c6887e9c0c9369683840ecb5f",
+              "fragmentSHA256": "ef259b1496219684727f06d5639b035662b541e55edcb5b9b76f3c7e02bd4fef",
+              "oldLimestonePhase": true,
+              "filteredLimestone": false,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,coastal-limestone:detail",
+              "vertexSHA256": "cc206f8941c03576ce65ec1f1ce3c1f0d4450594a19ba2f09e46e3f0fc658557",
+              "fragmentSHA256": "b6f2d089502e644047e21034e002496af2f2434323638b6acff0b190836b6805",
+              "oldLimestonePhase": true,
+              "filteredLimestone": false,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            }
+          ],
+          "outputColorSpace": "srgb",
+          "camera": {
+            "position": [
+              93.52345920533207,
+              11.756925763426436,
+              155.48409599998558
+            ],
+            "quaternion": [
+              0,
+              0.9197530075677798,
+              0,
+              -0.3924976497636944
+            ],
+            "origin": {
+              "x": 4608,
+              "z": 18944
+            }
+          }
+        },
+        {
+          "detail": false,
+          "file": "before-high-500-surface-off.jpg",
+          "sha256": "4e56e58042070a94ec69e0ce6b0b4fdfe90ad08d627eb7361b0f6deffe245108",
+          "samples": [
+            {
+              "ms": 4.5,
+              "calls": 33,
+              "triangles": 45774
+            },
+            {
+              "ms": 2.9000000059604645,
+              "calls": 33,
+              "triangles": 45774
+            },
+            {
+              "ms": 1.800000011920929,
+              "calls": 33,
+              "triangles": 45774
+            }
+          ],
+          "resources": {
+            "memory": {
+              "geometries": 61,
+              "textures": 10
+            },
+            "programs": 110,
+            "materials": 650,
+            "geometries": 967,
+            "textures": 26
+          },
+          "effective": [
+            {
+              "cacheKey": "basic,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,2,0,0,0,2,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalUrban-v1:detail",
+              "vertexSHA256": "44d46c526c5a5188692398faeb773120651d877c6887e9c0c9369683840ecb5f",
+              "fragmentSHA256": "fdfffb03d71f13b1141eab5ff0a3cd39fb5e5022e7093d7ff5dc5257c4b54f1b",
+              "oldLimestonePhase": true,
+              "filteredLimestone": false,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,2,0,0,0,2,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalGround-v1:detail",
+              "vertexSHA256": "c44ecbda14f4584428ed26bd499899a942cd1e1ddf122f4b67aa1986ebb9eb68",
+              "fragmentSHA256": "6eb6434b5eb4cc0bfea849fcdf711395be5e724b83b4c9f86f447f5bf6205e88",
+              "oldLimestonePhase": true,
+              "filteredLimestone": false,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,2,0,0,0,2,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,coastal-limestone:detail",
+              "vertexSHA256": "cc206f8941c03576ce65ec1f1ce3c1f0d4450594a19ba2f09e46e3f0fc658557",
+              "fragmentSHA256": "b42cca8d6aa9580c35a0100e2a1480939eec96737f709a327a5f8d7cef4e81e9",
+              "oldLimestonePhase": true,
+              "filteredLimestone": false,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalUrban-v1:detail",
+              "vertexSHA256": "44d46c526c5a5188692398faeb773120651d877c6887e9c0c9369683840ecb5f",
+              "fragmentSHA256": "fdfffb03d71f13b1141eab5ff0a3cd39fb5e5022e7093d7ff5dc5257c4b54f1b",
+              "oldLimestonePhase": true,
+              "filteredLimestone": false,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalGround-v1:detail",
+              "vertexSHA256": "c44ecbda14f4584428ed26bd499899a942cd1e1ddf122f4b67aa1986ebb9eb68",
+              "fragmentSHA256": "6eb6434b5eb4cc0bfea849fcdf711395be5e724b83b4c9f86f447f5bf6205e88",
+              "oldLimestonePhase": true,
+              "filteredLimestone": false,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,coastal-limestone:detail",
+              "vertexSHA256": "cc206f8941c03576ce65ec1f1ce3c1f0d4450594a19ba2f09e46e3f0fc658557",
+              "fragmentSHA256": "b42cca8d6aa9580c35a0100e2a1480939eec96737f709a327a5f8d7cef4e81e9",
+              "oldLimestonePhase": true,
+              "filteredLimestone": false,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalGround-v1:detail",
+              "vertexSHA256": "c44ecbda14f4584428ed26bd499899a942cd1e1ddf122f4b67aa1986ebb9eb68",
+              "fragmentSHA256": "0560eacb85666746d406a2e58288264f362820aa34e15adec14e71df533d954d",
+              "oldLimestonePhase": true,
+              "filteredLimestone": false,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalUrban-v1:detail",
+              "vertexSHA256": "44d46c526c5a5188692398faeb773120651d877c6887e9c0c9369683840ecb5f",
+              "fragmentSHA256": "ef259b1496219684727f06d5639b035662b541e55edcb5b9b76f3c7e02bd4fef",
+              "oldLimestonePhase": true,
+              "filteredLimestone": false,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,coastal-limestone:detail",
+              "vertexSHA256": "cc206f8941c03576ce65ec1f1ce3c1f0d4450594a19ba2f09e46e3f0fc658557",
+              "fragmentSHA256": "b6f2d089502e644047e21034e002496af2f2434323638b6acff0b190836b6805",
+              "oldLimestonePhase": true,
+              "filteredLimestone": false,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalGround-v1:plain",
+              "vertexSHA256": "a45d40e055832710bc6c089f77d4f38f42ea17172363698bab7d237d9cfb98a7",
+              "fragmentSHA256": "4d7a6189a57bf5ab5a6fcae2c7d85aa3e4862e95e17a1ab760e2bfe2536e45c3",
+              "oldLimestonePhase": false,
+              "filteredLimestone": false,
+              "genericGroundFibres": false,
+              "detailLookupDeclarations": 0
+            },
+            {
+              "cacheKey": "basic,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalUrban-v1:plain",
+              "vertexSHA256": "6ad51d36f3a063e904a5f7486f6c14e7253866fd7d44f355977f6973d310d273",
+              "fragmentSHA256": "322f4de9d8c69a29bff1f20a7cf807d25397ca5ea7da6fb3b372da454de41238",
+              "oldLimestonePhase": false,
+              "filteredLimestone": false,
+              "genericGroundFibres": false,
+              "detailLookupDeclarations": 0
+            },
+            {
+              "cacheKey": "basic,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalGround-v1:plain",
+              "vertexSHA256": "a45d40e055832710bc6c089f77d4f38f42ea17172363698bab7d237d9cfb98a7",
+              "fragmentSHA256": "4b21f156a79348f89363a9dd885c2724b1b270476d999b2b23dc5c05e658e8ad",
+              "oldLimestonePhase": false,
+              "filteredLimestone": false,
+              "genericGroundFibres": false,
+              "detailLookupDeclarations": 0
+            },
+            {
+              "cacheKey": "basic,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalUrban-v1:plain",
+              "vertexSHA256": "6ad51d36f3a063e904a5f7486f6c14e7253866fd7d44f355977f6973d310d273",
+              "fragmentSHA256": "0394968da1cb91a08af216737b2d9baed28c97a0cf6bcaa3195f0c6f39ef6009",
+              "oldLimestonePhase": false,
+              "filteredLimestone": false,
+              "genericGroundFibres": false,
+              "detailLookupDeclarations": 0
+            },
+            {
+              "cacheKey": "basic,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,coastal-limestone:plain",
+              "vertexSHA256": "a45d40e055832710bc6c089f77d4f38f42ea17172363698bab7d237d9cfb98a7",
+              "fragmentSHA256": "4b21f156a79348f89363a9dd885c2724b1b270476d999b2b23dc5c05e658e8ad",
+              "oldLimestonePhase": false,
+              "filteredLimestone": false,
+              "genericGroundFibres": false,
+              "detailLookupDeclarations": 0
+            }
+          ],
+          "outputColorSpace": "srgb",
+          "camera": {
+            "position": [
+              93.52345920533207,
+              11.756925763426436,
+              155.48409599998558
+            ],
+            "quaternion": [
+              0,
+              0.9197530075677798,
+              0,
+              -0.3924976497636944
+            ],
+            "origin": {
+              "x": 4608,
+              "z": 18944
+            }
+          }
+        }
+      ]
+    },
+    "after": {
+      "commit": "547630c70b9d7bc4a497cceeaffeb0015d2eb4cd",
+      "sourceSetSHA256": "2c9366b5e922ff96b17bbcc555dc4289e6ddfd57d48f8054cff2e1f71594630b",
+      "rawReceiptSHA256": "926c55d2da6f7fe0ebf5fe779263059777d77098d6d3b4e36b7f1c84c9dc3edf",
+      "browserVersion": "156.0.8078.4",
+      "runtime": {
+        "world": "athens",
+        "revision": "80055f9208753e2d6fa8658b31c90216d22c650f7f33588ebd5178d1a6b804a1",
+        "playerXYZ": [
+          4700.10934395296,
+          9.19763958225593,
+          19099.931063413722
+        ],
+        "streamPosition": {
+          "x": 4700.10934395296,
+          "z": 19099.931063413722
+        },
+        "origin": {
+          "x": 4608,
+          "z": 18944
+        },
+        "groundReady": true,
+        "simulationSeconds": 0.09999999999999999,
+        "active": [
+          {
+            "key": "10,36",
+            "entry": {
+              "url": "/world/cells/33352965f3b5f949e1f11da12886f37d82e1ae3c77a8a2f5e19b6731a959c0b2.bin.gz",
+              "sha256": "33352965f3b5f949e1f11da12886f37d82e1ae3c77a8a2f5e19b6731a959c0b2",
+              "bytes": 64241,
+              "decodedBytes": 1091566,
+              "residentBytes": 703619,
+              "transientBytes": 2247373,
+              "dependencies": [],
+              "triangles": 6820,
+              "contactEligible": true,
+              "source": {
+                "regionId": "basin",
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+              }
+            },
+            "metadata": {
+              "world": "athens-east-development",
+              "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+              "cell": [
+                10,
+                36
+              ],
+              "origin": [
+                5120,
+                0,
+                18432
+              ]
+            }
+          },
+          {
+            "key": "10,37",
+            "entry": {
+              "url": "/world/cells/2f6619d10a9cf2cd43d6bb1b78a6286112a8ea989bb56126f2e40d33f46f8c4c.bin.gz",
+              "sha256": "2f6619d10a9cf2cd43d6bb1b78a6286112a8ea989bb56126f2e40d33f46f8c4c",
+              "bytes": 23825,
+              "decodedBytes": 524208,
+              "residentBytes": 323277,
+              "transientBytes": 1072241,
+              "dependencies": [],
+              "triangles": 2944,
+              "contactEligible": true,
+              "source": {
+                "regionId": "basin",
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+              }
+            },
+            "metadata": {
+              "world": "athens-east-development",
+              "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+              "cell": [
+                10,
+                37
+              ],
+              "origin": [
+                5120,
+                0,
+                18944
+              ]
+            }
+          },
+          {
+            "key": "10,38",
+            "entry": {
+              "url": "/world/cells/3002a7597889865c7bae135821a012500cb85e236785febad5ea78d015ab19fd.bin.gz",
+              "sha256": "3002a7597889865c7bae135821a012500cb85e236785febad5ea78d015ab19fd",
+              "bytes": 87281,
+              "decodedBytes": 1361666,
+              "residentBytes": 797397,
+              "transientBytes": 2810613,
+              "dependencies": [],
+              "triangles": 8391,
+              "contactEligible": true,
+              "source": {
+                "regionId": "basin",
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+              }
+            },
+            "metadata": {
+              "world": "athens-east-development",
+              "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+              "cell": [
+                10,
+                38
+              ],
+              "origin": [
+                5120,
+                0,
+                19456
+              ]
+            }
+          },
+          {
+            "key": "4,25",
+            "entry": {
+              "url": "/world/cells/5c0ac5562d35f3aec611412a71fc2b273ec90591048f5a9a9c71a1a79436782c.bin.gz",
+              "sha256": "5c0ac5562d35f3aec611412a71fc2b273ec90591048f5a9a9c71a1a79436782c",
+              "bytes": 367227,
+              "decodedBytes": 5074882,
+              "residentBytes": 3209093,
+              "transientBytes": 10516991,
+              "dependencies": [],
+              "triangles": 37686,
+              "contactEligible": true,
+              "source": {
+                "regionId": "basin",
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+              }
+            },
+            "metadata": {
+              "world": "athens-east-development",
+              "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+              "cell": [
+                4,
+                25
+              ],
+              "origin": [
+                2048,
+                0,
+                12800
+              ]
+            }
+          },
+          {
+            "key": "8,36",
+            "entry": {
+              "url": "/world/cells/4e7a847351793ebd994bcd2095cdba0e20340c3ae2a171251c6ce7f6d0ef2c70.bin.gz",
+              "sha256": "4e7a847351793ebd994bcd2095cdba0e20340c3ae2a171251c6ce7f6d0ef2c70",
+              "bytes": 172002,
+              "decodedBytes": 2444773,
+              "residentBytes": 1439804,
+              "transientBytes": 5061548,
+              "dependencies": [],
+              "triangles": 15486,
+              "contactEligible": true,
+              "source": {
+                "regionId": "basin",
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+              }
+            },
+            "metadata": {
+              "world": "athens-east-development",
+              "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+              "cell": [
+                8,
+                36
+              ],
+              "origin": [
+                4096,
+                0,
+                18432
+              ]
+            }
+          },
+          {
+            "key": "8,37",
+            "entry": {
+              "url": "/world/cells/cac0c58f978fb2e831b7195289e6f4b3e55d3ee9aad7124961758655149b9cba.bin.gz",
+              "sha256": "cac0c58f978fb2e831b7195289e6f4b3e55d3ee9aad7124961758655149b9cba",
+              "bytes": 28471,
+              "decodedBytes": 661423,
+              "residentBytes": 367049,
+              "transientBytes": 1351317,
+              "dependencies": [],
+              "triangles": 3743,
+              "contactEligible": true,
+              "source": {
+                "regionId": "basin",
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+              }
+            },
+            "metadata": {
+              "world": "athens-east-development",
+              "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+              "cell": [
+                8,
+                37
+              ],
+              "origin": [
+                4096,
+                0,
+                18944
+              ]
+            }
+          },
+          {
+            "key": "8,38",
+            "entry": {
+              "url": "/world/cells/54cfc308dfe9a7d35b495322f5f7b087779aeacd5d4e89c5cae9e4d1ea7f07fd.bin.gz",
+              "sha256": "54cfc308dfe9a7d35b495322f5f7b087779aeacd5d4e89c5cae9e4d1ea7f07fd",
+              "bytes": 15685,
+              "decodedBytes": 528736,
+              "residentBytes": 279892,
+              "transientBytes": 1073157,
+              "dependencies": [],
+              "triangles": 2987,
+              "contactEligible": true,
+              "source": {
+                "regionId": "basin",
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+              }
+            },
+            "metadata": {
+              "world": "athens-east-development",
+              "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+              "cell": [
+                8,
+                38
+              ],
+              "origin": [
+                4096,
+                0,
+                19456
+              ]
+            }
+          },
+          {
+            "key": "9,36",
+            "entry": {
+              "url": "/world/cells/0d1886f2ed44104f227ed18d932f6a6d7cd2a40186de68943654b023cc767898.bin.gz",
+              "sha256": "0d1886f2ed44104f227ed18d932f6a6d7cd2a40186de68943654b023cc767898",
+              "bytes": 240979,
+              "decodedBytes": 3406060,
+              "residentBytes": 2056239,
+              "transientBytes": 7053099,
+              "dependencies": [],
+              "triangles": 23405,
+              "contactEligible": true,
+              "source": {
+                "regionId": "basin",
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+              }
+            },
+            "metadata": {
+              "world": "athens-east-development",
+              "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+              "cell": [
+                9,
+                36
+              ],
+              "origin": [
+                4608,
+                0,
+                18432
+              ]
+            }
+          },
+          {
+            "key": "9,37",
+            "entry": {
+              "url": "/world/cells/8056d040145d13b70920882d43e419c160e53a3b49bf8592f3ea603973529e3a.bin.gz",
+              "sha256": "8056d040145d13b70920882d43e419c160e53a3b49bf8592f3ea603973529e3a",
+              "bytes": 224844,
+              "decodedBytes": 4007374,
+              "residentBytes": 2626935,
+              "transientBytes": 8239592,
+              "dependencies": [],
+              "triangles": 26108,
+              "contactEligible": true,
+              "source": {
+                "regionId": "basin",
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+              }
+            },
+            "metadata": {
+              "world": "athens-east-development",
+              "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+              "cell": [
+                9,
+                37
+              ],
+              "origin": [
+                4608,
+                0,
+                18944
+              ]
+            }
+          },
+          {
+            "key": "9,38",
+            "entry": {
+              "url": "/world/cells/895342479667a107f59d620003174dfd66f6c821b04cbbd9d410d777c8a7c647.bin.gz",
+              "sha256": "895342479667a107f59d620003174dfd66f6c821b04cbbd9d410d777c8a7c647",
+              "bytes": 142615,
+              "decodedBytes": 2083861,
+              "residentBytes": 1150428,
+              "transientBytes": 4310337,
+              "dependencies": [],
+              "triangles": 13677,
+              "contactEligible": true,
+              "source": {
+                "regionId": "basin",
+                "world": "athens-east-development",
+                "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+              }
+            },
+            "metadata": {
+              "world": "athens-east-development",
+              "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+              "cell": [
+                9,
+                38
+              ],
+              "origin": [
+                4608,
+                0,
+                19456
+              ]
+            }
+          }
+        ]
+      },
+      "warmupElapsed": 0,
+      "physicsSteps": 24,
+      "physicsDt": 0.004166666666666667,
+      "readinessMs": 6129.5,
+      "picks": [
+        {
+          "pixel": [
+            200,
+            330
+          ],
+          "key": "9,37",
+          "surface": "coastalGround",
+          "name": "probe",
+          "distance": 255.67508646857357,
+          "worldPoint": [
+            4952.839718165917,
+            34.707785019857766,
+            19140.510256948342
+          ],
+          "limestoneWeight": 0,
+          "triangle": 6289,
+          "material": {
+            "type": "MeshBasicMaterial",
+            "uuid": "50049e30-6d45-4027-9150-af2df24bc3be",
+            "key": "athens-coastalGround-v2:detail",
+            "visible": true,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1
+          },
+          "foreground": {
+            "name": "athens-trees:1",
+            "type": "Mesh",
+            "distance": 51.316113887919514,
+            "unsupported": true
+          }
+        },
+        {
+          "pixel": [
+            300,
+            340
+          ],
+          "key": "9,37",
+          "surface": "coastalGround",
+          "name": "probe",
+          "distance": 229.75248548040634,
+          "worldPoint": [
+            4921.841063434131,
+            30.713757068344755,
+            19161.82987691725
+          ],
+          "limestoneWeight": 1,
+          "triangle": 5823,
+          "material": {
+            "type": "MeshBasicMaterial",
+            "uuid": "50049e30-6d45-4027-9150-af2df24bc3be",
+            "key": "athens-coastalGround-v2:detail",
+            "visible": true,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1
+          }
+        },
+        {
+          "pixel": [
+            400,
+            350
+          ],
+          "key": "9,37",
+          "surface": "coastalGround",
+          "name": "probe",
+          "distance": 242.5612428093883,
+          "worldPoint": [
+            4923.836092406166,
+            29.453171208069378,
+            19194.877452842637
+          ],
+          "limestoneWeight": 1,
+          "triangle": 5875,
+          "material": {
+            "type": "MeshBasicMaterial",
+            "uuid": "50049e30-6d45-4027-9150-af2df24bc3be",
+            "key": "athens-coastalGround-v2:detail",
+            "visible": true,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1
+          }
+        },
+        {
+          "pixel": [
+            180,
+            420
+          ],
+          "key": "9,37",
+          "surface": "coastalGround",
+          "name": "probe",
+          "distance": 48.97975538714507,
+          "worldPoint": [
+            4750.002179942603,
+            10.514440906036073,
+            19106.36059982398
+          ],
+          "limestoneWeight": 0,
+          "triangle": 1518,
+          "material": {
+            "type": "MeshBasicMaterial",
+            "uuid": "50049e30-6d45-4027-9150-af2df24bc3be",
+            "key": "athens-coastalGround-v2:detail",
+            "visible": true,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1
+          },
+          "foreground": {
+            "name": "athens-coast-far:4",
+            "type": "Mesh",
+            "distance": 48.846036542539395,
+            "unsupported": true
+          }
+        },
+        {
+          "pixel": [
+            300,
+            420
+          ],
+          "key": "9,37",
+          "surface": "coastalGround",
+          "name": "probe",
+          "distance": 60.576327806201206,
+          "worldPoint": [
+            4759.788756861684,
+            10.08581491042458,
+            19115.972090663316
+          ],
+          "limestoneWeight": 0,
+          "triangle": 1594,
+          "material": {
+            "type": "MeshBasicMaterial",
+            "uuid": "50049e30-6d45-4027-9150-af2df24bc3be",
+            "key": "athens-coastalGround-v2:detail",
+            "visible": true,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1
+          }
+        },
+        {
+          "pixel": [
+            400,
+            420
+          ],
+          "key": "9,37",
+          "surface": "asphalt",
+          "name": "probe",
+          "distance": 79.29540592218126,
+          "worldPoint": [
+            4774.362428063554,
+            9.43771204661465,
+            19130.738971839928
+          ],
+          "limestoneWeight": 0,
+          "triangle": 24356,
+          "material": {
+            "type": "MeshBasicMaterial",
+            "uuid": "8d4d7693-449a-4653-bc68-a2963f72ddef",
+            "key": "athens-scan-asphalt_diff-4.1967-0-1-61x80",
+            "visible": true,
+            "side": 0,
+            "transparent": false,
+            "opacity": 1
+          },
+          "foreground": {
+            "name": "athens-coast-far:4",
+            "type": "Mesh",
+            "distance": 58.322156852615876,
+            "unsupported": true
+          }
+        }
+      ],
+      "frames": [
+        {
+          "detail": true,
+          "file": "after-high-500-surface-on.jpg",
+          "sha256": "fa68883da1f61b640e95f4df724cc8d23e0a046d414f03e7feb74805602d83c7",
+          "samples": [
+            {
+              "ms": 8,
+              "calls": 53,
+              "triangles": 84505
+            },
+            {
+              "ms": 4.0999999940395355,
+              "calls": 53,
+              "triangles": 84505
+            },
+            {
+              "ms": 3.5999999940395355,
+              "calls": 53,
+              "triangles": 84505
+            }
+          ],
+          "resources": {
+            "memory": {
+              "geometries": 67,
+              "textures": 11
+            },
+            "programs": 98,
+            "materials": 650,
+            "geometries": 967,
+            "textures": 27
+          },
+          "effective": [
+            {
+              "cacheKey": "basic,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,2,0,0,0,2,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalUrban-v2:detail",
+              "vertexSHA256": "44d46c526c5a5188692398faeb773120651d877c6887e9c0c9369683840ecb5f",
+              "fragmentSHA256": "79d610cc20edab078671fa66767c24e753bd54df74fec2f2b5a670ecba21b733",
+              "oldLimestonePhase": false,
+              "filteredLimestone": true,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,2,0,0,0,2,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalGround-v2:detail",
+              "vertexSHA256": "c44ecbda14f4584428ed26bd499899a942cd1e1ddf122f4b67aa1986ebb9eb68",
+              "fragmentSHA256": "0d59cfb708d7b955a5922cdf4f5fbc30d72c82be5282507557296b5f26738ebe",
+              "oldLimestonePhase": false,
+              "filteredLimestone": true,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,2,0,0,0,2,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,coastal-limestone-v2:detail",
+              "vertexSHA256": "cc206f8941c03576ce65ec1f1ce3c1f0d4450594a19ba2f09e46e3f0fc658557",
+              "fragmentSHA256": "766862b6dbaad8672a6c13facebac08f1921f73bf66ce8f5387537b6554c98da",
+              "oldLimestonePhase": false,
+              "filteredLimestone": true,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalUrban-v2:detail",
+              "vertexSHA256": "44d46c526c5a5188692398faeb773120651d877c6887e9c0c9369683840ecb5f",
+              "fragmentSHA256": "79d610cc20edab078671fa66767c24e753bd54df74fec2f2b5a670ecba21b733",
+              "oldLimestonePhase": false,
+              "filteredLimestone": true,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalGround-v2:detail",
+              "vertexSHA256": "c44ecbda14f4584428ed26bd499899a942cd1e1ddf122f4b67aa1986ebb9eb68",
+              "fragmentSHA256": "0d59cfb708d7b955a5922cdf4f5fbc30d72c82be5282507557296b5f26738ebe",
+              "oldLimestonePhase": false,
+              "filteredLimestone": true,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,coastal-limestone-v2:detail",
+              "vertexSHA256": "cc206f8941c03576ce65ec1f1ce3c1f0d4450594a19ba2f09e46e3f0fc658557",
+              "fragmentSHA256": "766862b6dbaad8672a6c13facebac08f1921f73bf66ce8f5387537b6554c98da",
+              "oldLimestonePhase": false,
+              "filteredLimestone": true,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalGround-v2:detail",
+              "vertexSHA256": "c44ecbda14f4584428ed26bd499899a942cd1e1ddf122f4b67aa1986ebb9eb68",
+              "fragmentSHA256": "10fceacb7738fea49c792da9b52ec276e120b8073b418c9dee00a3d805218a43",
+              "oldLimestonePhase": false,
+              "filteredLimestone": true,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalUrban-v2:detail",
+              "vertexSHA256": "44d46c526c5a5188692398faeb773120651d877c6887e9c0c9369683840ecb5f",
+              "fragmentSHA256": "799938556bce8cb1849f6d2ab0ae6a29441200c372c8cd58532990418bb4fdde",
+              "oldLimestonePhase": false,
+              "filteredLimestone": true,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,coastal-limestone-v2:detail",
+              "vertexSHA256": "cc206f8941c03576ce65ec1f1ce3c1f0d4450594a19ba2f09e46e3f0fc658557",
+              "fragmentSHA256": "6c73441c630f237a8cb8fe720873de292b9b85a436331a4beddd0b53f1b724ea",
+              "oldLimestonePhase": false,
+              "filteredLimestone": true,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            }
+          ],
+          "outputColorSpace": "srgb",
+          "camera": {
+            "position": [
+              93.52345920533207,
+              11.756925763426436,
+              155.48409599998558
+            ],
+            "quaternion": [
+              0,
+              0.9197530075677798,
+              0,
+              -0.3924976497636944
+            ],
+            "origin": {
+              "x": 4608,
+              "z": 18944
+            }
+          }
+        },
+        {
+          "detail": false,
+          "file": "after-high-500-surface-off.jpg",
+          "sha256": "4e56e58042070a94ec69e0ce6b0b4fdfe90ad08d627eb7361b0f6deffe245108",
+          "samples": [
+            {
+              "ms": 6.300000011920929,
+              "calls": 33,
+              "triangles": 45774
+            },
+            {
+              "ms": 3.199999988079071,
+              "calls": 33,
+              "triangles": 45774
+            },
+            {
+              "ms": 3.4000000059604645,
+              "calls": 33,
+              "triangles": 45774
+            }
+          ],
+          "resources": {
+            "memory": {
+              "geometries": 61,
+              "textures": 10
+            },
+            "programs": 110,
+            "materials": 650,
+            "geometries": 967,
+            "textures": 26
+          },
+          "effective": [
+            {
+              "cacheKey": "basic,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,2,0,0,0,2,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalUrban-v2:detail",
+              "vertexSHA256": "44d46c526c5a5188692398faeb773120651d877c6887e9c0c9369683840ecb5f",
+              "fragmentSHA256": "79d610cc20edab078671fa66767c24e753bd54df74fec2f2b5a670ecba21b733",
+              "oldLimestonePhase": false,
+              "filteredLimestone": true,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,2,0,0,0,2,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalGround-v2:detail",
+              "vertexSHA256": "c44ecbda14f4584428ed26bd499899a942cd1e1ddf122f4b67aa1986ebb9eb68",
+              "fragmentSHA256": "0d59cfb708d7b955a5922cdf4f5fbc30d72c82be5282507557296b5f26738ebe",
+              "oldLimestonePhase": false,
+              "filteredLimestone": true,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,2,0,0,0,2,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,coastal-limestone-v2:detail",
+              "vertexSHA256": "cc206f8941c03576ce65ec1f1ce3c1f0d4450594a19ba2f09e46e3f0fc658557",
+              "fragmentSHA256": "766862b6dbaad8672a6c13facebac08f1921f73bf66ce8f5387537b6554c98da",
+              "oldLimestonePhase": false,
+              "filteredLimestone": true,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalUrban-v2:detail",
+              "vertexSHA256": "44d46c526c5a5188692398faeb773120651d877c6887e9c0c9369683840ecb5f",
+              "fragmentSHA256": "79d610cc20edab078671fa66767c24e753bd54df74fec2f2b5a670ecba21b733",
+              "oldLimestonePhase": false,
+              "filteredLimestone": true,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalGround-v2:detail",
+              "vertexSHA256": "c44ecbda14f4584428ed26bd499899a942cd1e1ddf122f4b67aa1986ebb9eb68",
+              "fragmentSHA256": "0d59cfb708d7b955a5922cdf4f5fbc30d72c82be5282507557296b5f26738ebe",
+              "oldLimestonePhase": false,
+              "filteredLimestone": true,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,coastal-limestone-v2:detail",
+              "vertexSHA256": "cc206f8941c03576ce65ec1f1ce3c1f0d4450594a19ba2f09e46e3f0fc658557",
+              "fragmentSHA256": "766862b6dbaad8672a6c13facebac08f1921f73bf66ce8f5387537b6554c98da",
+              "oldLimestonePhase": false,
+              "filteredLimestone": true,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalGround-v2:detail",
+              "vertexSHA256": "c44ecbda14f4584428ed26bd499899a942cd1e1ddf122f4b67aa1986ebb9eb68",
+              "fragmentSHA256": "10fceacb7738fea49c792da9b52ec276e120b8073b418c9dee00a3d805218a43",
+              "oldLimestonePhase": false,
+              "filteredLimestone": true,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalUrban-v2:detail",
+              "vertexSHA256": "44d46c526c5a5188692398faeb773120651d877c6887e9c0c9369683840ecb5f",
+              "fragmentSHA256": "799938556bce8cb1849f6d2ab0ae6a29441200c372c8cd58532990418bb4fdde",
+              "oldLimestonePhase": false,
+              "filteredLimestone": true,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,coastal-limestone-v2:detail",
+              "vertexSHA256": "cc206f8941c03576ce65ec1f1ce3c1f0d4450594a19ba2f09e46e3f0fc658557",
+              "fragmentSHA256": "6c73441c630f237a8cb8fe720873de292b9b85a436331a4beddd0b53f1b724ea",
+              "oldLimestonePhase": false,
+              "filteredLimestone": true,
+              "genericGroundFibres": true,
+              "detailLookupDeclarations": 10
+            },
+            {
+              "cacheKey": "basic,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalGround-v2:plain",
+              "vertexSHA256": "a45d40e055832710bc6c089f77d4f38f42ea17172363698bab7d237d9cfb98a7",
+              "fragmentSHA256": "4d7a6189a57bf5ab5a6fcae2c7d85aa3e4862e95e17a1ab760e2bfe2536e45c3",
+              "oldLimestonePhase": false,
+              "filteredLimestone": false,
+              "genericGroundFibres": false,
+              "detailLookupDeclarations": 0
+            },
+            {
+              "cacheKey": "basic,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalUrban-v2:plain",
+              "vertexSHA256": "6ad51d36f3a063e904a5f7486f6c14e7253866fd7d44f355977f6973d310d273",
+              "fragmentSHA256": "322f4de9d8c69a29bff1f20a7cf807d25397ca5ea7da6fb3b372da454de41238",
+              "oldLimestonePhase": false,
+              "filteredLimestone": false,
+              "genericGroundFibres": false,
+              "detailLookupDeclarations": 0
+            },
+            {
+              "cacheKey": "basic,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalGround-v2:plain",
+              "vertexSHA256": "a45d40e055832710bc6c089f77d4f38f42ea17172363698bab7d237d9cfb98a7",
+              "fragmentSHA256": "4b21f156a79348f89363a9dd885c2724b1b270476d999b2b23dc5c05e658e8ad",
+              "oldLimestonePhase": false,
+              "filteredLimestone": false,
+              "genericGroundFibres": false,
+              "detailLookupDeclarations": 0
+            },
+            {
+              "cacheKey": "basic,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,athens-coastalUrban-v2:plain",
+              "vertexSHA256": "6ad51d36f3a063e904a5f7486f6c14e7253866fd7d44f355977f6973d310d273",
+              "fragmentSHA256": "0394968da1cb91a08af216737b2d9baed28c97a0cf6bcaa3195f0c6f39ef6009",
+              "oldLimestonePhase": false,
+              "filteredLimestone": false,
+              "genericGroundFibres": false,
+              "detailLookupDeclarations": 0
+            },
+            {
+              "cacheKey": "basic,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,0,,false,0,,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,2049,131075,srgb,coastal-limestone-v2:plain",
+              "vertexSHA256": "a45d40e055832710bc6c089f77d4f38f42ea17172363698bab7d237d9cfb98a7",
+              "fragmentSHA256": "4b21f156a79348f89363a9dd885c2724b1b270476d999b2b23dc5c05e658e8ad",
+              "oldLimestonePhase": false,
+              "filteredLimestone": false,
+              "genericGroundFibres": false,
+              "detailLookupDeclarations": 0
+            }
+          ],
+          "outputColorSpace": "srgb",
+          "camera": {
+            "position": [
+              93.52345920533207,
+              11.756925763426436,
+              155.48409599998558
+            ],
+            "quaternion": [
+              0,
+              0.9197530075677798,
+              0,
+              -0.3924976497636944
+            ],
+            "origin": {
+              "x": 4608,
+              "z": 18944
+            }
+          }
+        }
+      ]
+    }
+  },
+  "comparison": {
+    "exactRuntimeMatch": true,
+    "frames": [
+      {
+        "detail": true,
+        "drawCalls": 53,
+        "triangles": 84505,
+        "allThreeSamplesCountsExact": true,
+        "resourcesExact": {
+          "memory": {
+            "geometries": 67,
+            "textures": 11
+          },
+          "programs": 98,
+          "materials": 650,
+          "geometries": 967,
+          "textures": 27
+        },
+        "nativeBaselineInventory": {
+          "source": "native renderer.renderLists.get(scene,0), read-only after final fresh frame; nominal scene accounting excludes postprocess passes",
+          "nominalCalls": 54,
+          "nominalTriangles": 84504,
+          "draws": [
+            {
+              "bucket": "opaque",
+              "name": "",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "SphereGeometry",
+              "vertices": 1225,
+              "indexCount": 6624,
+              "start": 0,
+              "count": 6624,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 2208,
+              "material": {
+                "type": "ShaderMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 1,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "athens-horizon",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 17292,
+              "indexCount": 77760,
+              "start": 0,
+              "count": 77760,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 25920,
+              "material": {
+                "type": "ShaderMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 2,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BoxGeometry",
+              "vertices": 24,
+              "indexCount": 36,
+              "start": 0,
+              "count": 36,
+              "instances": 0,
+              "passes": 1,
+              "nominalTriangles": 0,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "world-detail-unlit-v1",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "PlaneGeometry",
+              "vertices": 4,
+              "indexCount": 6,
+              "start": 0,
+              "count": 6,
+              "instances": 0,
+              "passes": 1,
+              "nominalTriangles": 0,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "world-detail-unlit-v1",
+                "side": 2,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "athens-props:0",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 72,
+              "indexCount": 108,
+              "start": 0,
+              "count": 108,
+              "instances": 13,
+              "passes": 1,
+              "nominalTriangles": 468,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 2,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "athens-props:1",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 48,
+              "indexCount": 72,
+              "start": 0,
+              "count": 72,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 24,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 2,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "athens-props:2",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 120,
+              "indexCount": 180,
+              "start": 0,
+              "count": 180,
+              "instances": 2,
+              "passes": 1,
+              "nominalTriangles": 120,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 2,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "athens-props:8",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 96,
+              "indexCount": 144,
+              "start": 0,
+              "count": 144,
+              "instances": 4,
+              "passes": 1,
+              "nominalTriangles": 192,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 2,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "athens-props:13",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 240,
+              "indexCount": 396,
+              "start": 0,
+              "count": 396,
+              "instances": 13,
+              "passes": 1,
+              "nominalTriangles": 1716,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-signal-v2",
+                "side": 2,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "athens-props:14",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 148,
+              "indexCount": 240,
+              "start": 0,
+              "count": 240,
+              "instances": 2,
+              "passes": 1,
+              "nominalTriangles": 160,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 2,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "athens-props:15",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 124,
+              "indexCount": 204,
+              "start": 0,
+              "count": 204,
+              "instances": 11,
+              "passes": 1,
+              "nominalTriangles": 748,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 2,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "athens-props:16",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 120,
+              "indexCount": 180,
+              "start": 0,
+              "count": 180,
+              "instances": 5,
+              "passes": 1,
+              "nominalTriangles": 300,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 2,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "athens-trees:1",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 294,
+              "indexCount": null,
+              "start": 0,
+              "count": 294,
+              "instances": 12,
+              "passes": 1,
+              "nominalTriangles": 1176,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}-vegetation-arrival-v2",
+                "side": 2,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "athens-trees:2",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 156,
+              "indexCount": null,
+              "start": 0,
+              "count": 156,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 52,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}-vegetation-arrival-v2",
+                "side": 2,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "athens-trees:4",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 66,
+              "indexCount": null,
+              "start": 0,
+              "count": 66,
+              "instances": 5,
+              "passes": 1,
+              "nominalTriangles": 110,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}-vegetation-arrival-v2",
+                "side": 2,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "athens-coast-far:1",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 6,
+              "indexCount": null,
+              "start": 0,
+              "count": 6,
+              "instances": 1400,
+              "passes": 1,
+              "nominalTriangles": 2800,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "coast-clusters-1-vegetation-arrival-v2",
+                "side": 2,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "athens-coast-far:4",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 6,
+              "indexCount": null,
+              "start": 0,
+              "count": 6,
+              "instances": 1400,
+              "passes": 1,
+              "nominalTriangles": 2800,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "coast-clusters-4-vegetation-arrival-v2",
+                "side": 2,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 13633,
+              "indexCount": 75345,
+              "start": 61461,
+              "count": 8298,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 2766,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-scan-paver_diff-3.2000-0-1-61x80",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 4569,
+              "indexCount": 24273,
+              "start": 16605,
+              "count": 3516,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 1172,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-scan-paver_diff-3.2000-0-1-61x80",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 3866,
+              "indexCount": 20088,
+              "start": 14613,
+              "count": 2163,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 721,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-scan-paver_diff-3.2000-0-1-61x80",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 13633,
+              "indexCount": 75345,
+              "start": 53778,
+              "count": 7683,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 2561,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 4569,
+              "indexCount": 24273,
+              "start": 12957,
+              "count": 3648,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 1216,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 3866,
+              "indexCount": 20088,
+              "start": 12357,
+              "count": 2256,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 752,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 2088,
+              "indexCount": 2088,
+              "start": 0,
+              "count": 2088,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 696,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 4902,
+              "indexCount": 4902,
+              "start": 0,
+              "count": 4902,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 1634,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 1770,
+              "indexCount": 1770,
+              "start": 0,
+              "count": 1770,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 590,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 13633,
+              "indexCount": 75345,
+              "start": 69759,
+              "count": 5586,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 1862,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-scan-asphalt_diff-4.1967-0-1-61x80",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 4569,
+              "indexCount": 24273,
+              "start": 20121,
+              "count": 3732,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 1244,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-scan-asphalt_diff-4.1967-0-1-61x80",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 3866,
+              "indexCount": 20088,
+              "start": 16776,
+              "count": 3312,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 1104,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-scan-asphalt_diff-4.1967-0-1-61x80",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 140,
+              "indexCount": 216,
+              "start": 0,
+              "count": 216,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 72,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-building-v1:detail",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 20,
+              "indexCount": 30,
+              "start": 0,
+              "count": 30,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 10,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-building-v1:detail",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 55,
+              "indexCount": 87,
+              "start": 0,
+              "count": 87,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 29,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-building-v1:detail",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 40,
+              "indexCount": 60,
+              "start": 0,
+              "count": 60,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 20,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-building-v1:detail",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "assembled-trim",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 1356,
+              "indexCount": null,
+              "start": 0,
+              "count": 1356,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 452,
+              "material": {
+                "type": "MeshStandardMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}:car-surface-v1",
+                "side": 2,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "assembled-trim",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 744,
+              "indexCount": null,
+              "start": 0,
+              "count": 744,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 248,
+              "material": {
+                "type": "MeshStandardMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 2,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "assembled-trim",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 396,
+              "indexCount": null,
+              "start": 0,
+              "count": 396,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 132,
+              "material": {
+                "type": "MeshStandardMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 2,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 2315,
+              "indexCount": 10737,
+              "start": 0,
+              "count": 9327,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 3109,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-coastalGround-v1:detail",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 13633,
+              "indexCount": 18921,
+              "start": 0,
+              "count": 18921,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 6307,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-coastalGround-v1:detail",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 13633,
+              "indexCount": 3183,
+              "start": 0,
+              "count": 3183,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 1061,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-coastalGround-v1:detail",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 4569,
+              "indexCount": 24273,
+              "start": 0,
+              "count": 12957,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 4319,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-coastalGround-v1:detail",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 1985,
+              "indexCount": 8832,
+              "start": 0,
+              "count": 8832,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 2944,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-coastalGround-v1:detail",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 3866,
+              "indexCount": 20088,
+              "start": 0,
+              "count": 12357,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 4119,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-coastalGround-v1:detail",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 13633,
+              "indexCount": 75345,
+              "start": 52812,
+              "count": 966,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 322,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-coastalUrban-v1:detail",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 66,
+              "indexCount": 66,
+              "start": 0,
+              "count": 66,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 22,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-sea-v1:detail",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 147,
+              "indexCount": 147,
+              "start": 0,
+              "count": 147,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 49,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-sea-v1:detail",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 96,
+              "indexCount": 96,
+              "start": 0,
+              "count": 96,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 32,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-sea-v1:detail",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 351,
+              "indexCount": 351,
+              "start": 0,
+              "count": 351,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 117,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-foam-v1:detail",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 180,
+              "indexCount": 180,
+              "start": 0,
+              "count": 180,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 60,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-foam-v1:detail",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "coastal-amenities",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 4752,
+              "indexCount": 4752,
+              "start": 0,
+              "count": 4752,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 1584,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "coastal-limestone:detail",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 4569,
+              "indexCount": 24273,
+              "start": 23853,
+              "count": 420,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 140,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 3088,
+              "indexCount": 11580,
+              "start": 0,
+              "count": 11580,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 3860,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "athens-marks",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 48000,
+              "indexCount": null,
+              "start": 0,
+              "count": 606,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 202,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 2,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "transparent",
+              "name": "athens-tree-shadows",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "CircleGeometry",
+              "vertices": 11,
+              "indexCount": 27,
+              "start": 0,
+              "count": 27,
+              "instances": 18,
+              "passes": 1,
+              "nominalTriangles": 162,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}-vegetation-arrival-v2",
+                "side": 0,
+                "transparent": true
+              },
+              "visible": true
+            },
+            {
+              "bucket": "transparent",
+              "name": "athens-props:shadows",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "CircleGeometry",
+              "vertices": 12,
+              "indexCount": 30,
+              "start": 0,
+              "count": 30,
+              "instances": 2,
+              "passes": 1,
+              "nominalTriangles": 20,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 0,
+                "transparent": true
+              },
+              "visible": true
+            }
+          ],
+          "traffic": [
+            {
+              "id": 22,
+              "type": "gla",
+              "kind": "gla",
+              "active": true,
+              "visible": true,
+              "pose": {
+                "x": 4600.022506844031,
+                "y": 10.907023248953847,
+                "z": 18926.771173124627,
+                "yaw": -1.4145228832094137,
+                "vLong": 6.87978166584459
+              },
+              "edge": "osm:way:459159793:0-0:f:8:36",
+              "model": "fleet-node-0",
+              "draws": 0,
+              "nominalTriangles": 0
+            }
+          ]
+        },
+        "candidateInventoryChangesOnly": [
+          {
+            "row": 36,
+            "beforeKey": "athens-coastalGround-v1:detail",
+            "afterKey": "athens-coastalGround-v2:detail"
+          },
+          {
+            "row": 37,
+            "beforeKey": "athens-coastalGround-v1:detail",
+            "afterKey": "athens-coastalGround-v2:detail"
+          },
+          {
+            "row": 38,
+            "beforeKey": "athens-coastalGround-v1:detail",
+            "afterKey": "athens-coastalGround-v2:detail"
+          },
+          {
+            "row": 39,
+            "beforeKey": "athens-coastalGround-v1:detail",
+            "afterKey": "athens-coastalGround-v2:detail"
+          },
+          {
+            "row": 40,
+            "beforeKey": "athens-coastalGround-v1:detail",
+            "afterKey": "athens-coastalGround-v2:detail"
+          },
+          {
+            "row": 41,
+            "beforeKey": "athens-coastalGround-v1:detail",
+            "afterKey": "athens-coastalGround-v2:detail"
+          },
+          {
+            "row": 42,
+            "beforeKey": "athens-coastalUrban-v1:detail",
+            "afterKey": "athens-coastalUrban-v2:detail"
+          },
+          {
+            "row": 48,
+            "beforeKey": "coastal-limestone:detail",
+            "afterKey": "coastal-limestone-v2:detail"
+          }
+        ],
+        "allOtherDrawRowFieldsExact": true,
+        "coastalProgramCounts": [
+          9,
+          9
+        ]
+      },
+      {
+        "detail": false,
+        "drawCalls": 33,
+        "triangles": 45774,
+        "allThreeSamplesCountsExact": true,
+        "resourcesExact": {
+          "memory": {
+            "geometries": 61,
+            "textures": 10
+          },
+          "programs": 110,
+          "materials": 650,
+          "geometries": 967,
+          "textures": 26
+        },
+        "nativeBaselineInventory": {
+          "source": "native renderer.renderLists.get(scene,0), read-only after final fresh frame; nominal scene accounting excludes postprocess passes",
+          "nominalCalls": 32,
+          "nominalTriangles": 45773,
+          "draws": [
+            {
+              "bucket": "opaque",
+              "name": "",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "SphereGeometry",
+              "vertices": 1225,
+              "indexCount": 6624,
+              "start": 0,
+              "count": 6624,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 2208,
+              "material": {
+                "type": "ShaderMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 1,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 13633,
+              "indexCount": 75345,
+              "start": 61461,
+              "count": 8298,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 2766,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-scan-paver_diff-3.2000-0-1-61x80",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 4569,
+              "indexCount": 24273,
+              "start": 16605,
+              "count": 3516,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 1172,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-scan-paver_diff-3.2000-0-1-61x80",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 3866,
+              "indexCount": 20088,
+              "start": 14613,
+              "count": 2163,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 721,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-scan-paver_diff-3.2000-0-1-61x80",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 13633,
+              "indexCount": 75345,
+              "start": 53778,
+              "count": 7683,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 2561,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 4569,
+              "indexCount": 24273,
+              "start": 12957,
+              "count": 3648,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 1216,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 3866,
+              "indexCount": 20088,
+              "start": 12357,
+              "count": 2256,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 752,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 2088,
+              "indexCount": 2088,
+              "start": 0,
+              "count": 2088,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 696,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 4902,
+              "indexCount": 4902,
+              "start": 0,
+              "count": 4902,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 1634,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 1770,
+              "indexCount": 1770,
+              "start": 0,
+              "count": 1770,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 590,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 13633,
+              "indexCount": 75345,
+              "start": 69759,
+              "count": 5586,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 1862,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-scan-asphalt_diff-4.1967-0-1-61x80",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 4569,
+              "indexCount": 24273,
+              "start": 20121,
+              "count": 3732,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 1244,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-scan-asphalt_diff-4.1967-0-1-61x80",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 3866,
+              "indexCount": 20088,
+              "start": 16776,
+              "count": 3312,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 1104,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-scan-asphalt_diff-4.1967-0-1-61x80",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 140,
+              "indexCount": 216,
+              "start": 0,
+              "count": 216,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 72,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-building-v1:plain",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 20,
+              "indexCount": 30,
+              "start": 0,
+              "count": 30,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 10,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-building-v1:plain",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 55,
+              "indexCount": 87,
+              "start": 0,
+              "count": 87,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 29,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-building-v1:plain",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 40,
+              "indexCount": 60,
+              "start": 0,
+              "count": 60,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 20,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-building-v1:plain",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "assembled-trim",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 1356,
+              "indexCount": null,
+              "start": 0,
+              "count": 1356,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 452,
+              "material": {
+                "type": "MeshStandardMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}:car-surface-v1",
+                "side": 2,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "assembled-trim",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 744,
+              "indexCount": null,
+              "start": 0,
+              "count": 744,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 248,
+              "material": {
+                "type": "MeshStandardMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 2,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "assembled-trim",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 396,
+              "indexCount": null,
+              "start": 0,
+              "count": 396,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 132,
+              "material": {
+                "type": "MeshStandardMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 2,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 2315,
+              "indexCount": 10737,
+              "start": 0,
+              "count": 9327,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 3109,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-coastalGround-v1:plain",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 13633,
+              "indexCount": 18921,
+              "start": 0,
+              "count": 18921,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 6307,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-coastalGround-v1:plain",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 13633,
+              "indexCount": 3183,
+              "start": 0,
+              "count": 3183,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 1061,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-coastalGround-v1:plain",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 4569,
+              "indexCount": 24273,
+              "start": 0,
+              "count": 12957,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 4319,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-coastalGround-v1:plain",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 1985,
+              "indexCount": 8832,
+              "start": 0,
+              "count": 8832,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 2944,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-coastalGround-v1:plain",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 3866,
+              "indexCount": 20088,
+              "start": 0,
+              "count": 12357,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 4119,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-coastalGround-v1:plain",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 13633,
+              "indexCount": 75345,
+              "start": 52812,
+              "count": 966,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 322,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-coastalUrban-v1:plain",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 66,
+              "indexCount": 66,
+              "start": 0,
+              "count": 66,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 22,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-sea-v1:plain",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 147,
+              "indexCount": 147,
+              "start": 0,
+              "count": 147,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 49,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-sea-v1:plain",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 96,
+              "indexCount": 96,
+              "start": 0,
+              "count": 96,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 32,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "athens-sea-v1:plain",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 4569,
+              "indexCount": 24273,
+              "start": 23853,
+              "count": 420,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 140,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            },
+            {
+              "bucket": "opaque",
+              "name": "probe",
+              "type": "Mesh",
+              "npcId": null,
+              "geometryType": "BufferGeometry",
+              "vertices": 3088,
+              "indexCount": 11580,
+              "start": 0,
+              "count": 11580,
+              "instances": 1,
+              "passes": 1,
+              "nominalTriangles": 3860,
+              "material": {
+                "type": "MeshBasicMaterial",
+                "name": "",
+                "key": "onBeforeCompile( /* shaderobject, renderer */ ) {}",
+                "side": 0,
+                "transparent": false
+              },
+              "visible": true
+            }
+          ],
+          "traffic": [
+            {
+              "id": 22,
+              "type": "gla",
+              "kind": "gla",
+              "active": true,
+              "visible": true,
+              "pose": {
+                "x": 4600.022506844031,
+                "y": 10.907023248953847,
+                "z": 18926.771173124627,
+                "yaw": -1.4145228832094137,
+                "vLong": 6.87978166584459
+              },
+              "edge": "osm:way:459159793:0-0:f:8:36",
+              "model": "fleet-node-0",
+              "draws": 0,
+              "nominalTriangles": 0
+            }
+          ]
+        },
+        "candidateInventoryChangesOnly": [
+          {
+            "row": 20,
+            "beforeKey": "athens-coastalGround-v1:plain",
+            "afterKey": "athens-coastalGround-v2:plain"
+          },
+          {
+            "row": 21,
+            "beforeKey": "athens-coastalGround-v1:plain",
+            "afterKey": "athens-coastalGround-v2:plain"
+          },
+          {
+            "row": 22,
+            "beforeKey": "athens-coastalGround-v1:plain",
+            "afterKey": "athens-coastalGround-v2:plain"
+          },
+          {
+            "row": 23,
+            "beforeKey": "athens-coastalGround-v1:plain",
+            "afterKey": "athens-coastalGround-v2:plain"
+          },
+          {
+            "row": 24,
+            "beforeKey": "athens-coastalGround-v1:plain",
+            "afterKey": "athens-coastalGround-v2:plain"
+          },
+          {
+            "row": 25,
+            "beforeKey": "athens-coastalGround-v1:plain",
+            "afterKey": "athens-coastalGround-v2:plain"
+          },
+          {
+            "row": 26,
+            "beforeKey": "athens-coastalUrban-v1:plain",
+            "afterKey": "athens-coastalUrban-v2:plain"
+          }
+        ],
+        "allOtherDrawRowFieldsExact": true,
+        "coastalProgramCounts": [
+          14,
+          14
+        ]
+      }
+    ]
+  },
+  "processes": {
+    "before": {
+      "slotTicket": 292,
+      "proxyPID": 1275547,
+      "terminal": "agent-d1b366c6-37f5-4b18-b895-37371ab0ae56",
+      "exitCode": 0,
+      "browserAndProxyClosed": true
+    },
+    "after": {
+      "slotTicket": 293,
+      "proxyPID": 1275971,
+      "terminal": "agent-2661756f-803d-4665-9412-3d28602e7ca4",
+      "exitCode": 0,
+      "browserAndProxyClosed": true
+    },
+    "order": "Before exited and proxy CLOSED before after was started. No queued or additional browser."
+  },
+  "originalReceiptsUnchanged": true
+}
