@@ -1,0 +1,258 @@
+{
+  "status": "SOURCE counts and synthetic tiny fixture solves ONLY; no real component solve or pack",
+  "inputSHA256": "e85ca0c7de2cdc5f057d3e69828c41b45fea61d5bc03c595525b5e927ceaa281",
+  "pythonPreflight": {
+    "schema": "terrain-lp-partition-1",
+    "fixedOnlyInfeasible": [],
+    "fixedOnlyRedundantRows": 14388,
+    "fullRows": 679034,
+    "components": [
+      {
+        "id": "-32,608",
+        "freeNodes": 3274,
+        "rows": 111134,
+        "nonzeros": 395308,
+        "forecastBytes": 376758786
+      },
+      {
+        "id": "-32,960",
+        "freeNodes": 196,
+        "rows": 7208,
+        "nonzeros": 23800,
+        "forecastBytes": 234881024
+      },
+      {
+        "id": "992,-488",
+        "freeNodes": 1958,
+        "rows": 68412,
+        "nonzeros": 240584,
+        "forecastBytes": 268694698
+      },
+      {
+        "id": "1200,-72",
+        "freeNodes": 973,
+        "rows": 33698,
+        "nonzeros": 120358,
+        "forecastBytes": 234881024
+      },
+      {
+        "id": "2016,12856",
+        "freeNodes": 4444,
+        "rows": 150460,
+        "nonzeros": 541548,
+        "forecastBytes": 478897383
+      },
+      {
+        "id": "4576,-3504",
+        "freeNodes": 4488,
+        "rows": 153256,
+        "nonzeros": 544324,
+        "forecastBytes": 480836228
+      },
+      {
+        "id": "7136,-10680",
+        "freeNodes": 4079,
+        "rows": 140478,
+        "nonzeros": 495284,
+        "forecastBytes": 446585156
+      }
+    ],
+    "buildsMatrix": false,
+    "emittedCells": 0
+  },
+  "independentJS": {
+    "independentJSPartitionMatched": true,
+    "components": [
+      {
+        "id": "-32,608",
+        "freeNodes": 3274,
+        "rows": 111134,
+        "nonzeros": 395308
+      },
+      {
+        "id": "-32,960",
+        "freeNodes": 196,
+        "rows": 7208,
+        "nonzeros": 23800
+      },
+      {
+        "id": "992,-488",
+        "freeNodes": 1958,
+        "rows": 68412,
+        "nonzeros": 240584
+      },
+      {
+        "id": "1200,-72",
+        "freeNodes": 973,
+        "rows": 33698,
+        "nonzeros": 120358
+      },
+      {
+        "id": "2016,12856",
+        "freeNodes": 4444,
+        "rows": 150460,
+        "nonzeros": 541548
+      },
+      {
+        "id": "4576,-3504",
+        "freeNodes": 4488,
+        "rows": 153256,
+        "nonzeros": 544324
+      },
+      {
+        "id": "7136,-10680",
+        "freeNodes": 4079,
+        "rows": 140478,
+        "nonzeros": 495284
+      }
+    ],
+    "maxRSS": 142032896,
+    "noMatrix": true,
+    "noSolve": true
+  },
+  "tinyFixtures": [
+    {
+      "method": "highs-ds",
+      "presolve": true,
+      "components": [
+        {
+          "componentId": "0,0",
+          "method": "highs-ds",
+          "presolve": true,
+          "solverStatus": 0,
+          "iterations": 0,
+          "crossoverIterations": 0,
+          "seconds": 0.012902375980047509,
+          "maxRSS": 76947456
+        },
+        {
+          "componentId": "256,0",
+          "method": "highs-ds",
+          "presolve": true,
+          "solverStatus": 0,
+          "iterations": 0,
+          "crossoverIterations": 0,
+          "seconds": 0.011010905989678577,
+          "maxRSS": 76947456
+        }
+      ],
+      "independentVerification": {
+        "fullPrimalPassed": true,
+        "fullDualPassed": true,
+        "optimumVerified": true,
+        "gradientVariable": 0.09011997775086848,
+        "maxEuclideanGradient": 0.08838834764831845,
+        "dualityGap": 9.132458678173805e-12
+      }
+    },
+    {
+      "method": "highs-ds",
+      "presolve": false,
+      "components": [
+        {
+          "componentId": "0,0",
+          "method": "highs-ds",
+          "presolve": false,
+          "solverStatus": 0,
+          "iterations": 3,
+          "crossoverIterations": 0,
+          "seconds": 0.008420911006396636,
+          "maxRSS": 76828672
+        },
+        {
+          "componentId": "256,0",
+          "method": "highs-ds",
+          "presolve": false,
+          "solverStatus": 0,
+          "iterations": 4,
+          "crossoverIterations": 0,
+          "seconds": 0.010609132994432002,
+          "maxRSS": 76959744
+        }
+      ],
+      "independentVerification": {
+        "fullPrimalPassed": true,
+        "fullDualPassed": true,
+        "optimumVerified": true,
+        "gradientVariable": 0.09011997775086848,
+        "maxEuclideanGradient": 0.08838834764831845,
+        "dualityGap": 9.132458678173805e-12
+      }
+    },
+    {
+      "method": "highs-ipm",
+      "presolve": true,
+      "components": [
+        {
+          "componentId": "0,0",
+          "method": "highs-ipm",
+          "presolve": true,
+          "solverStatus": 0,
+          "iterations": 0,
+          "crossoverIterations": 0,
+          "seconds": 0.0061946150090079755,
+          "maxRSS": 77078528
+        },
+        {
+          "componentId": "256,0",
+          "method": "highs-ipm",
+          "presolve": true,
+          "solverStatus": 0,
+          "iterations": 0,
+          "crossoverIterations": 0,
+          "seconds": 0.010453700000653043,
+          "maxRSS": 77078528
+        }
+      ],
+      "independentVerification": {
+        "fullPrimalPassed": true,
+        "fullDualPassed": true,
+        "optimumVerified": true,
+        "gradientVariable": 0.09011997775086848,
+        "maxEuclideanGradient": 0.08838834764831845,
+        "dualityGap": 9.132458678173805e-12
+      }
+    },
+    {
+      "method": "highs-ipm",
+      "presolve": false,
+      "components": [
+        {
+          "componentId": "0,0",
+          "method": "highs-ipm",
+          "presolve": false,
+          "solverStatus": 0,
+          "iterations": 7,
+          "crossoverIterations": 0,
+          "seconds": 0.009576260985340923,
+          "maxRSS": 77484032
+        },
+        {
+          "componentId": "256,0",
+          "method": "highs-ipm",
+          "presolve": false,
+          "solverStatus": 0,
+          "iterations": 6,
+          "crossoverIterations": 0,
+          "seconds": 0.010539502982283011,
+          "maxRSS": 77484032
+        }
+      ],
+      "independentVerification": {
+        "fullPrimalPassed": true,
+        "fullDualPassed": true,
+        "optimumVerified": true,
+        "gradientVariable": 0.0901199777508685,
+        "maxEuclideanGradient": 0.08838834764831845,
+        "dualityGap": 9.132458678173805e-12
+      }
+    }
+  ],
+  "focusedTests": {
+    "passed": 22,
+    "failed": 0,
+    "skipped": 0
+  },
+  "emittedCells": 0,
+  "acceptedField": false
+}

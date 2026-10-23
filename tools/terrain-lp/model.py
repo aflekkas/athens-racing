@@ -108,7 +108,8 @@ class Problem:
         return dict(nonzeroUpperBound=nnz_upper,nodes=self.n,variables=len(self.bounds),rows=rows,gradientTriangles=2*len(self.squares),facets=self.facets,forecastBytes=forecast,calibrationRSS=959492096,buildsMatrix=False)
 
 
-def solve(problem, input_sha, seconds, memory_bytes):
+def solve(problem, input_sha, seconds, memory_bytes, *, method='highs', presolve=True, display=False):
+    if method not in ('highs','highs-ds','highs-ipm'): raise ValueError('Unsupported HiGHS method')
     forecast=problem.forecast()
     if forecast['forecastBytes'] > memory_bytes: raise ValueError('Calibrated forecast exceeds explicit allocation')
     for name in ('OMP_NUM_THREADS','OPENBLAS_NUM_THREADS','MKL_NUM_THREADS'): os.environ[name]='1'
@@ -123,8 +124,10 @@ def solve(problem, input_sha, seconds, memory_bytes):
             if abs(v)>1e-14:rr.append(r);cc.append(c);vv.append(v)
     matrix=coo_matrix((np.asarray(vv),(np.asarray(rr),np.asarray(cc))),shape=(len(bb),len(problem.bounds))).tocsr()
     rhs=np.asarray(bb);del rr,cc,vv,bb
-    result=linprog(problem.objective,A_ub=matrix,b_ub=rhs,bounds=problem.bounds,method='highs',options={'time_limit':seconds,'threads':1})
-    certificate=dict(schema='terrain-lp-certificate-1',inputSHA256=input_sha,mode=problem.mode,stage=problem.stage,facets=problem.facets,solverStatus=int(result.status),message=result.message,forecast=forecast,seconds=time.monotonic()-start,maxRSS=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,emittedCells=0)
+    result=linprog(problem.objective,A_ub=matrix,b_ub=rhs,bounds=problem.bounds,method=method,options={'time_limit':seconds,'threads':1,'presolve':presolve,'disp':display})
+    certificate=dict(schema='terrain-lp-certificate-1',inputSHA256=input_sha,mode=problem.mode,stage=problem.stage,facets=problem.facets,method=method,presolve=presolve,solverStatus=int(result.status),message=result.message,forecast=forecast,seconds=time.monotonic()-start,maxRSS=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024,emittedCells=0)
+    certificate['iterations']=getattr(result,'nit',None)
+    certificate['crossoverIterations']=getattr(result,'crossover_nit',None)
     if result.success:
         certificate.update(gradientCap=problem.bounds[problem.g][0] if problem.stage=='correction' else None,values=list(map(float,result.x)),dual=[[i,float(y)] for i,y in enumerate(result.ineqlin.marginals) if y != 0],objective=float(result.fun))
     return certificate
