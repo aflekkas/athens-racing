@@ -1,0 +1,22 @@
+# Archive gates: exact f88cce4c (clean git archive + npm ci), ASR_TEST_JOBS=2, sequential, 2026-10-23
+=== GATE syntax start 08:55:10
+Syntax checked 460 JavaScript modules.
+=== GATE syntax exit 0 08:55:28
+=== GATE browser-imports start 08:55:28
+Browser import graph checked: 373 modules.
+=== GATE browser-imports exit 0 08:55:29
+=== GATE physics start 08:55:29
+1323 passed, 0 failed
+=== GATE physics exit 0 08:58:24
+=== GATE npm-test start 08:58:24
+[runner] 303 test files, 2 at a time, heaviest first, failed files retried once alone
+[unit] tools/driving-controls-notice.test.mjs: ok, 4 tests, 0.2 s
+[unit] tools/float-panel-fallback.test.mjs: ok, 3 tests, 0.2 s
+[unit] tools/map-select-perf.test.mjs: ok, 11 tests, 2.1 s
+[unit] tools/owner-locked-track-map.test.mjs: ok, 3 tests, 0.4 s
+[unit] tools/race-setup-screen.test.mjs: ok, 7 tests, 0.8 s
+[unit] tools/setup-event-choice.test.mjs: ok, 4 tests, 0.5 s
+[summary] 303/303 files, 2762 tests, 2748 pass, 0 fail in first attempts, 14 skipped; 0 flaky (passed on isolated retry), 0 failed
+[total] 588.9 s; PASS
+=== GATE npm-test exit 0 09:08:13
+=== GATES DONE 09:08:13
