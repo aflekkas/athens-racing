@@ -1,0 +1,16 @@
+{
+  "runURLs": [
+    "http://127.0.0.1:33691/index.html?menu&quality=low&simhook",
+    "http://127.0.0.1:33691/index.html?routes=1&route=psychiko-faros&setup=1&simhook&quality=low"
+  ],
+  "sha": "a117ed94",
+  "release": "2026.10.15.3",
+  "checks": [
+    "Actual About > What’s new shows generated current release 2026.10.15.3, one-car copy, no trim-picker image",
+    "Stack-less setup Escape via real keyboard opens track picker; second Escape returns title",
+    "Signed-out failed Top 3 uses sign-in text and action; no raw error or retry",
+    "Top 3 SIGN IN opens account flow",
+    "Unconfigured local server preserves genuine failure retry"
+  ],
+  "errors": []
+}
