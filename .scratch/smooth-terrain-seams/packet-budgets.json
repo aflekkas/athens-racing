@@ -1,0 +1,226 @@
+{
+  "note": "Potential source-packet draws before runtime culling and derived building/scenery draws; not an FPS or whole-frame measurement.",
+  "cells": 27,
+  "sourceDraws": 189,
+  "paintDrawsBefore": 27,
+  "paintDrawsAfter": 29,
+  "triangles": 1118559,
+  "rows": [
+    {
+      "key": "-1,0",
+      "sourceDraws": 8,
+      "paintDraws": 1,
+      "triangles": 45132,
+      "residentBytes": 4096852,
+      "bytes": 307733
+    },
+    {
+      "key": "-1,1",
+      "sourceDraws": 8,
+      "paintDraws": 1,
+      "triangles": 28894,
+      "residentBytes": 2686445,
+      "bytes": 187899
+    },
+    {
+      "key": "-1,2",
+      "sourceDraws": 7,
+      "paintDraws": 1,
+      "triangles": 43052,
+      "residentBytes": 3789039,
+      "bytes": 353563
+    },
+    {
+      "key": "0,0",
+      "sourceDraws": 6,
+      "paintDraws": 1,
+      "triangles": 50040,
+      "residentBytes": 4459844,
+      "bytes": 522383
+    },
+    {
+      "key": "0,1",
+      "sourceDraws": 6,
+      "paintDraws": 1,
+      "triangles": 48211,
+      "residentBytes": 4316210,
+      "bytes": 437331
+    },
+    {
+      "key": "0,2",
+      "sourceDraws": 8,
+      "paintDraws": 2,
+      "triangles": 52008,
+      "residentBytes": 4799148,
+      "bytes": 594453
+    },
+    {
+      "key": "1,0",
+      "sourceDraws": 7,
+      "paintDraws": 2,
+      "triangles": 60487,
+      "residentBytes": 5428279,
+      "bytes": 635651
+    },
+    {
+      "key": "1,1",
+      "sourceDraws": 6,
+      "paintDraws": 1,
+      "triangles": 13895,
+      "residentBytes": 1240965,
+      "bytes": 130062
+    },
+    {
+      "key": "1,2",
+      "sourceDraws": 8,
+      "paintDraws": 1,
+      "triangles": 34855,
+      "residentBytes": 3217082,
+      "bytes": 379266
+    },
+    {
+      "key": "3,24",
+      "sourceDraws": 7,
+      "paintDraws": 1,
+      "triangles": 35353,
+      "residentBytes": 2996873,
+      "bytes": 342379
+    },
+    {
+      "key": "3,25",
+      "sourceDraws": 9,
+      "paintDraws": 1,
+      "triangles": 47676,
+      "residentBytes": 4046792,
+      "bytes": 507109
+    },
+    {
+      "key": "3,26",
+      "sourceDraws": 8,
+      "paintDraws": 1,
+      "triangles": 27266,
+      "residentBytes": 2359479,
+      "bytes": 318662
+    },
+    {
+      "key": "4,24",
+      "sourceDraws": 7,
+      "paintDraws": 1,
+      "triangles": 39398,
+      "residentBytes": 3519559,
+      "bytes": 408583
+    },
+    {
+      "key": "4,25",
+      "sourceDraws": 7,
+      "paintDraws": 1,
+      "triangles": 41196,
+      "residentBytes": 3459204,
+      "bytes": 389537
+    },
+    {
+      "key": "4,26",
+      "sourceDraws": 7,
+      "paintDraws": 1,
+      "triangles": 33499,
+      "residentBytes": 2780919,
+      "bytes": 295292
+    },
+    {
+      "key": "5,24",
+      "sourceDraws": 7,
+      "paintDraws": 1,
+      "triangles": 46310,
+      "residentBytes": 4266957,
+      "bytes": 516791
+    },
+    {
+      "key": "5,25",
+      "sourceDraws": 6,
+      "paintDraws": 1,
+      "triangles": 45869,
+      "residentBytes": 4120812,
+      "bytes": 504879
+    },
+    {
+      "key": "5,26",
+      "sourceDraws": 6,
+      "paintDraws": 1,
+      "triangles": 37448,
+      "residentBytes": 3300462,
+      "bytes": 367735
+    },
+    {
+      "key": "8,-8",
+      "sourceDraws": 6,
+      "paintDraws": 1,
+      "triangles": 32885,
+      "residentBytes": 2377478,
+      "bytes": 293602
+    },
+    {
+      "key": "8,-7",
+      "sourceDraws": 7,
+      "paintDraws": 1,
+      "triangles": 47842,
+      "residentBytes": 3581713,
+      "bytes": 460149
+    },
+    {
+      "key": "8,-6",
+      "sourceDraws": 7,
+      "paintDraws": 1,
+      "triangles": 50529,
+      "residentBytes": 3691204,
+      "bytes": 424539
+    },
+    {
+      "key": "9,-8",
+      "sourceDraws": 6,
+      "paintDraws": 1,
+      "triangles": 40327,
+      "residentBytes": 3451619,
+      "bytes": 391432
+    },
+    {
+      "key": "9,-7",
+      "sourceDraws": 7,
+      "paintDraws": 1,
+      "triangles": 36776,
+      "residentBytes": 3069965,
+      "bytes": 335261
+    },
+    {
+      "key": "9,-6",
+      "sourceDraws": 7,
+      "paintDraws": 1,
+      "triangles": 50546,
+      "residentBytes": 4320402,
+      "bytes": 403452
+    },
+    {
+      "key": "10,-8",
+      "sourceDraws": 6,
+      "paintDraws": 1,
+      "triangles": 43747,
+      "residentBytes": 3830234,
+      "bytes": 384962
+    },
+    {
+      "key": "10,-7",
+      "sourceDraws": 7,
+      "paintDraws": 1,
+      "triangles": 45315,
+      "residentBytes": 3881835,
+      "bytes": 371646
+    },
+    {
+      "key": "10,-6",
+      "sourceDraws": 8,
+      "paintDraws": 1,
+      "triangles": 40003,
+      "residentBytes": 3531449,
+      "bytes": 353491
+    }
+  ]
+}

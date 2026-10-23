@@ -1,0 +1,439 @@
+{
+  "source": "https://staging.athensracing.com/world/manifests/ca5018719e5f94adbfc6f9a6ff78c4dc51026e5495240cd1cffc600b667e6f0a.json",
+  "world": "athens-east-development",
+  "revision": "4241d71bb4d87f995cde84bbf5af3d3c11d014f5ca5e4a2055c65c42f437827e",
+  "tiles": {
+    "-1,0": {
+      "url": "/world/cells/48c76d129276e6fabad9311d299a08974cfe560b3d7ae4ae19f3bba94aeb4c18.bin.gz",
+      "sha256": "48c76d129276e6fabad9311d299a08974cfe560b3d7ae4ae19f3bba94aeb4c18",
+      "bytes": 305079,
+      "decodedBytes": 4235453,
+      "residentBytes": 3977828,
+      "transientBytes": 8775985,
+      "dependencies": [],
+      "triangles": 43656,
+      "contactEligible": true,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      }
+    },
+    "-1,1": {
+      "url": "/world/cells/64176292ddb24901f10d6333f163d6a454457ef343aae560cc4ace1b704761cc.bin.gz",
+      "sha256": "64176292ddb24901f10d6333f163d6a454457ef343aae560cc4ace1b704761cc",
+      "bytes": 200293,
+      "decodedBytes": 2782220,
+      "residentBytes": 2681224,
+      "transientBytes": 5764733,
+      "dependencies": [],
+      "triangles": 28670,
+      "contactEligible": true,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      }
+    },
+    "-1,2": {
+      "url": "/world/cells/c7dcf9bf3a7313afa7ac5a70fc3feee74403751cf5b87caaeb34a5799c5b5e10.bin.gz",
+      "sha256": "c7dcf9bf3a7313afa7ac5a70fc3feee74403751cf5b87caaeb34a5799c5b5e10",
+      "bytes": 308276,
+      "decodedBytes": 4789461,
+      "residentBytes": 3575598,
+      "transientBytes": 9887198,
+      "dependencies": [],
+      "triangles": 40357,
+      "contactEligible": true,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      }
+    },
+    "0,0": {
+      "url": "/world/cells/5f49096b8a10b38f07b27b90a0673f3b793f22495da56bc5d9ab1b618886a250.bin.gz",
+      "sha256": "5f49096b8a10b38f07b27b90a0673f3b793f22495da56bc5d9ab1b618886a250",
+      "bytes": 315286,
+      "decodedBytes": 4666521,
+      "residentBytes": 3247505,
+      "transientBytes": 9648328,
+      "dependencies": [],
+      "triangles": 38179,
+      "contactEligible": true,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      }
+    },
+    "0,1": {
+      "url": "/world/cells/6307e6508c811597c7342f4bfaed6daf4a08f4ccd8f77d56b89d2f2b03634ffc.bin.gz",
+      "sha256": "6307e6508c811597c7342f4bfaed6daf4a08f4ccd8f77d56b89d2f2b03634ffc",
+      "bytes": 353643,
+      "decodedBytes": 4729919,
+      "residentBytes": 3597539,
+      "transientBytes": 9813481,
+      "dependencies": [],
+      "triangles": 41138,
+      "contactEligible": true,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      }
+    },
+    "0,2": {
+      "url": "/world/cells/c2c00fec28305d4a34ffb3080ee3ae4e6f5961e38a2f0493889bce9e1793edcb.bin.gz",
+      "sha256": "c2c00fec28305d4a34ffb3080ee3ae4e6f5961e38a2f0493889bce9e1793edcb",
+      "bytes": 397168,
+      "decodedBytes": 5257857,
+      "residentBytes": 3406678,
+      "transientBytes": 10912882,
+      "dependencies": [],
+      "triangles": 38368,
+      "contactEligible": true,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      }
+    },
+    "1,0": {
+      "url": "/world/cells/d829b5ee41f5df1163d2d6a51af9095e463dd46450f32ef1cd164a498e02ae93.bin.gz",
+      "sha256": "d829b5ee41f5df1163d2d6a51af9095e463dd46450f32ef1cd164a498e02ae93",
+      "bytes": 429226,
+      "decodedBytes": 5774462,
+      "residentBytes": 3971047,
+      "transientBytes": 11978150,
+      "dependencies": [],
+      "triangles": 46280,
+      "contactEligible": true,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      }
+    },
+    "1,1": {
+      "url": "/world/cells/9dda92a150c317b20df59a9fd86472ed20c64257f858e2535c19cd5e06be81bb.bin.gz",
+      "sha256": "9dda92a150c317b20df59a9fd86472ed20c64257f858e2535c19cd5e06be81bb",
+      "bytes": 126340,
+      "decodedBytes": 1808194,
+      "residentBytes": 1175007,
+      "transientBytes": 3742728,
+      "dependencies": [],
+      "triangles": 12959,
+      "contactEligible": true,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      }
+    },
+    "1,2": {
+      "url": "/world/cells/b223febaebc973cb736ffb2ada5648e1da475367646e6537b439758c8f4d61e0.bin.gz",
+      "sha256": "b223febaebc973cb736ffb2ada5648e1da475367646e6537b439758c8f4d61e0",
+      "bytes": 271438,
+      "decodedBytes": 3654072,
+      "residentBytes": 2447287,
+      "transientBytes": 7579582,
+      "dependencies": [],
+      "triangles": 27228,
+      "contactEligible": true,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      }
+    },
+    "3,24": {
+      "url": "/world/cells/7193b447305780b52fb9a3093e2787ca285bd91139818dd211683ba0d4056bb2.bin.gz",
+      "sha256": "7193b447305780b52fb9a3093e2787ca285bd91139818dd211683ba0d4056bb2",
+      "bytes": 266165,
+      "decodedBytes": 4133213,
+      "residentBytes": 2640794,
+      "transientBytes": 8532591,
+      "dependencies": [],
+      "triangles": 31086,
+      "contactEligible": true,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      }
+    },
+    "3,25": {
+      "url": "/world/cells/4580b406031e72c1c450a821c3c919e73db75ce152e6c2a3ab0ca9d0885a6fe8.bin.gz",
+      "sha256": "4580b406031e72c1c450a821c3c919e73db75ce152e6c2a3ab0ca9d0885a6fe8",
+      "bytes": 345961,
+      "decodedBytes": 5276855,
+      "residentBytes": 3191558,
+      "transientBytes": 10899671,
+      "dependencies": [],
+      "triangles": 38646,
+      "contactEligible": true,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      }
+    },
+    "3,26": {
+      "url": "/world/cells/8787aa40013e51a225b55a56b11c824007ada2fdc1d76a76772e423c46246ad4.bin.gz",
+      "sha256": "8787aa40013e51a225b55a56b11c824007ada2fdc1d76a76772e423c46246ad4",
+      "bytes": 218921,
+      "decodedBytes": 3026576,
+      "residentBytes": 1702278,
+      "transientBytes": 6272073,
+      "dependencies": [],
+      "triangles": 20655,
+      "contactEligible": true,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      }
+    },
+    "4,24": {
+      "url": "/world/cells/28e9a51597d79c3ded9690133e3639914707a71330937909022929f636ea8952.bin.gz",
+      "sha256": "28e9a51597d79c3ded9690133e3639914707a71330937909022929f636ea8952",
+      "bytes": 299768,
+      "decodedBytes": 4545320,
+      "residentBytes": 2992698,
+      "transientBytes": 9390408,
+      "dependencies": [],
+      "triangles": 33162,
+      "contactEligible": true,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      }
+    },
+    "4,25": {
+      "url": "/world/cells/5c0ac5562d35f3aec611412a71fc2b273ec90591048f5a9a9c71a1a79436782c.bin.gz",
+      "sha256": "5c0ac5562d35f3aec611412a71fc2b273ec90591048f5a9a9c71a1a79436782c",
+      "bytes": 367227,
+      "decodedBytes": 5074882,
+      "residentBytes": 3209093,
+      "transientBytes": 10516991,
+      "dependencies": [],
+      "triangles": 37686,
+      "contactEligible": true,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      }
+    },
+    "4,26": {
+      "url": "/world/cells/750e0daaba58e0276ead69c809c0e5e6c37aaa8119c983029f23c18adf8feec9.bin.gz",
+      "sha256": "750e0daaba58e0276ead69c809c0e5e6c37aaa8119c983029f23c18adf8feec9",
+      "bytes": 274282,
+      "decodedBytes": 4280461,
+      "residentBytes": 2750129,
+      "transientBytes": 8835204,
+      "dependencies": [],
+      "triangles": 32250,
+      "contactEligible": true,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      }
+    },
+    "5,24": {
+      "url": "/world/cells/61317ac74ce02025cb36fc79c417eb77338f8803d0e4ae85815597ce3becb872.bin.gz",
+      "sha256": "61317ac74ce02025cb36fc79c417eb77338f8803d0e4ae85815597ce3becb872",
+      "bytes": 336776,
+      "decodedBytes": 5056466,
+      "residentBytes": 3322324,
+      "transientBytes": 10449708,
+      "dependencies": [],
+      "triangles": 36084,
+      "contactEligible": true,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      }
+    },
+    "5,25": {
+      "url": "/world/cells/f643879a8e97efe837a30f490a269862290542557c5cd878a924a5c1ad93a0db.bin.gz",
+      "sha256": "f643879a8e97efe837a30f490a269862290542557c5cd878a924a5c1ad93a0db",
+      "bytes": 374702,
+      "decodedBytes": 5018035,
+      "residentBytes": 3207860,
+      "transientBytes": 10410772,
+      "dependencies": [],
+      "triangles": 36042,
+      "contactEligible": true,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      }
+    },
+    "5,26": {
+      "url": "/world/cells/bfb75df53a9398c52ef2b645d41dfc62798d4f628753a31acf3d8f4ae94b547f.bin.gz",
+      "sha256": "bfb75df53a9398c52ef2b645d41dfc62798d4f628753a31acf3d8f4ae94b547f",
+      "bytes": 310963,
+      "decodedBytes": 4261227,
+      "residentBytes": 2858850,
+      "transientBytes": 8833417,
+      "dependencies": [],
+      "triangles": 32230,
+      "contactEligible": true,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39"
+      }
+    },
+    "8,-8": {
+      "url": "/world/cells/fa9a31dd6dd5c59254798a8831cff0499400c7704fcec4bc7b7802e80b48aee6.bin.gz",
+      "sha256": "fa9a31dd6dd5c59254798a8831cff0499400c7704fcec4bc7b7802e80b48aee6",
+      "bytes": 277734,
+      "decodedBytes": 3940255,
+      "residentBytes": 2705657,
+      "transientBytes": 8158244,
+      "dependencies": [],
+      "triangles": 30299,
+      "contactEligible": true,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "5a6a3b3def63c8510dd5d2c06b4a15760a9779f7a41780d64cb2ee00575d7352"
+      }
+    },
+    "8,-7": {
+      "url": "/world/cells/8873ccc5f4e5169169e9e79ffcc2e21cf4dddf250284f855ff6b8f03d043158f.bin.gz",
+      "sha256": "8873ccc5f4e5169169e9e79ffcc2e21cf4dddf250284f855ff6b8f03d043158f",
+      "bytes": 376831,
+      "decodedBytes": 5238205,
+      "residentBytes": 3484750,
+      "transientBytes": 10853241,
+      "dependencies": [],
+      "triangles": 40425,
+      "contactEligible": true,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "5a6a3b3def63c8510dd5d2c06b4a15760a9779f7a41780d64cb2ee00575d7352"
+      }
+    },
+    "8,-6": {
+      "url": "/world/cells/e53751b34344b5287bd44b50ab6aba50fcc6d5dba753ec6958bf8f65f0c839fd.bin.gz",
+      "sha256": "e53751b34344b5287bd44b50ab6aba50fcc6d5dba753ec6958bf8f65f0c839fd",
+      "bytes": 376531,
+      "decodedBytes": 5913078,
+      "residentBytes": 4060757,
+      "transientBytes": 12202687,
+      "dependencies": [],
+      "triangles": 47910,
+      "contactEligible": true,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "5a6a3b3def63c8510dd5d2c06b4a15760a9779f7a41780d64cb2ee00575d7352"
+      }
+    },
+    "9,-8": {
+      "url": "/world/cells/fbc527ea83a5d14698f9014378b9f0f5f5c864e882c5568ef548d2d7bdedc94f.bin.gz",
+      "sha256": "fbc527ea83a5d14698f9014378b9f0f5f5c864e882c5568ef548d2d7bdedc94f",
+      "bytes": 288048,
+      "decodedBytes": 4518593,
+      "residentBytes": 3032443,
+      "transientBytes": 9325234,
+      "dependencies": [],
+      "triangles": 34379,
+      "contactEligible": true,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "5a6a3b3def63c8510dd5d2c06b4a15760a9779f7a41780d64cb2ee00575d7352"
+      }
+    },
+    "9,-7": {
+      "url": "/world/cells/de75ced1a09f35691abad11040b98ad075bb5239448b1b07fe7cd7709d1378c0.bin.gz",
+      "sha256": "de75ced1a09f35691abad11040b98ad075bb5239448b1b07fe7cd7709d1378c0",
+      "bytes": 306144,
+      "decodedBytes": 4330382,
+      "residentBytes": 2977095,
+      "transientBytes": 8966908,
+      "dependencies": [],
+      "triangles": 33280,
+      "contactEligible": true,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "5a6a3b3def63c8510dd5d2c06b4a15760a9779f7a41780d64cb2ee00575d7352"
+      }
+    },
+    "9,-6": {
+      "url": "/world/cells/e7fe7d31b697ae57e3aa00c1d507426d5590444c68e37d30885bafea83388784.bin.gz",
+      "sha256": "e7fe7d31b697ae57e3aa00c1d507426d5590444c68e37d30885bafea83388784",
+      "bytes": 410921,
+      "decodedBytes": 5836164,
+      "residentBytes": 4242765,
+      "transientBytes": 12083249,
+      "dependencies": [],
+      "triangles": 48602,
+      "contactEligible": true,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "5a6a3b3def63c8510dd5d2c06b4a15760a9779f7a41780d64cb2ee00575d7352"
+      }
+    },
+    "10,-8": {
+      "url": "/world/cells/c8c7d5065520e76551400cc20c7b038426fb5cdaa097d734172a12c5ffc772c0.bin.gz",
+      "sha256": "c8c7d5065520e76551400cc20c7b038426fb5cdaa097d734172a12c5ffc772c0",
+      "bytes": 359335,
+      "decodedBytes": 5100391,
+      "residentBytes": 3566258,
+      "transientBytes": 10560117,
+      "dependencies": [],
+      "triangles": 40188,
+      "contactEligible": true,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "5a6a3b3def63c8510dd5d2c06b4a15760a9779f7a41780d64cb2ee00575d7352"
+      }
+    },
+    "10,-7": {
+      "url": "/world/cells/a6985743bd59374327e11fc12e742ba539757b89b99007e580bdf0324666537a.bin.gz",
+      "sha256": "a6985743bd59374327e11fc12e742ba539757b89b99007e580bdf0324666537a",
+      "bytes": 341252,
+      "decodedBytes": 5412197,
+      "residentBytes": 3807420,
+      "transientBytes": 11165646,
+      "dependencies": [],
+      "triangles": 43580,
+      "contactEligible": true,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "5a6a3b3def63c8510dd5d2c06b4a15760a9779f7a41780d64cb2ee00575d7352"
+      }
+    },
+    "10,-6": {
+      "url": "/world/cells/90fee85d5b3322dd865c0609b60b5f9adf3e6b81a2cfcc079f082c369e8a9a78.bin.gz",
+      "sha256": "90fee85d5b3322dd865c0609b60b5f9adf3e6b81a2cfcc079f082c369e8a9a78",
+      "bytes": 292963,
+      "decodedBytes": 4614322,
+      "residentBytes": 3240360,
+      "transientBytes": 9521607,
+      "dependencies": [],
+      "triangles": 36384,
+      "contactEligible": true,
+      "source": {
+        "regionId": "basin",
+        "world": "athens-east-development",
+        "revision": "5a6a3b3def63c8510dd5d2c06b4a15760a9779f7a41780d64cb2ee00575d7352"
+      }
+    }
+  }
+}

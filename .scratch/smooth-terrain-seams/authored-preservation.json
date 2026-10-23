@@ -1,0 +1,45 @@
+{
+  "sourceMapSha256": "58bd941099b23a9c4b57d021e3a1efe6a950930b645b95a26d1828b4ee08ed0b",
+  "authoredPieces": 3647,
+  "affected": [
+    {
+      "cell": "8,-8",
+      "expected": 130,
+      "restored": 130,
+      "sourceMapSha256": "58bd941099b23a9c4b57d021e3a1efe6a950930b645b95a26d1828b4ee08ed0b"
+    },
+    {
+      "cell": "8,-7",
+      "expected": 236,
+      "restored": 236,
+      "sourceMapSha256": "58bd941099b23a9c4b57d021e3a1efe6a950930b645b95a26d1828b4ee08ed0b"
+    },
+    {
+      "cell": "8,-6",
+      "expected": 322,
+      "restored": 322,
+      "sourceMapSha256": "58bd941099b23a9c4b57d021e3a1efe6a950930b645b95a26d1828b4ee08ed0b"
+    },
+    {
+      "cell": "9,-8",
+      "expected": 46,
+      "restored": 46,
+      "sourceMapSha256": "58bd941099b23a9c4b57d021e3a1efe6a950930b645b95a26d1828b4ee08ed0b"
+    },
+    {
+      "cell": "9,-7",
+      "expected": 88,
+      "restored": 88,
+      "sourceMapSha256": "58bd941099b23a9c4b57d021e3a1efe6a950930b645b95a26d1828b4ee08ed0b"
+    },
+    {
+      "cell": "9,-6",
+      "expected": 3,
+      "restored": 3,
+      "sourceMapSha256": "58bd941099b23a9c4b57d021e3a1efe6a950930b645b95a26d1828b4ee08ed0b"
+    }
+  ],
+  "failures": [],
+  "affectedPieces": 825,
+  "unaffectedPieces": 2822
+}
