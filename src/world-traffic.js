@@ -69,16 +69,25 @@ export class WorldTraffic {
   const key=edge.id+':'+c.wid+':'+c.len+':'+(c.laneShift||0),revision=this.session.roads.graph.revision,cached=this.pathCache.get(key);if(cached?.edge===edge&&cached.revision===revision&&(cached.paths.length||cached.until>this.t))return cached.paths;
   if(this.pathCache.size>=2048)this.pathCache.delete(this.pathCache.keys().next().value);
   const entry=edgeLength(edge)-Math.min(8,edgeLength(edge)*.4),a=this.candidate(edge,entry,c);if(!a){this.pathCache.set(key,{edge,revision,paths:[],until:this.t+1});return [];}
-  const paths=[];
+  const paths=[],incoming=this.laneCache.get(edge.id+':'+c.wid),currentLane=Math.max(0,Math.round(-(c.laneShift||0)/(incoming?.laneWidth||1)));
   for(const next of trafficSuccessors(this.session.roads.graph,edge,this.closures)){
-   const exit=Math.min(8,edgeLength(next)*.4),b=this.candidate(next,exit,{...c,laneShift:0});if(!b)continue;
+   // Lane counts are directional. Unknown tags expose only the conservative
+   // default lane; never invent an opposing or undeclared continuation.
+   if(this.laneOffset(next,c)==null)continue;const lane=this.laneCache.get(next.id+':'+c.wid),preferred=Math.min(currentLane,lane.lanes-1);
+   const choices=Array.from({length:lane.lanes},(_,i)=>i).sort((a,b)=>Math.abs(a-preferred)-Math.abs(b-preferred));
+   for(const index of choices){
+   const exitShift=-index*lane.laneWidth,exit=Math.min(8,edgeLength(next)*.4),b=this.candidate(next,exit,{...c,laneShift:exitShift});if(!b)continue;
    const reach=Math.max(2,Math.hypot(b.x-a.x,b.z-a.z)*.5),A={x:a.x-Math.sin(a.yaw)*reach,z:a.z-Math.cos(a.yaw)*reach},B={x:b.x+Math.sin(b.yaw)*reach,z:b.z+Math.cos(b.yaw)*reach},points=[];let length=0,valid=true;
    for(let i=0;i<=20;i++){const t=i/20,u=1-t,x=u*u*u*a.x+3*u*u*t*A.x+3*u*t*t*B.x+t*t*t*b.x,z=u*u*u*a.z+3*u*u*t*A.z+3*u*t*t*B.z+t*t*t*b.z,dx=3*u*u*(A.x-a.x)+6*u*t*(B.x-A.x)+3*t*t*(b.x-B.x),dz=3*u*u*(A.z-a.z)+6*u*t*(B.z-A.z)+3*t*t*(b.z-B.z),p={...a,x,z,y:a.y+(b.y-a.y)*t,yaw:Math.atan2(-dx,-dz),edgeId:i<10?edge.id:next.id,layer:i<10?a.layer:b.layer};
     const contact=this.turnContact(p,edge,next);if(!contact){valid=false;break;}Object.assign(p,contact);
     if(!this.session.safePose(p,{halfWidth:c.wid/2,halfLength:c.len/2})||this.closures?.safe(p,{halfWidth:c.wid/2,halfLength:c.len/2})===false){valid=false;break;}
     if(i)length+=Math.hypot(x-points.at(-1).x,z-points.at(-1).z);points.push({...p,s:length});
    }
-   if(valid&&length>.1)paths.push({from:edge.id,via:edge.to,next:next.id,entry,exit,points,length,progress:0});
+   // Runtime follows these line segments, not the ideal cubic. Check their
+   // intervening footprints too, retaining the small knot array in the cache.
+   if(valid)for(let i=1;i<points.length&&valid;i++){const start=points[i-1].s,span=points[i].s-start,steps=Math.ceil(span/.2);for(let j=1;j<steps;j++){const p=this.turnContact(turnPoint({points},start+span*j/steps),edge,next);if(!p||!this.session.safePose(p,{halfWidth:c.wid/2,halfLength:c.len/2})||this.closures?.safe(p,{halfWidth:c.wid/2,halfLength:c.len/2})===false){valid=false;break;}}}
+   if(valid&&length>.1){paths.push({from:edge.id,via:edge.to,next:next.id,entry,exit,exitShift,points,length,progress:0});break;}
+   }
   }
   this.pathCache.set(key,{edge,revision,paths,until:this.t+1});return paths;
  }
@@ -89,7 +98,7 @@ export class WorldTraffic {
   if(clear&&!this.candidate(edge,end,c))clear=false;
   if(this.laneCache.size>=4096)this.laneCache.delete(this.laneCache.keys().next().value);this.laneCache.set(key,{edge,revision,clear,until:this.t+1});return clear;
  }
- throughPaths(edge,c){const joined={...c,laneShift:0};return this.turnPaths(edge,c).filter(p=>{const e=this.session.roads.graph.edges.get(p.next)?.value;return e&&this.laneClear(e,joined)&&this.turnPaths(e,joined).length;});}
+ throughPaths(edge,c){return this.turnPaths(edge,c).filter(p=>{const e=this.session.roads.graph.edges.get(p.next)?.value,joined={...c,laneShift:p.exitShift||0};return e&&this.laneClear(e,joined)&&this.turnPaths(e,joined).length;});}
  advanceLane(c,edge,travel,player){
   let turn=c.turn,offset=c.offset+travel;
   const entry=edgeLength(edge)-Math.min(8,edgeLength(edge)*.4);
@@ -103,7 +112,7 @@ export class WorldTraffic {
   if(!turn)return {p:this.candidate(edge,offset,c),offset,turn:null};
   if(!this.session.roads.graph.edges.has(turn.next))return null;
   const progress=turn.progress+travel;
-  if(progress>=turn.length){const next=this.session.roads.graph.edges.get(turn.next).value;offset=Math.min(edgeLength(next),turn.exit+progress-turn.length);return {p:this.candidate(next,offset,{...c,laneShift:0}),offset,turn:null,laneShift:0};}
+  if(progress>=turn.length){const next=this.session.roads.graph.edges.get(turn.next).value;offset=Math.min(edgeLength(next),turn.exit+progress-turn.length);return {p:this.candidate(next,offset,{...c,laneShift:turn.exitShift||0}),offset,turn:null,laneShift:turn.exitShift||0};}
   const p=this.turnContact(turnPoint(turn,progress),edge,this.session.roads.graph.edges.get(turn.next).value);if(!p)return null;
   return {p,offset:turn.entry+progress,turn:{...turn,progress}};
  }
@@ -164,7 +173,7 @@ export class WorldTraffic {
    for(const other of [...actors,...this.cars.filter(q=>q.active&&q!==c).map(q=>q.vehicle)]){if(Math.abs(other.y-c.vehicle.y)>2.5)continue;const dx=other.x-c.vehicle.x,dz=other.z-c.vehicle.z,along=dx*f.tx+dz*f.tz,across=Math.abs(dx*f.rx+dz*f.rz);if(along>0&&along<nearest&&across<(other.halfW||1)+c.wid/2+.4){nearest=along;gap=Math.max(.1,along-c.len/2-(other.halfL||2.5));leaderV=Math.max(0,(other.vLong||0)*Math.cos(other.yaw-f.yaw));}}
    const acceleration=target<.1?-4:this.pool.idm(c,c.v,Math.max(.1,target),gap,leaderV);c.v=Math.max(0,c.v+clamp(acceleration,-5,2)*dt);
    const travel=Math.min(c.v*dt,Math.max(0,gap-.35));c.v=travel/dt;const next=this.advanceLane(c,edge,travel,player),p=next?.p;
-   if(!p){this.stopBlocked(c);continue;}if(this.poseBlocked(c,p,[...actors,...this.cars.filter(q=>q.active&&q!==c).map(q=>q.vehicle)])){this.stopBlocked(c);continue;}c.offset=next.offset;c.turn=next.turn;if(next.laneShift===0){c.laneShift=0;c.bypassTarget=null;}c.point=p;
+   if(!p){this.stopBlocked(c);continue;}if(this.poseBlocked(c,p,[...actors,...this.cars.filter(q=>q.active&&q!==c).map(q=>q.vehicle)])){this.stopBlocked(c);continue;}c.offset=next.offset;c.turn=next.turn;if(next.laneShift!=null){c.laneShift=next.laneShift;c.bypassTarget=null;}c.point=p;
    this.placeTraffic(c,p);
   }
   this.updatePolice(dt,player);

@@ -86,6 +86,35 @@ test('transition identity never grants an unconnected or neighboring road layer'
  assert.equal(w.traffic.turnPaths(w.incoming,c).length,0,'matching layer alone cannot authorize an unrelated deck owner');
 });
 
+test('a legal same-direction lane survives turn lookahead, movement and retreat with real road safety',()=>{
+ for(const reverse of [false,true]){
+  const w=transitionWorld({reverse}),{traffic:t,incoming:a,outgoing:b}=w,c=t.cars[0];
+  for(const e of [a,b,w.after])e.lanes=2;
+  w.roads.width=()=>({left:3.2,right:3.2,width:6.4});
+  const contact=w.stream.contact;
+  // A blocked right-hand exit does not block the supported left-hand lane.
+  w.stream.contact=(x,z,o)=>{const station=reverse?300-z:z;return station>100&&(reverse?x>0:x<0)?null:contact(x,z,o);};
+  c.laneShift=-3.2;const paths=t.throughPaths(a,c);assert.equal(paths.length,1,JSON.stringify({reverse,turn:t.turnPaths(a,c).map(p=>({next:p.next,shift:p.exitShift})),next:t.turnPaths(b,c).length,clear:t.laneClear(b,c),candidate:t.candidate(a,92,c)}));const turn=paths[0];
+  assert.equal(turn.exitShift,-3.2,'prefer the current declared directional lane');
+  for(let i=0;i<=1000;i++){
+   const progress=turn.length*i/1000,n=t.advanceLane({...c,turn:{...turn,progress:0},offset:turn.entry},a,progress);
+   assert.ok(n?.p);assert.ok(w.session.safePose(n.p,{halfWidth:c.wid/2,halfLength:c.len/2}));
+   if(i===1000)assert.equal(n.laneShift,-3.2,'edge exit preserves the chosen lane');
+  }
+  const point=turn.points[15];Object.assign(c,{active:true,turn:{...turn,progress:point.s},offset:turn.entry+point.s,point,vehicle:{...point,halfL:c.len/2,halfW:c.wid/2},stoppedT:7,v:0});
+  for(let i=0;i<1000&&(c.turn||c.yielding);i++)t.yieldBack(c,a,.05,[]);
+  assert.equal(c.turn,null);assert.equal(c.yielding,null);assert.equal(c.laneShift,-3.2,'retreat returns to the original lane');
+  // An unknown tag cannot authorize another lane even on wide asphalt.
+  b.lanes=0;w.roads.graph.revision++;assert.equal(t.turnPaths(a,c).length,0);
+ }
+});
+
+test('turn admission rejects an unsupported footprint between its cubic knots',()=>{
+ const w=transitionWorld(),contact=w.stream.contact;
+ w.stream.contact=(x,z,o)=>z>99.75&&z<99.95?null:contact(x,z,o);
+ assert.equal(w.traffic.turnPaths(w.incoming,w.traffic.cars[0]).length,0,'the actual interpolated runtime path must be supported between stored knots');
+});
+
 test('random graph choices never select the immediate reverse edge',()=>{
  const e={id:'a',from:'n0',to:'n1',layer:0,points:[[0,0,0],[0,0,100]],flags:0},reverse={...e,id:'reverse',from:'n1',to:'n0',points:[...e.points].reverse()},next={...e,id:'next',from:'n1',to:'n2',points:[[0,0,100],[30,0,130]]},w=ribbonWorld([e,reverse,next]);
  assert.deepEqual(trafficSuccessors(w.roads.graph,e).map(e=>e.id),['next']);
