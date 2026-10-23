@@ -83,8 +83,19 @@ export function installCarSurface(car) {
     } else if (total > old) recordScuff(zone, total, hit?.localPoint);
     return result;
   };
-  const snapshot = car.setDamageSnapshot;
-  car.setDamageSnapshot = function(...args) { size.w = 0; return snapshot?.apply(this, args); };
+  const snapshot = car.setDamageSnapshot, snapshotLevels = new Float64Array(4);
+  car.setDamageSnapshot = function(...args) {
+    size.w = 0;
+    for (let i = 0; i < 4; i++) snapshotLevels[i] = bounded(this.damage?.[ZONES[i]]);
+    const result = snapshot?.apply(this, args);
+    let repaired = false, total = 0;
+    for (let i = 0; i < 4; i++) {
+      const value = bounded(this.damage?.[ZONES[i]]); total += value;
+      if (value < snapshotLevels[i]) { repaired = true; scuffs[i].w = Math.min(scuffs[i].w, value * 1.4); }
+    }
+    if (repaired && total === 0) clear();
+    return result;
+  };
   car.updateSurface = (dt, vehicle, detail = true, online = false) => {
     // reset() replaces the four contact records even for an undamaged but dirty car.
     if (surface.contactEpoch !== vehicle.corners) { clear(); surface.contactEpoch = vehicle.corners; surface.impactSerial = null; }

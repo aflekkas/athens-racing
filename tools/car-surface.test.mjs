@@ -79,3 +79,21 @@ test('snapshot-only free-roam rendering consumes each real local impact and clea
   car.updateSurface(0,v,true,false);assert.deepEqual(car.surface.scuffs[2].toArray(),contact,'same serial cannot relocate the scuff');
   v.reset(0,0);car.setDamageSnapshot(v.damage);car.updateSurface(0,v,true,false);assert.ok(car.surface.scuffs.every(p=>p.w===0));car.disposeDamage();
 });
+
+test('absolute repair snapshots clear wear without washing undamaged dirt on each render', () => {
+  const {car,v}=fixture();car.updateSurface(.1,v);
+  const dirt=car.surface.dirt.toArray();car.setDamageSnapshot(v.damage);car.updateSurface(0,v);
+  assert.deepEqual(car.surface.dirt.toArray(),dirt);
+  v.addDamage('left',8,hit);car.setDamageSnapshot(v.damage);car.updateSurface(0,v);
+  assert.ok(car.surface.scuffs[2].w>0);
+  v.damage.left=0;car.setDamageSnapshot(v.damage);car.updateSurface(0,v);
+  assert.ok(car.surface.scuffs.every(p=>p.w===0));assert.deepEqual(car.surface.dirt.toArray(),[0,0,0,0]);car.disposeDamage();
+});
+
+test('mixed snapshots trim only repaired zones even when total damage increases', () => {
+  const {car,v}=fixture();car.updateSurface(.1,v);car.setDamage('left',.3,hit);car.setDamage('rear',.2,{localPoint:{x:0,y:.55,z:2.2}});
+  const dirt=car.surface.dirt.toArray(),rear=car.surface.scuffs[1].toArray();
+  car.setDamageSnapshot({left:.1,rear:.2,right:.6});
+  assert.ok(Math.abs(car.surface.scuffs[2].w-.14)<1e-12);assert.deepEqual(car.surface.scuffs[1].toArray(),rear);
+  assert.deepEqual(car.surface.dirt.toArray(),dirt);assert.equal(car.surface.scuffs[3].w,0);car.disposeDamage();
+});
