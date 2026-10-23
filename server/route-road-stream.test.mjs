@@ -50,3 +50,56 @@ test('streamed recovery bounds concurrent unique fetches and releases its in-fli
   const preparing = authority.ensure(x.pose); await assert.rejects(authority.ensure({ ...x.pose, x: 5200 }), /busy/); assert.equal(authority.stats().pending, 1);
   release(); await preparing; assert.equal(authority.stats().pending, 0); assert.equal(authority.readyFor(x.pose), true);
 });
+
+test('leased safety snapshots survive eviction, serialize parsing and release all capacity', async () => {
+  const x = await setup({ maxEntries: 1 }), f = { halfWidth: 1, halfLength: 2 };
+  const [a, b] = await Promise.all([x.authority.prepare(x.pose, f), x.authority.prepare(x.pose, f)]);
+  assert.equal(a.candidates.length, 1); assert.equal(b.candidates.length, 1); assert.equal(x.authority.stats().peakParsing, 1);
+  assert.equal(x.authority.readyFor(x.pose), false); assert.equal(x.authority.stats().leases, 2);
+  await assert.rejects(x.authority.prepare(x.pose, f), /busy/);
+  a.release(); a.release(); b.release(); assert.equal(x.authority.stats().leases, 0);
+  const c = await x.authority.prepare(x.pose, f); c.release();
+  const limited = await setup();
+  const authority = createStreamedRoadAuthority(limited.manifest, async url => structuredClone(limited.bodies.get(url)), { maxContextBytes: 256 });
+  await assert.rejects(authority.prepare(limited.pose, f), /candidate memory/); assert.equal(authority.stats().leases, 0);
+  limited.bodies.delete(limited.manifest.cells['1,0'].url);
+  await assert.rejects(limited.authority.prepare(limited.pose, f)); assert.equal(limited.authority.stats().leases, 0);
+});
+
+test('nine near-2MiB cells retain the complete safety set under a constrained heap', async () => {
+  if (!process.env.ATHENS_RECOVERY_MEMORY_CHILD) {
+    const { spawnSync } = await import('node:child_process');
+    const env = { ...process.env, ATHENS_RECOVERY_MEMORY_CHILD: '1' }; delete env.NODE_TEST_CONTEXT;
+    const child = spawnSync(process.execPath, ['--max-old-space-size=24', '--test', '--test-name-pattern=nine near-2MiB', import.meta.filename], { encoding: 'utf8', env, timeout: 30000 });
+    assert.equal(child.status, 0, child.stdout + child.stderr); assert.match(child.stdout, /recoveryMemoryProof/); console.log(child.stdout.trim()); return;
+  }
+  const { canonicalJSON } = await import('../src/route-definition.js'), cells = {}, descriptors = new Map();
+  // An emitted shard may carry long source metadata. It must not remain in the
+  // decoded cache after validation. All nine candidates are within the query.
+  const make = key => ({ schemaVersion: 1, worldId: 'athens', projectionId: 'athens-v1', worldSetRevision: revision, sourceHashes: [[key, source]], edges: [{ id: key, layer: 0, flags: 1, surface: 'road', points: [[500, 0, 400], [500, 0, 600]], sourceMetadata: 'x'.repeat(1940000) }], anchors: [{ edgeId: key, offsetM: 100, x: 500, y: 0, z: 500, yaw: -Math.PI, layer: 0, surfaceId: 'road', leftM: 4, rightM: 4, halfWidth: 1.1, halfLength: 6 }] });
+  for (let x = -1; x <= 1; x++) for (let z = -1; z <= 1; z++) {
+    const key = `${x},${z}`, body = make(key), hash = await sha256(body), url = `/world/recovery/${key}.${hash}.json`;
+    cells[key] = { sourceHash: source, hash, url }; descriptors.set(url, key);
+  }
+  const manifest = { schemaVersion: 1, projectionId: 'athens-v1', worldId: 'athens', worldSetRevision: revision, cells, footprints: [{ halfWidth: 1.1, halfLength: 6 }] };
+  await validateRecoveryManifest(manifest, { expectedHash: await sha256(manifest), worldSetRevision: revision });
+  let calls = 0;
+  const authority = createStreamedRoadAuthority(manifest, async url => { calls++; return canonicalJSON(make(descriptors.get(url))); }, { maxEntries: 3 });
+  const snapshot = await authority.prepare({ x: 500, y: 0, z: 500 }, { halfWidth: 1, halfLength: 2 });
+  assert.equal(calls, 9); assert.equal(snapshot.candidates.length, 9); assert.equal(snapshot.edges.length, 9);
+  assert.equal(authority.readyFor({ x: 500, y: 0, z: 500 }), false);
+  assert.equal(authority.stats().entries, 3); assert.equal(authority.stats().peakParsing, 1);
+  assert.ok(authority.stats().bytes <= 12 * 1024 * 1024); assert.ok(authority.stats().decodedBytes < 100000);
+  snapshot.release(); assert.equal(authority.stats().leases, 0);
+  console.log(JSON.stringify({ recoveryMemoryProof: authority.stats(), maxRSSKiB: process.resourceUsage().maxRSS, heapUsed: process.memoryUsage().heapUsed }));
+});
+
+test('dense JSON expansion and decoded cache budgets reject before retaining geometry', async () => {
+  const x = await setup();
+  const dense = createStreamedRoadAuthority(x.manifest, async () => '[' + '0,'.repeat(110000) + '0]');
+  await assert.rejects(dense.prepare(x.pose, { halfWidth: 1, halfLength: 2 }), /decoded memory/);
+  assert.equal(dense.stats().entries, 0); assert.equal(dense.stats().leases, 0);
+  const tiny = createStreamedRoadAuthority(x.manifest, async url => structuredClone(x.bodies.get(url)), { maxDecodedBytes: 256 });
+  await assert.rejects(tiny.prepare(x.pose, { halfWidth: 1, halfLength: 2 }), /cache budget/);
+  assert.equal(tiny.stats().decodedBytes, 0); assert.equal(tiny.stats().pending, 0); assert.equal(tiny.stats().leases, 0);
+});

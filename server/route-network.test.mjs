@@ -105,10 +105,10 @@ test('asynchronous recovery preflight never fetches for spoofed tuples and reche
   x.advance(1100); x.map.prepareRecovery = async () => { x.lobby.raceId = 'new-race'; return true; };
   assert.equal(await x.core.prepareMessage(x.a, JSON.stringify(recover)), false); assert.equal(x.a.messages.at(-1).type, 'recover-denied');
 });
-for (const drift of ['position', 'generation', 'identity']) test(`recovery preflight rejects ${drift} changing while authoritative cells load`, async t => {
-  const x = await setup(t); x.ready(); x.advance(); x.send(x.a, x.packet({ type: 'state', state: x.pose(-8) })); const recover = x.packet({ type: 'recover', motionEpoch: 1 });
-  x.map.prepareRecovery = async driver => { if (drift === 'position') driver.state = { ...driver.state, x: driver.state.x + 1 }; if (drift === 'generation') x.lobby.generation++; if (drift === 'identity') x.lobby.routeIdentity = { ...x.lobby.routeIdentity, onlineGridHash: 'f'.repeat(64) }; return true; };
-  assert.equal(await x.core.prepareMessage(x.a, JSON.stringify(recover)), false); assert.equal(x.a.messages.at(-1).type, 'recover-denied'); assert.equal(x.core.clientData(x.a).recovery, null);
+for (const drift of ['position', 'generation', 'identity', 'disconnect']) test(`recovery preflight rejects ${drift} changing while authoritative cells load`, async t => {
+  const x = await setup(t); x.ready(); x.advance(); x.send(x.a, x.packet({ type: 'state', state: x.pose(-8) })); const recover = x.packet({ type: 'recover', motionEpoch: 1 }); let releases = 0; const driver = x.core.clientData(x.a); x.map.releaseRecovery = () => releases++;
+  x.map.prepareRecovery = async driver => { if (drift === 'position') driver.state = { ...driver.state, x: driver.state.x + 1 }; if (drift === 'generation') x.lobby.generation++; if (drift === 'disconnect') x.core.disconnect(x.a); if (drift === 'identity') x.lobby.routeIdentity = { ...x.lobby.routeIdentity, onlineGridHash: 'f'.repeat(64) }; return true; };
+  assert.equal(await x.core.prepareMessage(x.a, JSON.stringify(recover)), false); assert.equal(x.a.messages.at(-1).type, 'recover-denied'); assert.equal(driver.recovery, null); assert.equal(releases, 1);
 });
 
 test('authenticated world free roam accepts distant roads without course stations or records and still rejects teleports', async t => {
@@ -124,3 +124,14 @@ test('state batches count real wire packets once while the eighty-message guard 
  for(let i=0;i<80;i++)x.send(x.a,packet);assert.equal(x.a.readyState,1);assert.equal(x.core.clientData(x.a).messages,80);
  x.send(x.a,packet);assert.equal(x.a.readyState,3);assert.equal(x.core.clientData(x.a).messages,81);
 });
+
+ test('recovery snapshots release after every synchronous handler outcome', async t => {
+  const x = await setup(t); x.ready(); x.advance(); x.send(x.a, x.packet({ type: 'state', state: x.pose(-8) }));
+  let held = false, releases = 0; x.map.prepareRecovery = async () => { held = true; return true; };
+  x.map.releaseRecovery = () => { if (held) { held = false; releases++; } };
+  const packet = x.packet({ type: 'recover', motionEpoch: 1 });
+  assert.equal(await x.core.prepareMessage(x.a, JSON.stringify(packet)), true); assert.equal(held, true);
+  x.send(x.a, packet); assert.equal(held, false); assert.equal(releases, 1);
+  x.advance(1100); assert.equal(await x.core.prepareMessage(x.a, JSON.stringify({ ...packet, motionEpoch: 2 })), true);
+  x.send(x.a, { ...packet, motionEpoch: 2, mapId: 'spoof' }); assert.equal(held, false); assert.equal(releases, 2);
+ });

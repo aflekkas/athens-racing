@@ -665,9 +665,9 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
     const poseKey = () => JSON.stringify(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'layer', 'surfaceId', 'edgeId', 'motionEpoch'].map(k => driver.state?.[k]));
     const acceptedPose = poseKey();
     try {
-      if (!await map.prepareRecovery(driver) || driver.ws !== ws || driver.lobby !== lobby || lobby.raceId !== message.raceId || lobby.generation !== generation || poseKey() !== acceptedPose || !routePacketMatches(map, message) || !sameRouteIdentity(lobby.routeIdentity, map.routeIdentity)) { deny('Recovery position changed. Try again.'); return false; }
+      if (!await map.prepareRecovery(driver) || !driver.connected || ws.readyState !== 1 || driver.ws !== ws || driver.lobby !== lobby || lobby.raceId !== message.raceId || lobby.generation !== generation || poseKey() !== acceptedPose || !routePacketMatches(map, message) || !sameRouteIdentity(lobby.routeIdentity, map.routeIdentity)) { map.releaseRecovery?.(driver); deny('Recovery position changed. Try again.'); return false; }
       return true;
-    } catch (error) { deny(error.message || 'Recovery roads unavailable. Try again.'); return false; }
+    } catch (error) { map.releaseRecovery?.(driver); deny(error.message || 'Recovery roads unavailable. Try again.'); return false; }
   };
   const nextWake = () => {
     let at = Infinity;
@@ -679,5 +679,5 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
     }
     return Number.isFinite(at) ? at : null;
   };
-  return { connect, prepareMessage, message: (ws, bytes) => handlers.get(ws)?.message(bytes), disconnect: ws => { handlers.get(ws)?.close(); handlers.delete(ws); }, pong: ws => handlers.get(ws)?.pong(), tick, nextWake, exportState, restore, clientData: ws => { const c = [...clients].find(c => c.ws === ws); return c && clientData(c); }, discover, publicLobby, lobbies, clients, sessions, track };
+  return { connect, prepareMessage, message: (ws, bytes) => { const driver = [...clients].find(c => c.ws === ws), map = maps.get(driver?.lobby?.mapId); try { return handlers.get(ws)?.message(bytes); } finally { if (driver) map?.releaseRecovery?.(driver); } }, disconnect: ws => { handlers.get(ws)?.close(); handlers.delete(ws); }, pong: ws => handlers.get(ws)?.pong(), tick, nextWake, exportState, restore, clientData: ws => { const c = [...clients].find(c => c.ws === ws); return c && clientData(c); }, discover, publicLobby, lobbies, clients, sessions, track };
 }

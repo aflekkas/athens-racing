@@ -1,4 +1,4 @@
-import { canonicalJSON, sha256 } from '../src/route-definition.js';
+import { canonicalJSON } from '../src/route-definition.js';
 import { ROUTE_HASH } from '../src/route-network.js';
 import { routeSurfaceAllowed } from '../src/route-surface.js';
 import { projectEdge, edgeLength } from '../src/route-geometry.js';
@@ -9,7 +9,9 @@ const freeze = value => { if (value && typeof value === 'object' && !Object.isFr
 // The release builder signs exact emitted edges and individually contact/obstacle
 // proven anchors. The request never contributes geometry or an unproved pose.
 export async function validateRouteRoads(body, { expectedHash, worldSetRevision } = {}) {
-  if (!body || body.schemaVersion !== 1 || body.worldId !== 'athens' || body.projectionId !== 'athens-v1' || !ROUTE_HASH.test(expectedHash || '') || body.worldSetRevision !== worldSetRevision || !ROUTE_HASH.test(worldSetRevision || '') || new TextEncoder().encode(canonicalJSON(body)).length > 2 * 1024 * 1024 || await sha256(body) !== expectedHash) throw Error('Invalid authoritative recovery artifact');
+  const encoded = new TextEncoder().encode(canonicalJSON(body));
+  const digest = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', encoded)), v => v.toString(16).padStart(2, '0')).join('');
+  if (!body || body.schemaVersion !== 1 || body.worldId !== 'athens' || body.projectionId !== 'athens-v1' || !ROUTE_HASH.test(expectedHash || '') || body.worldSetRevision !== worldSetRevision || !ROUTE_HASH.test(worldSetRevision || '') || encoded.length > 2 * 1024 * 1024 || digest !== expectedHash) throw Error('Invalid authoritative recovery artifact');
   if (!Array.isArray(body.edges) || !body.edges.length || !Array.isArray(body.anchors) || !body.anchors.length || !Array.isArray(body.sourceHashes) || !body.sourceHashes.length || !body.sourceHashes.every(([cell, hash]) => /^-?\d+,-?\d+$/.test(cell) && ROUTE_HASH.test(hash))) throw Error('Incomplete authoritative recovery artifact');
   const edges = new Map();
   for (const edge of body.edges) {
