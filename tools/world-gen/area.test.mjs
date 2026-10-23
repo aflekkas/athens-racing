@@ -8,3 +8,8 @@ test('areas share one world, buildings clip to cells, the bridge guardrail is a 
 test('mapped rock bores preserve source/layer, reject unsupported crossings and clip walls at cell borders',{skip:!shapely&&'shapely is not installed'},()=>{const r=spawnSync(python,[fileURLToPath(new URL('./rock_bores_test.py',import.meta.url))],{encoding:'utf8'});assert.equal(r.status,0,r.stderr||r.stdout);});
 
 test('bounded official OSM sources retain node order, close restrictions and reject incomplete roads',()=>{const r=spawnSync(python,[fileURLToPath(new URL('./fetch_osm_area_test.py',import.meta.url))],{encoding:'utf8'});assert.equal(r.status,0,r.error?.message||r.stderr||r.stdout);});
+
+
+test('bridge posts retain whole-source cadence across noding and cell boundaries',{skip:!shapely&&'shapely is not installed'},()=>{
+  const r=spawnSync(python,[fileURLToPath(new URL('./bridge_context_test.py',import.meta.url))],{encoding:'utf8'});assert.equal(r.status,0,r.error?.message||r.stderr||r.stdout);
+});

@@ -98,12 +98,63 @@ def _prism(ps,ix,a,b,ya,yb,w,lo,hi,ends=False):
   ix.extend([v[0],v[1],v[2],v[0],v[2],v[3]])
 
 
+def bridge_post_stations(platform,cell):
+ """Four-metre stations on whole source rings, with one half-open cell owner.
+
+ Outline noding and tile clipping must not reset the post cadence. Canonical
+ ring direction/start also makes GEOS ring rotation and reversal immaterial.
+ """
+ from street_details import lines
+ ox,oz=(v*512 for v in cell)
+ for line in lines(platform.boundary):
+  points=list(line.coords)[:-1]
+  if len(points)<3:continue
+  start=min(range(len(points)),key=lambda i:points[i])
+  points=points[start:]+points[:start]
+  if points[-1]<points[1]:points=[points[0]]+list(reversed(points[1:]))
+  points.append(points[0]);station=0.
+  for a,b in zip(points,points[1:]):
+   length=math.dist(a,b)
+   if length<1e-9:continue
+   if max(a[0],b[0])>=ox and min(a[0],b[0])<=ox+512 and max(a[1],b[1])>=oz and min(a[1],b[1])<=oz+512:
+    at=math.ceil((station-1e-8)/4)*4.
+    while at<station+length-1e-8:
+     f=max(0.,min(1.,(at-station)/length));x=a[0]+(b[0]-a[0])*f;z=a[1]+(b[1]-a[1])*f
+     for border in (ox,ox+512):
+      if abs(x-border)<1e-8:x=float(border)
+     for border in (oz,oz+512):
+      if abs(z-border)<1e-8:z=float(border)
+     if ox<=x<ox+512 and oz<=z<oz+512:yield x,z,(b[0]-a[0])/length,(b[1]-a[1])/length
+     at+=4.
+   station+=length
+
+
+def bridge_post_mesh(platform,cell,rails):
+ """Posts follow the source outline, not every triangulation node or clipped
+ segment start. Interpolate their height from the unchanged collision rail;
+ keep even a post at a rail end entirely inside that solid swept volume.
+ """
+ ox,oz=(v*512 for v in cell);gp=[];gi=[]
+ for x,z,_,_ in bridge_post_stations(platform,cell):
+  x-=ox;z-=oz
+  for r in rails:
+   dx,dz=r[3]-r[0],r[5]-r[2];length=math.hypot(dx,dz)
+   f=((x-r[0])*dx+(z-r[2])*dz)/(length*length)
+   if not -1e-8<=f<=1+1e-8 or abs((x-r[0])*dz-(z-r[2])*dx)/length>1e-7:continue
+   at=max(0.,min(length,f*length));lo=max(0.,at-.06);hi=min(length,at+.06)
+   a=(r[0]+dx*lo/length,r[2]+dz*lo/length);b=(r[0]+dx*hi/length,r[2]+dz*hi/length)
+   ya=r[1]+(r[4]-r[1])*lo/length;yb=r[1]+(r[4]-r[1])*hi/length
+   _prism(gp,gi,a,b,ya,yb,.06,.1,.65,True)
+   break
+ return gp,gi
+
+
 def bridge_edges(platform,cell,deck,ground):
  """A half-metre slab edge with a kerb lip, and a low post-and-beam guardrail on it (posts every 4 m).
 
  Returns (fascia, guardrail, rails): two (positions, indices) meshes and the collision rail list. The collision rail is
  unchanged: a solid 0.3 m wide, 0.65 m high swept volume along the deck edge, so what a car hits is at least what is drawn."""
- from shapely.geometry import box,LineString
+ from shapely.geometry import box
  from street_details import lines
  ox,oz=(v*512 for v in cell);bounds=box(ox,oz,ox+512,oz+512);fp=[];fi=[];gp=[];gi=[];rails=[]
  # On the deck edge itself: an inward offset retreats at acute corners, leaving the corner more than the gate's 0.22 m from any rail.
@@ -117,7 +168,7 @@ def bridge_edges(platform,cell,deck,ground):
     p,q=(x-ox,z-oz),(xx-ox,zz-oz)
     _prism(fp,fi,p,q,y,yy,.15,-.5,.1)        # slab edge, 10 cm lip above the deck surface
     _prism(gp,gi,p,q,y,yy,.04,.37,.65)       # beam, 28 cm tall, top at the collision rail's height
-    ex,ez=(q[0]-p[0])/max(math.dist(p,q),1e-6)*.06,(q[1]-p[1])/max(math.dist(p,q),1e-6)*.06
-    _prism(gp,gi,(p[0]-ex,p[1]-ez),(p[0]+ex,p[1]+ez),y,y,.06,.1,.65,True)  # post at the segment start
     rails.append([x-ox,y,z-oz,xx-ox,yy,zz-oz,.65])
+ posts,post_indices=bridge_post_mesh(platform,cell,rails)
+ offset=len(gp)//3;gp.extend(posts);gi.extend(i+offset for i in post_indices)
  return (fp,fi),(gp,gi),rails
