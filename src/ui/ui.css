@@ -321,6 +321,7 @@ body[data-input=keyboard] .tabs__hint.on-pad, body:not([data-input]) .tabs__hint
 
 /* ---------------------------------------------------------------- modal / prompt: a glass sheet */
 #ui-layer { position: fixed; inset: 0; z-index: 150; pointer-events: none; }
+#ui-layer:empty { display: none; }
 .modal-scrim { position: absolute; inset: 0; display: grid; place-items: center; padding: var(--s-4); pointer-events: auto; }
 .modal { width: min(30rem, 100%); max-height: calc(100% - 2rem); overflow-y: auto; padding: var(--s-5); border-radius: var(--r-4);
   background: rgba(14, 19, 26, .97); border: 1px solid var(--ui-line-2);
