@@ -1,0 +1,457 @@
+{
+  "status": "failed",
+  "sourceRoot": "/home/dev/.cogenly/worktrees/athens-racing/t3-41c48689",
+  "sourceCommit": "91763ed223e19a92df5915ce4564478dcf3cf08c",
+  "hookInserted": false,
+  "sources": {
+    "src/main.js": "fddc0fb2bc295b4cddc00658f8dc522370ca4f42af8d90f0e35c5bf0f3d402bc",
+    "src/athens-world.js": "8cf262de3bf97e23fc461aa67e594ca9f0a81aaf89b5081854fe616a0ad3d690",
+    "src/cars.js": "8ef657c549c0695ef2d551b256c56971bfe048e67a13054b4ac0567c1ab23f71",
+    "src/car-surface.js": "ac552fe23935d44f866162302d76c78d306e81bdc174cd6e49394d4fbd051929"
+  },
+  "errors": [],
+  "runs": [
+    {
+      "quality": "low",
+      "capture": "Actual parent free roam; matched world render pose and camera; actual Vehicle/AthensGround driving, staged existing Ground._hit impulse; live world data via authenticated read-only proxy",
+      "clean": {
+        "perfClass": "low",
+        "drawingBuffer": [
+          1280,
+          800
+        ],
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "dirt": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "scuffs": [
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "enabled": 1,
+        "paintVersion": 2,
+        "shaderKey": "onBeforeCompile( /* shaderobject, renderer */ ) {}:car-surface-v1",
+        "carMaterials": 31,
+        "carGeometries": 125,
+        "carTextures": 8,
+        "programs": 53,
+        "surfacePrograms": 1,
+        "drawCalls": 1,
+        "memory": {
+          "geometries": 112,
+          "textures": 19
+        },
+        "uniformBytes": 160,
+        "shaderAddedBytes": 2013,
+        "damage": {
+          "front": 0,
+          "rear": 0,
+          "left": 0,
+          "right": 0
+        },
+        "resources": {
+          "jsBytes": 268435456,
+          "gpuBytes": 201326592,
+          "stream": {
+            "capBytes": 67108864,
+            "transientBytes": 67108864,
+            "concurrency": 2
+          }
+        }
+      },
+      "drive": {
+        "spot": {
+          "x": 3762.1591557042852,
+          "y": 189.17404756055316,
+          "z": -3525.019233950547,
+          "yaw": 0
+        },
+        "metres": 126.51132365559259,
+        "contacts": 61440,
+        "steps": 15360,
+        "reversals": 14,
+        "dirt": [
+          0.5506400806900088,
+          0.5506400806900088,
+          0.5506400806900088,
+          0.5506400806900088
+        ],
+        "surfaces": [
+          "dirt",
+          "dirt",
+          "dirt",
+          "dirt"
+        ],
+        "damage": {
+          "front": 0,
+          "rear": 0,
+          "left": 0,
+          "right": 0
+        },
+        "missingContacts": 0
+      },
+      "dirty": {
+        "perfClass": "low",
+        "drawingBuffer": [
+          1280,
+          800
+        ],
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "dirt": [
+          0.5506400806900088,
+          0.5506400806900088,
+          0.5506400806900088,
+          0.5506400806900088
+        ],
+        "scuffs": [
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "enabled": 1,
+        "paintVersion": 2,
+        "shaderKey": "onBeforeCompile( /* shaderobject, renderer */ ) {}:car-surface-v1",
+        "carMaterials": 31,
+        "carGeometries": 125,
+        "carTextures": 8,
+        "programs": 55,
+        "surfacePrograms": 1,
+        "drawCalls": 1,
+        "memory": {
+          "geometries": 324,
+          "textures": 22
+        },
+        "uniformBytes": 160,
+        "shaderAddedBytes": 2013,
+        "damage": {
+          "front": 0,
+          "rear": 0,
+          "left": 0,
+          "right": 0
+        },
+        "resources": {
+          "jsBytes": 268435456,
+          "gpuBytes": 201326592,
+          "stream": {
+            "capBytes": 67108864,
+            "transientBytes": 67108864,
+            "concurrency": 2
+          }
+        }
+      },
+      "impact": {
+        "before": {
+          "vLong": 0,
+          "vLat": -9,
+          "w": 0
+        },
+        "after": {
+          "vLong": -1.7574926213077737,
+          "vLat": -1.4391018669980102,
+          "w": 1.5509643853498738
+        },
+        "hit": {
+          "zone": "left",
+          "inc": 0.38444821731748724,
+          "ebs": 9,
+          "frontalEbs": 0,
+          "mechanical": 0.02697190426638918,
+          "kind": "wall",
+          "localPoint": {
+            "x": -0.9524999999999796,
+            "y": 0.45,
+            "z": -0.6999999999999809
+          },
+          "localNormal": {
+            "x": 0.9999999999999999,
+            "y": 0,
+            "z": 0
+          },
+          "serial": 1
+        }
+      },
+      "damaged": {
+        "perfClass": "low",
+        "drawingBuffer": [
+          1280,
+          800
+        ],
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "dirt": [
+          0.5506400806900088,
+          0.5506400806900088,
+          0.5506400806900088,
+          0.5506400806900088
+        ],
+        "scuffs": [
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            -0.9025,
+            0.45,
+            -0.6999999999999809,
+            0.5376
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "enabled": 1,
+        "paintVersion": 2,
+        "shaderKey": "onBeforeCompile( /* shaderobject, renderer */ ) {}:car-surface-v1",
+        "carMaterials": 31,
+        "carGeometries": 133,
+        "carTextures": 8,
+        "programs": 55,
+        "surfacePrograms": 1,
+        "drawCalls": 1,
+        "memory": {
+          "geometries": 370,
+          "textures": 22
+        },
+        "uniformBytes": 160,
+        "shaderAddedBytes": 2013,
+        "damage": {
+          "front": 0,
+          "rear": 0,
+          "left": 0.38444821731748724,
+          "right": 0
+        },
+        "resources": {
+          "jsBytes": 268435456,
+          "gpuBytes": 201326592,
+          "stream": {
+            "capBytes": 67108864,
+            "transientBytes": 67108864,
+            "concurrency": 2
+          }
+        }
+      },
+      "comparison": {
+        "hiddenChanges": 0,
+        "wearChanges": 10202,
+        "timing": [
+          {
+            "enabled": 0,
+            "samples": 2,
+            "ms": 10.599999994039536,
+            "drawCalls": 335,
+            "programs": 85
+          },
+          {
+            "enabled": 1,
+            "samples": 2,
+            "ms": 10.200000002980232,
+            "drawCalls": 335,
+            "programs": 85
+          }
+        ]
+      },
+      "repaired": {
+        "perfClass": "low",
+        "drawingBuffer": [
+          1280,
+          800
+        ],
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "dirt": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "scuffs": [
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "enabled": 1,
+        "paintVersion": 2,
+        "shaderKey": "onBeforeCompile( /* shaderobject, renderer */ ) {}:car-surface-v1",
+        "carMaterials": 31,
+        "carGeometries": 133,
+        "carTextures": 8,
+        "programs": 86,
+        "surfacePrograms": 2,
+        "drawCalls": 1,
+        "memory": {
+          "geometries": 370,
+          "textures": 22
+        },
+        "uniformBytes": 160,
+        "shaderAddedBytes": 2013,
+        "damage": {
+          "front": 0,
+          "rear": 0,
+          "left": 0,
+          "right": 0
+        },
+        "resources": {
+          "jsBytes": 268435456,
+          "gpuBytes": 201326592,
+          "stream": {
+            "capBytes": 67108864,
+            "transientBytes": 67108864,
+            "concurrency": 2
+          }
+        }
+      }
+    },
+    {
+      "quality": "high",
+      "capture": "Actual parent free roam; matched world render pose and camera; actual Vehicle/AthensGround driving, staged existing Ground._hit impulse; live world data via authenticated read-only proxy",
+      "clean": {
+        "perfClass": "high",
+        "drawingBuffer": [
+          1280,
+          800
+        ],
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "dirt": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "scuffs": [
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "enabled": 1,
+        "paintVersion": 2,
+        "shaderKey": "onBeforeCompile( /* shaderobject, renderer */ ) {}:car-surface-v1",
+        "carMaterials": 31,
+        "carGeometries": 125,
+        "carTextures": 8,
+        "programs": 53,
+        "surfacePrograms": 1,
+        "drawCalls": 1,
+        "memory": {
+          "geometries": 112,
+          "textures": 19
+        },
+        "uniformBytes": 160,
+        "shaderAddedBytes": 2013,
+        "damage": {
+          "front": 0,
+          "rear": 0,
+          "left": 0,
+          "right": 0
+        },
+        "resources": {
+          "jsBytes": 536870912,
+          "gpuBytes": 402653184,
+          "stream": {
+            "capBytes": 268435456,
+            "transientBytes": 201326592,
+            "concurrency": 2
+          }
+        }
+      }
+    }
+  ],
+  "deadlineExceeded": true,
+  "failure": "page.evaluate: Target page, context or browser has been closed\n    at /home/dev/.cogenly/worktrees/athens-racing/t3-d1bb19b7/tools/car-surface.browser.mjs:101:30"
+}
