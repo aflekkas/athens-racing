@@ -17,16 +17,16 @@ function turnPoint(turn,progress){
 /** A legal civilian successor may leave the selected race. No route-successor shortcut. */
 export function trafficSuccessors(graph,edge,closures){return [...(graph.outgoing.get(edge.to)||[])].map(id=>graph.edges.get(id)?.value).filter(e=>e&&e.to!==edge.from&&roadLayersConnect(edge,e)&&graph.legal(edge.id,e)&&!closures?.blocksEdge(e));}
 export class WorldTraffic {
- constructor(session,scene,route,{closures}={}){Object.assign(this,{session,scene,route,closures});this.pool=null;this.cars=[];this.widthCache=new Map();this.laneCache=new Map();this.pathCache=new Map();this.avoidEdges=new Map();this.sites=[];this.level=0;this.disabled=true;this.t=0;this.spawnT=0;this.hm=new HeatMachine();this.policeEnabled=false;this.wrecks=[];this.honks=[];this.sounds=[];}
+ constructor(session,scene,route,{closures,poolSize=24,policePoolSize=5}={}){Object.assign(this,{session,scene,route,closures,poolSize,policePoolSize});this.pool=null;this.cars=[];this.widthCache=new Map();this.laneCache=new Map();this.pathCache=new Map();this.avoidEdges=new Map();this.sites=[];this.level=0;this.disabled=true;this.t=0;this.spawnT=0;this.hm=new HeatMachine();this.policeEnabled=false;this.wrecks=[];this.honks=[];this.sounds=[];}
  configure(def,{deferFleet=false}={}){this.definition=def;this.level=clamp(def.traffic??0,0,2);this.disabled=this.level===0;this.policeEnabled=def.rules?.police===true;this.tuning=policeTuning(def.rules?.policeLevel,def.rules?.busted);this.hm=new HeatMachine(this.tuning);this.crossedRed=null;this.spawnT=0;this.widthCache.clear();this.laneCache.clear();this.pathCache.clear();this.avoidEdges.clear();
-  if(!deferFleet&&(this.level>0||this.policeEnabled)&&!this.pool){this.pool=new Traffic(this.scene,{closed:true},{},{poolSize:24,policePoolSize:5,roadVehiclesOnly:true});this.cars=this.pool.cars;}
+  if(!deferFleet&&(this.level>0||this.policeEnabled)&&!this.pool){this.pool=new Traffic(this.scene,{closed:true},{},{poolSize:this.poolSize,policePoolSize:this.policePoolSize,roadVehiclesOnly:true});this.cars=this.pool.cars;}
   for(const c of this.cars){if(c.police)c.cop||={};c.active=false;c.crashed=false;c.m.root.visible=false;c.point=null;c.vehicle=null;}
   Object.assign(pursuit,{enabled:this.policeEnabled,state:this.policeEnabled?'idle':'off',heat:0,level:0,bustMeter:0,evadeMeter:0,units:0});
  }
  async warmFleet(ready=()=>true){
   if(this.pool||!this.definition||!(this.level>0||this.policeEnabled))return;
   if(this.fleetWarming)return this.fleetWarming;
-  const pool=this.warmingPool=new Traffic(this.scene,{closed:true},{},{poolSize:24,policePoolSize:5,roadVehiclesOnly:true,deferBuild:true,buildProxies:false});
+  const pool=this.warmingPool=new Traffic(this.scene,{closed:true},{},{poolSize:this.poolSize,policePoolSize:this.policePoolSize,roadVehiclesOnly:true,deferBuild:true,buildProxies:false});
   this.fleetWarmMetrics={maxStepMs:0};this.fleetController=new AbortController();
   this.fleetWarming=prewarmFleet(pool.build,{ready,disposed:()=>this.disposed,signal:this.fleetController.signal,metrics:this.fleetWarmMetrics}).then(()=>{this.pool=pool;this.cars=pool.cars;this.configure(this.definition);}).catch(error=>{releaseFleet(pool);throw error;}).finally(()=>{this.warmingPool=null;this.fleetWarming=null;this.fleetController=null;});
   return this.fleetWarming;
