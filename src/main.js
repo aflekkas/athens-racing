@@ -941,15 +941,18 @@ function bestSetup(def = G.ev?.def, r = G.ev?.r, car = player?.spec.id) {
 }
 function rememberResult(res) {
   res.date ||= new Date().toISOString();
+  G.resultPhoto = null; G.resultPhotoPending = true;
+  // Online results belong to the server's online boards, never solo PB/event stores.
+  // Return before even reading a solo store: reads can migrate historical records.
+  if (multiplayer.active || res.source === 'online') { res.personalBest = null; return; }
   const setup = G.bestSetup || bestSetup();
   const eligible = (res.leaderboardValid ?? res.valid) && !Q.has('notraffic') && !G.bestSetupChanged && exactBestKey(setup) === exactBestKey(bestSetup());
   res.personalBest = recordPersonalBest(setup, { ...res, valid: eligible });
-  G.resultPhoto = null; G.resultPhotoPending = true;
 }
 function onlinePersonalResult() {
   const me = multiplayer.me;
   if (me?.finish == null || G.result?.raceId === multiplayer.lobby.raceId) return;
-  G.result = { raceId: multiplayer.lobby.raceId, time: me.finish, carName: player.spec.name, valid: !G.autodrive && !Q.has('s') && !me.dnf };
+  G.result = { source: 'online', raceId: multiplayer.lobby.raceId, time: me.finish, carName: player.spec.name, valid: !G.autodrive && !Q.has('s') && !me.dnf };
   rememberResult(G.result);
 }
 async function shareResult() {

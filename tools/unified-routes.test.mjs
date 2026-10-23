@@ -168,3 +168,22 @@ test('layered offline caches read unchanged cells without copying and fail close
  await fs.rm(resolve(derived,name));await fs.rm(resolve(original,name));assert.equal(await readEmittedCellBytes(entry,{cells:[derived,original]}),null);
  }finally{await fs.rm(directory,{recursive:true,force:true});}
 });
+
+
+test('online sprint and TT finishes never read or write solo PB/event/ghost stores', async () => {
+ const {readFile}=await import('node:fs/promises'),{runInNewContext}=await import('node:vm');
+ const main=await readFile(new URL('../src/main.js',import.meta.url),'utf8');
+ const code=main.slice(main.indexOf('function rememberResult(res)'),main.indexOf('async function shareResult()'));
+ for(const type of ['sprint','timetrial']) {
+  let writes=0,reads=0;
+  const G={ev:{def:{type}},result:null,autodrive:false},multiplayer={active:true,me:{finish:61.5,dnf:false},lobby:{raceId:'online-'+type}};
+  const ctx={G,multiplayer,player:{spec:{name:'MINI'}},Q:new URLSearchParams(),bestSetup(){reads++;throw Error('solo setup read');},recordPersonalBest(){writes++;throw Error('solo write');}};
+  runInNewContext(code+';onlinePersonalResult();onlinePersonalResult();',ctx);
+  assert.equal(reads,0);assert.equal(writes,0);assert.equal(G.result.source,'online');assert.equal(G.result.time,61.5);assert.equal(G.result.personalBest,null);assert.equal(G.result.valid,true);assert.equal(G.resultPhotoPending,true);
+  // Delayed result handling after leaving a lobby must still retain its source.
+  multiplayer.active=false;runInNewContext(code+';rememberResult(G.result);',ctx);assert.equal(reads,0);assert.equal(writes,0);
+ }
+ const G={bestSetup:{key:'solo'},bestSetupChanged:false},res={valid:true,time:62};let recorded=0;
+ runInNewContext(code+';rememberResult(res);',{G,res,multiplayer:{active:false},Q:new URLSearchParams(),bestSetup:()=>G.bestSetup,exactBestKey:s=>s.key,recordPersonalBest(s,r){recorded++;assert.equal(r.valid,true);return {newBest:true};}});
+ assert.equal(recorded,1);assert.equal(res.personalBest.newBest,true);
+});
