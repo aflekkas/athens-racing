@@ -830,6 +830,12 @@ body[data-ui] #mp-toggle { display: none !important; }
 .driving-controls { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .85rem; pointer-events: none; cursor: default; }
 .driving-controls > span { display: inline-flex; align-items: center; gap: .4rem; pointer-events: none; }
 .driving-controls b { font: 700 .7rem var(--f-cond); letter-spacing: .05em; color: #d2dbe5; }
+.driving-controls__keys { display: inline-flex; align-items: center; gap: 3px; }
+/* The race DRIVING CONTROLS notice: the same strip as key | action rows, so the narrow corner lane never runs keys and labels together. */
+.race-notice .driving-controls { display: grid; grid-template-columns: max-content minmax(0, 1fr); align-items: center; gap: 3px 10px; margin-top: 7px; }
+.race-notice .driving-controls > span { display: contents; }
+.race-notice .driving-controls .kbd { height: 18px; min-width: 18px; padding: 0 5px; font-size: 11px; }
+.race-notice .driving-controls b { font: 700 11px/1.2 var(--f-cond); letter-spacing: .08em; text-transform: uppercase; color: var(--c-text-2); overflow-wrap: anywhere; }
 
 /* Inline icon labels are shared by dropdown values, options and compact controls. */
 .icon-label { display: inline-flex; align-items: center; gap: .35em; }

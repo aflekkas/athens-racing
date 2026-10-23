@@ -1,4 +1,4 @@
-import { notifications, notificationText } from './notifications.js';
+import { notifications } from './notifications.js';
 // Binding-aware race-start strip and progressive tips. Dismissals/actions persist independently per tip.
 import { input } from '../input.js';
 import { bindingLabel } from '../input-labels.js';
@@ -13,11 +13,19 @@ if(!profiles.guest){try{profiles.guest=JSON.parse(localStorage.getItem('paraliak
 let profileId,saved={},schedule;
 const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(profiles));}catch{}};
 function profile(now){const id=driverName.get();if(id===profileId)return;profileId=id;const value=profiles[id];saved=value&&typeof value==='object'&&!Array.isArray(value)?value:{};profiles[id]=saved;schedule=new TipSchedule(saved);schedule.startRace(now);drivingHints.saved=saved;drivingHints.tipId=null;drivingHints.until=0;}
+// One row per control: its current binding(s) and what it does. Up/down shifting shares a row (keys in label order).
+function controlRows({ device='keyboard', manual=false }={}) {
+  const rows=[[['transmission'],'MANUAL / AUTO'],[['shiftUp','shiftDown'],manual?'SHIFT UP / DOWN':'PADDLE UP / DOWN'],[['handbrake'],'HANDBRAKE'],[['tractionControl'],'TC / ESC'],[['camera'],'POV / OUTSIDE'],[['cameraPosition'],'VIEW POSITION'],[['lookBack'],'LOOK BACK'],[['tow'],'TOW'],[['map'],'BIG MAP']];
+  return rows.map(([acts,label])=>({keys:acts.map(a=>bindingLabel(input.bindings,a,device)),label}));
+}
 export function controlsStrip({ device='keyboard', car, manual=false }={}) {
-  const labels=[['handbrake','HANDBRAKE'],['tractionControl','TC / ESC'],['camera','POV / OUTSIDE'],['cameraPosition','VIEW POSITION'],['lookBack','LOOK BACK'],['tow','TOW'],['map','BIG MAP']];
-  labels.unshift(['shiftUp',manual?'SHIFT UP':'PADDLE UP'],['shiftDown',manual?'SHIFT DOWN':'PADDLE DOWN']);
-  labels.unshift(['transmission','MANUAL / AUTO']);
-  return `<div class="driving-controls" aria-hidden="true">${labels.map(([act,label])=>`<span>${C.kbd(C.esc(bindingLabel(input.bindings,act,device)),device==='gamepad')}<b>${label}</b></span>`).join('')}${device==='keyboard'?'<span>'+C.kbd('RIGHT MOUSE')+'<b>HOLD TO LOOK</b></span>':''}</div>`;
+  const pad=device==='gamepad',row=(keys,label)=>`<span><span class="driving-controls__keys">${keys}</span><b>${label}</b></span>`;
+  // the mouse look row: Lucide's mouse in a key cap (a bare "RIGHT MOUSE" cap turned RIGHT into an arrow icon)
+  return `<div class="driving-controls" aria-hidden="true">${controlRows({device,manual}).map(({keys,label})=>row(keys.map(k=>C.kbd(C.esc(k),pad)).join(''),label)).join('')}${pad?'':row(C.kbd(C.icon('mouse')),'HOLD TO LOOK')}</div>`;
+}
+// The same list as one readable sentence: the race notice's screen-reader line (the strip itself is decorative).
+export function controlsText({ device='keyboard', manual=false }={}) {
+  return [...controlRows({device,manual}).map(({keys,label})=>`${keys.join(' / ')}: ${label}`),...(device==='gamepad'?[]:['MOUSE BUTTON: HOLD TO LOOK'])].join('. ')+'.';
 }
 export const drivingHints={
   saved,lastState:null,
@@ -29,7 +37,7 @@ export const drivingHints={
     const now=Date.now();profile(now);const racing=state.state==='race',visible=racing&&!state.blocked;
     if(racing&&!['race','pause','paused'].includes(this.lastState))schedule.startRace(now);this.lastState=state.state;
     if(!visible||!this.enabled||!schedule.available(now))return;
-    if(schedule.show('controls',now)){persist();notifications.post({id:'tip:controls',title:'DRIVING CONTROLS',text:notificationText(controlsStrip(state)),priority:5,ms:6000,staleAfter:8000,actions:[{label:'HIDE TIPS',run:()=>this.toggle()}]});return;}
+    if(schedule.show('controls',now)){persist();notifications.post({id:'tip:controls',title:'DRIVING CONTROLS',text:controlsText(state),body:controlsStrip(state),priority:5,ms:6000,staleAfter:8000,actions:[{label:'HIDE TIPS',run:()=>this.toggle()}]});return;}
     const key=a=>bindingLabel(input.bindings,a,state.device);
     const tips=[['manual',`${key('transmission')} switches between MANUAL and AUTO.`],...(state.manual?[['shifting',`MANUAL GEARS: ${key('shiftUp')} up / ${key('shiftDown')} down. Watch the rev bar.`]]:[]),['handbrake',`${key('handbrake')} is the handbrake. Release it to recover grip.`],['camera',`${key('camera')} toggles POV and outside.`],['cameraPosition',`${key('cameraPosition')} cycles the view position.`],['tow',`${key('tow')} returns you to the road.`],['lookBack',`Hold ${key('lookBack')} to look behind you.`],...(state.device==='keyboard'?[['mouseLook','Hold the left or right mouse button and drag to look around. Mouse free look is in Settings > Camera.']]:[])];
     const next=tips.find(([id])=>!saved[id]);if(!next||!schedule.show(next[0],now))return;persist();this.tipId=next[0];notifications.post({id:'tip:'+next[0],text:next[1],priority:5,ms:9000,staleAfter:10000,actions:[{label:'GOT IT',run:()=>this.seen(next[0])}]});

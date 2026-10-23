@@ -342,6 +342,11 @@ export class Menu {
       return;
     }
     if (scope === 'input') { controlsChange(this, key, value, el); return; }
+    if (scope === 'setup' && key === 'event') { // its own saved setup and records; the screen stays, so Back still leads to the map
+      const e = this.setupEvents().find((x) => x.id === value);
+      if (e) { this.data.def = e; this.data.eventId = e.id; this.data.trackTimes = null; this.data.showHistory = false; this.refresh(); }
+      return;
+    }
     if (scope === 'setup') {
       const id = this.setupKey(), s = loadSetup(id), fields = setupFields(this.setupDef(), { closed: this.isClosed() }), f = fields.find((x) => x.key === key);
       if (key === 'police') { // one row: OFF / RELAXED / NORMAL / TOUGH
@@ -446,12 +451,21 @@ export class Menu {
 
   // ---------------------------------------------------------------- race setup (event detail)
   setupDef() { if (this.data.mode === 'free') return window.__flow.freeRoamDef(); if (this.data.def) return this.data.def; return { ...(this.eventsHere()[0] || QUICK_RACE), mapId: this.h.ctx().mapId, quick: true, name: 'QUICK RACE' }; }
+  /** the loaded route's other full-route events (race / time trial) a Quick Race can switch between on Race Setup */
+  setupEvents(def = this.setupDef()) {
+    if (!def?.routeId || def.pilot) return [];
+    return (this.h.ctx().events || []).filter((e) => e.routeId === def.routeId && ['sprint', 'timetrial'].includes(e.type) && !e.reverse);
+  }
   setupKey() { const d = this.setupDef(); if(d.routeId)return d.id;return d.quick ? 'quick:' + (this.h.ctx().mapId || 'riviera') : d.id; }
   isClosed() { return !!this.h.ctx().route?.closed; }
   r_setup() {
     const def = this.setupDef(), closed = this.isClosed(), ctx = this.h.ctx(), saved = loadSetup(this.setupKey());
     const cur = resolveSetup(def, saved, { closed }), runDef = applySetup(def, saved, { closed }), r = resolve(runDef, ctx), custom = isCustom(def, saved, { closed });
-    const A = { 'data-scope': 'setup' }, rows = [];
+    const A = { 'data-scope': 'setup' }, rows = [], events = this.setupEvents(def);
+    // EVENT (race or time trial on this road) leads the options when the route offers more than one.
+    const eventName = (e) => (e.type === 'timetrial' ? 'TIME TRIAL' : 'RACE') + (events.filter((x) => x.type === e.type).length > 1 && e.laps ? ` · ${e.laps} ${e.laps === 1 ? 'LAP' : 'LAPS'}` : '');
+    const eventRow = events.length > 1 ? C.segmented({ key: 'event', label: 'EVENT', icon: def.type === 'timetrial' ? 'timer' : 'flag', value: def.baseId || def.id, attrs: A,
+      options: events.map((e) => [e.id, eventName(e), e.type === 'timetrial' ? 'timer' : 'flag']), note: def.type === 'timetrial' ? 'You, the road and the clock. No rivals.' : 'Race the AI rivals to the line.' }) : '';
     for (const f of setupFields(def, { closed })) {
       if (f.key === 'rivals') rows.push(C.stepper({ key: 'rivals', label: 'AI RIVALS', icon: 'users', value: cur.rivals, min: f.min, max: f.max, format: 'rivals', attrs: A,
         note: f.dflt === cur.rivals ? '' : `Default: ${f.dflt}`, noteCls: '' }));
@@ -472,7 +486,7 @@ export class Menu {
     const map = def.routeId ? { name: ctx.route.compiled.definition.name } : MAPS.find((m) => m.id === ctx.mapId) || MAPS[0];
     return C.stageInspector({ variant: 'setup', cls: 'scr--setup', kick: def.quick ? 'QUICK RACE' : `${TYPES[def.type].label} · ${esc(map.name)}`, title: def.objectiveMode || def.type === 'free' ? 'SESSION SETUP' : 'RACE SETUP',
       hints: [['updown', 'SELECT'], ['leftright', 'CHANGE'], ['confirm', 'OK'], ['back', 'BACK']],
-      stage: `${this.setupSummary(runDef, r, map)}${def.type === 'free' ? '' : renderSetupRecords(this, this.data, def.routeId ? { mapId: 'athens', routeId: def.routeId, eventId: def.baseId || def.id } : { mapId: ctx.mapId || 'riviera', eventId: (def.baseId || def.id).split('~')[0] })}`, inspectorTitle: '', inspector: `${rows.filter(row => /data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('')}${C.button({ label: this.data.advanced ? 'HIDE ADVANCED OPTIONS' : 'ADVANCED OPTIONS', icon: 'sliders-horizontal', act: 'setupAdvanced', variant: 'ghost', size: 'sm', block: true, cls: 'setup__more' })}${this.data.advanced ? rows.filter(row => !/data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('') : ''}`, note, actions: C.button({ label: 'CHOOSE CAR', icon: 'car', iconRight: 'chevron-right', variant: 'primary', act: 'setupGo', attrs: { 'data-default': '' } }), inspectorHead: C.button({ label: 'DEFAULTS', icon: 'rotate-ccw', variant: 'ghost', size: 'sm', act: 'setupReset', disabled: !custom }) });
+      stage: `${this.setupSummary(runDef, r, map)}${def.type === 'free' ? '' : renderSetupRecords(this, this.data, def.routeId ? { mapId: 'athens', routeId: def.routeId, eventId: def.baseId || def.id } : { mapId: ctx.mapId || 'riviera', eventId: (def.baseId || def.id).split('~')[0] })}`, inspectorTitle: '', inspector: `${eventRow}${rows.filter(row => /data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('')}${C.button({ label: this.data.advanced ? 'HIDE ADVANCED OPTIONS' : 'ADVANCED OPTIONS', icon: 'sliders-horizontal', act: 'setupAdvanced', variant: 'ghost', size: 'sm', block: true, cls: 'setup__more' })}${this.data.advanced ? rows.filter(row => !/data-key="(?:rivals|traffic|time|police|busted)"/.test(row)).join('') : ''}`, note, actions: C.button({ label: 'CHOOSE CAR', icon: 'car', iconRight: 'chevron-right', variant: 'primary', act: 'setupGo', attrs: { 'data-default': '' } }), inspectorHead: C.button({ label: 'DEFAULTS', icon: 'rotate-ccw', variant: 'ghost', size: 'sm', act: 'setupReset', disabled: !custom }) });
   }
   startSetup() {
     const def = this.setupDef(), runDef = applySetup(def, loadSetup(this.setupKey()), { closed: this.isClosed() });
