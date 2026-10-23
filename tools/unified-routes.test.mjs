@@ -215,3 +215,14 @@ test('opposite explicit one-way carriageways never share heading preference grou
  const admitted=await admitRecoverySidecar(JSON.stringify(body),{expectedHash:await sha256(body),worldSetRevision:world.manifest.revision});assert.equal(select(admitted.body.anchors).edgeId,'reverse');
  const bad=structuredClone(body);for(const a of bad.anchors)a.roadId='forward|reverse';assert.equal(select(bad.anchors).edgeId,'forward','negative control reproduces the farther wrong-way carriageway preference');await assert.rejects(admitRecoverySidecar(JSON.stringify(bad),{expectedHash:await sha256(bad),worldSetRevision:world.manifest.revision}),/road group/);
 });
+
+
+test('cold entry retains its warmed requested grid and TT never prepares the default AI event',async()=>{
+ const {readFile}=await import('node:fs/promises'),{runInNewContext}=await import('node:vm'),main=await readFile(new URL('../src/main.js',import.meta.url),'utf8'),code=main.slice(main.indexOf('function prepareInitialEvent(id)'),main.indexOf('function resetUnifiedRace()'));
+ const race={id:'megara-race',type:'sprint',rivals:2},tt={id:'megara-tt',type:'timetrial',rivals:0};let prepares=0,resets=0;const G={ev:{def:tt}},ctx={G,worldSession:{},mapEvent:id=>id===tt.id?tt:race,prepareEvent:def=>{prepares++;G.ev={def};},resetRace:()=>resets++};
+ runInNewContext(code+";prepareInitialEvent('megara-tt');",ctx);assert.equal(prepares,0);assert.equal(resets,0);
+ runInNewContext(code+";prepareInitialEvent('megara-race');",ctx);assert.equal(prepares,1);assert.equal(resets,1);assert.equal(G.ev.def,race);
+ runInNewContext(code+";prepareInitialEvent('quick');",ctx);assert.equal(resets,1,'same warmed default grid is reused');
+ ctx.worldSession=null;runInNewContext(code+";prepareInitialEvent('quick');",ctx);assert.equal(resets,2,'legacy bootstrap contract remains explicit');
+ assert.match(main,/eventId=Q.get\('routeEvent'\)\|\|Q.get\('event'\)/);assert.match(main,/retry:\(\)=>network\?multiplayer.retryMap\(\):loadUnifiedWorld\(compiled,\{eventId\}\)/);
+});

@@ -331,7 +331,7 @@ async function boot() {
     if(Q.get('event')!=='free')G.unifiedCompiled=Q.get('routes')==='1'?await loadUnifiedRoute(Q):await loadRaceRoute({mapId:initialMapId(Q),routeId:Q.get('route'),eventId:Q.get('event')});
     if(G.unifiedCompiled&&Q.has('car')){const i=CARS.findIndex(c=>c.id===canonicalCarId(Q.get('car')));if(i>=0)G.carIdx=i;}
     await switchMap(G.unifiedCompiled?'athens':initialMapId(Q), Q.get('event') === 'free' ? 'FREE ROAM' : 'QUICK RACE');
-    prepareEvent(Q.get('routeEvent') || Q.get('event') || 'quick'); resetRace();
+    prepareInitialEvent(Q.get('routeEvent') || Q.get('event') || 'quick');
     G.cam = G.userCam; applyCamMode(); updateCamera(0, true);if(G.unifiedCompiled&&Q.has('setup')){G.state='menu';const catalogue=await loadUnifiedRouteCatalogue({allowEmpty:true}).catch(()=>[]);menu.show('setup',{mode:'quick',catalogue});}else startCountdown();
   }
   document.body.classList.add('loaded');
@@ -339,7 +339,7 @@ async function boot() {
 }
 
 // The pilot binds capabilities to the existing renderer, input, camera, clock and results.
-async function loadUnifiedWorld(compiled,{eventId=Q.get('routeEvent'),network=null}={}) {
+async function loadUnifiedWorld(compiled,{eventId=Q.get('routeEvent')||Q.get('event'),network=null}={}) {
   if(!network&&!G.onlineGrid&&worldSession&&map?.route?.compiled?.routeHash===compiled.routeHash&&worldSession.manifest.revision===compiled.worldSetRevision){if(eventId&&map.events.some(e=>e.id===eventId)&&G.ev?.def.id!==eventId){prepareEvent(map.events.find(e=>e.id===eventId));resetUnifiedRace();}return map;}
   loading.show('athens', compiled.definition.name); loading.setRoute?.(compiled); G.state='loading';G.routePreparing=true;
   performance.mark('athens-route-selection');const started=performance.now(),entryPhases={},stamp=name=>{entryPhases[name]=performance.now()-started;};
@@ -383,7 +383,14 @@ async function loadUnifiedWorld(compiled,{eventId=Q.get('routeEvent'),network=nu
     if(Q.has('simhook'))window.__sim={get player(){return player;},get route(){return route;},get ground(){return ground;},get traffic(){return traffic;},get signals(){return signals;},get cars(){return[player,...grid,...remoteCars.values()];},scene,renderer,camera,canvas,keys,G,input,look,cameraBlend,towOffer,step:(n=1,dt=1/60)=>{for(let i=0;i<n;i++)step(dt,false);},render};
     if(Q.has('simhook'))window.__routePilot={get player(){return player;},get route(){return route;},get run(){return G.run;},get rivals(){return grid;},get traffic(){return traffic;},get closures(){return routeClosures;},get guidance(){return guidanceData;},get visuals(){return routeGuidance?.stats;},session:worldSession,G,scene,renderer,camera,input,step:(dt=1/60,draw=false,visual=true,frameDt=dt)=>step(dt,draw,visual,frameDt),restart:()=>startEvent(G.ev.def),start:def=>startEvent(def),tow:()=>towUnified(),setDriver:fn=>{pilotDriver=fn;}};
     addEventListener('pagehide',()=>{guidanceTilesOff?.();routeGuidance?.dispose();worldSession?.dispose();},{once:true});G.routePreparing=false;loading.hide();performance.mark('athens-route-ready');return map;
-  } catch(error){loading.fail({code:errorCode(error),retry:()=>loadUnifiedWorld(compiled)});throw error;}
+  } catch(error){loading.fail({code:errorCode(error),retry:()=>network?multiplayer.retryMap():loadUnifiedWorld(compiled,{eventId})});throw error;}
+}
+// Loading already positions and warms the requested grid. Keep that same grid
+// at direct entry; rebuilding it would dispose and recreate the warmed fleet.
+function prepareInitialEvent(id){
+ const def=mapEvent(id)||mapEvent('quick');
+ if(worldSession&&G.ev?.def===def)return;
+ prepareEvent(def);resetRace();
 }
 function resetUnifiedRace(){
   G.run?.abort('restart');notifications.clear();routeNavigation.reset();buildGrid();const pv=player.veh,p=G.unifiedCompiled.grid[0];
