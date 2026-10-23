@@ -1,3 +1,4 @@
+import {composeExtension} from './compose-extension.mjs';
 import {requireTerrainAcceptance} from './terrain-acceptance.mjs';
 import {readTerrainSource} from './refine-terrain.mjs';
 import {createHash} from 'node:crypto';
@@ -67,4 +68,13 @@ test('experimental quartic field preserves quadratic broad terrain without enabl
 test('experimental negative taps cannot create a new valley or summit beyond the source range',()=>{
  for(const sign of [-1,1]){const h=(x,z)=>100+sign*40*Math.exp(-(x*x+z*z)/6400),f=terrainReliefField(atlas(h),{filter:'quartic-9x32m-experimental'});for(let x=-400;x<=400;x+=8){const y=f.original(x,0)+f.delta(x,0);assert.ok(y>=60-.0001&&y<=140+.0001);}}
  const a=atlas((x,z)=>100+4*Math.cos(x/20));a.protected=['1,0'];const f=terrainReliefField(a,{filter:'quartic-9x32m-experimental'});assert.equal(f.delta(512,100),0);assert.equal(f.delta(520,100),0);
+});
+
+test('provisional extension composition preserves old packets and records basin source identity',()=>{
+ const projection={lat0:37.98,lon0:23.73,mlat:111320,mlon:87745.27512677578},tile={url:'https://example.invalid/old',sha256:'a'.repeat(64),bytes:1,decodedBytes:1,triangles:1,dependencies:[],source:{regionId:'basin',world:'old',revision:'old'}};
+ const base={tileVersion:1,tileMetres:512,world:'athens',revision:'old',projection,spawn:{cell:[0,0],anchor:'old-anchor'},tiles:{'0,0':tile},sourceIdentities:[tile.source]},extension={tileVersion:1,tileMetres:512,world:'ekali',revision:'new',projection,spawn:{cell:[1,0],anchor:'actual-new-anchor'},tiles:{'1,0':{...tile,url:'./cells/new',source:undefined,sha256:'b'.repeat(64)}}};
+ const original=JSON.stringify(base),r=composeExtension(base,extension);
+ assert.equal(JSON.stringify(base),original);assert.deepEqual(r.manifest.tiles['0,0'],tile);assert.deepEqual(r.manifest.spawn,base.spawn);assert.deepEqual(r.manifest.tiles['1,0'].source,{regionId:'basin',world:'ekali',revision:'new'});assert.equal(r.manifest.sourceIdentities.length,2);assert.equal(r.manifest.acceptance.passed,false);assert.equal(r.manifest.releaseReady,false);
+ assert.throws(()=>composeExtension(base,{...extension,projection:{...projection,lat0:38}}),/projection mismatch/);
+ assert.throws(()=>composeExtension(base,{...extension,tiles:{'1,0':{...extension.tiles['1,0'],source:{regionId:'basin',world:'spoof',revision:'new'}}}}),/packet identity mismatch/);
 });

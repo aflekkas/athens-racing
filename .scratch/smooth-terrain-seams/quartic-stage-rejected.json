@@ -1,0 +1,510 @@
+{
+  "source": "https://staging.athensracing.com/data/athens/manifest.json",
+  "revision": "880da8c8ceaff664c03ffc74c2f7fdc182ef726818482a27092b376a6c8d4b15",
+  "field": {
+    "schema": 2,
+    "id": "quartic-9x32m-experimental",
+    "geographyVerified": false,
+    "maxPrototypeCells": 27,
+    "sha256": "d0259d328c35f3af2aa8575938ec9245fc363f13b0fc30a058a2a3cd5bbc0a59"
+  },
+  "acceptanceReport": null,
+  "atlasReference": {
+    "file": "/tmp/athens-terrain.uKVC/world-scope/original-atlas.json",
+    "sha256": "988022635ddf80b26499e4d3a540f274264e27d9806e9c52e3ea6a76f48ca7d8",
+    "scope": "bounded cells under proposed global field; outer seams not accepted"
+  },
+  "reports": [
+    {
+      "key": "0,1",
+      "before": {
+        "passed": false,
+        "samples": 586,
+        "maxSag": 1.0954580492027306,
+        "limit": 0.5,
+        "halfChord": 16,
+        "worst": {
+          "edge": 8,
+          "station": 48,
+          "a": 100.31933042212681,
+          "b": 103.2644306704895,
+          "c": 104.01862998187245
+        }
+      },
+      "relief": {
+        "protected": false,
+        "vertices": 19460,
+        "maxAdjustment": 2.0388617673888803
+      },
+      "markings": {
+        "version": 1,
+        "meshes": 1,
+        "beforeTriangles": 1639,
+        "afterTriangles": 8712,
+        "beforeArea": 697.0788958964849,
+        "afterArea": 697.0788958967603,
+        "maxCorrection": 1.3349247032358988
+      },
+      "after": {
+        "passed": false,
+        "samples": 586,
+        "maxSag": 0.7028293583013594,
+        "limit": 0.5,
+        "halfChord": 16,
+        "worst": {
+          "edge": 24,
+          "station": 40,
+          "a": 102.92506641263574,
+          "b": 103.85407829883947,
+          "c": 103.3774192732985
+        }
+      },
+      "wholeCellAfter": {
+        "passed": false,
+        "samples": 586,
+        "maxSag": 0.7028293583013594,
+        "limit": 0.5,
+        "halfChord": 16,
+        "worst": {
+          "edge": 24,
+          "station": 40,
+          "a": 102.92506641263574,
+          "b": 103.85407829883947,
+          "c": 103.3774192732985
+        }
+      },
+      "physical": {
+        "passed": true,
+        "maxProfileGrade": 0.21208166742422363,
+        "asphaltTriangles": 4855,
+        "asphaltAbove30": 0,
+        "maxAsphaltDegrees": 12.42416244412479,
+        "shoulderSamples": 254201,
+        "guardedShoulderSamples": 0,
+        "outsideFixture": 2324,
+        "missingContacts": 0,
+        "maxShoulderStep": 0.1366177545101266,
+        "maxShoulderDegrees": 28.65532577365714,
+        "worstShoulder": {
+          "x": 188.75,
+          "z": 217.32000732421875,
+          "d": 0.25,
+          "nx": 1,
+          "nz": 0,
+          "previousY": 96.66487121582031,
+          "y": 96.80148897033044
+        },
+        "offenders": []
+      },
+      "bridges": {
+        "passed": true,
+        "edgeSamples": 0,
+        "unguarded": 0,
+        "clearanceSamples": 0,
+        "blocked": 0,
+        "unsafeAnchors": 0
+      },
+      "bores": {
+        "passed": true,
+        "bores": 0,
+        "samples": 0,
+        "minimumClearance": null,
+        "safetyRails": 0,
+        "problems": []
+      }
+    },
+    {
+      "key": "4,25",
+      "before": {
+        "passed": false,
+        "samples": 1125,
+        "maxSag": 0.6966133010623636,
+        "limit": 0.5,
+        "halfChord": 16,
+        "worst": {
+          "edge": 125,
+          "station": 64,
+          "a": 11.689052456403024,
+          "b": 12.59362278661499,
+          "c": 12.10496652734309
+        }
+      },
+      "relief": {
+        "protected": false,
+        "vertices": 19554,
+        "maxAdjustment": 1.2384219060186297
+      },
+      "markings": {
+        "version": 1,
+        "meshes": 1,
+        "beforeTriangles": 802,
+        "afterTriangles": 4312,
+        "beforeArea": 287.643773373833,
+        "afterArea": 271.0837547316886,
+        "maxCorrection": 0.33851484671894383
+      },
+      "after": {
+        "passed": true,
+        "samples": 1125,
+        "maxSag": 0.41925272067622205,
+        "limit": 0.5,
+        "halfChord": 16,
+        "worst": {
+          "edge": 46,
+          "station": 32,
+          "a": 15.496843228410675,
+          "b": 15.528100345628978,
+          "c": 14.720863168234093
+        }
+      },
+      "wholeCellAfter": {
+        "passed": true,
+        "samples": 1153,
+        "maxSag": 0.41925272067622205,
+        "limit": 0.5,
+        "halfChord": 16,
+        "worst": {
+          "edge": 46,
+          "station": 32,
+          "a": 15.496843228410675,
+          "b": 15.528100345628978,
+          "c": 14.720863168234093
+        }
+      },
+      "physical": {
+        "passed": true,
+        "maxProfileGrade": 0.0922471060994908,
+        "asphaltTriangles": 5536,
+        "asphaltAbove30": 0,
+        "maxAsphaltDegrees": 6.5084289411065575,
+        "shoulderSamples": 314613,
+        "guardedShoulderSamples": 0,
+        "outsideFixture": 2112,
+        "missingContacts": 0,
+        "maxShoulderStep": 0.12968221702439564,
+        "maxShoulderDegrees": 27.417073013028,
+        "worstShoulder": {
+          "x": 65.6792343209686,
+          "z": 373.9733889257589,
+          "d": 0.25,
+          "nx": -0.563061495422441,
+          "nz": -0.8264150000893283,
+          "previousY": 11.18394660949707,
+          "y": 11.313628826521466
+        },
+        "offenders": []
+      },
+      "bridges": {
+        "passed": true,
+        "edgeSamples": 0,
+        "unguarded": 0,
+        "clearanceSamples": 0,
+        "blocked": 0,
+        "unsafeAnchors": 0
+      },
+      "bores": {
+        "passed": true,
+        "bores": 0,
+        "samples": 0,
+        "minimumClearance": null,
+        "safetyRails": 0,
+        "problems": []
+      }
+    },
+    {
+      "key": "9,-7",
+      "before": {
+        "passed": true,
+        "samples": 910,
+        "maxSag": 0.44907467638686854,
+        "limit": 0.5,
+        "halfChord": 16,
+        "worst": {
+          "edge": 104,
+          "station": 20,
+          "a": 177.09119377545056,
+          "b": 176.0601433218868,
+          "c": 175.9272234828863
+        }
+      },
+      "relief": {
+        "protected": false,
+        "vertices": 16639,
+        "maxAdjustment": 0.7424824670888484
+      },
+      "markings": {
+        "version": 1,
+        "meshes": 1,
+        "beforeTriangles": 812,
+        "afterTriangles": 4308,
+        "beforeArea": 270.4069380777796,
+        "afterArea": 270.40693807773766,
+        "maxCorrection": 0.49550146031592135
+      },
+      "after": {
+        "passed": true,
+        "samples": 910,
+        "maxSag": 0.38627961918147363,
+        "limit": 0.5,
+        "halfChord": 16,
+        "worst": {
+          "edge": 104,
+          "station": 20,
+          "a": 177.22437763888394,
+          "b": 176.25337499516058,
+          "c": 176.05490615130387
+        }
+      },
+      "wholeCellAfter": {
+        "passed": true,
+        "samples": 910,
+        "maxSag": 0.38627961918147363,
+        "limit": 0.5,
+        "halfChord": 16,
+        "worst": {
+          "edge": 104,
+          "station": 20,
+          "a": 177.22437763888394,
+          "b": 176.25337499516058,
+          "c": 176.05490615130387
+        }
+      },
+      "physical": {
+        "passed": true,
+        "maxProfileGrade": 0.1080355406578813,
+        "asphaltTriangles": 4805,
+        "asphaltAbove30": 0,
+        "maxAsphaltDegrees": 6.685207569370409,
+        "shoulderSamples": 270447,
+        "guardedShoulderSamples": 0,
+        "outsideFixture": 2878,
+        "missingContacts": 0,
+        "maxShoulderStep": 0.12843560114117736,
+        "maxShoulderDegrees": 27.191488003688125,
+        "worstShoulder": {
+          "x": 274.09901874631737,
+          "z": 485.06309935502634,
+          "d": 0.25,
+          "nx": -0.8839543116056233,
+          "nz": -0.4675732830197085,
+          "previousY": 180.6898956298828,
+          "y": 180.818331231024
+        },
+        "offenders": []
+      },
+      "bridges": {
+        "passed": true,
+        "edgeSamples": 0,
+        "unguarded": 0,
+        "clearanceSamples": 0,
+        "blocked": 0,
+        "unsafeAnchors": 0
+      },
+      "bores": {
+        "passed": true,
+        "bores": 0,
+        "samples": 0,
+        "minimumClearance": null,
+        "safetyRails": 0,
+        "problems": []
+      }
+    },
+    {
+      "key": "2,-1",
+      "before": {
+        "passed": false,
+        "samples": 812,
+        "maxSag": 0.8214626376242976,
+        "limit": 0.5,
+        "halfChord": 16,
+        "worst": {
+          "edge": 39,
+          "station": 108,
+          "a": 210.44731667149185,
+          "b": 211.64813906278403,
+          "c": 211.2900684920618
+        }
+      },
+      "relief": {
+        "protected": false,
+        "vertices": 12087,
+        "maxAdjustment": 6.090573403751478
+      },
+      "markings": {
+        "version": 1,
+        "meshes": 1,
+        "beforeTriangles": 822,
+        "afterTriangles": 3128,
+        "beforeArea": 141.17842386318216,
+        "afterArea": 141.17481472755807,
+        "maxCorrection": 0.03806607948530427
+      },
+      "after": {
+        "passed": false,
+        "samples": 812,
+        "maxSag": 0.9436871025243911,
+        "limit": 0.5,
+        "halfChord": 16,
+        "worst": {
+          "edge": 14,
+          "station": 80,
+          "a": 227.8530021390615,
+          "b": 230.882623251496,
+          "c": 231.76296882069767
+        }
+      },
+      "wholeCellAfter": {
+        "passed": false,
+        "samples": 812,
+        "maxSag": 0.9436871025243911,
+        "limit": 0.5,
+        "halfChord": 16,
+        "worst": {
+          "edge": 14,
+          "station": 80,
+          "a": 227.8530021390615,
+          "b": 230.882623251496,
+          "c": 231.76296882069767
+        }
+      },
+      "physical": {
+        "passed": true,
+        "maxProfileGrade": 0.28743372008630497,
+        "asphaltTriangles": 2936,
+        "asphaltAbove30": 0,
+        "maxAsphaltDegrees": 20.9579805848272,
+        "shoulderSamples": 171480,
+        "guardedShoulderSamples": 0,
+        "outsideFixture": 1870,
+        "missingContacts": 0,
+        "maxShoulderStep": 0.12904140657138896,
+        "maxShoulderDegrees": 27.30122782565468,
+        "worstShoulder": {
+          "x": 285.66003578907015,
+          "z": 170.33353809923423,
+          "d": 0.25,
+          "nx": -0.7198421952818597,
+          "nz": 0.6941377484993834,
+          "previousY": 231.9171905517578,
+          "y": 232.0462319583292
+        },
+        "offenders": []
+      },
+      "bridges": {
+        "passed": true,
+        "edgeSamples": 0,
+        "unguarded": 0,
+        "clearanceSamples": 0,
+        "blocked": 0,
+        "unsafeAnchors": 0
+      },
+      "bores": {
+        "passed": true,
+        "bores": 0,
+        "samples": 0,
+        "minimumClearance": null,
+        "safetyRails": 0,
+        "problems": []
+      }
+    },
+    {
+      "key": "14,-21",
+      "before": {
+        "passed": false,
+        "samples": 769,
+        "maxSag": 0.6132051856077049,
+        "limit": 0.5,
+        "halfChord": 16,
+        "worst": {
+          "edge": 85,
+          "station": 48,
+          "a": 305.84622810463327,
+          "b": 305.8920779988848,
+          "c": 304.70990780836763
+        }
+      },
+      "relief": {
+        "protected": false,
+        "vertices": 15651,
+        "maxAdjustment": 1.3237908715382218
+      },
+      "markings": {
+        "version": 1,
+        "meshes": 1,
+        "beforeTriangles": 790,
+        "afterTriangles": 5642,
+        "beforeArea": 328.98721886069177,
+        "afterArea": 314.5629358102424,
+        "maxCorrection": 0.24700795755239824
+      },
+      "after": {
+        "passed": true,
+        "samples": 769,
+        "maxSag": 0.2834029811199754,
+        "limit": 0.5,
+        "halfChord": 16,
+        "worst": {
+          "edge": 37,
+          "station": 64,
+          "a": 296.63803023651144,
+          "b": 296.89201911149775,
+          "c": 296.5792056404228
+        }
+      },
+      "wholeCellAfter": {
+        "passed": true,
+        "samples": 769,
+        "maxSag": 0.2834029811199754,
+        "limit": 0.5,
+        "halfChord": 16,
+        "worst": {
+          "edge": 37,
+          "station": 64,
+          "a": 296.63803023651144,
+          "b": 296.89201911149775,
+          "c": 296.5792056404228
+        }
+      },
+      "physical": {
+        "passed": true,
+        "maxProfileGrade": 0.10833741579333171,
+        "asphaltTriangles": 4180,
+        "asphaltAbove30": 0,
+        "maxAsphaltDegrees": 8.863546068148066,
+        "shoulderSamples": 234360,
+        "guardedShoulderSamples": 0,
+        "outsideFixture": 1015,
+        "missingContacts": 0,
+        "maxShoulderStep": 0.12755826129284742,
+        "maxShoulderDegrees": 27.03217697671039,
+        "worstShoulder": {
+          "x": 2.8541800160141277,
+          "z": 486.28894925403455,
+          "d": 0.25,
+          "nx": 0.8567196444398112,
+          "nz": 0.5157823677006836,
+          "previousY": 287.29150390625,
+          "y": 287.41906216754285
+        },
+        "offenders": []
+      },
+      "bridges": {
+        "passed": true,
+        "edgeSamples": 0,
+        "unguarded": 0,
+        "clearanceSamples": 0,
+        "blocked": 0,
+        "unsafeAnchors": 0
+      },
+      "bores": {
+        "passed": true,
+        "bores": 0,
+        "samples": 0,
+        "minimumClearance": null,
+        "safetyRails": 0,
+        "problems": []
+      }
+    }
+  ],
+  "status": "Rejected bounded experimental field; no global acceptance, no visual proof, no publication"
+}

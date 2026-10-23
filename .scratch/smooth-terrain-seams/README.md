@@ -103,3 +103,14 @@ Candidate assets in `candidate/` are intentionally local derived data (~17MB), n
 Browser/server jobs fully closed; browser handed to infrastructure. Task temp `/tmp/athens-terrain.uKVC` retained for queued full-mode checks and read-use harness. Disk initially57GB/145GB(39%); continuation checkpoint74GB/145GB(52%), shared usage includes other agents. Final cleanup/disk outcome will be appended when continuation completes.
 
 </details>
+
+
+## Continuation: real Ekali source preparation (not acceptance)
+
+Six actual generated cells now exist in local `ekali-source/` (world data intentionally not committed). [Preparation summary](ekali-first-chunk-summary.json) records the exact cell hashes, 6/6 ordinary physical pack passes and inland source/DEM evidence. The three route core cells plus the genuine Rodon corridor through the original northern boundary are emitted. Fourteen halo cells remain, as do full contact seams, playable route/grid/runout and browser proof. The first source candidate was rejected by the unchanged route compiler at a roundabout corridor; the route author is checking a legal alternative. No catalogue activation or publication.
+
+[Graph diagnostic](ekali-portals-provisional.json): 21 internal shared portal copies are bit-identical; shared nodes with unchanged original neighbours16,-26 and17,-25 have no conflicts. Five original north-boundary portals, including both Rodon directions, retain exact XYZ. This is not asphalt/contact seam acceptance.
+
+The explicit inland mode was necessary because a bounded inland OSM source cannot establish the legacy whole-Attica coastline polygon. It requires zero source coastline, complete source support and a complete valid DEM window above10m; actual window minimum246.31981m. Five mapped water masks/tags are retained; no invented sea-level inland-water surface. The default coastal branch still refuses a missing OSM mainland mask. Four positive/negative Python controls pass. Source generation uses the approved roof fallback model91795 and scenery source snapshotcf980; no generated infill was added.
+
+Prototype quartic staging was rejected: [five-cell report](quartic-stage-rejected.json) has all5physical passes but Syntagma0.702829m and Lycabettus0.943687m fail the unchanged0.5m comfort target. Global terrain remains explicitly blocked. The source/math follow-up is bounded road-chord correction on the original geographic baseline, not an accepted field.

@@ -1,0 +1,64 @@
+{
+  "status": "Six-cell preparation only; no full-world/contact/route/browser acceptance",
+  "sourceWorld": "athens-ekali-development",
+  "sourceRevision": "12935f07f7dceacdfbf96d7a9de8fa10ae88f49fcf673fb08c6c8dfe5cb0cc31",
+  "composedRevision": "d7d206db358bc6ff0e143b42846f97f1f8084fecb2158e53f74c7b4f723260e7",
+  "cells": [
+    "17,-26",
+    "17,-27",
+    "17,-28",
+    "17,-29",
+    "18,-30",
+    "18,-29"
+  ],
+  "remainingHaloCells": 14,
+  "compressedBytes": 1270154,
+  "triangles": 131193,
+  "physicalPassed": 6,
+  "physicalFailed": 0,
+  "shoulderSamples": 972140,
+  "inland": {
+    "schema": 1,
+    "mode": "verified-positive-dem-inland",
+    "sourceBounds": [
+      23.8117,
+      38.0904,
+      23.8526,
+      38.1272
+    ],
+    "sourceSupportMetres": 256.0,
+    "demSupportBounds": [
+      7680.0,
+      -16384.0,
+      10752.0,
+      -12288.0
+    ],
+    "demMinimum": 246.31980895996094,
+    "demMargin": 10,
+    "coastlineCount": 0,
+    "dem": [
+      {
+        "name": "ekali-n38-e023.tif",
+        "sha256": "59d984ef5a145f90bb614c7aef31677877c6d32cb9d1da37363eefb0d7fc87b7"
+      }
+    ],
+    "waterCount": 5,
+    "waterRendering": "mapped masks retained; no sea-level substitution"
+  },
+  "sourceSha256": "6b3a65219bc0f2d94603b867c5da7e94db16e9160d6112f39ea9c9677dfdca33",
+  "cellHashes": {
+    "17,-26": "def5e6d1449a92f1f1d2404b1eb24b6cdf7d8c58a8f49bb79c32b724de9c42dd",
+    "17,-27": "7618a30861ac2e4471d03c9e403e5aab075b8c2d3f0e8f04f76a15181430f070",
+    "17,-28": "732efb95bf98939f851596e0740aa441bf8f7bc8fa084a98075cdfeb2341589f",
+    "17,-29": "0ebfb1666e5086b0f9fef51a3300ea8bbac5af26d85610ff82f6c105815d8e50",
+    "18,-30": "48e419fe1d8eab16185f548c733a227bf5177854da54f075980ec975fb77b152",
+    "18,-29": "1eacbe80257859f5c178ad7adf51861e0f67ba0a814ae89cbba0aa04571b258b"
+  },
+  "limits": [
+    "14 halo cells missing",
+    "full asphalt contact seams pending",
+    "actual source route unsafe-corridor at roundabout44130959:12 being audited by route author",
+    "whole-world terrain replacement blocked",
+    "actual game proof and clean exact source gates pending"
+  ]
+}

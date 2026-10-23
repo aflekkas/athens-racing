@@ -17,4 +17,4 @@ test('bridge posts retain whole-source cadence across noding and cell boundaries
 // Pure offline guard proof fixtures run even when the optional Python suite is unavailable.
 import './bridge-guards.test.mjs';
 
-test('bounded inland source and DEM coverage fail closed and retain actual water masks',{skip:!shapely&&'world-gen dependencies unavailable'},()=>{const r=spawnSync(python,[fileURLToPath(new URL('./inland_test.py',import.meta.url))],{encoding:'utf8'});assert.equal(r.status,0,r.error?.message||r.stderr||r.stdout);});
+test('bounded inland source and DEM coverage fail closed and retain actual water masks',{skip:(!shapely||spawnSync(python,['-c','import rasterio']).status!==0)&&'world-gen dependencies unavailable'},()=>{const r=spawnSync(python,[fileURLToPath(new URL('./inland_test.py',import.meta.url))],{encoding:'utf8'});assert.equal(r.status,0,r.error?.message||r.stderr||r.stdout);});
