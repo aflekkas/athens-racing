@@ -200,3 +200,16 @@ test('export admission checks original wire bytes, server budgets and every neig
  await assert.rejects(admitRecoveryCell(raw,{key:'0,0',manifest:{...manifest,tiles:{'0,0':{sha256:'c'.repeat(64)}}},hash}),/exact active neighborhood/);
  await assert.rejects(admitRecoveryCell('['+'0,'.repeat(100000)+'0]',{key:'0,0',manifest,hash}),/memory budget/);
 });
+
+
+test('opposite explicit one-way carriageways never share heading preference groups',async()=>{
+ const {worldTowCandidates}=await import('../src/world-recovery.js'),{proveRecoveryCell}=await import('./build-world-recovery.mjs'),{planWorldTow}=await import('../src/tow-placement.js'),{recoveryRoadGroup}=await import('../src/world-road-group.js'),{admitRecoverySidecar}=await import('../server/route-road-stream.mjs'),{sha256}=await import('../src/route-definition.js');
+ const forward={id:'forward',from:'a',to:'b',flags:1,layer:0,surface:'asphalt',points:[[22,0,60],[22,0,20]]},reverse={...forward,id:'reverse',from:'b',to:'a',points:[[18,0,20],[18,0,60]]},graph={edges:new Map([[forward.id,{value:forward}],[reverse.id,{value:reverse}]]),outgoing:new Map([['a',new Set(['forward'])],['b',new Set(['reverse'])]])};
+ // Neither direction may opt a one-way member into a physical two-way street.
+ for(const [a,b] of [[1,1],[0,1],[1,0]]){forward.flags=a;reverse.flags=b;assert.equal(recoveryRoadGroup(graph,forward),null);assert.equal(recoveryRoadGroup(graph,reverse),null);}forward.flags=reverse.flags=1;
+ const contact=()=>({y:0,layer:0,surfaceId:'asphalt'}),roads={graph,width:()=>({left:4,right:4,width:8})},world={manifest:{revision:'a'.repeat(64),tiles:{'0,0':{sha256:'b'.repeat(64)}}},tiles:new Map([['0,0',{packet:{roadGraph:{edges:[forward,reverse]}}}]]),roads,stream:{contact},safePose:()=>true,contacts:{contact,width:roads.width,safe:()=>true}},pose={x:18,y:0,z:40,yaw:-Math.PI,towHeading:0,s:0},select=roadCandidates=>planWorldTow({pose,route:null,roadCandidates});
+ const native=worldTowCandidates(world,pose,{halfWidth:1,halfLength:2}),body=proveRecoveryCell('0,0',world,[{halfWidth:1,halfLength:2}]);
+ assert.ok(native.every(a=>a.roadId===undefined));assert.ok(body.anchors.every(a=>a.roadId===undefined));assert.equal(select(native).edgeId,'reverse');assert.equal(select(body.anchors).edgeId,'reverse');
+ const admitted=await admitRecoverySidecar(JSON.stringify(body),{expectedHash:await sha256(body),worldSetRevision:world.manifest.revision});assert.equal(select(admitted.body.anchors).edgeId,'reverse');
+ const bad=structuredClone(body);for(const a of bad.anchors)a.roadId='forward|reverse';assert.equal(select(bad.anchors).edgeId,'forward','negative control reproduces the farther wrong-way carriageway preference');await assert.rejects(admitRecoverySidecar(JSON.stringify(bad),{expectedHash:await sha256(bad),worldSetRevision:world.manifest.revision}),/road group/);
+});
