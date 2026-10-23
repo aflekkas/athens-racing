@@ -71,7 +71,7 @@ test('nine near-2MiB cells retain the complete safety set under a constrained he
     const { spawnSync } = await import('node:child_process');
     const env = { ...process.env, ATHENS_RECOVERY_MEMORY_CHILD: '1' }; delete env.NODE_TEST_CONTEXT;
     const child = spawnSync(process.execPath, ['--max-old-space-size=24', '--test', '--test-name-pattern=nine near-2MiB', import.meta.filename], { encoding: 'utf8', env, timeout: 30000 });
-    assert.equal(child.status, 0, child.stdout + child.stderr); assert.match(child.stdout, /recoveryMemoryProof/); console.log(child.stdout.trim()); return;
+    assert.equal(child.status, 0, child.stdout + child.stderr); assert.match(child.stdout, /recoveryMemoryProof/); console.log(child.stdout.split('\n').find(line => line.includes('recoveryMemoryProof'))); return;
   }
   const { canonicalJSON } = await import('../src/route-definition.js'), cells = {}, descriptors = new Map();
   // An emitted shard may carry long source metadata. It must not remain in the
