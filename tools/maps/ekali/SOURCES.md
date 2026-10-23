@@ -6,7 +6,9 @@ world publication, start grid or physical acceptance is implied.
 
 ## Sources and licence
 
-Two bounded read-only official OpenStreetMap API requests returned HTTP 200:
+The two initial exploration extracts below were superseded by the expanded
+canonical source. They are insufficient for generation of the physical halo.
+Both bounded read-only official OpenStreetMap API requests returned HTTP 200:
 
 | Purpose | Request bbox (west,south,east,north) | Bytes | Response SHA-256 |
 |---|---|---:|---|
@@ -26,12 +28,39 @@ residential/primary/secondary/tertiary/unclassified/living_street and rejecting
 Subsequent source-only cycle exploration merges both responses, omits primary
 roads, rejects no/private/agricultural/forestry/destination access for access,
 vehicle, motor_vehicle and motorcar, excludes explicitly non-paved surfaces,
-and follows OSM one-way direction. Unspecified surface is still provisional.
+and initially follows only explicit OSM one-way tags. The canonical audit below
+rejects an implicit-roundabout direction error from that preliminary search.
+Unspecified surface is still provisional.
 No service road, footway or cycle track is used to manufacture connectivity.
+
+## Canonical source, 2026-10-23
+
+Terrain assembled one read-only canonical XML from the official API; this
+agent read the same file without duplicating the download. It contains
+62,589 nodes, 7,171 ways and 143 relations, including 52 restrictions.
+The 15,643,924-byte canonical response has SHA-256
+`6b3a65219bc0f2d94603b867c5da7e94db16e9160d6112f39ea9c9677dfdca33`.
+
+The original combined bbox `23.8117,38.0904,23.8526,38.1272` returned HTTP 400
+at 06:51:33 UTC because the map endpoint limits requests to 50,000 nodes.
+The recorded subdivision/closure requests were:
+
+| Request | Read time UTC | Bytes | Response SHA-256 |
+|---|---|---:|---|
+| `/api/0.6/map?bbox=23.8117000,38.0904000,23.8526000,38.1088000` | 06:51:35.112662 | 12,344,748 | e3c0a32bb9b079ab558091c594f3c9ffe79095758610ab92f7b892fd183cfaff |
+| `/api/0.6/map?bbox=23.8117000,38.1088000,23.8526000,38.1272000` | 06:51:39.275247 | 4,548,546 | 8bc82a89fcb1e1a0f283198b087abfb5ef839490489bc43b802076f565a53a5b |
+| `/api/0.6/way/556144178/full` | 06:51:42.212777 | 1,129 | 5c3e6e1d2e09bbf2d904e8c35bf01aa4f5877e81af4c4b4f880c11dde96c1dea |
+
+All URLs are on `https://api.openstreetmap.org`. The canonical sidecar records
+zero missing way nodes and complete restriction member closure, with whole-way
+node order retained. It explicitly enumerates **22,418 unresolved nonrestriction
+relation members**, including broad boundaries and transit routes. This is not
+complete membership for every relation, and incomplete area relations must not
+be turned into invented polygons. Terrain owns source assembly and its tests.
 
 ## Candidate to inspect
 
-One 2,085.944707 m connected source-polyline cycle near the
+The corrected 2,116.978544 m connected source-polyline cycle near the
 [GeoNames Ekali reference](https://www.geonames.org/262833/ekali.html)
 (38.11035, 23.83505) follows these way transitions. The starting point is an audit point,
 not a chosen timing line or safe grid. It uses no repeated node except closure.
@@ -41,7 +70,7 @@ not a chosen timing line or safe grid. It uses no repeated node except closure.
 | 44154570 | Fasideri | 6017564672 |
 | 44130953 | Dekeleias, forward one-way | 560945008 |
 | 44130952 | Pefkon | 560728637 |
-| 44130959 | Unnamed mapped tertiary segment | 560728633 |
+| 44130959 | Roundabout, legal forward traversal | 560728633 |
 | 44130950 | Parnithos | 560728629 |
 | 44130941 | Unnamed mapped residential segment | 560728572 |
 | 44130958 | Platanon, forward one-way | 560728574 |
@@ -55,11 +84,22 @@ not a chosen timing line or safe grid. It uses no repeated node except closure.
 | 44154572 | Kedron | 8262154221 |
 | 638497823 | Efterpis | 6017564673 |
 
-The four returned turn-restriction relations (6844186, 12668968, 13626465,
-17571102) do not reference these candidate ways. This observation does not
-replace a final restriction/conditional-access audit or an emitted graph check.
-Street View character, exact directions, start/runouts, full-garage clearance,
-road contact and grade still need acceptance before route authoring.
+The original 2,085.944707 m proposal was rejected: it traversed four edges
+of way 44130959 backward. `junction=roundabout` implies forward one-way in
+the repository normalizer even without an explicit `oneway` tag. The corrected
+proposal follows its twelve forward edges from node 560728633 through
+560728669/668/667/649/666/665/664/631/663/662/661 to 560728629. No reverse
+connector or relaxed direction rule is used.
+
+The canonical audit executes the repository `clean.py` road_parts and
+public_direction functions with `model.py` road_tags, complete source node
+order, node-use counts and node-rule context. All 56 source-adjacent traversals
+are public in their proposed direction. None of the canonical source's 52
+restriction relations references a candidate way. Reviewed node coordinates,
+traversals, way versions/tags, normalizer hash and boundary parts are recorded
+in `source-review.json`; this is source planning data, never a playable route
+definition or physical validation. Street View character, start/runouts,
+full-garage clearance, emitted road contact and grade still need acceptance.
 
 Candidate geometry bounds are 38.1101318–38.1151526 north and
 23.8324245–23.8397762 east. Exact segment/grid intersection in `athens-v1`
@@ -96,8 +136,17 @@ Real boundary portals include:
 These are real source/emitted identities, not a new connector. A new z-27/-28
 corridor and matching portal heights must be generated and proved. Existing
 source endpoint elevations are not substitute DEM samples for the new area.
-Existing basin metadata identifies Copernicus DEM, EGM2008, verticalOffset=0;
-no available local authenticated DEM cache for Ekali has been established.
-Terrain owns DEM acquisition, area configuration and world assembly. Route
+Terrain subsequently authenticated Copernicus GLO-30 DSM N38/E023, EGM2008,
+from the repository fetch pipeline: 32,409,679 bytes, SHA-256
+`c289c4a9b2c5c8b5b07e475129134bbb6b64b3ccb86d23eca3428b8e7f5bce28`.
+The source URL is
+`https://copernicus-dem-30m.s3.amazonaws.com/Copernicus_DSM_COG_10_N38_00_E023_00_DEM/Copernicus_DSM_COG_10_N38_00_E023_00_DEM.tif`.
+Its reduced pixel-window-halo1-v1 crop covers 23.8,38.08,23.87,38.14,
+142,528 bytes, SHA-256
+`59d984ef5a145f90bb614c7aef31677877c6d32cb9d1da37363eefb0d7fc87b7`;
+this agent independently verified the crop hash. Different existing emitted
+endpoint heights and new DEM samples require common-field boundary gates;
+no arbitrary height offset is assumed. Terrain owns DEM acquisition, area
+configuration and world assembly. Route
 work will consume its authenticated emitted output and leave the old seven
 Kifissia proof cells protected unless coordinated reproof is required.
