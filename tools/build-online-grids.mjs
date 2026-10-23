@@ -1,3 +1,4 @@
+import {recoveryRoadGroup} from '../src/world-road-group.js';
 // Offline physical proof for eight online slots. Does not change the competitive
 // compiled route, geometryHash, edition or its original 80 m run-in.
 import {readFile,mkdir,writeFile} from 'node:fs/promises';
@@ -61,7 +62,7 @@ function atStation(rows,s,world){
 // The contact/footprint proof below remains authoritative at junction fans.
 export function legalLanePoint(world,point,footprint,{validate=true}={}){
  const edge=edgeValue(world.roads.graph,point.edgeId),width=point.leftM+point.rightM,mid=(point.rightM-point.leftM)/2;
- const twin=!(edge.flags&1)&&[...(world.roads.graph.outgoing.get(edge.to)||[])].some(id=>{const e=edgeValue(world.roads.graph,id);return e&&!(e.flags&8)&&e.to===edge.from&&e.layer===edge.layer&&e.surface===edge.surface;});
+ const twin=!!recoveryRoadGroup(world.roads.graph,edge);
  let u=mid;
  if(twin){const min=mid+footprint.halfWidth+.05,max=point.rightM-footprint.halfWidth-.15;if(max<min)return null;u=Math.max(min,Math.min(mid+width/4,max));}
  const p={...point,x:point.x+point.rx*u,z:point.z+point.rz*u},contact=world.contacts.contact(p.x,p.z,{referenceY:p.y,layer:p.layer,requiredFlags:1});
