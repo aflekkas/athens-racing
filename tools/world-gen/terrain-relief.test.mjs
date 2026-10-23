@@ -1,3 +1,4 @@
+import {terrainNodeBasis,terrainChordTerms,solveTerrainComfort} from './terrain-comfort-project.mjs';
 import {composeExtension} from './compose-extension.mjs';
 import {requireTerrainAcceptance} from './terrain-acceptance.mjs';
 import {readTerrainSource} from './refine-terrain.mjs';
@@ -77,4 +78,27 @@ test('provisional extension composition preserves old packets and records basin 
  assert.equal(JSON.stringify(base),original);assert.deepEqual(r.manifest.tiles['0,0'],tile);assert.deepEqual(r.manifest.spawn,base.spawn);assert.deepEqual(r.manifest.tiles['1,0'].source,{regionId:'basin',world:'ekali',revision:'new'});assert.equal(r.manifest.sourceIdentities.length,2);assert.equal(r.manifest.acceptance.passed,false);assert.equal(r.manifest.releaseReady,false);
  assert.throws(()=>composeExtension(base,{...extension,projection:{...projection,lat0:38}}),/projection mismatch/);
  assert.throws(()=>composeExtension(base,{...extension,tiles:{'1,0':{...extension.tiles['1,0'],source:{regionId:'basin',world:'spoof',revision:'new'}}}}),/packet identity mismatch/);
+});
+
+function projectionChord(id='peak',x=0,z=0,height=1.1){return {id,a:{x:x-16,z,y:100},b:{x,z,y:100+height,nx:0,nz:0},c:{x:x+16,z,y:100},signedSag:height};}
+test('road projection reduces a chord defect with bounded sub-metre correction and gradient',()=>{
+ const c=projectionChord(),r=solveTerrainComfort([c]);assert.equal(r.report.passed,true);assert.ok(r.report.maxPredictedSag<=.450001);assert.ok(r.report.maxAdjustment<=.75);assert.ok(r.report.maxGradient<=.050001);assert.ok(Math.abs(c.signedSag+r.sample(0,0)-(r.sample(-16,0)+r.sample(16,0))/2)<=.450001);
+});
+test('road projection does not mistake affine hill grade on a horizontal bend for terrain ripple',()=>{
+ const h=(x,z)=>50+.12*x-.05*z,a={x:-12,z:20},b={x:0,z:0,nx:.12,nz:-.05},c={x:13,z:21};for(const p of[a,b,c])p.y=h(p.x,p.z);const signedSag=b.y-(a.y+c.y)/2-b.nx*(b.x-(a.x+c.x)/2)-b.nz*(b.z-(a.z+c.z)/2),chord={id:'affine',a,b,c,signedSag};
+ const terms=terrainChordTerms(chord);assert.ok(Math.abs(terms.reduce((v,t)=>v+t.coefficient*(4+.2*t.x+.1*t.z),0))<1e-12);const r=solveTerrainComfort([chord]);assert.equal(r.report.passed,true);assert.deepEqual(r.values,{});
+});
+test('protected and infeasible projection controls fail without changing their bounds',()=>{
+ const frozen=solveTerrainComfort([projectionChord()],{allowed:()=>false});assert.equal(frozen.report.passed,false);assert.deepEqual(frozen.values,{});
+ const impossible=solveTerrainComfort([projectionChord('large',0,0,3)],{maxAdjustment:.1,maxIterations:20});assert.equal(impossible.report.passed,false);assert.ok(impossible.report.maxAdjustment<=.1000001);assert.ok(impossible.report.maxPredictedSag>.5);assert.equal(impossible.report.ownerSagLimit,.5);
+});
+test('projected terrain is deterministic across cell input order and continuous across shared lattice seams',()=>{
+ const chords=[projectionChord('b',512,0),projectionChord('a',512,32)],a=solveTerrainComfort(chords),b=solveTerrainComfort([...chords].reverse());assert.deepEqual(a.values,b.values);assert.ok(Math.abs(a.sample(512-1e-6,0)-a.sample(512+1e-6,0))<1e-6);
+ const basis=terrainNodeBasis(-1,-1);assert.ok(Math.abs(basis.reduce((v,t)=>v+t.w,0)-1)<1e-12);
+});
+
+test('road projection never propagates beyond its explicit support bound',()=>{
+ const c=projectionChord(),r=solveTerrainComfort([c],{maxSupportMetres:8});
+ const seeds=terrainChordTerms(c);for(const k of Object.keys(r.values)){const[x,z]=k.split(',').map(Number);assert.ok(seeds.some(t=>Math.hypot(x-t.x,z-t.z)<=8.000001));}
+ assert.equal(r.report.supportLimitMetres,8);assert.throws(()=>solveTerrainComfort([c],{maxSupportMetres:Infinity}),/Invalid/);
 });
