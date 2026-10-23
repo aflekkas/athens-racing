@@ -34,7 +34,11 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
     maps.set(def.id, resolveMap(def, data));
   }
   let built; try { built = JSON.parse(await readFile(resolve(root, '.deploy/catalogue.json'), 'utf8')); } catch { built = {}; }
-  await installRouteMaps(maps, built, { carSpecs });
+  await installRouteMaps(maps, built, { carSpecs, loadRoadArtifact: async (url, maxBytes) => {
+    const file = resolve(root, '.' + url);
+    if (!(await stat(file)).isFile() || (await stat(file)).size > maxBytes) throw Error('Recovery asset unavailable or too large');
+    return readFile(file, 'utf8');
+  } });
   const { track, definitions } = maps.get('riviera');
   const leaderboard = await createLeaderboard(resolve(dataDir, 'leaderboard.json'), definitions, CARS, track.version, maps);
   const core = createGameCore({ maps, cars: CARS, carSpecs, nitrousCars, leaderboard, countdownMs, raceLimitMs, reconnectGraceMs });
@@ -96,7 +100,7 @@ export async function createGameServer({ root = ROOT, countdownMs = 4000, raceLi
     if (!core.connect(ws, req.socket.remoteAddress, { ...connectionProtocol(new URL(req.url, 'http://localhost')), identity: req.accountIdentity })) return;
     ws.on('pong', () => core.pong(ws));
     ws.on('message', async bytes => {
-      try { if (!await identityActive(core.clientData(ws)?.identity, accountEnv)) { ws.close(AUTH_CLOSE_CODE, 'Sign in with Google'); core.disconnect(ws); return; } core.message(ws, bytes); }
+      try { if (!await identityActive(core.clientData(ws)?.identity, accountEnv)) { ws.close(AUTH_CLOSE_CODE, 'Sign in with Google'); core.disconnect(ws); return; } if (await core.prepareMessage(ws, bytes)) core.message(ws, bytes); }
       catch { ws.close(1011, 'Sign-in unavailable'); }
     });
     ws.on('close', () => core.disconnect(ws));

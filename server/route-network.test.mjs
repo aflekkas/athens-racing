@@ -94,3 +94,18 @@ test('all eight slots are unique and a replacement reuses the empty slot', async
   assert.deepEqual([...x.lobby.players.values()].map(p => p.gridSlot), [0, 1, 2, 3, 4, 5, 6, 7]);
   x.send(sockets[3], { type: 'leave' }); const ws = socket(); x.core.connect(ws, 'replace', { protocol: MULTIPLAYER_PROTOCOL }); x.send(ws, { type: 'join', code: x.lobby.code }); assert.equal(x.core.clientData(ws).gridSlot, 3);
 });
+test('asynchronous recovery preflight never fetches for spoofed tuples and rechecks race after loading', async t => {
+  const x = await setup(t); x.ready(); x.advance(); x.send(x.a, x.packet({ type: 'state', state: x.pose(-8) })); let fetches = 0;
+  x.map.prepareRecovery = async () => { fetches++; return true; };
+  const recover = x.packet({ type: 'recover', motionEpoch: 1 });
+  await x.core.prepareMessage(x.a, JSON.stringify({ ...recover, mapId: 'spoof' })); assert.equal(fetches, 0);
+  await x.core.prepareMessage(x.a, JSON.stringify({ ...recover, generation: recover.generation - 1 })); assert.equal(fetches, 0);
+  assert.equal(await x.core.prepareMessage(x.a, JSON.stringify(recover)), true); assert.equal(fetches, 1);
+  x.advance(1100); x.map.prepareRecovery = async () => { x.lobby.raceId = 'new-race'; return true; };
+  assert.equal(await x.core.prepareMessage(x.a, JSON.stringify(recover)), false); assert.equal(x.a.messages.at(-1).type, 'recover-denied');
+});
+for (const drift of ['position', 'generation', 'identity']) test(`recovery preflight rejects ${drift} changing while authoritative cells load`, async t => {
+  const x = await setup(t); x.ready(); x.advance(); x.send(x.a, x.packet({ type: 'state', state: x.pose(-8) })); const recover = x.packet({ type: 'recover', motionEpoch: 1 });
+  x.map.prepareRecovery = async driver => { if (drift === 'position') driver.state = { ...driver.state, x: driver.state.x + 1 }; if (drift === 'generation') x.lobby.generation++; if (drift === 'identity') x.lobby.routeIdentity = { ...x.lobby.routeIdentity, onlineGridHash: 'f'.repeat(64) }; return true; };
+  assert.equal(await x.core.prepareMessage(x.a, JSON.stringify(recover)), false); assert.equal(x.a.messages.at(-1).type, 'recover-denied'); assert.equal(x.core.clientData(x.a).recovery, null);
+});

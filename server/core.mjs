@@ -279,7 +279,10 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
           if (m.type === 'recover') { send(c.ws, { type: 'recover-denied', raceId: m.raceId, generation: l.generation || 0, motionEpoch: m.motionEpoch, routeIdentity: l.routeIdentity, message: 'Route identity mismatch.' }); return; }
           return error('Route identity mismatch.');
         }
-        if (routeMap?.routeIdentity && ['state', 'recover', 'contact', 'dnf'].includes(m.type) && m.generation !== l.generation) return error('Race generation mismatch.');
+        if (routeMap?.routeIdentity && ['state', 'recover', 'contact', 'dnf'].includes(m.type) && m.generation !== l.generation) {
+          if (m.type === 'recover') { send(c.ws, { type: 'recover-denied', raceId: m.raceId, generation: l.generation || 0, motionEpoch: m.motionEpoch, routeIdentity: l.routeIdentity, message: 'Race generation mismatch.' }); return; }
+          return error('Race generation mismatch.');
+        }
         if (m.type === 'world-frame') { sharedWorld.frame(c, l, m, now); return; }
         if (m.type === 'world-contact') { sharedWorld.contact(c, l, m, now); return; }
         if (m.type === 'options') {
@@ -645,6 +648,25 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
       if (l.players.size) lobbies.set(l.code, l);
     }
   };
+  const prepareMessage = async (ws, bytes) => {
+    let message; try { message = JSON.parse(bytes); } catch { return true; }
+    if (message?.type !== 'recover') return true;
+    const driver = [...clients].find(c => c.ws === ws), lobby = driver?.lobby, map = maps.get(lobby?.mapId);
+    // Reject mismatched races before any asynchronous asset fetch. The normal
+    // handler produces the protocol's explicit denial for these cases.
+    if (!map?.prepareRecovery || !driver.state || !Number.isSafeInteger(message.motionEpoch) || message.motionEpoch <= (driver.state.motionEpoch ?? -1) || driver.finish !== null || driver.dnf || lobby.status !== 'race' || message.raceId !== lobby.raceId || message.generation !== lobby.generation || !routePacketMatches(map, message)) return true;
+    const deny = text => send(ws, { type: 'recover-denied', raceId: message.raceId, generation: lobby.generation || 0, motionEpoch: message.motionEpoch, routeIdentity: lobby.routeIdentity, message: text });
+    const now = Date.now();
+    if (now - (driver.recoveryPrepareAt ?? -Infinity) < 1000) { deny('Recovery roads are preparing. Try again.'); return false; }
+    driver.recoveryPrepareAt = now;
+    const generation = lobby.generation;
+    const poseKey = () => JSON.stringify(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'layer', 'surfaceId', 'edgeId', 'motionEpoch'].map(k => driver.state?.[k]));
+    const acceptedPose = poseKey();
+    try {
+      if (!await map.prepareRecovery(driver) || driver.ws !== ws || driver.lobby !== lobby || lobby.raceId !== message.raceId || lobby.generation !== generation || poseKey() !== acceptedPose || !routePacketMatches(map, message) || !sameRouteIdentity(lobby.routeIdentity, map.routeIdentity)) { deny('Recovery position changed. Try again.'); return false; }
+      return true;
+    } catch (error) { deny(error.message || 'Recovery roads unavailable. Try again.'); return false; }
+  };
   const nextWake = () => {
     let at = Infinity;
     for (const c of sessions.values()) if (!c.connected) at = Math.min(at, c.touched + reconnectGraceMs + 1);
@@ -655,5 +677,5 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
     }
     return Number.isFinite(at) ? at : null;
   };
-  return { connect, message: (ws, bytes) => handlers.get(ws)?.message(bytes), disconnect: ws => { handlers.get(ws)?.close(); handlers.delete(ws); }, pong: ws => handlers.get(ws)?.pong(), tick, nextWake, exportState, restore, clientData: ws => { const c = [...clients].find(c => c.ws === ws); return c && clientData(c); }, discover, publicLobby, lobbies, clients, sessions, track };
+  return { connect, prepareMessage, message: (ws, bytes) => handlers.get(ws)?.message(bytes), disconnect: ws => { handlers.get(ws)?.close(); handlers.delete(ws); }, pong: ws => handlers.get(ws)?.pong(), tick, nextWake, exportState, restore, clientData: ws => { const c = [...clients].find(c => c.ws === ws); return c && clientData(c); }, discover, publicLobby, lobbies, clients, sessions, track };
 }

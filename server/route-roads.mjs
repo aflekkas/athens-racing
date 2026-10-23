@@ -3,6 +3,8 @@ import { ROUTE_HASH } from '../src/route-network.js';
 import { routeSurfaceAllowed } from '../src/route-surface.js';
 import { projectEdge, edgeLength } from '../src/route-geometry.js';
 const finite = Number.isFinite;
+export const recoveryFootprints = anchor => anchor.footprints || [{ halfWidth: anchor.halfWidth, halfLength: anchor.halfLength }];
+export const footprintCertified = (anchor, footprint) => recoveryFootprints(anchor).some(p => p.halfWidth >= footprint.halfWidth && p.halfLength >= footprint.halfLength);
 const freeze = value => { if (value && typeof value === 'object' && !Object.isFrozen(value)) { Object.values(value).forEach(freeze); Object.freeze(value); } return value; };
 // The release builder signs exact emitted edges and individually contact/obstacle
 // proven anchors. The request never contributes geometry or an unproved pose.
@@ -19,6 +21,7 @@ export async function validateRouteRoads(body, { expectedHash, worldSetRevision 
   for (const a of body.anchors) {
     const e = edges.get(a.edgeId), key = canonicalJSON([a.edgeId, a.offsetM]);
     if (!e || seen.has(key) || !['x', 'y', 'z', 'yaw', 'offsetM', 'leftM', 'rightM', 'halfWidth', 'halfLength'].every(k => finite(a[k])) || a.offsetM < 0 || a.offsetM > edgeLength(e) + .025 || a.halfWidth <= 0 || a.halfLength <= 0 || a.leftM < a.halfWidth + .15 || a.rightM < a.halfWidth + .15 || a.layer !== e.layer || typeof a.surfaceId !== 'string') throw Error('Invalid proven recovery anchor');
+    if (!Array.isArray(recoveryFootprints(a)) || !recoveryFootprints(a).length || recoveryFootprints(a).length > 64 || !recoveryFootprints(a).every(p => finite(p.halfWidth) && p.halfWidth > 0 && p.halfWidth <= 3 && finite(p.halfLength) && p.halfLength > 0 && p.halfLength <= 12 && a.leftM >= p.halfWidth + .15 && a.rightM >= p.halfWidth + .15)) throw Error('Invalid certified recovery footprint');
     const q = projectEdge(e, a.x, a.z);
     if (!routeSurfaceAllowed(e, a, graph) || Math.abs(q.offsetM - a.offsetM) > .025 || q.distance > Math.max(a.leftM, a.rightM) || Math.abs(q.y - a.y) > .75 || Math.cos(q.yaw - a.yaw) < Math.cos(5 * Math.PI / 180)) throw Error('Recovery anchor left its emitted edge');
     seen.add(key);
@@ -32,7 +35,7 @@ export function routeRoadAuthority(body) {
     if (!['x', 'y', 'z'].every(k => finite(pose[k]))) return [];
     const out = [], n = Math.ceil(radius / size), cx = Math.floor(pose.x / size), cz = Math.floor(pose.z / size);
     for (let x = cx - n; x <= cx + n; x++) for (let z = cz - n; z <= cz + n; z++) for (const a of index.get(`${x},${z}`) || []) {
-      if (a.halfWidth >= footprint.halfWidth && a.halfLength >= footprint.halfLength && Math.hypot(a.x - pose.x, a.z - pose.z) <= radius) out.push(a);
+      if (footprintCertified(a, footprint) && Math.hypot(a.x - pose.x, a.z - pose.z) <= radius) out.push(a);
     }
     // No route-anchor fallback when the release has no surveyed road nearby.
     return out;

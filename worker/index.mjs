@@ -20,7 +20,11 @@ import { createSqlLeaderboard } from './leaderboard.mjs';
 
 const maps = new Map(catalogue.maps.map(m => [m.id, { ...m, definitions: new Map(m.definitions) }]));
 let routeMapsReady;
-const prepareRouteMaps = () => routeMapsReady ||= installRouteMaps(maps, catalogue, { carSpecs: catalogue.carSpecs || {} });
+const prepareRouteMaps = env => routeMapsReady ||= installRouteMaps(maps, catalogue, { carSpecs: catalogue.carSpecs || {}, loadRoadArtifact: async (url, maxBytes) => {
+  const object = await env.ATHENS_WORLD?.get(url.slice('/world/'.length));
+  if (!object || object.size > maxBytes) throw Error('Recovery asset unavailable or too large');
+  return object.text();
+} });
 const cars = new Set(catalogue.cars);
 const nitrousCars = new Set(catalogue.nitrousCars || []);
 const carSpecs = catalogue.carSpecs || {};
@@ -45,7 +49,7 @@ export default {
     const world = await worldAssets(request, env, ctx);
     if (world) return world;
     const url = new URL(request.url);
-    if (url.pathname === '/api/routes') { await prepareRouteMaps(); return json(maps.routeConfig); }
+    if (url.pathname === '/api/routes') { await prepareRouteMaps(env); return json(maps.routeConfig); }
     if (protectedPath(url.pathname)) { const auth = await authorizeGame(request, env); if (auth.response) return auth.response; }
     if (url.pathname === '/api/account/presence') return env.PRESENCE.get(env.PRESENCE.idFromName('friends-v1')).fetch(request);
     if (url.pathname.startsWith('/api/auth/') || url.pathname.startsWith('/api/account/')) return accounts(request, env);
@@ -74,7 +78,7 @@ export class GameArena extends DurableObject {
     // Auto-response avoids waking the object for optional idle keepalives.
     ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('keepalive', 'alive'));
     ctx.blockConcurrencyWhile(() => this.event('restore', async () => {
-      await prepareRouteMaps();
+      await prepareRouteMaps(env);
       this.leaderboard = createSqlLeaderboard(ctx.storage.sql, maps, cars, { transactionSync: fn => ctx.storage.transactionSync(fn) });
       this.core = createGameCore({ maps, cars, carSpecs, nitrousCars, leaderboard: this.leaderboard });
       await cleanupLegacyStorage(ctx.storage);
@@ -192,6 +196,7 @@ export class GameArena extends DurableObject {
         ws.send(JSON.stringify({ type: 'error', message: 'Impact is recoverable; tow and repair.' })); return;
       }
       const before = this.core.clientData(ws)?.finish;
+      if (!await this.core.prepareMessage(ws, message)) return;
       this.core.message(ws, message);
       this.attach(ws);
       // Attachments survive hibernation, but a platform replacement can close
