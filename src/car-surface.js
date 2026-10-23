@@ -36,10 +36,10 @@ if (carSurfaceSize.w > 0.5 && dot(carDirt, vec4(1.0)) + carScuffs[0].w + carScuf
     float along = flank ? d.z : d.x;
     float depth = flank ? d.x : d.z;
     float radius = length(vec3(along / 0.65, d.y / 0.22, depth / 0.26));
-    float patch = 1.0 - smoothstep(0.55, 1.0, radius);
+    float coverage = 1.0 - smoothstep(0.55, 1.0, radius);
     float scratch = 1.0 - smoothstep(0.055, 0.115, abs(fract((d.y + 0.018 * sin(along * 19.0)) * 32.0) - 0.5));
     float broken = step(0.26, carGrain(vec3(along * 27.0, d.y * 63.0, float(i))));
-    float wear = patch * carScuffs[i].w;
+    float wear = coverage * carScuffs[i].w;
     diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.07, 0.065, 0.055), wear * 0.32);
     diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.43, 0.44, 0.42), wear * scratch * broken * 0.8);
   }
