@@ -45,7 +45,7 @@ function scanRecoveryJSON(text, limit = Infinity) {
  * excluded; UTF-16 storage and UTF-8 wire bytes are reported separately. */
 export function estimateRecoveryJSON(raw) {
   if (typeof raw !== 'string' && !(raw instanceof Uint8Array)) throw TypeError('Recovery JSON must be text or bytes');
-  const text = typeof raw === 'string' ? raw : new TextDecoder().decode(raw);
+  const text = typeof raw === 'string' ? raw : new TextDecoder('utf-8', { fatal: true }).decode(raw);
   const wireBytes = typeof raw === 'string' ? new TextEncoder().encode(raw).length : raw.byteLength;
   const estimate = scanRecoveryJSON(text);
   return Object.freeze({ ...estimate, wireBytes, decodedLimitBytes: RECOVERY_MEMORY.decoded,
@@ -61,7 +61,7 @@ export async function admitRecoverySidecar(raw, { expectedHash, worldSetRevision
   if (typeof raw === 'string' || raw instanceof Uint8Array) {
     bytes = typeof raw === 'string' ? new TextEncoder().encode(raw).length : raw.byteLength;
     if (bytes > RECOVERY_ARTIFACT_BYTES) throw Error('Recovery sidecar exceeds artifact budget');
-    const text = typeof raw === 'string' ? raw : new TextDecoder().decode(raw);
+    const text = typeof raw === 'string' ? raw : new TextDecoder('utf-8', { fatal: true }).decode(raw);
     scanRecoveryJSON(text, RECOVERY_MEMORY.decoded); body = JSON.parse(text);
     liveBufferBytes = text.length * 2 + (raw instanceof Uint8Array ? raw.byteLength : 0); consumePacked = true;
   } else {

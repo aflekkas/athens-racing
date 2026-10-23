@@ -55,3 +55,20 @@ test('recovery asset schema gate permits v1 manifests and supported cells only a
  const lying={...env,ATHENS_WORLD:{async get(){return{body:tooBig,size:1}}}};
  assert.equal((await worldAssets(new Request(path),lying,ctx,cache)).status,413);assert.equal(puts,0);
 });
+
+test('recovery asset bytes reject malformed UTF-8 before cache while correctly encoded U+FFFD remains valid', async () => {
+ const {sha256,canonicalJSON} = await import('../src/route-definition.js');
+ const sequences = [[0xff,0xff,0xff],[0xe2,0x82],[0xc0,0xaf],[0xed,0xa0,0x80],[0xf4,0x90,0x80,0x80],[0x80]];
+ for(const [cell,version] of [['0,0',1],['0,0',2],['manifest',1]]) for(const sequence of sequences){
+  const body = {schemaVersion:version,worldId:'athens',projectionId:'athens-v1',worldSetRevision:'c'.repeat(64),edges:[{name:'UTF8_MARKER'}]};
+  const [prefix,suffix] = canonicalJSON(body).split('UTF8_MARKER'), replacement = new TextDecoder().decode(new Uint8Array(sequence));
+  const validBytes = Buffer.from(prefix+replacement+suffix), valid = JSON.parse(validBytes.toString()), key = `recovery/${cell}.${await sha256(valid)}.json`;
+  const malformed = Buffer.concat([Buffer.from(prefix),Buffer.from(sequence),Buffer.from(suffix)]);
+  assert.throws(()=>new TextDecoder('utf-8',{fatal:true}).decode(malformed),TypeError);
+  assert.deepEqual(JSON.parse(new TextDecoder().decode(malformed)),valid,'old replacement decoder passes canonical hash');
+  let puts=0;const cache={async match(){},async put(){puts++}},wait=[],ctx={waitUntil(p){wait.push(p)}},envFor=bytes=>({ATHENS_WORLD_MANIFEST:manifest,ATHENS_WORLD:{async get(){return{body:bytes,size:bytes.length,httpEtag:'"utf8"'}}}});
+  const request=()=>new Request('https://x/world/'+key);
+  const good=await worldAssets(request(),envFor(validBytes),ctx,cache); assert.equal(good.status,200); assert.deepEqual(new Uint8Array(await good.arrayBuffer()),new Uint8Array(validBytes)); await Promise.all(wait); assert.equal(puts,1);
+  const bad=await worldAssets(request(),envFor(malformed),ctx,cache); assert.equal(bad.status,502); assert.equal(bad.headers.get('Cache-Control'),'no-store'); assert.equal(puts,1,'bad bytes never cached');
+ }
+});

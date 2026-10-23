@@ -318,3 +318,21 @@ test('caller object admission rejects live serialization overflow before any Tex
     } finally { globalThis.TextEncoder = NativeEncoder; }
   }
 });
+
+test('recovery v1/v2 require fatal UTF-8 while valid replacement characters retain exact identity', async () => {
+  const { encodeRecoverySidecar } = await import('./route-road-wire.mjs'), { canonicalJSON } = await import('../src/route-definition.js');
+  const sequences = [[0xff,0xff,0xff], [0xe2,0x82], [0xc0,0xaf], [0xed,0xa0,0x80], [0xf4,0x90,0x80,0x80], [0x80]];
+  for (const version of [1,2]) for (const sequence of sequences) {
+    const body = version === 1 ? twoWayBody() : structuredClone(encodeRecoverySidecar(twoWayBody()));
+    body.edges[0].name = 'UTF8_MARKER';
+    const [prefix,suffix] = canonicalJSON(body).split('UTF8_MARKER'), replacement = new TextDecoder().decode(new Uint8Array(sequence));
+    const validText = prefix + replacement + suffix, valid = JSON.parse(validText), expectedHash = await sha256(valid);
+    const malformed = Buffer.concat([Buffer.from(prefix),Buffer.from(sequence),Buffer.from(suffix)]);
+    assert.throws(() => new TextDecoder('utf-8',{fatal:true}).decode(malformed), TypeError);
+    assert.deepEqual(JSON.parse(new TextDecoder().decode(malformed)),valid,'old replacement decoder authenticates a different byte stream');
+    const accepted = await admitRecoverySidecar(Buffer.from(validText),{expectedHash,worldSetRevision:revision});
+    assert.equal(accepted.body.anchors.length,2,'literal correctly encoded U+FFFD remains valid');
+    await assert.rejects(admitRecoverySidecar(malformed,{expectedHash,worldSetRevision:revision}),TypeError);
+    assert.throws(() => estimateRecoveryJSON(malformed),TypeError);
+  }
+});
