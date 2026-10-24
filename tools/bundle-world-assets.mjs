@@ -7,6 +7,7 @@ import {composeWorldManifest, canonicalWorldJSON, validateWorldDefinition} from 
 export const BUNDLE_WORLD_ORIGIN = 'https://staging.athensracing.com';
 export const BUNDLE_WORLD_LIMITS = Object.freeze({
   metadataBytes: 2 * 1024 * 1024, objectBytes: 4 * 1024 * 1024,
+  enrichmentObjectBytes: 2 * 1024 * 1024, enrichmentBytes: 8 * 1024 * 1024,
   upstreamBytes: 64 * 1024 * 1024, downstreamBytes: 64 * 1024 * 1024,
   regions: 8, objects: 4096, requests: 512, pending: 16,
   prepareMs: 15000, objectMs: 10000, lifetimeMs: 120000, closeMs: 2000,
@@ -19,6 +20,8 @@ const plain = value => value && typeof value === 'object' && !Array.isArray(valu
 const exact = (value, keys) => plain(value) && Object.keys(value).length === keys.length && keys.every(key => Object.hasOwn(value,key));
 const positive = value => Number.isSafeInteger(value) && value > 0;
 const apply=Reflect.apply;
+const addAbort=EventTarget.prototype.addEventListener,removeAbortNative=EventTarget.prototype.removeEventListener;
+const byteLengthGetter=Object.getOwnPropertyDescriptor(Object.getPrototypeOf(Uint8Array.prototype),'byteLength').get;
 // No error-value coercion, accessor invocation or Proxy trap for diagnostics.
 function safeErrorText(value,limit) {
   if(value===null||typeof value!=='object'||types.isProxy(value)||!types.isNativeError(value))return 'non-Error failure';
@@ -99,12 +102,12 @@ async function observeOwnedResponseClose(res,{until,now}) {
 }
 export async function prepareBundleWorldAssets(value, {fetcher=fetch, signal, limits:overrides={}, now=()=>performance.now()} = {}) {
   const source=sourceDescriptor(value), limits=lowerLimits(overrides), born=now(), deadline=born+limits.lifetimeMs;
-  let hasFirstFailure=false,firstFailure,hasCleanupFailure=false,cleanupFailure, cleanupConfirmed=false, closed=false, active=0, pending=0, upstreamBytes=0, downstreamBytes=0, metadataBytes=0, requests=0, enrichmentReads=0, enrichmentBytes=0;
+  let hasFirstFailure=false,firstFailure,hasCleanupFailure=false,cleanupFailure, cleanupConfirmed=false, closed=false, active=0, pending=0, upstreamBytes=0, downstreamBytes=0, metadataBytes=0, requests=0, enrichmentReads=0, enrichmentBytes=0, pendingReadOutcomes=0, accountingIncomplete=false;
   let sequence=Promise.resolve(), resolveFailure;
   const failure=new Promise(resolve=>{resolveFailure=resolve;});
   const objects=new Map(), metadata=new Map(), controllers=new Set(), cancellations=new Set(), fetches=new Set(), forwards=new Set(), phases=new WeakMap();
   const closeSignal=new AbortController(), secondaryFailures=[];let secondaryOverflow=false,cleanupUntil=null,responseCleanupPending=0,responseCleanupUncertain=0;
-  const responseCleanup=new WeakMap();
+  const responseCleanup=new WeakMap(),interruptReleases=new Set(),phaseInterrupts=new Map();
   const cleanupBudget=()=>cleanupUntil??=now()+limits.closeMs;
   const latch=error=>{if(!hasFirstFailure){hasFirstFailure=true;firstFailure=workFailure(error);resolveFailure(firstFailure);}return firstFailure;};
   const check=until=>{
@@ -114,6 +117,7 @@ export async function prepareBundleWorldAssets(value, {fetcher=fetch, signal, li
     if (now() >= Math.min(deadline,until??deadline)) fail('deadline');
   };
   function recordFailure(error,kind='bridge') {
+    if(!hasFirstFailure&&signal?.aborted)latch(signal.reason);
     if(kind==='bridge-cleanup'&&!hasCleanupFailure){hasCleanupFailure=true;cleanupFailure=error;}
     if(hasFirstFailure&&error!==firstFailure) {
       const message=safeErrorText(error,40);
@@ -124,6 +128,30 @@ export async function prepareBundleWorldAssets(value, {fetcher=fetch, signal, li
   }
   function cleanupAttempt(operation) {
     try{operation();return true;}catch(error){recordFailure(error,'bridge-cleanup');return false;}
+  }
+  // Original interrupt observers span acquisition, copy and cleanup, not just awaits.
+  // One app observer + at most requests phase observers + two sole-read observers.
+  function ownInterrupt(target,onAbort) {
+    if(!target)return ()=>{};
+    if(interruptReleases.size>=limits.requests+3)fail('interrupt observer cap');
+    let live=false;
+    const listener=()=>onAbort(target.reason);
+    const release=()=>{
+      if(!live)return;
+      let failed=false,error;
+      try{apply(target.removeEventListener,target,['abort',listener]);}catch(value){failed=true;error=value;}
+      // Always remove this exact owned registration even if a supplied method fails.
+      try{apply(removeAbortNative,target,['abort',listener]);live=false;interruptReleases.delete(release);}
+      catch(value){if(!failed){failed=true;error=value;}}
+      if(failed)throw error;
+    };
+    apply(addAbort,target,['abort',listener,{once:true}]);live=true;interruptReleases.add(release);
+    if(target.aborted)listener();
+    return release;
+  }
+  function releasePhase(state) {
+    const release=phaseInterrupts.get(state);if(!release)return;
+    if(cleanupAttempt(release))phaseInterrupts.delete(state);else throw firstFailure;
   }
   function phaseCheck(state) {
     try {
@@ -158,26 +186,33 @@ export async function prepareBundleWorldAssets(value, {fetcher=fetch, signal, li
     const combined=signals.length?AbortSignal.any(signals):null;
     let rejectAbort;
     const interrupted=new Promise((_,reject)=>{rejectAbort=reject;});
-    abortListener=()=>rejectAbort(combined.reason);
+    abortListener=()=>rejectAbort(latch(combined.reason));
     combined?.addEventListener('abort',abortListener,{once:true});
     try {
       phaseCheck(state);
       if(combined?.aborted)throw combined.reason;
-      timer=setTimeout(()=>rejectAbort(Error('Bundle world: response deadline')),Math.max(0,Math.min(deadline,state.until)-now()));
+      timer=setTimeout(()=>rejectAbort(latch(Error('Bundle world: response deadline'))),Math.max(0,Math.min(deadline,state.until)-now()));
       const result=await Promise.race([owned,interrupted,failure.then(error=>{throw error;})]);
       phaseCheck(state);return result;
     } catch(error) {recordFailure(error);cancelResponse(state);throw firstFailure;}
     finally {let failed=false;if(!cleanupAttempt(()=>clearTimeout(timer)))failed=true;if(!cleanupAttempt(()=>combined?.removeEventListener('abort',abortListener)))failed=true;if(failed)throw firstFailure;}
   }
   function beginRequest(requestSignal) {
-    const state={until:Math.min(deadline,now()+limits.objectMs),signal:requestSignal,request:null,response:null,complete:false};
-    phaseCheck(state);
+    const until=Math.min(deadline,now()+limits.objectMs);
+    if(phaseInterrupts.size>=limits.requests)throw recordFailure(Error('Bundle world: request phase cap'));
+    const original=[signal,requestSignal].filter(Boolean),combined=original.length?AbortSignal.any(original):null;
+    const release=ownInterrupt(combined,reason=>latch(reason));
+    let state;
+    try{state={until,signal:requestSignal,request:null,response:null,complete:false};phaseCheck(state);}
+    catch(error){recordFailure(error);cleanupAttempt(release);throw firstFailure;}
+    phaseInterrupts.set(state,release);
     const phase=Object.freeze({
       check(){phaseCheck(state);},
       async body(response) {
         try {
           phaseCheck(state);if(state.complete||state.response!==response)fail('response phase identity');
-          const body=response.body,copy=body?response.arrayBuffer:null;
+          const body=response.body;phaseCheck(state);
+          const copy=body?response.arrayBuffer:null;
           phaseCheck(state);if(!body)return null;
           const buffer=await phaseWait(state,apply(copy,response,[]));
           if(!(buffer instanceof ArrayBuffer)||buffer.byteLength>limits.objectBytes)fail('response copy type or size');
@@ -186,8 +221,8 @@ export async function prepareBundleWorldAssets(value, {fetcher=fetch, signal, li
       },
       track:trackForward,
       wait(work){return phaseWait(state,work);},
-      finish(){phaseCheck(state);state.complete=true;},
-      fail(error,kind){const primary=recordFailure(error,kind);cancelResponse(state);return primary;},
+      finish(){phaseCheck(state);state.complete=true;releasePhase(state);phaseCheck(state);},
+      fail(error,kind){const primary=recordFailure(error,kind);cancelResponse(state);try{releasePhase(state);}catch(error){recordFailure(error,'bridge-cleanup');}return primary;},
     });
     phases.set(phase,state);return phase;
   }
@@ -203,49 +238,114 @@ export async function prepareBundleWorldAssets(value, {fetcher=fetch, signal, li
     check(until);if(requestSignal?.aborted)throw requestSignal.reason;
     if (active) fail('overlapping upstream read');
     active++; const controller=new AbortController();controllers.add(controller);
-    let reader, response, timer, abortListener;
+    let reader,response,responseBody,bodyTried=false,bodyKnown=false,timer,combined,releaseCaller=()=>{},releaseController=()=>{};
+    const ownedBody=()=>{
+      if(response===undefined)return undefined;
+      if(!bodyTried){bodyTried=true;responseBody=response?.body;bodyKnown=true;}
+      if(!bodyKnown)fail('response body cleanup unavailable');
+      return responseBody;
+    };
     const end=Math.min(until,deadline,now()+limits.objectMs);
-    let rejectAbort;
+    let rejectAbort,hasObservedAbort=false,observedAbortReason;
+    const observeAbort=reason=>{if(!hasObservedAbort){hasObservedAbort=true;observedAbortReason=reason;}latch(observedAbortReason);};
     const interrupted=new Promise((_,reject)=>{rejectAbort=reject;});
-    controller.signal.addEventListener('abort',()=>rejectAbort(controller.signal.reason),{once:true});
-    abortListener=()=>{controller.abort(combined?.reason);};
-    const combined=signal&&requestSignal?AbortSignal.any([signal,requestSignal]):(signal||requestSignal);
-    combined?.addEventListener('abort',abortListener,{once:true});
-    if(combined?.aborted)controller.abort(combined.reason);
-    timer=setTimeout(()=>{const error=Error('Bundle world: object deadline');controller.abort(error);rejectAbort(error);},Math.max(0,end-now()));
-    const bounded=async promise=>{const result=await Promise.race([promise,interrupted]);check(end);return result;};
+    interrupted.catch(()=>{});
+    const preserveObservedAbort=()=>{
+      if(hasFirstFailure)return;
+      if(!hasObservedAbort){if(combined?.aborted)observeAbort(combined.reason);else if(controller.signal.aborted)observeAbort(controller.signal.reason);}
+      if(hasObservedAbort)latch(observedAbortReason);
+    };
+    const bounded=async promise=>{
+      const result=await Promise.race([promise,interrupted]);
+      // An already-resolved read/fetch can win the race in the same turn as abort.
+      // Preserve an earlier primary, then the original caller/owned abort reason.
+      preserveObservedAbort();
+      check(end);return result;
+    };
     try {
-      const upstream=Promise.resolve().then(()=>fetcher(source.origin+'/world/'+key,{
-        method:'GET', redirect:'error', credentials:'omit', cache:'no-store',
-        headers:{'Accept-Encoding':'identity'}, signal:controller.signal,
-      }));
-      const fetching=upstream.then(value=>{response=value;if(controller.signal.aborted)cleanupAttempt(()=>{if(response?.body&&!response.body.locked)cancel(response.body.getReader());});return response;});
+      combined=signal&&requestSignal?AbortSignal.any([signal,requestSignal]):(signal||requestSignal);
+      releaseController=ownInterrupt(controller.signal,reason=>{observeAbort(reason);rejectAbort(observedAbortReason);});
+      releaseCaller=ownInterrupt(combined,reason=>{observeAbort(reason);controller.abort(observedAbortReason);});
+      timer=setTimeout(()=>{const error=Error('Bundle world: object deadline');controller.abort(error);rejectAbort(error);},Math.max(0,end-now()));
+      const upstream=Promise.resolve().then(()=>{
+        check(end);
+        return fetcher(source.origin+'/world/'+key,{
+          method:'GET', redirect:'error', credentials:'omit', cache:'no-store',
+          headers:{'Accept-Encoding':'identity'}, signal:controller.signal,
+        });
+      });
+      const fetching=upstream.then(value=>{response=value;if(controller.signal.aborted)cleanupAttempt(()=>{const body=ownedBody();if(body&&!body.locked)cancel(body.getReader());});return response;});
       fetches.add(fetching);fetching.then(()=>fetches.delete(fetching),()=>fetches.delete(fetching));
       response=await bounded(fetching);
-      reader=response?.body?.getReader();
-      if (!response || response.status !== 200 || response.redirected) fail('upstream status or redirect');
-      if (response.url && response.url !== source.origin+'/world/'+key) fail('upstream response URL');
-      if (response.headers.get('content-encoding') && response.headers.get('content-encoding') !== 'identity') fail('HTTP content encoding');
-      const declared=response.headers.get('content-length');
+      const acquire=operation=>{check(end);const value=operation();check(end);return value;};
+      const responseBody=acquire(ownedBody);
+      if(responseBody){const getReader=acquire(()=>responseBody.getReader);reader=acquire(()=>apply(getReader,responseBody,[]));}
+      const status=acquire(()=>response?.status),redirected=acquire(()=>response?.redirected);
+      if (!response || status !== 200 || redirected) fail('upstream status or redirect');
+      const url=acquire(()=>response.url);if (url && url !== source.origin+'/world/'+key) fail('upstream response URL');
+      const headers=acquire(()=>response.headers),getHeader=acquire(()=>headers.get);
+      const encoding=acquire(()=>apply(getHeader,headers,['content-encoding']));
+      if (encoding && encoding !== 'identity') fail('HTTP content encoding');
+      const declared=acquire(()=>apply(getHeader,headers,['content-length']));
       if (declared !== null && (!/^[1-9]\d*$/.test(declared) || !positive(Number(declared)) || Number(declared)>expected.cap || expected.bytes!=null&&Number(declared)!==expected.bytes)) fail('upstream length');
-      if (!response.body) fail('missing body');
+      if (!responseBody) fail('missing body');
       const chunks=[];let length=0;
+      const accountingFailure=code=>{accountingIncomplete=true;throw recordFailure(Error('Bundle world: '+code));};
+      const captureRead=result=>{
+        // Observe each settled result once, even if the abort race already won.
+        // Never invoke result accessors or retain a history of raw results.
+        preserveObservedAbort();
+        if(result===null||typeof result!=='object'||types.isProxy(result))accountingFailure('unobservable read accounting');
+        const done=Object.getOwnPropertyDescriptor(result,'done'),value=Object.getOwnPropertyDescriptor(result,'value');
+        const hasData=value&&Object.hasOwn(value,'value'),chunk=hasData?value.value:undefined;
+        let size=0,observable=true;
+        if(chunk!==undefined){
+          if(!types.isUint8Array(chunk))observable=false;
+          else try{size=apply(byteLengthGetter,chunk,[]);}catch{observable=false;}
+        }else if(value&&!hasData)observable=false;
+        // Charge safely observable delivered bytes before abort/cap rejection.
+        if(observable){length+=size;upstreamBytes+=size;if(expected.enrichment)enrichmentBytes+=size;}
+        if(!observable||!done||!Object.hasOwn(done,'value')||typeof done.value!=='boolean')accountingFailure('unobservable read accounting');
+        if(!Number.isSafeInteger(length)||!Number.isSafeInteger(upstreamBytes)||!Number.isSafeInteger(enrichmentBytes))accountingFailure('read accounting overflow');
+        if(expected.enrichment&&enrichmentBytes>limits.enrichmentBytes)throw recordFailure(Error('Bundle world: enrichment cumulative cap'));
+        if(length>expected.cap||upstreamBytes>limits.upstreamBytes||expected.bytes!=null&&length>expected.bytes)throw recordFailure(Error('Bundle world: body byte limit'));
+        if(done.value){if(chunk!==undefined)throw recordFailure(Error('Bundle world: body EOF value'));}
+        else if(!hasData||!types.isUint8Array(chunk))accountingFailure('unobservable read accounting');
+        if(hasFirstFailure)throw firstFailure;
+        return {done:done.value,value:chunk,byteLength:size};
+      };
+      const readMethod=acquire(()=>reader.read);
+      const readOutcome=()=>{
+        check(end);
+        pendingReadOutcomes++;
+        let work;try{work=apply(readMethod,reader,[]);}catch(error){
+          pendingReadOutcomes--;accountingIncomplete=true;
+          preserveObservedAbort();throw recordFailure(error);
+        }
+        return trackForward(Promise.resolve(work).then(captureRead,error=>{
+          // A rejected/unobservable reader outcome carries no trustworthy data snapshot.
+          accountingIncomplete=true;
+          preserveObservedAbort();
+          throw recordFailure(error);
+        }).finally(()=>{pendingReadOutcomes--;}));
+      };
       for (;;) {
-        const {value:chunk,done}=await bounded(reader.read());if(done)break;
-        if (!(chunk instanceof Uint8Array)) fail('body chunk type');
-        length+=chunk.byteLength;upstreamBytes+=chunk.byteLength;
-        // Immutable enrichment JSON is opaque, lazy and never a regional manifest.
-        // Charge every received byte cumulatively, including a failed transfer.
-        if(expected.enrichment){metadataBytes+=chunk.byteLength;enrichmentBytes+=chunk.byteLength;if(metadataBytes>limits.metadataBytes)fail('metadata cap');}
-        if (length>expected.cap || upstreamBytes>limits.upstreamBytes || expected.bytes!=null&&length>expected.bytes) fail('body byte limit');
-        if(chunks.length>=4096)fail('body chunk cap');chunks.push(chunk);
+        const snapshot=await bounded(readOutcome());if(snapshot.done)break;
+        if(chunks.length>=4096)fail('body chunk cap');chunks.push(snapshot);
       }
       if (!length || expected.bytes!=null&&length!==expected.bytes || declared!==null&&length!==Number(declared)) fail('body length');
-      const bytes=new Uint8Array(length);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.byteLength;}
+      if(expected.enrichment&&(length>Math.min(limits.objectBytes,limits.enrichmentObjectBytes)||enrichmentBytes>limits.enrichmentBytes))fail('enrichment allocation cap');
+      const bytes=new Uint8Array(length);let offset=0;for(const snapshot of chunks){bytes.set(snapshot.value,offset);offset+=snapshot.byteLength;}
       if (digest(bytes)!==expected.sha256) fail('raw SHA mismatch');
       check(end);if(expected.enrichment)enrichmentReads++;return bytes;
-    } catch(error) {latch(error);cleanupAttempt(()=>controller.abort(error));cleanupAttempt(()=>{if(!reader&&response?.body&&!response.body.locked)reader=response.body.getReader();});cancel(reader);throw firstFailure;}
-    finally {let failed=false;for(const operation of [()=>clearTimeout(timer),()=>combined?.removeEventListener('abort',abortListener),()=>reader?.releaseLock()])if(!cleanupAttempt(operation))failed=true;controllers.delete(controller);active--;if(failed)throw firstFailure;}
+    } catch(error) {latch(error);cleanupAttempt(()=>controller.abort(error));cleanupAttempt(()=>{if(!reader){const body=ownedBody();if(body&&!body.locked)reader=body.getReader();}});cancel(reader);throw firstFailure;}
+    finally {
+      let failed=false;
+      // Keep original observers alive through reader/clock cleanup.
+      for(const operation of [()=>clearTimeout(timer),()=>reader?.releaseLock(),releaseCaller,releaseController])if(!cleanupAttempt(operation))failed=true;
+      controllers.delete(controller);active--;
+      if(failed||hasFirstFailure)throw firstFailure;
+    }
   }
   function address(url, base, pattern) {
     if(typeof url!=='string'||url.length>256||!url.startsWith('/')||url.startsWith('//')||url.includes('\\')||/[%?#]/.test(url)) fail('nonlocal immutable URL');
@@ -276,7 +376,7 @@ export async function prepareBundleWorldAssets(value, {fetcher=fetch, signal, li
           const key=address(e.url,source.origin,manifestKey);
           // URL content hash authenticates raw JSON; descriptor supplies no length.
           // No eager read, semantic recursion, parse or metadata-cache admission.
-          admit(key,{sha256:manifestKey.exec(key)[1],cap:limits.objectBytes,enrichment:true});
+          admit(key,{sha256:manifestKey.exec(key)[1],cap:Math.min(limits.objectBytes,limits.enrichmentObjectBytes),enrichment:true});
         } else if(typeof e.url!=='string'||e.url.length>256||!/^\/data\/[a-zA-Z0-9_/-]+\.json$/.test(e.url)||e.url.includes('/../')||e.url.includes('/./'))fail('unsupported enrichment URL');
       }
     }
@@ -298,19 +398,24 @@ export async function prepareBundleWorldAssets(value, {fetcher=fetch, signal, li
       until=cleanupBudget();
       await Promise.race([(async()=>{
         await sequence;await Promise.allSettled([...fetches]);await Promise.allSettled([...forwards]);await Promise.all([...cancellations]);
-        if(active||pending||fetches.size||forwards.size||responseCleanupPending)fail('cleanup still active');
+        if(active||pending||fetches.size||forwards.size||responseCleanupPending||pendingReadOutcomes)fail('cleanup still active');
         if(hasCleanupFailure)throw cleanupFailure;
         if(expired||now()>=until)fail('cleanup confirmation late');
       })(),new Promise((_,reject)=>{timer=setTimeout(()=>{expired=true;reject(Error('Bundle world: cleanup deadline'));},Math.max(0,until-now()));})]);
-    } catch(error){recordFailure(error,'bridge-cleanup');}
+    } catch(error){if(pendingReadOutcomes)accountingIncomplete=true;recordFailure(error,'bridge-cleanup');}
     finally {
       for(const operation of [()=>clearTimeout(timer),()=>metadata.clear(),()=>objects.clear()])cleanupAttempt(operation);
+      cleanupAttempt(()=>{if(expired||until===undefined||now()>=until)fail('cleanup confirmation late');});
+      for(const release of [...interruptReleases])cleanupAttempt(release);
+      cleanupAttempt(()=>phaseInterrupts.clear());
+      // Original cleanup deadline also covers listener release and phase clearing.
       cleanupAttempt(()=>{if(expired||until===undefined||now()>=until)fail('cleanup confirmation late');});
     }
     if(hasCleanupFailure)throw cleanupFailure;
     cleanupConfirmed=true;
   }
   try {
+    ownInterrupt(signal,reason=>latch(reason));
     const until=Math.min(deadline,born+limits.prepareMs);
     const root=await manifest(source.manifestKey,manifestKey.exec(source.manifestKey)[1],until);
     let composed;
@@ -337,8 +442,8 @@ export async function prepareBundleWorldAssets(value, {fetcher=fetch, signal, li
       if(pending>=limits.pending)throw latch(Error('Bundle world: pending request cap'));
       pending++;
       const work=sequence.then(()=>{
-        const bounded=expected.enrichment?{...expected,cap:Math.min(expected.cap,limits.metadataBytes-metadataBytes)}:expected;
-        if(bounded.cap<1)fail('metadata cap');
+        const bounded=expected.enrichment?{...expected,cap:Math.min(expected.cap,limits.enrichmentBytes-enrichmentBytes)}:expected;
+        if(bounded.cap<1)fail('enrichment cumulative cap');
         return read(key,bounded,until,requestSignal);
       });
       sequence=work.catch(()=>{});
@@ -350,8 +455,9 @@ export async function prepareBundleWorldAssets(value, {fetcher=fetch, signal, li
   return Object.freeze({
     source, failure, beginRequest, recordFailure, closeFailedResponse,
     check(){try{check();}catch(error){throw recordFailure(error,'guard');}},
-    status(){return Object.freeze({prepared:!closed&&!hasFirstFailure,closed,cleanupConfirmed,fetches:fetches.size,firstFailure:hasFirstFailure?safeErrorText(firstFailure,256):null,firstFailurePresent:hasFirstFailure,objects:objects.size,metadataBytes,enrichmentReads,enrichmentBytes,upstreamBytes,downstreamBytes,requests,pending,active,cleanupFailed:hasCleanupFailure,forwarding:forwards.size,secondaryFailures:[...secondaryFailures],secondaryOverflow,responseCleanupPending,responseCleanupUncertain});},
+    status(){return Object.freeze({prepared:!closed&&!hasFirstFailure,closed,cleanupConfirmed,fetches:fetches.size,firstFailure:hasFirstFailure?safeErrorText(firstFailure,256):null,firstFailurePresent:hasFirstFailure,objects:objects.size,metadataBytes,enrichmentReads,enrichmentBytes,enrichmentObjectLimit:limits.enrichmentObjectBytes,enrichmentLimit:limits.enrichmentBytes,accountingIncomplete,pendingReadOutcomes,receivedTotalsExact:!accountingIncomplete&&pendingReadOutcomes===0,upstreamBytes,downstreamBytes,requests,pending,active,cleanupFailed:hasCleanupFailure,forwarding:forwards.size,secondaryFailures:[...secondaryFailures],secondaryOverflow,responseCleanupPending,responseCleanupUncertain,interruptObservers:interruptReleases.size});},
     async handle(request,phase) {
+      const automatic=phase===undefined;
       try {
         if(phase===undefined)phase=beginRequest(request.signal);
         const state=phases.get(phase);if(!state||state.request)fail('request phase identity');
@@ -365,6 +471,7 @@ export async function prepareBundleWorldAssets(value, {fetcher=fetch, signal, li
         if(request.method==='GET'&&response.status===200) {downstreamBytes+=count;if(downstreamBytes>limits.downstreamBytes)fail('downstream byte cap');}
         phaseCheck(state);return response;
       } catch(error) {throw recordFailure(error);}
+      finally{if(automatic&&phase)releasePhase(phases.get(phase));}
     },
     close,
   });
@@ -372,33 +479,41 @@ export async function prepareBundleWorldAssets(value, {fetcher=fetch, signal, li
 // World routes are dispatched before generic /data/*.json compression. No real
 // server or socket is needed to exercise this bridge with inert request/response fakes.
 export async function serveBundleWorldRequest(adapter, req, res) {
-  const path=new URL(req.url,'http://localhost').pathname;
+  const rawURL=req.url,path=new URL(rawURL,'http://localhost').pathname;
   if(!isBundleWorldPath(path))return false;
   const controller=new AbortController();
   let phase,headersCommitted=false,endStarted=false,forwardFinished=false,accepted=false,completeResolve,completeReject;
-  const disconnected=()=>{if(!forwardFinished&&!res.writableFinished){const error=Error('Bundle world: client disconnected');completeReject?.(error);controller.abort(error);}};
-  const writeError=error=>{const primary=note(error,'bridge-write');completeReject?.(primary);controller.abort(primary);};
   const note=(error,kind='bridge')=>{if(phase)return phase.fail(error,kind);if(adapter?.recordFailure)return adapter.recordFailure(error,kind);return error;};
+  const interrupt=(error,kind='bridge')=>{const primary=note(error,kind);completeReject?.(primary);controller.abort(primary);return primary;};
+  const disconnected=()=>{if(!forwardFinished)interrupt(Error('Bundle world: client disconnected'));};
+  const responseClosed=()=>{if(forwardFinished)return;try{if(!res.writableFinished)disconnected();}catch(error){interrupt(error);}};
+  const writeError=error=>interrupt(error,'bridge-write');
   const destroy=async()=>{
     try {
       if(adapter?.closeFailedResponse)await adapter.closeFailedResponse(res);
       else await observeOwnedResponseClose(res,{until:performance.now()+BUNDLE_WORLD_LIMITS.closeMs,now:()=>performance.now()});
     } catch(error){note(error,'bridge-cleanup');}
   };
-  req.once?.('aborted',disconnected);res.once?.('close',disconnected);
   try {
+    req.once?.('aborted',disconnected);res.once?.('close',responseClosed);
     if(!adapter)fail('source unavailable');
     phase=adapter.beginRequest(controller.signal);
     // Constructing Request copies/serializes native headers under the same phase.
-    const method=req.method;
-    const request=new Request('http://localhost'+req.url,{method,headers:req.headers,signal:controller.signal});
+    const method=req.method;phase.check();
+    const requestHeaders=req.headers;phase.check();
+    const request=new Request('http://localhost'+rawURL,{method,headers:requestHeaders,signal:controller.signal});
     phase.check();
     const response=await adapter.handle(request,phase);
     const bytes=await phase.body(response);
-    const headers=Object.fromEntries(Array.from(response.headers,([key,value])=>[String(key),String(value)])),status=Number(response.status);
-    // Capture every potentially costly getter/serialization before the last guard.
-    const length=headers['content-length'],writeHead=res.writeHead,end=res.end;
-    phase.check();
+    const responseHeaders=response.headers;phase.check();
+    const headers=Object.fromEntries(Array.from(responseHeaders,row=>{
+      phase.check();const key=row[0];phase.check();const value=row[1];phase.check();
+      const name=String(key);phase.check();const text=String(value);phase.check();return[name,text];
+    }));phase.check();
+    const statusValue=response.status;phase.check();const status=Number(statusValue);phase.check();
+    // Capture potentially costly getters under the original phase, stopping on interrupt.
+    const length=headers['content-length'],writeHead=res.writeHead;phase.check();
+    const end=res.end;phase.check();
     if(!Number.isInteger(status)||status<100||status>599)fail('response status');
     if(method==='GET'&&status===200&&(!/^[1-9]\d*$/.test(length||'')||Number(length)!==bytes?.byteLength))fail('response content length');
     phase.check();
@@ -408,7 +523,7 @@ export async function serveBundleWorldRequest(adapter, req, res) {
     phase.check();
     apply(writeHead,res,[status,headers]);headersCommitted=true;
     phase.check(); // No body follows a late/aborted header operation.
-    endStarted=true;apply(end,res,[bytes,error=>{const failed=error!==null&&error!==undefined;forwardFinished=!failed;if(failed)completeReject(error);else completeResolve();}]);
+    endStarted=true;apply(end,res,[bytes,error=>{const failed=error!==null&&error!==undefined;forwardFinished=!failed;if(failed)interrupt(error,'bridge-write');else completeResolve();}]);
     phase.check();
     await phase.wait(completion);
     phase.finish();accepted=true; // Charges callback/flush and final forwarding costs.
@@ -418,7 +533,7 @@ export async function serveBundleWorldRequest(adapter, req, res) {
     // No second error-body write. Failed work is never a cleanup admission guard.
     await destroy();
   } finally {
-    for(const [owner,event,listener]of [[req,'aborted',disconnected],[res,'close',disconnected],[res,'error',writeError]]) {
+    for(const [owner,event,listener]of [[req,'aborted',disconnected],[res,'close',responseClosed],[res,'error',writeError]]) {
       try{owner.removeListener?.(event,listener);}catch(error){note(error,'bridge-cleanup');await destroy();}
     }
     if(accepted)try{phase.check();}catch(error){const primary=note(error);controller.abort(primary);await destroy();}
