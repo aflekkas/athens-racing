@@ -1,4 +1,4 @@
-# REVIEW ONLY: candidate9 proposal, not installed or dispatched.
+# Trusted draft acceptance; publication remains a separate action.
 name: Desktop native Windows acceptance
 on:
   pull_request:
@@ -17,7 +17,7 @@ env:
   PAYLOAD_SHA256: 4b1de8bd190ee9b30bbf6fb492f995b55e5359d6ec6eaf2a5d37494d8aff26da
 jobs:
   linux-exact-gates:
-    if: github.event.pull_request.draft && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.event.pull_request.head.ref, 'desktop-native-review/')
+    if: github.event.pull_request.draft == true && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.event.pull_request.head.ref, 'desktop-native-review/')
     runs-on: ubuntu-24.04
     timeout-minutes: 180
     steps:
@@ -57,9 +57,71 @@ jobs:
           name: linux-exact-source-gates
           path: ${{ runner.temp }}/exact-source/.scratch/test-results/
           if-no-files-found: warn
+  fetch-payload:
+    # Draft releases require write-level repository visibility. This isolated job
+    # never checks out or executes PR source, extracts archives, or publishes.
+    if: github.event.pull_request.draft == true && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.event.pull_request.head.ref, 'desktop-native-review/')
+    runs-on: windows-2025
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - name: Fetch pinned same-repository draft payload
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ($env:SOURCE_SHA -notmatch '^[a-f0-9]{40}$') { throw 'Invalid exact source SHA' }
+          if ($env:PAYLOAD_SHA256 -notmatch '^[a-f0-9]{64}$') { throw 'Missing exact payload pin' }
+          if ($env:PAYLOAD_TAG -notmatch '^[A-Za-z0-9._-]+$') { throw 'Invalid payload tag' }
+          $releaseText = gh api --paginate --slurp "repos/$env:GITHUB_REPOSITORY/releases?per_page=100"
+          if ($LASTEXITCODE -ne 0) { throw 'Draft lookup failed; no credential fallback' }
+          $matching = @()
+          foreach ($page in ($releaseText | ConvertFrom-Json -NoEnumerate)) {
+            foreach ($entry in $page) {
+              if ($entry.tag_name -eq $env:PAYLOAD_TAG) { $matching += $entry }
+            }
+          }
+          if ($matching.Count -ne 1) { throw 'Expected exactly one matching draft release' }
+          $release = $matching[0]
+          if (!$release.draft -or $release.target_commitish -ne $env:SOURCE_SHA) { throw 'Draft must target exact trusted PR head SHA' }
+          # PowerShell 7.4+ preserves native binary stdout during redirection.
+          if ($PSVersionTable.PSVersion -lt [version]'7.4') { throw 'Binary download requires PowerShell 7.4+' }
+          foreach ($name in @('game-payload.tar.gz','game-provenance.json')) {
+            $assets = @($release.assets | Where-Object { $_.name -eq $name -and $_.state -eq 'uploaded' })
+            if ($assets.Count -ne 1) { throw 'Expected one complete pinned payload asset' }
+            $asset = $assets[0]
+            if ($name -eq 'game-payload.tar.gz' -and ($asset.size -ne 678424508 -or $asset.digest -ne "sha256:$env:PAYLOAD_SHA256")) { throw 'Canonical payload metadata mismatch' }
+            if ($name -eq 'game-provenance.json' -and ($asset.size -gt 4096 -or $asset.size -lt 1 -or $asset.digest -notmatch '^sha256:[a-f0-9]{64}$')) { throw 'Invalid provenance metadata' }
+            $destination = Join-Path $env:RUNNER_TEMP $name
+            gh api "repos/$env:GITHUB_REPOSITORY/releases/assets/$($assets[0].id)" -H 'Accept: application/octet-stream' > $destination
+            if ($LASTEXITCODE -ne 0) { throw 'Payload download failed; do not use PAT/CF fallback' }
+            if ((Get-Item $destination).Length -ne $asset.size -or ('sha256:' + (Get-FileHash $destination -Algorithm SHA256).Hash.ToLower()) -ne $asset.digest) { throw 'Downloaded asset metadata/hash mismatch' }
+          }
+          $payload = Join-Path $env:RUNNER_TEMP 'game-payload.tar.gz'
+          if ((Get-FileHash $payload -Algorithm SHA256).Hash.ToLower() -ne $env:PAYLOAD_SHA256) { throw 'Payload SHA mismatch' }
+          $provenance = Get-Content (Join-Path $env:RUNNER_TEMP 'game-provenance.json') -Raw | ConvertFrom-Json
+          $commitText = gh api "repos/$env:GITHUB_REPOSITORY/git/commits/$env:SOURCE_SHA"
+          if ($LASTEXITCODE -ne 0) { throw 'Exact source identity lookup failed' }
+          $commit = $commitText | ConvertFrom-Json
+          if ($commit.sha -ne $env:SOURCE_SHA) { throw 'Source identity mismatch' }
+          $tree = $commit.tree.sha
+          if ($provenance.sourceCommit -ne $env:SOURCE_SHA -or $provenance.sourceTree -ne $tree -or $provenance.payloadSHA256 -ne $env:PAYLOAD_SHA256 -or $provenance.gameBuild -ne $env:EXPECTED_GAME_BUILD -or $provenance.runtimeHash -ne $env:EXPECTED_RUNTIME_HASH) { throw 'Canonical payload provenance mismatch' }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: canonical-input-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/game-payload.tar.gz
+            ${{ runner.temp }}/game-provenance.json
+          compression-level: 0
+          if-no-files-found: error
+          retention-days: 1
   windows-native:
+    needs: [fetch-payload]
+    permissions:
+      contents: read
     # Same-repository trusted review branch only; never pull_request_target.
-    if: github.event.pull_request.draft && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.event.pull_request.head.ref, 'desktop-native-review/')
+    if: github.event.pull_request.draft == true && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.event.pull_request.head.ref, 'desktop-native-review/')
     runs-on: windows-2025
     timeout-minutes: 120
     steps:
@@ -84,33 +146,13 @@ jobs:
           git rev-parse "HEAD^{tree}"
           if ((git rev-parse HEAD) -ne $env:SOURCE_SHA) { throw 'Source SHA mismatch' }
           node --version
-      - name: Fetch pinned same-repository draft payload
+      - uses: actions/download-artifact@v4
+        with:
+          name: canonical-input-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}
+      - name: Revalidate current-run canonical input
         shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
-          if ($env:PAYLOAD_SHA256 -notmatch '^[a-f0-9]{64}$') { throw 'Missing exact payload pin' }
-          if ($env:PAYLOAD_TAG -notmatch '^[A-Za-z0-9._-]+$') { throw 'Invalid payload tag' }
-          $releaseText = gh api --paginate --slurp "repos/$env:GITHUB_REPOSITORY/releases?per_page=100"
-          if ($LASTEXITCODE -ne 0) { throw 'Draft lookup failed with contents:read; stop for permission review, no credential fallback' }
-          $matching = @()
-          foreach ($page in ($releaseText | ConvertFrom-Json -NoEnumerate)) {
-            foreach ($entry in $page) {
-              if ($entry.tag_name -eq $env:PAYLOAD_TAG) { $matching += $entry }
-            }
-          }
-          if ($matching.Count -ne 1) { throw 'Expected exactly one matching draft release' }
-          $release = $matching[0]
-          if (!$release.draft -or $release.target_commitish -ne $env:SOURCE_SHA) { throw 'Draft must target exact trusted PR head SHA' }
-          # PowerShell 7.4+ preserves native binary stdout during redirection.
-          if ($PSVersionTable.PSVersion -lt [version]'7.4') { throw 'Binary download requires PowerShell 7.4+' }
-          foreach ($name in @('game-payload.tar.gz','game-provenance.json')) {
-            $assets = @($release.assets | Where-Object { $_.name -eq $name -and $_.state -eq 'uploaded' })
-            if ($assets.Count -ne 1) { throw 'Expected one complete pinned payload asset' }
-            $destination = Join-Path $env:RUNNER_TEMP $name
-            gh api "repos/$env:GITHUB_REPOSITORY/releases/assets/$($assets[0].id)" -H 'Accept: application/octet-stream' > $destination
-            if ($LASTEXITCODE -ne 0) { throw 'Payload download failed; do not use PAT/CF fallback' }
-          }
           $payload = Join-Path $env:RUNNER_TEMP 'game-payload.tar.gz'
           if ((Get-FileHash $payload -Algorithm SHA256).Hash.ToLower() -ne $env:PAYLOAD_SHA256) { throw 'Payload SHA mismatch' }
           $provenance = Get-Content (Join-Path $env:RUNNER_TEMP 'game-provenance.json') -Raw | ConvertFrom-Json
@@ -139,7 +181,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
   accepted:
-    if: github.event.pull_request.draft && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.event.pull_request.head.ref, 'desktop-native-review/')
+    if: github.event.pull_request.draft == true && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.event.pull_request.head.ref, 'desktop-native-review/')
     needs: [linux-exact-gates, windows-native]
     runs-on: ubuntu-24.04
     steps:
