@@ -91,9 +91,16 @@ jobs:
         run: |
           if ($env:PAYLOAD_SHA256 -notmatch '^[a-f0-9]{64}$') { throw 'Missing exact payload pin' }
           if ($env:PAYLOAD_TAG -notmatch '^[A-Za-z0-9._-]+$') { throw 'Invalid payload tag' }
-          $releaseText = gh api "repos/$env:GITHUB_REPOSITORY/releases/tags/$env:PAYLOAD_TAG"
+          $releaseText = gh api --paginate --slurp "repos/$env:GITHUB_REPOSITORY/releases?per_page=100"
           if ($LASTEXITCODE -ne 0) { throw 'Draft lookup failed with contents:read; stop for permission review, no credential fallback' }
-          $release = $releaseText | ConvertFrom-Json
+          $matching = @()
+          foreach ($page in ($releaseText | ConvertFrom-Json -NoEnumerate)) {
+            foreach ($entry in $page) {
+              if ($entry.tag_name -eq $env:PAYLOAD_TAG) { $matching += $entry }
+            }
+          }
+          if ($matching.Count -ne 1) { throw 'Expected exactly one matching draft release' }
+          $release = $matching[0]
           if (!$release.draft -or $release.target_commitish -ne $env:SOURCE_SHA) { throw 'Draft must target exact trusted PR head SHA' }
           gh release download $env:PAYLOAD_TAG --repo $env:GITHUB_REPOSITORY --pattern game-payload.tar.gz --pattern game-provenance.json --dir $env:RUNNER_TEMP
           if ($LASTEXITCODE -ne 0) { throw 'Payload download failed; do not use PAT/CF fallback' }
