@@ -102,8 +102,15 @@ jobs:
           if ($matching.Count -ne 1) { throw 'Expected exactly one matching draft release' }
           $release = $matching[0]
           if (!$release.draft -or $release.target_commitish -ne $env:SOURCE_SHA) { throw 'Draft must target exact trusted PR head SHA' }
-          gh release download $env:PAYLOAD_TAG --repo $env:GITHUB_REPOSITORY --pattern game-payload.tar.gz --pattern game-provenance.json --dir $env:RUNNER_TEMP
-          if ($LASTEXITCODE -ne 0) { throw 'Payload download failed; do not use PAT/CF fallback' }
+          # PowerShell 7.4+ preserves native binary stdout during redirection.
+          if ($PSVersionTable.PSVersion -lt [version]'7.4') { throw 'Binary download requires PowerShell 7.4+' }
+          foreach ($name in @('game-payload.tar.gz','game-provenance.json')) {
+            $assets = @($release.assets | Where-Object { $_.name -eq $name -and $_.state -eq 'uploaded' })
+            if ($assets.Count -ne 1) { throw 'Expected one complete pinned payload asset' }
+            $destination = Join-Path $env:RUNNER_TEMP $name
+            gh api "repos/$env:GITHUB_REPOSITORY/releases/assets/$($assets[0].id)" -H 'Accept: application/octet-stream' > $destination
+            if ($LASTEXITCODE -ne 0) { throw 'Payload download failed; do not use PAT/CF fallback' }
+          }
           $payload = Join-Path $env:RUNNER_TEMP 'game-payload.tar.gz'
           if ((Get-FileHash $payload -Algorithm SHA256).Hash.ToLower() -ne $env:PAYLOAD_SHA256) { throw 'Payload SHA mismatch' }
           $provenance = Get-Content (Join-Path $env:RUNNER_TEMP 'game-provenance.json') -Raw | ConvertFrom-Json
