@@ -125,12 +125,12 @@ test('per-frame DOM probes are cached: setCarSpec, notifications', () => {
 });
 
 
-function densityHarness({standalone=false,source=src(standalone?'src/athens-world.js':'src/main.js')}={}){
+function densityHarness({standalone=false,source=src(standalone?'src/athens-world.js':'src/main.js'),perfClass='potato',gpuName,debugAvailable=true}={}){
  // Keep the real configuration/graphics/setter; geometry warmup is unrelated to this hook.
  class DeferredTraffic extends WorldTraffic{configure(def){return super.configure(def,{deferFleet:true});}}
- let callback;const context={WorldTraffic:DeferredTraffic,resolveGraphics,settings:{perfClass:'potato',transmission:'manual'},GFX:resolveGraphics({perfClass:'high'}),gfx:resolveGraphics({perfClass:'high'}),G:{},traffic:null,worldTraffic:undefined,worldSession:{},session:{},scene:{},pendingRoute:{},network:null,player:{veh:{route:{},setManual(value){this.manual=value;}}},spec:{},input:{drivingSource:'keyboard'},people:{},hud:{setRates(){}},applyVehicleAids(){context.aids=(context.aids||0)+1;},applySteeringAssist(){context.steering=(context.steering||0)+1;},onSettings(fn){callback=fn;return()=>{};}};
- const lines=source.split('\n');
- if(standalone){const index=lines.findIndex(line=>line.includes('const applyDriving='));assert.ok(index>=0);const initial=lines.find(line=>line.includes('worldTraffic=new WorldTraffic('));assert.ok(initial);runInNewContext(lines.slice(index,index+2).join('\n')+'\n'+initial,context);context.applyBudget=()=>callback();context.traffic=context.worldTraffic;}
+ let callback;const context={WorldTraffic:DeferredTraffic,resolveGraphics,settings:{perfClass,transmission:'manual'},GFX:resolveGraphics({perfClass:'high'}),gfx:resolveGraphics({perfClass:'high'}),G:{},traffic:null,worldTraffic:undefined,worldSession:{},session:{},scene:{},pendingRoute:{},network:null,player:{veh:{route:{},setManual(value){this.manual=value;}}},spec:{},input:{drivingSource:'keyboard'},people:{},hud:{setRates(){}},applyVehicleAids(){context.aids=(context.aids||0)+1;},applySteeringAssist(){context.steering=(context.steering||0)+1;},onSettings(fn){callback=fn;return()=>{};}};
+ const lines=source.split('\n');context.gpuQueries=0;context.debug=debugAvailable?{UNMASKED_RENDERER_WEBGL:123}:null;context.gl={getParameter(key){assert.equal(key,123);context.gpuQueries++;return gpuName;}};
+ if(standalone){const boot=lines.find(line=>line.includes('gfx=resolveGraphics(settings,'));assert.ok(boot,'actual boot graphics statement');const stats=lines.find(line=>line.includes('const stats='));assert.ok(stats);runInNewContext(boot+'\n'+stats.slice(stats.indexOf('const stats='))+';globalThis.bootGraphics=gfx;globalThis.bootStats=stats;',context);const index=lines.findIndex(line=>line.includes('const applyDriving='));assert.ok(index>=0);const initial=lines.find(line=>line.includes('worldTraffic=new WorldTraffic('));assert.ok(initial);runInNewContext(lines.slice(index,index+2).join('\n')+'\n'+initial,context);context.applyBudget=()=>callback();context.traffic=context.worldTraffic;}
  else{const start=source.indexOf('traffic=new WorldTraffic('),end=source.indexOf('validateRivalPlan(',start);assert.ok(start>=0&&end>start);const budget=lines.find(line=>line.startsWith('const applyCpuBudget ='));assert.ok(budget);runInNewContext(source.slice(start,end)+budget+';globalThis.applyBudget=applyCpuBudget;',context);}
  return context;
 }
@@ -138,11 +138,36 @@ function densityHarness({standalone=false,source=src(standalone?'src/athens-worl
 test('standalone initial and settings hooks resolve fresh CPU density without changing driving aids',()=>{
  const f=densityHarness({standalone:true});assert.equal(f.traffic.offlineDensityScale,PERFORMANCE.potato.traffic,'first hook runs before traffic exists, constructor hook must apply current preference');assert.equal(f.aids,1);assert.equal(f.steering,1);assert.equal(f.player.veh.manual,true);
  f.settings.perfClass='high';f.settings.transmission='auto';f.applyBudget();assert.equal(f.traffic.offlineDensityScale,1);assert.equal(f.player.veh.manual,false);assert.equal(f.aids,2);assert.equal(f.steering,2);
- f.settings.perfClass='low';f.applyBudget();assert.equal(f.traffic.offlineDensityScale,PERFORMANCE.low.traffic);assert.equal(f.gfx.traffic,1,'startup graphics snapshot intentionally stayed High');
- for(const [standalone,source]of [[false,src('src/main.js')],[true,src('src/athens-world.js')]]){const old=source.replaceAll(/(?:traffic|worldTraffic)\?\.setOfflineDensityScale\?\.\(resolveGraphics\(settings\)\.traffic\);|(?:traffic|worldTraffic)\?\.setOfflineDensityScale\(resolveGraphics\(settings\)\.traffic\);|(?:traffic|worldTraffic)\.setOfflineDensityScale\(resolveGraphics\(settings\)\.traffic\);/g,'');const prior=densityHarness({standalone,source:old});assert.throws(()=>assert.equal(prior.traffic.offlineDensityScale,PERFORMANCE.potato.traffic),'negative control reproduces old missing hook');}
+ f.settings.perfClass='low';f.applyBudget();assert.equal(f.traffic.offlineDensityScale,PERFORMANCE.low.traffic);assert.equal(f.bootGraphics.perfClass,'potato','actual boot graphics stays at initial class while density uses current settings');
+ for(const [standalone,source]of [[false,src('src/main.js')],[true,src('src/athens-world.js')]]){const old=source.replaceAll(/(?:traffic|worldTraffic)\?\.setOfflineDensityScale\?\.\(resolveGraphics\(settings(?:,\{gpuName\})?\)\.traffic\);|(?:traffic|worldTraffic)\?\.setOfflineDensityScale\(resolveGraphics\(settings(?:,\{gpuName\})?\)\.traffic\);|(?:traffic|worldTraffic)\.setOfflineDensityScale\(resolveGraphics\(settings(?:,\{gpuName\})?\)\.traffic\);/g,'');const prior=densityHarness({standalone,source:old});assert.throws(()=>assert.equal(prior.traffic.offlineDensityScale,PERFORMANCE.potato.traffic),'negative control reproduces old missing hook');}
 });
 
 test('graphics hooks never change online civilian admission or hide the existing fleet',()=>{
  for(const standalone of [false,true]){const f=densityHarness({standalone}),t=f.traffic,active=Array.from({length:4},()=>({active:true,police:false,m:{root:{visible:true}}}));let attempts=0;t.cars=active;t.pool={pickFree(){attempts++;return null;}};t.level=1;t.spawn({x:0,z:0},[]);assert.equal(attempts,0,'offline Potato stops replenishment beyond three civilians');
  t.onlineAuthority=true;t.onlineTargets=new Map([['driver',{vehicle:{x:0,z:0}}]]);t.spawn({x:0,z:0},[]);assert.equal(attempts,1,'same scaled traffic still uses the full online target');f.settings.perfClass='high';f.applyBudget();f.settings.perfClass='potato';f.applyBudget();t.spawn({x:0,z:0},[]);assert.equal(attempts,2,'online admission ignores live graphics changes');assert.equal(t.cars,active);assert.ok(active.every(c=>c.active&&c.m.root.visible),'graphics never hides or trims an active actor');}
+});
+
+
+test('standalone Auto uses the GPU detected at boot for initial civilian density',()=>{
+ const f=densityHarness({standalone:true,perfClass:'auto',gpuName:'ANGLE SwiftShader'});
+ assert.equal(f.traffic.offlineDensityScale,PERFORMANCE.low.traffic,'Auto software GPU must not fall back to High density');
+ assert.equal(f.bootGraphics.perfClass,'low');assert.equal(f.gpuQueries,1,'reuse the existing boot query');
+});
+test('standalone live Auto/manual reselection resolves CURRENT settings with the captured GPU',()=>{
+ const f=densityHarness({standalone:true,perfClass:'auto',gpuName:'SwiftShader'});
+ for(const [perfClass,expected]of [['high',1],['auto',.6],['potato',.4],['med',.85],['auto',.6]]){f.settings.perfClass=perfClass;f.applyBudget();assert.equal(f.traffic.offlineDensityScale,expected,perfClass);}
+ assert.equal(f.gpuQueries,1);assert.equal(f.bootStats.bootPerfClass,'low','boot scalar is not relabelled on settings changes');
+});
+test('standalone manual performance classes retain their exact density despite software GPU',()=>{
+ for(const perfClass of PERF_CLASSES){const f=densityHarness({standalone:true,perfClass,gpuName:'SwiftShader'});assert.equal(f.traffic.offlineDensityScale,PERFORMANCE[perfClass].traffic);assert.equal(f.bootStats.bootPerfClass,perfClass);f.applyBudget();assert.equal(f.traffic.offlineDensityScale,PERFORMANCE[perfClass].traffic);assert.equal(f.gpuQueries,1);}
+});
+test('standalone missing GPU/debug extension preserves empty-name High fallback',()=>{
+ for(const [gpuName,debugAvailable]of [['',true],[undefined,true],['SwiftShader',false]]){const f=densityHarness({standalone:true,perfClass:'auto',gpuName,debugAvailable});assert.equal(f.traffic.offlineDensityScale,1);assert.equal(f.bootStats.gpuName,'');assert.equal(f.bootStats.bootPerfClass,'high');f.settings.perfClass='low';f.applyBudget();f.settings.perfClass='auto';f.applyBudget();assert.equal(f.traffic.offlineDensityScale,1);assert.equal(f.gpuQueries,debugAvailable?1:0);}
+});
+test('standalone boot GPU/class stats are bounded plain scalars from the existing query only',()=>{
+ const gpuName='SwiftShader '+ 'x'.repeat(400),f=densityHarness({standalone:true,perfClass:'auto',gpuName});assert.equal(f.bootStats.gpuName,gpuName.slice(0,256));assert.equal(f.bootStats.gpuName.length,256);assert.equal(f.bootStats.bootPerfClass,'low');assert.equal(f.gpuQueries,1);assert.equal(typeof f.bootStats.gpuName,'string');assert.equal(typeof f.bootStats.bootPerfClass,'string');
+});
+test('standalone density regression negative controls reproduce initial AND live old High fallback',()=>{
+ const fixed=src('src/athens-world.js'),old=fixed.replaceAll('setOfflineDensityScale(resolveGraphics(settings,{gpuName}).traffic)','setOfflineDensityScale(resolveGraphics(settings).traffic)');assert.notEqual(old,fixed);
+ const f=densityHarness({standalone:true,source:old,perfClass:'auto',gpuName:'SwiftShader'});assert.equal(f.bootGraphics.perfClass,'low');assert.equal(f.traffic.offlineDensityScale,1,'old initial bug');f.settings.perfClass='high';f.applyBudget();f.settings.perfClass='auto';f.applyBudget();assert.equal(f.traffic.offlineDensityScale,1,'old callback bug');
 });

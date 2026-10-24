@@ -40,7 +40,7 @@ export async function bootAthens({tileObserver=null}={}){
  if(account.blocked){location.replace('/?menu=1');return;}
  bootScreen.done();
  const canvas=document.getElementById('c'),renderer=new THREE.WebGLRenderer({canvas,antialias:false,stencil:false,powerPreference:'high-performance'}),gl=renderer.getContext(),debug=gl.getExtension('WEBGL_debug_renderer_info');
- const gfx=resolveGraphics(settings,{gpuName:debug?gl.getParameter(debug.UNMASKED_RENDERER_WEBGL):''}),resources=gfx.resources;
+ const gpuName=debug?gl.getParameter(debug.UNMASKED_RENDERER_WEBGL):'',gfx=resolveGraphics(settings,{gpuName}),resources=gfx.resources;
  renderer.setPixelRatio(gfx.pixelRatio);renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=false;
  const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(62,innerWidth/innerHeight,.15,Math.min(gfx.drawDistance,850));
  scene.fog=new THREE.Fog('#9caeae',camera.far*.65,camera.far);const sky=ENV.createSky();scene.add(sky);const baked=ENV.bakeSky(renderer,sky);scene.environment=baked.env;setCarEnv(baked.env);const {sun}=ENV.createLights(scene);sun.castShadow=false;
@@ -48,7 +48,7 @@ export async function bootAthens({tileObserver=null}={}){
  const area=pickedAthensArea(query);
  loading.show('athens','FREE ROAM',{freeRoam:true,area});
  let scripted=false,driver=null,cameraHook=null,player=null,stopped=false,paused=false,towing=false,frameId,elapsed=0,lastSurfaceElapsed=0,surfaceVehicle=null,surfaceCorners=null,accumulator=0,last=performance.now(),lastTraffic=-10,lookBackA=0;
- let worldTraffic;const stats={frames:0,simulationSeconds:0,metres:0,holds:0,missingContacts:0,carHits:0,frameMs:[],cpuMs:[],initialDownloadBytes:0,initialDriveMs:0,maxEstimatedJSBytes:0,maxEstimatedGPUBytes:0};
+ let worldTraffic;const stats={gpuName:typeof gpuName==='string'?gpuName.slice(0,256):'',bootPerfClass:gfx.perfClass,frames:0,simulationSeconds:0,metres:0,holds:0,missingContacts:0,carHits:0,frameMs:[],cpuMs:[],initialDownloadBytes:0,initialDriveMs:0,maxEstimatedJSBytes:0,maxEstimatedGPUBytes:0};
  const session=await createWorldSession({tileObserver,renderer,scene,resources,progress:(...args)=>loading.progress(...args)});
  const {stream,roads,barriers,obstacles,detail,props,trees,signs,marks,horizon,landmarks,plazas,lawns,sceneTiles,manifest}=session;
  let guidance=query.get('guidance')==='1'?createGuidanceDemo(scene,stream,roads):null;const offGuidance=session.subscribeTiles({activated:k=>guidance?.addCell(k),removed:k=>guidance?.removeCell(k)});
@@ -72,7 +72,7 @@ export async function bootAthens({tileObserver=null}={}){
  }
  stream.releaseSpawn();input.setCarSpec(spec);
  player.cockpit=new Cockpit(spec,player.model);player.cockpit.setVisible(false);
- const applyDriving=()=>{worldTraffic?.setOfflineDensityScale(resolveGraphics(settings).traffic);applyVehicleAids(player.veh,spec);player.veh.setManual(settings.transmission==='manual');applySteeringAssist(player.veh,input.drivingSource);};
+ const applyDriving=()=>{worldTraffic?.setOfflineDensityScale(resolveGraphics(settings,{gpuName}).traffic);applyVehicleAids(player.veh,spec);player.veh.setManual(settings.transmission==='manual');applySteeringAssist(player.veh,input.drivingSource);};
  const offSettings=onSettings(applyDriving);applyDriving();
  if(!directSpawn){const chosen=(query.get('spawn')||(guidance?`${DEMO_ROUTE[0][0]},${DEMO_ROUTE[0][2]}`:'')).split(',').map(Number);if(chosen.length===2&&chosen.every(Number.isFinite))await spawnAt(chosen[0],chosen[1]);}
  if(guidance&&!query.has('spawn')){const p=guidance.spawnPose();if(p)place(player.veh,p);}
@@ -113,7 +113,7 @@ export async function bootAthens({tileObserver=null}={}){
   return {js,gpu,heap,sharedJS,tileJS,tileGPU,renderTargetsAndSkyAllowance:targets,resources,streamReserved:stream.residentBytes+stream.reservedBytes,transient:stream.transientBytes};
  }
  async function tow(){if(towing)return;towing=true;try{const v=player.veh,p=worldRecoveryTarget(session,v,{route:null,halfWidth:v.halfW,halfLength:v.halfL,actors:worldTraffic?.actors||[]});if(!p)throw Error('No safe loaded road');await stream.teleport(p,()=>place(v,p),{validatePose:session.safePose});}finally{towing=false;}}
- worldTraffic=new WorldTraffic(session,scene,player.veh.route);worldTraffic.setOfflineDensityScale(resolveGraphics(settings).traffic);worldTraffic.configure({type:'free',traffic:1,rules:{police:false}});
+ worldTraffic=new WorldTraffic(session,scene,player.veh.route);worldTraffic.setOfflineDensityScale(resolveGraphics(settings,{gpuName}).traffic);worldTraffic.configure({type:'free',traffic:1,rules:{police:false}});
  function syncSurfaceClock(v){
   if(surfaceVehicle!==v||surfaceCorners!==v.corners){surfaceVehicle=v;surfaceCorners=v.corners;lastSurfaceElapsed=elapsed;}
  }
