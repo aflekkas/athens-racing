@@ -13,7 +13,7 @@ export function worldFixture(id) {
   if (!worlds.has(id)) worlds.set(id, (async () => {
     if (process.env.ASR_TEST_FULL === '1') {
       const bake = await generateMapBake(resolve(import.meta.dirname, '..'), id);
-      return { ...bake, terrain: {
+      return { ...bake, terrainPack: bake.terrain, terrain: {
         group: bake.terrainGroup,
         heightC: (x, z) => sampleH(bake.map.terrain, bake.map.terrain.Hc, x, z),
       } };

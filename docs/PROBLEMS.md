@@ -55,6 +55,8 @@ The owner requested self-contained installers, offline solo, and player-hosted L
 
 Fixed prerequisites (native installed and cross-platform acceptance remain separate):
 
+- Full-map bake tests retain the encoded terrain pack separately from the sampler facade; the full fixture no longer feeds an object as an empty binary buffer. Production bundle QA preserves test hooks across the real Quit-to-menu navigation and waits for the new loaded menu document without dereferencing a booting runtime.
+
 - Recovery production omitted authenticated junction contact-owner edges in cell `-1,-10`. It now retains the exact owner and its emitted twins, excludes restricted-only contacts, and passes unchanged admission.
 - Dense cells exceeded conservative 12 MiB parsing limits. Lossless identifier dictionaries and bounded ordered parts preserve every original anchor, coordinate and certificate without increasing wire, parse, cache or query limits. Artifact admission does not establish that every dense recovery neighborhood fits query memory; actual Tow remains an acceptance check.
 - Five legacy Megara graph cells used generic `surface:roads` instead of authenticated `surface:megaraNetwork`. A separate derived export replays the existing guarded metadata repair, preserves geometry bytes and all six route/rival numeric arrays, and rebinds the complete release identity. The published source remains immutable.
