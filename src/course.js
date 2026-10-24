@@ -193,9 +193,14 @@ function observeRouteCourse(course, received, now, { initialTime, recovery, rout
   if (!onRoute || !chord) course.excursion ??= { at: now - dt, progress: course.validProgress };
   const short = !course.excursion || now - course.excursion.at <= ROUTE_TOLERANCE.seconds &&
     Math.abs(d1 - course.excursion.progress) <= ROUTE_TOLERANCE.distance;
-  if (!continuous || !sameDeck || recovery || !short) course.rejoinLimit ??= course.validProgress + 2;
+  const unknownContact = received.surfaceId === '' || received.edgeId === '' || received.edgeId != null && received.edgeId !== q.edgeId;
+  if (unknownContact || !continuous || !sameDeck || recovery || !short) course.rejoinLimit ??= course.validProgress + 2;
   const rejoined = course.rejoinLimit == null || d1 <= course.rejoinLimit;
-  const valid = continuous && sameDeck && !recovery && rejoined && short && (onRoute || nearRoute);
+  // Empty network contact markers are explicit unknowns, never road proof.
+  // A supplied edge must agree with the authority's own projection; offline
+  // callers without edge telemetry retain the existing labelled-kerb grace.
+  const knownContact = received.surfaceId !== '' && received.edgeId !== '' && (received.edgeId == null || received.edgeId === q.edgeId);
+  const valid = knownContact && continuous && sameDeck && !recovery && rejoined && short && (onRoute || nearRoute);
   if (valid) {
     delete course.rejoinLimit;
     course.validProgress = d1;
@@ -214,7 +219,7 @@ function observeRouteCourse(course, received, now, { initialTime, recovery, rout
       if (course.finishedAt == null && d1 >= course.len) course.finishedAt = course.markTimes.at(-1);
     }
   }
-  if (onRoute && chord && continuous && sameDeck && rejoined && !recovery) {
+  if (knownContact && onRoute && chord && continuous && sameDeck && rejoined && !recovery) {
     delete course.excursion; delete course.rejoinLimit;
   }
   if (!valid && d1 > 0 && course.reached > 0 && !course.firstInvalid)

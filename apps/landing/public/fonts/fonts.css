@@ -1,0 +1,5 @@
+@font-face { font-family: 'Barlow'; src: url('./Barlow-Regular.ttf') format('truetype'); font-style: normal; font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Barlow'; src: url('./Barlow-Bold.ttf') format('truetype'); font-style: normal; font-weight: 700; font-display: swap; }
+@font-face { font-family: 'Barlow Condensed'; src: url('./BarlowCondensed-ExtraBold.ttf') format('truetype'); font-style: normal; font-weight: 800; font-display: swap; }
+@font-face { font-family: 'Barlow Condensed'; src: url('./BarlowCondensed-Black.ttf') format('truetype'); font-style: normal; font-weight: 900; font-display: swap; }
+@font-face { font-family: 'Barlow Condensed'; src: url('./BarlowCondensed-BlackItalic.ttf') format('truetype'); font-style: italic; font-weight: 900; font-display: swap; }

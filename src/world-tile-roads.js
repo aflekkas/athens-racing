@@ -1,10 +1,11 @@
+import {WorldRoadQueryCache} from './world-road-query-cache.js';
 import { WorldRoadGraph } from './world-tile-graph.js';
 import { tileKey } from './world-tile-format.js';
 import {MEGARA_RACEWAY,MEGARA_DRIVE_SURFACES} from './route-surface.js';
 
 /** Graph and contact queries share the scene's activation/eviction transaction. */
 export class WorldTileRoads {
-  constructor(stream) { this.stream=stream;this.graph=new WorldRoadGraph(); }
+  constructor(stream) { this.stream=stream;this.graph=new WorldRoadGraph();this.queryCache=new WorldRoadQueryCache(stream);if(stream.reserveQueryBytes)stream.roads=this; }
   publicSurfaces(layer){
     // Contact ownership can change inside overlapping OSM junction polygons.
     // Width is the contiguous physical asphalt interval, not one polygon label.
@@ -28,10 +29,11 @@ export class WorldTileRoads {
    * Never estimate physical width from directional laneCount or a surface maximum.
    */
   connected(edge){
+    const cached=this.queryCache.connected(edge,this.graph);if(cached)return cached;
     const result=new Map([[edge.surface,edge.layer]]);
     if(MEGARA_RACEWAY.test(edge.id)&&edge.surface==='surface:roads'&&edge.layer===0&&!(edge.flags&8))for(const surface of MEGARA_DRIVE_SURFACES)result.set(surface,0);
     for(const {value:e} of this.graph.edges.values()){if(e.flags&8)continue;if((e.from===edge.to&&this.graph.legal(edge.id,e)||e.to===edge.from&&this.graph.legal(e.id,edge))&&Math.abs((e.from===edge.to?e.points[0][1]-edge.points.at(-1)[1]:e.points.at(-1)[1]-edge.points[0][1]))<.025)result.set(e.surface,e.layer);if(e.layer!==edge.layer)continue;for(const [node,y]of [[edge.from,edge.points[0][1]],[edge.to,edge.points.at(-1)[1]]])if(e.from===node&&Math.abs(e.points[0][1]-y)<.025||e.to===node&&Math.abs(e.points.at(-1)[1]-y)<.025)result.set(e.surface,e.layer);}
-    return result;
+    this.queryCache.rememberConnected(edge,result);return result;
   }
   width(point,{radius=16,heightTolerance=1,connected=false,bounded=false}={}) {
     if(!(radius>0&&radius<=32))throw new Error('Invalid road width search radius');
@@ -74,9 +76,14 @@ export class WorldTileRoads {
     }
     // Building owners are already one-hop resident whenever contact is ready.
     const rectangle=[corners[0],corners[2],corners[8],corners[6]];
+    this.queryCache.sync(this.graph);
+    const padding=Math.max(0,clearance)+1e-6,finiteBounds=[point.x,point.z,point.yaw,halfWidth,halfLength,clearance].every(Number.isFinite);
+    let minX=Infinity,minZ=Infinity,maxX=-Infinity,maxZ=-Infinity;
+    if(finiteBounds)for(const [x,z]of rectangle){minX=Math.min(minX,x-padding);minZ=Math.min(minZ,z-padding);maxX=Math.max(maxX,x+padding);maxZ=Math.max(maxZ,z+padding);}
     for(const tile of this.stream.tiles.values())if(tile.state==='active'){
-      const {metadata:m,tables:t}=tile.packet;
+      const {metadata:m,tables:t}=tile.packet,bounds=finiteBounds?this.queryCache.boundsFor(tile):null;
       for(let i=0;i<t.buildings.length;i+=4){const h=i/2;if(point.y+2<t.buildingHeights[h]||point.y>t.buildingHeights[h]+t.buildingHeights[h+1])continue;
+        if(bounds&&(bounds[i+2]<minX||bounds[i]>maxX||bounds[i+3]<minZ||bounds[i+1]>maxZ))continue;
         const polygon=[];for(let j=t.buildings[i+1];j<t.buildings[i+1]+t.buildings[i+2];j++)polygon.push([t.buildingCorners[j*2]+m.origin[0],t.buildingCorners[j*2+1]+m.origin[2]]);
         if(polygonsOverlap(rectangle,polygon,clearance))return false;
       }
@@ -131,7 +138,10 @@ export class WorldTileRoads {
     const target=this.stream.anchor(id);if(!target)throw new Error('Unknown loaded tow anchor');
     return this.stream.teleport(target,()=>{const p=this.stream.anchor(id);if(!p||!this.safe(p))throw new Error('Tow footprint unavailable');return move(p);},options);
   }
-  dispose(){this.graph.dispose();}
+  invalidateTile(key){this.queryCache.remove(key);}
+  clearQueryCache(){this.queryCache.clear();}
+  get queryBytes(){return this.queryCache.bytes;}
+  dispose(){this.queryCache.clear();this.graph.dispose();}
 }
 function polygonsOverlap(a,b,clearance){
   const inside=(p,q)=>{let result=false;for(let i=0,j=q.length-1;i<q.length;j=i++){const u=q[i],v=q[j];if((u[1]>p[1])!==(v[1]>p[1])&&p[0]<(v[0]-u[0])*(p[1]-u[1])/(v[1]-u[1])+u[0])result=!result;}return result;};

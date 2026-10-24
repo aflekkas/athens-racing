@@ -42,6 +42,28 @@ Difficulty: 🟢 good first fix · 🟡 medium · 🔴 deep / needs care.
 
 ---
 
+## Open: offline desktop and LAN migration (2026-10-24)
+
+The owner requested self-contained installers, offline solo, and player-hosted LAN following Cogenly's architecture. Work is in progress; infrastructure must remain available until the replacement passes offline game, persistence, multiplayer, and installer verification.
+
+- The current renderer requires the unified Athens world and compiled routes. Legacy track files alone cannot run races. Package every manifest dependency and verify its immutable hash before distribution.
+- Published staging currently advertises `online:false`. Desktop LAN must build and validate its own complete online route/recovery catalogue before a race can work; a working lobby alone is insufficient.
+- Native Windows and Linux installer/firewall tests, macOS local-network permission, and two physical computers remain required before describing every platform as verified.
+
+- Results photo framing remains an open baseline visual issue: the native exported 1200×900 PNG saves correctly and passes save/cancel/subframe checks, but its photo area is mostly grey road/hills without a clearly framed car. The photo-camera block is byte-identical to original `36db95dc`; a streamed-origin mismatch is only a hypothesis. Evidence: `.scratch/desktop-check/installed-final/result-card.png`. This is separate from successful file export and is not fixed by the desktop/CI change.
+- Native Windows CI acceptance is proposed separately: an exact-source Windows NSIS install, six-route/PNG/two-client LAN checks and default-profile uninstall/reinstall retention must pass before advertising Windows as verified. Hosted software rendering and one-machine LAN do not establish physical GPU, Windows Firewall or Mac↔Windows interoperability.
+
+Fixed prerequisites (native installed and cross-platform acceptance remain separate):
+
+- Recovery production omitted authenticated junction contact-owner edges in cell `-1,-10`. It now retains the exact owner and its emitted twins, excludes restricted-only contacts, and passes unchanged admission.
+- Dense cells exceeded conservative 12 MiB parsing limits. Lossless identifier dictionaries and bounded ordered parts preserve every original anchor, coordinate and certificate without increasing wire, parse, cache or query limits. Artifact admission does not establish that every dense recovery neighborhood fits query memory; actual Tow remains an acceptance check.
+- Five legacy Megara graph cells used generic `surface:roads` instead of authenticated `surface:megaraNetwork`. A separate derived export replays the existing guarded metadata repair, preserves geometry bytes and all six route/rival numeric arrays, and rebinds the complete release identity. The published source remains immutable.
+- Local fonts, bundled Three/workers, explicit Solo/Host/Join, scoped local profiles, LAN lifecycle cleanup and fail-closed source/overlay verification are implemented. Complete recovery certification now covers all 1,748 cells and six routes. Native macOS source-game checks pass all six routes with keyboard movement, authenticated Megara cell-boundary crossing, Syntagma Tow, mouse lock/unlock/pause and full-restart persistence. Native Results PNG save/cancel and subframe denial pass. Two native macOS clients also pass private-IP host/join, synchronized start, accepted remote movement, authoritative Tow, reconnect retaining the driver and host shutdown→Solo. Final installed proof remains an acceptance check.
+
+- Native LAN start kept the menu backdrop over the streamed race and omitted edge contact identity from outgoing state. Both branches now reveal the road, and emitted contact metadata reaches strict server admission. Explicit unknown contacts and mismatched projected edges retain display snapshots without earned route progress; reentry must return to earned progress. Existing labelled kerb excursion behavior remains unchanged. Actual native two-client movement and Tow pass; source regression covers ground→production telemetry→real authority, unknown/stale contact, wrong deck and reentry.
+
+- Native road-query traffic spikes: an optional 256 KiB cache shares the existing stream admission budget, retains exact building bounds and graph-revision-scoped connectivity, and falls back to the original predicates when admission fails. Matched 60-second native drives improve frame p99 from 24.6 to 9.4 ms and frames over 50 ms from 27 to 1; one 99.9 ms frame remains. Evidence and instrumentation limits: `.scratch/desktop-check/traffic-performance.md`.
+
 ## Open: reported by the owner (most important first)
 
 ### 4. Unrealistic terrain 🔴

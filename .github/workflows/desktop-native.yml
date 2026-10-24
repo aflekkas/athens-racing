@@ -1,0 +1,132 @@
+# REVIEW ONLY: candidate9 proposal, not installed or dispatched.
+name: Desktop native Windows acceptance
+on:
+  pull_request:
+    branches: [staging]
+    types: [opened, reopened, synchronize]
+permissions:
+  contents: read
+concurrency:
+  group: desktop-native-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+env:
+  SOURCE_SHA: ${{ github.event.pull_request.head.sha }}
+  EXPECTED_GAME_BUILD: 67f8f8c4c724fe86a2b11dc55670bc9c56c66f43ea006a5b4a9ef34f38f08af5
+  EXPECTED_RUNTIME_HASH: 99920f00703076e7a587edbc8e9da6d9724a53105a62c6e749a1ba8291493773
+  PAYLOAD_TAG: v0.1.0
+  PAYLOAD_SHA256: 4b1de8bd190ee9b30bbf6fb492f995b55e5359d6ec6eaf2a5d37494d8aff26da
+jobs:
+  linux-exact-gates:
+    if: github.event.pull_request.draft && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.event.pull_request.head.ref, 'desktop-native-review/')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.3
+          cache: npm
+      - run: node -e "if(process.platform!=='linux'||process.arch!=='x64'||process.versions.node!=='22.23.3'||process.versions.openssl!=='3.5.8')throw Error('Unreviewed source-gate runtime')"
+      - name: Materialize clean exact candidate archive
+        run: |
+          mkdir -p "$RUNNER_TEMP/exact-source"
+          git archive "$SOURCE_SHA" | tar -x -C "$RUNNER_TEMP/exact-source"
+      - run: npm ci
+        working-directory: ${{ runner.temp }}/exact-source
+      - run: npx playwright install --with-deps chromium
+        working-directory: ${{ runner.temp }}/exact-source
+      - name: Required exact-candidate gates
+        working-directory: ${{ runner.temp }}/exact-source
+        run: |
+          unset ASR_TEST_RETRY
+          npm test -- --full --no-retry
+          node --import ./tools/physics-test/register.mjs tools/physics-test/regress.mjs
+          node tools/check-browser-imports.mjs
+          node tools/check-syntax.mjs
+          node tools/events-test.mjs
+          node tools/ghost-lap.test.mjs
+        env:
+          ASR_TEST_JOBS: '1'
+          BROWSER_SLOTS: '1'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: linux-exact-source-gates
+          path: ${{ runner.temp }}/exact-source/.scratch/test-results/
+          if-no-files-found: warn
+  windows-native:
+    # Same-repository trusted review branch only; never pull_request_target.
+    if: github.event.pull_request.draft && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.event.pull_request.head.ref, 'desktop-native-review/')
+    runs-on: windows-2025
+    timeout-minutes: 120
+    steps:
+      - name: Preserve canonical source LF checkout
+        shell: pwsh
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.3
+          cache: npm
+      - run: npm ci
+      - name: Record exact source provenance
+        shell: pwsh
+        run: |
+          git rev-parse HEAD
+          git rev-parse "HEAD^{tree}"
+          if ((git rev-parse HEAD) -ne $env:SOURCE_SHA) { throw 'Source SHA mismatch' }
+          node --version
+      - name: Fetch pinned same-repository draft payload
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ($env:PAYLOAD_SHA256 -notmatch '^[a-f0-9]{64}$') { throw 'Missing exact payload pin' }
+          if ($env:PAYLOAD_TAG -notmatch '^[A-Za-z0-9._-]+$') { throw 'Invalid payload tag' }
+          $releaseText = gh api "repos/$env:GITHUB_REPOSITORY/releases/tags/$env:PAYLOAD_TAG"
+          if ($LASTEXITCODE -ne 0) { throw 'Draft lookup failed with contents:read; stop for permission review, no credential fallback' }
+          $release = $releaseText | ConvertFrom-Json
+          if (!$release.draft -or $release.target_commitish -ne $env:SOURCE_SHA) { throw 'Draft must target exact trusted PR head SHA' }
+          gh release download $env:PAYLOAD_TAG --repo $env:GITHUB_REPOSITORY --pattern game-payload.tar.gz --pattern game-provenance.json --dir $env:RUNNER_TEMP
+          if ($LASTEXITCODE -ne 0) { throw 'Payload download failed; do not use PAT/CF fallback' }
+          $payload = Join-Path $env:RUNNER_TEMP 'game-payload.tar.gz'
+          if ((Get-FileHash $payload -Algorithm SHA256).Hash.ToLower() -ne $env:PAYLOAD_SHA256) { throw 'Payload SHA mismatch' }
+          $provenance = Get-Content (Join-Path $env:RUNNER_TEMP 'game-provenance.json') -Raw | ConvertFrom-Json
+          $tree = git rev-parse "HEAD^{tree}"
+          if ($provenance.sourceCommit -ne $env:SOURCE_SHA -or $provenance.sourceTree -ne $tree -or $provenance.payloadSHA256 -ne $env:PAYLOAD_SHA256 -or $provenance.gameBuild -ne $env:EXPECTED_GAME_BUILD -or $provenance.runtimeHash -ne $env:EXPECTED_RUNTIME_HASH) { throw 'Canonical payload provenance mismatch' }
+          New-Item -ItemType Directory '.desktop/game' -Force | Out-Null
+          tar -xf $payload -C '.desktop/game'
+          if ($LASTEXITCODE -ne 0) { throw 'Payload extraction failed' }
+          node tools/desktop-ci/verify-payload.mjs .desktop/game
+          if ($LASTEXITCODE -ne 0) { throw 'Payload inventory/runtime verification failed' }
+      - name: Native NSIS build from canonical payload
+        run: npx electron-builder --config apps/desktop/electron-builder.yml --win nsis --x64 --publish never
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - name: Native silent install, six routes, PNG, LAN, uninstall retention
+        shell: pwsh
+        run: ./tools/desktop-ci/windows-acceptance.ps1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-native-x64-review-only
+          include-hidden-files: true
+          path: |
+            .desktop/dist/*.exe
+            .scratch/desktop-check/windows-native/
+          if-no-files-found: warn
+          retention-days: 14
+  accepted:
+    if: github.event.pull_request.draft && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.event.pull_request.head.ref, 'desktop-native-review/')
+    needs: [linux-exact-gates, windows-native]
+    runs-on: ubuntu-24.04
+    steps:
+      - run: echo 'Both exact Linux gates and native Windows acceptance passed. Publication remains a separate reviewed action.'

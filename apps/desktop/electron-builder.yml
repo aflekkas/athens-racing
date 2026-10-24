@@ -1,0 +1,53 @@
+appId: com.athensracing.desktop
+productName: Athens Racing
+artifactName: Athens-Racing-${version}-${arch}.${ext}
+extraMetadata:
+  productName: Athens Racing
+  author:
+    name: Athens Racing
+  main: apps/desktop/main.mjs
+asar: true
+npmRebuild: false
+files:
+  - apps/desktop/**
+  - apps/server/runtime.mjs
+  - apps/server/release-fingerprint.mjs
+  - packages/**
+  - server/**
+  - worker/**
+  - src/**
+  - package.json
+  - node_modules/ws/**
+  - '!**/*.test.*'
+  - '!**/*.map'
+extraResources:
+  - from: .desktop/game
+    to: game
+    filter:
+      - '**/*'
+directories:
+  output: .desktop/dist
+mac:
+  identity: '-'
+  hardenedRuntime: false
+  notarize: false
+  icon: apps/desktop/resources/icon.icns
+  category: public.app-category.games
+  target: [dmg, zip]
+  extendInfo:
+    NSLocalNetworkUsageDescription: Athens Racing hosts and joins games with players on your local network.
+win:
+  icon: apps/desktop/resources/icon.png
+  target: [nsis]
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  deleteAppDataOnUninstall: false
+  createDesktopShortcut: true
+linux:
+  executableName: athens-racing
+  icon: apps/desktop/resources/icon.png
+  category: Game
+  target: [AppImage]
+publish: null

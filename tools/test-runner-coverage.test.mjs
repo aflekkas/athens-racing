@@ -13,7 +13,7 @@ function uncovered(script,files,read) {
       if(target.endsWith('.test.mjs'))visit(target);
     }
   };
-  for(const token of script.matchAll(/(?:tools|server|worker)\/[\w./*-]+\.(?:mjs|js)/g)) {
+  for(const token of script.matchAll(/(?:tools|server|worker|apps|packages)\/[\w./*-]+\.(?:mjs|js)/g)) {
     if(token[0].includes('*')) {
       const pattern=new RegExp('^'+token[0].split('*').map(s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('[^/]*')+'$');
       files.filter(f=>pattern.test(f)).forEach(visit);
@@ -21,8 +21,8 @@ function uncovered(script,files,read) {
   }
   return files.filter(f=>!visited.has(f));
 }
-test('npm test reaches every tools/server/worker test directly or through imports',()=>{
- const files=['tools','server','worker'].flatMap(dir=>readdirSync(resolve(root,dir),{recursive:true}).filter(f=>f.endsWith('.test.mjs')).map(f=>dir+'/'+f));
+test('npm test reaches every tools/server/worker/apps/packages test directly or through imports',()=>{
+ const files=['tools','server','worker','apps','packages'].flatMap(dir=>readdirSync(resolve(root,dir),{recursive:true}).filter(f=>f.endsWith('.test.mjs')).map(f=>dir+'/'+f));
  const command=JSON.parse(readFileSync(resolve(root,'package.json'))).scripts.test;
  assert.equal(command,'node tools/run-tests.mjs');
  const direct=Object.values(testGroups).flat();

@@ -2,7 +2,7 @@
 // tools/prepare-deploy.mjs adds <meta name="asr-build"> and this script to index.html. ?nosw removes it.
 const build = document.querySelector('meta[name="asr-build"]')?.content;
 if ('serviceWorker' in navigator) {
-  if (!build || new URLSearchParams(location.search).has('nosw')) {
+  if (document.querySelector('meta[name="asr-desktop"]') || !build || new URLSearchParams(location.search).has('nosw')) {
     navigator.serviceWorker.getRegistrations().then(list => list.forEach(r => r.unregister())).catch(() => {});
     globalThis.caches?.keys().then(names => names.filter(n => n.startsWith('asr-')).forEach(n => caches.delete(n))).catch(() => {});
   } else {

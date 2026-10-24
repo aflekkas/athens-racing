@@ -1,3 +1,4 @@
+import { desktopAvailable } from './desktop-navigation.js';
 import { personalBestLabel } from './personal-bests.js';
 const format = t => t == null ? 'DNF' : `${Math.floor(t / 60)}:${(t % 60).toFixed(2).padStart(5, '0')}`;
 // The source is captured synchronously just after a real renderer frame, before
@@ -32,5 +33,5 @@ export async function shareResultCard(data) {
     catch (e) { if (e.name === 'AbortError') return 'SHARE CANCELLED'; }
   }
   const url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = file.name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 30000);
-  return 'RESULT IMAGE DOWNLOADED';
+  return desktopAvailable() ? 'RESULT IMAGE SAVE REQUESTED' : 'RESULT IMAGE DOWNLOADED';
 }

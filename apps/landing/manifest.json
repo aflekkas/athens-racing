@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 1,
+  "publicDirectory": "public",
+  "models": {
+    "design": "Claude Opus 5.5",
+    "integration": "Codex gpt-6.1-sol"
+  },
+  "files": {
+    "_headers": {
+      "bytes": 383,
+      "sha256": "bc4e103ec3dbc163c2d38f48a80e4a010903c5c071d9c82e8a7eb439bac08865"
+    },
+    "assets/apple-touch-icon.png": {
+      "bytes": 5136,
+      "sha256": "2e5a9336fedae57cfd3d7c886d888e43c6f5c2212b429591a2551b2f057f113a"
+    },
+    "assets/athens-racing-share.jpg": {
+      "bytes": 75034,
+      "sha256": "7ae9c316fd6a681aa66daa7ede3e14eda483b1d33890a0a9267513670208f9f1"
+    },
+    "assets/icon.svg": {
+      "bytes": 417,
+      "sha256": "de94bbc07869ca1b0c807af58104a57e45cf068e7c6968ff9862ba7c06c7c4f8"
+    },
+    "assets/icons-LICENSE.txt": {
+      "bytes": 3208,
+      "sha256": "b495047bd93a9b06913511076f504daba17d5bbeb3e0650f3bb53a4220329c57"
+    },
+    "assets/lan-two-drivers-1600.webp": {
+      "bytes": 47556,
+      "sha256": "66b21f1a8c2af286213a54438fd87558deb42577c447bcf81629d4a61f97484f"
+    },
+    "assets/lan-two-drivers-800.webp": {
+      "bytes": 19318,
+      "sha256": "b930ea4c12c7a0116f3f42382f9ee97c434157bc8bf40e6d9c957cff72c170ed"
+    },
+    "assets/megara-club-1600.webp": {
+      "bytes": 23704,
+      "sha256": "9146cff2eb0f3d284240c5ef1f25f66c3d149048834d55aab2487cb52b36b5d6"
+    },
+    "assets/megara-club-800.webp": {
+      "bytes": 10126,
+      "sha256": "99e1b7937383621b1de174a930aa20c632a8db42fb582debd94215a9354c0904"
+    },
+    "assets/penteli-descent-1600.webp": {
+      "bytes": 23608,
+      "sha256": "3545ff3d38668c868a9259b180dfe79d8de1dd4114484664c0aed54e9f27a376"
+    },
+    "assets/penteli-descent-800.webp": {
+      "bytes": 10422,
+      "sha256": "07233a8aa09362c8ff77621e2be9d834c123847b10cb6a8176426762b6284679"
+    },
+    "assets/penteli-hill-1600.webp": {
+      "bytes": 36634,
+      "sha256": "3694011db3085aad183c9d442025e75b0e60b6376008ebc0b57ff5290cf7a570"
+    },
+    "assets/penteli-hill-800.webp": {
+      "bytes": 15670,
+      "sha256": "0fc2d1a4d8f67b27327b62695e9d093ad348b8fb627d4252174b075998e14d47"
+    },
+    "assets/psychiko-faros-1600.webp": {
+      "bytes": 57052,
+      "sha256": "040902e00f7049d0c2f212f9452097d216814a37cd48b7de3815be58b05aa65b"
+    },
+    "assets/psychiko-faros-800.webp": {
+      "bytes": 22054,
+      "sha256": "76b0e123e738af0a7755b252a0a19655eff92471cff74c9496457e91b7308d1e"
+    },
+    "assets/riviera-coast-1600.webp": {
+      "bytes": 52632,
+      "sha256": "8f03174e8193fac5fb22abea0e6c0d6e6426d191d6359d98784205cbf2738650"
+    },
+    "assets/riviera-coast-800.webp": {
+      "bytes": 18778,
+      "sha256": "b5b81ce13afa3707962ebb951a6c4408f66ed2af68a9aab810d5bbed8237f31a"
+    },
+    "assets/syntagma-pilot-1600.webp": {
+      "bytes": 51178,
+      "sha256": "21e6e88f64c6619090c1909e27ead34c14904efbf0489b9599e30c9c201d62be"
+    },
+    "assets/syntagma-pilot-800.webp": {
+      "bytes": 19184,
+      "sha256": "5ca5c29339d2ae015bbc6da134f24a2ab6d2f92155ffdc27cb583ceb32c2e703"
+    },
+    "credits.html": {
+      "bytes": 1683,
+      "sha256": "2b1de1699b65482d7404415c59ed751574bde140d79c3871b41c63cc7bc8efff"
+    },
+    "downloads.js": {
+      "bytes": 2202,
+      "sha256": "cff8a5c571e6f440a3a8855258268a0906259d727de2bd3a379647df20bb1885"
+    },
+    "fonts/Barlow-Bold.ttf": {
+      "bytes": 108220,
+      "sha256": "84e6a4d61e7c3e21f3c50ea6a4f7e5303a3467864c038be6ea3759bab8d547f9"
+    },
+    "fonts/Barlow-Regular.ttf": {
+      "bytes": 104068,
+      "sha256": "95aa02c7c43096e0dd44d787ba6216864a67157e402adab59b35572e0c1577ea"
+    },
+    "fonts/BarlowCondensed-Black.ttf": {
+      "bytes": 110828,
+      "sha256": "e74b750df582c608f35db467b711b2b60d2217618e85e60b72b42dfd00446cab"
+    },
+    "fonts/BarlowCondensed-BlackItalic.ttf": {
+      "bytes": 112592,
+      "sha256": "e1ed5d7e50c6a4498454d40509ce2362384a2c7870df3418fdbd010f81dffad3"
+    },
+    "fonts/BarlowCondensed-ExtraBold.ttf": {
+      "bytes": 110296,
+      "sha256": "724c9c25952d5f4a2d87185d9767aa006144c5f0d944dc05bf7d5d603551c260"
+    },
+    "fonts/CREDITS.txt": {
+      "bytes": 1715,
+      "sha256": "134ed3ea5115f1b9415cc90cc4fa15b6979e6e3ba38adfd08abb2826ba2f517d"
+    },
+    "fonts/OFL.txt": {
+      "bytes": 4377,
+      "sha256": "186d750eb496a4c17a76385f82be6aea2ac1cf2de074a811d63786cf374ea73f"
+    },
+    "fonts/fonts.css": {
+      "bytes": 803,
+      "sha256": "2239eba3ce8f2ac8543832af1522710c950bd7606ce176d9f4a4be4f755132f9"
+    },
+    "index.html": {
+      "bytes": 18006,
+      "sha256": "c73159a70b7aab3b823dc5a598c4674f7d5eedb5c6c5a28ff21e559ce09c03e3"
+    },
+    "release.js": {
+      "bytes": 561,
+      "sha256": "4819fca7730aa8b481b133921d8af28369622a979a3cea5341593bc283f801df"
+    },
+    "styles.css": {
+      "bytes": 17002,
+      "sha256": "f4804840da0da7eeb81e49002b5dbb4b613ac99165086c26e0af4df12c3be034"
+    }
+  }
+}

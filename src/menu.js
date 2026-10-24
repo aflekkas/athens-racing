@@ -1,3 +1,5 @@
+import { desktopAvailable } from './desktop-navigation.js';
+import { installDesktopMenu, afterDesktopShow, desktopAct, renderDesktopLan } from './desktop-menu.js';
 import { renderLeaderboards, renderBestRecord, renderTrackTimes, renderSetupRecords, leaderboardChange } from './leaderboards-screen.js';
 import { seatPosition, setSeatPosition, resetSeatPosition } from './seat-position.js';
 import { loadUnifiedRouteCatalogue } from './unified-routes.js';
@@ -82,7 +84,7 @@ export class Menu {
    */
   constructor(root, h) {
     this.root = root; this.h = h; this.screen = null; this.data = {}; this.focus = 0; this.stack = [];
-    this.filter = 'all';
+    this.filter = 'all'; installDesktopMenu(this);
     C.bindRoot(root); root.tabIndex = -1; installSettingsAccess(this); MP.installMpScreens(this); Release.install(this); installAccounts(this); installArticleScroll(this);
     root.addEventListener('focusin', e => { const row = e.target.closest('.mi'); const i = this.items().indexOf(row); if(i >= 0) this.setFocus(i, false); });
     root.addEventListener('keydown', e => { if(e.code !== 'Escape' || !e.target.closest('input, textarea, [contenteditable]')) return; e.preventDefault(); e.stopPropagation(); e.target.blur(); root.focus({preventScroll:true}); }, true);
@@ -116,6 +118,7 @@ export class Menu {
     document.body.dataset.ui = screen;
     this.render(); MP.syncFlag(screen);
     MP.afterShow(this, screen);
+    afterDesktopShow(this, screen, MP.openEntry);
     if (screen === 'title' && this.mpBooting) { this.mpBooting = false; MP.openEntry(this, 'join'); } // an invite link waits for the title
   }
   pop() {
@@ -272,6 +275,7 @@ export class Menu {
     const a = el.dataset.act;
     this.h.ui?.(true);
     if (Release.act(this, el)) return;
+    if (desktopAct(this, el)) return;
     if (a?.startsWith('mp') && MP.act(this, el)) return;
     switch (a) {
       case 'unifiedRoute': void Promise.resolve().then(() => this.h.selectUnifiedRoute(el.dataset.route,el.dataset.event)).catch(error => C.ui.toast(error.message, { tone: 'bad' })); break;
@@ -370,11 +374,12 @@ export class Menu {
   }
   r_title() {
     return C.heroTiles({ variant: 'title', kick: 'GREEK ROADS <span class="acc">/</span> PURE TIME', intro: `<h1 class="title__mark">${C.brandMark()}${C.wordmark()}</h1>
-      <p class="title__tag">Real roads of Attica: the Athens Riviera and the Penteli hill climb.</p>`, tiles: `${C.option({ icon: 'flag', title: 'PLAY', desc: 'Quick Race or Free Roam against the clock', act: 'play', cls: 'option--tile option--hero', attrs: { 'data-default': '' } })}
-        ${C.option({ icon: 'users', title: 'MULTIPLAYER', desc: 'Browse open lobbies, join with a code or host your own', act: 'multiplayer', cls: 'option--tile' })}
+      <p class="title__tag">Real roads of Attica: the Athens Riviera and the Penteli hill climb.</p>`, tiles: `${C.option({ icon: 'flag', title: desktopAvailable() ? 'PLAY SOLO' : 'PLAY', desc: 'Quick Race or Free Roam against the clock', act: desktopAvailable() ? 'desktopSolo' : 'play', cls: 'option--tile option--hero', attrs: { 'data-default': '' } })}
+        ${C.option({ icon: 'users', title: desktopAvailable() ? 'LAN MULTIPLAYER' : 'MULTIPLAYER', desc: desktopAvailable() ? 'Host a game or join friends on your local network' : 'Browse open lobbies, join with a code or host your own', act: desktopAvailable() ? 'desktopLan' : 'multiplayer', cls: 'option--tile' })}
         ${C.option({ icon: 'car', title: 'GARAGE', desc: `${GARAGE_CARS.length} cars · city to super`, act: 'garage', cls: 'option--tile' })}
         ${C.option({ icon: 'settings', title: 'SETTINGS', desc: 'Sound, graphics, driving and controls', act: 'settings', cls: 'option--tile' })}`, foot: Release.titleExtras(this), hints: [['select', 'SELECT'], ['confirm', 'OK'], ['garage', 'GARAGE']] });
   }
+  r_desktopLan() { return renderDesktopLan(this); }
   async openQuickRace() {
     if (this.loadingRoutes) return;
     const screen = this.screen, data = this.data;
@@ -509,7 +514,7 @@ export class Menu {
       // controls that never change the look live here: resolution, frame rate limit, draw distance. All live.
       const gfx=resolveGraphics(settings),pct=r=>Math.round(r*100)+'%';
       const screen=Math.min(globalThis.devicePixelRatio||1,2),autoRes=Math.min(screen,gfx.P.pixelRatio)/screen;
-      body = `<div class="group graphics-resolution"><h3 class="group__title">RESOLUTION</h3>${C.select({key:'renderScale',label:'RESOLUTION',value:v('renderScale'),options:[['auto','AUTO · '+pct(autoRes)],...Array.from({length:11},(_,i)=>[String((50+i*5)/100),(50+i*5)+'%'])],note:'Lower is softer but faster. Now '+pct(gfx.resolution)+' of your screen.',attrs:SET})}${C.toggle({key:'dynamicResolution',label:'Dynamic resolution',value:v('dynamicResolution'),note:'Drops resolution briefly under load. The HUD stays sharp.',attrs:SET})}${C.segmented({key:'frameCap',label:'FRAME RATE LIMIT',value:v('frameCap'),options:[['30','30 FPS'],['60','60 FPS'],['120','120 FPS'],['0','NO LIMIT']],note:'Lower keeps laptops cooler and quieter.',attrs:SET})}</div>
+      body = `<div class="group graphics-resolution"><h3 class="group__title">RESOLUTION</h3>${C.select({key:'renderScale',label:'RESOLUTION',value:v('renderScale'),options:[['auto','AUTO · '+pct(autoRes)],...Array.from({length:11},(_,i)=>[String((50+i*5)/100),(50+i*5)+'%'])],note:'Lower is softer but faster. Now '+pct(gfx.resolution)+' of your screen.',attrs:SET})}${C.toggle({key:'dynamicResolution',label:'Dynamic resolution',value:v('dynamicResolution'),note:'Drops resolution briefly under load. The HUD stays sharp.',attrs:SET})}</div>
         <div class="group"><h3 class="group__title">RENDER</h3>${C.segmented({ key: 'drawDistance', label: 'DRAW DISTANCE', value: v('drawDistance'), options: [['auto', 'AUTO · '+(gfx.P.drawDistance>=1000?gfx.P.drawDistance/1000+' KM':gfx.P.drawDistance+' M')], ['300', '300 M'], ['500', '500 M'], ['1000', '1 KM'], ['2000', '2 KM'], ['4000', '4 KM']], note: 'How far trees, cars and people are drawn in detail. Lower is faster.', attrs: SET })}
           ${C.toggle({ key: 'worldDetail', label: 'WORLD DETAIL', value: settings.worldDetail !== false, note: 'Facades, rooftops, street details and trees.', attrs: SET })}
           ${C.segmented({ key: 'mirrors', label: 'MIRROR', value: v('mirrors'), options: [['off', 'OFF'], ['low', 'LOW'], ['high', 'HIGH']], note: 'In-car mirrors only. Low is softer and faster; low classes use Low.', attrs: SET })}

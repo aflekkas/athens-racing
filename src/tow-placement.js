@@ -154,18 +154,67 @@ export function planTow({ x, z, yaw, route, index = null, course = null, dir = 1
 }
 
 /** Streamed-world candidates have already passed contacts, lane width, vehicle footprint and obstacle checks. */
-export function planWorldTow({pose,course,route,roadCandidates,footprint,obstacles}){
- const ref=course?.lastRoad?.s??pose.s??0,floor=course?Math.max((course.s0||0)+(course.validProgress||0),course.lastRoad?.s??-Infinity):-Infinity;const here=route?.project(pose.x,pose.z,{hint:ref,referenceY:pose.y,maxTravel:OWN_LEG_RANGE}),routeDistance=here?Math.max(0,-(here.leftM||0)-here.u,here.u-(here.rightM||0)):Infinity;
- const candidates=roadCandidates.filter(p=>p.safe!==false&&(!obstacles||!obstacles(p,footprint))).map(p=>{const q=route?.project(p.x,p.z,{hint:ref,referenceY:p.y,layer:p.layer,maxTravel:OWN_LEG_RANGE}),onRoute=!!q&&q.distance<=Math.max(q.leftM||0,q.rightM||0)+1&&p.layer===q.layer&&(route.contactAllowed?route.contactAllowed(q,p):p.surfaceId===q.surfaceId);const f=q&&route.frame(q.s),aligned=f&&(-Math.sin(p.yaw)*f.tx-Math.cos(p.yaw)*f.tz)>=.5,preferred=onRoute&&q.edgeId===p.edgeId&&aligned;return{...p,kind:preferred?'route':'road',s:q?.s??pose.s,u:q?.u??0,distance:Math.hypot(p.x-pose.x,p.z-pose.z),onRoute:preferred,onRouteGeometry:onRoute,routeAligned:!!aligned};}).filter(p=>(!course||!p.onRouteGeometry||p.routeAligned)&&(!p.onRouteGeometry||p.s>=floor-.01));
- const preferred=course?candidates.filter(p=>p.onRoute&&routeDistance<=ROUTE_PREFERENCE&&Math.abs(p.s-ref)<=OWN_LEG_RANGE):[];
- // On two-way streets the graph contains both directed edges. Choose the travel direction
- // within that same carriageway before comparing lane-centre distances. Separate one-way
- // carriageways have no twin, so their legal direction is never reversed.
+export function planWorldTow({pose,course,route,roadCandidates,footprint,obstacles,maxBytes=Infinity,memory}){
+ if(typeof maxBytes!=='number'||!(maxBytes>=0))throw new RangeError('Invalid tow planner memory budget');
+ let retainedBytes=4096,peakBytes=0,sequence=0;const order=Symbol('tow input order');
+ const charge=bytes=>{peakBytes=Math.max(peakBytes,bytes);if(memory){memory.peakBytes=peakBytes;memory.retainedBytes=retainedBytes;}if(bytes>maxBytes)throw new RangeError('Tow planner memory budget exceeded');};
+ // Conservative live-object charge: caller/context storage is reserved separately.
+ // Account for the decoded working anchor, spread pose, retained nested proof
+ // metadata and map/set entries before allocating or retaining planner state.
+ const size=(value,depth=0)=>{
+  if(depth>32)throw new RangeError('Tow planner memory budget exceeded');
+  if(typeof value==='string')return 32+2*value.length;
+  if(value===null||typeof value!=='object')return 16;
+  let bytes=Array.isArray(value)?64:96;
+  for(const key in value)if(Object.hasOwn(value,key)){bytes+=48+2*key.length+size(value[key],depth+1);if(bytes>maxBytes)throw new RangeError('Tow planner memory budget exceeded');}
+  return bytes;
+ };
+ charge(retainedBytes);
+ const ref=course?.lastRoad?.s??pose.s??0,floor=course?Math.max((course.s0||0)+(course.validProgress||0),course.lastRoad?.s??-Infinity):-Infinity;
+ const here=route?.project(pose.x,pose.z,{hint:ref,referenceY:pose.y,maxTravel:OWN_LEG_RANGE}),routeDistance=here?Math.max(0,-(here.leftM||0)-here.u,here.u-(here.rightM||0)):Infinity;
  const heading=towHeading(pose),alignment=p=>Math.cos(p.yaw-heading);
- const directions=new Map();
- const seenEdges=new Set();
- for(const p of candidates)if(p.roadId&&!seenEdges.has(p.edgeId)){seenEdges.add(p.edgeId);const best=directions.get(p.roadId);if(!best||alignment(p)>alignment(best))directions.set(p.roadId,p);}
- const legal=candidates.filter(p=>!p.roadId||alignment(p)>=-1e-6&&p.edgeId===directions.get(p.roadId).edgeId);
- const pool=preferred.length?preferred:legal;pool.sort((a,b)=>a.distance-b.distance||alignment(b)-alignment(a)||String(a.edgeId).localeCompare(String(b.edgeId)));
- return pool[0]||null;
+ const compare=(a,b)=>a.distance-b.distance||alignment(b)-alignment(a)||String(a.edgeId).localeCompare(String(b.edgeId))||a[order]-b[order];
+ const better=(a,b)=>!b||compare(a,b)<0;
+ // The first certified anchor of each directed edge determines its heading, exactly
+ // as in the full-array planner. Keep only that road's winning direction;
+ // later anchors on losing directions cannot change the first-edge heading.
+ const directions=new Map(),seenEdges=new Set();let inputCount=0,replayedCount=0;
+ const prepare=p=>{
+  const bytes=maxBytes===Infinity&&!memory?0:size(p)+1536;charge(retainedBytes+2*bytes);
+  if(p.safe===false||obstacles&&obstacles(p,footprint))return null;
+  const q=route?.project(p.x,p.z,{hint:ref,referenceY:p.y,layer:p.layer,maxTravel:OWN_LEG_RANGE}),onRoute=!!q&&q.distance<=Math.max(q.leftM||0,q.rightM||0)+1&&p.layer===q.layer&&(route.contactAllowed?route.contactAllowed(q,p):p.surfaceId===q.surfaceId);
+  const f=q&&route.frame(q.s),aligned=f&&(-Math.sin(p.yaw)*f.tx-Math.cos(p.yaw)*f.tz)>=.5,isPreferred=onRoute&&q.edgeId===p.edgeId&&aligned;
+  const candidate={...p,[order]:sequence++,kind:isPreferred?'route':'road',s:q?.s??pose.s,u:q?.u??0,distance:Math.hypot(p.x-pose.x,p.z-pose.z),onRoute:isPreferred,onRouteGeometry:onRoute,routeAligned:!!aligned};
+  if(course&&candidate.onRouteGeometry&&!candidate.routeAligned||candidate.onRouteGeometry&&!(candidate.s>=floor-.01))return null;
+  return {pose:candidate,bytes};
+ };
+ // First pass retains only direction identities, never a pose per road. The
+ // immutable packed context (and normal arrays) can replay its ordered anchors.
+ for(const p of roadCandidates){
+  inputCount++;const item=prepare(p);if(!item)continue;const candidate=item.pose;
+  if(!candidate.roadId||seenEdges.has(candidate.edgeId))continue;
+  const edgeBytes=96+2*String(candidate.edgeId).length;charge(retainedBytes+2*item.bytes+edgeBytes);retainedBytes+=edgeBytes;seenEdges.add(candidate.edgeId);
+  const direction=directions.get(candidate.roadId);
+  if(!direction||alignment(candidate)>Math.cos(direction.firstYaw-heading)){
+   if(!direction){const bytes=192+2*String(candidate.roadId).length;charge(retainedBytes+2*item.bytes+bytes);retainedBytes+=bytes;}
+   directions.set(candidate.roadId,{firstYaw:candidate.yaw,edgeId:candidate.edgeId});
+  }
+ }
+ // All first-edge identities remain live while replaying; reserve their full
+ // storage together with both global winners and the decoded working anchor.
+ let preferred=null,legal=null;sequence=0;
+ for(const p of roadCandidates){
+  replayedCount++;const item=prepare(p);if(!item)continue;const candidate=item.pose;
+  if(course&&candidate.onRoute&&routeDistance<=ROUTE_PREFERENCE&&Math.abs(candidate.s-ref)<=OWN_LEG_RANGE&&better(candidate,preferred?.pose)){
+   retainedBytes+=item.bytes-(preferred?.bytes||0);preferred=item;
+  }
+  if((!candidate.roadId||alignment(candidate)>=-1e-6&&candidate.edgeId===directions.get(candidate.roadId).edgeId)&&better(candidate,legal?.pose)){
+   retainedBytes+=item.bytes-(legal?.bytes||0);legal=item;
+  }
+  charge(retainedBytes+2*item.bytes);
+ }
+ if(replayedCount!==inputCount)throw new Error('Tow candidates must be replayable and immutable');
+ const best=preferred?.pose||legal?.pose;if(best)delete best[order];
+ if(memory){memory.peakBytes=peakBytes;memory.retainedBytes=retainedBytes;}
+ return best||null;
 }

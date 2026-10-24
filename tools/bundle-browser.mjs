@@ -15,7 +15,7 @@ export function initialChunks(meta, root, out, entry) {
   visit(entry);
   return [...seen].map(path => '/' + slash(relative(out, resolve(root, path))));
 }
-export async function bundleBrowser(root, out, { three = process.env.ASR_THREE_MODE || 'bundled' } = {}) {
+export async function bundleBrowser(root, out, { three = process.env.ASR_THREE_MODE || 'bundled', sourceMapsDir = resolve(root, '.deploy/sourcemaps') } = {}) {
   root = await realpath(root); out = await realpath(out);
   if (!['bundled', 'cdn'].includes(three)) throw new Error('ASR_THREE_MODE must be bundled or cdn');
   const exists = path => readFile(resolve(root, path)).then(() => true, () => false);
@@ -70,7 +70,7 @@ export async function bundleBrowser(root, out, { three = process.env.ASR_THREE_M
   // External maps have no sourceMappingURL and are private upload artifacts, never CDN assets.
   for (const file of result.outputFiles) {
     const map = file.path.endsWith('.map');
-    const destination = map ? resolve(root, '.deploy/sourcemaps', relative(out, file.path)) : file.path;
+    const destination = map ? resolve(sourceMapsDir, relative(out, file.path)) : file.path;
     await mkdir(resolve(destination, '..'), { recursive: true }); await writeFile(destination, file.contents);
   }
   for (const path of Object.keys(result.metafile.outputs)) if (path.endsWith('.map')) delete result.metafile.outputs[path];

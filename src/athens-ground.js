@@ -49,6 +49,6 @@ export class AthensGround{
   v.bank=clamp(((ys[1]+ys[3])-(ys[0]+ys[2]))/(2*v.track),-.6,.6);
   v.resolveBodyContact(dt,Math.max(c.y,ys.reduce((a,b)=>a+b,0)/4),v.gradeG,v.bank);
   v.wheelSurf=surfaces;v.surf=c.surf;v.surfMu=v.bodyDynamic?0:mu;v.surfDrag=v.bodyDynamic?0:drag;v.surfRes=v.air?0:res;v.surfSoft=v.air?0:soft;v.surfBow=0;v.water=c.water;v._network=true;
-  const q=this.route.project(v.x,v.z,{hint:v.s,referenceY:v.y,heading:v.yaw});v.s=q.s;v.u=q.u;v.routeContact={layer:c.layer,surfaceId:c.surfaceId};this.referenceY=v.y;
+  const q=this.route.project(v.x,v.z,{hint:v.s,referenceY:v.y,heading:v.yaw});v.s=q.s;v.u=q.u;v.routeContact={layer:c.layer,surfaceId:c.surfaceId,edgeId:q.layer===c.layer?q.edgeId:null};this.referenceY=v.y;
  }
 }

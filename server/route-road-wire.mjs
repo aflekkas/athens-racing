@@ -1,6 +1,7 @@
 import { canonicalJSON } from '../src/route-definition.js';
 
 const FIELDS = Object.freeze(['edgeId', 'footprints', 'halfLength', 'halfWidth', 'layer', 'leftM', 'offsetM', 'rightM', 'roadId', 'surfaceId', 'x', 'y', 'yaw', 'z']);
+const STRING_FIELDS = new Set(['edgeId', 'surfaceId', 'roadId']);
 const ROOT = ['schemaVersion', 'worldId', 'projectionId', 'worldSetRevision', 'sourceHashes', 'edges', 'anchors'];
 const own = (v, k) => Object.hasOwn(v, k);
 const objectKeys = (v, fields) => v && typeof v === 'object' && !Array.isArray(v) && Object.keys(v).length === fields.length && fields.every(k => own(v, k));
@@ -80,40 +81,50 @@ function validSets(sets) {
   }
 }
 function checkPacked(body) {
-  if (!objectKeys(body, [...ROOT, 'anchorFields', 'footprintSets']) || body.schemaVersion !== 2 || !Array.isArray(body.anchorFields) || body.anchorFields.length !== FIELDS.length || !FIELDS.every((k, i) => body.anchorFields[i] === k) || !Array.isArray(body.anchors) || !body.anchors.length) fail();
+  const dictionary = body?.schemaVersion === 3;
+  if (!objectKeys(body, [...ROOT, 'anchorFields', 'footprintSets', ...(dictionary ? ['stringTable'] : [])]) || ![2, 3].includes(body.schemaVersion) || !Array.isArray(body.anchorFields) || body.anchorFields.length !== FIELDS.length || !FIELDS.every((k, i) => body.anchorFields[i] === k) || !Array.isArray(body.anchors) || !body.anchors.length) fail();
   validSets(body.footprintSets);
+  const stringsUsed = new Set();
+  if (dictionary && (!Array.isArray(body.stringTable) || !body.stringTable.length || Object.keys(body.stringTable).length !== body.stringTable.length || !Object.keys(body.stringTable).every((key, i) => key === String(i)) || !body.stringTable.every((value, i) => Object.hasOwn(body.stringTable, i) && typeof value === 'string' && value.length > 0) || new Set(body.stringTable).size !== body.stringTable.length)) fail();
   const used = new Set();
   for (const row of body.anchors) {
     if (!Array.isArray(row) || row.length !== FIELDS.length || !Object.keys(row).every((k, i) => k === String(i)) || Object.keys(row).length !== FIELDS.length) fail();
     for (let i = 0; i < FIELDS.length; i++) {
       const k = FIELDS[i], v = row[i];
       if (k === 'footprints') { if (v !== null) { if (!Number.isInteger(v) || v < 0 || v >= body.footprintSets.length) fail(); used.add(v); } }
+      else if (dictionary && STRING_FIELDS.has(k)) { if (k === 'roadId' && v === null) continue; if (!Number.isInteger(v) || v < 0 || v >= body.stringTable.length) fail(); stringsUsed.add(v); }
       else if (k === 'roadId') { if (v !== null && (typeof v !== 'string' || !v)) fail(); }
       else if (k === 'edgeId' || k === 'surfaceId') { if (typeof v !== 'string' || !v) fail(); }
       else if (!Number.isFinite(v) || k === 'layer' && !Number.isInteger(v)) fail();
     }
   }
-  if (used.size !== body.footprintSets.length) fail();
+  if (used.size !== body.footprintSets.length || dictionary && stringsUsed.size !== body.stringTable.length) fail();
 }
 /** Builder API: no rounding, omission, mutation, or inferred certificates.
  * Null is reserved for absent optional footprints/roadId; all other 12 fields
- * are mandatory. Edge objects and every point/property remain unchanged. */
-export function encodeRecoverySidecar(body) {
+ * are mandatory. Optional schema 3 interns exact repeated strings only; it
+ * never changes numeric poses or certificates. Edge objects and every point/property remain unchanged. */
+export function encodeRecoverySidecar(body, { dictionary = false } = {}) {
   if (!objectKeys(body, ROOT) || body.schemaVersion !== 1 || !Array.isArray(body.anchors) || !body.anchors.length) fail();
   canonicalJSON(body); // Reject non-JSON values rather than silently dropping them.
-  const copy = structuredClone(body), footprintSets = [], ids = new Map();
+  const copy = structuredClone(body), footprintSets = [], ids = new Map(), stringTable = [], stringIds = new Map();
   const anchors = copy.anchors.map(a => {
     if (!a || typeof a !== 'object' || Array.isArray(a) || Object.keys(a).some(k => !FIELDS.includes(k)) || FIELDS.some(k => !['footprints', 'roadId'].includes(k) && !own(a, k))) fail();
     return FIELDS.map(k => {
       if (!own(a, k)) return null;
       if (a[k] === null) fail();
+      if (dictionary && STRING_FIELDS.has(k)) {
+        if (typeof a[k] !== 'string' || !a[k]) fail();
+        if (!stringIds.has(a[k])) { stringIds.set(a[k], stringTable.length); stringTable.push(a[k]); }
+        return stringIds.get(a[k]);
+      }
       if (k !== 'footprints') return a[k];
       const key = canonicalJSON(a[k]);
       if (!ids.has(key)) { ids.set(key, footprintSets.length); footprintSets.push(a[k]); }
       return ids.get(key);
     });
   });
-  const packed = { ...copy, schemaVersion: 2, anchorFields: [...FIELDS], footprintSets, anchors };
+  const packed = { ...copy, schemaVersion: dictionary ? 3 : 2, anchorFields: [...FIELDS], footprintSets, ...(dictionary ? { stringTable } : {}), anchors };
   checkPacked(packed); return freeze(packed);
 }
 /** Internal codec, only after packed authentication. Request-owned parsed rows
@@ -124,7 +135,7 @@ export function decodeRecoverySidecar(body, { maxCombinedBytes = Infinity, liveB
   const packedBytes = recoveryDataBytes(body, maxCombinedBytes);
   const expanded = consume ? body : { schemaVersion: 1, worldId: body.worldId, projectionId: body.projectionId, worldSetRevision: body.worldSetRevision, sourceHashes: body.sourceHashes, edges: body.edges, anchors: [] };
   let currentBytes = packedBytes + liveBufferBytes, peakBytes = currentBytes;
-  const valueAt = (row, i) => FIELDS[i] === 'footprints' ? body.footprintSets[row[i]] : row[i];
+  const valueAt = (row, i) => FIELDS[i] === 'footprints' ? body.footprintSets[row[i]] : body.schemaVersion === 3 && STRING_FIELDS.has(FIELDS[i]) ? body.stringTable[row[i]] : row[i];
   const anchorBytes = row => {
     let bytes = 96;
     for (let i = 0; i < FIELDS.length; i++) if (row[i] !== null) bytes += 48 + FIELDS[i].length * 2 + recoveryDataBytes(valueAt(row, i));
@@ -145,7 +156,7 @@ export function decodeRecoverySidecar(body, { maxCombinedBytes = Infinity, liveB
     expanded.anchors[n] = anchor;
     if (consume) currentBytes += bytes - recoveryDataBytes(row);
   }
-  if (consume) { expanded.schemaVersion = 1; delete expanded.anchorFields; delete expanded.footprintSets; }
+  if (consume) { expanded.schemaVersion = 1; delete expanded.anchorFields; delete expanded.footprintSets; delete expanded.stringTable; }
   return { body: expanded, metrics: Object.freeze({ packedBytes, expandedBytes: recoveryDataBytes(expanded), peakBytes, liveBufferBytes, consumed: consume }) };
 }
 
@@ -181,7 +192,7 @@ export function snapshotRecoverySidecar(value, { maxCombinedBytes = 12 * 1024 * 
   const dataBytes = recoveryJSONDataBytes(value, (maxCombinedBytes - liveBufferBytes) / 2);
   const size = recoveryCanonicalSize(value);
   if (size.bytes > 2 * 1024 * 1024) throw Error('Recovery sidecar exceeds artifact budget');
-  const canonicalBytes = (value?.schemaVersion === 2 ? size.maxTokenCodeUnits : size.codeUnits) * 2;
+  const canonicalBytes = ([2, 3].includes(value?.schemaVersion) ? size.maxTokenCodeUnits : size.codeUnits) * 2;
   const authenticationBytes = dataBytes * 2 + liveBufferBytes + canonicalBytes + size.bytes * 2;
   if (authenticationBytes > maxCombinedBytes) throw Error('Recovery authentication memory budget exceeded');
   const body = structuredClone(value);

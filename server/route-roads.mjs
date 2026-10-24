@@ -16,13 +16,13 @@ async function authenticateRouteRoads(body, { expectedHash, worldSetRevision, ma
   // Every supported schema/input path charges retained raw buffers, canonical
   // UTF-16 (full V1 or one V2 token), UTF-8 output, and a digest input copy
   // BEFORE creating any canonical string or encoded buffer.
-  const canonicalBytes = (body?.schemaVersion === 2 ? size.maxTokenCodeUnits : size.codeUnits) * 2;
+  const canonicalBytes = ([2, 3].includes(body?.schemaVersion) ? size.maxTokenCodeUnits : size.codeUnits) * 2;
   const bytes = recoveryDataBytes(body) + liveBufferBytes + callerObjectBytes + canonicalBytes + size.bytes * 2;
   if (bytes > maxCombinedBytes) throw Error('Recovery authentication memory budget exceeded');
   if (memoryStats) memoryStats.authenticationBytes = bytes;
-  const encoded = body?.schemaVersion === 2 ? recoveryCanonicalBytes(body, size) : new TextEncoder().encode(canonicalJSON(body));
+  const encoded = [2, 3].includes(body?.schemaVersion) ? recoveryCanonicalBytes(body, size) : new TextEncoder().encode(canonicalJSON(body));
   const digest = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', encoded)), v => v.toString(16).padStart(2, '0')).join('');
-  if (!body || ![1, 2].includes(body.schemaVersion) || body.worldId !== 'athens' || body.projectionId !== 'athens-v1' || !ROUTE_HASH.test(expectedHash || '') || body.worldSetRevision !== worldSetRevision || !ROUTE_HASH.test(worldSetRevision || '') || encoded.length > 2 * 1024 * 1024 || digest !== expectedHash) throw Error('Invalid authoritative recovery artifact');
+  if (!body || ![1, 2, 3].includes(body.schemaVersion) || body.worldId !== 'athens' || body.projectionId !== 'athens-v1' || !ROUTE_HASH.test(expectedHash || '') || body.worldSetRevision !== worldSetRevision || !ROUTE_HASH.test(worldSetRevision || '') || encoded.length > 2 * 1024 * 1024 || digest !== expectedHash) throw Error('Invalid authoritative recovery artifact');
 }
 // Public object API always takes ownership of a private snapshot before yielding.
 export async function validateRouteRoads(body, options = {}) {
@@ -47,7 +47,7 @@ async function validateOwnedRouteRoads(body, { expectedHash, worldSetRevision, m
   recoveryDataBytes(body, maxCombinedBytes);
   await authenticateRouteRoads(body, { expectedHash, worldSetRevision, maxCombinedBytes, liveBufferBytes, callerObjectBytes, memoryStats });
   // Authenticate the immutable packed representation before any expansion.
-  if (body.schemaVersion === 2) {
+  if ([2, 3].includes(body.schemaVersion)) {
     const decoded = decodeRecoverySidecar(body, { maxCombinedBytes, liveBufferBytes: liveBufferBytes + callerObjectBytes, consume: true });
     body = decoded.body;
     if (memoryStats) memoryStats.expansionBytes = decoded.metrics.peakBytes;
@@ -74,14 +74,14 @@ async function validateOwnedRouteRoads(body, { expectedHash, worldSetRevision, m
 export function routeRoadAuthority(body) {
   const index = new Map(), size = 64;
   for (const a of body.anchors) { const key = `${Math.floor(a.x / size)},${Math.floor(a.z / size)}`; if (!index.has(key)) index.set(key, []); index.get(key).push(a); }
-  const near = (pose, footprint, radius = 192) => {
-    if (!['x', 'y', 'z'].every(k => finite(pose[k]))) return [];
-    const out = [], n = Math.ceil(radius / size), cx = Math.floor(pose.x / size), cz = Math.floor(pose.z / size);
+  const iterateCandidates = function* (pose, footprint, radius = 192) {
+    if (!['x', 'y', 'z'].every(k => finite(pose[k]))) return;
+    const n = Math.ceil(radius / size), cx = Math.floor(pose.x / size), cz = Math.floor(pose.z / size);
     for (let x = cx - n; x <= cx + n; x++) for (let z = cz - n; z <= cz + n; z++) for (const a of index.get(`${x},${z}`) || []) {
-      if (footprintCertified(a, footprint) && Math.hypot(a.x - pose.x, a.z - pose.z) <= radius) out.push(a);
+      if (footprintCertified(a, footprint) && Math.hypot(a.x - pose.x, a.z - pose.z) <= radius) yield a;
     }
     // No route-anchor fallback when the release has no surveyed road nearby.
-    return out;
   };
-  return { candidates: near, contactAt(x, z, { referenceY = 0 } = {}) { return near({ x, y: referenceY, z }, { halfWidth: 0, halfLength: 0 }, 2).find(a => Math.abs(a.y - referenceY) < .75) || null; } };
+  const near = (...args) => [...iterateCandidates(...args)];
+  return { candidates: near, iterateCandidates, contactAt(x, z, { referenceY = 0 } = {}) { return near({ x, y: referenceY, z }, { halfWidth: 0, halfLength: 0 }, 2).find(a => Math.abs(a.y - referenceY) < .75) || null; } };
 }

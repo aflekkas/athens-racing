@@ -1,7 +1,7 @@
 Barlow and Barlow Condensed
 Copyright 2017 The Barlow Project Authors (https://github.com/jpt/barlow).
 SIL Open Font License 1.1; see LICENSE.txt in this directory.
-Loaded through Google Fonts by index.html.
+The hosted browser edition loads these through Google Fonts. The desktop edition bundles local font files; its exact source URLs and licence are recorded in apps/game/fonts/CREDITS.txt and OFL.txt.
 Upstream licence records:
 https://github.com/google/fonts/blob/main/ofl/barlow/OFL.txt
 https://github.com/google/fonts/blob/main/ofl/barlowcondensed/OFL.txt

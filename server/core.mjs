@@ -706,5 +706,6 @@ export function createGameCore({ maps, cars: CARS, carSpecs = null, nitrousCars 
     if (preparation?.ready) releasePreparation(preparation);
     handlers.get(ws)?.close(); handlers.delete(ws);
   };
-  return { connect, prepareMessage, message, disconnect, pong: ws => handlers.get(ws)?.pong(), tick, nextWake, exportState, restore, clientData: ws => { const c = [...clients].find(c => c.ws === ws); return c && clientData(c); }, discover, publicLobby, lobbies, clients, sessions, track };
+  const endSessions = () => { for (const lobby of [...lobbies.values()]) for (const player of [...lobby.players.values()]) leave(player); };
+  return { connect, prepareMessage, message, disconnect, endSessions, pong: ws => handlers.get(ws)?.pong(), tick, nextWake, exportState, restore, clientData: ws => { const c = [...clients].find(c => c.ws === ws); return c && clientData(c); }, discover, publicLobby, lobbies, clients, sessions, track };
 }

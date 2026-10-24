@@ -43,10 +43,12 @@ export class WorldTileStream {
     this.adapter=adapter;this.capBytes=capBytes;this.transientCap=transientBytes;this.concurrency=concurrency;
     this.nearRing=nearRing;this.safetyRing=safetyRing;this.lookaheadSeconds=lookaheadSeconds;this.activationMs=activationMs;this.now=now;this.retryMs=retryMs;
     this.tiles=new Map();this.pins=new Map();this.wanted=new Map();this.origin={x:0,z:0};this.generation=0;this.disposed=false;
-    this.residentBytes=0;this.reservedBytes=0;this.transientBytes=0;this.inflight=0;
+    this.queryBytes=0;this.residentBytes=0;this.reservedBytes=0;this.transientBytes=0;this.inflight=0;
     this.metrics={loadedBytes:0,evictions:0,failures:0,peakResidentBytes:0,peakReservedBytes:0,peakTransientBytes:0,peakJSBytes:0,peakGPUBytes:0,maxActivationMs:0,activationLongTasks:0,p95ActivationMs:0,p95FetchDecodeSeconds:0,activationFrameMs:[],fetchDecodeMs:[],activationStepMax:{}};
     this.spawnRelease=pinSpawn?this.pin('spawn',manifest.spawn.cell.join(',')):null;
   }
+  reserveQueryBytes(bytes){if(this.disposed||!Number.isSafeInteger(bytes)||bytes<0||this.residentBytes+this.reservedBytes+this.queryBytes+bytes>this.capBytes)return false;this.queryBytes+=bytes;this.metrics.peakQueryBytes=Math.max(this.metrics.peakQueryBytes||0,this.queryBytes);return true;}
+  releaseQueryBytes(bytes){if(!Number.isSafeInteger(bytes)||bytes<0||bytes>this.queryBytes)throw Error('Invalid query reservation release');this.queryBytes-=bytes;}
   entry(key){return this.manifest.tiles[key];}
   pin(reason,key){
     if(this.disposed||!this.entry(key))throw new Error(`Cannot pin unknown tile ${key}`);
@@ -98,11 +100,12 @@ export class WorldTileStream {
       const entry=this.entry(key),reserved=entry.residentBytes??entry.decodedBytes,transient=entry.transientBytes??entry.decodedBytes*2+entry.bytes;
       if(transient>this.transientCap-this.transientBytes)continue;
       const admission=(this.wanted.get(key)??0)>=10?this.capBytes*.8:this.capBytes;
-      while(this.residentBytes+this.reservedBytes+reserved>admission){
+      if(this.queryBytes&&this.residentBytes+this.reservedBytes+this.queryBytes+reserved>admission)this.roads?.clearQueryCache?.();
+      while(this.residentBytes+this.reservedBytes+this.queryBytes+reserved>admission){
         const candidates=[...this.tiles].filter(([k,t])=>!this.pins.has(k)&&!this.contactKeys?.has(k)&&(!this.wanted.has(k)||this.wanted.get(k)>this.wanted.get(key))&&['active','ready','preparing'].includes(t.state)).sort((a,b)=>(this.wanted.get(b[0])??100)-(this.wanted.get(a[0])??100)||a[1].used-b[1].used);
         if(!candidates.length)break;this.remove(candidates[0][0],'admission-eviction');this.metrics.evictions++;
       }
-      if(this.residentBytes+this.reservedBytes+reserved>admission)continue;
+      if(this.residentBytes+this.reservedBytes+this.queryBytes+reserved>admission)continue;
       const controller=new AbortController(),tile={state:'loading',generation:++this.generation,controller,reserved,transient,used:this.now(),attempts:(old?.attempts||0)+1};
       this.tiles.set(key,tile);this.inflight++;this.reservedBytes+=reserved;this.transientBytes+=transient;
       this.metrics.peakTransientBytes=Math.max(this.metrics.peakTransientBytes,this.transientBytes);
@@ -124,7 +127,7 @@ export class WorldTileStream {
         tile.packet=packet;tile.state='preparing';tile.used=this.now();tile.bytes=entry.residentBytes??packet.bytes;this.residentBytes+=tile.bytes;
         let jsBytes=0,gpuBytes=0;
         for(const value of this.tiles.values())if(value.packet){jsBytes+=value.packet.jsBytes??value.packet.bytes-(value.packet.gpuBytes||0);gpuBytes+=value.packet.gpuBytes||0;}
-        this.metrics.peakJSBytes=Math.max(this.metrics.peakJSBytes,jsBytes);
+        this.metrics.peakJSBytes=Math.max(this.metrics.peakJSBytes,jsBytes+this.queryBytes);
         this.metrics.peakGPUBytes=Math.max(this.metrics.peakGPUBytes,gpuBytes);
         this.metrics.loadedBytes+=entry.bytes;this.metrics.peakResidentBytes=Math.max(this.metrics.peakResidentBytes,this.residentBytes);
         const warming=this.adapter?.warmup?.(tile.packet);packet=null;
@@ -259,10 +262,10 @@ export class WorldTileStream {
   releaseSpawn(){this.spawnRelease?.();this.spawnRelease=null;}
   retry(key){const tile=this.tiles.get(key);if(tile?.state==='failed'){tile.attempts=0;tile.retryAt=0;this.pump();}}
   remove(key,reason='unknown'){
-    const tile=this.tiles.get(key);if(!tile)return;this.tiles.delete(key);if(this.#observation){const observed=this.#tileObservations.get(tile);observeTileRemoval(observed,reason);observeTileControllerAbort(observed);}tile.controller.abort();
+    const tile=this.tiles.get(key);if(!tile)return;this.roads?.invalidateTile?.(key);this.tiles.delete(key);if(this.#observation){const observed=this.#tileObservations.get(tile);observeTileRemoval(observed,reason);observeTileControllerAbort(observed);}tile.controller.abort();
     if(tile.reserved){this.reservedBytes-=tile.reserved;tile.reserved=0;}
     tile.build?.dispose?.();if(!tile.build)tile.handle?.dispose?.();
     this.residentBytes-=tile.bytes||0;tile.packet=null;tile.build=null;tile.handle=null;
   }
-  dispose(){if(this.disposed)return;this.disposed=true;for(const key of this.tiles.keys())this.remove(key,'stream-dispose');this.spawnRelease?.();this.pins.clear();this.wanted.clear();if(this.#observation)this.pool?.dispose('stream-dispose');else this.pool?.dispose();if(this.#observation)closeTileStreamObservation(this.#observation);}
+  dispose(){if(this.disposed)return;this.disposed=true;for(const key of this.tiles.keys())this.remove(key,'stream-dispose');this.roads?.clearQueryCache?.();this.spawnRelease?.();this.pins.clear();this.wanted.clear();if(this.#observation)this.pool?.dispose('stream-dispose');else this.pool?.dispose();if(this.#observation)closeTileStreamObservation(this.#observation);}
 }

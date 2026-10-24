@@ -6,7 +6,16 @@
     "start": "node server/index.mjs",
     "test": "node tools/run-tests.mjs",
     "test:full": "node tools/run-tests.mjs --full",
-    "check:bundle": "bash tools/browser-slot.sh node tools/check-bundle.mjs"
+    "check:bundle": "bash tools/browser-slot.sh node tools/check-bundle.mjs",
+    "desktop:prepare": "node apps/game/prepare.mjs",
+    "desktop:export-world": "node apps/game/export-world.mjs",
+    "desktop:start": "electron apps/desktop/main.mjs",
+    "desktop:pack": "npm run desktop:prepare && electron-builder --config apps/desktop/electron-builder.yml --dir --publish never",
+    "desktop:dist": "npm run desktop:prepare && electron-builder --config apps/desktop/electron-builder.yml --publish never",
+    "test:desktop": "node --test apps/desktop/*.test.mjs apps/server/*.test.mjs apps/game/*.test.mjs",
+    "desktop:prepare-online": "node apps/server/prepare-online.mjs",
+    "desktop:online": "npm run desktop:prepare-online",
+    "desktop:repair-world": "node apps/game/repair-world.mjs"
   },
   "engines": {
     "node": ">=22"
@@ -15,10 +24,13 @@
     "ws": "^8.18.3"
   },
   "devDependencies": {
+    "electron": "44.4.5",
+    "electron-builder": "26.15.6",
     "esbuild": "^0.28.2",
     "playwright": "1.64.0",
     "three": "0.170.0",
     "wrangler": "^4.150.0"
   },
-  "description": "ATHENS RACING \u2014 race real Athens roads in your browser."
+  "description": "Athens Racing \u2014 offline desktop racing and player-hosted LAN.",
+  "version": "0.1.0"
 }

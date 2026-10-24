@@ -1,0 +1,200 @@
+// Run via tools/browser-slot.sh after desktop:prepare. Uses the actual Electron shell.
+import assert from 'node:assert/strict';
+import { _electron } from 'playwright';
+import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+
+const evidence = resolve(process.env.DESKTOP_EVIDENCE || '.scratch/desktop-check');
+const temporary = await mkdtemp(resolve(process.env.DESKTOP_TEMP_ROOT || '/tmp', 'athens-desktop-check.'));
+await mkdir(evidence, { recursive: true });
+await mkdir(resolve(temporary, 'launch'));
+const environment = { ...process.env, ASR_DESKTOP_USER_DATA: resolve(temporary, 'profile'), ASR_DESKTOP_PORT: process.env.DESKTOP_TEST_PORT || '17843' };
+for (const key of ['NODE_PATH', 'NODE_OPTIONS', 'ELECTRON_RUN_AS_NODE']) delete environment[key];
+if (process.env.DESKTOP_EXECUTABLE) delete environment.ASR_GAME_ROOT;
+const launchBegan = Date.now();
+const metrics = {};
+const requests = [], errors = [], brokenResponses = [], consoleMessages = [], failedRequests = [], results = [];
+let application, page, primary;
+try {
+  application = await _electron.launch({
+    ...(process.env.DESKTOP_EXECUTABLE ? { executablePath: process.env.DESKTOP_EXECUTABLE, args: ['--mute-audio'], cwd: resolve(temporary, 'launch') } : { args: ['--mute-audio', 'apps/desktop/main.mjs'] }),
+    env: environment,
+    timeout: 60000,
+  });
+  page = await application.firstWindow();
+  await application.evaluate(({ app, BrowserWindow }) => {
+    app.focus({ steal: true });
+    for (const window of BrowserWindow.getAllWindows()) {
+      window.show(); window.focus();
+      const contents = window.webContents;
+      contents.setAudioMuted(true);
+      contents.on('dom-ready', () => contents.setAudioMuted(true));
+    }
+  });
+  page.on('request', request => requests.push(request.url()));
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('console', message => { if (['warning', 'warn', 'error'].includes(message.type())) { consoleMessages.push({ type: message.type(), text: message.text() }); console.log('Renderer:', message.text()); } });
+  page.on('requestfailed', request => failedRequests.push({ url: request.url(), error: request.failure()?.errorText }));
+  page.on('response', response => { if (response.status() >= 400) brokenResponses.push({ url: response.url(), status: response.status() }); });
+  await page.waitForFunction(() => !!window.athensDesktop && document.body.classList.contains('loaded'), null, { timeout: 90000 });
+  await page.waitForFunction(() => { const boot = document.getElementById('boot'); return document.documentElement.classList.contains('booted') && (!boot || getComputedStyle(boot).opacity === '0'); });
+  metrics.coldLaunchToInteractiveTitleMs = Date.now() - launchBegan;
+  metrics.runtime = await application.evaluate(() => ({ electron: process.versions.electron, node: process.versions.node, platform: process.platform, arch: process.arch, packaged: process.defaultApp !== true, cwd: process.cwd(), resourcesPath: process.resourcesPath }));
+  const origin = new URL(page.url()).origin;
+  // Reload with listeners attached to cover every eager cold-page request too.
+  await page.reload();
+  await page.waitForFunction(() => document.body.classList.contains('loaded'), null, { timeout: 90000 });
+  assert.equal((await page.evaluate(() => window.athensDesktop.session())).mode, 'solo');
+  await page.evaluate(() => localStorage.setItem('desktop-verification', 'retained'));
+  await page.waitForFunction(() => { const boot = document.getElementById('boot'); return document.documentElement.classList.contains('booted') && (!boot || getComputedStyle(boot).opacity === '0'); });
+  console.log('Native desktop title ready; selecting Solo through the UI.');
+  await page.screenshot({ path: resolve(evidence, 'desktop-title.jpg'), type: 'jpeg', quality: 85 });
+  await page.locator('[data-act=desktopSolo]').click();
+  await page.waitForFunction(() => (window.__flow?.menu || window.__bootMenu)?.screen === 'mode');
+  await page.locator('[data-act=quick]').click();
+  await page.locator('[data-confirm-track]').waitFor({ state: 'visible' });
+  for (let i = 0; i < 12 && await page.locator('[data-confirm-track]').getAttribute('data-map-id') !== 'megara-club'; i++) await page.keyboard.press('ArrowRight');
+
+  const menuRouteBegan = Date.now();
+  await page.locator('[data-confirm-track][data-map-id=megara-club]').click();
+  await page.waitForFunction(() => { if (window.__loading?.failure) throw Error('Menu route loading failed: ' + JSON.stringify(window.__loading.failure)); return !!document.querySelector('[data-act=setupGo]'); }, null, { timeout: 180000 });
+  await page.locator('[data-act=setupGo]').click({ timeout: 180000 });
+  await page.locator('[data-act=carConfirm]').click({ timeout: 120000 });
+  await page.waitForFunction(() => window.__game?.state === 'race' && window.__game.unifiedCompiled?.id === 'megara-club', null, { timeout: 180000 });
+  metrics.firstMenuSelectionToRaceMs = Date.now() - menuRouteBegan;
+  await page.keyboard.down('w'); await page.waitForTimeout(1500); await page.keyboard.up('w');
+  results.push({ menuRaceRoute: 'megara-club', menuFlow: 'Play Solo → Quick Race → Megara → Setup → Choose Car → Race' });
+  await page.goto(origin);
+  await page.locator('[data-act=desktopLan]').click();
+  await page.waitForFunction(() => (window.__flow?.menu || window.__bootMenu)?.screen === 'desktopLan');
+  await page.locator('[data-act=desktopHost]').click();
+  await page.locator('[data-act=mpCreate]').waitFor({ state: 'visible', timeout: 120000 });
+  await page.waitForFunction(async () => (await window.athensDesktop.session()).mode === 'host');
+  assert.equal((await page.evaluate(() => window.athensDesktop.session())).mode, 'host');
+  const local = await page.evaluate(() => window.athensDesktop.solo());
+  assert.equal(local.mode, 'solo');
+  const routeIds = await page.evaluate(async () => (await (await fetch('/api/routes')).json()).routes.map(route => route.id));
+  assert.ok(routeIds.length >= 6, 'all released race destinations must be included');
+  for (const map of routeIds) {
+    const began = Date.now(), initialRequests = requests.length;
+    console.log('Checking offline route:', map);
+    await page.goto(origin + '/?routes=1&route=' + map + '&quick&simhook&guest=1');
+    await page.waitForFunction(() => {
+      if (window.__loading?.failure) throw Error('Route loading failed: ' + JSON.stringify(window.__loading.failure));
+      return window.__game?.state === 'race' && !!window.__sim?.player;
+    }, null, { timeout: 240000 });
+    assert.equal(await page.evaluate(() => localStorage.getItem('desktop-verification')), 'retained');
+    const before = await page.evaluate(() => ({ x: window.__sim.player.veh.x, z: window.__sim.player.veh.z }));
+    await page.keyboard.down('w'); await page.waitForTimeout(2500); await page.keyboard.up('w');
+    const after = await page.evaluate(() => ({ x: window.__sim.player.veh.x, z: window.__sim.player.veh.z, map: window.__game.mapId, route: window.__game.unifiedCompiled?.id, render: { calls: window.__sim.renderer.info.render.calls, triangles: window.__sim.renderer.info.render.triangles }, geometries: window.__sim.renderer.info.memory.geometries }));
+    assert.equal(after.map, 'athens');
+    assert.equal(after.route, map);
+    assert.ok(Math.hypot(after.x - before.x, after.z - before.z) > 0.1, map + ': throttle must move the car');
+    if (map === 'syntagma-pilot') {
+      await page.evaluate(() => { window.__game.bestSetupChanged = false; });
+      await page.keyboard.press('r');
+      await page.waitForFunction(() => window.__game.bestSetupChanged && !window.__game.towing, null, { timeout: 30000 });
+      const recovered = await page.evaluate(() => { const v = window.__sim.player.veh; return { x: v.x, y: v.y, z: v.z, speed: Math.hypot(v.vLong, v.vLat), surfaceId: v.routeContact?.surfaceId }; });
+      assert.ok(recovered.surfaceId, 'dense city Tow must land on authenticated emitted geometry');
+      assert.ok(recovered.speed < 1.5, 'Tow must stop the vehicle');
+      results.push({ denseCityTow: recovered });
+    }
+    if (map === 'megara-club') {
+      await application.evaluate(({ BrowserWindow }) => { const window = BrowserWindow.getAllWindows()[0]; window.show(); window.focus(); });
+      await page.bringToFront();
+      await page.evaluate(() => {
+        window.__desktopPointerProbe = [];
+        for (const type of ['pointerlockchange', 'pointerlockerror']) document.addEventListener(type, () => window.__desktopPointerProbe.push({ type, locked: !!document.pointerLockElement, focused: document.hasFocus(), state: window.__game.state }));
+        const canvas = document.getElementById('c'), request = canvas.requestPointerLock.bind(canvas);
+        canvas.requestPointerLock = (...args) => {
+          window.__desktopPointerProbe.push({ type: 'request', focused: document.hasFocus(), activation: navigator.userActivation.isActive, state: window.__game.state });
+          const result = request(...args);
+          result?.catch(error => window.__desktopPointerProbe.push({ type: 'rejected', name: error.name, message: error.message }));
+          return result;
+        };
+      });
+      await page.evaluate(() => window.__flow.menu.onChange({ key: 'mouseLook', value: true, el: { dataset: { scope: 'setting' } } }));
+      await page.keyboard.press('Escape');
+      await page.locator('#ui [data-act=resume]').click();
+      await page.waitForFunction(() => document.pointerLockElement === document.getElementById('c')).catch(async error => {
+        const probe = await page.evaluate(() => ({ events: window.__desktopPointerProbe, focused: document.hasFocus(), state: window.__game.state, screen: window.__flow.menu.screen }));
+        throw Error('Native mouse-look lock failed: ' + JSON.stringify(probe), { cause: error });
+      });
+      await page.mouse.move(420, 320);
+      await page.evaluate(() => document.exitPointerLock());
+      await page.waitForFunction(() => window.__flow.menu.screen === 'pause');
+      await page.evaluate(() => window.__flow.menu.onChange({ key: 'mouseLook', value: false, el: { dataset: { scope: 'setting' } } }));
+      await page.locator('#ui [data-act=resume]').click();
+      await page.waitForFunction(() => window.__game.state === 'race' && !document.pointerLockElement);
+      results.push({ pointerLockGranted: true, pointerUnlockPaused: true });
+      const initialCell = await page.evaluate(() => {
+        const p = window.__routePilot, v = p.player.veh;
+        const Controller = p.rivals[0]?.ai?.controller?.constructor;
+        if (!Controller) throw Error('Route pilot controller unavailable for bounded boundary test');
+        const controller = new Controller(p.route, v, { perfect: true, closedRoad: true });
+        p.setDriver((vehicle, dt) => controller.update(dt, { pace: .8 }));
+        return `${Math.floor(v.x / 512)},${Math.floor(v.z / 512)}`;
+      });
+      await page.waitForFunction(initial => {
+        const p = window.__routePilot, v = p.player.veh;
+        const cell = `${Math.floor(v.x / 512)},${Math.floor(v.z / 512)}`;
+        return cell !== initial && p.session.stream.tiles.get(cell)?.state === 'active';
+      }, initialCell, { timeout: 120000 });
+      const crossing = await page.evaluate(initial => {
+        const p = window.__routePilot, v = p.player.veh, cell = `${Math.floor(v.x / 512)},${Math.floor(v.z / 512)}`;
+        p.setDriver(() => ({ throttle: 0, brake: 1, steer: 0 }));
+        return { from: initial, to: cell, sha256: p.session.manifest?.tiles?.[cell]?.sha256 || p.session.stream.manifest.tiles[cell].sha256, localURL: p.session.stream.manifest.tiles[cell].url, resident: p.session.stream.tiles.get(cell).state };
+      }, initialCell);
+      results.push({ boundaryCrossing: crossing });
+      await page.screenshot({ path: resolve(evidence, 'megara-boundary.jpg'), type: 'jpeg', quality: 85 });
+    }
+    const cadence = await page.evaluate(() => new Promise(resolve => { const samples = []; let previous; const tick = now => { if (previous !== undefined) samples.push(now - previous); previous = now; if (samples.length === 30) { const sorted = [...samples].sort((a, b) => a - b); resolve({ meanMs: samples.reduce((a, b) => a + b, 0) / samples.length, p95Ms: sorted[Math.floor(sorted.length * .95)], samples: samples.length, meaning: 'browser animation frame cadence, not a rendered FPS benchmark' }); } else requestAnimationFrame(tick); }; requestAnimationFrame(tick); }));
+    await page.screenshot({ path: resolve(evidence, map + '.jpg'), type: 'jpeg', quality: 85 });
+    results.push({ map, route: after.route, elapsedMs: Date.now() - began, localRequests: requests.length - initialRequests, cadence, entryPhases: await page.evaluate(() => window.__worldSession?.metrics?.entryPhases || null), render: after.render, geometries: after.geometries, movedMetres: Math.hypot(after.x - before.x, after.z - before.z) });
+  }
+  await page.goto(origin + '/?map=riviera&event=free&simhook&guest=1');
+  await page.waitForFunction(() => window.__athens?.player?.veh && document.body.classList.contains('loaded'), null, { timeout: 240000 });
+  const freeBefore = await page.evaluate(() => ({ x: window.__athens.player.veh.x, z: window.__athens.player.veh.z }));
+  await page.keyboard.down('w'); await page.waitForTimeout(2500); await page.keyboard.up('w');
+  const freeAfter = await page.evaluate(() => ({ x: window.__athens.player.veh.x, z: window.__athens.player.veh.z, paused: window.__athens.paused }));
+  assert.ok(Math.hypot(freeAfter.x - freeBefore.x, freeAfter.z - freeBefore.z) > .1, 'offline free-roam throttle must move the car');
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => window.__athens.paused && window.__athens.menu.open);
+  await page.screenshot({ path: resolve(evidence, 'free-roam-paused.jpg'), type: 'jpeg', quality: 85 });
+  results.push({ freeRoamMetres: Math.hypot(freeAfter.x - freeBefore.x, freeAfter.z - freeBefore.z), pauseWorked: true });
+  const warmRouteBegan = Date.now();
+  await page.goto(origin + '/?routes=1&route=megara-club&quick&simhook&guest=1');
+  await page.waitForFunction(() => window.__game?.state === 'race' && !!window.__sim?.player, null, { timeout: 240000 });
+  metrics.warmMegaraNavigationToRaceMs = Date.now() - warmRouteBegan;
+  await application.close(); application = null;
+  const relaunchBegan = Date.now();
+  application = await _electron.launch({
+    ...(process.env.DESKTOP_EXECUTABLE ? { executablePath: process.env.DESKTOP_EXECUTABLE, args: ['--mute-audio'], cwd: resolve(temporary, 'launch') } : { args: ['--mute-audio', 'apps/desktop/main.mjs'] }),
+    env: environment, timeout: 60000,
+  });
+  const reopened = await application.firstWindow();
+  await application.evaluate(({ app, BrowserWindow }) => {
+    app.focus({ steal: true });
+    for (const window of BrowserWindow.getAllWindows()) {
+      window.show(); window.focus();
+      const contents = window.webContents;
+      contents.setAudioMuted(true);
+      contents.on('dom-ready', () => contents.setAudioMuted(true));
+    }
+  });
+  await reopened.waitForFunction(() => !!window.athensDesktop && document.body.classList.contains('loaded'), null, { timeout: 90000 });
+  await reopened.waitForFunction(() => document.documentElement.classList.contains('booted'));
+  metrics.warmRelaunchToInteractiveTitleMs = Date.now() - relaunchBegan;
+  assert.equal(await reopened.evaluate(() => localStorage.getItem('desktop-verification')), 'retained', 'profile must survive full app restart');
+  const external = requests.filter(value => /^https?:|^wss?:/.test(value) && !['127.0.0.1', 'localhost', '[::1]'].includes(new URL(value).hostname));
+  assert.deepEqual(external, [], 'installed renderer must request no external services');
+  assert.deepEqual(errors, [], 'game must have no uncaught renderer errors');
+  assert.deepEqual(brokenResponses, [], 'all local assets and APIs must load successfully');
+} catch (error) { primary = error; if (page && !page.isClosed()) await page.screenshot({ path: resolve(evidence, 'failure.jpg'), type: 'jpeg', quality: 85 }).catch(() => {}); }
+finally {
+  if (application) await application.close().catch(error => { primary ||= error; });
+  await rm(temporary, { recursive: true, force: true });
+  await writeFile(resolve(evidence, 'results.json'), JSON.stringify({ passed: !primary, metrics, routes: results.filter(result => result.route), checks: results.filter(result => !result.route), requestCount: requests.length, errors, brokenResponses, consoleMessages, failedRequests, failure: primary?.stack }, null, 2));
+}
+if (primary) throw primary;
+console.log(`Desktop verified: ${results.filter(result => result.route).length} routes, ${requests.length} local requests, zero renderer errors.`);

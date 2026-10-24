@@ -20,7 +20,8 @@ test('Graphics menu writes resolution and draw distance live; the look never cha
 test('Graphics tab keeps the performance controls and no adaptive or automatic quality modes',()=>{
  const menu=Object.assign(Object.create(Menu.prototype),{h:{}});
  const html=menu.r_settings({tab:'video',from:'pause'});
- for(const key of ['renderScale','drawDistance','frameCap','mirrors'])assert.match(html,new RegExp('data-key="'+key+'"'));
+ for(const key of ['renderScale','drawDistance','mirrors'])assert.match(html,new RegExp('data-key="'+key+'"'));
+ assert.doesNotMatch(html,/data-key="frameCap"|FRAME RATE LIMIT/,'owner requested uncapped rendering, including persisted caps');
  assert.doesNotMatch(html,/LOCKED WHILE ONLINE|RELOADS THE GAME|ADAPTIVE|PIXEL RATIO CAP/);
  assert.match(html,/50%/);assert.match(html,/100%/);
 });
