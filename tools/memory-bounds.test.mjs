@@ -76,3 +76,46 @@ test('route admission is independent of uncollected V8 garbage; retained world a
   assert.equal(worldResourcesFit(worldResourceUsage({...retained,tileJS:300*MiB}),RESOURCE_BUDGETS.low),false);
   assert.equal(worldResourcesFit(worldResourceUsage({...retained,tileGPU:300*MiB}),RESOURCE_BUDGETS.low),false);
 });
+
+// Shared materials are common across streamed props: count resources, not mesh references.
+test('memory inventory scans shared material identities once, including repeated material-array entries', () => {
+  const texture={isTexture:true,image:{width:2,height:3},generateMipmaps:false};
+  let materialScans=0,uniformScans=0;
+  const uniforms=new Proxy({map:{value:[texture,texture]}},{ownKeys(target){uniformScans++;return Reflect.ownKeys(target);}});
+  const material=new Proxy({map:texture,uniforms},{ownKeys(target){materialScans++;return Reflect.ownKeys(target);}});
+  const geometry={attributes:{position:{array:new Float32Array(6)}},index:{array:new Uint16Array(3)}};
+  const nodes=[{geometry,material},...Array.from({length:20},()=>({geometry,material:[material,material],visible:false}))];
+  const scene={traverse(fn){nodes.forEach(fn);},environment:texture,background:texture};
+  const memory=estimateSceneMemory(scene);
+  assert.equal(memory.geometryBytes,30);assert.equal(memory.textureBytes,24);assert.equal(memory.gpuBytes,54);
+  assert.equal(materialScans,1,'shared material properties must be enumerated once per estimate');
+  assert.equal(uniformScans,1,'shared shader uniforms must be enumerated once per estimate');
+});
+
+test('memory inventory retains unique materials, compressed and shader textures, hidden resources and instance buffers', () => {
+  const shared={isTexture:true,image:{width:2,height:3},generateMipmaps:false};
+  const compressed={isTexture:true,isCompressedTexture:true,mipmaps:[{data:new Uint8Array(7)},{data:new Uint8Array(3)}]};
+  const cube={isTexture:true,image:[{width:1,height:2},{width:1,height:2}],generateMipmaps:false};
+  const ignored={isTexture:true,isRenderTargetTexture:true,image:{width:100,height:100}};
+  const geometry={attributes:{position:{array:new Float32Array(6)}},index:{array:new Uint16Array(3)}};
+  const matrices={array:new Float32Array(16)},colors={array:new Float32Array(3)};
+  const a={map:shared,uniforms:{maps:{value:[shared,compressed,ignored]}}},b={map:shared,uniforms:{cube:{value:cube}}};
+  const nodes=[{geometry,material:[a,b,a],instanceMatrix:matrices,visible:false},{geometry,material:b,instanceMatrix:matrices,instanceColor:colors}];
+  const memory=estimateSceneMemory({traverse(fn){nodes.forEach(fn);},background:shared,environment:cube});
+  assert.equal(memory.geometryBytes,30+64+12);assert.equal(memory.textureBytes,24+10+16);
+  assert.equal(memory.gpuBytes,156);
+});
+
+test('memory inventory recomputes shared materials and geometry after mutations between calls', () => {
+  const texture={isTexture:true,image:{width:2,height:3},generateMipmaps:false};
+  const material={uniforms:{map:{value:texture}}},geometry={attributes:{position:{array:new Float32Array(3)}}};
+  const nodes=[{material,geometry},{material:[material],geometry,visible:false}];
+  const scene={traverse(fn){nodes.forEach(fn);}};
+  const first=estimateSceneMemory(scene);
+  texture.image={width:4,height:5};geometry.attributes.position.array=new Float32Array(6);
+  material.uniforms.extra={value:{isTexture:true,image:{width:1,height:1},generateMipmaps:false}};
+  const second=estimateSceneMemory(scene);
+  assert.equal(first.geometryBytes,12);assert.equal(first.textureBytes,24);
+  assert.equal(second.geometryBytes,24);assert.equal(second.textureBytes,84);
+  assert.equal(second.gpuBytes,108);
+});

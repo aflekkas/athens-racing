@@ -9,7 +9,7 @@ export function setAssetCodecMap(id) { activeMap = id; }
 export const textureCodecsEnabled = () => assetCodecsEnabled() && new URLSearchParams(location.search).has('bakedownload') && MAP_CODEC_POLICY[activeMap]?.textures === true;
 export function heapBytes() { return globalThis.performance?.memory?.usedJSHeapSize ?? null; }
 export function estimateSceneMemory(scene) {
-  const geometries = new Set(), textures = new Set(), buffers = new Set(); let geometryBytes = 0, textureBytes = 0;
+  const geometries = new Set(), textures = new Set(), buffers = new Set(), materials = new Set(); let geometryBytes = 0, textureBytes = 0;
   const attribute = a => { const array = a?.array || a?.data?.array; if (array && !buffers.has(array)) { buffers.add(array); geometryBytes += array.byteLength; } };
   const texture = t => {
     if (!t?.isTexture || textures.has(t) || t.isRenderTargetTexture) return;
@@ -25,6 +25,8 @@ export function estimateSceneMemory(scene) {
     }
     attribute(o.instanceMatrix); attribute(o.instanceColor);
     for (const material of Array.isArray(o.material) ? o.material : o.material ? [o.material] : []) {
+      if (materials.has(material)) continue;
+      materials.add(material);
       for (const t of Object.values(material)) texture(t);
       for (const uniform of Object.values(material.uniforms || {})) for (const t of Array.isArray(uniform.value) ? uniform.value : [uniform.value]) texture(t);
     }
