@@ -1,0 +1,79 @@
+{
+  "schema": "root-native-world-bridge275-fullend-1",
+  "status": "PASS_METADATA_AND_ONE_OPAQUE_ENRICHMENT_ONLY",
+  "sourceCommit": "8652c41c32244bf84d4940d9c9583becc061302e",
+  "appTerminal": {
+    "terminalId": "agent-3f02092d-0275-442e-8b3c-a696c09a1d90",
+    "status": "exited",
+    "exitCode": 0,
+    "timedOut": false,
+    "output": "",
+    "nextOffset": 0,
+    "truncated": false
+  },
+  "parentObservedChildCloseMs": 3133.691086,
+  "parentElapsedMs": 3156.36649,
+  "all26SourcePinsPostMatched": true,
+  "upstreamRequests": 5,
+  "localRequests": 3,
+  "metadataBytes": 839510,
+  "opaqueEnrichmentBytes": 1908927,
+  "upstreamBytes": 2748437,
+  "downstreamBytes": 1908927,
+  "opaqueSHA256": "fe491cb8ace63cbed0644e4ca9f2c341bc32c7939878f680fe99876cd43de699",
+  "receivedTotalsExact": true,
+  "accountingIncomplete": false,
+  "cleanupConfirmed": true,
+  "allRecordedPIDsAbsent": true,
+  "allOwnedSocketsHandlersRequestsObservers": 0,
+  "artifacts": {
+    "actual-receipt.json": {
+      "path": "/tmp/athens-native-bridge175.ra59hdtx/native-validation-source-v4/actual-receipt.json",
+      "bytes": 15351,
+      "sha256": "6c23d69556dc3b87660304137241a10721e9ba9074c5a67d73f73b38e1beec4f"
+    },
+    "actual-parent-receipt.json": {
+      "path": "/tmp/athens-native-bridge175.ra59hdtx/native-validation-source-v4/actual-parent-receipt.json",
+      "bytes": 1116,
+      "sha256": "9b1d871bb0c4c03c8468e74df9f2d5cc88ab738de13100c32a0ce6cb20d3cd84"
+    },
+    "actual-parent.log": {
+      "path": "/tmp/athens-native-bridge175.ra59hdtx/native-validation-source-v4/actual-parent.log",
+      "bytes": 114,
+      "sha256": "09b26be6d78122cb36f56a0fed28fbeec2b1920f973fea6784b4b0905ae08e0d"
+    },
+    "actual-launcher.pid": {
+      "path": "/tmp/athens-native-bridge175.ra59hdtx/native-validation-source-v4/actual-launcher.pid",
+      "bytes": 8,
+      "sha256": "5a23277213327bf3eb649a8aaae848ab20ca4d359499e959fcbce7581f165615"
+    },
+    "actual-parent.pid": {
+      "path": "/tmp/athens-native-bridge175.ra59hdtx/native-validation-source-v4/actual-parent.pid",
+      "bytes": 8,
+      "sha256": "5a23277213327bf3eb649a8aaae848ab20ca4d359499e959fcbce7581f165615"
+    },
+    "actual-child.pid": {
+      "path": "/tmp/athens-native-bridge175.ra59hdtx/native-validation-source-v4/actual-child.pid",
+      "bytes": 8,
+      "sha256": "20ce403154d6ee0e4e43fde9f19f47b5dc703a8fe8fc080cc35a7d08ca7d8453"
+    },
+    "actual-worker.pid": {
+      "path": "/tmp/athens-native-bridge175.ra59hdtx/native-validation-source-v4/actual-worker.pid",
+      "bytes": 8,
+      "sha256": "20ce403154d6ee0e4e43fde9f19f47b5dc703a8fe8fc080cc35a7d08ca7d8453"
+    },
+    "runtime-grant.json": {
+      "path": "/tmp/athens-native-bridge175.ra59hdtx/native-validation-source-v4/runtime-grant.json",
+      "bytes": 359,
+      "sha256": "bcc37cae9cd2d54e5965fd93f97c16a5e2e3b61c3a2dcda165e95d3e4253806d"
+    }
+  },
+  "cells": 0,
+  "decode": false,
+  "browser": false,
+  "fullBundleSmoke": false,
+  "capacityProved": false,
+  "onlineAdmission": false,
+  "productionChanged": false,
+  "parentFullendSHA256": "bba737ef52ec101551cb8ca9590b6a4015b84b378132c3c79ca9cb8aa5319b6e"
+}
