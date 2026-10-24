@@ -1,0 +1,165 @@
+{
+  "schema": "clean-candidate-five-gates-1",
+  "testedCommit": "21bbb592d4f3f957073354575706e1b82b7bfce0",
+  "testedTree": "f0579cce20cb7c1e2fb16f3cbd9a9e7ef29477b9",
+  "status": "CODE_GATES_PASS_NOT_COMBINED_RELEASE",
+  "fullGitArchive": {
+    "files": 8781,
+    "trackedBytes": 855457301,
+    "tarStreamSHA256": "8c79ff1efd591a4ed9ebc25e945cb1c260b67de2ce79818003e5ee427338225b",
+    "removedAfterProof": true
+  },
+  "npm": {
+    "files": 338,
+    "scheduled": 338,
+    "tests": 3807,
+    "pass": 3779,
+    "firstAttemptFail": 0,
+    "skipped": 28,
+    "flaky": 0,
+    "failedFiles": 0,
+    "isolatedRetryAttempts": 0
+  },
+  "physics": {
+    "pass": 1323,
+    "fail": 0
+  },
+  "browserImportModules": 369,
+  "syntaxModules": 481,
+  "terrain": {
+    "counts": {
+      "tests": 4,
+      "pass": 4,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "maps": [
+      {
+        "map": "riviera",
+        "samples": 2525118,
+        "maxAboveMetres": -0.007688271580239103,
+        "maxStepMetres": 0.1315225993454927,
+        "maxSlope": 0.5656855598191551
+      },
+      {
+        "map": "megara",
+        "samples": 237940,
+        "maxAboveMetres": -0.07195737523740497,
+        "maxStepMetres": 0.11662019792873135,
+        "maxSlope": 0.17146178588733182
+      },
+      {
+        "map": "penteli",
+        "samples": 1043060,
+        "maxAboveMetres": -0.036977435504013556,
+        "maxStepMetres": 0.12517140695803164,
+        "maxSlope": 0.5656534348994506
+      },
+      {
+        "map": "psychiko",
+        "samples": 3074440,
+        "maxAboveMetres": 0.0025094918792092358,
+        "maxStepMetres": 0.14808013793447117,
+        "maxSlope": 0.5047527144689536
+      }
+    ],
+    "totalSamples": 6880558,
+    "limits": {
+      "maxTerrainAboveRoadMetres": 0.005,
+      "maxRoadShoulderStepMetres": 0.15,
+      "maxShoulderSlope": 0.5773502691896257
+    },
+    "scope": "CPU rendered triangle/contact scans of four legacy playable maps; not shared-streamed-world or new-route admission"
+  },
+  "garageManagedDefault": {
+    "counts": {
+      "tests": 7,
+      "pass": 7,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "CHROME_BIN": "ABSENT",
+    "channel": "ABSENT",
+    "nativePath": "/tmp/athens-loaders.OfMh/browsers/chromium_headless_shell-1248/chrome-headless-shell-linux64/chrome-headless-shell",
+    "nativeSHA256": "4fa61f0ba0b4f89b7bec242c32ca16d3bccf69dbfef0651924a9ba8fede5f9d6",
+    "Playwright": "1.64.0",
+    "runtimeBrowserVersionQueried": false
+  },
+  "gateEnvironment": {
+    "PATH": "/usr/bin:/bin",
+    "PLAYWRIGHT_BROWSERS_PATH": "/tmp/athens-loaders.OfMh/browsers",
+    "CHROME_BIN": "/tmp/athens-loaders.OfMh/browsers/chromium-1248/chrome-linux64/chrome",
+    "ASR_TEST_JOBS": "2 only npm",
+    "ASR_TEST_FULL": "1 only terrain"
+  },
+  "logSHA256": {
+    "npm": "c9fa1a18ed3a2bd2046b605c8f8746188beef8695625041eea4645e309237fc1",
+    "physics": "8df4b87b20277fbfb5cb8dc6bb1fad5e4c025f12f880ee42b19872c82053edcb",
+    "browser-imports": "d228d5766cf48bf0ec388e0997e81deb95394bbac0e1b6f564e3defd6296a04a",
+    "syntax": "6f1fcb9fb4ca8a47b5b4b2d8be677c66fb4b988c0cb506080760277db3c02d47",
+    "terrain": "ca4258bbb3718025e1448aba59c949c2df2a58262b2a1e0308b3d866287058fa",
+    "garageManagedDefault": "6e3783c0330f66391e100795327a94609b20b650066b49986d430db3d1edd7ff"
+  },
+  "originalReceipts": [
+    {
+      "path": "/tmp/athens-ui-fixes.Nxho/gates-21bbb592d4f3-full-v1/four-gates-full-end.json",
+      "bytes": 9072,
+      "sha256": "2b617eaf42432fb98497a74050a71119b2f20c0f4f126250bc014f45a286eee4"
+    },
+    {
+      "path": "/tmp/athens-ui-fixes.Nxho/gates-21bbb592d4f3-full-v1/terrain-full-end.json",
+      "bytes": 6092,
+      "sha256": "6ef0ef2699ecf71860ca007d5fbbf7990133bd98c2cad10acd22cd871805de5b"
+    },
+    {
+      "path": "/tmp/athens-ui-fixes.Nxho/garage-managed-default-21bbb-proof/full-end.json",
+      "bytes": 3829,
+      "sha256": "d93ef2bfa51c204d4df853a7963f809317150ce5fcc0addb3c97f2445a52798b"
+    },
+    {
+      "path": "/tmp/athens-ui-fixes.Nxho/gates-21bbb592d4f3-full-v1/archive-cleanup.json",
+      "bytes": 7043,
+      "sha256": "9b67a15851337a365342367431ad437914a4dd70768e2b898703b011f46da112"
+    }
+  ],
+  "parentVerification": {
+    "fourGates": "/tmp/athens-master.PDhi/four-gates311-parent-verification.json",
+    "fourGatesSHA256": "9afc856d4b295f8e6dbcf7c90f31b3e5bcff8cead1401c01c147cbdd0f3e0307",
+    "garageDefault": "/tmp/athens-master.PDhi/garage349-parent-verification.json",
+    "garageDefaultSHA256": "274f928a853de0bc40fd44d75163fa9eba938126f0944f42f96d151b4b284c42",
+    "postAll8781FilesVerifiedAfterFourGatesBeforeTerrain": true,
+    "postTerrain16PinsVerified": true
+  },
+  "sampledAggregateRSSBytes": {
+    "fourGates": 2520571904,
+    "terrain": 2298003456,
+    "notAbsoluteCapacityProof": true
+  },
+  "cleanup": {
+    "fullArchiveFreedBytes": 883490816,
+    "dfBefore": "54% 78G used 68G available",
+    "dfAfter": "53% 77G used 68G available",
+    "logsManifestsReceiptsRetained": true
+  },
+  "remaining": [
+    "current-root real-game cold-load <=8s",
+    "combined streamed-world/paint publication in both buckets",
+    "final Kifissia and Ekali route proofs",
+    "full VasPsychiko3647-piece preservation",
+    "actual two-client parity and full recovery/grid admission",
+    "matched material/fidelity captures",
+    "independent combined-release review",
+    "normal release-train deployment and smokes"
+  ],
+  "releaseAccepted": false,
+  "onlineEnabled": false,
+  "deploymentPerformed": false,
+  "mediaAdded": false,
+  "models": [
+    "Codex gpt-6.1-sol"
+  ]
+}
