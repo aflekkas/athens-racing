@@ -573,7 +573,7 @@ test('immutable enrichment is admitted lazily, not parsed/recurred/cached, with 
  // Deliberately not world-definition data: transport must not interpret this JSON.
  const {f,key,body,digest}=enrichmentFixture(),io=fake(f),app=await prepareBundleWorldAssets(f.source,{fetcher:io.fetcher});
  try{assert.equal(io.calls.length,2);assert.equal(app.status().objects,4);const before=app.status().metadataBytes;
- for(let n=1;n<=2;n++){const response=await app.handle(req('/world/'+key));assert.equal(response.status,200);assert.equal(response.headers.get('content-type'),'application/json');assert.equal(response.headers.get('etag'),'"'+digest+'"');assert.equal(response.headers.get('content-length'),String(body.length));assert.deepEqual(new Uint8Array(await response.arrayBuffer()),body);assert.equal(app.status().metadataBytes,before+n*body.length);assert.equal(app.status().enrichmentReads,n);assert.equal(app.status().enrichmentBytes,n*body.length);}
+ for(let n=1;n<=2;n++){const response=await app.handle(req('/world/'+key));assert.equal(response.status,200);assert.equal(response.headers.get('content-type'),'application/json');assert.equal(response.headers.get('etag'),'"'+digest+'"');assert.equal(response.headers.get('content-length'),String(body.length));assert.deepEqual(new Uint8Array(await response.arrayBuffer()),body);assert.equal(app.status().metadataBytes,before);assert.equal(app.status().enrichmentReads,n);assert.equal(app.status().enrichmentBytes,n*body.length);}
  assert.equal(io.calls.length,4);
  }finally{await app.close();}assert.equal(app.status().cleanupConfirmed,true);
 });
@@ -594,15 +594,15 @@ test('immutable enrichment wrong raw hash is fatal with confirmed owned cleanup'
 test('immutable enrichment accepts absent advertised length and reports authenticated actual length',async()=>{
  const {f,key,body}=enrichmentFixture(),app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f,({key:k})=>k===key?new Response(body):undefined).fetcher});try{const r=await app.handle(req('/world/'+key));assert.equal(r.headers.get('content-length'),String(body.length));assert.deepEqual(new Uint8Array(await r.arrayBuffer()),body);}finally{await app.close();}
 });
-test('immutable enrichment uses unchanged cumulative metadata cap across repeated uncached reads',async()=>{
- const {f,key,body}=enrichmentFixture(),base=f.rootBytes.length+f.documents.get(f.regionalKey).length,app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f).fetcher,limits:{metadataBytes:base+body.length}});
- await app.handle(req('/world/'+key));assert.equal(app.status().metadataBytes,base+body.length);await assert.rejects(app.handle(req('/world/'+key)),/metadata cap/);await app.close();assert.equal(app.status().enrichmentReads,1);assert.equal(app.status().cleanupConfirmed,true);
+test('immutable enrichment uses separate cumulative class cap across repeated uncached reads',async()=>{
+ const {f,key,body}=enrichmentFixture(),base=f.rootBytes.length+f.documents.get(f.regionalKey).length,app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f).fetcher,limits:{metadataBytes:base,enrichmentBytes:body.length}});
+ await app.handle(req('/world/'+key));assert.equal(app.status().metadataBytes,base);assert.equal(app.status().enrichmentBytes,body.length);await assert.rejects(app.handle(req('/world/'+key)),/enrichment cumulative cap/);await app.close();assert.equal(app.status().enrichmentReads,1);assert.equal(app.status().cleanupConfirmed,true);
 });
 test('immutable enrichment enforces per-object cap without a guessed declared descriptor length',async()=>{
  const body=bytes('x'.repeat(1025)),{f,key}=enrichmentFixture({body}),app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f).fetcher,limits:{objectBytes:1024}});await assert.rejects(app.handle(req('/world/'+key)),/upstream length/);await app.close();assert.equal(app.status().enrichmentReads,0);
 });
-test('immutable enrichment received chunks charge metadata before cap failure even without Content-Length',async()=>{
- const {f,key,body}=enrichmentFixture(),base=f.rootBytes.length+f.documents.get(f.regionalKey).length,app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f,({key:k})=>k===key?new Response(body):undefined).fetcher,limits:{metadataBytes:base+body.length-1}});await assert.rejects(app.handle(req('/world/'+key)),/metadata cap/);assert.equal(app.status().metadataBytes,base+body.length);await app.close();assert.equal(app.status().enrichmentReads,0);
+test('immutable enrichment received chunks charge class before cap failure even without Content-Length',async()=>{
+ const {f,key,body}=enrichmentFixture(),base=f.rootBytes.length+f.documents.get(f.regionalKey).length,app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f,({key:k})=>k===key?new Response(body):undefined).fetcher,limits:{metadataBytes:base,enrichmentBytes:body.length-1}});await assert.rejects(app.handle(req('/world/'+key)),/enrichment cumulative cap/);assert.equal(app.status().metadataBytes,base);assert.equal(app.status().enrichmentBytes,body.length);await app.close();assert.equal(app.status().enrichmentReads,0);
 });
 test('immutable enrichment shares cumulative upstream bound',async()=>{
  const {f,key,body}=enrichmentFixture(),base=f.rootBytes.length+f.documents.get(f.regionalKey).length,app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f).fetcher,limits:{upstreamBytes:base+body.length-1}});await assert.rejects(app.handle(req('/world/'+key)),/body byte limit/);await app.close();
@@ -622,4 +622,325 @@ test('immutable enrichment unlisted hash never fetches and does not recurse into
 });
 test('immutable enrichment concurrent requests remain serialized by existing queue',async()=>{
  const {f,key}=enrichmentFixture();let active=0,peak=0;const io=fake(f,({key:k,body})=>k===key?(async()=>{active++;peak=Math.max(peak,active);await Promise.resolve();active--;return new Response(body);})():undefined),app=await prepareBundleWorldAssets(f.source,{fetcher:io.fetcher});try{const responses=await Promise.all([app.handle(req('/world/'+key)),app.handle(req('/world/'+key))]);assert.equal(responses.length,2);assert.equal(peak,1);assert.equal(app.status().enrichmentReads,2);}finally{await app.close();}
+});
+
+// Explicit forwarding class policy: parsed manifests keep their original 2 MiB cap.
+test('opaque enrichment class limits are explicit and can only be lowered',async()=>{
+ assert.equal(L.metadataBytes,2097152);assert.equal(L.objectBytes,4194304);assert.equal(L.enrichmentObjectBytes,2097152);assert.equal(L.enrichmentBytes,8388608);
+ const f=fixture();for(const limits of [{enrichmentObjectBytes:L.enrichmentObjectBytes+1},{enrichmentBytes:L.enrichmentBytes+1},{enrichmentBytes:0},{enrichmentObjectBytes:-1},{enrichmentBytes:1.5}]){const io=fake(f);await assert.rejects(prepareBundleWorldAssets(f.source,{fetcher:io.fetcher,limits}),/limits/);assert.equal(io.calls.length,0);}
+});
+function syntheticMetadataSize(target,body) {
+ const build=n=>enrichmentFixture({body,fixtureOptions:{tweak:m=>m.syntheticPadding='p'.repeat(n)}});
+ const first=build(0),delta=target-first.f.rootBytes.length-first.f.documents.get(first.f.regionalKey).length;
+ assert(delta>=0);const result=build(delta);assert.equal(result.f.rootBytes.length+result.f.documents.get(result.f.regionalKey).length,target);return result;
+}
+test('synthetic 839510 metadata plus 1908927 opaque bytes fit separate classes for three route reads',async()=>{
+ const body=new Uint8Array(1908927).fill(65),{f,key}=syntheticMetadataSize(839510,body),io=fake(f),app=await prepareBundleWorldAssets(f.source,{fetcher:io.fetcher});
+ try{assert.equal(app.status().metadataBytes,839510);for(let i=1;i<=3;i++){const r=await app.handle(req('/world/'+key));assert.equal(r.status,200);assert.equal(r.headers.get('content-length'),'1908927');assert.equal((await r.arrayBuffer()).byteLength,1908927);assert.equal(app.status().enrichmentBytes,i*1908927);assert.equal(app.status().metadataBytes,839510);assert.equal(app.status().enrichmentReads,i);assert.equal(app.status().upstreamBytes,839510+i*1908927);assert.equal(app.status().downstreamBytes,i*1908927);}assert.equal(io.calls.length,5);}finally{await app.close();}assert.equal(app.status().cleanupConfirmed,true);
+});
+for(const [label,bodySize,okay]of [['under',2097151,true],['exact',2097152,true],['over',2097153,false]])test('opaque per-object 2MiB boundary '+label+' with native response declaration',async()=>{
+ const body=new Uint8Array(bodySize).fill(42),{f,key}=enrichmentFixture({body}),app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f).fetcher});
+ if(okay){const response=await app.handle(req('/world/'+key));assert.equal((await response.arrayBuffer()).byteLength,bodySize);assert.equal(app.status().enrichmentBytes,bodySize);}else{await assert.rejects(app.handle(req('/world/'+key)),/upstream length/);assert.equal(app.status().enrichmentBytes,0);}
+ await app.close();assert.equal(app.status().cleanupConfirmed,true);
+});
+test('opaque per-object overflow without Content-Length charges received bytes before rejecting',async()=>{
+ const body=new Uint8Array(2097153).fill(8),{f,key}=enrichmentFixture({body}),app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f,({key:k})=>k===key?new Response(body):undefined).fetcher});
+ await assert.rejects(app.handle(req('/world/'+key)),/body byte limit/);assert.equal(app.status().enrichmentBytes,body.length);assert.equal(app.status().enrichmentReads,0);await app.close();
+});
+test('opaque cumulative 8MiB exact boundary permits four reads then refuses before fifth fetch',async()=>{
+ const body=new Uint8Array(2097152).fill(7),{f,key}=enrichmentFixture({body}),io=fake(f),app=await prepareBundleWorldAssets(f.source,{fetcher:io.fetcher});
+ for(let i=0;i<4;i++){const r=await app.handle(req('/world/'+key));assert.equal((await r.arrayBuffer()).byteLength,body.length);}assert.equal(app.status().enrichmentBytes,8388608);assert.equal(app.status().enrichmentReads,4);const before=io.calls.length;await assert.rejects(app.handle(req('/world/'+key)),/enrichment cumulative cap/);assert.equal(io.calls.length,before);assert.equal(app.status().enrichmentBytes,8388608);await app.close();
+});
+for(const [label,budget,okay]of [['under-limit',11,false],['exact-limit',12,true],['above-limit',13,true]])test('lowered opaque cumulative boundary '+label,async()=>{
+ const body=bytes('abcdef'),{f,key}=enrichmentFixture({body}),io=fake(f),app=await prepareBundleWorldAssets(f.source,{fetcher:io.fetcher,limits:{enrichmentBytes:budget}});await app.handle(req('/world/'+key));if(okay){await app.handle(req('/world/'+key));assert.equal(app.status().enrichmentBytes,12);}else{await assert.rejects(app.handle(req('/world/'+key)),/upstream length/);assert.equal(app.status().enrichmentBytes,6);}await app.close();
+});
+test('opaque separate descriptors share one cumulative class rather than per-key allowance',async()=>{
+ const a=bytes('first!'),b=bytes('second'),ka='manifests/'+hash(a)+'.json',kb='manifests/'+hash(b)+'.json',f=fixture({tweak:m=>m.enrichments=[{url:'/world/'+ka},{url:'/world/'+kb}]}),io=fake(f);f.documents.set(ka,a);f.documents.set(kb,b);const app=await prepareBundleWorldAssets(f.source,{fetcher:io.fetcher,limits:{enrichmentBytes:12}});await app.handle(req('/world/'+ka));await app.handle(req('/world/'+kb));assert.equal(app.status().enrichmentBytes,12);const count=io.calls.length;await assert.rejects(app.handle(req('/world/'+ka)),/enrichment cumulative cap/);assert.equal(io.calls.length,count);await app.close();
+});
+test('lowered global object cap still narrows separate opaque per-object class',async()=>{
+ const body=bytes('1234567'),{f,key}=enrichmentFixture({body}),app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f).fetcher,limits:{objectBytes:6,enrichmentObjectBytes:8}});await assert.rejects(app.handle(req('/world/'+key)),/upstream length/);await app.close();assert.equal(app.status().enrichmentBytes,0);
+});
+test('lowered opaque per-object cap does not raise or consume parsed manifest budget',async()=>{
+ const body=bytes('123456'),{f,key}=enrichmentFixture({body}),base=f.rootBytes.length+f.documents.get(f.regionalKey).length,app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f).fetcher,limits:{metadataBytes:base,enrichmentObjectBytes:5}});assert.equal(app.status().metadataBytes,base);await assert.rejects(app.handle(req('/world/'+key)),/upstream length/);await app.close();assert.equal(app.status().metadataBytes,base);
+});
+test('lowered parsed metadata cap remains fatal even with untouched opaque allowances',async()=>{
+ const {f}=enrichmentFixture(),base=f.rootBytes.length+f.documents.get(f.regionalKey).length;await assert.rejects(prepareBundleWorldAssets(f.source,{fetcher:fake(f).fetcher,limits:{metadataBytes:base-1}}),/upstream length/);
+});
+test('failed raw hash pays opaque and global bytes without metadata contamination or retry',async()=>{
+ const {f,key,body}=enrichmentFixture(),bad=body.slice();bad[0]^=1;const io=fake(f,({key:k})=>k===key?new Response(bad):undefined),app=await prepareBundleWorldAssets(f.source,{fetcher:io.fetcher});const base=app.status().metadataBytes;await assert.rejects(app.handle(req('/world/'+key)),/raw SHA/);assert.equal(app.status().metadataBytes,base);assert.equal(app.status().enrichmentBytes,bad.length);assert.equal(app.status().upstreamBytes,base+bad.length);assert.equal(app.status().enrichmentReads,0);const count=io.calls.length;await assert.rejects(app.handle(req('/world/'+key)));assert.equal(io.calls.length,count);await app.close();
+});
+test('aborted opaque read retains charged chunks and original first cause with no GC refund',async()=>{
+ const {f,key,body}=enrichmentFixture(),abort=new AbortController(),reason=Error('owned abort'),base=f.rootBytes.length+f.documents.get(f.regionalKey).length;let n=0,cancelled=0,released=0;
+ const app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f,({key:k})=>k===key?{status:200,redirected:false,url:'',headers:new Headers(),body:{getReader(){return{async read(){if(n++===0)return{done:false,value:body.subarray(0,3)};abort.abort(reason);return{done:true};},cancel(){cancelled++;},releaseLock(){released++;}};}}}:undefined).fetcher});await assert.rejects(app.handle(req('/world/'+key,{signal:abort.signal})),e=>e===reason);assert.equal(app.status().enrichmentBytes,3);assert.equal(app.status().upstreamBytes,base+3);assert.equal(app.status().enrichmentReads,0);await app.close();assert.equal(app.status().enrichmentBytes,3);assert.equal(cancelled,1);assert.equal(released,1);
+});
+test('HEAD and conditional opaque responses still charge the class per uncached read',async()=>{
+ const {f,key,body}=enrichmentFixture(),app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f).fetcher});const base=app.status().metadataBytes;const head=await app.handle(req('/world/'+key,{method:'HEAD'}));assert.equal(await head.text(),'');const same=await app.handle(req('/world/'+key,{headers:{'If-None-Match':'"'+hash(body)+'"'}}));assert.equal(same.status,304);assert.equal(await same.text(),'');assert.equal(app.status().enrichmentBytes,body.length*2);assert.equal(app.status().metadataBytes,base);await app.close();
+});
+test('opaque per-object cap refusal precedes final output allocation and raw read admission',async()=>{
+ const {f,key,body}=enrichmentFixture();let done=false;const app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f,({key:k})=>k===key?{status:200,redirected:false,url:'',headers:new Headers(),body:{getReader(){return{async read(){if(done)return{done:true};done=true;return{done:false,value:body};},cancel(){},releaseLock(){}};}}}:undefined).fetcher,limits:{enrichmentObjectBytes:body.length-1}});await assert.rejects(app.handle(req('/world/'+key)),/body byte limit/);assert.equal(app.status().enrichmentBytes,body.length);assert.equal(app.status().enrichmentReads,0);await app.close();
+});
+test('opaque charged byte history survives global upstream failure without metadata credit',async()=>{
+ const {f,key,body}=enrichmentFixture(),base=f.rootBytes.length+f.documents.get(f.regionalKey).length,app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f,({key:k})=>k===key?new Response(body):undefined).fetcher,limits:{upstreamBytes:base+body.length-1}});await assert.rejects(app.handle(req('/world/'+key)),/body byte limit/);assert.equal(app.status().metadataBytes,base);assert.equal(app.status().enrichmentBytes,body.length);assert.equal(app.status().upstreamBytes,base+body.length);assert.equal(app.status().enrichmentReads,0);await app.close();
+});
+test('opaque byte history survives EOF deadline failure with no successful read admission',async()=>{
+ let clock=0,n=0;const {f,key,body}=enrichmentFixture(),app=await prepareBundleWorldAssets(f.source,{now:()=>clock,fetcher:fake(f,({key:k})=>k===key?{status:200,redirected:false,url:'',headers:new Headers(),body:{getReader(){return{async read(){if(n++===0)return{done:false,value:body};clock=10001;return{done:true};},cancel(){},releaseLock(){}};}}}:undefined).fetcher});const base=app.status().metadataBytes;await assert.rejects(app.handle(req('/world/'+key)),/deadline/);assert.equal(app.status().metadataBytes,base);assert.equal(app.status().enrichmentBytes,body.length);assert.equal(app.status().enrichmentReads,0);await app.close();
+});
+test('opaque cleanup cancellation failure preserves primary class failure and leaves cleanup unconfirmed',async()=>{
+ const {f,key,body}=enrichmentFixture();let n=0;const app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f,({key:k})=>k===key?{status:200,redirected:false,url:'',headers:new Headers(),body:{getReader(){return{async read(){return n++?{done:true}:{done:false,value:body};},cancel(){throw false;},releaseLock(){}};}}}:undefined).fetcher,limits:{enrichmentBytes:body.length-1}});let primary;try{await app.handle(req('/world/'+key));}catch(e){primary=e;}assert.match(primary.message,/enrichment cumulative cap/);assert.equal(await app.failure,primary);assert.equal(app.status().enrichmentBytes,body.length);let caught=false;try{await app.close();}catch(e){caught=true;assert.equal(e,false);}assert.equal(caught,true);assert.equal(app.status().cleanupConfirmed,false);assert.equal(app.status().cleanupFailed,true);assert.equal(await app.failure,primary);
+});
+test('opaque policy carries unchanged object/request/lifetime/cleanup deadline defaults',()=>{
+ assert.equal(L.objectMs,10000);assert.equal(L.prepareMs,15000);assert.equal(L.lifetimeMs,120000);assert.equal(L.closeMs,2000);assert.equal(L.upstreamBytes,67108864);assert.equal(L.downstreamBytes,67108864);assert.equal(L.requests,512);assert.equal(L.pending,16);
+});
+for(const [label,at]of [['EOF','eof'],['chunk','chunk']])test('same-turn request abort on resolved '+label+' preserves exact cause before acceptance',async()=>{
+ const {f,key,body}=enrichmentFixture(),abort=new AbortController(),reason=Error('same-turn '+label);let reads=0;
+ const app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f,({key:k})=>k===key?{status:200,redirected:false,url:'',headers:new Headers(),body:{getReader(){return{async read(){if(reads++===0){if(at==='chunk')abort.abort(reason);return{done:false,value:body};}abort.abort(reason);return{done:true};},cancel(){},releaseLock(){}};}}}:undefined).fetcher});
+ await assert.rejects(app.handle(req('/world/'+key,{signal:abort.signal})),e=>e===reason);assert.equal(await app.failure,reason);assert.equal(app.status().enrichmentReads,0);assert.equal(app.status().enrichmentBytes,body.length);await app.close();
+});
+test('same-turn original global abort on resolved fetch prevents header/data inspection',async()=>{
+ const f=fixture(),abort=new AbortController(),reason=Error('headers arrived after caller abort');let headers=0,reads=0,cancelled=0;
+ const response={status:200,redirected:false,url:'',get headers(){headers++;return new Headers();},body:{getReader(){return{async read(){reads++;return{done:true};},cancel(){cancelled++;},releaseLock(){}};}}};
+ await assert.rejects(prepareBundleWorldAssets(f.source,{signal:abort.signal,fetcher:()=>{abort.abort(reason);return Promise.resolve(response);}}),e=>e===reason);assert.equal(headers,0);assert.equal(reads,0);assert(cancelled<=1);
+});
+for(const [label,reason]of [['false',false],['zero',0],['empty',''],['null',null]])test('same-turn resolved EOF '+label+' abort follows existing falsy cause convention',async()=>{
+ const {f,key,body}=enrichmentFixture(),abort=new AbortController();let reads=0;const app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f,({key:k})=>k===key?{status:200,redirected:false,url:'',headers:new Headers(),body:{getReader(){return{async read(){if(reads++===0)return{done:false,value:body.subarray(0,2)};abort.abort(reason);return{done:true};},cancel(){},releaseLock(){}};}}}:undefined).fetcher});let caught;try{await app.handle(req('/world/'+key,{signal:abort.signal}));}catch(e){caught=e;}assert(caught instanceof Error);assert.equal(Object.is(caught.cause,reason),true);assert.equal(await app.failure,caught);assert.equal(app.status().enrichmentBytes,2);assert.equal(app.status().enrichmentReads,0);await app.close();
+});
+test('earlier class cap failure stays primary when original signal aborts during cancellation',async()=>{
+ const {f,key,body}=enrichmentFixture(),abort=new AbortController(),reason=Error('late caller abort');let reads=0;const app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f,({key:k})=>k===key?{status:200,redirected:false,url:'',headers:new Headers(),body:{getReader(){return{async read(){return reads++?{done:true}:{done:false,value:body};},cancel(){abort.abort(reason);},releaseLock(){}};}}}:undefined).fetcher,limits:{enrichmentBytes:body.length-1}});let caught;try{await app.handle(req('/world/'+key,{signal:abort.signal}));}catch(e){caught=e;}assert.match(caught.message,/enrichment cumulative cap/);assert.notEqual(caught,reason);assert.equal(await app.failure,caught);await app.close();assert.equal(await app.failure,caught);
+});
+
+// Review202: delivered settled-read bytes are accounting, never data admission.
+function accountedAbortFixture({reason=Error('original abort'),result,limits={},cancel,abortBefore=true}={}){
+ const body=new Uint8Array(17).fill(65),{f,key}=enrichmentFixture({body}),abort=new AbortController();let reads=0;
+ const io=fake(f,({key:k})=>k===key?{status:200,redirected:false,url:'',headers:new Headers(),body:{getReader(){return{async read(){reads++;if(abortBefore)abort.abort(reason);return typeof result==='function'?result({body,abort,reason,reads}):result??{done:false,value:body};},cancel(){cancel?.({abort,reason});},releaseLock(){}};}}}:undefined);
+ return {f,key,body,abort,reason,io,limits,get reads(){return reads;}};
+}
+test('actual same-turn delivered 17B abort counts both classes but admits no read',async()=>{
+ const v=accountedAbortFixture(),app=await prepareBundleWorldAssets(v.f.source,{fetcher:v.io.fetcher});const base=app.status().upstreamBytes;
+ await assert.rejects(app.handle(req('/world/'+v.key,{signal:v.abort.signal})),e=>e===v.reason);const s=app.status();assert.equal(s.enrichmentBytes,17);assert.equal(s.upstreamBytes,base+17);assert.equal(s.enrichmentReads,0);assert.equal(s.accountingIncomplete,false);assert.equal(s.receivedTotalsExact,true);assert.equal(s.pendingReadOutcomes,0);assert.equal(s.prepared,false);assert.equal(v.reads,1);await app.close();
+});
+test('settled EOF abort does not double count its preceding delivered17B chunk',async()=>{
+ const v=accountedAbortFixture({abortBefore:false,result:({body,abort,reason,reads})=>{if(reads===1)return{done:false,value:body};abort.abort(reason);return{done:true};}}),app=await prepareBundleWorldAssets(v.f.source,{fetcher:v.io.fetcher});const base=app.status().upstreamBytes;await assert.rejects(app.handle(req('/world/'+v.key,{signal:v.abort.signal})),e=>e===v.reason);assert.equal(app.status().enrichmentBytes,17);assert.equal(app.status().upstreamBytes,base+17);assert.equal(app.status().enrichmentReads,0);assert.equal(app.status().receivedTotalsExact,true);await app.close();
+});
+test('prior abort wins same-turn17B class overflow, truthful counters and bounded secondary retained',async()=>{
+ const v=accountedAbortFixture(),app=await prepareBundleWorldAssets(v.f.source,{fetcher:v.io.fetcher,limits:{enrichmentBytes:8}});const base=app.status().upstreamBytes;await assert.rejects(app.handle(req('/world/'+v.key,{signal:v.abort.signal})),e=>e===v.reason);const s=app.status();assert.equal(s.enrichmentBytes,17);assert.equal(s.upstreamBytes,base+17);assert.equal(s.enrichmentReads,0);assert.equal(s.receivedTotalsExact,true);assert(s.secondaryFailures.some(e=>e.message.includes('enrichment cumulative cap')));assert(s.secondaryFailures.length<=8);assert.equal(await app.failure,v.reason);await app.close();
+});
+test('prior abort wins same-turn17B global overflow without losing received count',async()=>{
+ const v=accountedAbortFixture(),base=v.f.rootBytes.length+v.f.documents.get(v.f.regionalKey).length,app=await prepareBundleWorldAssets(v.f.source,{fetcher:v.io.fetcher,limits:{upstreamBytes:base+16}});await assert.rejects(app.handle(req('/world/'+v.key,{signal:v.abort.signal})),e=>e===v.reason);const s=app.status();assert.equal(s.upstreamBytes,base+17);assert.equal(s.enrichmentBytes,17);assert.equal(s.enrichmentReads,0);assert(s.secondaryFailures.some(e=>e.message.includes('body byte limit')));assert.equal(s.receivedTotalsExact,true);await app.close();
+});
+test('first class failure remains primary when later cancellation aborts caller',async()=>{
+ const v=accountedAbortFixture({abortBefore:false,cancel:({abort,reason})=>abort.abort(reason)}),app=await prepareBundleWorldAssets(v.f.source,{fetcher:v.io.fetcher,limits:{enrichmentBytes:8}});let error;try{await app.handle(req('/world/'+v.key,{signal:v.abort.signal}));}catch(e){error=e;}assert.match(error.message,/enrichment cumulative cap/);assert.notEqual(error,v.reason);assert.equal(await app.failure,error);assert.equal(app.status().enrichmentBytes,17);assert.equal(app.status().enrichmentReads,0);await app.close();assert.equal(await app.failure,error);
+});
+for(const [label,reason]of [['false',false],['zero',0],['empty',''],['null',null]])test('delivered17B '+label+' abort retains raw cause convention and exact counters',async()=>{
+ const v=accountedAbortFixture({reason}),app=await prepareBundleWorldAssets(v.f.source,{fetcher:v.io.fetcher});const base=app.status().upstreamBytes;let error;try{await app.handle(req('/world/'+v.key,{signal:v.abort.signal}));}catch(e){error=e;}assert(error instanceof Error);assert.equal(Object.is(error.cause,reason),true);assert.equal(await app.failure,error);assert.equal(app.status().enrichmentBytes,17);assert.equal(app.status().upstreamBytes,base+17);assert.equal(app.status().receivedTotalsExact,true);assert.equal(app.status().enrichmentReads,0);await app.close();
+});
+test('undefined abort uses actual signal AbortError and delivered17B is still charged',async()=>{
+ const v=accountedAbortFixture({result:({body,abort})=>{abort.abort(undefined);return{done:false,value:body};},abortBefore:false}),app=await prepareBundleWorldAssets(v.f.source,{fetcher:v.io.fetcher});await assert.rejects(app.handle(req('/world/'+v.key,{signal:v.abort.signal})),e=>e===v.abort.signal.reason);assert.equal(app.status().enrichmentBytes,17);assert.equal(app.status().receivedTotalsExact,true);await app.close();
+});
+for(const kind of ['proxy','value-getter','done-getter','non-typed-value','null'])test('unobservable '+kind+' read marks accounting incomplete without raw getter execution',async()=>{
+ let traps=0;const v=accountedAbortFixture({result:({body})=>kind==='proxy'?new Proxy({done:false,value:body},{get(target,key){if(key==='then')return undefined;traps++;throw Error('trap');},getOwnPropertyDescriptor(){traps++;throw Error('trap');}}):kind==='value-getter'?{done:false,get value(){traps++;return body;}}:kind==='done-getter'?{get done(){traps++;return false;},value:body}:kind==='non-typed-value'?{done:false,value:{byteLength:17}}:null});
+ // Explicit null result must not use the fixture's default result branch.
+ const io=kind==='null'?fake(v.f,({key:k})=>k===v.key?{status:200,redirected:false,url:'',headers:new Headers(),body:{getReader(){return{async read(){v.abort.abort(v.reason);return null;},cancel(){},releaseLock(){}};}}}:undefined):v.io;
+ const app=await prepareBundleWorldAssets(v.f.source,{fetcher:io.fetcher});await assert.rejects(app.handle(req('/world/'+v.key,{signal:v.abort.signal})),e=>e===v.reason);const s=app.status();assert.equal(s.accountingIncomplete,true);assert.equal(s.receivedTotalsExact,false);assert.equal(s.enrichmentReads,0);assert.equal(s.prepared,false);assert.equal(traps,0);if(kind==='done-getter')assert.equal(s.enrichmentBytes,17);await app.close();assert.equal(app.status().receivedTotalsExact,false);
+});
+test('one settled snapshot uses intrinsic byte length and never calls chunk byteLength getter',async()=>{
+ let getters=0;const body=bytes('trusted synthetic data');Object.defineProperty(body,'byteLength',{get(){getters++;throw Error('untrusted length getter');}});const {f,key}=enrichmentFixture({body});let reads=0;const app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f,({key:k})=>k===key?{status:200,redirected:false,url:'',headers:new Headers(),body:{getReader(){return{async read(){return reads++?{done:true}:{done:false,value:body};},cancel(){},releaseLock(){}};}}}:undefined).fetcher});const r=await app.handle(req('/world/'+key));assert.deepEqual(Array.from(new Uint8Array(await r.arrayBuffer())),Array.from(body));assert.equal(getters,0);assert.equal(app.status().enrichmentBytes,body.length);assert.equal(app.status().receivedTotalsExact,true);await app.close();
+});
+async function lateReadCase({limit,lateUnknown=false,expire=false}={}){
+ const body=new Uint8Array(17).fill(77),{f,key}=enrichmentFixture({body}),abort=new AbortController(),reason=Error('abort before read settlement');let resolveRead,readStarted;const started=new Promise(resolve=>readStarted=resolve);
+ const app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f,({key:k})=>k===key?{status:200,redirected:false,url:'',headers:new Headers(),body:{getReader(){return{read(){readStarted();return new Promise(resolve=>resolveRead=resolve);},cancel(){},releaseLock(){}};}}}:undefined).fetcher,limits:{...(limit?{enrichmentBytes:limit}:{}),...(expire?{closeMs:5}:{})}});const base=app.status().upstreamBytes,handle=app.handle(req('/world/'+key,{signal:abort.signal}));await started;abort.abort(reason);await assert.rejects(handle,e=>e===reason);assert.equal(app.status().pendingReadOutcomes,1);assert.equal(app.status().receivedTotalsExact,false);assert.equal(app.status().enrichmentReads,0);
+ if(expire){await assert.rejects(app.close(),/cleanup/);assert.equal(app.status().cleanupConfirmed,false);assert.equal(app.status().accountingIncomplete,true);resolveRead(lateUnknown?new Proxy({},{get(){throw Error('unknown');}}):{done:false,value:body});await new Promise(resolve=>setImmediate(resolve));assert.equal(app.status().pendingReadOutcomes,0);assert.equal(app.status().forwarding,0);assert.equal(app.status().receivedTotalsExact,false);assert.equal(await app.failure,reason);return{app,base};}
+ const closing=app.close();resolveRead(lateUnknown?new Proxy({},{get(){throw Error('unknown');}}):{done:false,value:body});await closing;assert.equal(app.status().pendingReadOutcomes,0);assert.equal(app.status().forwarding,0);assert.equal(app.status().cleanupConfirmed,true);assert.equal(await app.failure,reason);return{app,base};
+}
+test('late delivered17B remains owned through cleanup and charges both counters',async()=>{
+ const {app,base}=await lateReadCase();assert.equal(app.status().enrichmentBytes,17);assert.equal(app.status().upstreamBytes,base+17);assert.equal(app.status().enrichmentReads,0);assert.equal(app.status().accountingIncomplete,false);assert.equal(app.status().receivedTotalsExact,true);
+});
+test('late delivered17B cap overflow cannot overwrite earlier abort or disappear from counters',async()=>{
+ const {app,base}=await lateReadCase({limit:8});assert.equal(app.status().enrichmentBytes,17);assert.equal(app.status().upstreamBytes,base+17);assert.equal(app.status().enrichmentReads,0);assert(app.status().secondaryFailures.some(e=>e.message.includes('enrichment cumulative cap')));assert.equal(app.status().receivedTotalsExact,true);
+});
+test('unsettled late result at cleanup deadline is incomplete and never upgraded by later data',async()=>{
+ const {app,base}=await lateReadCase({expire:true});assert.equal(app.status().enrichmentBytes,17);assert.equal(app.status().upstreamBytes,base+17);assert.equal(app.status().receivedTotalsExact,false);assert.equal(app.status().cleanupConfirmed,false);assert.equal(app.status().enrichmentReads,0);
+});
+test('late unobservable result keeps abort primary and explicitly fails exact accounting',async()=>{
+ const {app}=await lateReadCase({lateUnknown:true});assert.equal(app.status().accountingIncomplete,true);assert.equal(app.status().receivedTotalsExact,false);assert.equal(app.status().enrichmentReads,0);
+});
+test('header abort with no delivered read result stays zero-known and abort first',async()=>{
+ const {f,key}=enrichmentFixture(),abort=new AbortController(),reason=Error('header abort');let reads=0;const body={locked:false,getReader(){this.locked=true;return{async read(){reads++;return{done:true};},cancel(){},releaseLock(){}};}};const app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f,({key:k})=>{if(k===key){abort.abort(reason);return{status:200,redirected:false,url:'',headers:new Headers(),body};}}).fetcher});const base=app.status().upstreamBytes;await assert.rejects(app.handle(req('/world/'+key,{signal:abort.signal})),e=>e===reason);assert.equal(reads,0);assert.equal(app.status().enrichmentBytes,0);assert.equal(app.status().upstreamBytes,base);assert.equal(app.status().receivedTotalsExact,true);await app.close();
+});
+test('read Promise assimilation rejection is explicitly incomplete rather than exact zero',async()=>{
+ const v=accountedAbortFixture({result:()=>new Proxy({},{get(){throw Error('unobservable then accessor');}})}),app=await prepareBundleWorldAssets(v.f.source,{fetcher:v.io.fetcher});await assert.rejects(app.handle(req('/world/'+v.key,{signal:v.abort.signal})),e=>e===v.reason);assert.equal(app.status().accountingIncomplete,true);assert.equal(app.status().receivedTotalsExact,false);assert.equal(app.status().enrichmentReads,0);await app.close();
+});
+test('inherited done accessor is never read and safe delivered value is charged before incomplete failure',async()=>{
+ let getters=0;const v=accountedAbortFixture({result:({body})=>Object.assign(Object.create({get done(){getters++;return false;}}),{value:body})}),app=await prepareBundleWorldAssets(v.f.source,{fetcher:v.io.fetcher});const base=app.status().upstreamBytes;await assert.rejects(app.handle(req('/world/'+v.key,{signal:v.abort.signal})),e=>e===v.reason);assert.equal(getters,0);assert.equal(app.status().enrichmentBytes,17);assert.equal(app.status().upstreamBytes,base+17);assert.equal(app.status().accountingIncomplete,true);assert.equal(app.status().receivedTotalsExact,false);await app.close();
+});
+test('proxied typed value is unobservable without invoking its getters',async()=>{
+ let getters=0;const v=accountedAbortFixture({result:({body})=>({done:false,value:new Proxy(body,{get(){getters++;throw Error('raw value trap');}})})}),app=await prepareBundleWorldAssets(v.f.source,{fetcher:v.io.fetcher});await assert.rejects(app.handle(req('/world/'+v.key,{signal:v.abort.signal})),e=>e===v.reason);assert.equal(getters,0);assert.equal(app.status().receivedTotalsExact,false);assert.equal(app.status().accountingIncomplete,true);await app.close();
+});
+test('malformed EOF carrying safe17B value counts delivered bytes then fails without admission',async()=>{
+ const v=accountedAbortFixture({abortBefore:false,result:({body})=>({done:true,value:body})}),app=await prepareBundleWorldAssets(v.f.source,{fetcher:v.io.fetcher});const base=app.status().upstreamBytes;await assert.rejects(app.handle(req('/world/'+v.key,{signal:v.abort.signal})),/body EOF value/);assert.equal(app.status().enrichmentBytes,17);assert.equal(app.status().upstreamBytes,base+17);assert.equal(app.status().receivedTotalsExact,true);assert.equal(app.status().enrichmentReads,0);assert.equal(app.status().prepared,false);await app.close();
+});
+test('unknown nonaborted read result fails admission and cannot claim exact received totals',async()=>{
+ const v=accountedAbortFixture({abortBefore:false,result:()=>({done:false,get value(){throw Error('must not invoke');}})}),app=await prepareBundleWorldAssets(v.f.source,{fetcher:v.io.fetcher});await assert.rejects(app.handle(req('/world/'+v.key)),/unobservable read accounting/);assert.equal(app.status().prepared,false);assert.equal(app.status().accountingIncomplete,true);assert.equal(app.status().receivedTotalsExact,false);assert.equal(app.status().enrichmentReads,0);await app.close();
+});
+
+// Review212: a synchronous read throw must use the same observed-abort precedence.
+async function syncThrowCase(options={}){
+ const body=new Uint8Array(17).fill(65),{f,key}=enrichmentFixture({body}),global=new AbortController(),requestAbort=new AbortController(),reason=Object.hasOwn(options,'reason')?options.reason:Error('original synchronous abort'),later=Object.hasOwn(options,'later')?options.later:Error('later reader throw');let app,reads=0;
+ const io=fake(f,({key:k})=>k===key?{status:200,redirected:false,url:'',headers:new Headers(),body:{getReader(){return{read(){reads++;options.before?.({app,global,requestAbort,reason});if(options.abort!==false)(options.global?global:requestAbort).abort(reason);throw later;},cancel(){},releaseLock(){}};}}}:undefined);
+ app=await prepareBundleWorldAssets(f.source,{fetcher:io.fetcher,signal:global.signal});const base=app.status().upstreamBytes;let error;try{await app.handle(req('/world/'+key,{signal:requestAbort.signal}));}catch(e){error=e;}return{app,key,body,error,later,reason,global,requestAbort,io,base,get reads(){return reads;}};
+}
+test('synchronous reader abort then throw preserves original request reason not later Error',async()=>{
+ const v=await syncThrowCase();assert.equal(v.error,v.requestAbort.signal.reason);assert.notEqual(v.error,v.later);assert.equal(await v.app.failure,v.error);assert.equal(v.app.status().accountingIncomplete,true);assert.equal(v.app.status().receivedTotalsExact,false);assert.equal(v.app.status().enrichmentReads,0);assert.equal(v.app.status().enrichmentBytes,0);assert.equal(v.app.status().upstreamBytes,v.base);assert.equal(v.app.status().pendingReadOutcomes,0);assert.equal(v.reads,1);const n=v.io.calls.length;await assert.rejects(v.app.handle(req('/world/'+v.key)));assert.equal(v.io.calls.length,n);await v.app.close();
+});
+test('synchronous reader abort then throw preserves original global signal reason',async()=>{
+ const v=await syncThrowCase({global:true});assert.equal(v.error,v.global.signal.reason);assert.notEqual(v.error,v.later);assert.equal(await v.app.failure,v.error);await v.app.close();
+});
+test('plain synchronous reader throw without abort stays primary and incomplete',async()=>{
+ const v=await syncThrowCase({abort:false});assert.equal(v.error,v.later);assert.equal(await v.app.failure,v.later);assert.equal(v.app.status().accountingIncomplete,true);assert.equal(v.app.status().receivedTotalsExact,false);assert.equal(v.app.status().enrichmentReads,0);await v.app.close();
+});
+for(const [label,reason]of [['false',false],['zero',0],['empty',''],['null',null],['undefined',undefined]])test('synchronous '+label+' abort follows exact captured signal convention',async()=>{
+ const v=await syncThrowCase({reason});if(reason===undefined)assert.equal(v.error,v.requestAbort.signal.reason);else{assert(v.error instanceof Error);assert.equal(Object.is(v.error.cause,reason),true);}assert.notEqual(v.error,v.later);assert.equal(await v.app.failure,v.error);assert.equal(v.app.status().enrichmentReads,0);assert.equal(v.app.status().accountingIncomplete,true);await v.app.close();
+});
+for(const [label,later]of [['false',false],['zero',0],['empty',''],['null',null],['undefined',undefined]])test('later synchronous '+label+' throw cannot replace original abort',async()=>{
+ const v=await syncThrowCase({later});assert.equal(v.error,v.requestAbort.signal.reason);assert.equal(await v.app.failure,v.error);assert.equal(v.app.status().pendingReadOutcomes,0);assert.equal(v.app.status().accountingIncomplete,true);await v.app.close();
+});
+test('already latched primary stays first across synchronous abort and throw',async()=>{
+ const earlier=Error('earlier global cap failure'),v=await syncThrowCase({before:({app})=>app.recordFailure(earlier)});assert.equal(v.error,earlier);assert.equal(await v.app.failure,earlier);assert.notEqual(v.error,v.requestAbort.signal.reason);assert.equal(v.app.status().enrichmentReads,0);await v.app.close();assert.equal(await v.app.failure,earlier);
+});
+for(const first of ['request','global'])test('combined signal captures '+first+' first when both abort before synchronous throw',async()=>{
+ const requestReason=Error('request first value'),globalReason=Error('global first value');const v=await syncThrowCase({abort:false,before:({global,requestAbort})=>{if(first==='request'){requestAbort.abort(requestReason);global.abort(globalReason);}else{global.abort(globalReason);requestAbort.abort(requestReason);}}});assert.equal(v.error,first==='request'?requestReason:globalReason);assert.equal(await v.app.failure,v.error);await v.app.close();
+});
+test('captured false request abort is not replaced by later truthy global abort or read error',async()=>{
+ const v=await syncThrowCase({abort:false,before:({global,requestAbort})=>{requestAbort.abort(false);global.abort(Error('later global'));}});assert.equal(v.error.cause,false);assert.equal(await v.app.failure,v.error);await v.app.close();
+});
+test('actual first class cap remains primary through cancel abort and synchronous cleanup throw',async()=>{
+ const body=new Uint8Array(17).fill(88),{f,key}=enrichmentFixture({body}),abort=new AbortController(),reason=Error('later abort'),later=Error('later cleanup throw');let reads=0;const app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f,({key:k})=>k===key?{status:200,redirected:false,url:'',headers:new Headers(),body:{getReader(){return{read(){reads++;return Promise.resolve({done:false,value:body});},cancel(){abort.abort(reason);throw later;},releaseLock(){}};}}}:undefined).fetcher,limits:{enrichmentBytes:8}});let primary;try{await app.handle(req('/world/'+key,{signal:abort.signal}));}catch(e){primary=e;}assert.match(primary.message,/enrichment cumulative cap/);assert.equal(app.status().enrichmentBytes,17);assert.equal(app.status().enrichmentReads,0);assert.equal(reads,1);assert.equal(await app.failure,primary);await assert.rejects(app.close(),e=>e===later);assert.equal(await app.failure,primary);assert.equal(app.status().cleanupConfirmed,false);
+});
+test('abort before unobservable own result descriptors keeps original cause and safe17B accounting',async()=>{
+ const body=new Uint8Array(17).fill(9),{f,key}=enrichmentFixture({body}),abort=new AbortController(),reason=Error('original descriptor abort');let getters=0;const app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f,({key:k})=>k===key?{status:200,redirected:false,url:'',headers:new Headers(),body:{getReader(){return{read(){abort.abort(reason);return Promise.resolve({get done(){getters++;throw Error('later getter');},value:body});},cancel(){},releaseLock(){}};}}}:undefined).fetcher});await assert.rejects(app.handle(req('/world/'+key,{signal:abort.signal})),e=>e===reason);assert.equal(getters,0);assert.equal(app.status().enrichmentBytes,17);assert.equal(app.status().accountingIncomplete,true);assert.equal(app.status().receivedTotalsExact,false);assert.equal(app.status().enrichmentReads,0);await app.close();
+});
+test('abort from raw result Promise assimilation then rejection keeps captured cause',async()=>{
+ const {f,key}=enrichmentFixture(),abort=new AbortController(),reason=Error('original assimilation abort'),later=Error('later then getter throw');const app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f,({key:k})=>k===key?{status:200,redirected:false,url:'',headers:new Headers(),body:{getReader(){return{read(){return{get then(){abort.abort(reason);throw later;}};},cancel(){},releaseLock(){}};}}}:undefined).fetcher});await assert.rejects(app.handle(req('/world/'+key,{signal:abort.signal})),e=>e===reason);assert.equal(await app.failure,reason);assert.equal(app.status().accountingIncomplete,true);assert.equal(app.status().receivedTotalsExact,false);assert.equal(app.status().enrichmentReads,0);await app.close();
+});
+test('earlier wrapped falsy primary stays first across synchronous abort and throw',async()=>{
+ let earlier;const v=await syncThrowCase({before:({app})=>earlier=app.recordFailure(false)});assert(earlier instanceof Error);assert.equal(earlier.cause,false);assert.equal(v.error,earlier);assert.equal(await v.app.failure,earlier);assert.notEqual(v.error,v.requestAbort.signal.reason);await v.app.close();assert.equal(await v.app.failure,earlier);
+});
+
+// Review218: original interrupts own the complete acquisition/copy/cleanup lifetime.
+async function readLifetimeCase({where='getReader',globalAbort=false,reason=Error('original lifetime interrupt'),returns=false,prior}={}){
+ const body=new Uint8Array(17).fill(80),{f,key}=enrichmentFixture({body}),caller=new AbortController(),requestAbort=new AbortController(),later=Error('later '+where),calls={reads:0,cancel:0,release:0,getReader:0,body:0,headers:0,status:0};let app;
+ const trigger=()=>{if(prior)app.recordFailure(prior);(globalAbort?caller:requestAbort).abort(reason);if(!returns)throw later;};
+ const reader={read(){calls.reads++;return Promise.resolve(calls.reads===1?{done:false,value:body}:{done:true});},cancel(){calls.cancel++;},releaseLock(){calls.release++;}};
+ const rawBody={locked:false,getReader(){calls.getReader++;return reader;}},headers=new Headers(),response={status:200,redirected:false,url:'',headers,body:rawBody};
+ if(where==='getReader')Object.defineProperty(rawBody,'getReader',{get(){trigger();return function(){calls.getReader++;return reader;};}});
+ if(where==='body')Object.defineProperty(response,'body',{get(){calls.body++;trigger();return rawBody;}});
+ if(where==='status')Object.defineProperty(response,'status',{get(){calls.status++;trigger();return 200;}});
+ if(where==='redirected')Object.defineProperty(response,'redirected',{get(){trigger();return false;}});
+ if(where==='url')Object.defineProperty(response,'url',{get(){trigger();return '';}});
+ if(where==='headers')Object.defineProperty(response,'headers',{get(){calls.headers++;trigger();return headers;}});
+ if(where==='header-method')Object.defineProperty(headers,'get',{get(){trigger();return Headers.prototype.get;}});
+ if(where==='header-call')headers.get=function(...args){trigger();return Headers.prototype.get.apply(this,args);};
+ if(where==='read-method')Object.defineProperty(reader,'read',{get(){trigger();return function(){calls.reads++;return Promise.resolve({done:true});};}});
+ if(where==='releaseLock')reader.releaseLock=function(){calls.release++;trigger();};
+ const io=fake(f,({key:k})=>k===key?response:undefined);app=await prepareBundleWorldAssets(f.source,{fetcher:io.fetcher,signal:caller.signal});let error,closeError;try{await app.handle(req('/world/'+key,{signal:requestAbort.signal}));}catch(e){error=e;}const beforeClose=app.status();try{await app.close();}catch(e){closeError=e;}return{app,key,io,error,closeError,reason,later,calls,beforeClose};
+}
+for(const [where,globalAbort]of [['getReader',false],['getReader',true],['headers',false],['status',false],['read-method',false],['releaseLock',false]])test('original lifetime interrupt wins '+where+(globalAbort?' global':' request')+' before later throw',async()=>{
+ const v=await readLifetimeCase({where,globalAbort});assert.equal(v.error,v.reason);assert.equal(await v.app.failure,v.reason);assert.notEqual(v.error,v.later);assert.equal(v.app.status().interruptObservers,0);if(where!=='releaseLock'){assert.equal(v.calls.reads,0);assert.equal(v.app.status().enrichmentReads,0);}assert.equal(v.app.status().downstreamBytes,0);const n=v.io.calls.length;await assert.rejects(v.app.handle(req('/world/'+v.key)),e=>e===v.reason);assert.equal(v.io.calls.length,n);
+});
+for(const where of ['body','redirected','url','header-method','header-call'])test('central read observer preserves '+where+' interrupt and stops acquisition',async()=>{
+ const v=await readLifetimeCase({where});assert.equal(v.error,v.reason);assert.equal(await v.app.failure,v.reason);assert.equal(v.calls.reads,0);assert.equal(v.app.status().enrichmentReads,0);assert.equal(v.app.status().downstreamBytes,0);assert.equal(v.app.status().interruptObservers,0);
+});
+for(const where of ['body','getReader','status','headers','read-method'])test(where+' getter returning after abort cannot advance to data read',async()=>{
+ const v=await readLifetimeCase({where,returns:true});assert.equal(v.error,v.reason);assert.equal(v.calls.reads,0);assert.equal(v.app.status().enrichmentReads,0);assert.equal(v.app.status().downstreamBytes,0);assert.equal(v.app.status().interruptObservers,0);if(where==='body')assert.equal(v.calls.body,1);
+});
+for(const [label,reason]of [['false',false],['zero',0],['empty',''],['null',null]])test('lifetime getReader '+label+' interrupt retains original raw cause',async()=>{
+ const v=await readLifetimeCase({reason});assert(v.error instanceof Error);assert.equal(Object.is(v.error.cause,reason),true);assert.equal(await v.app.failure,v.error);assert.equal(v.calls.reads,0);assert.equal(v.app.status().interruptObservers,0);
+});
+test('earlier primary stays first through lifetime getter abort and later throw',async()=>{
+ const prior=Error('earlier exact cap primary'),v=await readLifetimeCase({where:'headers',prior});assert.equal(v.error,prior);assert.equal(await v.app.failure,prior);assert.equal(v.calls.reads,0);assert.equal(v.app.status().interruptObservers,0);
+});
+test('actual cap failure remains first when release cleanup aborts and throws',async()=>{
+ const body=new Uint8Array(17).fill(71),{f,key}=enrichmentFixture({body}),abort=new AbortController(),reason=Error('later cleanup abort'),later=Error('later release throw');let n=0;const app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f,({key:k})=>k===key?{status:200,redirected:false,url:'',headers:new Headers(),body:{getReader(){return{read(){n++;return Promise.resolve({done:false,value:body});},cancel(){},releaseLock(){abort.abort(reason);throw later;}};}}}:undefined).fetcher,limits:{enrichmentBytes:8}});let primary;try{await app.handle(req('/world/'+key,{signal:abort.signal}));}catch(e){primary=e;}assert.match(primary.message,/enrichment cumulative cap/);assert.equal(await app.failure,primary);assert.equal(app.status().enrichmentBytes,17);assert.equal(app.status().enrichmentReads,0);assert.equal(n,1);await assert.rejects(app.close(),e=>e===later);assert.equal(await app.failure,primary);assert.equal(app.status().interruptObservers,0);
+});
+test('bridge request abort during arrayBuffer getter latches before later getter Error',async()=>{
+ const later=Error('later response copy getter');const v=await bridgeCase({responseHook:({response,request})=>Object.defineProperty(response,'arrayBuffer',{get(){request.emit('aborted');throw later;}})});const primary=await v.app.failure;assert.match(primary.message,/client disconnected/);assert.notEqual(primary,later);assert.equal(successWrites(v).length,0);assert.equal(v.calls.some(c=>c.op==='body'),false);assert.equal(v.status.interruptObservers,0);assert.equal(v.request.listenerCount('aborted'),0);assert.equal(v.sink.listenerCount('close'),0);
+});
+test('bridge request abort returning from copy getter never invokes copy function',async()=>{
+ let copies=0;const v=await bridgeCase({responseHook:({response,request})=>Object.defineProperty(response,'arrayBuffer',{get(){request.emit('aborted');return()=>{copies++;throw Error('must not copy');};}})});assert.match((await v.app.failure).message,/client disconnected/);assert.equal(copies,0);assert.equal(successWrites(v).length,0);assert.equal(v.status.interruptObservers,0);
+});
+test('bridge request abort during response headers getter wins before later serialization Error',async()=>{
+ const later=Error('late header getter');const v=await bridgeCase({responseHook:({response,request})=>Object.defineProperty(response,'headers',{get(){request.emit('aborted');throw later;}})});const primary=await v.app.failure;assert.match(primary.message,/client disconnected/);assert.notEqual(primary,later);assert.equal(successWrites(v).length,0);assert.equal(v.status.interruptObservers,0);
+});
+test('bridge request abort during status conversion cannot reach response write getters',async()=>{
+ let ends=0;const v=await bridgeCase({responseHook:({response,request})=>Object.defineProperty(response,'status',{value:{valueOf(){request.emit('aborted');throw Error('later status error');}}}),sinkHook:({sink})=>Object.defineProperty(sink,'end',{get(){ends++;throw Error('must not acquire end');}})});assert.match((await v.app.failure).message,/client disconnected/);assert.equal(ends,0);assert.equal(successWrites(v).length,0);assert.equal(v.status.interruptObservers,0);
+});
+test('bridge end callback error is primary before end throws another Error',async()=>{
+ const first=Error('callback first'),later=Error('later end throw');const v=await bridgeCase({sinkHook:({sink,calls})=>{sink.end=function(body,done){calls.push({op:'body',bytes:body?.byteLength});done(first);throw later;};}});assert.equal(await v.app.failure,first);assert.notEqual(await v.app.failure,later);assert.equal(v.status.interruptObservers,0);
+});
+test('normal completed response close before callback remains success',async()=>{
+ const v=await bridgeCase({sinkHook:({sink,calls})=>{sink.end=function(body,done){calls.push({op:'body',bytes:body?.byteLength});this.writableFinished=true;this.emit('close');done(null);};}});assert.equal(v.status.firstFailurePresent,false);assert.equal(successWrites(v).length,1);assert.equal(v.status.cleanupConfirmed,true);assert.equal(v.status.interruptObservers,0);
+});
+test('normal completed response close after callback remains success',async()=>{
+ const v=await bridgeCase({sinkHook:({sink,calls})=>{sink.end=function(body,done){calls.push({op:'body',bytes:body?.byteLength});this.writableFinished=true;done(undefined);this.emit('close');};}});assert.equal(v.status.firstFailurePresent,false);assert.equal(v.status.cleanupConfirmed,true);assert.equal(v.status.interruptObservers,0);
+});
+test('normal app global observer lives through work and is exactly removed by close',async()=>{
+ const {getEventListeners}=await import('node:events'),global=new AbortController(),f=fixture(),app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f).fetcher,signal:global.signal});assert.equal(getEventListeners(global.signal,'abort').length,1);assert.equal(app.status().interruptObservers,1);await app.handle(req('/world/'+f.key));assert.equal(app.status().interruptObservers,1);await app.close();assert.equal(app.status().interruptObservers,0);assert.equal(getEventListeners(global.signal,'abort').length,0);assert.equal(app.status().firstFailurePresent,false);
+});
+test('explicit phase original observer covers pre-wait interval and releases on fail',async()=>{
+ const f=fixture(),app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f).fetcher}),abort=new AbortController(),reason=Error('pre-wait original interrupt'),phase=app.beginRequest(abort.signal);assert.equal(app.status().interruptObservers,1);abort.abort(reason);assert.equal(await app.failure,reason);assert.throws(()=>phase.check(),e=>e===reason);phase.fail(Error('later error'));assert.equal(app.status().interruptObservers,0);await app.close();assert.equal(app.status().interruptObservers,0);
+});
+test('idle explicit phase observers are bounded by existing lowered request cap and removed on close',async()=>{
+ const f=fixture(),app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f).fetcher,limits:{requests:3}});for(let i=0;i<3;i++)app.beginRequest(new AbortController().signal);assert.equal(app.status().interruptObservers,3);assert.throws(()=>app.beginRequest(new AbortController().signal),/request phase cap/);assert.equal(app.status().interruptObservers,3);await app.close();assert.equal(app.status().interruptObservers,0);assert.equal(app.status().firstFailurePresent,true);
+});
+test('automatic direct handle removes its phase observer without retaining request history',async()=>{
+ const f=fixture(),app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f).fetcher});for(let i=0;i<8;i++){await app.handle(req('/world/'+f.key));assert.equal(app.status().interruptObservers,0);}await app.close();assert.equal(app.status().interruptObservers,0);
+});
+test('global original observer covers cached response copy getter before any wait listener',async()=>{
+ const global=new AbortController(),reason=Error('global copy getter interrupt'),later=Error('later copy getter error'),f=fixture(),app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f).fetcher,signal:global.signal}),request=req('/world/'+f.key),phase=app.beginRequest(request.signal),response=await app.handle(request,phase);Object.defineProperty(response,'arrayBuffer',{get(){global.abort(reason);throw later;}});await assert.rejects(phase.body(response),e=>e===reason);assert.equal(await app.failure,reason);phase.fail(later);await app.close();assert.equal(app.status().interruptObservers,0);assert.equal(app.status().downstreamBytes,f.rootBytes.length);
+});
+test('phase body getter interrupt cannot acquire subsequent copy getter',async()=>{
+ const abort=new AbortController(),reason=Error('body getter original'),f=fixture(),app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f).fetcher}),request=req('/world/'+f.key,{signal:abort.signal}),phase=app.beginRequest(request.signal),response=await app.handle(request,phase),body=response.body;let copies=0;Object.defineProperty(response,'body',{get(){abort.abort(reason);return body;}});Object.defineProperty(response,'arrayBuffer',{get(){copies++;throw Error('must not acquire copy');}});await assert.rejects(phase.body(response),e=>e===reason);assert.equal(copies,0);assert.equal(await app.failure,reason);phase.fail(Error('later'));await app.close();assert.equal(app.status().interruptObservers,0);
+});
+test('bridge method getter abort stops before subsequent request header acquisition',async()=>{
+ let headers=0;const v=await bridgeCase({afterConstruct:({request})=>{Object.defineProperty(request,'method',{get(){request.emit('aborted');return'GET';}});Object.defineProperty(request,'headers',{get(){headers++;throw Error('must not acquire headers');}});}});assert.match((await v.app.failure).message,/client disconnected/);assert.equal(headers,0);assert.equal(successWrites(v).length,0);assert.equal(v.status.interruptObservers,0);
+});
+test('bridge registration callback abort plus later registration throw preserves client primary and cleans own listener',async()=>{
+ const later=Error('later once registration error');const v=await bridgeCase({afterConstruct:({request})=>{request.once=function(event,fn){EventEmitter.prototype.once.call(this,event,fn);if(event==='aborted'){this.emit('aborted');throw later;}return this;};}});assert.match((await v.app.failure).message,/client disconnected/);assert.notEqual(await v.app.failure,later);assert.equal(v.request.listenerCount('aborted'),0);assert.equal(successWrites(v).length,0);assert.equal(v.status.interruptObservers,0);
+});
+test('phase observer registration cost is charged to original entry deadline without reset',async()=>{
+ let clock=0;const f=fixture(),app=await prepareBundleWorldAssets(f.source,{fetcher:fake(f).fetcher,now:()=>clock,limits:{objectMs:5}}),original=AbortSignal.any;
+ try{AbortSignal.any=function(signals){clock=5;return Reflect.apply(original,AbortSignal,[signals]);};assert.throws(()=>app.beginRequest(new AbortController().signal),/deadline/);assert.equal(app.status().interruptObservers,0);assert.equal(app.status().firstFailurePresent,true);}finally{AbortSignal.any=original;await app.close();}
+});
+
+// Review243: cleanup admission must charge ALL listener and phase-clear work.
+function cleanupClockFixture(){
+ const data=Uint8Array.of(1),sha=hash(data),m={tileVersion:1,world:'athens',revision:'a'.repeat(64),projection:{lat0:0,lon0:0,mlat:1,mlon:1},tileMetres:512,spawn:{cell:[0,0],anchor:''},tiles:{'0,0':{url:'/world/cells/'+sha+'.bin.gz',sha256:sha,bytes:1,decodedBytes:1,triangles:0,dependencies:[]}},syntheticPadding:''};const n=529-bytes(m).length;assert(n>=0);m.syntheticPadding='p'.repeat(n);const rootBytes=bytes(m);assert.equal(rootBytes.length,529);const key='manifests/'+hash(rootBytes)+'.json';return{rootBytes,key,source:{schemaVersion:1,origin,manifestKey:key,worldSetRevision:m.revision}};
+}
+async function closeClockCase({cost=11,where='remove',primary,removalFailure,hasRemovalFailure=false,clearFailure,hasClearFailure=false}={}){
+ let clock=0,clears=0;const order=[],f=cleanupClockFixture(),controller=new AbortController(),app=await prepareBundleWorldAssets(f.source,{signal:controller.signal,now:()=>{order.push('clock:'+clock);return clock;},fetcher:async()=>new Response(f.rootBytes),limits:{closeMs:10}});assert.equal(app.status().metadataBytes,529);if(primary!==undefined)app.recordFailure(primary);
+ const originalRemove=controller.signal.removeEventListener,originalClear=Map.prototype.clear;
+ controller.signal.removeEventListener=function(...args){const result=Reflect.apply(originalRemove,this,args);order.push('remove');if(where==='remove')clock=cost;if(hasRemovalFailure)throw removalFailure;return result;};
+ Map.prototype.clear=function(){clears++;const result=Reflect.apply(originalClear,this,[]);order.push('clear:'+clears);if(clears===3){if(where==='phase-clear')clock=cost;if(hasClearFailure)throw clearFailure;}return result;};
+ let rejected=false,error;try{await app.close();}catch(e){rejected=true;error=e;}finally{Map.prototype.clear=originalClear;Object.defineProperty(controller.signal,'removeEventListener',{value:originalRemove,configurable:true,writable:true});}
+ return{app,rejected,error,clock,clears,order};
+}
+for(const where of ['remove','phase-clear'])for(const [label,cost,passed]of [['below',9,true],['at',10,false],['above',11,false]])test('original cleanup boundary '+label+' after '+where+' work',async()=>{
+ const v=await closeClockCase({where,cost});assert.equal(v.clears,3);assert.equal(v.rejected,!passed);assert.equal(v.app.status().cleanupConfirmed,passed);assert.equal(v.app.status().cleanupFailed,!passed);assert.equal(v.app.status().interruptObservers,0);const clear=v.order.lastIndexOf('clear:3');assert(clear>=0);assert(v.order.slice(clear+1).some(x=>x==='clock:'+cost));if(!passed)assert.match(v.error.message,/cleanup confirmation late/);
+});
+test('exact old-review 529B/native-controller remove0-to11 cannot confirm cleanup at11',async()=>{
+ const v=await closeClockCase();assert.equal(v.clock,11);assert.equal(v.rejected,true);assert.equal(v.app.status().cleanupConfirmed,false);assert.equal(v.app.status().cleanupFailed,true);assert.match(v.error.message,/cleanup confirmation late/);assert.equal(v.app.status().metadataBytes,529);
+});
+test('earlier work primary stays first when final listener cost exceeds cleanup deadline',async()=>{
+ const first=Error('original work failure'),v=await closeClockCase({primary:first});assert.equal(await v.app.failure,first);assert.notEqual(v.error,first);assert.match(v.error.message,/cleanup confirmation late/);assert.equal(v.app.status().cleanupConfirmed,false);assert.equal(v.app.status().cleanupFailed,true);
+});
+test('earlier wrapped falsy work primary remains first after final cleanup deadline failure',async()=>{
+ const v=await closeClockCase({primary:false});const first=await v.app.failure;assert(first instanceof Error);assert.equal(first.cause,false);assert.match(v.error.message,/cleanup confirmation late/);assert.equal(v.app.status().cleanupConfirmed,false);
+});
+for(const [label,value]of falsyCases)test('first listener-removal '+label+' failure survives later cleanup-clock failure',async()=>{
+ const v=await closeClockCase({hasRemovalFailure:true,removalFailure:value});assert.equal(v.rejected,true);assert.equal(Object.is(v.error,value),true);assert.equal(v.app.status().cleanupFailed,true);assert.equal(v.app.status().cleanupConfirmed,false);assert.equal(v.app.status().interruptObservers,0);const primary=await v.app.failure;assert(primary instanceof Error);assert.equal(Object.is(primary.cause,value),true);
+});
+test('phase-clear falsy error is recorded without replacing earlier listener removal failure',async()=>{
+ const v=await closeClockCase({hasRemovalFailure:true,removalFailure:false,hasClearFailure:true,clearFailure:undefined});assert.equal(v.rejected,true);assert.equal(v.error,false);assert.equal((await v.app.failure).cause,false);assert.equal(v.app.status().cleanupFailed,true);assert.equal(v.app.status().cleanupConfirmed,false);
+});
+test('phase-clear-only undefined failure is explicit and never reports cleanup success',async()=>{
+ const v=await closeClockCase({cost:0,where:'phase-clear',hasClearFailure:true,clearFailure:undefined});assert.equal(v.rejected,true);assert.equal(v.error,undefined);assert.equal(v.app.status().cleanupFailed,true);assert.equal(v.app.status().cleanupConfirmed,false);assert.equal((await v.app.failure).cause,undefined);
 });
