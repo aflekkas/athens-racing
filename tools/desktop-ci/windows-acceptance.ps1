@@ -26,11 +26,28 @@ function Uninstall-App {
   $uninstaller = Get-Item (Join-Path $installDir 'Uninstall Athens Racing.exe')
   $p = Start-Process -FilePath $uninstaller.FullName -ArgumentList '/S' -Wait -PassThru
   if ($p.ExitCode -ne 0) { throw 'NSIS uninstallation failed' }
-  for ($i=0; $i -lt 60 -and (Test-Path $env:DESKTOP_EXECUTABLE); $i++) { Start-Sleep -Seconds 1 }
-  if (Test-Path $env:DESKTOP_EXECUTABLE) { throw 'Installed executable survived uninstall' }
+  # NSIS may finish its process before the final self-delete removes its tree.
+  # Wait for observable completion; never delete nonempty installation contents.
+  $deadline = [DateTime]::UtcNow.AddSeconds(60)
+  while ($true) {
+    $remaining = @()
+    if (Test-Path -LiteralPath $installDir) {
+      try { $remaining = @(Get-ChildItem -LiteralPath $installDir -Force -ErrorAction Stop) }
+      catch { if (Test-Path -LiteralPath $installDir) { throw } }
+    }
+    if (!(Test-Path -LiteralPath $env:DESKTOP_EXECUTABLE) -and $remaining.Count -eq 0) {
+      if (Test-Path -LiteralPath $installDir) {
+        try { [IO.Directory]::Delete($installDir, $false) }
+        catch { if (Test-Path -LiteralPath $installDir) { throw } }
+      }
+      break
+    }
+    if ([DateTime]::UtcNow -ge $deadline) { throw 'Uninstall left executable or nonempty installation directory' }
+    Start-Sleep -Milliseconds 250
+  }
+  if (Test-Path -LiteralPath $env:DESKTOP_EXECUTABLE) { throw 'Installed executable survived uninstall' }
+  if (Test-Path -LiteralPath $installDir) { throw 'Installation directory survived uninstall' }
   if (!(Test-Path $retainedProfile)) { throw 'Uninstall removed retained user profile' }
-  # Remove only empty task-owned install directory, not preferences.
-  if ((Test-Path $installDir) -and !(Get-ChildItem $installDir -Force)) { Remove-Item $installDir }
 }
 try {
  Install-App
