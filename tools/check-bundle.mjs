@@ -5,15 +5,59 @@ import { existsSync } from 'node:fs';
 import { mkdir, writeFile, readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { serveBundle } from './serve-bundle.mjs';
+import { routeDestinationForMap } from '../src/unified-routes.js';
+// Expectations come from the actual private build's installed public catalogue.
+function bundleRouteExpectations(config, selections) {
+  if (!config || !['staging', 'production'].includes(config.environment) || !Array.isArray(config.routes)) throw Error('Built route catalogue unavailable');
+  const hashes = ['routeHash', 'geometryHash', 'worldSetRevision'], worlds = new Set();
+  return selections.map(({ map, id }) => {
+    const entries = config.routes.filter(entry => entry.id === id);
+    if (entries.length !== 1) throw Error('Built route unavailable: ' + id);
+    const entry = entries[0];
+    if (hashes.some(key => !/^[a-f0-9]{64}$/.test(entry[key] || '')) || entry.url !== `/data/routes/${id}.${entry.routeHash}.json`) throw Error('Built route identity invalid: ' + id);
+    worlds.add(entry.worldSetRevision);
+    if (worlds.size !== 1) throw Error('Built routes use different world releases');
+    return { map, id, ...Object.fromEntries(hashes.map(key => [key, entry[key]])) };
+  });
+}
+
+// A legacy menu destination now selects a route in the shared Athens world.
+// Loading failures stop the gate promptly; they are never accepted as readiness.
+function bundleRaceReady(expected) {
+  if (globalThis.__loading?.failure) throw Error('Route start failed: ' + expected.id + ' (' + (globalThis.__loading.failure.code || 'unknown') + ')');
+  const game = globalThis.__game;
+  if (!game || !['race', 'countdown'].includes(game.state)) return false;
+  if (game.mapId !== 'athens') throw Error('Race did not enter the shared Athens world');
+  const compiled = game.unifiedCompiled;
+  if (!compiled || compiled.worldId !== 'athens' || ['id', 'routeHash', 'geometryHash', 'worldSetRevision'].some(key => compiled[key] !== expected[key])) throw Error('Race compiled route identity mismatch: ' + expected.id);
+  if (game.routePreparing || !globalThis.__sim || !globalThis.__routePilot) return false;
+  if (globalThis.__worldSession?.manifest?.revision !== expected.worldSetRevision) throw Error('Race world release mismatch: ' + expected.id);
+  const active = globalThis.__sim.route?.compiled;
+  if (!active || ['id', 'routeHash', 'geometryHash', 'worldSetRevision'].some(key => active[key] !== expected[key])) throw Error('Active route identity mismatch: ' + expected.id);
+  return true;
+}
+
+async function closeBundleCheck(browser, app, saveReport, primaryError) {
+  const failures = [];
+  for (const close of [saveReport, () => browser?.close(), () => app.close()]) {
+    try { await close(); } catch (error) { failures.push(error); }
+  }
+  if (primaryError) { for (const error of failures) { try { console.error('Secondary bundle cleanup failure:', error.message); } catch {} } return; }
+  if (failures.length) throw failures[0];
+}
+
 const out = resolve(process.env.BUNDLE_EVIDENCE || '.scratch/bundle-check'); await mkdir(out, { recursive: true });
 const app = await serveBundle(resolve(process.argv[2] || '.deploy/assets'), { dataDir: resolve(out, 'server-data') });
-const { chromium } = process.env.PLAYWRIGHT_MODULE
-  ? await import(pathToFileURL(process.env.PLAYWRIGHT_MODULE))
-  : await import('playwright').catch(() => import('/tmp/pw/node_modules/playwright/index.mjs'));
-const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROME_BIN || (existsSync('/home/dev/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome') ? '/home/dev/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome' : undefined), args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 const errors = [], results = [];
-let page;
+let page, browser, primaryError;
 try {
+  const expectedRoutes = bundleRouteExpectations(app.routeConfig, ['riviera', 'megara', 'penteli'].map(map => ({ map, id: routeDestinationForMap(map) })));
+  if(!app.worldAssets)throw Error('Bundle world transport was not prepared');
+  app.worldAssets.check();
+  const { chromium } = process.env.PLAYWRIGHT_MODULE
+    ? await import(pathToFileURL(process.env.PLAYWRIGHT_MODULE))
+    : await import('playwright').catch(() => import('/tmp/pw/node_modules/playwright/index.mjs'));
+  browser = await chromium.launch({ headless: true, executablePath: process.env.CHROME_BIN || (existsSync('/home/dev/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome') ? '/home/dev/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome' : undefined), args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   const context = await browser.newContext({ viewport: { width: 1280, height: 720 } });
   page = await context.newPage(); const requested = [];
   await page.addInitScript(() => { const raf = requestAnimationFrame; window.requestAnimationFrame = cb => cb.name === 'frame' ? 0 : raf(cb); });
@@ -29,18 +73,21 @@ try {
   await page.evaluate(() => window.__flow.menu.show('account', {}, true));
   await page.waitForFunction(() => window.__flow.menu.screen === 'account');
   await page.evaluate(() => window.__flow.menu.show('title'));
-  for (const map of ['riviera', 'megara', 'penteli']) {
+  for (const expected of expectedRoutes) {
+    const map = expected.map;
     console.log('starting', map);
     // Select using the real menu handlers, then confirm the garage to load the runtime.
     await page.evaluate(map => { const menu = window.__flow.menu; menu.h.selectMap(map); menu.h.quickRace(); }, map);
     await page.waitForFunction(() => window.__flow.menu.screen === 'car', null, { timeout: 60000 });
     await page.evaluate(() => window.__flow.menu.confirmCar());
-    await page.waitForFunction(map => window.__game?.mapId === map && ['race', 'countdown'].includes(window.__game?.state), map, { timeout: 600000 });
+    await Promise.race([page.waitForFunction(bundleRaceReady, expected, { timeout: 600000 }),app.worldAssets.failure.then(error=>{throw error;})]);
+    app.worldAssets.check();
     // Let the real countdown and camera transition finish before rendering the capture.
     await page.evaluate(() => { window.__sim.step(90, 1 / 60); window.__sim.render(); });
     assert.equal(await page.evaluate(() => window.__game.state), 'race', map + ' must enter the race state');
     await page.screenshot({ path: resolve(out, map + '.png'), timeout: 60000 });
-    results.push({ map, state: await page.evaluate(() => window.__game.state) });
+    assert.equal(await page.evaluate(bundleRaceReady, expected), true, map + ' must retain its exact route and world identity');
+    results.push({ ...expected, worldId: 'athens', state: await page.evaluate(() => window.__game.state) });
     await page.evaluate(() => window.__flow.quit());
     await page.waitForFunction(() => window.__flow.menu.screen === 'title');
   }
@@ -70,16 +117,17 @@ try {
     assert.deepEqual(faultErrors, []);
     await faultContext.close();
   }
+  app.worldAssets.check();
   assert.deepEqual(errors, [], 'built client page errors');
   await context.close();
 } catch (error) {
+  primaryError = error;
   console.error(error.stack);
   const state = await Promise.race([page?.evaluate(() => ({ state: window.__game?.state, mapId: window.__game?.mapId, screen: window.__flow?.menu?.screen, loading: document.getElementById('lstat')?.textContent, error: document.getElementById('err')?.textContent })), new Promise(resolve => setTimeout(() => resolve('page busy'), 5000))]);
   console.error(JSON.stringify(state));
-  await writeFile(resolve(out, 'failure.json'), JSON.stringify({ error: error.stack, state }, null, 2));
+  try { await writeFile(resolve(out, 'failure.json'), JSON.stringify({ error: error.stack, state }, null, 2)); } catch (secondary) { try { console.error('Secondary bundle failure-report error:', secondary.message); } catch {} }
   throw error;
 } finally {
-  await writeFile(resolve(out, 'report.json'), JSON.stringify({ errors, results }, null, 2));
-  await browser.close(); await app.close();
+  await closeBundleCheck(browser, app, () => writeFile(resolve(out, 'report.json'), JSON.stringify({ errors, results, worldTransport:app.worldAssets?.status() }, null, 2)), primaryError);
 }
 console.log(JSON.stringify({ pass: true, results, errors }));

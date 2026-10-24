@@ -1,0 +1,13 @@
+# NOT RUN / NO ACTUAL CENSUS GRANT. Requires Review124 and a separate actual grant.
+# Recheck this receipt/all frozen pins+exact native SHA/owner/version/path first.
+unset BASH_ENV ENV LD_PRELOAD LD_AUDIT LD_LIBRARY_PATH LD_DEBUG LD_DEBUG_OUTPUT LD_BIND_NOW LD_BIND_NOT LD_DYNAMIC_WEAK LD_HWCAP_MASK LD_ORIGIN_PATH LD_PROFILE LD_PROFILE_OUTPUT LD_SHOW_AUXV LD_TRACE_LOADED_OBJECTS LD_USE_LOAD_BIAS LD_VERBOSE LD_WARN LD_ASSUME_KERNEL LD_POINTER_GUARD LD_PREFER_MAP_32BIT_EXEC LD_TRACE_PRELINKING LD_AOUT_LIBRARY_PATH LD_AOUT_PRELOAD GLIBC_TUNABLES GCONV_PATH LOCPATH NLSPATH MALLOC_TRACE MALLOC_CHECK_ MALLOC_PERTURB_
+/usr/bin/env -i /bin/bash --noprofile --norc <<'BASH'
+set -e
+set -o noclobber
+[ -z "${BASH_ENV+x}" ]
+[ -z "${ENV+x}" ]
+[ -z "${LD_PRELOAD+x}" ]
+[ -z "${LD_AUDIT+x}" ]
+printf '%s\n' "$BASHPID" > /tmp/athens-greenery.98Rc/role-census15-v6-future-launcher.pid
+exec -c /usr/bin/python3.12 -I -S -B /tmp/athens-greenery.98Rc/role_census15_controller_v6.py --grant-marker 6721129 --controller-bytes 20234 --controller-sha 99ff7450cf5dfec0c2a6d37ddfd52ffc754ef6dbcd2f0d42e8cb0569eec8ad23 --worker-sha 4f5f173e3cd0f8c03901a6e3031c513234ff9575d3ee2d0be875d8423e8affb8 --plan /tmp/athens-greenery.98Rc/single-original15-role-census-plan-v6.json --plan-bytes 25297 --plan-sha 436f77ba8ecf21dd832b476bd377abd76eb03ce453ba4313165488cb520dc77f --output-prefix /tmp/athens-greenery.98Rc/single-original15-role-census-v6-attempt1
+BASH

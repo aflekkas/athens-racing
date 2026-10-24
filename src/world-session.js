@@ -29,7 +29,7 @@ import {DRESSING_VARIANTS} from './world-tile-dressing.js';
 import {RouteRuntime} from './route-runtime.js';
 import {planRouteInterest} from './route-stream-policy.js';
 import {validateWorldDefinition,loadWorldDefinition} from './world-manifest.js';
-export async function createWorldSession({renderer,scene,resources,progress=()=>{},worldDefinition={},signal}){
+export async function createWorldSession({renderer,scene,resources,progress=()=>{},worldDefinition={},signal,tileObserver=null}){
  // Base scans and manifests are independent. Keep their I/O parallel, then
  // gate shader preparation on uploads rather than delaying contact admission.
  const startsRegional=['penteli','megara'].includes(worldDefinition.regionId),texturesReady=loadAthensTextures(renderer,{penteli:startsRegional});texturesReady.catch(()=>{});
@@ -76,7 +76,7 @@ export async function createWorldSession({renderer,scene,resources,progress=()=>
    return{steps:steps(),commit(){try{const handle=build.commit();boxRoots.add(handle.root);for(const c of handle.root.children)if(c.userData.landmarkBox)c.visible=settings.worldDetail===false;committed=true;for(const l of tileListeners)l.activated?.(key);return handle;}catch(error){cleanup();throw error;}},dispose:cleanup};
   }
  };
- stream=new WorldTileStream(manifest,{...resources.stream,...worldDefinition.streamOptions,adapter,capBytes:(worldDefinition.streamOptions?.capBytes||resources.stream.capBytes)-(manifest.regionResidentBytes||0),baseURL:manifestURL,activationMs:.75,pinSpawn:false});roads=new WorldTileRoads(stream);
+ stream=new WorldTileStream(manifest,{...resources.stream,...worldDefinition.streamOptions,observer:tileObserver,adapter,capBytes:(worldDefinition.streamOptions?.capBytes||resources.stream.capBytes)-(manifest.regionResidentBytes||0),baseURL:manifestURL,activationMs:.75,pinSpawn:false});roads=new WorldTileRoads(stream);
 
  const safeAbort=()=>{if(disposed||signal?.aborted)throw Error('World selection cancelled');};
  const safePose=(p,{halfWidth=1.1,halfLength=2.8}={})=>{if([...enrichments.values()].some(e=>!e.safe(p,{halfWidth,halfLength})))return false;if(session.closures?.safe(p,{halfWidth,halfLength})===false)return false;if(!roads.safe({...p,edge:p.edgeId||p.edge,surfaceId:p.surfaceId||stream.contact(p.x,p.z,{referenceY:p.y,layer:p.layer,requiredFlags:1})?.surfaceId},{halfWidth,halfLength,connected:true})||!barriers.safe(p,{halfWidth,halfLength}))return false;for(const a of [-halfLength+halfWidth,0,halfLength-halfWidth])if(obstacles.contact(p.x-Math.sin(p.yaw)*a,p.y,p.z-Math.cos(p.yaw)*a,halfWidth+.1))return false;return true;};

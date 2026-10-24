@@ -1,0 +1,150 @@
+{
+  "schema": "accepted-original15-metadata-role-evidence-1",
+  "status": "METADATA-ROLE-ONLY-NO-ADMISSION",
+  "files": {
+    "README.md": {
+      "bytes": 4956,
+      "sha256": "8636beb3842abe3b4a8eb51219852816086f29d283042b98d7859bc3b632d97d"
+    },
+    "closure.json": {
+      "bytes": 21066,
+      "sha256": "a24ccd16d8d26034bc57123c11ddd98c4d9485a5454e4cf9f0cf9a1dbf8d6805"
+    },
+    "controller.json": {
+      "bytes": 7076,
+      "sha256": "89edbb8c20397bb6f910161bf545159083c52db05450b885b89b1a3f44bd93b1"
+    },
+    "phase-ledger-design.md": {
+      "bytes": 13138,
+      "sha256": "c3d5c6c983e3e7fe35b8c3b3b6c57a827df113cd1a59a3ef80a0bb0de7149497"
+    },
+    "reviewed-command.txt": {
+      "bytes": 1437,
+      "sha256": "6f99773f91713bafb8bc8f0a377f32ade3a63872b7ee04d3cb5595406c3ec8e4"
+    },
+    "stdout.json": {
+      "bytes": 12780,
+      "sha256": "82597726ad8b6b59f625df75723882ed70f3e9be3ae688dd867d6f6ffa50c12b"
+    }
+  },
+  "ownParentCommit": "c386b8be5ac4291f5df50826dd4a7b4f78feb88e",
+  "sourceCheckpoint": "6721129cc1cc99dfac81afcfe2c1f60704f77c8b",
+  "sourceTree": "6375247ba41a28f73040acc625f7f738be6b3457",
+  "sourceProof": {
+    "checkpoint": "6721129cc1cc99dfac81afcfe2c1f60704f77c8b",
+    "planSha256": "436f77ba8ecf21dd832b476bd377abd76eb03ce453ba4313165488cb520dc77f",
+    "codeProofRawSha256": "d78d5c7889a218b62f5873fa04a5d99d569a566fbedbff1c0d0e5a2bfe611ca2",
+    "verifiedSourceFiles": 53,
+    "controllerSha256": "99ff7450cf5dfec0c2a6d37ddfd52ffc754ef6dbcd2f0d42e8cb0569eec8ad23",
+    "workerSha256": "4f5f173e3cd0f8c03901a6e3031c513234ff9575d3ee2d0be875d8423e8affb8"
+  },
+  "frozenPackageReceipt": {
+    "sha256": "ff91d8e1c4e9aa5eecb98986a493c7a6c6df674cf2f091766bbe9a1862cb08c3",
+    "files": {
+      "role_census15_controller_v6.py": {
+        "bytes": 20234,
+        "sha256": "99ff7450cf5dfec0c2a6d37ddfd52ffc754ef6dbcd2f0d42e8cb0569eec8ad23"
+      },
+      "role_census15_worker_v6.mjs": {
+        "bytes": 38201,
+        "sha256": "4f5f173e3cd0f8c03901a6e3031c513234ff9575d3ee2d0be875d8423e8affb8"
+      },
+      "role_census15_controller_v6_test.py": {
+        "bytes": 27586,
+        "sha256": "9ab709b49aa427b350b46881ec9e8ba9376fb2c43093366ccd2173c9e821853f"
+      },
+      "role_census15_worker_v6.test.mjs": {
+        "bytes": 43878,
+        "sha256": "252e8bfe6378e7687c227c82886c8db6467d902f21c3b244975d08294d12a042"
+      },
+      "single-original15-role-census-plan-v6.json": {
+        "bytes": 25297,
+        "sha256": "436f77ba8ecf21dd832b476bd377abd76eb03ce453ba4313165488cb520dc77f"
+      },
+      "role-census15-v6-resource-forecast.json": {
+        "bytes": 2519,
+        "sha256": "ea476b935a5aa697a317774bf0a24509011d3b894c44ee6f8ceffbe1a5fb2804"
+      },
+      "role-census15-v6-startup-manifest.json": {
+        "bytes": 2815,
+        "sha256": "103c7b03215482c73e0a211a87b9d643798577ee77ec0f1a47fc0be7a5c69d86"
+      },
+      "role-census15-v6-command-NOT-RUN.txt": {
+        "bytes": 1437,
+        "sha256": "6f99773f91713bafb8bc8f0a377f32ade3a63872b7ee04d3cb5595406c3ec8e4"
+      },
+      "role-census15-v6-source-diff.patch": {
+        "bytes": 9508,
+        "sha256": "25e1a98dfc67bc2b1581f1c1a6aeb3fbcd92002c2daf73bd3feca904b5281cad"
+      },
+      "role-census15-v6-controller-tests.log": {
+        "bytes": 7626,
+        "sha256": "113d7d1c760e76c169d9585a274ce60a828a239f205141fef8e92263373240dc"
+      },
+      "role-census15-v6-worker-tests.log": {
+        "bytes": 17373,
+        "sha256": "d50847359de79f0a8ce2e4ac2ee9f2f2ea96db1cc882c4ac646eff2d766e3229"
+      },
+      "role-census15-v6-processes.json": {
+        "bytes": 1486,
+        "sha256": "99551a5ad011fbe491f015c7c3f8fc938389dfacdb3b7d8bd6601fc5ca6a6f94"
+      }
+    }
+  },
+  "nativePins": [
+    {
+      "path": "/usr/bin/python3.12",
+      "resolvedPath": "/usr/bin/python3.12",
+      "bytes": 8020928,
+      "sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "version": "3.12.3",
+      "dev": "2049",
+      "ino": "2029",
+      "mtimeNs": "1788171506000000000",
+      "ctimeNs": "1789131544338952611",
+      "uid": 0,
+      "modeOctal": "0o755"
+    },
+    {
+      "path": "/usr/bin/node",
+      "resolvedPath": "/usr/bin/node",
+      "bytes": 124827920,
+      "sha256": "fde6a4bf8d0562f7751d1a2d6cb9b417c4cfe107bbcb0aa3e9a24e125e348f48",
+      "version": "22.23.3",
+      "dev": "2049",
+      "ino": "6261",
+      "mtimeNs": "1790150208000000000",
+      "ctimeNs": "1791511012414451387",
+      "uid": 0,
+      "modeOctal": "0o755"
+    }
+  ],
+  "actualTerminal": "agent-a70f4bc5-550e-4a44-905f-f28e6161d885",
+  "elapsedSeconds": 0.17124800899182446,
+  "pidAbsent": {
+    "1468264": true,
+    "1468266": true
+  },
+  "noActualCellAdmission": true,
+  "fullTileValidation": false,
+  "intrinsicBackingAliases": "UNKNOWN",
+  "targetProducerLineage": "UNKNOWN",
+  "ordinaryEncodingPolicyLower": 69813499,
+  "ordinaryCap": 67108864,
+  "typedMPFit": "OPEN",
+  "sourceDesignOnly": {
+    "MbaseKnownPositive": 24209159,
+    "diagnosticSupervisor": 33140802,
+    "SplusMbase": 57349961,
+    "headroomBeforeUnknownTerms": 9758903,
+    "conditionalFinalViewByteUpper": 784283,
+    "contactRefsActual": "UNKNOWN",
+    "correctedObstacleRefsActual": "UNKNOWN",
+    "supervisorSmallerCompleteLedger": "UNKNOWN",
+    "allBeforeAllocationFit": "NOT ESTABLISHED"
+  },
+  "evidenceValidation": "bytehash/size/JSONidentity/sourcecitation/arithmetic/diff-only; NOtest/gate/browser/actualrerun",
+  "diskBeforeAfter": "51%74Gused71Gfree145G",
+  "retainedTaskTemp": "/tmp/athens-greenery.98Rc",
+  "model": "Codex gpt-6.1-sol"
+}

@@ -79,3 +79,57 @@ export function sampleTileContact(t,index,x,z,{referenceY=0,layer=null,requiredF
   }else if(u+v<1){nx=b-a;nz=c-a;y=a+nx*u+nz*v;}else{nx=d-c;nz=d-b;y=d-nx*(1-u)-nz*(1-v);}
   return requiredFlags && !(requiredFlags&2) || layer!==null&&layer!==0?null:{y,nx:nx/16,nz:nz/16,flags:2,layer:0,surface:0};
 }
+
+// Explicit metrics-only API. No runtime caller, admission or native-memory claim.
+// Positional native views avoid invoking table/options property accessors.
+// Capture the native getter, not view[Symbol.toStringTag]/constructor/instanceof.
+// Its internal TypedArrayName check survives a forged prototype or tag property.
+const contactShapeNativeBrand=Object.getOwnPropertyDescriptor(Object.getPrototypeOf(Uint8Array.prototype),Symbol.toStringTag).get;
+const contactShapeNativeIsView=ArrayBuffer.isView,contactShapeNativeApply=Reflect.apply;
+const contactShapeFloat32Prototype=Float32Array.prototype,contactShapeFloat64Prototype=Float64Array.prototype,contactShapeUint32Prototype=Uint32Array.prototype;
+function contactShapeLength(view,kind){
+ if(!contactShapeNativeIsView(view))throw Error('Contact shape: native view required');
+ if(Object.hasOwn(view,Symbol.toStringTag))throw Error('Contact shape: native tag shadow');
+ const brand=contactShapeNativeApply(contactShapeNativeBrand,view,[]),proto=Object.getPrototypeOf(view);
+ if(kind==='uint'?brand!=='Uint32Array'||proto!==contactShapeUint32Prototype:!(brand==='Float32Array'&&proto===contactShapeFloat32Prototype||brand==='Float64Array'&&proto===contactShapeFloat64Prototype))throw Error('Contact shape: native brand/prototype type');
+ for(const key of ['buffer','length','byteLength','byteOffset','constructor','BYTES_PER_ELEMENT'])if(Object.hasOwn(view,key))throw Error('Contact shape: layout shadow');
+ const native=Object.getPrototypeOf(Uint8Array.prototype);
+ const buffer=Reflect.apply(Object.getOwnPropertyDescriptor(native,'buffer').get,view,[]);
+ if(Object.getPrototypeOf(buffer)!==ArrayBuffer.prototype)throw Error('Contact shape: fixed ArrayBuffer required');
+ for(const key of ['byteLength','resizable','maxByteLength','detached','constructor'])if(Object.hasOwn(buffer,key))throw Error('Contact shape: backing shadow');
+ const resizing=Object.getOwnPropertyDescriptor(ArrayBuffer.prototype,'resizable');
+ if(resizing&&Reflect.apply(resizing.get,buffer,[]))throw Error('Contact shape: resizable backing');
+ const bytes=Reflect.apply(Object.getOwnPropertyDescriptor(ArrayBuffer.prototype,'byteLength').get,buffer,[]);
+ if(bytes>67108864)throw Error('Contact shape: input backing bound');
+ // Native iterator creation validates detached buffers; one fixed object/input,
+ // never one object/triangle or a count-sized list. No iterator is consumed.
+ Reflect.apply(native.values,view,[]);
+ return Reflect.apply(Object.getOwnPropertyDescriptor(native,'length').get,view,[]);
+}
+/** Counts the unchanged builder's AABB visits. Does not validate a world tile.
+ * compact is actual fineSurface presence/truthiness normalized to a boolean by
+ * an owned caller (empty typed view is present); no metadata/options callbacks.
+ */
+export function measureContactIndexShape(finePositions,fineTriangles,contactPositions,contactTriangles,compact,maxReferences=2000000){
+ if(typeof compact!=='boolean'||typeof maxReferences!=='number'||!Number.isSafeInteger(maxReferences)||maxReferences<0||maxReferences>0xffffffff)throw Error('Contact shape: mode/reference limit');
+ const fp=contactShapeLength(finePositions,'float'),ft=contactShapeLength(fineTriangles,'uint'),cp=contactShapeLength(contactPositions,'float'),ct=contactShapeLength(contactTriangles,'uint');
+ if(fp%3||cp%3||ft%3||ct%5||ft/3>=0x80000000||ct/5>=0x80000000)throw Error('Contact shape: stride/row encoding');
+ for(let i=0;i<fp;i++)if(!Number.isFinite(finePositions[i]))throw Error('Contact shape: nonfinite position');
+ for(let i=0;i<cp;i++)if(!Number.isFinite(contactPositions[i]))throw Error('Contact shape: nonfinite position');
+ let references=0,primitives=0;
+ // Scalar workspace only. Preserve compact vs legacy pass order, not a
+ // triangle-intersection approximation, half-open edge, or deduplicated fan.
+ for(let pass=0;pass<2;pass++){
+  const fine=compact?pass===0:pass===1,positions=fine?finePositions:contactPositions,triangles=fine?fineTriangles:contactTriangles,stride=fine?3:5,length=fine?ft:ct,vertices=(fine?fp:cp)/3;
+  for(let i=0;i<length;i+=stride){
+   if(triangles[i]>=vertices||triangles[i+1]>=vertices||triangles[i+2]>=vertices)throw Error('Contact shape: vertex index');
+   const a=triangles[i]*3,b=triangles[i+1]*3,c=triangles[i+2]*3;
+   const x0=Math.max(0,Math.min(31,Math.floor(Math.min(positions[a],positions[b],positions[c])/16))),x1=Math.max(0,Math.min(31,Math.floor(Math.max(positions[a],positions[b],positions[c])/16)));
+   const z0=Math.max(0,Math.min(31,Math.floor(Math.min(positions[a+2],positions[b+2],positions[c+2])/16))),z1=Math.max(0,Math.min(31,Math.floor(Math.max(positions[a+2],positions[b+2],positions[c+2])/16)));
+   const delta=(x1-x0+1)*(z1-z0+1);
+   if(!Number.isSafeInteger(delta)||delta<1||delta>1024||delta>maxReferences-references)throw Error('Contact shape: reference overflow/limit');
+   references+=delta;primitives++;
+  }
+ }
+ return Object.freeze({status:'measured',kind:'contact',fineTriangles:ft/3,contactTriangles:ct/5,primitives,references,perBucketReferenceUpper:Math.min(primitives,references),passOrder:compact?'fine-then-contact':'contact-then-fine',shapeOnly:true,admission:false,capacityClaim:false});
+}

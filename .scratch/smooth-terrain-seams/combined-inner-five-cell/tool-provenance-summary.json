@@ -1,0 +1,178 @@
+{
+  "schema": "terrain-offline-tool-summary-1",
+  "originalReceipt": {
+    "path": "/tmp/athens-terrain.uKVC/scipy-tool-receipt.json",
+    "bytes": 65758,
+    "sha256": "048b493756127e3b5083601738b24838f1c5aa6519d9e3bed4d8e24269fa158d"
+  },
+  "status": "isolated offline-analysis environment only; no LP/terrain/packer run",
+  "packages": [
+    {
+      "name": "numpy",
+      "version": "2.5.4",
+      "licenseExpression": "BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0",
+      "wheel": "numpy-2.5.4-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+      "wheelURL": "https://files.pythonhosted.org/packages/43/a3/c799c62e19c337e6d3770b08e475887fb30ce8477d3c09efca6b2f0228a6/numpy-2.5.4-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+      "wheelBytes": 16727283,
+      "wheelSHA256": "fbde6962867ee75b48b0ee29b2b9372ec5d617799dbaf38e82dc0596f2f7738a",
+      "sourceArchivesFromOfficialMetadata": [
+        {
+          "filename": "numpy-2.5.4.tar.gz",
+          "url": "https://files.pythonhosted.org/packages/95/b0/c7453d0b6e2073c3264468b106ee1563750cecc910965e67357e3698c83e/numpy-2.5.4.tar.gz",
+          "sha256": "9a94cf751c9ad8ebaa835bcd3d40dacf8534ad086b88c38029b65123c7999d2a",
+          "downloaded": false
+        }
+      ],
+      "licences": [
+        {
+          "wheelPath": "numpy-2.5.4.dist-info/licenses/LICENSE.txt",
+          "sha256": "4860083caa0de2ac3292ca98bd074bd8f45d8b32624e37b1e70a240bff61e488",
+          "bytes": 46794,
+          "localPath": "/tmp/athens-terrain.uKVC/scipy-licences/numpy-numpy-2.5.4.dist-info_licenses_LICENSE.txt"
+        },
+        {
+          "wheelPath": "numpy-2.5.4.dist-info/licenses/numpy/_core/include/numpy/libdivide/LICENSE.txt",
+          "sha256": "fbc539f47d0cf83bc61378080fb873d5c14630126cacbfe754035c3926daa5ec",
+          "bytes": 1018,
+          "localPath": "/tmp/athens-terrain.uKVC/scipy-licences/numpy-numpy-2.5.4.dist-info_licenses_numpy__core_include_numpy_libdivide_LICENSE.txt"
+        },
+        {
+          "wheelPath": "numpy-2.5.4.dist-info/licenses/numpy/_core/src/common/pythoncapi-compat/COPYING",
+          "sha256": "3f2c1ffa76383a55ae0aac01c9737cd70050dff63e1f026694fbe9d662573c98",
+          "bytes": 690,
+          "localPath": "/tmp/athens-terrain.uKVC/scipy-licences/numpy-numpy-2.5.4.dist-info_licenses_numpy__core_src_common_pythoncapi-compat_COPYING"
+        },
+        {
+          "wheelPath": "numpy-2.5.4.dist-info/licenses/numpy/_core/src/highway/LICENSE",
+          "sha256": "e340270d4f64384569a91d546acb5b094d69ce47f0c015db77abb74dc6f815af",
+          "bytes": 20785,
+          "localPath": "/tmp/athens-terrain.uKVC/scipy-licences/numpy-numpy-2.5.4.dist-info_licenses_numpy__core_src_highway_LICENSE"
+        },
+        {
+          "wheelPath": "numpy-2.5.4.dist-info/licenses/numpy/_core/src/multiarray/dragon4_LICENSE.txt",
+          "sha256": "f7b14309e5f54e5022b26448eefd419988ada2aec01d3c1162d84a0ea8f21f2c",
+          "bytes": 1414,
+          "localPath": "/tmp/athens-terrain.uKVC/scipy-licences/numpy-numpy-2.5.4.dist-info_licenses_numpy__core_src_multiarray_dragon4_LICENSE.txt"
+        },
+        {
+          "wheelPath": "numpy-2.5.4.dist-info/licenses/numpy/_core/src/npysort/x86-simd-sort/LICENSE.md",
+          "sha256": "211e7d737d6179a08f791ebb0a99897ce7cd2457410c542876d125576edfe910",
+          "bytes": 1514,
+          "localPath": "/tmp/athens-terrain.uKVC/scipy-licences/numpy-numpy-2.5.4.dist-info_licenses_numpy__core_src_npysort_x86-simd-sort_LICENSE.md"
+        },
+        {
+          "wheelPath": "numpy-2.5.4.dist-info/licenses/numpy/_core/src/umath/svml/LICENSE",
+          "sha256": "c17011467b4fe6e20fbfbeda4df09e58c2bca5480a063e55735a4000a379aad9",
+          "bytes": 1543,
+          "localPath": "/tmp/athens-terrain.uKVC/scipy-licences/numpy-numpy-2.5.4.dist-info_licenses_numpy__core_src_umath_svml_LICENSE"
+        },
+        {
+          "wheelPath": "numpy-2.5.4.dist-info/licenses/numpy/fft/pocketfft/LICENSE.md",
+          "sha256": "a85ca13fdf90160b64a0698215868c13b74d835ad0a4e2ba44713b8c5058a056",
+          "bytes": 1498,
+          "localPath": "/tmp/athens-terrain.uKVC/scipy-licences/numpy-numpy-2.5.4.dist-info_licenses_numpy_fft_pocketfft_LICENSE.md"
+        },
+        {
+          "wheelPath": "numpy-2.5.4.dist-info/licenses/numpy/linalg/lapack_lite/LICENSE.txt",
+          "sha256": "a14cc25e10d40a3aa705b7de2fb764a6535d8ee9b2db4e1724900585457dfd55",
+          "bytes": 2266,
+          "localPath": "/tmp/athens-terrain.uKVC/scipy-licences/numpy-numpy-2.5.4.dist-info_licenses_numpy_linalg_lapack_lite_LICENSE.txt"
+        },
+        {
+          "wheelPath": "numpy-2.5.4.dist-info/licenses/numpy/ma/LICENSE",
+          "sha256": "05f3b88351988ecfad10abe92c0c50e5875c6452d5009a0084cc291551ffcca6",
+          "bytes": 1593,
+          "localPath": "/tmp/athens-terrain.uKVC/scipy-licences/numpy-numpy-2.5.4.dist-info_licenses_numpy_ma_LICENSE"
+        },
+        {
+          "wheelPath": "numpy-2.5.4.dist-info/licenses/numpy/random/LICENSE.md",
+          "sha256": "103166b62b80443afb9eb3488e052ea06be0cff566b908f199e561fde49af19f",
+          "bytes": 3511,
+          "localPath": "/tmp/athens-terrain.uKVC/scipy-licences/numpy-numpy-2.5.4.dist-info_licenses_numpy_random_LICENSE.md"
+        },
+        {
+          "wheelPath": "numpy-2.5.4.dist-info/licenses/numpy/random/src/distributions/LICENSE.md",
+          "sha256": "469778be8f33d54e1bcaab28c281cc472916d2d273f835e55bc487d30503face",
+          "bytes": 2745,
+          "localPath": "/tmp/athens-terrain.uKVC/scipy-licences/numpy-numpy-2.5.4.dist-info_licenses_numpy_random_src_distributions_LICENSE.md"
+        },
+        {
+          "wheelPath": "numpy-2.5.4.dist-info/licenses/numpy/random/src/mt19937/LICENSE.md",
+          "sha256": "0e111337b25494a773106695f0e799f642b8567aaacca4f116a74a8177179156",
+          "bytes": 2926,
+          "localPath": "/tmp/athens-terrain.uKVC/scipy-licences/numpy-numpy-2.5.4.dist-info_licenses_numpy_random_src_mt19937_LICENSE.md"
+        },
+        {
+          "wheelPath": "numpy-2.5.4.dist-info/licenses/numpy/random/src/pcg64/LICENSE.md",
+          "sha256": "e7d4f4fb20358f314210a892ae17351e04993813646f697ec387385ca2a36918",
+          "bytes": 1154,
+          "localPath": "/tmp/athens-terrain.uKVC/scipy-licences/numpy-numpy-2.5.4.dist-info_licenses_numpy_random_src_pcg64_LICENSE.md"
+        },
+        {
+          "wheelPath": "numpy-2.5.4.dist-info/licenses/numpy/random/src/philox/LICENSE.md",
+          "sha256": "6f5828a57223d4cc7f8ea505a2623e7b978b242752c1515e355f46ba2cec1800",
+          "bytes": 1509,
+          "localPath": "/tmp/athens-terrain.uKVC/scipy-licences/numpy-numpy-2.5.4.dist-info_licenses_numpy_random_src_philox_LICENSE.md"
+        },
+        {
+          "wheelPath": "numpy-2.5.4.dist-info/licenses/numpy/random/src/sfc64/LICENSE.md",
+          "sha256": "9d4098846018319cd68e228ee6220361787f73bccbf00237a85e4fc9621b998f",
+          "bytes": 1226,
+          "localPath": "/tmp/athens-terrain.uKVC/scipy-licences/numpy-numpy-2.5.4.dist-info_licenses_numpy_random_src_sfc64_LICENSE.md"
+        },
+        {
+          "wheelPath": "numpy-2.5.4.dist-info/licenses/numpy/random/src/splitmix64/LICENSE.md",
+          "sha256": "268b0ca06759d31ea3ca68dd35f20e877916e927b1c2a835e4592a3c4354b1f9",
+          "bytes": 332,
+          "localPath": "/tmp/athens-terrain.uKVC/scipy-licences/numpy-numpy-2.5.4.dist-info_licenses_numpy_random_src_splitmix64_LICENSE.md"
+        }
+      ]
+    },
+    {
+      "name": "scipy",
+      "version": "1.18.1",
+      "wheel": "scipy-1.18.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+      "wheelURL": "https://files.pythonhosted.org/packages/df/64/ff35eb9e54894cf471ff4716abd3c81eb0a0626869217ce3e6ba4ccf17d7/scipy-1.18.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+      "wheelBytes": 35344199,
+      "wheelSHA256": "f55fa87b6c612ecd6b058f167c53231b1d14e412efe361d3d6e38b3631c73218",
+      "sourceArchivesFromOfficialMetadata": [
+        {
+          "filename": "scipy-1.18.1.tar.gz",
+          "url": "https://files.pythonhosted.org/packages/7e/74/66de6258867beb2ef08f35f9f2ac017a52cacd5081714d239ff1a442d458/scipy-1.18.1.tar.gz",
+          "sha256": "52c4b7422442aba924d03ad4019852b08a92e64ea187b933135687bfe2747307",
+          "downloaded": false
+        }
+      ],
+      "licences": [
+        {
+          "wheelPath": "scipy-1.18.1.dist-info/LICENSE.txt",
+          "sha256": "17e7db9ffa4913121fa2df484633a362456a482da736c99db4711a98473770ea",
+          "bytes": 46845,
+          "localPath": "/tmp/athens-terrain.uKVC/scipy-licences/scipy-scipy-1.18.1.dist-info_LICENSE.txt"
+        }
+      ],
+      "licenseMetadataText": {
+        "utf8Bytes": 55281,
+        "sha256": "b63d03a68fb79b74e34eac12de35a9f347861eafd7526ac3192d13e53f57e086",
+        "fullTextLocation": "originalReceipt.packages entry licenseExpression; exact historical metadata text, retained once in source receipt"
+      }
+    }
+  ],
+  "installedProbeHistorical": {
+    "scipy": "1.18.1",
+    "numpy": "2.5.4",
+    "sourceFiles": [
+      {
+        "path": "/tmp/athens-terrain.uKVC/scipy-venv/lib/python3.12/site-packages/scipy/optimize/_linprog.py",
+        "sha256": "66633d0193e4482a54f38f4890f15d0437aea9eacc6c2ac3b41746b81c72513d"
+      },
+      {
+        "path": "/tmp/athens-terrain.uKVC/scipy-venv/lib/python3.12/site-packages/scipy/optimize/_linprog_highs.py",
+        "sha256": "32999bba42521a001d08bd9a1a02ca663b8b7eb93b6f799f37438e062484c89a"
+      }
+    ]
+  },
+  "newNumericalImports": 0,
+  "projectDependencyAdded": false,
+  "scope": "Historical offline solver environment; V1/V2 actual jobs were Node mathematical verification only, no SciPy imports or solve."
+}

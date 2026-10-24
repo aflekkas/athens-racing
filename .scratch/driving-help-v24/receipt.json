@@ -1,0 +1,111 @@
+{
+  "schema": "driving-help-v24-scoped-proof-1",
+  "status": "VERIFIED_UI_PHASE1",
+  "candidate": "4e15a4d95c1d4ef3070a441a712080d9288716b8",
+  "tree": "5f7fe1eeb96e5edbce105e03bed9dc03658003a9",
+  "rootCSSCommit": "36e7bba75f3b38b5800b49a36bbfe1b9d0636830",
+  "servedCSSBlob": "1cb27965db8a6c77d9e1c414ff0b86c662846478",
+  "rawReport": {
+    "path": "/tmp/athens-hints.KX5T/run-after-20261023T234416Z/out/after-report.json",
+    "bytes": 216999,
+    "sha256": "9ddecbb232f9624ca6e78f5bf32e71af2ff1f3ac750c177ba87f684d728df8d5"
+  },
+  "parentVerificationSHA256": "4014851c8cdf2c78c6df294bfb403bee490bf761d734dab9a949838c9eeef63d",
+  "actualTerminal": {
+    "terminalId": "agent-7602d91c-26c5-494e-bcd7-66c1a9a1b08f",
+    "status": "exited",
+    "exitCode": 0,
+    "timedOut": false,
+    "truncated": false
+  },
+  "checks": {
+    "account fixture empty": {
+      "failures": []
+    },
+    "native readiness": {
+      "failures": []
+    },
+    "controller source": {
+      "failures": []
+    },
+    "card not expired before readiness": {
+      "failures": []
+    },
+    "card controller": {
+      "failures": []
+    },
+    "card still visible after screenshot": {
+      "failures": []
+    },
+    "pause controller": {
+      "failures": []
+    },
+    "hide": {
+      "failures": []
+    },
+    "show": {
+      "failures": []
+    },
+    "custom tow": {
+      "failures": []
+    },
+    "keyboard": {
+      "failures": []
+    },
+    "loading tips": {
+      "failures": []
+    },
+    "physics": {
+      "failures": []
+    },
+    "network and account": {
+      "failures": []
+    }
+  },
+  "decision": {
+    "fatalCount": 0,
+    "closeErrors": 0,
+    "postFailures": []
+  },
+  "mainCompleted": true,
+  "all7OriginalImageHashesMatch": true,
+  "allOwnPIDsAbsent": true,
+  "remoteBytes": 0,
+  "media": [
+    {
+      "path": "before-card-provisional.jpg",
+      "sha256": "3fd8cd2dd4f16803a5c24d5064241bc7e912d75dd149910f7477c468e39c3a08",
+      "bytes": 122496,
+      "source": "/tmp/athens-hints.KX5T/run-before-20261023T205750Z/out/before-1-card-controller.jpg",
+      "licence": "Own-game evidence capture, no third-party reference media"
+    },
+    {
+      "path": "after-card.jpg",
+      "sha256": "5bcdc64474a829309bf987fbed3b2ed1a785f3c91effdc27540fdf8d6e83739d",
+      "bytes": 120808,
+      "source": "/tmp/athens-hints.KX5T/run-after-20261023T234416Z/out/after-1-card-controller.jpg",
+      "licence": "Own-game evidence capture, no third-party reference media"
+    },
+    {
+      "path": "after-custom-tow.jpg",
+      "sha256": "5d07039b6ab5bd77a7222c48d864bf824da0427cf7fc1c74496fa3cf65cc72be",
+      "bytes": 47285,
+      "source": "/tmp/athens-hints.KX5T/run-after-20261023T234416Z/out/after-5-pause-custom-tow.jpg",
+      "licence": "Own-game evidence capture, no third-party reference media"
+    },
+    {
+      "path": "after-keyboard.jpg",
+      "sha256": "c151a9d8f4d0d071ec80bb70273e4814297422974c9e10855846c1bcc38084ab",
+      "bytes": 49463,
+      "source": "/tmp/athens-hints.KX5T/run-after-20261023T234416Z/out/after-6-pause-keyboard.jpg",
+      "licence": "Own-game evidence capture, no third-party reference media"
+    }
+  ],
+  "scope": "Historical UI pair plus empty-layer CSS only; not full-root, 8-second load, MP, physical release or causal proof of previous occlusion",
+  "beforeScope": "Before92241a37 provisional card from a run that later failed; no full BEFORE pass",
+  "knownUnobserved": [
+    "TOW loading tip not observed",
+    "real physical gamepad not tested",
+    "full combined clean archive gates not run"
+  ]
+}

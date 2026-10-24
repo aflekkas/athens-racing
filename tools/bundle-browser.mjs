@@ -49,7 +49,7 @@ export async function bundleBrowser(root, out, { three = process.env.ASR_THREE_M
         const codec = /\/(?:KTX2Loader|meshopt_decoder\.module)\.js$/.test(args.path);
         if (!path.startsWith('src/') && !codec) return;
         let source = await preserveCodecWorkerSource(args.path, await readFile(args.path, 'utf8'));
-        if (path === gate && entry !== 'src/main.js') source = source.replace("import('./main.js')", `import('./${entry.slice('src/'.length)}')`);
+        if ((path === gate || path === 'src/game-entry.js') && entry !== 'src/main.js') source = source.replace("import('./main.js')", `import('./${entry.slice('src/'.length)}')`);
         if (path === 'src/cars.js') source = source.replace(/export const CARS = \[[\s\S]*?^\];/m, "import { CARS } from 'asr:car-data'; export { CARS };");
         source = source.replace(/(import\s*\{\s*CARS\s*\}\s*from\s*)['"]\.\/?cars\.js['"]/g, "$1'asr:car-data'");
         return { contents: source.replace(/\bimport\.meta\.url\b/g, `new URL(${JSON.stringify('/' + path)}, globalThis.location.href).href`), loader: 'js', resolveDir: resolve(args.path, '..') };

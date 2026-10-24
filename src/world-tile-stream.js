@@ -1,3 +1,4 @@
+import {openTileStreamObservation,openTilePoolObservation,observeTileInterest,observeTileAdmission,observeTileRemoval,observeTileControllerAbort,observeTilePoolBind,observeTileWorkerPost,observeTilePoolPrecancel,observeTilePoolMessage,observeTileWorkerTerminate,observeTilePoolSettle,observeTileLoadError,observeTileLoadSettle,observeTileIdleTerminate,closeTileStreamObservation} from './world-tile-observation.js';
 import { TILE_METRES, tileKey, tileTables, validateWorldManifest } from './world-tile-format.js';
 import { sampleTileContact } from './world-tile-contact.js';
 
@@ -8,31 +9,37 @@ export class TileResources {
   release(key){const entry=this.entries.get(key);if(!entry)throw new Error('Unbalanced tile resource release');if(--entry.refs===0){entry.resource.dispose?.();this.entries.delete(key);this.bytes-=entry.bytes;}}
 }
 export class TileWorkerPool {
-  constructor({size=2,url=new URL('./world-tile-worker.js',import.meta.url),createWorker=u=>new Worker(u,{type:'module'})}={}) {
+  #observation=null;
+  constructor({size=2,url=new URL('./world-tile-worker.js',import.meta.url),createWorker=u=>new Worker(u,{type:'module'}),observer=null}={}) {
+    if(observer)this.#observation=openTilePoolObservation(observer);
     this.slots=Array.from({length:size},()=>({worker:null,busy:false}));this.url=url;this.createWorker=createWorker;this.nextId=0;this.downloadedBytes=0;this.disposed=false;
   }
-  load(job,signal){
-    if(this.disposed||signal?.aborted)return Promise.reject(new Error('Tile worker cancelled'));
-    const slot=this.slots.find(s=>!s.busy);if(!slot)return Promise.reject(new Error('Tile worker pool full'));
+  load(job,signal,observationContext=null){
+    if(this.disposed||signal?.aborted){if(this.#observation)observeTilePoolPrecancel(observationContext,signal?.aborted===true);return Promise.reject(new Error('Tile worker cancelled'));}
+    const slot=this.slots.find(s=>!s.busy);if(!slot){if(this.#observation)observeTileLoadError(observationContext,'pool-full');return Promise.reject(new Error('Tile worker pool full'));}
     slot.busy=true;
     return new Promise((resolve,reject)=>{
-      const worker=slot.worker??=this.createWorker(this.url),id=++this.nextId;
-      const finish=(error,packet)=>{signal?.removeEventListener('abort',abort);worker.onmessage=worker.onerror=null;slot.busy=false;slot.reject=null;error?reject(error):resolve(packet);};
+      let worker;try{worker=slot.worker??=this.createWorker(this.url);}catch(error){if(this.#observation)observeTileLoadError(observationContext,'worker-create-error');throw error;}const id=++this.nextId;
+      if(this.#observation)observeTilePoolBind(this.#observation,observationContext,id,job);
+      const finish=(error,packet)=>{if(this.#observation)observeTilePoolSettle(observationContext,!!error);signal?.removeEventListener('abort',abort);worker.onmessage=worker.onerror=null;slot.busy=false;slot.reject=null;error?reject(error):resolve(packet);};
       // Terminating also cancels synchronous decode, and bounds stale worker allocations.
-      const abort=()=>{worker.terminate();slot.worker=null;finish(new Error('Tile worker cancelled'));};
+      const abort=()=>{if(this.#observation)observeTileWorkerTerminate(observationContext,true,signal?.aborted===true);worker.terminate();slot.worker=null;finish(new Error('Tile worker cancelled'));};
       slot.reject=abort;signal?.addEventListener('abort',abort,{once:true});
-      worker.onmessage=({data})=>{if(data.id===id){if(data.downloadBytes){this.downloadedBytes+=data.downloadBytes;return;}finish(data.error?new Error(data.error):null,data.packet);}};
-      worker.onerror=e=>{worker.terminate();slot.worker=null;finish(new Error(e.message||'Tile worker failed'));};
-      try{worker.postMessage({id,job});}catch(e){worker.terminate();slot.worker=null;finish(e);}
+      worker.onmessage=({data})=>{if(this.#observation)observeTilePoolMessage(observationContext,data.id);if(data.id===id){if(data.downloadBytes){this.downloadedBytes+=data.downloadBytes;return;}finish(data.error?new Error(data.error):null,data.packet);}};
+      worker.onerror=e=>{if(this.#observation)observeTileWorkerTerminate(observationContext,false,false);worker.terminate();slot.worker=null;finish(new Error(e.message||'Tile worker failed'));};
+      try{if(this.#observation)observeTileWorkerPost(observationContext);worker.postMessage({id,job});}catch(e){if(this.#observation)observeTileWorkerTerminate(observationContext,false,false,'post-message-error');worker.terminate();slot.worker=null;finish(e);}
     });
   }
-  dispose(){if(this.disposed)return;this.disposed=true;for(const slot of this.slots){slot.reject?.();slot.worker?.terminate();slot.worker=null;}}
+  dispose(reason='unknown'){if(this.disposed)return;this.disposed=true;for(const slot of this.slots){slot.reject?.();if(this.#observation&&slot.worker)observeTileIdleTerminate(this.#observation,reason);slot.worker?.terminate();slot.worker=null;}}
 }
 /** No world data is allocated until the caller constructs this after session selection. */
 export class WorldTileStream {
-  constructor(manifest,{baseURL,load,adapter,capBytes=64*1024*1024,transientBytes=32*1024*1024,concurrency=2,nearRing=1,safetyRing=0,lookaheadSeconds=12,activationMs=4,now=()=>performance.now(),retryMs=500,pinSpawn=true}={}) {
+  #observation=null;
+  #tileObservations=null;
+  constructor(manifest,{baseURL,load,adapter,capBytes=64*1024*1024,transientBytes=32*1024*1024,concurrency=2,nearRing=1,safetyRing=0,lookaheadSeconds=12,activationMs=4,now=()=>performance.now(),retryMs=500,pinSpawn=true,observer=null}={}) {
     this.manifest=validateWorldManifest(manifest);this.baseURL=baseURL||'http://localhost/';
-    this.pool=load?null:new TileWorkerPool({size:concurrency});this.load=load||((job,signal)=>this.pool.load(job,signal));
+    if(observer){this.#observation=openTileStreamObservation(observer,manifest,String(this.baseURL));if(this.#observation)this.#tileObservations=new WeakMap();}
+    this.pool=load?null:new TileWorkerPool({size:concurrency,observer:this.#observation});this.load=load||((job,signal,context)=>this.pool.load(job,signal,context));
     this.adapter=adapter;this.capBytes=capBytes;this.transientCap=transientBytes;this.concurrency=concurrency;
     this.nearRing=nearRing;this.safetyRing=safetyRing;this.lookaheadSeconds=lookaheadSeconds;this.activationMs=activationMs;this.now=now;this.retryMs=retryMs;
     this.tiles=new Map();this.pins=new Map();this.wanted=new Map();this.origin={x:0,z:0};this.generation=0;this.disposed=false;
@@ -72,8 +79,10 @@ export class WorldTileStream {
     for(const {key,priority} of routeInterest){if(!this.entry(key)||!Number.isFinite(priority))continue;for(const d of this.dependencies(key))this.wanted.set(d,Math.min(this.wanted.get(d)??Infinity,priority));}
     for(const key of this.pins.keys())this.wanted.set(key,-1);
     if(mandatoryOnly){const allowed=new Set([...this.pins.keys(),...this.contactKeys]);for(const key of this.wanted.keys())if(!allowed.has(key))this.wanted.delete(key);}
-    // Latest-interest generation cancels stale fetches before new reservations are admitted.
-    for(const [key,tile] of this.tiles)if(!this.wanted.has(key)&&['loading','preparing'].includes(tile.state))this.remove(key);
+    // Observation epoch counts completed interest recalculations, not admissions.
+    if(this.#observation)observeTileInterest(this.#observation);
+    // Latest interest cancels stale fetches before new reservations are admitted.
+    for(const [key,tile] of this.tiles)if(!this.wanted.has(key)&&['loading','preparing'].includes(tile.state))this.remove(key,'stale-interest');
     const ox=Math.abs(x-this.origin.x)>2048?Math.floor(x/TILE_METRES)*TILE_METRES:this.origin.x;
     const oz=Math.abs(z-this.origin.z)>2048?Math.floor(z/TILE_METRES)*TILE_METRES:this.origin.z;
     if(ox!==this.origin.x||oz!==this.origin.z){const previous=this.origin;this.origin={x:ox,z:oz};this.adapter?.rebase?.(this.origin,previous);}
@@ -91,7 +100,7 @@ export class WorldTileStream {
       const admission=(this.wanted.get(key)??0)>=10?this.capBytes*.8:this.capBytes;
       while(this.residentBytes+this.reservedBytes+reserved>admission){
         const candidates=[...this.tiles].filter(([k,t])=>!this.pins.has(k)&&!this.contactKeys?.has(k)&&(!this.wanted.has(k)||this.wanted.get(k)>this.wanted.get(key))&&['active','ready','preparing'].includes(t.state)).sort((a,b)=>(this.wanted.get(b[0])??100)-(this.wanted.get(a[0])??100)||a[1].used-b[1].used);
-        if(!candidates.length)break;this.remove(candidates[0][0]);this.metrics.evictions++;
+        if(!candidates.length)break;this.remove(candidates[0][0],'admission-eviction');this.metrics.evictions++;
       }
       if(this.residentBytes+this.reservedBytes+reserved>admission)continue;
       const controller=new AbortController(),tile={state:'loading',generation:++this.generation,controller,reserved,transient,used:this.now(),attempts:(old?.attempts||0)+1};
@@ -100,11 +109,13 @@ export class WorldTileStream {
       this.metrics.peakReservedBytes=Math.max(this.metrics.peakReservedBytes,this.residentBytes+this.reservedBytes);
       tile.started=this.now();
       const job={url:new URL(entry.url,this.baseURL).href,entry,world:entry.source?.world||this.manifest.world,revision:entry.source?.revision||this.manifest.revision,cell:key.split(',').map(Number)};
-      const failed=error=>{
+      const observed=this.#observation?observeTileAdmission(this.#observation,entry,key,job.url,tile.generation,!this.pool):null;if(observed)this.#tileObservations.set(tile,observed);
+      const failed=(error,kind='loader-error')=>{
+        if(this.#observation)observeTileLoadError(observed,kind);
         if(this.tiles.get(key)!==tile||this.disposed)return;
         this.residentBytes-=tile.bytes||0;tile.bytes=0;tile.packet=null;tile.state='failed';tile.error=error;tile.retryAt=this.now()+this.retryMs*2**(tile.attempts-1);this.metrics.failures++;
       };
-      Promise.resolve().then(()=>this.load(job,controller.signal)).then(packet=>{
+      Promise.resolve().then(()=>this.#observation?this.load(job,controller.signal,observed):this.load(job,controller.signal)).then(packet=>{
         if(this.disposed||this.tiles.get(key)!==tile)return;
         if(!Number.isSafeInteger(packet.bytes)||packet.bytes<0||packet.bytes>reserved)throw new Error('Tile exceeded reservation');
         packet.tables=tileTables(packet);
@@ -120,11 +131,12 @@ export class WorldTileStream {
         // Decode has returned its transferred packet: the worker and transient
         // reservation are free even while the GPU prepares common programs.
         // Residency still accounts for this packet, and activation stays gated.
-        if(warming)Promise.resolve(warming).then(()=>{if(!this.disposed&&this.tiles.get(key)===tile)tile.state='ready';}).catch(failed);
+        if(warming)Promise.resolve(warming).then(()=>{if(!this.disposed&&this.tiles.get(key)===tile)tile.state='ready';}).catch(this.#observation?error=>failed(error,'warmup-error'):failed);
         else tile.state='ready';
       }).catch(failed).finally(()=>{
         if(tile.reserved){this.reservedBytes-=tile.reserved;tile.reserved=0;}
         this.transientBytes-=tile.transient;tile.transient=0;this.inflight--;
+        if(this.#observation)observeTileLoadSettle(observed);
         this.pump();
       });
     }
@@ -146,7 +158,7 @@ export class WorldTileStream {
           if(step.done)break;
           at=this.now();
         }while(this.now()-start<this.activationMs);
-      }catch(error){tile.build?.dispose();this.residentBytes-=tile.bytes||0;tile.bytes=0;tile.packet=null;tile.build=null;tile.state='failed';tile.error=error;tile.retryAt=this.now()+this.retryMs;this.metrics.failures++;}
+      }catch(error){if(this.#observation)observeTileLoadError(this.#tileObservations.get(tile),'activation-error');tile.build?.dispose();this.residentBytes-=tile.bytes||0;tile.bytes=0;tile.packet=null;tile.build=null;tile.state='failed';tile.error=error;tile.retryAt=this.now()+this.retryMs;this.metrics.failures++;}
       if(this.now()-start>=this.activationMs)break;
     }
     if(worked){this.metrics.activationFrameMs.push(this.now()-start);if(this.metrics.activationFrameMs.length>512)this.metrics.activationFrameMs.shift();const values=[...this.metrics.activationFrameMs].sort((a,b)=>a-b);this.metrics.p95ActivationMs=values[Math.ceil(values.length*.95)-1];}
@@ -246,11 +258,11 @@ export class WorldTileStream {
   }
   releaseSpawn(){this.spawnRelease?.();this.spawnRelease=null;}
   retry(key){const tile=this.tiles.get(key);if(tile?.state==='failed'){tile.attempts=0;tile.retryAt=0;this.pump();}}
-  remove(key){
-    const tile=this.tiles.get(key);if(!tile)return;this.tiles.delete(key);tile.controller.abort();
+  remove(key,reason='unknown'){
+    const tile=this.tiles.get(key);if(!tile)return;this.tiles.delete(key);if(this.#observation){const observed=this.#tileObservations.get(tile);observeTileRemoval(observed,reason);observeTileControllerAbort(observed);}tile.controller.abort();
     if(tile.reserved){this.reservedBytes-=tile.reserved;tile.reserved=0;}
     tile.build?.dispose?.();if(!tile.build)tile.handle?.dispose?.();
     this.residentBytes-=tile.bytes||0;tile.packet=null;tile.build=null;tile.handle=null;
   }
-  dispose(){if(this.disposed)return;this.disposed=true;for(const key of this.tiles.keys())this.remove(key);this.spawnRelease?.();this.pins.clear();this.wanted.clear();this.pool?.dispose();}
+  dispose(){if(this.disposed)return;this.disposed=true;for(const key of this.tiles.keys())this.remove(key,'stream-dispose');this.spawnRelease?.();this.pins.clear();this.wanted.clear();if(this.#observation)this.pool?.dispose('stream-dispose');else this.pool?.dispose();if(this.#observation)closeTileStreamObservation(this.#observation);}
 }

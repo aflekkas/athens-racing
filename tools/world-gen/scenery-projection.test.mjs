@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {syncBuiltinESMExports} from 'node:module';
 import {join} from 'node:path';
+import {tmpdir} from 'node:os';
 import {createHash} from 'node:crypto';
 import {encodeTile} from './pack.mjs';
 import {TILE_TABLES} from '../../src/world-tile-format.js';
@@ -20,7 +21,7 @@ function fixture(){
  const metadata={tileVersion:1,world:'synthetic',revision:'original',cell:[0,0],origin:[0,0,0],ids:['','terrain:fixture'],strings:[''],palette:[[1,1,1]],meshes:[],terrain:{coarseSize:33,spacing:16},budgets:{triangles:0,buildingTriangles:0},extensions:{worldDetail:{version:1,buildings:{facadeStyle:3,detailSeed:4},vegetation:{positionHeight:0,kind:1,seed:2}}}};
  return encodeTile({metadata,tables,arrays:[{type:'Float32Array',data:[]},{type:'Uint8Array',data:[]},{type:'Uint32Array',data:[]},{type:'Uint8Array',data:[]},{type:'Uint32Array',data:[]}]}).decoded;
 }
-function withSource(value,fn){const dir=fs.mkdtempSync('/tmp/athens-greenery.98Rc/projection-test-');try{const data=typeof value==='string'?Buffer.from(value):Buffer.from(JSON.stringify(value)),path=join(dir,'source.json');fs.writeFileSync(path,data);return fn({sourcePath:path,sourceBytes:data.length,sourceSha256:SHA(data),codeProof:code},path);}finally{fs.rmSync(dir,{recursive:true,force:true});}}
+function withSource(value,fn){const dir=fs.mkdtempSync(join(tmpdir(),'athens-projection-test-'));try{const data=typeof value==='string'?Buffer.from(value):Buffer.from(JSON.stringify(value)),path=join(dir,'source.json');fs.writeFileSync(path,data);return fn({sourcePath:path,sourceBytes:data.length,sourceSha256:SHA(data),codeProof:code},path);}finally{fs.rmSync(dir,{recursive:true,force:true});}}
 function projected(source,sel=selection){const {catalog,report}=openVerifiedSceneryCatalog(source);const p=projectScenerySupport(catalog,sel);const v=verifyScenerySupport({source,selection:sel,projectedSha256:p.projectedSha256});const consumed=consumeVerifiedScenerySupport(v.token,{cell:sel.cell,originXZ:sel.originXZ});return {p,report,consumed};}
 function equivalent(s,options={}){return withSource(s,source=>{const {p,consumed,report}=projected(source),a=fixture(),b=fixture(),before=structuredClone(a),ra=applySceneryVegetation(a,s,options),rb=applySceneryVegetation(b,consumed.scenery,options);assert.deepEqual(rb,ra);assert.deepEqual(b,a);for(let i=0;i<before.arrays.length;i++)assert.deepEqual(b.arrays[i],before.arrays[i]);assert.equal(consumed.scenery.source.unresolvedRelationMembers,3);assert.equal(consumed.scenery.counts.tree,s.counts.tree);return {p,report,ra,scenery:consumed.scenery};});}
 

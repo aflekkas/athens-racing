@@ -1,0 +1,93 @@
+{
+  "status": "V2 PINNED FIVE-CELL INNER16 FINITE-FACET MATH PASS ONLY",
+  "terminalId": "agent-f8daddc0-5b86-489e-87f4-0f05b2b03c6b",
+  "terminalExitCode": 0,
+  "terminalTimedOut": false,
+  "controllerSeconds": 19.243842027994106,
+  "finalStdout": {
+    "stage": "v2",
+    "status": "COMPLETE PINNED INNER FINITE-FACET MATH ONLY",
+    "manifestSHA256": "13d37b0b281ba62514628fbaca09c8d74358a7ae458ec61f4445f2e793b29a44",
+    "receiptSHA256": "98f2f5e152e29367ffa26dbcbb3bf588f0993ff1c266cfe2066b6023111d7d3c",
+    "savedFourRefreshed": false,
+    "completeModelVerified": true,
+    "cleanupConfirmed": true,
+    "allOwnedChildrenReaped": true,
+    "mixedProvenance": {
+      "4576,-3504": {
+        "producerRunStatus": "FAILED_RESOURCE",
+        "producerResourceRunPassed": false,
+        "mathProvenance": "generation-resource-failed; independently-verified-candidate"
+      }
+    },
+    "adopted": false,
+    "emittedCells": 0,
+    "acceptanceRequiresActualExit0": true
+  },
+  "finalStdoutSHA256": "0f25c639a185536f3ce4ef3266488239caa54f5c4d655784fe3359b802cb50f2",
+  "canonicalProvisionalReceiptSHA256": "98f2f5e152e29367ffa26dbcbb3bf588f0993ff1c266cfe2066b6023111d7d3c",
+  "files": {
+    "bundle.json": {
+      "bytes": 441909,
+      "sha256": "fac3b79c2a41e06487b4df287d320bb3dd81d23bd7fc5b695012dc68a1c88ed9"
+    },
+    "full-decomposition.log": {
+      "bytes": 318566,
+      "sha256": "a1db0ee911e8dad8f40b72f97bd392919447c48f1102ca1c5c6f30c907bbd670"
+    },
+    "full-decomposition.json": {
+      "bytes": 318566,
+      "sha256": "a1db0ee911e8dad8f40b72f97bd392919447c48f1102ca1c5c6f30c907bbd670"
+    },
+    "launch.pid": {
+      "bytes": 46,
+      "sha256": "e506680193e17d7e59a4dc36a67b4b2ca503f093dfd5353bf07686455f068bc8"
+    },
+    "receipt.json": {
+      "bytes": 570711,
+      "sha256": "98f2f5e152e29367ffa26dbcbb3bf588f0993ff1c266cfe2066b6023111d7d3c"
+    }
+  },
+  "verification": {
+    "schema": "terrain-lp-decomposition-verification-1",
+    "inputSHA256": "e85ca0c7de2cdc5f057d3e69828c41b45fea61d5bc03c595525b5e927ceaa281",
+    "mode": "inner",
+    "stage": "gradient",
+    "fullPrimalPassed": true,
+    "fullDualPassed": true,
+    "gradientVariable": 0.06135472339608899,
+    "maxEuclideanGradient": 0.0613547233960891,
+    "maxSag": 0.5000000000000004,
+    "maxAdjustment": 0.7500000000000001,
+    "maxProfileCorrection": 9.974659986866641e-18,
+    "objective": 0.06135472339608899,
+    "conservativeDualBound": 0.06135472331172854,
+    "dualityGap": 8.43604491818084e-11,
+    "optimumVerified": true,
+    "componentLowerBound": 0.06135472331172854,
+    "emittedCells": 0,
+    "geographyAccepted": false,
+    "componentCount": 7
+  },
+  "pinsAfter": 54,
+  "ownedPIDsAbsent": {
+    "1463409": true,
+    "1463410": true,
+    "1463411": true
+  },
+  "minimumObservedAvailableBytes": 20910899200,
+  "maximumSampledLiveRSSBytes": 227651584,
+  "kernelLargestReapedChildPeakBytes": 228069376,
+  "resourceScope": "isolated Linux RUSAGE_CHILDREN largest reaped child, partial live samples; not continuous/process-tree/128-client",
+  "terminalObservedFirstPoll": 0,
+  "primaryFailure": null,
+  "secondaryFailures": [],
+  "provisionalReceiptCaveat": "Snapshot precedes receipt FD final close; final stdout+actual exit0 and own process absence separately establish clean completion.",
+  "producer4576": "FAILED_RESOURCE unchanged; independently verified math provenance",
+  "geographyAccepted": false,
+  "adopted": false,
+  "emittedCells": 0,
+  "solverRuns": 0,
+  "diskBeforeAfter": "145G total74Gused71Gavailable51%",
+  "cleanup": "Own launcher/controller/Node absent, Node handle reaped0, all FD/log closures confirmed by final completion. No nextjob."
+}

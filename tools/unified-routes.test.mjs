@@ -396,3 +396,63 @@ test('actual grid validator preserves its exact 128 KiB canonical boundary',asyn
  f.body.routeId+='x';f.compiled.id=f.body.routeId;const expectedHash=await onlineGridHash(f.body),clone=globalThis.structuredClone;let clones=0;globalThis.structuredClone=(...args)=>{clones++;return clone(...args);};
  try{await assert.rejects(validateOnlineGrid(f.body,f.compiled,{expectedHash}),/budget/);assert.equal(clones,0);}finally{globalThis.structuredClone=clone;}
 });
+
+const deferredRouteRead=()=>{let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject};};
+const flushRouteReads=()=>new Promise(resolve=>setImmediate(resolve));
+const routeResponse=body=>({ok:true,json:async()=>body});
+const sharedEntry=()=>({id:'shared-route',routeHash:'a',geometryHash:'b',worldSetRevision:'c',url:'/data/routes/shared.json'});
+test('concurrent authorized selections share one pending immutable artifact',async()=>{
+ const entry=sharedEntry(),gate=deferredRouteRead(),reads=[],fetcher=async url=>{reads.push(url);return url==='/api/routes'?routeResponse({environment:'staging',routes:[entry]}):gate.promise;},query=new URLSearchParams('routes=1&route=shared-route');
+ const one=loadUnifiedRoute(query,{fetcher}),two=loadUnifiedRoute(query,{fetcher});await flushRouteReads();
+ assert.equal(reads.filter(u=>u==='/api/routes').length,2);assert.equal(reads.filter(u=>u===entry.url).length,1);
+ gate.resolve(routeResponse({...entry}));assert.equal(await one,await two);
+});
+test('immutable cache keys include every pinned route and online descriptor field and fetcher owner',async()=>{
+ const {loadConfiguredRoute}=await import('../src/unified-routes.js'),base={...sharedEntry(),onlineGrid:{schemaVersion:1,capacity:8,hash:'grid',url:'/data/routes/grid.json'}},query=new URLSearchParams('routes=1&route=shared-route');let reads=0,current;
+ const fetcher=async()=>{reads++;return routeResponse({...current});};
+ const select=async(entry,environment='staging')=>{current=entry;return loadConfiguredRoute(query,{environment,routes:[entry]},{fetcher});};
+ await select(base);await select(base);assert.equal(reads,1);
+ for(const key of ['routeHash','geometryHash','worldSetRevision','url','worldId','projectionId']){await select({...base,[key]:'changed-'+key});}
+ for(const key of ['schemaVersion','capacity','hash','url']){await select({...base,onlineGrid:{...base.onlineGrid,[key]:'changed-'+key}});}
+ await select(base,'production');assert.equal(reads,12);
+ current=base;const other=async()=>fetcher();await loadConfiguredRoute(query,{environment:'staging',routes:[base]},{fetcher:other});assert.equal(reads,13);
+});
+test('failed pending artifacts retry and stale rejection cannot evict a replacement',async()=>{
+ const {loadConfiguredRoute}=await import('../src/unified-routes.js'),entry=sharedEntry(),query=new URLSearchParams('routes=1&route=shared-route'),first=deferredRouteRead(),replacement=deferredRouteRead();let reads=0;
+ const fetcher=async url=>{if(url===entry.url){reads++;return reads===1?first.promise:replacement.promise;}return routeResponse({...entry,url});};
+ const select=e=>loadConfiguredRoute(query,{environment:'staging',routes:[e]},{fetcher});
+ const old=select(entry),failed=assert.rejects(old,/first failed/);await flushRouteReads();
+ for(let i=0;i<8;i++)await select({...entry,url:'/data/routes/other-'+i+'.json'});
+ const next=select(entry);await flushRouteReads();first.reject(Error('first failed'));await failed;
+ assert.equal(select(entry),next);replacement.resolve(routeResponse({...entry}));await next;assert.equal(reads,2);
+ const broken=async()=>{throw Error('retryable');};for(let i=0;i<2;i++)await assert.rejects(loadConfiguredRoute(query,{environment:'staging',routes:[entry]},{fetcher:broken}),/retryable/);
+});
+test('artifact verification owns its authorized tuple before download yields',async()=>{
+ const entry=sharedEntry(),original={...entry},gate=deferredRouteRead(),fetcher=async url=>url==='/api/routes'?routeResponse({environment:'staging',routes:[entry]}):gate.promise;
+ const loading=loadUnifiedRoute(new URLSearchParams('routes=1&route=shared-route'),{fetcher});await flushRouteReads();entry.routeHash='mutated';gate.resolve(routeResponse(original));assert.equal((await loading).routeHash,original.routeHash);
+});
+test('network starts compiled and grid reads concurrently and retains stable artifact owner on reconnect',async()=>{
+ const {loadNetworkRoute}=await import('../src/network-route-client.js'),f=await networkReleaseFixture(),compiled=deferredRouteRead(),grid=deferredRouteRead(),reads=[];
+ const fetcher=async url=>{reads.push(url);return url==='/api/routes'?routeResponse(f.config):url===f.entry.url?compiled.promise:grid.promise;};
+ let completed=false;const loading=loadNetworkRoute(f.lobby,{fetcher,car:{width:2.55,length:12}}).then(r=>{completed=true;return r;});await flushRouteReads();
+ assert.deepEqual(new Set(reads),new Set(['/api/routes',f.entry.url,f.entry.onlineGrid.url]));compiled.resolve(routeResponse(f.compiled));await flushRouteReads();assert.equal(completed,false);
+ grid.resolve(routeResponse(f.body));const result=await loading;assert.equal(result.onlineGrid.poses.length,8);assert.equal(result.runtime.compiled,f.compiled);
+ await loadNetworkRoute(f.lobby,{fetcher});assert.equal(reads.filter(u=>u==='/api/routes').length,2);assert.equal(reads.filter(u=>u===f.entry.url).length,1);assert.equal(reads.filter(u=>u===f.entry.onlineGrid.url).length,2);
+});
+test('network rejects authorized tuple drift before either immutable download',async()=>{
+ const {loadNetworkRoute}=await import('../src/network-route-client.js');
+ for(const key of ['routeHash','geometryHash','worldSetRevision']){const f=await networkReleaseFixture(),reads=[];f.entry[key]='e'.repeat(64);const fetcher=async url=>{reads.push(url);return routeResponse(f.config);};await assert.rejects(loadNetworkRoute(f.lobby,{fetcher}),/release/);assert.deepEqual(reads,['/api/routes']);}
+});
+test('compiled failure aborts its own grid request and a retry can succeed',async()=>{
+ const {loadNetworkRoute}=await import('../src/network-route-client.js'),f=await networkReleaseFixture();let attempts=0,aborted=false;
+ const fetcher=async(url,options)=>{if(url==='/api/routes')return routeResponse(f.config);if(url===f.entry.url){if(++attempts===1)throw Error('compiled failed');return routeResponse(f.compiled);}if(attempts>1)return routeResponse(f.body);return new Promise((resolve,reject)=>options.signal.addEventListener('abort',()=>{aborted=true;reject(Error('grid aborted'));},{once:true}));};
+ await assert.rejects(loadNetworkRoute(f.lobby,{fetcher}),/compiled failed/);assert.equal(aborted,true);assert.equal((await loadNetworkRoute(f.lobby,{fetcher})).compiled,f.compiled);
+});
+test('grid failure observes late shared artifact rejection without publishing a runtime',async()=>{
+ const {loadNetworkRoute}=await import('../src/network-route-client.js'),f=await networkReleaseFixture(),gate=deferredRouteRead(),unhandled=[];let artifactReads=0;
+ const listener=error=>unhandled.push(error);process.on('unhandledRejection',listener);
+ try{const fetcher=async url=>url==='/api/routes'?routeResponse(f.config):url===f.entry.url?(++artifactReads===1?gate.promise:routeResponse(f.compiled)):Promise.reject(Error('grid failed'));
+  await assert.rejects(loadNetworkRoute(f.lobby,{fetcher}),/grid failed/);gate.reject(Error('late artifact failed'));await flushRouteReads();assert.deepEqual(unhandled,[]);
+  await assert.rejects(loadNetworkRoute(f.lobby,{fetcher}),/grid failed/);assert.equal(artifactReads,2);
+ }finally{process.removeListener('unhandledRejection',listener);}
+});

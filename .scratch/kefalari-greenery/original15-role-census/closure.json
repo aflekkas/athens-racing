@@ -1,0 +1,914 @@
+{
+  "status": "FULLEND-METADATA-ROLE-CENSUS-ONLY-NO-CELL-ADMISSION",
+  "terminal": "agent-a70f4bc5-550e-4a44-905f-f28e6161d885",
+  "exitCode": 0,
+  "timeout": false,
+  "pidAbsent": {
+    "1468264": true,
+    "1468266": true
+  },
+  "files": {
+    "single-original15-role-census-v6-attempt1.controller.json": {
+      "bytes": 7076,
+      "sha256": "89edbb8c20397bb6f910161bf545159083c52db05450b885b89b1a3f44bd93b1"
+    },
+    "single-original15-role-census-v6-attempt1.pid": {
+      "bytes": 8,
+      "sha256": "71ddbf5669b3db8334a06771dd04471ce0f6d528af72488c926bf9c1f698575e"
+    },
+    "single-original15-role-census-v6-attempt1.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "single-original15-role-census-v6-attempt1.stdout.json": {
+      "bytes": 12780,
+      "sha256": "82597726ad8b6b59f625df75723882ed70f3e9be3ae688dd867d6f6ffa50c12b"
+    }
+  },
+  "workerStatus": "METADATA-ROLE-CENSUS-ONLY-NOT-ADMITTED",
+  "workerSchemaStatus": null,
+  "workerError": null,
+  "acceptedRoleCounts": true,
+  "monitor": {
+    "stopReason": null,
+    "rssUncertain": false,
+    "resourceCapacityClaim": false,
+    "resourceCheckPassed": true,
+    "sampledCombinedRSSPeak": 80326656,
+    "events": [
+      {
+        "state": "ALIVE_SAMPLED",
+        "rss": 659456,
+        "cpuSeconds": 0.0,
+        "uncertain": false,
+        "exit": null
+      },
+      {
+        "state": "ALIVE_SAMPLED",
+        "rss": 47419392,
+        "cpuSeconds": 0.04,
+        "uncertain": false,
+        "exit": null
+      },
+      {
+        "state": "ALIVE_SAMPLED",
+        "rss": 60919808,
+        "cpuSeconds": 0.1,
+        "uncertain": false,
+        "exit": null
+      },
+      {
+        "state": "REAPED_BEFORE_SAMPLE",
+        "rss": null,
+        "uncertain": false,
+        "exit": 0
+      }
+    ],
+    "observationCount": 4,
+    "aliveRSSObservations": 3,
+    "cleanup": {
+      "closed": true,
+      "exit": 0,
+      "actions": []
+    }
+  },
+  "elapsedSeconds": 0.17124800899182446,
+  "sourceFilesVerified": 53,
+  "counters": {
+    "originalOpens": 1,
+    "compressedBytesRead": 289767,
+    "eofProbes": 1,
+    "compressedShaAuthenticated": true
+  },
+  "phaseLedger": [
+    {
+      "phase": "bounded inflate",
+      "reservationBytes": 49245334
+    },
+    {
+      "phase": "metadata UTF8/parse",
+      "reservationBytes": 60413394
+    }
+  ],
+  "geometryArrays": 0,
+  "projection": 0,
+  "mutation": 0,
+  "pack": 0,
+  "workerResource": {
+    "userCPUTime": 83488,
+    "systemCPUTime": 28164,
+    "maxRSS": 59240,
+    "sharedMemorySize": 0,
+    "unsharedDataSize": 0,
+    "unsharedStackSize": 0,
+    "minorPageFault": 4331,
+    "majorPageFault": 0,
+    "swappedOut": 0,
+    "fsRead": 0,
+    "fsWrite": 0,
+    "ipcSent": 0,
+    "ipcReceived": 0,
+    "signalsCount": 0,
+    "voluntaryContextSwitches": 23,
+    "involuntaryContextSwitches": 0
+  },
+  "retry": 0,
+  "resourceCapacityClaim": false,
+  "originalCellAdmission": false,
+  "ordinaryEncodingPolicyLower": 69813499,
+  "targetProducerLineage": "UNKNOWN",
+  "typedMPFit": "OPEN",
+  "diskBeforeAfter": "51%74Gused71Gfree145G",
+  "acceptedMetadataRoles": {
+    "schema": "metadata-role-census-2",
+    "roadSections": {
+      "variant": "producer7-74ba9089",
+      "rows": 87
+    },
+    "vegetationClearance": {
+      "present": true,
+      "policyReferenceCount": 1,
+      "referenceShape": "version1+lowercase64hexSHA256",
+      "policyAuthentication": "UNKNOWN",
+      "clearanceGeometryValidated": false
+    },
+    "sourceIdentity": {
+      "world": "athens-east-development",
+      "revision": "2881ca7fd0b8aeea46ac66a296e14cd6033d78936fb113ffc0cb8d5015b1da39",
+      "cell": [
+        15,
+        -21
+      ]
+    },
+    "views": [
+      {
+        "viewIndex": 0,
+        "type": "Float32Array",
+        "length": 41010,
+        "offset": 0,
+        "shuffled": false,
+        "declaredBytes": 164040
+      },
+      {
+        "viewIndex": 1,
+        "type": "Uint32Array",
+        "length": 78630,
+        "offset": 164040,
+        "shuffled": false,
+        "declaredBytes": 314520
+      },
+      {
+        "viewIndex": 2,
+        "type": "Uint8Array",
+        "length": 41010,
+        "offset": 478560,
+        "shuffled": false,
+        "declaredBytes": 41010
+      },
+      {
+        "viewIndex": 3,
+        "type": "Float32Array",
+        "length": 4599,
+        "offset": 519572,
+        "shuffled": false,
+        "declaredBytes": 18396
+      },
+      {
+        "viewIndex": 4,
+        "type": "Uint16Array",
+        "length": 1533,
+        "offset": 537968,
+        "shuffled": false,
+        "declaredBytes": 3066
+      },
+      {
+        "viewIndex": 5,
+        "type": "Uint8Array",
+        "length": 370,
+        "offset": 541036,
+        "shuffled": false,
+        "declaredBytes": 370
+      },
+      {
+        "viewIndex": 6,
+        "type": "Uint32Array",
+        "length": 370,
+        "offset": 541408,
+        "shuffled": false,
+        "declaredBytes": 1480
+      },
+      {
+        "viewIndex": 7,
+        "type": "Float32Array",
+        "length": 104,
+        "offset": 542888,
+        "shuffled": false,
+        "declaredBytes": 416
+      },
+      {
+        "viewIndex": 8,
+        "type": "Uint8Array",
+        "length": 26,
+        "offset": 543304,
+        "shuffled": false,
+        "declaredBytes": 26
+      },
+      {
+        "viewIndex": 9,
+        "type": "Uint32Array",
+        "length": 26,
+        "offset": 543332,
+        "shuffled": false,
+        "declaredBytes": 104
+      },
+      {
+        "viewIndex": 10,
+        "type": "Float32Array",
+        "length": 54,
+        "offset": 543436,
+        "shuffled": false,
+        "declaredBytes": 216
+      },
+      {
+        "viewIndex": 11,
+        "type": "Uint32Array",
+        "length": 9,
+        "offset": 543652,
+        "shuffled": false,
+        "declaredBytes": 36
+      },
+      {
+        "viewIndex": 12,
+        "type": "Float32Array",
+        "length": 375,
+        "offset": 543688,
+        "shuffled": false,
+        "declaredBytes": 1500
+      },
+      {
+        "viewIndex": 13,
+        "type": "Uint8Array",
+        "length": 75,
+        "offset": 545188,
+        "shuffled": false,
+        "declaredBytes": 75
+      },
+      {
+        "viewIndex": 14,
+        "type": "Uint32Array",
+        "length": 146,
+        "offset": 545264,
+        "shuffled": false,
+        "declaredBytes": 584
+      },
+      {
+        "viewIndex": 15,
+        "type": "Float32Array",
+        "length": 219,
+        "offset": 545848,
+        "shuffled": false,
+        "declaredBytes": 876
+      },
+      {
+        "viewIndex": 16,
+        "type": "Uint32Array",
+        "length": 1120,
+        "offset": 546724,
+        "shuffled": false,
+        "declaredBytes": 4480
+      },
+      {
+        "viewIndex": 17,
+        "type": "Float32Array",
+        "length": 2721,
+        "offset": 551204,
+        "shuffled": false,
+        "declaredBytes": 10884
+      },
+      {
+        "viewIndex": 18,
+        "type": "Int8Array",
+        "length": 112,
+        "offset": 562088,
+        "shuffled": false,
+        "declaredBytes": 112
+      },
+      {
+        "viewIndex": 19,
+        "type": "Uint32Array",
+        "length": 20,
+        "offset": 562200,
+        "shuffled": false,
+        "declaredBytes": 80
+      },
+      {
+        "viewIndex": 20,
+        "type": "Uint32Array",
+        "length": 0,
+        "offset": 562280,
+        "shuffled": false,
+        "declaredBytes": 0
+      },
+      {
+        "viewIndex": 21,
+        "type": "Float32Array",
+        "length": 0,
+        "offset": 562280,
+        "shuffled": false,
+        "declaredBytes": 0
+      },
+      {
+        "viewIndex": 22,
+        "type": "Int8Array",
+        "length": 0,
+        "offset": 562280,
+        "shuffled": false,
+        "declaredBytes": 0
+      },
+      {
+        "viewIndex": 23,
+        "type": "Float32Array",
+        "length": 1089,
+        "offset": 562280,
+        "shuffled": false,
+        "declaredBytes": 4356
+      },
+      {
+        "viewIndex": 24,
+        "type": "Uint32Array",
+        "length": 1480,
+        "offset": 566636,
+        "shuffled": false,
+        "declaredBytes": 5920
+      },
+      {
+        "viewIndex": 25,
+        "type": "Float32Array",
+        "length": 5264,
+        "offset": 572556,
+        "shuffled": false,
+        "declaredBytes": 21056
+      },
+      {
+        "viewIndex": 26,
+        "type": "Float32Array",
+        "length": 740,
+        "offset": 593612,
+        "shuffled": false,
+        "declaredBytes": 2960
+      },
+      {
+        "viewIndex": 27,
+        "type": "Uint32Array",
+        "length": 345,
+        "offset": 596572,
+        "shuffled": false,
+        "declaredBytes": 1380
+      },
+      {
+        "viewIndex": 28,
+        "type": "Float32Array",
+        "length": 276,
+        "offset": 597952,
+        "shuffled": false,
+        "declaredBytes": 1104
+      },
+      {
+        "viewIndex": 29,
+        "type": "Uint32Array",
+        "length": 26210,
+        "offset": 599056,
+        "shuffled": false,
+        "declaredBytes": 104840
+      },
+      {
+        "viewIndex": 30,
+        "type": "Uint8Array",
+        "length": 26210,
+        "offset": 703896,
+        "shuffled": false,
+        "declaredBytes": 26210
+      }
+    ],
+    "tables": [
+      {
+        "role": "nodes",
+        "viewIndex": 14,
+        "type": "Uint32Array",
+        "declaredElements": 146,
+        "stride": 2,
+        "declaredRows": 73
+      },
+      {
+        "role": "nodePositions",
+        "viewIndex": 15,
+        "type": "Float32Array",
+        "declaredElements": 219,
+        "stride": 3,
+        "declaredRows": 73
+      },
+      {
+        "role": "edges",
+        "viewIndex": 16,
+        "type": "Uint32Array",
+        "declaredElements": 1120,
+        "stride": 10,
+        "declaredRows": 112
+      },
+      {
+        "role": "edgePoints",
+        "viewIndex": 17,
+        "type": "Float32Array",
+        "declaredElements": 2721,
+        "stride": 3,
+        "declaredRows": 907
+      },
+      {
+        "role": "edgeLayers",
+        "viewIndex": 18,
+        "type": "Int8Array",
+        "declaredElements": 112,
+        "stride": 1,
+        "declaredRows": 112
+      },
+      {
+        "role": "turns",
+        "viewIndex": 19,
+        "type": "Uint32Array",
+        "declaredElements": 20,
+        "stride": 4,
+        "declaredRows": 5
+      },
+      {
+        "role": "ribbons",
+        "viewIndex": 20,
+        "type": "Uint32Array",
+        "declaredElements": 0,
+        "stride": 5,
+        "declaredRows": 0
+      },
+      {
+        "role": "ribbonVertices",
+        "viewIndex": 21,
+        "type": "Float32Array",
+        "declaredElements": 0,
+        "stride": 5,
+        "declaredRows": 0
+      },
+      {
+        "role": "junctions",
+        "viewIndex": 20,
+        "type": "Uint32Array",
+        "declaredElements": 0,
+        "stride": 5,
+        "declaredRows": 0
+      },
+      {
+        "role": "junctionVertices",
+        "viewIndex": 21,
+        "type": "Float32Array",
+        "declaredElements": 0,
+        "stride": 3,
+        "declaredRows": 0
+      },
+      {
+        "role": "markings",
+        "viewIndex": 21,
+        "type": "Float32Array",
+        "declaredElements": 0,
+        "stride": 7,
+        "declaredRows": 0
+      },
+      {
+        "role": "contactPositions",
+        "viewIndex": 0,
+        "type": "Float32Array",
+        "declaredElements": 41010,
+        "stride": 3,
+        "declaredRows": 13670
+      },
+      {
+        "role": "contactTriangles",
+        "viewIndex": 20,
+        "type": "Uint32Array",
+        "declaredElements": 0,
+        "stride": 5,
+        "declaredRows": 0
+      },
+      {
+        "role": "contactLayers",
+        "viewIndex": 22,
+        "type": "Int8Array",
+        "declaredElements": 0,
+        "stride": 1,
+        "declaredRows": 0
+      },
+      {
+        "role": "coarseHeights",
+        "viewIndex": 23,
+        "type": "Float32Array",
+        "declaredElements": 1089,
+        "stride": 1,
+        "declaredRows": 1089
+      },
+      {
+        "role": "finePositions",
+        "viewIndex": 0,
+        "type": "Float32Array",
+        "declaredElements": 41010,
+        "stride": 3,
+        "declaredRows": 13670
+      },
+      {
+        "role": "fineTriangles",
+        "viewIndex": 1,
+        "type": "Uint32Array",
+        "declaredElements": 78630,
+        "stride": 3,
+        "declaredRows": 26210
+      },
+      {
+        "role": "buildings",
+        "viewIndex": 24,
+        "type": "Uint32Array",
+        "declaredElements": 1480,
+        "stride": 4,
+        "declaredRows": 370
+      },
+      {
+        "role": "buildingCorners",
+        "viewIndex": 25,
+        "type": "Float32Array",
+        "declaredElements": 5264,
+        "stride": 2,
+        "declaredRows": 2632
+      },
+      {
+        "role": "buildingHeights",
+        "viewIndex": 26,
+        "type": "Float32Array",
+        "declaredElements": 740,
+        "stride": 2,
+        "declaredRows": 370
+      },
+      {
+        "role": "signs",
+        "viewIndex": 20,
+        "type": "Uint32Array",
+        "declaredElements": 0,
+        "stride": 4,
+        "declaredRows": 0
+      },
+      {
+        "role": "signTransforms",
+        "viewIndex": 21,
+        "type": "Float32Array",
+        "declaredElements": 0,
+        "stride": 5,
+        "declaredRows": 0
+      },
+      {
+        "role": "anchors",
+        "viewIndex": 27,
+        "type": "Uint32Array",
+        "declaredElements": 345,
+        "stride": 5,
+        "declaredRows": 69
+      },
+      {
+        "role": "anchorTransforms",
+        "viewIndex": 28,
+        "type": "Float32Array",
+        "declaredElements": 276,
+        "stride": 4,
+        "declaredRows": 69
+      },
+      {
+        "role": "fineSurface",
+        "viewIndex": 29,
+        "type": "Uint32Array",
+        "declaredElements": 26210,
+        "stride": 1,
+        "declaredRows": 26210
+      },
+      {
+        "role": "fineFlags",
+        "viewIndex": 30,
+        "type": "Uint8Array",
+        "declaredElements": 26210,
+        "stride": 1,
+        "declaredRows": 26210
+      }
+    ],
+    "declaredReferenceGroups": [
+      {
+        "viewIndex": 0,
+        "roles": [
+          "table:contactPositions",
+          "table:finePositions",
+          "mesh:0:position",
+          "mesh:1:position",
+          "mesh:2:position",
+          "mesh:3:position",
+          "mesh:5:position",
+          "mesh:6:position"
+        ],
+        "declaredSameIndexAlias": true
+      },
+      {
+        "viewIndex": 1,
+        "roles": [
+          "table:fineTriangles",
+          "mesh:0:index",
+          "mesh:1:index",
+          "mesh:2:index",
+          "mesh:3:index",
+          "mesh:5:index",
+          "mesh:6:index"
+        ],
+        "declaredSameIndexAlias": true
+      },
+      {
+        "viewIndex": 2,
+        "roles": [
+          "mesh:0:color",
+          "mesh:1:color"
+        ],
+        "declaredSameIndexAlias": true
+      },
+      {
+        "viewIndex": 3,
+        "roles": [
+          "mesh:4:position"
+        ],
+        "declaredSameIndexAlias": false
+      },
+      {
+        "viewIndex": 4,
+        "roles": [
+          "mesh:4:index"
+        ],
+        "declaredSameIndexAlias": false
+      },
+      {
+        "viewIndex": 5,
+        "roles": [
+          "buildingStyle:facadeStyle"
+        ],
+        "declaredSameIndexAlias": false
+      },
+      {
+        "viewIndex": 6,
+        "roles": [
+          "buildingStyle:detailSeed"
+        ],
+        "declaredSameIndexAlias": false
+      },
+      {
+        "viewIndex": 7,
+        "roles": [
+          "vegetation:positionHeight"
+        ],
+        "declaredSameIndexAlias": false
+      },
+      {
+        "viewIndex": 8,
+        "roles": [
+          "vegetation:kind"
+        ],
+        "declaredSameIndexAlias": false
+      },
+      {
+        "viewIndex": 9,
+        "roles": [
+          "vegetation:seed"
+        ],
+        "declaredSameIndexAlias": false
+      },
+      {
+        "viewIndex": 10,
+        "roles": [
+          "signals:rows"
+        ],
+        "declaredSameIndexAlias": false
+      },
+      {
+        "viewIndex": 11,
+        "roles": [
+          "signals:edge"
+        ],
+        "declaredSameIndexAlias": false
+      },
+      {
+        "viewIndex": 12,
+        "roles": [
+          "props:rows"
+        ],
+        "declaredSameIndexAlias": false
+      },
+      {
+        "viewIndex": 13,
+        "roles": [
+          "props:kind"
+        ],
+        "declaredSameIndexAlias": false
+      },
+      {
+        "viewIndex": 14,
+        "roles": [
+          "table:nodes"
+        ],
+        "declaredSameIndexAlias": false
+      },
+      {
+        "viewIndex": 15,
+        "roles": [
+          "table:nodePositions"
+        ],
+        "declaredSameIndexAlias": false
+      },
+      {
+        "viewIndex": 16,
+        "roles": [
+          "table:edges"
+        ],
+        "declaredSameIndexAlias": false
+      },
+      {
+        "viewIndex": 17,
+        "roles": [
+          "table:edgePoints"
+        ],
+        "declaredSameIndexAlias": false
+      },
+      {
+        "viewIndex": 18,
+        "roles": [
+          "table:edgeLayers"
+        ],
+        "declaredSameIndexAlias": false
+      },
+      {
+        "viewIndex": 19,
+        "roles": [
+          "table:turns"
+        ],
+        "declaredSameIndexAlias": false
+      },
+      {
+        "viewIndex": 20,
+        "roles": [
+          "table:ribbons",
+          "table:junctions",
+          "table:contactTriangles",
+          "table:signs"
+        ],
+        "declaredSameIndexAlias": true
+      },
+      {
+        "viewIndex": 21,
+        "roles": [
+          "table:ribbonVertices",
+          "table:junctionVertices",
+          "table:markings",
+          "table:signTransforms"
+        ],
+        "declaredSameIndexAlias": true
+      },
+      {
+        "viewIndex": 22,
+        "roles": [
+          "table:contactLayers"
+        ],
+        "declaredSameIndexAlias": false
+      },
+      {
+        "viewIndex": 23,
+        "roles": [
+          "table:coarseHeights"
+        ],
+        "declaredSameIndexAlias": false
+      },
+      {
+        "viewIndex": 24,
+        "roles": [
+          "table:buildings"
+        ],
+        "declaredSameIndexAlias": false
+      },
+      {
+        "viewIndex": 25,
+        "roles": [
+          "table:buildingCorners"
+        ],
+        "declaredSameIndexAlias": false
+      },
+      {
+        "viewIndex": 26,
+        "roles": [
+          "table:buildingHeights"
+        ],
+        "declaredSameIndexAlias": false
+      },
+      {
+        "viewIndex": 27,
+        "roles": [
+          "table:anchors"
+        ],
+        "declaredSameIndexAlias": false
+      },
+      {
+        "viewIndex": 28,
+        "roles": [
+          "table:anchorTransforms"
+        ],
+        "declaredSameIndexAlias": false
+      },
+      {
+        "viewIndex": 29,
+        "roles": [
+          "table:fineSurface"
+        ],
+        "declaredSameIndexAlias": false
+      },
+      {
+        "viewIndex": 30,
+        "roles": [
+          "table:fineFlags"
+        ],
+        "declaredSameIndexAlias": false
+      }
+    ],
+    "referenceCount": 51,
+    "referencedViewCount": 31,
+    "unreferencedViewCount": 0,
+    "aliasMeaning": "metadata view-index references ONLY; actual decoded intrinsic backing aliases UNKNOWN",
+    "actualDecodedBackingAlias": "UNKNOWN",
+    "metadataSummary": {
+      "nodes": 1857,
+      "objects": 82,
+      "arrays": 114,
+      "numbers": 650,
+      "booleans": 49,
+      "nulls": 0,
+      "stringValues": 962,
+      "stringUTF16Units": 22081,
+      "objectKeys": 394,
+      "keyUTF16Units": 3275,
+      "maxDepth": 5,
+      "policyHeapBytes": 379376,
+      "policyJSONCharUpper": 178535
+    },
+    "stringTables": {
+      "idCount": 718,
+      "idUTF16Units": 19899,
+      "stringCount": 17,
+      "stringUTF16Units": 177
+    },
+    "roles": {
+      "buildingRows": 370,
+      "cornerPairs": 2632,
+      "styles": [
+        {
+          "role": "facadeStyle",
+          "viewIndex": 5,
+          "declaredRows": 370
+        },
+        {
+          "role": "detailSeed",
+          "viewIndex": 6,
+          "declaredRows": 370
+        }
+      ],
+      "vegetation": {
+        "positionHeightView": 7,
+        "kindView": 8,
+        "seedView": 9,
+        "declaredRows": 26
+      },
+      "propRows": 75,
+      "signalRows": 9,
+      "meshes": 7,
+      "meshAttributeReferences": 9,
+      "meshIndexReferences": 7,
+      "guardMeshes": 0,
+      "clearancePolicyReferences": 1,
+      "structures": 0,
+      "rails": 0,
+      "safetyRails": 0,
+      "tunnelBores": 0,
+      "derivedBuildingWire": true
+    },
+    "compact": {
+      "fineSurfacePresent": true,
+      "fineFlagsPresent": true,
+      "fineTriangleRows": 26210,
+      "contactTriangleRows": 0
+    },
+    "declaredArrayBytes": 730097,
+    "declaredArrayElements": 234143,
+    "physicalGeometryValidated": false,
+    "fullTileValidation": false,
+    "meshAttributeTypeSemantics": "known ASR typed descriptors + itemSize divisibility only; semantic attribute/geometry validation NOT performed"
+  }
+}

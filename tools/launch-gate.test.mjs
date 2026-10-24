@@ -139,5 +139,5 @@ test('the answers the page entry already asked for are used, not asked for again
     assert.ok(!calls.includes('/api/auth/config') && !calls.includes('/api/auth/session'), `fetched again: ${calls}`);
   } finally { delete globalThis.__authPrefetch; }
   const entry = readFileSync(new URL('../src/entry.js', import.meta.url), 'utf8');
-  assert.ok(entry.indexOf("__authPrefetch") < entry.indexOf("await import('./main.js')"), 'the check starts before the game loads');
+  assert.ok(entry.indexOf("__authPrefetch") < entry.indexOf("await import('./game-entry.js')"), 'the check starts before the game loads');
 });

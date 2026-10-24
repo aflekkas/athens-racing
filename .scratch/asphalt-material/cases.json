@@ -1,0 +1,190 @@
+[
+  {
+    "id": "500-asphalt-near",
+    "spawn": [
+      4701.523459205332,
+      19099.484095999986
+    ],
+    "camera": {
+      "position": [
+        4701.523459205332,
+        11.756925763426436,
+        19099.484095999986
+      ],
+      "lookAt": [
+        4629.3232804386425,
+        11.756925763426436,
+        19168.67321498598
+      ],
+      "fov": 64.0107664
+    },
+    "pickPixels": [
+      [
+        550,
+        650
+      ],
+      [
+        640,
+        650
+      ],
+      [
+        800,
+        650
+      ],
+      [
+        450,
+        720
+      ],
+      [
+        850,
+        720
+      ]
+    ],
+    "limits": [
+      "Own-game static camera metadata reused as a requested pose only; NEW before/after captures required.",
+      "Eye height2.5m is an assumption, not surveyed road/source fidelity.",
+      "Must verify visible asphalt triangle/material and foreground safety; no camera hunting after failed pick."
+    ]
+  },
+  {
+    "id": "500-asphalt-far",
+    "spawn": [
+      4701.523459205332,
+      19099.484095999986
+    ],
+    "camera": {
+      "position": [
+        4710.187480657335,
+        11.756925763426436,
+        19091.181401721667
+      ],
+      "lookAt": [
+        4637.9873018906455,
+        11.756925763426436,
+        19160.370520707664
+      ],
+      "fov": 64.0107664
+    },
+    "pickPixels": [
+      [
+        550,
+        650
+      ],
+      [
+        640,
+        650
+      ],
+      [
+        800,
+        650
+      ],
+      [
+        450,
+        720
+      ],
+      [
+        850,
+        720
+      ]
+    ],
+    "limits": [
+      "Own-game static camera metadata reused as a requested pose only; NEW before/after captures required.",
+      "Eye height2.5m is an assumption, not surveyed road/source fidelity.",
+      "Must verify visible asphalt triangle/material and foreground safety; no camera hunting after failed pick."
+    ]
+  },
+  {
+    "id": "3000-asphalt-near",
+    "spawn": [
+      5921.103812719877,
+      19612.37986399972
+    ],
+    "camera": {
+      "position": [
+        5921.103812719877,
+        20.424224079641334,
+        19612.37986399972
+      ],
+      "lookAt": [
+        5871.345847275811,
+        20.424224079641334,
+        19525.63803513459
+      ],
+      "fov": 64.0107664
+    },
+    "pickPixels": [
+      [
+        550,
+        650
+      ],
+      [
+        640,
+        650
+      ],
+      [
+        800,
+        650
+      ],
+      [
+        450,
+        720
+      ],
+      [
+        850,
+        720
+      ]
+    ],
+    "limits": [
+      "Own-game static camera metadata reused as a requested pose only; NEW before/after captures required.",
+      "Eye height2.5m is an assumption, not surveyed road/source fidelity.",
+      "Must verify visible asphalt triangle/material and foreground safety; no camera hunting after failed pick."
+    ]
+  },
+  {
+    "id": "3000-asphalt-far",
+    "spawn": [
+      5921.103812719877,
+      19612.37986399972
+    ],
+    "camera": {
+      "position": [
+        5927.074768573165,
+        20.424224079641334,
+        19622.788883463534
+      ],
+      "lookAt": [
+        5877.316803129099,
+        20.424224079641334,
+        19536.047054598406
+      ],
+      "fov": 64.0107664
+    },
+    "pickPixels": [
+      [
+        550,
+        650
+      ],
+      [
+        640,
+        650
+      ],
+      [
+        800,
+        650
+      ],
+      [
+        450,
+        720
+      ],
+      [
+        850,
+        720
+      ]
+    ],
+    "limits": [
+      "Own-game static camera metadata reused as a requested pose only; NEW before/after captures required.",
+      "Eye height2.5m is an assumption, not surveyed road/source fidelity.",
+      "Must verify visible asphalt triangle/material and foreground safety; no camera hunting after failed pick."
+    ]
+  }
+]

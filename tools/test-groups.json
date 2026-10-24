@@ -1,5 +1,17 @@
 {
   "unit": [
+    "tools/world-tile-index-shape.test.mjs",
+    "tools/material-proof-cleanup.test.mjs",
+    "tools/material-proof-deadline.test.mjs",
+    "tools/material-proof-egress.test.mjs",
+    "tools/material-proof-trace.test.mjs",
+    "tools/bundle-world-assets.test.mjs",
+    "tools/bundle-route-host.test.mjs",
+    "tools/protected-world-manifest.test.mjs",
+    "tools/world-tile-observation.test.mjs",
+    "tools/athens-direct-spawn.test.mjs",
+    "tools/game-entry.test.mjs",
+    "tools/map-entry.test.mjs",
     "tools/structure-domains/context-domain-plan.test.mjs",
     "tools/auth-prefetch.test.mjs",
     "tools/fleet-prewarm.test.mjs",
