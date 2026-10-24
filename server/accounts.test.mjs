@@ -790,12 +790,83 @@ test('public Worker denies anonymous gameplay before forwarding to the arena', a
 });
 
 
-test('the client closes the gate at the session expiry deadline', async () => {
-  const client = new AccountsClient({ storage: null }); client.ready = true;
-  client.setSession({ user: { id: 'driver', displayName: 'ATHENA' }, expires: Date.now() + 10 });
+function sessionClock(t) {
+  let now = 1000;
+  const timers = [];
+  t.mock.method(Date, 'now', () => now);
+  t.mock.method(globalThis, 'setTimeout', (callback, delay) => {
+    const timer = { callback, delay, unref() {} };
+    timers.push(timer);
+    return timer;
+  });
+  t.mock.method(globalThis, 'clearTimeout', timer => { if (timer) timer.cleared = true; });
+  return { timers, at(value) { now = value; } };
+}
+
+function timedClient() {
+  let requests = 0;
+  const client = new AccountsClient({ storage: null, fetcher: () => {
+    requests++;
+    throw new Error('Session timer must not fetch');
+  } });
+  client.ready = true;
+  return { client, requests: () => requests };
+}
+
+const timerUser = { id: 'driver', displayName: 'ATHENA' };
+
+test('the client closes the gate at the session expiry deadline', t => {
+  const clock = sessionClock(t), { client, requests } = timedClient();
+  client.setSession({ user: timerUser, expires: 1010 });
   assert.equal(client.blocked, false);
-  await new Promise(resolve => setTimeout(resolve, 30));
+  assert.equal(clock.timers[0].delay, 10);
+  clock.at(1010); clock.timers[0].callback();
   assert.equal(client.blocked, true); assert.match(client.error, /expired/);
+  assert.equal(requests(), 0);
+});
+
+test('an early session timer re-arms without fetching or closing the gate', t => {
+  const clock = sessionClock(t), { client, requests } = timedClient();
+  client.setSession({ user: timerUser, expires: 1010 });
+  clock.at(1009); clock.timers[0].callback();
+  assert.equal(client.blocked, false);
+  assert.equal(clock.timers.length, 2); assert.equal(clock.timers[1].delay, 1);
+  assert.equal(requests(), 0);
+  clock.at(1010); clock.timers[1].callback();
+  assert.equal(client.blocked, true); assert.match(client.error, /expired/);
+});
+
+test('a capped long session timer waits for its actual deadline', t => {
+  const clock = sessionClock(t), { client, requests } = timedClient();
+  const expires = 1000 + 2147483647 + 500;
+  client.setSession({ user: timerUser, expires });
+  assert.equal(clock.timers[0].delay, 2147483647);
+  clock.at(expires - 500); clock.timers[0].callback();
+  assert.equal(client.blocked, false); assert.equal(clock.timers[1].delay, 500);
+  assert.equal(requests(), 0);
+  clock.at(expires); clock.timers[1].callback();
+  assert.equal(client.blocked, true); assert.match(client.error, /expired/);
+});
+
+test('a replaced session ignores an already queued old timer callback', t => {
+  const clock = sessionClock(t), { client, requests } = timedClient();
+  client.setSession({ user: timerUser, expires: 1010 });
+  const oldTimer = clock.timers[0];
+  client.setSession({ user: timerUser, expires: 1100 });
+  assert.equal(oldTimer.cleared, true);
+  clock.at(1010); oldTimer.callback();
+  assert.equal(client.blocked, false); assert.equal(clock.timers.length, 2);
+  clock.at(1100); clock.timers[1].callback();
+  assert.equal(client.blocked, true); assert.equal(requests(), 0);
+});
+
+test('disconnect invalidates an already queued session timer callback', t => {
+  const clock = sessionClock(t), { client, requests } = timedClient();
+  client.setSession({ user: timerUser, expires: 1010 });
+  client.disconnect(); client.error = 'Signed out';
+  clock.at(1010); clock.timers[0].callback();
+  assert.equal(client.blocked, true); assert.equal(client.error, 'Signed out');
+  assert.equal(clock.timers.length, 1); assert.equal(requests(), 0);
 });
 
 // Owner 2026-10-20: the launch screen checks the session and refreshes it if needed.
