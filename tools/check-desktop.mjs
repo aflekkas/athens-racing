@@ -20,10 +20,30 @@ let application, page, primary;
 async function unlockFreeAudio() {
   assert.ok(await page.evaluate(() => window.__athens?.audio === window.__bootAudio && !!window.__athens?.audio), 'free roam must wire the shared real Audio graph');
   await page.keyboard.press('w');
-  await page.waitForFunction(() => {
-    const view = window.__athens, audio = view?.audio;
-    return audio?.ctx?.state === 'running' && audio.engineSpec?.id === view.player.spec.id && audio.recordingState === 'recorded' && !!audio.engineVoice;
-  }, null, { timeout: 30000 });
+  try {
+    await page.waitForFunction(() => {
+      const view = window.__athens, audio = view?.audio;
+      return audio?.ctx?.state === 'running' && audio.engineSpec?.id === view.player.spec.id && audio.recordingState === 'recorded' && !!audio.engineVoice;
+    }, null, { timeout: 30000 });
+  } catch (error) {
+    // Preserve the failing condition before teardown. A combined timeout cannot
+    // distinguish a host output-device problem from a missing engine bank.
+    const state = await page.evaluate(() => {
+      const view = window.__athens, audio = view?.audio, ctx = audio?.ctx;
+      let health = null, healthError = null;
+      try { health = audio?.health?.(); } catch (error) { healthError = String(error); }
+      return { hidden: document.hidden, visibility: document.visibilityState, focused: document.hasFocus(),
+        userActivation: navigator.userActivation && { active: navigator.userActivation.isActive, everActive: navigator.userActivation.hasBeenActive },
+        sharedGraph: !!audio && audio === window.__bootAudio, started: audio?.started ?? false,
+        context: ctx?.state ?? null, currentTime: ctx?.currentTime ?? null, sampleRate: ctx?.sampleRate ?? null,
+        selectedCar: audio?.engineSpec?.id ?? null, playerCar: view?.player?.spec?.id ?? null,
+        recording: audio?.recordingState ?? null, engineVoice: !!audio?.engineVoice, recordedBank: !!audio?.recordedBank,
+        health, healthError, paused: view?.paused ?? null, frames: view?.stats?.frames ?? null };
+    }).catch(error => ({ diagnosticError: String(error) }));
+    (metrics.freeRoamAudioFailures ||= []).push(state);
+    console.error('Native free-roam audio readiness failure:', JSON.stringify(state));
+    throw error;
+  }
 }
 async function recordFreeAudio(label) {
   const snapshot = await page.evaluate(async () => {

@@ -124,3 +124,19 @@ test('native driving flow completes six race drives before both real free-roam P
  assert.deepEqual(trace.filter(e=>e[0]==='audio').map(e=>e[1]),['first entry driving','second entry driving']);
  assert.deepEqual(trace.filter(e=>e[0]==='disposed').map(e=>e[1]),['first disposal','second disposal']);
 });
+
+
+test('native audio timeout preserves real per-condition diagnostics and fails closed',async()=>{
+ const source=await readFile(new URL('./check-desktop.mjs',import.meta.url),'utf8');
+ const begin=source.indexOf('async function unlockFreeAudio()'),end=source.indexOf('async function recordFreeAudio(',begin);
+ const failure=new Error('real readiness timeout'),metrics={},logs=[],audio={started:true,ctx:{state:'suspended',currentTime:0,sampleRate:48000},engineSpec:{id:'aventador_svj'},recordingState:'loading',health:()=>({state:'suspended'})};
+ const context={assert,metrics,window:{__athens:{audio,player:{spec:{id:'aventador_svj'}},stats:{frames:31},paused:false},__bootAudio:audio},
+  document:{hidden:false,visibilityState:'visible',hasFocus:()=>true},navigator:{userActivation:{isActive:false,hasBeenActive:true}},console:{error:(...args)=>logs.push(args)},
+  page:{evaluate:async fn=>fn(),keyboard:{press:async()=>{}},waitForFunction:async()=>{throw failure;}}};
+ await assert.rejects(vm.runInNewContext('(async()=>{'+source.slice(begin,end)+';await unlockFreeAudio();})()',context),error=>error===failure);
+ const state=metrics.freeRoamAudioFailures[0];
+ assert.equal(state.context,'suspended');assert.equal(state.recording,'loading');assert.equal(state.engineVoice,false);assert.equal(state.recordedBank,false);
+ assert.equal(state.selectedCar,'aventador_svj');assert.equal(state.playerCar,'aventador_svj');assert.equal(state.sharedGraph,true);
+ assert.equal(state.focused,true);assert.equal(state.userActivation.everActive,true);assert.equal(state.frames,31);
+ assert.equal(logs.length,1);assert.match(logs[0][1],/"context":"suspended"/);
+});
