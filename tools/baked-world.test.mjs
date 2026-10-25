@@ -40,11 +40,12 @@ for (const id of ['riviera', 'penteli', 'psychiko']) test(`baked ${id} exactly e
   // Normal gate still compares every real generated attribute and index. The
   // nightly path also exercises the expensive gzip-based shuffling heuristic.
   const world = await worldFixture(id);
-  const bake = process.env.ASR_TEST_FULL === '1' ? world : {
+  const bake = process.env.ASR_TEST_FULL === '1' ? { ...world, terrain: world.terrainPack } : {
     ...world,
     terrain: packGroup(world.terrainGroup, { map: id, grid: world.map.terrain.GX * world.map.terrain.GZ, height: 0, source: 1 }, [world.map.terrain.Hc, world.network.source], arrays => arrays.map((_, i) => i % 2 === 0)),
     roads: packGroup(world.roadsGroup, { map: id, grid: world.map.terrain.GX * world.map.terrain.GZ, stats: { triangles: world.network.stats.triangles, tiles: world.network.stats.tiles } }, [], arrays => arrays.map((_, i) => i % 2 === 0)),
   };
+  assert.ok(bake.terrain instanceof ArrayBuffer, id + ' fixture retains its encoded terrain pack');
   const terrainPack = roundTrip(bake.terrain), roadsPack = roundTrip(bake.roads);
   // The worker uses raw (unshuffled) transferable packs; build bakes choose gzip-friendly byte planes.
   const workerTerrain = decodeGeometryPack(packGroup(bake.terrainGroup, { map: id, grid: bake.map.terrain.GX * bake.map.terrain.GZ, height: 0, source: 1 }, [bake.map.terrain.Hc, bake.network.source]));

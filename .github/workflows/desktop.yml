@@ -1,0 +1,99 @@
+name: Desktop installers
+
+# Explicitly requested builds only: this workflow never publishes a release or
+# changes the hosted deployment. A single Linux job materializes the world once.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.3
+          cache: npm
+      - name: Verify the exact source-gate runtime
+        run: node -e "if(process.platform!=='linux'||process.arch!=='x64'||process.versions.node!=='22.23.3'||process.versions.openssl!=='3.5.8')throw Error('Source gates require the reviewed Linux x64 Node/OpenSSL runtime')"
+      - run: npm ci
+      - name: Complete source gates on the reviewed runtime
+        run: |
+          npm test
+          node --import ./tools/physics-test/register.mjs tools/physics-test/regress.mjs
+          node tools/check-browser-imports.mjs
+          node tools/check-syntax.mjs
+        env:
+          ASR_TEST_JOBS: '2'
+      - run: npm run test:desktop
+      - run: npm run desktop:export-world
+      - run: npm run desktop:repair-world
+      - run: npm run desktop:prepare-online
+      - run: npm run desktop:prepare
+      - uses: actions/upload-artifact@v4
+        with:
+          name: offline-game-payload
+          path: .desktop/game/
+          include-hidden-files: true
+          compression-level: 0
+          retention-days: 7
+
+  package:
+    needs: prepare
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.3
+          cache: npm
+      - run: npm ci
+      - run: npm run test:desktop
+      - uses: actions/download-artifact@v4
+        with:
+          name: offline-game-payload
+          path: .desktop/game
+      - name: Build native installer and standalone application
+        run: npx electron-builder --config apps/desktop/electron-builder.yml --publish never
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      # GUI gates run serially under the repository's shared browser lock. Each
+      # Linux application is the packaged executable, with no system Node needed.
+      - name: Install Linux desktop test libraries
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb libgbm1 libgtk-3-0 libnss3 libasound2t64
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+      - name: Test installed Linux solo routes and persistence
+        if: runner.os == 'Linux'
+        run: xvfb-run -a bash tools/browser-slot.sh node tools/check-desktop.mjs
+        env:
+          DESKTOP_EXECUTABLE: ${{ github.workspace }}/.desktop/dist/linux-unpacked/athens-racing
+      - name: Test installed Linux two-player LAN
+        if: runner.os == 'Linux'
+        run: xvfb-run -a bash tools/browser-slot.sh node tools/check-desktop-lan.mjs
+        env:
+          DESKTOP_EXECUTABLE: ${{ github.workspace }}/.desktop/dist/linux-unpacked/athens-racing
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: desktop-${{ runner.os }}-${{ runner.arch }}
+          include-hidden-files: true
+          path: |
+            .desktop/dist/*.dmg
+            .desktop/dist/*.zip
+            .desktop/dist/*.exe
+            .desktop/dist/*.AppImage
+            .scratch/desktop-check/
+          if-no-files-found: warn
+          retention-days: 14

@@ -1,0 +1,20 @@
+Barlow and Barlow Condensed
+Copyright 2017 The Barlow Project Authors (https://github.com/jpt/barlow).
+SIL Open Font License 1.1; see OFL.txt. Fonts redistributed unmodified.
+Downloaded 2026-10-24 from the Google Fonts source repository:
+https://raw.githubusercontent.com/google/fonts/main/ofl/barlow/Barlow-Light.ttf
+https://raw.githubusercontent.com/google/fonts/main/ofl/barlow/Barlow-Regular.ttf
+https://raw.githubusercontent.com/google/fonts/main/ofl/barlow/Barlow-Medium.ttf
+https://raw.githubusercontent.com/google/fonts/main/ofl/barlow/Barlow-SemiBold.ttf
+https://raw.githubusercontent.com/google/fonts/main/ofl/barlow/Barlow-Bold.ttf
+https://raw.githubusercontent.com/google/fonts/main/ofl/barlowcondensed/BarlowCondensed-Medium.ttf
+https://raw.githubusercontent.com/google/fonts/main/ofl/barlowcondensed/BarlowCondensed-SemiBold.ttf
+https://raw.githubusercontent.com/google/fonts/main/ofl/barlowcondensed/BarlowCondensed-Bold.ttf
+https://raw.githubusercontent.com/google/fonts/main/ofl/barlowcondensed/BarlowCondensed-ExtraBold.ttf
+https://raw.githubusercontent.com/google/fonts/main/ofl/barlowcondensed/BarlowCondensed-Black.ttf
+https://raw.githubusercontent.com/google/fonts/main/ofl/barlowcondensed/BarlowCondensed-SemiBoldItalic.ttf
+https://raw.githubusercontent.com/google/fonts/main/ofl/barlowcondensed/BarlowCondensed-BoldItalic.ttf
+https://raw.githubusercontent.com/google/fonts/main/ofl/barlowcondensed/BarlowCondensed-ExtraBoldItalic.ttf
+https://raw.githubusercontent.com/google/fonts/main/ofl/barlowcondensed/BarlowCondensed-BlackItalic.ttf
+https://raw.githubusercontent.com/google/fonts/main/ofl/barlow/OFL.txt
+The desktop package uses these local files; no Google Fonts service is contacted.

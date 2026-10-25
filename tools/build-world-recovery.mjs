@@ -1,3 +1,4 @@
+import { recoveryCellSourceHash } from '../server/recovery-manifest-wire.mjs';
 import {encodeRecoverySidecar} from '../server/route-road-wire.mjs';
 import {admitRecoverySidecar} from '../server/route-road-stream.mjs';
 import {recoveryRoadGroup,recoveryRoadTwins} from '../src/world-road-group.js';
@@ -25,7 +26,7 @@ export function recoveryWorldRegistry(manifest){
 }
 export function assertRecoveryCoverage(manifest,registry){
  const expected=registry.sourceHashes,actual=Object.entries(manifest.cells).sort(([a],[b])=>a.localeCompare(b));
- if(manifest.worldSetRevision!==registry.worldSetRevision||actual.length!==expected.length||actual.some(([k,e],i)=>k!==expected[i][0]||e.sourceHash!==expected[i][1]))throw Error('Recovery manifest does not cover the complete active world');
+ if(manifest.worldSetRevision!==registry.worldSetRevision||actual.length!==expected.length||actual.some(([k,e],i)=>k!==expected[i][0]||recoveryCellSourceHash(manifest,k)!==expected[i][1]))throw Error('Recovery manifest does not cover the complete active world');
 }
 export function recoveryNeighborhood(key,manifest){
  const [x,z]=key.split(',').map(Number),keys=new Set();for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++){const k=`${x+dx},${z+dz}`;if(manifest.tiles[k])keys.add(k);}return keys;
@@ -34,13 +35,14 @@ export function proveRecoveryCell(key,world,profiles,{spacingM=4,onEdge=()=>{},o
  if(!(spacingM>0&&spacingM<=4))throw Error('Recovery sampling must be at most four metres');
  const packet=world.tiles.get(key)?.packet;if(!packet)throw Error('Missing recovery owner: '+key);
  const ids=new Set((packet.roadGraph||readGraphShard(packet)).edges.filter(e=>!(e.flags&8)).map(e=>e.id));
+ const publicGraph={edges:new Map([...world.roads.graph.edges].filter(([,v])=>!(v.value.flags&8)))};
  const anchors=[],edges=new Map(),seen=new Set(),observe=(stage,edge,point,extra={})=>onSample?.({stage,edgeId:edge.id,point,...extra});let roadSamples=0;
  for(const id of [...ids].sort()){
   const edge=edgeValue(world.roads.graph,id),group=recoveryRoadGroup(world.roads.graph,edge),length=edgeLength(edge),count=Math.max(1,Math.ceil(length/spacingM));let used=false;
   for(let i=0;i<=count;i++){
    const point={...edgePoint(edge,length*i/count),offsetM:length*i/count};if(cellKey(point.x,point.z)!==key)continue;roadSamples++;observe('sample',edge,point);
    const contact=world.contacts.contact(point.x,point.z,{referenceY:point.y,layer:edge.layer,requiredFlags:1});
-   if(!contact){observe('noContact',edge,point);continue;}if(!routeSurfaceAllowed(edge,contact,world.roads.graph)){observe('surfaceMismatch',edge,point,{contact});continue;}
+   if(!contact){observe('noContact',edge,point);continue;}if(!routeSurfaceAllowed(edge,contact,publicGraph)){observe('surfaceMismatch',edge,point,{contact});continue;}
    Object.assign(point,{y:contact.y,surfaceId:contact.surfaceId});const width=world.contacts.width(point,{connected:true});if(!width){observe('noWidth',edge,point,{contact});continue;}
    Object.assign(point,{leftM:width.left,rightM:width.right});
    // Each profile may need a different legal lane centre. Certify all profiles
@@ -49,8 +51,9 @@ export function proveRecoveryCell(key,world,profiles,{spacingM=4,onEdge=()=>{},o
    for(const p of candidates.values()){
     const certified=[];for(const profile of [...profiles].sort((a,b)=>b.halfLength-a.halfLength||b.halfWidth-a.halfWidth)){if(certified.some(q=>q.halfWidth>=profile.halfWidth&&q.halfLength>=profile.halfLength))continue;if(p.leftM>=profile.halfWidth+.15&&p.rightM>=profile.halfWidth+.15&&world.contacts.safe(p,{...profile,connected:true}))certified.push(profile);}const compatible=paretoFootprints(certified);
     if(!compatible.length){observe('noCertifiedFootprint',edge,p);continue;}
+    if(!routeSurfaceAllowed(edge,p,publicGraph)){observe('surfaceMismatch',edge,p,{contact:p});continue;}
     const projected=projectEdge(edge,p.x,p.z),identity=canonicalJSON([id,projected.offsetM]);if(seen.has(identity))continue;
-    if(Math.abs(projected.y-p.y)>.75||Math.cos(projected.yaw-p.yaw)<Math.cos(5*Math.PI/180)){observe('edgeProjection',edge,p);continue;}
+    if(projected.distance>Math.max(p.leftM,p.rightM)||Math.abs(projected.y-p.y)>.75||Math.cos(projected.yaw-p.yaw)<Math.cos(5*Math.PI/180)){observe('edgeProjection',edge,p);continue;}
     seen.add(identity);const first=compatible[0];anchors.push({edgeId:id,...(group?{roadId:group.roadId}:{}),offsetM:projected.offsetM,x:p.x,y:p.y,z:p.z,yaw:p.yaw,layer:p.layer,surfaceId:p.surfaceId,leftM:p.leftM,rightM:p.rightM,halfWidth:first.halfWidth,halfLength:first.halfLength,footprints:compatible});observe('anchor',edge,p,{footprints:compatible});used=true;
    }
   }
@@ -60,6 +63,17 @@ export function proveRecoveryCell(key,world,profiles,{spacingM=4,onEdge=()=>{},o
  // cell. Never disguise failed/missing certification as no-drivable content.
  if(ids.size&&!anchors.length)throw Error(`Recovery cell has roads but no certified anchors: ${key} (${roadSamples} samples)`);
  if(!ids.size)return null;
+ // Junction contact may belong to a neighbouring emitted road whose own
+ // anchors lie in another cell. Retain that exact authenticated surface owner
+ // and its reverse-edge closure, so the request-time proof can authenticate
+ // the same contact against the emitted subset rather than a missing edge.
+ const surfaces=new Set([...edges.values()].map(e=>canonicalJSON([e.surface,e.layer])));
+ const available=[...world.roads.graph.edges.values()].map(({value:e})=>e).filter(e=>!(e.flags&8)).sort((a,b)=>a.id.localeCompare(b.id));
+ for(const anchor of anchors){const key=canonicalJSON([anchor.surfaceId,anchor.layer]);if(surfaces.has(key))continue;
+  const emitted={edges:new Map([...edges].map(([id,value])=>[id,{value}]))};if(routeSurfaceAllowed(edges.get(anchor.edgeId),anchor,emitted)){surfaces.add(key);continue;}
+  const owner=available.find(e=>e.surface===anchor.surfaceId&&e.layer===anchor.layer);if(!owner)throw Error('Recovery contact surface lacks an emitted owner: '+anchor.surfaceId);
+  const pending=[owner];for(let i=0;i<pending.length;i++){const e=pending[i];if(edges.has(e.id))continue;edges.set(e.id,e);surfaces.add(canonicalJSON([e.surface,e.layer]));for(const twin of recoveryRoadTwins(world.roads.graph,e))if(!edges.has(twin.id))pending.push(twin);}
+ }
  const body={schemaVersion:1,worldId:'athens',projectionId:'athens-v1',worldSetRevision:world.manifest.revision,sourceHashes:[...world.tiles.keys()].sort().map(k=>[k,world.manifest.tiles[k].sha256]),edges:[...edges.values()].sort((a,b)=>a.id.localeCompare(b.id)),anchors};
  if(Buffer.byteLength(canonicalJSON(body))>MAX_RECOVERY_BYTES)throw Error('Recovery sidecar exceeds 2 MiB: '+key);
  return body;

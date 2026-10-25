@@ -26,7 +26,7 @@ import { soloStartPosition, raceGridSlot } from './start-placement.js';
 import { seatPosition } from './seat-position.js';
 import { CpuMetrics } from './cpu-metrics.js';
 import { RenderScale } from './render-scale.js';
-import { FrameLimiter, dynamicBudgetMs } from './frame-pacing.js';
+import { dynamicBudgetMs } from './frame-pacing.js';
 import { scaleVehicleLod } from './vehicle-lod.js';
 import { CHUNK_SCALE, mergeInstancedCells } from './batch.js';
 import { importWithUpdate } from './client-release.js';
@@ -172,7 +172,7 @@ addEventListener('keydown', (e) => {
 let pixelRatio = GFX.pixelRatio;
 let dynamicScale = makeDynamicScale();
 function makeDynamicScale() {
-  return new RenderScale({ max: GFX.pixelRatio, min: dynamicFloor(GFX.perfClass, GFX.pixelRatio), budgetMs: dynamicBudgetMs(settings.frameCap) });
+  return new RenderScale({ max: GFX.pixelRatio, min: dynamicFloor(GFX.perfClass, GFX.pixelRatio), budgetMs: dynamicBudgetMs() });
 }
 renderer.setPixelRatio(outputRatio(pixelRatio, window.devicePixelRatio));
 renderer.setSize(innerWidth, innerHeight);
@@ -301,7 +301,7 @@ const applyCpuBudget = () => { traffic?.setOfflineDensityScale?.(resolveGraphics
 PARKED_CELL.scale = GFX.chunkScale >= 3 ? 2 : 1; CHUNK_SCALE.value = GFX.chunkScale;
 const consolidateWorld = (w) => { if (w && GFX.chunkScale > 1) mergeInstancedCells(w.group, 400 * GFX.chunkScale, { lod: w.lod }); };
 const applyDrawDistance = () => { if (traffic) PARKED_RANGE.far = traffic.drawRange = Math.min(GFX.trafficDraw ?? Infinity, clamp(drawDistance() * 0.55, 220, 1150)); if (people) people.drawRadius = Math.min(GFX.crowd, Math.max(60, drawDistance() * 0.35)); };
-const GRAPHICS_KEYS = new Set(['perfClass', 'renderScale', 'dynamicResolution', 'frameCap', 'drawDistance']);
+const GRAPHICS_KEYS = new Set(['perfClass', 'renderScale', 'dynamicResolution', 'drawDistance']);
 /** re-resolve resolution / draw distance and apply them live (no reload, the world is kept); the look never changes */
 function applyGraphics() {
   GFX = resolveGraphics(settings, { deviceRatio: window.devicePixelRatio, gpuName });
@@ -2084,7 +2084,6 @@ const DBG_VIEW = Q.has('view') ? Q.get('view').split(',').map(Number) : null;
 
 // ------------------------------------------------------------------ main loop
 let last = 0, frameN = 0;
-const frameLimiter = new FrameLimiter();
 const perfGovernor = new PerfGovernor({ ceiling: storedPerfCeiling() });
 window.__perfGovernor = perfGovernor;
 const MAX_SLICES = 10; // a half-second hitch is caught up in at most 10 slices, not 30
@@ -2096,11 +2095,8 @@ function frame(now) {
   requestAnimationFrame(frame);
   // The hidden-online timer owns simulation until visibility returns. Ignore a queued older frame.
   if (multiplayer.active && (document.hidden || now < last)) return;
-  // Frame rate limit (Settings > Graphics, default 60): skip vsync callbacks that arrive early, so a 120 Hz laptop
-  // screen doesn't simulate and draw everything twice as often (heat, fan noise, battery). NO LIMIT (0) never skips:
-  // every requestAnimationFrame callback, at the display's refresh, simulates and draws.
+  // Every display callback renders; physics still advances in bounded 1/60 s slices.
   perfOverlay.tick();
-  if (!Q.has('fixeddt') && !frameLimiter.allow(now, settings.frameCap)) return;
   const cpuFrameStart = cpuMetrics.start(), frameStart = performance.now();
   const wallDt = Math.max(0, (now - last) / 1000);
   let dt = Math.min(0.5, wallDt); last = now;
@@ -2131,7 +2127,7 @@ function frame(now) {
   // Frame governor: a machine that keeps missing its budget (and where dynamic resolution cannot help) drops a performance class.
   if (!document.hidden && !Q.has('fixeddt') && (G.state === 'race' || G.state === 'onlineRace' || G.state === 'countdown') && !menu?.open) {
     const pixelBound = settings.dynamicResolution && dynamicScale.ratio > dynamicScale.min * 1.02 && dynamicScale.holdT <= 0;
-    const next = perfGovernor.sample(wallDt * 1000, performance.now() - frameStart, 1000 / (settings.frameCap || 60), GFX.perfClass, { dt: wallDt, pixelBound });
+    const next = perfGovernor.sample(wallDt * 1000, performance.now() - frameStart, 1000 / 60, GFX.perfClass, { dt: wallDt, pixelBound });
     if (next) { console.info(`performance class ${GFX.perfClass} -> ${next}`, perfGovernor.last); setSetting('perfClass', next); }
   }
 }
@@ -2577,7 +2573,7 @@ function updateRacerMarkers() {
   _markerItems.length = n;
   racerMarkers.update(_markerItems);
 }
-const networkState = v => ({layer:v.routeContact?.layer??v.layer,surfaceId:v.routeContact?.surfaceId??v.surfaceId, recordMeta: { tc: settings.aids, abs: settings.abs, steering: steeringAssistChoice(settings.steeringAssist, activeInputDevice()), gearbox: v.manual ? 'manual' : 'auto', carName: v.spec.name },  ...Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear', 'nitro', 'reverse'].map(k => [k, v[k]])), nitro: v.spec.nitrous === true ? v.nitro : 0, braking: input.brake > .3, damage: { ...v.damage }, ...spectatorState(v), paint: player.model.paintColor, pursuit: worldSession&&multiplayer.active?(traffic?.pursuitCode?.()??0):police?.online?police.pursuitCode():0 });
+const networkState = v => ({layer:v.routeContact?.layer??v.layer,surfaceId:(v.routeContact?v.routeContact.surfaceId:v.surfaceId)??'',edgeId:(v.routeContact?v.routeContact.edgeId:v.edgeId)??'', recordMeta: { tc: settings.aids, abs: settings.abs, steering: steeringAssistChoice(settings.steeringAssist, activeInputDevice()), gearbox: v.manual ? 'manual' : 'auto', carName: v.spec.name },  ...Object.fromEntries(['x', 'y', 'z', 'yaw', 's', 'u', 'vLong', 'vLat', 'steer', 'rpm', 'gear', 'nitro', 'reverse'].map(k => [k, v[k]])), nitro: v.spec.nitrous === true ? v.nitro : 0, braking: input.brake > .3, damage: { ...v.damage }, ...spectatorState(v), paint: player.model.paintColor, pursuit: worldSession&&multiplayer.active?(traffic?.pursuitCode?.()??0):police?.online?police.pursuitCode():0 });
 function clearDriveInput() { controls.clear(); closeTowOffer(TOW_PROMPT_COOLDOWN); }
 function onlineTrafficFoci(){
  const lobby=multiplayer.lobby;if(!lobby)return [];
@@ -2589,8 +2585,8 @@ function placeOnlineVehicle(v,member){
 }
 function onlineWait() {
   if (!world || !player || !multiplayer.loaded) return;
-  if(worldSession){hideGrid();clearDriveInput();hud.hideMenu();hud.count('');G.state='lobby';G.run?.abort('online');G.run=null;G.pFinish=null;G.rFinish=null;G.raceT=0;G.cam=G.userCam;applyCamMode();traffic.configure({...G.ev.def,traffic:0,rules:{...G.ev.def.rules,police:false}},{deferFleet:true});document.body.classList.remove('racing','counting');if(multiplayer.me?.gridPose)placeOnlineVehicle(player.veh,multiplayer.me);return;}
   document.body.classList.remove('menu-backdrop');
+  if(worldSession){hideGrid();clearDriveInput();hud.hideMenu();hud.count('');G.state='lobby';G.run?.abort('online');G.run=null;G.pFinish=null;G.rFinish=null;G.raceT=0;G.cam=G.userCam;applyCamMode();traffic.configure({...G.ev.def,traffic:0,rules:{...G.ev.def.rules,police:false}},{deferFleet:true});document.body.classList.remove('racing','counting');if(multiplayer.me?.gridPose)placeOnlineVehicle(player.veh,multiplayer.me);return;}
   clearDriveInput(); hud.hideMenu(); hud.count(''); G.state = 'lobby'; G.cam = G.userCam; applyCamMode();
   G.trafficMul = 0; traffic.disabled = true; resetRace(); rival.model.root.visible = false;
   document.body.classList.remove('racing', 'counting');

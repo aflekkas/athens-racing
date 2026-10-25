@@ -249,3 +249,11 @@ Owner correction: “towing no longer repairs the car??” Towing and reset full
 ## 2026-10-21: Camera modes and view positions
 
 Owner decision: "one key toggles POV/outside; a separate key cycles view position". C toggles between the saved POV and outside views; B cycles positions in the current mode. Outside has near chase, far chase, and bumper; POV has driver and hood. The defaults are a normal near chase camera and a seated driver POV. Both actions are rebindable for keyboard and gamepad. Mouse orbit returns to the chase view when released and cannot pitch the chase camera into a top-down angle. Guard: `tools/camera-views.test.mjs`.
+
+
+## 2026-10-24 — Self-contained desktop and player-hosted LAN
+
+The owner requested a self-contained installed game following Cogenly's desktop/server separation, with offline solo and player-hosted LAN. The installed product must keep working after all owner-hosted infrastructure is shut down. Desktop therefore uses local profiles without Google sign-in, bundled game assets and runtime, and optional LAN hosting on a player's machine. This supersedes mandatory Google sign-in for the installed desktop edition only. Existing hosted sign-in behavior remains in place during migration. The owner authorized agent orchestration, implementation and testing; no hosting shutdown or production deployment is part of this change.
+
+
+2026-10-24 owner decision: **Remove the game FPS cap, including saved cap values.** During the offline desktop migration the owner reported driving spikes and explicitly requested uncapped rendering. This supersedes earlier graphics-menu frame-limit choices. The game must neither honor nor restore a saved FPS cap; remove the frame-limit control while keeping the performance overlay and resolution/draw-distance controls. Measure sustained driving and streamed-cell transitions separately from short title-screen samples; uncapping alone does not establish that spikes are fixed.

@@ -1,3 +1,5 @@
+import { desktopInvite } from '../desktop-navigation.js';
+import { selectDesktopInvite } from '../desktop-menu.js';
 import { importWithUpdate } from '../client-release.js';
 // MULTIPLAYER SCREENS: the lobby browser, host setup, the lobby room, allowed cars and results, rendered by src/menu.js as ordinary head-unit
 // screens (shared page templates: the same status bar, Back, focus / gamepad navigation, slide-in and soft-key bar as every other menu).
@@ -152,7 +154,10 @@ export function renderHost(menu, mp) {
     return C.card({ media: trackArt(m.id), selected: m.id === map, title: esc(m.name), text: esc(cat?.subtitle || ''), act: 'mpTrack',
       foot: cat ? `<span>${esc(fmtDist(cat.length))}</span><span>${cat.type === 'circuit' ? 'CIRCUIT' : 'POINT TO POINT'}</span>` : '', attrs: { 'data-map': m.id, 'data-fid': 'track:' + m.id } });
   }).join('') : C.emptyState({ busy: !live, icon: 'triangle-alert', title: live ? 'NO TRACKS AVAILABLE' : 'CONNECTING TO THE LOBBY SERVER', text: 'Tracks load from the lobby server.' });
+  const lan = menu.desktopForm?.session;
+  const lanInfo = lan?.mode === 'host' ? C.listRow({ icon: 'monitor', title: 'FRIENDS JOIN AT', desc: esc((lan.addresses || [lan.address]).filter(Boolean).join(' · ')), focusable: false, go: false }) : '';
   const fields = [
+    lanInfo,
     C.textField({ name: 'name', label: 'LOBBY NAME', value: form.name, placeholder: (driverName.get() || 'MY') + '’S RACE', maxlength: 28, inputAttrs: { enterkeyhint: 'done' } }),
     C.segmented({ key: 'mode', label: 'MODE', icon: 'flag', value: form.mode, options: modes, attrs: A }),
     C.segmented({ key: 'private', label: 'WHO CAN JOIN', icon: 'lock', value: String(form.private), type: 'bool', options: [['false', 'ANYONE'], ['true', 'INVITE ONLY']], attrs: A,
@@ -217,12 +222,18 @@ export function renderLobby(menu, mp) {
   // The lobby's name, then one quiet line: its code (what you share), track and mode. The state is the status line.
   const caption = `${C.sheetHead({ title: `${esc(l.name)}`, status: live ? 'Race in progress' : waiting ? 'Waiting for drivers' : 'Results', statusIcon: '' })}
     <p class="mp-show__meta"><span title="Lobby code">Code <b class="tnum">${esc(l.code || '')}</b></span> · ${esc(mapName(mp, l.mapId))} · ${esc(describeMode(mode))}</p>`;
-  const tools = `<div class="mp-side__bar">${statusChip(mp)}<div class="mp-tools">${C.button({ label: 'INVITE', icon: 'link', variant: 'ghost', size: 'sm', act: 'mpCopy', attrs: { 'data-fid': 'copy' } })}${C.button({ icon: 'settings', variant: 'ghost', size: 'sm', act: 'settings', title: 'SETTINGS', attrs: { 'data-fid': 'settings' } })}${C.button({ label: 'LEAVE', icon: 'log-out', variant: 'ghost', size: 'sm', act: 'mpLeave', cls: 'mp-leave', attrs: { 'data-fid': 'leave' } })}</div></div>`;
+  const tools = `<div class="mp-side__bar">${statusChip(mp)}<div class="mp-tools">${C.button({ label: menu.desktopForm ? 'SHARE DETAILS' : 'INVITE', icon: 'link', variant: 'ghost', size: 'sm', act: 'mpCopy', attrs: { 'data-fid': 'copy' } })}${C.button({ icon: 'settings', variant: 'ghost', size: 'sm', act: 'settings', title: 'SETTINGS', attrs: { 'data-fid': 'settings' } })}${C.button({ label: 'LEAVE', icon: 'log-out', variant: 'ghost', size: 'sm', act: 'mpLeave', cls: 'mp-leave', attrs: { 'data-fid': 'leave' } })}</div></div>`;
+  const details = desktopInvite(menu.desktopForm?.session, l);
+  const lanInvite = menu.desktopForm ? C.panel('LAN INVITE', details ? [
+    C.listRow({ icon: 'monitor', title: 'HOST ADDRESS', desc: esc(details.addresses.join(' · ')), focusable: false, go: false, attrs: { 'data-desktop-room-address': '' } }),
+    C.listRow({ icon: 'link', title: 'LOBBY CODE', desc: esc(details.code), focusable: false, go: false }),
+    C.textField({ name: 'lan-invite', label: 'SHARE THESE DETAILS', value: details.text, inputAttrs: { readonly: '', 'data-desktop-share': '' }, note: 'On the other computer, choose LAN MULTIPLAYER, enter the host address, select JOIN LAN GAME, then enter the lobby code. Select SHARE DETAILS, then copy the highlighted text with Ctrl/Cmd+C.' }),
+  ].join('') : C.listRow({ icon: 'triangle-alert', title: 'LAN ADDRESS UNAVAILABLE', desc: esc(menu.desktopForm.error || 'Connect to your local network, then host a game.'), focusable: false, go: false }), { icon: 'link' }) : '';
   const sessionPanel = C.panel('SESSION', `<div class="mp-fields">${session}</div>`, { icon: 'sliders-horizontal', cls: 'mp-session' });
   const drivers = C.panel(`DRIVERS <span class="mp-count">${l.players.length}/${MAX_DRIVERS}</span>`, `<div class="mp-drivers__list">${rows}${blockedList}</div><p class="mp-help">${esc(helpText(mp, l, host))}</p>`, { icon: 'users', cls: 'mp-drivers' });
   return C.stageInspector({ variant: 'showroom', cls: 'scr--mp scr--showroom scr--mp-lobby', kick: 'MULTIPLAYER',
     hints: [['updown', 'SELECT'], ['leftright', 'CHANGE'], ['confirm', 'OK'], ['back', 'CLOSE']],
-    caption, summary: carPlate(mp, carOf(mp, me?.car), `<div class="mp-actions">${acts.join('')}</div>`), inspector: tools + drivers + sessionPanel });
+    caption, summary: carPlate(mp, carOf(mp, me?.car), `<div class="mp-actions">${acts.join('')}</div>`), inspector: tools + lanInvite + drivers + sessionPanel });
 }
 
 // ---------------------------------------------------------------- the live studio behind the showroom screens
@@ -402,7 +413,7 @@ export function act(menu, el) {
       actions: [{ id: 'force', label: 'FORCE START', variant: 'primary' }, { id: 'cancel', label: 'KEEP WAITING' }] }).then((c) => { if (c === 'force') mp.startRace({ force: true }); }); return true;
     case 'mpRestart': mp.restart(); return true;
     case 'mpToLobby': mp.returnToLobby(); return true;
-    case 'mpCopy': mp.$('mp-copy').click(); return true;
+    case 'mpCopy': if (menu.desktopForm) { void selectDesktopInvite(menu, mp); return true; } mp.$('mp-copy').click(); return true;
     case 'mpLeave': mp.$('mp-leave').click(); return true;
     case 'mpKick': case 'mpBlock': {
       const id = el.dataset.id, name = mp.lobby?.players.find((p) => p.id === id)?.name || 'this driver', kick = a === 'mpKick';

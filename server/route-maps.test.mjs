@@ -99,10 +99,30 @@ test('shared immutable recovery manifest URL and route-bound free roam preserve 
 test('free roam and off-course race recoveries on distant surveyed roads return finite stations', async () => {
  const {c,build}=await catalogue(),maps=new Map();await installRouteMaps(maps,build,{carSpecs:{mini:{width:2,length:4}}});const map=maps.get(c.id),route=map.geometry;
  route.recoveryCandidates=()=>[{x:1000,y:0,z:1000,yaw:0,layer:0,edgeId:'distant-road',surfaceId:'distant-road'}];
+ // This projection unit fixture replaces the packed candidate source. Supply
+ // its corresponding finite planner allowance; real lease admission is tested below.
+ route.recoveryPlanningBudget=()=>64*1024;
  for(const event of map.definitions.values()){
   const driver={car:'mini',state:{x:1000,y:0,z:1000,yaw:0,s:0,u:0,layer:0,surfaceId:'distant-road',motionEpoch:0},stateAt:1000,course:event.type==='free'?null:buildCourse(event,route)};
   const recovery=requestRecovery(driver,event,'race',1,1100,{route});assert.ok(recovery);assert.equal(recovery.kind,'road');assert.ok(Number.isFinite(recovery.s)&&Number.isFinite(recovery.u));assert.equal(recovery.u,0);if(driver.course)assert.equal(driver.course.reached,0);
  }
+});
+
+test('real recovery preparation owns a bounded planner allowance and release revokes it', async()=>{
+ const {c,build}=await catalogue(),maps=new Map();await installRouteMaps(maps,build,{carSpecs:{mini:{width:2,length:4}}});
+ const map=maps.get(c.id),route=map.geometry,event=[...map.definitions.values()].find(e=>e.type==='sprint');
+ const driver={car:'mini',state:{...map.gridPose(0,'mini'),u:0,vLong:0,vLat:0,motionEpoch:0},course:buildCourse(event,route)};
+ assert.equal(route.recoveryPlanningBudget(driver),0);assert.equal(map.recoveryStats().leases,0);
+ assert.equal(requestRecovery(driver,event,'race',1,1100,{route}),null,'unprepared recovery cannot allocate or place a car');
+ await map.prepareRecovery(driver);
+ try{
+  assert.equal(map.recoveryStats().leases,1);
+  const budget=route.recoveryPlanningBudget(driver);assert.ok(Number.isFinite(budget)&&budget>4096&&budget<6*1024*1024);
+  assert.ok(requestRecovery(driver,event,'race',1,1100,{route}),'verified prepared roads admit the genuine planner');
+  assert.equal(driver.course.reached,0,'placement earns no progress');
+ }finally{map.releaseRecovery(driver);}
+ assert.equal(map.recoveryStats().leases,0);assert.equal(route.recoveryPlanningBudget(driver),0);
+ assert.equal(requestRecovery(driver,event,'race',2,2500,{route}),null,'released allowance cannot be reused after the idempotent hold');
 });
 
 test('online activation replaces legacy offerings atomically and failed proof sets offer no partial release',async()=>{

@@ -1,5 +1,4 @@
 import { settings } from './settings.js';
-import { FrameLimiter } from './frame-pacing.js';
 import { importWithUpdate } from './client-release.js';
 // The pre-race showroom uses the same model and cockpit as the driven car.
 import * as THREE from 'three';
@@ -136,15 +135,10 @@ export function mountCarSelect(root, index, opts = {}) {
   container.addEventListener('pointerdown',down);container.addEventListener('pointermove',move);
   for(const name of ['pointerup','pointercancel','lostpointercapture'])container.addEventListener(name,up);
   const hint=document.createElement('span');hint.className='car-stage__hint';hint.setAttribute('aria-hidden','true');hint.textContent='DRAG TO ROTATE';if(!lite)container.append(hint);
-  const limiter = new FrameLimiter();
-  // The showroom follows Settings > Graphics > FRAME RATE LIMIT like the race does (NO LIMIT: every display refresh).
-  // The multiplayer lobby's light variant also stays at or under 30 fps while a limit is set.
-  const showroomCap = () => lite && settings.frameCap > 0 ? Math.min(30, settings.frameCap) : settings.frameCap;
   let showroomVisible = true, showroomRunning = false;
   // The turntable keeps redrawing even when the menu is hidden behind the race or another screen: pause it
   // while the stage is not visible (or the tab is), and render one frame on return so it never looks stale.
   const showroomDraw = now => {
-    if (!limiter.allow(now, showroomCap())) return;
     model.root.rotation.y = turntable.advance((now - last) / 1000); last = now;
     frame();renderer.render(scene, camera);
   };

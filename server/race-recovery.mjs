@@ -36,7 +36,9 @@ function towMap(geometry) {
 function towPose(driver, event, route) {
   if (route?.isWorldRoute) {
     const candidates = route.recoveryCandidates?.(driver.state, driver) || [];
-    const target = planWorldTow({ pose: { ...driver.state, towHeading: driver.towHeading }, course: event.type === 'free' ? null : driver.course, route: event.type === 'free' ? null : route, roadCandidates: candidates, footprint: route.recoveryFootprint?.(driver) });
+    const planningBudget=route.recoveryPlanningBudget?.(driver) ?? Infinity;
+    if(planningBudget<=0)return null;
+    const target = planWorldTow({ pose: { ...driver.state, towHeading: driver.towHeading }, course: event.type === 'free' ? null : driver.course, route: event.type === 'free' ? null : route, roadCandidates: candidates, maxBytes: planningBudget, footprint: route.recoveryFootprint?.(driver) });
     // Off-course projection has no lateral station. Its Infinity sentinel must
     // never escape as null JSON into an otherwise proven world-road placement.
     return target ? { ...target, u: Number.isFinite(target.u) ? target.u : 0 } : null;

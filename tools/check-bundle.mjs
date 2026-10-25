@@ -60,7 +60,17 @@ try {
   browser = await chromium.launch({ headless: true, executablePath: process.env.CHROME_BIN || (existsSync('/home/dev/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome') ? '/home/dev/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome' : undefined), args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   const context = await browser.newContext({ viewport: { width: 1280, height: 720 } });
   page = await context.newPage(); const requested = [];
-  await page.addInitScript(() => { const raf = requestAnimationFrame; window.requestAnimationFrame = cb => cb.name === 'frame' ? 0 : raf(cb); });
+  await page.addInitScript(origin => {
+    // Unified-world Quit performs a real menu navigation. Keep this harness's
+    // instrumentation across documents before boot reads the new query.
+    if (window.top === window && location.origin === origin) {
+      const url = new URL(location.href);
+      for (const [key, value] of [['simhook', ''], ['debug', ''], ['quality', 'low'], ['guest', '1']]) url.searchParams.set(key, value);
+      history.replaceState(null, '', url);
+    }
+    const raf = requestAnimationFrame;
+    window.requestAnimationFrame = cb => cb.name === 'frame' ? 0 : raf(cb);
+  }, new URL(app.url).origin);
   page.on('console', message => { if (message.type() === 'error' || /world-|abs|ready|map|compiled|textures/.test(message.text())) console.log(message.type(), message.text()); });
   page.on('pageerror', error => { errors.push(error.stack); console.error(error.stack); }); page.on('request', request => requested.push(request.url()));
   await page.goto(app.url + '/?menu&simhook&quality=low&guest=1&debug', { waitUntil: 'domcontentloaded' });
@@ -89,7 +99,7 @@ try {
     assert.equal(await page.evaluate(bundleRaceReady, expected), true, map + ' must retain its exact route and world identity');
     results.push({ ...expected, worldId: 'athens', state: await page.evaluate(() => window.__game.state) });
     await page.evaluate(() => window.__flow.quit());
-    await page.waitForFunction(() => window.__flow.menu.screen === 'title');
+    await page.waitForFunction(() => document.body.classList.contains('loaded') && window.__flow?.menu.screen === 'title');
   }
   await page.evaluate(() => { const menu = window.__flow.menu; menu.show('title'); menu.activate(menu.root.querySelector('[data-act=multiplayer]')); });
   await page.waitForFunction(() => window.__flow.menu.screen === 'mp' && window.__multiplayer?.loaded, null, { timeout: 60000 });

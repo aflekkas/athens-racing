@@ -84,9 +84,9 @@ export async function createWorldSession({renderer,scene,resources,progress=()=>
   const sceneBytes=estimateSceneMemory(scene);let tileJS=0,tileGPU=0;
   for(const t of stream.tiles.values())if(t.packet){tileJS+=t.packet.jsBytes||0;tileGPU+=t.packet.gpuBytes||0;}
   const size=renderer.getDrawingBufferSize(new THREE.Vector2());
-  const usage=worldResourceUsage({scene:sceneBytes,tileJS,tileGPU,regionalBytes:regionalScenery.cachedBytes,width:size.x,height:size.y,heapBytes:performance.memory?.usedJSHeapSize||0});
-  session.metrics.maxEstimatedJSBytes=Math.max(session.metrics.maxEstimatedJSBytes||0,usage.jsBytes);session.metrics.maxEstimatedGPUBytes=Math.max(session.metrics.maxEstimatedGPUBytes||0,usage.gpuBytes);
-  const result={...usage,streamResidentBytes:stream.residentBytes,decoderReservationBytes:stream.transientBytes};
+  const usage=worldResourceUsage({scene:sceneBytes,tileJS,tileGPU,regionalBytes:regionalScenery.cachedBytes,queryBytes:roads.queryBytes,transientBytes:stream.transientBytes,width:size.x,height:size.y,heapBytes:performance.memory?.usedJSHeapSize||0});
+  session.metrics.maxRawHeapBytes=Math.max(session.metrics.maxRawHeapBytes||0,usage.heapBytes);session.metrics.maxRetainedJSBytes=Math.max(session.metrics.maxRetainedJSBytes||0,usage.residentJSBytes);session.metrics.maxEstimatedJSBytes=Math.max(session.metrics.maxEstimatedJSBytes||0,usage.jsBytes);session.metrics.maxEstimatedGPUBytes=Math.max(session.metrics.maxEstimatedGPUBytes||0,usage.gpuBytes);
+  const result={...usage,streamResidentBytes:stream.residentBytes,roadQueryBytes:roads.queryBytes,decoderReservationBytes:stream.transientBytes,streamQueryReservationBytes:stream.queryBytes,limits:{jsBytes:resources.jsBytes,gpuBytes:resources.gpuBytes}};
   if(!worldResourcesFit(usage,resources))throw Object.assign(Error('World resource admission exceeded'),{detail:result});return result;
  };
  const session={inventory,safePose,

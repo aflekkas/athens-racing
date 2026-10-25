@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
+import vm from 'node:vm';
+import { remainingEntryTime, waitForRecordedEngine } from './desktop-audio-readiness.mjs';
 import {Input} from '../src/input.js';
 import {pickedAthensArea,pollFreeRoam,freeRoamHud,freeRoamJSBytes} from '../src/athens-free-roam.js';
 import {loading,freeRoamLoadingTitle,FREE_ROAM_TIPS} from '../src/ui/loading.js';
@@ -54,4 +56,148 @@ test('after a unified free-roam spawn, real keyboard input accelerates and steer
   for(let frame=0;frame<150;frame++){if(frame===100)r.key('keydown','KeyD');r.poll();for(let i=0;i<8;i++){v.ground.begin(v);v.update(1/240,r.input.state);}}
   assert.ok(v.vLong>5,'throttle drives the actual spawned car');assert.ok(Math.hypot(v.x-1000,v.z-2000)>10,'the car moves through world coordinates');assert.ok(Math.abs(v.yaw)>.02,'keyboard steering changes heading');
  }finally{r.input.destroy();}
+});
+
+// Free roam has its own entry; racing audio in main.js cannot cover it.
+test('the actual free-roam entry owns a live audio lifecycle, frame update and teardown',async()=>{
+ const world=await readFile(new URL('../src/athens-world.js',import.meta.url),'utf8');
+ assert.match(world,/createAthensAudio\(/,'free roam must wire sound independently of main.js');
+ assert.match(world,/worldAudio\.update\(/,'live render frames must supply vehicle telemetry');
+ assert.match(world,/worldAudio\.dispose\(/,'free-roam teardown must release its graph and listeners');
+});
+
+test('free-roam audio unlocks once per gesture, follows vehicle and sliders, silences hidden windows and disposes',async()=>{
+ const {createAthensAudio}=await import('../src/athens-audio.js');
+ const target=new EventTarget(),doc=new EventTarget();doc.hidden=false;
+ const events=[],updates=[];let subscriber,removed=0,closed=0;
+ const audio={ctx:null,setVolumes:v=>events.push(['vol',v.master]),setEngine:s=>events.push(['engine',s.id]),
+  start(){events.push(['start']);this.ctx||={currentTime:5,close:()=>{closed++;return Promise.resolve();}};this.mainOut={gain:{setValueAtTime:v=>events.push(['gain',v])}};},
+  update:p=>updates.push({...p,wheels:p.wheels.map(w=>({...w})),traffic:p.traffic.map(t=>({...t}))}),engineOff:()=>events.push(['off']),menuObserver:{disconnect:()=>events.push(['disconnect'])}};
+ const settings={master:0,engine:.8},spec={id:'test-car',redline:7000,gearbox:'manual'};
+ const lifecycle=createAthensAudio({audio,spec,settings,onSettings:fn=>{subscriber=fn;return()=>removed++;},target,document:doc});
+ assert.deepEqual(events,[['vol',0],['engine','test-car']]);
+ const v={x:0,z:0,yaw:0,rpm:2345,load:.7,vLong:12,vLat:5,m:1200,ratio:()=>3.5,corners:[{Fz:3333,sx:.2,sy:.3,vw:13}],_S:[{vgx:11}],wheelSurf:['gravel'],manual:true,shiftStartEvent:{serial:7,direction:1},bumpHit:.2};
+ lifecycle.update(v,.03);assert.equal(updates.length,0,'a frame cannot bypass gesture unlock');
+ target.dispatchEvent(new Event('keydown'));assert.ok(audio.ctx);
+ lifecycle.update(v,.03,{camera:'cockpit',input:{throttle:.8},cars:[{active:true,id:9,v:10,vehicle:{x:10,z:0}}]});
+ const p=updates.at(-1);assert.equal(p.rpm,2345);assert.equal(p.load,.7);assert.equal(p.speed,13);assert.equal(p.gearRatio,3.5);assert.equal(p.wheels[0].vgx,11);assert.equal(p.wheels[0].Fz,3333);assert.equal(p.surfaces[0],'gravel');assert.equal(p.shiftStart.serial,7);assert.equal(p.cockpit,true);assert.equal(p.traffic[0].id,9);
+ subscriber({master:.2});assert.deepEqual(events.at(-1),['vol',.2]);
+ lifecycle.update(v,.03,{paused:true});assert.equal(updates.at(-1).muted,true);assert.equal(updates.at(-1).menuOpen,true);
+ doc.hidden=true;doc.dispatchEvent(new Event('visibilitychange'));assert.deepEqual(events.at(-1),['gain',0]);
+ const starts=events.filter(e=>e[0]==='start').length;target.dispatchEvent(new Event('click'));assert.equal(events.filter(e=>e[0]==='start').length,starts);
+ doc.hidden=false;doc.dispatchEvent(new Event('visibilitychange'));assert.ok(events.some(e=>e[0]==='vol'&&e[1]===0),'restores saved master, including zero');
+ lifecycle.update(v,.03);assert.equal(updates.at(-1).muted,false);
+ lifecycle.dispose();lifecycle.dispose();assert.equal(removed,1);assert.equal(closed,1);
+ const count=events.length;target.dispatchEvent(new Event('keydown'));doc.dispatchEvent(new Event('visibilitychange'));subscriber(settings);lifecycle.update(v,.03);assert.equal(events.length,count,'teardown leaves no active listeners or frame work');
+});
+
+// Execute the shipped route/free phase control flow at a simulated browser
+// boundary. This checks placement/order only; native CI still measures real PCM.
+export async function traceDesktopDrivingPhases(source) {
+ const begin=source.indexOf('  for (const map of routeIds) {'),end=source.indexOf('  const warmRouteBegan',begin);
+ assert.ok(begin>=0&&end>begin,'actual native driving phases must be available');
+ const trace=[],state={mode:null,held:false},context={remainingEntryTime,window:{},document:{body:{classList:{contains:()=>true}}},assert,
+  routeIds:Array.from({length:6},(_,i)=>'route-probe-'+i),requests:[],results:[],origin:'http://offline.test',evidence:'evidence',resolve:(...a)=>a.join('/'),
+  localStorage:{getItem:()=> 'retained'},console:{log(){}},requestAnimationFrame:null};
+ let clock=0;context.requestAnimationFrame=fn=>fn(clock+=16);
+ const vehicle=()=>({x:0,z:0,kmh:10});
+ context.page={
+  async goto(url){const u=new URL(url);state.mode=u.searchParams.get('event')==='free'?'free':'race';state.held=false;trace.push(['goto',state.mode]);
+   if(state.mode==='race'){context.window={__game:{state:'race',mapId:'athens',unifiedCompiled:{id:u.searchParams.get('route')}},__sim:{player:{veh:vehicle()},renderer:{info:{render:{calls:1,triangles:1},memory:{geometries:1}}}},__worldSession:{metrics:{entryPhases:{}}}};}
+   else context.window={__athens:{player:{veh:vehicle()},stats:{frames:30},stream:{inflight:0,transientBytes:0},menu:{open:false},paused:false}};
+  },
+  async evaluate(fn,arg){return fn(arg);},async waitForFunction(fn,arg){assert.ok(await fn(arg),'phase readiness condition');},async screenshot(){},
+  async waitForTimeout(ms){trace.push(['wait',state.mode,ms]);if(state.held){const view=context.window.__athens||context.window.__sim;view.player.veh.x+=ms/1000;}},
+  keyboard:{async down(key){assert.equal(key,'w');state.held=true;trace.push(['down',state.mode]);},async up(){state.held=false;trace.push(['up',state.mode]);},async press(key){assert.equal(key,'Escape');context.window.__athens.paused=true;context.window.__athens.menu.open=true;}}
+ };
+ context.recordFreeAudio=async label=>{assert.equal(state.mode,'free','free-roam PCM check executed outside free-roam mode');assert.equal(state.held,true,'PCM check must run while driving');trace.push(['audio',label]);};
+ context.unlockFreeAudio=async()=>{assert.equal(state.mode,'free');trace.push(['unlock']);};
+ context.recordFreeAdmission=async(label,disposed)=>{assert.equal(state.mode,'free');trace.push(['admission',label,!!disposed]);};
+ context.assertFreeAudioDisposed=async label=>{assert.equal(state.mode,'free');trace.push(['disposed',label]);};
+ await vm.runInNewContext('(async()=>{'+source.slice(begin,end)+'})()',context);
+ return trace;
+}
+
+test('native driving flow completes six race drives before both real free-roam PCM phases',async()=>{
+ const source=await readFile(new URL('./check-desktop.mjs',import.meta.url),'utf8'),trace=await traceDesktopDrivingPhases(source);
+ assert.deepEqual(trace.filter(e=>e[0]==='goto').map(e=>e[1]),[...Array(6).fill('race'),'free','free']);
+ assert.deepEqual(trace.filter(e=>e[0]==='wait'&&e[1]==='race').map(e=>e[2]),Array(6).fill(2500),'six race drives retain their original duration');
+ assert.deepEqual(trace.filter(e=>e[0]==='audio').map(e=>e[1]),['first entry driving','second entry driving']);
+ assert.deepEqual(trace.filter(e=>e[0]==='disposed').map(e=>e[1]),['first disposal','second disposal']);
+});
+
+
+test('native audio timeout preserves real per-condition diagnostics and fails closed',async()=>{
+ const source=await readFile(new URL('./check-desktop.mjs',import.meta.url),'utf8');
+ const begin=source.indexOf('async function unlockFreeAudio('),end=source.indexOf('async function recordFreeAudio(',begin);
+ const failure=new Error('real readiness timeout'),metrics={},logs=[],audio={started:true,ctx:{state:'suspended',currentTime:0,sampleRate:48000},engineSpec:{id:'aventador_svj'},recordingState:'loading',health:()=>({state:'suspended'})};
+ const context={assert,metrics,remainingEntryTime,window:{__athens:{audio,player:{spec:{id:'aventador_svj'}},stats:{frames:31},paused:false},__bootAudio:audio},
+  document:{hidden:false,visibilityState:'visible',hasFocus:()=>true},navigator:{userActivation:{isActive:false,hasBeenActive:true}},console:{error:(...args)=>logs.push(args)},
+  page:{evaluate:async fn=>fn(),keyboard:{press:async()=>{}},waitForFunction:async()=>{throw failure;}}};
+ await assert.rejects(vm.runInNewContext('(async()=>{'+source.slice(begin,end)+';await unlockFreeAudio();})()',context),error=>error===failure);
+ const state=metrics.freeRoamAudioFailures[0];
+ assert.equal(state.context,'suspended');assert.equal(state.recording,'loading');assert.equal(state.engineVoice,false);assert.equal(state.recordedBank,false);
+ assert.equal(state.selectedCar,'aventador_svj');assert.equal(state.playerCar,'aventador_svj');assert.equal(state.sharedGraph,true);
+ assert.equal(state.focused,true);assert.equal(state.userActivation.everActive,true);assert.equal(state.frames,31);
+ assert.equal(logs.length,1);assert.match(logs[0][1],/"context":"suspended"/);
+});
+
+
+function recordingReadinessRig(engineReady) {
+ const audio={ctx:{state:'running',currentTime:33,sampleRate:44100},engineSpec:{id:'aventador_svj'},recordingState:'loading',engineVoice:{},recordedBank:null,engineReady,health:()=>({state:'running'})};
+ const sandbox={window:{__athens:{audio,player:{spec:{id:'aventador_svj'}}},__bootAudio:audio},
+  document:{hidden:false,hasFocus:()=>true},performance:{now:()=>performance.now(),getEntriesByType:()=>[{name:'http://offline/assets/audio/engines/v12-idle.wav',startTime:10,duration:20,responseEnd:30,transferSize:100,decodedBodySize:100}]},setTimeout,clearTimeout};
+ const page={evaluate(fn,options){return vm.runInNewContext('('+fn.toString()+')(options)',{...sandbox,options});}};
+ return {audio,wait:(options={})=>waitForRecordedEngine(page,{timeoutMs:1000,expectedCar:'aventador_svj',...options})};
+}
+
+test('native recording readiness awaits the actual pending production promise before accepting its bank',async()=>{
+ let resolve;const ready=new Promise(done=>{resolve=done;}),rig=recordingReadinessRig(ready);
+ let finished=false;const waiting=rig.wait().then(value=>{finished=true;return value;});
+ await new Promise(setImmediate);assert.equal(finished,false,'a live context and procedural voice cannot pass while engineReady is pending');
+ rig.audio.recordingState='recorded';rig.audio.recordedBank={recorded:true};resolve();
+ const report=await waiting;assert.equal(report.passed,true);assert.equal(report.promiseOutcome,'resolved');
+ assert.equal(report.before.recording,'loading');assert.equal(report.after.recording,'recorded');assert.equal(report.after.recordedBank,true);
+ assert.equal(report.resourcesAfter.length,1);assert.ok(report.finishedMs>=report.beganMs);assert.ok(report.elapsedMs>=0);
+});
+
+test('native recording readiness fails immediately if engineReady resolves to procedural fallback',async()=>{
+ const rig=recordingReadinessRig(Promise.resolve());rig.audio.recordingState='fallback';
+ await assert.rejects(rig.wait(),error=>error.readiness.promiseOutcome==='resolved'&&error.readiness.after.recording==='fallback'&&/without a recorded bank/.test(error.message));
+});
+
+test('native recording readiness preserves production promise rejection and evidence',async()=>{
+ const rig=recordingReadinessRig(Promise.reject(new Error('decode failed')));
+ await assert.rejects(rig.wait(),error=>error.readiness.promiseOutcome==='rejected'&&/decode failed/.test(error.message)&&error.readiness.after.context==='running');
+});
+
+test('native recording readiness bounds a permanently pending promise and fails closed',async()=>{
+ const rig=recordingReadinessRig(new Promise(()=>{}));
+ await assert.rejects(rig.wait({timeoutMs:10}),error=>error.readiness.promiseOutcome==='timeout'&&error.readiness.timeoutMs===10&&error.readiness.after.recording==='loading'&&error.readiness.passed===false);
+});
+
+test('native recording readiness rejects absent promises and changed car/context/bank state',async()=>{
+ await assert.rejects(recordingReadinessRig(undefined).wait(),/engineReady promise is missing/);
+ for(const change of [a=>{a.recordedBank=null;},a=>{a.ctx.state='closed';},a=>{a.engineSpec.id='mini';},a=>{a.engineVoice=null;}]){
+  const rig=recordingReadinessRig(Promise.resolve());rig.audio.recordingState='recorded';rig.audio.recordedBank={recorded:true};change(rig.audio);
+  await assert.rejects(rig.wait(),/Native recorded-engine readiness failed/);
+ }
+});
+
+test('native audio and PCM share the original 240-second entry budget without extending its deadline',()=>{
+ assert.equal(remainingEntryTime(240000,30000,5000,10000),30000,'unlock remains capped at30s');
+ assert.equal(remainingEntryTime(240000,120000,5000,10000),120000,'recording preparation is capped at120s');
+ assert.equal(remainingEntryTime(240000,120000,5000,200000),35000,'late entry spends only remaining time and reservesPCM');
+ assert.throws(()=>remainingEntryTime(240000,120000,5000,235000),/deadline exhausted/);
+ assert.throws(()=>remainingEntryTime(240000,1,0,240000),/deadline exhausted/);
+});
+
+
+test('native recording readiness rejects context or preparation replacement during the pending promise',async()=>{
+ for(const replace of [a=>{a.ctx={...a.ctx};},a=>{a.engineReady=Promise.resolve();}]){
+  let resolve;const rig=recordingReadinessRig(new Promise(done=>{resolve=done;}));
+  const waiting=rig.wait();await new Promise(setImmediate);
+  replace(rig.audio);rig.audio.recordingState='recorded';rig.audio.recordedBank={recorded:true};resolve();
+  await assert.rejects(waiting,/changed context, readiness promise, voice, car or shared graph/);
+ }
 });

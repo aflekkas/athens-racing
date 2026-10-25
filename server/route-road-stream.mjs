@@ -1,3 +1,5 @@
+import { createRecoveryQueryBuilder } from './recovery-query-context.mjs';
+import { recoveryCellDescriptor, recoveryCellSourceHash, recoveryCellScratchBytes, MAX_RECOVERY_CELL_SCRATCH } from './recovery-manifest-wire.mjs';
 import { canonicalJSON, sha256 } from '../src/route-definition.js';
 import { ROUTE_HASH } from '../src/route-network.js';
 import { validateRouteRoads, validateRecoveryRoadJSON, routeRoadAuthority } from './route-roads.mjs';
@@ -15,7 +17,9 @@ export async function validateRecoveryManifest(body, { expectedHash, worldSetRev
     if (!Array.isArray(sourceHashes) || !sourceHashes.length) throw Error('Recovery manifest omits or changes published world cells');
     registryIndexBytes = 96 + sourceHashes.length * 128;
   }
-  const registryLiveBytes = registryBytes * 2 + registryIndexBytes;
+  const compact = body && Object.getOwnPropertyDescriptor(body, 'schemaVersion')?.value === 2;
+  const descriptorScratchBytes = compact ? MAX_RECOVERY_CELL_SCRATCH : 0;
+  const registryLiveBytes = registryBytes * 2 + registryIndexBytes + descriptorScratchBytes;
   const snapshot = snapshotRecoverySidecar(body, { maxCombinedBytes: RECOVERY_MEMORY.decoded, liveBufferBytes: registryLiveBytes }); body = snapshot.body;
   if (sourceHashes !== null) {
     sourceHashes = structuredClone(sourceHashes);
@@ -25,11 +29,13 @@ export async function validateRecoveryManifest(body, { expectedHash, worldSetRev
       expected.set(tuple[0], tuple[1]);
     }
   }
-  if (!body || body.schemaVersion !== 1 || body.worldId !== 'athens' || body.projectionId !== 'athens-v1' || body.worldSetRevision !== worldSetRevision || !ROUTE_HASH.test(worldSetRevision || '') || !ROUTE_HASH.test(expectedHash || '') || snapshot.metrics.bytes > RECOVERY_ARTIFACT_BYTES || await sha256(body) !== expectedHash || !body.cells || Array.isArray(body.cells) || !Object.keys(body.cells).length) throw Error('Invalid authoritative recovery manifest');
-  if (expected !== null && (expected.size !== Object.keys(body.cells).length || [...expected].some(([key, hash]) => body.cells[key]?.sourceHash !== hash))) throw Error('Recovery manifest omits or changes published world cells');
-  for (const [key, cell] of Object.entries(body.cells)) {
-    if (!/^-?\d+,-?\d+$/.test(key) || !cell || !ROUTE_HASH.test(cell.sourceHash || '') || (cell.empty === true ? cell.hash !== undefined || cell.url !== undefined : !ROUTE_HASH.test(cell.hash || '') || cell.url !== sidecarURL(key, cell.hash))) throw Error('Invalid immutable recovery sidecar');
-    Object.freeze(cell);
+  if (!body || ![1, 2].includes(body.schemaVersion) || body.worldId !== 'athens' || body.projectionId !== 'athens-v1' || body.worldSetRevision !== worldSetRevision || !ROUTE_HASH.test(worldSetRevision || '') || !ROUTE_HASH.test(expectedHash || '') || snapshot.metrics.bytes > RECOVERY_ARTIFACT_BYTES || await sha256(body) !== expectedHash || !body.cells || Array.isArray(body.cells) || !Object.keys(body.cells).length) throw Error('Invalid authoritative recovery manifest');
+  if (expected !== null && (expected.size !== Object.keys(body.cells).length || [...expected].some(([key, hash]) => recoveryCellSourceHash(body, key) !== hash))) throw Error('Recovery manifest omits or changes published world cells');
+  for (const [key, raw] of Object.entries(body.cells)) {
+    const cell = compact ? recoveryCellDescriptor(body, key) : raw;
+    const multipart = Array.isArray(cell?.parts);
+    if (!/^-?\d+,-?\d+$/.test(key) || !cell || cell.empty !== undefined && cell.empty !== true || !ROUTE_HASH.test(cell.sourceHash || '') || (cell.empty === true ? cell.hash !== undefined || cell.url !== undefined || cell.parts !== undefined : multipart ? cell.hash !== undefined || cell.url !== undefined || !cell.parts.length || cell.parts.length > 64 || new Set(cell.parts).size !== cell.parts.length || cell.parts.some(hash => !ROUTE_HASH.test(hash || '')) : cell.parts !== undefined || !ROUTE_HASH.test(cell.hash || '') || cell.url !== sidecarURL(key, cell.hash))) throw Error('Invalid immutable recovery sidecar');
+    if (!compact) { if (multipart) Object.freeze(cell.parts); Object.freeze(cell); }
   }
   if (!Array.isArray(body.footprints) || !body.footprints.length || body.footprints.length > 64 || !body.footprints.every(p => Number.isFinite(p.halfWidth) && p.halfWidth > 0 && p.halfWidth <= 3 && Number.isFinite(p.halfLength) && p.halfLength > 0 && p.halfLength <= 12)) throw Error('Recovery manifest vehicle certificates unavailable');
   for (const p of body.footprints) Object.freeze(p); Object.freeze(body.footprints);
@@ -77,8 +83,20 @@ export function createStreamedRoadAuthority(manifest, loadArtifact, { maxBytes =
   const cache = new Map(), pending = new Map(); let bytes = 0, decodedBytes = 0, serial = Promise.resolve(), parsing = 0, peakParsing = 0, leases = 0;
   const keysFor = pose => {
     if (!pose || !['x', 'y', 'z'].every(k => Number.isFinite(pose[k])) || !manifest.cells[cellOf(pose)]) return null;
-    const [cx, cz] = cellOf(pose).split(',').map(Number), keys = [];
-    for (let x = cx - 1; x <= cx + 1; x++) for (let z = cz - 1; z <= cz + 1; z++) { const key = `${x},${z}`; if (manifest.cells[key] && !manifest.cells[key].empty) keys.push(key); }
+    const [cx, cz] = cellOf(pose).split(',').map(Number), keys = []; let scratchBytes = 256;
+    for (let x = cx - 1; x <= cx + 1; x++) for (let z = cz - 1; z <= cz + 1; z++) {
+      const key = `${x},${z}`; if (!Object.hasOwn(manifest.cells, key)) continue;
+      const descriptorBytes = recoveryCellScratchBytes(manifest, key); scratchBytes += descriptorBytes;
+      if (scratchBytes > maxContextBytes) throw Error('Recovery candidate memory budget exceeded: descriptor context');
+      const descriptor = recoveryCellDescriptor(manifest, key, { maxScratchBytes: descriptorBytes || MAX_RECOVERY_CELL_SCRATCH });
+      if (descriptor.empty === true) continue;
+      for (const hash of descriptor.parts || [descriptor.hash]) {
+        const referenceBytes = 96 + (key.length + 1 + hash.length) * 2; scratchBytes += referenceBytes;
+        if (scratchBytes > maxContextBytes) throw Error('Recovery candidate memory budget exceeded: reference context memory budget exceeded');
+        keys.push(key + ':' + hash);
+      }
+    }
+    Object.defineProperty(keys, 'scratchBytes', { value: scratchBytes });
     return keys;
   };
   const touch = key => { const value = cache.get(key); if (value) { cache.delete(key); cache.set(key, value); } return value; };
@@ -89,10 +107,10 @@ export function createStreamedRoadAuthority(manifest, loadArtifact, { maxBytes =
     const promise = serial.then(async () => {
       parsing++; peakParsing = Math.max(peakParsing, parsing);
       try {
-        const descriptor = manifest.cells[key], raw = await loadArtifact(descriptor.url, RECOVERY_ARTIFACT_BYTES);
+        const separator = key.indexOf(':'), cell = key.slice(0, separator), hash = key.slice(separator + 1), descriptor = { cell, hash, url: sidecarURL(cell, hash) }, raw = await loadArtifact(descriptor.url, RECOVERY_ARTIFACT_BYTES);
         const { body: proven, metrics } = await admitRecoverySidecar(raw, { expectedHash: descriptor.hash, worldSetRevision: manifest.worldSetRevision });
         const source = new Map(proven.sourceHashes);
-        if (source.get(key) !== descriptor.sourceHash || proven.sourceHashes.some(([cell, hash]) => manifest.cells[cell]?.sourceHash !== hash)) throw Error('Recovery sidecar source drift');
+        if (source.get(descriptor.cell) !== recoveryCellSourceHash(manifest, descriptor.cell) || proven.sourceHashes.some(([cell, hash]) => recoveryCellSourceHash(manifest, cell) !== hash)) throw Error('Recovery sidecar source drift');
         const { bytes: size, decodedBytes: decoded } = metrics, edges = proven.edges;
         if (size > maxBytes || decoded > maxDecodedBytes) throw Error('Recovery sidecar exceeds cache budget');
         const value = { authority: routeRoadAuthority(proven), edges, size, decoded };
@@ -111,24 +129,13 @@ export function createStreamedRoadAuthority(manifest, loadArtifact, { maxBytes =
       leases++; let released = false;
       const release = () => { if (!released) { released = true; leases--; } };
       try {
-        const unique = new Map(), edges = new Map(); let contextBytes = 256;
+        const builder = createRecoveryQueryBuilder({maxBytes:maxContextBytes,initialBytes:keys.scratchBytes || 0});
         for (const key of keys) {
           const cell = await load(key);
-          for (const a of cell.authority.candidates(pose, footprint)) {
-            const id = canonicalJSON([a.edgeId, a.offsetM, a.x, a.z]); if (unique.has(id)) continue;
-            // Copy anchors: a snapshot must not retain an evicted cell's arrays.
-            const anchor = { ...a, footprints: a.footprints?.map(p => ({ ...p })) };
-            contextBytes += recoveryDataBytes(anchor) * 2 + id.length * 2 + 128;
-            if (contextBytes > maxContextBytes) throw Error('Recovery candidate memory budget exceeded');
-            unique.set(id, anchor);
-          }
-          for (const e of cell.edges) if (!edges.has(e.id)) {
-            contextBytes += recoveryDataBytes(e) * 2 + 128;
-            if (contextBytes > maxContextBytes) throw Error('Recovery candidate memory budget exceeded');
-            edges.set(e.id, e);
-          }
+          for (const a of cell.authority.iterateCandidates(pose, footprint)) builder.add(a);
+          for (const e of cell.edges) builder.addEdge(e);
         }
-        return { pose: JSON.stringify(pose), candidates: [...unique.values()], edges: [...edges.values()], bytes: contextBytes, release };
+        return { pose: JSON.stringify(pose), ...builder.finish(), release };
       } catch (error) { release(); throw error; }
     },
     async ensure(pose) { const keys = keysFor(pose); if (!keys) throw Error('Recovery roads are unavailable at this position'); for (const key of keys) await load(key); if (!readyFor(pose)) throw Error('Recovery safety set exceeds cache budget'); },

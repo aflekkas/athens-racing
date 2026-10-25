@@ -2,7 +2,7 @@
 
 This is the list of things that are broken, rough or missing in Athens Racing right now. **Every item here is open for anyone to pick up:** people, AI agents, first-time contributors. If you want to help and don't know where to start, start here.
 
-Production is https://athensracing.com, last checked at `a8eaa73` on 2026-10-22.
+The public desktop download landing is https://athensracing.com (2026-10-25). macOS Apple Silicon is available as a preview; Windows and Linux installers remain unavailable pending native acceptance.
 
 ## How to contribute a fix
 
@@ -42,6 +42,41 @@ Difficulty: 🟢 good first fix · 🟡 medium · 🔴 deep / needs care.
 
 ---
 
+## Fixed: hosted game deployment automation replaced (2026-10-25)
+
+The general CI test job remains enabled. Its former `deploy` job and cloud-dependent hosted bundle checks have been removed so CI does not contact or recreate retired hosted game resources. General source/physics/events/ghost/import/syntax checks remain, isolated landing checks replace hosted validation, and the separate native workflow retains clean exact-source no-retry gates. The static download landing uses its own isolated configuration and the versioned macOS preview release `v0.1.0-mac.1`; the internal `v0.1.0` CI payload release remains a draft. No game runtime or installer bytes changed in this cutover follow-up.
+
+## Open: offline desktop and LAN migration (2026-10-24)
+
+The owner requested self-contained installers, offline solo, and player-hosted LAN following Cogenly's architecture. Work is in progress; infrastructure must remain available until the replacement passes offline game, persistence, multiplayer, and installer verification.
+
+- The current renderer requires the unified Athens world and compiled routes. Legacy track files alone cannot run races. Package every manifest dependency and verify its immutable hash before distribution.
+- Published staging currently advertises `online:false`. Desktop LAN must build and validate its own complete online route/recovery catalogue before a race can work; a working lobby alone is insufficient.
+- Native Windows and Linux installer/firewall tests, macOS local-network permission, and two physical computers remain required before describing every platform as verified.
+
+- Results photo framing remains an open baseline visual issue: the native exported 1200×900 PNG saves correctly and passes save/cancel/subframe checks, but its photo area is mostly grey road/hills without a clearly framed car. The photo-camera block is byte-identical to original `36db95dc`; a streamed-origin mismatch is only a hypothesis. Evidence: `.scratch/desktop-check/installed-final/result-card.png`. This is separate from successful file export and is not fixed by the desktop/CI change.
+- Native Windows CI acceptance is proposed separately: an exact-source Windows NSIS install, six-route/PNG/two-client LAN checks and default-profile uninstall/reinstall retention must pass before advertising Windows as verified. Hosted software rendering and one-machine LAN do not establish physical GPU, Windows Firewall or Mac↔Windows interoperability.
+
+Fixed prerequisites (native installed and cross-platform acceptance remain separate):
+
+- Native Windows run 40150516180 failed in QA before free roam: the first free-roam PCM call was placed in the six-route race loop and dereferenced absent __athens.audio. The harness restores every 2.5-second race drive and samples both actual free-roam drives instead, with explicit mode/car guards. An executable trace of the shipped phase control flow rejects source df184d3e and passes the corrected six-race/two-free sequence; real recorded-engine/master PCM thresholds and context-disposal checks remain unchanged. New native acceptance remains required.
+
+- Streamed Athens free roam never connected the shared Audio engine: it had no gesture unlock, vehicle telemetry or volume synchronization. It now reuses one graph, feeds live engine/tyre/traffic/ambience state, honors saved sliders and hidden-window silence, and releases listeners/context on exit. Packaged audible playback remains an acceptance check.
+
+- Native Host/Join→Solo mode changes cancelled in-flight immutable local assets, causing a Windows wind-audio HTTP 502. The facade now cancels session-bound requests only; shutdown still cancels every pending request. A real backpressured asset regression fails on the original runtime and verifies complete bytes across both mode changes with the fix. New packaged Windows acceptance remains required.
+- Free-roam admission used raw V8 heap while races used retained resource accounting. Both now use the same unchanged retained/GPU caps, including regional/query caches and active decode reservations. Raw heap and its high-water mark remain telemetry. Focused tests cover stale heap, every accounting bucket, invalid values and over-limit rejection; native repeated-entry inventories and managed-counter release are acceptance checks, not proof that all browser or driver memory is bounded.
+
+- Full-map bake tests retain the encoded terrain pack separately from the sampler facade; the full fixture no longer feeds an object as an empty binary buffer. Production bundle QA preserves test hooks across the real Quit-to-menu navigation and waits for the new loaded menu document without dereferencing a booting runtime.
+
+- Recovery production omitted authenticated junction contact-owner edges in cell `-1,-10`. It now retains the exact owner and its emitted twins, excludes restricted-only contacts, and passes unchanged admission.
+- Dense cells exceeded conservative 12 MiB parsing limits. Lossless identifier dictionaries and bounded ordered parts preserve every original anchor, coordinate and certificate without increasing wire, parse, cache or query limits. Artifact admission does not establish that every dense recovery neighborhood fits query memory; actual Tow remains an acceptance check.
+- Five legacy Megara graph cells used generic `surface:roads` instead of authenticated `surface:megaraNetwork`. A separate derived export replays the existing guarded metadata repair, preserves geometry bytes and all six route/rival numeric arrays, and rebinds the complete release identity. The published source remains immutable.
+- Local fonts, bundled Three/workers, explicit Solo/Host/Join, scoped local profiles, LAN lifecycle cleanup and fail-closed source/overlay verification are implemented. Complete recovery certification now covers all 1,748 cells and six routes. Native macOS source-game checks pass all six routes with keyboard movement, authenticated Megara cell-boundary crossing, Syntagma Tow, mouse lock/unlock/pause and full-restart persistence. Native Results PNG save/cancel and subframe denial pass. Two native macOS clients also pass private-IP host/join, synchronized start, accepted remote movement, authoritative Tow, reconnect retaining the driver and host shutdown→Solo. Final installed proof remains an acceptance check.
+
+- Native LAN start kept the menu backdrop over the streamed race and omitted edge contact identity from outgoing state. Both branches now reveal the road, and emitted contact metadata reaches strict server admission. Explicit unknown contacts and mismatched projected edges retain display snapshots without earned route progress; reentry must return to earned progress. Existing labelled kerb excursion behavior remains unchanged. Actual native two-client movement and Tow pass; source regression covers ground→production telemetry→real authority, unknown/stale contact, wrong deck and reentry.
+
+- Native road-query traffic spikes: an optional 256 KiB cache shares the existing stream admission budget, retains exact building bounds and graph-revision-scoped connectivity, and falls back to the original predicates when admission fails. Matched 60-second native drives improve frame p99 from 24.6 to 9.4 ms and frames over 50 ms from 27 to 1; one 99.9 ms frame remains. Evidence and instrumentation limits: `.scratch/desktop-check/traffic-performance.md`. Peristeri follow-up reproduced a 475 ms frame: repeated traffic footprint checks spent 470.9 ms in `roads.safe` when dense building bounds exceeded that unchanged optional cache. The denied-cache path now computes exact temporary building bounds before materializing candidate polygons; contact samples, density and budgets stay unchanged. An independent legacy-predicate oracle covers 10,800 positions plus nonfinite, height and boundary cases; the new denied-cache regression fails on the old source (9,216 unnecessary distance calculations) and passes with zero on the fix. The same 256 KiB cache now evicts older optional memos to admit the current repeatedly sampled connectivity query; oversized results cannot flush it. A comparable 60-second Peristeri source-method QA drive reduces maximum RAF gap from 475 to 58.9 ms and frames over 100 ms from one to zero; four frames over 50 ms remain. Replaying 600 actual query inputs against the same resident world and restored cache state gives identical results and 803 to 34.4 ms total. Native runs use unseeded traffic and are not identical NPC trajectories. Full Athens driving acceptance and packaged after measurements remain pending.
+
 ## Open: reported by the owner (most important first)
 
 ### 4. Unrealistic terrain 🔴
@@ -71,6 +106,10 @@ Source-model diagnostics remain separate from world acceptance. All seven compon
 **Remaining:** inherited road/terrain mesh seams, visible around Syntagma, need the separate terrain fix in item 4. Untagged driveways are inferred from road mouths and empty runs. No world rebake or R2 upload in this parking/decal change.
 
 ## Open: other known issues
+
+- **Windows LAN Tow remains unverified (2026-10-25):** exact a635 native Windows passed six routes, both recorded engine/master PCM drives and context disposal, plus PNG save/cancel/subframe checks and synchronized two-client race with 11.89 m accepted remote motion. The keyboard R Tow completion wait timed out after 30 seconds; cleanup passed. Its old diagnostic ring did not retain recovery request/denial boundaries, so no game root cause is established. A separate bounded early observer now records recovery calls/rejections, recovery-specific packets, key/focus state and accepted motion epochs without changing the manual R wrapper, predicate, deadline or Tow logic. Default-profile install/reinstall retention and subsequent LAN reconnect/shutdown are still unverified on Windows. Cold startup frame spikes below remain OPEN.
+
+- 🟡 **Residual Athens free-roam frame spikes.** The scoped Peristeri query fix removes the reproduced 475 ms stall in source-method QA, but four 50–59 ms frames remain over 60 seconds (repeated safety queries and one render cost). Chalandri, sustained tile-boundary driving and the final packaged installer still need acceptance measurements. Evidence: `.scratch/desktop-check/runtime-review/roads-safe-fix.md`. Actual new signed packaged app (naturally compiled d86d/e7ee, no method replacement) has a separate cold60s result:6954frames,p999.4ms,max399.3ms,8frames>50ms and4>100ms. Early render calls320.7ms and107.3ms explain two spikes; two initial delivery/scheduling gaps remain unproven. The20–60s interval has4742frames,p999.4ms,max49.5ms,zero>50ms; this does not erase cold spikes. The old late470.9ms road-query stall was not reproduced, with peak roads.safe60.2ms and connected2.7ms. Real recorded SVJ engine/master PCM passed while moving56.3km/h with device output muted. Full stutter resolution remains OPEN, as do Chalandri, sustained tile-boundary and Windows performance acceptance. Evidence: `.scratch/desktop-check/runtime-review/packaged-qa.md` and `packaged-summary.json`.
 
 - 🟡 **Combined release verification remains open.** Exact `21bbb592` passes the four clean-archive gates and unfiltered full terrain mode: npm 3,779 passed / 28 skipped / 0 failed, physics 1,323, imports 369, syntax 481 and all four legacy terrain scans. This does not admit the combined streamed world, new routes, cold-load, multiplayer or deployment. See `.scratch/release-gates-21bbb/README.md`.
 
@@ -110,6 +149,10 @@ Source-model diagnostics remain separate from world acceptance. All seven compon
 - **A failed commit is never retried on its own.** After a failure the release train skips that commit until `~/.local/state/athens-release/failed` is removed.
 
 ## Fixed
+
+- **Desktop window presentation and metadata (2026-10-25):** the window uses the existing menu status row for dragging, retains native window controls and keeps controls/canvas outside drag regions. Stable OS title is Athens Racing; page descriptions now describe offline solo, local saves and player-hosted LAN with Windows/macOS schema targets. Source macOS native QA verified title, controls, minimum-size LAN input/Back interactions and drag boundaries. A normal new prepared game now has build66e03bb37/runtime56ce6c94,3903files/1242936429bytes; independent389input/65chunk reconstruction passed. Actual signed macOS presentation QA now verifies the new HTML metadata, stable OS title, full-height content and minimum-size LAN input/Back controls. Windows acceptance, physical OS drag/native-button clicks, and complete LAN/lifecycle admission are still required. Visible game heading and its styling are unchanged. Evidence: `.scratch/desktop-presentation/README.md`.
+
+- **Native Windows acceptance cleanup obscured download evidence (2026-10-25):** await each owned Electron child shutdown, retry transient Windows directory locks within a bound, and persist functional plus cleanup results separately. Exact `808c6c8` Windows six-route and both recorded-engine PCM/disposal checks passed; its download cleanup then failed with EBUSY. New cleanup regression tests pass; corrected native download/LAN/install-retention acceptance remains pending CI. Cold renderer/scheduling stutters remain open.
 
 - **Garage browser-test portability.** Removed the stale Chromium 1234 default. Playwright 1.64.0 now selects its installed managed browser, while explicit `CHROME_BIN` stays supported. Exact `21bbb592` passes all seven garage checks with both verified full Chrome and the managed headless-shell default, and passes all five code gates. This closes the narrow test-launch problem; combined gameplay and remote release verification remain separate.
 

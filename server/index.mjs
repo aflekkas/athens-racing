@@ -1,4 +1,5 @@
 import { accounts } from '../worker/accounts.mjs';
+import { pathIsWithin } from './path-containment.mjs';
 import { authorizeGame, protectedPath, accountResult, identityActive } from './auth-policy.mjs';
 import { canSaveResults } from './smoke-session.mjs';
 import { leaderboardFilters } from './leaderboard-policy.mjs';
@@ -110,7 +111,7 @@ export async function createGameServer({ root = ROOT, builtCataloguePath, countd
       if (!['GET', 'HEAD'].includes(req.method)) { res.writeHead(405, headers); res.end(); return; }
       const allowed = path === '/' || path === '/index.html' || path === '/style.css' || /^\/(src|assets|data)\/[a-zA-Z0-9_./-]+$/.test(path);
       const file = resolve(root, '.' + (path === '/' ? '/index.html' : path));
-      if (!allowed || path.split('/').some(s => s.startsWith('.')) || !file.startsWith(root + '/')) { res.writeHead(404, headers); res.end('Not found'); return; }
+      if (!allowed || path.split('/').some(s => s.startsWith('.')) || !pathIsWithin(root, file)) { res.writeHead(404, headers); res.end('Not found'); return; }
       const info = await stat(file); if (!info.isFile()) throw new Error('Not a file');
       res.writeHead(200, { ...headers, 'Content-Type': TYPES[extname(file)] || 'application/octet-stream', 'Content-Length': info.size });
       if (req.method === 'HEAD') res.end(); else { const stream = createReadStream(file); stream.on('error', () => res.destroy()); stream.pipe(res); }
@@ -139,7 +140,7 @@ export async function createGameServer({ root = ROOT, builtCataloguePath, countd
   const tick = setInterval(() => { core.tick(); for (const [ip, limit] of postLimits) if (Date.now() - limit.at > 60000) postLimits.delete(ip); }, RELAY_MS);
   const heartbeat = setInterval(() => { for (const c of clients) { if (!c.alive) c.ws.terminate(); else { c.alive = false; c.ws.ping(); } } }, 15000);
   const close = async () => { clearInterval(tick); clearInterval(heartbeat); for (const c of clients) c.ws.terminate(); await new Promise(r => wss.close(r)); await new Promise(r => server.close(r)); await leaderboard.flush(); };
-  return { server, close, lobbies, track, leaderboard, routeConfig: maps.routeConfig };
+  return { server, close, endSessions: core.endSessions, lobbies, track, leaderboard, routeConfig: maps.routeConfig };
 }
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const app = await createGameServer();

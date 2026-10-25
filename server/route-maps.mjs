@@ -1,10 +1,10 @@
-import { routeSurfaceAllowed } from '../src/route-surface.js';
+import { routeSurfaceAllowed, MEGARA_RACEWAY, MEGARA_DRIVE_SURFACES } from '../src/route-surface.js';
 import { RouteNetworkRuntime } from '../src/route-network-runtime.js';
 import { routeEvent } from '../src/route-events.js';
 import { resolve as resolveEvent, freeRoam } from '../src/events.js';
 import { routeNetworkIdentity, sameRouteIdentity, ROUTE_HASH } from '../src/route-network.js';
 import { validateOnlineGrid, onlineGridPose } from '../src/online-grid.js';
-import { validateRecoveryManifest, createStreamedRoadAuthority } from './route-road-stream.mjs';
+import { validateRecoveryManifest, createStreamedRoadAuthority, RECOVERY_MEMORY } from './route-road-stream.mjs';
 const sameRelease = (entry, c) => entry?.id === c.id && ['routeHash', 'geometryHash', 'worldSetRevision'].every(k => ROUTE_HASH.test(c[k] || '') && entry[k] === c[k]);
 const immutableURL = (id, kind, hash) => `/data/routes/${id}.${kind}.${hash}.json`;
 // Only artifacts in the trusted build catalogue can become multiplayer maps or
@@ -58,12 +58,24 @@ export async function installRouteMaps(maps, catalogue, { carSpecs = {}, loadRoa
           const station = geometry.closed && q.s >= 0 ? geometry.wrap(q.s) : q.s;
           if (q.s < 0 && onlineGrid.approach.occurrences.some(o => o.layer === pose.layer && o.surfaceId === pose.surfaceId && q.s >= o.s0 && q.s <= o.s1)) return true;
           if (c.occurrences.some(o => o.layer === pose.layer && o.surfaceId === pose.surfaceId && station >= o.s0 - 4 && station <= o.s1 + 4)) return true;
-          const localGraph = { edges: new Map((activeRecovery?.edges || authority.edgesFor(pose)).map(e => [e.id, { value: e }])) };
+          if(activeRecovery){const edge=activeRecovery.edgeFor(q.edgeId);if(!edge||pose.layer!==edge.layer)return false;
+            return MEGARA_RACEWAY.test(edge.id)&&edge.surface==='surface:roads'&&edge.layer===0&&!(edge.flags&8)?MEGARA_DRIVE_SURFACES.includes(pose.surfaceId):activeRecovery.hasSurface(pose.layer,pose.surfaceId);}
+          const localGraph = { edges: new Map(authority.edgesFor(pose).map(e => [e.id, { value: e }])) };
           const edge = localGraph.edges.get(q.edgeId)?.value;
           return !!edge && routeSurfaceAllowed(edge, pose, localGraph);
         };
         geometry.recoveryFootprint = footprint;
-        geometry.recoveryCandidates = (pose, driver) => { activeRecovery = preparedRecovery.get(driver) || null; if (activeRecovery?.pose !== JSON.stringify(pose)) activeRecovery = null; return (activeRecovery?.candidates || []).filter(a => a.layer === pose.layer && Math.abs(a.y - pose.y) < 8).filter(a => ![...(driver.lobby?.players?.values() || [])].some(p => p !== driver && p.connected && p.state && Math.abs(p.state.y - a.y) < 3 && Math.hypot(p.state.x - a.x, p.state.z - a.z) < footprint(driver).halfLength + footprint(p).halfLength + 1)); };
+        geometry.recoveryCandidates = (pose, driver) => {
+          activeRecovery = preparedRecovery.get(driver) || null;
+          if (activeRecovery?.pose !== JSON.stringify(pose)) activeRecovery = null;
+          const candidates = activeRecovery?.candidates || [];
+          return { *[Symbol.iterator]() { for (const a of candidates) {
+            if(a.layer !== pose.layer || Math.abs(a.y-pose.y)>=8)continue;
+            let blocked=false;for(const p of driver.lobby?.players?.values() || [])if(p!==driver&&p.connected&&p.state&&Math.abs(p.state.y-a.y)<3&&Math.hypot(p.state.x-a.x,p.state.z-a.z)<footprint(driver).halfLength+footprint(p).halfLength+1){blocked=true;break;}
+            if(!blocked)yield a;
+          } } };
+        };
+        geometry.recoveryPlanningBudget = driver => Math.max(0,RECOVERY_MEMORY.context-(preparedRecovery.get(driver)?.bytes || RECOVERY_MEMORY.context));
         geometry.contactAt = authority.contactAt;
         const track = { start: 0, finish: c.lengthM, version: `${c.routeHash}:${descriptor.hash}`, routeIdentity: identity };
         const prepareRecovery = async driver => {

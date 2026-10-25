@@ -12,7 +12,7 @@
 //                             draw ranges, graphics.js PERFORMANCE); set silently by the first-run check, never the look
 //   settings.renderScale      'auto' (the performance class's resolution) | 0.5..1 of the screen's pixels (upper bound when dynamic resolution is enabled)
 //   settings.pixelRatioCap    legacy, unused
-//   settings.frameCap         frame rate limit: 30 | 60 | 120 | 0 (unlimited); high-refresh screens otherwise draw every vsync
+//   settings.frameCap         legacy compatibility value, always 0: render every display callback
 //   settings.drawDistance     'auto' (the performance class's) | 300 | 500 | 1000 | 2000 | 4000 metres (src/scenery.js, applies live)
 //   settings.mirrors          working in-car rear-view / door mirrors: 'off' | 'low' | 'high' (src/cockpit.js);
 //                             Off hides the mirrors and skips the pass, Low halves the resolution and refreshes every
@@ -27,23 +27,9 @@ const PERF_CLASSES = ['auto', 'potato', 'low', 'med', 'high'];
 // removed graphics choices (owner-locked single look): ignored and dropped from saves
 const LEGACY_GRAPHICS_KEYS = ['graphics', 'lighting', 'effects', 'motionBlur'];
 const LEGACY_GRAPHICS_STORAGE = 'paraliaki.graphics';
-export const FRAME_CAPS = [30, 60, 120, 0];
-/** Any saved or incoming frame limit as one of FRAME_CAPS (0 = no limit). Unlimited has been written as 0, as null
- *  (JSON.stringify(Infinity)) and as words; a number above 120 means "faster than the highest limit"; other numbers
- *  snap to the nearest limit. Anything unreadable gives `fallback`. */
-export function frameCapValue(value, fallback = DEFAULTS.frameCap) {
-  if (value === null || value === Infinity || value === false) return 0;
-  if (value === true) return fallback;
-  if (typeof value === 'string') {
-    const word = value.trim().toLowerCase();
-    if (/^(unlimited|none|off|max|maximum|no[ _-]?limit|uncapped|inf|infinity)$/.test(word)) return 0;
-    if (!word) return fallback;
-  }
-  const n = Number(value);
-  if (!Number.isFinite(n) || n < 0) return fallback;
-  if (n === 0 || n > 120) return 0;
-  return [30, 60, 120].reduce((a, b) => Math.abs(b - n) < Math.abs(a - n) ? b : a);
-}
+export const FRAME_CAPS = [0];
+// Owner request 2026-10-24: no game FPS cap, including previously saved limits.
+export function frameCapValue() { return 0; }
 const AUDIO_DEFAULT_VERSION = 'paraliaki.audio-default-version';
 const TYRE_DEFAULT_VERSION = 'paraliaki.tyre-default-version';
 const HUD_MOTION_DEFAULT_VERSION = 'paraliaki.hud-motion-default-version';
@@ -54,7 +40,7 @@ export function mirrorQuality(preference = settings.mirrors, perfClass = setting
   if (preference === 'low') return 'low';
   return perfClass === 'potato' || perfClass === 'low' ? 'low' : 'high';
 }
-export const DEFAULTS = { master: 0.6, sfx: 1, engine: 0.85, tyres: 0.28, ambience: 0.5, traffic: 0.65, voice: 0.65, ui: 0.4, mildLanguage: false, units: 'kmh', aids: true, abs: true, transmission: 'auto', steeringAssist: null, perfClass: 'auto', renderScale: 'auto', dynamicResolution: true, pixelRatioCap: 1.5, frameCap: 60, drawDistance: 'auto', worldDetail: true, mirrors: 'high', ghostEnabled: true,
+export const DEFAULTS = { master: 0.6, sfx: 1, engine: 0.85, tyres: 0.28, ambience: 0.5, traffic: 0.65, voice: 0.65, ui: 0.4, mildLanguage: false, units: 'kmh', aids: true, abs: true, transmission: 'auto', steeringAssist: null, perfClass: 'auto', renderScale: 'auto', dynamicResolution: true, pixelRatioCap: 1.5, frameCap: 0, drawDistance: 'auto', worldDetail: true, mirrors: 'high', ghostEnabled: true,
   mouseSensitivity: 1, mouseLook: false, invertLookY: false, chaseFov: 58, cockpitFov: 66, speedFov: true, playerMarkers: true, rivalMarkers: true, perfOverlay: false, hudMotion: 'full' };
 export const HUD_MOTION_VALUES = ['off', 'subtle', 'full'];
 const reducedMotion = () => { try { return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } };
@@ -81,6 +67,7 @@ function load() {
   try {
     const storage = ls(), saved = JSON.parse(storage?.getItem(KEY) || '{}');
     hadMirrors = Object.hasOwn(saved, 'mirrors');
+    if (saved.frameCap !== 0) { saved.frameCap = 0; try { storage?.setItem(KEY, JSON.stringify(saved)); } catch {} }
     // Owner-locked removal (docs/OWNER-DECISIONS.md): drop the obsolete tyre-grip HUD preference, persisted copies too.
     if (Object.hasOwn(saved, 'showTyreGrip')) {
       delete saved.showTyreGrip;
@@ -160,7 +147,7 @@ export function onSettings(fn) { subs.add(fn); return () => subs.delete(fn); }
 export function setSetting(key, value) {
   if (key === 'perfClass' && !PERF_CLASSES.includes(value)) return;
   if (key === 'renderScale') value = resolutionValue(value);
-  if (key === 'frameCap') { value = frameCapValue(value, null); if (value === null) return; }
+  if (key === 'frameCap') value = 0;
   if (key === 'pixelRatioCap') value = pixelRatioCapValue(value);
   if (key === 'worldDetail' || key === 'dynamicResolution' || key === 'mildLanguage' || key === 'aids' || key === 'abs') value = value === true;
   if (key === 'mirrors') {
