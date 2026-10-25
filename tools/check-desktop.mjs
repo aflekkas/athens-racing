@@ -15,6 +15,39 @@ const launchBegan = Date.now();
 const metrics = {};
 const requests = [], errors = [], brokenResponses = [], consoleMessages = [], failedRequests = [], results = [];
 let application, page, primary;
+// Electron output remains muted; assert the actual WebAudio signal before its
+// device sink so silence cannot hide an unwired free-roam entry again.
+async function unlockFreeAudio() {
+  assert.ok(await page.evaluate(() => window.__athens?.audio === window.__bootAudio && !!window.__athens?.audio), 'free roam must wire the shared real Audio graph');
+  await page.keyboard.press('w');
+  await page.waitForFunction(() => {
+    const view = window.__athens, audio = view?.audio;
+    return audio?.ctx?.state === 'running' && audio.engineSpec?.id === view.player.spec.id && audio.recordingState === 'recorded' && !!audio.engineVoice;
+  }, null, { timeout: 30000 });
+}
+async function recordFreeAudio(label) {
+  const snapshot = await page.evaluate(async () => {
+    const view = window.__athens, audio = view.audio;
+    audio.busLevels(); // Install real analyser taps; allow audio blocks to fill them.
+    const samples = [];
+    for (let i = 0; i < 12; i++) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      samples.push({ buses: audio.busLevels(), output: audio.levels(), speed: view.player.veh.kmh, rpm: view.player.veh.rpm });
+    }
+    return { context: audio.ctx.state, recording: audio.recordingState, selectedCar: audio.engineSpec.id, playerCar: view.player.spec.id, health: audio.health(), samples };
+  });
+  snapshot.label = label;
+  (metrics.freeRoamAudio ||= []).push(snapshot);
+  console.log('Native free-roam audio signal:', JSON.stringify(snapshot));
+  assert.equal(snapshot.context, 'running', label + ': audio context runs during actual driving');
+  assert.equal(snapshot.recording, 'recorded', label + ': installed selected-car recording is ready');
+  assert.equal(snapshot.selectedCar, snapshot.playerCar, label + ': audio follows the actual car');
+  assert.ok(snapshot.samples.some(sample => sample.speed > .1 && Number.isFinite(sample.buses?.eng) && sample.buses.eng > -80 && Number.isFinite(sample.output?.rms) && sample.output.rms > -80), label + ': moving car produces nonzero engine and master PCM despite device mute');
+}
+async function assertFreeAudioDisposed(label) {
+  await page.waitForFunction(() => window.__athens?.audio?.ctx?.state === 'closed', null, { timeout: 10000 });
+  (metrics.freeRoamAudio ||= []).push({ label, context: await page.evaluate(() => window.__athens.audio.ctx.state) });
+}
 async function recordFreeAdmission(label, disposed = false) {
   const snapshot = await page.evaluate(dispose => {
     const view = window.__athens;
@@ -114,7 +147,7 @@ try {
     }, null, { timeout: 240000 });
     assert.equal(await page.evaluate(() => localStorage.getItem('desktop-verification')), 'retained');
     const before = await page.evaluate(() => ({ x: window.__sim.player.veh.x, z: window.__sim.player.veh.z }));
-    await page.keyboard.down('w'); await page.waitForTimeout(2500); await page.keyboard.up('w');
+    await page.keyboard.down('w'); await page.waitForTimeout(1300); await recordFreeAudio('first entry driving'); await page.keyboard.up('w');
     const after = await page.evaluate(() => ({ x: window.__sim.player.veh.x, z: window.__sim.player.veh.z, map: window.__game.mapId, route: window.__game.unifiedCompiled?.id, render: { calls: window.__sim.renderer.info.render.calls, triangles: window.__sim.renderer.info.render.triangles }, geometries: window.__sim.renderer.info.memory.geometries }));
     assert.equal(after.map, 'athens');
     assert.equal(after.route, map);
@@ -181,10 +214,11 @@ try {
     await page.screenshot({ path: resolve(evidence, map + '.jpg'), type: 'jpeg', quality: 85 });
     results.push({ map, route: after.route, elapsedMs: Date.now() - began, localRequests: requests.length - initialRequests, cadence, entryPhases: await page.evaluate(() => window.__worldSession?.metrics?.entryPhases || null), render: after.render, geometries: after.geometries, movedMetres: Math.hypot(after.x - before.x, after.z - before.z) });
   }
-  await page.goto(origin + '/?map=riviera&event=free&simhook&guest=1');
+  await page.goto(origin + '/?map=riviera&event=free&car=aventador_svj&simhook&guest=1');
   await page.waitForFunction(() => window.__athens?.player?.veh && document.body.classList.contains('loaded'), null, { timeout: 240000 });
   await page.waitForFunction(() => window.__athens.stats.frames >= 30 && window.__athens.stream.inflight === 0 && window.__athens.stream.transientBytes === 0, null, { timeout: 120000 });
   await recordFreeAdmission('first entry');
+  await unlockFreeAudio();
   const freeBefore = await page.evaluate(() => ({ x: window.__athens.player.veh.x, z: window.__athens.player.veh.z }));
   await page.keyboard.down('w'); await page.waitForTimeout(2500); await page.keyboard.up('w');
   const freeAfter = await page.evaluate(() => ({ x: window.__athens.player.veh.x, z: window.__athens.player.veh.z, paused: window.__athens.paused }));
@@ -195,12 +229,16 @@ try {
   results.push({ freeRoamMetres: Math.hypot(freeAfter.x - freeBefore.x, freeAfter.z - freeBefore.z), pauseWorked: true });
   await recordFreeAdmission('first entry after driving');
   await recordFreeAdmission('first disposal', true);
+  await assertFreeAudioDisposed('first disposal');
   // Re-enter the same world in a fresh document without forcing GC. Managed
   // stream/query/regional counters must return to zero after each real dispose.
-  await page.goto(origin + '/?map=riviera&event=free&simhook&guest=1');
+  await page.goto(origin + '/?map=riviera&event=free&car=aventador_svj&simhook&guest=1');
   await page.waitForFunction(() => window.__athens?.player?.veh && window.__athens.stats.frames >= 30 && window.__athens.stream.inflight === 0 && window.__athens.stream.transientBytes === 0, null, { timeout: 240000 });
   await recordFreeAdmission('second entry');
+  await unlockFreeAudio();
+  await page.keyboard.down('w'); await recordFreeAudio('second entry driving'); await page.keyboard.up('w');
   await recordFreeAdmission('second disposal', true);
+  await assertFreeAudioDisposed('second disposal');
 
   const warmRouteBegan = Date.now();
   await page.goto(origin + '/?routes=1&route=megara-club&quick&simhook&guest=1');

@@ -55,3 +55,36 @@ test('after a unified free-roam spawn, real keyboard input accelerates and steer
   assert.ok(v.vLong>5,'throttle drives the actual spawned car');assert.ok(Math.hypot(v.x-1000,v.z-2000)>10,'the car moves through world coordinates');assert.ok(Math.abs(v.yaw)>.02,'keyboard steering changes heading');
  }finally{r.input.destroy();}
 });
+
+// Free roam has its own entry; racing audio in main.js cannot cover it.
+test('the actual free-roam entry owns a live audio lifecycle, frame update and teardown',async()=>{
+ const world=await readFile(new URL('../src/athens-world.js',import.meta.url),'utf8');
+ assert.match(world,/createAthensAudio\(/,'free roam must wire sound independently of main.js');
+ assert.match(world,/worldAudio\.update\(/,'live render frames must supply vehicle telemetry');
+ assert.match(world,/worldAudio\.dispose\(/,'free-roam teardown must release its graph and listeners');
+});
+
+test('free-roam audio unlocks once per gesture, follows vehicle and sliders, silences hidden windows and disposes',async()=>{
+ const {createAthensAudio}=await import('../src/athens-audio.js');
+ const target=new EventTarget(),doc=new EventTarget();doc.hidden=false;
+ const events=[],updates=[];let subscriber,removed=0,closed=0;
+ const audio={ctx:null,setVolumes:v=>events.push(['vol',v.master]),setEngine:s=>events.push(['engine',s.id]),
+  start(){events.push(['start']);this.ctx||={currentTime:5,close:()=>{closed++;return Promise.resolve();}};this.mainOut={gain:{setValueAtTime:v=>events.push(['gain',v])}};},
+  update:p=>updates.push({...p,wheels:p.wheels.map(w=>({...w})),traffic:p.traffic.map(t=>({...t}))}),engineOff:()=>events.push(['off']),menuObserver:{disconnect:()=>events.push(['disconnect'])}};
+ const settings={master:0,engine:.8},spec={id:'test-car',redline:7000,gearbox:'manual'};
+ const lifecycle=createAthensAudio({audio,spec,settings,onSettings:fn=>{subscriber=fn;return()=>removed++;},target,document:doc});
+ assert.deepEqual(events,[['vol',0],['engine','test-car']]);
+ const v={x:0,z:0,yaw:0,rpm:2345,load:.7,vLong:12,vLat:5,m:1200,ratio:()=>3.5,corners:[{Fz:3333,sx:.2,sy:.3,vw:13}],_S:[{vgx:11}],wheelSurf:['gravel'],manual:true,shiftStartEvent:{serial:7,direction:1},bumpHit:.2};
+ lifecycle.update(v,.03);assert.equal(updates.length,0,'a frame cannot bypass gesture unlock');
+ target.dispatchEvent(new Event('keydown'));assert.ok(audio.ctx);
+ lifecycle.update(v,.03,{camera:'cockpit',input:{throttle:.8},cars:[{active:true,id:9,v:10,vehicle:{x:10,z:0}}]});
+ const p=updates.at(-1);assert.equal(p.rpm,2345);assert.equal(p.load,.7);assert.equal(p.speed,13);assert.equal(p.gearRatio,3.5);assert.equal(p.wheels[0].vgx,11);assert.equal(p.wheels[0].Fz,3333);assert.equal(p.surfaces[0],'gravel');assert.equal(p.shiftStart.serial,7);assert.equal(p.cockpit,true);assert.equal(p.traffic[0].id,9);
+ subscriber({master:.2});assert.deepEqual(events.at(-1),['vol',.2]);
+ lifecycle.update(v,.03,{paused:true});assert.equal(updates.at(-1).muted,true);assert.equal(updates.at(-1).menuOpen,true);
+ doc.hidden=true;doc.dispatchEvent(new Event('visibilitychange'));assert.deepEqual(events.at(-1),['gain',0]);
+ const starts=events.filter(e=>e[0]==='start').length;target.dispatchEvent(new Event('click'));assert.equal(events.filter(e=>e[0]==='start').length,starts);
+ doc.hidden=false;doc.dispatchEvent(new Event('visibilitychange'));assert.ok(events.some(e=>e[0]==='vol'&&e[1]===0),'restores saved master, including zero');
+ lifecycle.update(v,.03);assert.equal(updates.at(-1).muted,false);
+ lifecycle.dispose();lifecycle.dispose();assert.equal(removed,1);assert.equal(closed,1);
+ const count=events.length;target.dispatchEvent(new Event('keydown'));doc.dispatchEvent(new Event('visibilitychange'));subscriber(settings);lifecycle.update(v,.03);assert.equal(events.length,count,'teardown leaves no active listeners or frame work');
+});

@@ -1,3 +1,15 @@
+# Current audio follow-up — native acceptance pending
+
+Streamed free roam bypasses main.js and omitted the shared Audio lifecycle entirely. The minimal fix reuses __bootAudio, unlocks/resumes from actual input, selects the real car, feeds live vehicle telemetry and saved volumes, and tears down gesture/settings/visibility handlers and its context. Dedicated implementation and independent review used Codex gpt-6.1-sol; focused HUD/vehicle-audio tests pass17/17 on macOS Node26.10.0. Browser imports373 and source syntax529 passed. These are diagnostic checks; exact Linux clean-archive and new native Windows gates remain required.
+
+Native QA remains device-muted but now selects the recorded Aventador SVJ and asserts a running actual shared graph, installed selected-car recording readiness, nonzero engine-bus and master PCM during real keyboard driving, and context closure after each actual disposal/re-entry. No fake Audio or forced graph start supplies acceptance. Prior muted QA missed the missing free-roam path; old source04 evidence is historical. A live reversible same-source helper on the user's existing Mac game produced recorded engine RMS -28.4 dBFS with zero underruns; The user subsequently confirmed actual audible engine sound ("Yes, sound works now") in that live existing session. This confirms the live integration; the newly built permanent installer and Windows native acceptance remain distinct.
+
+New frozen game build `7b5d38c2a034603c88fdc82325adf3c4cbeff10c2552b2707bf74ee2e8fb23e1`, runtime `82055292f67e3d6aeb079107d6b853e76e56423687107b6751430cae9f872de1`; 3,903 files / 1,242,935,769 bytes. Normal esbuild reconstruction matches389 inputs and65 outputs (dedup reduces one chunk); packaged ASAR startup sources and payload hashes match. Canonical normalized archive678,427,181 bytes, SHA256 `7f8c054ff84634c7334346f8bb2f42ace6693fb13182790f4b86f5fdaba00286`. No world, quality or resource cap changes. External source provenance and scoped draft asset replacement precede PR fast-forward. Release423028841 remains unpublished at explicit tagv0.1.0.
+
+The user also reports intermittent Peristeri free-roam freezes. A real30s Riviera race capture gave3,600 active frames, p99 gap9.1ms/max9.3ms, no long tasks or stream holds. It does not reproduce the Athens complaint or justify a performance rewrite. Diagnostic wrappers auto-restored; no input/settings/quality changes.
+
+## Historical source04 runtime follow-up
+
 # Native Windows acceptance — current runtime follow-up
 
 The original proposal below is historical. PR #6 remains a draft targeting staging. Run 40142685760 exposed Host→Solo cancelling a local audio body and free-roam admission using stale global heap after six routes. This follow-up preserves installed immutable GET/HEAD transfers across session changes and uses the shared retained/query/regional/transient/GPU collector for free roam and races, with unchanged caps. Raw heap and high-water values remain telemetry.

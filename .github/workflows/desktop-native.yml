@@ -11,10 +11,10 @@ concurrency:
   cancel-in-progress: false
 env:
   SOURCE_SHA: ${{ github.event.pull_request.head.sha }}
-  EXPECTED_GAME_BUILD: 7095b75551a4f685de44cfdf4071123ef3109b1a1f2f48a8e452f140f95eb91a
-  EXPECTED_RUNTIME_HASH: aadb94386d05e54934c7294df866020ec54aba686361d1d22c23b0dc3263a59e
+  EXPECTED_GAME_BUILD: 7b5d38c2a034603c88fdc82325adf3c4cbeff10c2552b2707bf74ee2e8fb23e1
+  EXPECTED_RUNTIME_HASH: 82055292f67e3d6aeb079107d6b853e76e56423687107b6751430cae9f872de1
   PAYLOAD_TAG: v0.1.0
-  PAYLOAD_SHA256: 1c503ae4c6cb1a829b7c6c468eede61e57ded8590aa5ba7561532897f960c387
+  PAYLOAD_SHA256: 7f8c054ff84634c7334346f8bb2f42ace6693fb13182790f4b86f5fdaba00286
 jobs:
   linux-exact-gates:
     if: github.event.pull_request.draft == true && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.event.pull_request.head.ref, 'desktop-native-review/')
@@ -91,7 +91,7 @@ jobs:
             $assets = @($release.assets | Where-Object { $_.name -eq $name -and $_.state -eq 'uploaded' })
             if ($assets.Count -ne 1) { throw 'Expected one complete pinned payload asset' }
             $asset = $assets[0]
-            if ($name -eq 'game-payload.tar.gz' -and ($asset.size -ne 678424223 -or $asset.digest -ne "sha256:$env:PAYLOAD_SHA256")) { throw 'Canonical payload metadata mismatch' }
+            if ($name -eq 'game-payload.tar.gz' -and ($asset.size -ne 678427181 -or $asset.digest -ne "sha256:$env:PAYLOAD_SHA256")) { throw 'Canonical payload metadata mismatch' }
             if ($name -eq 'game-provenance.json' -and ($asset.size -gt 4096 -or $asset.size -lt 1 -or $asset.digest -notmatch '^sha256:[a-f0-9]{64}$')) { throw 'Invalid provenance metadata' }
             $destination = Join-Path $env:RUNNER_TEMP $name
             gh api "repos/$env:GITHUB_REPOSITORY/releases/assets/$($assets[0].id)" -H 'Accept: application/octet-stream' > $destination

@@ -1,3 +1,6 @@
+import {Audio} from './audio.js';
+import {createAthensAudio} from './athens-audio.js';
+import {audioLatencyHint,audioLowCost} from './audio/robust.js';
 import {WorldTraffic} from './world-traffic.js';
 import {worldRecoveryTarget} from './world-recovery.js';
 import {createGuidanceDemo,DEMO_ROUTE} from './route-guidance/demo.js';
@@ -92,6 +95,9 @@ export async function bootAthens({tileObserver=null}={}){
  const menu=new Menu(document.getElementById('ui'),{resume,quit,carSpec:()=>spec,carName:()=>spec.name,manual:()=>player.veh.manual,inputDevice:()=>input.drivingSource,fmtTime,bindings:el=>input.openBindings(el),cancelBindings:()=>input.cancelCapture()});
  const openSettings=()=>{pause();menu.show('settings',{from:'pause',tab:'audio'},true);};
  window.__flow={menu,pause,resume,quit,openSettings,resetCar:()=>{resume();void tow();},inFreeRoam:()=>true,inMenu:()=>menu.open,get state(){return paused?'paused':'race';}};
+ const audio=window.__bootAudio||new Audio();window.__bootAudio=audio;
+ audio.latencyHint ||= audioLatencyHint(gfx.perfClass,navigator.hardwareConcurrency);audio.lowCost ??= audioLowCost(gfx.perfClass,navigator.hardwareConcurrency);
+ const worldAudio=createAthensAudio({audio,spec,settings,onSettings});
  canvasFocus();
  function action(name){
   drivingHints.action(name);
@@ -155,6 +161,7 @@ export async function bootAthens({tileObserver=null}={}){
   const mirrorQ=mirrorQuality(settings.mirrors,gfx.perfClass);
   if(mirrorsInView(cam))player.cockpit.renderMirrors(renderer,scene,{enabled:mirrorQ!=='off',quality:mirrorQ});
   post.render(dt);
+  worldAudio.update(v,dt,{paused,blocked:towing||account.blocked,camera:cam,input:input.state,cars:worldTraffic.cars});
   const now=performance.now();freeRoamHud(dial,v,{spec,aidsOff:!settings.aids,tacho:now-hudAt>1000/30,map:now-mapAt>1000/15});if(now-hudAt>1000/30)hudAt=now;if(now-mapAt>1000/15)mapAt=now;
   drivingHints.update({state:paused?'paused':'race',blocked:towing||account.blocked,device:input.drivingSource,car:spec,manual:v.manual});document.getElementById('tRace').textContent=fmtTime(elapsed);
  }
@@ -168,7 +175,7 @@ export async function bootAthens({tileObserver=null}={}){
   }catch(e){if(!menu.open)pause();document.getElementById('err').style.display='block';document.getElementById('err').textContent=e.message;console.error(e);}
   stats.cpuMs.push(performance.now()-cpu);if(stats.cpuMs.length>900)stats.cpuMs.shift();frameId=requestAnimationFrame(tick);
  }
- function dispose(){if(stopped)return;stopped=true;cancelAnimationFrame(frameId);offSettings();offGuidance();guidance?.dispose();player.cockpit?.disposeMirrors();worldTraffic?.dispose();session.dispose();renderer.dispose();}
+ function dispose(){if(stopped)return;stopped=true;cancelAnimationFrame(frameId);worldAudio.dispose();offSettings();offGuidance();guidance?.dispose();player.cockpit?.disposeMirrors();worldTraffic?.dispose();session.dispose();renderer.dispose();}
  addEventListener('pagehide',dispose,{once:true});addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();post.setSize(innerWidth,innerHeight,gfx.pixelRatio);});
  document.addEventListener('visibilitychange',()=>{last=performance.now();accumulator=0;if(!document.hidden)void account.revalidate();});
  // Scripted measurement drive: wall-clock paced like a 30 fps game, optional sparse rendering.
@@ -183,6 +190,6 @@ export async function bootAthens({tileObserver=null}={}){
   }}finally{scripted=false;last=performance.now();}
  }
  async function goto(id,x,z){towing=true;try{await stream.teleport({x,z},()=>{const p=stream.anchor(id);if(!p)throw Error('Unknown anchor '+id);place(player.veh,p);});}finally{towing=false;}}
- window.__athens={input,menu,get cameraMode(){return cam;},guidance,props,trees,signs,marks,horizon,landmarks,plazas,lawns,place:p=>place(player.veh,p),advance,goto,setDriver:fn=>{driver=fn;},setCameraHook:fn=>{cameraHook=fn;},stream,roads,barriers,obstacles,player,get traffic(){return worldTraffic.cars;},scene,renderer,camera,stats,inventory,tow,dispose,step,render,setPaused:value=>{paused=!!value;},get paused(){return paused;}};
+ window.__athens={input,menu,audio,get cameraMode(){return cam;},guidance,props,trees,signs,marks,horizon,landmarks,plazas,lawns,place:p=>place(player.veh,p),advance,goto,setDriver:fn=>{driver=fn;},setCameraHook:fn=>{cameraHook=fn;},stream,roads,barriers,obstacles,player,get traffic(){return worldTraffic.cars;},scene,renderer,camera,stats,inventory,tow,dispose,step,render,setPaused:value=>{paused=!!value;},get paused(){return paused;}};
  last=performance.now();frameId=requestAnimationFrame(tick);return window.__athens;
 }
