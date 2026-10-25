@@ -7,5 +7,17 @@
   "assets": {
     "directory": "./public",
     "not_found_handling": "404-page"
-  }
+  },
+  "routes": [
+    {
+      "pattern": "athensracing.com",
+      "custom_domain": true,
+      "zone_id": "8e758afe351840dc034ab0032ce42019"
+    },
+    {
+      "pattern": "www.athensracing.com",
+      "custom_domain": true,
+      "zone_id": "8e758afe351840dc034ab0032ce42019"
+    }
+  ]
 }

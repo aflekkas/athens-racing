@@ -91,7 +91,7 @@ jobs:
             $assets = @($release.assets | Where-Object { $_.name -eq $name -and $_.state -eq 'uploaded' })
             if ($assets.Count -ne 1) { throw 'Expected one complete pinned payload asset' }
             $asset = $assets[0]
-            if ($name -eq 'game-payload.tar.gz' -and ($asset.size -ne 678427352 -or $asset.digest -ne "sha256:$env:PAYLOAD_SHA256")) { throw 'Canonical payload metadata mismatch' }
+            if ($name -eq 'game-payload.tar.gz' -and ($asset.size -ne 678427294 -or $asset.digest -ne "sha256:$env:PAYLOAD_SHA256")) { throw 'Canonical payload metadata mismatch' }
             if ($name -eq 'game-provenance.json' -and ($asset.size -gt 4096 -or $asset.size -lt 1 -or $asset.digest -notmatch '^sha256:[a-f0-9]{64}$')) { throw 'Invalid provenance metadata' }
             $destination = Join-Path $env:RUNNER_TEMP $name
             gh api "repos/$env:GITHUB_REPOSITORY/releases/assets/$($assets[0].id)" -H 'Accept: application/octet-stream' > $destination

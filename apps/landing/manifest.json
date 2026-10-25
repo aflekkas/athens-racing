@@ -7,8 +7,8 @@
   },
   "files": {
     "_headers": {
-      "bytes": 383,
-      "sha256": "bc4e103ec3dbc163c2d38f48a80e4a010903c5c071d9c82e8a7eb439bac08865"
+      "bytes": 449,
+      "sha256": "e50276608d6ae7276741ef9025cbe7ef2666c1dde4ffaa8740777654c265023e"
     },
     "assets/apple-touch-icon.png": {
       "bytes": 5136,
@@ -123,12 +123,12 @@
       "sha256": "2239eba3ce8f2ac8543832af1522710c950bd7606ce176d9f4a4be4f755132f9"
     },
     "index.html": {
-      "bytes": 18006,
-      "sha256": "c73159a70b7aab3b823dc5a598c4674f7d5eedb5c6c5a28ff21e559ce09c03e3"
+      "bytes": 18086,
+      "sha256": "71ac8ba236223ca4994256b48ae81fec0f066e4e0077bf1064f2fb8ad9786c09"
     },
     "release.js": {
-      "bytes": 561,
-      "sha256": "4819fca7730aa8b481b133921d8af28369622a979a3cea5341593bc283f801df"
+      "bytes": 881,
+      "sha256": "65d85c96793b32414dc924df9ac8e21c6a665602e03f7ad55f089a92f1ef65d5"
     },
     "styles.css": {
       "bytes": 17002,

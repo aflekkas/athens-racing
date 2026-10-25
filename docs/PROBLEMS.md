@@ -2,7 +2,7 @@
 
 This is the list of things that are broken, rough or missing in Athens Racing right now. **Every item here is open for anyone to pick up:** people, AI agents, first-time contributors. If you want to help and don't know where to start, start here.
 
-Production is https://athensracing.com, last checked at `a8eaa73` on 2026-10-22.
+The public desktop download landing is https://athensracing.com (2026-10-25). macOS Apple Silicon is available as a preview; Windows and Linux installers remain unavailable pending native acceptance.
 
 ## How to contribute a fix
 
@@ -41,6 +41,10 @@ Production is https://athensracing.com, last checked at `a8eaa73` on 2026-10-22.
 Difficulty: 🟢 good first fix · 🟡 medium · 🔴 deep / needs care.
 
 ---
+
+## Fixed: hosted game deployment automation replaced (2026-10-25)
+
+The general CI test job remains enabled. Its former `deploy` job has been removed so pushes cannot recreate the retired hosted game Workers. The static download landing uses its own isolated configuration and the versioned macOS preview release `v0.1.0-mac.1`; the internal `v0.1.0` CI payload release remains a draft. No game runtime or installer bytes changed in this cutover follow-up.
 
 ## Open: offline desktop and LAN migration (2026-10-24)
 
