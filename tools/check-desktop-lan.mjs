@@ -1,7 +1,8 @@
 // One browser-slot job, two installed desktop clients and actual race controls.
 import assert from 'node:assert/strict';
+import { closeOwnedApplication, finishDesktopCheck } from './desktop-test-cleanup.mjs';
 import { _electron } from 'playwright';
-import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import http from 'node:http';
 import { DESKTOP_SERVICE, MULTIPLAYER_PROTOCOL } from '../packages/contracts/desktop.mjs';
@@ -12,11 +13,12 @@ await mkdir(resolve(temporary, 'launch'));
 const environment = { ...process.env };
 for (const key of ['NODE_PATH', 'NODE_OPTIONS', 'ELECTRON_RUN_AS_NODE']) delete environment[key];
 if (process.env.DESKTOP_EXECUTABLE) delete environment.ASR_GAME_ROOT;
+const children = new Map();
 const applications = [], errors = [], checks = [], wire = [];
 let failure, incompatible;
 async function launch(name, port) {
   const application = await _electron.launch({ ...(process.env.DESKTOP_EXECUTABLE ? { executablePath: process.env.DESKTOP_EXECUTABLE, args: ['--mute-audio'], cwd: resolve(temporary, 'launch') } : { args: ['--mute-audio', 'apps/desktop/main.mjs'] }), env: { ...environment, ASR_DESKTOP_USER_DATA: resolve(temporary, name), ASR_DESKTOP_PORT: String(port) }, timeout: 60000 });
-  applications.push(application);
+  applications.push(application); children.set(application, application.process());
   const page = await application.firstWindow();
   await application.evaluate(({ app, BrowserWindow }) => {
     app.focus({ steal: true });
@@ -107,7 +109,9 @@ try {
   await guest.page.evaluate(() => window.__multiplayer.ws.close());
   await guest.page.waitForFunction(id => window.__multiplayer?.connected && window.__multiplayer.id === id && window.__multiplayer.resumeCount > 0, guestId, { timeout: 30000 });
   checks.push({ reconnectRetainedDriver: guestId });
-  await host.application.close(); applications.splice(applications.indexOf(host.application), 1);
+  const hostShutdown = await closeOwnedApplication(host.application, children.get(host.application));
+  if (hostShutdown.errors.length) throw new AggregateError(hostShutdown.errors, 'Host shutdown failed');
+  applications.splice(applications.indexOf(host.application), 1);
   await guest.page.waitForFunction(() => !window.__multiplayer?.connected, null, { timeout: 30000 });
   await guest.page.goto(new URL(guest.page.url()).origin);
   await guest.page.locator('[data-act=desktopSolo]').click();
@@ -116,10 +120,10 @@ try {
   assert.deepEqual(errors, []);
 } catch (error) { failure = error; for (const [index, application] of applications.entries()) { const page = await application.firstWindow().catch(() => null); if (page && !page.isClosed()) { console.log('LAN failure client', index, await page.evaluate(() => ({ url: location.href, game: window.__game?.state, multiplayer: !!window.__multiplayer, network: window.__multiplayer ? { id: window.__multiplayer.id, connected: window.__multiplayer.connected, ready: window.__multiplayer.worldReady, me: window.__multiplayer.me, peers: [...window.__multiplayer.peers] } : null, text: document.body.innerText.slice(-1500) })).catch(() => null)); await page.screenshot({ path: resolve(evidence, 'lan-failure-' + index + '.jpg'), type: 'jpeg', quality: 80 }).catch(() => {}); } } }
 finally {
-  for (const application of applications.reverse()) await application.close().catch(error => { failure ||= error; });
-  if (incompatible) await new Promise(resolve => incompatible.close(resolve));
-  await rm(temporary, { recursive: true, force: true });
-  await writeFile(resolve(evidence, 'lan-results.json'), JSON.stringify({ passed: !failure, checks, errors, failure: failure?.stack, wire }, null, 2));
+  await finishDesktopCheck({ temporary, failure,
+    applications: applications.reverse().map(application => ({ application, child: children.get(application) })),
+    closeResources: async () => { if (incompatible) await new Promise(resolve => incompatible.close(resolve)); },
+    writeReceipt: status => writeFile(resolve(evidence, 'lan-results.json'), JSON.stringify({ ...status, checks, errors, wire }, null, 2))
+  });
 }
-if (failure) throw failure;
 console.log('PASS: two desktop clients host/join, ready/start, synchronized race, remote movement, reconnect, host shutdown and solo recovery.');

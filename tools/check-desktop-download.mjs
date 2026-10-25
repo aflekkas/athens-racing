@@ -1,8 +1,9 @@
 // Native result-image fallback: real rendered game photo, Results SHARE gesture,
 // native DownloadItem save/cancel, and same-origin subframe rejection.
 import assert from 'node:assert/strict';
+import { finishDesktopCheck } from './desktop-test-cleanup.mjs';
 import { _electron } from 'playwright';
-import { mkdtemp, mkdir, rm, readFile, writeFile, access } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, writeFile, access } from 'node:fs/promises';
 import { resolve } from 'node:path';
 const evidence = resolve(process.env.DESKTOP_EVIDENCE || '.scratch/desktop-check');
 const temporary = await mkdtemp(resolve(process.env.DESKTOP_TEMP_ROOT || '/tmp', 'athens-desktop-download.'));
@@ -10,9 +11,10 @@ await mkdir(evidence, { recursive: true }); await mkdir(resolve(temporary, 'laun
 const environment = { ...process.env, ASR_DESKTOP_USER_DATA: resolve(temporary, 'profile'), ASR_DESKTOP_PORT: '17845' };
 for (const key of ['NODE_PATH', 'NODE_OPTIONS', 'ELECTRON_RUN_AS_NODE']) delete environment[key];
 if (process.env.DESKTOP_EXECUTABLE) delete environment.ASR_GAME_ROOT;
-let application, page, failure, observations = [];
+let application, child, page, failure, observations = [];
 try {
   application = await _electron.launch({ ...(process.env.DESKTOP_EXECUTABLE ? { executablePath: process.env.DESKTOP_EXECUTABLE, args: ['--mute-audio'], cwd: resolve(temporary, 'launch') } : { args: ['--mute-audio', 'apps/desktop/main.mjs'] }), env: environment, timeout: 60000 });
+  child = application.process();
   page = await application.firstWindow();
   await application.evaluate(({ app, BrowserWindow }) => {
     app.focus({ steal: true });
@@ -79,9 +81,9 @@ try {
   await page.frameLocator('#download-subframe').locator('#download').click(); observations.push(await waitForDownload(2, 'blocked'));
 } catch (error) { failure = error; if (page && !page.isClosed()) await page.screenshot({ path: resolve(evidence, 'download-failure.jpg'), type: 'jpeg', quality: 85 }).catch(() => {}); }
 finally {
-  if (application) { observations = await application.evaluate(() => globalThis.__asrDownloadProbe?.records || []).catch(() => observations); await application.close().catch(error => { failure ||= error; }); }
-  await rm(temporary, { recursive: true, force: true });
-  await writeFile(resolve(evidence, 'download-results.json'), JSON.stringify({ passed: !failure, observations, fixture: 'Results SHARE after real driving; synthetic result only for image save, no finish/record claim', failure: failure?.stack }, null, 2));
+  if (application) observations = await application.evaluate(() => globalThis.__asrDownloadProbe?.records || []).catch(() => observations);
+  await finishDesktopCheck({ application, child, temporary, failure,
+    writeReceipt: status => writeFile(resolve(evidence, 'download-results.json'), JSON.stringify({ ...status, observations, fixture: 'Results SHARE after real driving; synthetic result only for image save, no finish/record claim' }, null, 2))
+  });
 }
-if (failure) throw failure;
 console.log('PASS: native Results image saved as1200×900 PNG, cancelled save left no file, subframe download denied.');

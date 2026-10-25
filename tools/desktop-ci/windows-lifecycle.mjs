@@ -1,5 +1,6 @@
 // Review-only draft. Copy to tools/desktop-ci/windows-lifecycle.mjs in candidate9.
 import assert from 'node:assert/strict';
+import { closeOwnedApplication } from '../desktop-test-cleanup.mjs';
 import { _electron } from 'playwright';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -11,9 +12,10 @@ const cwd = resolve(process.env.RUNNER_TEMP, 'athens-lifecycle-launch');
 await mkdir(cwd,{recursive:true}); await mkdir(evidence,{recursive:true});
 const env={...process.env,ASR_DESKTOP_PORT:'17849'};
 for(const key of ['ASR_DESKTOP_USER_DATA','ASR_GAME_ROOT','NODE_OPTIONS','NODE_PATH','ELECTRON_RUN_AS_NODE'])delete env[key];
-let app;
+let app, child, failure;
 try {
  app=await _electron.launch({executablePath:process.env.DESKTOP_EXECUTABLE,args:['--mute-audio'],cwd,env,timeout:60000});
+ child=app.process();
  await app.evaluate(({app,BrowserWindow})=>{app.focus({steal:true});for(const w of BrowserWindow.getAllWindows()){w.show();w.focus();w.webContents.setAudioMuted(true);w.webContents.on('dom-ready',()=>w.webContents.setAudioMuted(true));}});
  const page=await app.firstWindow();
  await page.waitForFunction(()=>window.athensDesktop&&document.body.classList.contains('loaded'),null,{timeout:120000});
@@ -24,4 +26,8 @@ try {
  const graphics=await page.evaluate(()=>{const canvas=document.getElementById('c');const gl=canvas?.getContext('webgl2')||canvas?.getContext('webgl');const ext=gl?.getExtension('WEBGL_debug_renderer_info');return {vendor:ext?gl.getParameter(ext.UNMASKED_VENDOR_WEBGL):null,renderer:ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):null};});
  await page.screenshot({path:resolve(evidence,'lifecycle-'+mode+'.jpg'),type:'jpeg',quality:85});
  await writeFile(resolve(evidence,'lifecycle-'+mode+'.json'),JSON.stringify({passed:true,mode,...metadata,graphics},null,2));
-} finally {await app?.close();}
+} catch (error) { failure=error; }
+finally {
+ if(app){const closed=await closeOwnedApplication(app,child);if(closed.errors.length){if(failure)console.error('Lifecycle cleanup also failed:',closed.errors);else failure=new AggregateError(closed.errors,'Lifecycle shutdown failed');}}
+}
+if(failure)throw failure;

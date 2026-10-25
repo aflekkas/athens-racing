@@ -1,0 +1,23 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { EventEmitter } from 'node:events';
+import { finishDesktopCheck } from './desktop-test-cleanup.mjs';
+const fixture = () => { const child = Object.assign(new EventEmitter(), { pid: 123, exitCode: null, signalCode: null }); const receipts = []; return { child, receipts, temporary: '/owned-test', writeReceipt: async value => receipts.push(value), application: { close: async () => { child.exitCode = 0; child.emit('close', 0); } } }; };
+test('observes synchronous exit before removing launch cwd', async () => { const f=fixture(); await finishDesktopCheck({...f, remove:async(path, options)=>{ assert.equal(f.child.exitCode,0); assert.equal(options.maxRetries,20); assert.equal(options.retryDelay,100); assert.equal(f.receipts[0].functionalPassed,true); }}); assert.equal(f.receipts.at(-1).passed,true); });
+test('already exited child does not wait for an event that has passed', async () => { const f=fixture(); f.child.exitCode=0; await finishDesktopCheck({...f,remove:async()=>{}}); assert.equal(f.receipts.at(-1).passed,true); });
+test('locked removal fails and persists cleanup diagnostic', async () => { const f=fixture(); await assert.rejects(finishDesktopCheck({...f,remove:async()=>{throw Object.assign(new Error('locked launch'),{code:'EBUSY'});}}),AggregateError); assert.equal(f.receipts.length,2); assert.equal(f.receipts.at(-1).passed,false); assert.match(f.receipts.at(-1).cleanupErrors[0],/locked launch/); });
+test('functional assertion remains primary when cleanup also fails', async () => { const f=fixture(),failure=new Error('subframe assertion'); await assert.rejects(finishDesktopCheck({...f,failure,remove:async()=>{throw new Error('locked');}}),e=>e===failure); assert.equal(f.receipts.at(-1).functionalPassed,false); assert.equal(f.receipts.at(-1).cleanup,'failed'); });
+test('functional failure never becomes green after successful cleanup', async () => { const f=fixture(),failure=new Error('cancel assertion'); await assert.rejects(finishDesktopCheck({...f,failure,remove:async()=>{}}),e=>e===failure); assert.equal(f.receipts.at(-1).passed,false); });
+test('live child timeout does not remove its cwd', async () => { const f=fixture(); f.application.close=async()=>{}; let removed=false; await assert.rejects(finishDesktopCheck({...f,exitTimeoutMs:5,remove:async()=>{removed=true;}}),AggregateError); assert.equal(removed,false); assert.match(f.receipts.at(-1).cleanupErrors[0],/PID 123/); });
+test('close failure retained even when child exits', async () => { const f=fixture(); f.application.close=async()=>{f.child.exitCode=0; f.child.emit('close'); throw new Error('close failure');}; await assert.rejects(finishDesktopCheck({...f,remove:async()=>{}}),AggregateError); assert.match(f.receipts.at(-1).cleanupErrors[0],/close failure/); });
+
+test('hung close is bounded by owned child deadline', async () => { const f=fixture(); f.application.close=()=>new Promise(()=>{}); await assert.rejects(finishDesktopCheck({...f,exitTimeoutMs:5,remove:async()=>assert.fail('live child')}),AggregateError); assert.equal(f.child.listenerCount('close'),0); });
+
+for (const failedWrite of [1, 2]) test(`receipt write ${failedWrite} failure preserves primary and still closes/removes`, async () => {
+ const f=fixture(), primary=new Error('primary assertion'); let writes=0, removed=false;
+ await assert.rejects(finishDesktopCheck({...f, failure:primary, writeReceipt:async()=>{if(++writes===failedWrite) throw new Error('receipt denied');},remove:async()=>{removed=true;}}),error=>error===primary);
+ assert.equal(removed,true); assert.equal(f.child.exitCode,0); assert.equal(writes,2);
+});
+test('waits for delayed close before deleting cwd', async () => { const f=fixture(); let closed=false; f.application.close=async()=>{setTimeout(()=>{closed=true; f.child.emit('close');},5);}; await finishDesktopCheck({...f,remove:async()=>assert.equal(closed,true)}); });
+test('signal termination counts as already exited', async () => { const f=fixture(); f.child.signalCode='SIGTERM'; f.application.close=async()=>{}; await finishDesktopCheck({...f,remove:async()=>{}}); assert.equal(f.receipts.at(-1).passed,true); });
+test('multi-app partial shutdown failure still closes others and retains shared cwd', async () => { const a=fixture(),b=fixture(); a.application.close=async()=>{}; let removed=false; await assert.rejects(finishDesktopCheck({...a,application:undefined,applications:[{application:a.application,child:a.child},{application:b.application,child:b.child}],exitTimeoutMs:5,remove:async()=>{removed=true;}}),AggregateError); assert.equal(b.child.exitCode,0); assert.equal(removed,false); assert.equal(a.receipts.at(-1).passed,false); });

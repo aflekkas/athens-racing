@@ -303,6 +303,7 @@
     "tools/riviera-probe-geometry.test.mjs",
     "tools/riviera-probe-binding.test.mjs",
     "tools/terrain-lp-components.test.mjs",
+    "tools/desktop-test-cleanup.test.mjs",
     "apps/desktop/security.test.mjs",
     "apps/game/prepare.test.mjs",
     "apps/server/runtime.test.mjs",
