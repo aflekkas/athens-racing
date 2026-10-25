@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
+import { remainingEntryTime, waitForRecordedEngine } from './desktop-audio-readiness.mjs';
 import {Input} from '../src/input.js';
 import {pickedAthensArea,pollFreeRoam,freeRoamHud,freeRoamJSBytes} from '../src/athens-free-roam.js';
 import {loading,freeRoamLoadingTitle,FREE_ROAM_TIPS} from '../src/ui/loading.js';
@@ -95,7 +96,7 @@ test('free-roam audio unlocks once per gesture, follows vehicle and sliders, sil
 export async function traceDesktopDrivingPhases(source) {
  const begin=source.indexOf('  for (const map of routeIds) {'),end=source.indexOf('  const warmRouteBegan',begin);
  assert.ok(begin>=0&&end>begin,'actual native driving phases must be available');
- const trace=[],state={mode:null,held:false},context={window:{},document:{body:{classList:{contains:()=>true}}},assert,
+ const trace=[],state={mode:null,held:false},context={remainingEntryTime,window:{},document:{body:{classList:{contains:()=>true}}},assert,
   routeIds:Array.from({length:6},(_,i)=>'route-probe-'+i),requests:[],results:[],origin:'http://offline.test',evidence:'evidence',resolve:(...a)=>a.join('/'),
   localStorage:{getItem:()=> 'retained'},console:{log(){}},requestAnimationFrame:null};
  let clock=0;context.requestAnimationFrame=fn=>fn(clock+=16);
@@ -128,9 +129,9 @@ test('native driving flow completes six race drives before both real free-roam P
 
 test('native audio timeout preserves real per-condition diagnostics and fails closed',async()=>{
  const source=await readFile(new URL('./check-desktop.mjs',import.meta.url),'utf8');
- const begin=source.indexOf('async function unlockFreeAudio()'),end=source.indexOf('async function recordFreeAudio(',begin);
+ const begin=source.indexOf('async function unlockFreeAudio('),end=source.indexOf('async function recordFreeAudio(',begin);
  const failure=new Error('real readiness timeout'),metrics={},logs=[],audio={started:true,ctx:{state:'suspended',currentTime:0,sampleRate:48000},engineSpec:{id:'aventador_svj'},recordingState:'loading',health:()=>({state:'suspended'})};
- const context={assert,metrics,window:{__athens:{audio,player:{spec:{id:'aventador_svj'}},stats:{frames:31},paused:false},__bootAudio:audio},
+ const context={assert,metrics,remainingEntryTime,window:{__athens:{audio,player:{spec:{id:'aventador_svj'}},stats:{frames:31},paused:false},__bootAudio:audio},
   document:{hidden:false,visibilityState:'visible',hasFocus:()=>true},navigator:{userActivation:{isActive:false,hasBeenActive:true}},console:{error:(...args)=>logs.push(args)},
   page:{evaluate:async fn=>fn(),keyboard:{press:async()=>{}},waitForFunction:async()=>{throw failure;}}};
  await assert.rejects(vm.runInNewContext('(async()=>{'+source.slice(begin,end)+';await unlockFreeAudio();})()',context),error=>error===failure);
@@ -139,4 +140,64 @@ test('native audio timeout preserves real per-condition diagnostics and fails cl
  assert.equal(state.selectedCar,'aventador_svj');assert.equal(state.playerCar,'aventador_svj');assert.equal(state.sharedGraph,true);
  assert.equal(state.focused,true);assert.equal(state.userActivation.everActive,true);assert.equal(state.frames,31);
  assert.equal(logs.length,1);assert.match(logs[0][1],/"context":"suspended"/);
+});
+
+
+function recordingReadinessRig(engineReady) {
+ const audio={ctx:{state:'running',currentTime:33,sampleRate:44100},engineSpec:{id:'aventador_svj'},recordingState:'loading',engineVoice:{},recordedBank:null,engineReady,health:()=>({state:'running'})};
+ const sandbox={window:{__athens:{audio,player:{spec:{id:'aventador_svj'}}},__bootAudio:audio},
+  document:{hidden:false,hasFocus:()=>true},performance:{now:()=>performance.now(),getEntriesByType:()=>[{name:'http://offline/assets/audio/engines/v12-idle.wav',startTime:10,duration:20,responseEnd:30,transferSize:100,decodedBodySize:100}]},setTimeout,clearTimeout};
+ const page={evaluate(fn,options){return vm.runInNewContext('('+fn.toString()+')(options)',{...sandbox,options});}};
+ return {audio,wait:(options={})=>waitForRecordedEngine(page,{timeoutMs:1000,expectedCar:'aventador_svj',...options})};
+}
+
+test('native recording readiness awaits the actual pending production promise before accepting its bank',async()=>{
+ let resolve;const ready=new Promise(done=>{resolve=done;}),rig=recordingReadinessRig(ready);
+ let finished=false;const waiting=rig.wait().then(value=>{finished=true;return value;});
+ await new Promise(setImmediate);assert.equal(finished,false,'a live context and procedural voice cannot pass while engineReady is pending');
+ rig.audio.recordingState='recorded';rig.audio.recordedBank={recorded:true};resolve();
+ const report=await waiting;assert.equal(report.passed,true);assert.equal(report.promiseOutcome,'resolved');
+ assert.equal(report.before.recording,'loading');assert.equal(report.after.recording,'recorded');assert.equal(report.after.recordedBank,true);
+ assert.equal(report.resourcesAfter.length,1);assert.ok(report.finishedMs>=report.beganMs);assert.ok(report.elapsedMs>=0);
+});
+
+test('native recording readiness fails immediately if engineReady resolves to procedural fallback',async()=>{
+ const rig=recordingReadinessRig(Promise.resolve());rig.audio.recordingState='fallback';
+ await assert.rejects(rig.wait(),error=>error.readiness.promiseOutcome==='resolved'&&error.readiness.after.recording==='fallback'&&/without a recorded bank/.test(error.message));
+});
+
+test('native recording readiness preserves production promise rejection and evidence',async()=>{
+ const rig=recordingReadinessRig(Promise.reject(new Error('decode failed')));
+ await assert.rejects(rig.wait(),error=>error.readiness.promiseOutcome==='rejected'&&/decode failed/.test(error.message)&&error.readiness.after.context==='running');
+});
+
+test('native recording readiness bounds a permanently pending promise and fails closed',async()=>{
+ const rig=recordingReadinessRig(new Promise(()=>{}));
+ await assert.rejects(rig.wait({timeoutMs:10}),error=>error.readiness.promiseOutcome==='timeout'&&error.readiness.timeoutMs===10&&error.readiness.after.recording==='loading'&&error.readiness.passed===false);
+});
+
+test('native recording readiness rejects absent promises and changed car/context/bank state',async()=>{
+ await assert.rejects(recordingReadinessRig(undefined).wait(),/engineReady promise is missing/);
+ for(const change of [a=>{a.recordedBank=null;},a=>{a.ctx.state='closed';},a=>{a.engineSpec.id='mini';},a=>{a.engineVoice=null;}]){
+  const rig=recordingReadinessRig(Promise.resolve());rig.audio.recordingState='recorded';rig.audio.recordedBank={recorded:true};change(rig.audio);
+  await assert.rejects(rig.wait(),/Native recorded-engine readiness failed/);
+ }
+});
+
+test('native audio and PCM share the original 240-second entry budget without extending its deadline',()=>{
+ assert.equal(remainingEntryTime(240000,30000,5000,10000),30000,'unlock remains capped at30s');
+ assert.equal(remainingEntryTime(240000,120000,5000,10000),120000,'recording preparation is capped at120s');
+ assert.equal(remainingEntryTime(240000,120000,5000,200000),35000,'late entry spends only remaining time and reservesPCM');
+ assert.throws(()=>remainingEntryTime(240000,120000,5000,235000),/deadline exhausted/);
+ assert.throws(()=>remainingEntryTime(240000,1,0,240000),/deadline exhausted/);
+});
+
+
+test('native recording readiness rejects context or preparation replacement during the pending promise',async()=>{
+ for(const replace of [a=>{a.ctx={...a.ctx};},a=>{a.engineReady=Promise.resolve();}]){
+  let resolve;const rig=recordingReadinessRig(new Promise(done=>{resolve=done;}));
+  const waiting=rig.wait();await new Promise(setImmediate);
+  replace(rig.audio);rig.audio.recordingState='recorded';rig.audio.recordedBank={recorded:true};resolve();
+  await assert.rejects(waiting,/changed context, readiness promise, voice, car or shared graph/);
+ }
 });

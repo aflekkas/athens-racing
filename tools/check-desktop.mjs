@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { _electron } from 'playwright';
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { remainingEntryTime, waitForRecordedEngine } from './desktop-audio-readiness.mjs';
 
 const evidence = resolve(process.env.DESKTOP_EVIDENCE || '.scratch/desktop-check');
 const temporary = await mkdtemp(resolve(process.env.DESKTOP_TEMP_ROOT || '/tmp', 'athens-desktop-check.'));
@@ -17,14 +18,22 @@ const requests = [], errors = [], brokenResponses = [], consoleMessages = [], fa
 let application, page, primary;
 // Electron output remains muted; assert the actual WebAudio signal before its
 // device sink so silence cannot hide an unwired free-roam entry again.
-async function unlockFreeAudio() {
+async function unlockFreeAudio(entryDeadline = Date.now() + 240000, label = 'free entry') {
+  const began = Date.now();
+  let phase = 'context unlock';
   assert.ok(await page.evaluate(() => window.__athens?.audio === window.__bootAudio && !!window.__athens?.audio), 'free roam must wire the shared real Audio graph');
   await page.keyboard.press('w');
   try {
     await page.waitForFunction(() => {
       const view = window.__athens, audio = view?.audio;
-      return audio?.ctx?.state === 'running' && audio.engineSpec?.id === view.player.spec.id && audio.recordingState === 'recorded' && !!audio.engineVoice;
-    }, null, { timeout: 30000 });
+      return audio?.ctx?.state === 'running' && audio.engineSpec?.id === view.player.spec.id && !!audio.engineVoice;
+    }, null, { timeout: remainingEntryTime(entryDeadline, 30000, 5000) });
+    phase = 'recording preparation';
+    const readiness = await waitForRecordedEngine(page, { timeoutMs: remainingEntryTime(entryDeadline, 120000, 5000), expectedCar: 'aventador_svj' });
+    readiness.label = label;
+    readiness.entryRemainingMs = entryDeadline - Date.now();
+    (metrics.freeRoamRecordingReadiness ||= []).push(readiness);
+    console.log('Native recorded-engine preparation:', JSON.stringify(readiness));
   } catch (error) {
     // Preserve the failing condition before teardown. A combined timeout cannot
     // distinguish a host output-device problem from a missing engine bank.
@@ -40,6 +49,7 @@ async function unlockFreeAudio() {
         recording: audio?.recordingState ?? null, engineVoice: !!audio?.engineVoice, recordedBank: !!audio?.recordedBank,
         health, healthError, paused: view?.paused ?? null, frames: view?.stats?.frames ?? null };
     }).catch(error => ({ diagnosticError: String(error) }));
+    Object.assign(state, { label, phase, elapsedMs: Date.now() - began, recordingPreparation: error.readiness || null });
     (metrics.freeRoamAudioFailures ||= []).push(state);
     console.error('Native free-roam audio readiness failure:', JSON.stringify(state));
     throw error;
@@ -237,13 +247,15 @@ try {
     await page.screenshot({ path: resolve(evidence, map + '.jpg'), type: 'jpeg', quality: 85 });
     results.push({ map, route: after.route, elapsedMs: Date.now() - began, localRequests: requests.length - initialRequests, cadence, entryPhases: await page.evaluate(() => window.__worldSession?.metrics?.entryPhases || null), render: after.render, geometries: after.geometries, movedMetres: Math.hypot(after.x - before.x, after.z - before.z) });
   }
-  await page.goto(origin + '/?map=riviera&event=free&car=aventador_svj&simhook&guest=1');
-  await page.waitForFunction(() => window.__athens?.player?.veh && document.body.classList.contains('loaded'), null, { timeout: 240000 });
-  await page.waitForFunction(() => window.__athens.stats.frames >= 30 && window.__athens.stream.inflight === 0 && window.__athens.stream.transientBytes === 0, null, { timeout: 120000 });
+  const firstFreeEntryDeadline = Date.now() + 240000;
+  await page.goto(origin + '/?map=riviera&event=free&car=aventador_svj&simhook&guest=1', { timeout: remainingEntryTime(firstFreeEntryDeadline, 240000) });
+  await page.waitForFunction(() => window.__athens?.player?.veh && document.body.classList.contains('loaded'), null, { timeout: remainingEntryTime(firstFreeEntryDeadline, 240000) });
+  await page.waitForFunction(() => window.__athens.stats.frames >= 30 && window.__athens.stream.inflight === 0 && window.__athens.stream.transientBytes === 0, null, { timeout: remainingEntryTime(firstFreeEntryDeadline, 120000) });
   await recordFreeAdmission('first entry');
-  await unlockFreeAudio();
+  await unlockFreeAudio(firstFreeEntryDeadline, 'first entry');
   const freeBefore = await page.evaluate(() => ({ x: window.__athens.player.veh.x, z: window.__athens.player.veh.z }));
-  await page.keyboard.down('w'); await page.waitForTimeout(1300); await recordFreeAudio('first entry driving'); await page.keyboard.up('w');
+  await page.keyboard.down('w'); await page.waitForTimeout(1300); await recordFreeAudio('first entry driving');
+  remainingEntryTime(firstFreeEntryDeadline, 1); await page.keyboard.up('w');
   const freeAfter = await page.evaluate(() => ({ x: window.__athens.player.veh.x, z: window.__athens.player.veh.z, paused: window.__athens.paused }));
   assert.ok(Math.hypot(freeAfter.x - freeBefore.x, freeAfter.z - freeBefore.z) > .1, 'offline free-roam throttle must move the car');
   await page.keyboard.press('Escape');
@@ -255,11 +267,14 @@ try {
   await assertFreeAudioDisposed('first disposal');
   // Re-enter the same world in a fresh document without forcing GC. Managed
   // stream/query/regional counters must return to zero after each real dispose.
-  await page.goto(origin + '/?map=riviera&event=free&car=aventador_svj&simhook&guest=1');
-  await page.waitForFunction(() => window.__athens?.player?.veh && window.__athens.stats.frames >= 30 && window.__athens.stream.inflight === 0 && window.__athens.stream.transientBytes === 0, null, { timeout: 240000 });
+  const secondFreeEntryDeadline = Date.now() + 240000;
+  await page.goto(origin + '/?map=riviera&event=free&car=aventador_svj&simhook&guest=1', { timeout: remainingEntryTime(secondFreeEntryDeadline, 240000) });
+  await page.waitForFunction(() => window.__athens?.player?.veh && window.__athens.stats.frames >= 30 && window.__athens.stream.inflight === 0 && window.__athens.stream.transientBytes === 0, null, { timeout: remainingEntryTime(secondFreeEntryDeadline, 240000) });
   await recordFreeAdmission('second entry');
-  await unlockFreeAudio();
-  await page.keyboard.down('w'); await recordFreeAudio('second entry driving'); await page.keyboard.up('w');
+  await unlockFreeAudio(secondFreeEntryDeadline, 'second entry');
+  await page.keyboard.down('w'); await recordFreeAudio('second entry driving');
+  remainingEntryTime(secondFreeEntryDeadline, 1);
+  await page.keyboard.up('w');
   await recordFreeAdmission('second disposal', true);
   await assertFreeAudioDisposed('second disposal');
 

@@ -84,6 +84,17 @@ export class WorldTileRoads {
       const {metadata:m,tables:t}=tile.packet,bounds=finiteBounds?this.queryCache.boundsFor(tile):null;
       for(let i=0;i<t.buildings.length;i+=4){const h=i/2;if(point.y+2<t.buildingHeights[h]||point.y>t.buildingHeights[h]+t.buildingHeights[h+1])continue;
         if(bounds&&(bounds[i+2]<minX||bounds[i]>maxX||bounds[i+3]<minZ||bounds[i+1]>maxZ))continue;
+        // The optional bounds cache can be full in a dense neighbourhood. Keep
+        // its exact broad phase on that path too, without retaining more data or
+        // constructing distant polygons for every traffic turn sample.
+        if(!bounds&&finiteBounds){
+          let bx0=Infinity,bz0=Infinity,bx1=-Infinity,bz1=-Infinity;
+          for(let j=t.buildings[i+1];j<t.buildings[i+1]+t.buildings[i+2];j++){
+            const x=t.buildingCorners[j*2]+m.origin[0],z=t.buildingCorners[j*2+1]+m.origin[2];
+            bx0=Math.min(bx0,x);bz0=Math.min(bz0,z);bx1=Math.max(bx1,x);bz1=Math.max(bz1,z);
+          }
+          if(Number.isFinite(bx0)&&Number.isFinite(bz0)&&Number.isFinite(bx1)&&Number.isFinite(bz1)&&(bx1<minX||bx0>maxX||bz1<minZ||bz0>maxZ))continue;
+        }
         const polygon=[];for(let j=t.buildings[i+1];j<t.buildings[i+1]+t.buildings[i+2];j++)polygon.push([t.buildingCorners[j*2]+m.origin[0],t.buildingCorners[j*2+1]+m.origin[2]]);
         if(polygonsOverlap(rectangle,polygon,clearance))return false;
       }

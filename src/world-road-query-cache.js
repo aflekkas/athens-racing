@@ -7,7 +7,21 @@ export class WorldRoadQueryCache {
  clearConnections(){for(const entry of this.connections?.values()||[])this.release(entry.bytes);this.connections?.clear();}
  sync(graph){if(this.revision!==graph.revision){this.clearConnections();this.revision=graph.revision;}for(const [key,entry]of this.buildings||[]){const tile=this.stream.tiles.get(key),t=tile?.packet?.tables,m=tile?.packet?.metadata;if(tile?.state!=='active'||tile.packet!==entry.packet||t.buildings!==entry.rows||t.buildingCorners!==entry.corners||m.origin[0]!==entry.x||m.origin[2]!==entry.z){this.release(entry.bytes);this.buildings.delete(key);}}}
  connected(edge,graph){this.sync(graph);const entry=this.connections?.get(edge.id);if(entry?.edge===edge)return new Map(entry.result);if(entry){this.release(entry.bytes);this.connections.delete(edge.id);}return null;}
- rememberConnected(edge,result){if(this.connections?.has(edge.id))return;let bytes=256+edge.id.length*2;for(const [surface]of result)bytes+=192+surface.length*2;if(!this.reserve(bytes))return;try{this.connections.set(edge.id,{edge,result:new Map(result),bytes});}catch(error){this.release(bytes);throw error;}}
+ rememberConnected(edge,result){
+  if(this.connections?.has(edge.id))return;
+  let bytes=256+edge.id.length*2;for(const [surface]of result)bytes+=192+surface.length*2;
+  if(bytes+(this.baseBytes||1024)>this.maxBytes)return;
+  // A full optional cache must still admit the current repeatedly sampled turn.
+  // Drop older connectivity first, then bounds (whose exact fallback is cheap).
+  let attempts=(this.connections?.size||0)+(this.buildings?.size||0);
+  while(!this.reserve(bytes)){
+   if(attempts--<=0)return;
+   const entries=this.connections?.size?this.connections:this.buildings;
+   const first=entries?.entries().next().value;if(!first)return;
+   entries.delete(first[0]);this.release(first[1].bytes);
+  }
+  try{this.connections.set(edge.id,{edge,result:new Map(result),bytes});}catch(error){this.release(bytes);throw error;}
+ }
  boundsFor(tile){if(!this.stream.reserveQueryBytes)return null;let key;for(const [k,value]of this.stream.tiles)if(value===tile){key=k;break;}if(key===undefined)return null;return this.bounds(key,tile);}
  bounds(key,tile){
   const old=this.buildings?.get(key);if(old)return old.bounds;
