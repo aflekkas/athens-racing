@@ -57,6 +57,8 @@ The owner requested self-contained installers, offline solo, and player-hosted L
 
 Fixed prerequisites (native installed and cross-platform acceptance remain separate):
 
+- Native Windows run 40150516180 failed in QA before free roam: the first free-roam PCM call was placed in the six-route race loop and dereferenced absent __athens.audio. The harness restores every 2.5-second race drive and samples both actual free-roam drives instead, with explicit mode/car guards. An executable trace of the shipped phase control flow rejects source df184d3e and passes the corrected six-race/two-free sequence; real recorded-engine/master PCM thresholds and context-disposal checks remain unchanged. New native acceptance remains required.
+
 - Streamed Athens free roam never connected the shared Audio engine: it had no gesture unlock, vehicle telemetry or volume synchronization. It now reuses one graph, feeds live engine/tyre/traffic/ambience state, honors saved sliders and hidden-window silence, and releases listeners/context on exit. Packaged audible playback remains an acceptance check.
 
 - Native Host/Join→Solo mode changes cancelled in-flight immutable local assets, causing a Windows wind-audio HTTP 502. The facade now cancels session-bound requests only; shutdown still cancels every pending request. A real backpressured asset regression fails on the original runtime and verifies complete bytes across both mode changes with the fix. New packaged Windows acceptance remains required.

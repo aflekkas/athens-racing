@@ -27,7 +27,9 @@ async function unlockFreeAudio() {
 }
 async function recordFreeAudio(label) {
   const snapshot = await page.evaluate(async () => {
-    const view = window.__athens, audio = view.audio;
+    const view = window.__athens;
+    if (!view?.audio || !view.player?.veh) throw Error('Free-roam PCM check requires an active free-roam Audio graph');
+    const audio = view.audio;
     audio.busLevels(); // Install real analyser taps; allow audio blocks to fill them.
     const samples = [];
     for (let i = 0; i < 12; i++) {
@@ -42,6 +44,7 @@ async function recordFreeAudio(label) {
   assert.equal(snapshot.context, 'running', label + ': audio context runs during actual driving');
   assert.equal(snapshot.recording, 'recorded', label + ': installed selected-car recording is ready');
   assert.equal(snapshot.selectedCar, snapshot.playerCar, label + ': audio follows the actual car');
+  assert.equal(snapshot.playerCar, 'aventador_svj', label + ': requested recorded Aventador must be selected');
   assert.ok(snapshot.samples.some(sample => sample.speed > .1 && Number.isFinite(sample.buses?.eng) && sample.buses.eng > -80 && Number.isFinite(sample.output?.rms) && sample.output.rms > -80), label + ': moving car produces nonzero engine and master PCM despite device mute');
 }
 async function assertFreeAudioDisposed(label) {
@@ -147,7 +150,7 @@ try {
     }, null, { timeout: 240000 });
     assert.equal(await page.evaluate(() => localStorage.getItem('desktop-verification')), 'retained');
     const before = await page.evaluate(() => ({ x: window.__sim.player.veh.x, z: window.__sim.player.veh.z }));
-    await page.keyboard.down('w'); await page.waitForTimeout(1300); await recordFreeAudio('first entry driving'); await page.keyboard.up('w');
+    await page.keyboard.down('w'); await page.waitForTimeout(2500); await page.keyboard.up('w');
     const after = await page.evaluate(() => ({ x: window.__sim.player.veh.x, z: window.__sim.player.veh.z, map: window.__game.mapId, route: window.__game.unifiedCompiled?.id, render: { calls: window.__sim.renderer.info.render.calls, triangles: window.__sim.renderer.info.render.triangles }, geometries: window.__sim.renderer.info.memory.geometries }));
     assert.equal(after.map, 'athens');
     assert.equal(after.route, map);
@@ -220,7 +223,7 @@ try {
   await recordFreeAdmission('first entry');
   await unlockFreeAudio();
   const freeBefore = await page.evaluate(() => ({ x: window.__athens.player.veh.x, z: window.__athens.player.veh.z }));
-  await page.keyboard.down('w'); await page.waitForTimeout(2500); await page.keyboard.up('w');
+  await page.keyboard.down('w'); await page.waitForTimeout(1300); await recordFreeAudio('first entry driving'); await page.keyboard.up('w');
   const freeAfter = await page.evaluate(() => ({ x: window.__athens.player.veh.x, z: window.__athens.player.veh.z, paused: window.__athens.paused }));
   assert.ok(Math.hypot(freeAfter.x - freeBefore.x, freeAfter.z - freeBefore.z) > .1, 'offline free-roam throttle must move the car');
   await page.keyboard.press('Escape');

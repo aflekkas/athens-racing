@@ -1,3 +1,15 @@
+# Current native harness phase correction
+
+Run40150516180/job121041018181 failed on the first offline race (Megara): recordFreeAudio at check-desktop.mjs150 accessed absent __athens.audio. The PCM call was inserted into the race loop by a broad text replacement, before the free-roam document existed. This was a harness insertion mistake, not a product audio failure.
+
+The correction restores all six original2.5-second race drives and moves the first PCM measurement into the actual first free-roam held-key drive. The second free entry, both real context closures, installed recorded-car readiness and engine/master PCM thresholds remain. An explicit active-free-roam guard gives a clear failure; the selected car must independently equal requested aventador_svj.
+
+An executable regression runs the shipped route/free phase control flow at a simulated browser boundary: all six race drives precede the two held-key PCM phases and both disposals. Exact source df184d3e is rejected for attempting PCM in race mode; fixed source passes. It tests orchestration, not real browser PCM; native acceptance still supplies that proof. Independent Codex gpt-6.1-sol review approved exact API, lifecycle and control flow. Focused Node26 diagnostics18/18 pass, source baseline expected rejection passes, and harness syntax passes. Exact clean-archive Linux/new Windows acceptance remains required.
+
+Production runtime, prepared game and native installers are byte-unchanged from source df184d3e: build7b5d38c2a034603c88fdc82325adf3c4cbeff10c2552b2707bf74ee2e8fb23e1, runtime82055292f67e3d6aeb079107d6b853e76e56423687107b6751430cae9f872de1, canonical archive678427181 bytes SHA2567f8c054ff84634c7334346f8bb2f42ace6693fb13182790f4b86f5fdaba00286 (asset673772664). The verified Mac DMG asset673772182 is reused. Only external source provenance and draft target are rebound before PR fast-forward. No rebake, public release, deployment or Cloudflare change.
+
+## Historical audio follow-up
+
 # Current audio follow-up — native acceptance pending
 
 Streamed free roam bypasses main.js and omitted the shared Audio lifecycle entirely. The minimal fix reuses __bootAudio, unlocks/resumes from actual input, selects the real car, feeds live vehicle telemetry and saved volumes, and tears down gesture/settings/visibility handlers and its context. Dedicated implementation and independent review used Codex gpt-6.1-sol; focused HUD/vehicle-audio tests pass17/17 on macOS Node26.10.0. Browser imports373 and source syntax529 passed. These are diagnostic checks; exact Linux clean-archive and new native Windows gates remain required.

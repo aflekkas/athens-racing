@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
+import vm from 'node:vm';
 import {Input} from '../src/input.js';
 import {pickedAthensArea,pollFreeRoam,freeRoamHud,freeRoamJSBytes} from '../src/athens-free-roam.js';
 import {loading,freeRoamLoadingTitle,FREE_ROAM_TIPS} from '../src/ui/loading.js';
@@ -87,4 +88,39 @@ test('free-roam audio unlocks once per gesture, follows vehicle and sliders, sil
  lifecycle.update(v,.03);assert.equal(updates.at(-1).muted,false);
  lifecycle.dispose();lifecycle.dispose();assert.equal(removed,1);assert.equal(closed,1);
  const count=events.length;target.dispatchEvent(new Event('keydown'));doc.dispatchEvent(new Event('visibilitychange'));subscriber(settings);lifecycle.update(v,.03);assert.equal(events.length,count,'teardown leaves no active listeners or frame work');
+});
+
+// Execute the shipped route/free phase control flow at a simulated browser
+// boundary. This checks placement/order only; native CI still measures real PCM.
+export async function traceDesktopDrivingPhases(source) {
+ const begin=source.indexOf('  for (const map of routeIds) {'),end=source.indexOf('  const warmRouteBegan',begin);
+ assert.ok(begin>=0&&end>begin,'actual native driving phases must be available');
+ const trace=[],state={mode:null,held:false},context={window:{},document:{body:{classList:{contains:()=>true}}},assert,
+  routeIds:Array.from({length:6},(_,i)=>'route-probe-'+i),requests:[],results:[],origin:'http://offline.test',evidence:'evidence',resolve:(...a)=>a.join('/'),
+  localStorage:{getItem:()=> 'retained'},console:{log(){}},requestAnimationFrame:null};
+ let clock=0;context.requestAnimationFrame=fn=>fn(clock+=16);
+ const vehicle=()=>({x:0,z:0,kmh:10});
+ context.page={
+  async goto(url){const u=new URL(url);state.mode=u.searchParams.get('event')==='free'?'free':'race';state.held=false;trace.push(['goto',state.mode]);
+   if(state.mode==='race'){context.window={__game:{state:'race',mapId:'athens',unifiedCompiled:{id:u.searchParams.get('route')}},__sim:{player:{veh:vehicle()},renderer:{info:{render:{calls:1,triangles:1},memory:{geometries:1}}}},__worldSession:{metrics:{entryPhases:{}}}};}
+   else context.window={__athens:{player:{veh:vehicle()},stats:{frames:30},stream:{inflight:0,transientBytes:0},menu:{open:false},paused:false}};
+  },
+  async evaluate(fn,arg){return fn(arg);},async waitForFunction(fn,arg){assert.ok(await fn(arg),'phase readiness condition');},async screenshot(){},
+  async waitForTimeout(ms){trace.push(['wait',state.mode,ms]);if(state.held){const view=context.window.__athens||context.window.__sim;view.player.veh.x+=ms/1000;}},
+  keyboard:{async down(key){assert.equal(key,'w');state.held=true;trace.push(['down',state.mode]);},async up(){state.held=false;trace.push(['up',state.mode]);},async press(key){assert.equal(key,'Escape');context.window.__athens.paused=true;context.window.__athens.menu.open=true;}}
+ };
+ context.recordFreeAudio=async label=>{assert.equal(state.mode,'free','free-roam PCM check executed outside free-roam mode');assert.equal(state.held,true,'PCM check must run while driving');trace.push(['audio',label]);};
+ context.unlockFreeAudio=async()=>{assert.equal(state.mode,'free');trace.push(['unlock']);};
+ context.recordFreeAdmission=async(label,disposed)=>{assert.equal(state.mode,'free');trace.push(['admission',label,!!disposed]);};
+ context.assertFreeAudioDisposed=async label=>{assert.equal(state.mode,'free');trace.push(['disposed',label]);};
+ await vm.runInNewContext('(async()=>{'+source.slice(begin,end)+'})()',context);
+ return trace;
+}
+
+test('native driving flow completes six race drives before both real free-roam PCM phases',async()=>{
+ const source=await readFile(new URL('./check-desktop.mjs',import.meta.url),'utf8'),trace=await traceDesktopDrivingPhases(source);
+ assert.deepEqual(trace.filter(e=>e[0]==='goto').map(e=>e[1]),[...Array(6).fill('race'),'free','free']);
+ assert.deepEqual(trace.filter(e=>e[0]==='wait'&&e[1]==='race').map(e=>e[2]),Array(6).fill(2500),'six race drives retain their original duration');
+ assert.deepEqual(trace.filter(e=>e[0]==='audio').map(e=>e[1]),['first entry driving','second entry driving']);
+ assert.deepEqual(trace.filter(e=>e[0]==='disposed').map(e=>e[1]),['first disposal','second disposal']);
 });
