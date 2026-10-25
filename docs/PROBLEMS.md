@@ -44,7 +44,7 @@ Difficulty: 🟢 good first fix · 🟡 medium · 🔴 deep / needs care.
 
 ## Fixed: hosted game deployment automation replaced (2026-10-25)
 
-The general CI test job remains enabled. Its former `deploy` job has been removed so pushes cannot recreate the retired hosted game Workers. The static download landing uses its own isolated configuration and the versioned macOS preview release `v0.1.0-mac.1`; the internal `v0.1.0` CI payload release remains a draft. No game runtime or installer bytes changed in this cutover follow-up.
+The general CI test job remains enabled. Its former `deploy` job and cloud-dependent hosted bundle checks have been removed so CI does not contact or recreate retired hosted game resources. General source/physics/events/ghost/import/syntax checks remain, isolated landing checks replace hosted validation, and the separate native workflow retains clean exact-source no-retry gates. The static download landing uses its own isolated configuration and the versioned macOS preview release `v0.1.0-mac.1`; the internal `v0.1.0` CI payload release remains a draft. No game runtime or installer bytes changed in this cutover follow-up.
 
 ## Open: offline desktop and LAN migration (2026-10-24)
 

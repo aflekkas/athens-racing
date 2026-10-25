@@ -25,21 +25,6 @@ jobs:
       - run: node tools/ghost-lap.test.mjs
       - run: node tools/check-syntax.mjs
       - run: node tools/check-browser-imports.mjs
-      - name: Validate Cloudflare bundle and asset sizes
-        run: npx wrangler deploy --env staging --dry-run
-      - name: Install headless browser
-        run: npx playwright install --with-deps chromium
-      - name: Boot the production menu and race on every map
-        run: npm run check:bundle
-      - name: Retain private client sourcemaps and bundle metadata
-        uses: actions/upload-artifact@v4
-        with:
-          name: client-debug-${{ github.sha }}-validation
-          path: |
-            .deploy/sourcemaps/
-            .deploy/browser-metafile.json
-            .scratch/bundle-check/
-          retention-days: 30
-          if-no-files-found: error
-          include-hidden-files: true
-  # Hosted game deployment retired: installers and the isolated static landing replace it.
+      - name: Validate isolated desktop download landing
+        run: node apps/landing/check.mjs
+  # Hosted game deployment and its cloud-dependent bundle checks are retired.
