@@ -119,3 +119,25 @@ test('memory inventory recomputes shared materials and geometry after mutations 
   assert.equal(second.geometryBytes,24);assert.equal(second.textureBytes,84);
   assert.equal(second.gpuBytes,108);
 });
+
+
+test('shared race/free-roam accounting preserves every retained and transient charge while ignoring stale heap for admission', async () => {
+  const { worldResourceUsage, worldResourcesFit } = await import('../src/world-resource-usage.js');
+  const MiB = 1024 * 1024, scene = { geometryBytes: 8 * MiB, textureBytes: 8 * MiB, gpuBytes: 16 * MiB };
+  const baseline = { scene, tileJS: 16 * MiB, tileGPU: 8 * MiB, regionalBytes: 4 * MiB, queryBytes: 2 * MiB, transientBytes: 3 * MiB, width: 1280, height: 800 };
+  const fresh = worldResourceUsage({ ...baseline, heapBytes: 64 * MiB });
+  const stale = worldResourceUsage({ ...baseline, heapBytes: 800 * MiB });
+  assert.equal(fresh.residentJSBytes, 41 * MiB); assert.equal(stale.residentJSBytes, fresh.residentJSBytes);
+  assert.equal(stale.jsBytes, 800 * MiB); assert.equal(stale.heapBytes, 800 * MiB);
+  assert.equal(worldResourcesFit(fresh, RESOURCE_BUDGETS.low), true); assert.equal(worldResourcesFit(stale, RESOURCE_BUDGETS.low), true);
+  for (const bucket of ['tileJS', 'regionalBytes', 'queryBytes', 'transientBytes']) assert.equal(worldResourcesFit(worldResourceUsage({ ...baseline, [bucket]: 300 * MiB }), RESOURCE_BUDGETS.low), false, bucket);
+  assert.equal(worldResourcesFit(worldResourceUsage({ ...baseline, scene: { ...scene, geometryBytes: 300 * MiB } }), RESOURCE_BUDGETS.low), false, 'scene bucket');
+  assert.equal(worldResourcesFit(worldResourceUsage({ ...baseline, tileGPU: 300 * MiB }), RESOURCE_BUDGETS.low), false, 'GPU bucket');
+  const heldQuery = worldResourceUsage({ ...baseline, queryBytes: 7 * MiB });
+  assert.equal(heldQuery.residentJSBytes - fresh.residentJSBytes, 5 * MiB, 'query bytes charged once, not once again for the stream reservation lease');
+  for (const invalid of [-1, NaN, Infinity, 1.5]) {
+    for (const bucket of ['tileJS', 'regionalBytes', 'queryBytes', 'transientBytes']) assert.throws(() => worldResourceUsage({ ...baseline, [bucket]: invalid }), /Invalid world resource accounting/, bucket);
+    assert.equal(worldResourcesFit({ ...fresh, residentJSBytes: invalid }, RESOURCE_BUDGETS.low), false);
+    assert.equal(worldResourcesFit(fresh, { ...RESOURCE_BUDGETS.low, jsBytes: invalid }), false);
+  }
+});

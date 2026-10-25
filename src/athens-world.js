@@ -14,7 +14,7 @@ import {seatPosition} from './seat-position.js';
 import {applyVehicleAids,toggleTractionControl} from './driving-aids.js';
 import {shiftTransmission} from './transmission.js';
 import {drivingHints} from './ui/driving-hints.js';
-import {pickedAthensArea,pollFreeRoam,freeRoamHud,freeRoamJSBytes} from './athens-free-roam.js';
+import {pickedAthensArea,pollFreeRoam,freeRoamHud} from './athens-free-roam.js';
 import {resolveGraphics} from './graphics.js';
 import {AthensRoute,AthensGround} from './athens-ground.js';
 import {SEA_TIME} from './athens-detail.js';
@@ -26,10 +26,9 @@ import {bootScreen} from './ui/boot-screen.js';
 import {loading} from './ui/loading.js';
 import {ui} from './ui/components.js';
 import {Hud,fmtTime} from './hud.js';
-import {estimateSceneMemory} from './asset-metrics.js';
 import {createPost} from './post.js';
 import * as ENV from './env.js';
-const MiB=1024*1024,clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export async function bootAthens({tileObserver=null}={}){
  const started=performance.now(),query=new URLSearchParams(location.search);
  if(query.get('map')!=='athens')throw Error('Athens requires its development map flag');
@@ -48,7 +47,7 @@ export async function bootAthens({tileObserver=null}={}){
  const area=pickedAthensArea(query);
  loading.show('athens','FREE ROAM',{freeRoam:true,area});
  let scripted=false,driver=null,cameraHook=null,player=null,stopped=false,paused=false,towing=false,frameId,elapsed=0,lastSurfaceElapsed=0,surfaceVehicle=null,surfaceCorners=null,accumulator=0,last=performance.now(),lastTraffic=-10,lookBackA=0;
- let worldTraffic;const stats={gpuName:typeof gpuName==='string'?gpuName.slice(0,256):'',bootPerfClass:gfx.perfClass,frames:0,simulationSeconds:0,metres:0,holds:0,missingContacts:0,carHits:0,frameMs:[],cpuMs:[],initialDownloadBytes:0,initialDriveMs:0,maxEstimatedJSBytes:0,maxEstimatedGPUBytes:0};
+ let worldTraffic;const stats={gpuName:typeof gpuName==='string'?gpuName.slice(0,256):'',bootPerfClass:gfx.perfClass,frames:0,simulationSeconds:0,metres:0,holds:0,missingContacts:0,carHits:0,frameMs:[],cpuMs:[],initialDownloadBytes:0,initialDriveMs:0,maxEstimatedJSBytes:0,maxRawHeapBytes:0,maxEstimatedGPUBytes:0};
  const session=await createWorldSession({tileObserver,renderer,scene,resources,progress:(...args)=>loading.progress(...args)});
  const {stream,roads,barriers,obstacles,detail,props,trees,signs,marks,horizon,landmarks,plazas,lawns,sceneTiles,manifest}=session;
  let guidance=query.get('guidance')==='1'?createGuidanceDemo(scene,stream,roads):null;const offGuidance=session.subscribeTiles({activated:k=>guidance?.addCell(k),removed:k=>guidance?.removeCell(k)});
@@ -105,12 +104,12 @@ export async function bootAthens({tileObserver=null}={}){
   else if(name==='shiftUp'||name==='shiftDown')shiftTransmission(player.veh,name==='shiftUp'?1:-1);
   else if(name==='tractionControl')toggleTractionControl();
  }
- let sharedMemory=estimateSceneMemory(scene),sharedJS=sharedMemory.geometryBytes+sharedMemory.textureBytes;
- function inventory(){sharedMemory=estimateSceneMemory(scene);sharedJS=sharedMemory.geometryBytes+sharedMemory.textureBytes;let tileJS=0,tileGPU=0;for(const t of stream.tiles.values())if(t.packet){tileJS+=t.packet.jsBytes;tileGPU+=t.packet.gpuBytes;}
-  const size=renderer.getDrawingBufferSize(new THREE.Vector2()),targets=size.x*size.y*20+16*MiB;
-  const heap=performance.memory?.usedJSHeapSize??64*MiB,js=freeRoamJSBytes(heap,sharedJS,tileJS,stream.transientBytes),gpu=sharedMemory.gpuBytes+tileGPU+targets;
-  stats.maxEstimatedJSBytes=Math.max(stats.maxEstimatedJSBytes,js);stats.maxEstimatedGPUBytes=Math.max(stats.maxEstimatedGPUBytes,gpu);
-  return {js,gpu,heap,sharedJS,tileJS,tileGPU,renderTargetsAndSkyAllowance:targets,resources,streamReserved:stream.residentBytes+stream.reservedBytes,transient:stream.transientBytes};
+ // Use the same complete retained/reservation collector and caps as races.
+ // It already charges query allocations once, independent of their stream lease.
+ function inventory(){
+  const m=session.inventory();
+  stats.maxRawHeapBytes=Math.max(stats.maxRawHeapBytes,m.heapBytes);stats.maxEstimatedJSBytes=Math.max(stats.maxEstimatedJSBytes,m.jsBytes);stats.maxRetainedJSBytes=Math.max(stats.maxRetainedJSBytes||0,m.residentJSBytes);stats.maxEstimatedGPUBytes=Math.max(stats.maxEstimatedGPUBytes,m.gpuBytes);
+  return {...m,js:m.jsBytes,gpu:m.gpuBytes,heap:m.heapBytes,sharedJS:m.sceneJSBytes,tileJS:m.tileJSBytes,tileGPU:m.tileGPUBytes,resources,streamReserved:stream.residentBytes+stream.reservedBytes+stream.queryBytes,transient:stream.transientBytes};
  }
  async function tow(){if(towing)return;towing=true;try{const v=player.veh,p=worldRecoveryTarget(session,v,{route:null,halfWidth:v.halfW,halfLength:v.halfL,actors:worldTraffic?.actors||[]});if(!p)throw Error('No safe loaded road');await stream.teleport(p,()=>place(v,p),{validatePose:session.safePose});}finally{towing=false;}}
  worldTraffic=new WorldTraffic(session,scene,player.veh.route);worldTraffic.setOfflineDensityScale(resolveGraphics(settings,{gpuName}).traffic);worldTraffic.configure({type:'free',traffic:1,rules:{police:false}});
@@ -165,7 +164,7 @@ export async function bootAthens({tileObserver=null}={}){
    applySteeringAssist(player.veh,input.drivingSource);
    stream.activateFrame();
    accumulator=Math.min(accumulator+delta,.1);while(accumulator>=1/240){step(1/240);accumulator-=1/240;}
-   render(delta);stats.frames++;if(stats.frames%30===0){const m=inventory();if(m.gpu>resources.gpuBytes||m.js>resources.jsBytes)throw Error('Athens resource admission exceeded');}
+   render(delta);stats.frames++;if(stats.frames%30===0)inventory();
   }catch(e){if(!menu.open)pause();document.getElementById('err').style.display='block';document.getElementById('err').textContent=e.message;console.error(e);}
   stats.cpuMs.push(performance.now()-cpu);if(stats.cpuMs.length>900)stats.cpuMs.shift();frameId=requestAnimationFrame(tick);
  }

@@ -41,6 +41,12 @@ const listen = (server, port, host) => new Promise((resolve, reject) => {
 const stop = server => new Promise(resolve => { if (!server?.listening) return resolve(); server.close(resolve); server.closeAllConnections?.(); });
 const sendJSON = (res, status, body) => { res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(body)); };
 const originForm = value => typeof value === 'string' && value.startsWith('/') && !value.startsWith('//') && !/[\\\x00-\x20\x7f#]/.test(value);
+// Match the backend's decoded static-file surface, never an extension guess.
+export function immutableLocalRequest({ local, remote, method, path }) {
+  if (!local || remote || !['GET', 'HEAD'].includes(method)) return false;
+  let decoded; try { decoded = decodeURIComponent(path); } catch { return false; }
+  return (['/', '/index.html', '/style.css'].includes(decoded) || /^\/(src|assets|data)\/[a-zA-Z0-9_./-]+$/.test(decoded)) && !decoded.split('/').some(part => part.startsWith('.'));
+}
 const sameOrigin = req => {
   if (!req.headers.origin) return true;
   try { return new URL(req.headers.origin).host === req.headers.host; } catch { return false; }
@@ -54,9 +60,9 @@ export async function startDesktopRuntime({ root = resolve(dirname(fileURLToPath
   const release = await runtimeReleaseHash({ gameRoot: root, codeRoot: resolve(dirname(fileURLToPath(import.meta.url)), '../..') });
   const game = await createGameServer({ root, builtCataloguePath, dataDir, accountEnv: {} });
   let facade, lan, closed = false, mode = 'solo', upstream, queue = Promise.resolve();
-  const tunnels = new Set(), upstreamTunnels = new Set(), requests = new Set();
+  const tunnels = new Set(), upstreamTunnels = new Set(), requests = new Map();
   const info = () => ({ service: DESKTOP_SERVICE, protocol: MULTIPLAYER_PROTOCOL, release });
-  const disconnect = async () => {
+  const disconnect = async ({ allRequests = false } = {}) => {
     await Promise.allSettled([...upstreamTunnels].filter(ws => ws.readyState === WebSocket.OPEN).map(ws => new Promise(resolve => {
       let timer;
       const finish = () => { clearTimeout(timer); ws.off('message', receive); ws.off('close', finish); resolve(); };
@@ -66,13 +72,13 @@ export async function startDesktopRuntime({ root = resolve(dirname(fileURLToPath
     })));
     game.endSessions();
     for (const ws of tunnels) ws.terminate(); tunnels.clear(); upstreamTunnels.clear();
-    for (const req of requests) req.destroy(); requests.clear();
+    for (const [req, sessionBound] of requests) if (allRequests || sessionBound) { req.destroy(); requests.delete(req); }
   };
   const addresses = () => lan?.listening ? [...new Set(Object.values(networkInterfaces()).flat().filter(n => n && !n.internal && n.family === 'IPv4' && privateAddress(n.address)).map(n => `${n.address}:${lan.address().port}`))] : [];
   const getSession = () => ({ mode, address: mode === 'join' ? upstream : mode === 'host' ? addresses()[0] || `127.0.0.1:${lan.address().port}` : null, addresses: addresses(), port: mode === 'host' ? lan.address().port : facade.address().port, protocol: MULTIPLAYER_PROTOCOL });
   const wsServer = new WebSocketServer({ noServer: true, maxPayload: 16384 });
   let backend;
-  const proxyHTTP = (req, res, target) => {
+  const proxyHTTP = (req, res, target, { sessionBound = true } = {}) => {
     let remote;
     try { remote = new URL(req.url, target); if (remote.origin !== new URL(target).origin) throw Error('Invalid proxy authority.'); }
     catch { sendJSON(res, 400, { error: 'Invalid request target.' }); return; }
@@ -83,7 +89,7 @@ export async function startDesktopRuntime({ root = resolve(dirname(fileURLToPath
       const responseHeaders = { ...response.headers }; delete responseHeaders['set-cookie'];
       res.writeHead(response.statusCode, responseHeaders); response.pipe(res);
     });
-    requests.add(pending); pending.on('close', () => requests.delete(pending));
+    requests.set(pending, sessionBound); pending.on('close', () => requests.delete(pending));
     pending.on('timeout', () => pending.destroy(Error('LAN host timed out.')));
     pending.on('error', () => { if (!res.headersSent) sendJSON(res, 502, { error: 'LAN host unavailable.' }); else res.destroy(); });
     res.on('close', () => pending.destroy()); req.pipe(pending);
@@ -122,7 +128,7 @@ export async function startDesktopRuntime({ root = resolve(dirname(fileURLToPath
       if (!local && !['/api/routes', '/api/lobbies', '/api/leaderboard'].includes(path)) return sendJSON(res, 404, { error: 'Not found.' });
       if (local && path.startsWith('/world/')) { void worldAsset(req, res, path); return; }
       const remote = local && mode === 'join' && ['/api/routes', '/api/lobbies', '/api/leaderboard'].includes(path);
-      proxyHTTP(req, res, remote ? upstream : backend);
+      proxyHTTP(req, res, remote ? upstream : backend, { sessionBound: !immutableLocalRequest({ local, remote, method: req.method, path }) });
     });
     server.on('upgrade', (req, socket, head) => {
       if (!originForm(req.url) || !validHost(req) || !sameOrigin(req) || closed) { socket.destroy(); return; }
@@ -183,7 +189,7 @@ export async function startDesktopRuntime({ root = resolve(dirname(fileURLToPath
     solo: () => change(async () => { await disconnect(); await stop(lan); lan = undefined; upstream = undefined; mode = 'solo'; return getSession(); }),
     close: async () => {
       if (closed) return;
-      closed = true; await queue; await disconnect(); await stop(lan); await stop(facade); await game.close(); await new Promise(resolve => wsServer.close(resolve));
+      closed = true; await queue; await disconnect({ allRequests: true }); await stop(lan); await stop(facade); await game.close(); await new Promise(resolve => wsServer.close(resolve));
     }
   };
 }

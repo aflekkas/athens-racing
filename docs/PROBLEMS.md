@@ -55,6 +55,9 @@ The owner requested self-contained installers, offline solo, and player-hosted L
 
 Fixed prerequisites (native installed and cross-platform acceptance remain separate):
 
+- Native Host/Join→Solo mode changes cancelled in-flight immutable local assets, causing a Windows wind-audio HTTP 502. The facade now cancels session-bound requests only; shutdown still cancels every pending request. A real backpressured asset regression fails on the original runtime and verifies complete bytes across both mode changes with the fix. New packaged Windows acceptance remains required.
+- Free-roam admission used raw V8 heap while races used retained resource accounting. Both now use the same unchanged retained/GPU caps, including regional/query caches and active decode reservations. Raw heap and its high-water mark remain telemetry. Focused tests cover stale heap, every accounting bucket, invalid values and over-limit rejection; native repeated-entry inventories and managed-counter release are acceptance checks, not proof that all browser or driver memory is bounded.
+
 - Full-map bake tests retain the encoded terrain pack separately from the sampler facade; the full fixture no longer feeds an object as an empty binary buffer. Production bundle QA preserves test hooks across the real Quit-to-menu navigation and waits for the new loaded menu document without dereferencing a booting runtime.
 
 - Recovery production omitted authenticated junction contact-owner edges in cell `-1,-10`. It now retains the exact owner and its emitted twins, excludes restricted-only contacts, and passes unchanged admission.

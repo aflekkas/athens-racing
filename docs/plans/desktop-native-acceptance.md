@@ -1,3 +1,15 @@
+# Native Windows acceptance — current runtime follow-up
+
+The original proposal below is historical. PR #6 remains a draft targeting staging. Run 40142685760 exposed Host→Solo cancelling a local audio body and free-roam admission using stale global heap after six routes. This follow-up preserves installed immutable GET/HEAD transfers across session changes and uses the shared retained/query/regional/transient/GPU collector for free roam and races, with unchanged caps. Raw heap and high-water values remain telemetry.
+
+The frozen prepared payload has build `7095b75551a4f685de44cfdf4071123ef3109b1a1f2f48a8e452f140f95eb91a`, runtime `aadb94386d05e54934c7294df866020ec54aba686361d1d22c23b0dc3263a59e`, and 3,904 files totalling 1,242,933,057 bytes. Canonical normalized archive is 678,424,223 bytes, SHA256 `1c503ae4c6cb1a829b7c6c468eede61e57ded8590aa5ba7561532897f960c387`. All 66 browser outputs reconstructed from 388 current source inputs match; packaged ASAR startup sources and payload inventory also match.
+
+Codex gpt-6.1-sol independently reviewed the eight runtime/test/document deltas. On macOS Node 26.10.0, focused cancellation/accounting checks passed 18/18 and the desktop suite passed 91/92 with one skip. These are diagnostic checks. Exact clean-archive Linux Node 22.23.3 gates and native Windows installed acceptance remain required; no GUI automation was run against the user's active Mac game. The harness now records separate raw/retained inventories, fatal overlays, repeated free-roam entry and managed-counter disposal. This does not establish a bound for every browser or GPU-driver allocation.
+
+Publication uses an auxiliary branch first, then replaces only this task's canonical draft-release assets and exact source provenance, then fast-forwards the existing PR branch after asset verification. Draft release 423028841 remains draft with explicit tag `v0.1.0`; no staging/prod/main ref or deployment is involved. Its target source SHA/tree and provenance are external to the commit, avoiding self-reference. User authorization for these task-owned publication steps is already recorded in the session. The existing scoped fetch job uses contents:write to read this same-repository draft, then transports verified inputs through a one-day Actions artifact to the read-only Windows job.
+
+## Historical initial proposal
+
 # Native Windows acceptance proposal — not published or run
 
 Review-only files prepared by Codex gpt-6.1-sol. Existing `.github/workflows/desktop.yml` builds Windows NSIS natively but executes installed GUI checks only on Linux. These drafts add a scoped new PR workflow and actual installed Windows acceptance. No frozen candidate8 file was changed.

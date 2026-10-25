@@ -1,13 +1,15 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
-import { mkdtemp, rm, mkdir, writeFile, symlink } from 'node:fs/promises';
+import { mkdtemp, rm, mkdir, writeFile, symlink, copyFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
+import { createHash } from 'node:crypto';
+import { MAPS } from '../../src/map-catalog.js';
 import { WebSocket } from 'ws';
-import { parseLanAddress, privateAddress, startDesktopRuntime } from './runtime.mjs';
+import { parseLanAddress, privateAddress, startDesktopRuntime, immutableLocalRequest } from './runtime.mjs';
 import { DESKTOP_SERVICE, MULTIPLAYER_PROTOCOL } from '../../packages/contracts/desktop.mjs';
 
 const packet = (ws, type) => new Promise((resolve, reject) => {
@@ -158,4 +160,66 @@ test('HTTP and WebSocket proxy targets cannot escape the selected authority via 
     }
     assert.equal(requests, 0); assert.equal(upgrades, 0);
   } finally { await runtime?.close(); await new Promise(resolve => spy.close(resolve)); await rm(temp, { recursive: true, force: true }); }
+});
+
+
+test('mode changes preserve backpressured immutable local bytes, cancel session APIs and close all streams at shutdown', { timeout: 20000 }, async () => {
+  const temp = await mkdtemp(join(tmpdir(), 'athens-mode-assets.'));
+  const root = join(temp, 'game'), source = fileURLToPath(new URL('../..', import.meta.url));
+  const bytes = Buffer.alloc(32 * 1024 * 1024, 0x59), digest = value => createHash('sha256').update(value).digest('hex');
+  const responses = []; let runtime, release, remoteSeen, remoteClosed;
+  const bounded = (promise, label) => { let timer; return Promise.race([promise, new Promise((_, reject) => { timer = setTimeout(() => reject(Error(label)), 4000); })]).finally(() => clearTimeout(timer)); };
+  const seen = new Promise(resolve => { remoteSeen = resolve; });
+  const remote = http.createServer((req, res) => {
+    if (req.url === '/api/desktop/info') { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify({ service: DESKTOP_SERVICE, protocol: MULTIPLAYER_PROTOCOL, release })); }
+    else { assert.equal(req.url, '/api/lobbies', 'installed assets must never reach the selected remote'); remoteClosed = new Promise(resolve => res.once('close', resolve)); remoteSeen(); }
+  });
+  const pausedAsset = () => new Promise((resolve, reject) => {
+    const request = http.get(runtime.url + '/%61ssets/mode-fixture.bin', response => {
+      assert.equal(response.statusCode, 200); response.pause(); responses.push(response);
+      const chunks = [];
+      const body = new Promise((resolveBody, rejectBody) => { response.on('data', chunk => chunks.push(chunk)); response.on('end', () => resolveBody(Buffer.concat(chunks))); response.on('error', rejectBody); });
+      // Shutdown deliberately aborts one body; attach a handler before transition.
+      body.catch(() => {}); resolve({ response, body });
+    }); request.on('error', reject);
+  });
+  try {
+    await mkdir(join(root, 'src'), { recursive: true }); await mkdir(join(root, 'assets'), { recursive: true });
+    await copyFile(join(source, 'src/cars.js'), join(root, 'src/cars.js'));
+    for (const map of MAPS) { const target = join(root, map.dataUrl); await mkdir(resolve(target, '..'), { recursive: true }); await copyFile(join(source, map.dataUrl), target); }
+    await writeFile(join(root, 'assets/mode-fixture.bin'), bytes);
+    runtime = await startDesktopRuntime({ root, dataDir: join(temp, 'saves'), port: 0, lanPort: 0 });
+    release = (await (await fetch(runtime.url + '/api/desktop/info')).json()).release;
+    await runtime.host();
+    const first = await pausedAsset();
+    await runtime.solo(); first.response.resume();
+    assert.equal(digest(await bounded(first.body, 'asset body interrupted by Host→Solo')), digest(bytes), 'Host→Solo retains every actual local asset byte');
+    await new Promise(resolve => remote.listen(0, '127.0.0.1', resolve));
+    await runtime.join(`127.0.0.1:${remote.address().port}`);
+    const pendingAPI = fetch(runtime.url + '/api/lobbies'); await bounded(seen, 'remote API never reached host');
+    const second = await pausedAsset();
+    await runtime.solo();
+    assert.equal((await bounded(pendingAPI, 'old API not canceled')).status, 502, 'old session API is canceled rather than delivered after mode change');
+    await bounded(remoteClosed, 'remote API transport survived mode change'); second.response.resume();
+    assert.equal(digest(await bounded(second.body, 'asset body interrupted by Join→Solo')), digest(bytes), 'Join→Solo still uses complete installed local assets');
+    assert.deepEqual(await (await fetch(runtime.url + '/api/lobbies')).json(), []);
+    const final = await pausedAsset(), closed = new Promise(resolve => final.response.once('close', resolve));
+    await runtime.close(); runtime = null; final.response.resume(); await bounded(closed, 'shutdown left local asset stream open');
+    assert.equal(final.response.complete, false, 'final shutdown cancels even immutable pending streams');
+  } finally {
+    for (const response of responses) response.destroy(); await runtime?.close();
+    remote.closeAllConnections?.(); await new Promise(resolve => remote.close(resolve)); await rm(temp, { recursive: true, force: true });
+  }
+});
+
+
+test('only decoded immutable installed GET/HEAD paths escape session cancellation', () => {
+  const check = (path, options = {}) => immutableLocalRequest({ local: true, remote: false, method: 'GET', path, ...options });
+  for (const path of ['/', '/index.html', '/style.css', '/assets/audio/world/wind.mp3', '/%61ssets/track.bin', '/src/chunk.js', '/data/routes/map.json']) {
+    assert.equal(check(path), true, path); assert.equal(check(path, { method: 'HEAD' }), true, path);
+    assert.equal(check(path, { remote: true }), false, 'selected remote never inherits installed exemption');
+    assert.equal(check(path, { local: false }), false, 'LAN listener never serves installed assets');
+    assert.equal(check(path, { method: 'POST' }), false, 'mutation requests remain session bound');
+  }
+  for (const path of ['/api/routes', '/%61pi/routes', '/api%2flobbies', '/auth/callback', '/%61uth/callback', '/assets/../api/lobbies', '/assets/%2e%2e/api/lobbies', '/assets/.secret', '/assets/%zz', '//remote/assets/wind.mp3', 'http://remote/assets/wind.mp3']) assert.equal(check(path), false, path);
 });

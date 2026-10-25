@@ -15,6 +15,35 @@ const launchBegan = Date.now();
 const metrics = {};
 const requests = [], errors = [], brokenResponses = [], consoleMessages = [], failedRequests = [], results = [];
 let application, page, primary;
+async function recordFreeAdmission(label, disposed = false) {
+  const snapshot = await page.evaluate(dispose => {
+    const view = window.__athens;
+    if (dispose) view.dispose();
+    let inventory, inventoryError = null;
+    try { inventory = view.inventory(); } catch (error) { inventory = error.detail || {}; inventoryError = error.message; }
+    const usage = {};
+    for (const key of ['residentJSBytes','jsBytes','gpuBytes','heapBytes','sceneJSBytes','tileJSBytes','tileGPUBytes','regionalBytes','queryBytes','transientBytes','streamResidentBytes','decoderReservationBytes','roadQueryBytes','streamQueryReservationBytes']) if (typeof inventory[key] === 'number') usage[key] = inventory[key];
+    usage.limits = inventory.limits || { jsBytes: inventory.resources?.jsBytes, gpuBytes: inventory.resources?.gpuBytes };
+    const error = document.getElementById('err');
+    return { usage, inventoryError, overlay: error && getComputedStyle(error).display !== 'none' ? error.textContent.trim() : '',
+      gpuName: view.stats.gpuName, perfClass: view.stats.bootPerfClass, frames: view.stats.frames,
+      rawHeapHighWater: view.stats.maxRawHeapBytes, retainedHighWater: view.stats.maxRetainedJSBytes,
+      released: { tiles: view.stream.tiles.size, resident: view.stream.residentBytes, reserved: view.stream.reservedBytes, transient: view.stream.transientBytes, queryLease: view.stream.queryBytes, queryAllocation: view.roads.queryBytes } };
+  }, disposed);
+  snapshot.label = label;
+  (metrics.freeRoamAdmission ||= []).push(snapshot);
+  console.log('Native free-roam admission inventory:', JSON.stringify(snapshot));
+  if (disposed) {
+    for (const [key, value] of Object.entries(snapshot.released)) assert.equal(value, 0, label + ': released world counter ' + key);
+    assert.equal(snapshot.usage.regionalBytes, 0, label + ': regional cache released');
+  } else {
+    assert.equal(snapshot.inventoryError, null, label + ': admission must succeed');
+    assert.equal(snapshot.overlay, '', label + ': free roam must have no fatal error overlay');
+    assert.ok(snapshot.usage.residentJSBytes <= snapshot.usage.limits.jsBytes, label + ': retained/reservation charges stay bounded');
+    assert.ok(snapshot.usage.gpuBytes <= snapshot.usage.limits.gpuBytes, label + ': GPU charges stay bounded');
+  }
+  return snapshot;
+}
 try {
   application = await _electron.launch({
     ...(process.env.DESKTOP_EXECUTABLE ? { executablePath: process.env.DESKTOP_EXECUTABLE, args: ['--mute-audio'], cwd: resolve(temporary, 'launch') } : { args: ['--mute-audio', 'apps/desktop/main.mjs'] }),
@@ -154,6 +183,8 @@ try {
   }
   await page.goto(origin + '/?map=riviera&event=free&simhook&guest=1');
   await page.waitForFunction(() => window.__athens?.player?.veh && document.body.classList.contains('loaded'), null, { timeout: 240000 });
+  await page.waitForFunction(() => window.__athens.stats.frames >= 30 && window.__athens.stream.inflight === 0 && window.__athens.stream.transientBytes === 0, null, { timeout: 120000 });
+  await recordFreeAdmission('first entry');
   const freeBefore = await page.evaluate(() => ({ x: window.__athens.player.veh.x, z: window.__athens.player.veh.z }));
   await page.keyboard.down('w'); await page.waitForTimeout(2500); await page.keyboard.up('w');
   const freeAfter = await page.evaluate(() => ({ x: window.__athens.player.veh.x, z: window.__athens.player.veh.z, paused: window.__athens.paused }));
@@ -162,6 +193,15 @@ try {
   await page.waitForFunction(() => window.__athens.paused && window.__athens.menu.open);
   await page.screenshot({ path: resolve(evidence, 'free-roam-paused.jpg'), type: 'jpeg', quality: 85 });
   results.push({ freeRoamMetres: Math.hypot(freeAfter.x - freeBefore.x, freeAfter.z - freeBefore.z), pauseWorked: true });
+  await recordFreeAdmission('first entry after driving');
+  await recordFreeAdmission('first disposal', true);
+  // Re-enter the same world in a fresh document without forcing GC. Managed
+  // stream/query/regional counters must return to zero after each real dispose.
+  await page.goto(origin + '/?map=riviera&event=free&simhook&guest=1');
+  await page.waitForFunction(() => window.__athens?.player?.veh && window.__athens.stats.frames >= 30 && window.__athens.stream.inflight === 0 && window.__athens.stream.transientBytes === 0, null, { timeout: 240000 });
+  await recordFreeAdmission('second entry');
+  await recordFreeAdmission('second disposal', true);
+
   const warmRouteBegan = Date.now();
   await page.goto(origin + '/?routes=1&route=megara-club&quick&simhook&guest=1');
   await page.waitForFunction(() => window.__game?.state === 'race' && !!window.__sim?.player, null, { timeout: 240000 });
