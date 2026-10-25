@@ -73,7 +73,7 @@ def main():
         assert 'text/html' in headers['content-type']
         p = HeadParser(); p.feed(body.decode())
         m = p.meta
-        assert p.title == 'ATHENS RACING — Free Browser Racing'
+        assert p.title == 'Athens Racing — Offline solo and LAN racing'
         assert 140 <= len(m['description']) <= 160
         assert p.links['canonical'] == origin + '/'
         expected = {'og:type':'website', 'og:site_name':'ATHENS RACING', 'og:title':'ATHENS RACING', 'og:url':origin+'/', 'og:image':origin+'/assets/share/og-image.jpg', 'og:image:type':'image/jpeg', 'og:image:width':'1200', 'og:image:height':'630', 'og:locale':'en_US', 'twitter:card':'summary_large_image', 'twitter:title':'ATHENS RACING', 'twitter:image':origin+'/assets/share/og-image.jpg', 'theme-color':'#07090c', 'color-scheme':'dark', 'viewport':'width=device-width, initial-scale=1'}
@@ -84,7 +84,7 @@ def main():
         assert schema['@context'] == 'https://schema.org' and schema['@type'] == 'VideoGame'
         assert schema['name'] == m['og:title'] and schema['description'] == m['description']
         assert schema['url'] == origin+'/' and schema['image'] == m['og:image']
-        assert schema['genre'] == 'Racing' and schema['gamePlatform'] == 'Web browser'
+        assert schema['genre'] == 'Racing' and schema['gamePlatform'] == ['Windows', 'macOS']
         assert schema['playMode'] == ['SinglePlayer', 'MultiPlayer']
         assert schema['offers']['price'] == '0' and schema['offers']['priceCurrency'] == 'EUR'
         print(json.dumps({'agent':agent, 'origin':origin, 'passed':True, 'og':{k:v for k,v in m.items() if k.startswith('og:')}, 'twitter':{k:v for k,v in m.items() if k.startswith('twitter:')}}, ensure_ascii=False))

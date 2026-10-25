@@ -56,6 +56,8 @@ async function start() {
   });
   window = new BrowserWindow({
     width: 1440, height: 900, minWidth: 900, minHeight: 650,
+    titleBarStyle: 'hidden',
+    ...(process.platform === 'darwin' ? {} : { titleBarOverlay: { color: '#080b10', symbolColor: '#e7edf4', height: 28 } }),
     title: 'Athens Racing', backgroundColor: '#080b10', autoHideMenuBar: true,
     webPreferences: {
       preload: resolve(here, 'preload.cjs'), session: gameSession,
@@ -64,6 +66,8 @@ async function start() {
       spellcheck: false,
     },
   });
+  // Keep OS task switching and accessibility names independent of page metadata.
+  window.on('page-title-updated', event => event.preventDefault());
   window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   window.webContents.on('will-navigate', (event, url) => { if (!trustedURL(url, origin)) event.preventDefault(); });
   window.webContents.on('will-redirect', (event, url) => { if (!trustedURL(url, origin)) event.preventDefault(); });

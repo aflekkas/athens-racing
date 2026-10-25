@@ -1,5 +1,6 @@
 // One browser-slot job, two installed desktop clients and actual race controls.
 import assert from 'node:assert/strict';
+import { createRecoveryWireLog, installRecoveryObserver, readRecoveryDiagnostic } from './desktop-lan-diagnostics.mjs';
 import { closeOwnedApplication, finishDesktopCheck } from './desktop-test-cleanup.mjs';
 import { _electron } from 'playwright';
 import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
@@ -14,7 +15,8 @@ const environment = { ...process.env };
 for (const key of ['NODE_PATH', 'NODE_OPTIONS', 'ELECTRON_RUN_AS_NODE']) delete environment[key];
 if (process.env.DESKTOP_EXECUTABLE) delete environment.ASR_GAME_ROOT;
 const children = new Map();
-const applications = [], errors = [], checks = [], wire = [];
+const applications = [], errors = [], checks = [], wire = [], recoverySnapshots = [];
+const recoveryWire = createRecoveryWireLog();
 let failure, incompatible;
 async function launch(name, port) {
   const application = await _electron.launch({ ...(process.env.DESKTOP_EXECUTABLE ? { executablePath: process.env.DESKTOP_EXECUTABLE, args: ['--mute-audio'], cwd: resolve(temporary, 'launch') } : { args: ['--mute-audio', 'apps/desktop/main.mjs'] }), env: { ...environment, ASR_DESKTOP_USER_DATA: resolve(temporary, name), ASR_DESKTOP_PORT: String(port) }, timeout: 60000 });
@@ -29,7 +31,7 @@ async function launch(name, port) {
       contents.on('dom-ready', () => contents.setAudioMuted(true));
     }
   }); page.setDefaultTimeout(60000);
-  page.on('websocket', socket => { for (const [event, direction] of [['framesent', 'sent'], ['framereceived', 'received']]) socket.on(event, frame => { try { const packet = JSON.parse(String(frame.payload)); if (['state', 'states', 'snapshot', 'error', 'recovered'].includes(packet.type)) { const record = { client: name, direction, type: packet.type, keys: Object.keys(packet), data: JSON.stringify(packet).slice(0, 1600) }; wire.push(record); if (wire.length > 24) wire.shift(); } } catch {} }); });
+  page.on('websocket', socket => { for (const [event, direction] of [['framesent', 'sent'], ['framereceived', 'received']]) socket.on(event, frame => { try { const packet = JSON.parse(String(frame.payload)); recoveryWire.observe(name,direction,packet); if (['state', 'states', 'snapshot', 'error', 'recovered'].includes(packet.type)) { const record = { client: name, direction, type: packet.type, keys: Object.keys(packet), data: JSON.stringify(packet).slice(0, 1600) }; wire.push(record); if (wire.length > 24) wire.shift(); } } catch {} }); });
   page.on('pageerror', error => { errors.push(name + ': ' + error.message); console.log(name, 'renderer error:', error.message); });
   page.on('framenavigated', frame => { if (frame === page.mainFrame()) console.log(name, 'navigated:', frame.url()); });
   page.on('console', message => { if (message.type() === 'error') console.log(name, 'console:', message.text()); });
@@ -86,6 +88,14 @@ try {
   const races = await Promise.all([host, guest].map(({ page }) => page.evaluate(() => ({ id: window.__multiplayer.lobby.raceId, start: window.__multiplayer.lobby.startAt }))));
   console.log('LAN synchronized race', JSON.stringify(races));
   assert.deepEqual(races[0], races[1]); checks.push({ race: races[0], code, hostAddress: address });
+  // Observe before driving/screenshot; the manual success wrapper below stays unchanged.
+  await host.page.evaluate(installRecoveryObserver);
+  const recoverySnapshot = async label => {
+    const state=await host.page.evaluate(readRecoveryDiagnostic,label).catch(error=>({label,error:error.message}));
+    state.latestWirePoses=JSON.parse(JSON.stringify(recoveryWire.latestPoses));
+    recoverySnapshots.push(state); console.log('LAN recovery diagnostic',JSON.stringify(state));
+  };
+  await recoverySnapshot('before throttle');
   const hostId = await host.page.evaluate(() => window.__multiplayer.id);
   const before = await host.page.evaluate(() => window.__multiplayer.me.gridPose);
   assert.ok(Number.isFinite(before.x) && Number.isFinite(before.z), 'host authenticated starting pose required');
@@ -100,8 +110,12 @@ try {
     window.__desktopRecovered = null;
     multiplayer.recover = async options => { const result = await recover(options); window.__desktopRecovered = result; return result; };
   });
+  await recoverySnapshot('before R');
   await host.page.keyboard.press('r');
-  await host.page.waitForFunction(() => !!window.__desktopRecovered && !window.__game.towing, null, { timeout: 30000 });
+  await recoverySnapshot('after R');
+  try { await host.page.waitForFunction(() => !!window.__desktopRecovered && !window.__game.towing, null, { timeout: 30000 }); }
+  catch(error) { await recoverySnapshot('timeout'); throw error; }
+  await recoverySnapshot('completed');
   const recovered = await host.page.evaluate(() => window.__desktopRecovered);
   assert.ok(Number.isFinite(recovered.x) && Number.isFinite(recovered.z) && Number.isFinite(recovered.until));
   checks.push({ authoritativeLanTow: recovered });
@@ -123,7 +137,7 @@ finally {
   await finishDesktopCheck({ temporary, failure,
     applications: applications.reverse().map(application => ({ application, child: children.get(application) })),
     closeResources: async () => { if (incompatible) await new Promise(resolve => incompatible.close(resolve)); },
-    writeReceipt: status => writeFile(resolve(evidence, 'lan-results.json'), JSON.stringify({ ...status, checks, errors, wire }, null, 2))
+    writeReceipt: status => writeFile(resolve(evidence, 'lan-results.json'), JSON.stringify({ ...status, checks, errors, wire, recoveryWire: recoveryWire.records, recoverySnapshots }, null, 2))
   });
 }
 console.log('PASS: two desktop clients host/join, ready/start, synchronized race, remote movement, reconnect, host shutdown and solo recovery.');

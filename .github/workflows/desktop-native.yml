@@ -11,10 +11,10 @@ concurrency:
   cancel-in-progress: false
 env:
   SOURCE_SHA: ${{ github.event.pull_request.head.sha }}
-  EXPECTED_GAME_BUILD: d86dfbae36c9b5692ff37e50db81cf3b0b394149f1a54e1fb1c09ac6103e77b2
-  EXPECTED_RUNTIME_HASH: e7ee9815b1af1743acdb675e8d764a0201e2a1d32e558d6c6dcc0e4728f964e4
+  EXPECTED_GAME_BUILD: 66e03bb37b80498a7b29df4458ebad0e3d627961c79847d38be0b8c6dfca51b4
+  EXPECTED_RUNTIME_HASH: 56ce6c94a1fa39cc40eb60991bb786ae63f7db711b4815ccf21d59b44ad5c190
   PAYLOAD_TAG: v0.1.0
-  PAYLOAD_SHA256: 94709b7e8b5a9513b147c5781048b584bff361e32417fddaf53ddb7cf343f3c3
+  PAYLOAD_SHA256: 3886462a5d50a40978281133b4705e1b16d6d22fa277b5fc2a5127086dff804f
 jobs:
   linux-exact-gates:
     if: github.event.pull_request.draft == true && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.event.pull_request.head.ref, 'desktop-native-review/')

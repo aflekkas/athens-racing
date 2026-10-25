@@ -2,6 +2,7 @@ appId: com.athensracing.desktop
 productName: Athens Racing
 artifactName: Athens-Racing-${version}-${arch}.${ext}
 extraMetadata:
+  description: Offline solo and player-hosted LAN racing on real roads of Attica.
   productName: Athens Racing
   author:
     name: Athens Racing

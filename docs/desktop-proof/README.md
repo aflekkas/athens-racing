@@ -35,3 +35,21 @@ Actual new signed packaged app (naturally compiled d86d/e7ee, no method replacem
 This third screenshot is our own signed packaged game, visually inspected. Only transparent timing wrappers were used and restored; no hotpath method was injected or replaced. Same hardware/preferences/car/scene as described above. The image does not establish frame timing by itself. Source: `.scratch/desktop-check/runtime-review/peristeri-packaged-60s.jpg`, own Athens Racing capture.
 
 Signed-package image exact source bytes: 298600, SHA256 841154f97375c1f69e06ca378524e2e6ab1dffc9986703b72e85172c96d21870.
+
+
+## Desktop window presentation (2026-10-25)
+
+| Before: original source window | After: actual new signed package |
+|---|---|
+| ![Original native title bar](window-before.jpg) | ![Actual signed native window](window-after.jpg) |
+
+Before uses canonical a635 Electron main/preload and the prior signed game resources. After launches the actual new packaged executable, with `isPackaged:true`, Electron44.4.5, prepared game66e03bb37b80498a7b29df4458ebad0e3d627961c79847d38be0b8c6dfca51b4 and ASAR0d347e7b743416ea56715b9b78e420da6387ee9980ce69edb9a0e9e18b913363. No source injection or response replacement was used in the after run.
+
+The outer window stayed1440×900; content increased1440×868→1440×900. Actual prepared HTML title is Athens Racing — Offline solo and LAN racing, its description is153characters consistently in meta/OG/Twitter/JSON-LD, and schema targets Windows/macOS. OS title stays Athens Racing despite renderer title updates. Native traffic lights are visible; native minimize/restore and maximize/unmaximize APIs passed. At900×650, the LAN host field accepted typing and Back remained clickable. Menu status reports drag, Back reports no-drag, and the driving canvas reports none. Visible game heading/styling are unchanged. Physical native-button clicks and OS dragging were not tested. This macOS presentation check does not certify Windows, LAN Tow, final install/reinstall retention or complete stutter resolution.
+
+These are project-owned game captures, not third-party media. Codex gpt-6.1-sol implemented and ran native QA, with independent Codex gpt-6.1-sol source/metadata reviews. Source and actual signed QA records: `.scratch/desktop-presentation/{before-qa,after-qa,final-signed-qa}.json`. All owned QA applications closed normally and temporary profiles were removed. The first signed QA harness lacked a boot handle; its documented QA-only retry did not change product files. No generative media was used.
+
+| Owned game capture | Bytes | SHA-256 |
+|---|---:|---|
+| `window-before.jpg` | 388361 | `584ba1a67affa047994ae61a3ac2f698fd266854748500a170a63ec90ccc3138` |
+| `window-after.jpg` | 393108 | `c28e9f95a785676f68dd45f905bfaed20f4c2c34c71409f1955e1d2a1e2d4e13` |
