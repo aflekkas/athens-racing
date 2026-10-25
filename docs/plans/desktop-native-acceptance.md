@@ -89,3 +89,15 @@ The combined follow-up keeps the30s context/car/voice unlock gate and awaits the
 The same combined candidate carries the independently reviewed Peristeri road-query fix: exact temporary AABB rejection before denied-cache polygon construction and optional FIFO eviction to admit current connectivity memos within the unchanged256KiB shared reservation. Source-method QA reduces worst RAF gap475→58.9ms, with zero>100ms but four50–59ms frames remaining;600same-world queries replay803→34.4ms with zero result mismatches. The64focused tests and frozen legacy oracle preserve exact predicates, density and budgets. These are source-method measurements, not final installer or Windows performance acceptance. Residual Athens/Chalandri/tile-boundary acceptance remains open in PROBLEMS.
 
 All source publications must use the task-private complete-identity binder `.scratch/desktop-check/native-audio-diagnostics/bind-draft.py`, with reviewed payload/game/runtime pins for the actual combined archive; never issue a target-only release PATCH. Draft release publication and source merge still require actual final exact Linux and installed Windows acceptance. The native workflow is not yet on staging, so globally requiring its new contexts before introduction would block ordinary PRs that lack the workflow; no branch policy was changed.
+
+
+## Actual signed-package qualification (same compiled payload)
+
+Actual new signed packaged app (naturally compiled d86d/e7ee, no method replacement) has a separate cold60s result:6954frames,p999.4ms,max399.3ms,8frames>50ms and4>100ms. Early render calls320.7ms and107.3ms explain two spikes; two initial delivery/scheduling gaps remain unproven. The20–60s interval has4742frames,p999.4ms,max49.5ms,zero>50ms; this does not erase cold spikes. The old late470.9ms road-query stall was not reproduced, with peak roads.safe60.2ms and connected2.7ms. Real recorded SVJ engine/master PCM passed while moving56.3km/h with device output muted. Full stutter resolution remains OPEN, as do Chalandri, sustained tile-boundary and Windows performance acceptance.
+
+| Actual signed package interval | Frames | p99 ms | Max RAF ms | >50 / >100 ms |
+|---|---:|---:|---:|---:|
+| Cold full60s | 6954 | 9.4 | 399.3 | 8 / 4 |
+| Disclosed20–60s interval | 4742 | 9.4 | 49.5 | 0 / 0 |
+
+The earlier475→58.9ms comparison remains valid only as the labelled method-injected experiment. The actual signed-package result above supersedes any assumption that final packaging proves complete stutter resolution. These are documentation-only qualifications; all389bundle inputs,65compiled chunks, canonical payload94709b7e…and Mac DMGcaf89adf…are unchanged. Final exact-source Linux and installed Windows gates remain required.
